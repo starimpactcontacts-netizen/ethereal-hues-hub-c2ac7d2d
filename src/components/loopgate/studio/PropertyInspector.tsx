@@ -31,6 +31,9 @@ type ClipInspectorData = {
   speed: number;
   opacity: number;
   scale: number;
+  scaleX: number;
+  scaleY: number;
+  scaleLocked: boolean;
   rotation: number;
   positionX: number;
   positionY: number;
@@ -256,14 +259,66 @@ export default function PropertyInspector({
             max={100}
             unit="%"
           />
-          <SliderRow
-            label="Scale"
-            value={data.scale}
-            onChange={(v) => onUpdate({ scale: v })}
-            min={10}
-            max={200}
-            unit="%"
-          />
+          {/* Scale / Stretch — StretchTok Mode */}
+          <div className="px-3 pt-1 pb-2">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[10px] font-medium text-white/40">Scale / Stretch</span>
+              <button
+                onClick={() => onUpdate({ scaleLocked: !data.scaleLocked })}
+                className="flex items-center gap-1 text-[8px] font-bold px-1.5 py-0.5 rounded transition-all"
+                style={{
+                  color: data.scaleLocked ? '#9999FF' : '#555',
+                  background: data.scaleLocked ? 'rgba(153,153,255,0.1)' : 'transparent',
+                  border: `1px solid ${data.scaleLocked ? 'rgba(153,153,255,0.22)' : '#333'}`,
+                }}
+              >
+                {data.scaleLocked ? <Lock className="w-2.5 h-2.5" /> : <Unlock className="w-2.5 h-2.5" />}
+                {data.scaleLocked ? "Locked" : "Free"}
+              </button>
+            </div>
+            <SliderRow
+              label="Scale X"
+              value={data.scaleX ?? data.scale}
+              onChange={(v) => {
+                onUpdate({ scaleX: v });
+                if (data.scaleLocked) onUpdate({ scaleY: v, scaleX: v });
+              }}
+              min={10}
+              max={300}
+              unit="%"
+            />
+            <SliderRow
+              label="Scale Y"
+              value={data.scaleY ?? data.scale}
+              onChange={(v) => {
+                onUpdate({ scaleY: v });
+                if (data.scaleLocked) onUpdate({ scaleX: v, scaleY: v });
+              }}
+              min={10}
+              max={300}
+              unit="%"
+            />
+            {/* Stretch presets */}
+            <div className="flex gap-1 mt-1.5 px-0.5">
+              {[
+                { label: "1:1", x: 100, y: 100 },
+                { label: "Tall", x: 70, y: 130 },
+                { label: "Wide", x: 140, y: 80 },
+                { label: "Stretch", x: 150, y: 150 },
+                { label: "Squish", x: 180, y: 50 },
+              ].map(p => (
+                <button key={p.label}
+                  onClick={() => onUpdate({ scaleX: p.x, scaleY: p.y, scaleLocked: false })}
+                  className="flex-1 py-1 rounded text-[7px] font-bold transition-all hover:brightness-125"
+                  style={{
+                    background: (data.scaleX ?? data.scale) === p.x && (data.scaleY ?? data.scale) === p.y ? 'rgba(153,153,255,0.1)' : '#151515',
+                    border: (data.scaleX ?? data.scale) === p.x && (data.scaleY ?? data.scale) === p.y ? '1px solid rgba(153,153,255,0.22)' : '1px solid #222',
+                    color: (data.scaleX ?? data.scale) === p.x && (data.scaleY ?? data.scale) === p.y ? '#9999FF' : '#666',
+                  }}
+                >{p.label}</button>
+              ))}
+            </div>
+          </div>
           <SliderRow
             label="Rotation"
             value={data.rotation}
