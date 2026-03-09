@@ -190,6 +190,25 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
   // Speed Curves (v1.5)
   const [activeSpeedCurve, setActiveSpeedCurve] = useState<SpeedCurve | null>(null);
 
+  // Blend & Overlay
+  const [blendMode, setBlendMode] = useState<BlendMode>("source-over");
+  const [activeOverlayId, setActiveOverlayId] = useState("none");
+  const [overlayOpacity, setOverlayOpacity] = useState(0.3);
+
+  // Keyframes
+  const [keyframeData, setKeyframeData] = useState<Record<string, Keyframe[]>>({});
+
+  // Timeline markers & layers
+  const [timelineMarkers, setTimelineMarkers] = useState<{ id: string; time: number; color: string; label: string; type: "cut" | "beat" | "effect" | "caption" }[]>([]);
+
+  // AI Tools overlay
+  const [aiToolsOpen, setAiToolsOpen] = useState(false);
+
+  // Chroma key
+  const [chromaEnabled, setChromaEnabled] = useState(false);
+  const [chromaColor, setChromaColor] = useState("#00FF00");
+  const [chromaThreshold, setChromaThreshold] = useState(80);
+
   const hasTriggeredPicker = useRef(false);
 
   const computedFilter = useMemo(() => buildComputedFilter(activeFilter, brightness, contrast, saturation, hueRotate), [activeFilter, brightness, contrast, saturation, hueRotate]);
