@@ -225,6 +225,8 @@ export default function LoopyPage() {
   const [showResult, setShowResult] = useState(false);
   const [animateScores, setAnimateScores] = useState(false);
   const [scanPhase, setScanPhase] = useState(0);
+  const [revealPhase, setRevealPhase] = useState(0); // 0=hidden, 1=flash, 2=grade slam, 3=score count, 4=full
+  const [displayScore, setDisplayScore] = useState(0);
 
   const fetchHistory = useCallback(async () => {
     if (!user) { setLoadingHistory(false); return; }
