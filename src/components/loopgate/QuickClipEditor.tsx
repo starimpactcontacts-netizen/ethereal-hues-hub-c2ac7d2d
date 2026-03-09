@@ -1066,7 +1066,7 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
               exit={{ height: 0, opacity: 0 }}
               transition={{ type: "spring", stiffness: 400, damping: 35 }}
               className="flex-shrink-0 overflow-hidden"
-              style={{ background: "#1a1a1a", borderTop: "1px solid #2a2a2a" }}
+              style={{ background: "linear-gradient(180deg, #131316 0%, #0e0e11 100%)", borderTop: "1px solid #1a1a1e" }}
             >
               <div className="p-4 max-h-[35vh] overflow-y-auto" style={{ scrollbarWidth: "none" }}>
 
