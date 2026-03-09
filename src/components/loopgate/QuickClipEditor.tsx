@@ -311,16 +311,20 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
         const combinedFilter = [computedFilter, adjFilter].filter(f => f !== "none").join(" ") || "none";
         ctx.save();
         ctx.filter = combinedFilter;
-        // Apply transforms
-        ctx.translate(finalW / 2, finalH / 2);
-        ctx.rotate((rotation * Math.PI) / 180);
-        ctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
-        // Draw centered
+        ctx.globalAlpha = videoOpacity;
+        // Apply transforms — position, rotation, scale (stretch)
+        const centerX = finalW * posX;
+        const centerY = finalH * posY;
+        ctx.translate(centerX, centerY);
+        ctx.rotate(((rotation + freeRotation) * Math.PI) / 180);
+        ctx.scale((flipH ? -1 : 1) * scaleX, (flipV ? -1 : 1) * scaleY);
+        // Draw centered at transform origin
         const drawW = isRotated90 ? finalH : finalW;
         const drawH = isRotated90 ? finalW : finalH;
         const sx = (vid.videoWidth - outW) / 2;
         const sy = (vid.videoHeight - outH) / 2;
         ctx.drawImage(vid, sx, sy, outW, outH, -drawW / 2, -drawH / 2, drawW, drawH);
+        ctx.globalAlpha = 1.0;
         ctx.restore();
         ctx.filter = "none";
         if (hasAdjustments(adjustments)) {
