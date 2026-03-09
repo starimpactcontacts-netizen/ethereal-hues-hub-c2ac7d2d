@@ -1173,11 +1173,11 @@ export default function ArenaPage() {
 
           {/* search bar moved to top */}
 
-          {/* ═══ LIVE PAYOUTS CAROUSEL ═══ */}
-          <LivePayoutsCarousel />
-
           {/* ═══ MISSIONS CAROUSEL — GET PAID ═══ */}
           <ArenaMissionsCarousel />
+
+          {/* ═══ LIVE PAYOUTS CAROUSEL ═══ */}
+          <LivePayoutsCarousel />
 
           {/* ═══ BOUNTIES CAROUSEL ═══ */}
           <ArenaBountiesCarousel />
