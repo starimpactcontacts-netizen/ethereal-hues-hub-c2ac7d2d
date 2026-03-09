@@ -284,7 +284,26 @@ export default function LoopyPage() {
       const data: LoopyRating = await resp.json();
       setRating(data);
       setShowResult(true);
-      setTimeout(() => setAnimateScores(true), 300);
+      setRevealPhase(0);
+      setDisplayScore(0);
+      // Dramatic reveal sequence
+      setTimeout(() => setRevealPhase(1), 100);   // flash
+      setTimeout(() => setRevealPhase(2), 600);    // grade slam
+      setTimeout(() => setRevealPhase(3), 1200);   // score count-up
+      setTimeout(() => { setRevealPhase(4); setAnimateScores(true); }, 2400); // full reveal
+      // Animated counter
+      const target = data.total;
+      const startTime = Date.now() + 1200; // starts at phase 3
+      const countDuration = 1000;
+      const tick = () => {
+        const elapsed = Date.now() - startTime;
+        if (elapsed < 0) { requestAnimationFrame(tick); return; }
+        const progress = Math.min(elapsed / countDuration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+        setDisplayScore(Math.round(eased * target));
+        if (progress < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
 
       if (user) {
         await supabase.from('loopy_ratings').insert({
