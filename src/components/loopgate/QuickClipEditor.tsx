@@ -358,6 +358,13 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
           applyCanvasAdjustments(ctx, canvas, adjustments);
         }
         activeEffects.forEach(effectId => { try { applyEffect(ctx, canvas, effectId, vid.currentTime); } catch { /* */ } });
+        // Apply overlay
+        const overlayPreset = OVERLAY_PRESETS.find(o => o.id === activeOverlayId);
+        if (overlayPreset) applyOverlay(ctx, canvas, overlayPreset, overlayOpacity);
+        // Apply chroma key
+        if (chromaEnabled) {
+          applyChromaKey(ctx, canvas, chromaColor, chromaThreshold);
+        }
         textOverlays.forEach((overlay) => {
           if (vid.currentTime >= overlay.startTime && vid.currentTime <= overlay.endTime) {
             try { renderTextOverlay(ctx, canvas, overlay.text, overlay.x, overlay.y, overlay.style); } catch { /* */ }
@@ -368,7 +375,7 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
     };
     draw();
     return () => { running = false; cancelAnimationFrame(animRef.current); };
-  }, [videoUrl, computedFilter, textOverlays, activeEffects, adjustments, cropPreset, rotation, flipH, flipV, scaleX, scaleY, posX, posY, videoOpacity, freeRotation]);
+  }, [videoUrl, computedFilter, textOverlays, activeEffects, adjustments, cropPreset, rotation, flipH, flipV, scaleX, scaleY, posX, posY, videoOpacity, freeRotation, activeOverlayId, overlayOpacity, chromaEnabled, chromaColor, chromaThreshold]);
 
   const togglePlay = () => {
     const vid = videoRef.current; if (!vid) return;
