@@ -6,7 +6,8 @@ import {
   Send, Loader2, Heart, Lightbulb, Music, Fingerprint, Zap,
   Trophy, TrendingUp, Star, Clock, ChevronRight, ExternalLink,
   MessageSquare, RotateCcw, Brain, Shield, Target, Activity,
-  Award, BarChart3, Eye, Swords, DollarSign, ArrowRight, Sparkles, Users, AlertTriangle
+  Award, BarChart3, Eye, Swords, DollarSign, ArrowRight, Sparkles, Users, AlertTriangle,
+  Share2, Copy, Camera
 } from 'lucide-react';
 import GateIcon from '@/components/loopgate/GateIcon';
 import GatePattern from '@/components/loopgate/GatePattern';
@@ -79,6 +80,34 @@ const GRADE_COLORS: Record<string, string> = {
   'C': 'from-slate-500 to-gray-400 text-white',
   'D': 'from-red-600 to-rose-500 text-white',
   'F': 'from-red-800 to-red-600 text-white',
+};
+
+const GRADE_GLOW: Record<string, string> = {
+  'S++': 'shadow-[0_0_60px_rgba(251,191,36,0.5),0_0_120px_rgba(251,191,36,0.2)]',
+  'S+': 'shadow-[0_0_60px_rgba(245,158,11,0.5),0_0_120px_rgba(245,158,11,0.2)]',
+  'S': 'shadow-[0_0_60px_rgba(249,115,22,0.4),0_0_100px_rgba(249,115,22,0.15)]',
+  'A': 'shadow-[0_0_50px_rgba(34,197,94,0.4),0_0_100px_rgba(34,197,94,0.15)]',
+  'B': 'shadow-[0_0_40px_rgba(59,130,246,0.3),0_0_80px_rgba(59,130,246,0.1)]',
+  'C': 'shadow-[0_0_30px_rgba(148,163,184,0.2)]',
+  'D': 'shadow-[0_0_40px_rgba(220,38,38,0.3)]',
+  'F': 'shadow-[0_0_50px_rgba(220,38,38,0.4)]',
+};
+
+// Grade-specific roasts/hypes that make people want to screenshot
+const GRADE_REACTIONS: Record<string, { emoji: string; headline: string; sub: string }> = {
+  'S++': { emoji: '👑', headline: 'GENERATIONAL TALENT', sub: 'You didn\'t just pass the test. You ARE the test.' },
+  'S+': { emoji: '🔥', headline: 'BUILT DIFFERENT', sub: 'The editors below you are looking up right now.' },
+  'S': { emoji: '⚡', headline: 'THAT\'S ELITE', sub: 'Most editors dream about this score. You just got it.' },
+  'A': { emoji: '💪', headline: 'ABOVE THE PACK', sub: 'Solid work. You\'re better than most, but not untouchable yet.' },
+  'B': { emoji: '📈', headline: 'MID BUT PROMISING', sub: 'You have the ingredients. The recipe needs work.' },
+  'C': { emoji: '😬', headline: 'THAT\'S... OKAY', sub: 'Your edit exists. That\'s about the nicest thing Loopy can say.' },
+  'D': { emoji: '💀', headline: 'PACK IT UP', sub: 'This edit needs CPR. Actually, it might be too late for that.' },
+  'F': { emoji: '☠️', headline: 'CERTIFIED NIGHTMARE', sub: 'Loopy had to look away. Twice. Then three more times.' },
+};
+
+const GRADE_PERCENTILE: Record<string, string> = {
+  'S++': 'Top 1%', 'S+': 'Top 5%', 'S': 'Top 10%', 'A': 'Top 25%',
+  'B': 'Top 50%', 'C': 'Bottom 40%', 'D': 'Bottom 20%', 'F': 'Bottom 5%',
 };
 
 const VERDICT = (score: number, max: number) => {
@@ -196,6 +225,8 @@ export default function LoopyPage() {
   const [showResult, setShowResult] = useState(false);
   const [animateScores, setAnimateScores] = useState(false);
   const [scanPhase, setScanPhase] = useState(0);
+  const [revealPhase, setRevealPhase] = useState(0); // 0=hidden, 1=flash, 2=grade slam, 3=score count, 4=full
+  const [displayScore, setDisplayScore] = useState(0);
 
   const fetchHistory = useCallback(async () => {
     if (!user) { setLoadingHistory(false); return; }
@@ -253,7 +284,26 @@ export default function LoopyPage() {
       const data: LoopyRating = await resp.json();
       setRating(data);
       setShowResult(true);
-      setTimeout(() => setAnimateScores(true), 300);
+      setRevealPhase(0);
+      setDisplayScore(0);
+      // Dramatic reveal sequence
+      setTimeout(() => setRevealPhase(1), 100);   // flash
+      setTimeout(() => setRevealPhase(2), 600);    // grade slam
+      setTimeout(() => setRevealPhase(3), 1200);   // score count-up
+      setTimeout(() => { setRevealPhase(4); setAnimateScores(true); }, 2400); // full reveal
+      // Animated counter
+      const target = data.total;
+      const startTime = Date.now() + 1200; // starts at phase 3
+      const countDuration = 1000;
+      const tick = () => {
+        const elapsed = Date.now() - startTime;
+        if (elapsed < 0) { requestAnimationFrame(tick); return; }
+        const progress = Math.min(elapsed / countDuration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+        setDisplayScore(Math.round(eased * target));
+        if (progress < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
 
       if (user) {
         await supabase.from('loopy_ratings').insert({
@@ -283,6 +333,20 @@ export default function LoopyPage() {
   const handleReset = () => {
     setUrl(''); setTitle(''); setNotes('');
     setRating(null); setShowResult(false); setAnimateScores(false);
+    setRevealPhase(0); setDisplayScore(0);
+  };
+
+  const handleShare = async () => {
+    const reaction = GRADE_REACTIONS[rating?.grade || 'C'];
+    const text = `${reaction?.emoji} I got a ${rating?.grade} (${rating?.total}/100) on Loopy AI Rating\n\n"${rating?.vibe_check}"\n\n${reaction?.headline}\n\nRate your edit → loopgate.io/loopy/rate`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: `My Loopy Rating: ${rating?.grade}`, text });
+      } else {
+        await navigator.clipboard.writeText(text);
+        toast.success('Copied to clipboard!');
+      }
+    } catch { /* user cancelled */ }
   };
 
   const gradeScore = rating?.total ?? 0;
@@ -560,46 +624,172 @@ export default function LoopyPage() {
             ) : rating && (
               <motion.div key="result" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} className="space-y-3">
 
-                {/* ═══════ GRADE HERO ═══════ */}
-                <div className="relative overflow-hidden bg-[#111] border border-white/[0.06]"
+                {/* ═══════ FULL-SCREEN FLASH ON REVEAL ═══════ */}
+                <AnimatePresence>
+                  {revealPhase === 1 && (
+                    <motion.div
+                      key="flash"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: [0, 1, 0] }}
+                      transition={{ duration: 0.5 }}
+                      className="fixed inset-0 z-[200] pointer-events-none"
+                      style={{ background: rating.total >= 50 ? 'rgba(251,191,36,0.3)' : 'rgba(220,38,38,0.25)' }}
+                    />
+                  )}
+                </AnimatePresence>
+
+                {/* ═══════ GRADE HERO — VIRAL REVEAL ═══════ */}
+                <div className="relative overflow-hidden bg-[#0a0a0a] border border-white/[0.06]"
                   style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)' }}>
                   <CornerMarks />
-                  <div className="h-[2px] bg-gradient-to-r from-purple-500 via-fuchsia-500 to-purple-500" />
-                  <motion.div
-                    className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent"
-                    animate={{ top: ['0%', '100%'] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                  
+                  {/* Top accent bar */}
+                  <motion.div 
+                    className="h-[3px]"
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: revealPhase >= 2 ? 1 : 0 }}
+                    transition={{ duration: 0.4 }}
+                    style={{ background: `linear-gradient(90deg, ${rating.total >= 70 ? '#fbbf24' : rating.total >= 50 ? '#22c55e' : '#ef4444'}, transparent)`, transformOrigin: 'left' }}
                   />
 
-                  {/* Section label */}
-                  <div className="flex items-center justify-between px-6 pt-4">
-                    <span className="text-[9px] font-bold text-white/15 uppercase tracking-[0.2em]" style={TEKO}>QOI Diagnostic Result</span>
-                    <span className="text-[8px] text-white/10 uppercase tracking-widest" style={TEKO}>LOOPY v1.1</span>
-                  </div>
-
-                  <div className="relative p-6 pt-3 text-center">
+                  {/* Scanning line */}
+                  {revealPhase >= 2 && (
                     <motion.div
-                      initial={{ scale: 0, rotate: -15 }}
-                      animate={{ scale: 1, rotate: 0 }}
-                      transition={{ type: 'spring', stiffness: 200, damping: 12 }}
-                      className="relative inline-block mb-3"
-                    >
-                      <div className="absolute inset-[-8px] bg-gradient-to-br from-amber-400/30 to-purple-500/20 blur-2xl" />
-                      <div className={`relative w-24 h-24 bg-gradient-to-br ${GRADE_COLORS[rating.grade] || 'from-gray-500 to-gray-400 text-white'} flex items-center justify-center border border-white/10`}
-                        style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)' }}>
-                        <span className="text-[48px] font-black leading-none" style={TEKO}>{rating.grade}</span>
-                      </div>
-                    </motion.div>
+                      className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/40 to-transparent"
+                      animate={{ top: ['0%', '100%'] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                    />
+                  )}
 
-                    <div className="flex items-center justify-center gap-1">
-                      <span className="text-[40px] font-black text-white leading-none" style={TEKO}>{rating.total}</span>
-                      <span className="text-[20px] text-white/30" style={TEKO}>/100</span>
+                  <div className="relative p-6 pb-5">
+                    {/* Version tag */}
+                    <div className="flex items-center justify-between mb-5">
+                      <span className="text-[9px] font-bold text-white/15 uppercase tracking-[0.2em]" style={TEKO}>QOI Diagnostic Result</span>
+                      <span className="text-[8px] text-white/10 uppercase tracking-widest" style={TEKO}>LOOPY v1.1</span>
                     </div>
-                    <p className="text-[12px] text-purple-400/80 mt-2 italic max-w-xs mx-auto">"{rating.vibe_check}"</p>
 
-                    <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 bg-purple-500/10 border border-purple-500/20">
-                      <Eye className="w-3 h-3 text-purple-400" />
-                      <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-purple-400" style={TEKO}>QOI Diagnostic Complete</span>
+                    {/* GRADE BADGE — dramatic slam */}
+                    <div className="flex flex-col items-center text-center">
+                      <AnimatePresence>
+                        {revealPhase >= 2 && (
+                          <motion.div
+                            initial={{ scale: 3, opacity: 0, rotate: -20 }}
+                            animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                            transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+                            className="relative mb-4"
+                          >
+                            {/* Glow behind grade */}
+                            <div className={`absolute inset-[-20px] blur-3xl opacity-60 bg-gradient-to-br ${GRADE_COLORS[rating.grade] || 'from-gray-500 to-gray-400'}`} />
+                            <motion.div
+                              animate={{ scale: [1, 1.05, 1] }}
+                              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                              className={`relative w-28 h-28 bg-gradient-to-br ${GRADE_COLORS[rating.grade] || 'from-gray-500 to-gray-400 text-white'} flex items-center justify-center border-2 border-white/20 ${GRADE_GLOW[rating.grade] || ''}`}
+                              style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
+                            >
+                              <span className="text-[64px] font-black leading-none" style={TEKO}>{rating.grade}</span>
+                            </motion.div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      {/* SCORE COUNTER */}
+                      <AnimatePresence>
+                        {revealPhase >= 3 && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5 }}
+                          >
+                            <div className="flex items-baseline justify-center gap-1">
+                              <span className="text-[56px] font-black text-white leading-none tabular-nums" style={TEKO}>{displayScore}</span>
+                              <span className="text-[24px] text-white/30" style={TEKO}>/100</span>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      {/* PERCENTILE RANK */}
+                      <AnimatePresence>
+                        {revealPhase >= 3 && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.3, duration: 0.4 }}
+                            className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 bg-white/[0.06] border border-white/[0.1]"
+                            style={{ clipPath: 'polygon(4px 0%, 100% 0%, calc(100% - 4px) 100%, 0% 100%)' }}
+                          >
+                            <BarChart3 className="w-3 h-3 text-purple-400" />
+                            <span className="text-[11px] font-black text-purple-400 uppercase tracking-[0.15em]" style={TEKO}>{GRADE_PERCENTILE[rating.grade] || 'Ranked'} of editors</span>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      {/* VIRAL ROAST/HYPE REACTION */}
+                      <AnimatePresence>
+                        {revealPhase >= 4 && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5 }}
+                            className="mt-5 space-y-2 max-w-xs"
+                          >
+                            <p className="text-[14px] font-black text-white uppercase tracking-wider flex items-center justify-center gap-2" style={TEKO}>
+                              <span className="text-2xl">{GRADE_REACTIONS[rating.grade]?.emoji || '🎬'}</span>
+                              {GRADE_REACTIONS[rating.grade]?.headline || 'RATED'}
+                            </p>
+                            <p className="text-[12px] text-white/50 italic leading-relaxed">
+                              "{GRADE_REACTIONS[rating.grade]?.sub || rating.vibe_check}"
+                            </p>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      {/* VIBE CHECK QUOTE */}
+                      <AnimatePresence>
+                        {revealPhase >= 4 && (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.3 }}
+                            className="mt-3"
+                          >
+                            <p className="text-[11px] text-purple-400/70 italic max-w-xs mx-auto leading-relaxed">"{rating.vibe_check}"</p>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      {/* SHARE / SCREENSHOT CTA — the viral driver */}
+                      <AnimatePresence>
+                        {revealPhase >= 4 && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.6 }}
+                            className="mt-5 flex items-center gap-2"
+                          >
+                            <motion.button
+                              onClick={handleShare}
+                              whileTap={{ scale: 0.95 }}
+                              className="group relative h-11 px-6 overflow-hidden"
+                              style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%)' }}
+                            >
+                              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-fuchsia-600 group-hover:from-purple-500 group-hover:to-fuchsia-500 transition-all" />
+                              <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/20 to-transparent" />
+                              <div className="relative flex items-center gap-2">
+                                <Share2 className="w-4 h-4 text-white" />
+                                <span className="text-[13px] font-bold text-white uppercase tracking-[0.15em]" style={TEKO}>Share Result</span>
+                              </div>
+                            </motion.button>
+                            <motion.button
+                              onClick={() => { navigator.clipboard.writeText(`I got ${rating.grade} (${rating.total}/100) on Loopy AI Rating 🎬\n\nRate yours → loopgate.io/loopy/rate`); toast.success('Copied!'); }}
+                              whileTap={{ scale: 0.95 }}
+                              className="h-11 w-11 flex items-center justify-center bg-white/[0.06] border border-white/[0.1] hover:bg-white/[0.1] transition-all"
+                            >
+                              <Copy className="w-4 h-4 text-white/60" />
+                            </motion.button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   </div>
                 </div>
