@@ -622,9 +622,27 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
             </div>
           )}
 
-          {speed !== 1 && (
-            <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full" style={{ background: "rgba(0,0,0,0.6)", border: `1px solid ${ACCENT_BORDER}` }}>
-              <span className="text-[10px] font-semibold" style={{ color: ACCENT }}>{speed}x</span>
+          {/* Speed / Curve badge */}
+          {(speed !== 1 || activeSpeedCurve) && (
+            <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background: "rgba(0,0,0,0.6)", border: `1px solid ${ACCENT_BORDER}` }}>
+              {activeSpeedCurve ? (
+                <>
+                  <Activity className="w-2.5 h-2.5" style={{ color: ACCENT }} />
+                  <span className="text-[9px] font-semibold" style={{ color: ACCENT }}>{activeSpeedCurve.name}</span>
+                </>
+              ) : (
+                <span className="text-[10px] font-semibold" style={{ color: ACCENT }}>{speed}x</span>
+              )}
+            </div>
+          )}
+
+          {/* Crop badge */}
+          {(cropPreset || rotation !== 0 || flipH || flipV) && (
+            <div className="absolute top-2 right-24 px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background: "rgba(0,0,0,0.6)", border: `1px solid ${ACCENT_BORDER}` }}>
+              <Crop className="w-2.5 h-2.5" style={{ color: ACCENT }} />
+              <span className="text-[9px] font-semibold" style={{ color: ACCENT }}>
+                {cropPreset || ''}{rotation ? ` ${rotation}°` : ''}{flipH ? ' H' : ''}{flipV ? ' V' : ''}
+              </span>
             </div>
           )}
 
