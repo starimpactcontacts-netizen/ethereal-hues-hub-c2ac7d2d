@@ -1136,6 +1136,9 @@ export default function ArenaPage() {
 
           {/* search bar moved to top */}
 
+          {/* ═══ LIVE WINNERS TICKER ═══ */}
+          <LiveWinnersTicker />
+
           {/* ═══ MISSIONS CAROUSEL — GET PAID ═══ */}
           <ArenaMissionsCarousel />
 

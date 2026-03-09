@@ -409,3 +409,13 @@ html, body {
   overflow-x: hidden;
   max-width: 100vw;
 }
+
+/* Live winners ticker scroll animation */
+@keyframes scroll-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-scroll-left {
+  animation: scroll-left 20s linear infinite;
+}
