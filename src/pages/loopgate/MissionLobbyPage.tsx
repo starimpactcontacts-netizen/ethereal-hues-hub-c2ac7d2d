@@ -324,90 +324,83 @@ export default function MissionLobbyPage() {
         </div>
       )}
 
-      {/* ═══ SUBMIT + ENTER STUDIO (TOP) ═══ */}
-      <div className="px-4 mt-2 space-y-2">
+      {/* ═══ SUBMISSION AREA ═══ */}
+      <div className="px-4 mt-3 space-y-3">
+        {/* Show previous submission result if exists */}
+        {mySubmission?.rating && (
+          <div className="flex items-center gap-3 py-2">
+            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 border text-base font-black ${RATING_COLORS[mySubmission.rating as SubmissionRating]}`}>
+              {mySubmission.rating}
+              {mySubmission.earned_cents > 0 && (
+                <span className="text-emerald-400 text-xs">+${(mySubmission.earned_cents / 100).toFixed(0)}</span>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">{RANK_LABELS[mySubmission.rating] || ''} — Last submission</span>
+              {mySubmission.feedback && (
+                <p className="text-[9px] text-foreground/50 italic mt-0.5 truncate">"{mySubmission.feedback}"</p>
+              )}
+            </div>
+            {officialEvent && PASSING_RATINGS.includes(mySubmission.rating) && (
+              <Link to={`/drop/${officialEvent.id}`}>
+                <div className="text-[8px] font-black text-emerald-400/60 flex items-center gap-0.5">
+                  <Swords className="w-3 h-3" /> Event
+                </div>
+              </Link>
+            )}
+          </div>
+        )}
+
+        {mySubmission && !mySubmission.rating && (
+          <div className="flex items-center gap-2 py-2">
+            <Clock className="w-4 h-4 text-gold animate-pulse" />
+            <span className="text-xs font-bold text-gold">Awaiting Rating</span>
+            <span className="text-[9px] text-muted-foreground ml-auto">You can submit another edit below</span>
+          </div>
+        )}
+
+        {/* Submit form — always visible for logged-in users */}
         {!user ? (
           <Link to="/login">
-            <div className="bg-red-500/10 border-2 border-red-500/30 p-4 text-center">
-              <Crosshair className="w-5 h-5 text-red-400 mx-auto mb-1.5" />
+            <div className="bg-destructive/10 border border-destructive/20 p-4 text-center rounded-sm">
+              <Crosshair className="w-5 h-5 text-destructive mx-auto mb-1.5" />
               <p style={teko} className="text-xl text-foreground">SIGN IN TO COMPETE</p>
               <p className="text-[10px] text-muted-foreground mt-0.5">Create a free account to start earning</p>
             </div>
           </Link>
-        ) : mySubmission ? (
-          <div className={`border-2 p-3 ${mySubmission.rating ? 'border-amber-500/40 bg-amber-500/5' : 'border-border bg-surface-1'}`}>
-            <div className="flex items-center gap-2 mb-2">
-              <Shield className="w-4 h-4 text-foreground/40" />
-              <span className="text-[10px] font-black text-foreground uppercase tracking-[0.15em]">Your Submission</span>
-            </div>
-            {mySubmission.rating ? (
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <div className={`inline-flex items-center gap-1.5 px-3 py-2 border text-lg font-black ${RATING_COLORS[mySubmission.rating as SubmissionRating]}`}>
-                    {mySubmission.rating}
-                    {mySubmission.earned_cents > 0 && (
-                      <span className="text-emerald-400 text-sm">+${(mySubmission.earned_cents / 100).toFixed(0)}</span>
-                    )}
-                  </div>
-                  <span className="text-[10px] text-muted-foreground uppercase font-bold">{RANK_LABELS[mySubmission.rating] || ''}</span>
-                </div>
-                {mySubmission.feedback && (
-                  <div className="bg-surface-2 border border-border/50 p-2.5 mt-2">
-                    <span className="text-[8px] font-black text-muted-foreground uppercase tracking-wider">Judge Feedback</span>
-                    <p className="text-xs text-foreground/80 mt-1 italic">"{mySubmission.feedback}"</p>
-                  </div>
-                )}
-                {officialEvent && PASSING_RATINGS.includes(mySubmission.rating) && (
-                  <Link to={`/drop/${officialEvent.id}`}>
-                    <div className="mt-2 bg-emerald-950/40 border border-emerald-500/30 px-3 py-2 flex items-center gap-2 hover:border-emerald-400/50 transition-colors">
-                      <Swords className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                      <span className="text-[9px] font-black text-emerald-400 uppercase tracking-wider flex-1">Auto-Entered Official Event</span>
-                      <ArrowRight className="w-3 h-3 text-emerald-400/50 shrink-0" />
-                    </div>
-                  </Link>
-                )}
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-amber-400 animate-pulse" />
-                <span className="text-sm font-bold text-amber-400">Awaiting Rating</span>
-              </div>
-            )}
-          </div>
         ) : (
-          <div className="border-2 border-emerald-500/30 bg-surface-0 overflow-hidden">
-            <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-3 py-2 flex items-center gap-2">
-              <Crosshair className="w-4 h-4 text-emerald-400" />
-              <span className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em]">Submit Your Edit</span>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 mb-1">
+              <Crosshair className="w-3.5 h-3.5 text-status-live" />
+              <span className="text-[10px] font-black text-status-live uppercase tracking-[0.2em]">
+                {mySubmission ? 'Submit Another Edit' : 'Submit Your Edit'}
+              </span>
             </div>
-            <div className="p-3 space-y-2.5">
+            <div className="flex gap-2">
               <Input
                 value={url}
                 onChange={e => setUrl(e.target.value)}
-                placeholder="Paste your TikTok, YouTube, or Instagram link..."
-                className="h-10 bg-surface-1 border-border/50 font-mono text-sm"
+                placeholder="Paste your TikTok, YouTube, or IG link..."
+                className="h-10 bg-surface-1 border-border/40 font-mono text-sm flex-1"
               />
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleSubmit}
-                  disabled={submitting || !url.trim()}
-                  className="flex-1 py-4 bg-emerald-600 hover:bg-emerald-500 text-white uppercase tracking-wider"
-                  style={teko}
-                >
-                  {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-                    <span className="text-lg flex items-center gap-2"><Send className="w-4 h-4" /> Submit & Earn</span>
-                  )}
-                </Button>
-                <Link to={`/studio?mission=${mission.id}`} className="shrink-0">
-                  <Button variant="outline" className="h-full px-4 border-red-500/30 bg-red-500/5 hover:bg-red-500/10 text-red-400">
-                    <Film className="w-4 h-4 mr-1.5" />
-                    <span className="text-xs font-black uppercase">Studio</span>
-                  </Button>
-                </Link>
-              </div>
+              <Button
+                onClick={handleSubmit}
+                disabled={submitting || !url.trim()}
+                className="h-10 px-5 bg-status-live hover:bg-status-live/90 text-white uppercase tracking-wider shrink-0"
+                style={teko}
+              >
+                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                  <span className="text-base flex items-center gap-1.5"><Send className="w-3.5 h-3.5" /> Go</span>
+                )}
+              </Button>
+            </div>
+            <div className="flex items-center justify-between">
+              <Link to={`/studio?mission=${mission.id}`} className="text-[9px] font-black text-destructive/60 hover:text-destructive uppercase tracking-wider flex items-center gap-1">
+                <Film className="w-3 h-3" /> Open Studio
+              </Link>
               {officialEvent && (
-                <p className="text-[9px] text-emerald-400/50 text-center">
-                  ✓ Your edit auto-enters the <span className="font-bold text-emerald-400/70">${officialEvent.prize_usd} Official Event</span> after rating
+                <p className="text-[8px] text-status-live/50">
+                  ✓ Auto-enters <span className="font-bold text-status-live/70">${officialEvent.prize_usd} event</span> after rating
                 </p>
               )}
             </div>
@@ -415,11 +408,14 @@ export default function MissionLobbyPage() {
         )}
       </div>
 
+      {/* ═══ DIVIDER ═══ */}
+      <div className="mx-4 mt-4 mb-3 h-px bg-border/30" />
+
       {/* ═══ SOCIAL PROOF — RATED EDITS CAROUSEL ═══ */}
-      <div className="mt-4">
+      <div>
         <div className="px-4 flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <Flame className="w-3.5 h-3.5 text-amber-400" />
+            <Flame className="w-3.5 h-3.5 text-gold" />
             <span className="text-[10px] font-black text-foreground uppercase tracking-[0.2em]">Rated Edits</span>
           </div>
           {ratedSubmissions.length > 0 && (
@@ -429,12 +425,9 @@ export default function MissionLobbyPage() {
 
         {ratedSubmissions.length === 0 ? (
           <div className="px-4">
-            <div className="border border-dashed border-border/40 bg-surface-0/50 py-8 flex flex-col items-center gap-2">
-              <div className="w-10 h-10 bg-surface-1 border border-border/30 flex items-center justify-center">
-                <Star className="w-5 h-5 text-muted-foreground/30" />
-              </div>
-              <p className="text-xs text-muted-foreground/50 font-bold">No rated edits yet</p>
-              <p className="text-[9px] text-muted-foreground/30">Be the first to submit and get rated</p>
+            <div className="border border-dashed border-border/30 py-6 flex flex-col items-center gap-1.5 rounded-sm">
+              <Star className="w-4 h-4 text-muted-foreground/20" />
+              <p className="text-[10px] text-muted-foreground/40 font-bold">No rated edits yet — be the first</p>
             </div>
           </div>
         ) : (
@@ -460,69 +453,64 @@ export default function MissionLobbyPage() {
         )}
       </div>
 
+      {/* ═══ DIVIDER ═══ */}
+      <div className="mx-4 mt-3 mb-3 h-px bg-border/30" />
+
       {/* ═══ EARNINGS POTENTIAL ═══ */}
-      <div className="px-4 mt-4 relative z-10">
-        <div className="bg-surface-0 border-2 border-emerald-500/30 overflow-hidden">
-          <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-3 py-2 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <DollarSign className="w-4 h-4 text-emerald-400" />
-              <span className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em]">Earnings</span>
-            </div>
-            {maxPayout > 0 && (
-              <span style={teko} className="text-lg text-emerald-400">UP TO ${(maxPayout / 100).toFixed(0)}</span>
-            )}
+      <div className="px-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <DollarSign className="w-3.5 h-3.5 text-status-live" />
+            <span className="text-[10px] font-black text-status-live uppercase tracking-[0.2em]">Earnings</span>
           </div>
-
-          <div className="grid grid-cols-6 divide-x divide-border/30">
-            {RATINGS.map(r => {
-              const cents = payouts[r] || 0;
-              const hasPay = cents > 0;
-              return (
-                <div key={r} className={`py-3 flex flex-col items-center gap-1 ${hasPay ? 'bg-surface-1' : 'bg-surface-0'}`}>
-                  <span className={`text-xs font-black ${
-                    r === 'S' ? 'text-amber-400' :
-                    r === 'A' ? 'text-emerald-400' :
-                    r === 'B' ? 'text-blue-400' :
-                    'text-muted-foreground'
-                  }`}>{r}</span>
-                  <span className={`text-[10px] font-bold ${hasPay ? 'text-emerald-400' : 'text-muted-foreground/40'}`}>
-                    {hasPay ? `$${(cents / 100).toFixed(2)}` : 'IDX'}
-                  </span>
-                  <span className="text-[7px] text-muted-foreground/30 font-bold uppercase">{RANK_LABELS[r]}</span>
-                </div>
-              );
-            })}
-          </div>
-
-          {mission.mission_views_milestone > 0 && mission.mission_views_bonus_cents > 0 && (
-            <div className="border-t border-emerald-500/20 bg-amber-500/5 px-3 py-2 flex items-center gap-2">
-              <Eye className="w-3.5 h-3.5 text-amber-400" />
-              <span className="text-[9px] font-black text-amber-400 uppercase tracking-wider">
-                {(mission.mission_views_milestone / 1000).toFixed(0)}K VIEWS = +${(mission.mission_views_bonus_cents / 100).toFixed(0)} BONUS
-              </span>
-              <span className="text-[7px] text-amber-400/40 ml-auto">C+ rank only</span>
-            </div>
+          {maxPayout > 0 && (
+            <span style={teko} className="text-base text-status-live">UP TO ${(maxPayout / 100).toFixed(0)}</span>
           )}
         </div>
+
+        <div className="grid grid-cols-6 gap-px bg-border/20 rounded-sm overflow-hidden">
+          {RATINGS.map(r => {
+            const cents = payouts[r] || 0;
+            const hasPay = cents > 0;
+            return (
+              <div key={r} className={`py-3 flex flex-col items-center gap-1 ${hasPay ? 'bg-surface-1' : 'bg-surface-0'}`}>
+                <span className={`text-xs font-black ${
+                  r === 'S' ? 'text-gold' :
+                  r === 'A' ? 'text-status-live' :
+                  r === 'B' ? 'text-blue-400' :
+                  'text-muted-foreground'
+                }`}>{r}</span>
+                <span className={`text-[10px] font-bold ${hasPay ? 'text-status-live' : 'text-muted-foreground/40'}`}>
+                  {hasPay ? `$${(cents / 100).toFixed(2)}` : 'IDX'}
+                </span>
+                <span className="text-[7px] text-muted-foreground/30 font-bold uppercase">{RANK_LABELS[r]}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        {mission.mission_views_milestone > 0 && mission.mission_views_bonus_cents > 0 && (
+          <div className="mt-1.5 flex items-center gap-2 py-1.5">
+            <Eye className="w-3 h-3 text-gold" />
+            <span className="text-[9px] font-black text-gold uppercase tracking-wider">
+              {(mission.mission_views_milestone / 1000).toFixed(0)}K VIEWS = +${(mission.mission_views_bonus_cents / 100).toFixed(0)} BONUS
+            </span>
+            <span className="text-[7px] text-gold/40 ml-auto">C+ rank only</span>
+          </div>
+        )}
       </div>
 
-      {/* ═══ YOUR BALANCE ═══ */}
+      {/* ═══ YOUR BALANCE — inline row ═══ */}
       {user && (
-        <div className="px-4 mt-3">
-          <div className="bg-surface-1 border border-border/50 px-3 py-2.5 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-emerald-500/20 flex items-center justify-center">
-                <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
-              </div>
-              <div>
-                <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-wider">Balance</span>
-                <p style={teko} className="text-lg text-emerald-400 leading-none">${(availableBalance / 100).toFixed(2)}</p>
-              </div>
-            </div>
-            <Link to="/payouts" className="text-[8px] font-black text-emerald-400/50 hover:text-emerald-400 uppercase tracking-wider flex items-center gap-1">
-              Withdraw <ChevronRight className="w-3 h-3" />
-            </Link>
+        <div className="px-4 mt-3 flex items-center justify-between py-2 border-t border-b border-border/20">
+          <div className="flex items-center gap-2">
+            <DollarSign className="w-3.5 h-3.5 text-status-live" />
+            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Balance</span>
+            <span style={teko} className="text-base text-status-live leading-none">${(availableBalance / 100).toFixed(2)}</span>
           </div>
+          <Link to="/payouts" className="text-[8px] font-black text-status-live/50 hover:text-status-live uppercase tracking-wider flex items-center gap-1">
+            Withdraw <ChevronRight className="w-3 h-3" />
+          </Link>
         </div>
       )}
 
