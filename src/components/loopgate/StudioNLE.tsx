@@ -240,6 +240,8 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
   const [rotation, setRotation] = useState(0); // degrees
   const [flipH, setFlipH] = useState(false);
   const [flipV, setFlipV] = useState(false);
+  const [showAutoClipper, setShowAutoClipper] = useState(false);
+  const [showSongRecommender, setShowSongRecommender] = useState(false);
 
   const activeMedia = useMemo(() => mediaItems.find((m) => m.id === activeMediaId) ?? null, [mediaItems, activeMediaId]);
   const [tracks] = useState<TimelineTrack[]>([
