@@ -1130,6 +1130,23 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
                         </button>
                       ))}
                     </div>
+                    {/* Animation picker */}
+                    <div>
+                      <span className="text-[9px] uppercase tracking-wider mb-1.5 block" style={{ color: "#555" }}>Animation</span>
+                      <div className="flex gap-1 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+                        {TEXT_ANIMATIONS.map(anim => (
+                          <button key={anim.id} onClick={() => setTextAnimation(anim.id)}
+                            className="px-2.5 py-1.5 rounded-lg flex-shrink-0 text-[8px] font-semibold transition-all"
+                            style={{
+                              background: textAnimation === anim.id ? ACCENT_DIM : "#151515",
+                              color: textAnimation === anim.id ? ACCENT : "#555",
+                              border: textAnimation === anim.id ? `1px solid ${ACCENT_BORDER}` : "1px solid #222",
+                            }}>
+                            {anim.preview} {anim.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                     <button onClick={addTextOverlay} disabled={!textInput.trim()}
                       className="w-full h-10 rounded-lg text-xs font-semibold transition-all disabled:opacity-30"
                       style={{ background: ACCENT, color: "#000" }}>
