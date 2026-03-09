@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.send-notification-email]
 verify_jwt = false
+
+[functions.studio-ai-brain]
+verify_jwt = false
