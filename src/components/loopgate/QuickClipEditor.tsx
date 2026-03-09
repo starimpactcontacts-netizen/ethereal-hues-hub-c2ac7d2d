@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import StudioSubmitButton from "./StudioSubmitButton";
+import AutoEditWizard from "./studio/AutoEditWizard";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import {
@@ -140,6 +141,7 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
   const [speed, setSpeed] = useState(1);
   const [muted, setMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(!!initialFile);
+  const [autoEditOpen, setAutoEditOpen] = useState(false);
   const [thumbnails, setThumbnails] = useState<string[]>([]);
   const [activeEffects, setActiveEffects] = useState<string[]>([]);
   const [activeTransition, setActiveTransition] = useState<string | null>(null);
@@ -568,14 +570,34 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
             <p className="text-[15px] font-semibold text-white">Select a video</p>
             <p className="text-[11px]" style={{ color: "#555" }}>to start editing</p>
           </div>
-          <button
-            onClick={openVideoPicker}
-            className="mt-2 h-10 px-6 rounded-full text-[13px] font-semibold flex items-center gap-2 transition-all active:scale-95"
-            style={{ background: ACCENT, color: "#000" }}
-          >
-            <Upload className="w-4 h-4" /> Choose Video
-          </button>
+          <div className="flex flex-col gap-2.5 mt-3 w-full items-center">
+            <button
+              onClick={openVideoPicker}
+              className="h-10 px-6 rounded-full text-[13px] font-semibold flex items-center gap-2 transition-all active:scale-95"
+              style={{ background: ACCENT, color: "#000" }}
+            >
+              <Upload className="w-4 h-4" /> Choose Video
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); setAutoEditOpen(true); }}
+              className="h-10 px-6 rounded-full text-[13px] font-semibold flex items-center gap-2 transition-all active:scale-95 border"
+              style={{ background: "rgba(153,153,255,0.08)", color: ACCENT, borderColor: ACCENT_BORDER }}
+            >
+              <Wand2 className="w-4 h-4" /> Loopy Auto-Edit
+            </button>
+          </div>
         </motion.div>
+
+        {/* Auto-Edit Wizard (mobile) */}
+        {autoEditOpen && (
+          <AutoEditWizard
+            onClose={() => setAutoEditOpen(false)}
+            onTimelineReady={(timeline, clips) => {
+              setAutoEditOpen(false);
+              toast.success("AI edit ready! Apply it in the full Studio for multi-clip timelines.");
+            }}
+          />
+        )}
         <input ref={fileInputRef} type="file" accept="video/*" onChange={handleFileSelect} className="hidden" />
       </div>
     );
@@ -1441,6 +1463,7 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
           <div className="flex items-center justify-center py-1.5 px-2">
             <div className="flex items-center gap-0.5 rounded-full p-0.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
               {([
+                { id: "ai" as const, icon: Wand2, label: "AI", accent: true },
                 { id: "trim" as EditorTool, icon: Scissors, label: "Trim" },
                 { id: "crop" as EditorTool, icon: Crop, label: "Crop" },
                 { id: "effects" as EditorTool, icon: Sparkles, label: "FX" },
@@ -1452,13 +1475,16 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
                 { id: "adjust" as EditorTool, icon: SlidersHorizontal, label: "Adjust" },
                 { id: "upscale" as EditorTool, icon: ArrowUpCircle, label: "4K" },
                 { id: "export" as EditorTool, icon: Settings, label: "Quality" },
-              ]).map(({ id, icon: Icon, label }) => (
+              ] as const).map(({ id, icon: Icon, label, ...rest }) => (
                 <button key={id}
-                  onClick={() => setActiveTool(activeTool === id ? null : id)}
+                  onClick={() => {
+                    if (id === "ai") { setAutoEditOpen(true); return; }
+                    setActiveTool(activeTool === id ? null : id as EditorTool);
+                  }}
                   className="flex-shrink-0 py-2 px-3 flex flex-col items-center gap-0.5 rounded-lg transition-all duration-150"
                   style={{
-                    color: activeTool === id ? ACCENT : "#666",
-                    background: activeTool === id ? ACCENT_DIM : "transparent",
+                    color: id === "ai" ? "#FF004F" : activeTool === id ? ACCENT : "#666",
+                    background: id === "ai" ? "rgba(255,0,79,0.08)" : activeTool === id ? ACCENT_DIM : "transparent",
                   }}>
                   <Icon className="w-[18px] h-[18px]" />
                   <span className="text-[7px] font-semibold tracking-wider uppercase">{label}</span>
@@ -1468,6 +1494,17 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
           </div>
           <div className="safe-bottom" />
         </div>
+
+        {/* Auto-Edit Wizard overlay (from toolbar) */}
+        {autoEditOpen && (
+          <AutoEditWizard
+            onClose={() => setAutoEditOpen(false)}
+            onTimelineReady={(timeline, clips) => {
+              setAutoEditOpen(false);
+              toast.success("AI timeline generated! Use full Studio for multi-clip editing.");
+            }}
+          />
+        )}
 
         <input ref={fileInputRef} type="file" accept="video/*" onChange={handleFileSelect} className="hidden" />
       </motion.div>
