@@ -1736,77 +1736,11 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
         </AnimatePresence>
 
         {/* ─── Pro Toolbar ─── */}
-        <div className="flex-shrink-0" style={{ background: "linear-gradient(180deg, #131316 0%, #0e0e11 100%)", borderTop: "1px solid #1a1a1e" }}>
-          <div className="flex items-center py-1 px-1.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-            {/* AI — special treatment */}
-            <button
-              onClick={() => setAiToolsOpen(true)}
-              className="flex-shrink-0 py-2 px-3 flex flex-col items-center gap-0.5 rounded-xl mr-0.5 transition-all active:scale-90 relative"
-              style={{ background: "linear-gradient(135deg, rgba(255,0,79,0.08), rgba(255,0,79,0.03))", border: "1px solid rgba(255,0,79,0.12)" }}>
-              <Wand2 className="w-[16px] h-[16px]" style={{ color: "#FF004F" }} />
-              <span className="text-[6px] font-black tracking-[0.15em] uppercase" style={{ color: "#FF004F" }}>AI</span>
-              <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full" style={{ background: "#FF004F", boxShadow: "0 0 4px #FF004F" }} />
-            </button>
-
-            {/* Separator */}
-            <div className="w-px h-6 mx-1 flex-shrink-0" style={{ background: "#1e1e24" }} />
-
-            {/* Tool groups with separators */}
-            {([
-              // Edit group
-              { id: "trim" as EditorTool, icon: Scissors, label: "Trim", group: "edit" },
-              { id: "crop" as EditorTool, icon: Crop, label: "Crop", group: "edit" },
-              { id: "speed" as EditorTool, icon: Gauge, label: "Speed", group: "edit" },
-              { id: "---1" as EditorTool, icon: null, label: "", group: "sep" },
-              // Color group
-              { id: "filters" as EditorTool, icon: Wand2, label: "Filter", group: "color" },
-              { id: "adjust" as EditorTool, icon: SlidersHorizontal, label: "Grade", group: "color" },
-              { id: "scopes" as EditorTool, icon: Activity, label: "Scopes", group: "color" },
-              { id: "blend" as EditorTool, icon: Blend, label: "Blend", group: "color" },
-              { id: "---2" as EditorTool, icon: null, label: "", group: "sep" },
-              // Compose group
-              { id: "text" as EditorTool, icon: Type, label: "Text", group: "compose" },
-              { id: "motion" as EditorTool, icon: LayoutGrid, label: "GFX", group: "compose" },
-              { id: "masks" as EditorTool, icon: Circle, label: "Mask", group: "compose" },
-              { id: "compositor" as EditorTool, icon: Layers, label: "PiP", group: "compose" },
-              { id: "---3" as EditorTool, icon: null, label: "", group: "sep" },
-              // Animate group
-              { id: "effects" as EditorTool, icon: Sparkles, label: "FX", group: "animate" },
-              { id: "transitions" as EditorTool, icon: Layers, label: "Trans", group: "animate" },
-              { id: "keyframes" as EditorTool, icon: Diamond, label: "Keys", group: "animate" },
-              { id: "---4" as EditorTool, icon: null, label: "", group: "sep" },
-              // Audio group
-              { id: "audio" as EditorTool, icon: Music, label: "Audio", group: "audio" },
-              { id: "audiofx" as EditorTool, icon: AudioLines, label: "FX", group: "audio" },
-              { id: "---5" as EditorTool, icon: null, label: "", group: "sep" },
-              // Output group
-              { id: "stabilize" as EditorTool, icon: Activity, label: "Stab", group: "output" },
-              { id: "upscale" as EditorTool, icon: ArrowUpCircle, label: "4K", group: "output" },
-              { id: "export" as EditorTool, icon: Settings, label: "Export", group: "output" },
-            ] as const).map(({ id, icon: Icon, label, group }) => {
-              if (group === "sep") {
-                return <div key={id} className="w-px h-5 mx-0.5 flex-shrink-0" style={{ background: "#1a1a1e" }} />;
-              }
-              const isActive = activeTool === id;
-              return (
-                <button key={id}
-                  onClick={() => setActiveTool(activeTool === id ? null : id as EditorTool)}
-                  className="flex-shrink-0 py-1.5 px-2.5 flex flex-col items-center gap-0.5 rounded-lg transition-all duration-100 active:scale-90 relative"
-                  style={{
-                    color: isActive ? ACCENT : "#555",
-                    background: isActive ? `${ACCENT}10` : "transparent",
-                  }}>
-                  {Icon && <Icon className="w-[15px] h-[15px]" />}
-                  <span className="text-[6px] font-bold tracking-[0.1em] uppercase">{label}</span>
-                  {isActive && (
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full" style={{ background: ACCENT, boxShadow: `0 0 4px ${ACCENT}` }} />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-          <div className="safe-bottom" />
-        </div>
+        <StudioProToolbar
+          activeTool={activeTool}
+          onToolChange={(tool) => setActiveTool(tool)}
+          onAIOpen={() => setAiToolsOpen(true)}
+        />
 
         {/* AI Tools overlay */}
         <AnimatePresence>
