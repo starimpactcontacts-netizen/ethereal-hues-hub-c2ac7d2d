@@ -40,6 +40,7 @@ import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import EmailNotificationSettings from "@/components/loopgate/EmailNotificationSettings";
 import LiveWinnersTicker from "@/components/loopgate/LiveWinnersTicker";
+import LivePayoutsCarousel from "@/components/loopgate/LivePayoutsCarousel";
 
 interface Event {
   id: string;
