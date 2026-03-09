@@ -213,6 +213,43 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
 
   const computedFilter = useMemo(() => buildComputedFilter(activeFilter, brightness, contrast, saturation, hueRotate), [activeFilter, brightness, contrast, saturation, hueRotate]);
 
+  // Chroma key function
+  const applyChromaKey = useCallback((ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, keyColor: string, threshold: number) => {
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    // Parse hex color
+    const r0 = parseInt(keyColor.slice(1, 3), 16);
+    const g0 = parseInt(keyColor.slice(3, 5), 16);
+    const b0 = parseInt(keyColor.slice(5, 7), 16);
+    for (let i = 0; i < data.length; i += 4) {
+      const dist = Math.sqrt(
+        (data[i] - r0) ** 2 + (data[i + 1] - g0) ** 2 + (data[i + 2] - b0) ** 2
+      );
+      if (dist < threshold) {
+        data[i + 3] = 0; // Make transparent
+      } else if (dist < threshold * 1.5) {
+        data[i + 3] = Math.round(((dist - threshold) / (threshold * 0.5)) * 255);
+      }
+    }
+    ctx.putImageData(imageData, 0, 0);
+  }, []);
+
+  // Keyframe helpers
+  const addKeyframe = useCallback((propertyId: string, time: number, value: number) => {
+    setKeyframeData(prev => ({
+      ...prev,
+      [propertyId]: [...(prev[propertyId] || []), { id: crypto.randomUUID(), time, value, easing: "ease-out" as const }],
+    }));
+    toast.success(`Keyframe added at ${time.toFixed(1)}s`);
+  }, []);
+
+  const removeKeyframe = useCallback((propertyId: string, keyframeId: string) => {
+    setKeyframeData(prev => ({
+      ...prev,
+      [propertyId]: (prev[propertyId] || []).filter(kf => kf.id !== keyframeId),
+    }));
+  }, []);
+
   const toggleEffect = (effectId: string) => {
     setActiveEffects(prev => prev.includes(effectId) ? prev.filter(e => e !== effectId) : [...prev, effectId]);
   };
