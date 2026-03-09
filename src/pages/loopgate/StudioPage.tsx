@@ -71,15 +71,17 @@ export default function StudioPage() {
     vid.muted = true;
     vid.preload = "auto";
     vid.playsInline = true;
+    vid.crossOrigin = "anonymous";
 
     return new Promise((resolve) => {
       let settled = false;
       const timeoutId = setTimeout(() => {
         if (settled) return;
         settled = true;
+        console.warn("[Studio] Thumbnail extraction timed out");
         URL.revokeObjectURL(objUrl);
         resolve({ thumbnail: null, duration: 0, resolution: "" });
-      }, 7000);
+      }, 12000); // Increased timeout to 12s
 
       const finish = (payload: Pick<StudioProject, "thumbnail" | "duration" | "resolution">) => {
         if (settled) return;
@@ -92,138 +94,150 @@ export default function StudioPage() {
       type ThumbnailCandidate = { url: string; score: number };
 
       const captureThumbnail = (): ThumbnailCandidate | null => {
-        if (vid.videoWidth === 0 || vid.videoHeight === 0) return null;
+        try {
+          if (vid.videoWidth === 0 || vid.videoHeight === 0) return null;
 
-        const canvas = document.createElement("canvas");
-        canvas.width = 320;
-        canvas.height = Math.max(180, Math.round(320 * (vid.videoHeight / vid.videoWidth)));
-        const ctx = canvas.getContext("2d", { willReadFrequently: true });
-        if (!ctx) return null;
+          const canvas = document.createElement("canvas");
+          canvas.width = 320;
+          canvas.height = Math.max(180, Math.round(320 * (vid.videoHeight / vid.videoWidth)));
+          const ctx = canvas.getContext("2d", { willReadFrequently: true });
+          if (!ctx) return null;
 
-        ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+          ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
 
-        const sampleCanvas = document.createElement("canvas");
-        sampleCanvas.width = 96;
-        sampleCanvas.height = 54;
-        const sampleCtx = sampleCanvas.getContext("2d", { willReadFrequently: true });
-        if (!sampleCtx) return null;
+          // Check if canvas has actual content (not just black)
+          const testData = ctx.getImageData(canvas.width / 2, canvas.height / 2, 10, 10).data;
+          let hasContent = false;
+          for (let i = 0; i < testData.length; i += 4) {
+            if (testData[i] > 5 || testData[i + 1] > 5 || testData[i + 2] > 5) {
+              hasContent = true;
+              break;
+            }
+          }
+          if (!hasContent) return null;
 
-        sampleCtx.drawImage(canvas, 0, 0, sampleCanvas.width, sampleCanvas.height);
-        const data = sampleCtx.getImageData(0, 0, sampleCanvas.width, sampleCanvas.height).data;
+          const url = canvas.toDataURL("image/jpeg", 0.8);
+          if (url.length < 1000) return null;
 
-        let lumaSum = 0;
-        let lumaSqSum = 0;
-        let maxLuma = 0;
+          // Simple scoring based on center brightness
+          const sampleCtx = canvas.getContext("2d");
+          if (!sampleCtx) return { url, score: 100 };
+          
+          const centerData = sampleCtx.getImageData(
+            Math.floor(canvas.width * 0.25), 
+            Math.floor(canvas.height * 0.25), 
+            Math.floor(canvas.width * 0.5), 
+            Math.floor(canvas.height * 0.5)
+          ).data;
 
-        for (let i = 0; i < data.length; i += 4) {
-          const r = data[i];
-          const g = data[i + 1];
-          const b = data[i + 2];
-          const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-          lumaSum += luma;
-          lumaSqSum += luma * luma;
-          if (luma > maxLuma) maxLuma = luma;
+          let totalBrightness = 0;
+          let variance = 0;
+          const pixelCount = centerData.length / 4;
+          
+          for (let i = 0; i < centerData.length; i += 16) { // Sample every 4th pixel for speed
+            const brightness = (centerData[i] + centerData[i + 1] + centerData[i + 2]) / 3;
+            totalBrightness += brightness;
+          }
+          const avgBrightness = totalBrightness / (pixelCount / 4);
+          
+          // Score: prefer frames that aren't too dark or too bright
+          const score = Math.min(avgBrightness, 255 - avgBrightness) + 50;
+          
+          return { url, score };
+        } catch (err) {
+          console.warn("[Studio] Thumbnail capture error:", err);
+          return null;
         }
-
-        const totalPixels = data.length / 4;
-        const avgLuma = lumaSum / totalPixels;
-        const variance = Math.max(0, lumaSqSum / totalPixels - avgLuma * avgLuma);
-
-        const url = canvas.toDataURL("image/jpeg", 0.78);
-        if (url.length < 900) return null;
-
-        const score = avgLuma * 0.5 + variance * 0.95 + maxLuma * 0.2;
-        return { url, score };
       };
 
-      const seekTo = (time: number) =>
-        new Promise<void>((resolveSeek, rejectSeek) => {
-          const duration = Number.isFinite(vid.duration) ? vid.duration : 0;
-          const target = Math.max(0, Math.min(time, Math.max(duration - 0.05, 0)));
-
-          let seekTimeout: ReturnType<typeof setTimeout>;
-          const onSeeked = () => {
-            clearTimeout(seekTimeout);
-            resolveSeek();
-          };
-
-          vid.addEventListener("seeked", onSeeked, { once: true });
-
-          seekTimeout = setTimeout(() => {
-            vid.removeEventListener("seeked", onSeeked);
-            rejectSeek(new Error("seek timeout"));
-          }, 1500);
-
-          try {
-            vid.currentTime = target;
-          } catch (err) {
-            clearTimeout(seekTimeout);
-            vid.removeEventListener("seeked", onSeeked);
-            rejectSeek(err);
-          }
-        });
-
-      const waitForPaint = () =>
-        new Promise<void>((resolvePaint) => {
+      const waitForFrame = () =>
+        new Promise<void>((resolveFrame) => {
           if ("requestVideoFrameCallback" in vid) {
-            (vid as any).requestVideoFrameCallback(() => resolvePaint());
+            (vid as any).requestVideoFrameCallback(() => resolveFrame());
           } else {
-            setTimeout(() => resolvePaint(), 140);
+            // Fallback: wait a bit for the frame to render
+            requestAnimationFrame(() => {
+              setTimeout(() => resolveFrame(), 100);
+            });
           }
         });
 
-      vid.onloadedmetadata = async () => {
+      vid.onloadeddata = async () => {
         const duration = Number.isFinite(vid.duration) ? vid.duration : 0;
         const resolution = vid.videoWidth > 0 && vid.videoHeight > 0 ? `${vid.videoWidth}x${vid.videoHeight}` : "";
 
-        if (vid.readyState < 2) {
-          try {
-            await new Promise<void>((resolveLoadedData) => {
-              vid.addEventListener("loadeddata", () => resolveLoadedData(), { once: true });
-            });
-          } catch {
-            // continue
+        // Strategy 1: Try simple play + capture
+        try {
+          vid.currentTime = Math.min(1, duration * 0.2);
+          await new Promise<void>((r) => vid.addEventListener("seeked", () => r(), { once: true }));
+          await waitForFrame();
+          
+          const shot = captureThumbnail();
+          if (shot && shot.url.length > 1000) {
+            console.log("[Studio] Thumbnail captured on first try");
+            finish({ thumbnail: shot.url, duration, resolution });
+            return;
           }
+        } catch (e) {
+          console.warn("[Studio] First thumbnail attempt failed:", e);
         }
 
-        const d = Math.max(duration, 1);
-        const randomPoints = Array.from({ length: 6 }, () => d * (0.12 + Math.random() * 0.76));
-        const fixedPoints = [d * 0.18, d * 0.33, d * 0.5, d * 0.66, d * 0.82, Math.min(3, d * 0.25)];
-        const candidates = [...randomPoints, ...fixedPoints];
+        // Strategy 2: Play briefly then capture
+        try {
+          vid.currentTime = 0;
+          await vid.play();
+          await new Promise((r) => setTimeout(r, 500));
+          vid.pause();
+          await waitForFrame();
+          
+          const shot = captureThumbnail();
+          if (shot && shot.url.length > 1000) {
+            console.log("[Studio] Thumbnail captured via play");
+            finish({ thumbnail: shot.url, duration, resolution });
+            return;
+          }
+        } catch (e) {
+          console.warn("[Studio] Play-capture attempt failed:", e);
+        }
 
+        // Strategy 3: Multiple seek attempts
+        const seekPoints = [0.25, 0.5, 0.33, 0.1, 0.75].map(p => duration * p);
         let bestShot: ThumbnailCandidate | null = null;
 
-        for (const t of candidates) {
+        for (const t of seekPoints) {
           try {
-            await seekTo(t);
-            await waitForPaint();
+            vid.currentTime = Math.max(0.1, Math.min(t, duration - 0.1));
+            await new Promise<void>((r, rej) => {
+              const timeout = setTimeout(() => rej(new Error("seek timeout")), 2000);
+              vid.addEventListener("seeked", () => { clearTimeout(timeout); r(); }, { once: true });
+            });
+            await waitForFrame();
+            
             const shot = captureThumbnail();
-            if (!shot) continue;
-            if (!bestShot || shot.score > bestShot.score) bestShot = shot;
-            if (shot.score > 260) break;
+            if (shot) {
+              if (!bestShot || shot.score > bestShot.score) {
+                bestShot = shot;
+              }
+              if (shot.score > 150) break; // Good enough
+            }
           } catch {
-            // try next
+            continue;
           }
         }
 
         if (bestShot) {
+          console.log("[Studio] Thumbnail captured via multi-seek");
           finish({ thumbnail: bestShot.url, duration, resolution });
-          return;
-        }
-
-        try {
-          await vid.play();
-          await new Promise((r) => setTimeout(r, 320));
-          vid.pause();
-          await waitForPaint();
-          const shot = captureThumbnail();
-          finish({ thumbnail: shot?.url ?? null, duration, resolution });
-        } catch {
+        } else {
+          console.warn("[Studio] All thumbnail strategies failed");
           finish({ thumbnail: null, duration, resolution });
         }
       };
 
-      vid.onerror = () => finish({ thumbnail: null, duration: 0, resolution: "" });
+      vid.onerror = (e) => {
+        console.error("[Studio] Video load error:", e);
+        finish({ thumbnail: null, duration: 0, resolution: "" });
+      };
     });
   }, []);
 
