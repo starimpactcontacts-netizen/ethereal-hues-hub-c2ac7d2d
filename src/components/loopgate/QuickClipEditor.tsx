@@ -11,7 +11,7 @@ import {
   Sun, Lightbulb, Sunrise, RectangleHorizontal, RectangleVertical,
   ArrowLeft, ArrowRight, ArrowUp, MoveHorizontal,
   RotateCw, Maximize, Minimize, Blend, Activity, Eye,
-  Diamond, Layers as LayersIcon, AudioLines
+  Diamond, Layers as LayersIcon, AudioLines, Undo2, Redo2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import StudioSubmitButton from "./StudioSubmitButton";
@@ -28,6 +28,10 @@ import MaskingPanel, { renderMaskToCanvas, type Mask, type MaskShape, DEFAULT_MA
 import AudioFXPanel, { DEFAULT_AUDIO_FX, type AudioFXState } from "./studio/AudioFXPanel";
 import MotionTemplatesPanel, { MOTION_TEMPLATES, renderMotionTemplate, type AppliedTemplate } from "./studio/MotionTemplates";
 import CompositorPanel, { renderCompositorLayers, DEFAULT_PIP, type CompositorLayer } from "./studio/CompositorPanel";
+import StickerOverlayPanel, { renderStickersToCanvas, type StickerOverlay } from "./studio/StickerOverlayPanel";
+import { TEXT_ANIMATIONS, renderAnimatedText } from "./studio/AnimatedTextPresets";
+import { CHROMA_BACKGROUNDS, renderChromaBackground } from "./studio/ChromaBackgrounds";
+import { useUndoRedo } from "./studio/useUndoRedo";
 import { LUT_PRESETS, applyLUTPreset, type LUT3D } from "@/lib/studioColorScience";
 import { MotionSmoother, estimateMotion, applyStabilization, DEFAULT_STABILIZER, type StabilizerConfig } from "@/lib/studioStabilizer";
 import { Slider } from "@/components/ui/slider";
@@ -45,7 +49,7 @@ import {
 } from "@/lib/studioAdjustments";
 import { SPEED_CURVE_PRESETS, getSpeedAtTime, type SpeedCurve } from "@/lib/studioSpeedCurves";
 
-type TextOverlay = { id: string; text: string; x: number; y: number; style: TextStyleKey; startTime: number; endTime: number };
+type TextOverlay = { id: string; text: string; x: number; y: number; style: TextStyleKey; startTime: number; endTime: number; animation?: string };
 // EditorTool type imported from StudioProToolbar
 
 // ─── Crop Presets (v1.5) ───
