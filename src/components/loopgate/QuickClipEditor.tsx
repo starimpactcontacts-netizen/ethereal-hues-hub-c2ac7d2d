@@ -429,6 +429,15 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
           applyCanvasAdjustments(ctx, canvas, adjustments);
         }
         activeEffects.forEach(effectId => { try { applyEffect(ctx, canvas, effectId, vid.currentTime); } catch { /* */ } });
+        // Apply LUT
+        if (activeLUT) {
+          const lutPreset = LUT_PRESETS.find(l => l.id === activeLUT);
+          if (lutPreset) {
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            applyLUTPreset(imageData, lutPreset, lutIntensity);
+            ctx.putImageData(imageData, 0, 0);
+          }
+        }
         // Apply overlay
         const overlayPreset = OVERLAY_PRESETS.find(o => o.id === activeOverlayId);
         if (overlayPreset) applyOverlay(ctx, canvas, overlayPreset, overlayOpacity);
@@ -436,9 +445,27 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
         if (chromaEnabled) {
           applyChromaKey(ctx, canvas, chromaColor, chromaThreshold);
         }
+        // Apply masks
+        if (masks.length > 0) {
+          renderMaskToCanvas(ctx, canvas, masks);
+        }
+        // Render compositor layers (PiP)
+        if (compositorLayers.length > 0) {
+          renderCompositorLayers(ctx, canvas, compositorLayers, compositorVideos.current);
+        }
+        // Render motion templates
+        appliedTemplates.forEach((at) => {
+          const tmpl = MOTION_TEMPLATES.find(t => t.id === at.templateId);
+          if (tmpl && vid.currentTime >= at.startTime && vid.currentTime <= at.startTime + tmpl.duration) {
+            const progress = (vid.currentTime - at.startTime) / tmpl.duration;
+            renderMotionTemplate(ctx, canvas, tmpl, at.fieldValues, progress);
+          }
+        });
+        // Text overlays
         textOverlays.forEach((overlay) => {
           if (vid.currentTime >= overlay.startTime && vid.currentTime <= overlay.endTime) {
             try { renderTextOverlay(ctx, canvas, overlay.text, overlay.x, overlay.y, overlay.style); } catch { /* */ }
+          }
           }
         });
       }
