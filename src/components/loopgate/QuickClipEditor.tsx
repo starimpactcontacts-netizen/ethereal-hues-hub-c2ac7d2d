@@ -11,7 +11,7 @@ import {
   Sun, Lightbulb, Sunrise, RectangleHorizontal, RectangleVertical,
   ArrowLeft, ArrowRight, ArrowUp, MoveHorizontal,
   RotateCw, Maximize, Minimize, Blend, Activity, Eye,
-  Diamond, Layers as LayersIcon
+  Diamond, Layers as LayersIcon, AudioLines
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import StudioSubmitButton from "./StudioSubmitButton";
