@@ -238,6 +238,7 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
     setProgress(0); setTextOverlays([]); setActiveFilter(FILTER_PRESETS[0]);
     setAudioFile(null); setAudioName(""); setSpeed(1); setIsFullscreen(true);
     setActiveEffects([]); setActiveTransition(null); resetColorGrading();
+    setScaleX(1); setScaleY(1); setPosX(0.5); setPosY(0.5); setVideoOpacity(1); setFreeRotation(0); setScaleLocked(true);
   };
 
   const handleAudioSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
