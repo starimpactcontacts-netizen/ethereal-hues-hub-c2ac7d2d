@@ -84,7 +84,7 @@ export default function LivePayoutsCarousel() {
       {/* Horizontal scrolling cards */}
       <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
         <div className="flex gap-2 pb-1">
-          {payouts.map((payout, idx) => (
+          {displayPayouts.map((payout, idx) => (
             <motion.div
               key={payout.id}
               initial={{ opacity: 0, x: -20 }}
