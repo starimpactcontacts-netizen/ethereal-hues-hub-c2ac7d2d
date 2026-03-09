@@ -1970,6 +1970,7 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
           activeTool={activeTool}
           onToolChange={(tool) => setActiveTool(tool)}
           onAIOpen={() => setAiToolsOpen(true)}
+          onAIBrainOpen={() => setAiBrainOpen(true)}
         />
 
         {/* AI Tools overlay */}
