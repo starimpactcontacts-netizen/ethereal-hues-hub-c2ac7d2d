@@ -132,9 +132,6 @@ export default function LivePayoutsCarousel() {
             <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-status-live rounded-full animate-pulse" />
           </div>
           <span className="text-[11px] font-black text-foreground uppercase tracking-wider">Live Payouts</span>
-          <div className="px-1.5 py-0.5 bg-status-live/10 border border-status-live/20 rounded-sm">
-            <span className="text-[8px] font-black text-status-live uppercase tracking-wider">Live</span>
-          </div>
         </div>
         <span className="text-[9px] text-muted-foreground font-medium">{payouts.length} recent</span>
       </div>
