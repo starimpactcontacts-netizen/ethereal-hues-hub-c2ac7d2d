@@ -249,6 +249,22 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
   const [chromaEnabled, setChromaEnabled] = useState(false);
   const [chromaColor, setChromaColor] = useState("#00FF00");
   const [chromaThreshold, setChromaThreshold] = useState(80);
+  const [chromaSoftness, setChromaSoftness] = useState(50);
+  const [chromaSpill, setChromaSpill] = useState(30);
+  const [chromaBgId, setChromaBgId] = useState("transparent");
+
+  // Stickers
+  const [stickerOverlays, setStickerOverlays] = useState<StickerOverlay[]>([]);
+
+  // Text animation
+  const [textAnimation, setTextAnimation] = useState("none");
+
+  // Undo/Redo
+  const undoRedo = useUndoRedo<{ filter: string; effects: string[]; adjustments: AdjustmentValues }>();
+
+  // Draggable text state
+  const [draggingTextId, setDraggingTextId] = useState<string | null>(null);
+  const dragStart = useRef<{ x: number; y: number; origX: number; origY: number } | null>(null);
 
   const hasTriggeredPicker = useRef(false);
 
