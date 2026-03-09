@@ -581,40 +581,39 @@ export default function MissionLobbyPage() {
       {/* ═══ SUBMISSIONS (Staff) ═══ */}
       {isStaff && submissions.length > 0 && (
         <div className="px-4 mt-4">
-          <div className="bg-surface-1 border border-border/50 overflow-hidden">
-            <div className="bg-amber-500/5 border-b border-amber-500/10 px-3 py-2 flex items-center justify-between">
-              <span className="text-[10px] font-black text-amber-400 uppercase tracking-[0.2em]">Submissions</span>
-              <span className="text-[9px] text-muted-foreground">{submissions.length} total</span>
-            </div>
-            <div className="divide-y divide-border/30">
-              {submissions.map(sub => (
-                <div key={sub.id} className="p-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className="w-7 h-7 bg-surface-2 flex items-center justify-center overflow-hidden shrink-0">
-                      {sub.avatar_url ? <img src={sub.avatar_url} alt="" className="w-full h-full object-cover" /> :
-                        <span className="text-[10px] font-bold text-muted-foreground">{sub.username?.[0]?.toUpperCase()}</span>}
-                    </div>
-                    <div className="min-w-0">
-                      <span className="text-xs font-bold text-foreground truncate block">@{sub.username}</span>
-                      <button onClick={() => window.open(sub.submission_url, '_blank')}
-                        className="text-[9px] text-emerald-400 hover:underline flex items-center gap-0.5">
-                        <ExternalLink className="w-2.5 h-2.5" /> Watch
-                      </button>
-                    </div>
+          <div className="mx-0 mb-3 h-px bg-border/30" />
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-black text-gold uppercase tracking-[0.2em]">Submissions</span>
+            <span className="text-[9px] text-muted-foreground">{submissions.length} total</span>
+          </div>
+          <div className="space-y-1.5">
+            {submissions.map(sub => (
+              <div key={sub.id} className="flex items-center justify-between py-2 border-b border-border/15 last:border-0">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-7 h-7 bg-surface-2 rounded-sm flex items-center justify-center overflow-hidden shrink-0">
+                    {sub.avatar_url ? <img src={sub.avatar_url} alt="" className="w-full h-full object-cover" /> :
+                      <span className="text-[10px] font-bold text-muted-foreground">{sub.username?.[0]?.toUpperCase()}</span>}
                   </div>
-                  {sub.rating ? (
-                    <div className={`px-2 py-1 border text-xs font-black ${RATING_COLORS[sub.rating as SubmissionRating]}`}>
-                      {sub.rating} {sub.earned_cents > 0 && <span className="text-emerald-400 text-[9px]">+${sub.earned_cents / 100}</span>}
-                    </div>
-                  ) : (
-                    <button onClick={() => setRatingTarget(sub)}
-                      className="text-[9px] font-black text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1.5 hover:bg-amber-500/20 transition-colors uppercase tracking-wider">
-                      <Star className="w-3 h-3 inline mr-1" />Rate
+                  <div className="min-w-0">
+                    <span className="text-xs font-bold text-foreground truncate block">@{sub.username}</span>
+                    <button onClick={() => window.open(sub.submission_url, '_blank')}
+                      className="text-[9px] text-status-live hover:underline flex items-center gap-0.5">
+                      <ExternalLink className="w-2.5 h-2.5" /> Watch
                     </button>
-                  )}
+                  </div>
                 </div>
-              ))}
-            </div>
+                {sub.rating ? (
+                  <div className={`px-2 py-1 border text-xs font-black ${RATING_COLORS[sub.rating as SubmissionRating]}`}>
+                    {sub.rating} {sub.earned_cents > 0 && <span className="text-status-live text-[9px]">+${sub.earned_cents / 100}</span>}
+                  </div>
+                ) : (
+                  <button onClick={() => setRatingTarget(sub)}
+                    className="text-[9px] font-black text-gold bg-gold/10 border border-gold/20 px-2.5 py-1.5 hover:bg-gold/20 transition-colors uppercase tracking-wider">
+                    <Star className="w-3 h-3 inline mr-1" />Rate
+                  </button>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       )}
