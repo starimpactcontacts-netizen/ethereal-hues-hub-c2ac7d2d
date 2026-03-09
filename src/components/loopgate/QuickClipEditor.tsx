@@ -1534,6 +1534,8 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
                 { id: "ai" as const, icon: Wand2, label: "AI", accent: true },
                 { id: "trim" as EditorTool, icon: Scissors, label: "Trim" },
                 { id: "crop" as EditorTool, icon: Crop, label: "Crop" },
+                { id: "keyframes" as EditorTool, icon: Diamond, label: "Keys" },
+                { id: "blend" as EditorTool, icon: Blend, label: "Blend" },
                 { id: "effects" as EditorTool, icon: Sparkles, label: "FX" },
                 { id: "transitions" as EditorTool, icon: Layers, label: "Trans" },
                 { id: "filters" as EditorTool, icon: Wand2, label: "Filters" },
@@ -1546,7 +1548,7 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
               ] as const).map(({ id, icon: Icon, label, ...rest }) => (
                 <button key={id}
                   onClick={() => {
-                    if (id === "ai") { setAutoEditOpen(true); return; }
+                    if (id === "ai") { setAiToolsOpen(true); return; }
                     setActiveTool(activeTool === id ? null : id as EditorTool);
                   }}
                   className="flex-shrink-0 py-2 px-3 flex flex-col items-center gap-0.5 rounded-lg transition-all duration-150"
@@ -1563,7 +1565,75 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
           <div className="safe-bottom" />
         </div>
 
-        {/* Auto-Edit Wizard overlay (from toolbar) */}
+        {/* AI Tools overlay */}
+        <AnimatePresence>
+          {aiToolsOpen && (
+            <MobileAITools
+              duration={trimEnd - trimStart}
+              onCaptionsGenerated={(captions) => {
+                // Convert AI captions to text overlays
+                const newOverlays = captions.map((cap) => ({
+                  id: crypto.randomUUID(),
+                  text: cap.text,
+                  x: 0.5,
+                  y: cap.position === "top" ? 0.15 : cap.position === "bottom" ? 0.85 : 0.5,
+                  style: (cap.style || "bold") as TextStyleKey,
+                  startTime: cap.startTime + trimStart,
+                  endTime: cap.endTime + trimStart,
+                }));
+                setTextOverlays(prev => [...prev, ...newOverlays]);
+                // Add markers for captions
+                const newMarkers = captions.map((cap) => ({
+                  id: crypto.randomUUID(),
+                  time: cap.startTime + trimStart,
+                  color: "#00D4FF",
+                  label: cap.text.substring(0, 10),
+                  type: "caption" as const,
+                }));
+                setTimelineMarkers(prev => [...prev, ...newMarkers]);
+                toast.success(`${captions.length} captions applied!`);
+              }}
+              onSmartCutsGenerated={(cuts) => {
+                const newMarkers = cuts.map((cut) => ({
+                  id: crypto.randomUUID(),
+                  time: cut.time,
+                  color: "#FF6B00",
+                  label: cut.type,
+                  type: "cut" as const,
+                }));
+                setTimelineMarkers(prev => [...prev, ...newMarkers]);
+                // Apply suggested effects at cut points
+                cuts.forEach(cut => {
+                  if (cut.effect && cut.effect !== "none" && !activeEffects.includes(cut.effect)) {
+                    setActiveEffects(prev => [...prev, cut.effect!]);
+                  }
+                });
+                toast.success(`${cuts.length} cut markers added!`);
+              }}
+              onEffectsSuggested={(suggestion) => {
+                // Apply filter
+                const filter = FILTER_PRESETS.find(f => f.name === suggestion.filter || f.label.toLowerCase() === suggestion.filter.toLowerCase());
+                if (filter) setActiveFilter(filter);
+                // Apply effects
+                suggestion.effects.forEach(eff => {
+                  if (!activeEffects.includes(eff)) {
+                    setActiveEffects(prev => [...prev, eff]);
+                  }
+                });
+                // Apply speed
+                if (suggestion.speed) setSpeed(suggestion.speed);
+                toast.success(`Applied: ${suggestion.vibe}`);
+              }}
+              onBgRemoveStart={() => {
+                setChromaEnabled(true);
+                toast.success("Chroma key enabled");
+              }}
+              onClose={() => setAiToolsOpen(false)}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Auto-Edit Wizard overlay (from empty state) */}
         {autoEditOpen && (
           <AutoEditWizard
             onClose={() => setAutoEditOpen(false)}
