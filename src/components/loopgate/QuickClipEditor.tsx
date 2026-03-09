@@ -31,6 +31,7 @@ import CompositorPanel, { renderCompositorLayers, DEFAULT_PIP, type CompositorLa
 import StickerOverlayPanel, { renderStickersToCanvas, type StickerOverlay } from "./studio/StickerOverlayPanel";
 import { TEXT_ANIMATIONS, renderAnimatedText } from "./studio/AnimatedTextPresets";
 import { CHROMA_BACKGROUNDS, renderChromaBackground } from "./studio/ChromaBackgrounds";
+import StudioAIBrain from "./studio/StudioAIBrain";
 import { useUndoRedo } from "./studio/useUndoRedo";
 import { LUT_PRESETS, applyLUTPreset, type LUT3D } from "@/lib/studioColorScience";
 import { MotionSmoother, estimateMotion, applyStabilization, DEFAULT_STABILIZER, type StabilizerConfig } from "@/lib/studioStabilizer";
