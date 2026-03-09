@@ -11,6 +11,7 @@ import { Film, Upload, Target, ArrowRight, X, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { saveVideoFile, loadVideoFile, deleteVideoFile } from "@/lib/studioFileStore";
 import StudioCrashBoundary from "@/components/loopgate/studio/StudioCrashBoundary";
+import AutoEditWizard from "@/components/loopgate/studio/AutoEditWizard";
 
 const StudioNLE = lazy(() => import("@/components/loopgate/StudioNLE"));
 const QuickClipEditor = lazy(() => import("@/components/loopgate/QuickClipEditor"));
