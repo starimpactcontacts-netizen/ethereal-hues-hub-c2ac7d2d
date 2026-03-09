@@ -1521,6 +1521,38 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
                     <input ref={upscaleInputRef} type="file" accept="video/*" onChange={handleUpscaleFile} className="hidden" />
                   </div>
                 )}
+
+                {/* ════ KEYFRAMES ════ */}
+                {activeTool === "keyframes" && (
+                  <KeyframeEditor
+                    properties={[
+                      { id: "scaleX", label: "Scale X", icon: Maximize, color: "#00D4FF", keyframes: keyframeData["scaleX"] || [], min: 0.1, max: 3, unit: "x", currentValue: scaleX },
+                      { id: "scaleY", label: "Scale Y", icon: Maximize, color: "#00AAFF", keyframes: keyframeData["scaleY"] || [], min: 0.1, max: 3, unit: "x", currentValue: scaleY },
+                      { id: "posX", label: "Position X", icon: Move, color: "#FF6B00", keyframes: keyframeData["posX"] || [], min: 0, max: 1, unit: "", currentValue: posX },
+                      { id: "posY", label: "Position Y", icon: Move, color: "#FF4400", keyframes: keyframeData["posY"] || [], min: 0, max: 1, unit: "", currentValue: posY },
+                      { id: "rotation", label: "Rotation", icon: RotateCw, color: "#AA44FF", keyframes: keyframeData["rotation"] || [], min: -180, max: 180, unit: "°", currentValue: freeRotation },
+                      { id: "opacity", label: "Opacity", icon: Eye, color: "#22CC88", keyframes: keyframeData["opacity"] || [], min: 0, max: 1, unit: "", currentValue: videoOpacity },
+                    ]}
+                    currentTime={currentTime}
+                    duration={duration}
+                    onAddKeyframe={addKeyframe}
+                    onRemoveKeyframe={removeKeyframe}
+                    onClose={() => setActiveTool(null)}
+                  />
+                )}
+
+                {/* ════ BLEND & OVERLAY ════ */}
+                {activeTool === "blend" && (
+                  <BlendModePanel
+                    activeBlendMode={blendMode}
+                    activeOverlay={activeOverlayId}
+                    overlayOpacity={overlayOpacity}
+                    onBlendModeChange={setBlendMode}
+                    onOverlayChange={setActiveOverlayId}
+                    onOverlayOpacityChange={setOverlayOpacity}
+                    onClose={() => setActiveTool(null)}
+                  />
+                )}
               </div>
             </motion.div>
           )}
