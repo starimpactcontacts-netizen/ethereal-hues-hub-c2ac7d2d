@@ -266,7 +266,7 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
     return () => { vid.removeEventListener("loadedmetadata", onMeta); vid.removeEventListener("timeupdate", onTime); };
   }, [videoUrl]);
 
-  // Canvas render loop — with advanced adjustments
+  // Canvas render loop — with advanced adjustments + crop/transform (v1.5)
   useEffect(() => {
     const vid = videoRef.current; const canvas = canvasRef.current;
     if (!vid || !canvas || !videoUrl) return;
@@ -275,13 +275,44 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
     const draw = () => {
       if (!running) return;
       if (vid.videoWidth && vid.videoHeight) {
-        if (canvas.width !== vid.videoWidth || canvas.height !== vid.videoHeight) {
-          canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
+        // Calculate output dimensions based on crop preset
+        let outW = vid.videoWidth;
+        let outH = vid.videoHeight;
+        if (cropPreset) {
+          const preset = CROP_PRESETS.find(p => p.id === cropPreset);
+          if (preset) {
+            const srcRatio = vid.videoWidth / vid.videoHeight;
+            if (srcRatio > preset.ratio) {
+              outW = Math.round(vid.videoHeight * preset.ratio);
+              outH = vid.videoHeight;
+            } else {
+              outW = vid.videoWidth;
+              outH = Math.round(vid.videoWidth / preset.ratio);
+            }
+          }
+        }
+        // Swap dimensions if rotated 90/270
+        const isRotated90 = rotation === 90 || rotation === 270;
+        const finalW = isRotated90 ? outH : outW;
+        const finalH = isRotated90 ? outW : outH;
+        if (canvas.width !== finalW || canvas.height !== finalH) {
+          canvas.width = finalW; canvas.height = finalH;
         }
         const adjFilter = buildAdjustFilter(adjustments);
         const combinedFilter = [computedFilter, adjFilter].filter(f => f !== "none").join(" ") || "none";
+        ctx.save();
         ctx.filter = combinedFilter;
-        ctx.drawImage(vid, 0, 0);
+        // Apply transforms
+        ctx.translate(finalW / 2, finalH / 2);
+        ctx.rotate((rotation * Math.PI) / 180);
+        ctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
+        // Draw centered
+        const drawW = isRotated90 ? finalH : finalW;
+        const drawH = isRotated90 ? finalW : finalH;
+        const sx = (vid.videoWidth - outW) / 2;
+        const sy = (vid.videoHeight - outH) / 2;
+        ctx.drawImage(vid, sx, sy, outW, outH, -drawW / 2, -drawH / 2, drawW, drawH);
+        ctx.restore();
         ctx.filter = "none";
         if (hasAdjustments(adjustments)) {
           applyCanvasAdjustments(ctx, canvas, adjustments);
@@ -297,7 +328,7 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
     };
     draw();
     return () => { running = false; cancelAnimationFrame(animRef.current); };
-  }, [videoUrl, computedFilter, textOverlays, activeEffects, adjustments]);
+  }, [videoUrl, computedFilter, textOverlays, activeEffects, adjustments, cropPreset, rotation, flipH, flipV]);
 
   const togglePlay = () => {
     const vid = videoRef.current; if (!vid) return;
