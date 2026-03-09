@@ -45,6 +45,7 @@ import {
   buildAdjustFilter, applyCanvasAdjustments, hasAdjustments,
   type AdjustmentValues, type AdjustSection,
 } from "@/lib/studioAdjustments";
+import { ANIMATION_PRESETS } from "@/lib/studioKeyframes";
 
 // ─── Types ───
 type TextOverlay = {
@@ -67,7 +68,7 @@ type TextOverlay = {
 };
 type MediaItem = { id: string; file: File; url: string; thumbnail: string; duration: number; name: string; type: "video" | "audio" | "image" };
 type TimelineTrack = { id: string; name: string; type: "video" | "audio" | "text" | "effect"; visible: boolean; locked: boolean };
-type ToolTab = "media" | "audio" | "text" | "effects" | "transitions" | "filters" | "adjust" | "export" | "upscale" | "crop";
+type ToolTab = "media" | "audio" | "text" | "effects" | "transitions" | "filters" | "adjust" | "export" | "upscale" | "crop" | "ai";
 type EffectIntensity = Record<string, number>;
 
 // Studio accent — monochrome premium
@@ -98,6 +99,7 @@ const TOOL_TABS: { id: ToolTab; icon: typeof Film; label: string }[] = [
   { id: "transitions", icon: Layers, label: "Transitions" },
   { id: "filters", icon: Wand2, label: "Filters" },
   { id: "adjust", icon: SlidersHorizontal, label: "Adjust" },
+  { id: "ai", icon: Wand2, label: "AI Tools" },
   { id: "upscale", icon: ArrowUpCircle, label: "Upscale" },
   { id: "export", icon: Settings, label: "Export" },
 ];
@@ -239,6 +241,8 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
   const [rotation, setRotation] = useState(0); // degrees
   const [flipH, setFlipH] = useState(false);
   const [flipV, setFlipV] = useState(false);
+  const [showAutoClipper, setShowAutoClipper] = useState(false);
+  const [showSongRecommender, setShowSongRecommender] = useState(false);
 
   const activeMedia = useMemo(() => mediaItems.find((m) => m.id === activeMediaId) ?? null, [mediaItems, activeMediaId]);
   const [tracks] = useState<TimelineTrack[]>([
@@ -1793,6 +1797,83 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
                             {s}x
                           </button>
                         ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* ════════ AI TOOLS ════════ */}
+                {activeToolTab === "ai" && (
+                  <>
+                    <div className="space-y-3">
+                      <p className="text-[10px]" style={{ color: "#888" }}>
+                        AI-powered tools to enhance your editing workflow.
+                      </p>
+
+                      {/* Auto-Clipper */}
+                      <button
+                        onClick={() => setShowAutoClipper(prev => !prev)}
+                        className="w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all hover:bg-white/5"
+                        style={{
+                          background: showAutoClipper ? ACCENT_DIM : "#151515",
+                          border: showAutoClipper ? `1px solid ${ACCENT_BORDER}` : "1px solid #2a2a2a",
+                        }}
+                      >
+                        <div className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0"
+                          style={{ background: "#1e1e1e", border: `1px solid ${showAutoClipper ? ACCENT_BORDER : "#2a2a2a"}` }}>
+                          <Scissors className="w-4 h-4" style={{ color: showAutoClipper ? ACCENT : "#777" }} />
+                        </div>
+                        <div className="text-left flex-1">
+                          <span className="text-[11px] font-medium block" style={{ color: showAutoClipper ? ACCENT : "#aaa" }}>
+                            Auto-Clipper
+                          </span>
+                          <span className="text-[9px]" style={{ color: "#555" }}>
+                            Detect best moments automatically
+                          </span>
+                        </div>
+                        {showAutoClipper && <Check className="w-3.5 h-3.5" style={{ color: ACCENT }} />}
+                      </button>
+
+                      {/* Song Recommender */}
+                      <button
+                        onClick={() => setShowSongRecommender(prev => !prev)}
+                        className="w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all hover:bg-white/5"
+                        style={{
+                          background: showSongRecommender ? ACCENT_DIM : "#151515",
+                          border: showSongRecommender ? `1px solid ${ACCENT_BORDER}` : "1px solid #2a2a2a",
+                        }}
+                      >
+                        <div className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0"
+                          style={{ background: "#1e1e1e", border: `1px solid ${showSongRecommender ? ACCENT_BORDER : "#2a2a2a"}` }}>
+                          <Music className="w-4 h-4" style={{ color: showSongRecommender ? "hsl(280 70% 60%)" : "#777" }} />
+                        </div>
+                        <div className="text-left flex-1">
+                          <span className="text-[11px] font-medium block" style={{ color: showSongRecommender ? ACCENT : "#aaa" }}>
+                            Song Match
+                          </span>
+                          <span className="text-[9px]" style={{ color: "#555" }}>
+                            Find music for your edit
+                          </span>
+                        </div>
+                        {showSongRecommender && <Check className="w-3.5 h-3.5" style={{ color: ACCENT }} />}
+                      </button>
+
+                      {/* Keyframe Presets */}
+                      <div className="pt-2" style={{ borderTop: "1px solid #222" }}>
+                        <span className="text-[10px] font-semibold" style={{ color: "#888" }}>Animation Presets</span>
+                        <div className="grid grid-cols-3 gap-1.5 mt-2">
+                          {ANIMATION_PRESETS.slice(0, 9).map(preset => (
+                            <button
+                              key={preset.id}
+                              className="flex flex-col items-center gap-1 py-2 px-1 rounded-lg transition-all hover:bg-white/5"
+                              style={{ border: "1px solid #2a2a2a", background: "#151515" }}
+                              onClick={() => toast.success(`${preset.label} applied`)}
+                            >
+                              <span className="text-base">{preset.icon}</span>
+                              <span className="text-[8px]" style={{ color: "#777" }}>{preset.label}</span>
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </>
