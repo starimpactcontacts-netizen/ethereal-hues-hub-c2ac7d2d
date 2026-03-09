@@ -561,7 +561,8 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
 
   const addTextOverlay = () => {
     if (!textInput.trim()) return;
-    setTextOverlays(prev => [...prev, { id: crypto.randomUUID(), text: textInput, x: 0.5, y: 0.5, style: textStyle, startTime: trimStart, endTime: trimEnd }]);
+    undoRedo.pushSnapshot({ filter: activeFilter.name, effects: activeEffects, adjustments });
+    setTextOverlays(prev => [...prev, { id: crypto.randomUUID(), text: textInput, x: 0.5, y: 0.5, style: textStyle, startTime: trimStart, endTime: trimEnd, animation: textAnimation }]);
     setTextInput(""); toast.success("Text added");
   };
 
