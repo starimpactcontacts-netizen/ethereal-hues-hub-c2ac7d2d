@@ -547,35 +547,33 @@ export default function MissionLobbyPage() {
 
       {/* ═══ THEME & INSPO ═══ */}
       {(mission.theme_description || mission.inspo_thumbnail_url || mission.inspo_url) && (
-        <div className="px-4 mt-3">
-          <div className="bg-surface-1 border border-border/50 overflow-hidden">
-            <div className="bg-purple-500/5 border-b border-purple-500/10 px-3 py-2">
-              <span className="text-[10px] font-black text-purple-400 uppercase tracking-[0.2em]">🎨 Theme & Inspiration</span>
-            </div>
-            <div className="p-3 space-y-3">
-              {mission.theme_description && (
-                <p className="text-xs text-foreground/80 leading-relaxed">{mission.theme_description}</p>
-              )}
-              {mission.inspo_thumbnail_url && (
-                <div className="relative overflow-hidden border border-border">
-                  <img src={mission.inspo_thumbnail_url} alt="Inspo" className="w-full h-44 object-cover" />
-                  {mission.inspo_url && (
-                    <a href={mission.inspo_url} target="_blank" rel="noopener noreferrer"
-                      className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity">
-                      <span className="bg-foreground/10 backdrop-blur-md px-4 py-2 border border-foreground/20 text-xs font-black text-foreground flex items-center gap-2 uppercase tracking-wider">
-                        <ExternalLink className="w-3.5 h-3.5" /> Watch Inspo
-                      </span>
-                    </a>
-                  )}
-                </div>
-              )}
-              {mission.inspo_url && !mission.inspo_thumbnail_url && (
-                <a href={mission.inspo_url} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-xs text-purple-400 hover:text-purple-300 font-bold">
-                  <ExternalLink className="w-3.5 h-3.5" /> Watch Inspo Video
-                </a>
-              )}
-            </div>
+        <div className="px-4 mt-4">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-[10px] font-black text-purple-400/70 uppercase tracking-[0.2em]">🎨 Theme & Inspiration</span>
+          </div>
+          <div className="space-y-2.5">
+            {mission.theme_description && (
+              <p className="text-xs text-foreground/70 leading-relaxed">{mission.theme_description}</p>
+            )}
+            {mission.inspo_thumbnail_url && (
+              <div className="relative overflow-hidden rounded-sm border border-border/30">
+                <img src={mission.inspo_thumbnail_url} alt="Inspo" className="w-full h-44 object-cover" />
+                {mission.inspo_url && (
+                  <a href={mission.inspo_url} target="_blank" rel="noopener noreferrer"
+                    className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity">
+                    <span className="bg-foreground/10 backdrop-blur-md px-4 py-2 border border-foreground/20 text-xs font-black text-foreground flex items-center gap-2 uppercase tracking-wider">
+                      <ExternalLink className="w-3.5 h-3.5" /> Watch Inspo
+                    </span>
+                  </a>
+                )}
+              </div>
+            )}
+            {mission.inspo_url && !mission.inspo_thumbnail_url && (
+              <a href={mission.inspo_url} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 text-xs text-purple-400 hover:text-purple-300 font-bold">
+                <ExternalLink className="w-3.5 h-3.5" /> Watch Inspo Video
+              </a>
+            )}
           </div>
         </div>
       )}
