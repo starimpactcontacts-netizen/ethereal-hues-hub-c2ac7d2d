@@ -430,8 +430,17 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
       if (vid.currentTime >= trimEnd || vid.ended) { vid.pause(); recorder.stop(); return; }
       const adjFilter = buildAdjustFilter(adjustments);
       const combinedFilter = [computedFilter, adjFilter].filter(f => f !== "none").join(" ") || "none";
+      ctx.save();
       ctx.filter = combinedFilter;
-      ctx.drawImage(vid, 0, 0, exportW, exportH);
+      ctx.globalAlpha = videoOpacity;
+      const centerX = exportW * posX;
+      const centerY = exportH * posY;
+      ctx.translate(centerX, centerY);
+      ctx.rotate(((rotation + freeRotation) * Math.PI) / 180);
+      ctx.scale((flipH ? -1 : 1) * scaleX, (flipV ? -1 : 1) * scaleY);
+      ctx.drawImage(vid, -exportW / 2, -exportH / 2, exportW, exportH);
+      ctx.globalAlpha = 1.0;
+      ctx.restore();
       ctx.filter = "none";
       if (hasAdjustments(adjustments)) {
         applyCanvasAdjustments(ctx, canvas, adjustments);
