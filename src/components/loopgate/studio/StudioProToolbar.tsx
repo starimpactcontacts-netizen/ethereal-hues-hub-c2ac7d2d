@@ -53,6 +53,7 @@ interface StudioProToolbarProps {
   activeTool: EditorTool | null;
   onToolChange: (tool: EditorTool | null) => void;
   onAIOpen: () => void;
+  onAIBrainOpen?: () => void;
 }
 
 export default function StudioProToolbar({ activeTool, onToolChange, onAIOpen }: StudioProToolbarProps) {
