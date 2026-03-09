@@ -672,12 +672,15 @@ export default function ArenaPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-32">
+    <div className="min-h-screen bg-black pb-32">
       <LoopMonster />
 
       {/* ═══ HERO ═══ */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-red-600/6 via-transparent to-transparent" />
+      <div className="relative overflow-hidden border-b border-white/[0.02]">
+        <div className="absolute inset-0 bg-gradient-to-b from-red-950/10 via-transparent to-transparent" />
+        <div className="absolute inset-0" style={{ 
+          backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(239, 68, 68, 0.03) 0%, transparent 50%)',
+        }} />
 
         <div className="relative px-4 sm:px-6 lg:px-8 pt-3 pb-1 max-w-2xl mx-auto">
           {/* Title row — merged with stats */}
