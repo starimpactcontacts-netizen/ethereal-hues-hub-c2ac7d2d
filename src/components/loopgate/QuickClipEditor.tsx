@@ -862,133 +862,28 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
         </div>
 
         {/* ─── Pro Timeline ─── */}
-        <div className="flex-shrink-0" style={{ background: "#111114", borderTop: "1px solid #1a1a1e" }}>
-          {/* Transport controls */}
-          <div className="flex items-center justify-between px-3 pt-2 pb-1">
-            <div className="flex items-center gap-1">
-              <span className="text-[10px] font-mono font-bold tabular-nums tracking-tight" style={{ color: ACCENT }}>{formatTimecode(currentTime)}</span>
-              <span className="text-[8px]" style={{ color: "#333" }}>/</span>
-              <span className="text-[10px] font-mono tabular-nums tracking-tight" style={{ color: "#444" }}>{formatTimecode(duration)}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <button onClick={() => seekTo(trimStart)} className="w-7 h-7 rounded-md flex items-center justify-center transition-all active:scale-90"
-                style={{ background: "rgba(255,255,255,0.03)" }}>
-                <SkipBack className="w-3.5 h-3.5" style={{ color: "#555" }} />
-              </button>
-              <button onClick={togglePlay}
-                className="w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-90"
-                style={{ background: `linear-gradient(135deg, ${ACCENT}15, ${ACCENT}08)`, border: `1px solid ${ACCENT}20`, boxShadow: playing ? `0 0 12px ${ACCENT}15` : "none" }}>
-                {playing ? <Pause className="w-4 h-4" style={{ color: ACCENT }} /> : <Play className="w-4 h-4 ml-0.5" style={{ color: ACCENT }} />}
-              </button>
-              <button onClick={() => seekTo(trimEnd)} className="w-7 h-7 rounded-md flex items-center justify-center transition-all active:scale-90"
-                style={{ background: "rgba(255,255,255,0.03)" }}>
-                <SkipForward className="w-3.5 h-3.5" style={{ color: "#555" }} />
-              </button>
-            </div>
-            <span className="text-[9px] font-mono" style={{ color: "#333" }}>{formatTimecode(trimEnd - trimStart)}</span>
-          </div>
-
-          {/* Timeline ruler */}
-          <div className="px-3 pb-0.5">
-            <div className="h-3 relative flex items-end">
-              {Array.from({ length: Math.min(20, Math.ceil(duration)) }).map((_, i) => {
-                const t = (i / Math.min(20, Math.ceil(duration))) * 100;
-                return (
-                  <div key={i} className="absolute bottom-0 flex flex-col items-center" style={{ left: `${t}%` }}>
-                    <span className="text-[5px] font-mono" style={{ color: "#333" }}>{Math.round(i * duration / Math.min(20, Math.ceil(duration)))}s</span>
-                    <div className="w-px h-1" style={{ background: "#2a2a2a" }} />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Main timeline track */}
-          <div className="px-3 pb-2">
-            {/* Track header */}
-            <div className="flex items-center gap-1 mb-1">
-              <div className="w-1 h-3 rounded-full" style={{ background: ACCENT }} />
-              <span className="text-[7px] font-bold tracking-wider uppercase" style={{ color: "#444" }}>V1 — Main</span>
-              {audioName && (
-                <>
-                  <span className="mx-1 text-[7px]" style={{ color: "#222" }}>|</span>
-                  <div className="w-1 h-3 rounded-full" style={{ background: "#A855F7" }} />
-                  <span className="text-[7px] font-bold tracking-wider uppercase" style={{ color: "#444" }}>A1</span>
-                </>
-              )}
-            </div>
-
-            <div ref={timelineRef} onClick={handleTimelineClick}
-              className="relative h-16 rounded-xl overflow-hidden cursor-pointer"
-              style={{ background: "#0a0a0d", border: "1px solid #1a1a1e", boxShadow: "inset 0 1px 3px rgba(0,0,0,0.5)" }}>
-              {/* Thumbnail strip */}
-              <div className="absolute inset-0 flex">
-                {thumbnails.map((thumb, i) => (
-                  <div key={i} className="flex-1 h-full overflow-hidden" style={{ opacity: 0.4 }}>
-                    <img src={thumb} alt="" className="w-full h-full object-cover" />
-                  </div>
-                ))}
-                {thumbnails.length === 0 && (
-                  <div className="flex-1 flex items-center justify-center" style={{ background: "#0d0d10" }}>
-                    <span className="text-[8px] font-bold tracking-wider" style={{ color: "#222" }}>NO MEDIA</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Active region highlight */}
-              {duration > 0 && (
-                <div className="absolute inset-0">
-                  {/* Inactive regions */}
-                  <div className="absolute inset-y-0 left-0" style={{ width: `${(trimStart / duration) * 100}%`, background: "rgba(0,0,0,0.7)" }} />
-                  <div className="absolute inset-y-0 right-0" style={{ width: `${((duration - trimEnd) / duration) * 100}%`, background: "rgba(0,0,0,0.7)" }} />
-
-                  {/* Trim handles — glowing */}
-                  <div className="absolute inset-y-0 w-1.5 cursor-col-resize z-10 rounded-l"
-                    style={{ left: `${(trimStart / duration) * 100}%`, background: `linear-gradient(180deg, ${ACCENT}, #7777DD)`, boxShadow: `0 0 6px ${ACCENT}40` }}
-                    onTouchStart={(e) => {
-                      e.stopPropagation();
-                      const rect = timelineRef.current!.getBoundingClientRect();
-                      const onMove = (ev: TouchEvent) => { const pct = Math.max(0, Math.min((trimEnd - 0.5) / duration, (ev.touches[0].clientX - rect.left) / rect.width)); setTrimStart(pct * duration); };
-                      const onEnd = () => { window.removeEventListener("touchmove", onMove); window.removeEventListener("touchend", onEnd); };
-                      window.addEventListener("touchmove", onMove, { passive: true }); window.addEventListener("touchend", onEnd);
-                    }} />
-                  <div className="absolute inset-y-0 w-1.5 cursor-col-resize z-10 rounded-r"
-                    style={{ left: `calc(${(trimEnd / duration) * 100}% - 6px)`, background: `linear-gradient(180deg, ${ACCENT}, #7777DD)`, boxShadow: `0 0 6px ${ACCENT}40` }}
-                    onTouchStart={(e) => {
-                      e.stopPropagation();
-                      const rect = timelineRef.current!.getBoundingClientRect();
-                      const onMove = (ev: TouchEvent) => { const pct = Math.max((trimStart + 0.5) / duration, Math.min(1, (ev.touches[0].clientX - rect.left) / rect.width)); setTrimEnd(pct * duration); };
-                      const onEnd = () => { window.removeEventListener("touchmove", onMove); window.removeEventListener("touchend", onEnd); };
-                      window.addEventListener("touchmove", onMove, { passive: true }); window.addEventListener("touchend", onEnd);
-                    }} />
-
-                  {/* Playhead — premium glow */}
-                  <div className="absolute top-0 bottom-0 z-20 pointer-events-none" style={{ left: `${(currentTime / duration) * 100}%` }}>
-                    <div className="absolute -left-px w-0.5 h-full" style={{ background: "white", boxShadow: "0 0 4px rgba(255,255,255,0.4)" }} />
-                    <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-2 h-2 rounded-sm rotate-45" style={{ background: "white", boxShadow: "0 0 6px rgba(255,255,255,0.5)" }} />
-                  </div>
-
-                  {/* Timeline markers */}
-                  {timelineMarkers.map(marker => (
-                    <div key={marker.id} className="absolute top-0 w-px z-15 pointer-events-none"
-                      style={{ left: `${(marker.time / duration) * 100}%`, height: "100%", background: marker.color, opacity: 0.6 }}>
-                      <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full" style={{ background: marker.color }} />
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Audio track */}
-              {audioName && (
-                <div className="absolute bottom-0 left-0 right-0 h-4 flex items-center px-1.5"
-                  style={{ background: "linear-gradient(180deg, transparent, rgba(168,85,247,0.06))", borderTop: "1px solid rgba(168,85,247,0.1)" }}>
-                  <Music className="w-2 h-2 mr-0.5 flex-shrink-0" style={{ color: "rgba(168,85,247,0.4)" }} />
-                  <span className="text-[6px] truncate font-medium" style={{ color: "rgba(168,85,247,0.4)" }}>{audioName}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        <StudioProTimeline
+          duration={duration}
+          currentTime={currentTime}
+          trimStart={trimStart}
+          trimEnd={trimEnd}
+          playing={playing}
+          thumbnails={thumbnails}
+          audioName={audioName}
+          markers={timelineMarkers}
+          onSeek={seekTo}
+          onTrimStartChange={setTrimStart}
+          onTrimEndChange={setTrimEnd}
+          onTogglePlay={togglePlay}
+          onAddMarker={(time) => {
+            setTimelineMarkers(prev => [...prev, { id: crypto.randomUUID(), time, color: "#FF6B00", label: `M${prev.length + 1}`, type: "beat" as const }]);
+            toast.success("Marker added");
+          }}
+          onSplit={(time) => {
+            setTimelineMarkers(prev => [...prev, { id: crypto.randomUUID(), time, color: "#FF004F", label: "Cut", type: "cut" as const }]);
+            toast.success("Split point added");
+          }}
+        />
 
         {/* ─── Tool Panel ─── */}
         <AnimatePresence>
