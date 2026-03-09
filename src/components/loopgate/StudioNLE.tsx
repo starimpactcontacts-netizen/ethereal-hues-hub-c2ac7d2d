@@ -45,6 +45,7 @@ import {
   buildAdjustFilter, applyCanvasAdjustments, hasAdjustments,
   type AdjustmentValues, type AdjustSection,
 } from "@/lib/studioAdjustments";
+import { ANIMATION_PRESETS } from "@/lib/studioKeyframes";
 
 // ─── Types ───
 type TextOverlay = {
