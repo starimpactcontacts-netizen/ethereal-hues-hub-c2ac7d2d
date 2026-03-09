@@ -211,6 +211,33 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
   // AI Tools overlay
   const [aiToolsOpen, setAiToolsOpen] = useState(false);
 
+  // ═══ NEW PRO TOOLS STATE ═══
+  // Color Scopes & LUTs
+  const [activeLUT, setActiveLUT] = useState<string | null>(null);
+  const [lutIntensity, setLutIntensity] = useState(1.0);
+  const [customLUT, setCustomLUT] = useState<LUT3D | null>(null);
+
+  // Masking
+  const [masks, setMasks] = useState<Mask[]>([]);
+  const [selectedMaskId, setSelectedMaskId] = useState<string | null>(null);
+
+  // Audio FX
+  const [audioFX, setAudioFX] = useState<AudioFXState>({ ...DEFAULT_AUDIO_FX });
+
+  // Motion Graphics Templates
+  const [appliedTemplates, setAppliedTemplates] = useState<AppliedTemplate[]>([]);
+
+  // Compositor (PiP / Split Screen)
+  const [compositorLayers, setCompositorLayers] = useState<CompositorLayer[]>([]);
+  const [selectedCompositorLayerId, setSelectedCompositorLayerId] = useState<string | null>(null);
+  const [activeSplitLayout, setActiveSplitLayout] = useState<string | null>(null);
+  const compositorVideos = useRef(new Map<string, HTMLVideoElement>());
+
+  // Stabilizer
+  const [stabilizer, setStabilizer] = useState<StabilizerConfig>({ ...DEFAULT_STABILIZER });
+  const stabSmoother = useRef(new MotionSmoother(0.5));
+  const prevFrameData = useRef<ImageData | null>(null);
+
   // Chroma key
   const [chromaEnabled, setChromaEnabled] = useState(false);
   const [chromaColor, setChromaColor] = useState("#00FF00");
