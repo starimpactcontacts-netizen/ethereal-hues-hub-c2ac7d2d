@@ -1463,6 +1463,7 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
           <div className="flex items-center justify-center py-1.5 px-2">
             <div className="flex items-center gap-0.5 rounded-full p-0.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
               {([
+                { id: "ai" as const, icon: Wand2, label: "AI", accent: true },
                 { id: "trim" as EditorTool, icon: Scissors, label: "Trim" },
                 { id: "crop" as EditorTool, icon: Crop, label: "Crop" },
                 { id: "effects" as EditorTool, icon: Sparkles, label: "FX" },
@@ -1474,13 +1475,16 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
                 { id: "adjust" as EditorTool, icon: SlidersHorizontal, label: "Adjust" },
                 { id: "upscale" as EditorTool, icon: ArrowUpCircle, label: "4K" },
                 { id: "export" as EditorTool, icon: Settings, label: "Quality" },
-              ]).map(({ id, icon: Icon, label }) => (
+              ] as const).map(({ id, icon: Icon, label, ...rest }) => (
                 <button key={id}
-                  onClick={() => setActiveTool(activeTool === id ? null : id)}
+                  onClick={() => {
+                    if (id === "ai") { setAutoEditOpen(true); return; }
+                    setActiveTool(activeTool === id ? null : id as EditorTool);
+                  }}
                   className="flex-shrink-0 py-2 px-3 flex flex-col items-center gap-0.5 rounded-lg transition-all duration-150"
                   style={{
-                    color: activeTool === id ? ACCENT : "#666",
-                    background: activeTool === id ? ACCENT_DIM : "transparent",
+                    color: id === "ai" ? "#FF004F" : activeTool === id ? ACCENT : "#666",
+                    background: id === "ai" ? "rgba(255,0,79,0.08)" : activeTool === id ? ACCENT_DIM : "transparent",
                   }}>
                   <Icon className="w-[18px] h-[18px]" />
                   <span className="text-[7px] font-semibold tracking-wider uppercase">{label}</span>
@@ -1490,6 +1494,17 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
           </div>
           <div className="safe-bottom" />
         </div>
+
+        {/* Auto-Edit Wizard overlay (from toolbar) */}
+        {autoEditOpen && (
+          <AutoEditWizard
+            onClose={() => setAutoEditOpen(false)}
+            onTimelineReady={(timeline, clips) => {
+              setAutoEditOpen(false);
+              toast.success("AI timeline generated! Use full Studio for multi-clip editing.");
+            }}
+          />
+        )}
 
         <input ref={fileInputRef} type="file" accept="video/*" onChange={handleFileSelect} className="hidden" />
       </motion.div>
