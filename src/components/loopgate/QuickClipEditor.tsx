@@ -525,8 +525,10 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
             if (anim && anim.id !== "none") {
               const progress = (vid.currentTime - overlay.startTime) / (overlay.endTime - overlay.startTime);
               const style = TEXT_STYLES[overlay.style];
-              const fontSize = Math.round((style?.fontSize || 48) * (canvas.width / 1080));
-              renderAnimatedText(ctx, canvas, overlay.text, overlay.x, overlay.y, fontSize, style?.color || "#fff", style?.fontFamily || "sans-serif", anim, progress, "shadow", style?.stroke || undefined, style?.strokeWidth || undefined);
+              const fontSizeMatch = style?.font?.match(/(\d+)px/);
+              const fontSize = fontSizeMatch ? Math.round(parseInt(fontSizeMatch[1]) * (canvas.width / 1080)) : Math.round(48 * (canvas.width / 1080));
+              const fontFamily = style?.font?.replace(/^.*?(\d+px\s*)/, '') || "sans-serif";
+              renderAnimatedText(ctx, canvas, overlay.text, overlay.x, overlay.y, fontSize, style?.color || "#fff", fontFamily, anim, progress, "shadow", style?.stroke || undefined, style?.stroke ? 3 : undefined);
             } else {
               try { renderTextOverlay(ctx, canvas, overlay.text, overlay.x, overlay.y, overlay.style); } catch { /* */ }
             }
