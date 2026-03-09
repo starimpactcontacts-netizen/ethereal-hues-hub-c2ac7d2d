@@ -1270,6 +1270,7 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
             <div className="flex items-center gap-0.5 rounded-full p-0.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
               {([
                 { id: "trim" as EditorTool, icon: Scissors, label: "Trim" },
+                { id: "crop" as EditorTool, icon: Crop, label: "Crop" },
                 { id: "effects" as EditorTool, icon: Sparkles, label: "FX" },
                 { id: "transitions" as EditorTool, icon: Layers, label: "Trans" },
                 { id: "filters" as EditorTool, icon: Wand2, label: "Filters" },
