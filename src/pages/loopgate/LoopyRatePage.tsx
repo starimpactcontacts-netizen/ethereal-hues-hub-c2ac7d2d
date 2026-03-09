@@ -82,6 +82,34 @@ const GRADE_COLORS: Record<string, string> = {
   'F': 'from-red-800 to-red-600 text-white',
 };
 
+const GRADE_GLOW: Record<string, string> = {
+  'S++': 'shadow-[0_0_60px_rgba(251,191,36,0.5),0_0_120px_rgba(251,191,36,0.2)]',
+  'S+': 'shadow-[0_0_60px_rgba(245,158,11,0.5),0_0_120px_rgba(245,158,11,0.2)]',
+  'S': 'shadow-[0_0_60px_rgba(249,115,22,0.4),0_0_100px_rgba(249,115,22,0.15)]',
+  'A': 'shadow-[0_0_50px_rgba(34,197,94,0.4),0_0_100px_rgba(34,197,94,0.15)]',
+  'B': 'shadow-[0_0_40px_rgba(59,130,246,0.3),0_0_80px_rgba(59,130,246,0.1)]',
+  'C': 'shadow-[0_0_30px_rgba(148,163,184,0.2)]',
+  'D': 'shadow-[0_0_40px_rgba(220,38,38,0.3)]',
+  'F': 'shadow-[0_0_50px_rgba(220,38,38,0.4)]',
+};
+
+// Grade-specific roasts/hypes that make people want to screenshot
+const GRADE_REACTIONS: Record<string, { emoji: string; headline: string; sub: string }> = {
+  'S++': { emoji: '👑', headline: 'GENERATIONAL TALENT', sub: 'You didn\'t just pass the test. You ARE the test.' },
+  'S+': { emoji: '🔥', headline: 'BUILT DIFFERENT', sub: 'The editors below you are looking up right now.' },
+  'S': { emoji: '⚡', headline: 'THAT\'S ELITE', sub: 'Most editors dream about this score. You just got it.' },
+  'A': { emoji: '💪', headline: 'ABOVE THE PACK', sub: 'Solid work. You\'re better than most, but not untouchable yet.' },
+  'B': { emoji: '📈', headline: 'MID BUT PROMISING', sub: 'You have the ingredients. The recipe needs work.' },
+  'C': { emoji: '😬', headline: 'THAT\'S... OKAY', sub: 'Your edit exists. That\'s about the nicest thing Loopy can say.' },
+  'D': { emoji: '💀', headline: 'PACK IT UP', sub: 'This edit needs CPR. Actually, it might be too late for that.' },
+  'F': { emoji: '☠️', headline: 'CERTIFIED NIGHTMARE', sub: 'Loopy had to look away. Twice. Then three more times.' },
+};
+
+const GRADE_PERCENTILE: Record<string, string> = {
+  'S++': 'Top 1%', 'S+': 'Top 5%', 'S': 'Top 10%', 'A': 'Top 25%',
+  'B': 'Top 50%', 'C': 'Bottom 40%', 'D': 'Bottom 20%', 'F': 'Bottom 5%',
+};
+
 const VERDICT = (score: number, max: number) => {
   const pct = (score / max) * 100;
   if (pct >= 90) return { label: 'ELITE', cls: 'text-amber-400 bg-amber-500/15' };
