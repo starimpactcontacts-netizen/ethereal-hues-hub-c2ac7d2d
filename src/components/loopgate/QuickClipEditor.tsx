@@ -464,9 +464,38 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
         // Apply overlay
         const overlayPreset = OVERLAY_PRESETS.find(o => o.id === activeOverlayId);
         if (overlayPreset) applyOverlay(ctx, canvas, overlayPreset, overlayOpacity);
-        // Apply chroma key
+        // Apply chroma key with background replacement
         if (chromaEnabled) {
+          // Save keyed frame
+          const frameData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          // Render background first
+          const bg = CHROMA_BACKGROUNDS.find(b => b.id === chromaBgId);
+          if (bg && bg.value !== "transparent") {
+            renderChromaBackground(ctx, canvas, bg);
+          } else {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+          }
+          // Apply chroma key and composite
           applyChromaKey(ctx, canvas, chromaColor, chromaThreshold);
+          // Re-draw the keyed frame on top
+          const tempCanvas = document.createElement("canvas");
+          tempCanvas.width = canvas.width;
+          tempCanvas.height = canvas.height;
+          const tempCtx = tempCanvas.getContext("2d")!;
+          tempCtx.putImageData(frameData, 0, 0);
+          // Apply the key to the temp canvas
+          const tempData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+          const data = tempData.data;
+          const r0 = parseInt(chromaColor.slice(1, 3), 16);
+          const g0 = parseInt(chromaColor.slice(3, 5), 16);
+          const b0 = parseInt(chromaColor.slice(5, 7), 16);
+          for (let i = 0; i < data.length; i += 4) {
+            const dist = Math.sqrt((data[i] - r0) ** 2 + (data[i + 1] - g0) ** 2 + (data[i + 2] - b0) ** 2);
+            if (dist < chromaThreshold) data[i + 3] = 0;
+            else if (dist < chromaThreshold * 1.5) data[i + 3] = Math.round(((dist - chromaThreshold) / (chromaThreshold * 0.5)) * 255);
+          }
+          tempCtx.putImageData(tempData, 0, 0);
+          ctx.drawImage(tempCanvas, 0, 0);
         }
         // Apply masks
         if (masks.length > 0) {
@@ -484,10 +513,23 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
             renderMotionTemplate(ctx, canvas, tmpl, at.fieldValues, progress);
           }
         });
-        // Text overlays
+        // Render stickers
+        if (stickerOverlays.length > 0) {
+          renderStickersToCanvas(ctx, canvas, stickerOverlays, vid.currentTime);
+        }
+        // Text overlays with animation support
         textOverlays.forEach((overlay) => {
           if (vid.currentTime >= overlay.startTime && vid.currentTime <= overlay.endTime) {
-            try { renderTextOverlay(ctx, canvas, overlay.text, overlay.x, overlay.y, overlay.style); } catch { /* */ }
+            const animId = overlay.animation || "none";
+            const anim = TEXT_ANIMATIONS.find(a => a.id === animId);
+            if (anim && anim.id !== "none") {
+              const progress = (vid.currentTime - overlay.startTime) / (overlay.endTime - overlay.startTime);
+              const style = TEXT_STYLES[overlay.style];
+              const fontSize = Math.round((style?.fontSize || 48) * (canvas.width / 1080));
+              renderAnimatedText(ctx, canvas, overlay.text, overlay.x, overlay.y, fontSize, style?.color || "#fff", style?.fontFamily || "sans-serif", anim, progress, "shadow", style?.stroke || undefined, style?.strokeWidth || undefined);
+            } else {
+              try { renderTextOverlay(ctx, canvas, overlay.text, overlay.x, overlay.y, overlay.style); } catch { /* */ }
+            }
           }
         });
       }
@@ -495,7 +537,7 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
     };
     draw();
     return () => { running = false; cancelAnimationFrame(animRef.current); };
-  }, [videoUrl, computedFilter, textOverlays, activeEffects, adjustments, cropPreset, rotation, flipH, flipV, scaleX, scaleY, posX, posY, videoOpacity, freeRotation, activeOverlayId, overlayOpacity, chromaEnabled, chromaColor, chromaThreshold, activeLUT, lutIntensity, masks, compositorLayers, appliedTemplates]);
+  }, [videoUrl, computedFilter, textOverlays, activeEffects, adjustments, cropPreset, rotation, flipH, flipV, scaleX, scaleY, posX, posY, videoOpacity, freeRotation, activeOverlayId, overlayOpacity, chromaEnabled, chromaColor, chromaThreshold, chromaBgId, activeLUT, lutIntensity, masks, compositorLayers, appliedTemplates, stickerOverlays]);
 
   const togglePlay = () => {
     const vid = videoRef.current; if (!vid) return;
