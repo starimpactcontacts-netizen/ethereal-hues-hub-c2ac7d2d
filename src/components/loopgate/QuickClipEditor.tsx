@@ -788,8 +788,41 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-1.5">
+          {/* Actions — Undo/Redo + Export */}
+          <div className="flex items-center gap-1">
+            {/* Undo/Redo */}
+            <button
+              onClick={() => {
+                const snapshot = undoRedo.undo({ filter: activeFilter.name, effects: activeEffects, adjustments });
+                if (snapshot) {
+                  const f = FILTER_PRESETS.find(fp => fp.name === snapshot.filter);
+                  if (f) setActiveFilter(f);
+                  setActiveEffects(snapshot.effects);
+                  setAdjustments(snapshot.adjustments);
+                  toast("Undo");
+                }
+              }}
+              disabled={!undoRedo.canUndo}
+              className="p-1.5 rounded-lg transition-all active:scale-90 disabled:opacity-20"
+              style={{ background: "rgba(255,255,255,0.04)" }}>
+              <Undo2 className="w-3.5 h-3.5" style={{ color: "#888" }} />
+            </button>
+            <button
+              onClick={() => {
+                const snapshot = undoRedo.redo({ filter: activeFilter.name, effects: activeEffects, adjustments });
+                if (snapshot) {
+                  const f = FILTER_PRESETS.find(fp => fp.name === snapshot.filter);
+                  if (f) setActiveFilter(f);
+                  setActiveEffects(snapshot.effects);
+                  setAdjustments(snapshot.adjustments);
+                  toast("Redo");
+                }
+              }}
+              disabled={!undoRedo.canRedo}
+              className="p-1.5 rounded-lg transition-all active:scale-90 disabled:opacity-20"
+              style={{ background: "rgba(255,255,255,0.04)" }}>
+              <Redo2 className="w-3.5 h-3.5" style={{ color: "#888" }} />
+            </button>
             <StudioSubmitButton />
             {state === "done" ? (
               <button onClick={handleDownload}
