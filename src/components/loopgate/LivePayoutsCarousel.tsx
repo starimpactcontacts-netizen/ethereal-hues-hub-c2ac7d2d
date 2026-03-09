@@ -16,8 +16,11 @@ type PayoutRow = {
   drop_id: string | null;
 };
 
+type DropInfo = { title: string; poster_url: string | null };
+
 type Payout = PayoutRow & {
   drop_title: string | null;
+  drop_poster: string | null;
 };
 
 export default function LivePayoutsCarousel() {
@@ -26,16 +29,18 @@ export default function LivePayoutsCarousel() {
   useEffect(() => {
     let mounted = true;
 
-    const hydrateDropTitles = async (rows: PayoutRow[]) => {
+    const hydrateDropInfo = async (rows: PayoutRow[]) => {
       const dropIds = [...new Set(rows.map((r) => r.drop_id).filter(Boolean))] as string[];
-      if (dropIds.length === 0) return new Map<string, string>();
+      if (dropIds.length === 0) return new Map<string, DropInfo>();
 
       const { data } = await supabase
         .from("featured_drops")
-        .select("id, title")
+        .select("id, title, poster_url")
         .in("id", dropIds);
 
-      return new Map((data || []).map((d) => [d.id, d.title] as const));
+      return new Map(
+        (data || []).map((d: any) => [d.id, { title: d.title, poster_url: d.poster_url }] as const),
+      );
     };
 
     const fetchPayouts = async () => {
@@ -47,12 +52,16 @@ export default function LivePayoutsCarousel() {
         .limit(12);
 
       const rows = (data || []) as unknown as PayoutRow[];
-      const dropMap = await hydrateDropTitles(rows);
+      const dropMap = await hydrateDropInfo(rows);
 
-      const next: Payout[] = rows.map((r) => ({
-        ...r,
-        drop_title: r.drop_id ? dropMap.get(r.drop_id) ?? null : null,
-      }));
+      const next: Payout[] = rows.map((r) => {
+        const info = r.drop_id ? dropMap.get(r.drop_id) : undefined;
+        return {
+          ...r,
+          drop_title: info?.title ?? null,
+          drop_poster: info?.poster_url ?? null,
+        };
+      });
 
       if (mounted) setPayouts(next);
     };
@@ -63,27 +72,24 @@ export default function LivePayoutsCarousel() {
       .channel("live-payouts-carousel")
       .on(
         "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "featured_submissions",
-          filter: "earned_cents=gt.0",
-        },
+        { event: "UPDATE", schema: "public", table: "featured_submissions", filter: "earned_cents=gt.0" },
         async (payload) => {
           const row = payload.new as unknown as PayoutRow;
           if (!row?.earned_cents || row.earned_cents <= 0) return;
 
           let drop_title: string | null = null;
+          let drop_poster: string | null = null;
           if (row.drop_id) {
             const { data } = await supabase
               .from("featured_drops")
-              .select("id, title")
+              .select("id, title, poster_url")
               .eq("id", row.drop_id)
               .maybeSingle();
             drop_title = data?.title ?? null;
+            drop_poster = (data as any)?.poster_url ?? null;
           }
 
-          const next: Payout = { ...row, drop_title };
+          const next: Payout = { ...row, drop_title, drop_poster };
           setPayouts((prev) => [next, ...prev.filter((p) => p.id !== next.id)].slice(0, 12));
         },
       )
@@ -108,9 +114,6 @@ export default function LivePayoutsCarousel() {
               <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-status-live rounded-full animate-pulse" />
             </div>
             <span className="text-[11px] font-black text-foreground uppercase tracking-wider">Live Payouts</span>
-            <div className="px-1.5 py-0.5 bg-muted/40 border border-border/60 rounded-sm">
-              <span className="text-[8px] font-black text-muted-foreground uppercase tracking-wider">Waiting</span>
-            </div>
           </div>
         </div>
         <div className="px-4">
@@ -147,63 +150,87 @@ export default function LivePayoutsCarousel() {
               transition={{ delay: idx * 0.05 }}
               className="shrink-0 w-[190px] relative group"
             >
-              <div className="relative overflow-hidden rounded-lg border border-border/60 bg-gradient-to-br from-surface-0 via-surface-1 to-surface-0 backdrop-blur-sm">
-                {/* top glow */}
-                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-status-live/35 to-transparent" />
+              <div className="relative overflow-hidden rounded-lg border border-border/60">
+                {/* Background: poster image or cinematic pattern */}
+                {payout.drop_poster ? (
+                  <div
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{ backgroundImage: `url(${payout.drop_poster})` }}
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-surface-0">
+                    {/* Geometric grid pattern fallback */}
+                    <svg className="absolute inset-0 w-full h-full opacity-[0.06]" xmlns="http://www.w3.org/2000/svg">
+                      <defs>
+                        <pattern id={`grid-${payout.id}`} width="20" height="20" patternUnits="userSpaceOnUse">
+                          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                        </pattern>
+                      </defs>
+                      <rect width="100%" height="100%" fill={`url(#grid-${payout.id})`} />
+                    </svg>
+                    {/* Diagonal accent line */}
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-status-live/8 to-transparent" />
+                  </div>
+                )}
+
+                {/* Dark overlay for readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/80 to-black/60" />
+
+                {/* Top glow line */}
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-status-live/40 to-transparent" />
 
                 <div className="relative p-3 space-y-2">
-                  {/* user row */}
+                  {/* User row */}
                   <div className="flex items-center gap-2">
-                    <Avatar className="w-8 h-8 border border-status-live/25 ring-1 ring-status-live/10">
+                    <Avatar className="w-7 h-7 border border-status-live/30 ring-1 ring-status-live/15">
                       <AvatarImage src={payout.avatar_url || ""} />
-                      <AvatarFallback className="bg-status-live/10 text-status-live text-[10px] font-bold">
+                      <AvatarFallback className="bg-status-live/15 text-status-live text-[9px] font-bold">
                         {payout.username?.slice(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-bold text-foreground truncate">{payout.username}</p>
-                      <p className="text-[8px] text-muted-foreground">
+                      <p className="text-[11px] font-bold text-white truncate drop-shadow-sm">{payout.username}</p>
+                      <p className="text-[8px] text-white/50">
                         {formatDistanceToNow(new Date(payout.judged_at || payout.created_at), { addSuffix: true })}
                       </p>
                     </div>
                   </div>
 
-                  {/* payout amount */}
+                  {/* Payout amount */}
                   <div className="flex items-baseline gap-1.5">
                     <span
-                      className="text-[20px] font-black text-status-live leading-none tabular-nums"
+                      className="text-[22px] font-black text-status-live leading-none tabular-nums drop-shadow-lg"
                       style={{
-                        textShadow:
-                          "0 0 18px hsl(var(--status-live) / 0.35), 0 0 42px hsl(var(--status-live) / 0.12)",
+                        textShadow: "0 0 20px hsl(var(--status-live) / 0.4), 0 0 50px hsl(var(--status-live) / 0.15)",
                       }}
                     >
                       ${(payout.earned_cents / 100).toFixed(2)}
                     </span>
-                    <TrendingUp className="w-3 h-3 text-status-live/70 mb-0.5" />
+                    <TrendingUp className="w-3 h-3 text-status-live/80" />
                   </div>
 
-                  {/* context badge */}
+                  {/* Context badge */}
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1 min-w-0">
                       <Zap className="w-2.5 h-2.5 text-gold shrink-0" />
-                      <span className="text-[8px] font-bold text-gold uppercase tracking-wider truncate">
+                      <span className="text-[8px] font-bold text-gold uppercase tracking-wider truncate drop-shadow-sm">
                         {payout.drop_title || "FEATURE"}
                       </span>
                     </div>
-                    {payout.rating ? (
-                      <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">
+                    {payout.rating && (
+                      <span className="text-[8px] font-black text-white/40 uppercase tracking-widest">
                         {payout.rating} rank
                       </span>
-                    ) : null}
+                    )}
                   </div>
                 </div>
 
-                {/* bottom gradient */}
-                <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-status-live/5 to-transparent pointer-events-none" />
+                {/* Bottom edge glow */}
+                <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-status-live/25 to-transparent" />
               </div>
 
-              {/* hover glow */}
-              <div className="absolute -inset-px rounded-lg bg-gradient-to-br from-status-live/0 via-status-live/0 to-status-live/0 group-hover:from-status-live/10 group-hover:via-status-live/5 group-hover:to-status-live/10 transition-all duration-500 -z-10 blur-xl opacity-0 group-hover:opacity-100" />
+              {/* Hover outer glow */}
+              <div className="absolute -inset-1 rounded-xl bg-status-live/0 group-hover:bg-status-live/5 transition-all duration-500 -z-10 blur-xl" />
             </motion.div>
           ))}
         </div>
@@ -224,7 +251,7 @@ export default function LivePayoutsCarousel() {
         </div>
         <div className="flex items-center gap-1 text-muted-foreground">
           <div className="w-1.5 h-1.5 rounded-full bg-status-live animate-pulse" />
-          <span className="font-medium">Last 24h</span>
+          <span className="font-medium">Recent</span>
         </div>
       </div>
     </div>
