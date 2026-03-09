@@ -443,6 +443,38 @@ export default function StudioPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Auto-Edit Wizard */}
+      {autoEditOpen && (
+        <AutoEditWizard
+          onClose={() => setAutoEditOpen(false)}
+          onTimelineReady={(timeline, clips) => {
+            setAutoEditOpen(false);
+            toast.success("Auto-edit timeline ready! Opening in Studio...");
+            // For now, open the first clip in the editor
+            // Future: pass full timeline data to NLE
+            if (clips[0]?.file) {
+              const projectId = crypto.randomUUID();
+              void (async () => {
+                try { await saveVideoFile(projectId, clips[0].file); } catch {}
+                const project: StudioProject = {
+                  id: projectId,
+                  name: `Auto-Edit — ${new Date().toLocaleDateString()}`,
+                  thumbnail: clips[0].thumbnail,
+                  lastModified: Date.now(),
+                  duration: timeline.timeline.total_duration,
+                  resolution: clips[0].resolution,
+                  fileSize: clips[0].file.size,
+                };
+                saveStudioProject(project);
+                setActiveProjectId(projectId);
+                setInitialFile(clips[0].file);
+                setEditorOpen(true);
+              })();
+            }
+          }}
+        />
+      )}
     </>
   );
 }
