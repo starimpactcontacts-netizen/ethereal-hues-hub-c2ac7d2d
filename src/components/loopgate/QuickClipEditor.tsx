@@ -570,14 +570,34 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
             <p className="text-[15px] font-semibold text-white">Select a video</p>
             <p className="text-[11px]" style={{ color: "#555" }}>to start editing</p>
           </div>
-          <button
-            onClick={openVideoPicker}
-            className="mt-2 h-10 px-6 rounded-full text-[13px] font-semibold flex items-center gap-2 transition-all active:scale-95"
-            style={{ background: ACCENT, color: "#000" }}
-          >
-            <Upload className="w-4 h-4" /> Choose Video
-          </button>
+          <div className="flex flex-col gap-2.5 mt-3 w-full items-center">
+            <button
+              onClick={openVideoPicker}
+              className="h-10 px-6 rounded-full text-[13px] font-semibold flex items-center gap-2 transition-all active:scale-95"
+              style={{ background: ACCENT, color: "#000" }}
+            >
+              <Upload className="w-4 h-4" /> Choose Video
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); setAutoEditOpen(true); }}
+              className="h-10 px-6 rounded-full text-[13px] font-semibold flex items-center gap-2 transition-all active:scale-95 border"
+              style={{ background: "rgba(153,153,255,0.08)", color: ACCENT, borderColor: ACCENT_BORDER }}
+            >
+              <Wand2 className="w-4 h-4" /> Loopy Auto-Edit
+            </button>
+          </div>
         </motion.div>
+
+        {/* Auto-Edit Wizard (mobile) */}
+        {autoEditOpen && (
+          <AutoEditWizard
+            onClose={() => setAutoEditOpen(false)}
+            onTimelineReady={(timeline, clips) => {
+              setAutoEditOpen(false);
+              toast.success("AI edit ready! Apply it in the full Studio for multi-clip timelines.");
+            }}
+          />
+        )}
         <input ref={fileInputRef} type="file" accept="video/*" onChange={handleFileSelect} className="hidden" />
       </div>
     );
