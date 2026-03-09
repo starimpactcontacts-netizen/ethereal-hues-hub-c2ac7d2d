@@ -218,6 +218,7 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
 
   // AI Tools overlay
   const [aiToolsOpen, setAiToolsOpen] = useState(false);
+  const [aiBrainOpen, setAiBrainOpen] = useState(false);
 
   // ═══ NEW PRO TOOLS STATE ═══
   // Color Scopes & LUTs
