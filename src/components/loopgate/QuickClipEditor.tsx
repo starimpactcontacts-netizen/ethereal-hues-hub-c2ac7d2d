@@ -4,13 +4,13 @@ import {
   Upload, Download, Film, Play, Pause, Type, Music, X,
   Loader2, Check, SkipBack, SkipForward, Scissors, RotateCcw,
   ChevronLeft, ChevronDown, Sparkles, Volume2, VolumeX, Gauge, Layers,
-  Wand2, SlidersHorizontal, Settings, ArrowUpCircle,
-  Zap, Vibrate, Search, FlipHorizontal, Grid3x3, Waves,
+  Wand2, SlidersHorizontal, Settings, ArrowUpCircle, Crop,
+  Zap, Vibrate, Search, FlipHorizontal, FlipVertical, Grid3x3, Waves,
   Rainbow, RefreshCw, Paintbrush, Gem, LayoutGrid,
-  MonitorPlay, FilmIcon, Circle, Wind,
-  Sun, Lightbulb, Sunrise,
+  MonitorPlay, FilmIcon, Circle, Wind, Smartphone, Monitor, Square,
+  Sun, Lightbulb, Sunrise, RectangleHorizontal, RectangleVertical,
   ArrowLeft, ArrowRight, ArrowUp, MoveHorizontal,
-  RotateCw, Maximize, Minimize, Blend
+  RotateCw, Maximize, Minimize, Blend, Activity
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import StudioSubmitButton from "./StudioSubmitButton";
@@ -27,9 +27,21 @@ import {
   buildAdjustFilter, applyCanvasAdjustments, hasAdjustments,
   type AdjustmentValues, type AdjustSection,
 } from "@/lib/studioAdjustments";
+import { SPEED_CURVE_PRESETS, getSpeedAtTime, type SpeedCurve } from "@/lib/studioSpeedCurves";
 
 type TextOverlay = { id: string; text: string; x: number; y: number; style: TextStyleKey; startTime: number; endTime: number };
-type EditorTool = "trim" | "filters" | "text" | "audio" | "speed" | "effects" | "transitions" | "adjust" | "export" | "upscale";
+type EditorTool = "trim" | "filters" | "text" | "audio" | "speed" | "effects" | "transitions" | "adjust" | "export" | "upscale" | "crop";
+
+// ─── Crop Presets (v1.5) ───
+type CropPreset = { id: string; label: string; icon: typeof Monitor; ratio: number; desc: string };
+const CROP_PRESETS: CropPreset[] = [
+  { id: "16:9", label: "16:9", icon: Monitor, ratio: 16 / 9, desc: "YouTube" },
+  { id: "9:16", label: "9:16", icon: Smartphone, ratio: 9 / 16, desc: "TikTok / Reels" },
+  { id: "1:1", label: "1:1", icon: Square, ratio: 1, desc: "Square" },
+  { id: "4:5", label: "4:5", icon: RectangleVertical, ratio: 4 / 5, desc: "Instagram" },
+  { id: "4:3", label: "4:3", icon: RectangleHorizontal, ratio: 4 / 3, desc: "Classic" },
+  { id: "21:9", label: "21:9", icon: RectangleHorizontal, ratio: 21 / 9, desc: "Ultrawide" },
+];
 
 const ACCENT = "#9999FF";
 const ACCENT_DIM = "rgba(153,153,255,0.10)";
