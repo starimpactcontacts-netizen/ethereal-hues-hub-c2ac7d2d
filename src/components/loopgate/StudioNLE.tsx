@@ -1819,7 +1819,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
                   <>
                     <div className="space-y-3">
                       <p className="text-[10px]" style={{ color: "#888" }}>
-                        AI-powered tools to enhance your editing workflow.
+                        AI-powered tools &amp; pro features to enhance your workflow.
                       </p>
 
                       {/* Auto-Clipper */}
@@ -1869,6 +1869,42 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
                         </div>
                         {showSongRecommender && <Check className="w-3.5 h-3.5" style={{ color: ACCENT }} />}
                       </button>
+
+                      {/* ── Speed Curves Panel ── */}
+                      <div className="pt-2" style={{ borderTop: "1px solid #222" }}>
+                        <SpeedCurvesPanel
+                          duration={duration}
+                          currentCurve={speedCurve}
+                          onCurveChange={setSpeedCurve}
+                          playheadPosition={duration > 0 ? currentTime / duration : 0}
+                        />
+                      </div>
+
+                      {/* ── Chroma Key Panel ── */}
+                      <div className="pt-2" style={{ borderTop: "1px solid #222" }}>
+                        <ChromaKeyPanel
+                          config={chromaConfig}
+                          onConfigChange={setChromaConfig}
+                          onPickColor={() => setIsPickingColor(!isPickingColor)}
+                          isPickingColor={isPickingColor}
+                        />
+                      </div>
+
+                      {/* ── Timeline Markers Panel ── */}
+                      <div className="pt-2" style={{ borderTop: "1px solid #222" }}>
+                        <TimelineMarkersPanel
+                          markers={timelineMarkers}
+                          onAddMarker={(m) => setTimelineMarkers(prev => [...prev, { ...m, id: crypto.randomUUID() }])}
+                          onUpdateMarker={(id, updates) => setTimelineMarkers(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m))}
+                          onDeleteMarker={(id) => setTimelineMarkers(prev => prev.filter(m => m.id !== id))}
+                          onJumpToMarker={(time) => {
+                            const vid = videoRef.current;
+                            if (vid) { vid.currentTime = time; setCurrentTime(time); }
+                          }}
+                          currentTime={currentTime}
+                          duration={duration}
+                        />
+                      </div>
 
                       {/* Keyframe Presets */}
                       <div className="pt-2" style={{ borderTop: "1px solid #222" }}>
