@@ -376,6 +376,7 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
     setAudioFile(null); setAudioName(""); setTrimStart(0); setTrimEnd(0);
     setPlaying(false); setThumbnails([]); setSpeed(1); setIsFullscreen(false);
     setActiveEffects([]); setActiveTransition(null); resetColorGrading();
+    setScaleX(1); setScaleY(1); setPosX(0.5); setPosY(0.5); setVideoOpacity(1); setFreeRotation(0); setScaleLocked(true);
     hasTriggeredPicker.current = false;
   };
 
