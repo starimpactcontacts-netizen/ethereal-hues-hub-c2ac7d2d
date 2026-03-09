@@ -66,6 +66,13 @@ export default {
           muted: "hsl(var(--gold-muted))",
           foreground: "hsl(var(--gold-foreground))",
         },
+        status: {
+          live: "hsl(var(--status-live))",
+          pending: "hsl(var(--status-pending))",
+          closed: "hsl(var(--status-closed))",
+          qualified: "hsl(var(--status-qualified))",
+          eliminated: "hsl(var(--status-eliminated))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
