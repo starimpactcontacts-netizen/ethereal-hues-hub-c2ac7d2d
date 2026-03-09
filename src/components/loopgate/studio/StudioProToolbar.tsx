@@ -5,7 +5,7 @@
 import {
   Scissors, Crop, Gauge, Wand2, SlidersHorizontal, Activity, Blend,
   Type, LayoutGrid, Circle, Layers, Sparkles, Diamond, Music,
-  AudioLines, ArrowUpCircle, Settings, Film, Smile, Palette
+  AudioLines, ArrowUpCircle, Settings, Film, Smile, Palette, Brain
 } from "lucide-react";
 import { motion } from "framer-motion";
 
