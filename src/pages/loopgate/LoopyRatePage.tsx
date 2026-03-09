@@ -624,46 +624,172 @@ export default function LoopyPage() {
             ) : rating && (
               <motion.div key="result" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} className="space-y-3">
 
-                {/* ═══════ GRADE HERO ═══════ */}
-                <div className="relative overflow-hidden bg-[#111] border border-white/[0.06]"
+                {/* ═══════ FULL-SCREEN FLASH ON REVEAL ═══════ */}
+                <AnimatePresence>
+                  {revealPhase === 1 && (
+                    <motion.div
+                      key="flash"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: [0, 1, 0] }}
+                      transition={{ duration: 0.5 }}
+                      className="fixed inset-0 z-[200] pointer-events-none"
+                      style={{ background: rating.total >= 50 ? 'rgba(251,191,36,0.3)' : 'rgba(220,38,38,0.25)' }}
+                    />
+                  )}
+                </AnimatePresence>
+
+                {/* ═══════ GRADE HERO — VIRAL REVEAL ═══════ */}
+                <div className="relative overflow-hidden bg-[#0a0a0a] border border-white/[0.06]"
                   style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)' }}>
                   <CornerMarks />
-                  <div className="h-[2px] bg-gradient-to-r from-purple-500 via-fuchsia-500 to-purple-500" />
-                  <motion.div
-                    className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent"
-                    animate={{ top: ['0%', '100%'] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                  
+                  {/* Top accent bar */}
+                  <motion.div 
+                    className="h-[3px]"
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: revealPhase >= 2 ? 1 : 0 }}
+                    transition={{ duration: 0.4 }}
+                    style={{ background: `linear-gradient(90deg, ${rating.total >= 70 ? '#fbbf24' : rating.total >= 50 ? '#22c55e' : '#ef4444'}, transparent)`, transformOrigin: 'left' }}
                   />
 
-                  {/* Section label */}
-                  <div className="flex items-center justify-between px-6 pt-4">
-                    <span className="text-[9px] font-bold text-white/15 uppercase tracking-[0.2em]" style={TEKO}>QOI Diagnostic Result</span>
-                    <span className="text-[8px] text-white/10 uppercase tracking-widest" style={TEKO}>LOOPY v1.1</span>
-                  </div>
-
-                  <div className="relative p-6 pt-3 text-center">
+                  {/* Scanning line */}
+                  {revealPhase >= 2 && (
                     <motion.div
-                      initial={{ scale: 0, rotate: -15 }}
-                      animate={{ scale: 1, rotate: 0 }}
-                      transition={{ type: 'spring', stiffness: 200, damping: 12 }}
-                      className="relative inline-block mb-3"
-                    >
-                      <div className="absolute inset-[-8px] bg-gradient-to-br from-amber-400/30 to-purple-500/20 blur-2xl" />
-                      <div className={`relative w-24 h-24 bg-gradient-to-br ${GRADE_COLORS[rating.grade] || 'from-gray-500 to-gray-400 text-white'} flex items-center justify-center border border-white/10`}
-                        style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)' }}>
-                        <span className="text-[48px] font-black leading-none" style={TEKO}>{rating.grade}</span>
-                      </div>
-                    </motion.div>
+                      className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/40 to-transparent"
+                      animate={{ top: ['0%', '100%'] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                    />
+                  )}
 
-                    <div className="flex items-center justify-center gap-1">
-                      <span className="text-[40px] font-black text-white leading-none" style={TEKO}>{rating.total}</span>
-                      <span className="text-[20px] text-white/30" style={TEKO}>/100</span>
+                  <div className="relative p-6 pb-5">
+                    {/* Version tag */}
+                    <div className="flex items-center justify-between mb-5">
+                      <span className="text-[9px] font-bold text-white/15 uppercase tracking-[0.2em]" style={TEKO}>QOI Diagnostic Result</span>
+                      <span className="text-[8px] text-white/10 uppercase tracking-widest" style={TEKO}>LOOPY v1.1</span>
                     </div>
-                    <p className="text-[12px] text-purple-400/80 mt-2 italic max-w-xs mx-auto">"{rating.vibe_check}"</p>
 
-                    <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 bg-purple-500/10 border border-purple-500/20">
-                      <Eye className="w-3 h-3 text-purple-400" />
-                      <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-purple-400" style={TEKO}>QOI Diagnostic Complete</span>
+                    {/* GRADE BADGE — dramatic slam */}
+                    <div className="flex flex-col items-center text-center">
+                      <AnimatePresence>
+                        {revealPhase >= 2 && (
+                          <motion.div
+                            initial={{ scale: 3, opacity: 0, rotate: -20 }}
+                            animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                            transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+                            className="relative mb-4"
+                          >
+                            {/* Glow behind grade */}
+                            <div className={`absolute inset-[-20px] blur-3xl opacity-60 bg-gradient-to-br ${GRADE_COLORS[rating.grade] || 'from-gray-500 to-gray-400'}`} />
+                            <motion.div
+                              animate={{ scale: [1, 1.05, 1] }}
+                              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                              className={`relative w-28 h-28 bg-gradient-to-br ${GRADE_COLORS[rating.grade] || 'from-gray-500 to-gray-400 text-white'} flex items-center justify-center border-2 border-white/20 ${GRADE_GLOW[rating.grade] || ''}`}
+                              style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
+                            >
+                              <span className="text-[64px] font-black leading-none" style={TEKO}>{rating.grade}</span>
+                            </motion.div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      {/* SCORE COUNTER */}
+                      <AnimatePresence>
+                        {revealPhase >= 3 && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5 }}
+                          >
+                            <div className="flex items-baseline justify-center gap-1">
+                              <span className="text-[56px] font-black text-white leading-none tabular-nums" style={TEKO}>{displayScore}</span>
+                              <span className="text-[24px] text-white/30" style={TEKO}>/100</span>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      {/* PERCENTILE RANK */}
+                      <AnimatePresence>
+                        {revealPhase >= 3 && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.3, duration: 0.4 }}
+                            className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 bg-white/[0.06] border border-white/[0.1]"
+                            style={{ clipPath: 'polygon(4px 0%, 100% 0%, calc(100% - 4px) 100%, 0% 100%)' }}
+                          >
+                            <BarChart3 className="w-3 h-3 text-purple-400" />
+                            <span className="text-[11px] font-black text-purple-400 uppercase tracking-[0.15em]" style={TEKO}>{GRADE_PERCENTILE[rating.grade] || 'Ranked'} of editors</span>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      {/* VIRAL ROAST/HYPE REACTION */}
+                      <AnimatePresence>
+                        {revealPhase >= 4 && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5 }}
+                            className="mt-5 space-y-2 max-w-xs"
+                          >
+                            <p className="text-[14px] font-black text-white uppercase tracking-wider flex items-center justify-center gap-2" style={TEKO}>
+                              <span className="text-2xl">{GRADE_REACTIONS[rating.grade]?.emoji || '🎬'}</span>
+                              {GRADE_REACTIONS[rating.grade]?.headline || 'RATED'}
+                            </p>
+                            <p className="text-[12px] text-white/50 italic leading-relaxed">
+                              "{GRADE_REACTIONS[rating.grade]?.sub || rating.vibe_check}"
+                            </p>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      {/* VIBE CHECK QUOTE */}
+                      <AnimatePresence>
+                        {revealPhase >= 4 && (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.3 }}
+                            className="mt-3"
+                          >
+                            <p className="text-[11px] text-purple-400/70 italic max-w-xs mx-auto leading-relaxed">"{rating.vibe_check}"</p>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      {/* SHARE / SCREENSHOT CTA — the viral driver */}
+                      <AnimatePresence>
+                        {revealPhase >= 4 && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.6 }}
+                            className="mt-5 flex items-center gap-2"
+                          >
+                            <motion.button
+                              onClick={handleShare}
+                              whileTap={{ scale: 0.95 }}
+                              className="group relative h-11 px-6 overflow-hidden"
+                              style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%)' }}
+                            >
+                              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-fuchsia-600 group-hover:from-purple-500 group-hover:to-fuchsia-500 transition-all" />
+                              <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/20 to-transparent" />
+                              <div className="relative flex items-center gap-2">
+                                <Share2 className="w-4 h-4 text-white" />
+                                <span className="text-[13px] font-bold text-white uppercase tracking-[0.15em]" style={TEKO}>Share Result</span>
+                              </div>
+                            </motion.button>
+                            <motion.button
+                              onClick={() => { navigator.clipboard.writeText(`I got ${rating.grade} (${rating.total}/100) on Loopy AI Rating 🎬\n\nRate yours → loopgate.io/loopy/rate`); toast.success('Copied!'); }}
+                              whileTap={{ scale: 0.95 }}
+                              className="h-11 w-11 flex items-center justify-center bg-white/[0.06] border border-white/[0.1] hover:bg-white/[0.1] transition-all"
+                            >
+                              <Copy className="w-4 h-4 text-white/60" />
+                            </motion.button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   </div>
                 </div>
