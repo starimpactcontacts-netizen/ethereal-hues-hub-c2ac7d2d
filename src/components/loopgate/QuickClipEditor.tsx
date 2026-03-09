@@ -662,61 +662,89 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
     setUpscaleState("idle"); setUpscaleProgress(0); setUpscaleDims(null);
   };
 
+  // ─── Viewport Overlays ───
+  const [showGrid, setShowGrid] = useState(false);
+  const [showSafeZones, setShowSafeZones] = useState(false);
+
   // ─── Seamless Import — auto-opens picker, minimal wait state ───
   if (!file) {
     return (
       <div
         className="fixed inset-0 z-[120] flex flex-col items-center justify-center px-6 touch-none overflow-hidden"
-        style={{ background: "#0a0a0a" }}
+        style={{ background: "radial-gradient(ellipse at 50% 30%, #0d0d1a 0%, #050508 100%)" }}
         onClick={openVideoPicker}
       >
-        {/* Back to Loopgate */}
         <button
           onClick={(e) => { e.stopPropagation(); onBack ? onBack() : navigate("/hub"); }}
-          className="absolute top-4 left-4 safe-top p-2 rounded-full transition-all active:scale-95"
-          style={{ background: "rgba(255,255,255,0.06)" }}
+          className="absolute top-4 left-4 safe-top p-2 rounded-xl transition-all active:scale-95"
+          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
         >
-          <ChevronLeft className="w-5 h-5" style={{ color: "#aaa" }} />
+          <ChevronLeft className="w-5 h-5" style={{ color: "#666" }} />
         </button>
 
+        {/* Pro badge */}
+        <div className="absolute top-5 right-5 safe-top flex items-center gap-1.5 px-2.5 py-1 rounded-full"
+          style={{ background: "rgba(153,153,255,0.06)", border: "1px solid rgba(153,153,255,0.12)" }}>
+          <div className="w-1.5 h-1.5 rounded-full" style={{ background: ACCENT, boxShadow: `0 0 6px ${ACCENT}` }} />
+          <span className="text-[8px] font-black tracking-[0.2em] uppercase" style={{ color: ACCENT }}>STUDIO PRO</span>
+        </div>
+
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="flex flex-col items-center gap-5"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="flex flex-col items-center gap-6"
           onClick={(e) => e.stopPropagation()}
         >
-          <motion.div
-            animate={{ opacity: [0.4, 1, 0.4] }}
-            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-            className="w-16 h-16 rounded-2xl flex items-center justify-center"
-            style={{ background: `${ACCENT}12`, border: `1px solid ${ACCENT}20` }}
-          >
-            <Film className="w-7 h-7" style={{ color: ACCENT }} />
-          </motion.div>
-          <div className="text-center space-y-1.5">
-            <p className="text-[15px] font-semibold text-white">Select a video</p>
-            <p className="text-[11px]" style={{ color: "#555" }}>to start editing</p>
+          {/* Animated icon */}
+          <div className="relative">
+            <motion.div
+              animate={{ scale: [1, 1.08, 1], opacity: [0.3, 0.6, 0.3] }}
+              transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+              className="absolute inset-0 rounded-3xl"
+              style={{ background: `radial-gradient(circle, ${ACCENT}15, transparent 70%)`, filter: "blur(20px)" }}
+            />
+            <div className="w-20 h-20 rounded-3xl flex items-center justify-center relative"
+              style={{ background: "linear-gradient(135deg, rgba(153,153,255,0.08), rgba(153,153,255,0.02))", border: "1px solid rgba(153,153,255,0.12)" }}>
+              <Film className="w-8 h-8" style={{ color: ACCENT }} />
+            </div>
           </div>
-          <div className="flex flex-col gap-2.5 mt-3 w-full items-center">
+
+          <div className="text-center space-y-2">
+            <h2 className="text-lg font-black tracking-tight text-white">Loopgate Studio</h2>
+            <p className="text-[11px] max-w-[200px] leading-relaxed" style={{ color: "#555" }}>
+              Professional-grade editing. Zero compromise.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3 w-full items-center">
             <button
               onClick={openVideoPicker}
-              className="h-10 px-6 rounded-full text-[13px] font-semibold flex items-center gap-2 transition-all active:scale-95"
-              style={{ background: ACCENT, color: "#000" }}
+              className="h-12 px-8 rounded-2xl text-[13px] font-bold flex items-center gap-2.5 transition-all active:scale-95 relative overflow-hidden"
+              style={{ background: `linear-gradient(135deg, ${ACCENT}, #7777DD)`, color: "#000", boxShadow: `0 4px 20px ${ACCENT}40` }}
             >
-              <Upload className="w-4 h-4" /> Choose Video
+              <Upload className="w-4 h-4" /> Import Video
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); setAutoEditOpen(true); }}
-              className="h-10 px-6 rounded-full text-[13px] font-semibold flex items-center gap-2 transition-all active:scale-95 border"
-              style={{ background: "rgba(153,153,255,0.08)", color: ACCENT, borderColor: ACCENT_BORDER }}
+              className="h-10 px-6 rounded-xl text-[12px] font-semibold flex items-center gap-2 transition-all active:scale-95"
+              style={{ background: "rgba(255,0,79,0.06)", color: "#FF004F", border: "1px solid rgba(255,0,79,0.15)" }}
             >
-              <Wand2 className="w-4 h-4" /> Loopy Auto-Edit
+              <Wand2 className="w-3.5 h-3.5" /> AI Auto-Edit
             </button>
+          </div>
+
+          {/* Feature pills */}
+          <div className="flex flex-wrap justify-center gap-1.5 max-w-[280px]">
+            {["4K Export", "AI Tools", "LUTs", "Keyframes", "Masks", "PiP", "Motion GFX", "Audio FX", "Stabilize"].map(f => (
+              <span key={f} className="px-2 py-0.5 rounded-full text-[7px] font-bold tracking-wider uppercase"
+                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", color: "#444" }}>
+                {f}
+              </span>
+            ))}
           </div>
         </motion.div>
 
-        {/* Auto-Edit Wizard (mobile) */}
         {autoEditOpen && (
           <AutoEditWizard
             onClose={() => setAutoEditOpen(false)}
