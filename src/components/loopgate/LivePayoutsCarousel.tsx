@@ -155,14 +155,14 @@ export default function LivePayoutsCarousel() {
           <div className="flex items-center gap-1">
             <span className="text-muted-foreground">Total paid:</span>
             <span className="text-emerald-400 font-bold tabular-nums">
-              ${(payouts.reduce((sum, p) => sum + p.earned_cents, 0) / 100).toFixed(2)}
+              ${(displayPayouts.reduce((sum, p) => sum + p.earned_cents, 0) / 100).toFixed(2)}
             </span>
           </div>
           <div className="w-px h-3 bg-border" />
           <div className="flex items-center gap-1">
             <span className="text-muted-foreground">Avg:</span>
             <span className="text-foreground font-bold tabular-nums">
-              ${(payouts.reduce((sum, p) => sum + p.earned_cents, 0) / payouts.length / 100).toFixed(2)}
+              ${(displayPayouts.reduce((sum, p) => sum + p.earned_cents, 0) / displayPayouts.length / 100).toFixed(2)}
             </span>
           </div>
         </div>
