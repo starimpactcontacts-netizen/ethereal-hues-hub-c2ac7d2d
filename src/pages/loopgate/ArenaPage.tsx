@@ -1036,13 +1036,15 @@ export default function ArenaPage() {
 
           {/* ═══ GAME LOBBY — Dropdown + GO ═══ */}
           <div className="mb-1">
-            <div className="flex gap-0 overflow-hidden border border-border">
+            <div className="flex gap-0 overflow-hidden border border-white/[0.06] shadow-xl shadow-black/60" style={{
+              background: 'linear-gradient(to bottom, rgba(15,15,15,0.95), rgba(5,5,5,0.98))',
+            }}>
               {/* Mode Dropdown */}
               <div className="flex-1 relative">
                 <select
                   value={selectedMode}
                   onChange={(e) => setSelectedMode(e.target.value as typeof selectedMode)}
-                  className="w-full appearance-none bg-surface-1 text-foreground text-[11px] font-black uppercase tracking-wider py-2.5 pl-3 pr-8 cursor-pointer focus:outline-none touch-manipulation"
+                  className="w-full appearance-none bg-transparent text-foreground text-[11px] font-black uppercase tracking-wider py-3 pl-3 pr-8 cursor-pointer focus:outline-none touch-manipulation"
                   style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}
                 >
                   {liveDrops.length > 0 && (
@@ -1056,7 +1058,7 @@ export default function ArenaPage() {
                 <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
               </div>
 
-              {/* GO Button */}
+              {/* GO Button - Stake-style with glow */}
               <motion.button
                 whileTap={isQfSearching ? undefined : { scale: 0.95 }}
                 onClick={() => {
@@ -1070,33 +1072,42 @@ export default function ArenaPage() {
                   }
                 }}
                 disabled={isQfSearching}
-                className="relative overflow-hidden touch-manipulation transition-colors min-h-[46px] px-7 flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-500"
+                className="relative overflow-hidden touch-manipulation transition-all min-h-[52px] px-8 flex items-center justify-center gap-2 bg-gradient-to-r from-red-600 via-red-500 to-red-600 hover:from-red-500 hover:via-red-400 hover:to-red-500"
+                style={{
+                  boxShadow: isQfSearching 
+                    ? '0 0 20px rgba(245, 158, 11, 0.3)' 
+                    : '0 0 30px rgba(239, 68, 68, 0.4), 0 0 60px rgba(239, 68, 68, 0.15)',
+                }}
               >
-                <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
+                <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
                 {isQfSearching ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 text-white animate-spin relative z-10" />
-                    <span className="text-[11px] font-black tracking-tight uppercase text-white relative z-10" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                    <Loader2 className="w-4 h-4 text-amber-400 animate-spin relative z-10" />
+                    <span className="text-[13px] font-black tracking-tight uppercase text-amber-400 relative z-10" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
                       {Math.floor(qfElapsed / 60)}:{(qfElapsed % 60).toString().padStart(2, '0')}
                     </span>
                   </>
                 ) : qfActiveFight && selectedMode === 'quick' ? (
-                  <span className="text-[14px] font-black text-white relative z-10 tracking-tight uppercase" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
-                    Return
-                  </span>
+                  <>
+                    <Zap className="w-4 h-4 text-white animate-pulse drop-shadow-lg relative z-10" />
+                    <span className="text-[15px] font-black text-white relative z-10 tracking-tight uppercase drop-shadow-lg" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                      Return
+                    </span>
+                  </>
                 ) : (
                   <>
-                    <span className="text-[16px] font-black text-white relative z-10 tracking-tight uppercase" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                    <Play className="w-4 h-4 text-white drop-shadow-lg relative z-10" />
+                    <span className="text-[17px] font-black text-white relative z-10 tracking-tight uppercase drop-shadow-lg" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
                       GO
                     </span>
                     {(selectedMode === 'quick' || selectedMode === 'battle') && (
-                      <span className="text-[9px] text-white/40 font-bold relative z-10">+20 IDX</span>
+                      <span className="text-[9px] text-white/50 font-bold relative z-10">+20 IDX</span>
                     )}
                     {selectedMode === 'solo' && (
-                      <span className="text-[9px] text-white/40 font-bold relative z-10">100+ IDX</span>
+                      <span className="text-[9px] text-white/50 font-bold relative z-10">100+ IDX</span>
                     )}
                     {selectedMode === 'drop' && liveDrops.length > 0 && (
-                      <span className="text-[10px] font-bold relative z-10 text-emerald-300">
+                      <span className="text-[10px] font-bold relative z-10 text-emerald-300 drop-shadow">
                         {(liveDrops[0] as any).prize_usd > 0 ? `$${(liveDrops[0] as any).prize_usd}` : 'Earn IDX'}
                       </span>
                     )}
@@ -1105,15 +1116,17 @@ export default function ArenaPage() {
               </motion.button>
             </div>
 
-            {/* Cancel queue */}
+            {/* Cancel queue - Stake-style */}
             {isQfSearching && (
-              <button
+              <motion.button
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
                 onClick={handleCancelQueue}
-                className="w-full flex items-center justify-center gap-1.5 px-4 py-1.5 border border-t-0 border-border bg-surface-1 text-muted-foreground text-[10px] font-bold uppercase tracking-wider hover:text-foreground transition-colors touch-manipulation"
+                className="w-full flex items-center justify-center gap-1.5 px-4 py-2 border border-t-0 border-white/[0.04] bg-black/80 text-muted-foreground text-[10px] font-bold uppercase tracking-wider hover:text-foreground hover:bg-amber-500/10 transition-all touch-manipulation backdrop-blur-sm"
               >
                 <X className="w-3 h-3" />
                 Cancel Search
-              </button>
+              </motion.button>
             )}
           </div>
 
