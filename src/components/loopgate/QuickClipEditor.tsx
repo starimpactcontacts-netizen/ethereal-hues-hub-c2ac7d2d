@@ -11,7 +11,7 @@ import {
   Sun, Lightbulb, Sunrise, RectangleHorizontal, RectangleVertical,
   ArrowLeft, ArrowRight, ArrowUp, MoveHorizontal,
   RotateCw, Maximize, Minimize, Blend, Activity, Eye,
-  Diamond, Layers as LayersIcon
+  Diamond, Layers as LayersIcon, AudioLines
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import StudioSubmitButton from "./StudioSubmitButton";
@@ -20,6 +20,13 @@ import MobileAITools from "./studio/MobileAITools";
 import GestureTimeline from "./studio/GestureTimeline";
 import KeyframeEditor, { interpolateKeyframes, type Keyframe, type KeyframedProperty } from "./studio/KeyframeEditor";
 import BlendModePanel, { BLEND_MODES, OVERLAY_PRESETS, applyOverlay, type BlendMode, type OverlayPreset } from "./studio/BlendModes";
+import ColorScopes from "./studio/ColorScopes";
+import MaskingPanel, { renderMaskToCanvas, type Mask, type MaskShape, DEFAULT_MASK } from "./studio/MaskingPanel";
+import AudioFXPanel, { DEFAULT_AUDIO_FX, type AudioFXState } from "./studio/AudioFXPanel";
+import MotionTemplatesPanel, { MOTION_TEMPLATES, renderMotionTemplate, type AppliedTemplate } from "./studio/MotionTemplates";
+import CompositorPanel, { renderCompositorLayers, DEFAULT_PIP, type CompositorLayer } from "./studio/CompositorPanel";
+import { LUT_PRESETS, applyLUTPreset, type LUT3D } from "@/lib/studioColorScience";
+import { MotionSmoother, estimateMotion, applyStabilization, DEFAULT_STABILIZER, type StabilizerConfig } from "@/lib/studioStabilizer";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import {
@@ -36,7 +43,7 @@ import {
 import { SPEED_CURVE_PRESETS, getSpeedAtTime, type SpeedCurve } from "@/lib/studioSpeedCurves";
 
 type TextOverlay = { id: string; text: string; x: number; y: number; style: TextStyleKey; startTime: number; endTime: number };
-type EditorTool = "trim" | "filters" | "text" | "audio" | "speed" | "effects" | "transitions" | "adjust" | "export" | "upscale" | "crop" | "keyframes" | "blend";
+type EditorTool = "trim" | "filters" | "text" | "audio" | "speed" | "effects" | "transitions" | "adjust" | "export" | "upscale" | "crop" | "keyframes" | "blend" | "scopes" | "masks" | "audiofx" | "motion" | "compositor" | "stabilize";
 
 // ─── Crop Presets (v1.5) ───
 type CropPreset = { id: string; label: string; icon: typeof Monitor; ratio: number; desc: string };
@@ -203,6 +210,33 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
 
   // AI Tools overlay
   const [aiToolsOpen, setAiToolsOpen] = useState(false);
+
+  // ═══ NEW PRO TOOLS STATE ═══
+  // Color Scopes & LUTs
+  const [activeLUT, setActiveLUT] = useState<string | null>(null);
+  const [lutIntensity, setLutIntensity] = useState(1.0);
+  const [customLUT, setCustomLUT] = useState<LUT3D | null>(null);
+
+  // Masking
+  const [masks, setMasks] = useState<Mask[]>([]);
+  const [selectedMaskId, setSelectedMaskId] = useState<string | null>(null);
+
+  // Audio FX
+  const [audioFX, setAudioFX] = useState<AudioFXState>({ ...DEFAULT_AUDIO_FX });
+
+  // Motion Graphics Templates
+  const [appliedTemplates, setAppliedTemplates] = useState<AppliedTemplate[]>([]);
+
+  // Compositor (PiP / Split Screen)
+  const [compositorLayers, setCompositorLayers] = useState<CompositorLayer[]>([]);
+  const [selectedCompositorLayerId, setSelectedCompositorLayerId] = useState<string | null>(null);
+  const [activeSplitLayout, setActiveSplitLayout] = useState<string | null>(null);
+  const compositorVideos = useRef(new Map<string, HTMLVideoElement>());
+
+  // Stabilizer
+  const [stabilizer, setStabilizer] = useState<StabilizerConfig>({ ...DEFAULT_STABILIZER });
+  const stabSmoother = useRef(new MotionSmoother(0.5));
+  const prevFrameData = useRef<ImageData | null>(null);
 
   // Chroma key
   const [chromaEnabled, setChromaEnabled] = useState(false);
@@ -395,6 +429,15 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
           applyCanvasAdjustments(ctx, canvas, adjustments);
         }
         activeEffects.forEach(effectId => { try { applyEffect(ctx, canvas, effectId, vid.currentTime); } catch { /* */ } });
+        // Apply LUT
+        if (activeLUT) {
+          const lutPreset = LUT_PRESETS.find(l => l.id === activeLUT);
+          if (lutPreset) {
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            applyLUTPreset(imageData, lutPreset, lutIntensity);
+            ctx.putImageData(imageData, 0, 0);
+          }
+        }
         // Apply overlay
         const overlayPreset = OVERLAY_PRESETS.find(o => o.id === activeOverlayId);
         if (overlayPreset) applyOverlay(ctx, canvas, overlayPreset, overlayOpacity);
@@ -402,6 +445,23 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
         if (chromaEnabled) {
           applyChromaKey(ctx, canvas, chromaColor, chromaThreshold);
         }
+        // Apply masks
+        if (masks.length > 0) {
+          renderMaskToCanvas(ctx, canvas, masks);
+        }
+        // Render compositor layers (PiP)
+        if (compositorLayers.length > 0) {
+          renderCompositorLayers(ctx, canvas, compositorLayers, compositorVideos.current);
+        }
+        // Render motion templates
+        appliedTemplates.forEach((at) => {
+          const tmpl = MOTION_TEMPLATES.find(t => t.id === at.templateId);
+          if (tmpl && vid.currentTime >= at.startTime && vid.currentTime <= at.startTime + tmpl.duration) {
+            const progress = (vid.currentTime - at.startTime) / tmpl.duration;
+            renderMotionTemplate(ctx, canvas, tmpl, at.fieldValues, progress);
+          }
+        });
+        // Text overlays
         textOverlays.forEach((overlay) => {
           if (vid.currentTime >= overlay.startTime && vid.currentTime <= overlay.endTime) {
             try { renderTextOverlay(ctx, canvas, overlay.text, overlay.x, overlay.y, overlay.style); } catch { /* */ }
@@ -412,7 +472,7 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
     };
     draw();
     return () => { running = false; cancelAnimationFrame(animRef.current); };
-  }, [videoUrl, computedFilter, textOverlays, activeEffects, adjustments, cropPreset, rotation, flipH, flipV, scaleX, scaleY, posX, posY, videoOpacity, freeRotation, activeOverlayId, overlayOpacity, chromaEnabled, chromaColor, chromaThreshold]);
+  }, [videoUrl, computedFilter, textOverlays, activeEffects, adjustments, cropPreset, rotation, flipH, flipV, scaleX, scaleY, posX, posY, videoOpacity, freeRotation, activeOverlayId, overlayOpacity, chromaEnabled, chromaColor, chromaThreshold, activeLUT, lutIntensity, masks, compositorLayers, appliedTemplates]);
 
   const togglePlay = () => {
     const vid = videoRef.current; if (!vid) return;
@@ -1553,6 +1613,153 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
                     onClose={() => setActiveTool(null)}
                   />
                 )}
+
+                {/* ════ COLOR SCOPES & LUTs ════ */}
+                {activeTool === "scopes" && (
+                  <ColorScopes
+                    canvasRef={canvasRef}
+                    isPlaying={playing}
+                    activeLUT={activeLUT}
+                    lutIntensity={lutIntensity}
+                    customLUT={customLUT}
+                    onLUTChange={setActiveLUT}
+                    onLUTIntensityChange={setLutIntensity}
+                    onCustomLUTLoad={setCustomLUT}
+                    onClose={() => setActiveTool(null)}
+                  />
+                )}
+
+                {/* ════ MASKING ════ */}
+                {activeTool === "masks" && (
+                  <MaskingPanel
+                    masks={masks}
+                    selectedMaskId={selectedMaskId}
+                    onAddMask={(shape: MaskShape) => {
+                      const newMask: Mask = { ...DEFAULT_MASK, id: crypto.randomUUID(), shape };
+                      setMasks(prev => [...prev, newMask]);
+                      setSelectedMaskId(newMask.id);
+                    }}
+                    onUpdateMask={(id, updates) => setMasks(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m))}
+                    onDeleteMask={(id) => { setMasks(prev => prev.filter(m => m.id !== id)); if (selectedMaskId === id) setSelectedMaskId(null); }}
+                    onSelectMask={setSelectedMaskId}
+                    onClose={() => setActiveTool(null)}
+                  />
+                )}
+
+                {/* ════ AUDIO FX ════ */}
+                {activeTool === "audiofx" && (
+                  <AudioFXPanel
+                    audioFX={audioFX}
+                    onUpdate={setAudioFX}
+                    onClose={() => setActiveTool(null)}
+                  />
+                )}
+
+                {/* ════ MOTION GRAPHICS ════ */}
+                {activeTool === "motion" && (
+                  <MotionTemplatesPanel
+                    appliedTemplates={appliedTemplates}
+                    currentTime={currentTime}
+                    onApplyTemplate={(template, fieldValues, startTime) => {
+                      setAppliedTemplates(prev => [...prev, {
+                        id: crypto.randomUUID(),
+                        templateId: template.id,
+                        startTime,
+                        fieldValues,
+                      }]);
+                      toast.success(`${template.label} added at ${startTime.toFixed(1)}s`);
+                    }}
+                    onRemoveTemplate={(id) => setAppliedTemplates(prev => prev.filter(at => at.id !== id))}
+                    onClose={() => setActiveTool(null)}
+                  />
+                )}
+
+                {/* ════ COMPOSITOR (PiP) ════ */}
+                {activeTool === "compositor" && (
+                  <CompositorPanel
+                    layers={compositorLayers}
+                    selectedLayerId={selectedCompositorLayerId}
+                    activeSplitLayout={activeSplitLayout}
+                    onAddLayer={(file) => {
+                      const url = URL.createObjectURL(file);
+                      const layer: CompositorLayer = {
+                        ...DEFAULT_PIP,
+                        id: crypto.randomUUID(),
+                        videoUrl: url,
+                        fileName: file.name,
+                      };
+                      // Create video element
+                      const vid = document.createElement("video");
+                      vid.src = url;
+                      vid.loop = true;
+                      vid.muted = true;
+                      vid.playsInline = true;
+                      vid.play().catch(() => {});
+                      compositorVideos.current.set(layer.id, vid);
+                      setCompositorLayers(prev => [...prev, layer]);
+                      setSelectedCompositorLayerId(layer.id);
+                      toast.success("PiP layer added");
+                    }}
+                    onUpdateLayer={(id, updates) => setCompositorLayers(prev => prev.map(l => l.id === id ? { ...l, ...updates } : l))}
+                    onDeleteLayer={(id) => {
+                      const vid = compositorVideos.current.get(id);
+                      if (vid) { vid.pause(); vid.src = ""; compositorVideos.current.delete(id); }
+                      setCompositorLayers(prev => prev.filter(l => l.id !== id));
+                      if (selectedCompositorLayerId === id) setSelectedCompositorLayerId(null);
+                    }}
+                    onSelectLayer={setSelectedCompositorLayerId}
+                    onSplitLayoutChange={setActiveSplitLayout}
+                    onClose={() => setActiveTool(null)}
+                  />
+                )}
+
+                {/* ════ STABILIZER ════ */}
+                {activeTool === "stabilize" && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Activity className="w-4 h-4" style={{ color: "#F59E0B" }} />
+                        <span className="text-[11px] font-bold text-white">Stabilization</span>
+                      </div>
+                      <button onClick={() => setActiveTool(null)} className="text-[10px]" style={{ color: "#555" }}>Done</button>
+                    </div>
+                    <button
+                      onClick={() => setStabilizer(prev => ({ ...prev, enabled: !prev.enabled }))}
+                      className="w-full py-3 rounded-xl text-[10px] font-bold transition-all"
+                      style={{
+                        background: stabilizer.enabled ? "rgba(245,158,11,0.15)" : "#111",
+                        color: stabilizer.enabled ? "#F59E0B" : "#666",
+                        border: `1px solid ${stabilizer.enabled ? "rgba(245,158,11,0.3)" : "#1a1a1a"}`,
+                      }}>
+                      {stabilizer.enabled ? "✓ Stabilization ON" : "Enable Stabilization"}
+                    </button>
+                    {stabilizer.enabled && (
+                      <div className="space-y-2">
+                        <div>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[9px]" style={{ color: "#555" }}>Smoothing</span>
+                            <span className="text-[9px] font-mono" style={{ color: "#F59E0B" }}>{Math.round(stabilizer.smoothing * 100)}%</span>
+                          </div>
+                          <input type="range" min={10} max={95} value={Math.round(stabilizer.smoothing * 100)}
+                            onChange={(e) => setStabilizer(prev => ({ ...prev, smoothing: Number(e.target.value) / 100 }))}
+                            className="w-full accent-[#F59E0B]" />
+                        </div>
+                        <div>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[9px]" style={{ color: "#555" }}>Crop (for stabilization room)</span>
+                            <span className="text-[9px] font-mono" style={{ color: "#F59E0B" }}>{Math.round(stabilizer.cropAmount * 100)}%</span>
+                          </div>
+                          <input type="range" min={5} max={25} value={Math.round(stabilizer.cropAmount * 100)}
+                            onChange={(e) => setStabilizer(prev => ({ ...prev, cropAmount: Number(e.target.value) / 100 }))}
+                            className="w-full accent-[#F59E0B]" />
+                        </div>
+                        <p className="text-[8px]" style={{ color: "#444" }}>
+                          Higher smoothing = less shake but more crop. Adjust crop to give the stabilizer room to work.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
@@ -1566,6 +1773,11 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
                 { id: "ai" as const, icon: Wand2, label: "AI", accent: true },
                 { id: "trim" as EditorTool, icon: Scissors, label: "Trim" },
                 { id: "crop" as EditorTool, icon: Crop, label: "Crop" },
+                { id: "scopes" as EditorTool, icon: Activity, label: "Scopes" },
+                { id: "masks" as EditorTool, icon: Circle, label: "Mask" },
+                { id: "compositor" as EditorTool, icon: Layers, label: "PiP" },
+                { id: "motion" as EditorTool, icon: LayoutGrid, label: "GFX" },
+                { id: "audiofx" as EditorTool, icon: AudioLines, label: "AudioFX" },
                 { id: "keyframes" as EditorTool, icon: Diamond, label: "Keys" },
                 { id: "blend" as EditorTool, icon: Blend, label: "Blend" },
                 { id: "effects" as EditorTool, icon: Sparkles, label: "FX" },
