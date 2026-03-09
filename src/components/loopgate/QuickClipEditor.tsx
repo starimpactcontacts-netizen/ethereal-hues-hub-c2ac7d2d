@@ -1782,6 +1782,119 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
                 )}
 
                 {/* ════ STABILIZER ════ */}
+                {/* ════ STICKERS ════ */}
+                {activeTool === "stickers" && (
+                  <StickerOverlayPanel
+                    stickers={stickerOverlays}
+                    currentTime={currentTime}
+                    trimStart={trimStart}
+                    trimEnd={trimEnd}
+                    onAddSticker={(sticker) => {
+                      setStickerOverlays(prev => [...prev, { ...sticker, id: crypto.randomUUID() }]);
+                      toast.success("Sticker added");
+                    }}
+                    onUpdateSticker={(id, updates) => setStickerOverlays(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s))}
+                    onDeleteSticker={(id) => setStickerOverlays(prev => prev.filter(s => s.id !== id))}
+                    onClose={() => setActiveTool(null)}
+                  />
+                )}
+
+                {/* ════ CHROMA KEY (enhanced) ════ */}
+                {activeTool === "chroma" && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded-full" style={{ background: chromaColor, border: "2px solid #333" }} />
+                        <span className="text-[11px] font-bold text-white">Chroma Key</span>
+                      </div>
+                      <button onClick={() => setActiveTool(null)} className="text-[10px]" style={{ color: "#555" }}>Done</button>
+                    </div>
+
+                    <button
+                      onClick={() => setChromaEnabled(!chromaEnabled)}
+                      className="w-full py-3 rounded-xl text-[10px] font-bold transition-all"
+                      style={{
+                        background: chromaEnabled ? "rgba(34,204,136,0.15)" : "#111",
+                        color: chromaEnabled ? "#22CC88" : "#666",
+                        border: `1px solid ${chromaEnabled ? "rgba(34,204,136,0.3)" : "#1a1a1a"}`,
+                      }}>
+                      {chromaEnabled ? "✓ Chroma Key ON" : "Enable Chroma Key"}
+                    </button>
+
+                    {chromaEnabled && (
+                      <>
+                        {/* Key color */}
+                        <div className="p-2.5 rounded-xl" style={{ background: "#0D0D0D", border: "1px solid #1A1A1A" }}>
+                          <span className="text-[9px] uppercase tracking-wider font-bold block mb-2" style={{ color: "#666" }}>Key Color</span>
+                          <div className="flex gap-1.5">
+                            {["#00FF00", "#0000FF", "#FF00FF", "#00FFFF", "#FFFFFF"].map(c => (
+                              <button key={c} onClick={() => setChromaColor(c)}
+                                className="w-8 h-8 rounded-lg transition-all"
+                                style={{
+                                  background: c,
+                                  border: chromaColor === c ? `2px solid ${ACCENT}` : "2px solid #333",
+                                  boxShadow: chromaColor === c ? `0 0 8px ${ACCENT}40` : "none",
+                                }}>
+                                {chromaColor === c && <Check className="w-3 h-3 mx-auto" style={{ color: c === "#FFFFFF" || c === "#00FF00" || c === "#00FFFF" ? "#000" : "#fff" }} />}
+                              </button>
+                            ))}
+                            <label className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer relative overflow-hidden"
+                              style={{ background: chromaColor, border: "2px solid #333" }}>
+                              <span className="text-[8px] font-bold" style={{ color: "#fff", textShadow: "0 1px 2px #000" }}>+</span>
+                              <input type="color" value={chromaColor} onChange={e => setChromaColor(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer" />
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Threshold */}
+                        <div className="p-2.5 rounded-xl space-y-2.5" style={{ background: "#0D0D0D", border: "1px solid #1A1A1A" }}>
+                          <div>
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-[9px]" style={{ color: "#888" }}>Threshold</span>
+                              <span className="text-[9px] font-mono" style={{ color: ACCENT }}>{chromaThreshold}</span>
+                            </div>
+                            <Slider value={[chromaThreshold]} min={10} max={200} step={1} onValueChange={([v]) => setChromaThreshold(v)} />
+                          </div>
+                          <div>
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-[9px]" style={{ color: "#888" }}>Edge Softness</span>
+                              <span className="text-[9px] font-mono" style={{ color: ACCENT }}>{chromaSoftness}%</span>
+                            </div>
+                            <Slider value={[chromaSoftness]} min={0} max={100} step={1} onValueChange={([v]) => setChromaSoftness(v)} />
+                          </div>
+                        </div>
+
+                        {/* Background replacement */}
+                        <div className="p-2.5 rounded-xl" style={{ background: "#0D0D0D", border: "1px solid #1A1A1A" }}>
+                          <span className="text-[9px] uppercase tracking-wider font-bold block mb-2" style={{ color: "#666" }}>Background</span>
+                          <div className="grid grid-cols-4 gap-1.5">
+                            {CHROMA_BACKGROUNDS.map(bg => {
+                              const isActive = chromaBgId === bg.id;
+                              const bgStyle = bg.type === "color"
+                                ? (bg.value === "transparent" ? "repeating-conic-gradient(#333 0% 25%, #222 0% 50%) 50% / 12px 12px" : bg.value)
+                                : `linear-gradient(180deg, ${bg.value.split(",").join(", ")})`;
+                              return (
+                                <button key={bg.id} onClick={() => setChromaBgId(bg.id)}
+                                  className="h-10 rounded-lg flex items-center justify-center transition-all relative overflow-hidden"
+                                  style={{
+                                    background: bgStyle,
+                                    border: isActive ? `2px solid ${ACCENT}` : "2px solid #222",
+                                    boxShadow: isActive ? `0 0 8px ${ACCENT}40` : "none",
+                                  }}>
+                                  <span className="text-[6px] font-bold relative z-10" style={{ color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.9)" }}>
+                                    {bg.label}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {/* ════ STABILIZER ════ */}
                 {activeTool === "stabilize" && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
