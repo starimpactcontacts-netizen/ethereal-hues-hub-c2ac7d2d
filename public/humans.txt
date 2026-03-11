@@ -1,0 +1,10 @@
+/* TEAM */
+Name: Loopgate
+Site: https://loopgate.io
+Contact: team@loopgate.io
+Description: The world's first competitive video editing platform.
+
+/* TECHNOLOGY */
+Frontend: React, TypeScript, Vite, Tailwind CSS
+Backend: PostgreSQL, Edge Functions
+Hosting: Lovable Cloud
