@@ -9,7 +9,7 @@ interface LoopMonsterProps {
 export default function LoopMonster({ scrollContainerRef }: LoopMonsterProps) {
   const [pullAmount, setPullAmount] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
-  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     let startY = 0;

@@ -16,7 +16,7 @@ export function useChannelPresence(crewId: string | undefined, channelId: string
   const [onlineMembers, setOnlineMembers] = useState<PresenceState[]>([]);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Track presence for the crew (not per channel, to show all online in unit)
   useEffect(() => {
