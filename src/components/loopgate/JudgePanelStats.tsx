@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Gavel, Clock, Star, Flame, TrendingUp } from 'lucide-react';
+import { Gavel, Clock, TrendingUp, Flame, Star } from 'lucide-react';
 import { useJudgeStats } from '@/hooks/useJudgeLeaderboard';
 import JudgeLevelBadge from './JudgeLevelBadge';
 import JudgeXPProgressBar from './JudgeXPProgressBar';
@@ -11,11 +11,11 @@ export default function JudgePanelStats() {
 
   if (loading) {
     return (
-      <div className="space-y-4 p-4">
-        <div className="h-20 bg-surface-1 rounded-xl animate-pulse" />
-        <div className="grid grid-cols-3 gap-2">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-20 bg-surface-1 rounded-xl animate-pulse" />
+      <div className="space-y-2">
+        <div className="h-14 bg-zinc-900 animate-pulse" />
+        <div className="grid grid-cols-4 gap-1">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-12 bg-zinc-900 animate-pulse" />
           ))}
         </div>
       </div>
@@ -25,87 +25,86 @@ export default function JudgePanelStats() {
   if (!stats) return null;
 
   return (
-    <div className="space-y-4">
-      {/* JXP Progress Card */}
+    <div className="space-y-2">
+      {/* XP Hero — single dense row */}
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-br from-gold/10 via-card to-amber-900/10 border border-gold/30 rounded-xl p-4"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="bg-zinc-900 border border-zinc-800 p-2.5"
       >
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center">
-              <Gavel size={18} className="text-gold" />
+            <div className="w-7 h-7 bg-gold/15 flex items-center justify-center">
+              <Gavel size={14} className="text-gold" />
             </div>
-            <div>
-              <p className="text-sm font-display">JUDGE XP</p>
-              <p className="text-2xl font-bold text-gold">{stats.judge_xp.toLocaleString()}</p>
+            <div className="leading-none">
+              <p className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest">Judge XP</p>
+              <p className="text-lg font-display font-bold text-gold tabular-nums">{stats.judge_xp.toLocaleString()}</p>
             </div>
           </div>
-          <JudgeLevelBadge level={stats.judge_level} size="lg" />
+          <JudgeLevelBadge level={stats.judge_level} size="md" />
         </div>
         <JudgeXPProgressBar 
           judgeXp={stats.judge_xp} 
           judgeLevel={stats.judge_level} 
-          showPerk 
+          showPerk={false}
+          size="sm"
         />
       </motion.div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-3 gap-2">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-surface-1 border border-border rounded-xl p-3 text-center"
-        >
-          <div className="flex items-center justify-center gap-1 mb-1">
-            <Clock size={14} className="text-gold" />
-          </div>
-          <p className="text-2xl font-display font-bold text-gold">{stats.pendingReviews}</p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Pending</p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="bg-surface-1 border border-border rounded-xl p-3 text-center"
-        >
-          <div className="flex items-center justify-center gap-1 mb-1">
-            <TrendingUp size={14} className="text-foreground" />
-          </div>
-          <p className="text-2xl font-display font-bold">{stats.judge_review_count}</p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Total</p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-surface-1 border border-border rounded-xl p-3 text-center"
-        >
-          <div className="flex items-center justify-center gap-1 mb-1">
-            <Flame size={14} className="text-orange-400" />
-          </div>
-          <p className="text-2xl font-display font-bold text-orange-400">{stats.weeklyReviews}</p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">This Week</p>
-        </motion.div>
+      {/* Stats Row — 4 compact cells */}
+      <div className="grid grid-cols-4 gap-1">
+        <StatCell 
+          icon={<Clock size={12} className="text-gold" />}
+          value={stats.pendingReviews}
+          label="Queue"
+          highlight={stats.pendingReviews > 0}
+          delay={0.05}
+        />
+        <StatCell 
+          icon={<TrendingUp size={12} className="text-zinc-400" />}
+          value={stats.judge_review_count}
+          label="Total"
+          delay={0.1}
+        />
+        <StatCell 
+          icon={<Flame size={12} className="text-orange-400" />}
+          value={stats.weeklyReviews}
+          label="Week"
+          delay={0.15}
+        />
+        <StatCell 
+          icon={<Star size={12} className="text-yellow-400" />}
+          value={stats.avgScore.toFixed(0)}
+          label="Avg"
+          delay={0.2}
+        />
       </div>
-
-      {/* Average Score */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.25 }}
-        className="bg-surface-1 border border-border rounded-xl p-3 flex items-center justify-between"
-      >
-        <div className="flex items-center gap-2">
-          <Star size={16} className="text-yellow-400" />
-          <span className="text-sm text-muted-foreground">Average Score Given</span>
-        </div>
-        <span className="text-lg font-bold">{stats.avgScore.toFixed(1)}</span>
-      </motion.div>
     </div>
+  );
+}
+
+function StatCell({ 
+  icon, value, label, highlight, delay = 0 
+}: { 
+  icon: React.ReactNode; 
+  value: number | string; 
+  label: string; 
+  highlight?: boolean;
+  delay?: number;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay }}
+      className={`bg-zinc-900 border ${highlight ? 'border-gold/40' : 'border-zinc-800'} p-2 text-center`}
+    >
+      <div className="flex items-center justify-center mb-0.5">{icon}</div>
+      <p className={`text-base font-display font-bold tabular-nums ${highlight ? 'text-gold' : 'text-white'}`}>
+        {value}
+      </p>
+      <p className="text-[8px] text-zinc-500 uppercase tracking-widest font-mono">{label}</p>
+    </motion.div>
   );
 }
