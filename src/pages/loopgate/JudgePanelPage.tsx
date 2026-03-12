@@ -190,10 +190,12 @@ export default function JudgePanelPage() {
             const isActive = activeFormat === fmt.id;
             const info = FORMAT_INFO[fmt.id as keyof typeof FORMAT_INFO];
             return (
-              <button
+              <div
                 key={fmt.id}
                 onClick={() => setActiveFormat(fmt.id)}
-                className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[9px] font-bold transition-all border relative ${
+                role="button"
+                tabIndex={0}
+                className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[9px] font-bold transition-all border relative cursor-pointer ${
                   isActive ? fmt.activeClass : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-600'
                 }`}
               >
@@ -204,7 +206,7 @@ export default function JudgePanelPage() {
                     <JudgeFormatInfo {...info} />
                   </div>
                 )}
-              </button>
+              </div>
             );
           })}
         </div>
