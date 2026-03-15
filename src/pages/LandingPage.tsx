@@ -654,7 +654,7 @@ export default function LandingPage() {
                   LOOPY<br />RATES YOUR<br /><span className="text-purple-400">EDITS</span>
                 </motion.h2>
                 <motion.p variants={fadeUp} custom={2} className="text-muted-foreground text-base leading-relaxed mb-6">
-                  Drop any TikTok, YouTube, or Instagram edit link. Loopy fetches the thumbnail, scrapes metadata, and runs a full multimodal AI diagnostic across 5 QOI pillars — instantly. Free.
+                  Drop any TikTok, YouTube, or Instagram edit link. Loopy fetches the thumbnail, scrapes metadata, and runs a full multimodal diagnostic across 5 QOI pillars — instantly. Free.
                 </motion.p>
                 <motion.ul variants={fadeUp} custom={3} className="space-y-2 mb-8">
                   {['Multimodal AI visual analysis', 'Real metadata extraction', '5-pillar QOI diagnostic', 'Personalized improvement tips', 'Full rating history'].map(f => (
