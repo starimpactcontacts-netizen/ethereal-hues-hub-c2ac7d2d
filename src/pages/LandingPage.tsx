@@ -564,7 +564,7 @@ export default function LandingPage() {
 
 
 
-        {/* ═══════════════ FEATURE 5: LOOPY AI RATING ═══════════════ */}
+        {/* ═══════════════ FEATURE 5: LOOPY RATING ═══════════════ */}
         <section className="relative py-24 sm:py-32 overflow-hidden border-t border-border/50">
           <div className="absolute inset-0 bg-gradient-to-b from-background via-purple-950/[0.03] to-background" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_50%,hsl(var(--gold)/0.03),transparent)]" />
