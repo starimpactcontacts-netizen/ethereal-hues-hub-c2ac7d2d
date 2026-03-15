@@ -651,7 +651,7 @@ export default function LandingPage() {
                   <Brain className="w-3.5 h-3.5" /> Smart Rating
                 </motion.span>
                 <motion.h2 variants={fadeUp} custom={1} className="font-display text-4xl sm:text-5xl md:text-6xl leading-[0.85] mb-5">
-                  AI THAT<br />RATES YOUR<br /><span className="text-purple-400">EDITS</span>
+                  LOOPY<br />RATES YOUR<br /><span className="text-purple-400">EDITS</span>
                 </motion.h2>
                 <motion.p variants={fadeUp} custom={2} className="text-muted-foreground text-base leading-relaxed mb-6">
                   Drop any TikTok, YouTube, or Instagram edit link. Loopy fetches the thumbnail, scrapes metadata, and runs a full multimodal AI diagnostic across 5 QOI pillars — instantly. Free.
