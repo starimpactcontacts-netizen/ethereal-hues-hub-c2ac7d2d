@@ -201,15 +201,15 @@ function SectionDivider({ label }: { label?: string }) {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Loopy AI Rating — AI Video Edit Analyzer",
+  "name": "Loopy Rating — Video Edit Analyzer",
   "alternateName": "Loopy Rate My Edit",
   "url": "https://loopgate.io/loopy",
-  "description": "Free AI-powered video editing quality analyzer. Get instant diagnostic scores across 5 pillars.",
+  "description": "Free video editing quality analyzer. Get instant diagnostic scores across 5 pillars.",
   "applicationCategory": "MultimediaApplication",
   "operatingSystem": "Web",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
   "creator": { "@type": "Organization", "name": "Loopgate", "url": "https://loopgate.io" },
-  "featureList": ["AI video edit analysis", "5-pillar QOI scoring", "Instant feedback", "Improvement tips", "Rating history"],
+  "featureList": ["Smart video edit analysis", "5-pillar QOI scoring", "Instant feedback", "Improvement tips", "Rating history"],
 };
 
 export default function LoopyPage() {
