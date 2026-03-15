@@ -570,7 +570,7 @@ export default function LandingPage() {
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_50%,hsl(var(--gold)/0.03),transparent)]" />
           <div className="max-w-6xl mx-auto px-6 relative z-10">
             <div className="grid md:grid-cols-5 gap-10 md:gap-16 items-center">
-              {/* AI Rating Card Mockup — 3 cols */}
+              {/* Rating Card Mockup — 3 cols */}
               <motion.div
                 className="md:col-span-3"
                 initial={{ opacity: 0, x: -60 }}
