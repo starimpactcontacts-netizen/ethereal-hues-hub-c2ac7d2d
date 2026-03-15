@@ -434,7 +434,7 @@ export default function LoopyPage() {
             </div>
 
             <h1 className="text-[42px] sm:text-[56px] font-black text-white leading-[0.9] tracking-wide mb-3" style={TEKO}>
-              LOOPY AI RATING
+              LOOPY RATING
             </h1>
 
             <p className="text-[13px] text-white/30 max-w-sm mx-auto leading-relaxed">
