@@ -6,6 +6,7 @@ import LoadingScreen from './LoadingScreen';
 import BeginnerGuideModal from './BeginnerGuideModal';
 import LoopyChat from './LoopyChat';
 import { useGlobalNotifications } from '@/hooks/useGlobalNotifications';
+import { useGlobalTapSound } from '@/hooks/useGlobalTapSound';
 
 export default function AuthenticatedLayout() {
   const location = useLocation();
@@ -17,6 +18,7 @@ export default function AuthenticatedLayout() {
 
   // Enable global notifications with sounds (unit chat, DMs, tournaments, system alerts)
   useGlobalNotifications();
+  useGlobalTapSound();
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col overflow-hidden">
