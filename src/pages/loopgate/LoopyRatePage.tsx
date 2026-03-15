@@ -418,7 +418,7 @@ export default function LoopyPage() {
               <div className="absolute inset-[-4px] bg-gradient-to-br from-purple-500/40 to-fuchsia-500/20 blur-xl" />
               <div className="relative w-20 h-20 border-2 border-white/10 overflow-hidden"
                 style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)' }}>
-                <img src={loopyAvatar} alt="Loopy AI" className="w-full h-full object-cover" />
+                <img src={loopyAvatar} alt="Loopy" className="w-full h-full object-cover" />
               </div>
               <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 flex items-center justify-center border-2 border-[#080808]">
                 <Brain className="w-3 h-3 text-white" />
