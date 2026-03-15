@@ -485,7 +485,7 @@ export default function LoopyPage() {
                     <div className="grid grid-cols-3 gap-1.5">
                       {[
                         { icon: Send, text: 'DROP LINK', num: '01' },
-                        { icon: Brain, text: 'AI ANALYZES', num: '02' },
+                        { icon: Brain, text: 'LOOPY SCANS', num: '02' },
                         { icon: BarChart3, text: 'GET SCORES', num: '03' },
                       ].map((step, i) => (
                         <div key={i} className="relative flex flex-col items-center gap-1 py-2.5 bg-white/[0.04] border border-white/[0.08]">
