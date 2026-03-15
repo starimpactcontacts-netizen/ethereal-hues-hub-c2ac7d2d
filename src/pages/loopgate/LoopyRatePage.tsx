@@ -781,7 +781,7 @@ export default function LoopyPage() {
                               </div>
                             </motion.button>
                             <motion.button
-                              onClick={() => { navigator.clipboard.writeText(`I got ${rating.grade} (${rating.total}/100) on Loopy AI Rating 🎬\n\nRate yours → loopgate.io/loopy/rate`); toast.success('Copied!'); }}
+                              onClick={() => { navigator.clipboard.writeText(`I got ${rating.grade} (${rating.total}/100) on Loopy Rating 🎬\n\nRate yours → loopgate.io/loopy/rate`); toast.success('Copied!'); }}
                               whileTap={{ scale: 0.95 }}
                               className="h-11 w-11 flex items-center justify-center bg-white/[0.06] border border-white/[0.1] hover:bg-white/[0.1] transition-all"
                             >

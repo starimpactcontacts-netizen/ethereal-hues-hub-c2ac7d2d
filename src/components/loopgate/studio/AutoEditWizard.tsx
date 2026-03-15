@@ -221,7 +221,7 @@ export default function AutoEditWizard({ onClose, onTimelineReady }: AutoEditWiz
             <h1 className="text-sm font-black text-white tracking-tight" style={{ fontFamily: "'Teko', sans-serif", fontSize: "22px", letterSpacing: "0.04em" }}>
               LOOPY AUTO-EDIT
             </h1>
-            <p className="text-[9px] text-white/30 uppercase tracking-[0.15em] -mt-0.5">AI-Powered • One-Click Professional Edits</p>
+            <p className="text-[9px] text-white/30 uppercase tracking-[0.15em] -mt-0.5">Smart • One-Click Professional Edits</p>
           </div>
         </div>
         <button onClick={onClose} className="p-2 rounded-lg hover:bg-white/[0.06] transition-colors">

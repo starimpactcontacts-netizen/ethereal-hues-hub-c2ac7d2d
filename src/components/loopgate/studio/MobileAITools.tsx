@@ -166,7 +166,7 @@ export default function MobileAITools({
         {!activeTool ? (
           /* Tool Selection Grid */
           <div className="space-y-3">
-            <p className="text-xs text-center" style={{ color: "#666" }}>Choose an AI tool</p>
+            <p className="text-xs text-center" style={{ color: "#666" }}>Choose a smart tool</p>
             <div className="grid grid-cols-2 gap-2.5">
               {AI_TOOLS.map((tool) => (
                 <motion.button

@@ -226,7 +226,7 @@ export default function LoopyChat() {
                   </div>
                   <div>
                     <p className="text-sm font-bold text-foreground">Rate My Edit</p>
-                    <p className="text-[10px] text-muted-foreground">instant AI diagnostic on any edit</p>
+                    <p className="text-[10px] text-muted-foreground">instant diagnostic on any edit</p>
                   </div>
                 </button>
 

@@ -70,7 +70,7 @@ export default function BeginnerGuideModal({ trigger, autoShow = false }: Beginn
                   GET YOUR EDIT RATED
                 </span>
               </div>
-              <p className="text-[10px] text-white/25 pl-7 mb-2.5">AI diagnostic · No sign-up needed</p>
+              <p className="text-[10px] text-white/25 pl-7 mb-2.5">Smart diagnostic · No sign-up needed</p>
               <div className="flex items-center justify-center gap-2 py-2.5 border border-purple-500/25 bg-purple-500/[0.06] group-hover:bg-purple-500/15 group-hover:border-purple-500/40 transition-all"
                 style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%)' }}>
                 <span className="text-[13px] font-bold text-purple-300/80 uppercase tracking-[0.18em] group-hover:text-purple-200 transition-colors" style={{ fontFamily: 'Teko, sans-serif' }}>

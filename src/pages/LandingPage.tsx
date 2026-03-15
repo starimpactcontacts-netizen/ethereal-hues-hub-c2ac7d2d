@@ -769,7 +769,7 @@ export default function LandingPage() {
                 <h4 className="text-[10px] font-bold tracking-[0.25em] uppercase text-foreground mb-5">Community</h4>
                 <div className="space-y-3">
                   <button onClick={handleGuestExplore} className="block text-sm text-muted-foreground hover:text-foreground transition-colors text-left">Explore as Guest</button>
-                  <Link to="/loopy" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Loopy AI Rating</Link>
+                  <Link to="/loopy" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Loopy Rating</Link>
                   <Link to="/gqt" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Take QOI Test</Link>
                 </div>
               </div>
