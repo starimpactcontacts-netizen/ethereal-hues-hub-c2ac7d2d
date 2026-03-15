@@ -92,7 +92,7 @@ export default function AutoClipperPanel({
             <Scissors className="h-4 w-4 text-foreground" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-foreground">AI Auto-Clipper</h3>
+            <h3 className="text-sm font-semibold text-foreground">Auto-Clipper</h3>
             <p className="text-[10px] text-muted-foreground">Detect highlights automatically</p>
           </div>
         </div>

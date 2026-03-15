@@ -234,7 +234,7 @@ export default function StudioAIBrain({ open, onClose, editSnapshot, onApplyTrim
         <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: "rgba(255,255,255,0.04)" }}>
           <div className="flex items-center gap-2">
             <Brain className="w-5 h-5" style={{ color: RED }} />
-            <span className="text-sm font-black tracking-wider uppercase" style={{ color: "#fff" }}>AI Brain</span>
+            <span className="text-sm font-black tracking-wider uppercase" style={{ color: "#fff" }}>Loopy Brain</span>
             <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-md" style={{ background: `${RED}15`, color: RED, border: `1px solid ${RED}25` }}>v2.0</span>
           </div>
           <button onClick={onClose} className="p-2 rounded-xl active:scale-90" style={{ background: "rgba(255,255,255,0.04)" }}>

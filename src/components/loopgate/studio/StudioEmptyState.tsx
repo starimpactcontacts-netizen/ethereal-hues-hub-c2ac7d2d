@@ -13,7 +13,7 @@ const HERO_FEATURES = [
   { icon: Zap, label: "24+ Real-time FX", color: "#FF6B00" },
   { icon: Layers, label: "Multi-track PiP", color: "#00D4FF" },
   { icon: Diamond, label: "Keyframe Animation", color: "#AA44FF" },
-  { icon: Sparkles, label: "AI Auto-Edit", color: "#FF004F" },
+  { icon: Sparkles, label: "Auto-Edit", color: "#FF004F" },
   { icon: Music, label: "Audio Mixing", color: "#A855F7" },
   { icon: ArrowUpCircle, label: "4K Upscale", color: "#22CC88" },
 ];
@@ -132,7 +132,7 @@ export default function StudioEmptyState({ onOpenPicker, onAutoEdit, onBack }: S
               boxShadow: "0 2px 12px rgba(255,0,79,0.05)",
             }}
           >
-            <Wand2 className="w-4 h-4" /> AI Auto-Edit
+            <Wand2 className="w-4 h-4" /> Auto-Edit
           </motion.button>
         </div>
 

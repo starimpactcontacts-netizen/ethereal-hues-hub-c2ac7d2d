@@ -237,7 +237,7 @@ export default function StudioHome({ onNewProject, onOpenProject, onOpenAutoEdit
                       </p>
                       <span className="text-[7px] font-bold tracking-[0.2em] uppercase px-1.5 py-0.5 rounded"
                         style={{ color: "#FF6B6B", background: "rgba(255,107,107,0.12)", border: "1px solid rgba(255,107,107,0.2)" }}>
-                        AI
+                        SMART
                       </span>
                     </div>
                     <p className="text-[10px] text-white/30">Upload clips → pick a style → get a pro edit in seconds</p>

@@ -564,13 +564,13 @@ export default function LandingPage() {
 
 
 
-        {/* ═══════════════ FEATURE 5: LOOPY AI RATING ═══════════════ */}
+        {/* ═══════════════ FEATURE 5: LOOPY RATING ═══════════════ */}
         <section className="relative py-24 sm:py-32 overflow-hidden border-t border-border/50">
           <div className="absolute inset-0 bg-gradient-to-b from-background via-purple-950/[0.03] to-background" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_50%,hsl(var(--gold)/0.03),transparent)]" />
           <div className="max-w-6xl mx-auto px-6 relative z-10">
             <div className="grid md:grid-cols-5 gap-10 md:gap-16 items-center">
-              {/* AI Rating Card Mockup — 3 cols */}
+              {/* Rating Card Mockup — 3 cols */}
               <motion.div
                 className="md:col-span-3"
                 initial={{ opacity: 0, x: -60 }}
@@ -582,8 +582,8 @@ export default function LandingPage() {
                   <div className="h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent" />
                   <div className="px-5 py-3.5 flex items-center justify-between border-b border-border/50">
                     <div className="flex items-center gap-2.5">
-                      <img src={loopyAvatar} alt="Loopy AI" className="w-6 h-6 rounded-full border border-purple-500/30" />
-                      <span className="text-xs font-bold uppercase tracking-[0.2em] text-purple-400">Loopy AI Diagnostic</span>
+                      <img src={loopyAvatar} alt="Loopy" className="w-6 h-6 rounded-full border border-purple-500/30" />
+                      <span className="text-xs font-bold uppercase tracking-[0.2em] text-purple-400">Loopy Diagnostic</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -648,16 +648,16 @@ export default function LandingPage() {
                 initial="hidden" whileInView="visible" viewport={{ once: true }}
               >
                 <motion.span variants={fadeUp} custom={0} className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-[0.3em] uppercase text-purple-400 mb-4">
-                  <Brain className="w-3.5 h-3.5" /> AI Rating
+                  <Brain className="w-3.5 h-3.5" /> Smart Rating
                 </motion.span>
                 <motion.h2 variants={fadeUp} custom={1} className="font-display text-4xl sm:text-5xl md:text-6xl leading-[0.85] mb-5">
-                  AI THAT<br />RATES YOUR<br /><span className="text-purple-400">EDITS</span>
+                  LOOPY<br />RATES YOUR<br /><span className="text-purple-400">EDITS</span>
                 </motion.h2>
                 <motion.p variants={fadeUp} custom={2} className="text-muted-foreground text-base leading-relaxed mb-6">
-                  Drop any TikTok, YouTube, or Instagram edit link. Loopy fetches the thumbnail, scrapes metadata, and runs a full multimodal AI diagnostic across 5 QOI pillars — instantly. Free.
+                  Drop any TikTok, YouTube, or Instagram edit link. Loopy fetches the thumbnail, scrapes metadata, and runs a full multimodal diagnostic across 5 QOI pillars — instantly. Free.
                 </motion.p>
                 <motion.ul variants={fadeUp} custom={3} className="space-y-2 mb-8">
-                  {['Multimodal AI visual analysis', 'Real metadata extraction', '5-pillar QOI diagnostic', 'Personalized improvement tips', 'Full rating history'].map(f => (
+                  {['Multimodal visual analysis', 'Real metadata extraction', '5-pillar QOI diagnostic', 'Personalized improvement tips', 'Full rating history'].map(f => (
                     <li key={f} className="flex items-center gap-2.5 text-sm text-foreground/70 md:justify-start justify-center">
                       <div className="w-1 h-1 rounded-full bg-purple-400" /> {f}
                     </li>
@@ -769,7 +769,7 @@ export default function LandingPage() {
                 <h4 className="text-[10px] font-bold tracking-[0.25em] uppercase text-foreground mb-5">Community</h4>
                 <div className="space-y-3">
                   <button onClick={handleGuestExplore} className="block text-sm text-muted-foreground hover:text-foreground transition-colors text-left">Explore as Guest</button>
-                  <Link to="/loopy" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Loopy AI Rating</Link>
+                  <Link to="/loopy" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Loopy Rating</Link>
                   <Link to="/gqt" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Take QOI Test</Link>
                 </div>
               </div>

@@ -496,7 +496,7 @@ export default function ProposeSanctionedTournament({
           <Textarea
             value={rulesText}
             onChange={(e) => setRulesText(e.target.value)}
-            placeholder="No AI-generated content&#10;Must be original work&#10;30-90 second limit"
+            placeholder="Must be original work&#10;No generated content&#10;30-90 second limit"
             className="bg-surface-1 border-border min-h-[100px] font-mono text-xs"
           />
         </div>

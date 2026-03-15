@@ -1,5 +1,5 @@
 /**
- * Mobile AI Tools Panel — Auto Captions, Smart Cuts, AI Effects Advisor, BG Removal
+ * Mobile Smart Tools Panel — Auto Captions, Smart Cuts, Effects Advisor, BG Removal
  */
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -166,7 +166,7 @@ export default function MobileAITools({
         {!activeTool ? (
           /* Tool Selection Grid */
           <div className="space-y-3">
-            <p className="text-xs text-center" style={{ color: "#666" }}>Choose an AI tool</p>
+            <p className="text-xs text-center" style={{ color: "#666" }}>Choose a smart tool</p>
             <div className="grid grid-cols-2 gap-2.5">
               {AI_TOOLS.map((tool) => (
                 <motion.button

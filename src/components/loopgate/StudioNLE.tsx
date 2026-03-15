@@ -105,7 +105,7 @@ const TOOL_TABS: { id: ToolTab; icon: typeof Film; label: string }[] = [
   { id: "transitions", icon: Layers, label: "Transitions" },
   { id: "filters", icon: Wand2, label: "Filters" },
   { id: "adjust", icon: SlidersHorizontal, label: "Adjust" },
-  { id: "ai", icon: Wand2, label: "AI Tools" },
+  { id: "ai", icon: Wand2, label: "Smart Tools" },
   { id: "upscale", icon: ArrowUpCircle, label: "Upscale" },
   { id: "export", icon: Settings, label: "Export" },
 ];
@@ -1814,12 +1814,12 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
                   </>
                 )}
 
-                {/* ════════ AI TOOLS ════════ */}
+                {/* ════════ SMART TOOLS ════════ */}
                 {activeToolTab === "ai" && (
                   <>
                     <div className="space-y-3">
                       <p className="text-[10px]" style={{ color: "#888" }}>
-                        AI-powered tools &amp; pro features to enhance your workflow.
+                        Smart tools &amp; pro features to enhance your workflow.
                       </p>
 
                       {/* Auto-Clipper */}

@@ -81,11 +81,11 @@ export default function StudioProToolbar({ activeTool, onToolChange, onAIOpen, o
             style={{ border: "1px solid rgba(255,0,79,0.2)" }}
           />
           <Wand2 className="w-5 h-5" style={{ color: "#FF004F" }} />
-          <span className="text-[7px] font-black tracking-[0.15em] uppercase" style={{ color: "#FF004F" }}>AI</span>
+          <span className="text-[7px] font-black tracking-[0.15em] uppercase" style={{ color: "#FF004F" }}>AUTO</span>
           <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ background: "#FF004F", boxShadow: "0 0 6px #FF004F" }} />
         </button>
 
-        {/* AI Brain Button */}
+        {/* Brain Button */}
         {onAIBrainOpen && (
           <button
             onClick={onAIBrainOpen}

@@ -201,15 +201,15 @@ function SectionDivider({ label }: { label?: string }) {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Loopy AI Rating — AI Video Edit Analyzer",
+  "name": "Loopy Rating — Video Edit Analyzer",
   "alternateName": "Loopy Rate My Edit",
   "url": "https://loopgate.io/loopy",
-  "description": "Free AI-powered video editing quality analyzer. Get instant diagnostic scores across 5 pillars.",
+  "description": "Free video editing quality analyzer. Get instant diagnostic scores across 5 pillars.",
   "applicationCategory": "MultimediaApplication",
   "operatingSystem": "Web",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
   "creator": { "@type": "Organization", "name": "Loopgate", "url": "https://loopgate.io" },
-  "featureList": ["AI video edit analysis", "5-pillar QOI scoring", "Instant feedback", "Improvement tips", "Rating history"],
+  "featureList": ["Smart video edit analysis", "5-pillar QOI scoring", "Instant feedback", "Improvement tips", "Rating history"],
 };
 
 export default function LoopyPage() {
@@ -338,7 +338,7 @@ export default function LoopyPage() {
 
   const handleShare = async () => {
     const reaction = GRADE_REACTIONS[rating?.grade || 'C'];
-    const text = `${reaction?.emoji} I got a ${rating?.grade} (${rating?.total}/100) on Loopy AI Rating\n\n"${rating?.vibe_check}"\n\n${reaction?.headline}\n\nRate your edit → loopgate.io/loopy/rate`;
+    const text = `${reaction?.emoji} I got a ${rating?.grade} (${rating?.total}/100) on Loopy Rating\n\n"${rating?.vibe_check}"\n\n${reaction?.headline}\n\nRate your edit → loopgate.io/loopy/rate`;
     try {
       if (navigator.share) {
         await navigator.share({ title: `My Loopy Rating: ${rating?.grade}`, text });
@@ -355,17 +355,17 @@ export default function LoopyPage() {
   return (
     <>
       <Helmet>
-        <title>AI Video Edit Rating Tool — Free Instant QOI Scores | Loopy by Loopgate</title>
-        <meta name="description" content="Rate your video edits with AI instantly. Loopy analyzes your AMV, edit, or content across 5 diagnostic pillars — Emotion, Creativity, Sync, Identity & Execution — and gives you a full QOI score with tips to level up. Free to use." />
-        <meta name="keywords" content="AI video edit rating, rate my edit, AMV rating AI, video editing score, QOI score, edit quality analyzer, AI edit feedback, loopy AI, video edit analyzer, free AI rating tool" />
+        <title>Video Edit Rating Tool — Free Instant QOI Scores | Loopy by Loopgate</title>
+        <meta name="description" content="Rate your video edits instantly. Loopy analyzes your AMV, edit, or content across 5 diagnostic pillars — Emotion, Creativity, Sync, Identity & Execution — and gives you a full QOI score with tips to level up. Free to use." />
+        <meta name="keywords" content="video edit rating, rate my edit, AMV rating, video editing score, QOI score, edit quality analyzer, edit feedback, loopy rating, video edit analyzer, free rating tool" />
         <link rel="canonical" href="https://loopgate.io/loopy" />
-        <meta property="og:title" content="Loopy AI Rating — Free Video Edit Analyzer" />
-        <meta property="og:description" content="Drop your edit link and get instant AI diagnostic scores across 5 pillars." />
+        <meta property="og:title" content="Loopy Rating — Free Video Edit Analyzer" />
+        <meta property="og:description" content="Drop your edit link and get instant diagnostic scores across 5 pillars." />
         <meta property="og:url" content="https://loopgate.io/loopy" />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Loopy AI Rating — Free Video Edit Analyzer" />
-        <meta name="twitter:description" content="AI-powered edit analysis across 5 QOI pillars. Get instant scores & tips." />
+        <meta name="twitter:title" content="Loopy Rating — Free Video Edit Analyzer" />
+        <meta name="twitter:description" content="Smart edit analysis across 5 QOI pillars. Get instant scores & tips." />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 
@@ -401,7 +401,7 @@ export default function LoopyPage() {
                 <span className="text-[8px] font-bold text-white/25 uppercase tracking-[0.3em]" style={TEKO}>System Online</span>
               </div>
               <div className="w-px h-3 bg-white/[0.08]" />
-              <span className="text-[8px] font-bold text-white/15 uppercase tracking-[0.2em]" style={TEKO}>Loopgate AI Engine</span>
+              <span className="text-[8px] font-bold text-white/15 uppercase tracking-[0.2em]" style={TEKO}>Loopgate Engine</span>
               <div className="w-px h-3 bg-white/[0.08]" />
               <div className="flex items-center gap-1 px-2 py-0.5 border border-purple-500/20 bg-purple-500/[0.06]">
                 <span className="text-[8px] font-bold text-purple-400/60 uppercase tracking-[0.2em]" style={TEKO}>v1.1</span>
@@ -418,7 +418,7 @@ export default function LoopyPage() {
               <div className="absolute inset-[-4px] bg-gradient-to-br from-purple-500/40 to-fuchsia-500/20 blur-xl" />
               <div className="relative w-20 h-20 border-2 border-white/10 overflow-hidden"
                 style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)' }}>
-                <img src={loopyAvatar} alt="Loopy AI" className="w-full h-full object-cover" />
+                <img src={loopyAvatar} alt="Loopy" className="w-full h-full object-cover" />
               </div>
               <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 flex items-center justify-center border-2 border-[#080808]">
                 <Brain className="w-3 h-3 text-white" />
@@ -430,11 +430,11 @@ export default function LoopyPage() {
             {/* Badge */}
             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/[0.04] border border-white/[0.08] mb-3">
               <span className="w-1.5 h-1.5 bg-emerald-400 animate-pulse" />
-              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/50" style={TEKO}>AI-Powered Analysis</span>
+              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/50" style={TEKO}>Smart Analysis</span>
             </div>
 
             <h1 className="text-[42px] sm:text-[56px] font-black text-white leading-[0.9] tracking-wide mb-3" style={TEKO}>
-              LOOPY AI RATING
+              LOOPY RATING
             </h1>
 
             <p className="text-[13px] text-white/30 max-w-sm mx-auto leading-relaxed">
@@ -485,7 +485,7 @@ export default function LoopyPage() {
                     <div className="grid grid-cols-3 gap-1.5">
                       {[
                         { icon: Send, text: 'DROP LINK', num: '01' },
-                        { icon: Brain, text: 'AI ANALYZES', num: '02' },
+                        { icon: Brain, text: 'LOOPY SCANS', num: '02' },
                         { icon: BarChart3, text: 'GET SCORES', num: '03' },
                       ].map((step, i) => (
                         <div key={i} className="relative flex flex-col items-center gap-1 py-2.5 bg-white/[0.04] border border-white/[0.08]">
@@ -604,7 +604,7 @@ export default function LoopyPage() {
                   <div className="space-y-3">
                     {[
                       { icon: Send, title: 'Paste your edit link', desc: 'TikTok, Instagram Reels, or YouTube — any platform works.' },
-                      { icon: Brain, title: 'Loopy runs multimodal AI analysis', desc: 'Thumbnail vision + metadata extraction across 5 QOI pillars.' },
+                      { icon: Brain, title: 'Loopy runs multimodal analysis', desc: 'Thumbnail vision + metadata extraction across 5 QOI pillars.' },
                       { icon: BarChart3, title: 'Get instant diagnostic scores', desc: 'Pillar breakdown, grade, strengths, and improvement tips.' },
                       { icon: Swords, title: 'Take your score to the Arena', desc: 'Challenge editors, enter drops, and get paid for your edits.' },
                     ].map((step, i) => (
@@ -781,7 +781,7 @@ export default function LoopyPage() {
                               </div>
                             </motion.button>
                             <motion.button
-                              onClick={() => { navigator.clipboard.writeText(`I got ${rating.grade} (${rating.total}/100) on Loopy AI Rating 🎬\n\nRate yours → loopgate.io/loopy/rate`); toast.success('Copied!'); }}
+                              onClick={() => { navigator.clipboard.writeText(`I got ${rating.grade} (${rating.total}/100) on Loopy Rating 🎬\n\nRate yours → loopgate.io/loopy/rate`); toast.success('Copied!'); }}
                               whileTap={{ scale: 0.95 }}
                               className="h-11 w-11 flex items-center justify-center bg-white/[0.06] border border-white/[0.1] hover:bg-white/[0.1] transition-all"
                             >
