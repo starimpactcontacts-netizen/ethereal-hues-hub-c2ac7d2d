@@ -648,7 +648,7 @@ export default function LandingPage() {
                 initial="hidden" whileInView="visible" viewport={{ once: true }}
               >
                 <motion.span variants={fadeUp} custom={0} className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-[0.3em] uppercase text-purple-400 mb-4">
-                  <Brain className="w-3.5 h-3.5" /> AI Rating
+                  <Brain className="w-3.5 h-3.5" /> Smart Rating
                 </motion.span>
                 <motion.h2 variants={fadeUp} custom={1} className="font-display text-4xl sm:text-5xl md:text-6xl leading-[0.85] mb-5">
                   AI THAT<br />RATES YOUR<br /><span className="text-purple-400">EDITS</span>
