@@ -18,6 +18,7 @@ export default function AuthenticatedLayout() {
 
   // Enable global notifications with sounds (unit chat, DMs, tournaments, system alerts)
   useGlobalNotifications();
+  useGlobalTapSound();
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col overflow-hidden">
