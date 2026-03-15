@@ -582,8 +582,8 @@ export default function LandingPage() {
                   <div className="h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent" />
                   <div className="px-5 py-3.5 flex items-center justify-between border-b border-border/50">
                     <div className="flex items-center gap-2.5">
-                      <img src={loopyAvatar} alt="Loopy AI" className="w-6 h-6 rounded-full border border-purple-500/30" />
-                      <span className="text-xs font-bold uppercase tracking-[0.2em] text-purple-400">Loopy AI Diagnostic</span>
+                      <img src={loopyAvatar} alt="Loopy" className="w-6 h-6 rounded-full border border-purple-500/30" />
+                      <span className="text-xs font-bold uppercase tracking-[0.2em] text-purple-400">Loopy Diagnostic</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
