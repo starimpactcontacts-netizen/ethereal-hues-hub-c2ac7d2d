@@ -6,6 +6,7 @@ import LoadingScreen from './LoadingScreen';
 import BeginnerGuideModal from './BeginnerGuideModal';
 import LoopyChat from './LoopyChat';
 import { useGlobalNotifications } from '@/hooks/useGlobalNotifications';
+import { useGlobalTapSound } from '@/hooks/useGlobalTapSound';
 
 export default function AuthenticatedLayout() {
   const location = useLocation();
