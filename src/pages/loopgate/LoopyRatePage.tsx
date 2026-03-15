@@ -401,7 +401,7 @@ export default function LoopyPage() {
                 <span className="text-[8px] font-bold text-white/25 uppercase tracking-[0.3em]" style={TEKO}>System Online</span>
               </div>
               <div className="w-px h-3 bg-white/[0.08]" />
-              <span className="text-[8px] font-bold text-white/15 uppercase tracking-[0.2em]" style={TEKO}>Loopgate AI Engine</span>
+              <span className="text-[8px] font-bold text-white/15 uppercase tracking-[0.2em]" style={TEKO}>Loopgate Engine</span>
               <div className="w-px h-3 bg-white/[0.08]" />
               <div className="flex items-center gap-1 px-2 py-0.5 border border-purple-500/20 bg-purple-500/[0.06]">
                 <span className="text-[8px] font-bold text-purple-400/60 uppercase tracking-[0.2em]" style={TEKO}>v1.1</span>
