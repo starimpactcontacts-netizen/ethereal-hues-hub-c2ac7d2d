@@ -355,17 +355,17 @@ export default function LoopyPage() {
   return (
     <>
       <Helmet>
-        <title>AI Video Edit Rating Tool — Free Instant QOI Scores | Loopy by Loopgate</title>
-        <meta name="description" content="Rate your video edits with AI instantly. Loopy analyzes your AMV, edit, or content across 5 diagnostic pillars — Emotion, Creativity, Sync, Identity & Execution — and gives you a full QOI score with tips to level up. Free to use." />
-        <meta name="keywords" content="AI video edit rating, rate my edit, AMV rating AI, video editing score, QOI score, edit quality analyzer, AI edit feedback, loopy AI, video edit analyzer, free AI rating tool" />
+        <title>Video Edit Rating Tool — Free Instant QOI Scores | Loopy by Loopgate</title>
+        <meta name="description" content="Rate your video edits instantly. Loopy analyzes your AMV, edit, or content across 5 diagnostic pillars — Emotion, Creativity, Sync, Identity & Execution — and gives you a full QOI score with tips to level up. Free to use." />
+        <meta name="keywords" content="video edit rating, rate my edit, AMV rating, video editing score, QOI score, edit quality analyzer, edit feedback, loopy rating, video edit analyzer, free rating tool" />
         <link rel="canonical" href="https://loopgate.io/loopy" />
-        <meta property="og:title" content="Loopy AI Rating — Free Video Edit Analyzer" />
-        <meta property="og:description" content="Drop your edit link and get instant AI diagnostic scores across 5 pillars." />
+        <meta property="og:title" content="Loopy Rating — Free Video Edit Analyzer" />
+        <meta property="og:description" content="Drop your edit link and get instant diagnostic scores across 5 pillars." />
         <meta property="og:url" content="https://loopgate.io/loopy" />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Loopy AI Rating — Free Video Edit Analyzer" />
-        <meta name="twitter:description" content="AI-powered edit analysis across 5 QOI pillars. Get instant scores & tips." />
+        <meta name="twitter:title" content="Loopy Rating — Free Video Edit Analyzer" />
+        <meta name="twitter:description" content="Smart edit analysis across 5 QOI pillars. Get instant scores & tips." />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 
