@@ -6,7 +6,7 @@ interface RadioSettings {
   default_playlist: string; // 'loopgate' | 'myplaylist'
 }
 
-const DEFAULTS: RadioSettings = { autoplay_enabled: true, default_playlist: 'loopgate' };
+const DEFAULTS: RadioSettings = { autoplay_enabled: false, default_playlist: 'loopgate' };
 
 export function useRadioSettings(userId: string | null) {
   const [settings, setSettings] = useState<RadioSettings>(DEFAULTS);
