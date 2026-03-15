@@ -604,7 +604,7 @@ export default function LoopyPage() {
                   <div className="space-y-3">
                     {[
                       { icon: Send, title: 'Paste your edit link', desc: 'TikTok, Instagram Reels, or YouTube — any platform works.' },
-                      { icon: Brain, title: 'Loopy runs multimodal AI analysis', desc: 'Thumbnail vision + metadata extraction across 5 QOI pillars.' },
+                      { icon: Brain, title: 'Loopy runs multimodal analysis', desc: 'Thumbnail vision + metadata extraction across 5 QOI pillars.' },
                       { icon: BarChart3, title: 'Get instant diagnostic scores', desc: 'Pillar breakdown, grade, strengths, and improvement tips.' },
                       { icon: Swords, title: 'Take your score to the Arena', desc: 'Challenge editors, enter drops, and get paid for your edits.' },
                     ].map((step, i) => (

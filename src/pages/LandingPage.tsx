@@ -657,7 +657,7 @@ export default function LandingPage() {
                   Drop any TikTok, YouTube, or Instagram edit link. Loopy fetches the thumbnail, scrapes metadata, and runs a full multimodal diagnostic across 5 QOI pillars — instantly. Free.
                 </motion.p>
                 <motion.ul variants={fadeUp} custom={3} className="space-y-2 mb-8">
-                  {['Multimodal AI visual analysis', 'Real metadata extraction', '5-pillar QOI diagnostic', 'Personalized improvement tips', 'Full rating history'].map(f => (
+                  {['Multimodal visual analysis', 'Real metadata extraction', '5-pillar QOI diagnostic', 'Personalized improvement tips', 'Full rating history'].map(f => (
                     <li key={f} className="flex items-center gap-2.5 text-sm text-foreground/70 md:justify-start justify-center">
                       <div className="w-1 h-1 rounded-full bg-purple-400" /> {f}
                     </li>

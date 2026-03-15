@@ -1814,12 +1814,12 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
                   </>
                 )}
 
-                {/* ════════ AI TOOLS ════════ */}
+                {/* ════════ SMART TOOLS ════════ */}
                 {activeToolTab === "ai" && (
                   <>
                     <div className="space-y-3">
                       <p className="text-[10px]" style={{ color: "#888" }}>
-                        AI-powered tools &amp; pro features to enhance your workflow.
+                        Smart tools &amp; pro features to enhance your workflow.
                       </p>
 
                       {/* Auto-Clipper */}

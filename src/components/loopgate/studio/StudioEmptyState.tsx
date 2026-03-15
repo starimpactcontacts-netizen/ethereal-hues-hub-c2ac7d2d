@@ -132,7 +132,7 @@ export default function StudioEmptyState({ onOpenPicker, onAutoEdit, onBack }: S
               boxShadow: "0 2px 12px rgba(255,0,79,0.05)",
             }}
           >
-            <Wand2 className="w-4 h-4" /> AI Auto-Edit
+            <Wand2 className="w-4 h-4" /> Auto-Edit
           </motion.button>
         </div>
 

@@ -85,7 +85,7 @@ export default function StudioProToolbar({ activeTool, onToolChange, onAIOpen, o
           <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ background: "#FF004F", boxShadow: "0 0 6px #FF004F" }} />
         </button>
 
-        {/* AI Brain Button */}
+        {/* Brain Button */}
         {onAIBrainOpen && (
           <button
             onClick={onAIBrainOpen}
