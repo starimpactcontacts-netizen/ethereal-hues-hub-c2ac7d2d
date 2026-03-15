@@ -338,7 +338,7 @@ export default function LoopyPage() {
 
   const handleShare = async () => {
     const reaction = GRADE_REACTIONS[rating?.grade || 'C'];
-    const text = `${reaction?.emoji} I got a ${rating?.grade} (${rating?.total}/100) on Loopy AI Rating\n\n"${rating?.vibe_check}"\n\n${reaction?.headline}\n\nRate your edit → loopgate.io/loopy/rate`;
+    const text = `${reaction?.emoji} I got a ${rating?.grade} (${rating?.total}/100) on Loopy Rating\n\n"${rating?.vibe_check}"\n\n${reaction?.headline}\n\nRate your edit → loopgate.io/loopy/rate`;
     try {
       if (navigator.share) {
         await navigator.share({ title: `My Loopy Rating: ${rating?.grade}`, text });
