@@ -1,5 +1,5 @@
 /**
- * Mobile AI Tools Panel — Auto Captions, Smart Cuts, AI Effects Advisor, BG Removal
+ * Mobile Smart Tools Panel — Auto Captions, Smart Cuts, Effects Advisor, BG Removal
  */
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
