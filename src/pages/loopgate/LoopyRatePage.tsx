@@ -430,7 +430,7 @@ export default function LoopyPage() {
             {/* Badge */}
             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/[0.04] border border-white/[0.08] mb-3">
               <span className="w-1.5 h-1.5 bg-emerald-400 animate-pulse" />
-              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/50" style={TEKO}>AI-Powered Analysis</span>
+              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/50" style={TEKO}>Smart Analysis</span>
             </div>
 
             <h1 className="text-[42px] sm:text-[56px] font-black text-white leading-[0.9] tracking-wide mb-3" style={TEKO}>
