@@ -19,7 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SiTiktok, SiInstagram, SiYoutube, SiX } from "@icons-pack/react-simple-icons";
 import ConnectButton from "@/components/loopgate/ConnectButton";
 import { Users } from "lucide-react";
-import IndexEarnBadge from "@/components/loopgate/IndexEarnBadge";
+// IndexEarnBadge removed — Index is NOT money
 import { useEquippedBadges } from "@/hooks/useEquippedBadges";
 import LinkTreePreview from "@/components/loopgate/LinkTreePreview";
 import type { LinkPageSettings, EditorLink } from "@/hooks/useEditorLinkPage";
@@ -49,8 +49,10 @@ interface PublicProfile {
   best_gatekeeper_qoi: number | null;
   is_founding_member: boolean;
   connection_count: number;
-   profile_bg_color: string | null;
-   profile_bg_image_url: string | null;
+  profile_bg_color: string | null;
+  profile_bg_image_url: string | null;
+  earnings_cents: number;
+  show_earnings: boolean;
 }
 
 interface ConnectedPlatform {
@@ -104,7 +106,7 @@ export default function PublicProfilePage() {
       
       const { data: profileData } = await supabase
         .from("profiles")
-         .select("id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, activity_status, bio, email, discord, portfolio_url, created_at, crew_id, xp, level, archetype, software, best_gatekeeper_qoi, is_founding_member, connection_count, profile_bg_color, profile_bg_image_url")
+         .select("id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, activity_status, bio, email, discord, portfolio_url, created_at, crew_id, xp, level, archetype, software, best_gatekeeper_qoi, is_founding_member, connection_count, profile_bg_color, profile_bg_image_url, earnings_cents, show_earnings")
         .eq(isUUID ? "id" : "username", userId)
         .single();
 
@@ -386,68 +388,83 @@ export default function PublicProfilePage() {
             </button>
           </div>
 
-          {/* Profile Info - Compact */}
-          <div className="px-4 pt-4 pb-4 flex flex-col items-center text-center">
-            {/* Avatar - Large & prominent */}
-            <div className="mb-4">
-              <Avatar className="w-24 h-24 border-2 border-border">
-                <AvatarImage src={profile.avatar_url || undefined} alt={profile.username} />
-                <AvatarFallback className="bg-muted text-muted-foreground text-3xl font-display">
+          {/* Profile Info */}
+          <div className="px-4 pt-6 pb-5 flex flex-col items-center text-center">
+            {/* Avatar — oversized with accent ring */}
+            <div className="mb-5 relative">
+              <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-gold/40 via-transparent to-gold/20 blur-sm" />
+              <Avatar className="relative w-28 h-28 border-[3px] border-foreground/15 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+                <AvatarImage src={profile.avatar_url || undefined} alt={profile.username} className="object-cover" />
+                <AvatarFallback className="bg-surface-1 text-muted-foreground text-3xl font-display">
                   {profile.username[0].toUpperCase()}
                 </AvatarFallback>
               </Avatar>
             </div>
 
-            {/* Name & Badges - Compact */}
+            {/* Name & Badges */}
             <div className="flex items-center gap-2 mb-1 flex-wrap justify-center">
-              <h1 className="font-display text-2xl tracking-wide">{profile.display_name || profile.username}</h1>
+              <h1 className="font-display text-[26px] tracking-wide leading-none">{profile.display_name || profile.username}</h1>
               {profile.level > 1 && <LevelBadge level={profile.level} size="sm" />}
               {profile.verification_status && <VerifiedBadge size="md" />}
               {authorityRole && <AuthorityBadge role={authorityRole} size="md" />}
               {(hasEquippedOG || profile.is_founding_member) && <FoundingBadge size="sm" />}
             </div>
             
-            <p className="text-xs text-muted-foreground mb-3">@{profile.username}</p>
+            <p className="text-xs text-muted-foreground mb-4">@{profile.username}</p>
 
-            {/* Stats Row - Properly sized */}
-            <div className="flex items-center justify-center gap-6 mb-4">
-              <div className="text-center">
-               <p className="font-display text-xl text-white">{isJudge ? videoCount : submissionCount}</p>
-                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{isJudge ? 'Videos' : 'Edits'}</p>
+            {/* Stats Row — divider-separated */}
+            <div className="flex items-center justify-center gap-0 mb-4 w-full max-w-xs">
+              <div className="flex-1 text-center">
+               <p className="font-display text-xl tabular-nums">{isJudge ? videoCount : submissionCount}</p>
+                 <p className="text-[9px] text-muted-foreground uppercase tracking-widest">{isJudge ? 'Videos' : 'Edits'}</p>
               </div>
-              <div className="w-px h-8 bg-border" />
-              <div className="text-center">
-                <p className="font-display text-xl text-white">{profile.connection_count || 0}</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Connections</p>
+              <div className="w-px h-9 bg-border/60" />
+              <div className="flex-1 text-center">
+                <p className="font-display text-xl tabular-nums">{profile.connection_count || 0}</p>
+                <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Connections</p>
               </div>
-              <div className="w-px h-8 bg-border" />
-              <div className="text-center">
-                <p className="font-display text-xl text-gold">#{rank || "—"}</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Rank</p>
+              <div className="w-px h-9 bg-border/60" />
+              <div className="flex-1 text-center">
+                <p className="font-display text-xl text-gold tabular-nums">#{rank || "—"}</p>
+                <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Rank</p>
               </div>
             </div>
 
-            {/* Unit Badge & Activity - Single row */}
-            <div className="flex items-center gap-4 mb-4">
-              {userCrew && <CrewBadge crew={userCrew} size="md" />}
-              <div className="flex items-center gap-2">
+            {/* Activity & Unit */}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-1.5">
                 <span className={`w-2 h-2 rounded-full ${activityLabels[profile.activity_status || 'offline']?.color || 'bg-muted-foreground'}`} />
                 <span className="text-xs text-muted-foreground">
                   {activityLabels[profile.activity_status || 'offline']?.label || 'Offline'}
                 </span>
               </div>
+              {userCrew && <CrewBadge crew={userCrew} size="md" />}
             </div>
 
-            {/* Bio - TikTok style - BEFORE message button */}
+            {/* Action Buttons */}
+            <div className="flex items-center gap-3 mb-4">
+              {isJudge && (
+                <button
+                  onClick={() => navigate(`/judge/${profile.username}`)}
+                  className="px-4 py-2.5 bg-destructive text-destructive-foreground text-xs font-bold uppercase tracking-wider rounded-lg hover:opacity-90 transition-opacity"
+                >
+                  Get Rated
+                </button>
+              )}
+              <ConnectButton targetUserId={profile.id} />
+              <MessageButton userId={profile.id} username={profile.username} variant="icon" />
+            </div>
+
+            {/* Bio */}
             {profile.bio && (
-              <p className="text-sm text-foreground/90 mb-4 max-w-sm text-center leading-relaxed">
+              <p className="text-sm text-foreground/90 max-w-sm text-center leading-relaxed mb-3">
                 {profile.bio}
               </p>
             )}
             
-            {/* Platform Links - Compact row */}
+            {/* Platform Links */}
             {platforms.length > 0 && (
-              <div className="flex items-center gap-2 mb-4 flex-wrap justify-center">
+              <div className="flex items-center gap-2 flex-wrap justify-center">
                 {platforms.map((p) => {
                   const Icon = p.platform === 'tiktok' ? SiTiktok 
                     : p.platform === 'instagram' ? SiInstagram 
@@ -460,7 +477,7 @@ export default function PublicProfilePage() {
                       href={p.platform_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-1 border border-border rounded-full text-xs text-muted-foreground hover:text-white hover:border-gold/50 transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-1 border border-border rounded-full text-xs text-muted-foreground hover:text-foreground hover:border-gold/40 transition-colors"
                     >
                       <Icon size={12} />
                       {platformLabels[p.platform] || p.platform}
@@ -469,20 +486,6 @@ export default function PublicProfilePage() {
                 })}
               </div>
             )}
-
-            {/* Action Buttons - Connect, Message & Get Rated */}
-            <div className="flex items-center gap-3">
-              {isJudge && (
-                <button
-                  onClick={() => navigate(`/judge/${profile.username}`)}
-                  className="px-4 py-2 bg-red-700 text-white text-xs font-bold uppercase tracking-wider hover:bg-red-600 transition-colors"
-                >
-                  Get Rated
-                </button>
-              )}
-              <ConnectButton targetUserId={profile.id} />
-              <MessageButton userId={profile.id} username={profile.username} variant="icon" />
-            </div>
           </div>
         </div>
       </div>
@@ -597,53 +600,62 @@ export default function PublicProfilePage() {
         )
       ) : (
         <div className="px-4 py-6 space-y-6">
-          {/* League & Stats Grid */}
+          {/* League, Class & Index Grid */}
           <div className="grid grid-cols-3 gap-2">
-            <div className="text-center p-3 bg-surface-1 border border-border">
+            <div className="text-center p-4 bg-surface-1 border border-border rounded-xl">
               <p className={`font-display text-2xl uppercase ${leagueColors[league]?.split(' ')[0] || 'text-muted-foreground'}`}>
                 {league.charAt(0)}
               </p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">
+              <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">
                 League
               </p>
             </div>
-            <div className="text-center p-3 bg-surface-1 border border-border">
+            <div className="text-center p-4 bg-surface-1 border border-border rounded-xl">
               <p className={`font-display text-2xl ${editorClass.color}`}>
                 {editorClass.letter}
               </p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">
+              <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">
                 Class
               </p>
             </div>
-            <div className="text-center p-3 bg-surface-1 border border-border">
-              <div className="flex items-center gap-1 justify-center">
-                <p className="font-display text-2xl">
-                  {Number(profile.global_index_score || 0).toFixed(1)}
-                </p>
-                <IndexEarnBadge size="md" />
-              </div>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">
+            <div className="text-center p-4 bg-surface-1 border border-border rounded-xl">
+              <p className="font-display text-2xl text-gold">
+                {Number(profile.global_index_score || 0).toFixed(1)}
+              </p>
+              <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">
                 Index
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="text-center p-3 bg-surface-1 border border-border">
+
+          {/* Win Rate, Events & Earnings */}
+          <div className={`grid ${profile.show_earnings ? 'grid-cols-3' : 'grid-cols-2'} gap-2`}>
+            <div className="text-center p-4 bg-surface-1 border border-border rounded-xl">
               <p className="font-display text-2xl">
                 {realStats.winRate.toFixed(0)}%
               </p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">
+              <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">
                 Win Rate
               </p>
             </div>
-            <div className="text-center p-3 bg-surface-1 border border-border">
+            <div className="text-center p-4 bg-surface-1 border border-border rounded-xl">
               <p className="font-display text-2xl">
                 {realStats.totalEvents}
               </p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">
+              <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">
                 Events
               </p>
             </div>
+            {profile.show_earnings && (
+              <div className="text-center p-4 bg-surface-1 border border-border rounded-xl">
+                <p className="font-display text-2xl text-emerald-400">
+                  ${((profile.earnings_cents || 0) / 100).toFixed(0)}
+                </p>
+                <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">
+                  Earned
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Member Since - Prestige Display */}

@@ -394,6 +394,30 @@ export default function ProfileSettingsPage() {
              />
            </div>
          </section>
+
+         {/* ─── Privacy ─── */}
+         <section className="space-y-3">
+           <h3 className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Privacy</h3>
+           <div className="bg-surface-1 border border-border rounded-xl p-4">
+             <div className="flex items-center justify-between">
+               <div>
+                 <p className="text-sm font-medium">Show Earnings on Profile</p>
+                 <p className="text-xs text-muted-foreground">Let others see how much you've earned</p>
+               </div>
+               <button
+                 onClick={async () => {
+                   const newVal = !(profile as any).show_earnings;
+                   await supabase.from('profiles').update({ show_earnings: newVal }).eq('id', profile.id);
+                   refreshProfile();
+                   toast.success(newVal ? 'Earnings visible' : 'Earnings hidden');
+                 }}
+                 className={`relative w-11 h-6 rounded-full transition-colors ${(profile as any).show_earnings ? 'bg-emerald-500' : 'bg-muted'}`}
+               >
+                 <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${(profile as any).show_earnings ? 'translate-x-5' : ''}`} />
+               </button>
+             </div>
+           </div>
+         </section>
  
         {/* ─── Verification ─── */}
         <section className="space-y-3">
