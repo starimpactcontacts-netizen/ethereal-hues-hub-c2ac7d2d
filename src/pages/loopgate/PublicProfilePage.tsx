@@ -49,8 +49,10 @@ interface PublicProfile {
   best_gatekeeper_qoi: number | null;
   is_founding_member: boolean;
   connection_count: number;
-   profile_bg_color: string | null;
-   profile_bg_image_url: string | null;
+  profile_bg_color: string | null;
+  profile_bg_image_url: string | null;
+  earnings_cents: number;
+  show_earnings: boolean;
 }
 
 interface ConnectedPlatform {
