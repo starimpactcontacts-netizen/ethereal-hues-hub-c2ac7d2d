@@ -5048,6 +5048,7 @@ export type Database = {
           region: string | null
           review_style: string | null
           rules_accepted: boolean | null
+          show_earnings: boolean
           software: string[] | null
           solo_cancel_count: number
           spendable_index: number
@@ -5110,6 +5111,7 @@ export type Database = {
           region?: string | null
           review_style?: string | null
           rules_accepted?: boolean | null
+          show_earnings?: boolean
           software?: string[] | null
           solo_cancel_count?: number
           spendable_index?: number
@@ -5172,6 +5174,7 @@ export type Database = {
           region?: string | null
           review_style?: string | null
           rules_accepted?: boolean | null
+          show_earnings?: boolean
           software?: string[] | null
           solo_cancel_count?: number
           spendable_index?: number
