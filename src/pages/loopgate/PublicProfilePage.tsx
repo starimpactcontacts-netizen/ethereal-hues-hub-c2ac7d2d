@@ -106,7 +106,7 @@ export default function PublicProfilePage() {
       
       const { data: profileData } = await supabase
         .from("profiles")
-         .select("id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, activity_status, bio, email, discord, portfolio_url, created_at, crew_id, xp, level, archetype, software, best_gatekeeper_qoi, is_founding_member, connection_count, profile_bg_color, profile_bg_image_url")
+         .select("id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, activity_status, bio, email, discord, portfolio_url, created_at, crew_id, xp, level, archetype, software, best_gatekeeper_qoi, is_founding_member, connection_count, profile_bg_color, profile_bg_image_url, earnings_cents, show_earnings")
         .eq(isUUID ? "id" : "username", userId)
         .single();
 
