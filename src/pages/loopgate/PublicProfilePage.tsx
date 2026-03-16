@@ -599,53 +599,62 @@ export default function PublicProfilePage() {
         )
       ) : (
         <div className="px-4 py-6 space-y-6">
-          {/* League & Stats Grid */}
+          {/* League, Class & Index Grid */}
           <div className="grid grid-cols-3 gap-2">
-            <div className="text-center p-3 bg-surface-1 border border-border">
+            <div className="text-center p-4 bg-surface-1 border border-border rounded-xl">
               <p className={`font-display text-2xl uppercase ${leagueColors[league]?.split(' ')[0] || 'text-muted-foreground'}`}>
                 {league.charAt(0)}
               </p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">
+              <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">
                 League
               </p>
             </div>
-            <div className="text-center p-3 bg-surface-1 border border-border">
+            <div className="text-center p-4 bg-surface-1 border border-border rounded-xl">
               <p className={`font-display text-2xl ${editorClass.color}`}>
                 {editorClass.letter}
               </p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">
+              <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">
                 Class
               </p>
             </div>
-            <div className="text-center p-3 bg-surface-1 border border-border">
-              <div className="flex items-center gap-1 justify-center">
-                <p className="font-display text-2xl">
-                  {Number(profile.global_index_score || 0).toFixed(1)}
-                </p>
-                <IndexEarnBadge size="md" />
-              </div>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">
+            <div className="text-center p-4 bg-surface-1 border border-border rounded-xl">
+              <p className="font-display text-2xl text-gold">
+                {Number(profile.global_index_score || 0).toFixed(1)}
+              </p>
+              <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">
                 Index
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="text-center p-3 bg-surface-1 border border-border">
+
+          {/* Win Rate, Events & Earnings */}
+          <div className={`grid ${profile.show_earnings ? 'grid-cols-3' : 'grid-cols-2'} gap-2`}>
+            <div className="text-center p-4 bg-surface-1 border border-border rounded-xl">
               <p className="font-display text-2xl">
                 {realStats.winRate.toFixed(0)}%
               </p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">
+              <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">
                 Win Rate
               </p>
             </div>
-            <div className="text-center p-3 bg-surface-1 border border-border">
+            <div className="text-center p-4 bg-surface-1 border border-border rounded-xl">
               <p className="font-display text-2xl">
                 {realStats.totalEvents}
               </p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">
+              <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">
                 Events
               </p>
             </div>
+            {profile.show_earnings && (
+              <div className="text-center p-4 bg-surface-1 border border-border rounded-xl">
+                <p className="font-display text-2xl text-emerald-400">
+                  ${((profile.earnings_cents || 0) / 100).toFixed(0)}
+                </p>
+                <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">
+                  Earned
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Member Since - Prestige Display */}
