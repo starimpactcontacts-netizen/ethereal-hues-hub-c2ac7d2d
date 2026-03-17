@@ -59,7 +59,7 @@ export default function LandingPage() {
               <img
                 src={loopgateHeroCinematic}
                 alt="Cinematic video editing — movies, artists, sports, cars"
-                className="w-[200%] sm:w-[150%] h-full object-cover object-center"
+                className="w-[350%] sm:w-[200%] h-full object-cover object-center"
                 style={{ minHeight: '100%' }}
               />
             </div>
