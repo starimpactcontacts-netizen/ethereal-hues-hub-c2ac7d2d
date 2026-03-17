@@ -53,25 +53,30 @@ export default function LandingPage() {
           {/* ── Cinematic hero image — TOP, full bleed ── */}
           <div className="absolute inset-0 z-0 overflow-hidden">
             <div
-              className="absolute inset-0"
-              style={{ animation: 'heroPan 25s ease-in-out infinite alternate' }}
+              className="absolute inset-y-0 left-0 w-[350%] sm:w-[200%]"
+              style={{ animation: 'heroPan 18s linear infinite alternate' }}
             >
               <img
                 src={loopgateHeroCinematic}
                 alt="Cinematic video editing — movies, artists, sports, cars"
-                className="w-[350%] sm:w-[200%] h-full object-cover object-center"
+                className="w-full h-full object-cover object-center"
                 style={{ minHeight: '100%' }}
               />
             </div>
             <style>{`
               @keyframes heroPan {
-                0%   { transform: translateX(0%); }
-                100% { transform: translateX(-71%); }
+                0%   { transform: translateX(0); }
+                100% { transform: translateX(-71.4286%); }
               }
               @media (min-width: 640px) {
                 @keyframes heroPan {
-                  0%   { transform: translateX(0%); }
+                  0%   { transform: translateX(0); }
                   100% { transform: translateX(-50%); }
+                }
+              }
+              @media (prefers-reduced-motion: reduce) {
+                div[style*='heroPan'] {
+                  animation: none !important;
                 }
               }
             `}</style>
