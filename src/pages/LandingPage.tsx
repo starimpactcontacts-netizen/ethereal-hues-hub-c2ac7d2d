@@ -48,25 +48,48 @@ export default function LandingPage() {
         <SEO {...pageSEO.home} />
         <LandingHeader bannerVisible={bannerVisible} />
 
-        {/* ═══════════════ HERO — PREVIEW-DOMINANT (Discord/Twitch style) ═══════════════ */}
+        {/* ═══════════════ HERO — CINEMATIC FULL-BLEED ═══════════════ */}
         <section className="relative min-h-[100vh] flex flex-col overflow-hidden">
-          {/* Full atmospheric bg */}
-          <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-red-950/10" />
+          {/* ── Cinematic hero image — TOP, full bleed ── */}
+          <div className="absolute inset-0 z-0">
+            <img
+              src={loopgateHeroCinematic}
+              alt="Cinematic video editing — movies, artists, sports, cars"
+              className="w-full h-full object-cover object-center"
+            />
+            {/* Heavy bottom fade to black for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background" />
+            {/* Side vignette */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_40%,transparent_30%,hsl(var(--background))_100%)]" />
+            {/* Top edge fade */}
+            <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-background to-transparent" />
+            {/* Film grain overlay */}
+            <div
+              className="absolute inset-0 opacity-[0.035] mix-blend-overlay pointer-events-none z-10"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E")`,
+                backgroundRepeat: 'repeat',
+                backgroundSize: '128px 128px',
+              }}
+            />
+          </div>
+
+          {/* Atmospheric underlays */}
           <GatePattern className="z-[1]" opacity={4} tileSize={56} />
           <div className="absolute top-1/3 right-1/4 w-[600px] h-[600px] bg-gold/[0.03] rounded-full blur-[120px] z-[1]" />
           <div className="absolute bottom-1/3 left-[10%] w-[400px] h-[400px] bg-red-500/[0.04] rounded-full blur-[100px] z-[1]" />
 
-          {/* Hero text — Apple × Fortnite × Discord seamless CTA */}
-          <div className="relative z-10 pt-12 sm:pt-16 pb-8 sm:pb-10 text-center px-6">
+          {/* Hero content — centered over image */}
+          <div className="relative z-10 flex-1 flex flex-col items-center justify-center pt-20 sm:pt-28 pb-16 text-center px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               className="mb-5"
             >
-              <img src={whereEditorsCompete} alt="WHERE EDITORS COMPETE" className="w-full max-w-[600px] sm:max-w-[700px] md:max-w-[800px] mx-auto" />
+              <img src={whereEditorsCompete} alt="WHERE EDITORS COMPETE" className="w-full max-w-[600px] sm:max-w-[700px] md:max-w-[800px] mx-auto drop-shadow-[0_4px_30px_rgba(0,0,0,0.8)]" />
             </motion.div>
             <motion.p
-              className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto mb-7 leading-relaxed font-medium"
+              className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto mb-7 leading-relaxed font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]"
               initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               transition={{ delay: 0.15, duration: 0.6 }}
             >
@@ -82,11 +105,9 @@ export default function LandingPage() {
                   whileHover={{ scale: 1.04, y: -2 }}
                   whileTap={{ scale: 0.96 }}
                   className="relative overflow-hidden px-14 sm:px-20 py-4 sm:py-5 cursor-pointer select-none touch-manipulation"
-                  style={{ background: 'linear-gradient(180deg, #E8C84A 0%, #D4A843 40%, #C49A2C 100%)', boxShadow: 'inset 0 0 0 2px rgba(30,30,30,0.45)' }}
+                  style={{ background: 'linear-gradient(180deg, #E8C84A 0%, #D4A843 40%, #C49A2C 100%)', boxShadow: 'inset 0 0 0 2px rgba(30,30,30,0.45), 0 8px 32px rgba(0,0,0,0.5)' }}
                 >
-                  {/* Top gloss highlight */}
                   <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/40 to-transparent pointer-events-none" />
-                  {/* Bottom shadow */}
                   <div className="absolute bottom-0 left-0 right-0 h-[30%] bg-gradient-to-t from-black/10 to-transparent pointer-events-none" />
                   <div className="relative z-10 flex items-center justify-center gap-3">
                     <Swords className="w-5 h-5 sm:w-6 sm:h-6 text-black" />
@@ -98,7 +119,7 @@ export default function LandingPage() {
               </Link>
               <button
                 onClick={handleGuestExplore}
-                className="font-display text-sm sm:text-base text-muted-foreground hover:text-foreground transition-colors font-bold tracking-[0.12em] px-4 py-3 uppercase"
+                className="font-display text-sm sm:text-base text-muted-foreground hover:text-foreground transition-colors font-bold tracking-[0.12em] px-4 py-3 uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
               >
                 Explore as Guest →
               </button>
@@ -111,47 +132,6 @@ export default function LandingPage() {
               <span className="flex items-center gap-1.5"><span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" /></span><span className="text-foreground font-bold">{stats.activeUsers || 0}</span> online</span>
               <span className="w-px h-3 bg-border" />
               <span className="flex items-center gap-1.5"><Swords className="w-3.5 h-3.5 text-muted-foreground" /><span className="text-foreground font-bold">{stats.totalCompeting || 0}</span> competing</span>
-            </motion.div>
-          </div>
-
-          {/* ──── REAL LOOPGATE UI PREVIEW ──── */}
-          <div className="relative z-10 flex-1 flex items-end justify-center px-4 sm:px-8 pb-16">
-            <motion.div
-              className="relative w-full max-w-5xl mx-auto"
-              initial={{ opacity: 0, y: 40, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.9, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            >
-              {/* Layered cinematic glow — two offset orbs for depth */}
-              <div
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[130%] pointer-events-none"
-                aria-hidden
-              >
-                {/* Primary glow — large, slow color cycle */}
-                <div
-                  className="absolute inset-0 rounded-full blur-[120px] sm:blur-[160px] opacity-20"
-                  style={{ animation: 'heroGlowA 12s ease-in-out infinite' }}
-                />
-                {/* Secondary glow — offset, counter-phase */}
-                <div
-                  className="absolute inset-[15%] rounded-full blur-[80px] sm:blur-[120px] opacity-15"
-                  style={{ animation: 'heroGlowB 12s ease-in-out infinite' }}
-                />
-              </div>
-              <style>{`
-                @keyframes heroGlowA {
-                  0%, 100% { background: radial-gradient(ellipse at 45% 50%, hsl(0 70% 45% / 0.6), transparent 70%); }
-                  25%  { background: radial-gradient(ellipse at 55% 45%, hsl(35 80% 45% / 0.5), transparent 70%); }
-                  50%  { background: radial-gradient(ellipse at 50% 55%, hsl(220 50% 40% / 0.4), transparent 70%); }
-                  75%  { background: radial-gradient(ellipse at 45% 50%, hsl(350 65% 40% / 0.5), transparent 70%); }
-                }
-                @keyframes heroGlowB {
-                  0%, 100% { background: radial-gradient(ellipse at 55% 55%, hsl(45 75% 50% / 0.5), transparent 65%); }
-                  33%  { background: radial-gradient(ellipse at 40% 50%, hsl(0 60% 40% / 0.4), transparent 65%); }
-                  66%  { background: radial-gradient(ellipse at 60% 45%, hsl(280 40% 35% / 0.35), transparent 65%); }
-                }
-              `}</style>
-              <img src={loopgateHeroCinematic} alt="Cinematic video editing — movies, artists, sports, cars" className="relative z-10 w-full h-auto rounded-lg drop-shadow-[0_20px_60px_rgba(0,0,0,0.5)]" />
             </motion.div>
           </div>
 
