@@ -151,7 +151,7 @@ export default function LandingPage() {
                   66%  { background: radial-gradient(ellipse at 60% 45%, hsl(280 40% 35% / 0.35), transparent 65%); }
                 }
               `}</style>
-              <img src={loopgatePreviewDevices} alt="Loopgate on mobile and desktop" className="relative z-10 w-full h-auto drop-shadow-[0_20px_60px_rgba(0,0,0,0.5)]" />
+              <img src={loopgateHeroCinematic} alt="Cinematic video editing — movies, artists, sports, cars" className="relative z-10 w-full h-auto rounded-lg drop-shadow-[0_20px_60px_rgba(0,0,0,0.5)]" />
             </motion.div>
           </div>
 
