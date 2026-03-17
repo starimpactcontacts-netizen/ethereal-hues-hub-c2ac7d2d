@@ -51,12 +51,30 @@ export default function LandingPage() {
         {/* ═══════════════ HERO — CINEMATIC FULL-BLEED ═══════════════ */}
         <section className="relative min-h-[100vh] flex flex-col overflow-hidden">
           {/* ── Cinematic hero image — TOP, full bleed ── */}
-          <div className="absolute inset-0 z-0">
-            <img
-              src={loopgateHeroCinematic}
-              alt="Cinematic video editing — movies, artists, sports, cars"
-              className="w-full h-full object-cover object-center"
-            />
+          <div className="absolute inset-0 z-0 overflow-hidden">
+            <div
+              className="absolute inset-0"
+              style={{ animation: 'heroPan 25s ease-in-out infinite alternate' }}
+            >
+              <img
+                src={loopgateHeroCinematic}
+                alt="Cinematic video editing — movies, artists, sports, cars"
+                className="w-[200%] sm:w-[150%] h-full object-cover object-center"
+                style={{ minHeight: '100%' }}
+              />
+            </div>
+            <style>{`
+              @keyframes heroPan {
+                0%   { transform: translateX(0%); }
+                100% { transform: translateX(-50%); }
+              }
+              @media (min-width: 640px) {
+                @keyframes heroPan {
+                  0%   { transform: translateX(0%); }
+                  100% { transform: translateX(-33%); }
+                }
+              }
+            `}</style>
             {/* Heavy bottom fade to black for text readability */}
             <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background" />
             {/* Side vignette */}
