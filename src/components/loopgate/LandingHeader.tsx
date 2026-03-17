@@ -38,12 +38,13 @@ export default function LandingHeader({ bannerVisible = false }: LandingHeaderPr
     <header className="bg-background/95 backdrop-blur-sm border-b border-border/50">
       <div className="flex items-center justify-between px-6 sm:px-8 h-[72px]">
         {/* Logo - Official Brand Wordmark */}
-        <Link to="/" className="flex items-center">
+        <Link to="/" className="flex items-center gap-2">
           <img 
             src={loopgateBrand} 
             alt="LOOPGATE" 
             className="h-8 sm:h-10 w-auto"
           />
+          <span className="text-[9px] font-bold tracking-widest text-muted-foreground/60 uppercase border border-border/40 rounded px-1.5 py-0.5 leading-none">Beta</span>
         </Link>
 
         {/* Desktop Navigation */}

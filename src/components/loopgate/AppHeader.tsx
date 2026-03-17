@@ -63,8 +63,9 @@ export default function AppHeader() {
       <div className="flex items-center justify-between px-4 h-14">
         {/* Left side: Logo + Music Player */}
         <div className="flex items-center gap-3">
-          <Link to="/hub" className="flex items-center group">
+          <Link to="/hub" className="flex items-center gap-1.5 group">
             <img src={loopgateBrand} alt="LOOPGATE" className="h-6 w-auto opacity-90 group-hover:opacity-100 transition-opacity" />
+            <span className="text-[8px] font-bold tracking-widest text-muted-foreground/50 uppercase border border-border/30 rounded px-1 py-0.5 leading-none">Beta</span>
           </Link>
           <div className="w-[1px] h-5 bg-border/40" />
           <HeaderMusicPlayer />
