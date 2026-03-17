@@ -15,7 +15,7 @@ import { useGuestMode } from '@/hooks/useGuestMode';
 import loopgateBrand from '@/assets/loopgate-brand.png';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 import atlasStatue from '@/assets/atlas-statue.png';
-import loopgatePreviewDevices from '@/assets/loopgate-hero-mockup.png';
+import loopgateHeroCinematic from '@/assets/loopgate-hero-cinematic.jpeg';
 import editoriumLogo from '@/assets/editorium-logo.png';
 import loopyAvatar from '@/assets/loopy-avatar.png';
 
