@@ -66,12 +66,12 @@ export default function LandingPage() {
             <style>{`
               @keyframes heroPan {
                 0%   { transform: translateX(0%); }
-                100% { transform: translateX(-50%); }
+                100% { transform: translateX(-71%); }
               }
               @media (min-width: 640px) {
                 @keyframes heroPan {
                   0%   { transform: translateX(0%); }
-                  100% { transform: translateX(-33%); }
+                  100% { transform: translateX(-50%); }
                 }
               }
             `}</style>
