@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Swords, Gavel, Smartphone, Shield, Eye, Award, Play, ChevronDown, Brain, Heart, Lightbulb, Music, Fingerprint, Zap, BarChart3 } from 'lucide-react';
 import GateIcon from '@/components/loopgate/GateIcon';
 import { Button } from '@/components/ui/button';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import LandingHeader from '@/components/loopgate/LandingHeader';
 import IOSAppBanner from '@/components/loopgate/iOSAppBanner';
 import GatePattern from '@/components/loopgate/GatePattern';
@@ -38,7 +38,7 @@ export default function LandingPage() {
   const [heroPanDistance, setHeroPanDistance] = useState(0);
   const heroViewportRef = useRef<HTMLDivElement>(null);
   const heroImageRef = useRef<HTMLImageElement>(null);
-  const prefersReducedMotion = useReducedMotion();
+  
 
   useEffect(() => {
     const updateHeroPanDistance = () => {
@@ -77,7 +77,7 @@ export default function LandingPage() {
               src={loopgateHeroCinematic}
               alt="Cinematic video editing — movies, artists, sports, cars"
               className="absolute inset-y-0 left-0 h-full w-auto max-w-none"
-              animate={{ x: prefersReducedMotion ? 0 : [0, -heroPanDistance, 0] }}
+              animate={{ x: [0, -heroPanDistance, 0] }}
               transition={{
                 duration: 36,
                 ease: 'easeInOut',
