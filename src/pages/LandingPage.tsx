@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Swords, Gavel, Smartphone, Shield, Eye, Award, Play, ChevronDown, Brain, Heart, Lightbulb, Music, Fingerprint, Zap, BarChart3 } from 'lucide-react';
 import GateIcon from '@/components/loopgate/GateIcon';
 import { Button } from '@/components/ui/button';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import LandingHeader from '@/components/loopgate/LandingHeader';
 import IOSAppBanner from '@/components/loopgate/iOSAppBanner';
 import GatePattern from '@/components/loopgate/GatePattern';
