@@ -56,9 +56,10 @@ export default function LandingPage() {
               className="absolute inset-y-0 left-0 w-[320%] sm:w-[200%]"
               animate={{ x: ['0%', '-68%', '0%'] }}
               transition={{
-                duration: 24,
-                ease: 'linear',
+                duration: 30,
+                ease: 'easeInOut',
                 repeat: Infinity,
+                repeatType: 'loop',
                 times: [0, 0.5, 1],
               }}
             >
