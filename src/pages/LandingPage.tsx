@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Swords, Gavel, Smartphone, Shield, Eye, Award, Play, ChevronDown, Brain, Heart, Lightbulb, Music, Fingerprint, Zap, BarChart3 } from 'lucide-react';
 import GateIcon from '@/components/loopgate/GateIcon';
@@ -35,26 +35,6 @@ export default function LandingPage() {
   const { setGuest } = useGuestMode();
   const { stats } = useGlobalStats();
   const [bannerVisible, setBannerVisible] = useState(false);
-  const [heroPanDistance, setHeroPanDistance] = useState(0);
-  const heroViewportRef = useRef<HTMLDivElement>(null);
-  const heroImageRef = useRef<HTMLImageElement>(null);
-  
-
-  useEffect(() => {
-    const updateHeroPanDistance = () => {
-      const viewport = heroViewportRef.current;
-      const image = heroImageRef.current;
-
-      if (!viewport || !image) return;
-
-      setHeroPanDistance(Math.max(image.scrollWidth - viewport.clientWidth, 0));
-    };
-
-    updateHeroPanDistance();
-    window.addEventListener('resize', updateHeroPanDistance);
-
-    return () => window.removeEventListener('resize', updateHeroPanDistance);
-  }, []);
 
   const handleGuestExplore = () => {
     setGuest(true);
@@ -71,29 +51,24 @@ export default function LandingPage() {
         {/* ═══════════════ HERO — CINEMATIC FULL-BLEED ═══════════════ */}
         <section className="relative min-h-[100vh] flex flex-col overflow-hidden">
           {/* ── Cinematic hero image — TOP, full bleed ── */}
-          <div ref={heroViewportRef} className="absolute inset-0 z-0 overflow-hidden">
-            <motion.img
-              ref={heroImageRef}
-              src={loopgateHeroCinematic}
-              alt="Cinematic video editing — movies, artists, sports, cars"
-              className="absolute inset-y-0 left-0 h-full w-auto max-w-none"
-              animate={{ x: [0, -heroPanDistance, 0] }}
+          <div className="absolute inset-0 z-0 overflow-hidden">
+            <motion.div
+              className="absolute inset-y-0 left-0 w-[320%] sm:w-[200%]"
+              animate={{ x: ['0%', '-68%', '0%'] }}
               transition={{
-                duration: 36,
-                ease: 'easeInOut',
+                duration: 24,
+                ease: 'linear',
                 repeat: Infinity,
-                repeatType: 'loop',
                 times: [0, 0.5, 1],
               }}
-              onLoad={() => {
-                const viewport = heroViewportRef.current;
-                const image = heroImageRef.current;
-
-                if (!viewport || !image) return;
-
-                setHeroPanDistance(Math.max(image.scrollWidth - viewport.clientWidth, 0));
-              }}
-            />
+            >
+              <img
+                src={loopgateHeroCinematic}
+                alt="Cinematic video editing — movies, artists, sports, cars"
+                className="w-full h-full object-cover object-center"
+                style={{ minHeight: '100%' }}
+              />
+            </motion.div>
             {/* Heavy bottom fade to black for text readability */}
             <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background" />
             {/* Side vignette */}
