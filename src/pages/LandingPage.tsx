@@ -77,7 +77,7 @@ export default function LandingPage() {
               src={loopgateHeroCinematic}
               alt="Cinematic video editing — movies, artists, sports, cars"
               className="absolute inset-y-0 left-0 h-full w-auto max-w-none"
-              animate={{ x: prefersReducedMotion ? 0 : [0, -heroPanDistance, 0] }}
+              animate={{ x: [0, -heroPanDistance, 0] }}
               transition={{
                 duration: 36,
                 ease: 'easeInOut',
