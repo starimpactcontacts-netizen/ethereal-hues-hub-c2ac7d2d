@@ -38,7 +38,7 @@ export default function LandingPage() {
   const [heroPanDistance, setHeroPanDistance] = useState(0);
   const heroViewportRef = useRef<HTMLDivElement>(null);
   const heroImageRef = useRef<HTMLImageElement>(null);
-  const prefersReducedMotion = useReducedMotion();
+  
 
   useEffect(() => {
     const updateHeroPanDistance = () => {
