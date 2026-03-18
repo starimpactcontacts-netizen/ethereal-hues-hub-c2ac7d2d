@@ -52,9 +52,15 @@ export default function LandingPage() {
         <section className="relative min-h-[100vh] flex flex-col overflow-hidden">
           {/* ── Cinematic hero image — TOP, full bleed ── */}
           <div className="absolute inset-0 z-0 overflow-hidden">
-            <div
-              className="absolute inset-y-0 left-0 w-[350%] sm:w-[200%]"
-              style={{ animation: 'heroPan 18s linear infinite alternate' }}
+            <motion.div
+              className="absolute inset-y-0 left-0 w-[320%] sm:w-[200%]"
+              animate={{ x: ['0%', '-68%', '0%'] }}
+              transition={{
+                duration: 24,
+                ease: 'linear',
+                repeat: Infinity,
+                times: [0, 0.5, 1],
+              }}
             >
               <img
                 src={loopgateHeroCinematic}
@@ -62,24 +68,7 @@ export default function LandingPage() {
                 className="w-full h-full object-cover object-center"
                 style={{ minHeight: '100%' }}
               />
-            </div>
-            <style>{`
-              @keyframes heroPan {
-                0%   { transform: translateX(0); }
-                100% { transform: translateX(-71.4286%); }
-              }
-              @media (min-width: 640px) {
-                @keyframes heroPan {
-                  0%   { transform: translateX(0); }
-                  100% { transform: translateX(-50%); }
-                }
-              }
-              @media (prefers-reduced-motion: reduce) {
-                div[style*='heroPan'] {
-                  animation: none !important;
-                }
-              }
-            `}</style>
+            </motion.div>
             {/* Heavy bottom fade to black for text readability */}
             <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background" />
             {/* Side vignette */}
