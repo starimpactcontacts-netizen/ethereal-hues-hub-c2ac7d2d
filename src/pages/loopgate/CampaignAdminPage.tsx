@@ -683,6 +683,8 @@ export default function CampaignAdminPage() {
                                         goal_posts: (campaign as any).goal_posts || 0,
                                         goal_label: campaign.goal_label || '',
                                         incoming_note: (campaign as any).incoming_note || '',
+                                        campaign_type: (campaign as any).campaign_type || 'artist',
+                                        logo_url: (campaign as any).logo_url || '',
                                       });
                                     }}
                                     className="h-6 px-2 rounded text-[9px] text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
