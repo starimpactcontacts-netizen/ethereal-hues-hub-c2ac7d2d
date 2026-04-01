@@ -118,7 +118,7 @@ export default function CampaignAdminPage() {
       if (!params.featured_artist_id) delete params.featured_artist_id;
       await createCampaign(params);
       toast.success('Campaign created');
-      setNewCampaign({ client_name: '', name: '', description: '', goal_views: 0, goal_posts: 0, goal_label: '', featured_artist_id: '' });
+      setNewCampaign({ client_name: '', name: '', description: '', goal_views: 0, goal_posts: 0, goal_label: '', featured_artist_id: '', campaign_type: 'artist', logo_url: '' });
       setShowCreateForm(false);
     } catch (err: any) { toast.error(err.message); }
   };
