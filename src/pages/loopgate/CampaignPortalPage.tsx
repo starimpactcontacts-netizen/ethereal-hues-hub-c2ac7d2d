@@ -155,7 +155,15 @@ export default function CampaignPortalPage() {
     }
   }, [slug, refreshing, fetchData]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  // On mount: fetch data AND trigger IG stats refresh
+  useEffect(() => {
+    const init = async () => {
+      // Try to refresh IG stats on load (non-blocking)
+      supabase.functions.invoke('instagram-stats', { body: { action: 'refresh-all' } }).catch(() => {});
+      await fetchData();
+    };
+    init();
+  }, [fetchData]);
 
   // Auto-refresh every 30 minutes (also triggers IG stats)
   useEffect(() => {
