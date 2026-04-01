@@ -178,6 +178,7 @@ export type Database = {
       artist_campaigns: {
         Row: {
           budget_cents: number | null
+          campaign_type: string
           client_id: string
           client_name: string | null
           cover_image_url: string | null
@@ -190,6 +191,7 @@ export type Database = {
           goal_views: number
           id: string
           incoming_note: string | null
+          logo_url: string | null
           name: string
           password_hash: string | null
           roi_percentage: number | null
@@ -205,6 +207,7 @@ export type Database = {
         }
         Insert: {
           budget_cents?: number | null
+          campaign_type?: string
           client_id: string
           client_name?: string | null
           cover_image_url?: string | null
@@ -217,6 +220,7 @@ export type Database = {
           goal_views?: number
           id?: string
           incoming_note?: string | null
+          logo_url?: string | null
           name: string
           password_hash?: string | null
           roi_percentage?: number | null
@@ -232,6 +236,7 @@ export type Database = {
         }
         Update: {
           budget_cents?: number | null
+          campaign_type?: string
           client_id?: string
           client_name?: string | null
           cover_image_url?: string | null
@@ -244,6 +249,7 @@ export type Database = {
           goal_views?: number
           id?: string
           incoming_note?: string | null
+          logo_url?: string | null
           name?: string
           password_hash?: string | null
           roi_percentage?: number | null
