@@ -150,11 +150,15 @@ export default function LandingPage() {
                 >
                   <Link
                     to={link.to}
-                    className={`group flex flex-col items-center justify-center gap-2 py-6 sm:py-8 bg-surface-0 border ${link.color} transition-all hover:bg-surface-1`}
+                    className={`group relative flex flex-col items-center justify-center gap-2.5 py-8 sm:py-10 bg-surface-0 border ${link.border} transition-all duration-300 hover:bg-surface-1 overflow-hidden ${link.glow}`}
                   >
-                    <link.icon className="w-6 h-6 sm:w-7 sm:h-7 text-muted-foreground group-hover:text-foreground transition-colors" />
-                    <span className="font-display text-sm sm:text-base text-foreground tracking-wide">{link.label}</span>
-                    <span className="text-[10px] text-muted-foreground">{link.desc}</span>
+                    {/* Accent gradient overlay */}
+                    <div className={`absolute inset-0 bg-gradient-to-b ${link.accent} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                    <div className="relative z-10 flex flex-col items-center gap-2.5">
+                      <link.Icon size={32} className="text-muted-foreground group-hover:text-foreground transition-colors duration-300" />
+                      <span className="font-display text-base sm:text-lg text-foreground tracking-[0.08em] font-bold uppercase">{link.label}</span>
+                      <span className="text-[10px] sm:text-[11px] text-muted-foreground tracking-wide">{link.desc}</span>
+                    </div>
                   </Link>
                 </motion.div>
               ))}
