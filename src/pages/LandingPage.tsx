@@ -53,10 +53,10 @@ export default function LandingPage() {
           {/* ── Cinematic hero image — TOP, full bleed ── */}
           <div className="absolute inset-0 z-0 overflow-hidden">
             <motion.div
-              className="absolute inset-y-0 left-0 w-[320%] sm:w-[200%]"
-              animate={{ x: ['0%', '-68%', '0%'] }}
+              className="absolute inset-y-0 left-0 w-[220%] sm:w-[160%]"
+              animate={{ x: ['0%', '-55%', '0%'] }}
               transition={{
-                duration: 24,
+                duration: 40,
                 ease: 'linear',
                 repeat: Infinity,
                 times: [0, 0.5, 1],
