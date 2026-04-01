@@ -404,44 +404,59 @@ export default function CampaignAdminPage() {
                       </div>
                     )}
 
-                    {/* Featured Artist */}
-                    <div>
-                      <label className="text-[8px] text-muted-foreground uppercase tracking-[0.12em] font-bold block mb-1.5">Featured Artist</label>
-                      <select
-                        value={newCampaign.featured_artist_id}
-                        onChange={e => setNewCampaign(p => ({ ...p, featured_artist_id: e.target.value, name: '' }))}
-                        className="w-full bg-background/60 border border-border/40 rounded-md text-sm h-10 px-3 text-foreground"
-                      >
-                        <option value="">None (no artist profile)</option>
-                        {artists.map(a => (
-                          <option key={a.id} value={a.id}>{a.name}{a.genre ? ` · ${a.genre}` : ''}</option>
-                        ))}
-                      </select>
-                    </div>
+                    {newCampaign.campaign_type === 'artist' ? (
+                      <>
+                        {/* Featured Artist — only for artist campaigns */}
+                        <div>
+                          <label className="text-[8px] text-muted-foreground uppercase tracking-[0.12em] font-bold block mb-1.5">Featured Artist</label>
+                          <select
+                            value={newCampaign.featured_artist_id}
+                            onChange={e => setNewCampaign(p => ({ ...p, featured_artist_id: e.target.value, name: '' }))}
+                            className="w-full bg-background/60 border border-border/40 rounded-md text-sm h-10 px-3 text-foreground"
+                          >
+                            <option value="">None (no artist profile)</option>
+                            {artists.map(a => (
+                              <option key={a.id} value={a.id}>{a.name}{a.genre ? ` · ${a.genre}` : ''}</option>
+                            ))}
+                          </select>
+                        </div>
 
-                    {/* Song */}
-                    <div>
-                      <label className="text-[8px] text-muted-foreground uppercase tracking-[0.12em] font-bold block mb-1.5">Song</label>
-                      {newCampaign.featured_artist_id && artistSongs.length > 0 ? (
-                        <select
-                          value={newCampaign.name}
-                          onChange={e => setNewCampaign(p => ({ ...p, name: e.target.value }))}
-                          className="w-full bg-background/60 border border-border/40 rounded-md text-sm h-10 px-3 text-foreground"
-                        >
-                          <option value="">Select a song</option>
-                          {artistSongs.map(s => (
-                            <option key={s.id} value={s.song_name}>{s.song_name}</option>
-                          ))}
-                        </select>
-                      ) : (
+                        {/* Song — only for artist campaigns */}
+                        <div>
+                          <label className="text-[8px] text-muted-foreground uppercase tracking-[0.12em] font-bold block mb-1.5">Song</label>
+                          {newCampaign.featured_artist_id && artistSongs.length > 0 ? (
+                            <select
+                              value={newCampaign.name}
+                              onChange={e => setNewCampaign(p => ({ ...p, name: e.target.value }))}
+                              className="w-full bg-background/60 border border-border/40 rounded-md text-sm h-10 px-3 text-foreground"
+                            >
+                              <option value="">Select a song</option>
+                              {artistSongs.map(s => (
+                                <option key={s.id} value={s.song_name}>{s.song_name}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            <Input
+                              placeholder={newCampaign.featured_artist_id ? 'No drops found — type manually' : 'Select an artist first or type manually'}
+                              value={newCampaign.name}
+                              onChange={e => setNewCampaign(p => ({ ...p, name: e.target.value }))}
+                              className="bg-background/60 border-border/40 h-10"
+                            />
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      /* Campaign Name — for brand/film campaigns */
+                      <div>
+                        <label className="text-[8px] text-muted-foreground uppercase tracking-[0.12em] font-bold block mb-1.5">Campaign Name</label>
                         <Input
-                          placeholder={newCampaign.featured_artist_id ? 'No drops found — type manually' : 'Select an artist first or type manually'}
+                          placeholder={`e.g. ${newCampaign.campaign_type === 'brand' ? 'Summer Promo 2026' : 'Official Trailer Launch'}`}
                           value={newCampaign.name}
                           onChange={e => setNewCampaign(p => ({ ...p, name: e.target.value }))}
                           className="bg-background/60 border-border/40 h-10"
                         />
-                      )}
-                    </div>
+                      </div>
+                    )}
 
                     <Input
                       placeholder="Description (optional)"
