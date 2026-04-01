@@ -16,12 +16,12 @@ import loopyAvatar from '@/assets/loopy-avatar.png';
 import { useState } from 'react';
 
 const quickLinks = [
-  { to: '/hub', label: 'Hub', icon: Eye, desc: 'Browse edits & editors', color: 'border-foreground/10 hover:border-foreground/30' },
-  { to: '/arena', label: 'Arena', icon: Swords, desc: 'Compete now', color: 'border-red-500/20 hover:border-red-500/40' },
-  { to: '/rankings', label: 'Rankings', icon: Award, desc: 'Global leaderboard', color: 'border-gold/20 hover:border-gold/40' },
-  { to: '/loopy', label: 'Rate My Edit', icon: Brain, desc: 'Free instant rating', color: 'border-purple-500/20 hover:border-purple-500/40' },
-  { to: '/units', label: 'Units', icon: Shield, desc: 'Join a crew', color: 'border-cyan-500/20 hover:border-cyan-500/40' },
-  { to: '/missions', label: 'Missions', icon: Flame, desc: 'Earn cash', color: 'border-emerald-500/20 hover:border-emerald-500/40' },
+  { to: '/hub', label: 'Hub', Icon: HubIcon, desc: 'Browse edits & editors', accent: 'from-white/5 to-transparent', border: 'border-foreground/8 hover:border-foreground/25', glow: '' },
+  { to: '/arena', label: 'Arena', Icon: ArenaIcon, desc: 'Compete now', accent: 'from-red-500/8 to-transparent', border: 'border-red-500/15 hover:border-red-500/40', glow: 'hover:shadow-[0_0_30px_-8px_rgba(239,68,68,0.15)]' },
+  { to: '/rankings', label: 'Rankings', Icon: RankingsIcon, desc: 'Global leaderboard', accent: 'from-gold/8 to-transparent', border: 'border-gold/15 hover:border-gold/40', glow: 'hover:shadow-[0_0_30px_-8px_rgba(232,200,74,0.15)]' },
+  { to: '/loopy', label: 'Rate My Edit', Icon: RateIcon, desc: 'Free instant rating', accent: 'from-purple-500/8 to-transparent', border: 'border-purple-500/15 hover:border-purple-500/40', glow: 'hover:shadow-[0_0_30px_-8px_rgba(168,85,247,0.15)]' },
+  { to: '/units', label: 'Units', Icon: UnitsIcon, desc: 'Join a crew', accent: 'from-cyan-500/8 to-transparent', border: 'border-cyan-500/15 hover:border-cyan-500/40', glow: 'hover:shadow-[0_0_30px_-8px_rgba(6,182,212,0.15)]' },
+  { to: '/missions', label: 'Missions', Icon: MissionsIcon, desc: 'Earn cash', accent: 'from-emerald-500/8 to-transparent', border: 'border-emerald-500/15 hover:border-emerald-500/40', glow: 'hover:shadow-[0_0_30px_-8px_rgba(16,185,129,0.15)]' },
 ];
 
 export default function LandingPage() {
