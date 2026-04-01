@@ -363,6 +363,47 @@ export default function CampaignAdminPage() {
                       )}
                     </div>
 
+                    {/* Campaign Type */}
+                    <div>
+                      <label className="text-[8px] text-muted-foreground uppercase tracking-[0.12em] font-bold block mb-1.5">Campaign Type</label>
+                      <div className="flex gap-2">
+                        {(['artist', 'brand', 'film'] as const).map(type => (
+                          <button
+                            key={type}
+                            onClick={() => setNewCampaign(p => ({ ...p, campaign_type: type }))}
+                            className={`flex-1 h-10 rounded-md border text-xs font-bold uppercase tracking-wider transition-all ${
+                              newCampaign.campaign_type === type
+                                ? 'border-gold bg-gold/10 text-gold'
+                                : 'border-border/40 bg-background/60 text-muted-foreground hover:border-border/60'
+                            }`}
+                          >
+                            {type === 'artist' ? '🎵 Artist' : type === 'brand' ? '🏢 Brand' : '🎬 Film'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Logo URL (for brand/film) */}
+                    {newCampaign.campaign_type !== 'artist' && (
+                      <div>
+                        <label className="text-[8px] text-muted-foreground uppercase tracking-[0.12em] font-bold block mb-1.5">
+                          Company Logo URL
+                        </label>
+                        <Input
+                          placeholder="https://example.com/logo.png"
+                          value={newCampaign.logo_url}
+                          onChange={e => setNewCampaign(p => ({ ...p, logo_url: e.target.value }))}
+                          className="bg-background/60 border-border/40 h-10"
+                        />
+                        {newCampaign.logo_url && (
+                          <div className="mt-2 flex items-center gap-2">
+                            <img src={newCampaign.logo_url} alt="Logo preview" className="h-8 w-auto object-contain rounded border border-border/30 bg-background/60 p-1" />
+                            <span className="text-[8px] text-muted-foreground">Preview</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     {/* Featured Artist */}
                     <div>
                       <label className="text-[8px] text-muted-foreground uppercase tracking-[0.12em] font-bold block mb-1.5">Featured Artist</label>
