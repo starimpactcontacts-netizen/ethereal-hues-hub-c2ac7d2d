@@ -520,7 +520,9 @@ export default function CampaignAdminPage() {
                           className="flex-1 flex items-center gap-3 text-left group"
                         >
                           <div className="w-10 h-10 rounded-lg bg-background/60 border border-border/30 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                            {artistInfo?.avatar_url ? (
+                            {logoUrl && campaignType !== 'artist' ? (
+                              <img src={logoUrl} alt="" className="w-full h-full object-contain p-1" />
+                            ) : artistInfo?.avatar_url ? (
                               <img src={artistInfo.avatar_url} alt="" className="w-full h-full object-cover" />
                             ) : (
                               <CampaignIcon className="text-muted-foreground/40" size={18} />
