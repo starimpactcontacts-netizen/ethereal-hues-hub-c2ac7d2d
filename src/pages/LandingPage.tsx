@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Swords, Eye, Award, Play, Shield, Brain, Smartphone, Flame, BookOpen } from 'lucide-react';
+import { ArrowRight, Swords, Play, Smartphone } from 'lucide-react';
+import { HubIcon, ArenaIcon, RankingsIcon, RateIcon, UnitsIcon, MissionsIcon } from '@/components/loopgate/LandingIcons';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import LandingHeader from '@/components/loopgate/LandingHeader';
@@ -16,12 +17,12 @@ import loopyAvatar from '@/assets/loopy-avatar.png';
 import { useState } from 'react';
 
 const quickLinks = [
-  { to: '/hub', label: 'Hub', icon: Eye, desc: 'Browse edits & editors', color: 'border-foreground/10 hover:border-foreground/30' },
-  { to: '/arena', label: 'Arena', icon: Swords, desc: 'Compete now', color: 'border-red-500/20 hover:border-red-500/40' },
-  { to: '/rankings', label: 'Rankings', icon: Award, desc: 'Global leaderboard', color: 'border-gold/20 hover:border-gold/40' },
-  { to: '/loopy', label: 'Rate My Edit', icon: Brain, desc: 'Free instant rating', color: 'border-purple-500/20 hover:border-purple-500/40' },
-  { to: '/units', label: 'Units', icon: Shield, desc: 'Join a crew', color: 'border-cyan-500/20 hover:border-cyan-500/40' },
-  { to: '/missions', label: 'Missions', icon: Flame, desc: 'Earn cash', color: 'border-emerald-500/20 hover:border-emerald-500/40' },
+  { to: '/hub', label: 'Hub', Icon: HubIcon, desc: 'Browse edits & editors', accent: 'from-white/5 to-transparent', border: 'border-foreground/8 hover:border-foreground/25', glow: '' },
+  { to: '/arena', label: 'Arena', Icon: ArenaIcon, desc: 'Compete now', accent: 'from-red-500/8 to-transparent', border: 'border-red-500/15 hover:border-red-500/40', glow: 'hover:shadow-[0_0_30px_-8px_rgba(239,68,68,0.15)]' },
+  { to: '/rankings', label: 'Rankings', Icon: RankingsIcon, desc: 'Global leaderboard', accent: 'from-gold/8 to-transparent', border: 'border-gold/15 hover:border-gold/40', glow: 'hover:shadow-[0_0_30px_-8px_rgba(232,200,74,0.15)]' },
+  { to: '/loopy', label: 'Rate My Edit', Icon: RateIcon, desc: 'Free instant rating', accent: 'from-purple-500/8 to-transparent', border: 'border-purple-500/15 hover:border-purple-500/40', glow: 'hover:shadow-[0_0_30px_-8px_rgba(168,85,247,0.15)]' },
+  { to: '/units', label: 'Units', Icon: UnitsIcon, desc: 'Join a crew', accent: 'from-cyan-500/8 to-transparent', border: 'border-cyan-500/15 hover:border-cyan-500/40', glow: 'hover:shadow-[0_0_30px_-8px_rgba(6,182,212,0.15)]' },
+  { to: '/missions', label: 'Missions', Icon: MissionsIcon, desc: 'Earn cash', accent: 'from-emerald-500/8 to-transparent', border: 'border-emerald-500/15 hover:border-emerald-500/40', glow: 'hover:shadow-[0_0_30px_-8px_rgba(16,185,129,0.15)]' },
 ];
 
 export default function LandingPage() {
@@ -150,11 +151,15 @@ export default function LandingPage() {
                 >
                   <Link
                     to={link.to}
-                    className={`group flex flex-col items-center justify-center gap-2 py-6 sm:py-8 bg-surface-0 border ${link.color} transition-all hover:bg-surface-1`}
+                    className={`group relative flex flex-col items-center justify-center gap-2.5 py-8 sm:py-10 bg-surface-0 border ${link.border} transition-all duration-300 hover:bg-surface-1 overflow-hidden ${link.glow}`}
                   >
-                    <link.icon className="w-6 h-6 sm:w-7 sm:h-7 text-muted-foreground group-hover:text-foreground transition-colors" />
-                    <span className="font-display text-sm sm:text-base text-foreground tracking-wide">{link.label}</span>
-                    <span className="text-[10px] text-muted-foreground">{link.desc}</span>
+                    {/* Accent gradient overlay */}
+                    <div className={`absolute inset-0 bg-gradient-to-b ${link.accent} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                    <div className="relative z-10 flex flex-col items-center gap-2.5">
+                      <link.Icon size={32} className="text-muted-foreground group-hover:text-foreground transition-colors duration-300" />
+                      <span className="font-display text-base sm:text-lg text-foreground tracking-[0.08em] font-bold uppercase">{link.label}</span>
+                      <span className="text-[10px] sm:text-[11px] text-muted-foreground tracking-wide">{link.desc}</span>
+                    </div>
                   </Link>
                 </motion.div>
               ))}
@@ -181,6 +186,22 @@ export default function LandingPage() {
               >
                 <span className="text-sm font-bold tracking-wider text-muted-foreground group-hover:text-foreground transition-colors">QOI TEST</span>
                 <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">→</span>
+              </Link>
+            </motion.div>
+
+            {/* About link */}
+            <motion.div
+              className="mt-4 text-center"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4, duration: 0.4 }}
+            >
+              <Link
+                to="/about"
+                className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors tracking-[0.15em] uppercase font-medium"
+              >
+                What is Loopgate? <ArrowRight className="w-3 h-3" />
               </Link>
             </motion.div>
           </div>
