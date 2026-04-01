@@ -155,7 +155,15 @@ export default function CampaignPortalPage() {
     }
   }, [slug, refreshing, fetchData]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  // On mount: fetch data AND trigger IG stats refresh
+  useEffect(() => {
+    const init = async () => {
+      // Try to refresh IG stats on load (non-blocking)
+      supabase.functions.invoke('instagram-stats', { body: { action: 'refresh-all' } }).catch(() => {});
+      await fetchData();
+    };
+    init();
+  }, [fetchData]);
 
   // Auto-refresh every 30 minutes (also triggers IG stats)
   useEffect(() => {
@@ -207,7 +215,9 @@ export default function CampaignPortalPage() {
   const totalLikes = edits.reduce((sum, e) => sum + e.like_count, 0);
   const totalShares = edits.reduce((sum, e) => sum + e.share_count, 0);
   const totalComments = edits.reduce((sum, e) => sum + e.comment_count, 0);
-  const engagementRate = totalEditViews > 0 ? (((totalLikes + totalShares + totalComments) / totalEditViews) * 100).toFixed(1) : '0.0';
+  // Use the higher of campaign total_views or aggregated edit views
+  const displayViews = Math.max(campaign.total_views, totalEditViews);
+  const engagementRate = displayViews > 0 ? (((totalLikes + totalShares + totalComments) / displayViews) * 100).toFixed(1) : '0.0';
   const portalUrl = window.location.href;
   const isBrandCampaign = campaign.campaign_type === 'brand' || campaign.campaign_type === 'film';
 
@@ -351,7 +361,7 @@ export default function CampaignPortalPage() {
         >
           <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-400 font-black mb-2">Views Generated</p>
           <p className="text-6xl sm:text-7xl font-black text-neutral-900 tracking-tight tabular-nums leading-none">
-            {campaign.total_views > 0 ? formatNumber(campaign.total_views) : '—'}
+            {displayViews > 0 ? formatNumber(displayViews) : '—'}
           </p>
           <div className="flex items-center justify-center gap-3 mt-4">
             <button
@@ -379,7 +389,7 @@ export default function CampaignPortalPage() {
           className="grid grid-cols-2 sm:grid-cols-4 gap-3"
         >
           {[
-            { label: 'Total Reach', raw: campaign.total_views, icon: Eye, sub: 'Organic + Paid Views' },
+            { label: 'Total Reach', raw: displayViews, icon: Eye, sub: 'Organic + Paid Views' },
             { label: 'Impressions', raw: campaign.total_impressions, icon: TrendingUp, sub: 'Feed Appearances' },
             { label: 'Engagements', raw: campaign.total_engagements, icon: Zap, sub: 'Likes, Shares, Comments' },
             { label: 'Click-Through', raw: campaign.total_clicks, icon: MousePointerClick, sub: 'Profile & Link Clicks' },
@@ -525,11 +535,10 @@ export default function CampaignPortalPage() {
                         <p className="text-[10px] text-neutral-400 font-bold truncate">@{edit.editor_username}</p>
                       )}
                       <div className="flex items-center gap-3 mt-1">
-                        {edit.view_count > 0 && (
-                          <span className="text-xs font-black text-neutral-900">{formatNumber(edit.view_count)} <span className="text-neutral-400 font-bold text-[9px]">views</span></span>
-                        )}
-                        {edit.like_count > 0 && (
-                          <span className="text-xs font-black text-neutral-900">{formatNumber(edit.like_count)} <span className="text-neutral-400 font-bold text-[9px]">likes</span></span>
+                        <span className="text-xs font-black text-neutral-900">{formatNumber(edit.view_count)} <span className="text-neutral-400 font-bold text-[9px]">views</span></span>
+                        <span className="text-xs font-black text-neutral-900">{formatNumber(edit.like_count)} <span className="text-neutral-400 font-bold text-[9px]">likes</span></span>
+                        {edit.comment_count > 0 && (
+                          <span className="text-xs font-black text-neutral-900">{formatNumber(edit.comment_count)} <span className="text-neutral-400 font-bold text-[9px]">comments</span></span>
                         )}
                       </div>
                     </div>
