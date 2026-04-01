@@ -88,6 +88,19 @@ function exportCSV(campaign: CampaignData, edits: EditData[]) {
   a.click(); URL.revokeObjectURL(url);
 }
 
+const REFRESH_COOLDOWN_MS = 30 * 60 * 1000; // 30 minutes
+
+function getStoredLastRefresh(slug: string): number {
+  try {
+    const stored = localStorage.getItem(`campaign_refresh_${slug}`);
+    return stored ? parseInt(stored, 10) : 0;
+  } catch { return 0; }
+}
+
+function setStoredLastRefresh(slug: string) {
+  try { localStorage.setItem(`campaign_refresh_${slug}`, String(Date.now())); } catch {}
+}
+
 export default function CampaignPortalPage() {
   const { slug } = useParams<{ slug: string }>();
   const [loading, setLoading] = useState(true);
@@ -97,6 +110,8 @@ export default function CampaignPortalPage() {
   const [edits, setEdits] = useState<EditData[]>([]);
   const [copied, setCopied] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [refreshing, setRefreshing] = useState(false);
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
 
   const fetchData = useCallback(async () => {
     if (!slug) return;
@@ -118,13 +133,53 @@ export default function CampaignPortalPage() {
     }
   }, [slug]);
 
+  // Manual refresh — triggers instagram-stats then re-fetches
+  const handleManualRefresh = useCallback(async () => {
+    if (!slug || refreshing) return;
+    const lastTime = getStoredLastRefresh(slug);
+    if (Date.now() - lastTime < REFRESH_COOLDOWN_MS) return;
+
+    setRefreshing(true);
+    try {
+      // Trigger Instagram stats refresh
+      await supabase.functions.invoke('instagram-stats', {
+        body: { action: 'refresh-all' }
+      });
+      // Then re-fetch campaign data
+      await fetchData();
+      setStoredLastRefresh(slug);
+    } catch (err) {
+      console.error('Manual refresh failed:', err);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [slug, refreshing, fetchData]);
+
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // Auto-refresh every 30 minutes
+  // Auto-refresh every 30 minutes (also triggers IG stats)
   useEffect(() => {
-    const interval = setInterval(() => { fetchData(); }, 30 * 60 * 1000);
+    const interval = setInterval(async () => {
+      try {
+        await supabase.functions.invoke('instagram-stats', { body: { action: 'refresh-all' } });
+      } catch {}
+      fetchData();
+    }, REFRESH_COOLDOWN_MS);
     return () => clearInterval(interval);
   }, [fetchData]);
+
+  // Cooldown timer
+  useEffect(() => {
+    if (!slug) return;
+    const tick = () => {
+      const lastTime = getStoredLastRefresh(slug);
+      const elapsed = Date.now() - lastTime;
+      setCooldownRemaining(elapsed < REFRESH_COOLDOWN_MS ? Math.ceil((REFRESH_COOLDOWN_MS - elapsed) / 1000) : 0);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [slug, refreshing]);
 
   if (loading) {
     return (
