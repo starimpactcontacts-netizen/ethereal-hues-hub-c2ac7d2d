@@ -353,8 +353,23 @@ export default function CampaignPortalPage() {
           <p className="text-6xl sm:text-7xl font-black text-neutral-900 tracking-tight tabular-nums leading-none">
             {campaign.total_views > 0 ? formatNumber(campaign.total_views) : '—'}
           </p>
-          <div className="flex items-center justify-center gap-2 mt-3 text-[9px] text-neutral-400">
-            <RefreshCw size={10} />
+          <div className="flex items-center justify-center gap-3 mt-4">
+            <button
+              onClick={handleManualRefresh}
+              disabled={refreshing || cooldownRemaining > 0}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-[10px] uppercase tracking-wider font-black transition-all ${
+                refreshing || cooldownRemaining > 0
+                  ? 'bg-neutral-100 text-neutral-300 cursor-not-allowed'
+                  : 'bg-neutral-900 text-white hover:bg-neutral-800 active:scale-95'
+              }`}
+            >
+              <RefreshCw size={11} className={refreshing ? 'animate-spin' : ''} />
+              {refreshing ? 'Refreshing…' : cooldownRemaining > 0
+                ? `${Math.floor(cooldownRemaining / 60)}:${String(cooldownRemaining % 60).padStart(2, '0')}`
+                : 'Refresh Stats'}
+            </button>
+          </div>
+          <div className="flex items-center justify-center gap-2 mt-2 text-[9px] text-neutral-400">
             <span className="font-bold">Updated {lastRefresh.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • Auto-refreshes every 30 min</span>
           </div>
         </motion.div>
