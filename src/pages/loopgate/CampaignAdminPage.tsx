@@ -502,8 +502,10 @@ export default function CampaignAdminPage() {
                   const artistInfo = (campaign as any).featured_artists;
                   const goalProgress = campaign.goal_views > 0 ? Math.min(100, (campaign.total_views / campaign.goal_views) * 100) : 0;
                   const postsProgress = (campaign as any).goal_posts > 0 ? Math.min(100, (campaignEdits.length / (campaign as any).goal_posts) * 100) : 0;
+                          const campaignType = (campaign as any).campaign_type || 'artist';
+                          const logoUrl = (campaign as any).logo_url;
 
-                  return (
+                          return (
                     <motion.div
                       key={campaign.id}
                       layout
