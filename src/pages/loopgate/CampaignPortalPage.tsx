@@ -535,11 +535,10 @@ export default function CampaignPortalPage() {
                         <p className="text-[10px] text-neutral-400 font-bold truncate">@{edit.editor_username}</p>
                       )}
                       <div className="flex items-center gap-3 mt-1">
-                        {edit.view_count > 0 && (
-                          <span className="text-xs font-black text-neutral-900">{formatNumber(edit.view_count)} <span className="text-neutral-400 font-bold text-[9px]">views</span></span>
-                        )}
-                        {edit.like_count > 0 && (
-                          <span className="text-xs font-black text-neutral-900">{formatNumber(edit.like_count)} <span className="text-neutral-400 font-bold text-[9px]">likes</span></span>
+                        <span className="text-xs font-black text-neutral-900">{formatNumber(edit.view_count)} <span className="text-neutral-400 font-bold text-[9px]">views</span></span>
+                        <span className="text-xs font-black text-neutral-900">{formatNumber(edit.like_count)} <span className="text-neutral-400 font-bold text-[9px]">likes</span></span>
+                        {edit.comment_count > 0 && (
+                          <span className="text-xs font-black text-neutral-900">{formatNumber(edit.comment_count)} <span className="text-neutral-400 font-bold text-[9px]">comments</span></span>
                         )}
                       </div>
                     </div>
