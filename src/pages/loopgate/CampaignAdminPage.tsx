@@ -738,6 +738,34 @@ export default function CampaignAdminPage() {
                                       className="bg-background/60 h-8 text-xs border-emerald-500/20 focus:border-emerald-500/40"
                                     />
                                   </div>
+                                  <div className="pt-2 border-t border-border/20">
+                                    <label className="text-[7px] text-muted-foreground uppercase tracking-wider block mb-1">Campaign Type & Logo</label>
+                                    <div className="flex gap-2 items-end">
+                                      <div className="flex gap-1">
+                                        {(['artist', 'brand', 'film'] as const).map(type => (
+                                          <button
+                                            key={type}
+                                            onClick={() => setStatsForm(p => ({ ...p, campaign_type: type }))}
+                                            className={`h-8 px-2.5 rounded-md border text-[9px] font-bold uppercase tracking-wider transition-all ${
+                                              statsForm.campaign_type === type
+                                                ? 'border-gold bg-gold/10 text-gold'
+                                                : 'border-border/30 bg-background/60 text-muted-foreground'
+                                            }`}
+                                          >
+                                            {type}
+                                          </button>
+                                        ))}
+                                      </div>
+                                      {statsForm.campaign_type !== 'artist' && (
+                                        <Input
+                                          value={statsForm.logo_url}
+                                          onChange={e => setStatsForm(p => ({ ...p, logo_url: e.target.value }))}
+                                          placeholder="Company logo URL"
+                                          className="bg-background/60 h-8 text-xs border-border/30 flex-1"
+                                        />
+                                      )}
+                                    </div>
+                                  </div>
                                 </div>
                               ) : (
                                 <div className="grid grid-cols-5 gap-2">
