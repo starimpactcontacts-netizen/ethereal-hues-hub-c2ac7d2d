@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Swords, Eye, Award, Play, Shield, Brain, Smartphone, Flame, BookOpen } from 'lucide-react';
+import { ArrowRight, Swords, Play, Smartphone } from 'lucide-react';
+import { HubIcon, ArenaIcon, RankingsIcon, RateIcon, UnitsIcon, MissionsIcon } from '@/components/loopgate/LandingIcons';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import LandingHeader from '@/components/loopgate/LandingHeader';
