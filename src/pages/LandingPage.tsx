@@ -187,6 +187,22 @@ export default function LandingPage() {
                 <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">→</span>
               </Link>
             </motion.div>
+
+            {/* About link */}
+            <motion.div
+              className="mt-4 text-center"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4, duration: 0.4 }}
+            >
+              <Link
+                to="/about"
+                className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors tracking-[0.15em] uppercase font-medium"
+              >
+                What is Loopgate? <ArrowRight className="w-3 h-3" />
+              </Link>
+            </motion.div>
           </div>
         </section>
 
