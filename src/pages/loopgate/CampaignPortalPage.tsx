@@ -207,7 +207,9 @@ export default function CampaignPortalPage() {
   const totalLikes = edits.reduce((sum, e) => sum + e.like_count, 0);
   const totalShares = edits.reduce((sum, e) => sum + e.share_count, 0);
   const totalComments = edits.reduce((sum, e) => sum + e.comment_count, 0);
-  const engagementRate = totalEditViews > 0 ? (((totalLikes + totalShares + totalComments) / totalEditViews) * 100).toFixed(1) : '0.0';
+  // Use the higher of campaign total_views or aggregated edit views
+  const displayViews = Math.max(campaign.total_views, totalEditViews);
+  const engagementRate = displayViews > 0 ? (((totalLikes + totalShares + totalComments) / displayViews) * 100).toFixed(1) : '0.0';
   const portalUrl = window.location.href;
   const isBrandCampaign = campaign.campaign_type === 'brand' || campaign.campaign_type === 'film';
 
