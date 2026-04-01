@@ -543,6 +543,13 @@ export default function CampaignAdminPage() {
                                 campaign.status === 'completed' ? 'border-border/30 text-muted-foreground bg-muted/20' :
                                 'border-yellow-500/25 text-yellow-400 bg-yellow-500/8'
                               }`}>{campaign.status}</span>
+                              <span className={`text-[8px] px-1.5 py-0.5 rounded uppercase tracking-wider font-bold border ${
+                                campaignType === 'brand' ? 'border-blue-500/25 text-blue-400 bg-blue-500/8' :
+                                campaignType === 'film' ? 'border-purple-500/25 text-purple-400 bg-purple-500/8' :
+                                'border-amber-500/25 text-amber-400 bg-amber-500/8'
+                              }`}>
+                                {campaignType === 'brand' ? '🏢' : campaignType === 'film' ? '🎬' : '🎵'} {campaignType}
+                              </span>
                             </div>
                             <p className="text-[10px] text-muted-foreground mt-0.5">
                               {(campaign as any).client_name || clientInfo?.display_name || clientInfo?.email || 'Unknown client'} · {campaignEdits.length} edits · {formatNumber(campaign.total_views)} views
