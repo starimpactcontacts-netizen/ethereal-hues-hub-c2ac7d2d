@@ -389,7 +389,7 @@ export default function CampaignPortalPage() {
           className="grid grid-cols-2 sm:grid-cols-4 gap-3"
         >
           {[
-            { label: 'Total Reach', raw: campaign.total_views, icon: Eye, sub: 'Organic + Paid Views' },
+            { label: 'Total Reach', raw: displayViews, icon: Eye, sub: 'Organic + Paid Views' },
             { label: 'Impressions', raw: campaign.total_impressions, icon: TrendingUp, sub: 'Feed Appearances' },
             { label: 'Engagements', raw: campaign.total_engagements, icon: Zap, sub: 'Likes, Shares, Comments' },
             { label: 'Click-Through', raw: campaign.total_clicks, icon: MousePointerClick, sub: 'Profile & Link Clicks' },
