@@ -93,9 +93,9 @@ export default function CampaignAdminPage() {
     fetchData();
   }, []);
 
-  const [newCampaign, setNewCampaign] = useState({ client_name: '', name: '', description: '', goal_views: 0, goal_posts: 0, goal_label: '', featured_artist_id: '' });
+  const [newCampaign, setNewCampaign] = useState({ client_name: '', name: '', description: '', goal_views: 0, goal_posts: 0, goal_label: '', featured_artist_id: '', campaign_type: 'artist' as 'artist' | 'brand' | 'film', logo_url: '' });
   const [newEdit, setNewEdit] = useState({ title: '', video_url: '', thumbnail_url: '', platform: 'tiktok', editor_username: '', view_count: 0 });
-  const [statsForm, setStatsForm] = useState({ total_views: 0, total_impressions: 0, total_engagements: 0, total_clicks: 0, roi_percentage: 0, goal_views: 0, goal_posts: 0, goal_label: '', incoming_note: '' });
+  const [statsForm, setStatsForm] = useState({ total_views: 0, total_impressions: 0, total_engagements: 0, total_clicks: 0, roi_percentage: 0, goal_views: 0, goal_posts: 0, goal_label: '', incoming_note: '', campaign_type: 'artist', logo_url: '' });
   const [artistSongs, setArtistSongs] = useState<ArtistSong[]>([]);
 
   useEffect(() => {
@@ -118,7 +118,7 @@ export default function CampaignAdminPage() {
       if (!params.featured_artist_id) delete params.featured_artist_id;
       await createCampaign(params);
       toast.success('Campaign created');
-      setNewCampaign({ client_name: '', name: '', description: '', goal_views: 0, goal_posts: 0, goal_label: '', featured_artist_id: '' });
+      setNewCampaign({ client_name: '', name: '', description: '', goal_views: 0, goal_posts: 0, goal_label: '', featured_artist_id: '', campaign_type: 'artist', logo_url: '' });
       setShowCreateForm(false);
     } catch (err: any) { toast.error(err.message); }
   };
@@ -363,6 +363,47 @@ export default function CampaignAdminPage() {
                       )}
                     </div>
 
+                    {/* Campaign Type */}
+                    <div>
+                      <label className="text-[8px] text-muted-foreground uppercase tracking-[0.12em] font-bold block mb-1.5">Campaign Type</label>
+                      <div className="flex gap-2">
+                        {(['artist', 'brand', 'film'] as const).map(type => (
+                          <button
+                            key={type}
+                            onClick={() => setNewCampaign(p => ({ ...p, campaign_type: type }))}
+                            className={`flex-1 h-10 rounded-md border text-xs font-bold uppercase tracking-wider transition-all ${
+                              newCampaign.campaign_type === type
+                                ? 'border-gold bg-gold/10 text-gold'
+                                : 'border-border/40 bg-background/60 text-muted-foreground hover:border-border/60'
+                            }`}
+                          >
+                            {type === 'artist' ? '🎵 Artist' : type === 'brand' ? '🏢 Brand' : '🎬 Film'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Logo URL (for brand/film) */}
+                    {newCampaign.campaign_type !== 'artist' && (
+                      <div>
+                        <label className="text-[8px] text-muted-foreground uppercase tracking-[0.12em] font-bold block mb-1.5">
+                          Company Logo URL
+                        </label>
+                        <Input
+                          placeholder="https://example.com/logo.png"
+                          value={newCampaign.logo_url}
+                          onChange={e => setNewCampaign(p => ({ ...p, logo_url: e.target.value }))}
+                          className="bg-background/60 border-border/40 h-10"
+                        />
+                        {newCampaign.logo_url && (
+                          <div className="mt-2 flex items-center gap-2">
+                            <img src={newCampaign.logo_url} alt="Logo preview" className="h-8 w-auto object-contain rounded border border-border/30 bg-background/60 p-1" />
+                            <span className="text-[8px] text-muted-foreground">Preview</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     {/* Featured Artist */}
                     <div>
                       <label className="text-[8px] text-muted-foreground uppercase tracking-[0.12em] font-bold block mb-1.5">Featured Artist</label>
@@ -461,8 +502,10 @@ export default function CampaignAdminPage() {
                   const artistInfo = (campaign as any).featured_artists;
                   const goalProgress = campaign.goal_views > 0 ? Math.min(100, (campaign.total_views / campaign.goal_views) * 100) : 0;
                   const postsProgress = (campaign as any).goal_posts > 0 ? Math.min(100, (campaignEdits.length / (campaign as any).goal_posts) * 100) : 0;
+                          const campaignType = (campaign as any).campaign_type || 'artist';
+                          const logoUrl = (campaign as any).logo_url;
 
-                  return (
+                          return (
                     <motion.div
                       key={campaign.id}
                       layout
@@ -477,7 +520,9 @@ export default function CampaignAdminPage() {
                           className="flex-1 flex items-center gap-3 text-left group"
                         >
                           <div className="w-10 h-10 rounded-lg bg-background/60 border border-border/30 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                            {artistInfo?.avatar_url ? (
+                            {logoUrl && campaignType !== 'artist' ? (
+                              <img src={logoUrl} alt="" className="w-full h-full object-contain p-1" />
+                            ) : artistInfo?.avatar_url ? (
                               <img src={artistInfo.avatar_url} alt="" className="w-full h-full object-cover" />
                             ) : (
                               <CampaignIcon className="text-muted-foreground/40" size={18} />
@@ -498,6 +543,13 @@ export default function CampaignAdminPage() {
                                 campaign.status === 'completed' ? 'border-border/30 text-muted-foreground bg-muted/20' :
                                 'border-yellow-500/25 text-yellow-400 bg-yellow-500/8'
                               }`}>{campaign.status}</span>
+                              <span className={`text-[8px] px-1.5 py-0.5 rounded uppercase tracking-wider font-bold border ${
+                                campaignType === 'brand' ? 'border-blue-500/25 text-blue-400 bg-blue-500/8' :
+                                campaignType === 'film' ? 'border-purple-500/25 text-purple-400 bg-purple-500/8' :
+                                'border-amber-500/25 text-amber-400 bg-amber-500/8'
+                              }`}>
+                                {campaignType === 'brand' ? '🏢' : campaignType === 'film' ? '🎬' : '🎵'} {campaignType}
+                              </span>
                             </div>
                             <p className="text-[10px] text-muted-foreground mt-0.5">
                               {(campaign as any).client_name || clientInfo?.display_name || clientInfo?.email || 'Unknown client'} · {campaignEdits.length} edits · {formatNumber(campaign.total_views)} views
@@ -631,6 +683,8 @@ export default function CampaignAdminPage() {
                                         goal_posts: (campaign as any).goal_posts || 0,
                                         goal_label: campaign.goal_label || '',
                                         incoming_note: (campaign as any).incoming_note || '',
+                                        campaign_type: (campaign as any).campaign_type || 'artist',
+                                        logo_url: (campaign as any).logo_url || '',
                                       });
                                     }}
                                     className="h-6 px-2 rounded text-[9px] text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
@@ -683,6 +737,34 @@ export default function CampaignAdminPage() {
                                       placeholder="e.g. 3 edits incoming today"
                                       className="bg-background/60 h-8 text-xs border-emerald-500/20 focus:border-emerald-500/40"
                                     />
+                                  </div>
+                                  <div className="pt-2 border-t border-border/20">
+                                    <label className="text-[7px] text-muted-foreground uppercase tracking-wider block mb-1">Campaign Type & Logo</label>
+                                    <div className="flex gap-2 items-end">
+                                      <div className="flex gap-1">
+                                        {(['artist', 'brand', 'film'] as const).map(type => (
+                                          <button
+                                            key={type}
+                                            onClick={() => setStatsForm(p => ({ ...p, campaign_type: type }))}
+                                            className={`h-8 px-2.5 rounded-md border text-[9px] font-bold uppercase tracking-wider transition-all ${
+                                              statsForm.campaign_type === type
+                                                ? 'border-gold bg-gold/10 text-gold'
+                                                : 'border-border/30 bg-background/60 text-muted-foreground'
+                                            }`}
+                                          >
+                                            {type}
+                                          </button>
+                                        ))}
+                                      </div>
+                                      {statsForm.campaign_type !== 'artist' && (
+                                        <Input
+                                          value={statsForm.logo_url}
+                                          onChange={e => setStatsForm(p => ({ ...p, logo_url: e.target.value }))}
+                                          placeholder="Company logo URL"
+                                          className="bg-background/60 h-8 text-xs border-border/30 flex-1"
+                                        />
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
                               ) : (
