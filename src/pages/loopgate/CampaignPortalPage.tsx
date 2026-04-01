@@ -88,6 +88,19 @@ function exportCSV(campaign: CampaignData, edits: EditData[]) {
   a.click(); URL.revokeObjectURL(url);
 }
 
+const REFRESH_COOLDOWN_MS = 30 * 60 * 1000; // 30 minutes
+
+function getStoredLastRefresh(slug: string): number {
+  try {
+    const stored = localStorage.getItem(`campaign_refresh_${slug}`);
+    return stored ? parseInt(stored, 10) : 0;
+  } catch { return 0; }
+}
+
+function setStoredLastRefresh(slug: string) {
+  try { localStorage.setItem(`campaign_refresh_${slug}`, String(Date.now())); } catch {}
+}
+
 export default function CampaignPortalPage() {
   const { slug } = useParams<{ slug: string }>();
   const [loading, setLoading] = useState(true);
@@ -97,6 +110,8 @@ export default function CampaignPortalPage() {
   const [edits, setEdits] = useState<EditData[]>([]);
   const [copied, setCopied] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [refreshing, setRefreshing] = useState(false);
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
 
   const fetchData = useCallback(async () => {
     if (!slug) return;
@@ -118,13 +133,53 @@ export default function CampaignPortalPage() {
     }
   }, [slug]);
 
+  // Manual refresh — triggers instagram-stats then re-fetches
+  const handleManualRefresh = useCallback(async () => {
+    if (!slug || refreshing) return;
+    const lastTime = getStoredLastRefresh(slug);
+    if (Date.now() - lastTime < REFRESH_COOLDOWN_MS) return;
+
+    setRefreshing(true);
+    try {
+      // Trigger Instagram stats refresh
+      await supabase.functions.invoke('instagram-stats', {
+        body: { action: 'refresh-all' }
+      });
+      // Then re-fetch campaign data
+      await fetchData();
+      setStoredLastRefresh(slug);
+    } catch (err) {
+      console.error('Manual refresh failed:', err);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [slug, refreshing, fetchData]);
+
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // Auto-refresh every 30 minutes
+  // Auto-refresh every 30 minutes (also triggers IG stats)
   useEffect(() => {
-    const interval = setInterval(() => { fetchData(); }, 30 * 60 * 1000);
+    const interval = setInterval(async () => {
+      try {
+        await supabase.functions.invoke('instagram-stats', { body: { action: 'refresh-all' } });
+      } catch {}
+      fetchData();
+    }, REFRESH_COOLDOWN_MS);
     return () => clearInterval(interval);
   }, [fetchData]);
+
+  // Cooldown timer
+  useEffect(() => {
+    if (!slug) return;
+    const tick = () => {
+      const lastTime = getStoredLastRefresh(slug);
+      const elapsed = Date.now() - lastTime;
+      setCooldownRemaining(elapsed < REFRESH_COOLDOWN_MS ? Math.ceil((REFRESH_COOLDOWN_MS - elapsed) / 1000) : 0);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [slug, refreshing]);
 
   if (loading) {
     return (
@@ -298,8 +353,23 @@ export default function CampaignPortalPage() {
           <p className="text-6xl sm:text-7xl font-black text-neutral-900 tracking-tight tabular-nums leading-none">
             {campaign.total_views > 0 ? formatNumber(campaign.total_views) : '—'}
           </p>
-          <div className="flex items-center justify-center gap-2 mt-3 text-[9px] text-neutral-400">
-            <RefreshCw size={10} />
+          <div className="flex items-center justify-center gap-3 mt-4">
+            <button
+              onClick={handleManualRefresh}
+              disabled={refreshing || cooldownRemaining > 0}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-[10px] uppercase tracking-wider font-black transition-all ${
+                refreshing || cooldownRemaining > 0
+                  ? 'bg-neutral-100 text-neutral-300 cursor-not-allowed'
+                  : 'bg-neutral-900 text-white hover:bg-neutral-800 active:scale-95'
+              }`}
+            >
+              <RefreshCw size={11} className={refreshing ? 'animate-spin' : ''} />
+              {refreshing ? 'Refreshing…' : cooldownRemaining > 0
+                ? `${Math.floor(cooldownRemaining / 60)}:${String(cooldownRemaining % 60).padStart(2, '0')}`
+                : 'Refresh Stats'}
+            </button>
+          </div>
+          <div className="flex items-center justify-center gap-2 mt-2 text-[9px] text-neutral-400">
             <span className="font-bold">Updated {lastRefresh.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • Auto-refreshes every 30 min</span>
           </div>
         </motion.div>
