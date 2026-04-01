@@ -361,7 +361,7 @@ export default function CampaignPortalPage() {
         >
           <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-400 font-black mb-2">Views Generated</p>
           <p className="text-6xl sm:text-7xl font-black text-neutral-900 tracking-tight tabular-nums leading-none">
-            {campaign.total_views > 0 ? formatNumber(campaign.total_views) : '—'}
+            {displayViews > 0 ? formatNumber(displayViews) : '—'}
           </p>
           <div className="flex items-center justify-center gap-3 mt-4">
             <button
