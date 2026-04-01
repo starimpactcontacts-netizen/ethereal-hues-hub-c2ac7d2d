@@ -93,7 +93,7 @@ export default function CampaignAdminPage() {
     fetchData();
   }, []);
 
-  const [newCampaign, setNewCampaign] = useState({ client_name: '', name: '', description: '', goal_views: 0, goal_posts: 0, goal_label: '', featured_artist_id: '' });
+  const [newCampaign, setNewCampaign] = useState({ client_name: '', name: '', description: '', goal_views: 0, goal_posts: 0, goal_label: '', featured_artist_id: '', campaign_type: 'artist' as 'artist' | 'brand' | 'film', logo_url: '' });
   const [newEdit, setNewEdit] = useState({ title: '', video_url: '', thumbnail_url: '', platform: 'tiktok', editor_username: '', view_count: 0 });
   const [statsForm, setStatsForm] = useState({ total_views: 0, total_impressions: 0, total_engagements: 0, total_clicks: 0, roi_percentage: 0, goal_views: 0, goal_posts: 0, goal_label: '', incoming_note: '' });
   const [artistSongs, setArtistSongs] = useState<ArtistSong[]>([]);
