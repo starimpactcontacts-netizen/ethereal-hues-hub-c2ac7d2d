@@ -55,7 +55,7 @@ async function fetchViaGraphQL(shortcode: string): Promise<{
       });
       if (!altRes.ok) {
         console.log('GraphQL alt HTTP:', altRes.status);
-        return { views: null, likes: null, comments: null, thumbnailUrl: null };
+        return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
       }
       const altJson = await altRes.json();
       const altMedia = altJson?.data?.shortcode_media;
@@ -63,10 +63,11 @@ async function fetchViaGraphQL(shortcode: string): Promise<{
         const views = altMedia.video_view_count ?? altMedia.video_play_count ?? null;
         const likes = altMedia.edge_media_preview_like?.count ?? null;
         const comments = altMedia.edge_media_to_parent_comment?.count ?? null;
-        console.log('✅ GraphQL alt stats:', { views, likes, comments });
-        return { views, likes, comments, thumbnailUrl: altMedia.display_url ?? null };
+        const shares = altMedia.share_count ?? altMedia.reshare_count ?? null;
+        console.log('✅ GraphQL alt stats:', { views, likes, comments, shares });
+        return { views, likes, comments, shares, thumbnailUrl: altMedia.display_url ?? null };
       }
-      return { views: null, likes: null, comments: null, thumbnailUrl: null };
+      return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
     }
     
     const json = await res.json();
