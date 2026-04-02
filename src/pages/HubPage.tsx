@@ -993,17 +993,13 @@ export default function HubPage() {
         className="px-4 mt-2"
       >
         <Link to="/judges" className="block group">
-          <div className="relative overflow-hidden rounded-xl bg-white/[0.03] border border-white/[0.06] group-hover:border-white/[0.12] transition-all duration-300">
-            <div className="relative p-3.5 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-white/[0.06] flex items-center justify-center group-hover:bg-white/[0.1] transition-colors">
-                <Gavel className="w-4 h-4 text-foreground/60 group-hover:text-foreground transition-colors" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h2 className="font-display text-sm tracking-[0.08em] text-foreground leading-none">JUDGES</h2>
-                <p className="text-[10px] text-muted-foreground mt-0.5">Get your edits rated by top judges.</p>
-              </div>
-              <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-foreground/60 group-hover:translate-x-0.5 transition-all" />
+          <div className="relative py-3.5 flex items-center gap-3">
+            <Gavel className="w-5 h-5 text-foreground/50 group-hover:text-foreground transition-colors" />
+            <div className="flex-1 min-w-0">
+              <h2 className="font-display text-sm tracking-[0.08em] text-foreground leading-none">JUDGES</h2>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Get your edits rated by top judges.</p>
             </div>
+            <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-foreground/60 group-hover:translate-x-0.5 transition-all" />
           </div>
         </Link>
       </motion.div>

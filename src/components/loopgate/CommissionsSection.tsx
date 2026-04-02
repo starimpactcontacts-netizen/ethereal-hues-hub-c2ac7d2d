@@ -40,11 +40,8 @@ function BalanceTicker() {
       <motion.div
         whileTap={{ scale: 0.98 }}
         onClick={() => setWalletOpen(true)}
-        className="relative overflow-hidden rounded-xl cursor-pointer group"
+        className="relative cursor-pointer group"
       >
-        {/* Dark base */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0f0f0f] via-[#0a0a0a] to-[#080808]" />
-        <div className="absolute inset-0 rounded-xl border border-white/[0.04]" />
 
         <div className="relative flex items-center gap-5 px-4 py-4">
           {/* Floating Centurion Card — white-to-black gradient, no border */}
