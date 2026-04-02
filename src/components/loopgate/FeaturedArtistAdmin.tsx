@@ -305,6 +305,7 @@ export default function FeaturedArtistAdmin() {
       mission_views_milestone: dropAny.mission_views_milestone || 0,
       mission_views_bonus_cents: dropAny.mission_views_bonus_cents || 0,
       submission_goal: dropAny.submission_goal || 0,
+      drop_type: dropAny.drop_type || 'artist',
     });
   };
 
