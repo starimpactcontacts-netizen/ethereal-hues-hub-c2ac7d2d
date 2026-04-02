@@ -71,7 +71,7 @@ export function playSuccess() {
     const c = getCtx();
     const t = c.currentTime;
     const master = c.createGain();
-    master.gain.value = 0.45;
+    master.gain.value = 0.70;
     master.connect(c.destination);
 
     osc(c, 'sine', 800, t, 0.08, 0.5, master);
