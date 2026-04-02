@@ -2788,6 +2788,7 @@ export type Database = {
           starts_at: string | null
           status: string | null
           submission_count: number | null
+          submission_goal: number
           theme_description: string | null
           title: string
           top_score: number | null
@@ -2827,6 +2828,7 @@ export type Database = {
           starts_at?: string | null
           status?: string | null
           submission_count?: number | null
+          submission_goal?: number
           theme_description?: string | null
           title: string
           top_score?: number | null
@@ -2866,6 +2868,7 @@ export type Database = {
           starts_at?: string | null
           status?: string | null
           submission_count?: number | null
+          submission_goal?: number
           theme_description?: string | null
           title?: string
           top_score?: number | null

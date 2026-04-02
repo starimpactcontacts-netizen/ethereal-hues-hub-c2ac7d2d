@@ -35,7 +35,7 @@ export default function FeaturedArtistAdmin() {
 
   // Edit drop state
   const [editingDrop, setEditingDrop] = useState<FeaturedDrop | null>(null);
-  const [editDropForm, setEditDropForm] = useState({ title: '', song_name: '', song_url: '', song_preview_url: '', poster_url: '', description: '', xp_reward: 30, index_reward: 15, mystery_reward_label: '', artist_id: '', mission_live: false, mission_custom_payouts: { S: 0, A: 0, B: 0, C: 0, D: 0, F: 0 } as Record<string, number>, mission_views_milestone: 0, mission_views_bonus_cents: 0 });
+  const [editDropForm, setEditDropForm] = useState({ title: '', song_name: '', song_url: '', song_preview_url: '', poster_url: '', description: '', xp_reward: 30, index_reward: 15, mystery_reward_label: '', artist_id: '', mission_live: false, mission_custom_payouts: { S: 0, A: 0, B: 0, C: 0, D: 0, F: 0 } as Record<string, number>, mission_views_milestone: 0, mission_views_bonus_cents: 0, submission_goal: 0 });
   const [savingDrop, setSavingDrop] = useState(false);
   const [uploadingEditPreview, setUploadingEditPreview] = useState(false);
 
@@ -304,6 +304,7 @@ export default function FeaturedArtistAdmin() {
       mission_custom_payouts: dropAny.mission_custom_payouts ? (typeof dropAny.mission_custom_payouts === 'object' ? dropAny.mission_custom_payouts : defaultPayouts) : defaultPayouts,
       mission_views_milestone: dropAny.mission_views_milestone || 0,
       mission_views_bonus_cents: dropAny.mission_views_bonus_cents || 0,
+      submission_goal: dropAny.submission_goal || 0,
     });
   };
 
@@ -325,6 +326,7 @@ export default function FeaturedArtistAdmin() {
       mission_custom_payouts: editDropForm.mission_custom_payouts,
       mission_views_milestone: editDropForm.mission_views_milestone,
       mission_views_bonus_cents: editDropForm.mission_views_bonus_cents,
+      submission_goal: editDropForm.submission_goal,
     } as any).eq('id', editingDrop.id);
     if (error) toast.error(error.message);
     else { toast.success('Drop updated!'); setEditingDrop(null); refresh(); }
@@ -539,8 +541,35 @@ export default function FeaturedArtistAdmin() {
                     <p className="text-[10px] text-muted-foreground">
                       {(drop as any).artist?.name || 'Unknown'} • {drop.song_name} • {dropSubs.length} entries ({pendingSubs.length} pending)
                     </p>
+                    {/* Submission Goal Progress Bar */}
+                    {(drop as any).submission_goal > 0 && (
+                      <div className="mt-1.5">
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className="text-[9px] text-cyan-400 font-bold uppercase tracking-wider">Submissions</span>
+                          <span className="text-[9px] font-bold text-foreground tabular-nums">{scoredSubs.length}/{(drop as any).submission_goal}</span>
+                        </div>
+                        <div className="h-2 rounded-full overflow-hidden bg-surface-2 relative">
+                          <div className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-cyan-500 to-emerald-500"
+                            style={{ width: `${Math.min(100, (scoredSubs.length / (drop as any).submission_goal) * 100)}%` }} />
+                        </div>
+                        <span className="text-[8px] text-muted-foreground">
+                          {Math.round(Math.min(100, (scoredSubs.length / (drop as any).submission_goal) * 100))}% complete
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center gap-1">
+                    {/* End Button — only for live drops */}
+                    {drop.status === 'live' && (
+                      <button onClick={async () => {
+                        const { error } = await supabase.from('featured_drops').update({ status: 'closed' } as any).eq('id', drop.id);
+                        if (error) toast.error(error.message);
+                        else { toast.success('Drop ended'); refresh(); }
+                      }}
+                        className="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider bg-red-600 text-white hover:bg-red-700 transition-colors" title="End this drop">
+                        End
+                      </button>
+                    )}
                     <button onClick={() => handleToggleDropStatus(drop)}
                       className={`p-1.5 rounded ${drop.status === 'live' ? 'bg-emerald-600' : drop.status === 'judging' ? 'bg-amber-500' : 'bg-muted'}`} title="Toggle status">
                       {drop.status === 'live' ? <Square size={14} /> : <Play size={14} />}
@@ -1066,6 +1095,15 @@ export default function FeaturedArtistAdmin() {
                     className="mt-1 h-8 text-xs" placeholder="e.g. 2000" />
                   <p className="text-[8px] text-muted-foreground mt-0.5">Bonus paid regardless of rank when milestone hits</p>
                 </div>
+              </div>
+
+              {/* Submission Goal */}
+              <div className="mt-3">
+                <Label className="text-xs text-cyan-400">Submission Goal (accepted edits for 100%)</Label>
+                <Input type="number" value={editDropForm.submission_goal}
+                  onChange={e => setEditDropForm({...editDropForm, submission_goal: Number(e.target.value)})}
+                  className="mt-1 h-8 text-xs" placeholder="e.g. 50" />
+                <p className="text-[8px] text-muted-foreground mt-0.5">0 = no goal. Progress bar shows on the drop card.</p>
               </div>
             </div>
 
