@@ -221,6 +221,7 @@ export default function HeaderMusicPlayer() {
     audioRef.current = a;
 
     a.addEventListener('ended', onEnded);
+    a.loop = loopEnabled;
     a.addEventListener('error', () => {
       setAudioError(true);
       setIsPlaying(false);
