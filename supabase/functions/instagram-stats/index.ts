@@ -6,142 +6,146 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-const FB_API = 'https://graph.facebook.com/v21.0';
-
 function extractShortcode(url: string): string | null {
   const match = url.match(/instagram\.com\/(?:p|reel|reels|tv)\/([A-Za-z0-9_-]+)/);
   return match ? match[1] : null;
 }
 
-// Method 1: Try Facebook Graph API (Page token flow)
-async function tryGraphAPI(shortcode: string, userToken: string) {
+// Primary method: Instagram GraphQL API (no auth needed)
+async function fetchViaGraphQL(shortcode: string): Promise<{
+  views: number | null;
+  likes: number | null;
+  comments: number | null;
+  thumbnailUrl: string | null;
+}> {
   try {
-    // Get pages
-    const pagesRes = await fetch(`${FB_API}/me/accounts?fields=id,name,access_token&access_token=${encodeURIComponent(userToken)}`);
-    const pagesData = await pagesRes.json();
-    if (pagesData.error) {
-      console.log('Graph API pages error:', pagesData.error.message);
-      return null;
-    }
+    console.log('Trying Instagram GraphQL for shortcode:', shortcode);
     
-    const pages = pagesData.data || [];
-    console.log('Graph API pages:', pages.length);
-    if (pages.length === 0) return null;
+    const variables = JSON.stringify({
+      shortcode: shortcode,
+      fetch_tagged_user_count: null,
+      hoisted_comment_id: null,
+      hoisted_reply_id: null,
+    });
+    
+    // Instagram's internal GraphQL endpoint
+    const graphqlUrl = 'https://www.instagram.com/graphql/query';
+    
+    const res = await fetch(graphqlUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'X-IG-App-ID': '936619743392459',
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': `https://www.instagram.com/p/${shortcode}/`,
+        'Accept': '*/*',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Origin': 'https://www.instagram.com',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Site': 'same-origin',
+      },
+      body: `variables=${encodeURIComponent(variables)}&doc_id=8845758582119845`,
+    });
 
-    for (const page of pages) {
-      const igRes = await fetch(`${FB_API}/${page.id}?fields=instagram_business_account{id}&access_token=${encodeURIComponent(page.access_token)}`);
-      const igData = await igRes.json();
-      if (!igData.instagram_business_account?.id) continue;
+    if (!res.ok) {
+      console.log('GraphQL HTTP status:', res.status);
+      const text = await res.text();
+      console.log('GraphQL response:', text.substring(0, 300));
+      return { views: null, likes: null, comments: null, thumbnailUrl: null };
+    }
 
-      const igUserId = igData.instagram_business_account.id;
-      const pageToken = page.access_token;
-
-      // Search media
-      let nextUrl: string | null = `${FB_API}/${igUserId}/media?fields=id,shortcode,permalink,media_type,thumbnail_url,like_count,comments_count&limit=50&access_token=${encodeURIComponent(pageToken)}`;
-      
-      for (let p = 0; p < 4 && nextUrl; p++) {
-        const mediaRes = await fetch(nextUrl);
-        if (!mediaRes.ok) break;
-        const mediaData = await mediaRes.json();
-        
-        const match = (mediaData.data || []).find((m: any) => m.shortcode === shortcode || m.permalink?.includes(shortcode));
-        if (match) {
-          let views: number | null = null;
-          if (match.media_type === 'VIDEO') {
-            for (const metrics of ['plays', 'ig_reels_aggregated_all_plays_count']) {
-              try {
-                const iRes = await fetch(`${FB_API}/${match.id}/insights?metric=${metrics}&access_token=${encodeURIComponent(pageToken)}`);
-                if (iRes.ok) {
-                  const iData = await iRes.json();
-                  for (const m of (iData.data || [])) {
-                    if (m.values?.[0]?.value) views = m.values[0].value;
-                  }
-                  if (views) break;
-                }
-              } catch {}
-            }
-          }
-          return { views, likes: match.like_count ?? null, comments: match.comments_count ?? null, thumbnailUrl: match.thumbnail_url || null };
-        }
-        
-        nextUrl = mediaData.paging?.next || null;
+    const data = await res.json();
+    
+    // Navigate the response structure
+    const items = data?.data?.xdt_api__v1__media__shortcode__web_info?.items;
+    if (!items || items.length === 0) {
+      // Try alternate response shape
+      const media = data?.data?.xdt_shortcode_media;
+      if (media) {
+        const likes = media.edge_media_preview_like?.count ?? null;
+        const comments = media.edge_media_to_parent_comment?.count ?? media.edge_media_to_comment?.count ?? null;
+        const views = media.video_view_count ?? media.video_play_count ?? null;
+        const thumbnailUrl = media.display_url ?? media.thumbnail_src ?? null;
+        console.log('GraphQL (alt shape) stats:', { views, likes, comments, thumb: !!thumbnailUrl });
+        return { views, likes, comments, thumbnailUrl };
       }
+      console.log('GraphQL: no items found in response');
+      console.log('Response keys:', JSON.stringify(Object.keys(data?.data || {})).substring(0, 200));
+      return { views: null, likes: null, comments: null, thumbnailUrl: null };
     }
+
+    const item = items[0];
+    const likes = item.like_count ?? null;
+    const comments = item.comment_count ?? null;
+    const views = item.video_view_count ?? item.play_count ?? item.view_count ?? null;
+    const thumbnailUrl = item.image_versions2?.candidates?.[0]?.url 
+      ?? item.carousel_media?.[0]?.image_versions2?.candidates?.[0]?.url 
+      ?? null;
+
+    console.log('✅ GraphQL stats:', { views, likes, comments, thumb: !!thumbnailUrl });
+    return { views, likes, comments, thumbnailUrl };
   } catch (e) {
-    console.error('Graph API error:', e);
+    console.error('GraphQL error:', e);
+    return { views: null, likes: null, comments: null, thumbnailUrl: null };
   }
-  return null;
 }
 
-// Method 2: oEmbed for thumbnail
-async function tryOEmbed(url: string, accessToken: string): Promise<string | null> {
+// Fallback: Scrape the post page for og:image and embedded JSON
+async function fetchViaScrape(url: string): Promise<{
+  views: number | null;
+  likes: number | null;
+  comments: number | null;
+  thumbnailUrl: string | null;
+}> {
   try {
-    const oembedUrl = `${FB_API}/instagram_oembed?url=${encodeURIComponent(url)}&access_token=${encodeURIComponent(accessToken)}`;
-    const res = await fetch(oembedUrl);
-    if (res.ok) {
-      const data = await res.json();
-      return data.thumbnail_url || null;
-    }
-    const errText = await res.text();
-    console.log('oEmbed error:', errText.substring(0, 200));
-  } catch (e) {
-    console.error('oEmbed error:', e);
-  }
-  return null;
-}
-
-// Method 3: Scrape Instagram page for metadata
-async function tryScrape(url: string): Promise<{ thumbnailUrl: string | null; views: number | null; likes: number | null }> {
-  try {
+    console.log('Trying scrape fallback for:', url);
     const res = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml',
         'Accept-Language': 'en-US,en;q=0.9',
       },
     });
-    
+
     if (!res.ok) {
-      console.log('Scrape HTTP status:', res.status);
-      return { thumbnailUrl: null, views: null, likes: null };
+      console.log('Scrape HTTP:', res.status);
+      return { views: null, likes: null, comments: null, thumbnailUrl: null };
     }
-    
+
     const html = await res.text();
-    
-    // Extract og:image for thumbnail
+
     let thumbnailUrl: string | null = null;
-    const ogMatch = html.match(/<meta\s+(?:property|name)="og:image"\s+content="([^"]+)"/i) 
+    const ogMatch = html.match(/<meta\s+(?:property|name)="og:image"\s+content="([^"]+)"/i)
       || html.match(/content="([^"]+)"\s+(?:property|name)="og:image"/i);
-    if (ogMatch) {
-      thumbnailUrl = ogMatch[1];
-    }
-    
-    // Try to extract view count from meta or JSON-LD
+    if (ogMatch) thumbnailUrl = ogMatch[1];
+
     let views: number | null = null;
-    const viewMatch = html.match(/"video_view_count"\s*:\s*(\d+)/) 
-      || html.match(/"view_count"\s*:\s*(\d+)/)
-      || html.match(/interactionCount['"]\s*:\s*['"]*(\d+)/);
-    if (viewMatch) {
-      views = parseInt(viewMatch[1], 10);
-    }
-    
-    // Try to extract like count
+    const viewMatch = html.match(/"video_view_count"\s*:\s*(\d+)/)
+      || html.match(/"play_count"\s*:\s*(\d+)/)
+      || html.match(/"view_count"\s*:\s*(\d+)/);
+    if (viewMatch) views = parseInt(viewMatch[1], 10);
+
     let likes: number | null = null;
-    const likeMatch = html.match(/"edge_media_preview_like"\s*:\s*\{\s*"count"\s*:\s*(\d+)/)
-      || html.match(/"like_count"\s*:\s*(\d+)/);
-    if (likeMatch) {
-      likes = parseInt(likeMatch[1], 10);
-    }
-    
-    console.log('Scrape results - thumb:', !!thumbnailUrl, 'views:', views, 'likes:', likes);
-    return { thumbnailUrl, views, likes };
+    const likeMatch = html.match(/"like_count"\s*:\s*(\d+)/)
+      || html.match(/"edge_media_preview_like"\s*:\s*\{\s*"count"\s*:\s*(\d+)/);
+    if (likeMatch) likes = parseInt(likeMatch[1], 10);
+
+    let comments: number | null = null;
+    const commentMatch = html.match(/"comment_count"\s*:\s*(\d+)/);
+    if (commentMatch) comments = parseInt(commentMatch[1], 10);
+
+    console.log('Scrape results:', { views, likes, comments, thumb: !!thumbnailUrl });
+    return { views, likes, comments, thumbnailUrl };
   } catch (e) {
     console.error('Scrape error:', e);
-    return { thumbnailUrl: null, views: null, likes: null };
+    return { views: null, likes: null, comments: null, thumbnailUrl: null };
   }
 }
 
-async function fetchInstagramPostStats(url: string, userToken: string): Promise<{
+// Combine methods
+async function fetchInstagramPostStats(url: string): Promise<{
   views: number | null;
   likes: number | null;
   comments: number | null;
@@ -153,29 +157,17 @@ async function fetchInstagramPostStats(url: string, userToken: string): Promise<
     return { views: null, likes: null, comments: null, thumbnailUrl: null };
   }
 
-  console.log('Looking up shortcode:', shortcode);
+  console.log('Fetching stats for shortcode:', shortcode);
 
-  // Try Method 1: Graph API (best data)
-  const graphResult = await tryGraphAPI(shortcode, userToken);
-  if (graphResult && (graphResult.views !== null || graphResult.likes !== null)) {
-    console.log('✅ Graph API succeeded');
-    return graphResult;
+  // Method 1: GraphQL (works for any public post, no auth)
+  const gql = await fetchViaGraphQL(shortcode);
+  if (gql.likes !== null || gql.views !== null) {
+    return gql;
   }
 
-  // Try Method 2 + 3: oEmbed thumbnail + scrape for stats
-  console.log('Graph API unavailable, falling back to oEmbed + scrape');
-  
-  const [oembedThumb, scrapeResult] = await Promise.all([
-    tryOEmbed(url, userToken),
-    tryScrape(url),
-  ]);
-
-  return {
-    views: scrapeResult.views,
-    likes: scrapeResult.likes,
-    comments: null,
-    thumbnailUrl: oembedThumb || scrapeResult.thumbnailUrl,
-  };
+  // Method 2: Scrape fallback
+  const scrape = await fetchViaScrape(url);
+  return scrape;
 }
 
 serve(async (req) => {
@@ -184,18 +176,10 @@ serve(async (req) => {
   }
 
   try {
-    const accessToken = Deno.env.get('INSTAGRAM_ACCESS_TOKEN');
-    if (!accessToken) {
-      return new Response(
-        JSON.stringify({ error: 'Instagram access token not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     const { url, action } = await req.json();
 
     if (action === 'get-stats' && url) {
-      const stats = await fetchInstagramPostStats(url, accessToken);
+      const stats = await fetchInstagramPostStats(url);
       return new Response(
         JSON.stringify({ success: true, ...stats }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -219,7 +203,7 @@ serve(async (req) => {
       for (const edit of (edits || [])) {
         if (!edit.video_url) continue;
         try {
-          const stats = await fetchInstagramPostStats(edit.video_url, accessToken);
+          const stats = await fetchInstagramPostStats(edit.video_url);
           const payload: Record<string, any> = { updated_at: new Date().toISOString() };
           if (stats.views !== null) payload.view_count = stats.views;
           if (stats.likes !== null) payload.like_count = stats.likes;
@@ -230,7 +214,7 @@ serve(async (req) => {
             await supabase.from('artist_campaign_edits').update(payload).eq('id', edit.id);
             updated++;
           }
-          await new Promise(r => setTimeout(r, 500));
+          await new Promise(r => setTimeout(r, 1000));
         } catch (e) {
           console.error(`Error updating edit ${edit.id}:`, e);
         }
