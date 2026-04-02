@@ -385,6 +385,7 @@ export default function HubPage() {
       {/* Gate lattice — subtle geometric texture */}
       <GatePattern opacity={1.5} tileSize={48} className="z-0" />
       <LoopMonster />
+      <LoopyWelcomeModal />
       
       {/* Concentric Rings Pattern - Portal effect */}
       <div className="absolute inset-x-0 -top-20 h-[550px] pointer-events-none overflow-hidden z-0 flex items-center justify-center">
