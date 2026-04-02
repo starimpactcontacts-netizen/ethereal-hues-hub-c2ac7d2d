@@ -1,8 +1,7 @@
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
-  UserRound, Trophy, Zap, Music, Eye, Clock, 
-  ChevronRight, Flame, Play, User, ThumbsUp, ThumbsDown, MessageCircle
+  UserRound, Zap, Music, ChevronRight, ThumbsUp, MessageCircle, Play
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRecentSoloSubmissions, type RecentSolo } from "@/hooks/useRecentSoloSubmissions";
@@ -10,130 +9,98 @@ import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
 
-// ─── Solo Submission Card ──────────────────────────────────────
+// ─── Solo Submission Card — Cinematic Poster Style ─────────────
 function SoloCard({ solo }: { solo: RecentSolo }) {
-  const statusConfig: Record<string, { label: string; color: string; pulse?: boolean }> = {
-    editing: { label: "EDITING", color: "text-amber-400", pulse: true },
-    submitted: { label: "SUBMITTED", color: "text-sky-400" },
-    judging: { label: "JUDGING", color: "text-purple-400", pulse: true },
-    scored: { label: "SCORED", color: "text-emerald-400" },
+  const statusConfig: Record<string, { label: string; color: string; bg: string; pulse?: boolean }> = {
+    editing: { label: "EDITING", color: "text-amber-400", bg: "bg-amber-500/20 border-amber-500/40", pulse: true },
+    submitted: { label: "SUBMITTED", color: "text-sky-400", bg: "bg-sky-500/20 border-sky-500/40" },
+    judging: { label: "JUDGING", color: "text-purple-400", bg: "bg-purple-500/20 border-purple-500/40", pulse: true },
+    scored: { label: "SCORED", color: "text-emerald-400", bg: "bg-emerald-500/20 border-emerald-500/40" },
   };
   const s = statusConfig[solo.status] || statusConfig.editing;
   const timeAgo = formatDistanceToNow(new Date(solo.created_at), { addSuffix: false });
 
   return (
-    <Link to={`/solo/${solo.id}`} className="shrink-0 w-[220px] bg-surface-1 border border-border hover:border-gold/40 transition-all overflow-hidden group block">
-      {/* Thumbnail / Theme visual */}
-      <div className="relative h-28 bg-gradient-to-br from-gold/10 via-surface-2 to-purple-500/10 overflow-hidden">
+    <Link to={`/solo/${solo.id}`} className="shrink-0 w-[160px] snap-start block group">
+      <div className="relative h-[210px] overflow-hidden rounded-lg" style={{
+        boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+      }}>
+        {/* Background */}
         {solo.thumbnail_url ? (
-          <img src={solo.thumbnail_url} alt="" className="w-full h-full object-cover" />
+          <img src={solo.thumbnail_url} alt="" className="absolute inset-0 w-full h-full object-cover scale-[1.02] group-hover:scale-[1.08] transition-transform duration-700" />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center gap-1.5">
-            <UserRound className="w-5 h-5 text-gold/40" />
-            <span className="text-[10px] font-bold text-gold/50 uppercase tracking-widest">
-              {solo.theme}
-            </span>
-          </div>
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-950/40 via-black to-purple-950/30" />
         )}
 
-        {/* Status badge */}
-        <div className="absolute top-2 left-2 flex items-center gap-1.5 bg-black/70 backdrop-blur-sm px-2 py-0.5">
-          {s.pulse && <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />}
-          <span className={`text-[9px] font-bold uppercase tracking-wider ${s.color}`}>{s.label}</span>
+        {/* Cinematic overlays */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/10" />
+        <div className="absolute bottom-0 left-0 right-0 h-[70%] bg-gradient-to-t from-black to-transparent" />
+        
+        {/* Border glow */}
+        <div className="absolute inset-0 rounded-lg border border-white/[0.06] group-hover:border-gold/30 transition-colors duration-300" />
+
+        {/* Status badge — top left */}
+        <div className="absolute top-2 left-2 z-10">
+          <div className={`flex items-center gap-1 px-2 py-0.5 border rounded-full backdrop-blur-md ${s.bg}`}>
+            {s.pulse && <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />}
+            <span className={`text-[8px] font-black uppercase tracking-wider ${s.color}`}>{s.label}</span>
+          </div>
         </div>
 
-        {/* QOI Score */}
-        {solo.qoi_score != null && (
-          <div className="absolute bottom-2 right-2 bg-black/70 backdrop-blur-sm px-2.5 py-1">
-            <span className="text-sm font-black text-gold">{Math.round(solo.qoi_score)}</span>
-            <span className="text-[8px] text-gold/60 ml-0.5 uppercase">QOI</span>
-          </div>
-        )}
-
-        {/* Index awarded */}
+        {/* Index badge — top right */}
         {solo.index_awarded > 0 && (
-          <div className="absolute top-2 right-2 bg-emerald-500/20 border border-emerald-500/40 px-2 py-0.5 flex items-center gap-1">
+          <div className="absolute top-2 right-2 z-10 flex items-center gap-0.5 bg-emerald-500/20 border border-emerald-500/40 px-1.5 py-0.5 rounded-full backdrop-blur-md">
             <Zap className="w-2.5 h-2.5 text-emerald-400" />
-            <span className="text-[9px] font-bold text-emerald-400">+{solo.index_awarded} IDX</span>
+            <span className="text-[8px] font-black text-emerald-400">+{solo.index_awarded}</span>
           </div>
         )}
-      </div>
 
-      {/* Info */}
-      <div className="p-2.5">
-        <div className="flex items-center gap-2 mb-1.5">
-          <Avatar className="w-5 h-5 border border-border">
-            <AvatarImage src={solo.avatar_url || ''} />
-            <AvatarFallback className="bg-surface-2 text-[8px] font-bold text-foreground">
-              {solo.username?.[0]?.toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <span className="text-[11px] font-bold text-foreground truncate">@{solo.username}</span>
-        </div>
-        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-          <Music className="w-3 h-3 shrink-0" />
-          <span className="truncate">{solo.song_name}</span>
-        </div>
-        <div className="flex items-center justify-between mt-1.5">
-          <span className="text-[9px] text-muted-foreground/60 italic">"{solo.theme}"</span>
-          <div className="flex items-center gap-2">
-            {((solo as any).upvotes > 0 || (solo as any).downvotes > 0) && (
-              <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground/60">
-                <ThumbsUp className="w-2.5 h-2.5" />{(solo as any).upvotes || 0}
-                <ThumbsDown className="w-2.5 h-2.5 ml-0.5" />{(solo as any).downvotes || 0}
-              </div>
-            )}
-            {(solo as any).comment_count > 0 && (
-              <div className="flex items-center gap-0.5 text-[9px] text-muted-foreground/60">
-                <MessageCircle className="w-2.5 h-2.5" />{(solo as any).comment_count}
-              </div>
-            )}
-            <span className="text-[9px] text-muted-foreground/40">{timeAgo}</span>
+        {/* QOI Score — centered bottom area */}
+        {solo.qoi_score != null && (
+          <div className="absolute bottom-[52px] right-2 z-10">
+            <div className="bg-black/60 backdrop-blur-md px-2 py-1 rounded-md border border-white/[0.08]">
+              <span className="text-lg font-black text-gold leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>{Math.round(solo.qoi_score)}</span>
+              <span className="text-[7px] text-gold/50 ml-0.5 font-bold">QOI</span>
+            </div>
+          </div>
+        )}
+
+        {/* Theme label — centered */}
+        {!solo.thumbnail_url && (
+          <div className="absolute inset-0 flex items-center justify-center z-[1]">
+            <span className="text-[11px] font-black text-white/20 uppercase tracking-[0.2em] text-center px-4 leading-tight">{solo.theme}</span>
+          </div>
+        )}
+
+        {/* Bottom content */}
+        <div className="absolute bottom-0 left-0 right-0 p-2.5 z-10">
+          <div className="flex items-center gap-1.5 mb-1">
+            <Avatar className="w-4 h-4 border border-white/10">
+              <AvatarImage src={solo.avatar_url || ''} />
+              <AvatarFallback className="bg-white/10 text-[6px] font-bold text-white">
+                {solo.username?.[0]?.toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <span className="text-[10px] font-bold text-white truncate">@{solo.username}</span>
+          </div>
+          <div className="flex items-center gap-1 text-[9px] text-white/40 truncate">
+            <Music className="w-2.5 h-2.5 shrink-0" />
+            <span className="truncate">{solo.song_name}</span>
+          </div>
+          <div className="flex items-center justify-between mt-1">
+            <div className="flex items-center gap-2 text-[8px] text-white/30">
+              {(solo as any).upvotes > 0 && (
+                <span className="flex items-center gap-0.5"><ThumbsUp className="w-2 h-2" />{(solo as any).upvotes}</span>
+              )}
+              {(solo as any).comment_count > 0 && (
+                <span className="flex items-center gap-0.5"><MessageCircle className="w-2 h-2" />{(solo as any).comment_count}</span>
+              )}
+            </div>
+            <span className="text-[8px] text-white/20">{timeAgo}</span>
           </div>
         </div>
       </div>
     </Link>
-  );
-}
-
-// ─── Live Activity Ticker ──────────────────────────────────────
-function SoloActivityTicker({ submissions }: { submissions: RecentSolo[] }) {
-  const recent = submissions.slice(0, 5);
-  if (recent.length === 0) return null;
-
-  const getAction = (s: RecentSolo) => {
-    switch (s.status) {
-      case 'editing': return 'is editing';
-      case 'submitted': return 'submitted an edit';
-      case 'judging': return 'is being judged';
-      case 'scored': return `scored ${Math.round(s.qoi_score || 0)} QOI`;
-      default: return 'started solo mode';
-    }
-  };
-
-  return (
-    <div className="px-4 mb-3 space-y-1">
-      {recent.slice(0, 3).map((s, i) => (
-        <motion.div
-          key={s.id}
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: i * 0.1 }}
-          className="flex items-center gap-2 py-1"
-        >
-          <Avatar className="w-4 h-4 border border-border">
-            <AvatarImage src={s.avatar_url || ''} />
-            <AvatarFallback className="bg-surface-2 text-[6px] font-bold">{s.username?.[0]?.toUpperCase()}</AvatarFallback>
-          </Avatar>
-          <span className="text-[11px] text-muted-foreground">
-            <span className="font-bold text-foreground">@{s.username}</span>
-            {' '}{getAction(s)}{' '}
-            <span className="text-gold/70">"{s.theme}"</span>
-          </span>
-          {s.status === 'editing' && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />}
-        </motion.div>
-      ))}
-    </div>
   );
 }
 
@@ -149,69 +116,72 @@ export default function SoloShowcase({ onStartSolo }: { onStartSolo: () => void 
       animate={{ opacity: 1 }}
       className="relative"
     >
-      {/* Section header — minimal */}
-      <div className="flex items-center justify-between px-4 mb-2">
-        <div className="flex items-center gap-1.5">
-          <UserRound className="w-3 h-3 text-gold/70" />
-          <span className="text-[11px] font-bold text-foreground uppercase tracking-wide">Solo</span>
+      {/* Section header with inline quick-start */}
+      <div className="flex items-center justify-between px-4 mb-2.5">
+        <div className="flex items-center gap-2">
+          <UserRound className="w-4 h-4 text-gold" />
+          <span className="text-[14px] font-extrabold text-foreground tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Solo</span>
           {stats.editing > 0 && (
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse ml-1" />
+            <span className="flex items-center gap-1 text-[9px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-full">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+              {stats.editing} editing
+            </span>
+          )}
+          {stats.total > 0 && (
+            <span className="text-[10px] font-bold text-muted-foreground/50">{stats.total} edits</span>
           )}
         </div>
-        <span className="text-[9px] font-bold text-gold/60">{stats.total > 0 ? `${stats.total} edits` : ''}</span>
-      </div>
 
-      {/* CTA — compact */}
-      <div className="px-4 mb-2.5">
+        {/* Quick Start Button */}
         <motion.button
-          whileTap={{ scale: 0.98 }}
+          whileTap={{ scale: 0.92 }}
+          whileHover={{ scale: 1.03 }}
           onClick={() => profile ? onStartSolo() : navigate('/start')}
-          className="w-full bg-surface-1 border border-border hover:border-gold/30 py-2 px-3 flex items-center gap-2 transition-colors touch-manipulation"
+          className="relative flex items-center gap-1.5 px-3.5 py-1.5 rounded-full overflow-hidden touch-manipulation"
+          style={{
+            background: 'linear-gradient(135deg, hsl(43, 96%, 50%), hsl(38, 92%, 45%))',
+            boxShadow: '0 2px 12px rgba(234,179,8,0.3), inset 0 1px 0 rgba(255,255,255,0.2)',
+          }}
         >
-          <UserRound className="w-3.5 h-3.5 text-gold/70" />
-          <span className="text-[11px] font-bold text-foreground uppercase tracking-wide">Start Solo</span>
-          <span className="text-[9px] text-gold/60 font-bold ml-auto">100+ IDX</span>
-          <ChevronRight className="w-3 h-3 text-muted-foreground" />
+          <div className="absolute top-0 left-0 right-0 h-[50%] bg-gradient-to-b from-white/[0.2] to-transparent pointer-events-none rounded-t-full" />
+          <Play className="w-3 h-3 text-black relative z-10" fill="black" />
+          <span className="text-[11px] font-black text-black uppercase tracking-wide relative z-10">Start</span>
         </motion.button>
       </div>
 
-      {/* Submissions carousel */}
+      {/* Submissions carousel — compact poster cards */}
       {loading ? (
         <div className="flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-2">
-          <Skeleton className="h-48 w-[220px] shrink-0" />
-          <Skeleton className="h-48 w-[220px] shrink-0" />
-          <Skeleton className="h-48 w-[220px] shrink-0" />
+          <Skeleton className="h-[210px] w-[160px] shrink-0 rounded-lg" />
+          <Skeleton className="h-[210px] w-[160px] shrink-0 rounded-lg" />
+          <Skeleton className="h-[210px] w-[160px] shrink-0 rounded-lg" />
         </div>
       ) : submissions.length > 0 ? (
         <div className="flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory">
           {submissions.map(solo => (
             <SoloCard key={solo.id} solo={solo} />
           ))}
-          {submissions.length < 4 && Array.from({ length: Math.max(0, 3 - submissions.length) }).map((_, i) => (
-            <div key={`ghost-solo-${i}`} className="shrink-0 w-[220px] h-[180px] border border-dashed border-gold/15 bg-surface-0/40 flex flex-col items-center justify-center gap-2">
-              <div className="w-8 h-8 bg-surface-2/60 flex items-center justify-center">
-                <UserRound className="w-4 h-4 text-gold/20" />
-              </div>
-              <span className="text-[11px] text-muted-foreground/40 font-medium">Your edit here</span>
-            </div>
-          ))}
         </div>
       ) : (
         <div className="px-4">
-          <div className="bg-surface-1 border border-gold/15 border-dashed p-8 text-center">
-            <div className="w-14 h-14 bg-gold/10 border border-gold/20 flex items-center justify-center mx-auto mb-3">
-              <UserRound className="w-6 h-6 text-gold/30" />
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            onClick={() => profile ? onStartSolo() : navigate('/start')}
+            className="w-full relative overflow-hidden rounded-lg p-6 text-center group touch-manipulation"
+            style={{
+              background: 'linear-gradient(135deg, rgba(234,179,8,0.06), rgba(0,0,0,0.4), rgba(168,85,247,0.04))',
+              boxShadow: '0 2px 16px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(234,179,8,0.1)',
+            }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-gold/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <UserRound className="w-8 h-8 text-gold/20 mx-auto mb-2" />
+            <p className="text-[13px] font-bold text-foreground/70 mb-1">No solo edits yet</p>
+            <p className="text-[11px] text-muted-foreground/40 mb-3">Pick a song, choose a theme, get scored by a judge</p>
+            <div className="inline-flex items-center gap-1.5 text-gold text-[12px] font-bold">
+              <Play className="w-3.5 h-3.5" /> Start Solo Edit
+              <ChevronRight className="w-3.5 h-3.5" />
             </div>
-            <p className="text-[13px] text-muted-foreground font-medium mb-1">No solo edits yet</p>
-            <p className="text-[12px] text-muted-foreground/60 mb-4">Be the first to start a solo edit session</p>
-            <motion.button
-              whileTap={{ scale: 0.98 }}
-              onClick={() => profile ? onStartSolo() : navigate('/start')}
-              className="inline-flex items-center gap-1.5 bg-gold hover:bg-gold/90 text-background text-[12px] font-bold px-5 py-2.5 transition-colors"
-            >
-              <UserRound className="w-3.5 h-3.5" /> Start Solo Mode
-            </motion.button>
-          </div>
+          </motion.button>
         </div>
       )}
     </motion.section>
