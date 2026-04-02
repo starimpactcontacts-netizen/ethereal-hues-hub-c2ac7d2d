@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Radio, Shuffle, Music, ExternalLink, Pencil, Settings, Search, Send, X, Repeat, Repeat1 } from 'lucide-react';
 
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
