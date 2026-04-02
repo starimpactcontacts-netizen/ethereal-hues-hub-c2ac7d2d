@@ -271,15 +271,21 @@ async function fetchViaEmbed(shortcode: string): Promise<{
         if (thumbMatch) thumbnailUrl = thumbMatch[1].replace(/\\u0026/g, '&').replace(/\\\//g, '/');
       }
 
+      let shares: number | null = null;
+      for (const p of [/share_count[^\d]{0,5}(\d+)/, /reshare_count[^\d]{0,5}(\d+)/]) {
+        const m = html.match(p);
+        if (m) { shares = parseInt(m[1].replace(/,/g, ''), 10); break; }
+      }
+
       if (likes !== null || views !== null) {
-        console.log('✅ Embed stats:', { views, likes, comments });
-        return { views, likes, comments, thumbnailUrl };
+        console.log('✅ Embed stats:', { views, likes, comments, shares });
+        return { views, likes, comments, shares, thumbnailUrl };
       }
     }
-    return { views: null, likes: null, comments: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
   } catch (e) {
     console.error('Embed error:', e);
-    return { views: null, likes: null, comments: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
   }
 }
 
