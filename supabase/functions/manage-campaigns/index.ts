@@ -152,7 +152,7 @@ serve(async (req) => {
 
     // ─── CREATE CAMPAIGN ───
     if (action === "create-campaign") {
-      const { client_id, client_name, name, description, start_date, end_date, budget_cents, cover_image_url, goal_views, goal_label, goal_posts, featured_artist_id, password } = params;
+      const { client_id, client_name, name, description, start_date, end_date, budget_cents, cover_image_url, goal_views, goal_label, goal_posts, featured_artist_id, password, campaign_type, logo_url } = params;
       if (!name) return jsonRes({ error: "name required" }, 400);
 
       // Resolve client_id: use provided or find/create by client_name
