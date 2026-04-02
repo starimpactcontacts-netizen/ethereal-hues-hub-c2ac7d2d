@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Infinity as InfinityIcon, ChevronRight, Users, Trophy, 
   Flame, Calendar, Target, Shield, Swords,
-  Search, X, TrendingUp, Plus, HelpCircle, CheckCircle2,
+  Search, X, TrendingUp, Plus, HelpCircle, CheckCircle2, Info,
   Clock, Award, UserPlus, Eye, Globe, Crown, Zap, UserRound,
   Sparkles, Star, Music, Mail, ArrowRight, History, Play, Loader2,
   Clapperboard, ChevronDown, Crosshair, DollarSign
