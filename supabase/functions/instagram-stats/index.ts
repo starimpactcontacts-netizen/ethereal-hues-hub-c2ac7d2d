@@ -23,7 +23,7 @@ function shortcodeToMediaId(shortcode: string): string {
 
 // Method 1: Instagram GraphQL API (real-time accurate data)
 async function fetchViaGraphQL(shortcode: string): Promise<{
-  views: number | null; likes: number | null; comments: number | null; thumbnailUrl: string | null;
+  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null;
 }> {
   try {
     // Use Instagram's web GraphQL endpoint
@@ -55,7 +55,7 @@ async function fetchViaGraphQL(shortcode: string): Promise<{
       });
       if (!altRes.ok) {
         console.log('GraphQL alt HTTP:', altRes.status);
-        return { views: null, likes: null, comments: null, thumbnailUrl: null };
+        return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
       }
       const altJson = await altRes.json();
       const altMedia = altJson?.data?.shortcode_media;
@@ -63,10 +63,11 @@ async function fetchViaGraphQL(shortcode: string): Promise<{
         const views = altMedia.video_view_count ?? altMedia.video_play_count ?? null;
         const likes = altMedia.edge_media_preview_like?.count ?? null;
         const comments = altMedia.edge_media_to_parent_comment?.count ?? null;
-        console.log('✅ GraphQL alt stats:', { views, likes, comments });
-        return { views, likes, comments, thumbnailUrl: altMedia.display_url ?? null };
+        const shares = altMedia.share_count ?? altMedia.reshare_count ?? null;
+        console.log('✅ GraphQL alt stats:', { views, likes, comments, shares });
+        return { views, likes, comments, shares, thumbnailUrl: altMedia.display_url ?? null };
       }
-      return { views: null, likes: null, comments: null, thumbnailUrl: null };
+      return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
     }
     
     const json = await res.json();
@@ -75,22 +76,23 @@ async function fetchViaGraphQL(shortcode: string): Promise<{
       const views = media.video_view_count ?? media.video_play_count ?? media.play_count ?? null;
       const likes = media.edge_media_preview_like?.count ?? media.like_count ?? null;
       const comments = media.edge_media_to_parent_comment?.count ?? media.comment_count ?? null;
+      const shares = media.share_count ?? media.reshare_count ?? null;
       const thumbnailUrl = media.display_url ?? null;
-      console.log('✅ GraphQL stats:', { views, likes, comments });
-      return { views, likes, comments, thumbnailUrl };
+      console.log('✅ GraphQL stats:', { views, likes, comments, shares });
+      return { views, likes, comments, shares, thumbnailUrl };
     }
     
     console.log('GraphQL: no media in response, keys:', Object.keys(json?.data || {}));
-    return { views: null, likes: null, comments: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
   } catch (e) {
     console.error('GraphQL error:', e);
-    return { views: null, likes: null, comments: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
   }
 }
 
 // Method 2: Instagram Private Mobile API
 async function fetchViaMobileApi(shortcode: string): Promise<{
-  views: number | null; likes: number | null; comments: number | null; thumbnailUrl: string | null;
+  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null;
 }> {
   try {
     const mediaId = shortcodeToMediaId(shortcode);
@@ -106,7 +108,7 @@ async function fetchViaMobileApi(shortcode: string): Promise<{
     
     if (!res.ok) {
       console.log('Mobile API HTTP:', res.status);
-      return { views: null, likes: null, comments: null, thumbnailUrl: null };
+      return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
     }
     
     const json = await res.json();
@@ -115,22 +117,23 @@ async function fetchViaMobileApi(shortcode: string): Promise<{
       const views = item.play_count ?? item.video_view_count ?? item.view_count ?? null;
       const likes = item.like_count ?? null;
       const comments = item.comment_count ?? null;
+      const shares = item.share_count ?? item.reshare_count ?? null;
       const thumbnailUrl = item.image_versions2?.candidates?.[0]?.url ?? null;
-      console.log('✅ Mobile API stats:', { views, likes, comments });
-      return { views, likes, comments, thumbnailUrl };
+      console.log('✅ Mobile API stats:', { views, likes, comments, shares });
+      return { views, likes, comments, shares, thumbnailUrl };
     }
     
     console.log('Mobile API: no items');
-    return { views: null, likes: null, comments: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
   } catch (e) {
     console.error('Mobile API error:', e);
-    return { views: null, likes: null, comments: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
   }
 }
 
 // Method 2: Scrape the main HTML page (often has more current data than embed)
 async function fetchViaMainPage(shortcode: string): Promise<{
-  views: number | null; likes: number | null; comments: number | null; thumbnailUrl: string | null;
+  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null;
 }> {
   try {
     for (const prefix of ['p', 'reel']) {
@@ -150,6 +153,7 @@ async function fetchViaMainPage(shortcode: string): Promise<{
       let views: number | null = null;
       let likes: number | null = null;
       let comments: number | null = null;
+      let shares: number | null = null;
       let thumbnailUrl: string | null = null;
 
       // Try to find structured data
@@ -202,21 +206,30 @@ async function fetchViaMainPage(shortcode: string): Promise<{
         }
       }
 
+      // Try to extract share count
+      if (shares === null) {
+        const sharePatterns = [/share_count["\s:]+(\d+)/, /reshare_count["\s:]+(\d+)/];
+        for (const p of sharePatterns) {
+          const m = html.match(p);
+          if (m) { shares = parseInt(m[1], 10); break; }
+        }
+      }
+
       if (views !== null || likes !== null) {
-        console.log('✅ Main page stats:', { views, likes, comments, prefix });
-        return { views, likes, comments, thumbnailUrl };
+        console.log('✅ Main page stats:', { views, likes, comments, shares, prefix });
+        return { views, likes, comments, shares, thumbnailUrl };
       }
     }
-    return { views: null, likes: null, comments: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
   } catch (e) {
     console.error('Main page error:', e);
-    return { views: null, likes: null, comments: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
   }
 }
 
 // Method 3: Embed page (fallback - can have stale view counts)
 async function fetchViaEmbed(shortcode: string): Promise<{
-  views: number | null; likes: number | null; comments: number | null; thumbnailUrl: string | null;
+  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null;
 }> {
   try {
     for (const prefix of ['p', 'reel']) {
@@ -258,40 +271,48 @@ async function fetchViaEmbed(shortcode: string): Promise<{
         if (thumbMatch) thumbnailUrl = thumbMatch[1].replace(/\\u0026/g, '&').replace(/\\\//g, '/');
       }
 
+      let shares: number | null = null;
+      for (const p of [/share_count[^\d]{0,5}(\d+)/, /reshare_count[^\d]{0,5}(\d+)/]) {
+        const m = html.match(p);
+        if (m) { shares = parseInt(m[1].replace(/,/g, ''), 10); break; }
+      }
+
       if (likes !== null || views !== null) {
-        console.log('✅ Embed stats:', { views, likes, comments });
-        return { views, likes, comments, thumbnailUrl };
+        console.log('✅ Embed stats:', { views, likes, comments, shares });
+        return { views, likes, comments, shares, thumbnailUrl };
       }
     }
-    return { views: null, likes: null, comments: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
   } catch (e) {
     console.error('Embed error:', e);
-    return { views: null, likes: null, comments: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
   }
 }
 
 // Combine results from multiple methods, taking the highest values (real counts only go up)
-function mergeStats(...results: Array<{ views: number | null; likes: number | null; comments: number | null; thumbnailUrl: string | null }>) {
+function mergeStats(...results: Array<{ views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null }>) {
   let views: number | null = null;
   let likes: number | null = null;
   let comments: number | null = null;
+  let shares: number | null = null;
   let thumbnailUrl: string | null = null;
 
   for (const r of results) {
     if (r.views !== null && (views === null || r.views > views)) views = r.views;
     if (r.likes !== null && (likes === null || r.likes > likes)) likes = r.likes;
     if (r.comments !== null && (comments === null || r.comments > comments)) comments = r.comments;
+    if (r.shares !== null && (shares === null || r.shares > shares)) shares = r.shares;
     if (r.thumbnailUrl && !thumbnailUrl) thumbnailUrl = r.thumbnailUrl;
   }
 
-  return { views, likes, comments, thumbnailUrl };
+  return { views, likes, comments, shares, thumbnailUrl };
 }
 
 async function fetchInstagramPostStats(url: string) {
   const shortcode = extractShortcode(url);
   if (!shortcode) {
     console.log('Could not extract shortcode from:', url);
-    return { views: null, likes: null, comments: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
   }
 
   // Try all methods in parallel for speed and accuracy
@@ -347,6 +368,7 @@ serve(async (req) => {
           if (stats.views !== null && stats.views > (edit.view_count || 0)) payload.view_count = stats.views;
           if (stats.likes !== null && stats.likes > (edit.like_count || 0)) payload.like_count = stats.likes;
           if (stats.comments !== null && stats.comments > (edit.comment_count || 0)) payload.comment_count = stats.comments;
+          if (stats.shares !== null && stats.shares > (edit.share_count || 0)) payload.share_count = stats.shares;
           if (stats.thumbnailUrl && !edit.thumbnail_url) payload.thumbnail_url = stats.thumbnailUrl;
 
           if (Object.keys(payload).length > 1) {

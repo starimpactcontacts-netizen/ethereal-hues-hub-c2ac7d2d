@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Eye, TrendingUp, Zap, MousePointerClick, BarChart3, ExternalLink, Play, Music, Globe, CheckCircle, Download, Link2, RefreshCw } from 'lucide-react';
+import { Eye, TrendingUp, Zap, MousePointerClick, BarChart3, ExternalLink, Play, Music, Globe, CheckCircle, Download, Link2, RefreshCw, Share2 } from 'lucide-react';
 import { SiTiktok, SiYoutube, SiInstagram } from '@icons-pack/react-simple-icons';
 import { supabase } from '@/integrations/supabase/client';
 import viralCartelCrest from '@/assets/viral-cartel-crest.png';
@@ -393,7 +393,7 @@ export default function CampaignPortalPage() {
         >
           {[
             { label: 'Total Reach', raw: displayViews, icon: Eye, sub: 'Organic + Paid Views' },
-            { label: 'Impressions', raw: campaign.total_impressions, icon: TrendingUp, sub: 'Feed Appearances' },
+            { label: 'Shares', raw: totalShares, icon: Share2, sub: 'Content Shares' },
             { label: 'Engagements', raw: campaign.total_engagements, icon: Zap, sub: 'Likes, Shares, Comments' },
             { label: 'Click-Through', raw: campaign.total_clicks, icon: MousePointerClick, sub: 'Profile & Link Clicks' },
           ].map((stat, i) => (
