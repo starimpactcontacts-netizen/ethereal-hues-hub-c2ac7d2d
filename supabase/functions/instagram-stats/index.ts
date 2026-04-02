@@ -153,6 +153,7 @@ async function fetchViaMainPage(shortcode: string): Promise<{
       let views: number | null = null;
       let likes: number | null = null;
       let comments: number | null = null;
+      let shares: number | null = null;
       let thumbnailUrl: string | null = null;
 
       // Try to find structured data
