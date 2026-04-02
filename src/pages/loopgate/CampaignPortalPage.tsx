@@ -393,7 +393,7 @@ export default function CampaignPortalPage() {
         >
           {[
             { label: 'Total Reach', raw: displayViews, icon: Eye, sub: 'Organic + Paid Views' },
-            { label: 'Impressions', raw: campaign.total_impressions, icon: TrendingUp, sub: 'Feed Appearances' },
+            { label: 'Shares', raw: totalShares, icon: Share2, sub: 'Content Shares' },
             { label: 'Engagements', raw: campaign.total_engagements, icon: Zap, sub: 'Likes, Shares, Comments' },
             { label: 'Click-Through', raw: campaign.total_clicks, icon: MousePointerClick, sub: 'Profile & Link Clicks' },
           ].map((stat, i) => (
