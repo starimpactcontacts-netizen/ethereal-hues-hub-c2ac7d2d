@@ -117,16 +117,17 @@ async function fetchViaMobileApi(shortcode: string): Promise<{
       const views = item.play_count ?? item.video_view_count ?? item.view_count ?? null;
       const likes = item.like_count ?? null;
       const comments = item.comment_count ?? null;
+      const shares = item.share_count ?? item.reshare_count ?? null;
       const thumbnailUrl = item.image_versions2?.candidates?.[0]?.url ?? null;
-      console.log('✅ Mobile API stats:', { views, likes, comments });
-      return { views, likes, comments, thumbnailUrl };
+      console.log('✅ Mobile API stats:', { views, likes, comments, shares });
+      return { views, likes, comments, shares, thumbnailUrl };
     }
     
     console.log('Mobile API: no items');
-    return { views: null, likes: null, comments: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
   } catch (e) {
     console.error('Mobile API error:', e);
-    return { views: null, likes: null, comments: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
   }
 }
 
