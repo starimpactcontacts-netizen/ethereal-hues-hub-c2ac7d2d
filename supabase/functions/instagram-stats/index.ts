@@ -290,20 +290,22 @@ async function fetchViaEmbed(shortcode: string): Promise<{
 }
 
 // Combine results from multiple methods, taking the highest values (real counts only go up)
-function mergeStats(...results: Array<{ views: number | null; likes: number | null; comments: number | null; thumbnailUrl: string | null }>) {
+function mergeStats(...results: Array<{ views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null }>) {
   let views: number | null = null;
   let likes: number | null = null;
   let comments: number | null = null;
+  let shares: number | null = null;
   let thumbnailUrl: string | null = null;
 
   for (const r of results) {
     if (r.views !== null && (views === null || r.views > views)) views = r.views;
     if (r.likes !== null && (likes === null || r.likes > likes)) likes = r.likes;
     if (r.comments !== null && (comments === null || r.comments > comments)) comments = r.comments;
+    if (r.shares !== null && (shares === null || r.shares > shares)) shares = r.shares;
     if (r.thumbnailUrl && !thumbnailUrl) thumbnailUrl = r.thumbnailUrl;
   }
 
-  return { views, likes, comments, thumbnailUrl };
+  return { views, likes, comments, shares, thumbnailUrl };
 }
 
 async function fetchInstagramPostStats(url: string) {
