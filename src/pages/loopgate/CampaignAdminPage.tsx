@@ -392,18 +392,34 @@ export default function CampaignAdminPage() {
                       </div>
                     </div>
 
-                    {/* Logo URL (for brand/film) */}
+                    {/* Logo Upload (for brand/film) */}
                     {newCampaign.campaign_type !== 'artist' && (
                       <div>
                         <label className="text-[8px] text-muted-foreground uppercase tracking-[0.12em] font-bold block mb-1.5">
-                          Company Logo URL
+                          Company Logo
                         </label>
-                        <Input
-                          placeholder="https://example.com/logo.png"
-                          value={newCampaign.logo_url}
-                          onChange={e => setNewCampaign(p => ({ ...p, logo_url: e.target.value }))}
-                          className="bg-background/60 border-border/40 h-10"
-                        />
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Paste URL or upload below"
+                            value={newCampaign.logo_url}
+                            onChange={e => setNewCampaign(p => ({ ...p, logo_url: e.target.value }))}
+                            className="bg-background/60 border-border/40 h-10 flex-1"
+                          />
+                          <label className="h-10 px-3 rounded-md border border-border/40 bg-background/60 flex items-center gap-1.5 cursor-pointer hover:bg-background/80 transition-colors">
+                            <Upload className="w-3.5 h-3.5 text-muted-foreground" />
+                            <span className="text-[9px] text-muted-foreground font-medium">Upload</span>
+                            <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              try {
+                                toast.info('Uploading logo...');
+                                const url = await uploadLogoFile(file);
+                                setNewCampaign(p => ({ ...p, logo_url: url }));
+                                toast.success('Logo uploaded!');
+                              } catch (err: any) { toast.error(err.message); }
+                            }} />
+                          </label>
+                        </div>
                         {newCampaign.logo_url && (
                           <div className="mt-2 flex items-center gap-2">
                             <img src={newCampaign.logo_url} alt="Logo preview" className="h-8 w-auto object-contain rounded border border-border/30 bg-background/60 p-1" />
