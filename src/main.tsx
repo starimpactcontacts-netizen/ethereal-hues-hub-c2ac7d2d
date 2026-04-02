@@ -5,21 +5,23 @@ import "./index.css";
 import { initializeNativeApp, disableZoom } from "./lib/native";
 
 // Register service worker with aggressive auto-update
-// Checks for updates every 60 seconds and reloads immediately when found
+// Checks for updates every 30 seconds and reloads immediately when found
 const updateSW = registerSW({
   onNeedRefresh() {
     // Immediately activate the new SW — no prompt, just update
     updateSW(true);
+    // Force reload to bust any in-memory caches
+    window.location.reload();
   },
   onOfflineReady() {
     console.log("[Loopgate] App ready for offline use");
   },
   onRegisteredSW(swUrl, registration) {
     if (registration) {
-      // Check for updates every 60 seconds
+      // Check for updates every 30 seconds (was 60)
       setInterval(() => {
         registration.update();
-      }, 60 * 1000);
+      }, 30 * 1000);
     }
   },
 });
