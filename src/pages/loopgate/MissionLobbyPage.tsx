@@ -337,7 +337,7 @@ export default function MissionLobbyPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <Swords className="w-3.5 h-3.5 text-emerald-400" />
-                    <span className="text-[9px] font-black text-emerald-400 uppercase tracking-[0.15em]">Battle Royale</span>
+                    <span className="text-[9px] font-black text-emerald-400 uppercase tracking-[0.15em]">Official Event</span>
                   </div>
                   <h3 style={teko} className="text-[17px] text-white leading-tight truncate tracking-wide">
                     {officialEvent.title}

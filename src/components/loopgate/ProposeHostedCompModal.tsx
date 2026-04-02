@@ -407,7 +407,7 @@ export default function ProposeHostedCompModal({ isOpen, onClose, onSuccess }: P
             </label>
             <div className="grid grid-cols-3 gap-2">
               {[
-                { id: 'battle_royale', label: 'Battle Royale', desc: 'Best edit wins', comingSoon: false },
+                { id: 'battle_royale', label: 'Open Submit', desc: 'Best edit wins', comingSoon: false },
                 { id: 'bracket', label: 'Bracket', desc: 'Elimination rounds', comingSoon: true },
                 { id: 'round_robin', label: 'Scored', desc: 'Points-based', comingSoon: true }
               ].map((f) => (
