@@ -161,7 +161,7 @@ function EditorCard({ editor, pinnedEdits, navigate, size = "md", showRank = fal
       </div>
       
       {/* Stats bar below thumbnail */}
-      <div className="bg-surface-1/80 border-x border-b border-border/30 px-2 py-1.5">
+      <div className="bg-surface-1/60 border-x border-b border-border/20 rounded-b-lg px-2 py-1.5">
         <div className="flex items-center justify-between text-[9px] text-muted-foreground">
           <div className="flex items-center gap-2">
             <span className="text-gold font-bold text-[11px]">{(editor.global_index_score || 0).toFixed(1)}</span>
