@@ -1386,7 +1386,7 @@ export default function ArenaPage() {
 
 
               {/* Fight List */}
-              <div className="px-4 space-y-1.5">
+              <div className="px-4 space-y-1">
                 {quickLoading ? (
                   <div className="space-y-1.5">
                     <Skeleton className="h-16 w-full" />
