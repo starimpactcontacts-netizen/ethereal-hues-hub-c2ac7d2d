@@ -388,6 +388,43 @@ export default function CampaignPortalPage() {
           </div>
         </motion.div>
 
+        {/* ★ Views Growth Chart */}
+        {growthData.length > 1 && (
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}
+            className="rounded-2xl border border-neutral-200 bg-white p-5 sm:p-6"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-400 font-black">Growth Over Time</p>
+                <p className="text-[9px] text-neutral-400 mt-0.5">Cumulative views by content publish date</p>
+              </div>
+              <div className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center">
+                <TrendingUp size={14} className="text-neutral-600" />
+              </div>
+            </div>
+            <div className="h-48 sm:h-56">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={growthData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+                  <defs>
+                    <linearGradient id="viewsGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#171717" stopOpacity={0.15} />
+                      <stop offset="100%" stopColor="#171717" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="label" tick={{ fontSize: 9, fill: '#a3a3a3', fontWeight: 700 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 9, fill: '#a3a3a3', fontWeight: 700 }} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatNumber(v)} />
+                  <Tooltip
+                    contentStyle={{ background: '#171717', border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 700, color: '#fff' }}
+                    labelStyle={{ color: '#a3a3a3', fontSize: 9 }}
+                    formatter={(value: number) => [formatNumber(value), 'Views']}
+                  />
+                  <Area type="monotone" dataKey="views" stroke="#171717" strokeWidth={2} fill="url(#viewsGradient)" dot={false} activeDot={{ r: 4, fill: '#171717' }} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+        )}
+
         {/* KPI Grid */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
           className="grid grid-cols-2 sm:grid-cols-4 gap-3"
