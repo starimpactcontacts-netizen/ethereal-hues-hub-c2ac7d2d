@@ -1367,6 +1367,7 @@ export default function ArenaPage() {
                 title="Quick Edit 1v1s"
                 badge={liveQuick > 0 ? `${liveQuick} Live` : undefined}
                 badgeColor="bg-red-500/20 border-red-500/40 text-red-400"
+                infoText="Instant matchmaking. Auto-matched with another editor — both submit an edit within 3 hours. Judge picks the winner. Winner +20 IDX."
                 action={
                   <button
                     onClick={() => profile ? navigate('/quick-fight') : navigate('/start')}
@@ -1376,8 +1377,6 @@ export default function ArenaPage() {
                   </button>
                 }
               />
-              <p className="text-[12px] text-muted-foreground px-4 mb-1">Instant matchmaking · 3hr edit window · Winner +20 IDX</p>
-              <p className="text-[10px] text-muted-foreground/50 px-4 mb-3">Auto-matched with another editor. Both submit an edit within 3 hours. Judge picks the winner.</p>
 
 
 
