@@ -101,7 +101,7 @@ export default function HeaderMusicPlayer() {
   const [tracks, setTracks] = useState<Track[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(0.18);
+  const [volume, setVolume] = useState(0.08);
   const [shuffled, setShuffled] = useState(true);
   const [progress, setProgress] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1.0);
