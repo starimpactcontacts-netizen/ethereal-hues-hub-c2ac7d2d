@@ -371,7 +371,7 @@ export default function MissionLobbyPage() {
         <div className="bg-emerald-950/40 border border-emerald-500/15 px-3 py-2 flex items-center gap-2">
           <Zap className="w-3 h-3 text-emerald-400/60 shrink-0" />
           <p className="text-[9px] text-emerald-400/70">
-            <span className="font-bold text-emerald-400/90">Submissions auto-enter lobby queue</span> — rated C+ or higher joins the competition
+            <span className="font-bold text-emerald-400/90">Edits auto-enter the queue</span> — rated C+ or higher joins the competition
           </p>
         </div>
       </div>
