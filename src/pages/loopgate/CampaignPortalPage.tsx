@@ -155,12 +155,15 @@ export default function CampaignPortalPage() {
     }
   }, [slug, refreshing, fetchData]);
 
-  // On mount: fetch data AND trigger IG stats refresh
+  // On mount: fetch data AND trigger IG stats refresh, then re-fetch to show updated metrics
   useEffect(() => {
     const init = async () => {
-      // Try to refresh IG stats on load (non-blocking)
-      supabase.functions.invoke('instagram-stats', { body: { action: 'refresh-all' } }).catch(() => {});
       await fetchData();
+      // Background refresh IG stats, then re-fetch to pick up updated metrics
+      try {
+        await supabase.functions.invoke('instagram-stats', { body: { action: 'refresh-all' } });
+        await fetchData();
+      } catch {}
     };
     init();
   }, [fetchData]);
