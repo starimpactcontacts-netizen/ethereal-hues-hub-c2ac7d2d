@@ -7,7 +7,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ArrowRight, DollarSign, Brain, Trophy } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { ScopeTarget, MedalRing, TrophyPillar } from "@/components/loopgate/LoopgateIcons";
 import loopgateBrand from "@/assets/loopgate-brand.png";
 
 const GUIDE_VERSION = "v5.2";
