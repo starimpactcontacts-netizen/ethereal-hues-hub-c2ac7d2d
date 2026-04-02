@@ -206,15 +206,24 @@ async function fetchViaMainPage(shortcode: string): Promise<{
         }
       }
 
+      // Try to extract share count
+      if (shares === null) {
+        const sharePatterns = [/share_count["\s:]+(\d+)/, /reshare_count["\s:]+(\d+)/];
+        for (const p of sharePatterns) {
+          const m = html.match(p);
+          if (m) { shares = parseInt(m[1], 10); break; }
+        }
+      }
+
       if (views !== null || likes !== null) {
-        console.log('✅ Main page stats:', { views, likes, comments, prefix });
-        return { views, likes, comments, thumbnailUrl };
+        console.log('✅ Main page stats:', { views, likes, comments, shares, prefix });
+        return { views, likes, comments, shares, thumbnailUrl };
       }
     }
-    return { views: null, likes: null, comments: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
   } catch (e) {
     console.error('Main page error:', e);
-    return { views: null, likes: null, comments: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
   }
 }
 
