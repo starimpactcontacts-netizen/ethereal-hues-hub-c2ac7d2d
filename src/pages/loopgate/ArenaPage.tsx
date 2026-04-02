@@ -1432,9 +1432,8 @@ export default function ArenaPage() {
                 title="1v1 Edit Battles"
                 badge={liveBattles > 0 ? `${liveBattles} Live` : undefined}
                 badgeColor="bg-red-500/20 border-red-500/40 text-red-400"
+                infoText="Challenge a specific editor to a head-to-head showdown. Pick a song, set the deadline, and go 1v1. Winner earns +20 IDX. No penalty for the loser."
               />
-              <p className="text-[12px] text-muted-foreground px-4 mb-1">Head-to-head editing showdowns · Winner +20 IDX</p>
-              <p className="text-[10px] text-muted-foreground/50 px-4 mb-3">Challenge a specific editor. Pick a song, set the deadline, and go head-to-head. Loser gets no penalty.</p>
 
               {battlesLoading ? (
                 <div className="flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-2">
