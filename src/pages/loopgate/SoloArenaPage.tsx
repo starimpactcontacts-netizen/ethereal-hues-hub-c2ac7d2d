@@ -56,10 +56,10 @@ function BalanceBanner() {
     <Link to="/payouts">
       <div className="bg-gradient-to-r from-emerald-950/60 to-surface-1 border border-emerald-500/20 rounded-xl p-4 flex items-center justify-between hover:border-emerald-500/40 transition-colors">
         <div>
-          <p className="text-[9px] font-bold uppercase tracking-widest text-emerald-400">Your Balance</p>
+          <p className="text-[9px] font-bold uppercase tracking-widest text-emerald-400/60">Your Balance</p>
           <div className="flex items-baseline gap-1 mt-0.5">
             <DollarSign className="w-5 h-5 text-emerald-400" />
-            <span className="font-display text-3xl text-emerald-400">{(availableBalance / 100).toFixed(2)}</span>
+            <span className="font-display text-3xl text-foreground">{(availableBalance / 100).toFixed(2)}</span>
           </div>
         </div>
         <div className="flex items-center gap-1.5 text-emerald-400/70 text-xs font-semibold">
