@@ -502,19 +502,24 @@ export default function IndexPage() {
       {/* ═══ FULL PAGE PATTERN ═══ */}
       <GatePattern opacity={4} tileSize={56} className="fixed inset-0 z-0" />
       
-      {/* ═══ COMPACT HERO ═══ */}
+      {/* ═══ CINEMATIC HERO ═══ */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-surface-2/90 via-background/95 to-background" />
+        {/* Deep layered gradients for depth */}
+        <div className="absolute inset-0 bg-gradient-to-b from-surface-2 via-background/98 to-background" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(212,175,55,0.06),transparent_60%)]" />
         <IndexHeroPattern />
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-foreground/10 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
         
-        <header className="relative z-10 px-4 pt-5 pb-3">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-[10px] text-muted-foreground uppercase tracking-[0.4em] font-semibold">Discover</span>
+        <header className="relative z-10 px-4 pt-6 pb-4">
+          {/* Top row — label + shuffle */}
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 bg-gold rounded-full" />
+              <span className="text-[10px] text-gold/80 uppercase tracking-[0.5em] font-bold">Global Directory</span>
+            </div>
             {viewMode === "editors" && (
               <button onClick={() => {
                 setShuffleKey(k => k + 1);
-                // Scroll to the top of the feed so the shuffle is visible
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }} className="flex items-center gap-1.5 px-3 py-1.5 bg-foreground/5 hover:bg-foreground/10 border border-foreground/10 transition-all text-foreground/70 hover:text-foreground group active:scale-95">
                 <RefreshCw className="w-3 h-3 group-hover:rotate-180 transition-transform duration-500" />
@@ -523,28 +528,27 @@ export default function IndexPage() {
             )}
           </div>
           
-          <div className="flex items-center gap-3">
-            <h1 className="font-display text-4xl tracking-wider text-foreground">THE INDEX</h1>
-            {/* Tactical live counter */}
-            <div className="ml-auto flex items-center gap-0 border border-foreground/20 bg-black/60 backdrop-blur-sm">
-              <div className="px-2 py-1 border-r border-foreground/20 flex items-center gap-1.5">
-                <div className="relative flex items-center justify-center">
-                  <div className="w-1.5 h-1.5 bg-red-500" style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }} />
-                  <div className="absolute w-3 h-3 border border-red-500/40 animate-ping" style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }} />
-                </div>
-                <span className="text-[9px] font-black text-red-400 uppercase tracking-widest">SYS</span>
+          {/* Massive title */}
+          <h1 className="font-display text-[3.5rem] leading-[0.85] tracking-wider text-foreground mb-1">
+            THE<br/>INDEX
+          </h1>
+          
+          {/* Live counter — clean and minimal */}
+          <div className="flex items-center gap-3 mt-2">
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <div className="w-2 h-2 bg-emerald-400 rounded-full" />
+                <div className="absolute inset-0 w-2 h-2 bg-emerald-400 rounded-full animate-ping opacity-60" />
               </div>
-              <div className="px-2.5 py-1">
-                <span className="text-[10px] font-black text-foreground tabular-nums tracking-wider">{rankings.length}</span>
-                <span className="text-[8px] font-bold text-foreground/40 ml-1 uppercase">ACTIVE</span>
-              </div>
+              <span className="text-sm font-bold text-foreground tabular-nums">{rankings.length}</span>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Editors Indexed</span>
             </div>
           </div>
         </header>
 
-        {/* Tab Navigation */}
+        {/* Tab Navigation — cleaner, bolder */}
         <div className="relative z-10 px-4 pb-4">
-          <div className="flex gap-0.5 bg-black/40 backdrop-blur-xl border border-foreground/10 p-1">
+          <div className="flex gap-0.5 bg-surface-0/80 backdrop-blur-xl border border-border/30 p-1">
             {tabs.map((tab) => {
               const isActive = viewMode === tab.id;
               const Icon = tab.icon;
