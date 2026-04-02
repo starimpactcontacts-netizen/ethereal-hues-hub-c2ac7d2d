@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Swords, Play, Smartphone } from 'lucide-react';
+import { ArrowRight, Swords, Play, Smartphone, ChevronRight } from 'lucide-react';
 import { HubIcon, ArenaIcon, RankingsIcon, RateIcon, UnitsIcon, MissionsIcon } from '@/components/loopgate/LandingIcons';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
