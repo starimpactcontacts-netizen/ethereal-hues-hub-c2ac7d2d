@@ -11,45 +11,52 @@ function extractShortcode(url: string): string | null {
   return match ? match[1] : null;
 }
 
-// Method 1: Try the ?__a=1 JSON API (most accurate, real-time data)
-async function fetchViaJsonApi(shortcode: string): Promise<{
+// Convert shortcode to media ID (Instagram uses base64-like encoding)
+function shortcodeToMediaId(shortcode: string): string {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+  let id = BigInt(0);
+  for (const char of shortcode) {
+    id = id * BigInt(64) + BigInt(alphabet.indexOf(char));
+  }
+  return id.toString();
+}
+
+// Method 1: Instagram Private Mobile API (most accurate real-time data)
+async function fetchViaMobileApi(shortcode: string): Promise<{
   views: number | null; likes: number | null; comments: number | null; thumbnailUrl: string | null;
 }> {
   try {
-    const apiUrl = `https://www.instagram.com/p/${shortcode}/?__a=1&__d=dis`;
-    console.log('Trying JSON API:', apiUrl);
+    const mediaId = shortcodeToMediaId(shortcode);
+    const apiUrl = `https://i.instagram.com/api/v1/media/${mediaId}/info/`;
+    console.log('Trying mobile API:', apiUrl, 'mediaId:', mediaId);
+    
     const res = await fetch(apiUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'application/json, text/plain, */*',
-        'X-IG-App-ID': '936619743392459',
-        'X-Requested-With': 'XMLHttpRequest',
+        'User-Agent': 'Instagram 275.0.0.27.98 Android (33/13; 420dpi; 1080x2400; samsung; SM-G991B; o1s; exynos2100; en_US; 458229258)',
+        'X-IG-App-ID': '567067343352427',
       },
     });
+    
     if (!res.ok) {
-      console.log('JSON API HTTP:', res.status);
+      console.log('Mobile API HTTP:', res.status);
       return { views: null, likes: null, comments: null, thumbnailUrl: null };
     }
-    const text = await res.text();
-    console.log('JSON API response length:', text.length);
     
-    try {
-      const json = JSON.parse(text);
-      const media = json?.graphql?.shortcode_media || json?.items?.[0];
-      if (media) {
-        const views = media.video_view_count ?? media.video_play_count ?? media.play_count ?? null;
-        const likes = media.edge_media_preview_like?.count ?? media.like_count ?? null;
-        const comments = media.edge_media_to_parent_comment?.count ?? media.comment_count ?? null;
-        const thumbnailUrl = media.display_url ?? media.thumbnail_src ?? null;
-        console.log('✅ JSON API stats:', { views, likes, comments });
-        return { views, likes, comments, thumbnailUrl };
-      }
-    } catch {
-      console.log('JSON API parse failed');
+    const json = await res.json();
+    const item = json?.items?.[0];
+    if (item) {
+      const views = item.play_count ?? item.video_view_count ?? item.view_count ?? null;
+      const likes = item.like_count ?? null;
+      const comments = item.comment_count ?? null;
+      const thumbnailUrl = item.image_versions2?.candidates?.[0]?.url ?? null;
+      console.log('✅ Mobile API stats:', { views, likes, comments });
+      return { views, likes, comments, thumbnailUrl };
     }
+    
+    console.log('Mobile API: no items in response');
     return { views: null, likes: null, comments: null, thumbnailUrl: null };
   } catch (e) {
-    console.error('JSON API error:', e);
+    console.error('Mobile API error:', e);
     return { views: null, likes: null, comments: null, thumbnailUrl: null };
   }
 }
