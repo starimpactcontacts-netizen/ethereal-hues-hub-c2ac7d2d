@@ -314,17 +314,17 @@ export default function FeaturedDropCard({ drop }: Props) {
       </div>
 
       {/* Activity signal + Rewards */}
-      <div className="px-3 py-2.5 flex items-center gap-1.5 border-t border-white/[0.06]">
-        <ActivityIcon className={cn("w-3 h-3 shrink-0", activity.color)} />
-        <span className={cn("text-[9px] sm:text-[10px] font-semibold tracking-tight flex-1 truncate", activity.color)}>
+      <div className="px-2.5 py-2 flex items-center gap-1.5 border-t border-white/[0.04]">
+        <ActivityIcon className={cn("w-2.5 h-2.5 shrink-0", activity.color)} />
+        <span className={cn("text-[8px] font-semibold tracking-tight flex-1 truncate", activity.color)}>
           {activity.text}
         </span>
-        <div className="flex items-center gap-2 text-[9px] sm:text-[10px] font-bold shrink-0">
+        <div className="flex items-center gap-1.5 text-[8px] font-bold shrink-0">
           <span className="flex items-center gap-0.5 text-brand">
-            <Zap className="w-3 h-3" />+{drop.xp_reward}
+            <Zap className="w-2.5 h-2.5" />+{drop.xp_reward}
           </span>
           <span className="flex items-center gap-0.5 text-gold">
-            <Trophy className="w-3 h-3" />+{drop.index_reward}
+            <Trophy className="w-2.5 h-2.5" />+{drop.index_reward}
           </span>
         </div>
       </div>
