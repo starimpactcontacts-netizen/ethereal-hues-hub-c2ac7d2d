@@ -134,69 +134,82 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ═══════════════ DIRECT ACCESS — Portal Grid ═══════════════ */}
-        <section className="relative py-4 sm:py-8 px-4 sm:px-6">
-          <div className="max-w-md mx-auto space-y-1.5">
+        {/* ═══════════════ DIRECT ACCESS — Seamless Portal ═══════════════ */}
+        <section className="relative py-6 sm:py-10 px-5 sm:px-6">
+          <div className="max-w-sm mx-auto space-y-3">
+            {/* Main links — horizontal pill rows */}
             <motion.div
-              className="grid grid-cols-3 gap-1.5"
-              initial={{ opacity: 0, y: 16 }}
+              className="space-y-2"
+              initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.4 }}
+              transition={{ duration: 0.5 }}
             >
               {quickLinks.map((link, i) => (
                 <motion.div
                   key={link.to}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0, x: -8 }}
+                  whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: i * 0.04, duration: 0.3 }}
+                  transition={{ delay: i * 0.06, duration: 0.35 }}
                 >
                   <Link
                     to={link.to}
-                    className="group relative flex flex-col items-center justify-center gap-1 py-4 rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.03] active:scale-[0.97]"
+                    className={`group relative flex items-center gap-4 px-5 py-3.5 rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-[0.96] ${link.glow}`}
                     style={{
-                      background: 'linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)',
-                      border: '1px solid rgba(255,255,255,0.06)',
+                      background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.015) 100%)',
+                      border: '1px solid rgba(255,255,255,0.07)',
                     }}
                   >
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: `radial-gradient(circle at 50% 40%, rgba(255,255,255,0.06), transparent 70%)` }} />
-                    <link.Icon size={18} className="text-muted-foreground group-hover:text-foreground transition-colors duration-300 relative z-10" />
-                    <span className="text-[13px] font-bold text-foreground/80 group-hover:text-foreground tracking-wide uppercase relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>{link.label}</span>
+                    {/* Hover glow */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: 'radial-gradient(ellipse at 20% 50%, rgba(255,255,255,0.06), transparent 70%)' }} />
+                    
+                    {/* Icon */}
+                    <div className="relative z-10 flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-300"
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}
+                    >
+                      <link.Icon size={16} className="text-foreground/60 group-hover:text-foreground transition-colors duration-300" />
+                    </div>
+                    
+                    {/* Label + desc */}
+                    <div className="relative z-10 flex-1 min-w-0">
+                      <span className="block text-[15px] font-bold text-foreground/90 group-hover:text-foreground tracking-[0.08em] uppercase leading-tight transition-colors" style={{ fontFamily: 'Teko, sans-serif' }}>
+                        {link.label}
+                      </span>
+                      <span className="block text-[11px] text-foreground/30 group-hover:text-foreground/50 tracking-wide transition-colors">
+                        {link.desc}
+                      </span>
+                    </div>
+                    
+                    {/* Arrow */}
+                    <ChevronRight className="relative z-10 w-4 h-4 text-foreground/15 group-hover:text-foreground/50 group-hover:translate-x-0.5 transition-all duration-300" />
                   </Link>
                 </motion.div>
               ))}
             </motion.div>
 
-            {/* Secondary row */}
+            {/* Secondary row — subtle */}
             <motion.div
-              className="flex gap-1.5"
+              className="flex gap-2 pt-1"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              transition={{ delay: 0.2, duration: 0.35 }}
+              transition={{ delay: 0.35, duration: 0.4 }}
             >
-              <Link
-                to="/editorium"
-                className="group flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg transition-all hover:scale-[1.02] active:scale-[0.97]"
-                style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}
-              >
-                <img src={editoriumLogo} alt="Editorium" className="h-3 opacity-40 group-hover:opacity-70 transition-opacity" />
-              </Link>
-              <Link
-                to="/gqt"
-                className="group flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg transition-all hover:scale-[1.02] active:scale-[0.97]"
-                style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}
-              >
-                <span className="text-[11px] font-bold tracking-wider text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" style={{ fontFamily: 'Teko, sans-serif' }}>QOI TEST</span>
-              </Link>
-              <Link
-                to="/about"
-                className="group flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg transition-all hover:scale-[1.02] active:scale-[0.97]"
-                style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}
-              >
-                <span className="text-[11px] font-bold tracking-wider text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" style={{ fontFamily: 'Teko, sans-serif' }}>ABOUT</span>
-              </Link>
+              {[
+                { to: '/editorium', content: <img src={editoriumLogo} alt="Editorium" className="h-3 opacity-30 group-hover:opacity-60 transition-opacity" /> },
+                { to: '/gqt', content: <span className="text-[10px] font-bold tracking-[0.2em] text-foreground/20 group-hover:text-foreground/50 transition-colors" style={{ fontFamily: 'Teko, sans-serif' }}>QOI TEST</span> },
+                { to: '/about', content: <span className="text-[10px] font-bold tracking-[0.2em] text-foreground/20 group-hover:text-foreground/50 transition-colors" style={{ fontFamily: 'Teko, sans-serif' }}>ABOUT</span> },
+              ].map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className="group flex-1 flex items-center justify-center py-2 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.96]"
+                  style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}
+                >
+                  {item.content}
+                </Link>
+              ))}
             </motion.div>
           </div>
         </section>
