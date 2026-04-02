@@ -797,12 +797,31 @@ export default function CampaignAdminPage() {
                                         ))}
                                       </div>
                                       {statsForm.campaign_type !== 'artist' && (
-                                        <Input
-                                          value={statsForm.logo_url}
-                                          onChange={e => setStatsForm(p => ({ ...p, logo_url: e.target.value }))}
-                                          placeholder="Company logo URL"
-                                          className="bg-background/60 h-8 text-xs border-border/30 flex-1"
-                                        />
+                                        <div className="flex gap-1.5 flex-1 items-center">
+                                          <Input
+                                            value={statsForm.logo_url}
+                                            onChange={e => setStatsForm(p => ({ ...p, logo_url: e.target.value }))}
+                                            placeholder="Logo URL"
+                                            className="bg-background/60 h-8 text-xs border-border/30 flex-1"
+                                          />
+                                          <label className="h-8 px-2 rounded-md border border-border/30 bg-background/60 flex items-center gap-1 cursor-pointer hover:bg-background/80 transition-colors flex-shrink-0">
+                                            <Upload className="w-3 h-3 text-muted-foreground" />
+                                            <span className="text-[8px] text-muted-foreground">Upload</span>
+                                            <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                                              const file = e.target.files?.[0];
+                                              if (!file) return;
+                                              try {
+                                                toast.info('Uploading...');
+                                                const url = await uploadLogoFile(file);
+                                                setStatsForm(p => ({ ...p, logo_url: url }));
+                                                toast.success('Logo uploaded!');
+                                              } catch (err: any) { toast.error(err.message); }
+                                            }} />
+                                          </label>
+                                          {statsForm.logo_url && (
+                                            <img src={statsForm.logo_url} alt="" className="h-7 w-7 object-contain rounded border border-border/20 bg-background/60 p-0.5 flex-shrink-0" />
+                                          )}
+                                        </div>
                                       )}
                                     </div>
                                   </div>
