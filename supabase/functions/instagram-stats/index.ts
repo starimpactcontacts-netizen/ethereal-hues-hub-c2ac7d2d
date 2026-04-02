@@ -295,13 +295,14 @@ async function fetchInstagramPostStats(url: string) {
   }
 
   // Try all methods in parallel for speed and accuracy
-  const [mobileResult, mainResult, embedResult] = await Promise.all([
+  const [gqlResult, mobileResult, mainResult, embedResult] = await Promise.all([
+    fetchViaGraphQL(shortcode),
     fetchViaMobileApi(shortcode),
     fetchViaMainPage(shortcode),
     fetchViaEmbed(shortcode),
   ]);
 
-  const merged = mergeStats(mobileResult, mainResult, embedResult);
+  const merged = mergeStats(gqlResult, mobileResult, mainResult, embedResult);
   console.log('🔥 Final merged stats:', merged);
   return merged;
 }
