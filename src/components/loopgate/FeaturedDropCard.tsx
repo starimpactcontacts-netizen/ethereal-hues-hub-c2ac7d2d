@@ -246,7 +246,7 @@ export default function FeaturedDropCard({ drop }: Props) {
       )}
     >
       {/* Poster */}
-      <div className="relative w-full h-40 sm:h-44 overflow-hidden">
+      <div className="relative w-full h-48 sm:h-52 overflow-hidden">
         {drop.poster_url ? (
           <img
             src={drop.poster_url}
