@@ -507,13 +507,12 @@ export default function IndexPage() {
       <div className="relative overflow-hidden">
         {/* Cinematic collage backdrop */}
         <div className="absolute inset-0">
-          <img src={heroCollage} alt="" className="w-full h-full object-cover opacity-[0.12]" />
+          <img src={heroCollage} alt="" className="w-full h-full object-cover" />
         </div>
-        {/* Heavy gradient overlays for readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/85 to-background" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(212,175,55,0.08),transparent_55%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(212,175,55,0.03),transparent_50%)]" />
-        <IndexHeroPattern />
+        {/* Edge shadows only */}
+        <div className="absolute inset-0 shadow-[inset_0_0_120px_60px_rgba(0,0,0,0.85)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-background" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/50 via-transparent to-background/50" />
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/25 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent z-[1]" />
         
