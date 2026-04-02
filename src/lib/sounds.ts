@@ -86,7 +86,7 @@ export function playError() {
     const c = getCtx();
     const t = c.currentTime;
     const master = c.createGain();
-    master.gain.value = 0.40;
+    master.gain.value = 0.60;
     master.connect(c.destination);
 
     osc(c, 'square', 200, t, 0.12, 0.3, master);
