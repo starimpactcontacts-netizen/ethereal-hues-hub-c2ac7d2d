@@ -23,7 +23,7 @@ function shortcodeToMediaId(shortcode: string): string {
 
 // Method 1: Instagram GraphQL API (real-time accurate data)
 async function fetchViaGraphQL(shortcode: string): Promise<{
-  views: number | null; likes: number | null; comments: number | null; thumbnailUrl: string | null;
+  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null;
 }> {
   try {
     // Use Instagram's web GraphQL endpoint
