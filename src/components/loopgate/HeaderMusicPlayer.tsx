@@ -358,7 +358,7 @@ export default function HeaderMusicPlayer() {
     });
   }, []);
 
-  const toggleMute = useCallback(() => { setVolume(v => v === 0 ? 0.3 : 0); }, []);
+  const toggleMute = useCallback(() => { setVolume(v => v === 0 ? 0.5 : 0); }, []);
   useEffect(() => () => { cleanupAudio(); }, [cleanupAudio]);
 
   const nowPlayingName = playlistMode === 'deezer' ? deezerNowPlaying?.title
