@@ -237,12 +237,12 @@ export default function FeaturedDropCard({ drop }: Props) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
       className={cn(
-        "relative w-[240px] sm:w-[260px] shrink-0 snap-start overflow-hidden rounded-xl",
-        "bg-[hsl(240,4%,18%)]",
+        "relative w-[210px] sm:w-[220px] shrink-0 snap-start overflow-hidden rounded-lg",
+        "bg-black",
         "border transition-all duration-300 group",
         isPromoted
-          ? "border-gold/40 shadow-[0_6px_28px_rgba(255,215,0,0.15)] hover:shadow-[0_10px_36px_rgba(255,215,0,0.25)]"
-          : "border-white/[0.08] shadow-[0_6px_24px_rgba(0,0,0,0.5)] hover:shadow-[0_10px_32px_rgba(0,0,0,0.6)]"
+          ? "border-gold/30 shadow-[0_4px_20px_rgba(255,215,0,0.12)] hover:shadow-[0_6px_28px_rgba(255,215,0,0.2)]"
+          : "border-white/[0.06] shadow-[0_4px_16px_rgba(0,0,0,0.6)] hover:shadow-[0_6px_24px_rgba(0,0,0,0.7)]"
       )}
     >
       {/* Poster */}
