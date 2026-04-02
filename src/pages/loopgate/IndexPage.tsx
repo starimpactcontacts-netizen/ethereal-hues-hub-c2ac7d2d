@@ -611,9 +611,9 @@ export default function IndexPage() {
 
                 {/* ─── TOP RANKED CAROUSEL ─── */}
                 {topRanked.length > 0 && (
-                  <div className="pt-5 pb-2">
+                  <div className="pt-4 pb-2">
                     <SectionHeader icon={Crown} label="TOP RANKED" onSeeAll={() => { setRankFilter("top10"); setSearchQuery("_"); setSearchQuery(""); }} />
-                    <div className="flex gap-3 overflow-x-auto scrollbar-hide px-4 pb-2">
+                    <div className="flex gap-3 overflow-x-auto scrollbar-hide px-5 pb-2">
                       {topRanked.map((editor, i) => (
                         <motion.div key={editor.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
                           <EditorCard editor={editor} pinnedEdits={pinnedEditsByUser[editor.id]} navigate={navigate} size="lg" showRank />
