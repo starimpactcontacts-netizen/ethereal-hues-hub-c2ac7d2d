@@ -2765,6 +2765,7 @@ export type Database = {
           created_at: string | null
           custom_payouts: Json | null
           description: string | null
+          drop_type: string
           ends_at: string | null
           id: string
           index_reward: number | null
@@ -2805,6 +2806,7 @@ export type Database = {
           created_at?: string | null
           custom_payouts?: Json | null
           description?: string | null
+          drop_type?: string
           ends_at?: string | null
           id?: string
           index_reward?: number | null
@@ -2845,6 +2847,7 @@ export type Database = {
           created_at?: string | null
           custom_payouts?: Json | null
           description?: string | null
+          drop_type?: string
           ends_at?: string | null
           id?: string
           index_reward?: number | null
