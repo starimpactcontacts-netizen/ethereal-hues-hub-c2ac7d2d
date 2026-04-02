@@ -355,7 +355,6 @@ export default function App() {
               <Route path="/shop" element={<ShopPage />} />
               <Route path="/inventory" element={<InventoryPage />} />
               
-              <Route path="/studio" element={<StudioPage />} />
               <Route path="/enterprise-dashboard" element={<EnterpriseDashboard />} />
             </Route>
             
