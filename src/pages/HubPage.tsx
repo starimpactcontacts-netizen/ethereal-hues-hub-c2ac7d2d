@@ -995,8 +995,7 @@ export default function HubPage() {
         <Link to="/judges" className="block group">
           <div className="relative transition-all duration-300">
             <div className="relative py-3.5 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-white/[0.06] flex items-center justify-center group-hover:bg-white/[0.1] transition-colors">
-                <Gavel className="w-4 h-4 text-foreground/60 group-hover:text-foreground transition-colors" />
+              <Gavel className="w-5 h-5 text-foreground/50 group-hover:text-foreground transition-colors" />
               </div>
               <div className="flex-1 min-w-0">
                 <h2 className="font-display text-sm tracking-[0.08em] text-foreground leading-none">JUDGES</h2>
