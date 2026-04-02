@@ -243,9 +243,17 @@ export default function HeaderMusicPlayer() {
     setPlaylistMode('loopgate');
     setDeezerNowPlaying(null);
     playAudioUrl(track.song_preview_url, 'loopgate', () => {
-      setCurrentIndex(i => (i + 1) % tracks.length);
+      // If loop is enabled, replay the same track
+      if (loopEnabled) {
+        const idx = tracks.findIndex(t => t.id === track.id);
+        if (idx >= 0) {
+          setTimeout(() => playAudioUrl(tracks[idx].song_preview_url, 'loopgate', () => {}), 50);
+        }
+      } else {
+        setCurrentIndex(i => (i + 1) % tracks.length);
+      }
     });
-  }, [playAudioUrl, tracks.length]);
+  }, [playAudioUrl, tracks, loopEnabled]);
 
   const playMyTrack = useCallback((track: UserPlaylistTrack, nextTracks: UserPlaylistTrack[], nextIdx: number) => {
     setPlaylistMode('myplaylist');
