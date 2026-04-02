@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Swords, Play, Smartphone, ChevronRight } from 'lucide-react';
+import { Swords, Play, Smartphone } from 'lucide-react';
 import { HubIcon, ArenaIcon, RankingsIcon, RateIcon, UnitsIcon, MissionsIcon } from '@/components/loopgate/LandingIcons';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
@@ -17,12 +17,12 @@ import loopyAvatar from '@/assets/loopy-avatar.png';
 import { useState } from 'react';
 
 const quickLinks = [
-  { to: '/hub', label: 'Hub', Icon: HubIcon, desc: 'Browse edits & editors', accent: 'from-white/5 to-transparent', border: 'border-foreground/8 hover:border-foreground/25', glow: '' },
-  { to: '/arena', label: 'Arena', Icon: ArenaIcon, desc: 'Compete now', accent: 'from-red-500/8 to-transparent', border: 'border-red-500/15 hover:border-red-500/40', glow: 'hover:shadow-[0_0_30px_-8px_rgba(239,68,68,0.15)]' },
-  { to: '/rankings', label: 'Rankings', Icon: RankingsIcon, desc: 'Global leaderboard', accent: 'from-gold/8 to-transparent', border: 'border-gold/15 hover:border-gold/40', glow: 'hover:shadow-[0_0_30px_-8px_rgba(232,200,74,0.15)]' },
-  { to: '/loopy', label: 'Rate My Edit', Icon: RateIcon, desc: 'Free instant rating', accent: 'from-purple-500/8 to-transparent', border: 'border-purple-500/15 hover:border-purple-500/40', glow: 'hover:shadow-[0_0_30px_-8px_rgba(168,85,247,0.15)]' },
-  { to: '/units', label: 'Units', Icon: UnitsIcon, desc: 'Join a crew', accent: 'from-cyan-500/8 to-transparent', border: 'border-cyan-500/15 hover:border-cyan-500/40', glow: 'hover:shadow-[0_0_30px_-8px_rgba(6,182,212,0.15)]' },
-  { to: '/missions', label: 'Missions', Icon: MissionsIcon, desc: 'Earn cash', accent: 'from-emerald-500/8 to-transparent', border: 'border-emerald-500/15 hover:border-emerald-500/40', glow: 'hover:shadow-[0_0_30px_-8px_rgba(16,185,129,0.15)]' },
+  { to: '/hub', label: 'Hub', Icon: HubIcon, desc: 'Browse edits & editors', color: '#ffffff', bgGrad: 'from-white/[0.07] to-white/[0.02]', glowColor: 'rgba(255,255,255,0.08)' },
+  { to: '/arena', label: 'Arena', Icon: ArenaIcon, desc: 'Compete now', color: '#ef4444', bgGrad: 'from-red-500/[0.12] to-red-500/[0.02]', glowColor: 'rgba(239,68,68,0.15)' },
+  { to: '/rankings', label: 'Rankings', Icon: RankingsIcon, desc: 'Global leaderboard', color: '#E8C84A', bgGrad: 'from-amber-500/[0.12] to-amber-500/[0.02]', glowColor: 'rgba(232,200,74,0.15)' },
+  { to: '/loopy', label: 'Rate My Edit', Icon: RateIcon, desc: 'Free AI rating', color: '#a855f7', bgGrad: 'from-purple-500/[0.12] to-purple-500/[0.02]', glowColor: 'rgba(168,85,247,0.15)' },
+  { to: '/units', label: 'Units', Icon: UnitsIcon, desc: 'Join a crew', color: '#06b6d4', bgGrad: 'from-cyan-500/[0.12] to-cyan-500/[0.02]', glowColor: 'rgba(6,182,212,0.15)' },
+  { to: '/missions', label: 'Missions', Icon: MissionsIcon, desc: 'Earn cash', color: '#10b981', bgGrad: 'from-emerald-500/[0.12] to-emerald-500/[0.02]', glowColor: 'rgba(16,185,129,0.15)' },
 ];
 
 export default function LandingPage() {
@@ -134,78 +134,119 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ═══════════════ DIRECT ACCESS — Seamless Portal ═══════════════ */}
-        <section className="relative py-6 sm:py-10 px-5 sm:px-6">
-          <div className="max-w-sm mx-auto space-y-3">
-            {/* Main links — horizontal pill rows */}
+        {/* ═══════════════ DIRECT ACCESS — Premium Grid ═══════════════ */}
+        <section className="relative py-8 sm:py-12 px-5 sm:px-6">
+          <div className="max-w-sm mx-auto">
+            {/* Top row — 2 big tiles (Hub + Arena) */}
             <motion.div
-              className="space-y-2"
-              initial={{ opacity: 0, y: 12 }}
+              className="grid grid-cols-2 gap-2 mb-2"
+              initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
             >
-              {quickLinks.map((link, i) => (
-                <motion.div
-                  key={link.to}
-                  initial={{ opacity: 0, x: -8 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.06, duration: 0.35 }}
-                >
-                  <Link
-                    to={link.to}
-                    className={`group relative flex items-center gap-4 px-5 py-3.5 rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-[0.96] ${link.glow}`}
+              {quickLinks.slice(0, 2).map((link, i) => (
+                <Link key={link.to} to={link.to} className="group relative">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.08, duration: 0.4 }}
+                    whileHover={{ scale: 1.03, y: -2 }}
+                    whileTap={{ scale: 0.97 }}
+                    className="relative aspect-[1/1.1] overflow-hidden flex flex-col items-center justify-center"
                     style={{
-                      background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.015) 100%)',
-                      border: '1px solid rgba(255,255,255,0.07)',
+                      background: `linear-gradient(160deg, ${link.glowColor} 0%, rgba(15,15,15,0.95) 60%)`,
+                      boxShadow: `inset 0 1px 0 rgba(255,255,255,0.06), inset 0 0 0 1px rgba(255,255,255,0.04)`,
                     }}
                   >
-                    {/* Hover glow */}
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: 'radial-gradient(ellipse at 20% 50%, rgba(255,255,255,0.06), transparent 70%)' }} />
+                    {/* Top edge light streak */}
+                    <div className="absolute top-0 inset-x-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${link.color}33, transparent)` }} />
+                    {/* Corner accent */}
+                    <div className="absolute top-0 right-0 w-12 h-12 opacity-30" style={{ background: `radial-gradient(circle at 100% 0%, ${link.color}22, transparent 70%)` }} />
                     
-                    {/* Icon */}
-                    <div className="relative z-10 flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-300"
-                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}
-                    >
-                      <link.Icon size={16} className="text-foreground/60 group-hover:text-foreground transition-colors duration-300" />
+                    {/* Icon — large and bold */}
+                    <div className="relative mb-3 transition-transform duration-300 group-hover:scale-110">
+                      <div className="absolute inset-0 blur-xl opacity-0 group-hover:opacity-40 transition-opacity duration-500" style={{ background: link.color }} />
+                      <link.Icon size={28} className="relative text-foreground/50 group-hover:text-foreground/90 transition-colors duration-300" />
                     </div>
                     
-                    {/* Label + desc */}
-                    <div className="relative z-10 flex-1 min-w-0">
-                      <span className="block text-[15px] font-bold text-foreground/90 group-hover:text-foreground tracking-[0.08em] uppercase leading-tight transition-colors" style={{ fontFamily: 'Teko, sans-serif' }}>
-                        {link.label}
-                      </span>
-                      <span className="block text-[11px] text-foreground/30 group-hover:text-foreground/50 tracking-wide transition-colors">
-                        {link.desc}
-                      </span>
+                    {/* Label */}
+                    <span className="text-[20px] font-black tracking-[0.12em] uppercase text-foreground/80 group-hover:text-foreground transition-colors duration-300" style={{ fontFamily: 'Teko, sans-serif' }}>
+                      {link.label}
+                    </span>
+                    <span className="text-[9px] text-foreground/20 group-hover:text-foreground/40 tracking-widest uppercase transition-colors duration-300">
+                      {link.desc}
+                    </span>
+
+                    {/* Shine sweep on hover */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none overflow-hidden">
+                      <div className="absolute inset-y-0 -left-full w-1/2 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent group-hover:translate-x-[300%] transition-transform duration-1000" />
                     </div>
-                    
-                    {/* Arrow */}
-                    <ChevronRight className="relative z-10 w-4 h-4 text-foreground/15 group-hover:text-foreground/50 group-hover:translate-x-0.5 transition-all duration-300" />
-                  </Link>
-                </motion.div>
+                  </motion.div>
+                </Link>
               ))}
             </motion.div>
 
-            {/* Secondary row — subtle */}
+            {/* Bottom grid — 4 smaller tiles */}
             <motion.div
-              className="flex gap-2 pt-1"
+              className="grid grid-cols-4 gap-2"
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.15, duration: 0.5 }}
+            >
+              {quickLinks.slice(2).map((link, i) => (
+                <Link key={link.to} to={link.to} className="group relative">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.2 + i * 0.06, duration: 0.35 }}
+                    whileHover={{ scale: 1.06, y: -3 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="relative aspect-square overflow-hidden flex flex-col items-center justify-center gap-1.5"
+                    style={{
+                      background: `linear-gradient(160deg, ${link.glowColor} 0%, rgba(12,12,12,0.95) 55%)`,
+                      boxShadow: `inset 0 1px 0 rgba(255,255,255,0.05), inset 0 0 0 1px rgba(255,255,255,0.03)`,
+                    }}
+                  >
+                    {/* Top edge light */}
+                    <div className="absolute top-0 inset-x-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${link.color}22, transparent)` }} />
+                    
+                    {/* Icon */}
+                    <div className="relative transition-transform duration-300 group-hover:scale-110">
+                      <div className="absolute inset-0 blur-lg opacity-0 group-hover:opacity-40 transition-opacity duration-500" style={{ background: link.color }} />
+                      <link.Icon size={18} className="relative text-foreground/40 group-hover:text-foreground/80 transition-colors duration-300" />
+                    </div>
+                    
+                    {/* Label */}
+                    <span className="text-[11px] font-black tracking-[0.08em] uppercase text-foreground/50 group-hover:text-foreground/80 transition-colors text-center leading-tight" style={{ fontFamily: 'Teko, sans-serif' }}>
+                      {link.label}
+                    </span>
+                  </motion.div>
+                </Link>
+              ))}
+            </motion.div>
+
+            {/* Secondary row — ultra minimal */}
+            <motion.div
+              className="flex gap-2 mt-3"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              transition={{ delay: 0.35, duration: 0.4 }}
+              transition={{ delay: 0.4, duration: 0.4 }}
             >
               {[
-                { to: '/editorium', content: <img src={editoriumLogo} alt="Editorium" className="h-3 opacity-30 group-hover:opacity-60 transition-opacity" /> },
-                { to: '/gqt', content: <span className="text-[10px] font-bold tracking-[0.2em] text-foreground/20 group-hover:text-foreground/50 transition-colors" style={{ fontFamily: 'Teko, sans-serif' }}>QOI TEST</span> },
-                { to: '/about', content: <span className="text-[10px] font-bold tracking-[0.2em] text-foreground/20 group-hover:text-foreground/50 transition-colors" style={{ fontFamily: 'Teko, sans-serif' }}>ABOUT</span> },
+                { to: '/editorium', content: <img src={editoriumLogo} alt="Editorium" className="h-3 opacity-20 group-hover:opacity-50 transition-opacity" /> },
+                { to: '/gqt', content: <span className="text-[10px] font-bold tracking-[0.2em] text-foreground/15 group-hover:text-foreground/40 transition-colors" style={{ fontFamily: 'Teko, sans-serif' }}>QOI TEST</span> },
+                { to: '/about', content: <span className="text-[10px] font-bold tracking-[0.2em] text-foreground/15 group-hover:text-foreground/40 transition-colors" style={{ fontFamily: 'Teko, sans-serif' }}>ABOUT</span> },
               ].map((item) => (
                 <Link
                   key={item.to}
                   to={item.to}
-                  className="group flex-1 flex items-center justify-center py-2 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.96]"
-                  style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}
+                  className="group flex-1 flex items-center justify-center py-2.5 transition-all hover:scale-[1.02] active:scale-[0.96]"
+                  style={{ background: 'rgba(255,255,255,0.015)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.03)' }}
                 >
                   {item.content}
                 </Link>
