@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, TrendingUp, Zap, MousePointerClick, BarChart3, ExternalLink, Play, Music, Globe, CheckCircle, Download, Link2, RefreshCw, Share2 } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { SiTiktok, SiYoutube, SiInstagram } from '@icons-pack/react-simple-icons';
 import { supabase } from '@/integrations/supabase/client';
 import viralCartelCrest from '@/assets/viral-cartel-crest.png';
@@ -222,6 +223,30 @@ export default function CampaignPortalPage() {
   const displayViews = Math.max(campaign.total_views, totalEditViews);
   const engagementRate = displayViews > 0 ? (((totalLikes + totalShares + totalComments) / displayViews) * 100).toFixed(1) : '0.0';
   const portalUrl = window.location.href;
+
+  // Build growth chart data from edits sorted by publish date
+  const growthData = useMemo(() => {
+    const sorted = [...edits]
+      .filter(e => e.published_at)
+      .sort((a, b) => new Date(a.published_at!).getTime() - new Date(b.published_at!).getTime());
+    if (sorted.length === 0) return [];
+    let cumulative = 0;
+    const points = sorted.map(e => {
+      cumulative += e.view_count;
+      const d = new Date(e.published_at!);
+      return { label: `${d.getMonth() + 1}/${d.getDate()}`, views: cumulative };
+    });
+    // Merge same-day points (keep last cumulative)
+    const merged: typeof points = [];
+    for (const p of points) {
+      if (merged.length > 0 && merged[merged.length - 1].label === p.label) {
+        merged[merged.length - 1].views = p.views;
+      } else {
+        merged.push({ ...p });
+      }
+    }
+    return merged;
+  }, [edits]);
   const isBrandCampaign = campaign.campaign_type === 'brand' || campaign.campaign_type === 'film';
 
   const handleCopyLink = () => {
@@ -386,6 +411,43 @@ export default function CampaignPortalPage() {
             <span className="font-bold">Updated {lastRefresh.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • Auto-refreshes every 30 min</span>
           </div>
         </motion.div>
+
+        {/* ★ Views Growth Chart */}
+        {growthData.length > 1 && (
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}
+            className="rounded-2xl border border-neutral-200 bg-white p-5 sm:p-6"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-400 font-black">Growth Over Time</p>
+                <p className="text-[9px] text-neutral-400 mt-0.5">Cumulative views by content publish date</p>
+              </div>
+              <div className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center">
+                <TrendingUp size={14} className="text-neutral-600" />
+              </div>
+            </div>
+            <div className="h-48 sm:h-56">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={growthData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+                  <defs>
+                    <linearGradient id="viewsGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#171717" stopOpacity={0.15} />
+                      <stop offset="100%" stopColor="#171717" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="label" tick={{ fontSize: 9, fill: '#a3a3a3', fontWeight: 700 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 9, fill: '#a3a3a3', fontWeight: 700 }} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatNumber(v)} />
+                  <Tooltip
+                    contentStyle={{ background: '#171717', border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 700, color: '#fff' }}
+                    labelStyle={{ color: '#a3a3a3', fontSize: 9 }}
+                    formatter={(value: number) => [formatNumber(value), 'Views']}
+                  />
+                  <Area type="monotone" dataKey="views" stroke="#171717" strokeWidth={2} fill="url(#viewsGradient)" dot={false} activeDot={{ r: 4, fill: '#171717' }} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+        )}
 
         {/* KPI Grid */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
