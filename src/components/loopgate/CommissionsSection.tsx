@@ -362,19 +362,6 @@ export default function CommissionsSection() {
           </div>
         )}
 
-        {/* Marketplace — Coming Soon */}
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-full h-[1px] bg-gradient-to-r from-foreground/10 to-transparent" />
-            <span className="text-[7px] font-black text-foreground/20 uppercase tracking-[0.25em] whitespace-nowrap">Marketplace</span>
-            <div className="w-8 h-[1px] bg-foreground/5" />
-          </div>
-          <div className="relative overflow-hidden rounded-sm border border-dashed border-foreground/[0.06] px-4 py-5 flex flex-col items-center justify-center gap-1.5">
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.03] to-transparent" />
-            <span className="text-[10px] font-black text-foreground/25 uppercase tracking-[0.2em]">Coming Soon</span>
-            <span className="text-[8px] text-foreground/15 max-w-[200px] text-center leading-relaxed">Post bounties, hire editors, and trade work — all on-platform.</span>
-          </div>
-        </div>
       </div>
     </motion.div>
   );
