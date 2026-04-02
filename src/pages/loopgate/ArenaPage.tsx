@@ -1337,7 +1337,7 @@ export default function ArenaPage() {
                 title="Official Events"
                 badge={liveDrops.length > 0 ? `${liveDrops.length} Live` : undefined}
                 badgeColor="bg-emerald-500/20 border-emerald-500/40 text-emerald-400"
-                infoText="Artist-featured multi-round competitions with cash prizes. Submit your edit each round — judges score on a 0–100 QOI scale. Top scorers earn cash + Index."
+                infoText="Multi-round competitions with cash prizes. Submit your edit each round — judges score on a 0–100 QOI scale. Top scorers earn cash + Index."
               />
               {liveDrops.length > 0 ? (
                 <div className="px-4 flex gap-3 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory">

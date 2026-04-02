@@ -58,7 +58,7 @@ export default function FeaturedDropCard({ drop }: Props) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
         className={cn(
-          "relative w-[280px] sm:w-[300px] shrink-0 snap-start overflow-hidden group",
+          "relative w-[240px] sm:w-[260px] shrink-0 snap-start overflow-hidden group",
           "bg-black border-2 border-emerald-500/60",
           "shadow-[0_0_30px_rgba(16,185,129,0.2),0_0_60px_rgba(16,185,129,0.08)]",
           "hover:shadow-[0_0_40px_rgba(16,185,129,0.35),0_0_80px_rgba(16,185,129,0.12)]",
@@ -237,16 +237,16 @@ export default function FeaturedDropCard({ drop }: Props) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
       className={cn(
-        "relative w-[240px] sm:w-[260px] shrink-0 snap-start overflow-hidden rounded-xl",
-        "bg-[hsl(240,4%,18%)]",
+        "relative w-[210px] sm:w-[220px] shrink-0 snap-start overflow-hidden rounded-lg",
+        "bg-black",
         "border transition-all duration-300 group",
         isPromoted
-          ? "border-gold/40 shadow-[0_6px_28px_rgba(255,215,0,0.15)] hover:shadow-[0_10px_36px_rgba(255,215,0,0.25)]"
-          : "border-white/[0.08] shadow-[0_6px_24px_rgba(0,0,0,0.5)] hover:shadow-[0_10px_32px_rgba(0,0,0,0.6)]"
+          ? "border-gold/30 shadow-[0_4px_20px_rgba(255,215,0,0.12)] hover:shadow-[0_6px_28px_rgba(255,215,0,0.2)]"
+          : "border-white/[0.06] shadow-[0_4px_16px_rgba(0,0,0,0.6)] hover:shadow-[0_6px_24px_rgba(0,0,0,0.7)]"
       )}
     >
       {/* Poster */}
-      <div className="relative w-full h-40 sm:h-44 overflow-hidden">
+      <div className="relative w-full h-48 sm:h-52 overflow-hidden">
         {drop.poster_url ? (
           <img
             src={drop.poster_url}
@@ -259,8 +259,9 @@ export default function FeaturedDropCard({ drop }: Props) {
             <Music className="w-8 h-8 text-muted-foreground/15" />
           </div>
         )}
-        {/* Gradient overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-black/10" />
+        {/* Cinematic gradient overlays */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/20" />
+        <div className="absolute bottom-0 left-0 right-0 h-[60%] bg-gradient-to-t from-black to-transparent" />
 
         {/* Top row: Artist left, status right */}
         <div className="absolute top-0 left-0 right-0 p-2.5 flex items-center justify-between gap-1.5">
@@ -313,17 +314,17 @@ export default function FeaturedDropCard({ drop }: Props) {
       </div>
 
       {/* Activity signal + Rewards */}
-      <div className="px-3 py-2.5 flex items-center gap-1.5 border-t border-white/[0.06]">
-        <ActivityIcon className={cn("w-3 h-3 shrink-0", activity.color)} />
-        <span className={cn("text-[9px] sm:text-[10px] font-semibold tracking-tight flex-1 truncate", activity.color)}>
+      <div className="px-2.5 py-2 flex items-center gap-1.5 border-t border-white/[0.04]">
+        <ActivityIcon className={cn("w-2.5 h-2.5 shrink-0", activity.color)} />
+        <span className={cn("text-[8px] font-semibold tracking-tight flex-1 truncate", activity.color)}>
           {activity.text}
         </span>
-        <div className="flex items-center gap-2 text-[9px] sm:text-[10px] font-bold shrink-0">
+        <div className="flex items-center gap-1.5 text-[8px] font-bold shrink-0">
           <span className="flex items-center gap-0.5 text-brand">
-            <Zap className="w-3 h-3" />+{drop.xp_reward}
+            <Zap className="w-2.5 h-2.5" />+{drop.xp_reward}
           </span>
           <span className="flex items-center gap-0.5 text-gold">
-            <Trophy className="w-3 h-3" />+{drop.index_reward}
+            <Trophy className="w-2.5 h-2.5" />+{drop.index_reward}
           </span>
         </div>
       </div>
@@ -347,50 +348,34 @@ export default function FeaturedDropCard({ drop }: Props) {
       )}
 
       {/* CTA Buttons */}
-      <div className="px-3 pb-3 space-y-1.5 pt-0.5">
+      <div className="px-2.5 pb-2.5 pt-0.5">
         {isLive ? (
-          <>
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              onClick={() => {
-                if (profile) navigate(`/drop/${drop.id}`);
-                else navigate('/start');
-              }}
-              className={cn(
-                "w-full py-3 sm:py-3.5 rounded-lg font-display text-sm uppercase tracking-widest",
-                "flex items-center justify-center gap-2",
-                "bg-emerald-500 text-white",
-                "shadow-[0_4px_16px_rgba(16,185,129,0.3)]",
-                "hover:bg-emerald-400 hover:shadow-[0_6px_24px_rgba(16,185,129,0.4)]",
-                "active:bg-emerald-600",
-                "transition-all duration-200 touch-manipulation"
-              )}
-            >
-              Join
-            </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              onClick={() => navigate(`/drop/${drop.id}`)}
-              className={cn(
-                "w-full py-2.5 rounded-lg font-display text-xs uppercase tracking-widest",
-                "flex items-center justify-center gap-1.5",
-                "bg-white/[0.04] border border-white/[0.08] text-white/60",
-                "hover:bg-white/[0.08] hover:text-white/80 hover:border-white/[0.15]",
-                "transition-all duration-200 touch-manipulation"
-              )}
-            >
-              View Event
-              <ChevronRight className="w-3 h-3" />
-            </motion.button>
-          </>
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={() => {
+              if (profile) navigate(`/drop/${drop.id}`);
+              else navigate('/start');
+            }}
+            className={cn(
+              "w-full py-2.5 rounded-md font-display text-[11px] uppercase tracking-widest",
+              "flex items-center justify-center gap-1.5",
+              "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold",
+              "shadow-[0_2px_12px_rgba(16,185,129,0.3)]",
+              "hover:from-emerald-400 hover:to-emerald-500",
+              "active:from-emerald-600 active:to-emerald-700",
+              "transition-all duration-200 touch-manipulation"
+            )}
+          >
+            View Event <ChevronRight className="w-3 h-3" />
+          </motion.button>
         ) : (
           <Link
             to={`/drop/${drop.id}`}
             className={cn(
-              "w-full py-3 rounded-lg font-display text-xs uppercase tracking-widest",
+              "w-full py-2.5 rounded-md font-display text-[10px] uppercase tracking-widest",
               "flex items-center justify-center gap-1.5",
-              "bg-white/[0.04] border border-white/[0.08] text-white/60",
-              "hover:bg-white/[0.08] hover:text-white/80",
+              "bg-white/[0.04] border border-white/[0.06] text-white/50",
+              "hover:bg-white/[0.08] hover:text-white/70",
               "transition-all duration-200"
             )}
           >

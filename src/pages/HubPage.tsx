@@ -886,7 +886,7 @@ export default function HubPage() {
       {/* Arena banner removed — Arena access consolidated into quick-access grid */}
 
       {/* ═══════════════════════════════════════════════════════════════════
-          🎵 ARTIST FEATURED — Artist drops carousel
+          🎵 FEATURED DROPS — All drops carousel
       ═══════════════════════════════════════════════════════════════════ */}
       {totalArtistFeatured > 0 && (
         <motion.div
@@ -925,7 +925,7 @@ export default function HubPage() {
                 <span className="w-2 h-2 rounded-full bg-emerald-500 block" />
                 <span className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
               </div>
-              <h3 className="font-display text-sm text-foreground">ARTIST FEATURED</h3>
+              <h3 className="font-display text-sm text-foreground">FEATURED DROPS</h3>
               <span className="text-[9px] text-muted-foreground">({totalArtistFeatured} active)</span>
             </div>
             <Link to="/arena?filter=official" className="text-[9px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
