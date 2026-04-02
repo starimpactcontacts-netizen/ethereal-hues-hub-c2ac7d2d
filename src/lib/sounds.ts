@@ -57,7 +57,7 @@ export function playNav() {
     const c = getCtx();
     const t = c.currentTime;
     const master = c.createGain();
-    master.gain.value = 0.30;
+    master.gain.value = 0.45;
     master.connect(c.destination);
 
     osc(c, 'sine', 1200, t, 0.05, 0.5, master);
