@@ -6,72 +6,142 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-const FB_API = 'https://graph.facebook.com/v23.0';
+const FB_API = 'https://graph.facebook.com/v21.0';
 
-// Extract Instagram media shortcode from URL
 function extractShortcode(url: string): string | null {
   const match = url.match(/instagram\.com\/(?:p|reel|reels|tv)\/([A-Za-z0-9_-]+)/);
   return match ? match[1] : null;
 }
 
-// Step 1: Get the Facebook Page ID + its access token
-async function getPageToken(userAccessToken: string): Promise<{ pageId: string; pageToken: string; igUserId: string } | null> {
+// Method 1: Try Facebook Graph API (Page token flow)
+async function tryGraphAPI(shortcode: string, userToken: string) {
   try {
-    // Get pages the user manages
-    const pagesUrl = `${FB_API}/me/accounts?fields=id,name,access_token,instagram_business_account&access_token=${encodeURIComponent(userAccessToken)}`;
-    console.log('Fetching pages from:', pagesUrl.substring(0, 80) + '...');
-    const pagesRes = await fetch(pagesUrl);
-    if (!pagesRes.ok) {
-      const err = await pagesRes.text();
-      console.error('FB /me/accounts error:', err);
+    // Get pages
+    const pagesRes = await fetch(`${FB_API}/me/accounts?fields=id,name,access_token&access_token=${encodeURIComponent(userToken)}`);
+    const pagesData = await pagesRes.json();
+    if (pagesData.error) {
+      console.log('Graph API pages error:', pagesData.error.message);
       return null;
     }
-    const pagesData = await pagesRes.json();
-    console.log('Pages found:', pagesData.data?.length || 0);
-    console.log('Pages detail:', JSON.stringify((pagesData.data || []).map((p: any) => ({ id: p.id, name: p.name, ig: p.instagram_business_account }))));
+    
+    const pages = pagesData.data || [];
+    console.log('Graph API pages:', pages.length);
+    if (pages.length === 0) return null;
 
-    // Find first page with an instagram_business_account
-    for (const page of (pagesData.data || [])) {
-      if (page.instagram_business_account?.id) {
-        console.log(`Found IG business account ${page.instagram_business_account.id} on page ${page.name}`);
-        return {
-          pageId: page.id,
-          pageToken: page.access_token,
-          igUserId: page.instagram_business_account.id,
-        };
-      }
-    }
+    for (const page of pages) {
+      const igRes = await fetch(`${FB_API}/${page.id}?fields=instagram_business_account{id}&access_token=${encodeURIComponent(page.access_token)}`);
+      const igData = await igRes.json();
+      if (!igData.instagram_business_account?.id) continue;
 
-    // If instagram_business_account wasn't in the fields, query each page
-    for (const page of (pagesData.data || [])) {
-      try {
-        const igRes = await fetch(`${FB_API}/${page.id}?fields=instagram_business_account&access_token=${page.access_token}`);
-        if (igRes.ok) {
-          const igData = await igRes.json();
-          if (igData.instagram_business_account?.id) {
-            console.log(`Found IG business account ${igData.instagram_business_account.id} on page ${page.name}`);
-            return {
-              pageId: page.id,
-              pageToken: page.access_token,
-              igUserId: igData.instagram_business_account.id,
-            };
+      const igUserId = igData.instagram_business_account.id;
+      const pageToken = page.access_token;
+
+      // Search media
+      let nextUrl: string | null = `${FB_API}/${igUserId}/media?fields=id,shortcode,permalink,media_type,thumbnail_url,like_count,comments_count&limit=50&access_token=${encodeURIComponent(pageToken)}`;
+      
+      for (let p = 0; p < 4 && nextUrl; p++) {
+        const mediaRes = await fetch(nextUrl);
+        if (!mediaRes.ok) break;
+        const mediaData = await mediaRes.json();
+        
+        const match = (mediaData.data || []).find((m: any) => m.shortcode === shortcode || m.permalink?.includes(shortcode));
+        if (match) {
+          let views: number | null = null;
+          if (match.media_type === 'VIDEO') {
+            for (const metrics of ['plays', 'ig_reels_aggregated_all_plays_count']) {
+              try {
+                const iRes = await fetch(`${FB_API}/${match.id}/insights?metric=${metrics}&access_token=${encodeURIComponent(pageToken)}`);
+                if (iRes.ok) {
+                  const iData = await iRes.json();
+                  for (const m of (iData.data || [])) {
+                    if (m.values?.[0]?.value) views = m.values[0].value;
+                  }
+                  if (views) break;
+                }
+              } catch {}
+            }
           }
+          return { views, likes: match.like_count ?? null, comments: match.comments_count ?? null, thumbnailUrl: match.thumbnail_url || null };
         }
-      } catch (e) {
-        console.error(`Error checking page ${page.id}:`, e);
+        
+        nextUrl = mediaData.paging?.next || null;
       }
     }
-
-    console.error('No page with instagram_business_account found');
-    return null;
   } catch (e) {
-    console.error('getPageToken error:', e);
-    return null;
+    console.error('Graph API error:', e);
+  }
+  return null;
+}
+
+// Method 2: oEmbed for thumbnail
+async function tryOEmbed(url: string, accessToken: string): Promise<string | null> {
+  try {
+    const oembedUrl = `${FB_API}/instagram_oembed?url=${encodeURIComponent(url)}&access_token=${encodeURIComponent(accessToken)}`;
+    const res = await fetch(oembedUrl);
+    if (res.ok) {
+      const data = await res.json();
+      return data.thumbnail_url || null;
+    }
+    const errText = await res.text();
+    console.log('oEmbed error:', errText.substring(0, 200));
+  } catch (e) {
+    console.error('oEmbed error:', e);
+  }
+  return null;
+}
+
+// Method 3: Scrape Instagram page for metadata
+async function tryScrape(url: string): Promise<{ thumbnailUrl: string | null; views: number | null; likes: number | null }> {
+  try {
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+    });
+    
+    if (!res.ok) {
+      console.log('Scrape HTTP status:', res.status);
+      return { thumbnailUrl: null, views: null, likes: null };
+    }
+    
+    const html = await res.text();
+    
+    // Extract og:image for thumbnail
+    let thumbnailUrl: string | null = null;
+    const ogMatch = html.match(/<meta\s+(?:property|name)="og:image"\s+content="([^"]+)"/i) 
+      || html.match(/content="([^"]+)"\s+(?:property|name)="og:image"/i);
+    if (ogMatch) {
+      thumbnailUrl = ogMatch[1];
+    }
+    
+    // Try to extract view count from meta or JSON-LD
+    let views: number | null = null;
+    const viewMatch = html.match(/"video_view_count"\s*:\s*(\d+)/) 
+      || html.match(/"view_count"\s*:\s*(\d+)/)
+      || html.match(/interactionCount['"]\s*:\s*['"]*(\d+)/);
+    if (viewMatch) {
+      views = parseInt(viewMatch[1], 10);
+    }
+    
+    // Try to extract like count
+    let likes: number | null = null;
+    const likeMatch = html.match(/"edge_media_preview_like"\s*:\s*\{\s*"count"\s*:\s*(\d+)/)
+      || html.match(/"like_count"\s*:\s*(\d+)/);
+    if (likeMatch) {
+      likes = parseInt(likeMatch[1], 10);
+    }
+    
+    console.log('Scrape results - thumb:', !!thumbnailUrl, 'views:', views, 'likes:', likes);
+    return { thumbnailUrl, views, likes };
+  } catch (e) {
+    console.error('Scrape error:', e);
+    return { thumbnailUrl: null, views: null, likes: null };
   }
 }
 
-// Step 2: Find media by shortcode and get stats
-async function fetchInstagramPostStats(url: string, userAccessToken: string): Promise<{
+async function fetchInstagramPostStats(url: string, userToken: string): Promise<{
   views: number | null;
   likes: number | null;
   comments: number | null;
@@ -85,102 +155,27 @@ async function fetchInstagramPostStats(url: string, userAccessToken: string): Pr
 
   console.log('Looking up shortcode:', shortcode);
 
-  const pageInfo = await getPageToken(userAccessToken);
-  if (!pageInfo) {
-    console.error('Could not get page token / IG user ID');
-    return { views: null, likes: null, comments: null, thumbnailUrl: null };
+  // Try Method 1: Graph API (best data)
+  const graphResult = await tryGraphAPI(shortcode, userToken);
+  if (graphResult && (graphResult.views !== null || graphResult.likes !== null)) {
+    console.log('✅ Graph API succeeded');
+    return graphResult;
   }
 
-  const { pageToken, igUserId } = pageInfo;
+  // Try Method 2 + 3: oEmbed thumbnail + scrape for stats
+  console.log('Graph API unavailable, falling back to oEmbed + scrape');
+  
+  const [oembedThumb, scrapeResult] = await Promise.all([
+    tryOEmbed(url, userToken),
+    tryScrape(url),
+  ]);
 
-  try {
-    // Fetch recent media from the IG business account
-    let allMedia: any[] = [];
-    let mediaUrl = `${FB_API}/${igUserId}/media?fields=id,shortcode,permalink,media_type,thumbnail_url,like_count,comments_count,timestamp&limit=50&access_token=${pageToken}`;
-    
-    // Paginate up to 200 posts to find the match
-    for (let page = 0; page < 4; page++) {
-      const mediaRes = await fetch(mediaUrl);
-      if (!mediaRes.ok) {
-        const errText = await mediaRes.text();
-        console.error('IG media list error:', errText);
-        break;
-      }
-      const mediaData = await mediaRes.json();
-      allMedia = allMedia.concat(mediaData.data || []);
-      
-      // Check if we found it
-      const found = allMedia.find((m: any) => 
-        m.shortcode === shortcode || m.permalink?.includes(shortcode)
-      );
-      if (found) break;
-      
-      // Next page
-      if (mediaData.paging?.next) {
-        mediaUrl = mediaData.paging.next;
-      } else {
-        break;
-      }
-    }
-
-    const matchingMedia = allMedia.find((m: any) =>
-      m.shortcode === shortcode || m.permalink?.includes(shortcode)
-    );
-
-    if (!matchingMedia) {
-      console.log('No matching media found for shortcode:', shortcode, '(searched', allMedia.length, 'posts)');
-      return { views: null, likes: null, comments: null, thumbnailUrl: null };
-    }
-
-    console.log('Found media:', matchingMedia.id, 'type:', matchingMedia.media_type);
-
-    // Get insights for videos/reels
-    let views: number | null = null;
-    if (matchingMedia.media_type === 'VIDEO') {
-      try {
-        const insightsRes = await fetch(
-          `${FB_API}/${matchingMedia.id}/insights?metric=plays,reach,total_interactions,likes,comments,shares,saved&access_token=${pageToken}`
-        );
-        if (insightsRes.ok) {
-          const insightsData = await insightsRes.json();
-          console.log('Insights data:', JSON.stringify(insightsData.data?.map((d: any) => ({ name: d.name, value: d.values?.[0]?.value }))));
-          for (const metric of (insightsData.data || [])) {
-            if (metric.name === 'plays' || metric.name === 'views') {
-              views = metric.values?.[0]?.value || null;
-            }
-          }
-        } else {
-          const errText = await insightsRes.text();
-          console.error('Insights error:', errText);
-          
-          // Fallback: try ig_reels_aggregated_all_plays_count
-          const fallbackRes = await fetch(
-            `${FB_API}/${matchingMedia.id}/insights?metric=ig_reels_aggregated_all_plays_count&access_token=${pageToken}`
-          );
-          if (fallbackRes.ok) {
-            const fallbackData = await fallbackRes.json();
-            for (const metric of (fallbackData.data || [])) {
-              if (metric.name === 'ig_reels_aggregated_all_plays_count') {
-                views = metric.values?.[0]?.value || null;
-              }
-            }
-          }
-        }
-      } catch (e) {
-        console.error('Insights fetch error:', e);
-      }
-    }
-
-    return {
-      views,
-      likes: matchingMedia.like_count ?? null,
-      comments: matchingMedia.comments_count ?? null,
-      thumbnailUrl: matchingMedia.thumbnail_url || null,
-    };
-  } catch (e) {
-    console.error('Instagram API error:', e);
-    return { views: null, likes: null, comments: null, thumbnailUrl: null };
-  }
+  return {
+    views: scrapeResult.views,
+    likes: scrapeResult.likes,
+    comments: null,
+    thumbnailUrl: oembedThumb || scrapeResult.thumbnailUrl,
+  };
 }
 
 serve(async (req) => {
@@ -199,7 +194,6 @@ serve(async (req) => {
 
     const { url, action } = await req.json();
 
-    // Single URL lookup
     if (action === 'get-stats' && url) {
       const stats = await fetchInstagramPostStats(url, accessToken);
       return new Response(
@@ -208,7 +202,6 @@ serve(async (req) => {
       );
     }
 
-    // Batch refresh: update all Instagram campaign edits
     if (action === 'refresh-all') {
       const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
       const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -228,18 +221,16 @@ serve(async (req) => {
         try {
           const stats = await fetchInstagramPostStats(edit.video_url, accessToken);
           const payload: Record<string, any> = { updated_at: new Date().toISOString() };
-
-          if (stats.views !== null) { payload.view_count = stats.views; }
-          if (stats.likes !== null) { payload.like_count = stats.likes; }
-          if (stats.comments !== null) { payload.comment_count = stats.comments; }
-          if (stats.thumbnailUrl && !edit.thumbnail_url) { payload.thumbnail_url = stats.thumbnailUrl; }
+          if (stats.views !== null) payload.view_count = stats.views;
+          if (stats.likes !== null) payload.like_count = stats.likes;
+          if (stats.comments !== null) payload.comment_count = stats.comments;
+          if (stats.thumbnailUrl && !edit.thumbnail_url) payload.thumbnail_url = stats.thumbnailUrl;
 
           if (Object.keys(payload).length > 1) {
             await supabase.from('artist_campaign_edits').update(payload).eq('id', edit.id);
             updated++;
           }
-
-          await new Promise(r => setTimeout(r, 300));
+          await new Promise(r => setTimeout(r, 500));
         } catch (e) {
           console.error(`Error updating edit ${edit.id}:`, e);
         }
@@ -252,7 +243,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ error: 'Invalid action. Use "get-stats" or "refresh-all".' }),
+      JSON.stringify({ error: 'Invalid action' }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
