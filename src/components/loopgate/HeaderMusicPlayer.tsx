@@ -674,7 +674,10 @@ export default function HeaderMusicPlayer() {
                   <p className={`text-sm font-bold truncate ${i === currentIndex && playlistMode === 'loopgate' ? 'text-emerald-400' : 'text-white/60'}`} style={TEKO}>{track.song_name.toUpperCase()}</p>
                   <p className="text-[10px] text-white/25 truncate">{track.artist_name || track.title}</p>
                 </div>
-                {track.is_priority && (
+                {track.id === '__loopgate_theme__' && (
+                  <span className="text-[8px] font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 shrink-0 border border-amber-500/20" style={TEKO}>THEME</span>
+                )}
+                {track.is_priority && track.id !== '__loopgate_theme__' && (
                   <span className="text-[8px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 shrink-0 border border-emerald-500/20" style={TEKO}>PRIORITY</span>
                 )}
                 {i === currentIndex && playlistMode === 'loopgate' && isPlaying && (
