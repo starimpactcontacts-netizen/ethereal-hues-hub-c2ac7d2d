@@ -58,9 +58,11 @@ export default function LandingPage() {
                 className="w-full h-full object-cover object-center"
               />
             </motion.div>
-            <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/50 to-background" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_40%,transparent_30%,hsl(var(--background))_100%)]" />
-            <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-background to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/40 to-background" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_70%_at_50%_35%,transparent_20%,hsl(var(--background))_100%)]" />
+            <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-background via-background/80 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-background via-background/90 to-transparent" />
+            <div className="absolute inset-0" style={{ boxShadow: 'inset 0 0 120px 40px hsl(var(--background))' }} />
             {/* Film grain */}
             <div
               className="absolute inset-0 opacity-[0.035] mix-blend-overlay pointer-events-none z-10"
