@@ -203,9 +203,23 @@ export default function HubPage() {
   const featuredScrollRef = useRef<HTMLDivElement>(null);
   const [featuredActiveIdx, setFeaturedActiveIdx] = useState(0);
   const featuredAutoScrollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const eventsScrollRef = useRef<HTMLDivElement>(null);
+  const [eventsActiveIdx, setEventsActiveIdx] = useState(0);
+  const eventsAutoScrollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { hasEquippedOG } = useEquippedBadges(user?.id);
-  // Stabilize shuffle — only re-shuffle when the actual drop IDs change
-  // Official events (prize_usd > 0) always first, then shuffle the rest
+
+  // Split drops: artist featured vs event drops (brand/film/official)
+  const artistDrops = useMemo(() => {
+    const drops = liveDrops.filter(d => (d as any).drop_type !== 'brand' && (d as any).drop_type !== 'film' && (!d.prize_usd || d.prize_usd === 0));
+    return [...drops].sort(() => Math.random() - 0.5);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [liveDrops.map(d => d.id).join(',')]);
+
+  const eventDrops = useMemo(() => {
+    return liveDrops.filter(d => (d as any).drop_type === 'brand' || (d as any).drop_type === 'film' || (d.prize_usd > 0));
+  }, [liveDrops]);
+
+  // Legacy shuffledDrops kept for reference
   const shuffledDrops = useMemo(() => {
     const official = liveDrops.filter(d => d.prize_usd > 0);
     const regular = [...liveDrops.filter(d => !d.prize_usd || d.prize_usd === 0)].sort(() => Math.random() - 0.5);
