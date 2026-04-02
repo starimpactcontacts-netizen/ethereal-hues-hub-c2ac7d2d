@@ -312,7 +312,7 @@ async function fetchInstagramPostStats(url: string) {
   const shortcode = extractShortcode(url);
   if (!shortcode) {
     console.log('Could not extract shortcode from:', url);
-    return { views: null, likes: null, comments: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
   }
 
   // Try all methods in parallel for speed and accuracy
