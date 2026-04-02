@@ -600,12 +600,12 @@ export default function IndexPage() {
             ) : (
               /* ═══ DISCOVER FEED — Visual carousels ═══ */
               <>
-                {/* Search bar */}
-                <div className="px-4 pt-3 pb-1">
+                {/* Search bar — rounded, premium */}
+                <div className="px-5 pt-1 pb-2">
                   <div className="relative group">
-                    <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 group-focus-within:text-foreground transition-colors" />
+                    <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-foreground/60 transition-colors" />
                     <input type="text" placeholder="Search editors, units..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full bg-surface-0/40 border border-border/40 pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-foreground/20 transition-all placeholder:text-muted-foreground/40" />
+                      className="w-full bg-surface-1/50 border border-border/20 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-foreground/15 focus:bg-surface-1/80 transition-all placeholder:text-muted-foreground/30" />
                   </div>
                 </div>
 
