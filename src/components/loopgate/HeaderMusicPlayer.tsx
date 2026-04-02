@@ -114,6 +114,7 @@ export default function HeaderMusicPlayer() {
   const [showSettings, setShowSettings] = useState(false);
   const [deezerNowPlaying, setDeezerNowPlaying] = useState<{ url: string; title: string; artist: string; cover: string } | null>(null);
   const [audioError, setAudioError] = useState(false);
+  const [loopEnabled, setLoopEnabled] = useState(true); // Loop on by default for theme song
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioModeRef = useRef<string>('loopgate');
