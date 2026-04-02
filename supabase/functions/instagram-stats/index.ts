@@ -11,7 +11,6 @@ function extractShortcode(url: string): string | null {
   return match ? match[1] : null;
 }
 
-// Fetch stats via Instagram's embed page (works for ANY public post, no auth needed)
 async function fetchViaEmbed(shortcode: string): Promise<{
   views: number | null;
   likes: number | null;
@@ -19,66 +18,106 @@ async function fetchViaEmbed(shortcode: string): Promise<{
   thumbnailUrl: string | null;
 }> {
   try {
-    const embedUrl = `https://www.instagram.com/p/${shortcode}/embed/`;
-    console.log('Fetching embed page:', embedUrl);
+    // Try both /p/ and /reel/ embed URLs
+    for (const prefix of ['p', 'reel']) {
+      const embedUrl = `https://www.instagram.com/${prefix}/${shortcode}/embed/captioned/`;
+      console.log('Trying embed:', embedUrl);
 
-    const res = await fetch(embedUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml',
-        'Accept-Language': 'en-US,en;q=0.9',
-      },
-    });
+      const res = await fetch(embedUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Referer': 'https://www.google.com/',
+        },
+      });
 
-    if (!res.ok) {
-      console.log('Embed HTTP status:', res.status);
-      return { views: null, likes: null, comments: null, thumbnailUrl: null };
+      if (!res.ok) {
+        console.log(`Embed ${prefix} HTTP:`, res.status);
+        continue;
+      }
+
+      const html = await res.text();
+      console.log('Embed HTML length:', html.length);
+      
+      // Debug: log a sample of what we got
+      const hasLikes = html.includes('like');
+      const hasViews = html.includes('view');
+      const hasGqlData = html.includes('gql_data');
+      const hasShortcode = html.includes(shortcode);
+      console.log('Content check:', { hasLikes, hasViews, hasGqlData, hasShortcode, prefix });
+
+      // Extract likes - multiple patterns
+      let likes: number | null = null;
+      const likesPatterns = [
+        /likes_count[^\d]{0,5}(\d+)/,
+        /edge_liked_by[^\d]{0,15}(\d+)/,
+        /like_count[^\d]{0,5}(\d+)/,
+        /([\d,]+)\s*likes/,
+      ];
+      for (const p of likesPatterns) {
+        const m = html.match(p);
+        if (m) {
+          likes = parseInt(m[1].replace(/,/g, ''), 10);
+          console.log('Likes matched pattern:', p.source, '=', likes);
+          break;
+        }
+      }
+
+      // Extract views
+      let views: number | null = null;
+      const viewsPatterns = [
+        /video_view_count[^\d]{0,5}(\d+)/,
+        /video_play_count[^\d]{0,5}(\d+)/,
+        /play_count[^\d]{0,5}(\d+)/,
+        /([\d,]+)\s*views/,
+      ];
+      for (const p of viewsPatterns) {
+        const m = html.match(p);
+        if (m) {
+          views = parseInt(m[1].replace(/,/g, ''), 10);
+          console.log('Views matched pattern:', p.source, '=', views);
+          break;
+        }
+      }
+
+      // Extract comments
+      let comments: number | null = null;
+      const commentsPatterns = [
+        /commenter_count[^\d]{0,5}(\d+)/,
+        /edge_media_to_parent_comment[^\d]{0,15}(\d+)/,
+        /comment_count[^\d]{0,5}(\d+)/,
+      ];
+      for (const p of commentsPatterns) {
+        const m = html.match(p);
+        if (m) {
+          comments = parseInt(m[1].replace(/,/g, ''), 10);
+          break;
+        }
+      }
+
+      // Extract thumbnail
+      let thumbnailUrl: string | null = null;
+      const displayMatch = html.match(/"display_url"\s*:\s*"([^"]+)"/);
+      if (displayMatch) {
+        thumbnailUrl = displayMatch[1].replace(/\\u0026/g, '&').replace(/\\\//g, '/');
+      }
+      if (!thumbnailUrl) {
+        const ogMatch = html.match(/content="([^"]+)"\s+property="og:image"/i)
+          || html.match(/property="og:image"\s+content="([^"]+)"/i);
+        if (ogMatch) thumbnailUrl = ogMatch[1];
+      }
+
+      if (likes !== null || views !== null) {
+        console.log('✅ Got stats from embed:', { views, likes, comments, thumb: !!thumbnailUrl });
+        return { views, likes, comments, thumbnailUrl };
+      }
     }
 
-    const html = await res.text();
-
-    // Extract likes
-    let likes: number | null = null;
-    const likesMatch = html.match(/likes_count[^\d]{0,5}(\d+)/)
-      || html.match(/edge_liked_by[^\d]{0,15}(\d+)/)
-      || html.match(/like_count[^\d]{0,5}(\d+)/);
-    if (likesMatch) likes = parseInt(likesMatch[1], 10);
-
-    // Extract views
-    let views: number | null = null;
-    const viewsMatch = html.match(/video_view_count[^\d]{0,5}(\d+)/)
-      || html.match(/video_play_count[^\d]{0,5}(\d+)/)
-      || html.match(/play_count[^\d]{0,5}(\d+)/);
-    if (viewsMatch) views = parseInt(viewsMatch[1], 10);
-
-    // Extract comments
-    let comments: number | null = null;
-    const commentsMatch = html.match(/commenter_count[^\d]{0,5}(\d+)/)
-      || html.match(/edge_media_to_parent_comment[^\d]{0,15}(\d+)/)
-      || html.match(/comment_count[^\d]{0,5}(\d+)/);
-    if (commentsMatch) comments = parseInt(commentsMatch[1], 10);
-
-    // Extract thumbnail from display_url or og:image
-    let thumbnailUrl: string | null = null;
-    const displayMatch = html.match(/"display_url":"([^"]+)"/);
-    if (displayMatch) {
-      thumbnailUrl = displayMatch[1].replace(/\\u0026/g, '&').replace(/\\\//g, '/');
-    } else {
-      const ogMatch = html.match(/<meta\s+(?:property|name)="og:image"\s+content="([^"]+)"/i)
-        || html.match(/content="([^"]+)"\s+(?:property|name)="og:image"/i);
-      if (ogMatch) thumbnailUrl = ogMatch[1];
-    }
-
-    // Also try the text like "56,536 likes"
-    if (likes === null) {
-      const textLikes = html.match(/([\d,]+)\s*likes/);
-      if (textLikes) likes = parseInt(textLikes[1].replace(/,/g, ''), 10);
-    }
-
-    console.log('✅ Embed stats:', { views, likes, comments, thumb: !!thumbnailUrl });
-    return { views, likes, comments, thumbnailUrl };
+    console.log('❌ No stats found from embed');
+    return { views: null, likes: null, comments: null, thumbnailUrl: null };
   } catch (e) {
-    console.error('Embed fetch error:', e);
+    console.error('Embed error:', e);
     return { views: null, likes: null, comments: null, thumbnailUrl: null };
   }
 }
@@ -95,7 +134,6 @@ async function fetchInstagramPostStats(url: string): Promise<{
     return { views: null, likes: null, comments: null, thumbnailUrl: null };
   }
 
-  console.log('Fetching IG stats for shortcode:', shortcode);
   return await fetchViaEmbed(shortcode);
 }
 
