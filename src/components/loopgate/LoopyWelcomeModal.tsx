@@ -1,23 +1,23 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import loopyWelcome from '@/assets/loopy-welcome.png';
+
+const OG_ITEM_ID = '88ab63be-357e-4b09-9dc2-124a23caed3f';
 
 export default function LoopyWelcomeModal() {
   const [show, setShow] = useState(false);
   const [ogNumber, setOgNumber] = useState<number | null>(null);
   const [confetti, setConfetti] = useState(false);
-  const navigate = useNavigate();
-  const { profile } = useAuth();
+  const [claimed, setClaimed] = useState(false);
+  const { user, profile } = useAuth();
 
   useEffect(() => {
     const flag = sessionStorage.getItem('loopgate_just_signed_up');
     if (!flag) return;
     sessionStorage.removeItem('loopgate_just_signed_up');
 
-    // Get OG number (total profiles count)
     supabase
       .from('profiles')
       .select('id', { count: 'exact', head: true })
@@ -27,12 +27,20 @@ export default function LoopyWelcomeModal() {
       });
   }, []);
 
-  const handleClaim = () => {
+  const handleClaim = async () => {
+    if (claimed || !user) return;
     setConfetti(true);
-    setTimeout(() => {
-      navigate('/inventory');
-      setShow(false);
-    }, 800);
+    setClaimed(true);
+
+    // Insert purchase + set founding member
+    await Promise.all([
+      supabase.from('shop_purchases').insert({
+        user_id: user.id,
+        item_id: OG_ITEM_ID,
+        is_equipped: true,
+      }),
+      supabase.from('profiles').update({ is_founding_member: true } as any).eq('id', user.id),
+    ]);
   };
 
   const handleAskLoopy = () => {
