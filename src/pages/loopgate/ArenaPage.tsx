@@ -1285,8 +1285,7 @@ export default function ArenaPage() {
           {/* ═══ LIVE PAYOUTS CAROUSEL ═══ */}
           <LivePayoutsCarousel />
 
-          {/* ═══ BOUNTIES CAROUSEL ═══ */}
-          <ArenaBountiesCarousel />
+          {/* Marketplace removed */}
 
           {/* ═══ FILTER PILLS — small rounded ═══ */}
           <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-1">
