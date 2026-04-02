@@ -238,7 +238,7 @@ export default function HeaderMusicPlayer() {
 
     if (a.readyState >= 2) tryPlay();
     else a.addEventListener('canplay', tryPlay, { once: true });
-  }, [volume, playbackRate, pitchSemitones, cleanupAudio, startProgressTracking, stopProgressTracking]);
+  }, [volume, playbackRate, pitchSemitones, loopEnabled, cleanupAudio, startProgressTracking, stopProgressTracking]);
 
   const playTrack = useCallback((track: Track) => {
     setPlaylistMode('loopgate');
