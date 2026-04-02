@@ -373,8 +373,10 @@ export default function HubPage() {
     c.is_premium && (c.status === 'live' || c.status === 'judging')
   );
   
-  // Total featured count for header
-  const totalFeatured = liveDrops.length + premiumComps.length + activeSanctioned.length + featuredBattles.length;
+  // Total counts
+  const totalArtistFeatured = artistDrops.length;
+  const totalEvents = eventDrops.length + premiumComps.length + activeSanctioned.length + featuredBattles.length;
+  const totalFeatured = totalArtistFeatured + totalEvents;
 
   return (
     <div className="min-h-screen bg-background pb-16 overflow-x-hidden relative">
