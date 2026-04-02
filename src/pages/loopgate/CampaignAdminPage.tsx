@@ -1,13 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Save, Eye, TrendingUp, Zap, MousePointerClick, Edit3, X, ChevronDown, ChevronUp, Copy, Bell, Check, RefreshCw, Music, FileText, ArrowLeft } from 'lucide-react';
+import { Plus, Trash2, Save, Eye, TrendingUp, Zap, MousePointerClick, Edit3, X, ChevronDown, ChevronUp, Copy, Bell, Check, RefreshCw, Music, FileText, ArrowLeft, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useArtistCampaigns, useUpdateRequests } from '@/hooks/useArtistCampaigns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
+
+async function uploadLogoFile(file: File): Promise<string> {
+  const ext = file.name.split('.').pop() || 'png';
+  const fileName = `${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage.from('campaign-logos').upload(fileName, file, { upsert: true });
+  if (error) throw new Error('Upload failed: ' + error.message);
+  const { data: urlData } = supabase.storage.from('campaign-logos').getPublicUrl(fileName);
+  return urlData.publicUrl;
+}
 
 function formatNumber(n: number): string {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
