@@ -24,6 +24,7 @@ import GatePattern from "@/components/loopgate/GatePattern";
 import IndexHeroPattern from "@/components/loopgate/IndexHeroPattern";
 import EditoriumCarousel from "@/components/loopgate/EditoriumCarousel";
 import DiscoverEditsCarousel from "@/components/loopgate/DiscoverEditsCarousel";
+import heroCollage from "@/assets/hero-collage.jpeg";
 
 type LeagueFilter = "all" | "open" | "pro" | "elite";
 type RankFilter = "all" | "top10" | "top50" | "top100";
