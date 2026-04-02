@@ -41,7 +41,7 @@ export function playTap() {
     const c = getCtx();
     const t = c.currentTime;
     const master = c.createGain();
-    master.gain.value = 0.12;
+    master.gain.value = 0.35;
     master.connect(c.destination);
 
     osc(c, 'sine', 1800, t, 0.06, 0.6, master);
@@ -57,7 +57,7 @@ export function playNav() {
     const c = getCtx();
     const t = c.currentTime;
     const master = c.createGain();
-    master.gain.value = 0.10;
+    master.gain.value = 0.30;
     master.connect(c.destination);
 
     osc(c, 'sine', 1200, t, 0.05, 0.5, master);
@@ -71,7 +71,7 @@ export function playSuccess() {
     const c = getCtx();
     const t = c.currentTime;
     const master = c.createGain();
-    master.gain.value = 0.10;
+    master.gain.value = 0.30;
     master.connect(c.destination);
 
     osc(c, 'sine', 800, t, 0.08, 0.5, master);
@@ -86,7 +86,7 @@ export function playError() {
     const c = getCtx();
     const t = c.currentTime;
     const master = c.createGain();
-    master.gain.value = 0.08;
+    master.gain.value = 0.25;
     master.connect(c.destination);
 
     osc(c, 'square', 200, t, 0.12, 0.3, master);
@@ -100,7 +100,7 @@ export function playToggleOn() {
     const c = getCtx();
     const t = c.currentTime;
     const master = c.createGain();
-    master.gain.value = 0.10;
+    master.gain.value = 0.30;
     master.connect(c.destination);
 
     osc(c, 'sine', 1000, t, 0.04, 0.5, master);
@@ -114,7 +114,7 @@ export function playToggleOff() {
     const c = getCtx();
     const t = c.currentTime;
     const master = c.createGain();
-    master.gain.value = 0.08;
+    master.gain.value = 0.25;
     master.connect(c.destination);
 
     osc(c, 'sine', 1200, t, 0.04, 0.4, master);
