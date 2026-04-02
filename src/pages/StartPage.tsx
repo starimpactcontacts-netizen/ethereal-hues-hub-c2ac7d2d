@@ -39,7 +39,7 @@ export default function StartPage() {
   const [codeInfo, setCodeInfo] = useState<{ type: 'personal' | 'crew'; crewName?: string; inviterName?: string } | null>(null);
   
   const [formData, setFormData] = useState<FormData>({
-    role: null,
+    role: 'editor',
     username: '',
     email: '',
     password: '',
@@ -509,21 +509,27 @@ export default function StartPage() {
               </div>
 
               <div className="space-y-3">
+                {/* Editor — hero primary choice, pre-selected */}
                 <button
                   onClick={() => setFormData(prev => ({ ...prev, role: 'editor' }))}
-                  className={`w-full p-5 border transition-all duration-200 text-left group ${
+                  className={`w-full border transition-all duration-200 text-left group relative overflow-hidden ${
                     formData.role === 'editor'
-                      ? 'border-gold bg-gold/10'
-                      : 'border-border bg-surface-1 hover:border-muted-foreground'
+                      ? 'border-gold bg-gradient-to-r from-gold/15 via-gold/8 to-transparent p-6'
+                      : 'border-border bg-surface-1 hover:border-muted-foreground p-5'
                   }`}
                 >
+                  {formData.role === 'editor' && (
+                    <div className="absolute top-0 right-0 bg-gold text-background text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5">
+                      Most Popular
+                    </div>
+                  )}
                   <div className="flex items-center gap-4">
-                    <div className={`p-2.5 ${formData.role === 'editor' ? 'bg-gold/20' : 'bg-surface-2'}`}>
-                      <Swords className={`h-5 w-5 ${formData.role === 'editor' ? 'text-gold' : 'text-muted-foreground'}`} />
+                    <div className={`p-3 ${formData.role === 'editor' ? 'bg-gold/20 border border-gold/30' : 'bg-surface-2'}`}>
+                      <Swords className={`h-6 w-6 ${formData.role === 'editor' ? 'text-gold' : 'text-muted-foreground'}`} />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <h3 className="font-display text-xl">EDITOR</h3>
+                        <h3 className={`font-display ${formData.role === 'editor' ? 'text-2xl' : 'text-xl'}`}>EDITOR</h3>
                         {formData.role === 'editor' && (
                           <div className="h-5 w-5 rounded-full bg-gold flex items-center justify-center">
                             <Check className="h-3 w-3 text-background" />
@@ -537,28 +543,29 @@ export default function StartPage() {
                   </div>
                 </button>
 
+                {/* Judge — secondary, understated */}
                 <button
                   onClick={() => setFormData(prev => ({ ...prev, role: 'judge' }))}
-                  className={`w-full p-5 border transition-all duration-200 text-left group ${
+                  className={`w-full p-4 border transition-all duration-200 text-left group ${
                     formData.role === 'judge'
                       ? 'border-gold bg-gold/10'
-                      : 'border-border bg-surface-1 hover:border-muted-foreground'
+                      : 'border-border/60 bg-surface-1/60 hover:border-muted-foreground'
                   }`}
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`p-2.5 ${formData.role === 'judge' ? 'bg-gold/20' : 'bg-surface-2'}`}>
-                      <Scale className={`h-5 w-5 ${formData.role === 'judge' ? 'text-gold' : 'text-muted-foreground'}`} />
+                    <div className={`p-2 ${formData.role === 'judge' ? 'bg-gold/20' : 'bg-surface-2/60'}`}>
+                      <Scale className={`h-4 w-4 ${formData.role === 'judge' ? 'text-gold' : 'text-muted-foreground/60'}`} />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <h3 className="font-display text-xl">JUDGE</h3>
+                        <h3 className="font-display text-base text-muted-foreground">JUDGE</h3>
                         {formData.role === 'judge' && (
                           <div className="h-5 w-5 rounded-full bg-gold flex items-center justify-center">
                             <Check className="h-3 w-3 text-background" />
                           </div>
                         )}
                       </div>
-                      <p className="text-muted-foreground text-xs mt-0.5">
+                      <p className="text-muted-foreground/60 text-[11px] mt-0.5">
                         Score submissions, shape the meta, earn authority
                       </p>
                     </div>
