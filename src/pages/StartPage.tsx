@@ -487,7 +487,7 @@ export default function StartPage() {
       </div>
 
       {/* Main content - vertically centered with proper spacing */}
-      <div className="relative z-10 flex-1 flex flex-col justify-center px-5 pb-4">
+      <div className="relative z-10 flex-1 flex flex-col justify-start pt-8 px-5 pb-4">
         <AnimatePresence mode="wait">
           {/* Step 0: Role Selection */}
           {step === 0 && (
