@@ -1,0 +1,1 @@
+ALTER TABLE public.featured_drops ADD COLUMN submission_goal integer NOT NULL DEFAULT 0;
