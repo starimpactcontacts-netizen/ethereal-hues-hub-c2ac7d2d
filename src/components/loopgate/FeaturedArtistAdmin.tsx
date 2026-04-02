@@ -29,7 +29,7 @@ export default function FeaturedArtistAdmin() {
 
   // Create drop state
   const [showCreateDrop, setShowCreateDrop] = useState(false);
-  const [newDrop, setNewDrop] = useState({ artist_id: '', title: '', song_name: '', song_url: '', song_preview_url: '', poster_url: '', description: '', xp_reward: 30, index_reward: 15, mystery_reward_label: '' });
+  const [newDrop, setNewDrop] = useState({ artist_id: '', title: '', song_name: '', song_url: '', song_preview_url: '', poster_url: '', description: '', xp_reward: 30, index_reward: 15, mystery_reward_label: '', drop_type: 'artist' as 'artist' | 'brand' | 'film' });
   const [uploadingPreview, setUploadingPreview] = useState(false);
   const [creatingDrop, setCreatingDrop] = useState(false);
 
