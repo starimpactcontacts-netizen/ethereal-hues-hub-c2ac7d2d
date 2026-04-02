@@ -407,7 +407,7 @@ export default function HeaderMusicPlayer() {
     </button>
   ) : (
     <button
-      onClick={() => navigate('/playlists')}
+      onClick={() => setOpen(true)}
       className="relative flex items-center gap-2 px-3 py-2 transition-colors hover:bg-white/[0.04] border border-white/[0.06] group"
       style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%)', fontFamily: 'Teko, sans-serif' }}
     >
