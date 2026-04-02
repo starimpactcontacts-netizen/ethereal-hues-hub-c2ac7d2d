@@ -11,7 +11,7 @@ import whereEditorsCompete from '@/assets/where-editors-compete-2.png';
 import SEO, { pageSEO } from '@/components/SEO';
 import { useGuestMode } from '@/hooks/useGuestMode';
 import loopgateLogo from '@/assets/loopgate-logo.png';
-import loopgateHeroCinematic from '@/assets/loopgate-hero-cinematic.jpeg';
+import loopgateHeroCinematic from '@/assets/hero-collage.jpeg';
 import editoriumLogo from '@/assets/editorium-logo.png';
 import loopyAvatar from '@/assets/loopy-avatar.png';
 import { useState } from 'react';
