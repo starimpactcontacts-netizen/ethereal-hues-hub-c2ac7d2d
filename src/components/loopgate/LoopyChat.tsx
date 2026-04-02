@@ -54,6 +54,15 @@ export default function LoopyChat() {
     if (view === 'chat') setTimeout(() => inputRef.current?.focus(), 200);
   }, [view]);
 
+  // Listen for programmatic open events
+  useEffect(() => {
+    const handler = async () => {
+      await handleOpen();
+    };
+    window.addEventListener('open-loopy-chat', handler);
+    return () => window.removeEventListener('open-loopy-chat', handler);
+  }, [activeConversationId, messages.length]);
+
   const handleOpen = async () => {
     setOpen(true);
     setShowPulse(false);

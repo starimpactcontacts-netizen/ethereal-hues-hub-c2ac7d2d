@@ -407,6 +407,7 @@ export default function StartPage() {
     }
 
     showSuccessToast();
+    sessionStorage.setItem('loopgate_just_signed_up', '1');
 
     if (formData.role === 'judge') {
       const { error: roleError } = await supabase.from('user_roles').insert({
