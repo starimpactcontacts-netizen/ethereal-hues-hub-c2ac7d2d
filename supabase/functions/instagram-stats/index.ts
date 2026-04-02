@@ -229,7 +229,7 @@ async function fetchViaMainPage(shortcode: string): Promise<{
 
 // Method 3: Embed page (fallback - can have stale view counts)
 async function fetchViaEmbed(shortcode: string): Promise<{
-  views: number | null; likes: number | null; comments: number | null; thumbnailUrl: string | null;
+  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null;
 }> {
   try {
     for (const prefix of ['p', 'reel']) {
