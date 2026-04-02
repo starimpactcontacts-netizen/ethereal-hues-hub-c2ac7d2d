@@ -300,7 +300,7 @@ function LobbyPhase({
             style={teko}
           >
             <Zap className="w-5 h-5 mr-2" />
-            {maxReached ? "Lobby Full" : "Enter Lobby"}
+            {maxReached ? "Event Full" : "Join Event"}
           </Button>
         ) : !isReady ? (
           <Button

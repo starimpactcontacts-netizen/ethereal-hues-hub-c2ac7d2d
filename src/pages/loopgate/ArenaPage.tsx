@@ -1166,7 +1166,7 @@ export default function ArenaPage() {
             )}
           </div>
 
-          {/* ═══ ENTER LOBBY — Big CTA for Battle Royale ═══ */}
+          {/* ═══ ENTER LOBBY — Live Drop CTA ═══ */}
           {liveDrops.length > 0 && (
             <motion.button
               initial={{ opacity: 0, y: 8 }}
@@ -1206,7 +1206,7 @@ export default function ArenaPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-lg shadow-red-500/50" />
-                    <span className="text-[10px] font-black text-red-400 uppercase tracking-[0.2em]">Battle Royale Live</span>
+                    <span className="text-[10px] font-black text-red-400 uppercase tracking-[0.2em]">Official Event Live</span>
                   </div>
                   <h3 className="text-[18px] font-black text-white leading-tight truncate tracking-tight" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
                     {liveDrops[0].title}
@@ -1226,7 +1226,7 @@ export default function ArenaPage() {
                     <div className="flex items-center gap-2 relative z-10">
                       <Users className="w-4 h-4 text-white drop-shadow-lg" />
                       <span className="text-[16px] font-black text-white uppercase tracking-wider drop-shadow-lg" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
-                        Enter Lobby
+                        Submit Edit
                       </span>
                       <ChevronRight className="w-4 h-4 text-white/70 group-hover:translate-x-0.5 transition-transform" />
                     </div>

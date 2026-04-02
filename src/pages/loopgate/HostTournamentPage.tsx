@@ -437,7 +437,7 @@ function SanctionedFields({
           <Select value={formatType} onValueChange={setFormatType}>
             <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="battle_royale">Battle Royale</SelectItem>
+              <SelectItem value="battle_royale">Open Submit</SelectItem>
               <SelectItem value="single_elimination">Single Elimination</SelectItem>
               <SelectItem value="round_robin">Round Robin</SelectItem>
               <SelectItem value="swiss">Swiss</SelectItem>
@@ -536,7 +536,7 @@ function MonetizedFields({
           <Select value={format} onValueChange={setFormat}>
             <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="battle_royale">Battle Royale</SelectItem>
+              <SelectItem value="battle_royale">Open Submit</SelectItem>
               <SelectItem value="ranked">Ranked</SelectItem>
               <SelectItem value="showcase">Showcase</SelectItem>
             </SelectContent>
