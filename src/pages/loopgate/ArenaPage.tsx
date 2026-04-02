@@ -474,35 +474,67 @@ function Quick1v1Row({ fight, onClick }: { fight: any; onClick: () => void }) {
 }
 
 // ─── Section Header — Stake-style ────────────────────────────────────────
-function SectionHeader({ icon, title, badge, badgeColor = "text-emerald-400", action }: {
+function SectionHeader({ icon, title, badge, badgeColor = "text-emerald-400", action, infoText }: {
   icon: React.ReactNode;
   title: string;
   badge?: string;
   badgeColor?: string;
   action?: React.ReactNode;
+  infoText?: string;
 }) {
+  const [showInfo, setShowInfo] = useState(false);
   const textColor = badgeColor.includes('text-') 
     ? badgeColor.split(' ').find(c => c.startsWith('text-')) || 'text-emerald-400'
     : 'text-emerald-400';
   return (
-    <div className="flex items-center justify-between px-4 mb-3">
-      <div className="flex items-center gap-2">
-        <div className="relative">
-          {icon}
+    <>
+      <div className="flex items-center justify-between px-4 mb-3">
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            {icon}
+            {badge && (
+              <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-current animate-pulse" style={{ boxShadow: '0 0 6px currentColor' }} />
+            )}
+          </div>
+          <span className="text-[15px] font-extrabold text-foreground tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>{title}</span>
           {badge && (
-            <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-current animate-pulse" style={{ boxShadow: '0 0 6px currentColor' }} />
+            <span className={`flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 bg-current/10 border border-current/20 ${textColor}`}>
+              <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+              {badge}
+            </span>
+          )}
+          {infoText && (
+            <button
+              onClick={() => setShowInfo(v => !v)}
+              className="w-5 h-5 rounded-full bg-surface-2 border border-border/40 flex items-center justify-center hover:bg-surface-1 transition-colors"
+              aria-label={`How ${title} works`}
+            >
+              <Info className="w-3 h-3 text-muted-foreground/70" />
+            </button>
           )}
         </div>
-        <span className="text-[15px] font-extrabold text-foreground tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>{title}</span>
-        {badge && (
-          <span className={`flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 bg-current/10 border border-current/20 ${textColor}`}>
-            <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-            {badge}
-          </span>
-        )}
+        {action}
       </div>
-      {action}
-    </div>
+      <AnimatePresence>
+        {showInfo && infoText && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden px-4 mb-3"
+          >
+            <div className="bg-surface-1 border border-border/40 rounded-lg p-3 flex items-start gap-2">
+              <Info className="w-3.5 h-3.5 text-gold shrink-0 mt-0.5" />
+              <p className="text-[11px] text-muted-foreground leading-relaxed">{infoText}</p>
+              <button onClick={() => setShowInfo(false)} className="shrink-0 p-0.5 hover:bg-surface-2 rounded">
+                <X className="w-3 h-3 text-muted-foreground/50" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 
