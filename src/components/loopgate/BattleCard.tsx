@@ -19,12 +19,6 @@ function formatTimeLeft(endDate: string | null): string {
   return `${minutes}m`;
 }
 
-function formatViews(count: number): string {
-  if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
-  if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
-  return count.toString();
-}
-
 export default function BattleCard({ battle, onClick }: BattleCardProps) {
   const isOpen = battle.status === 'pending' && !battle.opponent_id;
   const isLive = battle.status === 'active';
@@ -34,146 +28,182 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
   const totalVotes = battle.challenger_votes + battle.opponent_votes;
 
   const statusText = isLive ? 'LIVE' : isJudging ? 'JUDGING' : isCompleted ? 'DECIDED' : isOpen ? 'OPEN' : 'PENDING';
-  const statusColor = isLive ? 'text-red-400' : isJudging ? 'text-purple-400' : isCompleted ? 'text-gold' : 'text-amber-400';
 
   return (
     <motion.div
       whileTap={{ scale: 0.97 }}
+      whileHover={{ y: -3 }}
       onClick={onClick}
-      className="w-[280px] sm:w-[300px] shrink-0 bg-surface-1 border border-red-500/20 hover:border-red-500/50 transition-all cursor-pointer group overflow-hidden"
+      className="w-[260px] sm:w-[280px] shrink-0 overflow-hidden cursor-pointer group rounded-lg relative"
+      style={{
+        background: 'linear-gradient(160deg, rgba(30,30,40,1) 0%, rgba(10,10,15,1) 100%)',
+        boxShadow: isLive
+          ? '0 0 24px rgba(239,68,68,0.15), 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)'
+          : '0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)',
+      }}
     >
-      {/* Hero — VS Display */}
-      <div className="relative h-[140px] overflow-hidden">
-        {/* Blue/Red atmosphere split */}
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 via-surface-1 to-red-900/30" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-surface-1" />
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 6px, currentColor 6px, currentColor 7px),
-                            repeating-linear-gradient(-45deg, transparent, transparent 6px, currentColor 6px, currentColor 7px)`,
-          color: 'rgb(239 68 68)'
-        }} />
+      {/* Top edge glow */}
+      <div className="absolute top-0 left-0 right-0 h-[1px]" style={{
+        background: isLive
+          ? 'linear-gradient(90deg, transparent, rgba(239,68,68,0.5), transparent)'
+          : isOpen
+          ? 'linear-gradient(90deg, transparent, rgba(234,179,8,0.4), transparent)'
+          : 'linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)',
+      }} />
 
-        {/* Status — seamless text */}
-        <div className="absolute top-2.5 left-0 right-0 flex items-center justify-center gap-1.5">
-          {isLive && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_6px_rgba(239,68,68,0.6)]" />}
-          <span className={`text-[11px] font-bold uppercase tracking-[0.15em] drop-shadow-sm ${statusColor}`} style={{ fontFamily: 'Teko, sans-serif' }}>
+      {/* Status bar */}
+      <div className="flex items-center justify-between px-3 pt-2.5 pb-1">
+        <div className="flex items-center gap-1.5">
+          {isLive && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
+          <span className={`text-[10px] font-bold uppercase tracking-[0.15em] ${
+            isLive ? 'text-red-400' : isJudging ? 'text-purple-400' : isCompleted ? 'text-gold' : isOpen ? 'text-amber-400' : 'text-zinc-500'
+          }`} style={{ fontFamily: 'Teko, sans-serif' }}>
             {statusText}
           </span>
         </div>
 
-        {/* VS Display */}
-        <div className="absolute inset-0 flex items-center justify-center px-5 pt-3">
-          {/* Challenger — Blue side */}
-          <div className="flex-1 flex flex-col items-center">
-            <div className="p-[2px] bg-gradient-to-br from-blue-500/60 to-blue-900/60" style={{ borderRadius: '50%' }}>
-              <Avatar className="w-14 h-14 border-[1.5px] border-background" style={{ borderRadius: '50%' }}>
+        <div className="flex items-center gap-2">
+          {isRapid && (
+            <div className="flex items-center gap-0.5 bg-amber-500/10 px-1.5 py-0.5 rounded-full">
+              <Zap className="w-2.5 h-2.5 text-amber-400" />
+              <span className="text-[8px] font-bold text-amber-400 uppercase">Rapid</span>
+            </div>
+          )}
+          <div className="flex items-center gap-1 text-[9px] text-zinc-500">
+            <Clock className="w-2.5 h-2.5" />
+            <span>{battle.duration_hours}h</span>
+          </div>
+        </div>
+      </div>
+
+      {/* VS Display */}
+      <div className="relative px-3 py-4">
+        {/* Subtle atmospheric split */}
+        <div className="absolute inset-0 opacity-[0.04]" style={{
+          background: 'linear-gradient(90deg, rgba(59,130,246,0.8) 0%, transparent 40%, transparent 60%, rgba(239,68,68,0.8) 100%)',
+        }} />
+
+        <div className="relative flex items-center justify-between">
+          {/* Challenger */}
+          <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+            <div className="relative">
+              <div className="absolute -inset-1 rounded-full opacity-40" style={{
+                background: 'radial-gradient(circle, rgba(59,130,246,0.3) 0%, transparent 70%)',
+              }} />
+              <Avatar className="w-12 h-12 border-2 border-blue-500/40 relative z-10">
                 <AvatarImage src={battle.challenger_avatar_url || ''} />
-                <AvatarFallback className="bg-blue-500/20 text-blue-400 text-base font-bold">
+                <AvatarFallback className="bg-blue-500/15 text-blue-400 text-sm font-bold">
                   {battle.challenger_username.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
             </div>
-            <span className="text-[11px] text-foreground font-bold mt-1.5 truncate max-w-[90px] uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>
+            <span className="text-[11px] text-foreground font-bold truncate max-w-[80px] uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>
               {battle.challenger_username}
             </span>
           </div>
 
-          {/* VS Badge */}
-          <div className="relative mx-2 shrink-0">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-red-600 flex items-center justify-center shadow-lg shadow-red-500/30" style={{ borderRadius: '50%' }}>
-              <Swords className="w-4 h-4 text-white" />
+          {/* VS */}
+          <div className="relative mx-1 shrink-0">
+            <div className="w-9 h-9 rounded-full flex items-center justify-center relative z-10" style={{
+              background: 'linear-gradient(135deg, rgba(59,130,246,0.25), rgba(239,68,68,0.25))',
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}>
+              <Swords className="w-3.5 h-3.5 text-white/70" />
             </div>
-            {isLive && <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />}
           </div>
 
-          {/* Opponent — Red side */}
-          <div className="flex-1 flex flex-col items-center">
+          {/* Opponent */}
+          <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
             {battle.opponent_id ? (
               <>
-                <div className="p-[2px] bg-gradient-to-br from-red-500/60 to-red-900/60" style={{ borderRadius: '50%' }}>
-                  <Avatar className="w-14 h-14 border-[1.5px] border-background" style={{ borderRadius: '50%' }}>
+                <div className="relative">
+                  <div className="absolute -inset-1 rounded-full opacity-40" style={{
+                    background: 'radial-gradient(circle, rgba(239,68,68,0.3) 0%, transparent 70%)',
+                  }} />
+                  <Avatar className="w-12 h-12 border-2 border-red-500/40 relative z-10">
                     <AvatarImage src={battle.opponent_avatar_url || ''} />
-                    <AvatarFallback className="bg-red-500/20 text-red-400 text-base font-bold">
+                    <AvatarFallback className="bg-red-500/15 text-red-400 text-sm font-bold">
                       {battle.opponent_username?.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                 </div>
-                <span className="text-[11px] text-foreground font-bold mt-1.5 truncate max-w-[90px] uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>
+                <span className="text-[11px] text-foreground font-bold truncate max-w-[80px] uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>
                   {battle.opponent_username}
                 </span>
               </>
             ) : (
               <>
-                <div className="w-14 h-14 border-[1.5px] border-dashed border-red-500/30 flex items-center justify-center bg-surface-2/50" style={{ borderRadius: '50%' }}>
-                  <span className="text-xl text-red-400/30 font-display">?</span>
+                <div className="w-12 h-12 rounded-full border-2 border-dashed border-white/10 flex items-center justify-center bg-white/[0.02]">
+                  <span className="text-lg text-white/20 font-bold">?</span>
                 </div>
-                <span className="text-[11px] text-muted-foreground mt-1.5 uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>
+                <span className="text-[11px] text-zinc-600 uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>
                   Open
                 </span>
               </>
             )}
           </div>
         </div>
-
-        {/* View count */}
-        <div className="absolute bottom-2 left-2.5 flex items-center gap-1">
-          <Eye className="w-3 h-3 text-muted-foreground/60" />
-          <span className="text-[9px] text-foreground/50 font-medium tabular-nums">{formatViews(battle.view_count)}</span>
-        </div>
-
-        {/* Rapid badge */}
-        {isRapid && (
-          <div className="absolute bottom-2 right-2.5 flex items-center gap-1 bg-amber-500/20 border border-amber-500/30 px-1.5 py-0.5">
-            <Zap className="w-2.5 h-2.5 text-amber-400" />
-            <span className="text-[8px] font-bold text-amber-400 uppercase tracking-wider">RAPID</span>
-          </div>
-        )}
       </div>
 
-      {/* Content */}
-      <div className="p-3 pt-2.5 space-y-2">
-        {/* Stakes + Duration row */}
+      {/* Stats row */}
+      <div className="px-3 pb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1">
             <Trophy className="w-3 h-3 text-gold" />
             <span className="text-[11px] font-bold text-gold tabular-nums">+{battle.winner_index_awarded} IDX</span>
           </div>
-          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-            <Clock className="w-3 h-3" />
-            <span>{battle.duration_hours}h</span>
+
+          {isLive && battle.ends_at && (
+            <div className="flex items-center gap-1 text-[10px] text-red-400">
+              <Flame className="w-3 h-3" />
+              <span className="font-bold">{formatTimeLeft(battle.ends_at)}</span>
+            </div>
+          )}
+
+          <div className="flex items-center gap-1">
+            <Eye className="w-2.5 h-2.5 text-zinc-600" />
+            <span className="text-[9px] text-zinc-600 tabular-nums">{battle.view_count}</span>
           </div>
         </div>
+      </div>
 
-        {/* Timer if live */}
-        {isLive && battle.ends_at && (
-          <div className="flex items-center gap-1 text-[11px] text-red-400">
-            <Flame className="w-3 h-3" />
-            <span className="font-bold">{formatTimeLeft(battle.ends_at)} left</span>
+      {/* Vote bar */}
+      {(isJudging || isCompleted) && totalVotes > 0 && (
+        <div className="px-3 pb-2">
+          <div className="flex items-center justify-between text-[8px] mb-0.5 text-zinc-500 tabular-nums">
+            <span>{battle.challenger_votes}</span>
+            <span>{battle.opponent_votes}</span>
           </div>
-        )}
-
-        {/* Vote bar */}
-        {(isJudging || isCompleted) && totalVotes > 0 && (
-          <div>
-            <div className="flex items-center justify-between text-[9px] mb-1 text-muted-foreground">
-              <span className="tabular-nums">{battle.challenger_votes}</span>
-              <span className="tabular-nums">{battle.opponent_votes}</span>
-            </div>
-            <div className="h-1 bg-surface-2 overflow-hidden flex">
-              <div className="h-full bg-red-500 transition-all" style={{ width: `${(battle.challenger_votes / totalVotes) * 100}%` }} />
-              <div className="h-full bg-sky-500 transition-all" style={{ width: `${(battle.opponent_votes / totalVotes) * 100}%` }} />
-            </div>
+          <div className="h-[3px] bg-white/[0.04] rounded-full overflow-hidden flex">
+            <div className="h-full bg-blue-500/70 rounded-full transition-all" style={{ width: `${(battle.challenger_votes / totalVotes) * 100}%` }} />
+            <div className="h-full bg-red-500/70 rounded-full transition-all" style={{ width: `${(battle.opponent_votes / totalVotes) * 100}%` }} />
           </div>
-        )}
+        </div>
+      )}
 
-        {/* CTA */}
-        <button className="w-full py-2 relative overflow-hidden bg-red-600 hover:bg-red-500 transition-colors text-white font-display text-xs uppercase tracking-[0.12em] flex items-center justify-center gap-1.5 group-hover:shadow-lg group-hover:shadow-red-500/15" style={{ fontFamily: 'Teko, sans-serif' }}>
-          <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.1] to-transparent pointer-events-none" />
-          <Swords className="w-3 h-3 relative z-10" />
-          <span className="relative z-10">
-            {isOpen ? "ACCEPT" : isLive ? "WATCH" : isCompleted ? "RESULTS" : isJudging ? "VIEW" : "VIEW"}
-          </span>
-        </button>
+      {/* CTA */}
+      <div className="px-3 pb-3 pt-1">
+        <div className="relative overflow-hidden rounded-md transition-all" style={{
+          background: isOpen
+            ? 'linear-gradient(135deg, rgba(234,179,8,0.15), rgba(234,179,8,0.08))'
+            : isLive
+            ? 'linear-gradient(135deg, rgba(239,68,68,0.15), rgba(239,68,68,0.08))'
+            : 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
+          border: isOpen
+            ? '1px solid rgba(234,179,8,0.2)'
+            : isLive
+            ? '1px solid rgba(239,68,68,0.2)'
+            : '1px solid rgba(255,255,255,0.06)',
+        }}>
+          <div className="py-2 flex items-center justify-center gap-1.5">
+            <Swords className={`w-3 h-3 ${isOpen ? 'text-amber-400' : isLive ? 'text-red-400' : 'text-zinc-400'}`} />
+            <span className={`text-[11px] font-bold uppercase tracking-[0.12em] ${
+              isOpen ? 'text-amber-400' : isLive ? 'text-red-400' : 'text-zinc-400'
+            }`} style={{ fontFamily: 'Teko, sans-serif' }}>
+              {isOpen ? "ACCEPT CHALLENGE" : isLive ? "WATCH LIVE" : isCompleted ? "VIEW RESULTS" : isJudging ? "VIEW" : "VIEW"}
+            </span>
+          </div>
+        </div>
       </div>
     </motion.div>
   );
