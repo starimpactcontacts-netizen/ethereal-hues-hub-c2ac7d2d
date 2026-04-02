@@ -732,7 +732,7 @@ export default function HubPage() {
                   }
                 }
               }}
-              className="flex-1 relative overflow-hidden flex items-center justify-center gap-3 px-6 py-6 bg-red-600 hover:bg-red-500 transition-colors touch-manipulation select-none"
+              className="flex-1 relative overflow-hidden flex items-center justify-center gap-3 px-6 py-6 bg-gradient-to-r from-amber-600 to-gold hover:from-amber-500 hover:to-amber-400 transition-colors touch-manipulation select-none"
             >
               <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.14] to-transparent pointer-events-none" />
               {quickAction === 'solo' ? (
