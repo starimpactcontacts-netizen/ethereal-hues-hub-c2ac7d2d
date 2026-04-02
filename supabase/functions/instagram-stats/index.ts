@@ -21,14 +21,81 @@ function shortcodeToMediaId(shortcode: string): string {
   return id.toString();
 }
 
-// Method 1: Instagram Private Mobile API (most accurate real-time data)
+// Method 1: Instagram GraphQL API (real-time accurate data)
+async function fetchViaGraphQL(shortcode: string): Promise<{
+  views: number | null; likes: number | null; comments: number | null; thumbnailUrl: string | null;
+}> {
+  try {
+    // Use Instagram's web GraphQL endpoint
+    const variables = JSON.stringify({ shortcode, child_comment_count: 0, fetch_comment_count: 0, parent_comment_count: 0, has_threaded_comments: false });
+    const docId = '8845758582119845'; // Instagram's public media query doc ID
+    const apiUrl = `https://www.instagram.com/graphql/query/?doc_id=${docId}&variables=${encodeURIComponent(variables)}`;
+    console.log('Trying GraphQL API for shortcode:', shortcode);
+    
+    const res = await fetch(apiUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'X-IG-App-ID': '936619743392459',
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': '*/*',
+        'Sec-Fetch-Site': 'same-origin',
+      },
+    });
+    
+    if (!res.ok) {
+      console.log('GraphQL API HTTP:', res.status);
+      // Try alternative doc IDs
+      const altDocId = '17991233890457762';
+      const altUrl = `https://www.instagram.com/graphql/query/?query_hash=${altDocId}&variables=${encodeURIComponent(JSON.stringify({ shortcode }))}`;
+      const altRes = await fetch(altUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'X-IG-App-ID': '936619743392459',
+        },
+      });
+      if (!altRes.ok) {
+        console.log('GraphQL alt HTTP:', altRes.status);
+        return { views: null, likes: null, comments: null, thumbnailUrl: null };
+      }
+      const altJson = await altRes.json();
+      const altMedia = altJson?.data?.shortcode_media;
+      if (altMedia) {
+        const views = altMedia.video_view_count ?? altMedia.video_play_count ?? null;
+        const likes = altMedia.edge_media_preview_like?.count ?? null;
+        const comments = altMedia.edge_media_to_parent_comment?.count ?? null;
+        console.log('✅ GraphQL alt stats:', { views, likes, comments });
+        return { views, likes, comments, thumbnailUrl: altMedia.display_url ?? null };
+      }
+      return { views: null, likes: null, comments: null, thumbnailUrl: null };
+    }
+    
+    const json = await res.json();
+    const media = json?.data?.xdt_shortcode_media || json?.data?.shortcode_media;
+    if (media) {
+      const views = media.video_view_count ?? media.video_play_count ?? media.play_count ?? null;
+      const likes = media.edge_media_preview_like?.count ?? media.like_count ?? null;
+      const comments = media.edge_media_to_parent_comment?.count ?? media.comment_count ?? null;
+      const thumbnailUrl = media.display_url ?? null;
+      console.log('✅ GraphQL stats:', { views, likes, comments });
+      return { views, likes, comments, thumbnailUrl };
+    }
+    
+    console.log('GraphQL: no media in response, keys:', Object.keys(json?.data || {}));
+    return { views: null, likes: null, comments: null, thumbnailUrl: null };
+  } catch (e) {
+    console.error('GraphQL error:', e);
+    return { views: null, likes: null, comments: null, thumbnailUrl: null };
+  }
+}
+
+// Method 2: Instagram Private Mobile API
 async function fetchViaMobileApi(shortcode: string): Promise<{
   views: number | null; likes: number | null; comments: number | null; thumbnailUrl: string | null;
 }> {
   try {
     const mediaId = shortcodeToMediaId(shortcode);
     const apiUrl = `https://i.instagram.com/api/v1/media/${mediaId}/info/`;
-    console.log('Trying mobile API:', apiUrl, 'mediaId:', mediaId);
+    console.log('Trying mobile API, mediaId:', mediaId);
     
     const res = await fetch(apiUrl, {
       headers: {
@@ -53,7 +120,7 @@ async function fetchViaMobileApi(shortcode: string): Promise<{
       return { views, likes, comments, thumbnailUrl };
     }
     
-    console.log('Mobile API: no items in response');
+    console.log('Mobile API: no items');
     return { views: null, likes: null, comments: null, thumbnailUrl: null };
   } catch (e) {
     console.error('Mobile API error:', e);
