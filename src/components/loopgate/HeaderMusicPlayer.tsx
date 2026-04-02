@@ -545,11 +545,19 @@ export default function HeaderMusicPlayer() {
 
       {/* Transport Controls */}
       <div className="flex items-center justify-between px-5 py-3 shrink-0">
-        <button onClick={toggleShuffle}
-          className={`p-2.5 transition-colors ${shuffled ? 'text-emerald-400 bg-emerald-500/10' : 'text-white/25 hover:text-white/60'}`}
-          style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%)' }}>
-          <Shuffle size={16} />
-        </button>
+        <div className="flex items-center gap-1">
+          <button onClick={toggleShuffle}
+            className={`p-2.5 transition-colors ${shuffled ? 'text-emerald-400 bg-emerald-500/10' : 'text-white/25 hover:text-white/60'}`}
+            style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%)' }}>
+            <Shuffle size={16} />
+          </button>
+          <button onClick={() => setLoopEnabled(l => !l)}
+            className={`p-2.5 transition-colors ${loopEnabled ? 'text-emerald-400 bg-emerald-500/10' : 'text-white/25 hover:text-white/60'}`}
+            style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%)' }}
+            title={loopEnabled ? 'Loop: ON' : 'Loop: OFF'}>
+            {loopEnabled ? <Repeat1 size={16} /> : <Repeat size={16} />}
+          </button>
+        </div>
         <div className="flex items-center gap-4">
           <button
             onClick={() => {
