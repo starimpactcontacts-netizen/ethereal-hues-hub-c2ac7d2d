@@ -194,7 +194,9 @@ serve(async (req) => {
           goal_views: goal_views || 0, goal_label, goal_posts: goal_posts || 0,
           featured_artist_id: featured_artist_id || null,
           client_name: client_name || null,
-          password_hash
+          password_hash,
+          campaign_type: campaign_type || 'artist',
+          logo_url: logo_url || null
         })
         .select("*, featured_artists(name, avatar_url)")
         .single();
