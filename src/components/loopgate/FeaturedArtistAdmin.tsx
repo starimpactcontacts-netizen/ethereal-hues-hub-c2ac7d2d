@@ -541,8 +541,35 @@ export default function FeaturedArtistAdmin() {
                     <p className="text-[10px] text-muted-foreground">
                       {(drop as any).artist?.name || 'Unknown'} • {drop.song_name} • {dropSubs.length} entries ({pendingSubs.length} pending)
                     </p>
+                    {/* Submission Goal Progress Bar */}
+                    {(drop as any).submission_goal > 0 && (
+                      <div className="mt-1.5">
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className="text-[9px] text-cyan-400 font-bold uppercase tracking-wider">Submissions</span>
+                          <span className="text-[9px] font-bold text-foreground tabular-nums">{scoredSubs.length}/{(drop as any).submission_goal}</span>
+                        </div>
+                        <div className="h-2 rounded-full overflow-hidden bg-surface-2 relative">
+                          <div className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-cyan-500 to-emerald-500"
+                            style={{ width: `${Math.min(100, (scoredSubs.length / (drop as any).submission_goal) * 100)}%` }} />
+                        </div>
+                        <span className="text-[8px] text-muted-foreground">
+                          {Math.round(Math.min(100, (scoredSubs.length / (drop as any).submission_goal) * 100))}% complete
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center gap-1">
+                    {/* End Button — only for live drops */}
+                    {drop.status === 'live' && (
+                      <button onClick={async () => {
+                        const { error } = await supabase.from('featured_drops').update({ status: 'closed' } as any).eq('id', drop.id);
+                        if (error) toast.error(error.message);
+                        else { toast.success('Drop ended'); refresh(); }
+                      }}
+                        className="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider bg-red-600 text-white hover:bg-red-700 transition-colors" title="End this drop">
+                        End
+                      </button>
+                    )}
                     <button onClick={() => handleToggleDropStatus(drop)}
                       className={`p-1.5 rounded ${drop.status === 'live' ? 'bg-emerald-600' : drop.status === 'judging' ? 'bg-amber-500' : 'bg-muted'}`} title="Toggle status">
                       {drop.status === 'live' ? <Square size={14} /> : <Play size={14} />}
