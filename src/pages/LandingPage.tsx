@@ -135,7 +135,7 @@ export default function LandingPage() {
         </section>
 
         {/* ═══════════════ DIRECT ACCESS — Premium Grid ═══════════════ */}
-        <section className="relative pt-2 pb-8 sm:pt-4 sm:pb-12 px-5 sm:px-6 -mt-4">
+        <section className="relative pt-0 pb-8 sm:pt-2 sm:pb-12 px-5 sm:px-6 -mt-8">
           <div className="max-w-sm mx-auto">
             {/* Top row — 2 big tiles (Hub + Arena) */}
             <motion.div
