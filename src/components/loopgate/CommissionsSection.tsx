@@ -334,10 +334,6 @@ export default function CommissionsSection() {
             <InfinityLoop size={20} className="relative" />
           </div>
           <h3 className="font-display text-base text-foreground tracking-wide">GET PAID</h3>
-          <div className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/15 px-2 py-0.5 rounded-sm">
-            <Flame className="w-2.5 h-2.5 text-emerald-400" />
-            <span className="text-[7px] font-black text-emerald-400 uppercase tracking-[0.15em]">{drops.length} Live</span>
-          </div>
         </div>
         <Link to="/solo-arena" className="text-[9px] text-foreground/30 hover:text-emerald-400 transition-colors flex items-center gap-1 font-bold uppercase tracking-wider">
           Arena <ArrowRight size={10} />
