@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
 import { 
   Target, ArrowRight, Crown, Shield, Users, Trophy, 
   Users2, TrendingUp, Coins, ShoppingBag, Gavel, Gift,
