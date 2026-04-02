@@ -108,7 +108,7 @@ async function fetchViaMobileApi(shortcode: string): Promise<{
     
     if (!res.ok) {
       console.log('Mobile API HTTP:', res.status);
-      return { views: null, likes: null, comments: null, thumbnailUrl: null };
+      return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
     }
     
     const json = await res.json();
