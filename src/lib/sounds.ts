@@ -100,7 +100,7 @@ export function playToggleOn() {
     const c = getCtx();
     const t = c.currentTime;
     const master = c.createGain();
-    master.gain.value = 0.10;
+    master.gain.value = 0.30;
     master.connect(c.destination);
 
     osc(c, 'sine', 1000, t, 0.04, 0.5, master);
