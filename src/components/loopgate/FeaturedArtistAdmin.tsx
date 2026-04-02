@@ -328,6 +328,7 @@ export default function FeaturedArtistAdmin() {
       mission_views_milestone: editDropForm.mission_views_milestone,
       mission_views_bonus_cents: editDropForm.mission_views_bonus_cents,
       submission_goal: editDropForm.submission_goal,
+      drop_type: editDropForm.drop_type,
     } as any).eq('id', editingDrop.id);
     if (error) toast.error(error.message);
     else { toast.success('Drop updated!'); setEditingDrop(null); refresh(); }
