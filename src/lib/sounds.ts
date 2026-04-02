@@ -41,7 +41,7 @@ export function playTap() {
     const c = getCtx();
     const t = c.currentTime;
     const master = c.createGain();
-    master.gain.value = 0.55;
+    master.gain.value = 0.85;
     master.connect(c.destination);
 
     osc(c, 'sine', 1800, t, 0.06, 0.6, master);
