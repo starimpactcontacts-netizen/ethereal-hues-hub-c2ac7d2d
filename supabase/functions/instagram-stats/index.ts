@@ -98,7 +98,21 @@ async function fetchViaEmbed(shortcode: string): Promise<{
       let thumbnailUrl: string | null = null;
       const displayMatch = html.match(/"display_url"\s*:\s*"([^"]+)"/);
       if (displayMatch) {
-        thumbnailUrl = displayMatch[1].replace(/\\u0026/g, '&').replace(/\\\//g, '/');
+        thumbnailUrl = displayMatch[1]
+          .replace(/\\u0026/g, '&')
+          .replace(/\\\//g, '/')
+          .replace(/\\\\/g, '\\')
+          .replace(/\\\\\\//g, '/');
+      }
+      if (!thumbnailUrl) {
+        const thumbMatch = html.match(/"thumbnail_src"\s*:\s*"([^"]+)"/);
+        if (thumbMatch) {
+          thumbnailUrl = thumbMatch[1]
+            .replace(/\\u0026/g, '&')
+            .replace(/\\\//g, '/')
+            .replace(/\\\\/g, '\\')
+            .replace(/\\\\\\//g, '/');
+        }
       }
       if (!thumbnailUrl) {
         const ogMatch = html.match(/content="([^"]+)"\s+property="og:image"/i)
