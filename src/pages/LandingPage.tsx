@@ -134,11 +134,11 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ═══════════════ DIRECT ACCESS GRID — Like Roblox ═══════════════ */}
-        <section className="relative py-8 sm:py-12 px-4 sm:px-6 border-t border-border/30">
-          <div className="max-w-3xl mx-auto">
+        {/* ═══════════════ DIRECT ACCESS — Seamless Cinematic Grid ═══════════════ */}
+        <section className="relative py-6 sm:py-10 px-4 sm:px-6">
+          <div className="max-w-3xl mx-auto space-y-2">
             <motion.div
-              className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4"
+              className="grid grid-cols-2 gap-2"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -147,62 +147,68 @@ export default function LandingPage() {
               {quickLinks.map((link, i) => (
                 <motion.div
                   key={link.to}
-                  initial={{ opacity: 0, y: 15 }}
+                  initial={{ opacity: 0, y: 10 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: i * 0.05, duration: 0.4 }}
+                  transition={{ delay: i * 0.04, duration: 0.35 }}
                 >
                   <Link
                     to={link.to}
-                    className={`group relative flex flex-col items-center justify-center gap-2.5 py-8 sm:py-10 bg-surface-0 border ${link.border} transition-all duration-300 hover:bg-surface-1 overflow-hidden ${link.glow}`}
+                    className="group relative flex items-center gap-3 px-4 py-4 rounded-xl overflow-hidden transition-all duration-300"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))',
+                      border: '1px solid rgba(255,255,255,0.06)',
+                    }}
                   >
-                    {/* Accent gradient overlay */}
-                    <div className={`absolute inset-0 bg-gradient-to-b ${link.accent} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-                    <div className="relative z-10 flex flex-col items-center gap-2.5">
-                      <link.Icon size={32} className="text-muted-foreground group-hover:text-foreground transition-colors duration-300" />
-                      <span className="font-display text-base sm:text-lg text-foreground tracking-[0.08em] font-bold uppercase">{link.label}</span>
-                      <span className="text-[10px] sm:text-[11px] text-muted-foreground tracking-wide">{link.desc}</span>
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.06), transparent)' }} />
+                    <link.Icon size={20} className="text-muted-foreground group-hover:text-foreground transition-colors duration-300 shrink-0 relative z-10" />
+                    <div className="relative z-10 min-w-0">
+                      <span className="block text-[13px] font-bold text-foreground tracking-wide uppercase" style={{ fontFamily: 'Teko, sans-serif', fontSize: '16px' }}>{link.label}</span>
+                      <span className="block text-[9px] text-muted-foreground/60 tracking-wider">{link.desc}</span>
                     </div>
+                    <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/30 group-hover:text-muted-foreground/60 ml-auto shrink-0 relative z-10 transition-colors" />
                   </Link>
                 </motion.div>
               ))}
             </motion.div>
 
-            {/* Extra quick links row */}
+            {/* Extra quick links */}
             <motion.div
-              className="grid grid-cols-2 gap-3 sm:gap-4 mt-3 sm:mt-4"
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              className="grid grid-cols-2 gap-2"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              transition={{ delay: 0.3, duration: 0.4 }}
+              transition={{ delay: 0.25, duration: 0.4 }}
             >
               <Link
                 to="/editorium"
-                className="group flex items-center justify-center gap-3 py-4 bg-surface-0 border border-border/40 hover:border-foreground/20 transition-all hover:bg-surface-1"
+                className="group flex items-center gap-3 px-4 py-3 rounded-xl transition-all"
+                style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}
               >
-                <img src={editoriumLogo} alt="Editorium" className="h-4 sm:h-5 opacity-70 group-hover:opacity-100 transition-opacity" />
-                <span className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] group-hover:text-foreground transition-colors">Read Now</span>
+                <img src={editoriumLogo} alt="Editorium" className="h-3.5 opacity-50 group-hover:opacity-80 transition-opacity" />
+                <span className="text-[9px] text-muted-foreground/50 uppercase tracking-[0.15em] group-hover:text-muted-foreground transition-colors">Read</span>
               </Link>
               <Link
                 to="/gqt"
-                className="group flex items-center justify-center gap-3 py-4 bg-surface-0 border border-border/40 hover:border-foreground/20 transition-all hover:bg-surface-1"
+                className="group flex items-center gap-3 px-4 py-3 rounded-xl transition-all"
+                style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}
               >
-                <span className="text-sm font-bold tracking-wider text-muted-foreground group-hover:text-foreground transition-colors">QOI TEST</span>
-                <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">→</span>
+                <span className="text-[12px] font-bold tracking-wider text-muted-foreground/50 group-hover:text-muted-foreground transition-colors" style={{ fontFamily: 'Teko, sans-serif' }}>QOI TEST</span>
+                <span className="text-[9px] text-muted-foreground/30 group-hover:text-muted-foreground/50 transition-colors">→</span>
               </Link>
             </motion.div>
 
             {/* About link */}
             <motion.div
-              className="mt-4 text-center"
+              className="pt-2 text-center"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              transition={{ delay: 0.4, duration: 0.4 }}
+              transition={{ delay: 0.35 }}
             >
               <Link
                 to="/about"
-                className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors tracking-[0.15em] uppercase font-medium"
+                className="inline-flex items-center gap-2 text-[10px] text-muted-foreground/40 hover:text-muted-foreground transition-colors tracking-[0.2em] uppercase"
               >
                 What is Loopgate? <ArrowRight className="w-3 h-3" />
               </Link>
