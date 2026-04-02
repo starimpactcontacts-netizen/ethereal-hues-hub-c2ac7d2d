@@ -24,6 +24,7 @@ import GatePattern from "@/components/loopgate/GatePattern";
 import IndexHeroPattern from "@/components/loopgate/IndexHeroPattern";
 import EditoriumCarousel from "@/components/loopgate/EditoriumCarousel";
 import DiscoverEditsCarousel from "@/components/loopgate/DiscoverEditsCarousel";
+import heroCollage from "@/assets/hero-collage.jpeg";
 
 type LeagueFilter = "all" | "open" | "pro" | "elite";
 type RankFilter = "all" | "top10" | "top50" | "top100";
@@ -504,8 +505,12 @@ export default function IndexPage() {
       
       {/* ═══ CINEMATIC HERO ═══ */}
       <div className="relative overflow-hidden">
-        {/* Deep layered gradients — Netflix premium depth */}
-        <div className="absolute inset-0 bg-gradient-to-b from-surface-2 via-surface-1/60 to-background" />
+        {/* Cinematic collage backdrop */}
+        <div className="absolute inset-0">
+          <img src={heroCollage} alt="" className="w-full h-full object-cover opacity-[0.12]" />
+        </div>
+        {/* Heavy gradient overlays for readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/85 to-background" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(212,175,55,0.08),transparent_55%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(212,175,55,0.03),transparent_50%)]" />
         <IndexHeroPattern />
