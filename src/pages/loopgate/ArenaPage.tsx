@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Infinity as InfinityIcon, ChevronRight, Users, Trophy, 
   Flame, Calendar, Target, Shield, Swords,
-  Search, X, TrendingUp, Plus, HelpCircle, CheckCircle2,
+  Search, X, TrendingUp, Plus, HelpCircle, CheckCircle2, Info,
   Clock, Award, UserPlus, Eye, Globe, Crown, Zap, UserRound,
   Sparkles, Star, Music, Mail, ArrowRight, History, Play, Loader2,
   Clapperboard, ChevronDown, Crosshair, DollarSign
@@ -474,35 +474,67 @@ function Quick1v1Row({ fight, onClick }: { fight: any; onClick: () => void }) {
 }
 
 // ─── Section Header — Stake-style ────────────────────────────────────────
-function SectionHeader({ icon, title, badge, badgeColor = "text-emerald-400", action }: {
+function SectionHeader({ icon, title, badge, badgeColor = "text-emerald-400", action, infoText }: {
   icon: React.ReactNode;
   title: string;
   badge?: string;
   badgeColor?: string;
   action?: React.ReactNode;
+  infoText?: string;
 }) {
+  const [showInfo, setShowInfo] = useState(false);
   const textColor = badgeColor.includes('text-') 
     ? badgeColor.split(' ').find(c => c.startsWith('text-')) || 'text-emerald-400'
     : 'text-emerald-400';
   return (
-    <div className="flex items-center justify-between px-4 mb-3">
-      <div className="flex items-center gap-2">
-        <div className="relative">
-          {icon}
+    <>
+      <div className="flex items-center justify-between px-4 mb-3">
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            {icon}
+            {badge && (
+              <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-current animate-pulse" style={{ boxShadow: '0 0 6px currentColor' }} />
+            )}
+          </div>
+          <span className="text-[15px] font-extrabold text-foreground tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>{title}</span>
           {badge && (
-            <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-current animate-pulse" style={{ boxShadow: '0 0 6px currentColor' }} />
+            <span className={`flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 bg-current/10 border border-current/20 ${textColor}`}>
+              <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+              {badge}
+            </span>
+          )}
+          {infoText && (
+            <button
+              onClick={() => setShowInfo(v => !v)}
+              className="w-5 h-5 rounded-full bg-surface-2 border border-border/40 flex items-center justify-center hover:bg-surface-1 transition-colors"
+              aria-label={`How ${title} works`}
+            >
+              <Info className="w-3 h-3 text-muted-foreground/70" />
+            </button>
           )}
         </div>
-        <span className="text-[15px] font-extrabold text-foreground tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>{title}</span>
-        {badge && (
-          <span className={`flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 bg-current/10 border border-current/20 ${textColor}`}>
-            <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-            {badge}
-          </span>
-        )}
+        {action}
       </div>
-      {action}
-    </div>
+      <AnimatePresence>
+        {showInfo && infoText && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden px-4 mb-3"
+          >
+            <div className="bg-surface-1 border border-border/40 rounded-lg p-3 flex items-start gap-2">
+              <Info className="w-3.5 h-3.5 text-gold shrink-0 mt-0.5" />
+              <p className="text-[11px] text-muted-foreground leading-relaxed">{infoText}</p>
+              <button onClick={() => setShowInfo(false)} className="shrink-0 p-0.5 hover:bg-surface-2 rounded">
+                <X className="w-3 h-3 text-muted-foreground/50" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 
@@ -1305,9 +1337,8 @@ export default function ArenaPage() {
                 title="Official Events"
                 badge={liveDrops.length > 0 ? `${liveDrops.length} Live` : undefined}
                 badgeColor="bg-emerald-500/20 border-emerald-500/40 text-emerald-400"
+                infoText="Artist-featured multi-round competitions with cash prizes. Submit your edit each round — judges score on a 0–100 QOI scale. Top scorers earn cash + Index."
               />
-              <p className="text-[12px] text-muted-foreground px-4 mb-1">Artist-featured multi-round competitions · Cash prizes · Best edit + random pick wins</p>
-              <p className="text-[10px] text-muted-foreground/50 px-4 mb-3">Submit your edit each round. Judges score on a 0–100 QOI scale. Top scorers earn cash + Index.</p>
               {liveDrops.length > 0 ? (
                 <div className="px-4 flex gap-3 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory">
                   {liveDrops.map(drop => (
@@ -1336,6 +1367,7 @@ export default function ArenaPage() {
                 title="Quick Edit 1v1s"
                 badge={liveQuick > 0 ? `${liveQuick} Live` : undefined}
                 badgeColor="bg-red-500/20 border-red-500/40 text-red-400"
+                infoText="Instant matchmaking. Auto-matched with another editor — both submit an edit within 3 hours. Judge picks the winner. Winner +20 IDX."
                 action={
                   <button
                     onClick={() => profile ? navigate('/quick-fight') : navigate('/start')}
@@ -1345,8 +1377,6 @@ export default function ArenaPage() {
                   </button>
                 }
               />
-              <p className="text-[12px] text-muted-foreground px-4 mb-1">Instant matchmaking · 3hr edit window · Winner +20 IDX</p>
-              <p className="text-[10px] text-muted-foreground/50 px-4 mb-3">Auto-matched with another editor. Both submit an edit within 3 hours. Judge picks the winner.</p>
 
 
 
@@ -1402,9 +1432,8 @@ export default function ArenaPage() {
                 title="1v1 Edit Battles"
                 badge={liveBattles > 0 ? `${liveBattles} Live` : undefined}
                 badgeColor="bg-red-500/20 border-red-500/40 text-red-400"
+                infoText="Challenge a specific editor to a head-to-head showdown. Pick a song, set the deadline, and go 1v1. Winner earns +20 IDX. No penalty for the loser."
               />
-              <p className="text-[12px] text-muted-foreground px-4 mb-1">Head-to-head editing showdowns · Winner +20 IDX</p>
-              <p className="text-[10px] text-muted-foreground/50 px-4 mb-3">Challenge a specific editor. Pick a song, set the deadline, and go head-to-head. Loser gets no penalty.</p>
 
               {battlesLoading ? (
                 <div className="flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-2">
