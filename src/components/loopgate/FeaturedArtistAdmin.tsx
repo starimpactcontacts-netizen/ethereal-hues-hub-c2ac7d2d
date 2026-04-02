@@ -281,7 +281,7 @@ export default function FeaturedArtistAdmin() {
       status: 'draft',
     });
     if (error) toast.error(error.message);
-    else { toast.success('Drop created! Set it live when ready.'); setShowCreateDrop(false); setNewDrop({ artist_id: '', title: '', song_name: '', song_url: '', song_preview_url: '', poster_url: '', description: '', xp_reward: 30, index_reward: 15, mystery_reward_label: '' }); refresh(); }
+    else { toast.success('Drop created! Set it live when ready.'); setShowCreateDrop(false); setNewDrop({ artist_id: '', title: '', song_name: '', song_url: '', song_preview_url: '', poster_url: '', description: '', xp_reward: 30, index_reward: 15, mystery_reward_label: '', drop_type: 'artist' }); refresh(); }
     setCreatingDrop(false);
   };
 
