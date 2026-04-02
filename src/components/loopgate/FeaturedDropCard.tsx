@@ -379,7 +379,7 @@ export default function FeaturedDropCard({ drop }: Props) {
                 "transition-all duration-200 touch-manipulation"
               )}
             >
-              Enter Lobby
+              View Event
               <ChevronRight className="w-3 h-3" />
             </motion.button>
           </>

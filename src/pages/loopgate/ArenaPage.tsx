@@ -1226,7 +1226,7 @@ export default function ArenaPage() {
                     <div className="flex items-center gap-2 relative z-10">
                       <Users className="w-4 h-4 text-white drop-shadow-lg" />
                       <span className="text-[16px] font-black text-white uppercase tracking-wider drop-shadow-lg" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
-                        Enter Lobby
+                        Submit Edit
                       </span>
                       <ChevronRight className="w-4 h-4 text-white/70 group-hover:translate-x-0.5 transition-transform" />
                     </div>
