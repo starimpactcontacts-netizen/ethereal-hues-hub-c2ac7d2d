@@ -7,7 +7,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ArrowRight, DollarSign, Brain, Trophy } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { ScopeTarget, MedalRing, TrophyPillar } from "@/components/loopgate/LoopgateIcons";
 import loopgateBrand from "@/assets/loopgate-brand.png";
 
 const GUIDE_VERSION = "v5.2";
@@ -65,7 +66,7 @@ export default function BeginnerGuideModal({ trigger, autoShow = false }: Beginn
                   style={{ clipPath: 'polygon(3px 0, 100% 0, calc(100% - 3px) 100%, 0 100%)' }}>FREE</span>
               </div>
               <div className="flex items-center gap-2 mb-0.5">
-                <Brain className="w-5 h-5 text-purple-400" />
+                <ScopeTarget className="w-5 h-5 text-purple-400" />
                 <span className="text-[19px] font-black text-white tracking-wide leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>
                   GET YOUR EDIT RATED
                 </span>
@@ -91,7 +92,7 @@ export default function BeginnerGuideModal({ trigger, autoShow = false }: Beginn
                   style={{ clipPath: 'polygon(3px 0, 100% 0, calc(100% - 3px) 100%, 0 100%)' }}>EARN $$$</span>
               </div>
               <div className="flex items-center gap-2 mb-0.5">
-                <DollarSign className="w-5 h-5 text-emerald-400" />
+                <MedalRing className="w-5 h-5 text-emerald-400" />
                 <span className="text-[19px] font-black text-white tracking-wide leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>
                   DO A MISSION — GET PAID
                 </span>
@@ -117,7 +118,7 @@ export default function BeginnerGuideModal({ trigger, autoShow = false }: Beginn
                   style={{ clipPath: 'polygon(3px 0, 100% 0, calc(100% - 3px) 100%, 0 100%)' }}>+100 IDX</span>
               </div>
               <div className="flex items-center gap-2 mb-0.5">
-                <Trophy className="w-5 h-5 text-amber-400" />
+                <TrophyPillar className="w-5 h-5 text-amber-400" />
                 <span className="text-[19px] font-black text-white tracking-wide leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>
                   COMPETE FOR INDEX
                 </span>
