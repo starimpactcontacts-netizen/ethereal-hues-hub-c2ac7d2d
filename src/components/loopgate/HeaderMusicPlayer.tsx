@@ -748,5 +748,19 @@ export default function HeaderMusicPlayer() {
     );
   }
 
-  return triggerButton;
-}
+  // Desktop: Popover with full radio player
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        {triggerButton}
+      </PopoverTrigger>
+      <PopoverContent 
+        side="bottom" 
+        align="end" 
+        sideOffset={8}
+        className="w-[400px] h-[80vh] max-h-[700px] p-0 overflow-hidden border border-white/[0.06] bg-[#0a0a0a] rounded-xl shadow-2xl"
+      >
+        {playerContent}
+      </PopoverContent>
+    </Popover>
+  );
