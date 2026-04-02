@@ -28,6 +28,7 @@ async function getPageToken(userAccessToken: string): Promise<{ pageId: string; 
     }
     const pagesData = await pagesRes.json();
     console.log('Pages found:', pagesData.data?.length || 0);
+    console.log('Pages detail:', JSON.stringify((pagesData.data || []).map((p: any) => ({ id: p.id, name: p.name, ig: p.instagram_business_account }))));
 
     // Find first page with an instagram_business_account
     for (const page of (pagesData.data || [])) {
