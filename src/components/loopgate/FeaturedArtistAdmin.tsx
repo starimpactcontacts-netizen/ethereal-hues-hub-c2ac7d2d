@@ -1107,6 +1107,20 @@ export default function FeaturedArtistAdmin() {
                   className="mt-1 h-8 text-xs" placeholder="e.g. 50" />
                 <p className="text-[8px] text-muted-foreground mt-0.5">0 = no goal. Progress bar shows on the drop card.</p>
               </div>
+
+              {/* Drop Type */}
+              <div className="mt-3">
+                <Label className="text-xs text-cyan-400">Drop Type</Label>
+                <div className="flex gap-2 mt-1">
+                  {(['artist', 'brand', 'film'] as const).map(t => (
+                    <button key={t} onClick={() => setEditDropForm({...editDropForm, drop_type: t})}
+                      className={`px-3 py-1.5 text-xs font-bold rounded capitalize ${editDropForm.drop_type === t ? 'bg-gold text-black' : 'bg-surface-2 text-muted-foreground'}`}>
+                      {t}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[8px] text-muted-foreground mt-0.5">Artist drops show in "Artist Featured", brand/film show in "Events".</p>
+              </div>
             </div>
 
             <button onClick={handleSaveDrop} disabled={savingDrop || !editDropForm.title || !editDropForm.song_name}
