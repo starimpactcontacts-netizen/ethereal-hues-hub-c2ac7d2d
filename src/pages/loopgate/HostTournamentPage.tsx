@@ -536,7 +536,7 @@ function MonetizedFields({
           <Select value={format} onValueChange={setFormat}>
             <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="battle_royale">Battle Royale</SelectItem>
+              <SelectItem value="battle_royale">Open Submit</SelectItem>
               <SelectItem value="ranked">Ranked</SelectItem>
               <SelectItem value="showcase">Showcase</SelectItem>
             </SelectContent>
