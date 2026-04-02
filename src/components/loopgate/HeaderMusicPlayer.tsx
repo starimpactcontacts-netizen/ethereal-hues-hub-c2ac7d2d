@@ -350,6 +350,7 @@ export default function HeaderMusicPlayer() {
   }, [currentIndex]);
 
   useEffect(() => { if (audioRef.current) audioRef.current.volume = volume; }, [volume]);
+  useEffect(() => { if (audioRef.current) audioRef.current.loop = loopEnabled; }, [loopEnabled]);
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.preservesPitch = false;
