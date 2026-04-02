@@ -35,7 +35,7 @@ export default function FeaturedArtistAdmin() {
 
   // Edit drop state
   const [editingDrop, setEditingDrop] = useState<FeaturedDrop | null>(null);
-  const [editDropForm, setEditDropForm] = useState({ title: '', song_name: '', song_url: '', song_preview_url: '', poster_url: '', description: '', xp_reward: 30, index_reward: 15, mystery_reward_label: '', artist_id: '', mission_live: false, mission_custom_payouts: { S: 0, A: 0, B: 0, C: 0, D: 0, F: 0 } as Record<string, number>, mission_views_milestone: 0, mission_views_bonus_cents: 0 });
+  const [editDropForm, setEditDropForm] = useState({ title: '', song_name: '', song_url: '', song_preview_url: '', poster_url: '', description: '', xp_reward: 30, index_reward: 15, mystery_reward_label: '', artist_id: '', mission_live: false, mission_custom_payouts: { S: 0, A: 0, B: 0, C: 0, D: 0, F: 0 } as Record<string, number>, mission_views_milestone: 0, mission_views_bonus_cents: 0, submission_goal: 0 });
   const [savingDrop, setSavingDrop] = useState(false);
   const [uploadingEditPreview, setUploadingEditPreview] = useState(false);
 
