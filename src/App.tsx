@@ -330,6 +330,7 @@ export default function App() {
               <Route path="/mission/:id" element={<MissionLobbyPage />} />
               <Route path="/loopy" element={<LoopyPage />} />
               <Route path="/loopy/rate" element={<LoopyRatePage />} />
+              <Route path="/studio" element={<StudioPage />} />
             </Route>
 
             {/* Protected routes - auth required */}
