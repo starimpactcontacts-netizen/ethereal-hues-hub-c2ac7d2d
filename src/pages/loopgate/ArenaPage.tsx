@@ -445,29 +445,33 @@ function Quick1v1Row({ fight, onClick }: { fight: any; onClick: () => void }) {
     <motion.button
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className="w-full flex items-center gap-3 p-3.5 bg-surface-1 border border-border hover:border-red-500/40 transition-all touch-manipulation text-left"
+      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all touch-manipulation text-left group"
+      style={{
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))',
+        border: '1px solid rgba(255,255,255,0.04)',
+      }}
     >
-      <Avatar className="w-10 h-10 border border-border shrink-0">
+      <Avatar className="w-7 h-7 shrink-0" style={{ border: '1.5px solid rgba(255,255,255,0.08)' }}>
         <AvatarImage src={fight.player_1_avatar_url || ''} />
-        <AvatarFallback className="bg-surface-2 text-foreground text-[11px] font-bold">
+        <AvatarFallback className="bg-surface-2 text-foreground text-[9px] font-bold">
           {fight.player_1_username?.charAt(0).toUpperCase()}
         </AvatarFallback>
       </Avatar>
 
-      <div className="flex items-center gap-2 flex-1 min-w-0">
-        <span className="text-[13px] font-bold text-foreground truncate">{fight.player_1_username}</span>
-        <span className="text-[11px] font-black text-muted-foreground/50 shrink-0">vs</span>
-        <span className="text-[13px] font-bold text-foreground truncate">
+      <div className="flex items-center gap-1.5 flex-1 min-w-0">
+        <span className="text-[11px] font-semibold text-foreground truncate">{fight.player_1_username}</span>
+        <span className="text-[9px] text-muted-foreground/40 shrink-0">vs</span>
+        <span className="text-[11px] font-semibold text-foreground truncate">
           {fight.player_2_username || "—"}
         </span>
       </div>
 
-      <div className="shrink-0 flex items-center gap-3">
-        <div className="flex items-center gap-1.5">
-          {isLive && <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
-          <span className={`text-[11px] font-bold ${s.color}`}>{s.label}</span>
+      <div className="shrink-0 flex items-center gap-2">
+        <div className="flex items-center gap-1">
+          {isLive && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
+          <span className={`text-[9px] font-bold ${s.color}`}>{s.label}</span>
         </div>
-        <span className="text-[11px] font-bold text-gold">+20 IDX</span>
+        <span className="text-[9px] font-bold text-gold">+20 IDX</span>
       </div>
     </motion.button>
   );
