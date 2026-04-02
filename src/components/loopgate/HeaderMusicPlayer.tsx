@@ -764,3 +764,4 @@ export default function HeaderMusicPlayer() {
       </PopoverContent>
     </Popover>
   );
+}
