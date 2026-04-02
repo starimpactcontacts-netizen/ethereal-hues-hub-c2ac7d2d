@@ -368,6 +368,7 @@ serve(async (req) => {
           if (stats.views !== null && stats.views > (edit.view_count || 0)) payload.view_count = stats.views;
           if (stats.likes !== null && stats.likes > (edit.like_count || 0)) payload.like_count = stats.likes;
           if (stats.comments !== null && stats.comments > (edit.comment_count || 0)) payload.comment_count = stats.comments;
+          if (stats.shares !== null && stats.shares > (edit.share_count || 0)) payload.share_count = stats.shares;
           if (stats.thumbnailUrl && !edit.thumbnail_url) payload.thumbnail_url = stats.thumbnailUrl;
 
           if (Object.keys(payload).length > 1) {
