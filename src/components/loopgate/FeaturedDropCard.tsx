@@ -259,8 +259,9 @@ export default function FeaturedDropCard({ drop }: Props) {
             <Music className="w-8 h-8 text-muted-foreground/15" />
           </div>
         )}
-        {/* Gradient overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-black/10" />
+        {/* Cinematic gradient overlays */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/20" />
+        <div className="absolute bottom-0 left-0 right-0 h-[60%] bg-gradient-to-t from-black to-transparent" />
 
         {/* Top row: Artist left, status right */}
         <div className="absolute top-0 left-0 right-0 p-2.5 flex items-center justify-between gap-1.5">
