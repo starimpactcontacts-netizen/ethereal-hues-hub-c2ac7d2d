@@ -18,7 +18,9 @@ function extractShortcode(url: string): string | null {
 async function getPageToken(userAccessToken: string): Promise<{ pageId: string; pageToken: string; igUserId: string } | null> {
   try {
     // Get pages the user manages
-    const pagesRes = await fetch(`${FB_API}/me/accounts?fields=id,name,access_token,instagram_business_account&access_token=${userAccessToken}`);
+    const pagesUrl = `${FB_API}/me/accounts?fields=id,name,access_token,instagram_business_account&access_token=${encodeURIComponent(userAccessToken)}`;
+    console.log('Fetching pages from:', pagesUrl.substring(0, 80) + '...');
+    const pagesRes = await fetch(pagesUrl);
     if (!pagesRes.ok) {
       const err = await pagesRes.text();
       console.error('FB /me/accounts error:', err);
