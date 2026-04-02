@@ -223,6 +223,30 @@ export default function CampaignPortalPage() {
   const displayViews = Math.max(campaign.total_views, totalEditViews);
   const engagementRate = displayViews > 0 ? (((totalLikes + totalShares + totalComments) / displayViews) * 100).toFixed(1) : '0.0';
   const portalUrl = window.location.href;
+
+  // Build growth chart data from edits sorted by publish date
+  const growthData = useMemo(() => {
+    const sorted = [...edits]
+      .filter(e => e.published_at)
+      .sort((a, b) => new Date(a.published_at!).getTime() - new Date(b.published_at!).getTime());
+    if (sorted.length === 0) return [];
+    let cumulative = 0;
+    const points = sorted.map(e => {
+      cumulative += e.view_count;
+      const d = new Date(e.published_at!);
+      return { label: `${d.getMonth() + 1}/${d.getDate()}`, views: cumulative };
+    });
+    // Merge same-day points (keep last cumulative)
+    const merged: typeof points = [];
+    for (const p of points) {
+      if (merged.length > 0 && merged[merged.length - 1].label === p.label) {
+        merged[merged.length - 1].views = p.views;
+      } else {
+        merged.push({ ...p });
+      }
+    }
+    return merged;
+  }, [edits]);
   const isBrandCampaign = campaign.campaign_type === 'brand' || campaign.campaign_type === 'film';
 
   const handleCopyLink = () => {
