@@ -1,6 +1,6 @@
 User-agent: Googlebot
 Allow: /
-Crawl-delay: 1
+Crawl-delay: 0
 
 User-agent: Bingbot
 Allow: /
@@ -25,6 +25,10 @@ Disallow: /crew-chat
 Disallow: /judge-panel
 Disallow: /judge-queue
 Disallow: /ops
+Disallow: /admin
+Disallow: /onboarding
+Disallow: /studio
+Disallow: /wallet
 
 # Sitemap
 Sitemap: https://loopgate.io/sitemap.xml
