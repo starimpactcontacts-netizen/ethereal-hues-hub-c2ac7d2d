@@ -92,7 +92,7 @@ async function fetchViaGraphQL(shortcode: string): Promise<{
 
 // Method 2: Instagram Private Mobile API
 async function fetchViaMobileApi(shortcode: string): Promise<{
-  views: number | null; likes: number | null; comments: number | null; thumbnailUrl: string | null;
+  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null;
 }> {
   try {
     const mediaId = shortcodeToMediaId(shortcode);
