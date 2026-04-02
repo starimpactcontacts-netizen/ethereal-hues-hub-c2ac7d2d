@@ -47,6 +47,7 @@ export interface FeaturedDrop {
   mission_views_bonus_cents?: number;
   created_at: string;
   slug: string | null;
+  drop_type: 'artist' | 'brand' | 'film';
   // Joined
   artist?: FeaturedArtist;
 }

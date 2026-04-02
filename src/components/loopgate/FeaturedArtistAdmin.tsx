@@ -29,13 +29,13 @@ export default function FeaturedArtistAdmin() {
 
   // Create drop state
   const [showCreateDrop, setShowCreateDrop] = useState(false);
-  const [newDrop, setNewDrop] = useState({ artist_id: '', title: '', song_name: '', song_url: '', song_preview_url: '', poster_url: '', description: '', xp_reward: 30, index_reward: 15, mystery_reward_label: '' });
+  const [newDrop, setNewDrop] = useState({ artist_id: '', title: '', song_name: '', song_url: '', song_preview_url: '', poster_url: '', description: '', xp_reward: 30, index_reward: 15, mystery_reward_label: '', drop_type: 'artist' as 'artist' | 'brand' | 'film' });
   const [uploadingPreview, setUploadingPreview] = useState(false);
   const [creatingDrop, setCreatingDrop] = useState(false);
 
   // Edit drop state
   const [editingDrop, setEditingDrop] = useState<FeaturedDrop | null>(null);
-  const [editDropForm, setEditDropForm] = useState({ title: '', song_name: '', song_url: '', song_preview_url: '', poster_url: '', description: '', xp_reward: 30, index_reward: 15, mystery_reward_label: '', artist_id: '', mission_live: false, mission_custom_payouts: { S: 0, A: 0, B: 0, C: 0, D: 0, F: 0 } as Record<string, number>, mission_views_milestone: 0, mission_views_bonus_cents: 0, submission_goal: 0 });
+  const [editDropForm, setEditDropForm] = useState({ title: '', song_name: '', song_url: '', song_preview_url: '', poster_url: '', description: '', xp_reward: 30, index_reward: 15, mystery_reward_label: '', artist_id: '', mission_live: false, mission_custom_payouts: { S: 0, A: 0, B: 0, C: 0, D: 0, F: 0 } as Record<string, number>, mission_views_milestone: 0, mission_views_bonus_cents: 0, submission_goal: 0, drop_type: 'artist' as 'artist' | 'brand' | 'film' });
   const [savingDrop, setSavingDrop] = useState(false);
   const [uploadingEditPreview, setUploadingEditPreview] = useState(false);
 
@@ -281,7 +281,7 @@ export default function FeaturedArtistAdmin() {
       status: 'draft',
     });
     if (error) toast.error(error.message);
-    else { toast.success('Drop created! Set it live when ready.'); setShowCreateDrop(false); setNewDrop({ artist_id: '', title: '', song_name: '', song_url: '', song_preview_url: '', poster_url: '', description: '', xp_reward: 30, index_reward: 15, mystery_reward_label: '' }); refresh(); }
+    else { toast.success('Drop created! Set it live when ready.'); setShowCreateDrop(false); setNewDrop({ artist_id: '', title: '', song_name: '', song_url: '', song_preview_url: '', poster_url: '', description: '', xp_reward: 30, index_reward: 15, mystery_reward_label: '', drop_type: 'artist' }); refresh(); }
     setCreatingDrop(false);
   };
 
@@ -305,6 +305,7 @@ export default function FeaturedArtistAdmin() {
       mission_views_milestone: dropAny.mission_views_milestone || 0,
       mission_views_bonus_cents: dropAny.mission_views_bonus_cents || 0,
       submission_goal: dropAny.submission_goal || 0,
+      drop_type: dropAny.drop_type || 'artist',
     });
   };
 
@@ -327,6 +328,7 @@ export default function FeaturedArtistAdmin() {
       mission_views_milestone: editDropForm.mission_views_milestone,
       mission_views_bonus_cents: editDropForm.mission_views_bonus_cents,
       submission_goal: editDropForm.submission_goal,
+      drop_type: editDropForm.drop_type,
     } as any).eq('id', editingDrop.id);
     if (error) toast.error(error.message);
     else { toast.success('Drop updated!'); setEditingDrop(null); refresh(); }
@@ -1104,6 +1106,20 @@ export default function FeaturedArtistAdmin() {
                   onChange={e => setEditDropForm({...editDropForm, submission_goal: Number(e.target.value)})}
                   className="mt-1 h-8 text-xs" placeholder="e.g. 50" />
                 <p className="text-[8px] text-muted-foreground mt-0.5">0 = no goal. Progress bar shows on the drop card.</p>
+              </div>
+
+              {/* Drop Type */}
+              <div className="mt-3">
+                <Label className="text-xs text-cyan-400">Drop Type</Label>
+                <div className="flex gap-2 mt-1">
+                  {(['artist', 'brand', 'film'] as const).map(t => (
+                    <button key={t} onClick={() => setEditDropForm({...editDropForm, drop_type: t})}
+                      className={`px-3 py-1.5 text-xs font-bold rounded capitalize ${editDropForm.drop_type === t ? 'bg-gold text-black' : 'bg-surface-2 text-muted-foreground'}`}>
+                      {t}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[8px] text-muted-foreground mt-0.5">Artist drops show in "Artist Featured", brand/film show in "Events".</p>
               </div>
             </div>
 

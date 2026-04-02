@@ -1,0 +1,1 @@
+ALTER TABLE public.featured_drops ADD COLUMN drop_type text NOT NULL DEFAULT 'artist';

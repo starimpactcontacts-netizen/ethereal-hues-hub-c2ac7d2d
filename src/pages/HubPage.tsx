@@ -203,9 +203,23 @@ export default function HubPage() {
   const featuredScrollRef = useRef<HTMLDivElement>(null);
   const [featuredActiveIdx, setFeaturedActiveIdx] = useState(0);
   const featuredAutoScrollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const eventsScrollRef = useRef<HTMLDivElement>(null);
+  const [eventsActiveIdx, setEventsActiveIdx] = useState(0);
+  const eventsAutoScrollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { hasEquippedOG } = useEquippedBadges(user?.id);
-  // Stabilize shuffle — only re-shuffle when the actual drop IDs change
-  // Official events (prize_usd > 0) always first, then shuffle the rest
+
+  // Split drops: artist featured vs event drops (brand/film/official)
+  const artistDrops = useMemo(() => {
+    const drops = liveDrops.filter(d => (d as any).drop_type !== 'brand' && (d as any).drop_type !== 'film' && (!d.prize_usd || d.prize_usd === 0));
+    return [...drops].sort(() => Math.random() - 0.5);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [liveDrops.map(d => d.id).join(',')]);
+
+  const eventDrops = useMemo(() => {
+    return liveDrops.filter(d => (d as any).drop_type === 'brand' || (d as any).drop_type === 'film' || (d.prize_usd > 0));
+  }, [liveDrops]);
+
+  // Legacy shuffledDrops kept for reference
   const shuffledDrops = useMemo(() => {
     const official = liveDrops.filter(d => d.prize_usd > 0);
     const regular = [...liveDrops.filter(d => !d.prize_usd || d.prize_usd === 0)].sort(() => Math.random() - 0.5);
@@ -359,8 +373,10 @@ export default function HubPage() {
     c.is_premium && (c.status === 'live' || c.status === 'judging')
   );
   
-  // Total featured count for header
-  const totalFeatured = liveDrops.length + premiumComps.length + activeSanctioned.length + featuredBattles.length;
+  // Total counts
+  const totalArtistFeatured = artistDrops.length;
+  const totalEvents = eventDrops.length + premiumComps.length + activeSanctioned.length + featuredBattles.length;
+  const totalFeatured = totalArtistFeatured + totalEvents;
 
   return (
     <div className="min-h-screen bg-background pb-16 overflow-x-hidden relative">
@@ -870,21 +886,21 @@ export default function HubPage() {
       {/* Arena banner removed — Arena access consolidated into quick-access grid */}
 
       {/* ═══════════════════════════════════════════════════════════════════
-          📺 FEATURED SECTION - Official events + Sanctioned tournaments
+          🎵 ARTIST FEATURED — Artist drops carousel
       ═══════════════════════════════════════════════════════════════════ */}
-      {totalFeatured > 0 && (
+      {totalArtistFeatured > 0 && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.15 }}
           className="mt-2 relative"
         >
-          {/* Top decorative border line - white, subtle */}
+          {/* Top decorative border line */}
           <div className="relative h-[1px] pointer-events-none overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-foreground/15 to-transparent" />
           </div>
 
-          {/* Luxe Background Pattern */}
+          {/* Background Pattern */}
           <div className="absolute inset-y-0 left-0 right-0 top-[3px] overflow-hidden pointer-events-none">
             <div 
               className="absolute inset-0 opacity-[0.04]"
@@ -909,24 +925,60 @@ export default function HubPage() {
                 <span className="w-2 h-2 rounded-full bg-emerald-500 block" />
                 <span className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
               </div>
-              <h3 className="font-display text-sm text-foreground">FEATURED</h3>
-              <span className="text-[9px] text-muted-foreground">({totalFeatured} active)</span>
+              <h3 className="font-display text-sm text-foreground">ARTIST FEATURED</h3>
+              <span className="text-[9px] text-muted-foreground">({totalArtistFeatured} active)</span>
             </div>
-            <Link to="/arena" className="text-[9px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
+            <Link to="/arena?filter=official" className="text-[9px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
               VIEW ALL <ArrowRight size={10} />
             </Link>
           </div>
           
-          {/* Horizontal Carousel - Featured drops, Premium comps, Sanctioned, Battles */}
+          {/* Artist Drops Carousel */}
           <FeaturedCarousel
             scrollRef={featuredScrollRef}
             activeIdx={featuredActiveIdx}
             setActiveIdx={setFeaturedActiveIdx}
             autoScrollRef={featuredAutoScrollRef}
-            totalFeatured={totalFeatured}
+            totalFeatured={totalArtistFeatured}
           >
-            {/* Featured Artist Drops - Stable shuffle */}
-            {shuffledDrops.map(drop => (
+            {artistDrops.map(drop => (
+              <FeaturedDropCard key={drop.id} drop={drop} />
+            ))}
+          </FeaturedCarousel>
+        </motion.div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          📺 EVENTS — Competitions, tournaments, battles, brand/film drops
+      ═══════════════════════════════════════════════════════════════════ */}
+      {totalEvents > 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="mt-4 relative"
+        >
+          {/* Section Header */}
+          <div className="relative flex items-center justify-between px-4 mb-2">
+            <div className="flex items-center gap-2">
+              <h3 className="font-display text-sm text-foreground">EVENTS</h3>
+              <span className="text-[9px] text-muted-foreground">({totalEvents} active)</span>
+            </div>
+            <Link to="/arena" className="text-[9px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
+              ARENA <ArrowRight size={10} />
+            </Link>
+          </div>
+          
+          {/* Events Carousel */}
+          <FeaturedCarousel
+            scrollRef={eventsScrollRef}
+            activeIdx={eventsActiveIdx}
+            setActiveIdx={setEventsActiveIdx}
+            autoScrollRef={eventsAutoScrollRef}
+            totalFeatured={totalEvents}
+          >
+            {/* Official / Brand / Film event drops */}
+            {eventDrops.map(drop => (
               <FeaturedDropCard key={drop.id} drop={drop} />
             ))}
 
@@ -936,10 +988,9 @@ export default function HubPage() {
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.15 + (liveEvents.length + i) * 0.05 }}
+                  transition={{ delay: 0.15 + i * 0.05 }}
                   className="w-[240px] bg-surface-1/80 backdrop-blur border border-border/50 hover:border-amber-500/50 transition-colors overflow-hidden group"
                 >
-                  {/* Competition Poster */}
                   <div className="h-24 overflow-hidden relative bg-gradient-to-br from-amber-900/50 to-surface-1">
                     {(comp.poster_urls?.[0] || comp.poster_url) ? (
                       <img 
@@ -953,27 +1004,19 @@ export default function HubPage() {
                       </div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-surface-1 to-transparent" />
-                    
-                    {/* Live badge */}
                     <div className="absolute top-1.5 left-1.5 flex items-center gap-1 bg-amber-500/90 px-1.5 py-0.5 rounded-sm">
                       <span className="w-1 h-1 rounded-full bg-white animate-pulse" />
                       <span className="text-[7px] font-bold text-white uppercase tracking-wider">
                         {comp.status === 'judging' ? 'Judging' : 'Live'}
                       </span>
                     </div>
-                    
-                    {/* Premium badge */}
                     <div className="absolute bottom-1.5 left-1.5 bg-gradient-to-r from-amber-500 to-orange-500 px-1.5 py-0.5 rounded-sm">
                       <span className="text-[7px] font-bold text-white uppercase tracking-wider">Premium</span>
                     </div>
-                    
-                    {/* Participant count */}
                     <div className="absolute top-1.5 right-1.5 bg-background/80 border border-border/50 px-1.5 py-0.5 rounded-sm">
                       <span className="text-[8px] font-medium text-foreground">{comp.participant_count || 0} joined</span>
                     </div>
                   </div>
-                  
-                  {/* Competition Info */}
                   <div className="p-2.5">
                     <p className="font-display text-xs text-foreground truncate">{comp.name}</p>
                     <div className="flex items-center justify-between mt-1.5">
@@ -982,7 +1025,6 @@ export default function HubPage() {
                         <CountdownTimer endDate={comp.submission_deadline} expiredLabel="Closed" />
                       </div>
                     </div>
-                    {/* Activity signal */}
                     {(comp.submission_count || 0) > 0 && (
                       <div className="mt-1.5 flex items-center gap-1.5">
                         <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
@@ -1003,10 +1045,9 @@ export default function HubPage() {
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.15 + (liveEvents.length + premiumComps.length + i) * 0.05 }}
+                  transition={{ delay: 0.15 + (premiumComps.length + i) * 0.05 }}
                   className="w-[240px] bg-surface-1/80 backdrop-blur border border-border/50 hover:border-purple-500/50 transition-colors overflow-hidden group"
                 >
-                  {/* Tournament Poster or Gradient */}
                   <div className="h-24 overflow-hidden relative bg-gradient-to-br from-purple-900/50 to-surface-1">
                     {tournament.poster_url ? (
                       <img 
@@ -1020,8 +1061,6 @@ export default function HubPage() {
                       </div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-surface-1 to-transparent" />
-                    
-                    {/* Status badge */}
                     <div className={`absolute top-1.5 left-1.5 flex items-center gap-1 px-1.5 py-0.5 rounded-sm ${
                       tournament.status === 'live' || tournament.status === 'bracket' 
                         ? 'bg-purple-500/90' 
@@ -1029,35 +1068,28 @@ export default function HubPage() {
                     }`}>
                       <span className="w-1 h-1 rounded-full bg-white animate-pulse" />
                       <span className="text-[7px] font-bold text-white uppercase tracking-wider">
-                        {tournament.status === 'approved' ? 'Lobby' : 
+                        {tournament.status === 'approved' ? 'Open' : 
                          tournament.status === 'ready_up' ? 'Ready Up' :
                          tournament.status === 'bracket' ? 'Bracket' : 'Live'}
                       </span>
                     </div>
-                    
-                    {/* Sanctioned label */}
                     <div className="absolute bottom-1.5 left-1.5 bg-purple-500/90 px-1.5 py-0.5 rounded-sm">
                       <span className="text-[7px] font-bold text-white uppercase tracking-wider">Sanctioned</span>
                     </div>
-                    
-                    {/* Player count */}
                     <div className="absolute top-1.5 right-1.5 bg-background/80 border border-border/50 px-1.5 py-0.5 rounded-sm">
                       <span className="text-[8px] font-medium text-foreground">{tournament.player_count}/{tournament.max_players}</span>
                     </div>
                   </div>
-                  
-                  {/* Tournament Info */}
                   <div className="p-2.5">
                     <p className="font-display text-xs text-foreground truncate">{tournament.name}</p>
                     <div className="flex items-center justify-between mt-1.5">
                       <span className="text-[8px] text-purple-400 uppercase tracking-wider">{tournament.crew_name}</span>
                       <span className="text-[9px] text-muted-foreground">{tournament.format_type?.replace('_', ' ')}</span>
                     </div>
-                    {/* Activity signal */}
                     {tournament.player_count > 0 && (
                       <div className="mt-1.5 flex items-center gap-1.5">
                         <span className="w-1 h-1 rounded-full bg-purple-500 animate-pulse" />
-                        <span className="text-[8px] text-purple-400">{tournament.player_count} fighters ready</span>
+                        <span className="text-[8px] text-purple-400">{tournament.player_count} editors ready</span>
                         {tournament.player_count >= tournament.max_players - 2 && (
                           <span className="text-[8px] text-red-400 ml-auto">Almost full</span>
                         )}
@@ -1074,17 +1106,13 @@ export default function HubPage() {
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.15 + (liveEvents.length + premiumComps.length + activeSanctioned.length + i) * 0.05 }}
+                  transition={{ delay: 0.15 + (premiumComps.length + activeSanctioned.length + i) * 0.05 }}
                   className="w-[280px] sm:w-[300px] bg-surface-1/80 backdrop-blur border border-border/50 hover:border-red-500/40 transition-all duration-300 overflow-hidden group hover:shadow-[0_4px_24px_rgba(239,68,68,0.1)]"
                 >
-                  {/* VS Display Header — Blue vs Red split */}
                   <div className="h-36 overflow-hidden relative">
-                    {/* Blue/Red gradient split */}
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-900/60 via-surface-2 to-red-900/60" />
                     <div className="absolute inset-0 bg-gradient-to-t from-surface-1 via-transparent to-transparent" />
-                    
                     <div className="absolute inset-0 flex items-center justify-center px-4">
-                      {/* Challenger — Blue side */}
                       <div className="flex-1 flex flex-col items-center">
                         <div className="w-14 h-14 rounded-full border-2 border-blue-500/60 bg-blue-500/20 flex items-center justify-center overflow-hidden shadow-lg shadow-blue-500/20">
                           {battle.challenger_avatar_url ? (
@@ -1099,8 +1127,6 @@ export default function HubPage() {
                           {battle.challenger_username}
                         </span>
                       </div>
-                      
-                      {/* VS Badge */}
                       <div className="relative mx-2">
                         <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-red-500 flex items-center justify-center shadow-lg shadow-red-500/30">
                           <Swords className="w-4 h-4 text-white" />
@@ -1109,8 +1135,6 @@ export default function HubPage() {
                           <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500 animate-ping" />
                         )}
                       </div>
-                      
-                      {/* Opponent — Red side */}
                       <div className="flex-1 flex flex-col items-center">
                         {battle.opponent_id ? (
                           <>
@@ -1137,8 +1161,6 @@ export default function HubPage() {
                         )}
                       </div>
                     </div>
-                    
-                    {/* Status badge */}
                     <div className={`absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full ${
                       battle.status === 'active' ? 'bg-red-500/90' :
                       battle.status === 'judging' ? 'bg-purple-500/90' : 'bg-amber-500/90'
@@ -1149,28 +1171,21 @@ export default function HubPage() {
                          battle.status === 'active' ? 'Live' : 'Judging'}
                       </span>
                     </div>
-                    
-                    {/* 1v1 label */}
                     <div className="absolute bottom-2 left-2 bg-gradient-to-r from-blue-600 to-red-600 px-2 py-0.5 rounded-full">
-                      <span className="text-[7px] font-bold text-white uppercase tracking-wider">1v1 Battle</span>
+                      <span className="text-[7px] font-bold text-white uppercase tracking-wider">1v1 Edit Battle</span>
                     </div>
-                    
-                    {/* Prize */}
                     <div className="absolute top-2 right-2 bg-background/80 border border-gold/50 px-1.5 py-0.5 rounded-full">
                       <span className="text-[8px] font-bold text-gold">+{battle.winner_index_awarded || 20} IDX</span>
                     </div>
                   </div>
-                  
-                  {/* Battle Info */}
                   <div className="p-3">
                     <p className="font-display text-sm text-foreground truncate">
                       {battle.challenger_username} vs {battle.opponent_username || '???'}
                     </p>
                     <div className="flex items-center justify-between mt-1.5">
-                      <span className="text-[9px] text-muted-foreground uppercase tracking-wider font-semibold">{battle.duration_hours}h Battle</span>
+                      <span className="text-[9px] text-muted-foreground uppercase tracking-wider font-semibold">{battle.duration_hours}h Edit Battle</span>
                       <span className="text-[9px] text-muted-foreground uppercase font-medium">{battle.status}</span>
                     </div>
-                    {/* Activity signal */}
                     <div className="mt-2 flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
                       <span className="text-[9px] text-red-400 font-medium">
@@ -1183,8 +1198,7 @@ export default function HubPage() {
               </Link>
             ))}
             
-            {/* Empty state */}
-            {totalFeatured === 0 && (
+            {totalEvents === 0 && (
               <div className="w-full py-6 text-center">
                 <p className="text-xs text-muted-foreground">No active events right now</p>
               </div>
