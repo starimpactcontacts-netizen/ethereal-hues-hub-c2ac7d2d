@@ -35,10 +35,10 @@ function EditorCashout() {
     <div className="space-y-4">
       {/* Balance card */}
       <div className="bg-gradient-to-br from-emerald-950/60 to-surface-1 border border-emerald-500/20 rounded-xl p-5">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-400 mb-1">Your Balance</p>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-400/60 mb-1">Your Balance</p>
         <div className="flex items-baseline gap-1">
           <DollarSign className="w-6 h-6 text-emerald-400" />
-          <span className="font-display text-4xl text-emerald-400">{(availableBalance / 100).toFixed(2)}</span>
+          <span className="font-display text-4xl text-foreground">{(availableBalance / 100).toFixed(2)}</span>
         </div>
         <div className="flex gap-4 mt-3 text-[10px] text-muted-foreground">
           <span>Total earned: ${(earnings.earnings_cents / 100).toFixed(2)}</span>

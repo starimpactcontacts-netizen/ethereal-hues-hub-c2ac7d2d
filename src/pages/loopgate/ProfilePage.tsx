@@ -212,10 +212,11 @@ export default function ProfilePage() {
             </div>
             <div className="flex flex-col items-center">
               <div className="flex items-center gap-0.5">
-                <span className="font-display text-base leading-none text-emerald-400">${(Math.max(0, ((profile as any)?.earnings_cents || 0) - ((profile as any)?.pending_withdrawal_cents || 0) - ((profile as any)?.withdrawn_cents || 0)) / 100).toFixed(2)}</span>
+                <span className="text-emerald-400 text-xs">$</span>
+                <span className="font-display text-base leading-none text-foreground">{(Math.max(0, ((profile as any)?.earnings_cents || 0) - ((profile as any)?.pending_withdrawal_cents || 0) - ((profile as any)?.withdrawn_cents || 0)) / 100).toFixed(2)}</span>
                 <IndexEarnBadge size="sm" hideDollar />
               </div>
-              <span className="text-[8px] uppercase tracking-wider text-emerald-400/50 mt-0.5">Earn</span>
+              <span className="text-[8px] uppercase tracking-wider text-muted-foreground mt-0.5">Earn</span>
             </div>
           </div>
 
