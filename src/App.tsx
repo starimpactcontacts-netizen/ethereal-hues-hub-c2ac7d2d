@@ -330,6 +330,7 @@ export default function App() {
               <Route path="/mission/:id" element={<MissionLobbyPage />} />
               <Route path="/loopy" element={<LoopyPage />} />
               <Route path="/loopy/rate" element={<LoopyRatePage />} />
+              <Route path="/studio" element={<StudioPage />} />
             </Route>
 
             {/* Protected routes - auth required */}
@@ -355,7 +356,6 @@ export default function App() {
               <Route path="/shop" element={<ShopPage />} />
               <Route path="/inventory" element={<InventoryPage />} />
               
-              <Route path="/studio" element={<StudioPage />} />
               <Route path="/enterprise-dashboard" element={<EnterpriseDashboard />} />
             </Route>
             
