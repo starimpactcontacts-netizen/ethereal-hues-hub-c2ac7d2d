@@ -348,50 +348,34 @@ export default function FeaturedDropCard({ drop }: Props) {
       )}
 
       {/* CTA Buttons */}
-      <div className="px-3 pb-3 space-y-1.5 pt-0.5">
+      <div className="px-2.5 pb-2.5 pt-0.5">
         {isLive ? (
-          <>
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              onClick={() => {
-                if (profile) navigate(`/drop/${drop.id}`);
-                else navigate('/start');
-              }}
-              className={cn(
-                "w-full py-3 sm:py-3.5 rounded-lg font-display text-sm uppercase tracking-widest",
-                "flex items-center justify-center gap-2",
-                "bg-emerald-500 text-white",
-                "shadow-[0_4px_16px_rgba(16,185,129,0.3)]",
-                "hover:bg-emerald-400 hover:shadow-[0_6px_24px_rgba(16,185,129,0.4)]",
-                "active:bg-emerald-600",
-                "transition-all duration-200 touch-manipulation"
-              )}
-            >
-              Join
-            </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              onClick={() => navigate(`/drop/${drop.id}`)}
-              className={cn(
-                "w-full py-2.5 rounded-lg font-display text-xs uppercase tracking-widest",
-                "flex items-center justify-center gap-1.5",
-                "bg-white/[0.04] border border-white/[0.08] text-white/60",
-                "hover:bg-white/[0.08] hover:text-white/80 hover:border-white/[0.15]",
-                "transition-all duration-200 touch-manipulation"
-              )}
-            >
-              View Event
-              <ChevronRight className="w-3 h-3" />
-            </motion.button>
-          </>
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={() => {
+              if (profile) navigate(`/drop/${drop.id}`);
+              else navigate('/start');
+            }}
+            className={cn(
+              "w-full py-2.5 rounded-md font-display text-[11px] uppercase tracking-widest",
+              "flex items-center justify-center gap-1.5",
+              "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold",
+              "shadow-[0_2px_12px_rgba(16,185,129,0.3)]",
+              "hover:from-emerald-400 hover:to-emerald-500",
+              "active:from-emerald-600 active:to-emerald-700",
+              "transition-all duration-200 touch-manipulation"
+            )}
+          >
+            View Event <ChevronRight className="w-3 h-3" />
+          </motion.button>
         ) : (
           <Link
             to={`/drop/${drop.id}`}
             className={cn(
-              "w-full py-3 rounded-lg font-display text-xs uppercase tracking-widest",
+              "w-full py-2.5 rounded-md font-display text-[10px] uppercase tracking-widest",
               "flex items-center justify-center gap-1.5",
-              "bg-white/[0.04] border border-white/[0.08] text-white/60",
-              "hover:bg-white/[0.08] hover:text-white/80",
+              "bg-white/[0.04] border border-white/[0.06] text-white/50",
+              "hover:bg-white/[0.08] hover:text-white/70",
               "transition-all duration-200"
             )}
           >
