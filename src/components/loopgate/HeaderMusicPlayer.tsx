@@ -134,6 +134,18 @@ export default function HeaderMusicPlayer() {
 
   const isMuted = volume === 0;
 
+  // Theme song — always first in the playlist
+  const THEME_TRACK: Track = {
+    id: '__loopgate_theme__',
+    song_name: 'Jump',
+    song_preview_url: '/audio/loopgate-theme.mp3',
+    artist_name: 'LOOPGATE',
+    title: 'LOOPGATE Theme',
+    poster_url: '/images/loopgate-logo-cover.jpeg',
+    is_priority: true,
+    source: 'radio_track',
+  };
+
   useEffect(() => {
     const fetchTracks = async () => {
       const { data: radioData } = await supabase
@@ -162,9 +174,9 @@ export default function HeaderMusicPlayer() {
 
       const priority = radioTracks.filter(t => t.is_priority);
       const nonPriority = shuffleArray([...radioTracks.filter(t => !t.is_priority), ...dropTracks]);
-      setTracks([...priority, ...nonPriority]);
-      if (priority.length > 0) setCurrentIndex(0);
-      else if (nonPriority.length > 0) setCurrentIndex(Math.floor(Math.random() * nonPriority.length));
+      // Theme song always first
+      setTracks([THEME_TRACK, ...priority, ...nonPriority]);
+      setCurrentIndex(0); // Start on theme song
     };
     fetchTracks();
   }, []);
