@@ -39,7 +39,7 @@ export default function StartPage() {
   const [codeInfo, setCodeInfo] = useState<{ type: 'personal' | 'crew'; crewName?: string; inviterName?: string } | null>(null);
   
   const [formData, setFormData] = useState<FormData>({
-    role: null,
+    role: 'editor',
     username: '',
     email: '',
     password: '',
