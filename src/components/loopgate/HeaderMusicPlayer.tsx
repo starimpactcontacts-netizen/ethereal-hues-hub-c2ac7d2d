@@ -139,7 +139,7 @@ export default function HeaderMusicPlayer() {
   const THEME_TRACK: Track = {
     id: '__loopgate_theme__',
     song_name: 'Virtuoso',
-    song_preview_url: '/audio/loopgate-theme.mp3',
+    song_preview_url: '/audio/loopgate-theme.mp3?v=quietmix2',
     artist_name: 'Loneliness x Sace',
     title: 'LOOPGATE Theme',
     poster_url: '/images/loopgate-logo-cover.jpeg',
