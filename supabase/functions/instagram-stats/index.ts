@@ -234,7 +234,7 @@ async function fetchInstagramPostStats(url: string) {
     fetchViaEmbed(shortcode),
   ]);
 
-  const merged = mergeStats(jsonResult, mainResult, embedResult);
+  const merged = mergeStats(mobileResult, mainResult, embedResult);
   console.log('🔥 Final merged stats:', merged);
   return merged;
 }
