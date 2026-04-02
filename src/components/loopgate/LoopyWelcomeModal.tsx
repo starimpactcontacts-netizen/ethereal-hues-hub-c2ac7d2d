@@ -189,9 +189,14 @@ export default function LoopyWelcomeModal() {
                 </div>
                 <button
                   onClick={handleClaim}
-                  className="ml-auto px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-black text-xs font-bold hover:from-amber-400 hover:to-amber-500 transition-all active:scale-95"
+                  disabled={claimed}
+                  className={`ml-auto px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95 ${
+                    claimed
+                      ? 'bg-emerald-500/20 text-emerald-400 cursor-default'
+                      : 'bg-gradient-to-r from-amber-500 to-amber-600 text-black hover:from-amber-400 hover:to-amber-500'
+                  }`}
                 >
-                  Claim
+                  {claimed ? 'Claimed ✓' : 'Claim'}
                 </button>
               </motion.div>
 
