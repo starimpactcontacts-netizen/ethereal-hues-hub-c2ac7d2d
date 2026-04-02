@@ -52,6 +52,7 @@ import FoundingBadge from '@/components/loopgate/FoundingBadge';
 import { useEquippedBadges } from '@/hooks/useEquippedBadges';
 import CommissionsSection from '@/components/loopgate/CommissionsSection';
 import WalletDrawer from '@/components/loopgate/WalletDrawer';
+import LoopyWelcomeModal from '@/components/loopgate/LoopyWelcomeModal';
 
 // ── Live Feed for Hub ──────────────────────────────────────────────────
 const actionColors: Record<string, string> = {
