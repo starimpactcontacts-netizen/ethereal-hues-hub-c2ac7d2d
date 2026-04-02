@@ -228,8 +228,8 @@ async function fetchInstagramPostStats(url: string) {
   }
 
   // Try all methods in parallel for speed and accuracy
-  const [jsonResult, mainResult, embedResult] = await Promise.all([
-    fetchViaJsonApi(shortcode),
+  const [mobileResult, mainResult, embedResult] = await Promise.all([
+    fetchViaMobileApi(shortcode),
     fetchViaMainPage(shortcode),
     fetchViaEmbed(shortcode),
   ]);
