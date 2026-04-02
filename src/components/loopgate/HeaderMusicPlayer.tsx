@@ -316,32 +316,23 @@ export default function HeaderMusicPlayer() {
     setCurrentIndex(i => (i - 1 + tracks.length) % tracks.length);
   }, [tracks.length]);
 
+  // ALWAYS autoplay theme song for everyone (guests included) at 50% volume
   useEffect(() => {
     if (tracks.length > 0 && !hasAutoPlayed && current) {
       setHasAutoPlayed(true);
-      if (!settings.autoplay_enabled) return;
-      if (settings.default_playlist === 'myplaylist' && myTracks.length > 0) {
-        setPlaylistMode('myplaylist');
-        setActiveTab('myplaylist');
-        const start = async () => {
-          if (!introPlayed) { setIntroPlayed(true); await playIntroChime(volume); }
-          playMyTrack(myTracks[0], myTracks, 0);
-        };
-        start().catch(() => {});
-        return;
-      }
       const start = async () => {
         if (!introPlayed) { setIntroPlayed(true); await playIntroChime(volume); }
         playTrack(current);
       };
       start().catch(() => {
+        // Browser blocked autoplay — wait for first user interaction then play
         const unlock = () => { start(); window.removeEventListener('click', unlock); window.removeEventListener('touchstart', unlock); };
         window.addEventListener('click', unlock, { once: true });
         window.addEventListener('touchstart', unlock, { once: true });
       });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tracks, myTracks]);
+  }, [tracks]);
 
   useEffect(() => {
     if (!current) return;
