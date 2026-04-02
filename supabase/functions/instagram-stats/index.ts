@@ -76,16 +76,17 @@ async function fetchViaGraphQL(shortcode: string): Promise<{
       const views = media.video_view_count ?? media.video_play_count ?? media.play_count ?? null;
       const likes = media.edge_media_preview_like?.count ?? media.like_count ?? null;
       const comments = media.edge_media_to_parent_comment?.count ?? media.comment_count ?? null;
+      const shares = media.share_count ?? media.reshare_count ?? null;
       const thumbnailUrl = media.display_url ?? null;
-      console.log('✅ GraphQL stats:', { views, likes, comments });
-      return { views, likes, comments, thumbnailUrl };
+      console.log('✅ GraphQL stats:', { views, likes, comments, shares });
+      return { views, likes, comments, shares, thumbnailUrl };
     }
     
     console.log('GraphQL: no media in response, keys:', Object.keys(json?.data || {}));
-    return { views: null, likes: null, comments: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
   } catch (e) {
     console.error('GraphQL error:', e);
-    return { views: null, likes: null, comments: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
   }
 }
 
