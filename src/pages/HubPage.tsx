@@ -984,7 +984,7 @@ export default function HubPage() {
       <CommissionsSection />
 
       {/* ═══════════════════════════════════════════════════════════════════
-          ⚖️ JUDGE AUTHORITY — Cinematic gateway to /judges
+          ⚖️ JUDGES — Clean minimal gateway to /judges
       ═══════════════════════════════════════════════════════════════════ */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -993,39 +993,16 @@ export default function HubPage() {
         className="px-4 mt-2"
       >
         <Link to="/judges" className="block group">
-          <div className="relative overflow-hidden rounded-xl bg-background group-hover:bg-surface-1/50 transition-all duration-500">
-            {/* Scanline sweep */}
-            <motion.div
-              animate={{ x: ['-100%', '200%'] }}
-              transition={{ duration: 5, repeat: Infinity, ease: 'linear', repeatDelay: 3 }}
-              className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-red-700/[0.04] to-transparent pointer-events-none z-0"
-            />
-            
-            <div className="relative p-4 flex items-center gap-4">
-              {/* Judge Icon — Authority red */}
-              <div className="relative shrink-0">
-                <div className="w-14 h-14 rounded-sm border border-red-800/40 flex items-center justify-center bg-red-950/30 group-hover:bg-red-950/50 transition-colors">
-                  <Gavel className="w-5 h-5 text-red-400" />
-                </div>
-                {/* Live indicator */}
-                <div className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-red-600 border-2 border-background">
-                  <span className="absolute inset-0 rounded-full bg-red-600 animate-ping opacity-75" />
-                </div>
+          <div className="relative overflow-hidden rounded-xl bg-white/[0.03] border border-white/[0.06] group-hover:border-white/[0.12] transition-all duration-300">
+            <div className="relative p-3.5 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-white/[0.06] flex items-center justify-center group-hover:bg-white/[0.1] transition-colors">
+                <Gavel className="w-4 h-4 text-foreground/60 group-hover:text-foreground transition-colors" />
               </div>
-              
-              {/* Text block */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h2 className="font-display text-xl tracking-[0.08em] text-foreground leading-none">JUDGES</h2>
-                  <span className="text-[8px] px-1.5 py-0.5 bg-red-950/50 border border-red-800/40 text-red-400 font-bold uppercase tracking-widest rounded-sm">Authority</span>
-                </div>
-                <p className="text-[10px] text-muted-foreground mt-1 font-medium">Submit your edit, get rated by your favorite judges.</p>
+                <h2 className="font-display text-sm tracking-[0.08em] text-foreground leading-none">JUDGES</h2>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Get your edits rated by top judges.</p>
               </div>
-              
-              {/* CTA arrow */}
-              <div className="shrink-0 w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:border-red-700/50 group-hover:bg-red-950/30 transition-all duration-300">
-                <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-white group-hover:translate-x-0.5 transition-all" />
-              </div>
+              <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-foreground/60 group-hover:translate-x-0.5 transition-all" />
             </div>
           </div>
         </Link>
