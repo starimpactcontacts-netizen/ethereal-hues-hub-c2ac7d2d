@@ -112,7 +112,7 @@ function EditorCard({ editor, pinnedEdits, navigate, size = "md", showRank = fal
       className={`${widthClass} flex-shrink-0 text-left group`}
     >
       {/* Thumbnail / Visual */}
-      <div className={`relative ${thumbH} w-full bg-surface-1 border border-border/30 overflow-hidden`}>
+      <div className={`relative ${thumbH} w-full bg-surface-1 rounded-t-lg border border-border/20 overflow-hidden`}>
         {firstEdit?.thumbnail_url ? (
           <ThumbnailImage src={firstEdit.thumbnail_url} alt={editor.username} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
         ) : editor.avatar_url ? (
