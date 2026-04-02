@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Radio, Shuffle, Music, ExternalLink, Pencil, Settings, Search, Send, X } from 'lucide-react';
+import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Radio, Shuffle, Music, ExternalLink, Pencil, Settings, Search, Send, X, Repeat, Repeat1 } from 'lucide-react';
 
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
@@ -114,6 +114,7 @@ export default function HeaderMusicPlayer() {
   const [showSettings, setShowSettings] = useState(false);
   const [deezerNowPlaying, setDeezerNowPlaying] = useState<{ url: string; title: string; artist: string; cover: string } | null>(null);
   const [audioError, setAudioError] = useState(false);
+  const [loopEnabled, setLoopEnabled] = useState(true); // Loop on by default for theme song
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioModeRef = useRef<string>('loopgate');
@@ -132,6 +133,18 @@ export default function HeaderMusicPlayer() {
   }, []);
 
   const isMuted = volume === 0;
+
+  // Theme song — always first in the playlist
+  const THEME_TRACK: Track = {
+    id: '__loopgate_theme__',
+    song_name: 'Jump',
+    song_preview_url: '/audio/loopgate-theme.mp3',
+    artist_name: 'LOOPGATE',
+    title: 'LOOPGATE Theme',
+    poster_url: '/images/loopgate-logo-cover.jpeg',
+    is_priority: true,
+    source: 'radio_track',
+  };
 
   useEffect(() => {
     const fetchTracks = async () => {
@@ -161,9 +174,9 @@ export default function HeaderMusicPlayer() {
 
       const priority = radioTracks.filter(t => t.is_priority);
       const nonPriority = shuffleArray([...radioTracks.filter(t => !t.is_priority), ...dropTracks]);
-      setTracks([...priority, ...nonPriority]);
-      if (priority.length > 0) setCurrentIndex(0);
-      else if (nonPriority.length > 0) setCurrentIndex(Math.floor(Math.random() * nonPriority.length));
+      // Theme song always first
+      setTracks([THEME_TRACK, ...priority, ...nonPriority]);
+      setCurrentIndex(0); // Start on theme song
     };
     fetchTracks();
   }, []);
@@ -208,6 +221,7 @@ export default function HeaderMusicPlayer() {
     audioRef.current = a;
 
     a.addEventListener('ended', onEnded);
+    a.loop = loopEnabled;
     a.addEventListener('error', () => {
       setAudioError(true);
       setIsPlaying(false);
@@ -224,7 +238,7 @@ export default function HeaderMusicPlayer() {
 
     if (a.readyState >= 2) tryPlay();
     else a.addEventListener('canplay', tryPlay, { once: true });
-  }, [volume, playbackRate, pitchSemitones, cleanupAudio, startProgressTracking, stopProgressTracking]);
+  }, [volume, playbackRate, pitchSemitones, loopEnabled, cleanupAudio, startProgressTracking, stopProgressTracking]);
 
   const playTrack = useCallback((track: Track) => {
     setPlaylistMode('loopgate');
@@ -336,6 +350,7 @@ export default function HeaderMusicPlayer() {
   }, [currentIndex]);
 
   useEffect(() => { if (audioRef.current) audioRef.current.volume = volume; }, [volume]);
+  useEffect(() => { if (audioRef.current) audioRef.current.loop = loopEnabled; }, [loopEnabled]);
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.preservesPitch = false;
@@ -530,11 +545,19 @@ export default function HeaderMusicPlayer() {
 
       {/* Transport Controls */}
       <div className="flex items-center justify-between px-5 py-3 shrink-0">
-        <button onClick={toggleShuffle}
-          className={`p-2.5 transition-colors ${shuffled ? 'text-emerald-400 bg-emerald-500/10' : 'text-white/25 hover:text-white/60'}`}
-          style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%)' }}>
-          <Shuffle size={16} />
-        </button>
+        <div className="flex items-center gap-1">
+          <button onClick={toggleShuffle}
+            className={`p-2.5 transition-colors ${shuffled ? 'text-emerald-400 bg-emerald-500/10' : 'text-white/25 hover:text-white/60'}`}
+            style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%)' }}>
+            <Shuffle size={16} />
+          </button>
+          <button onClick={() => setLoopEnabled(l => !l)}
+            className={`p-2.5 transition-colors ${loopEnabled ? 'text-emerald-400 bg-emerald-500/10' : 'text-white/25 hover:text-white/60'}`}
+            style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%)' }}
+            title={loopEnabled ? 'Loop: ON' : 'Loop: OFF'}>
+            {loopEnabled ? <Repeat1 size={16} /> : <Repeat size={16} />}
+          </button>
+        </div>
         <div className="flex items-center gap-4">
           <button
             onClick={() => {
@@ -651,7 +674,10 @@ export default function HeaderMusicPlayer() {
                   <p className={`text-sm font-bold truncate ${i === currentIndex && playlistMode === 'loopgate' ? 'text-emerald-400' : 'text-white/60'}`} style={TEKO}>{track.song_name.toUpperCase()}</p>
                   <p className="text-[10px] text-white/25 truncate">{track.artist_name || track.title}</p>
                 </div>
-                {track.is_priority && (
+                {track.id === '__loopgate_theme__' && (
+                  <span className="text-[8px] font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 shrink-0 border border-amber-500/20" style={TEKO}>THEME</span>
+                )}
+                {track.is_priority && track.id !== '__loopgate_theme__' && (
                   <span className="text-[8px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 shrink-0 border border-emerald-500/20" style={TEKO}>PRIORITY</span>
                 )}
                 {i === currentIndex && playlistMode === 'loopgate' && isPlaying && (
