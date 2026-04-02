@@ -886,7 +886,7 @@ export default function HubPage() {
       {/* Arena banner removed — Arena access consolidated into quick-access grid */}
 
       {/* ═══════════════════════════════════════════════════════════════════
-          🎵 ARTIST FEATURED — Artist drops carousel
+          🎵 FEATURED DROPS — All drops carousel
       ═══════════════════════════════════════════════════════════════════ */}
       {totalArtistFeatured > 0 && (
         <motion.div
