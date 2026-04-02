@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Radio, Shuffle, Music, ExternalLink, Pencil, Settings, Search, Send, X, Repeat, Repeat1 } from 'lucide-react';
 
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
@@ -100,7 +101,7 @@ export default function HeaderMusicPlayer() {
   const [tracks, setTracks] = useState<Track[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(0.3);
+  const [volume, setVolume] = useState(0.5);
   const [shuffled, setShuffled] = useState(true);
   const [progress, setProgress] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1.0);
@@ -316,32 +317,23 @@ export default function HeaderMusicPlayer() {
     setCurrentIndex(i => (i - 1 + tracks.length) % tracks.length);
   }, [tracks.length]);
 
+  // ALWAYS autoplay theme song for everyone (guests included) at 50% volume
   useEffect(() => {
     if (tracks.length > 0 && !hasAutoPlayed && current) {
       setHasAutoPlayed(true);
-      if (!settings.autoplay_enabled) return;
-      if (settings.default_playlist === 'myplaylist' && myTracks.length > 0) {
-        setPlaylistMode('myplaylist');
-        setActiveTab('myplaylist');
-        const start = async () => {
-          if (!introPlayed) { setIntroPlayed(true); await playIntroChime(volume); }
-          playMyTrack(myTracks[0], myTracks, 0);
-        };
-        start().catch(() => {});
-        return;
-      }
       const start = async () => {
         if (!introPlayed) { setIntroPlayed(true); await playIntroChime(volume); }
         playTrack(current);
       };
       start().catch(() => {
+        // Browser blocked autoplay — wait for first user interaction then play
         const unlock = () => { start(); window.removeEventListener('click', unlock); window.removeEventListener('touchstart', unlock); };
         window.addEventListener('click', unlock, { once: true });
         window.addEventListener('touchstart', unlock, { once: true });
       });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tracks, myTracks]);
+  }, [tracks]);
 
   useEffect(() => {
     if (!current) return;
@@ -367,7 +359,7 @@ export default function HeaderMusicPlayer() {
     });
   }, []);
 
-  const toggleMute = useCallback(() => { setVolume(v => v === 0 ? 0.3 : 0); }, []);
+  const toggleMute = useCallback(() => { setVolume(v => v === 0 ? 0.5 : 0); }, []);
   useEffect(() => () => { cleanupAudio(); }, [cleanupAudio]);
 
   const nowPlayingName = playlistMode === 'deezer' ? deezerNowPlaying?.title
@@ -415,7 +407,7 @@ export default function HeaderMusicPlayer() {
     </button>
   ) : (
     <button
-      onClick={() => navigate('/playlists')}
+      onClick={() => setOpen(true)}
       className="relative flex items-center gap-2 px-3 py-2 transition-colors hover:bg-white/[0.04] border border-white/[0.06] group"
       style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%)', fontFamily: 'Teko, sans-serif' }}
     >
@@ -756,5 +748,20 @@ export default function HeaderMusicPlayer() {
     );
   }
 
-  return triggerButton;
+  // Desktop: Popover with full radio player
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        {triggerButton}
+      </PopoverTrigger>
+      <PopoverContent 
+        side="bottom" 
+        align="end" 
+        sideOffset={8}
+        className="w-[400px] h-[80vh] max-h-[700px] p-0 overflow-hidden border border-white/[0.06] bg-[#0a0a0a] rounded-xl shadow-2xl"
+      >
+        {playerContent}
+      </PopoverContent>
+    </Popover>
+  );
 }
