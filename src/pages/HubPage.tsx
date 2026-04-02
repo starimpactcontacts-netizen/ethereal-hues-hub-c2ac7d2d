@@ -495,7 +495,7 @@ export default function HubPage() {
                         )}
                       </div>
                       <div className="flex items-center gap-[6px] mt-1.5">
-                        <span className="text-[10px] font-bold tracking-[0.15em] text-muted-foreground uppercase">{league.label}</span>
+                        <button onClick={(e) => { e.stopPropagation(); navigate('/league'); }} className="text-[10px] font-bold tracking-[0.15em] text-muted-foreground uppercase hover:text-gold transition-colors">{league.label}</button>
                         <span className="text-muted-foreground/30 text-[8px]">·</span>
                         {globalRank && globalRank <= 500 ? (
                           <>
@@ -503,7 +503,7 @@ export default function HubPage() {
                             <span className="text-muted-foreground/30 text-[8px]">·</span>
                           </>
                         ) : null}
-                        <span className={`text-[10px] font-black ${classRankConfig?.color || 'text-muted-foreground'}`}>{classLetter}</span>
+                        <button onClick={(e) => { e.stopPropagation(); navigate('/class'); }} className={`text-[10px] font-black hover:text-gold transition-colors ${classRankConfig?.color || 'text-muted-foreground'}`}>{classLetter}</button>
                       </div>
                     </div>
                   </button>
