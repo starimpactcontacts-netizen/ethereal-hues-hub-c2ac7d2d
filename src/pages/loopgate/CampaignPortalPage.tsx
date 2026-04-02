@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, TrendingUp, Zap, MousePointerClick, BarChart3, ExternalLink, Play, Music, Globe, CheckCircle, Download, Link2, RefreshCw, Share2 } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { SiTiktok, SiYoutube, SiInstagram } from '@icons-pack/react-simple-icons';
 import { supabase } from '@/integrations/supabase/client';
 import viralCartelCrest from '@/assets/viral-cartel-crest.png';
