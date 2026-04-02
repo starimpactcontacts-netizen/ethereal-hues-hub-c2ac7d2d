@@ -152,7 +152,7 @@ serve(async (req) => {
 
     // ─── CREATE CAMPAIGN ───
     if (action === "create-campaign") {
-      const { client_id, client_name, name, description, start_date, end_date, budget_cents, cover_image_url, goal_views, goal_label, goal_posts, featured_artist_id, password } = params;
+      const { client_id, client_name, name, description, start_date, end_date, budget_cents, cover_image_url, goal_views, goal_label, goal_posts, featured_artist_id, password, campaign_type, logo_url } = params;
       if (!name) return jsonRes({ error: "name required" }, 400);
 
       // Resolve client_id: use provided or find/create by client_name
@@ -194,7 +194,9 @@ serve(async (req) => {
           goal_views: goal_views || 0, goal_label, goal_posts: goal_posts || 0,
           featured_artist_id: featured_artist_id || null,
           client_name: client_name || null,
-          password_hash
+          password_hash,
+          campaign_type: campaign_type || 'artist',
+          logo_url: logo_url || null
         })
         .select("*, featured_artists(name, avatar_url)")
         .single();
@@ -210,7 +212,7 @@ serve(async (req) => {
 
       const allowed = ['name', 'description', 'status', 'total_views', 'total_impressions', 
         'total_engagements', 'total_clicks', 'budget_cents', 'spent_cents', 'roi_percentage',
-        'start_date', 'end_date', 'cover_image_url', 'goal_views', 'goal_label', 'goal_posts', 'featured_artist_id', 'client_name', 'incoming_note'];
+        'start_date', 'end_date', 'cover_image_url', 'goal_views', 'goal_label', 'goal_posts', 'featured_artist_id', 'client_name', 'incoming_note', 'campaign_type', 'logo_url'];
       const filtered: Record<string, any> = {};
       for (const key of allowed) {
         if (updates[key] !== undefined) filtered[key] = updates[key];
