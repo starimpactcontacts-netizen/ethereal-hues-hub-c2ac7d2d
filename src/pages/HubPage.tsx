@@ -725,16 +725,20 @@ export default function HubPage() {
         </div>
       )}
 
-      {/* ⚔️ QUICK ACTION CTA — Dropdown to switch between Solo Edit / Quick Edit Battle */}
+      {/* ⚔️ QUICK ACTION CTA — Premium cinematic button */}
       <div className="px-4 mt-3">
         <div className="flex flex-col gap-0">
-          {/* Fortnite-style skewed container */}
+          {/* Cinematic action container */}
           <div 
-            className="flex gap-0 overflow-hidden"
-            style={{ clipPath: 'polygon(2% 0, 100% 0, 98% 100%, 0% 100%)' }}
+            className="flex gap-0 overflow-hidden rounded-xl"
+            style={{ boxShadow: quickAction === 'solo' 
+              ? '0 4px 30px rgba(234,179,8,0.25), 0 0 60px rgba(234,179,8,0.08), inset 0 1px 0 rgba(255,255,255,0.1)' 
+              : '0 4px 30px rgba(239,68,68,0.25), 0 0 60px rgba(239,68,68,0.08), inset 0 1px 0 rgba(255,255,255,0.1)'
+            }}
           >
             <motion.button
-              whileTap={{ scale: 0.97 }}
+              whileTap={{ scale: 0.96 }}
+              whileHover={{ scale: 1.01 }}
               disabled={quickAction === 'quick' && qfIsSearching}
               onClick={() => {
                 if (!profile) { navigate('/start'); return; }
@@ -748,23 +752,38 @@ export default function HubPage() {
                   }
                 }
               }}
-              className="flex-1 relative overflow-hidden flex items-center justify-center gap-3 px-6 py-6 bg-gradient-to-r from-amber-600 to-gold hover:from-amber-500 hover:to-amber-400 transition-colors touch-manipulation select-none"
+              className={cn(
+                "flex-1 relative overflow-hidden flex items-center justify-center gap-3 px-6 py-5 transition-all duration-300 touch-manipulation select-none",
+                quickAction === 'solo'
+                  ? "bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600"
+                  : "bg-gradient-to-r from-red-600 via-red-500 to-red-600"
+              )}
             >
-              <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.14] to-transparent pointer-events-none" />
+              {/* Shine sweep animation */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.15] to-transparent -skew-x-12 pointer-events-none"
+                animate={{ x: ['-200%', '200%'] }}
+                transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut', repeatDelay: 2 }}
+              />
+              {/* Top gloss */}
+              <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/[0.18] to-transparent pointer-events-none" />
+              
               {quickAction === 'solo' ? (
                 <>
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-white/20 to-white/5 flex items-center justify-center relative z-10 border border-white/20">
-                    <UserRound className="w-4 h-4 text-white" />
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-white/25 to-white/5 flex items-center justify-center relative z-10 border border-white/30 shadow-lg shadow-amber-900/30">
+                    <UserRound className="w-4.5 h-4.5 text-white drop-shadow-lg" />
                   </div>
-                   <span className="text-[26px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
-                    Solo Edit
-                  </span>
-                  <span className="text-[10px] text-white/50 font-bold relative z-10">100+ IDX</span>
+                  <div className="flex flex-col relative z-10">
+                    <span className="text-[28px] font-bold text-white uppercase tracking-wider leading-none drop-shadow-lg" style={{ fontFamily: 'Teko, sans-serif' }}>
+                      Solo Edit
+                    </span>
+                    <span className="text-[9px] text-white/60 font-bold tracking-wider">EARN 100+ INDEX</span>
+                  </div>
                 </>
               ) : qfIsSearching ? (
                 <>
                   <Loader2 className="w-5 h-5 text-white animate-spin relative z-10" />
-                   <span className="text-[26px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
+                  <span className="text-[26px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
                     Searching...
                   </span>
                   <span className="flex items-center gap-1 text-xs text-white/70 font-mono relative z-10">
@@ -775,17 +794,21 @@ export default function HubPage() {
               ) : qfActiveFight ? (
                 <>
                   <Swords className="w-5 h-5 text-white relative z-10" />
-                   <span className="text-[26px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
+                  <span className="text-[26px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
                     Return to Fight
                   </span>
                 </>
               ) : (
                 <>
-                  <Zap className="w-5 h-5 text-white relative z-10" />
-                   <span className="text-[26px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
-                    Quick Edit Battle
-                  </span>
-                  <span className="text-[10px] text-white/50 font-bold relative z-10">+20 IDX</span>
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-white/25 to-white/5 flex items-center justify-center relative z-10 border border-white/30 shadow-lg shadow-red-900/30">
+                    <Zap className="w-4.5 h-4.5 text-white drop-shadow-lg" />
+                  </div>
+                  <div className="flex flex-col relative z-10">
+                    <span className="text-[28px] font-bold text-white uppercase tracking-wider leading-none drop-shadow-lg" style={{ fontFamily: 'Teko, sans-serif' }}>
+                      Quick Edit Battle
+                    </span>
+                    <span className="text-[9px] text-white/60 font-bold tracking-wider">WIN +20 INDEX</span>
+                  </div>
                 </>
               )}
             </motion.button>
@@ -793,9 +816,14 @@ export default function HubPage() {
             {/* Dropdown toggle */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="relative overflow-hidden flex items-center justify-center px-5 py-6 bg-amber-700 hover:bg-amber-600 transition-colors touch-manipulation select-none border-l border-amber-900/50">
-                  <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
-                  <ChevronDown className="w-5 h-5 text-white/70 relative z-10" />
+                <button className={cn(
+                  "relative overflow-hidden flex items-center justify-center px-5 py-5 transition-colors touch-manipulation select-none border-l",
+                  quickAction === 'solo'
+                    ? "bg-amber-700/80 hover:bg-amber-600/80 border-amber-900/40"
+                    : "bg-red-700/80 hover:bg-red-600/80 border-red-900/40"
+                )}>
+                  <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/[0.1] to-transparent pointer-events-none" />
+                  <ChevronDown className="w-5 h-5 text-white/80 relative z-10" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52 bg-surface-1 border-border">
