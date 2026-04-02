@@ -118,7 +118,7 @@ export default function BeginnerGuideModal({ trigger, autoShow = false }: Beginn
                   style={{ clipPath: 'polygon(3px 0, 100% 0, calc(100% - 3px) 100%, 0 100%)' }}>+100 IDX</span>
               </div>
               <div className="flex items-center gap-2 mb-0.5">
-                <Trophy className="w-5 h-5 text-amber-400" />
+                <TrophyPillar className="w-5 h-5 text-amber-400" />
                 <span className="text-[19px] font-black text-white tracking-wide leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>
                   COMPETE FOR INDEX
                 </span>
