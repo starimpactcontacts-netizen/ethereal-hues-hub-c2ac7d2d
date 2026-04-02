@@ -1069,6 +1069,15 @@ export default function FeaturedArtistAdmin() {
                   <p className="text-[8px] text-muted-foreground mt-0.5">Bonus paid regardless of rank when milestone hits</p>
                 </div>
               </div>
+
+              {/* Submission Goal */}
+              <div className="mt-3">
+                <Label className="text-xs text-cyan-400">Submission Goal (accepted edits for 100%)</Label>
+                <Input type="number" value={editDropForm.submission_goal}
+                  onChange={e => setEditDropForm({...editDropForm, submission_goal: Number(e.target.value)})}
+                  className="mt-1 h-8 text-xs" placeholder="e.g. 50" />
+                <p className="text-[8px] text-muted-foreground mt-0.5">0 = no goal. Progress bar shows on the drop card.</p>
+              </div>
             </div>
 
             <button onClick={handleSaveDrop} disabled={savingDrop || !editDropForm.title || !editDropForm.song_name}
