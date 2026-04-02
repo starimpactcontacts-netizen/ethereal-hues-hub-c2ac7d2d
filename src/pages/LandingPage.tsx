@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Swords, Play, Smartphone, ChevronRight } from 'lucide-react';
+import { Swords, Play, Smartphone, ChevronRight } from 'lucide-react';
 import { HubIcon, ArenaIcon, RankingsIcon, RateIcon, UnitsIcon, MissionsIcon } from '@/components/loopgate/LandingIcons';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
@@ -86,8 +86,8 @@ export default function LandingPage() {
               <img src={whereEditorsCompete} alt="WHERE EDITORS COMPETE" className="w-full max-w-[500px] sm:max-w-[600px] mx-auto drop-shadow-[0_4px_30px_rgba(0,0,0,0.8)]" />
             </motion.div>
             <motion.p
-              className="text-2xl sm:text-3xl md:text-4xl max-w-lg mx-auto mb-6 leading-[1.1] tracking-[0.14em] uppercase font-bold"
-              style={{ fontFamily: 'Teko, Bebas Neue, sans-serif', color: 'rgba(255,255,255,0.85)', textShadow: '0 0 40px rgba(0,0,0,0.9), 0 4px 20px rgba(0,0,0,0.7)' }}
+              className="text-xl sm:text-2xl max-w-md mx-auto mb-6 leading-[1.15] tracking-[0.12em] uppercase font-bold"
+              style={{ fontFamily: 'Teko, Bebas Neue, sans-serif', color: 'rgba(255,255,255,0.75)', textShadow: '0 0 30px rgba(0,0,0,0.9), 0 3px 16px rgba(0,0,0,0.6)' }}
               initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               transition={{ delay: 0.15, duration: 0.6 }}
             >
@@ -134,83 +134,68 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ═══════════════ DIRECT ACCESS — Seamless Cinematic Grid ═══════════════ */}
-        <section className="relative py-6 sm:py-10 px-4 sm:px-6">
-          <div className="max-w-3xl mx-auto space-y-2">
+        {/* ═══════════════ DIRECT ACCESS — Portal Grid ═══════════════ */}
+        <section className="relative py-4 sm:py-8 px-4 sm:px-6">
+          <div className="max-w-md mx-auto space-y-1.5">
             <motion.div
-              className="grid grid-cols-2 gap-2"
-              initial={{ opacity: 0, y: 20 }}
+              className="grid grid-cols-3 gap-1.5"
+              initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.4 }}
             >
               {quickLinks.map((link, i) => (
                 <motion.div
                   key={link.to}
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
-                  transition={{ delay: i * 0.04, duration: 0.35 }}
+                  transition={{ delay: i * 0.04, duration: 0.3 }}
                 >
                   <Link
                     to={link.to}
-                    className="group relative flex items-center gap-3 px-4 py-4 rounded-xl overflow-hidden transition-all duration-300"
+                    className="group relative flex flex-col items-center justify-center gap-1 py-4 rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.03] active:scale-[0.97]"
                     style={{
-                      background: 'linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))',
+                      background: 'linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)',
                       border: '1px solid rgba(255,255,255,0.06)',
                     }}
                   >
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.06), transparent)' }} />
-                    <link.Icon size={20} className="text-muted-foreground group-hover:text-foreground transition-colors duration-300 shrink-0 relative z-10" />
-                    <div className="relative z-10 min-w-0">
-                      <span className="block text-[13px] font-bold text-foreground tracking-wide uppercase" style={{ fontFamily: 'Teko, sans-serif', fontSize: '16px' }}>{link.label}</span>
-                      <span className="block text-[9px] text-muted-foreground/60 tracking-wider">{link.desc}</span>
-                    </div>
-                    <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/30 group-hover:text-muted-foreground/60 ml-auto shrink-0 relative z-10 transition-colors" />
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: `radial-gradient(circle at 50% 40%, rgba(255,255,255,0.06), transparent 70%)` }} />
+                    <link.Icon size={18} className="text-muted-foreground group-hover:text-foreground transition-colors duration-300 relative z-10" />
+                    <span className="text-[13px] font-bold text-foreground/80 group-hover:text-foreground tracking-wide uppercase relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>{link.label}</span>
                   </Link>
                 </motion.div>
               ))}
             </motion.div>
 
-            {/* Extra quick links */}
+            {/* Secondary row */}
             <motion.div
-              className="grid grid-cols-2 gap-2"
+              className="flex gap-1.5"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              transition={{ delay: 0.25, duration: 0.4 }}
+              transition={{ delay: 0.2, duration: 0.35 }}
             >
               <Link
                 to="/editorium"
-                className="group flex items-center gap-3 px-4 py-3 rounded-xl transition-all"
+                className="group flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg transition-all hover:scale-[1.02] active:scale-[0.97]"
                 style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}
               >
-                <img src={editoriumLogo} alt="Editorium" className="h-3.5 opacity-50 group-hover:opacity-80 transition-opacity" />
-                <span className="text-[9px] text-muted-foreground/50 uppercase tracking-[0.15em] group-hover:text-muted-foreground transition-colors">Read</span>
+                <img src={editoriumLogo} alt="Editorium" className="h-3 opacity-40 group-hover:opacity-70 transition-opacity" />
               </Link>
               <Link
                 to="/gqt"
-                className="group flex items-center gap-3 px-4 py-3 rounded-xl transition-all"
+                className="group flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg transition-all hover:scale-[1.02] active:scale-[0.97]"
                 style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}
               >
-                <span className="text-[12px] font-bold tracking-wider text-muted-foreground/50 group-hover:text-muted-foreground transition-colors" style={{ fontFamily: 'Teko, sans-serif' }}>QOI TEST</span>
-                <span className="text-[9px] text-muted-foreground/30 group-hover:text-muted-foreground/50 transition-colors">→</span>
+                <span className="text-[11px] font-bold tracking-wider text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" style={{ fontFamily: 'Teko, sans-serif' }}>QOI TEST</span>
               </Link>
-            </motion.div>
-
-            {/* About link */}
-            <motion.div
-              className="pt-2 text-center"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.35 }}
-            >
               <Link
                 to="/about"
-                className="inline-flex items-center gap-2 text-[10px] text-muted-foreground/40 hover:text-muted-foreground transition-colors tracking-[0.2em] uppercase"
+                className="group flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg transition-all hover:scale-[1.02] active:scale-[0.97]"
+                style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}
               >
-                What is Loopgate? <ArrowRight className="w-3 h-3" />
+                <span className="text-[11px] font-bold tracking-wider text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" style={{ fontFamily: 'Teko, sans-serif' }}>ABOUT</span>
               </Link>
             </motion.div>
           </div>
