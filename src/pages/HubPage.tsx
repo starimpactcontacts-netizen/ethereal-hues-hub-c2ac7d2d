@@ -840,15 +840,24 @@ export default function HubPage() {
             {/* Dropdown toggle */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className={cn(
-                  "relative overflow-hidden flex items-center justify-center px-5 py-5 transition-colors touch-manipulation select-none border-l",
-                  quickAction === 'solo'
-                    ? "bg-amber-700/80 hover:bg-amber-600/80 border-amber-900/40"
-                    : "bg-red-700/80 hover:bg-red-600/80 border-red-900/40"
-                )}>
-                  <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/[0.1] to-transparent pointer-events-none" />
-                  <ChevronDown className="w-5 h-5 text-white/80 relative z-10" />
-                </button>
+                <button 
+                  className={cn(
+                    "relative overflow-hidden flex items-center justify-center px-5 py-5 transition-colors touch-manipulation select-none border-l",
+                    quickAction === 'solo'
+                      ? "hover:brightness-110 border-white/10"
+                      : "bg-red-700/80 hover:bg-red-600/80 border-red-900/40"
+                  )}
+                  style={quickAction === 'solo' ? { background: 'hsl(33 100% 38%)' } : undefined}
+                >
+                   {quickAction === 'solo' && (
+                     <div className="absolute inset-0 pointer-events-none opacity-[0.06]" style={{
+                       backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(255,255,255,0.5) 6px, rgba(255,255,255,0.5) 7px),
+                         repeating-linear-gradient(-45deg, transparent, transparent 6px, rgba(255,255,255,0.5) 6px, rgba(255,255,255,0.5) 7px)`,
+                     }} />
+                   )}
+                   <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
+                   <ChevronDown className="w-5 h-5 text-white/90 relative z-10" />
+                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52 bg-surface-1 border-border">
                 <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">Quick Action</DropdownMenuLabel>
