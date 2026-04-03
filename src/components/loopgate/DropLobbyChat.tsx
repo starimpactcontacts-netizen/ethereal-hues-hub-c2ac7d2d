@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { Send, Loader2, MessageCircle, Image as ImageIcon, Info, X, ChevronDown } from "lucide-react";
+import { Send, Loader2, MessageCircle, Image as ImageIcon, Info, X, ChevronDown, Reply } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import GifPicker from "./GifPicker";
+import ChatReplyBar from "./ChatReplyBar";
 
 interface Message {
   id: string;
@@ -14,6 +15,9 @@ interface Message {
   message_text: string;
   is_system: boolean;
   created_at: string;
+  reply_to_id: string | null;
+  reply_to_username: string | null;
+  reply_to_text: string | null;
 }
 
 interface DropLobbyChatProps {
@@ -25,7 +29,6 @@ function isGifUrl(text: string): boolean {
   return /\.(gif|gifv)(\?|$)/i.test(text) || text.includes("tenor.com") || text.includes("giphy.com") || text.includes("media.tenor");
 }
 
-// Quick reaction chips for fast engagement
 const QUICK_CHIPS = ["🔥", "W", "💀", "GG", "nah", "😭", "goated"];
 
 export default function DropLobbyChat({ dropId }: DropLobbyChatProps) {
@@ -39,8 +42,10 @@ export default function DropLobbyChat({ dropId }: DropLobbyChatProps) {
   const [showInfo, setShowInfo] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [newCount, setNewCount] = useState(0);
+  const [replyTo, setReplyTo] = useState<{ id: string; username: string; text: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!dropId) return;
@@ -75,7 +80,6 @@ export default function DropLobbyChat({ dropId }: DropLobbyChatProps) {
     return () => { supabase.removeChannel(channel); };
   }, [dropId]);
 
-  // Auto-scroll when at bottom
   useEffect(() => {
     if (isAtBottom) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -96,19 +100,41 @@ export default function DropLobbyChat({ dropId }: DropLobbyChatProps) {
     setNewCount(0);
   };
 
+  const handleReply = (msg: Message) => {
+    const previewText = isGifUrl(msg.message_text) ? "GIF" : msg.message_text.slice(0, 60);
+    setReplyTo({ id: msg.id, username: msg.username, text: previewText });
+    inputRef.current?.focus();
+  };
+
+  const handleMention = (username: string) => {
+    setNewMessage(prev => prev + `@${username} `);
+    inputRef.current?.focus();
+  };
+
   const sendMessage = async (text: string) => {
     if (!text.trim() || !user || !profile) return;
     setIsSending(true);
+    
+    const insertPayload: any = {
+      drop_id: dropId,
+      user_id: user.id,
+      username: profile.username,
+      avatar_url: profile.avatar_url,
+      message_text: text.trim(),
+    };
+
+    if (replyTo) {
+      insertPayload.reply_to_id = replyTo.id;
+      insertPayload.reply_to_username = replyTo.username;
+      insertPayload.reply_to_text = replyTo.text;
+    }
+
     await supabase
       .from('featured_drop_messages' as any)
-      .insert({
-        drop_id: dropId,
-        user_id: user.id,
-        username: profile.username,
-        avatar_url: profile.avatar_url,
-        message_text: text.trim()
-      });
+      .insert(insertPayload);
+    
     setNewMessage("");
+    setReplyTo(null);
     setIsSending(false);
     setShowGifPicker(false);
   };
@@ -122,9 +148,28 @@ export default function DropLobbyChat({ dropId }: DropLobbyChatProps) {
     sendMessage(gifUrl);
   };
 
+  // Render @mentions as tappable
+  const renderMessageText = (text: string) => {
+    const parts = text.split(/(@\w+)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('@')) {
+        const username = part.slice(1);
+        return (
+          <button
+            key={i}
+            onClick={() => navigate(`/u/${username}`)}
+            className="text-primary font-bold hover:underline"
+          >
+            {part}
+          </button>
+        );
+      }
+      return <span key={i}>{part}</span>;
+    });
+  };
+
   return (
     <div className="relative overflow-hidden flex flex-col border-2 border-foreground/[0.06]">
-      {/* Top accent bar */}
       <div className="h-[2px] bg-gradient-to-r from-red-500/60 via-red-500 to-red-500/60" />
 
       {/* Header */}
@@ -173,14 +218,14 @@ export default function DropLobbyChat({ dropId }: DropLobbyChatProps) {
                 Messages are live and visible to everyone in this event.
               </p>
               <p className="text-[10px] text-foreground/30 leading-relaxed">
-                Send GIFs, quick reactions, or type your message. Keep it competitive. 🔥
+                Tap a username to @mention them. Swipe a message to reply. 🔥
               </p>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Messages area — tall on mobile for prominence */}
+      {/* Messages area */}
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
@@ -206,7 +251,7 @@ export default function DropLobbyChat({ dropId }: DropLobbyChatProps) {
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.15 }}
-                className={`flex items-start gap-1.5 py-0.5 ${msg.is_system ? 'justify-center' : ''}`}
+                className={`flex items-start gap-1.5 py-0.5 group ${msg.is_system ? 'justify-center' : ''}`}
               >
                 {msg.is_system ? (
                   <p className="text-[10px] text-foreground/25 italic text-center">{msg.message_text}</p>
@@ -225,24 +270,56 @@ export default function DropLobbyChat({ dropId }: DropLobbyChatProps) {
                       )}
                     </button>
                     <div className="min-w-0 flex-1">
-                      <button
-                        onClick={() => navigate(`/u/${msg.username}`)}
-                        className="text-[10px] font-black text-red-400 hover:text-red-300 mr-1.5 uppercase tracking-wide transition-colors"
-                      >
-                        {msg.username}
-                      </button>
-                      {isGifUrl(msg.message_text) ? (
-                        <div className="mt-0.5">
-                          <img
-                            src={msg.message_text}
-                            alt="GIF"
-                            className="max-w-[180px] max-h-[120px] rounded-sm object-cover"
-                            loading="lazy"
-                          />
+                      {/* Reply context */}
+                      {msg.reply_to_username && (
+                        <div className="flex items-center gap-1 text-[9px] text-foreground/30 mb-0.5">
+                          <Reply className="w-2.5 h-2.5 rotate-180" />
+                          <span>replying to</span>
+                          <button
+                            onClick={() => navigate(`/u/${msg.reply_to_username}`)}
+                            className="font-bold text-red-400/60 hover:text-red-400"
+                          >
+                            @{msg.reply_to_username}
+                          </button>
+                          {msg.reply_to_text && (
+                            <span className="truncate max-w-[120px] text-foreground/20">"{msg.reply_to_text}"</span>
+                          )}
                         </div>
-                      ) : (
-                        <span className="text-[12px] text-foreground/80 break-words leading-snug">{msg.message_text}</span>
                       )}
+                      <div className="flex items-start gap-1">
+                        <div className="flex-1 min-w-0">
+                          <button
+                            onClick={() => handleMention(msg.username)}
+                            className="text-[10px] font-black text-red-400 hover:text-red-300 mr-1.5 uppercase tracking-wide transition-colors"
+                          >
+                            {msg.username}
+                          </button>
+                          {isGifUrl(msg.message_text) ? (
+                            <div className="mt-0.5">
+                              <img
+                                src={msg.message_text}
+                                alt="GIF"
+                                className="max-w-[180px] max-h-[120px] rounded-sm object-cover"
+                                loading="lazy"
+                              />
+                            </div>
+                          ) : (
+                            <span className="text-[12px] text-foreground/80 break-words leading-snug">
+                              {renderMessageText(msg.message_text)}
+                            </span>
+                          )}
+                        </div>
+                        {/* Reply button */}
+                        {user && (
+                          <button
+                            onClick={() => handleReply(msg)}
+                            className="opacity-0 group-hover:opacity-100 active:opacity-100 p-1 text-foreground/20 hover:text-red-400 transition-all shrink-0 touch-manipulation"
+                            title="Reply"
+                          >
+                            <Reply className="w-3 h-3 rotate-180" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </>
                 )}
@@ -252,7 +329,6 @@ export default function DropLobbyChat({ dropId }: DropLobbyChatProps) {
         )}
         <div ref={messagesEndRef} />
 
-        {/* New messages indicator */}
         {!isAtBottom && newCount > 0 && (
           <button
             onClick={scrollToBottom}
@@ -277,9 +353,19 @@ export default function DropLobbyChat({ dropId }: DropLobbyChatProps) {
         )}
       </AnimatePresence>
 
-      {/* Quick chips + input */}
+      {/* Reply bar + Quick chips + input */}
       {user ? (
         <div className="border-t border-foreground/[0.06] bg-background">
+          {/* Reply indicator */}
+          {replyTo && (
+            <ChatReplyBar
+              username={replyTo.username}
+              text={replyTo.text}
+              onClear={() => setReplyTo(null)}
+              accentColor="red"
+            />
+          )}
+
           {/* Quick reaction chips */}
           <div className="px-2 pt-2 pb-1 flex gap-1.5 overflow-x-auto scrollbar-hide">
             {QUICK_CHIPS.map((chip) => (
@@ -308,10 +394,11 @@ export default function DropLobbyChat({ dropId }: DropLobbyChatProps) {
               <ImageIcon className="w-4 h-4" />
             </button>
             <input
+              ref={inputRef}
               type="text"
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Say something..."
+              placeholder={replyTo ? `Reply to @${replyTo.username}...` : "Say something..."}
               className="flex-1 bg-foreground/[0.04] border border-foreground/[0.08] px-3 py-2 text-[13px] text-foreground placeholder:text-foreground/20 focus:outline-none focus:border-red-500/30 transition-colors"
               maxLength={300}
             />
