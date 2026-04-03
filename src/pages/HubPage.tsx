@@ -719,13 +719,13 @@ export default function HubPage() {
       )}
 
       {/* ⚔️ QUICK ACTION CTA — Premium cinematic button */}
-      <div className="px-4 mt-3">
+      <div className="px-4 mt-1.5">
         <div className="flex flex-col gap-0">
-          {/* Cinematic action container */}
+          {/* Cinematic action container — Fortnite parallelogram */}
           <div 
             className="flex overflow-hidden"
             style={{ 
-              clipPath: 'polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%)',
+              clipPath: 'polygon(14px 0%, calc(100% - 4px) 0%, calc(100% - 14px) 100%, 4px 100%)',
               boxShadow: quickAction === 'solo' 
                 ? '0 4px 30px rgba(234,179,8,0.25), 0 0 60px rgba(234,179,8,0.08), inset 0 1px 0 rgba(255,255,255,0.1)' 
                 : '0 4px 30px rgba(239,68,68,0.25), 0 0 60px rgba(239,68,68,0.08), inset 0 1px 0 rgba(255,255,255,0.1)'
