@@ -544,26 +544,19 @@ export default function HubPage() {
                 />
               </div>
 
-              {/* Stats Row */}
-              <div className="relative z-10 border-t border-border/30 px-4 py-2">
-                <div className="grid grid-cols-4 gap-3 text-center">
-                  <div>
-                    <p className="font-display text-xl text-foreground">{activityStats.totalEvents}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-semibold">Events</p>
+              {/* Stats — compressed thin bar */}
+              <div className="relative z-10 border-t border-border/20 px-4 py-1.5 flex items-center justify-center gap-4">
+                {[
+                  { val: activityStats.totalEvents, label: 'Events' },
+                  { val: activityStats.totalWins, label: 'Wins' },
+                  { val: bestScore?.toFixed(0) || '—', label: 'QOI' },
+                  { val: activityStats.totalEvents > 0 ? `${activityStats.winRate.toFixed(0)}%` : '—', label: 'W%' },
+                ].map((s, i) => (
+                  <div key={i} className="flex items-center gap-1">
+                    <span className="font-display text-[13px] text-foreground">{s.val}</span>
+                    <span className="text-[8px] text-muted-foreground/50 uppercase tracking-wider font-semibold">{s.label}</span>
                   </div>
-                  <div>
-                    <p className="font-display text-xl text-foreground">{activityStats.totalWins}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-semibold">Wins</p>
-                  </div>
-                  <div>
-                    <p className="font-display text-xl text-foreground">{bestScore?.toFixed(0) || '—'}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-semibold">Best QOI</p>
-                  </div>
-                  <div>
-                    <p className="font-display text-xl text-foreground">{activityStats.totalEvents > 0 ? `${activityStats.winRate.toFixed(0)}%` : '—'}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-semibold">Win Rate</p>
-                  </div>
-                </div>
+                ))}
               </div>
 
               {/* Quick Access — Cards with gradient transition */}
