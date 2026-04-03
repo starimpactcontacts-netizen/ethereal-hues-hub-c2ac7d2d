@@ -776,14 +776,21 @@ export default function HubPage() {
                 background: 'linear-gradient(135deg, hsl(43 96% 56%) 0%, hsl(40 100% 50%) 40%, hsl(36 100% 48%) 100%)',
               } : undefined}
             >
-              {/* Shine sweep animation */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.15] to-transparent -skew-x-12 pointer-events-none"
-                animate={{ x: ['-200%', '200%'] }}
-                transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut', repeatDelay: 2 }}
-              />
-              {/* Top gloss */}
-              <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/[0.18] to-transparent pointer-events-none" />
+               {/* Luxury geometric pattern overlay */}
+               {quickAction === 'solo' && (
+                 <div className="absolute inset-0 pointer-events-none opacity-[0.07]" style={{
+                   backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(255,255,255,0.5) 8px, rgba(255,255,255,0.5) 9px),
+                     repeating-linear-gradient(-45deg, transparent, transparent 8px, rgba(255,255,255,0.5) 8px, rgba(255,255,255,0.5) 9px)`,
+                 }} />
+               )}
+               {/* Shine sweep animation */}
+               <motion.div
+                 className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.20] to-transparent -skew-x-12 pointer-events-none"
+                 animate={{ x: ['-200%', '200%'] }}
+                 transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut', repeatDelay: 2 }}
+               />
+               {/* Top gloss */}
+               <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/[0.22] to-transparent pointer-events-none" />
               
               {quickAction === 'solo' ? (
                 <>
