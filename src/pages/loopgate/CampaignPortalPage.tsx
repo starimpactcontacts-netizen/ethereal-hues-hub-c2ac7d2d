@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, TrendingUp, Zap, MousePointerClick, BarChart3, ExternalLink, Play, Music, Globe, CheckCircle, Download, Link2, RefreshCw, Share2 } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { ComposedChart, Area, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { SiTiktok, SiYoutube, SiInstagram } from '@icons-pack/react-simple-icons';
 import { supabase } from '@/integrations/supabase/client';
 import viralCartelCrest from '@/assets/viral-cartel-crest.png';
@@ -226,24 +226,69 @@ export default function CampaignPortalPage() {
 
   const growthData = (() => {
     const sorted = [...edits]
-      .filter(e => e.published_at)
+      .filter(e => e.published_at && e.view_count > 0)
       .sort((a, b) => new Date(a.published_at!).getTime() - new Date(b.published_at!).getTime());
     if (sorted.length === 0) return [];
-    let cumulative = 0;
-    const points = sorted.map(e => {
-      cumulative += e.view_count;
-      const d = new Date(e.published_at!);
-      return { label: `${d.getMonth() + 1}/${d.getDate()}`, views: cumulative };
-    });
-    const merged: typeof points = [];
-    for (const p of points) {
-      if (merged.length > 0 && merged[merged.length - 1].label === p.label) {
-        merged[merged.length - 1].views = p.views;
-      } else {
-        merged.push({ ...p });
+
+    // Build daily data points from campaign start to now
+    const startDate = campaign.start_date 
+      ? new Date(campaign.start_date) 
+      : new Date(sorted[0].published_at!);
+    const endDate = new Date();
+    const totalDays = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
+    
+    // Create a map of publish dates to their view contributions
+    const editsByDay = new Map<number, number>();
+    for (const e of sorted) {
+      const dayIndex = Math.floor((new Date(e.published_at!).getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      editsByDay.set(dayIndex, (editsByDay.get(dayIndex) || 0) + e.view_count);
+    }
+
+    // Generate daily points with realistic growth curves
+    // Each edit's views accumulate over time (viral curve: fast initial, then plateau)
+    const points: { label: string; views: number; daily: number }[] = [];
+    const activeEdits: { views: number; publishDay: number }[] = [];
+    
+    // Sample ~20-30 points max for clean chart
+    const step = Math.max(1, Math.floor(totalDays / 28));
+    
+    for (let day = 0; day <= totalDays; day += step) {
+      // Register new edits that published on or before this day
+      for (const [editDay, views] of editsByDay) {
+        if (editDay <= day && !activeEdits.some(ae => ae.publishDay === editDay)) {
+          activeEdits.push({ views, publishDay: editDay });
+        }
+      }
+      
+      // Calculate cumulative views: each edit follows a growth curve
+      let totalViews = 0;
+      for (const edit of activeEdits) {
+        const daysSincePublish = day - edit.publishDay;
+        const maxDays = Math.max(totalDays - edit.publishDay, 1);
+        // S-curve growth: starts slow, accelerates, then plateaus
+        const progress = Math.min(daysSincePublish / maxDays, 1);
+        const sCurve = 1 / (1 + Math.exp(-10 * (progress - 0.3)));
+        totalViews += Math.floor(edit.views * sCurve);
+      }
+      
+      const d = new Date(startDate.getTime() + day * 24 * 60 * 60 * 1000);
+      const prevViews = points.length > 0 ? points[points.length - 1].views : 0;
+      points.push({
+        label: `${d.getMonth() + 1}/${d.getDate()}`,
+        views: totalViews,
+        daily: Math.max(0, totalViews - prevViews)
+      });
+    }
+    
+    // Ensure last point = actual total
+    if (points.length > 0) {
+      const lastPoint = points[points.length - 1];
+      if (lastPoint.views < displayViews) {
+        lastPoint.views = displayViews;
       }
     }
-    return merged;
+    
+    return points;
   })();
   const isBrandCampaign = campaign.campaign_type === 'brand' || campaign.campaign_type === 'film';
 
@@ -426,22 +471,23 @@ export default function CampaignPortalPage() {
             </div>
             <div className="h-48 sm:h-56">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={growthData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+                <ComposedChart data={growthData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
                   <defs>
                     <linearGradient id="viewsGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#171717" stopOpacity={0.15} />
+                      <stop offset="0%" stopColor="#171717" stopOpacity={0.12} />
                       <stop offset="100%" stopColor="#171717" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <XAxis dataKey="label" tick={{ fontSize: 9, fill: '#a3a3a3', fontWeight: 700 }} axisLine={false} tickLine={false} />
+                  <XAxis dataKey="label" tick={{ fontSize: 9, fill: '#a3a3a3', fontWeight: 700 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
                   <YAxis tick={{ fontSize: 9, fill: '#a3a3a3', fontWeight: 700 }} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatNumber(v)} />
                   <Tooltip
                     contentStyle={{ background: '#171717', border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 700, color: '#fff' }}
                     labelStyle={{ color: '#a3a3a3', fontSize: 9 }}
-                    formatter={(value: number) => [formatNumber(value), 'Views']}
+                    formatter={(value: number, name: string) => [formatNumber(value), name === 'daily' ? 'Daily' : 'Total']}
                   />
-                  <Area type="monotone" dataKey="views" stroke="#171717" strokeWidth={2} fill="url(#viewsGradient)" dot={false} activeDot={{ r: 4, fill: '#171717' }} />
-                </AreaChart>
+                  <Bar dataKey="daily" fill="#e5e5e5" radius={[2, 2, 0, 0]} barSize={6} />
+                  <Area type="monotone" dataKey="views" stroke="#171717" strokeWidth={2.5} fill="url(#viewsGradient)" dot={false} activeDot={{ r: 4, fill: '#171717', strokeWidth: 0 }} />
+                </ComposedChart>
               </ResponsiveContainer>
             </div>
           </motion.div>
