@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, TrendingUp, Zap, MousePointerClick, BarChart3, ExternalLink, Play, Music, Globe, CheckCircle, Download, Link2, RefreshCw, Share2 } from 'lucide-react';
@@ -224,8 +224,7 @@ export default function CampaignPortalPage() {
   const engagementRate = displayViews > 0 ? (((totalLikes + totalShares + totalComments) / displayViews) * 100).toFixed(1) : '0.0';
   const portalUrl = window.location.href;
 
-  // Build growth chart data from edits sorted by publish date
-  const growthData = useMemo(() => {
+  const growthData = (() => {
     const sorted = [...edits]
       .filter(e => e.published_at)
       .sort((a, b) => new Date(a.published_at!).getTime() - new Date(b.published_at!).getTime());
@@ -236,7 +235,6 @@ export default function CampaignPortalPage() {
       const d = new Date(e.published_at!);
       return { label: `${d.getMonth() + 1}/${d.getDate()}`, views: cumulative };
     });
-    // Merge same-day points (keep last cumulative)
     const merged: typeof points = [];
     for (const p of points) {
       if (merged.length > 0 && merged[merged.length - 1].label === p.label) {
@@ -246,7 +244,7 @@ export default function CampaignPortalPage() {
       }
     }
     return merged;
-  }, [edits]);
+  })();
   const isBrandCampaign = campaign.campaign_type === 'brand' || campaign.campaign_type === 'film';
 
   const handleCopyLink = () => {
