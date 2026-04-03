@@ -553,7 +553,17 @@ export default function HubPage() {
           </motion.div>
 
           {/* Quick Access — Rolls Royce Starlight dock */}
-          <div className="flex items-center justify-center gap-6 mt-4 mb-3">
+          <div className="relative mt-4 mb-3">
+            {/* ─── BELT — horizontal band cutting through icons ─── */}
+            <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 z-0 pointer-events-none" style={{ marginTop: '-8px' }}>
+              <div className="h-[18px] w-full" style={{
+                background: 'linear-gradient(180deg, hsl(0 0% 0% / 0) 0%, hsl(0 0% 8% / 0.9) 20%, hsl(0 0% 12% / 1) 40%, hsl(0 0% 12% / 1) 60%, hsl(0 0% 8% / 0.9) 80%, hsl(0 0% 0% / 0) 100%)',
+                borderTop: '1px solid hsl(0 0% 100% / 0.08)',
+                borderBottom: '1px solid hsl(0 0% 100% / 0.06)',
+              }} />
+            </div>
+
+            <div className="relative z-10 flex items-center justify-center gap-6">
             {/* UNITS */}
             <Link to={userCrew ? `/units/${userCrew.id}` : '/units'} className="group flex flex-col items-center gap-3">
               <div className="relative w-[68px] h-[68px] rounded-[22px] overflow-hidden"
@@ -608,7 +618,6 @@ export default function HubPage() {
                     border: '1px solid hsl(0 0% 100% / 0.07)',
                     boxShadow: '0 12px 40px hsl(0 0% 0% / 0.85), inset 0 1px 0 hsl(0 0% 100% / 0.05), 0 0 20px hsl(0 0% 100% / 0.04), 0 0 1px hsl(0 0% 100% / 0.15)',
                   }}>
-                  {/* More starlight dots for center prominence */}
                   <div className="absolute inset-0 overflow-hidden rounded-[26px]">
                     <div className="absolute w-[2px] h-[2px] rounded-full bg-white/70 top-3 left-5" style={{ boxShadow: '0 0 4px hsl(0 0% 100% / 0.8)' }} />
                     <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-white/55 top-5 right-4" style={{ boxShadow: '0 0 3px hsl(0 0% 100% / 0.6)' }} />
@@ -644,18 +653,7 @@ export default function HubPage() {
               </div>
               <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'hsl(0 0% 100% / 0.35)' }}>GQT</span>
             </Link>
-          </div>
-
-          {/* ─── Cinematic Belt Divider ─── */}
-          <div className="relative mt-2 mb-1 mx-auto w-full max-w-md">
-            <div className="relative h-[3px] rounded-full overflow-hidden">
-              {/* Base line */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
-              {/* Center glow */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
             </div>
-            {/* Soft glow underneath */}
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-2/3 h-4 bg-gold/[0.06] blur-xl rounded-full" />
           </div>
         </div>
       </div>
