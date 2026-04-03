@@ -97,7 +97,7 @@ export default function BeginnerGuideModal({ trigger, autoShow = false }: Beginn
                   DO A MISSION — GET PAID
                 </span>
               </div>
-              <p className="text-[10px] text-white/25 pl-7 mb-2.5">Edit for artists · Real cash instantly</p>
+              <p className="text-[10px] text-white/25 pl-7 mb-2.5">Join edit events · Paid instantly</p>
               <div className="flex items-center justify-center gap-2 py-2.5 border border-emerald-500/25 bg-emerald-500/[0.06] group-hover:bg-emerald-500/15 group-hover:border-emerald-500/40 transition-all"
                 style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%)' }}>
                 <span className="text-[13px] font-bold text-emerald-300/80 uppercase tracking-[0.18em] group-hover:text-emerald-200 transition-colors" style={{ fontFamily: 'Teko, sans-serif' }}>
