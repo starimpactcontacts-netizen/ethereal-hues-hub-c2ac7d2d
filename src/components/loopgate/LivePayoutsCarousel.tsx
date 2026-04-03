@@ -204,7 +204,7 @@ function PayoutCard({ payout, idx }: { payout: Payout; idx: number }) {
           <span className="text-2xl font-black text-emerald-400 leading-none tabular-nums tracking-tight" style={teko}>
             ${amount}
           </span>
-          <TrendingUp className="w-4 h-4 text-emerald-400/60 mb-1" />
+          <TrendingUp className="w-3.5 h-3.5 text-emerald-400/60 mb-0.5" />
         </div>
 
         {/* Bottom — drop info + rating */}
