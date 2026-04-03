@@ -561,7 +561,7 @@ export default function ArenaPage() {
 
   const { tournaments: sanctionedTournaments, loading: sanctionedLoading } = useSanctionedTournaments(["approved", "ready_up", "live", "bracket", "completed"]);
   const { battles, loading: battlesLoading } = useBattles(["pending", "active", "judging", "completed"]);
-  const { competitions: hostedComps, loading: hostedLoading } = useHostedCompetitions();
+  
   const { fights: quickFights, loading: quickLoading } = useRecentQuickFights(100);
   const { liveDrops } = useFeaturedDrops();
   const { activeSolo, loading: soloLoading, cancelSolo } = useSoloMode();
