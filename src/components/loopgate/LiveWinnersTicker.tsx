@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { DollarSign } from 'lucide-react';
 
 interface Winner {
   id: string;
@@ -48,17 +47,16 @@ export default function LiveWinnersTicker() {
 
   if (winners.length === 0) return null;
 
-  // Duplicate for seamless loop
   const tickerItems = [...winners, ...winners];
 
   return (
-    <div className="relative overflow-hidden bg-black/40 border border-emerald-500/20 rounded-lg py-2">
+    <div className="relative overflow-hidden bg-black/40 border border-white/[0.06] rounded-lg py-2">
       <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-black/80 to-transparent z-10 pointer-events-none" />
       <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-black/80 to-transparent z-10 pointer-events-none" />
       
-      <div className="flex items-center gap-1 px-3 mb-1">
-        <DollarSign className="h-3 w-3 text-emerald-400" />
-        <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">Live Payouts</span>
+      <div className="flex items-center gap-1.5 px-3 mb-1">
+        <div className="w-1.5 h-1.5 rounded-full bg-status-live animate-pulse" />
+        <span className="text-[9px] font-bold text-foreground uppercase tracking-wider">Live Payouts</span>
       </div>
 
       <div className="flex animate-scroll-left">
@@ -67,9 +65,9 @@ export default function LiveWinnersTicker() {
             key={`${winner.id}-${idx}`}
             className="flex items-center gap-2 px-4 shrink-0"
           >
-            <Avatar className="h-6 w-6 border border-emerald-500/30">
+            <Avatar className="h-6 w-6 border border-white/[0.08]">
               <AvatarImage src={winner.avatar_url || ''} />
-              <AvatarFallback className="bg-emerald-500/20 text-emerald-400 text-[10px]">
+              <AvatarFallback className="bg-white/[0.06] text-white/60 text-[10px]">
                 {winner.username?.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -77,8 +75,8 @@ export default function LiveWinnersTicker() {
               <span className="text-[11px] font-medium text-foreground truncate max-w-[80px]">
                 {winner.username}
               </span>
-              <span className="text-[10px] font-bold text-emerald-400">
-                +${(winner.earned_cents / 100).toFixed(2)}
+              <span className="text-[10px] font-bold text-foreground tabular-nums">
+                <span className="text-gold">$</span>{(winner.earned_cents / 100).toFixed(2)}
               </span>
             </div>
           </div>
