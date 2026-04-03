@@ -428,8 +428,8 @@ export default function HubPage() {
           >
              <div className={`overflow-hidden relative rounded-t-xl ${hasEquippedOG ? 'bg-transparent' : 'bg-surface-1/80'}`}
                style={{
-                 maskImage: 'linear-gradient(to bottom, black 88%, transparent 100%)',
-                 WebkitMaskImage: 'linear-gradient(to bottom, black 88%, transparent 100%)',
+                 maskImage: 'linear-gradient(to bottom, black 92%, transparent 100%)',
+                 WebkitMaskImage: 'linear-gradient(to bottom, black 92%, transparent 100%)',
                }}>
                {/* First Circle Skin — luxury prestige aesthetic */}
                 {hasEquippedOG && (
