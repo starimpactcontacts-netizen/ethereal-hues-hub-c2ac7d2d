@@ -427,10 +427,12 @@ export default function HubPage() {
             className="relative z-10"
           >
              <div className={`overflow-hidden relative rounded-t-xl ${hasEquippedOG ? 'bg-transparent' : 'bg-surface-1/80'}`}>
-               {/* Fade mask — only on background layers */}
+               {/* Fade mask — bow/arch shape: high in center, drops on sides with long fading edges */}
                <div className="absolute inset-0 pointer-events-none z-0" style={{
-                 maskImage: 'linear-gradient(to bottom, black 60%, transparent 90%)',
-                 WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 90%)',
+                 maskImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200'%3E%3Cdefs%3E%3ClinearGradient id='f' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='white'/%3E%3Cstop offset='1' stop-color='black'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='200' fill='white'/%3E%3Cpath d='M0 110 Q50 130, 100 140 Q200 100, 200 100 Q200 100, 300 140 Q350 130, 400 110 L400 200 L0 200 Z' fill='url(%23f)'/%3E%3C/svg%3E")`,
+                 WebkitMaskImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200'%3E%3Cdefs%3E%3ClinearGradient id='f' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='white'/%3E%3Cstop offset='1' stop-color='black'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='200' fill='white'/%3E%3Cpath d='M0 110 Q50 130, 100 140 Q200 100, 200 100 Q200 100, 300 140 Q350 130, 400 110 L400 200 L0 200 Z' fill='url(%23f)'/%3E%3C/svg%3E")`,
+                 maskSize: '100% 100%',
+                 WebkitMaskSize: '100% 100%',
                }}>
                 {hasEquippedOG && (
                    <div className="absolute inset-0 overflow-hidden">
