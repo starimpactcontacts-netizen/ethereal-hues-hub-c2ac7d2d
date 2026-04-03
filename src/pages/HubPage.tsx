@@ -744,9 +744,9 @@ export default function HubPage() {
           <div 
             className="flex overflow-hidden rounded-xl border"
             style={{ 
-              borderColor: quickAction === 'solo' ? 'rgba(234,179,8,0.35)' : 'rgba(239,68,68,0.35)',
+              borderColor: quickAction === 'solo' ? 'rgba(255,255,255,0.20)' : 'rgba(239,68,68,0.35)',
               boxShadow: quickAction === 'solo' 
-                ? '0 4px 30px rgba(234,179,8,0.25), 0 0 60px rgba(234,179,8,0.08)' 
+                ? '0 4px 30px rgba(255,255,255,0.12), 0 0 60px rgba(255,255,255,0.06)' 
                 : '0 4px 30px rgba(239,68,68,0.25), 0 0 60px rgba(239,68,68,0.08)'
             }}
           >
