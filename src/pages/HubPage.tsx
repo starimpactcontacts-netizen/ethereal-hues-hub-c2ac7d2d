@@ -426,7 +426,7 @@ export default function HubPage() {
             animate={{ opacity: 1, y: 0 }}
             className="relative z-10"
           >
-             <div className={`overflow-hidden relative rounded-t-xl ${hasEquippedOG ? 'bg-[#0c0a04] border border-gold/15 border-b-0' : 'bg-surface-1 border border-border/50 border-b-0'}`}>
+             <div className={`overflow-hidden relative rounded-t-xl ${hasEquippedOG ? 'bg-[#0c0a04]' : 'bg-surface-1'}`}>
                {/* First Circle Skin — luxury prestige aesthetic */}
                {hasEquippedOG && (
                  <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
@@ -545,8 +545,8 @@ export default function HubPage() {
               </div>
 
 
-              {/* Quick Access — Cards with seamless dark fade */}
-              <div className="relative z-10 px-3 pt-4 pb-2.5" style={{ background: 'linear-gradient(to bottom, hsl(0 0% 0% / 0) 0%, hsl(0 0% 0% / 0.85) 35%, hsl(0 0% 0% / 1) 100%)' }}>
+              {/* Quick Access — seamless fade into pure black */}
+              <div className="relative z-10 px-3 pt-4 pb-2.5" style={{ background: 'linear-gradient(to bottom, transparent 0%, hsl(0 0% 0% / 0.6) 20%, hsl(0 0% 0% / 1) 60%)' }}>
                 <div className="flex gap-2 items-stretch">
                   {/* Unit — compact left */}
                   <Link to={userCrew ? `/units/${userCrew.id}` : '/units'} className="group flex-1 min-w-0">
