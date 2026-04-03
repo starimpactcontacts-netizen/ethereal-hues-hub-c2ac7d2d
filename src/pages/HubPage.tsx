@@ -769,9 +769,12 @@ export default function HubPage() {
               className={cn(
                 "flex-1 relative overflow-hidden flex items-center justify-center gap-3 px-6 py-5 transition-all duration-300 touch-manipulation select-none",
                 quickAction === 'solo'
-                  ? "bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600"
+                  ? ""
                   : "bg-gradient-to-r from-red-600 via-red-500 to-red-600"
               )}
+              style={quickAction === 'solo' ? {
+                background: 'linear-gradient(135deg, hsl(43 96% 56%) 0%, hsl(40 100% 50%) 40%, hsl(36 100% 48%) 100%)',
+              } : undefined}
             >
               {/* Shine sweep animation */}
               <motion.div
