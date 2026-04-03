@@ -794,8 +794,8 @@ export default function HubPage() {
               
               {quickAction === 'solo' ? (
                 <>
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-white/25 to-white/5 flex items-center justify-center relative z-10 border border-white/30 shadow-lg shadow-amber-900/30">
-                    <UserRound className="w-4.5 h-4.5 text-white drop-shadow-lg" />
+                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-white/30 to-white/10 flex items-center justify-center relative z-10 border border-white/40 shadow-lg shadow-black/20">
+                     <UserRound className="w-4.5 h-4.5 text-white drop-shadow-lg" />
                   </div>
                   <div className="flex flex-col relative z-10">
                     <span className="text-[28px] font-bold text-white uppercase tracking-wider leading-none drop-shadow-lg" style={{ fontFamily: 'Teko, sans-serif' }}>
