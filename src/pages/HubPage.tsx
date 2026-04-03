@@ -426,21 +426,22 @@ export default function HubPage() {
             animate={{ opacity: 1, y: 0 }}
             className="relative z-10"
           >
-             <div className={`overflow-hidden relative rounded-t-xl ${hasEquippedOG ? 'bg-[#0c0a04]' : 'bg-surface-1'}`}>
+             <div className={`overflow-hidden relative rounded-t-xl ${hasEquippedOG ? 'bg-transparent' : 'bg-surface-1'}`}>
                {/* First Circle Skin — luxury prestige aesthetic */}
                 {hasEquippedOG && (
                   <div
                     className="absolute inset-0 pointer-events-none z-0 overflow-hidden"
                     style={{
-                      maskImage: 'linear-gradient(to bottom, #000 0%, #000 62%, rgba(0, 0, 0, 0.55) 82%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to bottom, #000 0%, #000 62%, rgba(0, 0, 0, 0.55) 82%, transparent 100%)',
+                      maskImage: 'linear-gradient(to bottom, hsl(0 0% 0% / 1) 0%, hsl(0 0% 0% / 1) 46%, hsl(0 0% 0% / 0.82) 62%, hsl(0 0% 0% / 0.42) 76%, hsl(0 0% 0% / 0.14) 86%, transparent 92%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to bottom, hsl(0 0% 0% / 1) 0%, hsl(0 0% 0% / 1) 46%, hsl(0 0% 0% / 0.82) 62%, hsl(0 0% 0% / 0.42) 76%, hsl(0 0% 0% / 0.14) 86%, transparent 92%, transparent 100%)',
                     }}
                   >
+                    <div className="absolute inset-0 bg-[linear-gradient(to_bottom,hsl(var(--background)/0.9)_0%,hsl(var(--background)/0.78)_42%,hsl(var(--background)/0.28)_76%,transparent_100%)]" />
                    {/* Subtle radial gold glow from center-top */}
-                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[200px] bg-[radial-gradient(ellipse_at_center,_hsl(var(--gold)/0.06)_0%,_transparent_70%)]" />
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[320px] h-[220px] bg-[radial-gradient(ellipse_at_center,_hsl(var(--gold)/0.07)_0%,_transparent_72%)]" />
                    
                    {/* Fine diagonal crosshatch */}
-                   <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
+                    <svg className="absolute inset-0 w-full h-full opacity-[0.055]" xmlns="http://www.w3.org/2000/svg">
                      <defs>
                        <pattern id="fc-hatch" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
                          <line x1="0" y1="0" x2="0" y2="20" stroke="#C4A44A" strokeWidth="0.5" />
@@ -449,8 +450,8 @@ export default function HubPage() {
                      <rect width="100%" height="100%" fill="url(#fc-hatch)" />
                    </svg>
                    
-                   {/* Edge vignette */}
-                   <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_40%,_#0c0a04_100%)]" />
+                    {/* Soft depth without a hard dark bottom */}
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_transparent_28%,_hsl(var(--background)/0.18)_72%,_transparent_100%)]" />
                    
                    {/* Top accent line */}
                    <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
@@ -459,8 +460,6 @@ export default function HubPage() {
                    {/* Corner accents */}
                    <div className="absolute top-3 left-3 w-3 h-3 border-t border-l border-gold/15" />
                    <div className="absolute top-3 right-3 w-3 h-3 border-t border-r border-gold/15" />
-                   <div className="absolute bottom-3 left-3 w-3 h-3 border-b border-l border-gold/10" />
-                   <div className="absolute bottom-3 right-3 w-3 h-3 border-b border-r border-gold/10" />
                  </div>
                )}
                {/* Top Row: Avatar + Identity + Earnings/Index */}
