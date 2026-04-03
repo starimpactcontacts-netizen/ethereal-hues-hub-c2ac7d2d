@@ -85,7 +85,7 @@ function BalanceTicker() {
               <span className="text-lg font-bold text-white/25 leading-none tabular-nums" style={teko}>.{centPart}</span>
             </div>
             {user && earnings.earnings_cents > 0 && (
-              <p className="text-[9px] font-bold tabular-nums mt-1"><span className="text-emerald-400/50">$</span><span className="text-white/40">{totalEarned}</span> <span className="text-white/15 uppercase tracking-widest text-[7px]">earned</span></p>
+              <p className="text-[9px] font-bold tabular-nums mt-1"><span className="text-emerald-400/50">$</span><span className="text-white/40">{totalEarned}</span> <span className="text-white/15 uppercase tracking-widest text-[7px]">lifetime</span></p>
             )}
           </div>
 
