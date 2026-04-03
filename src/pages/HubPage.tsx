@@ -645,6 +645,18 @@ export default function HubPage() {
               <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'hsl(0 0% 100% / 0.35)' }}>GQT</span>
             </Link>
           </div>
+
+          {/* ─── Cinematic Belt Divider ─── */}
+          <div className="relative mt-2 mb-1 mx-auto w-full max-w-md">
+            <div className="relative h-[3px] rounded-full overflow-hidden">
+              {/* Base line */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
+              {/* Center glow */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+            </div>
+            {/* Soft glow underneath */}
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-2/3 h-4 bg-gold/[0.06] blur-xl rounded-full" />
+          </div>
         </div>
       </div>
 
