@@ -163,7 +163,7 @@ function PayoutCard({ payout, idx }: { payout: Payout; idx: number }) {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: idx * 0.05 }}
-      className="shrink-0 w-[240px] snap-start relative overflow-hidden rounded-lg group"
+      className="shrink-0 w-[200px] snap-start relative overflow-hidden rounded-lg group"
       style={{
         boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
       }}
