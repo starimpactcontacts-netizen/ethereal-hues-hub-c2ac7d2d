@@ -1374,9 +1374,14 @@ export default function ArenaPage() {
                 action={
                   <button
                     onClick={() => profile ? navigate('/quick-fight') : navigate('/start')}
-                    className="text-[12px] text-red-400 hover:text-red-300 font-semibold flex items-center gap-1.5 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:brightness-110"
+                    style={{
+                      background: 'linear-gradient(135deg, #10B981, #059669)',
+                      color: '#fff',
+                      boxShadow: '0 2px 10px rgba(16,185,129,0.3)',
+                    }}
                   >
-                    <Zap className="w-3.5 h-3.5" /> Start Editing
+                    <Zap className="w-3 h-3" /> Start Editing
                   </button>
                 }
               />
