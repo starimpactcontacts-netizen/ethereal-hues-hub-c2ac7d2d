@@ -187,7 +187,7 @@ function PayoutCard({ payout, idx }: { payout: Payout; idx: number }) {
       <div className="relative p-2.5 flex flex-col h-[130px] justify-between">
         {/* Top — user info */}
         <div className="flex items-center gap-2">
-          <Avatar className="w-8 h-8 border border-white/[0.15]">
+          <Avatar className="w-6 h-6 border border-white/[0.15]">
             <AvatarImage src={payout.avatar_url || ""} />
             <AvatarFallback className="bg-emerald-500/20 text-emerald-300 text-[10px] font-black">
               {payout.username?.slice(0, 2).toUpperCase()}
