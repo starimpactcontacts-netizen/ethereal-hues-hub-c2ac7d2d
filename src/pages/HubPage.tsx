@@ -426,7 +426,7 @@ export default function HubPage() {
             animate={{ opacity: 1, y: 0 }}
             className="relative z-10"
           >
-             <div className={`overflow-hidden relative rounded-t-xl ${hasEquippedOG ? 'bg-[#0c0a04] border border-gold/15 border-b-0' : 'bg-surface-1 border border-border/50 border-b-0'}`}>
+             <div className={`overflow-hidden relative ${hasEquippedOG ? 'bg-[#0c0a04]' : 'bg-surface-1'}`} style={{ borderRadius: '12px 12px 0 0', border: '1px solid', borderBottom: 'none', borderImage: hasEquippedOG ? 'linear-gradient(to bottom, hsl(43 74% 49% / 0.15) 0%, transparent 85%) 1' : 'linear-gradient(to bottom, hsl(0 0% 100% / 0.08) 0%, transparent 85%) 1', borderImageSlice: 1 }}>
                {/* First Circle Skin — luxury prestige aesthetic */}
                {hasEquippedOG && (
                  <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
