@@ -724,7 +724,7 @@ export default function HubPage() {
       )}
 
       {/* ⚔️ QUICK ACTION CTA — Premium cinematic button */}
-      <div className="px-4 mt-0">
+      <div className="px-4 mt-1.5">
         <div className="flex flex-col gap-0">
           {/* Cinematic action container — Premium rounded */}
           <div 
