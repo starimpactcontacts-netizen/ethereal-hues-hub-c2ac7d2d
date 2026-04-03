@@ -566,78 +566,73 @@ export default function HubPage() {
                 </div>
               </div>
 
-              {/* Quick Access — Independent floating buttons */}
-              <div className="relative z-10 px-3 py-3">
-                <div className="flex gap-3 items-stretch">
+              {/* Quick Access — Cards with gradient transition */}
+              <div className="relative z-10 px-3 py-2.5" style={{ background: 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.6))' }}>
+                <div className="flex gap-2 items-stretch">
                   {/* Unit — compact left */}
                   <Link to={userCrew ? `/units/${userCrew.id}` : '/units'} className="group flex-1 min-w-0">
-                    <div className="h-full flex flex-col items-center justify-center text-center gap-1.5 py-3 rounded-xl transition-all group-hover:bg-white/[0.03] group-active:scale-[0.97]">
-                      <div className="w-9 h-9 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center overflow-hidden group-hover:border-white/[0.15] transition-colors">
+                    <div className="bg-surface-1/40 border border-border/30 rounded-xl p-2.5 group-hover:border-foreground/20 transition-colors h-full flex flex-col items-center justify-center text-center gap-1.5">
+                      <div className="w-8 h-8 rounded-lg bg-muted/40 border border-border/50 flex items-center justify-center overflow-hidden">
                         {userCrew?.avatar_url ? (
                           <img src={userCrew.avatar_url} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <Users2 className="w-4 h-4 text-muted-foreground/60" />
+                          <Users2 className="w-4 h-4 text-muted-foreground/70" />
                         )}
                       </div>
                       <div>
-                        <p className="text-[8px] text-muted-foreground/50 uppercase tracking-[0.15em] font-semibold">{userCrew ? 'Unit' : 'Units'}</p>
-                        <p className="font-display text-[11px] text-foreground/90 leading-tight truncate max-w-[80px]">
+                        <p className="text-[8px] text-muted-foreground/60 uppercase tracking-[0.15em] font-semibold">{userCrew ? 'Unit' : 'Units'}</p>
+                        <p className="font-display text-[11px] text-foreground leading-tight truncate max-w-[80px]">
                           {userCrew ? userCrew.name : 'Find group'}
                         </p>
                       </div>
                     </div>
                   </Link>
 
-                  {/* Divider */}
-                  <div className="w-px bg-gradient-to-b from-transparent via-white/[0.06] to-transparent self-stretch my-2" />
-
                   {/* Studio — hero center tile */}
                   {isJudge ? (
                     <Link to="/judge-panel" className="group flex-[1.6]">
-                      <div className="relative h-full flex flex-col items-center justify-center text-center gap-2 py-3 rounded-xl transition-all group-hover:bg-white/[0.03] group-active:scale-[0.97]">
-                        <div className="relative w-11 h-11 rounded-xl bg-red-500/[0.08] border border-red-500/[0.15] flex items-center justify-center group-hover:border-red-500/30 transition-colors">
+                      <div className="relative overflow-hidden bg-gradient-to-b from-red-950/40 to-background border border-red-800/30 rounded-xl p-4 group-hover:border-red-600/50 transition-all h-full flex flex-col items-center justify-center text-center gap-2">
+                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.08),transparent_70%)]" />
+                        <div className="relative w-10 h-10 rounded-xl bg-red-900/30 border border-red-800/40 flex items-center justify-center">
                           <Gavel className="w-5 h-5 text-red-400" />
                         </div>
                         <div className="relative">
                           <p className="font-display text-sm text-foreground leading-tight">Start Judging</p>
-                          <p className="text-[8px] text-red-400/50 uppercase tracking-[0.15em] font-semibold mt-0.5">Panel</p>
+                          <p className="text-[8px] text-red-400/60 uppercase tracking-[0.15em] font-semibold mt-0.5">Panel</p>
                         </div>
                       </div>
                     </Link>
                   ) : (
                     <Link to="/studio" className="group flex-[1.6]">
-                      <div className="relative h-full flex flex-col items-center justify-center text-center gap-2 py-3 rounded-xl transition-all group-hover:bg-white/[0.03] group-active:scale-[0.97]">
-                        <div className="relative w-11 h-11 rounded-xl bg-white/[0.06] border border-white/[0.1] flex items-center justify-center group-hover:border-white/[0.2] transition-colors">
+                      <div className="relative overflow-hidden bg-gradient-to-b from-surface-1 to-background border border-border/50 rounded-xl p-4 group-hover:border-foreground/30 transition-all h-full flex flex-col items-center justify-center text-center gap-2">
+                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.03),transparent_70%)]" />
+                        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-foreground/10 to-transparent" />
+                        <div className="relative w-10 h-10 rounded-xl bg-foreground/[0.06] border border-border/50 flex items-center justify-center">
                           <Clapperboard className="w-5 h-5 text-foreground/80" />
                         </div>
                         <div className="relative">
                           <p className="font-display text-sm text-foreground leading-tight">Open Studio</p>
-                          <p className="text-[8px] text-muted-foreground/40 uppercase tracking-[0.15em] font-semibold mt-0.5">Editor</p>
+                          <p className="text-[8px] text-muted-foreground/50 uppercase tracking-[0.15em] font-semibold mt-0.5">Editor</p>
                         </div>
                       </div>
                     </Link>
                   )}
 
-                  {/* Divider */}
-                  <div className="w-px bg-gradient-to-b from-transparent via-white/[0.06] to-transparent self-stretch my-2" />
-
                   {/* GQT — compact right */}
                   <Link to="/gqt" className="group flex-1 min-w-0">
-                    <div className="h-full flex flex-col items-center justify-center text-center gap-1.5 py-3 rounded-xl transition-all group-hover:bg-white/[0.03] group-active:scale-[0.97]">
-                      <div className="w-9 h-9 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center group-hover:border-white/[0.15] transition-colors">
-                        <Target className="w-4 h-4 text-muted-foreground/60" />
+                    <div className="bg-surface-1/40 border border-border/30 rounded-xl p-2.5 group-hover:border-foreground/20 transition-colors h-full flex flex-col items-center justify-center text-center gap-1.5">
+                      <div className="w-8 h-8 rounded-lg bg-muted/40 border border-border/50 flex items-center justify-center">
+                        <Target className="w-4 h-4 text-muted-foreground/70" />
                       </div>
                       <div>
-                        <p className="text-[8px] text-muted-foreground/50 uppercase tracking-[0.15em] font-semibold">GQT</p>
-                        <p className="font-display text-[11px] text-foreground/90 leading-tight">
+                        <p className="text-[8px] text-muted-foreground/60 uppercase tracking-[0.15em] font-semibold">GQT</p>
+                        <p className="font-display text-[11px] text-foreground leading-tight">
                           {bestScore ? `${bestScore.toFixed(0)} QOI` : 'Get score'}
                         </p>
                       </div>
                     </div>
                   </Link>
                 </div>
-                {/* Bottom fade line */}
-                <div className="absolute bottom-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
               </div>
             </div>
           </motion.div>
