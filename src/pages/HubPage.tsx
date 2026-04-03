@@ -549,7 +549,7 @@ export default function HubPage() {
           </motion.div>
 
           {/* Quick Access — Rolls Royce Starlight dock */}
-          <div className="flex items-center justify-center gap-6 mt-2 mb-3">
+          <div className="flex items-center justify-center gap-6 -mt-1 mb-3">
             {/* UNITS */}
             <Link to={userCrew ? `/units/${userCrew.id}` : '/units'} className="group flex flex-col items-center gap-3">
               <div className="relative w-[68px] h-[68px] rounded-[22px] overflow-hidden"
