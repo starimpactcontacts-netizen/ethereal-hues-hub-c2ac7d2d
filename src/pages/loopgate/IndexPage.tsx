@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Search, Loader2, Gavel, Crown, Lock, ChevronRight, Users, Target, Medal, Zap, Trophy, RefreshCw, ArrowLeft, Plus, Play, Flame, Star, Newspaper, TrendingUp, ArrowRight, Eye } from "lucide-react";
+import { Search, Loader2, Gavel, Crown, Lock, ChevronRight, Users, Target, Medal, Zap, Trophy, RefreshCw, ArrowLeft, Plus, Play, Flame, Star, Newspaper, TrendingUp, ArrowRight, Eye, UserPlus } from "lucide-react";
 import GateIcon from '@/components/loopgate/GateIcon';
 import { motion, AnimatePresence } from "framer-motion";
 import { useRealRankings, useRealEvents, useEventRankings, useActiveSession } from "@/hooks/useRealData";
