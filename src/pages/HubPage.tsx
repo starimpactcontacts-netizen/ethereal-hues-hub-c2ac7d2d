@@ -426,7 +426,11 @@ export default function HubPage() {
             animate={{ opacity: 1, y: 0 }}
             className="relative z-10"
           >
-             <div className={`overflow-hidden relative rounded-xl border border-border/20 ${hasEquippedOG ? 'bg-transparent' : 'bg-surface-1'}`}>
+             <div className={`overflow-hidden relative rounded-t-xl ${hasEquippedOG ? 'bg-transparent' : 'bg-surface-1/80'}`}
+               style={{
+                 maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
+                 WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
+               }}>
                {/* First Circle Skin — luxury prestige aesthetic */}
                 {hasEquippedOG && (
                   <div
