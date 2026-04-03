@@ -1373,7 +1373,7 @@ export default function ArenaPage() {
                 infoText="Instant matchmaking. Auto-matched with another editor — both submit an edit within 3 hours. Judge picks the winner. Winner +20 IDX."
                 action={
                   <button
-                    onClick={() => profile ? navigate('/quick-fight') : navigate('/start')}
+                    onClick={handleQuickFight}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:brightness-110"
                     style={{
                       background: 'linear-gradient(135deg, #10B981, #059669)',
@@ -1421,7 +1421,7 @@ export default function ArenaPage() {
                     <p className="text-[12px] text-muted-foreground/60 mb-4">Be the first to start a fight</p>
                     <Button
                       size="sm"
-                      onClick={() => profile ? navigate('/quick-fight') : navigate('/start')}
+                      onClick={handleQuickFight}
                       className="bg-red-500 hover:bg-red-600 text-white text-[12px] h-9 px-5"
                     >
                       <Zap className="w-3.5 h-3.5 mr-1.5" /> Start Quick 1v1
