@@ -681,8 +681,6 @@ export default function ArenaPage() {
     { key: "battles", label: "1v1", icon: <Swords className="w-3.5 h-3.5" />, accent: "red" },
     { key: "official", label: "Official", icon: <InfinityIcon className="w-3.5 h-3.5" />, accent: "gold" },
     { key: "sanctioned", label: "Sanctioned", icon: <Shield className="w-3.5 h-3.5" /> },
-    { key: "hosted", label: "Hosted", icon: <Globe className="w-3.5 h-3.5" />, accent: "cyan" },
-    { key: "practice", label: "Practice" },
   ];
 
   const handleQuickFight = async () => {
