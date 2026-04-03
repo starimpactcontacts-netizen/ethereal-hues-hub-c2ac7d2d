@@ -554,22 +554,22 @@ export default function HubPage() {
             <Link to={userCrew ? `/units/${userCrew.id}` : '/units'} className="group flex flex-col items-center gap-3">
               <div className="relative w-[68px] h-[68px] rounded-[22px] overflow-hidden"
                 style={{
-                  background: 'linear-gradient(145deg, #0a0a0e 0%, #0e0e12 50%, #08080c 100%)',
-                  border: '1px solid rgba(255,255,255,0.05)',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.03)',
+                  background: 'linear-gradient(145deg, hsl(0 0% 4%) 0%, hsl(0 0% 6%) 50%, hsl(0 0% 3%) 100%)',
+                  border: '1px solid hsl(0 0% 100% / 0.05)',
+                  boxShadow: '0 8px 32px hsl(0 0% 0% / 0.8), inset 0 1px 0 hsl(0 0% 100% / 0.03)',
                 }}>
-                <div className="absolute w-[1px] h-[1px] rounded-full bg-white/25 top-4 right-5" style={{ boxShadow: '0 0 2px rgba(255,255,255,0.2)' }} />
-                <div className="absolute w-[1px] h-[1px] rounded-full bg-white/20 bottom-4 left-5" style={{ boxShadow: '0 0 2px rgba(255,255,255,0.15)' }} />
-                <div className="absolute inset-[6px] rounded-[16px]" style={{ border: '1px solid rgba(255,255,255,0.03)' }} />
+                <div className="absolute w-[1px] h-[1px] rounded-full bg-white/25 top-4 right-5" style={{ boxShadow: '0 0 2px hsl(0 0% 100% / 0.2)' }} />
+                <div className="absolute w-[1px] h-[1px] rounded-full bg-white/20 bottom-4 left-5" style={{ boxShadow: '0 0 2px hsl(0 0% 100% / 0.15)' }} />
+                <div className="absolute inset-[6px] rounded-[16px]" style={{ border: '1px solid hsl(0 0% 100% / 0.03)' }} />
                 <div className="relative z-10 flex h-full w-full items-center justify-center">
                   {userCrew?.avatar_url ? (
                     <img src={userCrew.avatar_url} alt="" className="w-9 h-9 rounded-xl object-cover" />
                   ) : (
-                    <Users2 className="w-7 h-7" style={{ color: 'rgba(255,255,255,0.45)' }} />
+                    <Users2 className="w-7 h-7" style={{ color: 'hsl(0 0% 100% / 0.45)' }} />
                   )}
                 </div>
               </div>
-              <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'rgba(255,255,255,0.35)' }}>{userCrew ? 'Unit' : 'Units'}</span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'hsl(0 0% 100% / 0.35)' }}>{userCrew ? 'Unit' : 'Units'}</span>
             </Link>
 
             {/* CENTER — Studio or Judge Panel */}
@@ -577,49 +577,49 @@ export default function HubPage() {
               <Link to="/judge-panel" className="group flex flex-col items-center gap-3">
                 <div className="relative w-[80px] h-[80px] rounded-[26px] overflow-hidden"
                   style={{
-                    background: 'linear-gradient(145deg, #0c0810 0%, #0f0a16 50%, #0a0810 100%)',
-                    border: '1px solid rgba(180,140,255,0.1)',
-                    boxShadow: '0 12px 40px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.04), 0 0 20px rgba(140,100,220,0.06), 0 0 1px rgba(180,160,255,0.2)',
+                    background: 'linear-gradient(145deg, hsl(0 0% 4%) 0%, hsl(0 0% 6%) 50%, hsl(0 0% 3%) 100%)',
+                    border: '1px solid hsl(0 0% 100% / 0.07)',
+                    boxShadow: '0 12px 40px hsl(0 0% 0% / 0.85), inset 0 1px 0 hsl(0 0% 100% / 0.04), 0 0 20px hsl(0 0% 100% / 0.04), 0 0 1px hsl(0 0% 100% / 0.15)',
                   }}>
                   <div className="absolute inset-0 overflow-hidden rounded-[26px]">
-                    <div className="absolute w-[2px] h-[2px] rounded-full bg-white/70 top-3 left-5" style={{ boxShadow: '0 0 4px rgba(200,180,255,0.7)' }} />
-                    <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-white/50 top-6 right-4" style={{ boxShadow: '0 0 3px rgba(200,180,255,0.5)' }} />
-                    <div className="absolute w-[1px] h-[1px] rounded-full bg-white/40 bottom-5 left-4" style={{ boxShadow: '0 0 2px rgba(200,180,255,0.4)' }} />
-                    <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-white/55 bottom-3 right-6" style={{ boxShadow: '0 0 3px rgba(200,180,255,0.5)' }} />
-                    <div className="absolute w-[1px] h-[1px] rounded-full bg-white/35 top-10 left-6" style={{ boxShadow: '0 0 2px rgba(200,180,255,0.3)' }} />
-                    <div className="absolute w-[2px] h-[2px] rounded-full bg-white/60 top-4 right-7" style={{ boxShadow: '0 0 4px rgba(200,180,255,0.6)' }} />
+                    <div className="absolute w-[2px] h-[2px] rounded-full bg-white/70 top-3 left-5" style={{ boxShadow: '0 0 4px hsl(0 0% 100% / 0.7)' }} />
+                    <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-white/50 top-6 right-4" style={{ boxShadow: '0 0 3px hsl(0 0% 100% / 0.5)' }} />
+                    <div className="absolute w-[1px] h-[1px] rounded-full bg-white/40 bottom-5 left-4" style={{ boxShadow: '0 0 2px hsl(0 0% 100% / 0.4)' }} />
+                    <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-white/55 bottom-3 right-6" style={{ boxShadow: '0 0 3px hsl(0 0% 100% / 0.5)' }} />
+                    <div className="absolute w-[1px] h-[1px] rounded-full bg-white/35 top-10 left-6" style={{ boxShadow: '0 0 2px hsl(0 0% 100% / 0.3)' }} />
+                    <div className="absolute w-[2px] h-[2px] rounded-full bg-white/60 top-4 right-7" style={{ boxShadow: '0 0 4px hsl(0 0% 100% / 0.6)' }} />
                   </div>
-                  <div className="absolute inset-[6px] rounded-[20px]" style={{ border: '1px solid rgba(180,140,255,0.06)', background: 'linear-gradient(160deg, rgba(180,140,255,0.03) 0%, transparent 60%)' }} />
+                  <div className="absolute inset-[6px] rounded-[20px]" style={{ border: '1px solid hsl(0 0% 100% / 0.05)', background: 'linear-gradient(160deg, hsl(0 0% 100% / 0.03) 0%, transparent 60%)' }} />
                   <div className="relative z-10 flex h-full w-full items-center justify-center">
-                    <Gavel className="w-9 h-9" style={{ color: 'rgba(200,180,255,0.8)' }} />
+                    <Gavel className="w-9 h-9" style={{ color: 'hsl(0 0% 100% / 0.78)' }} />
                   </div>
                 </div>
-                <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'rgba(200,180,255,0.55)' }}>Panel</span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'hsl(0 0% 100% / 0.5)' }}>Panel</span>
               </Link>
             ) : (
               <Link to="/studio" className="group flex flex-col items-center gap-3">
                 <div className="relative w-[80px] h-[80px] rounded-[26px] overflow-hidden"
                   style={{
-                    background: 'linear-gradient(145deg, #08080e 0%, #0c0c14 50%, #06060c 100%)',
-                    border: '1px solid rgba(180,200,255,0.08)',
-                    boxShadow: '0 12px 40px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 20px rgba(140,170,255,0.05), 0 0 1px rgba(200,220,255,0.2)',
+                    background: 'linear-gradient(145deg, hsl(0 0% 4%) 0%, hsl(0 0% 6%) 50%, hsl(0 0% 3%) 100%)',
+                    border: '1px solid hsl(0 0% 100% / 0.07)',
+                    boxShadow: '0 12px 40px hsl(0 0% 0% / 0.85), inset 0 1px 0 hsl(0 0% 100% / 0.05), 0 0 20px hsl(0 0% 100% / 0.04), 0 0 1px hsl(0 0% 100% / 0.15)',
                   }}>
                   {/* More starlight dots for center prominence */}
                   <div className="absolute inset-0 overflow-hidden rounded-[26px]">
-                    <div className="absolute w-[2px] h-[2px] rounded-full bg-white/70 top-3 left-5" style={{ boxShadow: '0 0 4px rgba(200,220,255,0.8)' }} />
-                    <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-white/55 top-5 right-4" style={{ boxShadow: '0 0 3px rgba(200,220,255,0.6)' }} />
-                    <div className="absolute w-[1px] h-[1px] rounded-full bg-white/40 bottom-5 left-4" style={{ boxShadow: '0 0 2px rgba(200,220,255,0.4)' }} />
-                    <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-white/60 bottom-3 right-5" style={{ boxShadow: '0 0 3px rgba(200,220,255,0.6)' }} />
-                    <div className="absolute w-[1px] h-[1px] rounded-full bg-white/35 top-9 left-3" style={{ boxShadow: '0 0 2px rgba(200,220,255,0.3)' }} />
-                    <div className="absolute w-[2px] h-[2px] rounded-full bg-white/65 top-4 right-7" style={{ boxShadow: '0 0 4px rgba(200,220,255,0.7)' }} />
-                    <div className="absolute w-[1px] h-[1px] rounded-full bg-white/30 bottom-6 left-7" style={{ boxShadow: '0 0 2px rgba(200,220,255,0.3)' }} />
+                    <div className="absolute w-[2px] h-[2px] rounded-full bg-white/70 top-3 left-5" style={{ boxShadow: '0 0 4px hsl(0 0% 100% / 0.8)' }} />
+                    <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-white/55 top-5 right-4" style={{ boxShadow: '0 0 3px hsl(0 0% 100% / 0.6)' }} />
+                    <div className="absolute w-[1px] h-[1px] rounded-full bg-white/40 bottom-5 left-4" style={{ boxShadow: '0 0 2px hsl(0 0% 100% / 0.4)' }} />
+                    <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-white/60 bottom-3 right-5" style={{ boxShadow: '0 0 3px hsl(0 0% 100% / 0.6)' }} />
+                    <div className="absolute w-[1px] h-[1px] rounded-full bg-white/35 top-9 left-3" style={{ boxShadow: '0 0 2px hsl(0 0% 100% / 0.3)' }} />
+                    <div className="absolute w-[2px] h-[2px] rounded-full bg-white/65 top-4 right-7" style={{ boxShadow: '0 0 4px hsl(0 0% 100% / 0.7)' }} />
+                    <div className="absolute w-[1px] h-[1px] rounded-full bg-white/30 bottom-6 left-7" style={{ boxShadow: '0 0 2px hsl(0 0% 100% / 0.3)' }} />
                   </div>
-                  <div className="absolute inset-[6px] rounded-[20px]" style={{ border: '1px solid rgba(200,220,255,0.05)', background: 'linear-gradient(160deg, rgba(200,220,255,0.03) 0%, transparent 60%)' }} />
+                  <div className="absolute inset-[6px] rounded-[20px]" style={{ border: '1px solid hsl(0 0% 100% / 0.05)', background: 'linear-gradient(160deg, hsl(0 0% 100% / 0.03) 0%, transparent 60%)' }} />
                   <div className="relative z-10 flex h-full w-full items-center justify-center">
-                    <Clapperboard className="w-9 h-9" style={{ color: 'rgba(210,225,255,0.85)' }} />
+                    <Clapperboard className="w-9 h-9" style={{ color: 'hsl(0 0% 100% / 0.82)' }} />
                   </div>
                 </div>
-                <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'rgba(200,215,240,0.55)' }}>Studio</span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'hsl(0 0% 100% / 0.5)' }}>Studio</span>
               </Link>
             )}
 
@@ -627,18 +627,18 @@ export default function HubPage() {
             <Link to="/gqt" className="group flex flex-col items-center gap-3">
               <div className="relative w-[68px] h-[68px] rounded-[22px] overflow-hidden"
                 style={{
-                  background: 'linear-gradient(145deg, #0a0a0e 0%, #0e0e12 50%, #08080c 100%)',
-                  border: '1px solid rgba(255,255,255,0.05)',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.03)',
+                  background: 'linear-gradient(145deg, hsl(0 0% 4%) 0%, hsl(0 0% 6%) 50%, hsl(0 0% 3%) 100%)',
+                  border: '1px solid hsl(0 0% 100% / 0.05)',
+                  boxShadow: '0 8px 32px hsl(0 0% 0% / 0.8), inset 0 1px 0 hsl(0 0% 100% / 0.03)',
                 }}>
-                <div className="absolute w-[1px] h-[1px] rounded-full bg-white/20 top-3 left-5" style={{ boxShadow: '0 0 2px rgba(255,255,255,0.15)' }} />
-                <div className="absolute w-[1px] h-[1px] rounded-full bg-white/25 bottom-5 right-4" style={{ boxShadow: '0 0 2px rgba(255,255,255,0.2)' }} />
-                <div className="absolute inset-[6px] rounded-[16px]" style={{ border: '1px solid rgba(255,255,255,0.03)' }} />
+                <div className="absolute w-[1px] h-[1px] rounded-full bg-white/20 top-3 left-5" style={{ boxShadow: '0 0 2px hsl(0 0% 100% / 0.15)' }} />
+                <div className="absolute w-[1px] h-[1px] rounded-full bg-white/25 bottom-5 right-4" style={{ boxShadow: '0 0 2px hsl(0 0% 100% / 0.2)' }} />
+                <div className="absolute inset-[6px] rounded-[16px]" style={{ border: '1px solid hsl(0 0% 100% / 0.03)' }} />
                 <div className="relative z-10 flex h-full w-full items-center justify-center">
-                  <Target className="w-7 h-7" style={{ color: 'rgba(255,255,255,0.45)' }} />
+                  <Target className="w-7 h-7" style={{ color: 'hsl(0 0% 100% / 0.45)' }} />
                 </div>
               </div>
-              <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'rgba(255,255,255,0.35)' }}>GQT</span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'hsl(0 0% 100% / 0.35)' }}>GQT</span>
             </Link>
           </div>
         </div>
