@@ -555,7 +555,7 @@ export default function HubPage() {
           {/* Quick Access — Rolls Royce Starlight dock */}
           <div className="relative mt-4 mb-3">
             {/* ─── BELT — horizontal band cutting through icons ─── */}
-            <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 z-0 pointer-events-none" style={{ marginTop: '-8px' }}>
+            <div className="absolute top-1/2 z-0 pointer-events-none" style={{ marginTop: '-8px', width: '100vw', left: '50%', transform: 'translateX(-50%) translateY(-50%)' }}>
               <div className="h-[18px] w-full" style={{
                 background: 'linear-gradient(180deg, hsl(0 0% 0% / 0) 0%, hsl(0 0% 8% / 0.9) 20%, hsl(0 0% 12% / 1) 40%, hsl(0 0% 12% / 1) 60%, hsl(0 0% 8% / 0.9) 80%, hsl(0 0% 0% / 0) 100%)',
                 borderTop: '1px solid hsl(0 0% 100% / 0.08)',
