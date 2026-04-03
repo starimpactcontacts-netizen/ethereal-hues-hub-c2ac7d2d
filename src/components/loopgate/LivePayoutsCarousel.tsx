@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DollarSign } from "lucide-react";
+import { DollarSign, TrendingUp, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 
@@ -22,6 +22,8 @@ type Payout = PayoutRow & {
   drop_title: string | null;
   drop_poster: string | null;
 };
+
+const teko = { fontFamily: 'Teko, sans-serif' };
 
 export default function LivePayoutsCarousel() {
   const [payouts, setPayouts] = useState<Payout[]>([]);
@@ -102,6 +104,7 @@ export default function LivePayoutsCarousel() {
   }, []);
 
   const totalCents = useMemo(() => payouts.reduce((sum, p) => sum + (p.earned_cents || 0), 0), [payouts]);
+  const avgCents = payouts.length > 0 ? totalCents / payouts.length : 0;
 
   if (payouts.length === 0) {
     return (
@@ -121,63 +124,105 @@ export default function LivePayoutsCarousel() {
 
   return (
     <div className="mb-4">
-      {/* Header — minimal */}
-      <div className="flex items-center justify-between mb-2 px-4">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-2.5 px-4">
         <div className="flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-status-live animate-pulse" />
-          <span className="text-[11px] font-black text-foreground uppercase tracking-wider">Live Payouts</span>
-          <span className="text-[9px] text-muted-foreground font-medium tabular-nums">
-            ${(totalCents / 100).toFixed(2)} paid
-          </span>
+          <DollarSign className="w-4 h-4 text-emerald-400" />
+          <span className="text-[13px] font-black text-foreground uppercase tracking-wider" style={teko}>Live Payouts</span>
         </div>
         <span className="text-[9px] text-muted-foreground">{payouts.length} recent</span>
       </div>
 
-      {/* Ticker rows — stake.com style */}
-      <div className="px-4 space-y-px">
+      {/* Cards carousel */}
+      <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory">
         {payouts.map((payout, idx) => (
-          <motion.div
-            key={payout.id}
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.03 }}
-            className="flex items-center gap-3 py-2 px-3 rounded-md group hover:bg-white/[0.03] transition-colors"
-            style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
-          >
-            {/* Avatar */}
-            <Avatar className="w-7 h-7 shrink-0 border border-white/[0.08]">
-              <AvatarImage src={payout.avatar_url || ""} />
-              <AvatarFallback className="bg-white/[0.06] text-white/60 text-[9px] font-bold">
-                {payout.username?.slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-
-            {/* User + context */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[12px] font-bold text-foreground truncate">{payout.username}</span>
-                {payout.rating && (
-                  <span className="text-[8px] font-bold text-muted-foreground/50 uppercase">{payout.rating}</span>
-                )}
-              </div>
-              <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground">
-                <span className="truncate">{payout.drop_title || "Feature"}</span>
-                <span>·</span>
-                <span className="shrink-0">
-                  {formatDistanceToNow(new Date(payout.judged_at || payout.created_at), { addSuffix: true })}
-                </span>
-              </div>
-            </div>
-
-            {/* Amount — the dopamine hit */}
-            <div className="shrink-0 text-right">
-              <span className="text-[14px] font-black text-foreground tabular-nums">
-                <span className="text-gold">$</span>{(payout.earned_cents / 100).toFixed(2)}
-              </span>
-            </div>
-          </motion.div>
+          <PayoutCard key={payout.id} payout={payout} idx={idx} />
         ))}
       </div>
+
+      {/* Footer stats */}
+      <div className="flex items-center gap-3 px-4 mt-2 text-[9px] text-muted-foreground">
+        <span>Total paid: <span className="text-emerald-400 font-bold">${(totalCents / 100).toFixed(2)}</span></span>
+        <span className="text-border/30">|</span>
+        <span>Avg: <span className="text-foreground/60 font-bold">${(avgCents / 100).toFixed(2)}</span></span>
+        <div className="flex items-center gap-1 ml-auto">
+          <div className="w-1.5 h-1.5 rounded-full bg-status-live animate-pulse" />
+          <span className="font-bold">Recent</span>
+        </div>
+      </div>
     </div>
+  );
+}
+
+function PayoutCard({ payout, idx }: { payout: Payout; idx: number }) {
+  const amount = (payout.earned_cents / 100).toFixed(2);
+  const timeAgo = formatDistanceToNow(new Date(payout.judged_at || payout.created_at), { addSuffix: false });
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: idx * 0.05 }}
+      className="shrink-0 w-[240px] snap-start relative overflow-hidden rounded-lg group"
+      style={{
+        boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
+      }}
+    >
+      {/* Background — poster or gradient */}
+      {payout.drop_poster ? (
+        <img
+          src={payout.drop_poster}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover scale-[1.05] group-hover:scale-[1.1] transition-transform duration-700"
+        />
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/60 via-black to-black" />
+      )}
+
+      {/* Overlays */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/30" />
+      <div className="absolute inset-0 rounded-lg border border-white/[0.08] group-hover:border-emerald-400/20 transition-colors duration-300" />
+
+      {/* Content */}
+      <div className="relative p-3 flex flex-col h-[160px] justify-between">
+        {/* Top — user info */}
+        <div className="flex items-center gap-2">
+          <Avatar className="w-8 h-8 border border-white/[0.15]">
+            <AvatarImage src={payout.avatar_url || ""} />
+            <AvatarFallback className="bg-emerald-500/20 text-emerald-300 text-[10px] font-black">
+              {payout.username?.slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0">
+            <span className="text-[13px] font-bold text-white truncate block">{payout.username}</span>
+            <span className="text-[9px] text-white/40">{timeAgo} ago</span>
+          </div>
+        </div>
+
+        {/* Center — big money */}
+        <div className="flex items-end gap-1.5">
+          <span className="text-3xl font-black text-emerald-400 leading-none tabular-nums tracking-tight" style={teko}>
+            ${amount}
+          </span>
+          <TrendingUp className="w-4 h-4 text-emerald-400/60 mb-1" />
+        </div>
+
+        {/* Bottom — drop info + rating */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1 min-w-0 flex-1">
+            <Zap className="w-3 h-3 text-gold shrink-0" />
+            <span className="text-[9px] font-bold text-white/50 uppercase tracking-wider truncate">
+              {payout.drop_title || "Feature"}
+            </span>
+          </div>
+          {payout.rating && (
+            <div className="flex flex-col items-center ml-2 shrink-0">
+              <span className="text-sm font-black text-white/30 leading-none" style={teko}>{payout.rating}</span>
+              <span className="text-[6px] font-bold text-white/15 uppercase tracking-[0.15em]">Rank</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </motion.div>
   );
 }
