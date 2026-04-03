@@ -25,7 +25,6 @@ export default function AuthenticatedLayout() {
       {!hideNav && !hideHeader && <AppHeader />}
       <main
         className={`flex-1 overflow-y-auto bg-background ${!hideNav && !hideHeader ? 'pb-[calc(4.5rem+env(safe-area-inset-bottom))]' : ''}`}
-        style={!hideNav && !hideHeader ? { paddingTop: 'env(safe-area-inset-top)' } : undefined}
       >
         <Suspense fallback={<LoadingScreen minimal />}>
           <Outlet />
