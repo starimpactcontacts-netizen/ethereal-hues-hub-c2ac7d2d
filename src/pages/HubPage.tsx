@@ -426,136 +426,130 @@ export default function HubPage() {
             animate={{ opacity: 1, y: 0 }}
             className="relative z-10"
           >
-             <div className={`overflow-hidden relative rounded-t-xl ${hasEquippedOG ? 'bg-transparent' : 'bg-surface-1/80'}`}>
-               {/* Background layers */}
-               <div className="absolute inset-0 pointer-events-none z-0">
+             <div className={`overflow-hidden relative rounded-t-xl ${hasEquippedOG ? 'bg-transparent' : 'bg-surface-1/80'}`}
+               style={{
+                 maskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)',
+                 WebkitMaskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)',
+               }}>
+               {/* First Circle Skin — luxury prestige aesthetic */}
                 {hasEquippedOG && (
-                   <div className="absolute inset-0 overflow-hidden">
-                     <div className="absolute inset-0 bg-[linear-gradient(to_bottom,hsl(var(--background)/0.9)_0%,hsl(var(--background)/0.78)_42%,hsl(var(--background)/0.28)_76%,transparent_100%)]" />
-                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[320px] h-[220px] bg-[radial-gradient(ellipse_at_center,_hsl(var(--gold)/0.07)_0%,_transparent_72%)]" />
-                     <svg className="absolute inset-0 w-full h-full opacity-[0.055]" xmlns="http://www.w3.org/2000/svg">
-                      <defs>
-                        <pattern id="fc-hatch" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                          <line x1="0" y1="0" x2="0" y2="20" stroke="#C4A44A" strokeWidth="0.5" />
-                        </pattern>
-                      </defs>
-                      <rect width="100%" height="100%" fill="url(#fc-hatch)" />
-                    </svg>
-                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_transparent_28%,_hsl(var(--background)/0.18)_72%,_transparent_100%)]" />
-                    <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
-                    <div className="absolute top-3 left-3 w-3 h-3 border-t border-l border-gold/15" />
-                    <div className="absolute top-3 right-3 w-3 h-3 border-t border-r border-gold/15" />
-                  </div>
-                )}
-                {!hasEquippedOG && <div className="absolute inset-0 bg-surface-1/80" />}
-               </div>
-               {/* Bow/arch fade overlay — arches up in center, long shadow edges on sides */}
-               <div className="absolute inset-0 pointer-events-none z-[1] overflow-hidden">
-                 {/* Center arch cap */}
-                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[52%] h-[62%]" style={{
-                   background: 'radial-gradient(ellipse 100% 100% at 50% 100%, hsl(var(--background)) 0%, hsl(var(--background)) 34%, hsl(var(--background)/0.72) 52%, transparent 74%)',
-                 }} />
-                 {/* Left long bridge arm */}
-                 <div className="absolute -bottom-[6%] -left-[10%] w-[48%] h-[44%] rotate-[12deg] blur-md" style={{
-                   background: 'linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background)/0.92) 32%, hsl(var(--background)/0.55) 62%, transparent 100%)',
-                   clipPath: 'polygon(0% 100%, 100% 68%, 100% 100%, 0% 100%)',
-                 }} />
-                 {/* Right long bridge arm */}
-                 <div className="absolute -bottom-[6%] -right-[10%] w-[48%] h-[44%] -rotate-[12deg] blur-md" style={{
-                   background: 'linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background)/0.92) 32%, hsl(var(--background)/0.55) 62%, transparent 100%)',
-                   clipPath: 'polygon(0% 68%, 100% 100%, 100% 100%, 0% 100%)',
-                 }} />
-                 {/* Bottom anchor haze */}
-                 <div className="absolute bottom-0 left-0 right-0 h-[18%]" style={{
-                   background: 'linear-gradient(to top, hsl(var(--background)/0.95) 0%, hsl(var(--background)/0.58) 58%, transparent 100%)',
-                 }} />
-               </div>
-
-               {/* Content — NOT masked */}
-               <div className="relative z-10 p-4 pb-2">
-                 <div className="flex items-start justify-between gap-2">
-                   <button 
-                     onClick={() => navigate('/profile')}
-                     className="flex items-center gap-3 group text-left min-w-0"
-                   >
-                     <div className="relative shrink-0">
-                       <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br ${league.gradient} p-[2px] shadow-lg ${league.glow} group-hover:scale-105 transition-transform`}>
-                         <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden">
-                           {displayAvatar ? (
-                             <img src={displayAvatar} alt="" className="w-full h-full object-cover" />
-                           ) : (
-                             <span className="font-display text-2xl text-foreground">
-                               {displayUsername?.charAt(0).toUpperCase() || 'E'}
-                             </span>
-                           )}
-                         </div>
-                       </div>
-                       <div className="absolute -bottom-1.5 -right-1.5 px-1 py-0.5 rounded-md bg-background border border-border flex items-center justify-center shadow-lg gap-0.5">
-                         <img src={lvMonogram} alt="Lv" className="w-3 h-3 object-contain opacity-90" />
-                         <span className="font-display text-sm font-bold text-foreground">{profile?.level || 1}</span>
-                       </div>
-                     </div>
-                     
-                     <div className="min-w-0">
-                       <div className="flex items-center gap-2 flex-wrap">
-                         <h1 className="font-display text-xl sm:text-2xl text-foreground leading-none truncate max-w-[160px] sm:max-w-[200px]">
-                           {displayUsername}
-                         </h1>
-                         {hasEquippedOG && (
-                           <FoundingBadge size="sm" animate={false} />
-                         )}
-                         {isJudge && (
-                           <JudgeClassBadge reviewCount={judgeReviewCount} size="sm" />
-                         )}
-                       </div>
-                       <div className="flex items-center gap-[6px] mt-1.5">
-                         <button onClick={(e) => { e.stopPropagation(); navigate('/league'); }} className="text-[10px] font-bold tracking-[0.15em] text-muted-foreground uppercase hover:text-gold transition-colors">{league.label}</button>
-                         <span className="text-muted-foreground/30 text-[8px]">·</span>
-                         {globalRank && globalRank <= 500 ? (
-                           <>
-                             <span className="text-[10px] font-bold tabular-nums text-foreground">#{globalRank}</span>
-                             <span className="text-muted-foreground/30 text-[8px]">·</span>
-                           </>
-                         ) : null}
-                         <button onClick={(e) => { e.stopPropagation(); navigate('/class'); }} className={`text-[10px] font-black hover:text-gold transition-colors ${classRankConfig?.color || 'text-muted-foreground'}`}>{classLetter}</button>
-                       </div>
-                     </div>
-                   </button>
-
-                   {/* Earnings + Index — top right */}
-                   <div className="flex flex-col gap-1.5 shrink-0 items-end">
-                     <button onClick={() => setWalletOpen(true)} className="flex flex-col items-end group">
-                       <div className="flex items-center gap-1">
-                         <DollarSign className="w-4 h-4 text-emerald-400" />
-                         <span className="font-display text-xl tabular-nums font-bold text-foreground leading-none">
-                           {(Math.max(0, ((profile as any)?.earnings_cents || 0) - ((profile as any)?.pending_withdrawal_cents || 0) - ((profile as any)?.withdrawn_cents || 0)) / 100).toFixed(2)}
-                         </span>
-                       </div>
-                       <span className="text-[8px] text-muted-foreground/60 font-semibold uppercase tracking-wider mt-0.5">
-                         <span className="text-emerald-400">$</span>{(((profile as any)?.earnings_cents || 0) / 100).toFixed(2)} LIFETIME
-                       </span>
-                     </button>
-                     <Link to="/index" className="flex items-center gap-1.5">
-                       <IndexEarnBadge size="sm" hideDollar />
-                       <Coins className="w-3.5 h-3.5 text-gold" />
-                       <span className="font-display text-sm tabular-nums font-bold text-foreground/80 leading-none">
-                         {profile?.global_index_score || 0}
-                       </span>
-                       <span className="text-[8px] text-gold/50 font-bold tracking-wider">IDX</span>
-                     </Link>
-                   </div>
+                  <div
+                    className="absolute inset-0 pointer-events-none z-0 overflow-hidden"
+                     style={{}}
+                  >
+                    <div className="absolute inset-0 bg-[linear-gradient(to_bottom,hsl(var(--background)/0.9)_0%,hsl(var(--background)/0.78)_42%,hsl(var(--background)/0.28)_76%,transparent_100%)]" />
+                   {/* Subtle radial gold glow from center-top */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[320px] h-[220px] bg-[radial-gradient(ellipse_at_center,_hsl(var(--gold)/0.07)_0%,_transparent_72%)]" />
+                   
+                   {/* Fine diagonal crosshatch */}
+                    <svg className="absolute inset-0 w-full h-full opacity-[0.055]" xmlns="http://www.w3.org/2000/svg">
+                     <defs>
+                       <pattern id="fc-hatch" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                         <line x1="0" y1="0" x2="0" y2="20" stroke="#C4A44A" strokeWidth="0.5" />
+                       </pattern>
+                     </defs>
+                     <rect width="100%" height="100%" fill="url(#fc-hatch)" />
+                   </svg>
+                   
+                    {/* Soft depth without a hard dark bottom */}
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_transparent_28%,_hsl(var(--background)/0.18)_72%,_transparent_100%)]" />
+                   
+                   {/* Top accent line */}
+                   <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
+                   
+                   
+                   {/* Corner accents */}
+                   <div className="absolute top-3 left-3 w-3 h-3 border-t border-l border-gold/15" />
+                   <div className="absolute top-3 right-3 w-3 h-3 border-t border-r border-gold/15" />
                  </div>
-               </div>
-               {/* XP Progress Bar — fully visible, outside fade mask */}
-               <div className="relative z-10 px-4 pb-3">
-                 <XPProgressBar 
-                   xp={profile?.xp || 0} 
-                   level={profile?.level || 1} 
-                   size="sm"
-                   showNumbers={true}
-                 />
-               </div>
-             </div>
+               )}
+               {/* Top Row: Avatar + Identity + Earnings/Index */}
+              <div className="relative z-10 p-4 pb-2">
+                <div className="flex items-start justify-between gap-2">
+                  <button 
+                    onClick={() => navigate('/profile')}
+                    className="flex items-center gap-3 group text-left min-w-0"
+                  >
+                    <div className="relative shrink-0">
+                      <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br ${league.gradient} p-[2px] shadow-lg ${league.glow} group-hover:scale-105 transition-transform`}>
+                        <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden">
+                          {displayAvatar ? (
+                            <img src={displayAvatar} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="font-display text-2xl text-foreground">
+                              {displayUsername?.charAt(0).toUpperCase() || 'E'}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="absolute -bottom-1.5 -right-1.5 px-1 py-0.5 rounded-md bg-background border border-border flex items-center justify-center shadow-lg gap-0.5">
+                        <img src={lvMonogram} alt="Lv" className="w-3 h-3 object-contain opacity-90" />
+                        <span className="font-display text-sm font-bold text-foreground">{profile?.level || 1}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h1 className="font-display text-xl sm:text-2xl text-foreground leading-none truncate max-w-[160px] sm:max-w-[200px]">
+                          {displayUsername}
+                        </h1>
+                        {hasEquippedOG && (
+                          <FoundingBadge size="sm" animate={false} />
+                        )}
+                        {isJudge && (
+                          <JudgeClassBadge reviewCount={judgeReviewCount} size="sm" />
+                        )}
+                      </div>
+                      <div className="flex items-center gap-[6px] mt-1.5">
+                        <button onClick={(e) => { e.stopPropagation(); navigate('/league'); }} className="text-[10px] font-bold tracking-[0.15em] text-muted-foreground uppercase hover:text-gold transition-colors">{league.label}</button>
+                        <span className="text-muted-foreground/30 text-[8px]">·</span>
+                        {globalRank && globalRank <= 500 ? (
+                          <>
+                            <span className="text-[10px] font-bold tabular-nums text-foreground">#{globalRank}</span>
+                            <span className="text-muted-foreground/30 text-[8px]">·</span>
+                          </>
+                        ) : null}
+                        <button onClick={(e) => { e.stopPropagation(); navigate('/class'); }} className={`text-[10px] font-black hover:text-gold transition-colors ${classRankConfig?.color || 'text-muted-foreground'}`}>{classLetter}</button>
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Earnings + Index — top right */}
+                  <div className="flex flex-col gap-1.5 shrink-0 items-end">
+                    {/* Earnings — prominent real money display */}
+                    <button onClick={() => setWalletOpen(true)} className="flex flex-col items-end group">
+                      <div className="flex items-center gap-1">
+                        <DollarSign className="w-4 h-4 text-emerald-400" />
+                        <span className="font-display text-xl tabular-nums font-bold text-foreground leading-none">
+                          {(Math.max(0, ((profile as any)?.earnings_cents || 0) - ((profile as any)?.pending_withdrawal_cents || 0) - ((profile as any)?.withdrawn_cents || 0)) / 100).toFixed(2)}
+                        </span>
+                      </div>
+                      <span className="text-[8px] text-muted-foreground/60 font-semibold uppercase tracking-wider mt-0.5">
+                        <span className="text-emerald-400">$</span>{(((profile as any)?.earnings_cents || 0) / 100).toFixed(2)} LIFETIME
+                      </span>
+                    </button>
+                    {/* Index */}
+                    <Link to="/index" className="flex items-center gap-1.5">
+                      <IndexEarnBadge size="sm" hideDollar />
+                      <Coins className="w-3.5 h-3.5 text-gold" />
+                      <span className="font-display text-sm tabular-nums font-bold text-foreground/80 leading-none">
+                        {profile?.global_index_score || 0}
+                      </span>
+                      <span className="text-[8px] text-gold/50 font-bold tracking-wider">IDX</span>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+              {/* XP Progress Bar — closes out the profile card */}
+              <div className="relative z-10 px-4 pb-3">
+                <XPProgressBar 
+                  xp={profile?.xp || 0} 
+                  level={profile?.level || 1} 
+                  size="sm"
+                  showNumbers={true}
+                />
+              </div>
+            </div>
           </motion.div>
 
           {/* Quick Access — Rolls Royce Starlight dock */}
