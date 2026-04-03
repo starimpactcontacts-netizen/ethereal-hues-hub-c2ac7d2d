@@ -549,40 +549,61 @@ export default function HubPage() {
           </motion.div>
 
           {/* Quick Access — iOS dock style */}
-          <div className="flex items-center justify-center gap-8 mt-6 mb-6">
-            <Link to={userCrew ? `/units/${userCrew.id}` : '/units'} className="group flex flex-col items-center gap-2">
-              <div className="w-20 h-20 rounded-2xl bg-surface-1/60 border border-border/30 flex items-center justify-center group-hover:border-foreground/20 transition-all overflow-hidden">
-                {userCrew?.avatar_url ? (
-                  <img src={userCrew.avatar_url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <Users2 className="w-8 h-8 text-muted-foreground/60" />
-                )}
+          <div className="flex items-center justify-center gap-5 mt-5 mb-7">
+            <Link to={userCrew ? `/units/${userCrew.id}` : '/units'} className="group flex flex-col items-center gap-2.5">
+              <div className="relative w-16 h-16 rounded-[22px] border border-border/60 bg-background/95 backdrop-blur-md overflow-hidden shadow-2xl">
+                <div className="absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-foreground/20 to-transparent" />
+                <div className="absolute inset-[1px] rounded-[20px] bg-surface-1/95" />
+                <div className="relative z-10 flex h-full w-full items-center justify-center">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border/40 bg-muted/15 overflow-hidden">
+                    {userCrew?.avatar_url ? (
+                      <img src={userCrew.avatar_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <Users2 className="w-7 h-7 text-foreground/80" />
+                    )}
+                  </div>
+                </div>
               </div>
-              <span className="text-[10px] text-muted-foreground/50 font-semibold uppercase tracking-wider">{userCrew ? 'Unit' : 'Units'}</span>
+              <span className="rounded-full border border-border/40 bg-background/90 px-2.5 py-1 text-[10px] text-foreground/70 font-semibold uppercase tracking-[0.18em]">{userCrew ? 'Unit' : 'Units'}</span>
             </Link>
 
             {isJudge ? (
-              <Link to="/judge-panel" className="group flex flex-col items-center gap-2">
-                <div className="w-22 h-22 w-[88px] h-[88px] rounded-2xl bg-red-950/40 border border-red-800/30 flex items-center justify-center group-hover:border-red-500/40 transition-all relative">
-                  <div className="absolute inset-0 rounded-2xl bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.08),transparent_70%)]" />
-                  <Gavel className="w-9 h-9 text-red-400 relative z-10" />
+              <Link to="/judge-panel" className="group flex flex-col items-center gap-2.5">
+                <div className="relative w-[72px] h-[72px] rounded-[24px] border border-red-800/40 bg-background/95 backdrop-blur-md overflow-hidden shadow-2xl">
+                  <div className="absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-red-400/35 to-transparent" />
+                  <div className="absolute inset-[1px] rounded-[22px] bg-surface-1/95" />
+                  <div className="absolute inset-[10px] rounded-[18px] border border-red-800/30 bg-red-950/35" />
+                  <div className="relative z-10 flex h-full w-full items-center justify-center">
+                    <Gavel className="w-8 h-8 text-red-400" />
+                  </div>
                 </div>
-                <span className="text-[10px] text-red-400/50 font-semibold uppercase tracking-wider">Panel</span>
+                <span className="rounded-full border border-red-800/35 bg-background/90 px-2.5 py-1 text-[10px] text-red-400/80 font-semibold uppercase tracking-[0.18em]">Panel</span>
               </Link>
             ) : (
-              <Link to="/studio" className="group flex flex-col items-center gap-2">
-                <div className="w-[88px] h-[88px] rounded-2xl bg-surface-1/70 border border-border/35 flex items-center justify-center group-hover:border-foreground/25 transition-all">
-                  <Clapperboard className="w-9 h-9 text-foreground/70" />
+              <Link to="/studio" className="group flex flex-col items-center gap-2.5">
+                <div className="relative w-[72px] h-[72px] rounded-[24px] border border-gold/35 bg-background/95 backdrop-blur-md overflow-hidden shadow-2xl">
+                  <div className="absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+                  <div className="absolute inset-[1px] rounded-[22px] bg-surface-1/95" />
+                  <div className="absolute inset-[10px] rounded-[18px] border border-gold/25 bg-gold/10" />
+                  <div className="relative z-10 flex h-full w-full items-center justify-center">
+                    <Clapperboard className="w-8 h-8 text-gold" />
+                  </div>
                 </div>
-                <span className="text-[10px] text-muted-foreground/50 font-semibold uppercase tracking-wider">Studio</span>
+                <span className="rounded-full border border-gold/25 bg-background/90 px-2.5 py-1 text-[10px] text-gold font-semibold uppercase tracking-[0.18em]">Studio</span>
               </Link>
             )}
 
-            <Link to="/gqt" className="group flex flex-col items-center gap-2">
-              <div className="w-20 h-20 rounded-2xl bg-surface-1/60 border border-border/30 flex items-center justify-center group-hover:border-foreground/20 transition-all">
-                <Target className="w-8 h-8 text-muted-foreground/60" />
+            <Link to="/gqt" className="group flex flex-col items-center gap-2.5">
+              <div className="relative w-16 h-16 rounded-[22px] border border-border/60 bg-background/95 backdrop-blur-md overflow-hidden shadow-2xl">
+                <div className="absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-foreground/20 to-transparent" />
+                <div className="absolute inset-[1px] rounded-[20px] bg-surface-1/95" />
+                <div className="relative z-10 flex h-full w-full items-center justify-center">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border/40 bg-muted/15">
+                    <Target className="w-7 h-7 text-foreground/80" />
+                  </div>
+                </div>
               </div>
-              <span className="text-[10px] text-muted-foreground/50 font-semibold uppercase tracking-wider">GQT</span>
+              <span className="rounded-full border border-border/40 bg-background/90 px-2.5 py-1 text-[10px] text-foreground/70 font-semibold uppercase tracking-[0.18em]">GQT</span>
             </Link>
           </div>
         </div>
