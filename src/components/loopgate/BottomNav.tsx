@@ -45,6 +45,7 @@ export default function BottomNav() {
       )}
 
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background safe-bottom">
+        <div className="absolute inset-0 bg-background" />
         {/* Top border with synced arena color glow */}
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-white/[0.04]" />
         {/* Core bright line — hue-synced, subtle */}
@@ -61,7 +62,7 @@ export default function BottomNav() {
           animate={{ filter: ["hue-rotate(0deg)", "hue-rotate(360deg)"] }}
           transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
         />
-        <div className="grid grid-cols-5 h-16 max-w-lg mx-auto">
+        <div className="relative grid grid-cols-5 h-16 max-w-lg mx-auto">
           {/* Left side items (Hub, Loop) */}
           {navItems.slice(0, 2).map((item) => (
             <NavLink
