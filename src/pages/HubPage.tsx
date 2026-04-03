@@ -554,29 +554,24 @@ export default function HubPage() {
 
           {/* Quick Access — Rolls Royce Starlight dock */}
           <div className="relative mt-4 mb-3">
-            {/* ─── LEGS — dark shadow extensions from card edges ─── */}
-            <div className="pointer-events-none absolute inset-x-0 -top-8 h-[280px] z-0">
-              {/* Left leg */}
-              <div className="absolute left-4 top-0 w-[70px] h-full"
+            {/* ─── LEGS — background extensions from card edges ─── */}
+            <div className="pointer-events-none absolute inset-x-0 -top-1 h-[300px] z-0 overflow-visible">
+              <div
+                className="absolute left-0 top-0 h-full w-[88px] sm:w-[100px]"
                 style={{
-                  background: 'linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--background) / 0.6) 35%, hsl(var(--background) / 0.2) 70%, transparent 100%)',
-                  borderRadius: '0 0 50% 50%',
-                  filter: 'blur(10px)',
+                  background: hasEquippedOG
+                    ? 'linear-gradient(to bottom, hsl(var(--background) / 0.92) 0%, hsl(var(--background) / 0.88) 54%, hsl(var(--background) / 0.72) 78%, transparent 100%)'
+                    : 'linear-gradient(to bottom, hsl(var(--surface-1) / 0.82) 0%, hsl(var(--surface-1) / 0.78) 54%, hsl(var(--surface-1) / 0.62) 78%, transparent 100%)',
+                  clipPath: 'polygon(0 0, 100% 0, 94% 72%, 76% 100%, 0 100%)',
                 }}
               />
-              {/* Right leg */}
-              <div className="absolute right-4 top-0 w-[70px] h-full"
+              <div
+                className="absolute right-0 top-0 h-full w-[88px] sm:w-[100px]"
                 style={{
-                  background: 'linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--background) / 0.6) 35%, hsl(var(--background) / 0.2) 70%, transparent 100%)',
-                  borderRadius: '0 0 50% 50%',
-                  filter: 'blur(10px)',
-                }}
-              />
-              {/* Center arch connecting the legs */}
-              <div className="absolute left-[80px] right-[80px] top-0 h-[30%]"
-                style={{
-                  background: 'linear-gradient(180deg, hsl(var(--background) / 0.4) 0%, transparent 100%)',
-                  filter: 'blur(14px)',
+                  background: hasEquippedOG
+                    ? 'linear-gradient(to bottom, hsl(var(--background) / 0.92) 0%, hsl(var(--background) / 0.88) 54%, hsl(var(--background) / 0.72) 78%, transparent 100%)'
+                    : 'linear-gradient(to bottom, hsl(var(--surface-1) / 0.82) 0%, hsl(var(--surface-1) / 0.78) 54%, hsl(var(--surface-1) / 0.62) 78%, transparent 100%)',
+                  clipPath: 'polygon(0 0, 100% 0, 100% 100%, 24% 100%, 6% 72%)',
                 }}
               />
             </div>
