@@ -86,12 +86,12 @@ export default function LandingPage() {
               <img src={whereEditorsCompete} alt="WHERE EDITORS COMPETE" className="w-full max-w-[500px] sm:max-w-[600px] mx-auto drop-shadow-[0_4px_30px_rgba(0,0,0,0.8)]" />
             </motion.div>
             <motion.p
-              className="text-2xl sm:text-3xl max-w-sm mx-auto mb-6 leading-[1.1] tracking-[0.18em] uppercase font-black text-center"
+              className="text-[17px] sm:text-3xl max-w-[320px] sm:max-w-sm mx-auto mb-6 leading-[1.15] tracking-[0.14em] sm:tracking-[0.18em] uppercase font-black text-center"
               style={{ fontFamily: 'Teko, Bebas Neue, sans-serif', color: '#ffffff', textShadow: '0 0 40px rgba(0,0,0,1), 0 4px 20px rgba(0,0,0,0.8), 0 0 80px rgba(0,0,0,0.5)' }}
               initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               transition={{ delay: 0.15, duration: 0.6 }}
             >
-              Submit Edits. Get Judged.<br />Climb The Global Rankings.
+              Submit Edits. Get Judged. Climb The Global Rankings.
             </motion.p>
             <motion.div
               className="flex flex-col sm:flex-row gap-3 items-center justify-center"
