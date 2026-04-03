@@ -49,9 +49,9 @@ function SoloCard({ solo }: { solo: RecentSolo }) {
 
         {/* Index badge — top right */}
         {solo.index_awarded > 0 && (
-          <div className="absolute top-2 right-2 z-10 flex items-center gap-0.5 bg-emerald-500/20 border border-emerald-500/40 px-1.5 py-0.5 rounded-full backdrop-blur-md">
-            <Zap className="w-2.5 h-2.5 text-emerald-400" />
-            <span className="text-[8px] font-black text-emerald-400">+{solo.index_awarded}</span>
+          <div className="absolute top-2 right-2 z-10 flex items-center gap-0.5 bg-black/50 border border-white/[0.1] px-1.5 py-0.5 rounded-full backdrop-blur-md">
+            <Zap className="w-2.5 h-2.5 text-gold" />
+            <span className="text-[8px] font-black text-gold">+{solo.index_awarded}</span>
           </div>
         )}
 
