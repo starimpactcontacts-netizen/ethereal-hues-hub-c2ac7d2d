@@ -14,14 +14,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import LoopMonster from "@/components/loopgate/LoopMonster";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
-import PracticeModeCard from "@/components/loopgate/PracticeModeCard";
-import PracticeModeView from "@/components/loopgate/PracticeModeView";
 import SoloModeFlow from "@/components/loopgate/SoloModeFlow";
 import SoloShowcase from "@/components/loopgate/SoloShowcase";
-import HostedCompCard from "@/components/loopgate/HostedCompCard";
-import FeaturedHostedCompCard from "@/components/loopgate/FeaturedHostedCompCard";
-import PremiumCompCard from "@/components/loopgate/PremiumCompCard";
-import { useHostedCompetitions } from "@/hooks/useHostedCompetitions";
 import SanctionedTournamentCard from "@/components/loopgate/SanctionedTournamentCard";
 import BattleCard from "@/components/loopgate/BattleCard";
 import CreateBattleModal from "@/components/loopgate/CreateBattleModal";
@@ -548,8 +542,8 @@ export default function ArenaPage() {
   const [searchParams] = useSearchParams();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState<"all" | "official" | "sanctioned" | "battles" | "quick" | "hosted" | "practice">("all");
-  const [showPracticeMode, setShowPracticeMode] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<"all" | "official" | "sanctioned" | "battles" | "quick">("all");
+
   const [showSoloMode, setShowSoloMode] = useState(() => searchParams.get('auto') === '1' && searchParams.get('mode') === 'solo');
   const [showCreateBattle, setShowCreateBattle] = useState(false);
   const [quickSearch, setQuickSearch] = useState("");
@@ -561,7 +555,7 @@ export default function ArenaPage() {
 
   const { tournaments: sanctionedTournaments, loading: sanctionedLoading } = useSanctionedTournaments(["approved", "ready_up", "live", "bracket", "completed"]);
   const { battles, loading: battlesLoading } = useBattles(["pending", "active", "judging", "completed"]);
-  const { competitions: hostedComps, loading: hostedLoading } = useHostedCompetitions();
+  
   const { fights: quickFights, loading: quickLoading } = useRecentQuickFights(100);
   const { liveDrops } = useFeaturedDrops();
   const { activeSolo, loading: soloLoading, cancelSolo } = useSoloMode();
@@ -634,9 +628,8 @@ export default function ArenaPage() {
 
   const liveBattles = battles.filter(b => b.status === "active" || b.status === "judging").length;
   const liveTournaments = sanctionedTournaments.filter(t => t.status === "live" || t.status === "bracket" || t.status === "ready_up").length;
-  const liveHosted = hostedComps.filter(c => c.status === "live" || c.status === "judging").length;
   const liveQuick = quickFights.filter(f => f.status === "active" || f.status === "judging").length;
-  const totalLive = liveEvents.length + liveBattles + liveTournaments + liveHosted + liveQuick;
+  const totalLive = liveEvents.length + liveBattles + liveTournaments + liveQuick;
 
   const featuredFight = useMemo(() => {
     const liveFights = quickFights.filter(f => f.status === 'active' || f.status === 'judging');
@@ -675,9 +668,8 @@ export default function ArenaPage() {
     setEmailInput("");
   };
 
-  if (showPracticeMode) {
-    return <PracticeModeView onBack={() => setShowPracticeMode(false)} />;
-  }
+
+
 
   if (showSoloMode) {
     return <SoloModeFlow onBack={() => setShowSoloMode(false)} />;
@@ -689,8 +681,6 @@ export default function ArenaPage() {
     { key: "battles", label: "1v1", icon: <Swords className="w-3.5 h-3.5" />, accent: "red" },
     { key: "official", label: "Official", icon: <InfinityIcon className="w-3.5 h-3.5" />, accent: "gold" },
     { key: "sanctioned", label: "Sanctioned", icon: <Shield className="w-3.5 h-3.5" /> },
-    { key: "hosted", label: "Hosted", icon: <Globe className="w-3.5 h-3.5" />, accent: "cyan" },
-    { key: "practice", label: "Practice" },
   ];
 
   const handleQuickFight = async () => {
@@ -724,7 +714,7 @@ export default function ArenaPage() {
     quick: handleQuickFight,
     battle: () => profile ? setShowCreateBattle(true) : navigate('/start'),
     solo: () => profile ? setShowSoloMode(true) : navigate('/start'),
-    practice: () => setShowPracticeMode(true),
+    
   };
 
   return (
@@ -1491,164 +1481,6 @@ export default function ArenaPage() {
           )}
 
           {/* (Official Events now shown above as Featured Drops with rounds) */}
-
-          {/* Premium Comps */}
-          {(activeFilter === "all") && (
-            <motion.section key="premium-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="px-4">
-              <SectionHeader
-                icon={<Crown className="w-4 h-4 text-purple-400" />}
-                title="Premium Comps"
-                badgeColor="bg-purple-500/20 border-purple-500/40 text-purple-400"
-                badge="Easy Entry"
-              />
-              {hostedComps.filter(c => c.is_premium && (c.status === 'live' || c.status === 'judging')).length > 0 ? (
-                <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4">
-                  {hostedComps
-                    .filter(c => c.is_premium && (c.status === 'live' || c.status === 'judging'))
-                    .map(comp => (
-                      <PremiumCompCard key={comp.id} comp={comp} onClick={() => navigate(`/hosted-comp/${comp.slug || comp.id}`)} />
-                    ))}
-                  {hostedComps.filter(c => c.is_premium && (c.status === 'live' || c.status === 'judging')).length < 3 &&
-                    Array.from({ length: Math.max(0, 3 - hostedComps.filter(c => c.is_premium && (c.status === 'live' || c.status === 'judging')).length) }).map((_, i) => (
-                      <GhostSlot key={`ghost-prem-${i}`} icon={<Crown className="w-4 h-4 text-purple-400/20" />} label="Open slot" accentColor="border-purple-500/15" />
-                    ))
-                  }
-                </div>
-              ) : (
-                <div className="bg-surface-1 border border-purple-500/15 border-dashed p-8 text-center">
-                  <div className="w-12 h-12 bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto mb-3">
-                    <Crown className="w-6 h-6 text-purple-400/30" />
-                  </div>
-                  <p className="text-[13px] text-muted-foreground font-medium">No premium comps right now</p>
-                </div>
-              )}
-            </motion.section>
-          )}
-
-          {/* Sanctioned Tournaments */}
-          {(activeFilter === "all" || activeFilter === "sanctioned") && (
-            <motion.section key="sanctioned-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="px-4">
-              <SectionHeader
-                icon={<Shield className="w-4 h-4 text-gold" />}
-                title="Sanctioned"
-                badge={liveTournaments > 0 ? `${liveTournaments} Active` : undefined}
-                badgeColor="bg-gold/20 border-gold/40 text-gold"
-                action={
-                  profile?.crew_id ? (
-                    <Link to="/units" className="text-[12px] text-gold hover:text-gold/80 flex items-center gap-1 font-semibold transition-colors">
-                      <Plus className="w-3.5 h-3.5" /> Propose
-                    </Link>
-                  ) : undefined
-                }
-              />
-
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={() => navigate('/units')}
-                className="w-full bg-surface-1 border border-border hover:border-gold/40 p-4 flex items-center gap-4 text-left transition-all mb-3"
-              >
-                <div className="w-12 h-12 bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
-                  <Shield className="w-6 h-6 text-gold" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <span className="text-[14px] font-bold text-foreground block" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Unit Tournaments</span>
-                  <span className="text-[12px] text-muted-foreground">Single elimination · Up to 100 editors</span>
-                </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
-              </motion.button>
-
-              {sanctionedLoading ? (
-                <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4">
-                  <Skeleton className="h-48 w-[240px] shrink-0" />
-                  <Skeleton className="h-48 w-[240px] shrink-0" />
-                </div>
-              ) : sanctionedTournaments.length > 0 ? (
-                <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4">
-                  {sanctionedTournaments.map(t => (
-                    <SanctionedTournamentCard key={t.id} tournament={t} onClick={() => navigate(`/sanctioned/${t.id}`)} />
-                  ))}
-                  {sanctionedTournaments.length < 3 && Array.from({ length: Math.max(0, 3 - sanctionedTournaments.length) }).map((_, i) => (
-                    <GhostSlot key={`ghost-sanc-${i}`} icon={<Shield className="w-4 h-4 text-gold/20" />} label="Open slot" accentColor="border-gold/15" />
-                  ))}
-                </div>
-              ) : (
-                <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <GhostSlot key={`ghost-sanc-empty-${i}`} icon={<Shield className="w-4 h-4 text-gold/20" />} label="No tournaments" accentColor="border-gold/15" />
-                  ))}
-                </div>
-              )}
-            </motion.section>
-          )}
-
-          {/* Hosted Comps */}
-          {(activeFilter === "all" || activeFilter === "hosted") && (
-            <motion.section key="hosted-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="px-4">
-              <SectionHeader
-                icon={<Globe className="w-4 h-4 text-cyan-400" />}
-                title="Hosted Comps"
-                badge="New"
-                badgeColor="bg-cyan-500/20 border-cyan-500/30 text-cyan-400"
-              />
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={() => navigate('/hosted-comps')}
-                className="w-full bg-surface-1 border border-border hover:border-cyan-500/40 p-4 flex items-center gap-4 text-left transition-all"
-              >
-                <div className="w-12 h-12 bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
-                  <Globe className="w-6 h-6 text-cyan-400" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <span className="text-[14px] font-bold text-foreground block" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Browse or Host a Competition</span>
-                  <span className="text-[12px] text-muted-foreground">Discord servers & creators run comps with Loopgate infrastructure</span>
-                </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
-              </motion.button>
-
-              {hostedComps.filter(c => c.is_featured && (c.status === 'live' || c.status === 'judging')).length > 0 && (
-                <div className="mt-3">
-                  <span className="text-[11px] font-bold text-cyan-400 mb-2 block tracking-wide">FEATURED</span>
-                  <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4">
-                    {hostedComps
-                      .filter(c => c.is_featured && (c.status === 'live' || c.status === 'judging'))
-                      .slice(0, 6)
-                      .map(comp => (
-                        <FeaturedHostedCompCard key={comp.id} comp={comp} onClick={() => navigate(`/hosted-comp/${comp.id}`)} />
-                      ))}
-                    {hostedComps.filter(c => c.is_featured && (c.status === 'live' || c.status === 'judging')).length < 3 && 
-                      Array.from({ length: Math.max(0, 3 - hostedComps.filter(c => c.is_featured && (c.status === 'live' || c.status === 'judging')).length) }).map((_, i) => (
-                        <GhostSlot key={`ghost-hosted-${i}`} icon={<Globe className="w-4 h-4 text-cyan-400/20" />} label="Open slot" accentColor="border-cyan-500/15" />
-                      ))
-                    }
-                  </div>
-                </div>
-              )}
-            </motion.section>
-          )}
-
-          {/* Practice */}
-          {(activeFilter === "all" || activeFilter === "practice") && (
-            <motion.section key="practice-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="px-4">
-              <SectionHeader
-                icon={<Target className="w-4 h-4 text-emerald-400" />}
-                title="Practice Mode"
-              />
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setShowPracticeMode(true)}
-                className="w-full bg-surface-1 border border-border hover:border-emerald-500/40 p-4 flex items-center gap-4 text-left transition-all"
-              >
-                <div className="w-12 h-12 bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
-                  <Target className="w-6 h-6 text-emerald-400" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <span className="text-[14px] font-bold text-foreground block" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Get Feedback</span>
-                  <span className="text-[12px] text-muted-foreground">Submit work for judge review · +30 XP</span>
-                </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
-              </motion.button>
-            </motion.section>
-          )}
 
           <div className="h-8" />
         </div>
