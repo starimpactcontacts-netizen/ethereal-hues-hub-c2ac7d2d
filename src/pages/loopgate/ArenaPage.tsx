@@ -668,9 +668,8 @@ export default function ArenaPage() {
     setEmailInput("");
   };
 
-  if (showPracticeMode) {
-    return <PracticeModeView onBack={() => setShowPracticeMode(false)} />;
-  }
+
+
 
   if (showSoloMode) {
     return <SoloModeFlow onBack={() => setShowSoloMode(false)} />;
