@@ -15,7 +15,7 @@ function SoloCard({ solo }: { solo: RecentSolo }) {
     editing: { label: "EDITING", color: "text-amber-400", bg: "bg-amber-500/20 border-amber-500/40", pulse: true },
     submitted: { label: "SUBMITTED", color: "text-sky-400", bg: "bg-sky-500/20 border-sky-500/40" },
     judging: { label: "JUDGING", color: "text-purple-400", bg: "bg-purple-500/20 border-purple-500/40", pulse: true },
-    scored: { label: "SCORED", color: "text-emerald-400", bg: "bg-emerald-500/20 border-emerald-500/40" },
+    scored: { label: "SCORED", color: "text-white/80", bg: "bg-white/[0.08] border-white/[0.12]" },
   };
   const s = statusConfig[solo.status] || statusConfig.editing;
   const timeAgo = formatDistanceToNow(new Date(solo.created_at), { addSuffix: false });
