@@ -549,7 +549,7 @@ export default function HubPage() {
           </motion.div>
 
           {/* Quick Access — Rolls Royce Starlight dock */}
-          <div className="flex items-center justify-center gap-6 mt-6 mb-8">
+          <div className="flex items-center justify-center gap-6 mt-2 mb-3">
             {/* UNITS */}
             <Link to={userCrew ? `/units/${userCrew.id}` : '/units'} className="group flex flex-col items-center gap-3">
               <div className="relative w-[68px] h-[68px] rounded-[22px] overflow-hidden"
@@ -724,7 +724,7 @@ export default function HubPage() {
       )}
 
       {/* ⚔️ QUICK ACTION CTA — Premium cinematic button */}
-      <div className="px-4 mt-0">
+      <div className="px-4 mt-1.5">
         <div className="flex flex-col gap-0">
           {/* Cinematic action container — Premium rounded */}
           <div 
