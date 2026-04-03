@@ -194,7 +194,7 @@ function PayoutCard({ payout, idx }: { payout: Payout; idx: number }) {
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <span className="text-[13px] font-bold text-white truncate block">{payout.username}</span>
+            <span className="text-[11px] font-bold text-white truncate block">{payout.username}</span>
             <span className="text-[9px] text-white/40">{timeAgo} ago</span>
           </div>
         </div>
