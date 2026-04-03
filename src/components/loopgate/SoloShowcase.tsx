@@ -15,7 +15,7 @@ function SoloCard({ solo }: { solo: RecentSolo }) {
     editing: { label: "EDITING", color: "text-amber-400", bg: "bg-amber-500/20 border-amber-500/40", pulse: true },
     submitted: { label: "SUBMITTED", color: "text-sky-400", bg: "bg-sky-500/20 border-sky-500/40" },
     judging: { label: "JUDGING", color: "text-purple-400", bg: "bg-purple-500/20 border-purple-500/40", pulse: true },
-    scored: { label: "SCORED", color: "text-emerald-400", bg: "bg-emerald-500/20 border-emerald-500/40" },
+    scored: { label: "SCORED", color: "text-white/80", bg: "bg-white/[0.08] border-white/[0.12]" },
   };
   const s = statusConfig[solo.status] || statusConfig.editing;
   const timeAgo = formatDistanceToNow(new Date(solo.created_at), { addSuffix: false });
@@ -49,9 +49,9 @@ function SoloCard({ solo }: { solo: RecentSolo }) {
 
         {/* Index badge — top right */}
         {solo.index_awarded > 0 && (
-          <div className="absolute top-2 right-2 z-10 flex items-center gap-0.5 bg-emerald-500/20 border border-emerald-500/40 px-1.5 py-0.5 rounded-full backdrop-blur-md">
-            <Zap className="w-2.5 h-2.5 text-emerald-400" />
-            <span className="text-[8px] font-black text-emerald-400">+{solo.index_awarded}</span>
+          <div className="absolute top-2 right-2 z-10 flex items-center gap-0.5 bg-black/50 border border-white/[0.1] px-1.5 py-0.5 rounded-full backdrop-blur-md">
+            <Zap className="w-2.5 h-2.5 text-gold" />
+            <span className="text-[8px] font-black text-gold">+{solo.index_awarded}</span>
           </div>
         )}
 
