@@ -1374,9 +1374,14 @@ export default function ArenaPage() {
                 action={
                   <button
                     onClick={() => profile ? navigate('/quick-fight') : navigate('/start')}
-                    className="text-[12px] text-red-400 hover:text-red-300 font-semibold flex items-center gap-1.5 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:brightness-110"
+                    style={{
+                      background: 'linear-gradient(135deg, #10B981, #059669)',
+                      color: '#fff',
+                      boxShadow: '0 2px 10px rgba(16,185,129,0.3)',
+                    }}
                   >
-                    <Zap className="w-3.5 h-3.5" /> Start Editing
+                    <Zap className="w-3 h-3" /> Start Editing
                   </button>
                 }
               />
@@ -1436,6 +1441,19 @@ export default function ArenaPage() {
                 badge={liveBattles > 0 ? `${liveBattles} Live` : undefined}
                 badgeColor="bg-red-500/20 border-red-500/40 text-red-400"
                 infoText="Challenge a specific editor to a head-to-head showdown. Pick a song, set the deadline, and go 1v1. Winner earns +20 IDX. No penalty for the loser."
+                action={
+                  <button
+                    onClick={() => profile ? setShowCreateBattle(true) : navigate('/start')}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:brightness-110"
+                    style={{
+                      background: 'linear-gradient(135deg, #3B82F6, #EF4444)',
+                      color: '#fff',
+                      boxShadow: '0 2px 10px rgba(59,130,246,0.25), 0 2px 10px rgba(239,68,68,0.25)',
+                    }}
+                  >
+                    <Swords className="w-3 h-3" /> Challenge
+                  </button>
+                }
               />
 
               {battlesLoading ? (
