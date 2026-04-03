@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Search, Loader2, Gavel, Crown, Lock, ChevronRight, Users, Target, Medal, Zap, Trophy, RefreshCw, ArrowLeft, Plus, Play, Flame, Star, Newspaper, TrendingUp, ArrowRight, Eye } from "lucide-react";
+import { Search, Loader2, Gavel, Crown, Lock, ChevronRight, Users, Target, Medal, Zap, Trophy, RefreshCw, ArrowLeft, Plus, Play, Flame, Star, Newspaper, TrendingUp, ArrowRight, Eye, UserPlus } from "lucide-react";
 import GateIcon from '@/components/loopgate/GateIcon';
 import { motion, AnimatePresence } from "framer-motion";
 import { useRealRankings, useRealEvents, useEventRankings, useActiveSession } from "@/hooks/useRealData";
@@ -108,58 +108,60 @@ function EditorCard({ editor, pinnedEdits, navigate, size = "md", showRank = fal
   const editCount = pinnedEdits?.length || 0;
 
   return (
-    <button
-      onClick={() => navigate(`/editor/${editor.id}`)}
-      className={`${widthClass} flex-shrink-0 text-left group`}
-    >
+    <div className={`${widthClass} flex-shrink-0 text-left group`}>
       {/* Thumbnail / Visual */}
-      <div className={`relative ${thumbH} w-full bg-surface-1 rounded-t-lg border border-border/20 overflow-hidden`}>
-        {firstEdit?.thumbnail_url ? (
-          <ThumbnailImage src={firstEdit.thumbnail_url} alt={editor.username} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-        ) : editor.avatar_url ? (
-          <img src={editor.avatar_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-surface-2 to-surface-0 flex items-center justify-center">
-            <span className="font-display text-3xl text-muted-foreground/30">{editor.username[0]?.toUpperCase()}</span>
+      <button
+        onClick={() => navigate(`/editor/${editor.id}`)}
+        className="w-full text-left"
+      >
+        <div className={`relative ${thumbH} w-full bg-surface-1 rounded-t-lg border border-border/20 overflow-hidden`}>
+          {firstEdit?.thumbnail_url ? (
+            <ThumbnailImage src={firstEdit.thumbnail_url} alt={editor.username} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          ) : editor.avatar_url ? (
+            <img src={editor.avatar_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-surface-2 to-surface-0 flex items-center justify-center">
+              <span className="font-display text-3xl text-muted-foreground/30">{editor.username[0]?.toUpperCase()}</span>
+            </div>
+          )}
+          
+          {/* Overlay gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          
+          {/* Rank badge */}
+          {showRank && rank <= 50 && (
+            <div className={`absolute top-1.5 left-1.5 px-1.5 py-0.5 text-[9px] font-black ${
+              rank === 1 ? 'bg-gold text-background' : rank <= 3 ? 'bg-foreground/90 text-background' : 'bg-background/80 text-foreground'
+            }`}>
+              #{rank}
+            </div>
+          )}
+          
+          {/* Class badge */}
+          <div className={`absolute top-1.5 right-1.5 px-1.5 py-0.5 text-[8px] border ${classStyle}`}>
+            {classLetter}
           </div>
-        )}
-        
-        {/* Overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-        
-        {/* Rank badge */}
-        {showRank && rank <= 50 && (
-          <div className={`absolute top-1.5 left-1.5 px-1.5 py-0.5 text-[9px] font-black ${
-            rank === 1 ? 'bg-gold text-background' : rank <= 3 ? 'bg-foreground/90 text-background' : 'bg-background/80 text-foreground'
-          }`}>
-            #{rank}
+          
+          {/* Bottom overlay info */}
+          <div className="absolute bottom-0 left-0 right-0 px-2 pb-1.5 pt-4">
+            <div className="flex items-center gap-1 mb-0.5">
+              {editor.verification_status && <VerifiedBadge size="sm" />}
+              {authorityRole && <AuthorityBadge role={authorityRole} size="sm" />}
+              {editor.is_founding_member && <FoundingBadge size="sm" animate={false} />}
+            </div>
+            <p className="font-semibold text-[13px] text-white truncate leading-tight drop-shadow-lg">
+              {editor.display_name || editor.username}
+            </p>
           </div>
-        )}
-        
-        {/* Class badge */}
-        <div className={`absolute top-1.5 right-1.5 px-1.5 py-0.5 text-[8px] border ${classStyle}`}>
-          {classLetter}
+          
+          {/* Play indicator if has edit */}
+          {firstEdit?.thumbnail_url && (
+            <div className="absolute bottom-1.5 right-1.5 w-5 h-5 bg-white/90 flex items-center justify-center">
+              <Play className="w-2.5 h-2.5 text-black fill-black" />
+            </div>
+          )}
         </div>
-        
-        {/* Bottom overlay info */}
-        <div className="absolute bottom-0 left-0 right-0 px-2 pb-1.5 pt-4">
-          <div className="flex items-center gap-1 mb-0.5">
-            {editor.verification_status && <VerifiedBadge size="sm" />}
-            {authorityRole && <AuthorityBadge role={authorityRole} size="sm" />}
-            {editor.is_founding_member && <FoundingBadge size="sm" animate={false} />}
-          </div>
-          <p className="font-semibold text-[13px] text-white truncate leading-tight drop-shadow-lg">
-            {editor.display_name || editor.username}
-          </p>
-        </div>
-        
-        {/* Play indicator if has edit */}
-        {firstEdit?.thumbnail_url && (
-          <div className="absolute bottom-1.5 right-1.5 w-5 h-5 bg-white/90 flex items-center justify-center">
-            <Play className="w-2.5 h-2.5 text-black fill-black" />
-          </div>
-        )}
-      </div>
+      </button>
       
       {/* Stats bar below thumbnail */}
       <div className="bg-surface-1/60 border-x border-b border-border/20 rounded-b-lg px-2 py-1.5">
@@ -171,17 +173,19 @@ function EditorCard({ editor, pinnedEdits, navigate, size = "md", showRank = fal
             <span className="text-border/40">|</span>
             <span>Lv {editor.level || 1}</span>
           </div>
-          {editCount > 0 && (
-            <span className="flex items-center gap-0.5"><Play className="w-2 h-2" />{editCount}</span>
-          )}
         </div>
-        <div className="flex items-center gap-2 mt-0.5 text-[9px] text-muted-foreground/70">
-          <span className="flex items-center gap-0.5"><Users className="w-2.5 h-2.5" />{editor.connection_count || 0}</span>
-          <span>{editor.total_events || 0} events</span>
-          {editor.crew && <CrewBadge crew={editor.crew} size="sm" />}
+        <div className="flex items-center justify-between mt-1">
+          <div className="flex items-center gap-2 text-[9px] text-muted-foreground/70">
+            <span className="flex items-center gap-0.5"><Users className="w-2.5 h-2.5" />{editor.connection_count || 0}</span>
+            <span>{editor.total_events || 0} events</span>
+            {editor.crew && <CrewBadge crew={editor.crew} size="sm" />}
+          </div>
+          <div onClick={(e) => e.stopPropagation()}>
+            <ConnectButton targetUserId={editor.id} variant="micro" />
+          </div>
         </div>
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -613,6 +617,57 @@ export default function IndexPage() {
                   </div>
                 </div>
 
+                {/* ─── SUGGESTED CONNECTIONS ─── */}
+                {profile && trending.length > 0 && (
+                  <div className="pt-3 pb-1">
+                    <div className="flex items-center justify-between px-4 mb-2.5">
+                      <div className="flex items-center gap-2">
+                        <UserPlus className="w-4 h-4 text-foreground/50" />
+                        <h2 className="font-display text-lg tracking-wide text-foreground">CONNECT</h2>
+                        <span className="text-[10px] text-muted-foreground/60 ml-1">People you may know</span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2.5 overflow-x-auto scrollbar-hide px-4 pb-2">
+                      {trending.slice(0, 8).map((editor, i) => (
+                        <motion.div
+                          key={`suggest-${editor.id}`}
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: i * 0.04 }}
+                          className="w-[130px] flex-shrink-0 bg-surface-1/40 border border-border/20 rounded-xl overflow-hidden text-center"
+                        >
+                          <button
+                            onClick={() => navigate(`/editor/${editor.id}`)}
+                            className="w-full"
+                          >
+                            <div className="relative h-[70px] overflow-hidden">
+                              {editor.avatar_url ? (
+                                <img src={editor.avatar_url} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full bg-gradient-to-br from-surface-2 to-surface-0 flex items-center justify-center">
+                                  <span className="font-display text-2xl text-muted-foreground/30">{editor.username[0]?.toUpperCase()}</span>
+                                </div>
+                              )}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                            </div>
+                            <div className="px-2 pt-1.5">
+                              <p className="font-semibold text-[11px] text-foreground truncate">{editor.display_name || editor.username}</p>
+                              <div className="flex items-center justify-center gap-1 mt-0.5 text-[9px] text-muted-foreground/60">
+                                <Users className="w-2.5 h-2.5" />
+                                <span>{editor.connection_count || 0}</span>
+                                {editor.crew && <><span className="text-border/30">·</span><span className="truncate max-w-[50px]">{typeof editor.crew === 'object' ? editor.crew.name : ''}</span></>}
+                              </div>
+                            </div>
+                          </button>
+                          <div className="px-2 pb-2 pt-1.5" onClick={(e) => e.stopPropagation()}>
+                            <ConnectButton targetUserId={editor.id} variant="pill" className="w-full justify-center" />
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* ─── TOP RANKED CAROUSEL ─── */}
                 {topRanked.length > 0 && (
                   <div className="pt-4 pb-2">
@@ -1001,12 +1056,15 @@ function DirectoryList({ editors, pinnedEditsByUser, navigate, profile }: {
               </div>
             </div>
             
-            {/* Score */}
-            <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+            {/* Score + Connect */}
+            <div className="flex flex-col items-end gap-1 flex-shrink-0">
               <span className={`font-display text-xl tabular-nums ${isNumberOne ? 'text-gold' : 'text-foreground'}`}>
                 {(editor.global_index_score || 0).toFixed(1)}
               </span>
               <p className="text-[7px] text-muted-foreground/50 uppercase tracking-wider">Index</p>
+              <div onClick={(e) => e.stopPropagation()}>
+                <ConnectButton targetUserId={editor.id} variant="micro" />
+              </div>
             </div>
           </button>
         );
