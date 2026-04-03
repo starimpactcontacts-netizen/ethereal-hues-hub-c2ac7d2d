@@ -428,8 +428,8 @@ export default function HubPage() {
           >
              <div className={`overflow-hidden relative rounded-t-xl ${hasEquippedOG ? 'bg-transparent' : 'bg-surface-1/80'}`}
                style={{
-                 maskImage: 'linear-gradient(to bottom, black 96%, transparent 108%)',
-                 WebkitMaskImage: 'linear-gradient(to bottom, black 96%, transparent 108%)',
+                 maskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)',
+                 WebkitMaskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)',
                }}>
                {/* First Circle Skin — luxury prestige aesthetic */}
                 {hasEquippedOG && (
@@ -554,6 +554,36 @@ export default function HubPage() {
 
           {/* Quick Access — Rolls Royce Starlight dock */}
           <div className="relative mt-4 mb-3">
+            <div className="pointer-events-none absolute inset-x-0 -top-16 h-28 z-0 overflow-visible">
+              <div
+                className="absolute left-0 top-0 h-full w-[26%] blur-xl"
+                style={{
+                  background: 'linear-gradient(180deg, hsl(var(--background) / 0.74) 0%, hsl(var(--background) / 0.42) 44%, transparent 100%)',
+                  clipPath: 'polygon(0 0, 100% 0, 72% 100%, 0 100%)',
+                }}
+              />
+              <div
+                className="absolute right-0 top-0 h-full w-[26%] blur-xl"
+                style={{
+                  background: 'linear-gradient(180deg, hsl(var(--background) / 0.74) 0%, hsl(var(--background) / 0.42) 44%, transparent 100%)',
+                  clipPath: 'polygon(0 0, 100% 0, 100% 100%, 28% 100%)',
+                }}
+              />
+              <div
+                className="absolute left-[2%] top-1 h-[92%] w-[18%] blur-2xl opacity-90"
+                style={{
+                  background: 'linear-gradient(180deg, hsl(var(--background) / 0.62) 0%, hsl(var(--background) / 0.26) 58%, transparent 100%)',
+                  clipPath: 'polygon(0 0, 100% 0, 68% 100%, 0 100%)',
+                }}
+              />
+              <div
+                className="absolute right-[2%] top-1 h-[92%] w-[18%] blur-2xl opacity-90"
+                style={{
+                  background: 'linear-gradient(180deg, hsl(var(--background) / 0.62) 0%, hsl(var(--background) / 0.26) 58%, transparent 100%)',
+                  clipPath: 'polygon(0 0, 100% 0, 100% 100%, 32% 100%)',
+                }}
+              />
+            </div>
             {/* ─── BELT — horizontal band cutting through icons ─── */}
             <div className="absolute top-1/2 z-0 pointer-events-none" style={{ marginTop: '-8px', width: '100vw', left: '50%', transform: 'translateX(-50%) translateY(-50%)' }}>
               <div className="h-[18px] w-full" style={{
