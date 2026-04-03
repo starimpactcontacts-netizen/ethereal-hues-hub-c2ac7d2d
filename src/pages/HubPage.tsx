@@ -426,15 +426,12 @@ export default function HubPage() {
             animate={{ opacity: 1, y: 0 }}
             className="relative z-10"
           >
-             <div className={`overflow-hidden relative rounded-t-xl ${hasEquippedOG ? 'bg-transparent' : 'bg-surface-1'}`}>
+             <div className={`overflow-hidden relative rounded-xl border border-border/20 ${hasEquippedOG ? 'bg-transparent' : 'bg-surface-1'}`}>
                {/* First Circle Skin — luxury prestige aesthetic */}
                 {hasEquippedOG && (
                   <div
                     className="absolute inset-0 pointer-events-none z-0 overflow-hidden"
-                    style={{
-                      maskImage: 'linear-gradient(to bottom, hsl(0 0% 0% / 1) 0%, hsl(0 0% 0% / 1) 46%, hsl(0 0% 0% / 0.82) 62%, hsl(0 0% 0% / 0.42) 76%, hsl(0 0% 0% / 0.14) 86%, transparent 92%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to bottom, hsl(0 0% 0% / 1) 0%, hsl(0 0% 0% / 1) 46%, hsl(0 0% 0% / 0.82) 62%, hsl(0 0% 0% / 0.42) 76%, hsl(0 0% 0% / 0.14) 86%, transparent 92%, transparent 100%)',
-                    }}
+                     style={{}}
                   >
                     <div className="absolute inset-0 bg-[linear-gradient(to_bottom,hsl(var(--background)/0.9)_0%,hsl(var(--background)/0.78)_42%,hsl(var(--background)/0.28)_76%,transparent_100%)]" />
                    {/* Subtle radial gold glow from center-top */}
@@ -539,8 +536,8 @@ export default function HubPage() {
                   </div>
                 </div>
               </div>
-              {/* XP Progress Bar */}
-              <div className="relative z-10 px-4 pb-2">
+              {/* XP Progress Bar — closes out the profile card */}
+              <div className="relative z-10 px-4 pb-3">
                 <XPProgressBar 
                   xp={profile?.xp || 0} 
                   level={profile?.level || 1} 
@@ -548,80 +545,74 @@ export default function HubPage() {
                   showNumbers={true}
                 />
               </div>
-
-
-              {/* Quick Access — keep the transition transparent so the pattern can fade out naturally */}
-              <div className="relative z-10 px-3 pt-4 pb-1">
-                <div className="flex gap-2 items-stretch">
-                  {/* Unit — compact left */}
-                  <Link to={userCrew ? `/units/${userCrew.id}` : '/units'} className="group flex-1 min-w-0">
-                    <div className="bg-surface-1/40 border border-border/30 rounded-xl p-2.5 group-hover:border-foreground/20 transition-colors h-full flex flex-col items-center justify-center text-center gap-1.5">
-                      <div className="w-8 h-8 rounded-lg bg-muted/40 border border-border/50 flex items-center justify-center overflow-hidden">
-                        {userCrew?.avatar_url ? (
-                          <img src={userCrew.avatar_url} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <Users2 className="w-4 h-4 text-muted-foreground/70" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="text-[8px] text-muted-foreground/60 uppercase tracking-[0.15em] font-semibold">{userCrew ? 'Unit' : 'Units'}</p>
-                        <p className="font-display text-[11px] text-foreground leading-tight truncate max-w-[80px]">
-                          {userCrew ? userCrew.name : 'Find group'}
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
-
-                  {/* Studio — hero center tile */}
-                  {isJudge ? (
-                    <Link to="/judge-panel" className="group flex-[1.6]">
-                      <div className="relative overflow-hidden bg-gradient-to-b from-red-950/40 to-background border border-red-800/30 rounded-xl p-4 group-hover:border-red-600/50 transition-all h-full flex flex-col items-center justify-center text-center gap-2">
-                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.08),transparent_70%)]" />
-                        <div className="relative w-10 h-10 rounded-xl bg-red-900/30 border border-red-800/40 flex items-center justify-center">
-                          <Gavel className="w-5 h-5 text-red-400" />
-                        </div>
-                        <div className="relative">
-                          <p className="font-display text-sm text-foreground leading-tight">Start Judging</p>
-                          <p className="text-[8px] text-red-400/60 uppercase tracking-[0.15em] font-semibold mt-0.5">Panel</p>
-                        </div>
-                      </div>
-                    </Link>
-                  ) : (
-                    <Link to="/studio" className="group flex-[1.6]">
-                      <div className="relative overflow-hidden bg-gradient-to-b from-surface-1 to-background border border-border/50 rounded-xl p-4 group-hover:border-foreground/30 transition-all h-full flex flex-col items-center justify-center text-center gap-2">
-                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.03),transparent_70%)]" />
-                        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-foreground/10 to-transparent" />
-                        <div className="relative w-10 h-10 rounded-xl bg-foreground/[0.06] border border-border/50 flex items-center justify-center">
-                          <Clapperboard className="w-5 h-5 text-foreground/80" />
-                        </div>
-                        <div className="relative">
-                          <p className="font-display text-sm text-foreground leading-tight">Open Studio</p>
-                          <p className="text-[8px] text-muted-foreground/50 uppercase tracking-[0.15em] font-semibold mt-0.5">Editor</p>
-                        </div>
-                      </div>
-                    </Link>
-                  )}
-
-                  {/* GQT — compact right */}
-                  <Link to="/gqt" className="group flex-1 min-w-0">
-                    <div className="bg-surface-1/40 border border-border/30 rounded-xl p-2.5 group-hover:border-foreground/20 transition-colors h-full flex flex-col items-center justify-center text-center gap-1.5">
-                      <div className="w-8 h-8 rounded-lg bg-muted/40 border border-border/50 flex items-center justify-center">
-                        <Target className="w-4 h-4 text-muted-foreground/70" />
-                      </div>
-                      <div>
-                        <p className="text-[8px] text-muted-foreground/60 uppercase tracking-[0.15em] font-semibold">GQT</p>
-                        <p className="font-display text-[11px] text-foreground leading-tight">
-                          {bestScore ? `${bestScore.toFixed(0)} QOI` : 'Get score'}
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
-                </div>
-              </div>
-
-              <div className="pointer-events-none absolute inset-x-3 bottom-[-2.75rem] z-[1] h-20 bg-[linear-gradient(to_bottom,transparent_0%,hsl(var(--background)/0.28)_38%,hsl(var(--background)/0.72)_72%,hsl(var(--background))_100%)]" />
             </div>
           </motion.div>
+
+          {/* Quick Access — independent from profile card */}
+          <div className="flex gap-2.5 items-stretch mt-3">
+            {/* Unit */}
+            <Link to={userCrew ? `/units/${userCrew.id}` : '/units'} className="group flex-1 min-w-0">
+              <div className="bg-surface-1/60 backdrop-blur-sm border border-border/25 rounded-xl p-3 group-hover:border-foreground/20 transition-all h-full flex flex-col items-center justify-center text-center gap-2">
+                <div className="w-9 h-9 rounded-lg bg-muted/30 border border-border/40 flex items-center justify-center overflow-hidden">
+                  {userCrew?.avatar_url ? (
+                    <img src={userCrew.avatar_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <Users2 className="w-4 h-4 text-muted-foreground/60" />
+                  )}
+                </div>
+                <div>
+                  <p className="text-[8px] text-muted-foreground/50 uppercase tracking-[0.15em] font-semibold">{userCrew ? 'Unit' : 'Units'}</p>
+                  <p className="font-display text-[11px] text-foreground leading-tight truncate max-w-[80px]">
+                    {userCrew ? userCrew.name : 'Find group'}
+                  </p>
+                </div>
+              </div>
+            </Link>
+
+            {/* Center — Studio or Judge Panel */}
+            {isJudge ? (
+              <Link to="/judge-panel" className="group flex-[1.6]">
+                <div className="relative overflow-hidden bg-gradient-to-b from-red-950/30 to-surface-1/40 backdrop-blur-sm border border-red-800/25 rounded-xl p-3.5 group-hover:border-red-500/40 transition-all h-full flex flex-col items-center justify-center text-center gap-2">
+                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.06),transparent_70%)]" />
+                  <div className="relative w-10 h-10 rounded-xl bg-red-900/25 border border-red-800/30 flex items-center justify-center">
+                    <Gavel className="w-5 h-5 text-red-400" />
+                  </div>
+                  <div className="relative">
+                    <p className="font-display text-sm text-foreground leading-tight">Start Judging</p>
+                    <p className="text-[8px] text-red-400/50 uppercase tracking-[0.15em] font-semibold mt-0.5">Panel</p>
+                  </div>
+                </div>
+              </Link>
+            ) : (
+              <Link to="/studio" className="group flex-[1.6]">
+                <div className="relative overflow-hidden bg-surface-1/50 backdrop-blur-sm border border-border/30 rounded-xl p-3.5 group-hover:border-foreground/25 transition-all h-full flex flex-col items-center justify-center text-center gap-2">
+                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.02),transparent_70%)]" />
+                  <div className="relative w-10 h-10 rounded-xl bg-foreground/[0.05] border border-border/40 flex items-center justify-center">
+                    <Clapperboard className="w-5 h-5 text-foreground/70" />
+                  </div>
+                  <div className="relative">
+                    <p className="font-display text-sm text-foreground leading-tight">Open Studio</p>
+                    <p className="text-[8px] text-muted-foreground/40 uppercase tracking-[0.15em] font-semibold mt-0.5">Editor</p>
+                  </div>
+                </div>
+              </Link>
+            )}
+
+            {/* GQT */}
+            <Link to="/gqt" className="group flex-1 min-w-0">
+              <div className="bg-surface-1/60 backdrop-blur-sm border border-border/25 rounded-xl p-3 group-hover:border-foreground/20 transition-all h-full flex flex-col items-center justify-center text-center gap-2">
+                <div className="w-9 h-9 rounded-lg bg-muted/30 border border-border/40 flex items-center justify-center">
+                  <Target className="w-4 h-4 text-muted-foreground/60" />
+                </div>
+                <div>
+                  <p className="text-[8px] text-muted-foreground/50 uppercase tracking-[0.15em] font-semibold">GQT</p>
+                  <p className="font-display text-[11px] text-foreground leading-tight">
+                    {bestScore ? `${bestScore.toFixed(0)} QOI` : 'Get score'}
+                  </p>
+                </div>
+              </div>
+            </Link>
+          </div>
         </div>
       </div>
 
