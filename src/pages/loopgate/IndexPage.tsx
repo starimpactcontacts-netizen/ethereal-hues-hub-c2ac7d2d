@@ -617,6 +617,57 @@ export default function IndexPage() {
                   </div>
                 </div>
 
+                {/* ─── SUGGESTED CONNECTIONS ─── */}
+                {profile && trending.length > 0 && (
+                  <div className="pt-3 pb-1">
+                    <div className="flex items-center justify-between px-4 mb-2.5">
+                      <div className="flex items-center gap-2">
+                        <UserPlus className="w-4 h-4 text-foreground/50" />
+                        <h2 className="font-display text-lg tracking-wide text-foreground">CONNECT</h2>
+                        <span className="text-[10px] text-muted-foreground/60 ml-1">People you may know</span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2.5 overflow-x-auto scrollbar-hide px-4 pb-2">
+                      {trending.slice(0, 8).map((editor, i) => (
+                        <motion.div
+                          key={`suggest-${editor.id}`}
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: i * 0.04 }}
+                          className="w-[130px] flex-shrink-0 bg-surface-1/40 border border-border/20 rounded-xl overflow-hidden text-center"
+                        >
+                          <button
+                            onClick={() => navigate(`/editor/${editor.id}`)}
+                            className="w-full"
+                          >
+                            <div className="relative h-[70px] overflow-hidden">
+                              {editor.avatar_url ? (
+                                <img src={editor.avatar_url} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full bg-gradient-to-br from-surface-2 to-surface-0 flex items-center justify-center">
+                                  <span className="font-display text-2xl text-muted-foreground/30">{editor.username[0]?.toUpperCase()}</span>
+                                </div>
+                              )}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                            </div>
+                            <div className="px-2 pt-1.5">
+                              <p className="font-semibold text-[11px] text-foreground truncate">{editor.display_name || editor.username}</p>
+                              <div className="flex items-center justify-center gap-1 mt-0.5 text-[9px] text-muted-foreground/60">
+                                <Users className="w-2.5 h-2.5" />
+                                <span>{editor.connection_count || 0}</span>
+                                {editor.crew && <><span className="text-border/30">·</span><span className="truncate max-w-[50px]">{typeof editor.crew === 'object' ? editor.crew.name : ''}</span></>}
+                              </div>
+                            </div>
+                          </button>
+                          <div className="px-2 pb-2 pt-1.5" onClick={(e) => e.stopPropagation()}>
+                            <ConnectButton targetUserId={editor.id} variant="pill" className="w-full justify-center" />
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* ─── TOP RANKED CAROUSEL ─── */}
                 {topRanked.length > 0 && (
                   <div className="pt-4 pb-2">
