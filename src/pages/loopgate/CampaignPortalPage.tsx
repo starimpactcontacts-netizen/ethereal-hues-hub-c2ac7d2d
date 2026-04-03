@@ -471,22 +471,23 @@ export default function CampaignPortalPage() {
             </div>
             <div className="h-48 sm:h-56">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={growthData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+                <ComposedChart data={growthData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
                   <defs>
                     <linearGradient id="viewsGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#171717" stopOpacity={0.15} />
+                      <stop offset="0%" stopColor="#171717" stopOpacity={0.12} />
                       <stop offset="100%" stopColor="#171717" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <XAxis dataKey="label" tick={{ fontSize: 9, fill: '#a3a3a3', fontWeight: 700 }} axisLine={false} tickLine={false} />
+                  <XAxis dataKey="label" tick={{ fontSize: 9, fill: '#a3a3a3', fontWeight: 700 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
                   <YAxis tick={{ fontSize: 9, fill: '#a3a3a3', fontWeight: 700 }} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatNumber(v)} />
                   <Tooltip
                     contentStyle={{ background: '#171717', border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 700, color: '#fff' }}
                     labelStyle={{ color: '#a3a3a3', fontSize: 9 }}
-                    formatter={(value: number) => [formatNumber(value), 'Views']}
+                    formatter={(value: number, name: string) => [formatNumber(value), name === 'daily' ? 'Daily' : 'Total']}
                   />
-                  <Area type="monotone" dataKey="views" stroke="#171717" strokeWidth={2} fill="url(#viewsGradient)" dot={false} activeDot={{ r: 4, fill: '#171717' }} />
-                </AreaChart>
+                  <Bar dataKey="daily" fill="#e5e5e5" radius={[2, 2, 0, 0]} barSize={6} />
+                  <Area type="monotone" dataKey="views" stroke="#171717" strokeWidth={2.5} fill="url(#viewsGradient)" dot={false} activeDot={{ r: 4, fill: '#171717', strokeWidth: 0 }} />
+                </ComposedChart>
               </ResponsiveContainer>
             </div>
           </motion.div>
