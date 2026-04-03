@@ -628,9 +628,8 @@ export default function ArenaPage() {
 
   const liveBattles = battles.filter(b => b.status === "active" || b.status === "judging").length;
   const liveTournaments = sanctionedTournaments.filter(t => t.status === "live" || t.status === "bracket" || t.status === "ready_up").length;
-  const liveHosted = hostedComps.filter(c => c.status === "live" || c.status === "judging").length;
   const liveQuick = quickFights.filter(f => f.status === "active" || f.status === "judging").length;
-  const totalLive = liveEvents.length + liveBattles + liveTournaments + liveHosted + liveQuick;
+  const totalLive = liveEvents.length + liveBattles + liveTournaments + liveQuick;
 
   const featuredFight = useMemo(() => {
     const liveFights = quickFights.filter(f => f.status === 'active' || f.status === 'judging');
