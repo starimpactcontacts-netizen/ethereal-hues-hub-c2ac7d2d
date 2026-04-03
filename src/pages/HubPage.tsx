@@ -450,22 +450,24 @@ export default function HubPage() {
                 {!hasEquippedOG && <div className="absolute inset-0 bg-surface-1/80" />}
                </div>
                {/* Bow/arch fade overlay — arches up in center, long shadow edges on sides */}
-               <div className="absolute inset-0 pointer-events-none z-[1]">
-                 {/* Center arch — pushes fade UP in the middle */}
-                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[70%] h-[65%]" style={{
-                   background: 'radial-gradient(ellipse 100% 100% at 50% 100%, hsl(var(--background)) 0%, hsl(var(--background)) 30%, transparent 70%)',
+               <div className="absolute inset-0 pointer-events-none z-[1] overflow-hidden">
+                 {/* Center arch cap */}
+                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[52%] h-[62%]" style={{
+                   background: 'radial-gradient(ellipse 100% 100% at 50% 100%, hsl(var(--background)) 0%, hsl(var(--background)) 34%, hsl(var(--background)/0.72) 52%, transparent 74%)',
                  }} />
-                 {/* Left edge — long downward fade */}
-                 <div className="absolute bottom-0 left-0 w-[30%] h-[50%]" style={{
-                   background: 'linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background)/0.8) 40%, transparent 100%)',
+                 {/* Left long bridge arm */}
+                 <div className="absolute -bottom-[6%] -left-[10%] w-[48%] h-[44%] rotate-[12deg] blur-md" style={{
+                   background: 'linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background)/0.92) 32%, hsl(var(--background)/0.55) 62%, transparent 100%)',
+                   clipPath: 'polygon(0% 100%, 100% 68%, 100% 100%, 0% 100%)',
                  }} />
-                 {/* Right edge — long downward fade */}
-                 <div className="absolute bottom-0 right-0 w-[30%] h-[50%]" style={{
-                   background: 'linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background)/0.8) 40%, transparent 100%)',
+                 {/* Right long bridge arm */}
+                 <div className="absolute -bottom-[6%] -right-[10%] w-[48%] h-[44%] -rotate-[12deg] blur-md" style={{
+                   background: 'linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background)/0.92) 32%, hsl(var(--background)/0.55) 62%, transparent 100%)',
+                   clipPath: 'polygon(0% 68%, 100% 100%, 100% 100%, 0% 100%)',
                  }} />
-                 {/* Bottom base — solid to anchor */}
-                 <div className="absolute bottom-0 left-0 right-0 h-[20%]" style={{
-                   background: 'linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background)/0.6) 60%, transparent 100%)',
+                 {/* Bottom anchor haze */}
+                 <div className="absolute bottom-0 left-0 right-0 h-[18%]" style={{
+                   background: 'linear-gradient(to top, hsl(var(--background)/0.95) 0%, hsl(var(--background)/0.58) 58%, transparent 100%)',
                  }} />
                </div>
 
