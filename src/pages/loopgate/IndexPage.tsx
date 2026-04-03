@@ -516,7 +516,7 @@ export default function IndexPage() {
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/25 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent z-[1]" />
         
-        <header className="relative z-10 px-5 pt-6 pb-3">
+        <header className="relative z-10 px-5 pt-0 pb-3">
           {/* Shuffle button — top right */}
           <div className="flex items-center justify-end mb-4">
             {viewMode === "editors" && (
