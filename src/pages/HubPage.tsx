@@ -627,23 +627,18 @@ export default function HubPage() {
             <Link to="/gqt" className="group flex flex-col items-center gap-3">
               <div className="relative w-[68px] h-[68px] rounded-[22px] overflow-hidden"
                 style={{
-                  background: 'linear-gradient(145deg, #0a0a10 0%, #0d0d14 50%, #080810 100%)',
-                  border: '1px solid rgba(255,255,255,0.06)',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.04), 0 0 1px rgba(200,220,255,0.15)',
+                  background: 'linear-gradient(145deg, #0a0a0e 0%, #0e0e12 50%, #08080c 100%)',
+                  border: '1px solid rgba(255,255,255,0.05)',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.03)',
                 }}>
-                <div className="absolute inset-0 overflow-hidden rounded-[22px]">
-                  <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-white/55 top-4 right-4" style={{ boxShadow: '0 0 3px rgba(200,220,255,0.5)' }} />
-                  <div className="absolute w-[1px] h-[1px] rounded-full bg-white/40 top-3 left-5" style={{ boxShadow: '0 0 2px rgba(200,220,255,0.4)' }} />
-                  <div className="absolute w-[1px] h-[1px] rounded-full bg-white/35 bottom-5 right-5" style={{ boxShadow: '0 0 2px rgba(200,220,255,0.3)' }} />
-                  <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-white/45 bottom-3 left-4" style={{ boxShadow: '0 0 3px rgba(200,220,255,0.4)' }} />
-                  <div className="absolute w-[1px] h-[1px] rounded-full bg-white/30 top-7 right-3" style={{ boxShadow: '0 0 2px rgba(200,220,255,0.3)' }} />
-                </div>
-                <div className="absolute inset-[6px] rounded-[16px]" style={{ border: '1px solid rgba(255,255,255,0.04)', background: 'linear-gradient(160deg, rgba(255,255,255,0.02) 0%, transparent 60%)' }} />
+                <div className="absolute w-[1px] h-[1px] rounded-full bg-white/20 top-3 left-5" style={{ boxShadow: '0 0 2px rgba(255,255,255,0.15)' }} />
+                <div className="absolute w-[1px] h-[1px] rounded-full bg-white/25 bottom-5 right-4" style={{ boxShadow: '0 0 2px rgba(255,255,255,0.2)' }} />
+                <div className="absolute inset-[6px] rounded-[16px]" style={{ border: '1px solid rgba(255,255,255,0.03)' }} />
                 <div className="relative z-10 flex h-full w-full items-center justify-center">
-                  <Target className="w-7 h-7" style={{ color: 'rgba(200,215,240,0.7)' }} />
+                  <Target className="w-7 h-7" style={{ color: 'rgba(255,255,255,0.45)' }} />
                 </div>
               </div>
-              <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'rgba(200,215,240,0.5)' }}>GQT</span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'rgba(255,255,255,0.35)' }}>GQT</span>
             </Link>
           </div>
         </div>
