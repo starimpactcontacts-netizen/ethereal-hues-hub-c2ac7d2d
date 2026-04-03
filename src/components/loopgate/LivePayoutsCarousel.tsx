@@ -201,7 +201,7 @@ function PayoutCard({ payout, idx }: { payout: Payout; idx: number }) {
 
         {/* Center — big money */}
         <div className="flex items-end gap-1.5">
-          <span className="text-3xl font-black text-emerald-400 leading-none tabular-nums tracking-tight" style={teko}>
+          <span className="text-2xl font-black text-emerald-400 leading-none tabular-nums tracking-tight" style={teko}>
             ${amount}
           </span>
           <TrendingUp className="w-4 h-4 text-emerald-400/60 mb-1" />
