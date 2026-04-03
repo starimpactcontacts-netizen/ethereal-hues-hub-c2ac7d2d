@@ -556,11 +556,14 @@ export default function HubPage() {
           <div className="relative mt-4 mb-3">
             {/* ─── BELT — horizontal band cutting through icons ─── */}
             <div className="absolute top-1/2 z-0 pointer-events-none" style={{ marginTop: '-8px', width: '100vw', left: '50%', transform: 'translateX(-50%) translateY(-50%)' }}>
-              <div className="h-[18px] w-full" style={{
-                background: 'linear-gradient(180deg, hsl(0 0% 0% / 0) 0%, hsl(0 0% 8% / 0.9) 20%, hsl(0 0% 12% / 1) 40%, hsl(0 0% 12% / 1) 60%, hsl(0 0% 8% / 0.9) 80%, hsl(0 0% 0% / 0) 100%)',
-                borderTop: '1px solid hsl(0 0% 100% / 0.08)',
-                borderBottom: '1px solid hsl(0 0% 100% / 0.06)',
-              }} />
+              <svg viewBox="0 0 400 28" preserveAspectRatio="none" className="w-full h-[28px]" xmlns="http://www.w3.org/2000/svg">
+                {/* Belt fill — bridge arch shape */}
+                <path d="M0 20 Q100 20, 150 8 Q200 -2, 200 -2 Q200 -2, 250 8 Q300 20, 400 20 L400 28 Q300 28, 250 16 Q200 6, 200 6 Q200 6, 150 16 Q100 28, 0 28 Z" fill="hsl(0 0% 10%)" />
+                {/* Top edge line */}
+                <path d="M0 20 Q100 20, 150 8 Q200 -2, 200 -2 Q200 -2, 250 8 Q300 20, 400 20" fill="none" stroke="hsla(0,0%,100%,0.08)" strokeWidth="0.8" />
+                {/* Bottom edge line */}
+                <path d="M0 28 Q100 28, 150 16 Q200 6, 200 6 Q200 6, 250 16 Q300 28, 400 28" fill="none" stroke="hsla(0,0%,100%,0.05)" strokeWidth="0.8" />
+              </svg>
             </div>
 
             <div className="relative z-10 flex items-center justify-center gap-6">
