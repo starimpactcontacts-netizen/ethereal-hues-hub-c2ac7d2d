@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, MessageSquare, Users, Lock, Image as ImageIcon } from "lucide-react";
+import { Send, MessageSquare, Users, Lock, Image as ImageIcon, Reply } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import GifPicker from "./GifPicker";
+import ChatReplyBar from "./ChatReplyBar";
+import { useNavigate } from "react-router-dom";
 
 interface BattleMessage {
   id: string;
@@ -19,6 +21,9 @@ interface BattleMessage {
   is_public: boolean;
   is_system: boolean;
   created_at: string;
+  reply_to_id: string | null;
+  reply_to_username: string | null;
+  reply_to_text: string | null;
 }
 
 interface BattleChatProps {
@@ -34,16 +39,18 @@ function isGifUrl(text: string): boolean {
 
 export default function BattleChat({ battleId, challengerId, opponentId, judgeId }: BattleChatProps) {
   const { profile, user } = useAuth();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<BattleMessage[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [tab, setTab] = useState<"public" | "private">("public");
   const [showGifPicker, setShowGifPicker] = useState(false);
+  const [replyTo, setReplyTo] = useState<{ id: string; username: string; text: string } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const isParticipant = user?.id === challengerId || user?.id === opponentId || user?.id === judgeId;
 
-  // Fetch messages
   useEffect(() => {
     const fetchMessages = async () => {
       let query = supabase
@@ -89,29 +96,48 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
     };
   }, [battleId, tab]);
 
-  // Auto-scroll
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
+
+  const handleReply = (msg: BattleMessage) => {
+    const previewText = isGifUrl(msg.message_text) ? "GIF" : msg.message_text.slice(0, 60);
+    setReplyTo({ id: msg.id, username: msg.username, text: previewText });
+    inputRef.current?.focus();
+  };
+
+  const handleMention = (username: string) => {
+    setInput(prev => prev + `@${username} `);
+    inputRef.current?.focus();
+  };
 
   const handleSend = async (text?: string) => {
     const msgText = text || input.trim();
     if (!msgText || !profile || sending) return;
 
     setSending(true);
-    const { error } = await supabase.from("battle_messages").insert({
+    const insertPayload: any = {
       battle_id: battleId,
       user_id: profile.id,
       username: profile.username,
       avatar_url: profile.avatar_url,
       message_text: msgText,
       is_public: tab === "public",
-    });
+    };
+
+    if (replyTo) {
+      insertPayload.reply_to_id = replyTo.id;
+      insertPayload.reply_to_username = replyTo.username;
+      insertPayload.reply_to_text = replyTo.text;
+    }
+
+    const { error } = await supabase.from("battle_messages").insert(insertPayload);
 
     if (error) {
       toast.error("Failed to send message");
     } else {
       if (!text) setInput("");
+      setReplyTo(null);
     }
     setSending(false);
   };
@@ -139,12 +165,27 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
     return "text-foreground";
   };
 
+  const renderMessageText = (text: string) => {
+    const parts = text.split(/(@\w+)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('@')) {
+        const username = part.slice(1);
+        return (
+          <button key={i} onClick={() => navigate(`/u/${username}`)} className="text-primary font-bold hover:underline">
+            {part}
+          </button>
+        );
+      }
+      return <span key={i}>{part}</span>;
+    });
+  };
+
   return (
     <div className="bg-surface-1 border border-border overflow-hidden">
       {/* Tab Header */}
       <div className="flex border-b border-border">
         <button
-          onClick={() => setTab("public")}
+          onClick={() => { setTab("public"); setReplyTo(null); }}
           className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${
             tab === "public"
               ? "text-red-400 border-b-2 border-red-500 bg-red-500/5"
@@ -156,7 +197,7 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
         </button>
         {isParticipant && (
           <button
-            onClick={() => setTab("private")}
+            onClick={() => { setTab("private"); setReplyTo(null); }}
             className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${
               tab === "private"
                 ? "text-purple-400 border-b-2 border-purple-500 bg-purple-500/5"
@@ -186,7 +227,7 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
               key={msg.id}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`flex gap-2 ${msg.is_system ? "justify-center" : ""}`}
+              className={`flex gap-2 group ${msg.is_system ? "justify-center" : ""}`}
             >
               {msg.is_system ? (
                 <span className="text-[10px] text-muted-foreground italic bg-surface-2 px-3 py-1">
@@ -201,23 +242,46 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
-                      <span className={`text-[10px] font-bold ${getNameColor(msg.user_id)}`}>
-                        {msg.username}
-                      </span>
-                      {getRoleBadge(msg.user_id)}
-                      <span className="text-[8px] text-muted-foreground">{formatTime(msg.created_at)}</span>
-                    </div>
-                    {isGifUrl(msg.message_text) ? (
-                      <img
-                        src={msg.message_text}
-                        alt="GIF"
-                        className="max-w-[200px] mt-1 border border-border"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <p className="text-xs text-foreground/90 break-words">{msg.message_text}</p>
+                    {/* Reply context */}
+                    {msg.reply_to_username && (
+                      <div className="flex items-center gap-1 text-[9px] text-muted-foreground/50 mb-0.5">
+                        <Reply className="w-2.5 h-2.5 rotate-180" />
+                        <span>replying to</span>
+                        <span className="font-bold">@{msg.reply_to_username}</span>
+                      </div>
                     )}
+                    <div className="flex items-start gap-1">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => handleMention(msg.username)}
+                            className={`text-[10px] font-bold ${getNameColor(msg.user_id)} hover:underline`}
+                          >
+                            {msg.username}
+                          </button>
+                          {getRoleBadge(msg.user_id)}
+                          <span className="text-[8px] text-muted-foreground">{formatTime(msg.created_at)}</span>
+                        </div>
+                        {isGifUrl(msg.message_text) ? (
+                          <img
+                            src={msg.message_text}
+                            alt="GIF"
+                            className="max-w-[200px] mt-1 border border-border"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <p className="text-xs text-foreground/90 break-words">{renderMessageText(msg.message_text)}</p>
+                        )}
+                      </div>
+                      {user && (
+                        <button
+                          onClick={() => handleReply(msg)}
+                          className="opacity-0 group-hover:opacity-100 active:opacity-100 p-1 text-muted-foreground/30 hover:text-red-400 transition-all shrink-0 touch-manipulation"
+                        >
+                          <Reply className="w-3 h-3 rotate-180" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </>
               )}
@@ -233,32 +297,43 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
         </div>
       )}
 
-      {/* Input */}
+      {/* Reply bar + Input */}
       {user && (tab === "public" || isParticipant) && (
-        <div className="border-t border-border p-2 flex gap-2">
-          <button
-            onClick={() => setShowGifPicker(!showGifPicker)}
-            className={`h-8 w-8 flex items-center justify-center shrink-0 border transition-colors ${
-              showGifPicker ? "bg-red-500/20 border-red-500/40 text-red-400" : "bg-surface-2 border-border text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <ImageIcon className="w-3.5 h-3.5" />
-          </button>
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder={tab === "public" ? "Chat as spectator..." : "Fighter chat..."}
-            className="flex-1 h-8 text-xs bg-background border-border"
-          />
-          <Button
-            size="sm"
-            onClick={() => handleSend()}
-            disabled={!input.trim() || sending}
-            className={`h-8 px-3 ${tab === "public" ? "bg-red-500 hover:bg-red-600" : "bg-purple-500 hover:bg-purple-600"} text-white`}
-          >
-            <Send className="w-3 h-3" />
-          </Button>
+        <div className="border-t border-border">
+          {replyTo && (
+            <ChatReplyBar
+              username={replyTo.username}
+              text={replyTo.text}
+              onClear={() => setReplyTo(null)}
+              accentColor={tab === "public" ? "red" : "purple"}
+            />
+          )}
+          <div className="p-2 flex gap-2">
+            <button
+              onClick={() => setShowGifPicker(!showGifPicker)}
+              className={`h-8 w-8 flex items-center justify-center shrink-0 border transition-colors ${
+                showGifPicker ? "bg-red-500/20 border-red-500/40 text-red-400" : "bg-surface-2 border-border text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <ImageIcon className="w-3.5 h-3.5" />
+            </button>
+            <Input
+              ref={inputRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              placeholder={replyTo ? `Reply to @${replyTo.username}...` : (tab === "public" ? "Chat as spectator..." : "Fighter chat...")}
+              className="flex-1 h-8 text-xs bg-background border-border"
+            />
+            <Button
+              size="sm"
+              onClick={() => handleSend()}
+              disabled={!input.trim() || sending}
+              className={`h-8 px-3 ${tab === "public" ? "bg-red-500 hover:bg-red-600" : "bg-purple-500 hover:bg-purple-600"} text-white`}
+            >
+              <Send className="w-3 h-3" />
+            </Button>
+          </div>
         </div>
       )}
     </div>
