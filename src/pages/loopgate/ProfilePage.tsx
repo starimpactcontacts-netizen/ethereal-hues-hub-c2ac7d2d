@@ -216,7 +216,7 @@ export default function ProfilePage() {
                 <span className="font-display text-base leading-none text-foreground">{(Math.max(0, ((profile as any)?.earnings_cents || 0) - ((profile as any)?.pending_withdrawal_cents || 0) - ((profile as any)?.withdrawn_cents || 0)) / 100).toFixed(2)}</span>
                 <IndexEarnBadge size="sm" hideDollar />
               </div>
-              <span className="text-[8px] uppercase tracking-wider text-muted-foreground mt-0.5">Lifetime</span>
+              <span className="text-[8px] uppercase tracking-wider text-muted-foreground mt-0.5">Earn</span>
             </div>
           </div>
 
