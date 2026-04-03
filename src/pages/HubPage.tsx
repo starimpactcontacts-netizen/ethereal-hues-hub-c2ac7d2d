@@ -744,9 +744,9 @@ export default function HubPage() {
           <div 
             className="flex overflow-hidden rounded-xl border"
             style={{ 
-              borderColor: quickAction === 'solo' ? 'rgba(234,179,8,0.35)' : 'rgba(239,68,68,0.35)',
+              borderColor: quickAction === 'solo' ? 'rgba(255,255,255,0.20)' : 'rgba(239,68,68,0.35)',
               boxShadow: quickAction === 'solo' 
-                ? '0 4px 30px rgba(234,179,8,0.25), 0 0 60px rgba(234,179,8,0.08)' 
+                ? '0 4px 30px rgba(255,255,255,0.12), 0 0 60px rgba(255,255,255,0.06)' 
                 : '0 4px 30px rgba(239,68,68,0.25), 0 0 60px rgba(239,68,68,0.08)'
             }}
           >
@@ -769,23 +769,33 @@ export default function HubPage() {
               className={cn(
                 "flex-1 relative overflow-hidden flex items-center justify-center gap-3 px-6 py-5 transition-all duration-300 touch-manipulation select-none",
                 quickAction === 'solo'
-                  ? "bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600"
+                  ? ""
                   : "bg-gradient-to-r from-red-600 via-red-500 to-red-600"
               )}
+              style={quickAction === 'solo' ? {
+                background: 'linear-gradient(135deg, hsl(43 96% 56%) 0%, hsl(40 100% 50%) 40%, hsl(36 100% 48%) 100%)',
+              } : undefined}
             >
-              {/* Shine sweep animation */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.15] to-transparent -skew-x-12 pointer-events-none"
-                animate={{ x: ['-200%', '200%'] }}
-                transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut', repeatDelay: 2 }}
-              />
-              {/* Top gloss */}
-              <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/[0.18] to-transparent pointer-events-none" />
+               {/* Luxury geometric pattern overlay */}
+               {quickAction === 'solo' && (
+                 <div className="absolute inset-0 pointer-events-none opacity-[0.07]" style={{
+                   backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(255,255,255,0.5) 8px, rgba(255,255,255,0.5) 9px),
+                     repeating-linear-gradient(-45deg, transparent, transparent 8px, rgba(255,255,255,0.5) 8px, rgba(255,255,255,0.5) 9px)`,
+                 }} />
+               )}
+               {/* Shine sweep animation */}
+               <motion.div
+                 className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.20] to-transparent -skew-x-12 pointer-events-none"
+                 animate={{ x: ['-200%', '200%'] }}
+                 transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut', repeatDelay: 2 }}
+               />
+               {/* Top gloss */}
+               <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/[0.22] to-transparent pointer-events-none" />
               
               {quickAction === 'solo' ? (
                 <>
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-white/25 to-white/5 flex items-center justify-center relative z-10 border border-white/30 shadow-lg shadow-amber-900/30">
-                    <UserRound className="w-4.5 h-4.5 text-white drop-shadow-lg" />
+                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-white/30 to-white/10 flex items-center justify-center relative z-10 border border-white/40 shadow-lg shadow-black/20">
+                     <UserRound className="w-4.5 h-4.5 text-white drop-shadow-lg" />
                   </div>
                   <div className="flex flex-col relative z-10">
                     <span className="text-[28px] font-bold text-white uppercase tracking-wider leading-none drop-shadow-lg" style={{ fontFamily: 'Teko, sans-serif' }}>
@@ -830,15 +840,24 @@ export default function HubPage() {
             {/* Dropdown toggle */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className={cn(
-                  "relative overflow-hidden flex items-center justify-center px-5 py-5 transition-colors touch-manipulation select-none border-l",
-                  quickAction === 'solo'
-                    ? "bg-amber-700/80 hover:bg-amber-600/80 border-amber-900/40"
-                    : "bg-red-700/80 hover:bg-red-600/80 border-red-900/40"
-                )}>
-                  <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/[0.1] to-transparent pointer-events-none" />
-                  <ChevronDown className="w-5 h-5 text-white/80 relative z-10" />
-                </button>
+                <button 
+                  className={cn(
+                    "relative overflow-hidden flex items-center justify-center px-5 py-5 transition-colors touch-manipulation select-none border-l",
+                    quickAction === 'solo'
+                      ? "hover:brightness-110 border-white/10"
+                      : "bg-red-700/80 hover:bg-red-600/80 border-red-900/40"
+                  )}
+                  style={quickAction === 'solo' ? { background: 'hsl(33 100% 38%)' } : undefined}
+                >
+                   {quickAction === 'solo' && (
+                     <div className="absolute inset-0 pointer-events-none opacity-[0.06]" style={{
+                       backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(255,255,255,0.5) 6px, rgba(255,255,255,0.5) 7px),
+                         repeating-linear-gradient(-45deg, transparent, transparent 6px, rgba(255,255,255,0.5) 6px, rgba(255,255,255,0.5) 7px)`,
+                     }} />
+                   )}
+                   <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
+                   <ChevronDown className="w-5 h-5 text-white/90 relative z-10" />
+                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52 bg-surface-1 border-border">
                 <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">Quick Action</DropdownMenuLabel>
