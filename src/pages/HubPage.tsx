@@ -519,7 +519,7 @@ export default function HubPage() {
                         </span>
                       </div>
                       <span className="text-[8px] text-muted-foreground/60 font-semibold uppercase tracking-wider mt-0.5">
-                        <span className="text-emerald-400">$</span>{(((profile as any)?.earnings_cents || 0) / 100).toFixed(2)} earned
+                        <span className="text-emerald-400">$</span>{(((profile as any)?.earnings_cents || 0) / 100).toFixed(2)} LIFETIME
                       </span>
                     </button>
                     {/* Index */}
