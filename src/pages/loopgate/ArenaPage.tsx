@@ -1373,7 +1373,7 @@ export default function ArenaPage() {
                 infoText="Instant matchmaking. Auto-matched with another editor — both submit an edit within 3 hours. Judge picks the winner. Winner +20 IDX."
                 action={
                   <button
-                    onClick={() => profile ? navigate('/quick-fight') : navigate('/start')}
+                    onClick={handleQuickFight}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:brightness-110"
                     style={{
                       background: 'linear-gradient(135deg, #10B981, #059669)',
