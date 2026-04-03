@@ -448,7 +448,7 @@ export default function HubPage() {
                    
                    {/* Top accent line */}
                    <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
-                   <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold/8 to-transparent" />
+                   
                    
                    {/* Corner accents */}
                    <div className="absolute top-3 left-3 w-3 h-3 border-t border-l border-gold/15" />
