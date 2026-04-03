@@ -352,10 +352,7 @@ export default function FeaturedDropCard({ drop }: Props) {
         {isLive ? (
           <motion.button
             whileTap={{ scale: 0.97 }}
-            onClick={() => {
-              if (profile) navigate(`/drop/${drop.id}`);
-              else navigate('/start');
-            }}
+            onClick={() => navigate(`/drop/${drop.id}`)}
             className={cn(
               "w-full py-2.5 rounded-md font-display text-[11px] uppercase tracking-widest",
               "flex items-center justify-center gap-1.5",
