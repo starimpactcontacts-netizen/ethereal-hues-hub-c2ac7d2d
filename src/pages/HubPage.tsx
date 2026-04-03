@@ -420,7 +420,7 @@ export default function HubPage() {
         {/* Subtle top gradient */}
         <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-surface-1/50 to-transparent pointer-events-none" />
 
-        <div className="relative px-4 pt-5 pb-1">
+        <div className="relative px-4 pt-5 pb-0">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -551,7 +551,7 @@ export default function HubPage() {
 
 
               {/* Quick Access — keep the transition transparent so the pattern can fade out naturally */}
-              <div className="relative z-10 px-3 pt-4 pb-2.5">
+              <div className="relative z-10 px-3 pt-4 pb-1">
                 <div className="flex gap-2 items-stretch">
                   {/* Unit — compact left */}
                   <Link to={userCrew ? `/units/${userCrew.id}` : '/units'} className="group flex-1 min-w-0">
@@ -618,6 +618,8 @@ export default function HubPage() {
                   </Link>
                 </div>
               </div>
+
+              <div className="pointer-events-none absolute inset-x-3 bottom-[-2.75rem] z-[1] h-20 bg-[linear-gradient(to_bottom,transparent_0%,hsl(var(--background)/0.28)_38%,hsl(var(--background)/0.72)_72%,hsl(var(--background))_100%)]" />
             </div>
           </motion.div>
         </div>
@@ -703,7 +705,7 @@ export default function HubPage() {
       )}
 
       {/* ⚔️ QUICK ACTION CTA — Premium cinematic button */}
-      <div className="px-4 mt-1.5">
+      <div className="px-4 mt-0">
         <div className="flex flex-col gap-0">
           {/* Cinematic action container — Premium rounded */}
           <div 
