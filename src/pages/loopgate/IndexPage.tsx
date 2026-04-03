@@ -1005,12 +1005,15 @@ function DirectoryList({ editors, pinnedEditsByUser, navigate, profile }: {
               </div>
             </div>
             
-            {/* Score */}
-            <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+            {/* Score + Connect */}
+            <div className="flex flex-col items-end gap-1 flex-shrink-0">
               <span className={`font-display text-xl tabular-nums ${isNumberOne ? 'text-gold' : 'text-foreground'}`}>
                 {(editor.global_index_score || 0).toFixed(1)}
               </span>
               <p className="text-[7px] text-muted-foreground/50 uppercase tracking-wider">Index</p>
+              <div onClick={(e) => e.stopPropagation()}>
+                <ConnectButton targetUserId={editor.id} variant="micro" />
+              </div>
             </div>
           </button>
         );
