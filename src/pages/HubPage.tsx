@@ -554,33 +554,29 @@ export default function HubPage() {
 
           {/* Quick Access — Rolls Royce Starlight dock */}
           <div className="relative mt-4 mb-3">
-            <div className="pointer-events-none absolute inset-x-0 -top-16 h-28 z-0 overflow-visible">
-              <div
-                className="absolute left-0 top-0 h-full w-[26%] blur-xl"
+            {/* ─── LEGS — dark shadow extensions from card edges ─── */}
+            <div className="pointer-events-none absolute inset-x-0 -top-8 h-32 z-0">
+              {/* Left leg */}
+              <div className="absolute left-4 top-0 w-[60px] h-full"
                 style={{
-                  background: 'linear-gradient(180deg, hsl(var(--background) / 0.74) 0%, hsl(var(--background) / 0.42) 44%, transparent 100%)',
-                  clipPath: 'polygon(0 0, 100% 0, 72% 100%, 0 100%)',
+                  background: 'linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--background) / 0.7) 30%, hsl(var(--background) / 0.3) 65%, transparent 100%)',
+                  borderRadius: '0 0 50% 50%',
+                  filter: 'blur(8px)',
                 }}
               />
-              <div
-                className="absolute right-0 top-0 h-full w-[26%] blur-xl"
+              {/* Right leg */}
+              <div className="absolute right-4 top-0 w-[60px] h-full"
                 style={{
-                  background: 'linear-gradient(180deg, hsl(var(--background) / 0.74) 0%, hsl(var(--background) / 0.42) 44%, transparent 100%)',
-                  clipPath: 'polygon(0 0, 100% 0, 100% 100%, 28% 100%)',
+                  background: 'linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--background) / 0.7) 30%, hsl(var(--background) / 0.3) 65%, transparent 100%)',
+                  borderRadius: '0 0 50% 50%',
+                  filter: 'blur(8px)',
                 }}
               />
-              <div
-                className="absolute left-[2%] top-1 h-[92%] w-[18%] blur-2xl opacity-90"
+              {/* Center arch connecting the legs */}
+              <div className="absolute left-[72px] right-[72px] top-0 h-[40%]"
                 style={{
-                  background: 'linear-gradient(180deg, hsl(var(--background) / 0.62) 0%, hsl(var(--background) / 0.26) 58%, transparent 100%)',
-                  clipPath: 'polygon(0 0, 100% 0, 68% 100%, 0 100%)',
-                }}
-              />
-              <div
-                className="absolute right-[2%] top-1 h-[92%] w-[18%] blur-2xl opacity-90"
-                style={{
-                  background: 'linear-gradient(180deg, hsl(var(--background) / 0.62) 0%, hsl(var(--background) / 0.26) 58%, transparent 100%)',
-                  clipPath: 'polygon(0 0, 100% 0, 100% 100%, 32% 100%)',
+                  background: 'linear-gradient(180deg, hsl(var(--background) / 0.5) 0%, transparent 100%)',
+                  filter: 'blur(12px)',
                 }}
               />
             </div>
