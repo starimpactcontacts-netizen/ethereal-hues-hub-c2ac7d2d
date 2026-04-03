@@ -548,62 +548,109 @@ export default function HubPage() {
             </div>
           </motion.div>
 
-          {/* Quick Access — iOS dock style */}
-          <div className="flex items-center justify-center gap-5 mt-5 mb-7">
-            <Link to={userCrew ? `/units/${userCrew.id}` : '/units'} className="group flex flex-col items-center gap-2.5">
-              <div className="relative w-16 h-16 rounded-[22px] border border-border/60 bg-background/95 backdrop-blur-md overflow-hidden shadow-2xl">
-                <div className="absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-foreground/20 to-transparent" />
-                <div className="absolute inset-[1px] rounded-[20px] bg-surface-1/95" />
+          {/* Quick Access — Rolls Royce Starlight dock */}
+          <div className="flex items-center justify-center gap-6 mt-6 mb-8">
+            {/* UNITS */}
+            <Link to={userCrew ? `/units/${userCrew.id}` : '/units'} className="group flex flex-col items-center gap-3">
+              <div className="relative w-[68px] h-[68px] rounded-[22px] overflow-hidden"
+                style={{
+                  background: 'linear-gradient(145deg, #0a0a10 0%, #0d0d14 50%, #080810 100%)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.04), 0 0 1px rgba(200,220,255,0.15)',
+                }}>
+                {/* Starlight dots */}
+                <div className="absolute inset-0 overflow-hidden rounded-[22px]">
+                  <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-white/60 top-3 left-4" style={{ boxShadow: '0 0 3px rgba(200,220,255,0.6)' }} />
+                  <div className="absolute w-[1px] h-[1px] rounded-full bg-white/40 top-5 right-5" style={{ boxShadow: '0 0 2px rgba(200,220,255,0.4)' }} />
+                  <div className="absolute w-[1px] h-[1px] rounded-full bg-white/35 bottom-4 left-6" style={{ boxShadow: '0 0 2px rgba(200,220,255,0.3)' }} />
+                  <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-white/50 top-8 left-3" style={{ boxShadow: '0 0 3px rgba(200,220,255,0.5)' }} />
+                  <div className="absolute w-[1px] h-[1px] rounded-full bg-white/30 bottom-3 right-4" style={{ boxShadow: '0 0 2px rgba(200,220,255,0.3)' }} />
+                </div>
+                {/* Inner bezel */}
+                <div className="absolute inset-[6px] rounded-[16px]" style={{ border: '1px solid rgba(255,255,255,0.04)', background: 'linear-gradient(160deg, rgba(255,255,255,0.02) 0%, transparent 60%)' }} />
                 <div className="relative z-10 flex h-full w-full items-center justify-center">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border/40 bg-muted/15 overflow-hidden">
-                    {userCrew?.avatar_url ? (
-                      <img src={userCrew.avatar_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <Users2 className="w-7 h-7 text-foreground/80" />
-                    )}
-                  </div>
+                  {userCrew?.avatar_url ? (
+                    <img src={userCrew.avatar_url} alt="" className="w-9 h-9 rounded-xl object-cover" />
+                  ) : (
+                    <Users2 className="w-7 h-7" style={{ color: 'rgba(200,215,240,0.7)' }} />
+                  )}
                 </div>
               </div>
-              <span className="rounded-full border border-border/40 bg-background/90 px-2.5 py-1 text-[10px] text-foreground/70 font-semibold uppercase tracking-[0.18em]">{userCrew ? 'Unit' : 'Units'}</span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'rgba(200,215,240,0.5)' }}>{userCrew ? 'Unit' : 'Units'}</span>
             </Link>
 
+            {/* CENTER — Studio or Judge Panel */}
             {isJudge ? (
-              <Link to="/judge-panel" className="group flex flex-col items-center gap-2.5">
-                <div className="relative w-[72px] h-[72px] rounded-[24px] border border-red-800/40 bg-background/95 backdrop-blur-md overflow-hidden shadow-2xl">
-                  <div className="absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-red-400/35 to-transparent" />
-                  <div className="absolute inset-[1px] rounded-[22px] bg-surface-1/95" />
-                  <div className="absolute inset-[10px] rounded-[18px] border border-red-800/30 bg-red-950/35" />
+              <Link to="/judge-panel" className="group flex flex-col items-center gap-3">
+                <div className="relative w-[80px] h-[80px] rounded-[26px] overflow-hidden"
+                  style={{
+                    background: 'linear-gradient(145deg, #0c0810 0%, #0f0a16 50%, #0a0810 100%)',
+                    border: '1px solid rgba(180,140,255,0.1)',
+                    boxShadow: '0 12px 40px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.04), 0 0 20px rgba(140,100,220,0.06), 0 0 1px rgba(180,160,255,0.2)',
+                  }}>
+                  <div className="absolute inset-0 overflow-hidden rounded-[26px]">
+                    <div className="absolute w-[2px] h-[2px] rounded-full bg-white/70 top-3 left-5" style={{ boxShadow: '0 0 4px rgba(200,180,255,0.7)' }} />
+                    <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-white/50 top-6 right-4" style={{ boxShadow: '0 0 3px rgba(200,180,255,0.5)' }} />
+                    <div className="absolute w-[1px] h-[1px] rounded-full bg-white/40 bottom-5 left-4" style={{ boxShadow: '0 0 2px rgba(200,180,255,0.4)' }} />
+                    <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-white/55 bottom-3 right-6" style={{ boxShadow: '0 0 3px rgba(200,180,255,0.5)' }} />
+                    <div className="absolute w-[1px] h-[1px] rounded-full bg-white/35 top-10 left-6" style={{ boxShadow: '0 0 2px rgba(200,180,255,0.3)' }} />
+                    <div className="absolute w-[2px] h-[2px] rounded-full bg-white/60 top-4 right-7" style={{ boxShadow: '0 0 4px rgba(200,180,255,0.6)' }} />
+                  </div>
+                  <div className="absolute inset-[6px] rounded-[20px]" style={{ border: '1px solid rgba(180,140,255,0.06)', background: 'linear-gradient(160deg, rgba(180,140,255,0.03) 0%, transparent 60%)' }} />
                   <div className="relative z-10 flex h-full w-full items-center justify-center">
-                    <Gavel className="w-8 h-8 text-red-400" />
+                    <Gavel className="w-9 h-9" style={{ color: 'rgba(200,180,255,0.8)' }} />
                   </div>
                 </div>
-                <span className="rounded-full border border-red-800/35 bg-background/90 px-2.5 py-1 text-[10px] text-red-400/80 font-semibold uppercase tracking-[0.18em]">Panel</span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'rgba(200,180,255,0.55)' }}>Panel</span>
               </Link>
             ) : (
-              <Link to="/studio" className="group flex flex-col items-center gap-2.5">
-                <div className="relative w-[72px] h-[72px] rounded-[24px] border border-gold/35 bg-background/95 backdrop-blur-md overflow-hidden shadow-2xl">
-                  <div className="absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
-                  <div className="absolute inset-[1px] rounded-[22px] bg-surface-1/95" />
-                  <div className="absolute inset-[10px] rounded-[18px] border border-gold/25 bg-gold/10" />
+              <Link to="/studio" className="group flex flex-col items-center gap-3">
+                <div className="relative w-[80px] h-[80px] rounded-[26px] overflow-hidden"
+                  style={{
+                    background: 'linear-gradient(145deg, #08080e 0%, #0c0c14 50%, #06060c 100%)',
+                    border: '1px solid rgba(180,200,255,0.08)',
+                    boxShadow: '0 12px 40px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 20px rgba(140,170,255,0.05), 0 0 1px rgba(200,220,255,0.2)',
+                  }}>
+                  {/* More starlight dots for center prominence */}
+                  <div className="absolute inset-0 overflow-hidden rounded-[26px]">
+                    <div className="absolute w-[2px] h-[2px] rounded-full bg-white/70 top-3 left-5" style={{ boxShadow: '0 0 4px rgba(200,220,255,0.8)' }} />
+                    <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-white/55 top-5 right-4" style={{ boxShadow: '0 0 3px rgba(200,220,255,0.6)' }} />
+                    <div className="absolute w-[1px] h-[1px] rounded-full bg-white/40 bottom-5 left-4" style={{ boxShadow: '0 0 2px rgba(200,220,255,0.4)' }} />
+                    <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-white/60 bottom-3 right-5" style={{ boxShadow: '0 0 3px rgba(200,220,255,0.6)' }} />
+                    <div className="absolute w-[1px] h-[1px] rounded-full bg-white/35 top-9 left-3" style={{ boxShadow: '0 0 2px rgba(200,220,255,0.3)' }} />
+                    <div className="absolute w-[2px] h-[2px] rounded-full bg-white/65 top-4 right-7" style={{ boxShadow: '0 0 4px rgba(200,220,255,0.7)' }} />
+                    <div className="absolute w-[1px] h-[1px] rounded-full bg-white/30 bottom-6 left-7" style={{ boxShadow: '0 0 2px rgba(200,220,255,0.3)' }} />
+                  </div>
+                  <div className="absolute inset-[6px] rounded-[20px]" style={{ border: '1px solid rgba(200,220,255,0.05)', background: 'linear-gradient(160deg, rgba(200,220,255,0.03) 0%, transparent 60%)' }} />
                   <div className="relative z-10 flex h-full w-full items-center justify-center">
-                    <Clapperboard className="w-8 h-8 text-gold" />
+                    <Clapperboard className="w-9 h-9" style={{ color: 'rgba(210,225,255,0.85)' }} />
                   </div>
                 </div>
-                <span className="rounded-full border border-gold/25 bg-background/90 px-2.5 py-1 text-[10px] text-gold font-semibold uppercase tracking-[0.18em]">Studio</span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'rgba(200,215,240,0.55)' }}>Studio</span>
               </Link>
             )}
 
-            <Link to="/gqt" className="group flex flex-col items-center gap-2.5">
-              <div className="relative w-16 h-16 rounded-[22px] border border-border/60 bg-background/95 backdrop-blur-md overflow-hidden shadow-2xl">
-                <div className="absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-foreground/20 to-transparent" />
-                <div className="absolute inset-[1px] rounded-[20px] bg-surface-1/95" />
+            {/* GQT */}
+            <Link to="/gqt" className="group flex flex-col items-center gap-3">
+              <div className="relative w-[68px] h-[68px] rounded-[22px] overflow-hidden"
+                style={{
+                  background: 'linear-gradient(145deg, #0a0a10 0%, #0d0d14 50%, #080810 100%)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.04), 0 0 1px rgba(200,220,255,0.15)',
+                }}>
+                <div className="absolute inset-0 overflow-hidden rounded-[22px]">
+                  <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-white/55 top-4 right-4" style={{ boxShadow: '0 0 3px rgba(200,220,255,0.5)' }} />
+                  <div className="absolute w-[1px] h-[1px] rounded-full bg-white/40 top-3 left-5" style={{ boxShadow: '0 0 2px rgba(200,220,255,0.4)' }} />
+                  <div className="absolute w-[1px] h-[1px] rounded-full bg-white/35 bottom-5 right-5" style={{ boxShadow: '0 0 2px rgba(200,220,255,0.3)' }} />
+                  <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-white/45 bottom-3 left-4" style={{ boxShadow: '0 0 3px rgba(200,220,255,0.4)' }} />
+                  <div className="absolute w-[1px] h-[1px] rounded-full bg-white/30 top-7 right-3" style={{ boxShadow: '0 0 2px rgba(200,220,255,0.3)' }} />
+                </div>
+                <div className="absolute inset-[6px] rounded-[16px]" style={{ border: '1px solid rgba(255,255,255,0.04)', background: 'linear-gradient(160deg, rgba(255,255,255,0.02) 0%, transparent 60%)' }} />
                 <div className="relative z-10 flex h-full w-full items-center justify-center">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border/40 bg-muted/15">
-                    <Target className="w-7 h-7 text-foreground/80" />
-                  </div>
+                  <Target className="w-7 h-7" style={{ color: 'rgba(200,215,240,0.7)' }} />
                 </div>
               </div>
-              <span className="rounded-full border border-border/40 bg-background/90 px-2.5 py-1 text-[10px] text-foreground/70 font-semibold uppercase tracking-[0.18em]">GQT</span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'rgba(200,215,240,0.5)' }}>GQT</span>
             </Link>
           </div>
         </div>
