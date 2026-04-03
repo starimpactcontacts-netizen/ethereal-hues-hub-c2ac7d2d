@@ -428,8 +428,14 @@ export default function HubPage() {
           >
              <div className={`overflow-hidden relative rounded-t-xl ${hasEquippedOG ? 'bg-[#0c0a04]' : 'bg-surface-1'}`}>
                {/* First Circle Skin — luxury prestige aesthetic */}
-               {hasEquippedOG && (
-                 <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+                {hasEquippedOG && (
+                  <div
+                    className="absolute inset-0 pointer-events-none z-0 overflow-hidden"
+                    style={{
+                      maskImage: 'linear-gradient(to bottom, #000 0%, #000 62%, rgba(0, 0, 0, 0.55) 82%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to bottom, #000 0%, #000 62%, rgba(0, 0, 0, 0.55) 82%, transparent 100%)',
+                    }}
+                  >
                    {/* Subtle radial gold glow from center-top */}
                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[200px] bg-[radial-gradient(ellipse_at_center,_hsl(var(--gold)/0.06)_0%,_transparent_70%)]" />
                    
@@ -545,8 +551,8 @@ export default function HubPage() {
               </div>
 
 
-              {/* Quick Access — seamless fade into pure black */}
-              <div className="relative z-10 px-3 pt-4 pb-2.5" style={{ background: 'linear-gradient(to bottom, transparent 0%, hsl(0 0% 0% / 0.6) 20%, hsl(0 0% 0% / 1) 60%)' }}>
+              {/* Quick Access — keep the transition transparent so the pattern can fade out naturally */}
+              <div className="relative z-10 px-3 pt-4 pb-2.5">
                 <div className="flex gap-2 items-stretch">
                   {/* Unit — compact left */}
                   <Link to={userCrew ? `/units/${userCrew.id}` : '/units'} className="group flex-1 min-w-0">
