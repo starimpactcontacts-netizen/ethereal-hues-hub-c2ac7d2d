@@ -714,7 +714,7 @@ export default function ArenaPage() {
     quick: handleQuickFight,
     battle: () => profile ? setShowCreateBattle(true) : navigate('/start'),
     solo: () => profile ? setShowSoloMode(true) : navigate('/start'),
-    practice: () => setShowPracticeMode(true),
+    
   };
 
   return (
