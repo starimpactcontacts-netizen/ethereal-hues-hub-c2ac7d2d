@@ -1017,7 +1017,7 @@ export default function FeaturedArtistAdmin() {
                 <div className="mt-1">
                   <input
                     type="file"
-                    accept="audio/*"
+                    accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,video/*"
                     disabled={uploadingEditPreview}
                     onChange={(e) => {
                       const file = e.target.files?.[0];
