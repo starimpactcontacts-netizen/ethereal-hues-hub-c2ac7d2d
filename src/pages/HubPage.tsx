@@ -549,40 +549,40 @@ export default function HubPage() {
           </motion.div>
 
           {/* Quick Access — iOS dock style */}
-          <div className="flex items-center justify-center gap-8 mt-4 mb-1">
-            <Link to={userCrew ? `/units/${userCrew.id}` : '/units'} className="group flex flex-col items-center gap-1.5">
-              <div className="w-12 h-12 rounded-2xl bg-surface-1/70 border border-border/30 flex items-center justify-center group-hover:border-foreground/25 group-hover:bg-surface-1 transition-all overflow-hidden">
+          <div className="flex items-center justify-center gap-10 mt-2.5 mb-0">
+            <Link to={userCrew ? `/units/${userCrew.id}` : '/units'} className="group flex flex-col items-center gap-1">
+              <div className="w-10 h-10 rounded-xl bg-surface-1/60 border border-border/25 flex items-center justify-center group-hover:border-foreground/20 transition-all overflow-hidden">
                 {userCrew?.avatar_url ? (
                   <img src={userCrew.avatar_url} alt="" className="w-full h-full object-cover" />
                 ) : (
-                  <Users2 className="w-5 h-5 text-muted-foreground/70" />
+                  <Users2 className="w-4 h-4 text-muted-foreground/60" />
                 )}
               </div>
-              <span className="text-[9px] text-muted-foreground/60 font-semibold uppercase tracking-wider">{userCrew ? 'Unit' : 'Units'}</span>
+              <span className="text-[8px] text-muted-foreground/50 font-semibold uppercase tracking-wider">{userCrew ? 'Unit' : 'Units'}</span>
             </Link>
 
             {isJudge ? (
-              <Link to="/judge-panel" className="group flex flex-col items-center gap-1.5">
-                <div className="w-14 h-14 rounded-2xl bg-red-950/40 border border-red-800/30 flex items-center justify-center group-hover:border-red-500/40 transition-all relative">
-                  <div className="absolute inset-0 rounded-2xl bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.1),transparent_70%)]" />
+              <Link to="/judge-panel" className="group flex flex-col items-center gap-1">
+                <div className="w-11 h-11 rounded-xl bg-red-950/40 border border-red-800/25 flex items-center justify-center group-hover:border-red-500/35 transition-all relative">
+                  <div className="absolute inset-0 rounded-xl bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.08),transparent_70%)]" />
                   <Gavel className="w-6 h-6 text-red-400 relative z-10" />
                 </div>
-                <span className="text-[9px] text-red-400/60 font-semibold uppercase tracking-wider">Panel</span>
+                <span className="text-[8px] text-red-400/50 font-semibold uppercase tracking-wider">Panel</span>
               </Link>
             ) : (
-              <Link to="/studio" className="group flex flex-col items-center gap-1.5">
-                <div className="w-14 h-14 rounded-2xl bg-surface-1/80 border border-border/40 flex items-center justify-center group-hover:border-foreground/30 transition-all">
-                  <Clapperboard className="w-6 h-6 text-foreground/80" />
+              <Link to="/studio" className="group flex flex-col items-center gap-1">
+                <div className="w-11 h-11 rounded-xl bg-surface-1/70 border border-border/30 flex items-center justify-center group-hover:border-foreground/25 transition-all">
+                  <Clapperboard className="w-5 h-5 text-foreground/70" />
                 </div>
-                <span className="text-[9px] text-muted-foreground/60 font-semibold uppercase tracking-wider">Studio</span>
+                <span className="text-[8px] text-muted-foreground/50 font-semibold uppercase tracking-wider">Studio</span>
               </Link>
             )}
 
-            <Link to="/gqt" className="group flex flex-col items-center gap-1.5">
-              <div className="w-12 h-12 rounded-2xl bg-surface-1/70 border border-border/30 flex items-center justify-center group-hover:border-foreground/25 group-hover:bg-surface-1 transition-all">
-                <Target className="w-5 h-5 text-muted-foreground/70" />
+            <Link to="/gqt" className="group flex flex-col items-center gap-1">
+              <div className="w-10 h-10 rounded-xl bg-surface-1/60 border border-border/25 flex items-center justify-center group-hover:border-foreground/20 transition-all">
+                <Target className="w-4 h-4 text-muted-foreground/60" />
               </div>
-              <span className="text-[9px] text-muted-foreground/60 font-semibold uppercase tracking-wider">GQT</span>
+              <span className="text-[8px] text-muted-foreground/50 font-semibold uppercase tracking-wider">GQT</span>
             </Link>
           </div>
         </div>
