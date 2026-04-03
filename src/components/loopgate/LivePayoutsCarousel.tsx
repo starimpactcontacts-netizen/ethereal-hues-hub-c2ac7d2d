@@ -163,7 +163,7 @@ function PayoutCard({ payout, idx }: { payout: Payout; idx: number }) {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: idx * 0.05 }}
-      className="shrink-0 w-[240px] snap-start relative overflow-hidden rounded-lg group"
+      className="shrink-0 w-[200px] snap-start relative overflow-hidden rounded-lg group"
       style={{
         boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
       }}
@@ -184,27 +184,27 @@ function PayoutCard({ payout, idx }: { payout: Payout; idx: number }) {
       <div className="absolute inset-0 rounded-lg border border-white/[0.08] group-hover:border-emerald-400/20 transition-colors duration-300" />
 
       {/* Content */}
-      <div className="relative p-3 flex flex-col h-[160px] justify-between">
+      <div className="relative p-2.5 flex flex-col h-[130px] justify-between">
         {/* Top — user info */}
         <div className="flex items-center gap-2">
-          <Avatar className="w-8 h-8 border border-white/[0.15]">
+          <Avatar className="w-6 h-6 border border-white/[0.15]">
             <AvatarImage src={payout.avatar_url || ""} />
             <AvatarFallback className="bg-emerald-500/20 text-emerald-300 text-[10px] font-black">
               {payout.username?.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <span className="text-[13px] font-bold text-white truncate block">{payout.username}</span>
+            <span className="text-[11px] font-bold text-white truncate block">{payout.username}</span>
             <span className="text-[9px] text-white/40">{timeAgo} ago</span>
           </div>
         </div>
 
         {/* Center — big money */}
         <div className="flex items-end gap-1.5">
-          <span className="text-3xl font-black text-emerald-400 leading-none tabular-nums tracking-tight" style={teko}>
+          <span className="text-2xl font-black text-emerald-400 leading-none tabular-nums tracking-tight" style={teko}>
             ${amount}
           </span>
-          <TrendingUp className="w-4 h-4 text-emerald-400/60 mb-1" />
+          <TrendingUp className="w-3.5 h-3.5 text-emerald-400/60 mb-0.5" />
         </div>
 
         {/* Bottom — drop info + rating */}
