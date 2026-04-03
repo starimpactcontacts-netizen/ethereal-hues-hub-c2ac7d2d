@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Send, Globe, Users, Crown, Shield, Trash2 } from "lucide-react";
+import { ArrowLeft, Send, Globe, Users, Crown, Shield, Trash2, Reply } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useGuestMode } from "@/hooks/useGuestMode";
+import ChatReplyBar from "@/components/loopgate/ChatReplyBar";
 
 interface ArenaMessage {
   id: string;
@@ -19,6 +20,9 @@ interface ArenaMessage {
   avatar_url: string | null;
   message_text: string;
   created_at: string;
+  reply_to_id: string | null;
+  reply_to_username: string | null;
+  reply_to_text: string | null;
 }
 
 const arenaInfo: Record<number, { title: string; icon: React.ElementType }> = {
@@ -37,14 +41,15 @@ export default function ArenaChatPage() {
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [replyTo, setReplyTo] = useState<{ id: string; username: string; text: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const numericArenaId = parseInt(arenaId || "1", 10);
   const arena = arenaInfo[numericArenaId] || arenaInfo[1];
   const Icon = arena.icon;
 
-  // Check league access
   useEffect(() => {
     const userLeague = profile?.league?.toLowerCase() || "open";
 
@@ -61,7 +66,6 @@ export default function ArenaChatPage() {
     }
   }, [numericArenaId, profile?.league, navigate]);
 
-  // Fetch initial messages
   useEffect(() => {
     const fetchMessages = async () => {
       setLoading(true);
@@ -84,7 +88,6 @@ export default function ArenaChatPage() {
     fetchMessages();
   }, [numericArenaId]);
 
-  // Subscribe to realtime updates (INSERT and DELETE)
   useEffect(() => {
     const channel = supabase
       .channel(`arena-${numericArenaId}`)
@@ -120,15 +123,23 @@ export default function ArenaChatPage() {
     };
   }, [numericArenaId]);
 
-  // Auto-scroll to bottom on new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const handleReply = (msg: ArenaMessage) => {
+    setReplyTo({ id: msg.id, username: msg.username, text: msg.message_text.slice(0, 60) });
+    inputRef.current?.focus();
+  };
+
+  const handleMention = (username: string) => {
+    setNewMessage(prev => prev + `@${username} `);
+    inputRef.current?.focus();
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Block guest users
     if (isGuest) {
       toast.error("Sign in to send messages");
       return;
@@ -140,32 +151,38 @@ export default function ArenaChatPage() {
 
     setSending(true);
 
-    // Use display_name if available, otherwise username
     const displayUsername = (profile as any).display_name || profile.username || "Anonymous";
 
-    const { error } = await supabase.from("arena_messages").insert({
+    const insertPayload: any = {
       arena_id: numericArenaId,
       user_id: user.id,
       username: displayUsername,
       avatar_url: profile.avatar_url,
       message_text: newMessage.trim(),
-    });
+    };
+
+    if (replyTo) {
+      insertPayload.reply_to_id = replyTo.id;
+      insertPayload.reply_to_username = replyTo.username;
+      insertPayload.reply_to_text = replyTo.text;
+    }
+
+    const { error } = await supabase.from("arena_messages").insert(insertPayload);
 
     if (error) {
       console.error("Error sending message:", error);
       toast.error("Failed to send message");
     } else {
       setNewMessage("");
+      setReplyTo(null);
     }
 
     setSending(false);
   };
 
-  // Admin/Dev message deletion
   const { isAdmin, isDev } = useAuth();
   const canModerate = isAdmin || isDev;
 
-  // Check if message is within 5-minute delete window
   const canDeleteOwnMessage = (createdAt: string) => {
     const messageTime = new Date(createdAt).getTime();
     const now = Date.now();
@@ -189,6 +206,21 @@ export default function ArenaChatPage() {
 
   const formatTime = (dateString: string) => {
     return format(new Date(dateString), "HH:mm");
+  };
+
+  const renderMessageText = (text: string) => {
+    const parts = text.split(/(@\w+)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('@')) {
+        const username = part.slice(1);
+        return (
+          <button key={i} onClick={() => navigate(`/u/${username}`)} className="text-primary font-bold hover:underline">
+            {part}
+          </button>
+        );
+      }
+      return <span key={i}>{part}</span>;
+    });
   };
 
   return (
@@ -260,11 +292,25 @@ export default function ArenaChatPage() {
                       isOwnMessage ? "flex-row-reverse" : ""
                     }`}
                   >
-                    <span className="text-sm font-medium">{message.username}</span>
+                    <button
+                      onClick={() => handleMention(message.username)}
+                      className="text-sm font-medium hover:underline"
+                    >
+                      {message.username}
+                    </button>
                     <span className="text-xs text-muted-foreground">
                       {formatTime(message.created_at)}
                     </span>
                   </div>
+
+                  {/* Reply context */}
+                  {message.reply_to_username && (
+                    <div className={`flex items-center gap-1 text-[10px] text-muted-foreground/50 mb-1 ${isOwnMessage ? "justify-end" : ""}`}>
+                      <Reply className="w-3 h-3 rotate-180" />
+                      <span>replying to <span className="font-bold">@{message.reply_to_username}</span></span>
+                    </div>
+                  )}
+
                   <div
                     className={`inline-block px-3 py-2 rounded-2xl ${
                       isOwnMessage
@@ -273,21 +319,31 @@ export default function ArenaChatPage() {
                     }`}
                   >
                     <p className="text-sm whitespace-pre-wrap break-words">
-                      {message.message_text}
+                      {renderMessageText(message.message_text)}
                     </p>
                   </div>
-                  {/* Delete button - moderators or own message within 5 min */}
-                  {(canModerate || (isOwnMessage && canDeleteOwnMessage(message.created_at))) && (
+
+                  {/* Action buttons */}
+                  <div className={`flex items-center gap-1 mt-0.5 ${isOwnMessage ? "justify-end" : ""}`}>
+                    {/* Reply button */}
                     <button
-                      onClick={() => handleDeleteMessage(message.id)}
-                      className={`ml-2 p-1 transition-colors opacity-0 group-hover:opacity-100 ${
-                        isOwnMessage ? "text-muted-foreground hover:text-destructive" : "text-muted-foreground hover:text-destructive"
-                      }`}
-                      title={isOwnMessage && !canModerate ? "Delete (5 min window)" : "Delete message"}
+                      onClick={() => handleReply(message)}
+                      className="p-1 transition-colors opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-primary"
+                      title="Reply"
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Reply className="w-3 h-3 rotate-180" />
                     </button>
-                  )}
+                    {/* Delete button */}
+                    {(canModerate || (isOwnMessage && canDeleteOwnMessage(message.created_at))) && (
+                      <button
+                        onClick={() => handleDeleteMessage(message.id)}
+                        className="p-1 transition-colors opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive"
+                        title={isOwnMessage && !canModerate ? "Delete (5 min window)" : "Delete message"}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </motion.div>
             );
@@ -298,11 +354,22 @@ export default function ArenaChatPage() {
 
       {/* Input */}
       <div className="sticky bottom-0 bg-background border-t border-border p-4 pb-safe">
+        {replyTo && (
+          <div className="mb-2">
+            <ChatReplyBar
+              username={replyTo.username}
+              text={replyTo.text}
+              onClear={() => setReplyTo(null)}
+              accentColor="gold"
+            />
+          </div>
+        )}
         <form onSubmit={handleSendMessage} className="flex gap-2">
           <Input
+            ref={inputRef}
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type a message..."
+            placeholder={replyTo ? `Reply to @${replyTo.username}...` : "Type a message..."}
             className="flex-1"
             disabled={sending}
             maxLength={500}

@@ -87,6 +87,9 @@ export type Database = {
           created_at: string
           id: string
           message_text: string
+          reply_to_id: string | null
+          reply_to_text: string | null
+          reply_to_username: string | null
           user_id: string
           username: string
         }
@@ -96,6 +99,9 @@ export type Database = {
           created_at?: string
           id?: string
           message_text: string
+          reply_to_id?: string | null
+          reply_to_text?: string | null
+          reply_to_username?: string | null
           user_id: string
           username: string
         }
@@ -105,10 +111,21 @@ export type Database = {
           created_at?: string
           id?: string
           message_text?: string
+          reply_to_id?: string | null
+          reply_to_text?: string | null
+          reply_to_username?: string | null
           user_id?: string
           username?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "arena_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "arena_messages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       artist_campaign_edits: {
         Row: {
@@ -347,6 +364,9 @@ export type Database = {
           is_public: boolean | null
           is_system: boolean | null
           message_text: string
+          reply_to_id: string | null
+          reply_to_text: string | null
+          reply_to_username: string | null
           user_id: string
           username: string
         }
@@ -358,6 +378,9 @@ export type Database = {
           is_public?: boolean | null
           is_system?: boolean | null
           message_text: string
+          reply_to_id?: string | null
+          reply_to_text?: string | null
+          reply_to_username?: string | null
           user_id: string
           username: string
         }
@@ -369,6 +392,9 @@ export type Database = {
           is_public?: boolean | null
           is_system?: boolean | null
           message_text?: string
+          reply_to_id?: string | null
+          reply_to_text?: string | null
+          reply_to_username?: string | null
           user_id?: string
           username?: string
         }
@@ -378,6 +404,13 @@ export type Database = {
             columns: ["battle_id"]
             isOneToOne: false
             referencedRelation: "battles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "battle_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "battle_messages"
             referencedColumns: ["id"]
           },
         ]
@@ -2600,6 +2633,9 @@ export type Database = {
           id: string
           is_system: boolean | null
           message_text: string
+          reply_to_id: string | null
+          reply_to_text: string | null
+          reply_to_username: string | null
           user_id: string
           username: string
         }
@@ -2610,6 +2646,9 @@ export type Database = {
           id?: string
           is_system?: boolean | null
           message_text: string
+          reply_to_id?: string | null
+          reply_to_text?: string | null
+          reply_to_username?: string | null
           user_id: string
           username: string
         }
@@ -2620,6 +2659,9 @@ export type Database = {
           id?: string
           is_system?: boolean | null
           message_text?: string
+          reply_to_id?: string | null
+          reply_to_text?: string | null
+          reply_to_username?: string | null
           user_id?: string
           username?: string
         }
@@ -2629,6 +2671,13 @@ export type Database = {
             columns: ["drop_id"]
             isOneToOne: false
             referencedRelation: "featured_drops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "featured_drop_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "featured_drop_messages"
             referencedColumns: ["id"]
           },
         ]
