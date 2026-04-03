@@ -555,28 +555,28 @@ export default function HubPage() {
           {/* Quick Access — Rolls Royce Starlight dock */}
           <div className="relative mt-4 mb-3">
             {/* ─── LEGS — dark shadow extensions from card edges ─── */}
-            <div className="pointer-events-none absolute inset-x-0 -top-8 h-32 z-0">
+            <div className="pointer-events-none absolute inset-x-0 -top-8 h-[280px] z-0">
               {/* Left leg */}
-              <div className="absolute left-4 top-0 w-[60px] h-full"
+              <div className="absolute left-4 top-0 w-[70px] h-full"
                 style={{
-                  background: 'linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--background) / 0.7) 30%, hsl(var(--background) / 0.3) 65%, transparent 100%)',
+                  background: 'linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--background) / 0.6) 35%, hsl(var(--background) / 0.2) 70%, transparent 100%)',
                   borderRadius: '0 0 50% 50%',
-                  filter: 'blur(8px)',
+                  filter: 'blur(10px)',
                 }}
               />
               {/* Right leg */}
-              <div className="absolute right-4 top-0 w-[60px] h-full"
+              <div className="absolute right-4 top-0 w-[70px] h-full"
                 style={{
-                  background: 'linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--background) / 0.7) 30%, hsl(var(--background) / 0.3) 65%, transparent 100%)',
+                  background: 'linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--background) / 0.6) 35%, hsl(var(--background) / 0.2) 70%, transparent 100%)',
                   borderRadius: '0 0 50% 50%',
-                  filter: 'blur(8px)',
+                  filter: 'blur(10px)',
                 }}
               />
               {/* Center arch connecting the legs */}
-              <div className="absolute left-[72px] right-[72px] top-0 h-[40%]"
+              <div className="absolute left-[80px] right-[80px] top-0 h-[30%]"
                 style={{
-                  background: 'linear-gradient(180deg, hsl(var(--background) / 0.5) 0%, transparent 100%)',
-                  filter: 'blur(12px)',
+                  background: 'linear-gradient(180deg, hsl(var(--background) / 0.4) 0%, transparent 100%)',
+                  filter: 'blur(14px)',
                 }}
               />
             </div>
