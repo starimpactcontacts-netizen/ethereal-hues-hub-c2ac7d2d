@@ -546,7 +546,7 @@ export default function HubPage() {
 
 
               {/* Quick Access — Cards with gradient transition */}
-              <div className="relative z-10 px-3 py-2.5" style={{ background: 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.6))' }}>
+              <div className="relative z-10 px-3 pt-3 pb-2.5" style={{ background: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,0.6) 100%)' }}>
                 <div className="flex gap-2 items-stretch">
                   {/* Unit — compact left */}
                   <Link to={userCrew ? `/units/${userCrew.id}` : '/units'} className="group flex-1 min-w-0">
