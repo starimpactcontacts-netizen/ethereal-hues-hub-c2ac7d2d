@@ -426,7 +426,7 @@ export default function HubPage() {
             animate={{ opacity: 1, y: 0 }}
             className="relative z-10"
           >
-             <div className={`overflow-hidden relative rounded-xl ${hasEquippedOG ? 'bg-[#0c0a04] border border-gold/15' : 'bg-surface-1 border border-border/50'}`}>
+             <div className={`overflow-hidden relative rounded-t-xl ${hasEquippedOG ? 'bg-[#0c0a04] border border-gold/15 border-b-0' : 'bg-surface-1 border border-border/50 border-b-0'}`}>
                {/* First Circle Skin — luxury prestige aesthetic */}
                {hasEquippedOG && (
                  <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
@@ -448,7 +448,7 @@ export default function HubPage() {
                    
                    {/* Top accent line */}
                    <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
-                   <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold/8 to-transparent" />
+                   
                    
                    {/* Corner accents */}
                    <div className="absolute top-3 left-3 w-3 h-3 border-t border-l border-gold/15" />
