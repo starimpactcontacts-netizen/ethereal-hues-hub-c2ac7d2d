@@ -1357,7 +1357,7 @@ export default function ArenaPage() {
 
           {/* ═══ COMPETITIONS ═══ */}
           {(activeFilter === "all") && (
-            <ArenaCompetitionsSection onCreateClick={() => profile ? setShowCreateComp(true) : navigate('/start')} />
+            <ArenaCompetitionsSection onCreateClick={() => navigate(profile ? '/competition/create' : '/start')} />
           )}
 
           {/* Quick 1v1s */}
