@@ -435,17 +435,17 @@ export default function PublicProfilePage() {
             </div>
 
             {/* TikTok-style buttons: Connect | Message | Rate */}
-            <div className="flex items-center gap-1.5 w-full max-w-[320px] mb-2">
+            <div className="flex items-center gap-2 w-full max-w-[280px] mb-2">
               <div className="flex-1">
-                <ConnectButton targetUserId={profile.id} className="w-full rounded-full h-10" />
+                <ConnectButton targetUserId={profile.id} className="w-full rounded-full h-8 text-xs" />
               </div>
               <div className="flex-1">
-                <MessageButton userId={profile.id} username={profile.username} variant="outline" size="default" className="w-full rounded-full h-10" />
+                <MessageButton userId={profile.id} username={profile.username} variant="outline" size="sm" className="w-full rounded-full h-8 text-xs" />
               </div>
               {isJudge && (
                 <button
                   onClick={() => navigate(`/judge/${profile.username}`)}
-                  className="h-10 px-4 bg-destructive text-destructive-foreground text-xs font-semibold rounded-full hover:opacity-90 transition-opacity"
+                  className="h-8 px-3 bg-destructive text-destructive-foreground text-[11px] font-semibold rounded-full hover:opacity-90 transition-opacity"
                 >
                   Rate
                 </button>
