@@ -233,10 +233,36 @@ export default function HostedCompHostDashboard({
   submissions, 
   judges,
   onInviteJudges,
-  onRefresh
+  onRefresh,
+  competitionStatus,
+  participantCount = 0
 }: HostedCompHostDashboardProps) {
+  const [isStarting, setIsStarting] = useState(false);
   const scoredCount = submissions.filter(s => s.score !== null).length;
   const pendingCount = submissions.length - scoredCount;
+  const isLobby = competitionStatus === 'lobby';
+  const canStart = isLobby && participantCount >= 2;
+
+  const handleStartCompetition = async () => {
+    if (!canStart) return;
+    setIsStarting(true);
+    try {
+      const { error } = await supabase
+        .from('hosted_competitions')
+        .update({
+          status: 'live',
+          submission_deadline: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        })
+        .eq('id', competitionId);
+      if (error) throw error;
+      toast.success("🚀 Competition is LIVE! Editors can now submit.");
+      onRefresh();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to start");
+    } finally {
+      setIsStarting(false);
+    }
+  };
 
   const handleScore = async (submissionId: string, score: number, notes?: string): Promise<boolean> => {
     const { error } = await supabase
