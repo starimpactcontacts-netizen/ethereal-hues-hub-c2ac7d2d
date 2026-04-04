@@ -102,7 +102,12 @@ export default function LoopyChat() {
     sendMessage(msg);
   };
 
-  const handleDock = (e: React.MouseEvent) => { e.stopPropagation(); setDocked(true); };
+  const handleDock = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDragPos({ x: 0, y: dragPos.y });
+    sessionStorage.setItem('loopy-x', '0');
+    setDocked(true);
+  };
   const hasHistory = conversations.length > 0;
 
   return (
