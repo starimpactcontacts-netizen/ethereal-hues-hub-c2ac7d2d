@@ -546,7 +546,7 @@ function SubmissionDetailModal({
           )}
           
           {/* QOI Visibility toggle — let users decide if QOI shows publicly */}
-          {userId && submission.qoi_score && (
+          {isOwner && submission.qoi_score && (
             <button
               onClick={() => { onToggleQoiHidden(submission); }}
               className={`flex items-center justify-center gap-2 w-full py-2.5 text-xs transition-colors border-t border-border/20 ${
