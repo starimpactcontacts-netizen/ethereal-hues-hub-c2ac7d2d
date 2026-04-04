@@ -307,7 +307,7 @@ function SubmissionDetailModal({
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !userId) return;
+    if (!file || !user?.id) return;
     if (!file.type.startsWith('image/')) { toast.error('Please select an image'); return; }
     if (file.size > 5 * 1024 * 1024) { toast.error('Max 5MB'); return; }
 
