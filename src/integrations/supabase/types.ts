@@ -5268,6 +5268,30 @@ export type Database = {
           },
         ]
       }
+      qoi_hidden_edits: {
+        Row: {
+          created_at: string
+          id: string
+          source: string
+          source_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          source: string
+          source_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          source?: string
+          source_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       quick_fight_messages: {
         Row: {
           avatar_url: string | null
