@@ -1360,10 +1360,7 @@ export default function ArenaPage() {
             </motion.section>
           )}
 
-          {/* ═══ COMPETITIONS ═══ */}
-          {(activeFilter === "all") && (
-            <ArenaCompetitionsSection onCreateClick={() => navigate(profile ? '/competition/create' : '/start')} />
-          )}
+          {/* Competitions moved to top */}
 
           {/* Quick 1v1s */}
           {(activeFilter === "all" || activeFilter === "quick") && (
