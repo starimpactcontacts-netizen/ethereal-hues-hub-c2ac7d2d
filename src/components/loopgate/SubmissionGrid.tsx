@@ -194,7 +194,7 @@ export default function SubmissionGrid({ userId }: SubmissionGridProps) {
                   </div>
                 )}
                 <p className="text-[10px] text-white/80 truncate">
-                  {submission.event?.title || 'Event'}
+                  {submission.source === 'battle' ? (submission.custom_title || '1v1 Battle') : (submission.event?.title || 'Event')}
                 </p>
               </div>
               
