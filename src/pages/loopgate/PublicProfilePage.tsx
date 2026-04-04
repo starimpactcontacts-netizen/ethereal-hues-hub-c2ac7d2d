@@ -375,24 +375,32 @@ export default function PublicProfilePage() {
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border/40 to-transparent" />
 
         <div className="relative z-10">
-          {/* Top bar */}
+          {/* Top bar — back, activity status, share */}
           <div className="px-4 pt-3 pb-0 flex items-center justify-between">
             <button onClick={() => navigate(-1)} className="p-1.5 -ml-1.5">
               <ArrowLeft size={18} className="text-muted-foreground" />
             </button>
-            <button onClick={handleShare} className="p-1.5 -mr-1.5 text-muted-foreground hover:text-foreground transition-colors">
-              <Share2 size={16} />
-            </button>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
+                <span className={`w-1.5 h-1.5 rounded-full ${activityLabels[profile.activity_status || 'offline']?.color || 'bg-muted-foreground'}`} />
+                <span className="text-[9px] text-muted-foreground">
+                  {activityLabels[profile.activity_status || 'offline']?.label || 'Offline'}
+                </span>
+              </div>
+              <button onClick={handleShare} className="p-1.5 text-muted-foreground hover:text-foreground transition-colors">
+                <Share2 size={16} />
+              </button>
+            </div>
           </div>
 
-          {/* Profile core — TikTok-style centered */}
-          <div className="px-5 pt-4 pb-4 flex flex-col items-center text-center">
-            {/* Avatar */}
-            <div className="mb-3 relative">
+          {/* Profile core */}
+          <div className="px-5 pt-3 pb-3 flex flex-col items-center text-center">
+            {/* Avatar — smaller */}
+            <div className="mb-2 relative">
               <div className="absolute -inset-0.5 rounded-full bg-gradient-to-b from-gold/30 to-transparent opacity-60" />
-              <Avatar className="relative w-24 h-24 border-2 border-foreground/10">
+              <Avatar className="relative w-20 h-20 border-2 border-foreground/10">
                 <AvatarImage src={profile.avatar_url || undefined} alt={profile.username} className="object-cover" />
-                <AvatarFallback className="bg-surface-1 text-muted-foreground text-2xl font-display">
+                <AvatarFallback className="bg-surface-1 text-muted-foreground text-xl font-display">
                   {profile.username[0].toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -400,58 +408,58 @@ export default function PublicProfilePage() {
 
             {/* Name + badges */}
             <div className="flex items-center gap-1.5 mb-0.5 flex-wrap justify-center">
-              <h1 className="font-display text-[22px] tracking-wide leading-none">{profile.display_name || profile.username}</h1>
+              <h1 className="font-display text-lg tracking-wide leading-none">{profile.display_name || profile.username}</h1>
               {profile.level > 1 && <LevelBadge level={profile.level} size="sm" />}
               {profile.verification_status && <VerifiedBadge size="md" />}
               {authorityRole && <AuthorityBadge role={authorityRole} size="md" />}
               {(hasEquippedOG || profile.is_founding_member) && <FoundingBadge size="sm" />}
             </div>
-            <p className="text-[11px] text-muted-foreground/60 mb-4">@{profile.username}</p>
+            <p className="text-[11px] text-muted-foreground/60 mb-3">@{profile.username}</p>
 
-            {/* TikTok-style stats row with dividers */}
-            <div className="flex items-center justify-center mb-4 w-full max-w-xs">
+            {/* TikTok stats row */}
+            <div className="flex items-center justify-center mb-3 w-full max-w-[280px]">
               <div className="flex-1 flex flex-col items-center">
-                <span className="font-display text-lg font-bold tabular-nums leading-none">{isJudge ? videoCount : submissionCount}</span>
+                <span className="font-display text-base font-bold tabular-nums leading-none">{isJudge ? videoCount : submissionCount}</span>
                 <span className="text-[10px] text-muted-foreground/60 mt-0.5">{isJudge ? 'Videos' : 'Edits'}</span>
               </div>
-              <div className="w-px h-8 bg-border/30" />
+              <div className="w-px h-7 bg-border/30" />
               <div className="flex-1 flex flex-col items-center">
-                <span className="font-display text-lg font-bold tabular-nums leading-none">{realConnectionCount}</span>
+                <span className="font-display text-base font-bold tabular-nums leading-none">{realConnectionCount}</span>
                 <span className="text-[10px] text-muted-foreground/60 mt-0.5">Connections</span>
               </div>
-              <div className="w-px h-8 bg-border/30" />
+              <div className="w-px h-7 bg-border/30" />
               <div className="flex-1 flex flex-col items-center">
-                <span className="font-display text-lg font-bold tabular-nums leading-none text-gold">#{rank || '—'}</span>
+                <span className="font-display text-base font-bold tabular-nums leading-none text-gold">#{rank || '—'}</span>
                 <span className="text-[10px] text-muted-foreground/60 mt-0.5">Rank</span>
               </div>
             </div>
 
-            {/* Activity status */}
-            <div className="flex items-center gap-1.5 mb-3">
-              <span className={`w-1.5 h-1.5 rounded-full ${activityLabels[profile.activity_status || 'offline']?.color || 'bg-muted-foreground'}`} />
-              <span className="text-[10px] text-muted-foreground">
-                {activityLabels[profile.activity_status || 'offline']?.label || 'Offline'}
-              </span>
-              {userCrew && <><span className="text-muted-foreground/30 mx-1">·</span><CrewBadge crew={userCrew} size="md" /></>}
-            </div>
-
-            {/* TikTok-style action buttons — prominent row */}
-            <div className="flex items-center gap-2 w-full max-w-xs mb-3">
-              <ConnectButton targetUserId={profile.id} />
+            {/* TikTok-style buttons: Connect (wide, primary) | Message (outlined) | dropdown */}
+            <div className="flex items-center gap-1.5 w-full max-w-[300px] mb-2">
+              <div className="flex-1">
+                <ConnectButton targetUserId={profile.id} className="w-full" />
+              </div>
               <MessageButton userId={profile.id} username={profile.username} variant="icon" />
               {isJudge && (
                 <button
                   onClick={() => navigate(`/judge/${profile.username}`)}
-                  className="px-3 py-2 bg-destructive text-destructive-foreground text-[10px] font-bold uppercase tracking-wider rounded-lg hover:opacity-90 transition-opacity"
+                  className="h-9 px-3 bg-destructive text-destructive-foreground text-[10px] font-bold uppercase tracking-wider rounded-lg hover:opacity-90 transition-opacity"
                 >
                   Rate
                 </button>
               )}
             </div>
 
+            {/* Unit badge */}
+            {userCrew && (
+              <div className="mb-1.5">
+                <CrewBadge crew={userCrew} size="md" />
+              </div>
+            )}
+
             {/* Bio */}
             {profile.bio && (
-              <p className="text-[12px] text-foreground/70 max-w-[280px] text-center leading-relaxed mb-2">
+              <p className="text-[12px] text-foreground/70 max-w-[280px] text-center leading-relaxed mb-1.5">
                 {profile.bio}
               </p>
             )}
@@ -477,8 +485,6 @@ export default function PublicProfilePage() {
           </div>
         </div>
       </div>
-
-      {/* Stats strip removed — now in About tab as radar */}
 
       {/* ─── TABS ─── */}
       <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border/20">
