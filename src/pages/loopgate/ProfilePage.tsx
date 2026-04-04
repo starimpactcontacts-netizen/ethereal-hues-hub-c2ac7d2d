@@ -114,6 +114,7 @@ export default function ProfilePage() {
   const quickNav = [
     { to: "/profile/stats", icon: BarChart3, label: "Stats" },
     { to: "/connections", icon: Users, label: "Network" },
+    { to: "/payouts", icon: DollarSign, label: "Earnings" },
     { to: "/inventory", icon: Package, label: "Items" },
     { to: "/profile/settings", icon: Settings, label: "Settings" },
   ];
