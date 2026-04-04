@@ -416,14 +416,12 @@ export default function HubPage() {
       {/* ═══════════════════════════════════════════════════════════════════
           HERO LAYER - Profile Card with Dimensional Gate Background
       ═══════════════════════════════════════════════════════════════════ */}
-      <div className="relative z-10">
+      <div className="relative z-10 overflow-hidden">
         {/* Subtle top gradient */}
         <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-surface-1/50 to-transparent pointer-events-none" />
-        {/* Side blurs — matching the surface-1 profile card tone for arch effect */}
-        <div className="absolute -top-2 -left-16 w-72 h-80 bg-surface-1/90 rounded-full blur-[90px] pointer-events-none" />
-        <div className="absolute -top-2 -right-16 w-72 h-80 bg-surface-1/90 rounded-full blur-[90px] pointer-events-none" />
-        <div className="absolute top-10 -left-4 w-56 h-64 bg-surface-1/70 rounded-full blur-[70px] pointer-events-none" />
-        <div className="absolute top-10 -right-4 w-56 h-64 bg-surface-1/70 rounded-full blur-[70px] pointer-events-none" />
+        {/* Side arch blurs — clipped to this container */}
+        <div className="absolute top-0 -left-10 w-48 h-64 bg-surface-1/80 rounded-full blur-[60px] pointer-events-none" />
+        <div className="absolute top-0 -right-10 w-48 h-64 bg-surface-1/80 rounded-full blur-[60px] pointer-events-none" />
 
         <div className="relative px-4 pt-5 pb-0">
           <motion.div
