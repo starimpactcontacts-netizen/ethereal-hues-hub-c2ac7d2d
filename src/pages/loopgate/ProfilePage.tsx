@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Camera, Lock, ArrowRight, Share2, BarChart3, Grid3X3, Shield, Gavel, Video, Users, Link2, Package, Settings, Sparkles, ShoppingBag } from "lucide-react";
+import { Camera, Lock, ArrowRight, Share2, BarChart3, Grid3X3, Shield, Gavel, Video, Users, Link2, Package, Settings, Sparkles, ShoppingBag, DollarSign } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTempProfile } from "@/hooks/useTempProfile";
