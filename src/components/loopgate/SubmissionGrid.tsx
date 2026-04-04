@@ -45,7 +45,7 @@ interface SubmissionGridProps {
 }
 
 export default function SubmissionGrid({ userId }: SubmissionGridProps) {
-  const { submissions, loading, refetch, toggleHidden } = useUserSubmissions(userId);
+  const { submissions, loading, refetch, toggleHidden, toggleQoiHidden } = useUserSubmissions(userId);
   const { user } = useAuth();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
