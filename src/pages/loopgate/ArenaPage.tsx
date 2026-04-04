@@ -1355,6 +1355,11 @@ export default function ArenaPage() {
             </motion.section>
           )}
 
+          {/* ═══ COMPETITIONS ═══ */}
+          {(activeFilter === "all") && (
+            <ArenaCompetitionsSection onCreateClick={() => profile ? setShowCreateComp(true) : navigate('/start')} />
+          )}
+
           {/* Quick 1v1s */}
           {(activeFilter === "all" || activeFilter === "quick") && (
             <motion.section key="quick-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
