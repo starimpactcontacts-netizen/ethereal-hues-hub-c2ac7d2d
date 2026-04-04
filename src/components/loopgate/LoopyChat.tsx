@@ -48,6 +48,18 @@ export default function LoopyChat() {
 
   const { user } = useAuth();
   const isGuest = !user;
+  const { isGuest: guestMode } = useGuestMode();
+  const { open: openAccountPrompt } = useAccountPrompt();
+  const ticketStore = useTicketStore();
+
+  const handleTicket = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user || guestMode) {
+      openAccountPrompt("save_score");
+      return;
+    }
+    ticketStore.setOpen(true);
+  };
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
