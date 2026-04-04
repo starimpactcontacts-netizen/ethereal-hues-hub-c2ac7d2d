@@ -559,23 +559,23 @@ export default function HubPage() {
               {/* Left sharp edge */}
               <div className="absolute left-0 top-0 h-full w-[2px] bg-gradient-to-b from-[hsl(var(--surface-1)/0.9)] via-[hsl(var(--surface-1)/0.4)] to-transparent" />
               {/* Left thick blur */}
-              <div className="absolute left-[2px] top-0 h-full w-[50px]"
+              <div className="absolute left-[2px] top-0 h-full w-[80px]"
                 style={{
-                  background: 'linear-gradient(to right, hsl(var(--surface-1) / 0.55) 0%, hsl(var(--surface-1) / 0.2) 50%, transparent 100%)',
-                  maskImage: 'linear-gradient(to bottom, black 0%, black 40%, transparent 100%)',
-                  WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 40%, transparent 100%)',
-                  filter: 'blur(12px)',
+                  background: 'linear-gradient(to right, hsl(var(--surface-1) / 0.7) 0%, hsl(var(--surface-1) / 0.35) 40%, transparent 100%)',
+                  maskImage: 'linear-gradient(to bottom, black 0%, black 45%, transparent 100%)',
+                  WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 45%, transparent 100%)',
+                  filter: 'blur(16px)',
                 }}
               />
               {/* Right sharp edge */}
               <div className="absolute right-0 top-0 h-full w-[2px] bg-gradient-to-b from-[hsl(var(--surface-1)/0.9)] via-[hsl(var(--surface-1)/0.4)] to-transparent" />
               {/* Right thick blur */}
-              <div className="absolute right-[2px] top-0 h-full w-[50px]"
+              <div className="absolute right-[2px] top-0 h-full w-[80px]"
                 style={{
-                  background: 'linear-gradient(to left, hsl(var(--surface-1) / 0.55) 0%, hsl(var(--surface-1) / 0.2) 50%, transparent 100%)',
-                  maskImage: 'linear-gradient(to bottom, black 0%, black 40%, transparent 100%)',
-                  WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 40%, transparent 100%)',
-                  filter: 'blur(12px)',
+                  background: 'linear-gradient(to left, hsl(var(--surface-1) / 0.7) 0%, hsl(var(--surface-1) / 0.35) 40%, transparent 100%)',
+                  maskImage: 'linear-gradient(to bottom, black 0%, black 45%, transparent 100%)',
+                  WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 45%, transparent 100%)',
+                  filter: 'blur(16px)',
                 }}
               />
             </div>
