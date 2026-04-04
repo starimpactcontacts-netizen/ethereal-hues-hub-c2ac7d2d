@@ -111,18 +111,6 @@ export default function ProfilePage() {
     );
   }
 
-  const userRanking = rankings.find(r => r.id === profile.id);
-  const userRank = userRanking?.rank || (rankings.length > 0 ? rankings.length + 1 : '—');
-  const bestGQT = (profile as any).best_gatekeeper_qoi;
-  const hasTakenGQT = bestGQT && bestGQT > 0;
-  const rankConfig = hasTakenGQT ? getRankFromScore(bestGQT) : null;
-  const classLetter = rankConfig?.rank || (level >= 2 ? 'D' : 'F');
-
-  const classColors: Record<string, string> = {
-    'S++': 'text-gold', 'S+': 'text-gold', 'S': 'text-amber-400',
-    'A': 'text-emerald-400', 'B': 'text-blue-400', 'C': 'text-slate-300',
-    'D': 'text-orange-400', 'F': 'text-muted-foreground',
-  };
 
   const quickNav = [
     { to: "/profile/stats", icon: BarChart3, label: "Stats" },
