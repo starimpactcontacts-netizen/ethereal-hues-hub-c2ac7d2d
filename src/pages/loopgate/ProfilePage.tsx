@@ -5,7 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTempProfile } from "@/hooks/useTempProfile";
 import { useRealRankings, useActiveSession } from "@/hooks/useRealData";
-import { useXP } from "@/hooks/useXP";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useUserSubmissions } from "@/hooks/useUserSubmissions";
 import { useJudgeRatingVideos } from "@/hooks/useJudgeRatingVideos";
