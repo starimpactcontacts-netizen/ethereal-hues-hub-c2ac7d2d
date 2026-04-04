@@ -422,8 +422,8 @@ export default function HubPage() {
         {/* Side color blurs — cinematic arch depth on edges */}
         <div className="absolute top-0 -left-8 w-52 h-72 bg-gold/[0.08] rounded-full blur-[80px] pointer-events-none" />
         <div className="absolute top-0 -right-8 w-52 h-72 bg-gold/[0.08] rounded-full blur-[80px] pointer-events-none" />
-        <div className="absolute top-16 left-4 w-40 h-56 bg-foreground/[0.04] rounded-full blur-[60px] pointer-events-none" />
-        <div className="absolute top-16 right-4 w-40 h-56 bg-foreground/[0.04] rounded-full blur-[60px] pointer-events-none" />
+        <div className="absolute top-16 left-4 w-40 h-56 bg-gold/[0.06] rounded-full blur-[60px] pointer-events-none" />
+        <div className="absolute top-16 right-4 w-40 h-56 bg-gold/[0.06] rounded-full blur-[60px] pointer-events-none" />
 
         <div className="relative px-4 pt-5 pb-0">
           <motion.div
