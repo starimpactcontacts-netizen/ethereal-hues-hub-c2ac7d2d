@@ -21,7 +21,7 @@ import { useTempProfile } from '@/hooks/useTempProfile';
 import { useGuestMode } from '@/hooks/useGuestMode';
 import { useSanctionedTournaments } from '@/hooks/useSanctionedTournaments';
 import { useBattles } from '@/hooks/useBattles';
-import { useHostedCompetitions } from '@/hooks/useHostedCompetitions';
+
 import { useLiveActivity, type LiveActivityItem } from '@/hooks/useLiveActivity';
 import { useFeaturedDrops } from '@/hooks/useFeaturedDrops';
 import FeaturedDropCard from '@/components/loopgate/FeaturedDropCard';

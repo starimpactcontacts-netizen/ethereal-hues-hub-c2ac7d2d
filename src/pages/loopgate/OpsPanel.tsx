@@ -18,7 +18,7 @@ import JudgeManagementSection from "@/components/loopgate/JudgeManagementSection
 import JudgeApplicationsSection from "@/components/loopgate/JudgeApplicationsSection";
 import SanctionedTournamentManagement from "@/components/loopgate/SanctionedTournamentManagement";
 import LeagueApplicationsAdmin from "@/components/loopgate/LeagueApplicationsAdmin";
-import HostedCompManagement from "@/components/loopgate/HostedCompManagement";
+
 import { awardReviewXP } from "@/hooks/useJudgeXP";
 import BattleAdminPanel from "@/components/loopgate/BattleAdminPanel";
 import FeaturedArtistAdmin from "@/components/loopgate/FeaturedArtistAdmin";

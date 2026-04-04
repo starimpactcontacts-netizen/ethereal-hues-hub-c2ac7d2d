@@ -311,8 +311,7 @@ export default function App() {
               <Route path="/fight/:fightId" element={<QuickFightPage />} />
               <Route path="/quick-fight" element={<QuickFightPage />} />
               <Route path="/judge-queue" element={<JudgeQueuePage />} />
-              <Route path="/hosted-comps" element={<HostedCompsPage />} />
-              <Route path="/hosted-comp/:id" element={<HostedCompDetailPage />} />
+              <Route path="/competition/:id" element={<CompetitionLobbyPage />} />
               <Route path="/judges" element={<JudgeHubPage />} />
               <Route path="/judges/leaderboard" element={<JudgeLeaderboardPage />} />
               <Route path="/judges/apply" element={<JudgeApplicationPage />} />

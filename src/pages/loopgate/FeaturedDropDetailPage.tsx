@@ -20,7 +20,7 @@ import { useDropRounds } from "@/hooks/useDropRounds";
 import { useDropQueue } from "@/hooks/useDropQueue";
 import type { FeaturedDrop, FeaturedArtist, FeaturedSubmission } from "@/hooks/useFeaturedDrops";
 import FeaturedSubmitModal from "@/components/loopgate/FeaturedSubmitModal";
-import CompLobbyHeader from "@/components/loopgate/CompLobbyHeader";
+
 import DropLobbyChat from "@/components/loopgate/DropLobbyChat";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
