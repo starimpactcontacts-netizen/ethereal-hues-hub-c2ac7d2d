@@ -92,6 +92,7 @@ export default function HostedCompDetailPage() {
     );
   }
 
+  const isLobby = competition.status === 'lobby';
   const deadlinePassed = isPast(new Date(competition.submission_deadline));
   const canSubmit = competition.status === 'live' && !deadlinePassed && !hasSubmitted;
   const isJudging = competition.status === 'judging' || (competition.status === 'live' && deadlinePassed);
