@@ -419,11 +419,11 @@ export default function HubPage() {
       <div className="relative z-10">
         {/* Subtle top gradient */}
         <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-surface-1/50 to-transparent pointer-events-none" />
-        {/* Side blurs — strong background-colored arch fade pushing inward */}
-        <div className="absolute -top-2 -left-16 w-72 h-80 bg-[radial-gradient(circle_at_center,_hsl(var(--background)/0.98)_0%,_hsl(var(--background)/0.88)_38%,_hsl(var(--background)/0.52)_62%,_transparent_100%)] blur-[95px] pointer-events-none" />
-        <div className="absolute -top-2 -right-16 w-72 h-80 bg-[radial-gradient(circle_at_center,_hsl(var(--background)/0.98)_0%,_hsl(var(--background)/0.88)_38%,_hsl(var(--background)/0.52)_62%,_transparent_100%)] blur-[95px] pointer-events-none" />
-        <div className="absolute top-10 -left-6 w-56 h-64 bg-[radial-gradient(circle_at_center,_hsl(var(--background)/0.92)_0%,_hsl(var(--background)/0.66)_48%,_transparent_100%)] blur-[70px] pointer-events-none" />
-        <div className="absolute top-10 -right-6 w-56 h-64 bg-[radial-gradient(circle_at_center,_hsl(var(--background)/0.92)_0%,_hsl(var(--background)/0.66)_48%,_transparent_100%)] blur-[70px] pointer-events-none" />
+        {/* Side blurs — matching the surface-1 profile card tone for arch effect */}
+        <div className="absolute -top-2 -left-16 w-72 h-80 bg-surface-1/90 rounded-full blur-[90px] pointer-events-none" />
+        <div className="absolute -top-2 -right-16 w-72 h-80 bg-surface-1/90 rounded-full blur-[90px] pointer-events-none" />
+        <div className="absolute top-10 -left-4 w-56 h-64 bg-surface-1/70 rounded-full blur-[70px] pointer-events-none" />
+        <div className="absolute top-10 -right-4 w-56 h-64 bg-surface-1/70 rounded-full blur-[70px] pointer-events-none" />
 
         <div className="relative px-4 pt-5 pb-0">
           <motion.div
