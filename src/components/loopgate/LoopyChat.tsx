@@ -17,6 +17,7 @@ const QUICK_ACTIONS = [
   { label: '🏆 Drops', msg: 'whats dropping rn?', icon: Trophy },
   { label: '👥 Units', msg: 'tell me about units', icon: Users },
   { label: '📈 My Stats', msg: 'whats my current stats looking like?', icon: Zap },
+  { label: '🐛 Report Bug', action: 'ticket', icon: Bug },
 ];
 
 export default function LoopyChat() {
