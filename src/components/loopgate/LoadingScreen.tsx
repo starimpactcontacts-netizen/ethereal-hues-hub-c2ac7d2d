@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import loopgateLogo from '@/assets/loopgate-logo.jpeg';
+import loopgateLogo from '@/assets/loopgate-logo.png';
+import loopgateBrand from '@/assets/loopgate-brand.png';
 
 interface LoadingScreenProps {
   minimal?: boolean;
@@ -20,8 +21,8 @@ export default function LoadingScreen({ minimal = false }: LoadingScreenProps) {
 
   return (
     <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-50 gap-8">
-      <img src={loopgateLogo} alt="Loopgate" className="w-72 h-72" style={{ imageRendering: '-webkit-optimize-contrast' }} />
-      <img src="/loopgate-brand.png" alt="LOOPGATE" className="h-16 w-auto" />
+      <img src={loopgateLogo} alt="Loopgate" className="w-80 h-80 max-w-[82vw] max-h-[46vh]" style={{ imageRendering: '-webkit-optimize-contrast' }} />
+      <img src={loopgateBrand} alt="LOOPGATE" className="w-56 max-w-[64vw] h-auto" />
     </div>
   );
 }
