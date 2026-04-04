@@ -136,11 +136,16 @@ export default function ProfilePage() {
           >
             <Share2 className="w-3 h-3" />
           </button>
-          <ActivityStatusSelector
-            userId={profile.id}
-            currentStatus={(profile as any).activity_status || "online"}
-            onStatusChange={refreshProfile}
-          />
+          <div className="flex items-center gap-2">
+            <Link to="/shop" className="p-1.5 rounded-full hover:bg-surface-1/60 transition-colors">
+              <ShoppingBag className="w-4 h-4 text-muted-foreground hover:text-gold transition-colors" />
+            </Link>
+            <ActivityStatusSelector
+              userId={profile.id}
+              currentStatus={(profile as any).activity_status || "online"}
+              onStatusChange={refreshProfile}
+            />
+          </div>
         </div>
 
         {/* Centered avatar */}
