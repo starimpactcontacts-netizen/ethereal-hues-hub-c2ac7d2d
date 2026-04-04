@@ -226,7 +226,7 @@ export default function PublicProfilePage() {
           .eq("final_rank", 1),
       ]);
       
-      const submissionTotal = (eventParts.count || 0) + (roundParts.count || 0);
+      const submissionTotal = (eventParts.count || 0) + (roundParts.count || 0) + (hostedSubs.count || 0) + battleCount;
       setSubmissionCount(submissionTotal);
       
       // Calculate real event stats - include ALL event types
