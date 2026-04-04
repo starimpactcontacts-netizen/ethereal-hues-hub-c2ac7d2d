@@ -169,6 +169,14 @@ export default function LoopyChat() {
               <X className="w-2.5 h-2.5 text-muted-foreground" />
             </motion.button>
             <motion.button
+              initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} transition={{ delay: 0.3 }}
+              onClick={handleTicket}
+              className="absolute -bottom-1.5 -left-1.5 z-10 w-5 h-5 rounded-full bg-muted border border-border flex items-center justify-center hover:bg-primary/20 hover:border-primary/40 transition-colors"
+              title="Report bug"
+            >
+              <Bug className="w-2.5 h-2.5 text-muted-foreground" />
+            </motion.button>
+            <motion.button
               initial={{ scale: 0, rotate: -20 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0, rotate: 20 }}
               whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
               transition={{ type: 'spring', stiffness: 500, damping: 25 }}
