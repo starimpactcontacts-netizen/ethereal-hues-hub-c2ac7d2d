@@ -372,8 +372,8 @@ function SubmissionDetailModal({
             ×
           </button>
 
-          {/* Thumbnail edit button */}
-          {userId && (
+          {/* Thumbnail edit button — owner only */}
+          {isOwner && (
             <button
               onClick={() => setShowThumbInput(!showThumbInput)}
               className="absolute top-3 left-3 w-8 h-8 rounded-full bg-black/50 flex items-center justify-center text-white hover:bg-gold/30 hover:text-gold transition-colors"
