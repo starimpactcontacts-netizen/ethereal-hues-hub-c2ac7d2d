@@ -3689,6 +3689,12 @@ export type Database = {
           id: string
           is_ready: boolean | null
           joined_at: string
+          platform: string | null
+          qoi_score: number | null
+          status: string | null
+          submission_url: string | null
+          submitted_at: string | null
+          thumbnail_url: string | null
           user_id: string
           username: string
         }
@@ -3698,6 +3704,12 @@ export type Database = {
           id?: string
           is_ready?: boolean | null
           joined_at?: string
+          platform?: string | null
+          qoi_score?: number | null
+          status?: string | null
+          submission_url?: string | null
+          submitted_at?: string | null
+          thumbnail_url?: string | null
           user_id: string
           username: string
         }
@@ -3707,6 +3719,12 @@ export type Database = {
           id?: string
           is_ready?: boolean | null
           joined_at?: string
+          platform?: string | null
+          qoi_score?: number | null
+          status?: string | null
+          submission_url?: string | null
+          submitted_at?: string | null
+          thumbnail_url?: string | null
           user_id?: string
           username?: string
         }
@@ -3796,6 +3814,7 @@ export type Database = {
           approved_at: string | null
           approved_by: string | null
           community_url: string | null
+          cover_image_url: string | null
           cpm_rate_cents: number
           created_at: string
           description: string | null
@@ -3808,9 +3827,12 @@ export type Database = {
           host_name: string
           host_user_id: string
           id: string
+          index_reward_pool: number | null
           is_featured: boolean | null
           is_premium: boolean | null
           is_trending: boolean | null
+          league_suggestion: string | null
+          max_participants: number | null
           max_submissions: number | null
           name: string
           participant_count: number | null
@@ -3821,7 +3843,10 @@ export type Database = {
           prize_description: string | null
           rejection_reason: string | null
           rules: string | null
+          scoring_mode: string | null
           slug: string | null
+          song_name: string | null
+          song_preview_url: string | null
           status: string
           submission_deadline: string
           total_payout_cents: number
@@ -3832,6 +3857,7 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           community_url?: string | null
+          cover_image_url?: string | null
           cpm_rate_cents?: number
           created_at?: string
           description?: string | null
@@ -3844,9 +3870,12 @@ export type Database = {
           host_name: string
           host_user_id: string
           id?: string
+          index_reward_pool?: number | null
           is_featured?: boolean | null
           is_premium?: boolean | null
           is_trending?: boolean | null
+          league_suggestion?: string | null
+          max_participants?: number | null
           max_submissions?: number | null
           name: string
           participant_count?: number | null
@@ -3857,7 +3886,10 @@ export type Database = {
           prize_description?: string | null
           rejection_reason?: string | null
           rules?: string | null
+          scoring_mode?: string | null
           slug?: string | null
+          song_name?: string | null
+          song_preview_url?: string | null
           status?: string
           submission_deadline: string
           total_payout_cents?: number
@@ -3868,6 +3900,7 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           community_url?: string | null
+          cover_image_url?: string | null
           cpm_rate_cents?: number
           created_at?: string
           description?: string | null
@@ -3880,9 +3913,12 @@ export type Database = {
           host_name?: string
           host_user_id?: string
           id?: string
+          index_reward_pool?: number | null
           is_featured?: boolean | null
           is_premium?: boolean | null
           is_trending?: boolean | null
+          league_suggestion?: string | null
+          max_participants?: number | null
           max_submissions?: number | null
           name?: string
           participant_count?: number | null
@@ -3893,7 +3929,10 @@ export type Database = {
           prize_description?: string | null
           rejection_reason?: string | null
           rules?: string | null
+          scoring_mode?: string | null
           slug?: string | null
+          song_name?: string | null
+          song_preview_url?: string | null
           status?: string
           submission_deadline?: string
           total_payout_cents?: number
@@ -6925,6 +6964,10 @@ export type Database = {
           new_level: number
           new_xp: number
         }[]
+      }
+      calculate_comp_index_reward: {
+        Args: { participant_count: number }
+        Returns: number
       }
       calculate_level_from_xp: { Args: { xp_amount: number }; Returns: number }
       can_change_house: { Args: { user_uuid: string }; Returns: boolean }
