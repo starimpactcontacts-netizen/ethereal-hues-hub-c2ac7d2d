@@ -120,11 +120,11 @@ export default function LoopyChat() {
             dragConstraints={{ top: -300, bottom: 200 }}
             dragElastic={0.1}
             dragMomentum={false}
-            style={{ y: dragY }}
+            style={{ y: dragPos.y }}
             onDragEnd={(_, info) => {
-              const newY = dragY + info.offset.y;
+              const newY = dragPos.y + info.offset.y;
               const clamped = Math.max(-300, Math.min(200, newY));
-              setDragY(clamped);
+              setDragPos(prev => ({ ...prev, y: clamped }));
               sessionStorage.setItem('loopy-y', String(clamped));
             }}
             initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 20, opacity: 0 }}
