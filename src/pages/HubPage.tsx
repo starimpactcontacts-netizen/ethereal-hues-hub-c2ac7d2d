@@ -554,20 +554,26 @@ export default function HubPage() {
 
           {/* Quick Access — Rolls Royce Starlight dock */}
           <div className="relative mt-4 mb-3">
-            {/* ─── Edge legs — at outer edges of card ─── */}
-            <div className="pointer-events-none absolute inset-x-0 -top-10 h-[140px] z-0 overflow-visible">
-              <div
-                className="absolute left-0 top-0 h-full w-[40px]"
+            {/* ─── Bow arch — sharp outer edges, blurred inward fade ─── */}
+            <div className="pointer-events-none absolute inset-x-0 -top-6 h-[120px] z-0 overflow-visible">
+              {/* Left edge — sharp outer, soft inner */}
+              <div className="absolute left-0 top-0 h-full w-[3px] bg-gradient-to-b from-[hsl(var(--surface-1))] via-[hsl(var(--surface-1)/0.5)] to-transparent" />
+              <div className="absolute left-[3px] top-0 h-full w-[28px]"
                 style={{
-                  background: 'linear-gradient(to bottom, hsl(var(--surface-1)) 0%, hsl(var(--surface-1) / 0.7) 40%, hsl(var(--surface-1) / 0.25) 75%, transparent 100%)',
-                  filter: 'blur(5px)',
+                  background: 'linear-gradient(to right, hsl(var(--surface-1) / 0.6) 0%, transparent 100%)',
+                  maskImage: 'linear-gradient(to bottom, black 0%, black 30%, transparent 100%)',
+                  WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 30%, transparent 100%)',
+                  filter: 'blur(8px)',
                 }}
               />
-              <div
-                className="absolute right-0 top-0 h-full w-[40px]"
+              {/* Right edge — sharp outer, soft inner */}
+              <div className="absolute right-0 top-0 h-full w-[3px] bg-gradient-to-b from-[hsl(var(--surface-1))] via-[hsl(var(--surface-1)/0.5)] to-transparent" />
+              <div className="absolute right-[3px] top-0 h-full w-[28px]"
                 style={{
-                  background: 'linear-gradient(to bottom, hsl(var(--surface-1)) 0%, hsl(var(--surface-1) / 0.7) 40%, hsl(var(--surface-1) / 0.25) 75%, transparent 100%)',
-                  filter: 'blur(5px)',
+                  background: 'linear-gradient(to left, hsl(var(--surface-1) / 0.6) 0%, transparent 100%)',
+                  maskImage: 'linear-gradient(to bottom, black 0%, black 30%, transparent 100%)',
+                  WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 30%, transparent 100%)',
+                  filter: 'blur(8px)',
                 }}
               />
             </div>
