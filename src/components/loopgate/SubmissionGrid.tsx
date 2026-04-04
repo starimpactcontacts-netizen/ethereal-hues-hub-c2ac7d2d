@@ -194,7 +194,7 @@ export default function SubmissionGrid({ userId }: SubmissionGridProps) {
                   </div>
                 )}
                 <p className="text-[10px] text-white/80 truncate">
-                  {submission.event?.title || 'Event'}
+                  {submission.source === 'battle' ? (submission.custom_title || '1v1 Battle') : (submission.event?.title || 'Event')}
                 </p>
               </div>
               
@@ -485,14 +485,23 @@ function SubmissionDetailModal({
             </div>
           )}
 
-          {/* Event link */}
+          {/* Event / Battle link */}
           <div>
-            <Link 
-              to={`/event/${submission.event_id}`}
-              className="text-xs text-muted-foreground hover:text-gold transition-colors"
-            >
-              {submission.event?.title || 'Unknown Event'} →
-            </Link>
+            {submission.source === 'battle' ? (
+              <Link 
+                to={`/battle/${submission.event_id}`}
+                className="text-xs text-muted-foreground hover:text-gold transition-colors"
+              >
+                {submission.custom_title || '1v1 Battle'} →
+              </Link>
+            ) : (
+              <Link 
+                to={`/event/${submission.event_id}`}
+                className="text-xs text-muted-foreground hover:text-gold transition-colors"
+              >
+                {submission.event?.title || 'Event'} →
+              </Link>
+            )}
             <div className="flex items-center gap-2 mt-1">
               <span className={`text-[10px] px-2 py-0.5 uppercase tracking-wider rounded bg-gradient-to-r ${gradient} text-white`}>
                 {submission.platform}
