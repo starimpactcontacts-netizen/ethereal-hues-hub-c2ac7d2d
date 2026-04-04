@@ -313,7 +313,7 @@ function SubmissionDetailModal({
 
     setSaving(true);
     const ext = file.name.split('.').pop() || 'jpg';
-    const path = `${userId}/${submission.id}.${ext}`;
+    const path = `${user.id}/${submission.id}.${ext}`;
 
     const { error: uploadErr } = await supabase.storage
       .from('video-thumbnails')
