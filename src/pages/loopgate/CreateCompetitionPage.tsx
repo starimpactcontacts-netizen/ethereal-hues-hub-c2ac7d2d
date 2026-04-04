@@ -21,6 +21,12 @@ const SCORING_OPTIONS = [
 ];
 
 const MAX_OPTIONS = [10, 25, 50, 100];
+const DURATION_OPTIONS = [
+  { hours: 6, label: "6h", desc: "Blitz" },
+  { hours: 12, label: "12h", desc: "Sprint" },
+  { hours: 18, label: "18h", desc: "Standard" },
+  { hours: 24, label: "24h", desc: "Full Day" },
+];
 
 const REWARD_PRESETS = [
   { label: "Winner Takes All", distribution: [{ rank: 1, pct: 100 }] },
