@@ -44,7 +44,7 @@ export default function SEO({
         url: 'https://loopgate.io',
         logo: {
           '@type': 'ImageObject',
-          url: 'https://storage.googleapis.com/gpt-engineer-file-uploads/mff08AeRisdvHL1tgv4VUuuN8iR2/uploads/1767502308450-Untitled design-42.png',
+          url: 'https://tmfnqnmyxxydrxwjkaiq.supabase.co/storage/v1/object/public/loop-media/branding/loopgate-og-icon.png',
           width: 512,
           height: 512,
         },
