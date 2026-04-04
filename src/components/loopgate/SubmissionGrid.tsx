@@ -107,18 +107,20 @@ export default function SubmissionGrid({ userId }: SubmissionGridProps) {
 
   return (
     <>
-      {/* Pull to Refresh Indicator */}
-      <motion.div 
-        style={{ opacity, scale }}
-        className="flex items-center justify-center py-3"
-      >
-        <motion.div style={{ rotate }}>
-          <RefreshCw className={`w-5 h-5 text-gold ${isRefreshing ? 'animate-spin' : ''}`} />
+      {/* Pull to Refresh Indicator — only visible when pulling */}
+      {pullDistance > 0 && (
+        <motion.div 
+          style={{ opacity, scale }}
+          className="flex items-center justify-center py-2"
+        >
+          <motion.div style={{ rotate }}>
+            <RefreshCw className={`w-5 h-5 text-gold ${isRefreshing ? 'animate-spin' : ''}`} />
+          </motion.div>
+          <span className="ml-2 text-xs text-muted-foreground">
+            {pullDistance >= PULL_THRESHOLD ? 'Release to refresh' : 'Pull to refresh'}
+          </span>
         </motion.div>
-        <span className="ml-2 text-xs text-muted-foreground">
-          {pullDistance >= PULL_THRESHOLD ? 'Release to refresh' : 'Pull to refresh'}
-        </span>
-      </motion.div>
+      )}
 
       {/* TikTok-style Grid with pull gesture */}
       <motion.div 
