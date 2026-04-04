@@ -554,38 +554,38 @@ export default function HubPage() {
 
           {/* Quick Access — Rolls Royce Starlight dock */}
           <div className="relative mt-4 mb-3">
-            {/* ─── Bow arch — softer lines, stronger inward blur ─── */}
+            {/* ─── Bow arch — edge lines + heavy inward blur arch ─── */}
             <div className="pointer-events-none absolute inset-x-0 -top-20 h-[190px] z-0 overflow-visible">
               {/* Left edge line */}
               <div className="absolute left-0 top-0 h-full w-px bg-gradient-to-b from-foreground/10 via-foreground/5 to-transparent" />
-              {/* Left inward blur */}
-              <div
-                className="absolute left-0 top-0 h-full w-[132px]"
-                style={{
-                  background: 'linear-gradient(to right, hsl(var(--surface-1) / 0.42) 0%, hsl(var(--surface-1) / 0.18) 42%, transparent 100%)',
-                  maskImage: 'radial-gradient(140% 100% at 0% 0%, black 0%, black 52%, transparent 100%)',
-                  WebkitMaskImage: 'radial-gradient(140% 100% at 0% 0%, black 0%, black 52%, transparent 100%)',
-                  filter: 'blur(24px)',
-                }}
-              />
               {/* Right edge line */}
               <div className="absolute right-0 top-0 h-full w-px bg-gradient-to-b from-foreground/10 via-foreground/5 to-transparent" />
-              {/* Right inward blur */}
+              {/* Left inward blur — subtle */}
               <div
-                className="absolute right-0 top-0 h-full w-[132px]"
+                className="absolute left-0 top-0 h-full w-[60px]"
                 style={{
-                  background: 'linear-gradient(to left, hsl(var(--surface-1) / 0.42) 0%, hsl(var(--surface-1) / 0.18) 42%, transparent 100%)',
-                  maskImage: 'radial-gradient(140% 100% at 100% 0%, black 0%, black 52%, transparent 100%)',
-                  WebkitMaskImage: 'radial-gradient(140% 100% at 100% 0%, black 0%, black 52%, transparent 100%)',
-                  filter: 'blur(24px)',
+                  background: 'linear-gradient(to right, hsl(var(--surface-1) / 0.3) 0%, transparent 100%)',
+                  maskImage: 'linear-gradient(to bottom, black 0%, black 40%, transparent 100%)',
+                  WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 40%, transparent 100%)',
+                  filter: 'blur(18px)',
                 }}
               />
-              {/* Arch body */}
+              {/* Right inward blur — subtle */}
               <div
-                className="absolute left-[56px] right-[56px] top-[22px] h-[112px]"
+                className="absolute right-0 top-0 h-full w-[60px]"
                 style={{
-                  background: 'radial-gradient(ellipse 100% 88% at 50% 0%, hsl(var(--surface-1) / 0.16) 0%, hsl(var(--surface-1) / 0.08) 38%, transparent 72%)',
-                  filter: 'blur(28px)',
+                  background: 'linear-gradient(to left, hsl(var(--surface-1) / 0.3) 0%, transparent 100%)',
+                  maskImage: 'linear-gradient(to bottom, black 0%, black 40%, transparent 100%)',
+                  WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 40%, transparent 100%)',
+                  filter: 'blur(18px)',
+                }}
+              />
+              {/* Main arch — heavy blur mass connecting the legs */}
+              <div
+                className="absolute inset-x-0 top-0 h-full"
+                style={{
+                  background: 'radial-gradient(ellipse 88% 70% at 50% -10%, hsl(var(--surface-1) / 0.32) 0%, hsl(var(--surface-1) / 0.14) 40%, transparent 72%)',
+                  filter: 'blur(30px)',
                 }}
               />
             </div>
