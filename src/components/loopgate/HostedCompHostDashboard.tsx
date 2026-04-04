@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { 
   Gavel, Star, Trophy, MessageCircle, CheckCircle, 
-  ExternalLink, Loader2, Crown, ChevronDown, ChevronUp 
+  ExternalLink, Loader2, Crown, ChevronDown, ChevronUp, Play, Users
 } from "lucide-react";
 import { HostedCompetitionSubmission, HostedCompetitionJudge } from "@/hooks/useHostedCompetitions";
 import { supabase } from "@/integrations/supabase/client";
