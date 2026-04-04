@@ -762,14 +762,22 @@ export default function FeaturedDropDetailPage() {
           </motion.p>
         )}
 
-        {/* ═══ ALL SUBMISSIONS ═══ */}
+        {/* ═══ ALL SUBMISSIONS — Best Edits ═══ */}
         {!hasRounds && (
-          <div className="space-y-2">
+          <div className="space-y-3">
+            {/* Section header */}
             <div className="flex items-center justify-between">
-              <h2 className="text-xl text-foreground flex items-center gap-2 tracking-wider uppercase font-bold" style={teko}>
-                <Trophy className="w-4 h-4 text-gold" />
-                {scored.length > 0 ? 'Leaderboard' : 'Submissions'}
-              </h2>
+              <div>
+                <h2 className="text-xl text-foreground flex items-center gap-2 tracking-wider uppercase font-bold" style={teko}>
+                  <Trophy className="w-4 h-4 text-gold" />
+                  Best Edits
+                </h2>
+                {drop?.song_name && (
+                  <p className="text-[10px] text-muted-foreground/60 uppercase tracking-widest mt-0.5 pl-6">
+                    for "{drop.song_name}"
+                  </p>
+                )}
+              </div>
               <span className="text-sm text-muted-foreground font-bold tabular-nums" style={teko}>{allSubs.length} {allSubs.length === 1 ? 'Entry' : 'Entries'}</span>
             </div>
 
@@ -780,18 +788,88 @@ export default function FeaturedDropDetailPage() {
             ) : allSubs.length === 0 ? (
               <div className="p-8 text-center">
                 <Flame className="w-10 h-10 text-muted-foreground/20 mx-auto mb-3" />
-                <p className="text-lg font-bold text-muted-foreground" style={teko}>No Submissions Yet</p>
+                <p className="text-lg font-bold text-muted-foreground" style={teko}>No Edits Yet</p>
                 <p className="text-[10px] text-muted-foreground/60 mt-1">Be the first to enter & set the bar 🔥</p>
               </div>
             ) : (
-              <div className="space-y-2">
-                {scored.map((sub, idx) => (
-                  <DropSubmissionCard key={sub.id} submission={sub} rank={idx + 1} isTopScorer={idx === 0} />
-                ))}
-                {pending.map((sub) => (
-                  <DropSubmissionCard key={sub.id} submission={sub} />
-                ))}
-              </div>
+              <>
+                {/* ── Top Edits Carousel ── */}
+                {scored.length > 0 && (
+                  <div className="-mx-4">
+                    <div className="flex gap-2.5 overflow-x-auto px-4 pb-2 scrollbar-hide snap-x snap-mandatory">
+                      {scored.slice(0, 8).map((sub, idx) => (
+                        <a
+                          key={sub.id}
+                          href={sub.submission_url || '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="shrink-0 snap-start w-[140px] group"
+                        >
+                          <div className={cn(
+                            "relative rounded-xl overflow-hidden border transition-all",
+                            idx === 0 ? "border-gold/30" : "border-border/30 hover:border-border/60"
+                          )}>
+                            {/* Thumbnail */}
+                            <div className="aspect-[9/12] bg-surface-2 relative">
+                              {sub.thumbnail_url ? (
+                                <img src={sub.thumbnail_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-surface-2 to-surface-1">
+                                  <Video className="w-6 h-6 text-muted-foreground/20" />
+                                </div>
+                              )}
+                              {/* Gradient overlay */}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                              {/* Rank badge */}
+                              <div className={cn(
+                                "absolute top-1.5 left-1.5 w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-display font-bold",
+                                idx === 0 ? "bg-gold text-black" : "bg-black/70 text-foreground/80 border border-border/30"
+                              )}>
+                                {idx + 1}
+                              </div>
+                              {/* Play icon */}
+                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Play className="w-8 h-8 text-white drop-shadow-lg" />
+                              </div>
+                              {/* Bottom info */}
+                              <div className="absolute bottom-0 inset-x-0 p-2">
+                                <div className="flex items-center gap-1.5 mb-1">
+                                  <Avatar className="w-4 h-4 border border-white/20">
+                                    <AvatarImage src={sub.avatar_url || ''} />
+                                    <AvatarFallback className="text-[6px] bg-surface-2">{sub.username?.[0]?.toUpperCase()}</AvatarFallback>
+                                  </Avatar>
+                                  <span className="text-[9px] font-bold text-white truncate">@{sub.username}</span>
+                                </div>
+                                {sub.qoi_score != null && (
+                                  <div className="flex items-center gap-1">
+                                    <span className={cn(
+                                      "text-sm font-display font-bold leading-none",
+                                      (sub.qoi_score || 0) >= 70 ? "text-gold" : "text-white/90"
+                                    )}>
+                                      {Math.round(sub.qoi_score)}
+                                    </span>
+                                    <span className="text-[7px] text-white/50 uppercase">QOI</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Full List ── */}
+                <div className="space-y-2">
+                  {scored.map((sub, idx) => (
+                    <DropSubmissionCard key={sub.id} submission={sub} rank={idx + 1} isTopScorer={idx === 0} />
+                  ))}
+                  {pending.map((sub) => (
+                    <DropSubmissionCard key={sub.id} submission={sub} />
+                  ))}
+                </div>
+              </>
             )}
           </div>
         )}
