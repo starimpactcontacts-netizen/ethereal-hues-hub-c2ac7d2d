@@ -253,12 +253,14 @@ function SubmissionDetailModal({
   onClose,
   onThumbnailUpdated,
   onToggleHidden,
+  onToggleQoiHidden,
 }: {
   submission: any;
   userId?: string;
   onClose: () => void;
   onThumbnailUpdated: () => void;
   onToggleHidden: (submission: any) => void;
+  onToggleQoiHidden: (submission: any) => void;
 }) {
   const [showThumbInput, setShowThumbInput] = useState(false);
   const [thumbMode, setThumbMode] = useState<'file' | 'url'>('file');
