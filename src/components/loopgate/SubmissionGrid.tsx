@@ -235,7 +235,7 @@ export default function SubmissionGrid({ userId }: SubmissionGridProps) {
         {selectedSubmission && (
           <SubmissionDetailModal
             submission={submissions.find(s => s.id === selectedSubmission)!}
-            userId={user?.id}
+            isOwner={!userId || userId === user?.id}
             onClose={() => setSelectedSubmission(null)}
             onThumbnailUpdated={refetch}
             onToggleHidden={toggleHidden}
