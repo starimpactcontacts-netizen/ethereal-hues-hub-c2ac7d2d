@@ -2,11 +2,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Trophy, ArrowLeft, Zap, Settings2, Image, Calendar,
-  Users, DollarSign, Loader2, Crown, Medal, Award, Hash
+  Trophy, ArrowLeft, Zap, Settings2, ImagePlus, Calendar,
+  Users, DollarSign, Loader2, Crown, Medal, Award, Hash, X
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useRef } from "react";
 import { toast } from "sonner";
 
 const LEAGUE_OPTIONS = [
