@@ -385,8 +385,8 @@ export default function PublicProfilePage() {
             </button>
           </div>
 
-          {/* Profile core */}
-          <div className="px-5 pt-4 pb-5 flex flex-col items-center text-center">
+          {/* Profile core — TikTok-style centered */}
+          <div className="px-5 pt-4 pb-4 flex flex-col items-center text-center">
             {/* Avatar */}
             <div className="mb-3 relative">
               <div className="absolute -inset-0.5 rounded-full bg-gradient-to-b from-gold/30 to-transparent opacity-60" />
@@ -398,7 +398,7 @@ export default function PublicProfilePage() {
               </Avatar>
             </div>
 
-            {/* Name + badges — tight */}
+            {/* Name + badges */}
             <div className="flex items-center gap-1.5 mb-0.5 flex-wrap justify-center">
               <h1 className="font-display text-[22px] tracking-wide leading-none">{profile.display_name || profile.username}</h1>
               {profile.level > 1 && <LevelBadge level={profile.level} size="sm" />}
@@ -406,57 +406,57 @@ export default function PublicProfilePage() {
               {authorityRole && <AuthorityBadge role={authorityRole} size="md" />}
               {(hasEquippedOG || profile.is_founding_member) && <FoundingBadge size="sm" />}
             </div>
-            <p className="text-[11px] text-muted-foreground/60 mb-3">@{profile.username}</p>
+            <p className="text-[11px] text-muted-foreground/60 mb-4">@{profile.username}</p>
 
-            {/* Inline stat chips — compact horizontal row */}
+            {/* TikTok-style stats row with dividers */}
+            <div className="flex items-center justify-center mb-4 w-full max-w-xs">
+              <div className="flex-1 flex flex-col items-center">
+                <span className="font-display text-lg font-bold tabular-nums leading-none">{isJudge ? videoCount : submissionCount}</span>
+                <span className="text-[10px] text-muted-foreground/60 mt-0.5">{isJudge ? 'Videos' : 'Edits'}</span>
+              </div>
+              <div className="w-px h-8 bg-border/30" />
+              <div className="flex-1 flex flex-col items-center">
+                <span className="font-display text-lg font-bold tabular-nums leading-none">{realConnectionCount}</span>
+                <span className="text-[10px] text-muted-foreground/60 mt-0.5">Connections</span>
+              </div>
+              <div className="w-px h-8 bg-border/30" />
+              <div className="flex-1 flex flex-col items-center">
+                <span className="font-display text-lg font-bold tabular-nums leading-none text-gold">#{rank || '—'}</span>
+                <span className="text-[10px] text-muted-foreground/60 mt-0.5">Rank</span>
+              </div>
+            </div>
+
+            {/* Activity status */}
             <div className="flex items-center gap-1.5 mb-3">
-              <div className="flex items-center gap-1 px-2.5 py-1 bg-foreground/[0.04] border border-border/30 rounded-md">
-                <span className="text-[11px] font-bold tabular-nums text-foreground">{isJudge ? videoCount : submissionCount}</span>
-                <span className="text-[9px] text-muted-foreground/60 uppercase tracking-wider">{isJudge ? 'vids' : 'edits'}</span>
-              </div>
-              <div className="flex items-center gap-1 px-2.5 py-1 bg-foreground/[0.04] border border-border/30 rounded-md">
-                <span className="text-[11px] font-bold tabular-nums text-foreground">{realConnectionCount}</span>
-                <span className="text-[9px] text-muted-foreground/60 uppercase tracking-wider">connections</span>
-              </div>
-              <div className="flex items-center gap-1 px-2.5 py-1 bg-foreground/[0.04] border border-border/30 rounded-md">
-                <span className="text-[11px] font-bold tabular-nums text-gold">#{rank || '—'}</span>
-                <span className="text-[9px] text-muted-foreground/60 uppercase tracking-wider">rank</span>
-              </div>
+              <span className={`w-1.5 h-1.5 rounded-full ${activityLabels[profile.activity_status || 'offline']?.color || 'bg-muted-foreground'}`} />
+              <span className="text-[10px] text-muted-foreground">
+                {activityLabels[profile.activity_status || 'offline']?.label || 'Offline'}
+              </span>
+              {userCrew && <><span className="text-muted-foreground/30 mx-1">·</span><CrewBadge crew={userCrew} size="md" /></>}
             </div>
 
-            {/* Activity + Unit */}
-            <div className="flex items-center gap-2.5 mb-3">
-              <div className="flex items-center gap-1.5">
-                <span className={`w-1.5 h-1.5 rounded-full ${activityLabels[profile.activity_status || 'offline']?.color || 'bg-muted-foreground'}`} />
-                <span className="text-[10px] text-muted-foreground">
-                  {activityLabels[profile.activity_status || 'offline']?.label || 'Offline'}
-                </span>
-              </div>
-              {userCrew && <CrewBadge crew={userCrew} size="md" />}
-            </div>
-
-            {/* Actions — tighter */}
-            <div className="flex items-center gap-2 mb-3">
+            {/* TikTok-style action buttons — prominent row */}
+            <div className="flex items-center gap-2 w-full max-w-xs mb-3">
+              <ConnectButton targetUserId={profile.id} />
+              <MessageButton userId={profile.id} username={profile.username} variant="icon" />
               {isJudge && (
                 <button
                   onClick={() => navigate(`/judge/${profile.username}`)}
-                  className="px-3.5 py-2 bg-destructive text-destructive-foreground text-[10px] font-bold uppercase tracking-wider rounded-lg hover:opacity-90 transition-opacity"
+                  className="px-3 py-2 bg-destructive text-destructive-foreground text-[10px] font-bold uppercase tracking-wider rounded-lg hover:opacity-90 transition-opacity"
                 >
-                  Get Rated
+                  Rate
                 </button>
               )}
-              <ConnectButton targetUserId={profile.id} />
-              <MessageButton userId={profile.id} username={profile.username} variant="icon" />
             </div>
 
-            {/* Bio — condensed */}
+            {/* Bio */}
             {profile.bio && (
-              <p className="text-[12px] text-foreground/70 max-w-[280px] text-center leading-relaxed mb-2.5">
+              <p className="text-[12px] text-foreground/70 max-w-[280px] text-center leading-relaxed mb-2">
                 {profile.bio}
               </p>
             )}
 
-            {/* Social icons — minimal */}
+            {/* Social icons */}
             {platforms.length > 0 && (
               <div className="flex items-center gap-3">
                 {platforms.map((p) => {
