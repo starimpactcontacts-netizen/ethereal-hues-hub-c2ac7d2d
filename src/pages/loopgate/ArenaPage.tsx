@@ -1500,11 +1500,6 @@ export default function ArenaPage() {
         onSuccess={(battleId) => { setShowCreateBattle(false); navigate(`/battle/${battleId}`); }}
       />
 
-      <CreateCompetitionModal
-        isOpen={showCreateComp}
-        onClose={() => setShowCreateComp(false)}
-        onSuccess={(compId) => { setShowCreateComp(false); }}
-      />
     </div>
   );
 }
