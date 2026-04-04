@@ -414,7 +414,7 @@ export default function PublicProfilePage() {
                 <span className="text-[9px] text-muted-foreground/60 uppercase tracking-wider">{isJudge ? 'vids' : 'edits'}</span>
               </div>
               <div className="flex items-center gap-1 px-2.5 py-1 bg-foreground/[0.04] border border-border/30 rounded-md">
-                <span className="text-[11px] font-bold tabular-nums text-foreground">{profile.connection_count || 0}</span>
+                <span className="text-[11px] font-bold tabular-nums text-foreground">{realConnectionCount}</span>
                 <span className="text-[9px] text-muted-foreground/60 uppercase tracking-wider">connections</span>
               </div>
               <div className="flex items-center gap-1 px-2.5 py-1 bg-foreground/[0.04] border border-border/30 rounded-md">
