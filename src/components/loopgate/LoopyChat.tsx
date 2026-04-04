@@ -1,12 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Loader2, Plus, MessageSquare, Trash2, ChevronLeft, Star, Swords, Trophy, Users, Zap, Maximize2 } from 'lucide-react';
+import { X, Send, Loader2, Plus, MessageSquare, Trash2, ChevronLeft, Star, Swords, Trophy, Users, Zap, Maximize2, Bug } from 'lucide-react';
 import GateIcon from '@/components/loopgate/GateIcon';
 import { useNavigate } from 'react-router-dom';
 import loopyAvatar from '@/assets/loopy-avatar.png';
 import { useLoopyChat } from '@/hooks/useLoopyChat';
 import { useAuth } from '@/hooks/useAuth';
 import ReactMarkdown from 'react-markdown';
+import { useTicketStore } from './TicketFAB';
+import { useGuestMode } from '@/hooks/useGuestMode';
+import { useAccountPrompt } from '@/hooks/useAccountPrompt';
 
 const QUICK_ACTIONS = [
   { label: '⚔️ Battle', msg: 'how do i start a battle?', icon: Swords },
@@ -45,6 +48,18 @@ export default function LoopyChat() {
 
   const { user } = useAuth();
   const isGuest = !user;
+  const { isGuest: guestMode } = useGuestMode();
+  const { open: openAccountPrompt } = useAccountPrompt();
+  const ticketStore = useTicketStore();
+
+  const handleTicket = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user || guestMode) {
+      openAccountPrompt("save_score");
+      return;
+    }
+    ticketStore.setOpen(true);
+  };
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -152,6 +167,14 @@ export default function LoopyChat() {
               className="absolute -top-1.5 -left-1.5 z-10 w-5 h-5 rounded-full bg-muted border border-border flex items-center justify-center hover:bg-destructive/20 hover:border-destructive/40 transition-colors"
             >
               <X className="w-2.5 h-2.5 text-muted-foreground" />
+            </motion.button>
+            <motion.button
+              initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} transition={{ delay: 0.3 }}
+              onClick={handleTicket}
+              className="absolute -bottom-1.5 -left-1.5 z-10 w-5 h-5 rounded-full bg-muted border border-border flex items-center justify-center hover:bg-primary/20 hover:border-primary/40 transition-colors"
+              title="Report bug"
+            >
+              <Bug className="w-2.5 h-2.5 text-muted-foreground" />
             </motion.button>
             <motion.button
               initial={{ scale: 0, rotate: -20 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0, rotate: 20 }}
