@@ -19,9 +19,9 @@ export default function LoadingScreen({ minimal = false }: LoadingScreenProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-50 gap-4">
-      <img src={loopgateLogo} alt="Loopgate" className="w-16 h-16" />
-      <span className="text-white text-2xl tracking-[0.15em] font-normal" style={{ fontFamily: "'Bebas Neue', 'Teko', sans-serif" }}>
+    <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-50 gap-5">
+      <img src={loopgateLogo} alt="Loopgate" className="w-20 h-20" style={{ imageRendering: '-webkit-optimize-contrast' }} />
+      <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '32px', letterSpacing: '0.18em', color: '#fff' }}>
         LOOPGATE
       </span>
     </div>
