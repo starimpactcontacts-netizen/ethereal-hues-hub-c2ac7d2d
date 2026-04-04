@@ -65,6 +65,8 @@ export default function CreateCompetitionPage() {
   const [rewardPreset, setRewardPreset] = useState(0); // Winner Takes All default
 
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   const indexPool = getIndexPool(maxParticipants);
   const currentPreset = REWARD_PRESETS[rewardPreset];
