@@ -35,6 +35,8 @@ import { toast } from "sonner";
 import EmailNotificationSettings from "@/components/loopgate/EmailNotificationSettings";
 import LiveWinnersTicker from "@/components/loopgate/LiveWinnersTicker";
 import LivePayoutsCarousel from "@/components/loopgate/LivePayoutsCarousel";
+import ArenaCompetitionsSection from "@/components/loopgate/ArenaCompetitionsSection";
+import CreateCompetitionModal from "@/components/loopgate/CreateCompetitionModal";
 
 interface Event {
   id: string;
