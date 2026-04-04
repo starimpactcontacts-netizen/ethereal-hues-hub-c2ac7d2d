@@ -894,6 +894,163 @@ export type Database = {
           },
         ]
       }
+      competition_participants: {
+        Row: {
+          avatar_url: string | null
+          competition_id: string
+          id: string
+          joined_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          competition_id: string
+          id?: string
+          joined_at?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          competition_id?: string
+          id?: string
+          joined_at?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competition_participants_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      competition_submissions: {
+        Row: {
+          avatar_url: string | null
+          competition_id: string
+          created_at: string
+          id: string
+          is_winner: boolean | null
+          judge_notes: string | null
+          platform: string | null
+          score: number | null
+          scored_at: string | null
+          submission_url: string
+          user_id: string
+          username: string
+          winner_place: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          competition_id: string
+          created_at?: string
+          id?: string
+          is_winner?: boolean | null
+          judge_notes?: string | null
+          platform?: string | null
+          score?: number | null
+          scored_at?: string | null
+          submission_url: string
+          user_id: string
+          username: string
+          winner_place?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          competition_id?: string
+          created_at?: string
+          id?: string
+          is_winner?: boolean | null
+          judge_notes?: string | null
+          platform?: string | null
+          score?: number | null
+          scored_at?: string | null
+          submission_url?: string
+          user_id?: string
+          username?: string
+          winner_place?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competition_submissions_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      competitions: {
+        Row: {
+          cover_image_url: string | null
+          created_at: string
+          creator_avatar_url: string | null
+          creator_id: string
+          creator_username: string
+          current_players: number
+          deadline: string | null
+          description: string | null
+          id: string
+          index_reward_pool: number
+          league: string
+          max_players: number
+          name: string
+          scoring_mode: string
+          slug: string | null
+          started_at: string | null
+          status: string
+          theme: string | null
+          updated_at: string
+        }
+        Insert: {
+          cover_image_url?: string | null
+          created_at?: string
+          creator_avatar_url?: string | null
+          creator_id: string
+          creator_username: string
+          current_players?: number
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          index_reward_pool?: number
+          league?: string
+          max_players?: number
+          name: string
+          scoring_mode?: string
+          slug?: string | null
+          started_at?: string | null
+          status?: string
+          theme?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cover_image_url?: string | null
+          created_at?: string
+          creator_avatar_url?: string | null
+          creator_id?: string
+          creator_username?: string
+          current_players?: number
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          index_reward_pool?: number
+          league?: string
+          max_players?: number
+          name?: string
+          scoring_mode?: string
+          slug?: string | null
+          started_at?: string | null
+          status?: string
+          theme?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       connected_platforms: {
         Row: {
           connected_at: string | null
