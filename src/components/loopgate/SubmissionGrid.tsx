@@ -547,6 +547,42 @@ function SubmissionDetailModal({
               <p className="text-xs text-muted-foreground">Awaiting QOI score</p>
             </div>
           )}
+
+          {/* Earnings & Stats row */}
+          {((submission.earned_cents ?? 0) > 0 || (submission.xp_awarded ?? 0) > 0 || (submission.view_count ?? 0) > 0 || submission.rating) && (
+            <div className="grid grid-cols-3 gap-0 text-center border border-border/30 overflow-hidden">
+              {(submission.earned_cents ?? 0) > 0 && (
+                <div className="p-3 bg-emerald-500/5 border-r border-border/20">
+                  <div className="flex items-center justify-center gap-0.5">
+                    <DollarSign className="w-3 h-3 text-emerald-400" />
+                    <p className="text-lg font-bold tabular-nums text-foreground">{((submission.earned_cents ?? 0) / 100).toFixed(2)}</p>
+                  </div>
+                  <p className="text-[9px] text-emerald-400 uppercase tracking-wider font-semibold">Earned</p>
+                </div>
+              )}
+              {submission.rating && (
+                <div className="p-3 bg-gold/5 border-r border-border/20">
+                  <p className="text-lg font-bold tabular-nums text-gold">{submission.rating}</p>
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Rating</p>
+                </div>
+              )}
+              {(submission.xp_awarded ?? 0) > 0 && (
+                <div className="p-3 bg-background/50 border-r border-border/20">
+                  <div className="flex items-center justify-center gap-0.5">
+                    <Zap className="w-3 h-3 text-yellow-500" />
+                    <p className="text-lg font-bold tabular-nums">{submission.xp_awarded}</p>
+                  </div>
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-wider">XP</p>
+                </div>
+              )}
+              {(submission.view_count ?? 0) > 0 && (
+                <div className="p-3 bg-background/50">
+                  <p className="text-lg font-bold tabular-nums">{(submission.view_count ?? 0).toLocaleString()}</p>
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Views</p>
+                </div>
+              )}
+            </div>
+          )}
           
           {/* Final Rank */}
           {submission.final_rank && (
