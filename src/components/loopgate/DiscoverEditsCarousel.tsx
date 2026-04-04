@@ -185,9 +185,10 @@ function EditShowcaseCard({
             <span className="text-xs font-bold text-white truncate block drop-shadow-lg">
               @{entry.username}
             </span>
-            <span className="text-[9px] text-white/60">
-              {formatDistanceToNow(new Date(entry.created_at), { addSuffix: true })}
-            </span>
+          </div>
+          <div className="ml-auto pl-2 flex items-center gap-1 bg-white/15 backdrop-blur-sm px-2.5 py-1 rounded-full">
+            <Play className="w-3 h-3 text-white" fill="white" />
+            <span className="text-[9px] font-bold text-white uppercase tracking-wider">Play</span>
           </div>
         </div>
       </button>
