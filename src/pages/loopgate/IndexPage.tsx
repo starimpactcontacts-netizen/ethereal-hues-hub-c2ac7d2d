@@ -534,10 +534,36 @@ export default function IndexPage() {
             )}
           </div>
           
-          {/* Massive title — single line for impact */}
-          <h1 className="font-display text-[3.8rem] leading-[0.85] tracking-wide text-foreground">
-            THE INDEX
-          </h1>
+          {/* Massive 3D cinematic title — Netflix/Seedance arch perspective */}
+          <div className="relative" style={{ perspective: '600px' }}>
+            <h1 
+              className="font-display text-[4.2rem] leading-[0.8] tracking-[0.06em] text-foreground"
+              style={{
+                transformStyle: 'preserve-3d',
+                transform: 'rotateX(12deg) scaleY(1.05)',
+                textShadow: `
+                  0 1px 0 hsl(var(--foreground) / 0.6),
+                  0 2px 0 hsl(var(--foreground) / 0.5),
+                  0 3px 0 hsl(var(--foreground) / 0.4),
+                  0 4px 0 hsl(var(--foreground) / 0.3),
+                  0 5px 0 hsl(var(--foreground) / 0.2),
+                  0 6px 0 hsl(var(--foreground) / 0.1),
+                  0 0 30px hsl(var(--foreground) / 0.15),
+                  0 10px 40px hsl(0 0% 0% / 0.5)
+                `,
+              }}
+            >
+              THE INDEX
+            </h1>
+            {/* Floor reflection glow */}
+            <div 
+              className="absolute left-1/2 -translate-x-1/2 -bottom-3 w-[80%] h-6 rounded-full"
+              style={{
+                background: 'radial-gradient(ellipse at center, hsl(var(--foreground) / 0.12) 0%, transparent 70%)',
+                filter: 'blur(6px)',
+              }}
+            />
+          </div>
           
           {/* Live counter — minimal with gold accent */}
           <div className="flex items-center gap-2.5 mt-3 mb-1">
