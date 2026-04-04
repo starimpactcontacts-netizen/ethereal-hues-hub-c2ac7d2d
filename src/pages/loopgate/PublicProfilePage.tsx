@@ -87,7 +87,7 @@ export default function PublicProfilePage() {
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [userCrew, setUserCrew] = useState<{ id: string; name: string; emblem: string; avatar_url: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'videos' | 'edits' | 'links' | 'about'>('videos');
+  const [activeTab, setActiveTab] = useState<'videos' | 'edits' | 'links' | 'about'>('edits');
    const [submissionCount, setSubmissionCount] = useState(0);
    const [videoCount, setVideoCount] = useState(0);
    const [isJudge, setIsJudge] = useState(false);
