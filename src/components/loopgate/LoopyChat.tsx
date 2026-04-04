@@ -111,7 +111,7 @@ export default function LoopyChat() {
             initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 20, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             onClick={() => setDocked(false)}
-            className="fixed bottom-28 right-0 z-50 cursor-grab active:cursor-grabbing pointer-events-auto group touch-none"
+            className="fixed bottom-20 right-0 z-50 cursor-grab active:cursor-grabbing pointer-events-auto group touch-none"
           >
             <motion.div animate={{ x: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }} className="flex flex-col gap-6 items-end">
               {[0, 1].map(i => (
@@ -144,7 +144,7 @@ export default function LoopyChat() {
               setDragY(clamped);
               sessionStorage.setItem('loopy-y', String(clamped));
             }}
-            className="fixed bottom-28 right-3 z-50 cursor-grab active:cursor-grabbing pointer-events-auto touch-none"
+            className="fixed bottom-20 right-3 z-50 cursor-grab active:cursor-grabbing pointer-events-auto touch-none"
           >
             <motion.button
               initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} transition={{ delay: 0.2 }}
@@ -179,7 +179,7 @@ export default function LoopyChat() {
             initial={{ opacity: 0, y: 40, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 350, damping: 28, mass: 0.8 }}
-            className="fixed bottom-28 right-2 left-2 sm:left-auto sm:w-[380px] z-50 max-h-[70vh] flex flex-col rounded-2xl border border-border bg-background shadow-2xl shadow-black/40 overflow-hidden"
+            className="fixed bottom-20 right-2 left-2 sm:left-auto sm:w-[380px] z-[60] max-h-[75vh] flex flex-col rounded-2xl border border-border bg-background shadow-2xl shadow-black/40 overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center gap-2 px-3 py-2.5 bg-card border-b border-border">
