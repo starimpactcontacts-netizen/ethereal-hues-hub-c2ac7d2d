@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Trophy, Users, Music, Clock, ChevronRight, Plus, Gavel, Vote, Play } from "lucide-react";
+import { Trophy, Users, Music, Clock, Plus, Play } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCompetitionsList, type Competition } from "@/hooks/useCompetitions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -9,17 +9,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 
 function LeagueBadge({ league }: { league: string }) {
-  const cfg: Record<string, { label: string; dot: string; text: string; border: string; bg: string }> = {
-    open: { label: "OPEN", dot: "bg-white/40", text: "text-white/70", border: "border-white/[0.12]", bg: "bg-white/[0.04]" },
-    pro: { label: "PRO", dot: "bg-blue-400", text: "text-blue-300", border: "border-blue-400/20", bg: "bg-blue-500/[0.06]" },
-    elite: { label: "ELITE", dot: "bg-amber-400", text: "text-amber-300", border: "border-amber-400/20", bg: "bg-amber-500/[0.06]" },
-  };
-  const c = cfg[league] || cfg.open;
+  const labels: Record<string, string> = { open: "OPEN LEAGUE", pro: "PRO LEAGUE", elite: "ELITE LEAGUE" };
   return (
-    <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 border rounded backdrop-blur-sm ${c.border} ${c.bg}`}>
-      <div className={`w-1 h-1 rounded-full ${c.dot}`} />
-      <span className={`text-[8px] font-bold uppercase tracking-[0.12em] ${c.text}`} style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
-        {c.label}
+    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-black/60 backdrop-blur-md border border-white/[0.15] rounded-lg">
+      <span className="text-[9px] font-extrabold uppercase tracking-[0.15em] text-white/90" style={{ fontFamily: "'Teko', sans-serif" }}>
+        {labels[league] || labels.open}
       </span>
     </div>
   );
@@ -52,22 +46,13 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
 
         <div className="absolute top-2.5 left-2.5"><LeagueBadge league={comp.league} /></div>
 
-        <div className="absolute top-2.5 right-2.5">
-          <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-black/50 backdrop-blur-sm border border-white/[0.06] rounded">
-            {comp.scoring_mode === "judged" ? <Gavel className="w-2.5 h-2.5 text-white/50" /> : <Vote className="w-2.5 h-2.5 text-white/50" />}
-            <span className="text-[8px] font-bold uppercase tracking-wider text-white/50">
-              {comp.scoring_mode === "judged" ? "Judged" : "Votes"}
-            </span>
-          </div>
-        </div>
-
         {/* Status */}
         <div className="absolute bottom-2.5 right-2.5">
-          <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wider ${
-            isLobby ? "bg-amber-500/20 text-amber-300 border border-amber-500/20" : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/20"
-          }`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${isLobby ? "bg-amber-400" : "bg-emerald-400"} animate-pulse`} />
-            {isLobby ? "In Lobby" : "Live"}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/[0.12]">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+            <span className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-amber-300" style={{ fontFamily: "'Teko', sans-serif" }}>
+              {isLobby ? "Awaiting Start" : "In Progress"}
+            </span>
           </div>
         </div>
 
@@ -134,13 +119,11 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
         <button
           onClick={(e) => { e.stopPropagation(); onJoin(comp.id); }}
           disabled={spotsLeft <= 0}
-          className="w-full py-2.5 rounded-xl font-display text-[11px] uppercase tracking-[0.15em] flex items-center justify-center gap-2 transition-all disabled:opacity-20 disabled:cursor-not-allowed bg-white text-black font-bold hover:bg-white/90 active:bg-white/80"
-          style={{ boxShadow: "0 2px 12px rgba(255,255,255,0.08)" }}
+          className="w-full py-3 rounded-xl uppercase tracking-[0.2em] flex items-center justify-center gap-2 transition-all disabled:opacity-20 disabled:cursor-not-allowed bg-emerald-500 text-white font-extrabold hover:bg-emerald-400 active:bg-emerald-600 text-[13px]"
+          style={{ fontFamily: "'Teko', sans-serif", boxShadow: "0 4px 20px rgba(16,185,129,0.35)", letterSpacing: "0.15em" }}
         >
-          {spotsLeft <= 0 ? "Full" : isLobby ? (
-            <><Play className="w-3 h-3" /> Join Lobby</>
-          ) : (
-            <>Join Competition <ChevronRight className="w-3 h-3" /></>
+          {spotsLeft <= 0 ? "FULL" : (
+            <><Play className="w-3.5 h-3.5" /> JOIN LOBBY</>
           )}
         </button>
       </div>
