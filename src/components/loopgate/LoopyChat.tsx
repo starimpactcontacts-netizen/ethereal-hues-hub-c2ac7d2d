@@ -27,9 +27,10 @@ export default function LoopyChat() {
   const [showPulse, setShowPulse] = useState(true);
   const [view, setView] = useState<'menu' | 'chat' | 'history'>('menu');
   const [docked, setDocked] = useState(false);
-  const [dragY, setDragY] = useState(() => {
-    const saved = sessionStorage.getItem('loopy-y');
-    return saved ? Number(saved) : 0;
+  const [dragPos, setDragPos] = useState(() => {
+    const savedX = sessionStorage.getItem('loopy-x');
+    const savedY = sessionStorage.getItem('loopy-y');
+    return { x: savedX ? Number(savedX) : 0, y: savedY ? Number(savedY) : 0 };
   });
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -101,7 +102,12 @@ export default function LoopyChat() {
     sendMessage(msg);
   };
 
-  const handleDock = (e: React.MouseEvent) => { e.stopPropagation(); setDocked(true); };
+  const handleDock = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDragPos({ x: 0, y: dragPos.y });
+    sessionStorage.setItem('loopy-x', '0');
+    setDocked(true);
+  };
   const hasHistory = conversations.length > 0;
 
   return (
@@ -114,11 +120,11 @@ export default function LoopyChat() {
             dragConstraints={{ top: -300, bottom: 200 }}
             dragElastic={0.1}
             dragMomentum={false}
-            style={{ y: dragY }}
+            style={{ y: dragPos.y }}
             onDragEnd={(_, info) => {
-              const newY = dragY + info.offset.y;
+              const newY = dragPos.y + info.offset.y;
               const clamped = Math.max(-300, Math.min(200, newY));
-              setDragY(clamped);
+              setDragPos(prev => ({ ...prev, y: clamped }));
               sessionStorage.setItem('loopy-y', String(clamped));
             }}
             initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 20, opacity: 0 }}
@@ -146,16 +152,19 @@ export default function LoopyChat() {
       <AnimatePresence>
         {!open && !docked && (
           <motion.div
-            drag="y"
-            dragConstraints={{ top: -300, bottom: 200 }}
-            dragElastic={0.1}
+            drag
+            dragConstraints={{ top: -400, bottom: 200, left: -300, right: 50 }}
+            dragElastic={0.15}
             dragMomentum={false}
-            style={{ y: dragY }}
+            style={{ x: dragPos.x, y: dragPos.y }}
             onDragEnd={(_, info) => {
-              const newY = dragY + info.offset.y;
-              const clamped = Math.max(-300, Math.min(200, newY));
-              setDragY(clamped);
-              sessionStorage.setItem('loopy-y', String(clamped));
+              const newX = dragPos.x + info.offset.x;
+              const newY = dragPos.y + info.offset.y;
+              const clampedX = Math.max(-300, Math.min(50, newX));
+              const clampedY = Math.max(-400, Math.min(200, newY));
+              setDragPos({ x: clampedX, y: clampedY });
+              sessionStorage.setItem('loopy-x', String(clampedX));
+              sessionStorage.setItem('loopy-y', String(clampedY));
             }}
             className="fixed bottom-20 right-3 z-50 cursor-grab active:cursor-grabbing pointer-events-auto touch-none"
           >
