@@ -7,6 +7,7 @@ import {
   TrendingUp, ChevronDown, Play, Lock, Video, Award, Link2, Download,
   ListOrdered, MessageCircle, Info, X, Swords
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 import DropSubmissionCard from "@/components/loopgate/DropSubmissionCard";
 import DropLeaderboardRow from "@/components/loopgate/DropLeaderboardRow";
