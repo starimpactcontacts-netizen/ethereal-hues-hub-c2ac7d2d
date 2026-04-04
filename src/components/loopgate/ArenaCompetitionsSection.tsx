@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Trophy, Users, Music, Clock, ChevronRight, Plus, Gavel, Vote, Play } from "lucide-react";
+import { Trophy, Users, Music, Clock, Plus, Play } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCompetitionsList, type Competition } from "@/hooks/useCompetitions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
