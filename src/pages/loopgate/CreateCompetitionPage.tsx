@@ -104,7 +104,7 @@ export default function CreateCompetitionPage() {
           scoring_mode: mode === "advanced" ? scoringMode : "judged",
           max_participants: mode === "advanced" ? Math.min(maxParticipants, 100) : 100,
           cover_image_url: coverUrl.trim() || null,
-          submission_deadline: mode === "advanced" && deadline ? new Date(deadline).toISOString() : null,
+          submission_deadline: new Date(Date.now() + durationHours * 60 * 60 * 1000).toISOString(),
           status: "live",
           slug,
           format: "battle_royale",
