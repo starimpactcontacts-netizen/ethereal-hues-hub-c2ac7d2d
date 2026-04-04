@@ -221,7 +221,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Unit + XP compact */}
-          <div className="flex items-center gap-2 w-full max-w-sm mb-3">
+          <div className="flex items-center justify-center gap-2 w-full max-w-sm mb-3">
             {primaryCrew?.crew && (
               <Link to={`/units/${primaryCrew.crew_id}`} className="flex items-center gap-1.5 px-2 py-1 bg-surface-1/50 border border-border/20 rounded-full hover:border-border/40 transition-colors">
                 <div className="w-4 h-4 rounded-full overflow-hidden bg-muted/30 flex items-center justify-center shrink-0">
