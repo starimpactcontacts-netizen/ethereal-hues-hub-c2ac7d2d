@@ -35,6 +35,7 @@ export default function AuthenticatedLayout() {
       
       {/* Loopy AI chatbot */}
       <LoopyChat />
+      <TicketFAB />
       
       {/* Auto-show beginner guide for new users / official opening */}
       <BeginnerGuideModal autoShow />
