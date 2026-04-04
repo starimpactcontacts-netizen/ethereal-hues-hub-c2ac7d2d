@@ -83,7 +83,7 @@ export function useUserSubmissions(targetUserId?: string) {
         impact_score: s.impact_score, qoi_score: s.qoi_score, final_rank: null,
         submitted_at: s.submitted_at || s.created_at, thumbnail_url: (s as any).thumbnail_url || null,
         custom_title: (s as any).custom_title || null, source: 'round',
-        is_hidden: hiddenSet.has(`round:${s.id}`),
+        is_hidden: hiddenSet.has(`round:${s.id}`), qoi_hidden: qoiHiddenSet.has(`round:${s.id}`),
       });
     }
 
