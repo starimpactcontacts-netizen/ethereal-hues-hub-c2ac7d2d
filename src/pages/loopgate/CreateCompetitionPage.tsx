@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Trophy, ArrowLeft, Zap, Settings2, Image, Calendar,
-  Users, DollarSign, Loader2, Crown, Medal, Award, Hash
+  Trophy, ArrowLeft, Zap, Settings2, ImagePlus, Calendar,
+  Users, DollarSign, Loader2, Crown, Medal, Award, Hash, X
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -64,6 +64,8 @@ export default function CreateCompetitionPage() {
   const [rewardPreset, setRewardPreset] = useState(0); // Winner Takes All default
 
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   const indexPool = getIndexPool(maxParticipants);
   const currentPreset = REWARD_PRESETS[rewardPreset];
@@ -193,16 +195,61 @@ export default function CreateCompetitionPage() {
           <span className="text-[9px] text-muted-foreground/50 mt-1 block">Optional — leave blank for open theme</span>
         </div>
 
-        {/* Cover Image */}
+        {/* Cover Image Upload */}
         <div>
           <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-            <Image className="w-3 h-3" /> Cover Image URL
+            <ImagePlus className="w-3 h-3" /> Cover Image
           </label>
+          {coverUrl ? (
+            <div className="relative rounded-lg overflow-hidden border border-border/40">
+              <img src={coverUrl} alt="Cover" className="w-full h-32 object-cover" />
+              <button
+                onClick={() => setCoverUrl("")}
+                className="absolute top-2 right-2 w-6 h-6 bg-black/70 rounded-full flex items-center justify-center hover:bg-black/90 transition-colors"
+              >
+                <X className="w-3.5 h-3.5 text-white" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => coverInputRef.current?.click()}
+              disabled={uploadingCover}
+              className="w-full bg-surface-1 border border-border/40 border-dashed rounded-lg px-3 py-6 flex flex-col items-center gap-2 hover:border-gold/30 transition-colors disabled:opacity-50"
+            >
+              {uploadingCover ? (
+                <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
+              ) : (
+                <ImagePlus className="w-5 h-5 text-muted-foreground/60" />
+              )}
+              <span className="text-[11px] text-muted-foreground/60 font-medium">
+                {uploadingCover ? "Uploading..." : "Tap to upload cover image"}
+              </span>
+            </button>
+          )}
           <input
-            value={coverUrl}
-            onChange={(e) => setCoverUrl(e.target.value)}
-            placeholder="https://..."
-            className="w-full bg-surface-1 border border-border/40 rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-gold/40 transition-colors"
+            ref={coverInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file || !user) return;
+              if (file.size > 10 * 1024 * 1024) { toast.error("Image must be under 10MB"); return; }
+              setUploadingCover(true);
+              try {
+                const ext = file.name.split('.').pop() || 'jpg';
+                const path = `competitions/${user.id}/${Date.now()}.${ext}`;
+                const { error } = await supabase.storage.from('loop-media').upload(path, file, { cacheControl: '3600', upsert: false });
+                if (error) throw error;
+                const { data: urlData } = supabase.storage.from('loop-media').getPublicUrl(path);
+                setCoverUrl(urlData.publicUrl);
+              } catch (err: any) {
+                toast.error(err?.message || "Upload failed");
+              } finally {
+                setUploadingCover(false);
+                if (coverInputRef.current) coverInputRef.current.value = '';
+              }
+            }}
           />
         </div>
 
