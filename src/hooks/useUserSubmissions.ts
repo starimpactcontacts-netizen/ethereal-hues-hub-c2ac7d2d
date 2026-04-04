@@ -131,7 +131,7 @@ export function useUserSubmissions(targetUserId?: string) {
         submitted_at: submittedAt || b.created_at, thumbnail_url: thumbUrl || null,
         custom_title: b.theme_song_name ? `Battle: ${b.theme_song_name}` : 'Battle',
         source: 'battle',
-        is_hidden: hiddenSet.has(`battle:${b.id}`),
+        is_hidden: hiddenSet.has(`battle:${b.id}`), qoi_hidden: qoiHiddenSet.has(`battle:${b.id}`),
       });
     }
 
