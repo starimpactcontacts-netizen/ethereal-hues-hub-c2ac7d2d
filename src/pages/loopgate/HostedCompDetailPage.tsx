@@ -92,6 +92,7 @@ export default function HostedCompDetailPage() {
     );
   }
 
+  const isLobby = competition.status === 'lobby';
   const deadlinePassed = isPast(new Date(competition.submission_deadline));
   const canSubmit = competition.status === 'live' && !deadlinePassed && !hasSubmitted;
   const isJudging = competition.status === 'judging' || (competition.status === 'live' && deadlinePassed);
@@ -493,6 +494,8 @@ export default function HostedCompDetailPage() {
             judges={judges}
             onInviteJudges={() => setShowInviteJudges(true)}
             onRefresh={refetch}
+            competitionStatus={competition.status}
+            participantCount={participants?.length || competition.participant_count || 0}
           />
         )}
 

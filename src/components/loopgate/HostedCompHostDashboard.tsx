@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { 
   Gavel, Star, Trophy, MessageCircle, CheckCircle, 
-  ExternalLink, Loader2, Crown, ChevronDown, ChevronUp 
+  ExternalLink, Loader2, Crown, ChevronDown, ChevronUp, Play, Users
 } from "lucide-react";
 import { HostedCompetitionSubmission, HostedCompetitionJudge } from "@/hooks/useHostedCompetitions";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,8 @@ interface HostedCompHostDashboardProps {
   judges: HostedCompetitionJudge[];
   onInviteJudges: () => void;
   onRefresh: () => void;
+  competitionStatus?: string;
+  participantCount?: number;
 }
 
 function ScoringRow({ 
@@ -231,10 +233,36 @@ export default function HostedCompHostDashboard({
   submissions, 
   judges,
   onInviteJudges,
-  onRefresh
+  onRefresh,
+  competitionStatus,
+  participantCount = 0
 }: HostedCompHostDashboardProps) {
+  const [isStarting, setIsStarting] = useState(false);
   const scoredCount = submissions.filter(s => s.score !== null).length;
   const pendingCount = submissions.length - scoredCount;
+  const isLobby = competitionStatus === 'lobby';
+  const canStart = isLobby && participantCount >= 2;
+
+  const handleStartCompetition = async () => {
+    if (!canStart) return;
+    setIsStarting(true);
+    try {
+      const { error } = await supabase
+        .from('hosted_competitions')
+        .update({
+          status: 'live',
+          submission_deadline: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        })
+        .eq('id', competitionId);
+      if (error) throw error;
+      toast.success("🚀 Competition is LIVE! Editors can now submit.");
+      onRefresh();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to start");
+    } finally {
+      setIsStarting(false);
+    }
+  };
 
   const handleScore = async (submissionId: string, score: number, notes?: string): Promise<boolean> => {
     const { error } = await supabase
@@ -298,6 +326,35 @@ export default function HostedCompHostDashboard({
             <span className="text-amber-400">{pendingCount} pending</span>
           </div>
         </div>
+        {/* Start Competition Button (Lobby Mode) */}
+        {isLobby && (
+          <div className="mb-3 p-3 bg-surface-1 border border-amber-500/20 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <Users className="w-4 h-4 text-amber-400" />
+              <span className="text-sm font-bold text-foreground">{participantCount} editor{participantCount !== 1 ? 's' : ''} in lobby</span>
+            </div>
+            <button
+              onClick={handleStartCompetition}
+              disabled={!canStart || isStarting}
+              className="w-full py-3 rounded-xl font-display text-sm uppercase tracking-[0.12em] flex items-center justify-center gap-2 transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold hover:from-emerald-400 hover:to-emerald-500"
+              style={{ boxShadow: "0 2px 16px rgba(16,185,129,0.3)" }}
+            >
+              {isStarting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  <Play className="w-4 h-4" />
+                  {canStart ? 'Start Competition' : `Need ${2 - participantCount} more editor${2 - participantCount !== 1 ? 's' : ''}`}
+                </>
+              )}
+            </button>
+            {canStart && (
+              <p className="text-[10px] text-muted-foreground text-center mt-1.5">
+                This will open submissions for 24 hours
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-2">
