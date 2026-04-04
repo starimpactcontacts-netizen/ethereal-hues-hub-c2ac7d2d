@@ -18,6 +18,7 @@ export interface UserSubmission {
   custom_title: string | null;
   source: 'standard' | 'round' | 'sanctioned' | 'featured' | 'battle';
   is_hidden?: boolean;
+  qoi_hidden?: boolean;
   event?: {
     id: string;
     title: string;
@@ -42,18 +43,22 @@ export function useUserSubmissions(targetUserId?: string) {
     }
 
     // Fetch all sources in parallel
-    const [standardRes, roundRes, sanctionedRes, featuredRes, battlesRes, hiddenRes] = await Promise.all([
+    const [standardRes, roundRes, sanctionedRes, featuredRes, battlesRes, hiddenRes, qoiHiddenRes] = await Promise.all([
       supabase.from('event_participations').select('*').eq('user_id', userId).order('submitted_at', { ascending: false }),
       supabase.from('round_participations').select('*').eq('user_id', userId).not('submission_url', 'is', null).order('submitted_at', { ascending: false }),
       supabase.from('sanctioned_tournament_participants').select('*, sanctioned_tournaments!inner(id, name, status)').eq('user_id', userId).not('submission_url', 'is', null).order('submitted_at', { ascending: false }),
       supabase.from('featured_submissions').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
       supabase.from('battles').select('*').or(`challenger_id.eq.${userId},opponent_id.eq.${userId}`).not('status', 'eq', 'pending').order('created_at', { ascending: false }),
       supabase.from('hidden_edits').select('source, source_id').eq('user_id', userId),
+      supabase.from('qoi_hidden_edits').select('source, source_id').eq('user_id', userId),
     ]);
 
     // Build hidden set
     const hiddenSet = new Set(
       (hiddenRes.data || []).map((h: any) => `${h.source}:${h.source_id}`)
+    );
+    const qoiHiddenSet = new Set(
+      (qoiHiddenRes.data || []).map((h: any) => `${h.source}:${h.source_id}`)
     );
 
     const allSubmissions: UserSubmission[] = [];
@@ -66,7 +71,7 @@ export function useUserSubmissions(targetUserId?: string) {
         impact_score: s.impact_score, qoi_score: s.qoi_score, final_rank: s.final_rank,
         submitted_at: s.submitted_at, thumbnail_url: s.thumbnail_url || null,
         custom_title: (s as any).custom_title || null, source: 'standard',
-        is_hidden: hiddenSet.has(`standard:${s.id}`),
+        is_hidden: hiddenSet.has(`standard:${s.id}`), qoi_hidden: qoiHiddenSet.has(`standard:${s.id}`),
       });
     }
 
@@ -78,7 +83,7 @@ export function useUserSubmissions(targetUserId?: string) {
         impact_score: s.impact_score, qoi_score: s.qoi_score, final_rank: null,
         submitted_at: s.submitted_at || s.created_at, thumbnail_url: (s as any).thumbnail_url || null,
         custom_title: (s as any).custom_title || null, source: 'round',
-        is_hidden: hiddenSet.has(`round:${s.id}`),
+        is_hidden: hiddenSet.has(`round:${s.id}`), qoi_hidden: qoiHiddenSet.has(`round:${s.id}`),
       });
     }
 
@@ -90,7 +95,7 @@ export function useUserSubmissions(targetUserId?: string) {
         impact_score: null, qoi_score: s.qoi_score, final_rank: s.final_rank,
         submitted_at: s.submitted_at || s.joined_at, thumbnail_url: (s as any).thumbnail_url || null,
         custom_title: (s as any).custom_title || null, source: 'sanctioned',
-        is_hidden: hiddenSet.has(`sanctioned:${s.id}`),
+        is_hidden: hiddenSet.has(`sanctioned:${s.id}`), qoi_hidden: qoiHiddenSet.has(`sanctioned:${s.id}`),
       });
     }
 
@@ -104,7 +109,7 @@ export function useUserSubmissions(targetUserId?: string) {
         impact_score: s.impact_score, qoi_score: s.qoi_score, final_rank: null,
         submitted_at: s.created_at || '', thumbnail_url: s.thumbnail_url || null,
         custom_title: s.video_title || null, source: 'featured',
-        is_hidden: hiddenSet.has(`featured:${s.id}`),
+        is_hidden: hiddenSet.has(`featured:${s.id}`), qoi_hidden: qoiHiddenSet.has(`featured:${s.id}`),
       });
     }
 
@@ -126,7 +131,7 @@ export function useUserSubmissions(targetUserId?: string) {
         submitted_at: submittedAt || b.created_at, thumbnail_url: thumbUrl || null,
         custom_title: b.theme_song_name ? `Battle: ${b.theme_song_name}` : 'Battle',
         source: 'battle',
-        is_hidden: hiddenSet.has(`battle:${b.id}`),
+        is_hidden: hiddenSet.has(`battle:${b.id}`), qoi_hidden: qoiHiddenSet.has(`battle:${b.id}`),
       });
     }
 
@@ -172,5 +177,15 @@ export function useUserSubmissions(targetUserId?: string) {
     await fetchSubmissions();
   };
 
-  return { submissions, loading, refetch: fetchSubmissions, toggleHidden };
+  const toggleQoiHidden = async (submission: UserSubmission) => {
+    if (!user?.id) return;
+    if (submission.qoi_hidden) {
+      await supabase.from('qoi_hidden_edits' as any).delete().eq('user_id', user.id).eq('source', submission.source).eq('source_id', submission.id);
+    } else {
+      await supabase.from('qoi_hidden_edits' as any).insert({ user_id: user.id, source: submission.source, source_id: submission.id });
+    }
+    await fetchSubmissions();
+  };
+
+  return { submissions, loading, refetch: fetchSubmissions, toggleHidden, toggleQoiHidden };
 }
