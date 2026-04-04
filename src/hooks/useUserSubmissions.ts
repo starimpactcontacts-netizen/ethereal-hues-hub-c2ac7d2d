@@ -177,5 +177,15 @@ export function useUserSubmissions(targetUserId?: string) {
     await fetchSubmissions();
   };
 
-  return { submissions, loading, refetch: fetchSubmissions, toggleHidden };
+  const toggleQoiHidden = async (submission: UserSubmission) => {
+    if (!user?.id) return;
+    if (submission.qoi_hidden) {
+      await supabase.from('qoi_hidden_edits' as any).delete().eq('user_id', user.id).eq('source', submission.source).eq('source_id', submission.id);
+    } else {
+      await supabase.from('qoi_hidden_edits' as any).insert({ user_id: user.id, source: submission.source, source_id: submission.id });
+    }
+    await fetchSubmissions();
+  };
+
+  return { submissions, loading, refetch: fetchSubmissions, toggleHidden, toggleQoiHidden };
 }
