@@ -19,6 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SiTiktok, SiInstagram, SiYoutube, SiX } from "@icons-pack/react-simple-icons";
 import ConnectButton from "@/components/loopgate/ConnectButton";
 import { Users } from "lucide-react";
+import StatsRadarChart from "@/components/loopgate/StatsRadarChart";
 // IndexEarnBadge removed — Index is NOT money
 import { useEquippedBadges } from "@/hooks/useEquippedBadges";
 import LinkTreePreview from "@/components/loopgate/LinkTreePreview";
@@ -466,31 +467,7 @@ export default function PublicProfilePage() {
         </div>
       </div>
 
-      {/* ─── STATS STRIP — always visible, not buried in About ─── */}
-      <div className="px-4 py-3 flex items-stretch gap-1.5 border-b border-border/30">
-        <div className="flex-1 text-center py-2 bg-foreground/[0.03] rounded-lg">
-          <p className={`font-display text-base uppercase leading-none ${leagueColors[league]?.split(' ')[0] || 'text-muted-foreground'}`}>
-            {league === 'elite' ? 'ELT' : league === 'pro' ? 'PRO' : 'OPN'}
-          </p>
-          <p className="text-[8px] text-muted-foreground/50 uppercase tracking-widest mt-0.5">League</p>
-        </div>
-        <div className="flex-1 text-center py-2 bg-foreground/[0.03] rounded-lg">
-          <p className={`font-display text-base leading-none ${editorClass.color}`}>{editorClass.letter}</p>
-          <p className="text-[8px] text-muted-foreground/50 uppercase tracking-widest mt-0.5">Class</p>
-        </div>
-        <div className="flex-1 text-center py-2 bg-foreground/[0.03] rounded-lg">
-          <p className="font-display text-base text-gold leading-none tabular-nums">{Number(profile.global_index_score || 0).toFixed(1)}</p>
-          <p className="text-[8px] text-muted-foreground/50 uppercase tracking-widest mt-0.5">Index</p>
-        </div>
-        <div className="flex-1 text-center py-2 bg-foreground/[0.03] rounded-lg">
-          <p className="font-display text-base leading-none tabular-nums">{realStats.winRate.toFixed(0)}%</p>
-          <p className="text-[8px] text-muted-foreground/50 uppercase tracking-widest mt-0.5">Wins</p>
-        </div>
-        <div className="flex-1 text-center py-2 bg-foreground/[0.03] rounded-lg">
-          <p className="font-display text-base leading-none tabular-nums">{realStats.totalEvents}</p>
-          <p className="text-[8px] text-muted-foreground/50 uppercase tracking-widest mt-0.5">Events</p>
-        </div>
-      </div>
+      {/* Stats strip removed — now in About tab as radar */}
 
       {/* ─── TABS ─── */}
       <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border/20">
@@ -579,6 +556,43 @@ export default function PublicProfilePage() {
         )
       ) : (
         <div className="px-4 py-5 space-y-5">
+          {/* Pentagon Radar Stats */}
+          <div className="bg-foreground/[0.03] border border-border/20 rounded-xl p-3">
+            <p className="text-[9px] text-muted-foreground/50 uppercase tracking-widest mb-1 text-center font-bold">Performance</p>
+            <StatsRadarChart
+              indexScore={profile.global_index_score || 0}
+              winRate={realStats.winRate}
+              totalEvents={realStats.totalEvents}
+              classLetter={editorClass.letter}
+              league={league}
+            />
+            {/* Stat values row below chart */}
+            <div className="flex items-center justify-between px-2 pt-1">
+              <div className="text-center">
+                <p className={`font-display text-sm leading-none ${leagueColors[league]?.split(' ')[0] || 'text-muted-foreground'}`}>
+                  {league === 'elite' ? 'ELT' : league === 'pro' ? 'PRO' : 'OPN'}
+                </p>
+                <p className="text-[7px] text-muted-foreground/40 uppercase tracking-widest mt-0.5">League</p>
+              </div>
+              <div className="text-center">
+                <p className={`font-display text-sm leading-none ${editorClass.color}`}>{editorClass.letter}</p>
+                <p className="text-[7px] text-muted-foreground/40 uppercase tracking-widest mt-0.5">Class</p>
+              </div>
+              <div className="text-center">
+                <p className="font-display text-sm text-gold leading-none tabular-nums">{Number(profile.global_index_score || 0).toFixed(1)}</p>
+                <p className="text-[7px] text-muted-foreground/40 uppercase tracking-widest mt-0.5">Index</p>
+              </div>
+              <div className="text-center">
+                <p className="font-display text-sm leading-none tabular-nums">{realStats.winRate.toFixed(0)}%</p>
+                <p className="text-[7px] text-muted-foreground/40 uppercase tracking-widest mt-0.5">Wins</p>
+              </div>
+              <div className="text-center">
+                <p className="font-display text-sm leading-none tabular-nums">{realStats.totalEvents}</p>
+                <p className="text-[7px] text-muted-foreground/40 uppercase tracking-widest mt-0.5">Events</p>
+              </div>
+            </div>
+          </div>
+
           {/* Earnings — only if shown */}
           {profile.show_earnings && (
             <div className="flex items-center gap-3 p-3 bg-foreground/[0.03] border border-border/20 rounded-lg">
