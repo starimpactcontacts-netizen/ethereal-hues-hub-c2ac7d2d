@@ -554,22 +554,20 @@ export default function HubPage() {
 
           {/* Quick Access — Rolls Royce Starlight dock */}
           <div className="relative mt-4 mb-3">
-            {/* ─── Edge legs from card fade ─── */}
-            <div className="pointer-events-none absolute inset-x-0 -top-1 h-[122px] z-0 overflow-hidden">
+            {/* ─── Edge legs — continuous with card background ─── */}
+            <div className="pointer-events-none absolute inset-x-0 -top-10 h-[140px] z-0 overflow-visible">
               <div
-                className="absolute left-4 top-0 h-full w-[44px]"
+                className="absolute left-4 top-0 h-full w-[36px]"
                 style={{
-                  background: 'linear-gradient(to bottom, hsl(var(--surface-1) / 0.9) 0%, hsl(var(--surface-1) / 0.72) 38%, hsl(var(--surface-1) / 0.28) 76%, transparent 100%)',
-                  clipPath: 'polygon(0 0, 100% 0, 78% 100%, 12% 100%)',
-                  filter: 'blur(4px)',
+                  background: 'linear-gradient(to bottom, hsl(var(--surface-1) / 0.8) 0%, hsl(var(--surface-1) / 0.5) 50%, hsl(var(--surface-1) / 0.15) 80%, transparent 100%)',
+                  filter: 'blur(6px)',
                 }}
               />
               <div
-                className="absolute right-4 top-0 h-full w-[44px]"
+                className="absolute right-4 top-0 h-full w-[36px]"
                 style={{
-                  background: 'linear-gradient(to bottom, hsl(var(--surface-1) / 0.9) 0%, hsl(var(--surface-1) / 0.72) 38%, hsl(var(--surface-1) / 0.28) 76%, transparent 100%)',
-                  clipPath: 'polygon(0 0, 100% 0, 88% 100%, 22% 100%)',
-                  filter: 'blur(4px)',
+                  background: 'linear-gradient(to bottom, hsl(var(--surface-1) / 0.8) 0%, hsl(var(--surface-1) / 0.5) 50%, hsl(var(--surface-1) / 0.15) 80%, transparent 100%)',
+                  filter: 'blur(6px)',
                 }}
               />
             </div>
