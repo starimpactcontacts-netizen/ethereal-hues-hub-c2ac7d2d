@@ -27,9 +27,10 @@ export default function LoopyChat() {
   const [showPulse, setShowPulse] = useState(true);
   const [view, setView] = useState<'menu' | 'chat' | 'history'>('menu');
   const [docked, setDocked] = useState(false);
-  const [dragY, setDragY] = useState(() => {
-    const saved = sessionStorage.getItem('loopy-y');
-    return saved ? Number(saved) : 0;
+  const [dragPos, setDragPos] = useState(() => {
+    const savedX = sessionStorage.getItem('loopy-x');
+    const savedY = sessionStorage.getItem('loopy-y');
+    return { x: savedX ? Number(savedX) : 0, y: savedY ? Number(savedY) : 0 };
   });
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
