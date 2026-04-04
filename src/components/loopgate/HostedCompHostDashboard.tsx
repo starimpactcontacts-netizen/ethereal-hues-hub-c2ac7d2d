@@ -326,6 +326,35 @@ export default function HostedCompHostDashboard({
             <span className="text-amber-400">{pendingCount} pending</span>
           </div>
         </div>
+        {/* Start Competition Button (Lobby Mode) */}
+        {isLobby && (
+          <div className="mb-3 p-3 bg-surface-1 border border-amber-500/20 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <Users className="w-4 h-4 text-amber-400" />
+              <span className="text-sm font-bold text-foreground">{participantCount} editor{participantCount !== 1 ? 's' : ''} in lobby</span>
+            </div>
+            <button
+              onClick={handleStartCompetition}
+              disabled={!canStart || isStarting}
+              className="w-full py-3 rounded-xl font-display text-sm uppercase tracking-[0.12em] flex items-center justify-center gap-2 transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold hover:from-emerald-400 hover:to-emerald-500"
+              style={{ boxShadow: "0 2px 16px rgba(16,185,129,0.3)" }}
+            >
+              {isStarting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  <Play className="w-4 h-4" />
+                  {canStart ? 'Start Competition' : `Need ${2 - participantCount} more editor${2 - participantCount !== 1 ? 's' : ''}`}
+                </>
+              )}
+            </button>
+            {canStart && (
+              <p className="text-[10px] text-muted-foreground text-center mt-1.5">
+                This will open submissions for 24 hours
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-2">
