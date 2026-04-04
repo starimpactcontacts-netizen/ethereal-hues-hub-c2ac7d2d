@@ -7,7 +7,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProposeTournament } from "@/hooks/useSanctionedTournaments";
-import { useHostedCompetitions } from "@/hooks/useHostedCompetitions";
+
 import { useCrewMembership } from "@/hooks/useCrewMembership";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,7 +32,7 @@ export default function HostTournamentPage() {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const { proposeTournament, submitting: sanctionedSubmitting } = useProposeTournament();
-  const { proposeCompetition } = useHostedCompetitions();
+  const proposeCompetition = async (_data: any) => { toast.info("Competition system rebuilding"); return null; };
 
   const isMonetize = searchParams.get("monetize") === "true";
   const [mode, setMode] = useState<"sanctioned" | "monetized">(isMonetize ? "monetized" : "sanctioned");

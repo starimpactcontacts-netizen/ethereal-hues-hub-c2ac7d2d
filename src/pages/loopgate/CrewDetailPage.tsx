@@ -22,7 +22,7 @@ import ChannelChatView from "@/components/loopgate/ChannelChatView";
 import ChannelMembersList from "@/components/loopgate/ChannelMembersList";
 import ChannelSettingsPage from "@/components/loopgate/ChannelSettingsPage";
 import CrewLevelBadge from "@/components/loopgate/CrewLevelBadge";
-import HostEarningsDashboard from "@/components/loopgate/HostEarningsDashboard";
+
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -592,11 +592,7 @@ export default function CrewDetailPage() {
       {isOwner && crewId && <TournamentEarnings crewId={crewId} />}
       
       {/* Full Earnings Dashboard (expandable) */}
-      {isOwner && crewId && showEarnings && (
-        <div className="mx-3 mb-2">
-          <HostEarningsDashboard crewId={crewId} />
-        </div>
-      )}
+      {/* Earnings dashboard placeholder */}
       {isOwner && crewId && (
         <button
           onClick={() => setShowEarnings(!showEarnings)}

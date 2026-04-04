@@ -76,8 +76,7 @@ const FAQPage = lazy(() => import("./pages/FAQPage"));
 const StartPage = lazy(() => import("./pages/StartPage"));
 const MessagesPage = lazy(() => import("./pages/loopgate/MessagesPage"));
 const DirectMessagePage = lazy(() => import("./pages/loopgate/DirectMessagePage"));
-const HostedCompsPage = lazy(() => import("./pages/loopgate/HostedCompsPage"));
-const HostedCompDetailPage = lazy(() => import("./pages/loopgate/HostedCompDetailPage"));
+const CompetitionLobbyPage = lazy(() => import("./pages/loopgate/CompetitionLobbyPage"));
 const HostTournamentPage = lazy(() => import("./pages/loopgate/HostTournamentPage"));
 const ConnectionsPage = lazy(() => import("./pages/loopgate/ConnectionsPage"));
 const ArtistProfilePage = lazy(() => import("./pages/loopgate/ArtistProfilePage"));
@@ -312,8 +311,7 @@ export default function App() {
               <Route path="/fight/:fightId" element={<QuickFightPage />} />
               <Route path="/quick-fight" element={<QuickFightPage />} />
               <Route path="/judge-queue" element={<JudgeQueuePage />} />
-              <Route path="/hosted-comps" element={<HostedCompsPage />} />
-              <Route path="/hosted-comp/:id" element={<HostedCompDetailPage />} />
+              <Route path="/competition/:id" element={<CompetitionLobbyPage />} />
               <Route path="/judges" element={<JudgeHubPage />} />
               <Route path="/judges/leaderboard" element={<JudgeLeaderboardPage />} />
               <Route path="/judges/apply" element={<JudgeApplicationPage />} />

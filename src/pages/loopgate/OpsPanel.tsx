@@ -18,7 +18,7 @@ import JudgeManagementSection from "@/components/loopgate/JudgeManagementSection
 import JudgeApplicationsSection from "@/components/loopgate/JudgeApplicationsSection";
 import SanctionedTournamentManagement from "@/components/loopgate/SanctionedTournamentManagement";
 import LeagueApplicationsAdmin from "@/components/loopgate/LeagueApplicationsAdmin";
-import HostedCompManagement from "@/components/loopgate/HostedCompManagement";
+
 import { awardReviewXP } from "@/hooks/useJudgeXP";
 import BattleAdminPanel from "@/components/loopgate/BattleAdminPanel";
 import FeaturedArtistAdmin from "@/components/loopgate/FeaturedArtistAdmin";
@@ -2669,12 +2669,7 @@ export default function OpsPanel() {
           <SanctionedTournamentManagement onClose={() => {}} />
         </section>
 
-        {/* ═══════════════════════════════════════════════════════════════════
-            HOSTED COMPETITIONS MANAGEMENT
-        ═══════════════════════════════════════════════════════════════════ */}
-        <section className="bg-card border border-cyan-500/30 rounded-lg p-4">
-          <HostedCompManagement />
-        </section>
+        {/* Competitions management - TODO: rebuild with new system */}
 
         {/* Submissions & Judging */}
         <section>

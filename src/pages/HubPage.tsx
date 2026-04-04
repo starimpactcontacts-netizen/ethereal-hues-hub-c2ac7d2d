@@ -21,7 +21,7 @@ import { useTempProfile } from '@/hooks/useTempProfile';
 import { useGuestMode } from '@/hooks/useGuestMode';
 import { useSanctionedTournaments } from '@/hooks/useSanctionedTournaments';
 import { useBattles } from '@/hooks/useBattles';
-import { useHostedCompetitions } from '@/hooks/useHostedCompetitions';
+
 import { useLiveActivity, type LiveActivityItem } from '@/hooks/useLiveActivity';
 import { useFeaturedDrops } from '@/hooks/useFeaturedDrops';
 import FeaturedDropCard from '@/components/loopgate/FeaturedDropCard';
@@ -186,7 +186,7 @@ export default function HubPage() {
   const { stats } = useGlobalStats();
   const { rankings } = useRealRankings();
   const { tournaments: sanctionedTournaments } = useSanctionedTournaments();
-  const { competitions: hostedComps } = useHostedCompetitions();
+  const hostedComps: any[] = [];
   const activityStats = useUserActivityStats(user?.id);
   const { activeBattles } = useActiveBattles();
   const { liveDrops } = useFeaturedDrops();
