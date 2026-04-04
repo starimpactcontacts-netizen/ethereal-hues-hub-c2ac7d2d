@@ -1272,6 +1272,11 @@ export default function ArenaPage() {
 
           {/* search bar moved to top */}
 
+          {/* ═══ COMPETITIONS — TOP ═══ */}
+          {(activeFilter === "all") && (
+            <ArenaCompetitionsSection onCreateClick={() => navigate(profile ? '/competition/create' : '/start')} />
+          )}
+
           {/* ═══ MISSIONS CAROUSEL — GET PAID ═══ */}
           <ArenaMissionsCarousel />
 
