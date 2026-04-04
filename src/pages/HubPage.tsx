@@ -419,9 +419,11 @@ export default function HubPage() {
       <div className="relative z-10">
         {/* Subtle top gradient */}
         <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-surface-1/50 to-transparent pointer-events-none" />
-        {/* Side color blurs — cinematic depth on edges */}
-        <div className="absolute top-8 left-0 w-28 h-48 bg-gold/[0.06] rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-8 right-0 w-28 h-48 bg-gold/[0.06] rounded-full blur-3xl pointer-events-none" />
+        {/* Side color blurs — cinematic arch depth on edges */}
+        <div className="absolute top-0 -left-8 w-52 h-72 bg-gold/[0.08] rounded-full blur-[80px] pointer-events-none" />
+        <div className="absolute top-0 -right-8 w-52 h-72 bg-gold/[0.08] rounded-full blur-[80px] pointer-events-none" />
+        <div className="absolute top-16 left-4 w-40 h-56 bg-foreground/[0.04] rounded-full blur-[60px] pointer-events-none" />
+        <div className="absolute top-16 right-4 w-40 h-56 bg-foreground/[0.04] rounded-full blur-[60px] pointer-events-none" />
 
         <div className="relative px-4 pt-5 pb-0">
           <motion.div
