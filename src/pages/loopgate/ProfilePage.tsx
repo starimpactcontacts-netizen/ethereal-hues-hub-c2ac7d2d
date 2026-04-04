@@ -192,52 +192,103 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {/* Stats row — centered, tight */}
-          <div className="flex items-center justify-center gap-5 mb-3">
-            <Link to="/gqt" className="flex flex-col items-center">
-              <span className={`font-display text-base leading-none ${classColors[classLetter] || 'text-muted-foreground'}`}>{classLetter}</span>
-              <span className="text-[8px] uppercase tracking-wider text-muted-foreground mt-0.5">Class</span>
-            </Link>
-            <div className="flex flex-col items-center">
-              <span className="font-display text-base leading-none">{isAnyJudge ? judgeVideos.length : submissions.length}</span>
-              <span className="text-[8px] uppercase tracking-wider text-muted-foreground mt-0.5">{isAnyJudge ? 'Videos' : 'Edits'}</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <span className="font-display text-base leading-none">#{userRank}</span>
-              <span className="text-[8px] uppercase tracking-wider text-muted-foreground mt-0.5">Rank</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <span className="font-display text-base leading-none">{Number(profile.global_index_score || 0).toFixed(1)}</span>
-              <span className="text-[8px] uppercase tracking-wider text-muted-foreground mt-0.5">Index</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <div className="flex items-center gap-0.5">
-                <span className="text-emerald-400 text-xs">$</span>
-                <span className="font-display text-base leading-none text-foreground">{(Math.max(0, ((profile as any)?.earnings_cents || 0) - ((profile as any)?.pending_withdrawal_cents || 0) - ((profile as any)?.withdrawn_cents || 0)) / 100).toFixed(2)}</span>
-                <IndexEarnBadge size="sm" hideDollar />
-              </div>
-              <span className="text-[8px] uppercase tracking-wider text-muted-foreground mt-0.5">Earn</span>
-            </div>
-          </div>
-
-          {/* Unit + XP compact */}
-          <div className="flex items-center justify-center gap-2 w-full max-w-sm mb-3">
-            {primaryCrew?.crew && (
-              <Link to={`/units/${primaryCrew.crew_id}`} className="flex items-center gap-1.5 px-2 py-1 bg-surface-1/50 border border-border/20 rounded-full hover:border-border/40 transition-colors">
-                <div className="w-4 h-4 rounded-full overflow-hidden bg-muted/30 flex items-center justify-center shrink-0">
-                  {primaryCrew.crew.avatar_url ? (
-                    <img src={primaryCrew.crew.avatar_url} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <Shield className="w-2 h-2 text-muted-foreground" />
-                  )}
+          {/* ═══ XP LEVEL BAR ═══ */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-sm mb-3"
+          >
+            <div className="relative bg-surface-1/60 border border-border/30 rounded-xl p-3 overflow-hidden">
+              {/* Subtle glow behind bar */}
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 via-transparent to-gold/5 pointer-events-none" />
+              
+              <div className="relative flex items-center gap-3">
+                {/* Level badge */}
+                <div className="relative flex-shrink-0">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-purple-600/10 border border-purple-500/30 flex items-center justify-center">
+                    <span className="font-display text-lg font-bold text-purple-300">{level}</span>
+                  </div>
+                  <Zap className="absolute -top-1 -right-1 w-3.5 h-3.5 text-purple-400 drop-shadow-[0_0_4px_rgba(168,85,247,0.6)]" />
                 </div>
-                <span className="text-[10px] font-medium truncate max-w-[80px]">{primaryCrew.crew.name}</span>
-              </Link>
-            )}
-            <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground">
-              <Zap className="w-2.5 h-2.5 text-purple-400" />
-              <span className="tabular-nums">Lv {level} · {xp} XP</span>
+                
+                {/* XP bar + info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] font-semibold text-foreground/80">Level {level}</span>
+                    <span className="text-[9px] text-muted-foreground tabular-nums">{xp.toLocaleString()} XP</span>
+                  </div>
+                  <XPProgressBar xp={xp} level={level} showNumbers={false} size="md" />
+                </div>
+              </div>
+
+              {/* Unit badge inline */}
+              {primaryCrew?.crew && (
+                <Link to={`/units/${primaryCrew.crew_id}`} className="relative mt-2 flex items-center gap-1.5 px-2 py-1 bg-surface-1/50 border border-border/20 rounded-full hover:border-border/40 transition-colors w-fit">
+                  <div className="w-4 h-4 rounded-full overflow-hidden bg-muted/30 flex items-center justify-center shrink-0">
+                    {primaryCrew.crew.avatar_url ? (
+                      <img src={primaryCrew.crew.avatar_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <Shield className="w-2 h-2 text-muted-foreground" />
+                    )}
+                  </div>
+                  <span className="text-[10px] font-medium truncate max-w-[80px]">{primaryCrew.crew.name}</span>
+                </Link>
+              )}
             </div>
+          </motion.div>
+
+          {/* ═══ STATS GRID — gaming card style ═══ */}
+          <div className="w-full max-w-sm grid grid-cols-5 gap-1.5 mb-3">
+            <Link to="/gqt" className="group">
+              <motion.div 
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 }}
+                className="bg-surface-1/60 border border-border/30 rounded-lg p-2 text-center group-hover:border-border/50 transition-colors"
+              >
+                <span className={`font-display text-lg font-bold leading-none block ${classColors[classLetter] || 'text-muted-foreground'}`}>{classLetter}</span>
+                <span className="text-[7px] uppercase tracking-widest text-muted-foreground mt-1 block font-mono">Class</span>
+              </motion.div>
+            </Link>
+            <motion.div 
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-surface-1/60 border border-border/30 rounded-lg p-2 text-center"
+            >
+              <span className="font-display text-lg font-bold leading-none block">{isAnyJudge ? judgeVideos.length : submissions.length}</span>
+              <span className="text-[7px] uppercase tracking-widest text-muted-foreground mt-1 block font-mono">{isAnyJudge ? 'Vids' : 'Edits'}</span>
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="bg-surface-1/60 border border-border/30 rounded-lg p-2 text-center"
+            >
+              <span className="font-display text-lg font-bold leading-none block text-gold">#{userRank}</span>
+              <span className="text-[7px] uppercase tracking-widest text-muted-foreground mt-1 block font-mono">Rank</span>
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-surface-1/60 border border-border/30 rounded-lg p-2 text-center"
+            >
+              <span className="font-display text-lg font-bold leading-none block">{Number(profile.global_index_score || 0).toFixed(1)}</span>
+              <span className="text-[7px] uppercase tracking-widest text-muted-foreground mt-1 block font-mono">Index</span>
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              className="bg-surface-1/60 border border-border/30 rounded-lg p-2 text-center"
+            >
+              <div className="flex items-center justify-center gap-0.5">
+                <span className="text-emerald-400 text-xs">$</span>
+                <span className="font-display text-lg font-bold leading-none">{(Math.max(0, ((profile as any)?.earnings_cents || 0) - ((profile as any)?.pending_withdrawal_cents || 0) - ((profile as any)?.withdrawn_cents || 0)) / 100).toFixed(0)}</span>
+              </div>
+              <span className="text-[7px] uppercase tracking-widest text-muted-foreground mt-1 block font-mono">Earn</span>
+            </motion.div>
           </div>
 
           {/* Quick nav — tiny circle icons */}
