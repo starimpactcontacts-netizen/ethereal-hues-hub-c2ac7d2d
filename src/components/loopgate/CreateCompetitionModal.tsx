@@ -58,8 +58,8 @@ export default function CreateCompetitionModal({ isOpen, onClose, onSuccess }: P
           scoring_mode: scoringMode,
           max_participants: Math.min(maxParticipants, 100),
           cover_image_url: coverUrl.trim() || null,
-          submission_deadline: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(),
-          status: "live",
+          submission_deadline: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          status: "lobby",
           slug,
           format: "battle_royale",
         } as any)
