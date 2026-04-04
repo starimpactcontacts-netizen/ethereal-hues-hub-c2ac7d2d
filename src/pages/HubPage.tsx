@@ -554,35 +554,38 @@ export default function HubPage() {
 
           {/* Quick Access — Rolls Royce Starlight dock */}
           <div className="relative mt-4 mb-3">
-            {/* ─── Bow arch — sharp edges + thick blur arch ─── */}
-            <div className="pointer-events-none absolute inset-x-0 -top-24 h-[220px] z-0 overflow-visible">
-              {/* Left sharp edge */}
-              <div className="absolute left-0 top-0 h-full w-[3px] bg-gradient-to-b from-white/20 via-white/8 to-transparent" />
-              {/* Left thick blur */}
-              <div className="absolute left-0 top-0 h-full w-[110px]"
+            {/* ─── Bow arch — softer lines, stronger inward blur ─── */}
+            <div className="pointer-events-none absolute inset-x-0 -top-20 h-[190px] z-0 overflow-visible">
+              {/* Left edge line */}
+              <div className="absolute left-0 top-0 h-full w-px bg-gradient-to-b from-foreground/10 via-foreground/5 to-transparent" />
+              {/* Left inward blur */}
+              <div
+                className="absolute left-0 top-0 h-full w-[132px]"
                 style={{
-                  background: 'linear-gradient(to right, hsl(var(--surface-1) / 0.9) 0%, hsl(var(--surface-1) / 0.5) 35%, hsl(var(--surface-1) / 0.15) 65%, transparent 100%)',
-                  maskImage: 'linear-gradient(to bottom, black 0%, black 50%, transparent 100%)',
-                  WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 50%, transparent 100%)',
-                  filter: 'blur(14px)',
+                  background: 'linear-gradient(to right, hsl(var(--surface-1) / 0.42) 0%, hsl(var(--surface-1) / 0.18) 42%, transparent 100%)',
+                  maskImage: 'radial-gradient(140% 100% at 0% 0%, black 0%, black 52%, transparent 100%)',
+                  WebkitMaskImage: 'radial-gradient(140% 100% at 0% 0%, black 0%, black 52%, transparent 100%)',
+                  filter: 'blur(24px)',
                 }}
               />
-              {/* Right sharp edge */}
-              <div className="absolute right-0 top-0 h-full w-[3px] bg-gradient-to-b from-white/20 via-white/8 to-transparent" />
-              {/* Right thick blur */}
-              <div className="absolute right-0 top-0 h-full w-[110px]"
+              {/* Right edge line */}
+              <div className="absolute right-0 top-0 h-full w-px bg-gradient-to-b from-foreground/10 via-foreground/5 to-transparent" />
+              {/* Right inward blur */}
+              <div
+                className="absolute right-0 top-0 h-full w-[132px]"
                 style={{
-                  background: 'linear-gradient(to left, hsl(var(--surface-1) / 0.9) 0%, hsl(var(--surface-1) / 0.5) 35%, hsl(var(--surface-1) / 0.15) 65%, transparent 100%)',
-                  maskImage: 'linear-gradient(to bottom, black 0%, black 50%, transparent 100%)',
-                  WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 50%, transparent 100%)',
-                  filter: 'blur(14px)',
+                  background: 'linear-gradient(to left, hsl(var(--surface-1) / 0.42) 0%, hsl(var(--surface-1) / 0.18) 42%, transparent 100%)',
+                  maskImage: 'radial-gradient(140% 100% at 100% 0%, black 0%, black 52%, transparent 100%)',
+                  WebkitMaskImage: 'radial-gradient(140% 100% at 100% 0%, black 0%, black 52%, transparent 100%)',
+                  filter: 'blur(24px)',
                 }}
               />
-              {/* Bottom arch connector */}
-              <div className="absolute bottom-[30%] left-[80px] right-[80px] h-[60px]"
+              {/* Arch body */}
+              <div
+                className="absolute left-[56px] right-[56px] top-[22px] h-[112px]"
                 style={{
-                  background: 'radial-gradient(ellipse 100% 100% at 50% 100%, hsl(var(--surface-1) / 0.3) 0%, transparent 70%)',
-                  filter: 'blur(18px)',
+                  background: 'radial-gradient(ellipse 100% 88% at 50% 0%, hsl(var(--surface-1) / 0.16) 0%, hsl(var(--surface-1) / 0.08) 38%, transparent 72%)',
+                  filter: 'blur(28px)',
                 }}
               />
             </div>
