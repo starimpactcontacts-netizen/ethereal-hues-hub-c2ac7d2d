@@ -94,6 +94,7 @@ const PayoutsPage = lazy(() => import("./pages/loopgate/PayoutsPage"));
 const SoloArenaPage = lazy(() => import("./pages/loopgate/SoloArenaPage"));
 const MissionLobbyPage = lazy(() => import("./pages/loopgate/MissionLobbyPage"));
 const LoopyPage = lazy(() => import("./pages/loopgate/LoopyPage"));
+const CreateCompetitionPage = lazy(() => import("./pages/loopgate/CreateCompetitionPage"));
 const LoopyRatePage = lazy(() => import("./pages/loopgate/LoopyRatePage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -305,6 +306,7 @@ export default function App() {
               <Route path="/index" element={<IndexPage />} />
               <Route path="/arenas" element={<ArenasPage />} />
               <Route path="/arena" element={<ArenaPage />} />
+              <Route path="/competition/create" element={<CreateCompetitionPage />} />
               <Route path="/sanctioned/:id" element={<SanctionedTournamentPage />} />
               <Route path="/battle/:battleId" element={<BattleDetailPage />} />
               <Route path="/fight/:fightId" element={<QuickFightPage />} />

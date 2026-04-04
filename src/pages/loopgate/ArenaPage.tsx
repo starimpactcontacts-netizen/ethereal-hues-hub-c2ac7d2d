@@ -36,7 +36,7 @@ import EmailNotificationSettings from "@/components/loopgate/EmailNotificationSe
 import LiveWinnersTicker from "@/components/loopgate/LiveWinnersTicker";
 import LivePayoutsCarousel from "@/components/loopgate/LivePayoutsCarousel";
 import ArenaCompetitionsSection from "@/components/loopgate/ArenaCompetitionsSection";
-import CreateCompetitionModal from "@/components/loopgate/CreateCompetitionModal";
+
 
 interface Event {
   id: string;
@@ -548,7 +548,7 @@ export default function ArenaPage() {
 
   const [showSoloMode, setShowSoloMode] = useState(() => searchParams.get('auto') === '1' && searchParams.get('mode') === 'solo');
   const [showCreateBattle, setShowCreateBattle] = useState(false);
-  const [showCreateComp, setShowCreateComp] = useState(false);
+  
   const [quickSearch, setQuickSearch] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const [selectedMode, setSelectedMode] = useState<'quick' | 'battle' | 'solo' | 'practice' | 'drop'>((searchParams.get('mode') as any) || 'drop');
@@ -1357,7 +1357,7 @@ export default function ArenaPage() {
 
           {/* ═══ COMPETITIONS ═══ */}
           {(activeFilter === "all") && (
-            <ArenaCompetitionsSection onCreateClick={() => profile ? setShowCreateComp(true) : navigate('/start')} />
+            <ArenaCompetitionsSection onCreateClick={() => navigate(profile ? '/competition/create' : '/start')} />
           )}
 
           {/* Quick 1v1s */}
@@ -1500,11 +1500,6 @@ export default function ArenaPage() {
         onSuccess={(battleId) => { setShowCreateBattle(false); navigate(`/battle/${battleId}`); }}
       />
 
-      <CreateCompetitionModal
-        isOpen={showCreateComp}
-        onClose={() => setShowCreateComp(false)}
-        onSuccess={(compId) => { setShowCreateComp(false); }}
-      />
     </div>
   );
 }
