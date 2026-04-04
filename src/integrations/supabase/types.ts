@@ -3813,6 +3813,7 @@ export type Database = {
         Row: {
           approved_at: string | null
           approved_by: string | null
+          cash_prize_cents: number | null
           community_url: string | null
           cover_image_url: string | null
           cpm_rate_cents: number
@@ -3841,7 +3842,9 @@ export type Database = {
           premium_at: string | null
           premium_steps: Json | null
           prize_description: string | null
+          prize_distribution: Json | null
           rejection_reason: string | null
+          reward_type: string | null
           rules: string | null
           scoring_mode: string | null
           slug: string | null
@@ -3856,6 +3859,7 @@ export type Database = {
         Insert: {
           approved_at?: string | null
           approved_by?: string | null
+          cash_prize_cents?: number | null
           community_url?: string | null
           cover_image_url?: string | null
           cpm_rate_cents?: number
@@ -3884,7 +3888,9 @@ export type Database = {
           premium_at?: string | null
           premium_steps?: Json | null
           prize_description?: string | null
+          prize_distribution?: Json | null
           rejection_reason?: string | null
+          reward_type?: string | null
           rules?: string | null
           scoring_mode?: string | null
           slug?: string | null
@@ -3899,6 +3905,7 @@ export type Database = {
         Update: {
           approved_at?: string | null
           approved_by?: string | null
+          cash_prize_cents?: number | null
           community_url?: string | null
           cover_image_url?: string | null
           cpm_rate_cents?: number
@@ -3927,7 +3934,9 @@ export type Database = {
           premium_at?: string | null
           premium_steps?: Json | null
           prize_description?: string | null
+          prize_distribution?: Json | null
           rejection_reason?: string | null
+          reward_type?: string | null
           rules?: string | null
           scoring_mode?: string | null
           slug?: string | null
