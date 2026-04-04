@@ -548,7 +548,7 @@ export default function ArenaPage() {
 
   const [showSoloMode, setShowSoloMode] = useState(() => searchParams.get('auto') === '1' && searchParams.get('mode') === 'solo');
   const [showCreateBattle, setShowCreateBattle] = useState(false);
-  const [showCreateComp, setShowCreateComp] = useState(false);
+  
   const [quickSearch, setQuickSearch] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const [selectedMode, setSelectedMode] = useState<'quick' | 'battle' | 'solo' | 'practice' | 'drop'>((searchParams.get('mode') as any) || 'drop');
