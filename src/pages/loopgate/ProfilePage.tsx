@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Camera, Zap, Lock, ArrowRight, Share2, BarChart3, Grid3X3, ChevronRight, Shield, Gavel, Video, Users, Link2, Package, Settings } from "lucide-react";
+import { Camera, Lock, ArrowRight, Share2, BarChart3, Grid3X3, Shield, Gavel, Video, Users, Link2, Package, Settings, Sparkles, ShoppingBag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTempProfile } from "@/hooks/useTempProfile";
-import { useRealRankings, useActiveSession } from "@/hooks/useRealData";
-import { useXP } from "@/hooks/useXP";
+import { useActiveSession } from "@/hooks/useRealData";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useUserSubmissions } from "@/hooks/useUserSubmissions";
 import { useJudgeRatingVideos } from "@/hooks/useJudgeRatingVideos";
@@ -16,16 +15,16 @@ import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import FoundingBadge from "@/components/loopgate/FoundingBadge";
 import AvatarUploadModal from "@/components/loopgate/AvatarUploadModal";
 import ActivityStatusSelector from "@/components/loopgate/ActivityStatusSelector";
-import XPProgressBar from "@/components/loopgate/XPProgressBar";
+
 import SubmissionGrid from "@/components/loopgate/SubmissionGrid";
 import ArchetypeBadge from "@/components/loopgate/ArchetypeBadge";
 import { SoftwareBadges } from "@/components/loopgate/SoftwareBadge";
 import MyJudgeReviews from "@/components/loopgate/MyJudgeReviews";
 import MyRatingVideos from "@/components/loopgate/MyRatingVideos";
-import { getRankFromScore } from "@/data/gqtConfig";
+
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import IndexEarnBadge from "@/components/loopgate/IndexEarnBadge";
+
 import { useEquippedBadges } from "@/hooks/useEquippedBadges";
 import LinkTreeEditor from "@/components/loopgate/LinkTreeEditor";
 
@@ -34,13 +33,11 @@ export default function ProfilePage() {
   const { profile, refreshProfile, loading: authLoading } = useAuth();
   const { profile: tempProfile, isTemp, clearProfile: clearTempProfile } = useTempProfile();
   const { isGuest, clearGuest } = useGuestMode();
-  const { rankings } = useRealRankings();
-  const { xp, level } = useXP();
   const { submissions } = useUserSubmissions();
   const { videos: judgeVideos } = useJudgeRatingVideos();
   const { primaryCrew } = useCrewMembership(profile?.id);
   const { isAnyJudge } = useUserRoles(profile?.id);
-  const { hasEquippedOG } = useEquippedBadges(profile?.id);
+  const { badges, hasEquippedOG } = useEquippedBadges(profile?.id);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'edits' | 'reviews' | 'videos' | 'links'>('edits');
 
@@ -113,18 +110,6 @@ export default function ProfilePage() {
     );
   }
 
-  const userRanking = rankings.find(r => r.id === profile.id);
-  const userRank = userRanking?.rank || (rankings.length > 0 ? rankings.length + 1 : '—');
-  const bestGQT = (profile as any).best_gatekeeper_qoi;
-  const hasTakenGQT = bestGQT && bestGQT > 0;
-  const rankConfig = hasTakenGQT ? getRankFromScore(bestGQT) : null;
-  const classLetter = rankConfig?.rank || (level >= 2 ? 'D' : 'F');
-
-  const classColors: Record<string, string> = {
-    'S++': 'text-gold', 'S+': 'text-gold', 'S': 'text-amber-400',
-    'A': 'text-emerald-400', 'B': 'text-blue-400', 'C': 'text-slate-300',
-    'D': 'text-orange-400', 'F': 'text-muted-foreground',
-  };
 
   const quickNav = [
     { to: "/profile/stats", icon: BarChart3, label: "Stats" },
@@ -192,104 +177,56 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {/* ═══ XP LEVEL BAR ═══ */}
+          {/* ═══ CUSTOMIZATION SHOWCASE ═══ */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="w-full max-w-sm mb-3"
           >
-            <div className="relative bg-surface-1/60 border border-border/30 rounded-xl p-3 overflow-hidden">
-              {/* Subtle glow behind bar */}
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 via-transparent to-gold/5 pointer-events-none" />
-              
-              <div className="relative flex items-center gap-3">
-                {/* Level badge */}
-                <div className="relative flex-shrink-0">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-purple-600/10 border border-purple-500/30 flex items-center justify-center">
-                    <span className="font-display text-lg font-bold text-purple-300">{level}</span>
-                  </div>
-                  <Zap className="absolute -top-1 -right-1 w-3.5 h-3.5 text-purple-400 drop-shadow-[0_0_4px_rgba(168,85,247,0.6)]" />
+            {/* Equipped items display */}
+            {badges.length > 0 ? (
+              <div className="bg-surface-1/60 border border-border/30 rounded-xl p-3 overflow-hidden">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-mono">Equipped</span>
+                  <Link to="/inventory" className="text-[9px] text-muted-foreground hover:text-foreground transition-colors">Edit →</Link>
                 </div>
-                
-                {/* XP bar + info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] font-semibold text-foreground/80">Level {level}</span>
-                    <span className="text-[9px] text-muted-foreground tabular-nums">{xp.toLocaleString()} XP</span>
-                  </div>
-                  <XPProgressBar xp={xp} level={level} showNumbers={false} size="md" />
+                <div className="flex items-center gap-2 flex-wrap">
+                  {badges.map((badge) => (
+                    <div key={badge.id} className="flex items-center gap-1.5 px-2.5 py-1.5 bg-surface-1/80 border border-border/40 rounded-full">
+                      {badge.image_url ? (
+                        <img src={badge.image_url} alt={badge.item_name} className="w-4 h-4 rounded-sm object-cover" />
+                      ) : (
+                        <Sparkles className="w-3.5 h-3.5 text-gold" />
+                      )}
+                      <span className="text-[10px] font-medium">{badge.item_name}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
+            ) : (
+              <Link to="/shop" className="block">
+                <div className="bg-surface-1/60 border border-border/30 rounded-xl p-4 text-center hover:border-border/50 transition-colors group">
+                  <ShoppingBag className="w-5 h-5 text-muted-foreground/50 mx-auto mb-2 group-hover:text-gold transition-colors" />
+                  <p className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors">Customize your profile</p>
+                  <p className="text-[9px] text-muted-foreground/50 mt-0.5">Frames, badges, themes & more</p>
+                </div>
+              </Link>
+            )}
 
-              {/* Unit badge inline */}
-              {primaryCrew?.crew && (
-                <Link to={`/units/${primaryCrew.crew_id}`} className="relative mt-2 flex items-center gap-1.5 px-2 py-1 bg-surface-1/50 border border-border/20 rounded-full hover:border-border/40 transition-colors w-fit">
-                  <div className="w-4 h-4 rounded-full overflow-hidden bg-muted/30 flex items-center justify-center shrink-0">
-                    {primaryCrew.crew.avatar_url ? (
-                      <img src={primaryCrew.crew.avatar_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <Shield className="w-2 h-2 text-muted-foreground" />
-                    )}
-                  </div>
-                  <span className="text-[10px] font-medium truncate max-w-[80px]">{primaryCrew.crew.name}</span>
-                </Link>
-              )}
-            </div>
+            {/* Unit badge */}
+            {primaryCrew?.crew && (
+              <Link to={`/units/${primaryCrew.crew_id}`} className="mt-2 flex items-center gap-1.5 px-2 py-1 bg-surface-1/50 border border-border/20 rounded-full hover:border-border/40 transition-colors w-fit">
+                <div className="w-4 h-4 rounded-full overflow-hidden bg-muted/30 flex items-center justify-center shrink-0">
+                  {primaryCrew.crew.avatar_url ? (
+                    <img src={primaryCrew.crew.avatar_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <Shield className="w-2 h-2 text-muted-foreground" />
+                  )}
+                </div>
+                <span className="text-[10px] font-medium truncate max-w-[80px]">{primaryCrew.crew.name}</span>
+              </Link>
+            )}
           </motion.div>
-
-          {/* ═══ STATS GRID — gaming card style ═══ */}
-          <div className="w-full max-w-sm grid grid-cols-5 gap-1.5 mb-3">
-            <Link to="/gqt" className="group">
-              <motion.div 
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 }}
-                className="bg-surface-1/60 border border-border/30 rounded-lg p-2 text-center group-hover:border-border/50 transition-colors"
-              >
-                <span className={`font-display text-lg font-bold leading-none block ${classColors[classLetter] || 'text-muted-foreground'}`}>{classLetter}</span>
-                <span className="text-[7px] uppercase tracking-widest text-muted-foreground mt-1 block font-mono">Class</span>
-              </motion.div>
-            </Link>
-            <motion.div 
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-surface-1/60 border border-border/30 rounded-lg p-2 text-center"
-            >
-              <span className="font-display text-lg font-bold leading-none block">{isAnyJudge ? judgeVideos.length : submissions.length}</span>
-              <span className="text-[7px] uppercase tracking-widest text-muted-foreground mt-1 block font-mono">{isAnyJudge ? 'Vids' : 'Edits'}</span>
-            </motion.div>
-            <motion.div 
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-              className="bg-surface-1/60 border border-border/30 rounded-lg p-2 text-center"
-            >
-              <span className="font-display text-lg font-bold leading-none block text-gold">#{userRank}</span>
-              <span className="text-[7px] uppercase tracking-widest text-muted-foreground mt-1 block font-mono">Rank</span>
-            </motion.div>
-            <motion.div 
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-surface-1/60 border border-border/30 rounded-lg p-2 text-center"
-            >
-              <span className="font-display text-lg font-bold leading-none block">{Number(profile.global_index_score || 0).toFixed(1)}</span>
-              <span className="text-[7px] uppercase tracking-widest text-muted-foreground mt-1 block font-mono">Index</span>
-            </motion.div>
-            <motion.div 
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25 }}
-              className="bg-surface-1/60 border border-border/30 rounded-lg p-2 text-center"
-            >
-              <div className="flex items-center justify-center gap-0.5">
-                <span className="text-emerald-400 text-xs">$</span>
-                <span className="font-display text-lg font-bold leading-none">{(Math.max(0, ((profile as any)?.earnings_cents || 0) - ((profile as any)?.pending_withdrawal_cents || 0) - ((profile as any)?.withdrawn_cents || 0)) / 100).toFixed(0)}</span>
-              </div>
-              <span className="text-[7px] uppercase tracking-widest text-muted-foreground mt-1 block font-mono">Earn</span>
-            </motion.div>
-          </div>
 
           {/* Quick nav — tiny circle icons */}
           <div className="flex items-center gap-3 mb-3">
