@@ -554,12 +554,25 @@ export default function HubPage() {
 
           {/* Quick Access — Rolls Royce Starlight dock */}
           <div className="relative mt-4 mb-3">
-            {/* ─── Subtle corner legs from card fade ─── */}
-            <div className="pointer-events-none absolute -top-3 left-4 right-4 h-10 z-0"
-              style={{
-                background: 'radial-gradient(ellipse 100% 100% at 50% 0%, hsl(var(--surface-1) / 0.35) 0%, transparent 70%)',
-              }}
-            />
+            {/* ─── Edge legs from card fade ─── */}
+            <div className="pointer-events-none absolute inset-x-0 -top-1 h-[122px] z-0 overflow-hidden">
+              <div
+                className="absolute left-4 top-0 h-full w-[44px]"
+                style={{
+                  background: 'linear-gradient(to bottom, hsl(var(--surface-1) / 0.9) 0%, hsl(var(--surface-1) / 0.72) 38%, hsl(var(--surface-1) / 0.28) 76%, transparent 100%)',
+                  clipPath: 'polygon(0 0, 100% 0, 78% 100%, 12% 100%)',
+                  filter: 'blur(4px)',
+                }}
+              />
+              <div
+                className="absolute right-4 top-0 h-full w-[44px]"
+                style={{
+                  background: 'linear-gradient(to bottom, hsl(var(--surface-1) / 0.9) 0%, hsl(var(--surface-1) / 0.72) 38%, hsl(var(--surface-1) / 0.28) 76%, transparent 100%)',
+                  clipPath: 'polygon(0 0, 100% 0, 88% 100%, 22% 100%)',
+                  filter: 'blur(4px)',
+                }}
+              />
+            </div>
             {/* ─── BELT — horizontal band cutting through icons ─── */}
             <div className="absolute top-1/2 z-0 pointer-events-none" style={{ marginTop: '-8px', width: '100vw', left: '50%', transform: 'translateX(-50%) translateY(-50%)' }}>
               <div className="h-[18px] w-full" style={{
