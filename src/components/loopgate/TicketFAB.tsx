@@ -17,10 +17,10 @@ export default function TicketFAB() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="fixed left-4 bottom-[72px] z-40 w-10 h-10 rounded-full bg-card border border-border/50 shadow-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all active:scale-95"
+        className="fixed left-4 bottom-20 z-40 w-9 h-9 rounded-full bg-card/80 border border-border/40 shadow-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all active:scale-95 backdrop-blur-sm"
         title="Report bug or suggest"
       >
-        <Bug size={16} />
+        <Bug size={14} />
       </button>
       <SubmitTicketModal open={open} onOpenChange={setOpen} />
     </>
