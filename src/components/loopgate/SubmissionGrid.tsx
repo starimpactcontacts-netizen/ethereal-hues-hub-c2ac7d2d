@@ -238,6 +238,7 @@ export default function SubmissionGrid({ userId }: SubmissionGridProps) {
             onClose={() => setSelectedSubmission(null)}
             onThumbnailUpdated={refetch}
             onToggleHidden={toggleHidden}
+            onToggleQoiHidden={toggleQoiHidden}
           />
         )}
       </AnimatePresence>
