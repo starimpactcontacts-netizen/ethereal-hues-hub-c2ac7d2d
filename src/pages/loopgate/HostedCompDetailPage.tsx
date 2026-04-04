@@ -493,6 +493,8 @@ export default function HostedCompDetailPage() {
             judges={judges}
             onInviteJudges={() => setShowInviteJudges(true)}
             onRefresh={refetch}
+            competitionStatus={competition.status}
+            participantCount={participants?.length || competition.participant_count || 0}
           />
         )}
 
