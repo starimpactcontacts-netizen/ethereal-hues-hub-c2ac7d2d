@@ -10,7 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { formatDistanceToNow, isPast } from "date-fns";
-import { validatePlatformUrl, getPlatformUrlPlaceholder, type PlatformType } from "@/lib/urlValidation";
+import { validatePlatformUrl, getPlatformUrlPlaceholder } from "@/lib/urlValidation";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 
