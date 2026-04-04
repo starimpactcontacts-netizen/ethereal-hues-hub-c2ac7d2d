@@ -479,13 +479,38 @@ export default function CreateCompetitionPage() {
           </motion.div>
         )}
 
+        {/* Duration Selector (always visible) */}
+        {mode === "quick" && (
+          <div>
+            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <Calendar className="w-3 h-3" /> ⏱️ Duration
+            </label>
+            <div className="grid grid-cols-4 gap-1.5">
+              {DURATION_OPTIONS.map((opt) => (
+                <button
+                  key={opt.hours}
+                  onClick={() => setDurationHours(opt.hours)}
+                  className={`py-2.5 rounded-lg text-center transition-all border ${
+                    durationHours === opt.hours
+                      ? "bg-gold/10 border-gold/30 text-gold"
+                      : "bg-surface-1 border-border/30 text-muted-foreground hover:border-border/60"
+                  }`}
+                >
+                  <span className="text-[13px] font-bold block">{opt.label}</span>
+                  <span className="text-[8px] opacity-60">{opt.desc}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Quick mode defaults info */}
         {mode === "quick" && (
           <div className="bg-surface-1/50 border border-border/20 rounded-lg p-3">
             <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Quick Launch Defaults</span>
             <div className="flex flex-wrap gap-2">
               {[
-                "Open League", "Judge Scored", "100 Max Editors", "No Deadline"
+                "Open League", "Judge Scored", "100 Max Editors"
               ].map((d) => (
                 <span key={d} className="text-[9px] text-muted-foreground/60 bg-surface-2 px-2 py-0.5 rounded-full">{d}</span>
               ))}
