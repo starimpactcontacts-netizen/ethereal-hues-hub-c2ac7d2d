@@ -24,7 +24,7 @@ import MyRatingVideos from "@/components/loopgate/MyRatingVideos";
 
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import IndexEarnBadge from "@/components/loopgate/IndexEarnBadge";
+
 import { useEquippedBadges } from "@/hooks/useEquippedBadges";
 import LinkTreeEditor from "@/components/loopgate/LinkTreeEditor";
 
