@@ -71,7 +71,7 @@ export function useUserSubmissions(targetUserId?: string) {
         impact_score: s.impact_score, qoi_score: s.qoi_score, final_rank: s.final_rank,
         submitted_at: s.submitted_at, thumbnail_url: s.thumbnail_url || null,
         custom_title: (s as any).custom_title || null, source: 'standard',
-        is_hidden: hiddenSet.has(`standard:${s.id}`),
+        is_hidden: hiddenSet.has(`standard:${s.id}`), qoi_hidden: qoiHiddenSet.has(`standard:${s.id}`),
       });
     }
 
