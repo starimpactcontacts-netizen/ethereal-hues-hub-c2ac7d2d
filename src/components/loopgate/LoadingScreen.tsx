@@ -1,11 +1,11 @@
 import { motion } from 'framer-motion';
+import loopgateLogo from '@/assets/loopgate-logo.jpeg';
 
 interface LoadingScreenProps {
   minimal?: boolean;
 }
 
 export default function LoadingScreen({ minimal = false }: LoadingScreenProps) {
-  // Minimal inline loader for page transitions
   if (minimal) {
     return (
       <div className="flex-1 flex items-center justify-center min-h-[60vh]">
@@ -18,15 +18,12 @@ export default function LoadingScreen({ minimal = false }: LoadingScreenProps) {
     );
   }
 
-  // Full-screen loader - returns null since HTML splash handles initial load
-  // This is just a fallback for in-app transitions
   return (
-    <div className="fixed inset-0 bg-background flex items-center justify-center z-50">
-      <motion.div
-        className="w-8 h-8 border-2 border-border border-t-foreground rounded-full"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-      />
+    <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-50 gap-4">
+      <img src={loopgateLogo} alt="Loopgate" className="w-16 h-16" />
+      <span className="text-white text-2xl tracking-[0.15em] font-normal" style={{ fontFamily: "'Bebas Neue', 'Teko', sans-serif" }}>
+        LOOPGATE
+      </span>
     </div>
   );
 }
