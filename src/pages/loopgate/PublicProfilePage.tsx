@@ -226,14 +226,15 @@ export default function PublicProfilePage() {
           .eq("final_rank", 1),
       ]);
       
+      const battles = battlesData.data || [];
+      const battleCount = battles.length;
+      const battleWins = battles.filter(b => b.winner_id === uid).length;
+
       const submissionTotal = (eventParts.count || 0) + (roundParts.count || 0) + (hostedSubs.count || 0) + battleCount;
       setSubmissionCount(submissionTotal);
       
       // Calculate real event stats - include ALL event types
       const eventCount = (roundParts.count || 0) + (hostedSubs.count || 0) + (eventParts.count || 0) + (friendlyTournaments.count || 0) + (sanctionedTournaments.count || 0);
-      const battles = battlesData.data || [];
-      const battleCount = battles.length;
-      const battleWins = battles.filter(b => b.winner_id === uid).length;
       
       // Total wins from ALL sources
       const totalWins = battleWins + (hostedWins.count || 0) + (eventWins.count || 0) + (friendlyWins.count || 0) + (sanctionedWins.count || 0);
