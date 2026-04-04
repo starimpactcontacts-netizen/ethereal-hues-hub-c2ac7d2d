@@ -592,11 +592,7 @@ export default function CrewDetailPage() {
       {isOwner && crewId && <TournamentEarnings crewId={crewId} />}
       
       {/* Full Earnings Dashboard (expandable) */}
-      {isOwner && crewId && showEarnings && (
-        <div className="mx-3 mb-2">
-          <HostEarningsDashboard crewId={crewId} />
-        </div>
-      )}
+      {/* Earnings dashboard placeholder */}
       {isOwner && crewId && (
         <button
           onClick={() => setShowEarnings(!showEarnings)}

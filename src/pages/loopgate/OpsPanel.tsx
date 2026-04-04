@@ -2669,12 +2669,7 @@ export default function OpsPanel() {
           <SanctionedTournamentManagement onClose={() => {}} />
         </section>
 
-        {/* ═══════════════════════════════════════════════════════════════════
-            HOSTED COMPETITIONS MANAGEMENT
-        ═══════════════════════════════════════════════════════════════════ */}
-        <section className="bg-card border border-cyan-500/30 rounded-lg p-4">
-          <HostedCompManagement />
-        </section>
+        {/* Competitions management - TODO: rebuild with new system */}
 
         {/* Submissions & Judging */}
         <section>

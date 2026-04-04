@@ -186,7 +186,7 @@ export default function HubPage() {
   const { stats } = useGlobalStats();
   const { rankings } = useRealRankings();
   const { tournaments: sanctionedTournaments } = useSanctionedTournaments();
-  const { competitions: hostedComps } = useHostedCompetitions();
+  const hostedComps: any[] = [];
   const activityStats = useUserActivityStats(user?.id);
   const { activeBattles } = useActiveBattles();
   const { liveDrops } = useFeaturedDrops();
