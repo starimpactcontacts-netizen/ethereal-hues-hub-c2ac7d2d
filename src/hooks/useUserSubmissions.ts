@@ -95,7 +95,7 @@ export function useUserSubmissions(targetUserId?: string) {
         impact_score: null, qoi_score: s.qoi_score, final_rank: s.final_rank,
         submitted_at: s.submitted_at || s.joined_at, thumbnail_url: (s as any).thumbnail_url || null,
         custom_title: (s as any).custom_title || null, source: 'sanctioned',
-        is_hidden: hiddenSet.has(`sanctioned:${s.id}`),
+        is_hidden: hiddenSet.has(`sanctioned:${s.id}`), qoi_hidden: qoiHiddenSet.has(`sanctioned:${s.id}`),
       });
     }
 
