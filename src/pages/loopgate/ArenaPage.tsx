@@ -1083,7 +1083,7 @@ export default function ArenaPage() {
                   <option value="quick">⚡ Quick 1v1 — Auto · 3hr</option>
                   <option value="battle">⚔️ 1v1 Battle — Invite</option>
                   <option value="solo">👤 Solo Edit — Pick · Score</option>
-                  <option value="practice">🎯 Practice — No Stakes</option>
+                  
                 </select>
                 <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
               </div>
