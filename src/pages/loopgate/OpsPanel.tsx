@@ -3518,6 +3518,9 @@ export default function OpsPanel() {
         {/* ━━━ FEED MODERATION ━━━ */}
         <FeedModerationAdmin />
 
+        {/* ━━━ SUPPORT TICKETS ━━━ */}
+        <SupportTicketsAdmin />
+
         {/* ━━━ GROWTH ANALYTICS ━━━ */}
         <PlatformAnalyticsAdmin />
 
