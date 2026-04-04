@@ -35,6 +35,8 @@ import { toast } from "sonner";
 import EmailNotificationSettings from "@/components/loopgate/EmailNotificationSettings";
 import LiveWinnersTicker from "@/components/loopgate/LiveWinnersTicker";
 import LivePayoutsCarousel from "@/components/loopgate/LivePayoutsCarousel";
+import ArenaCompetitionsSection from "@/components/loopgate/ArenaCompetitionsSection";
+import CreateCompetitionModal from "@/components/loopgate/CreateCompetitionModal";
 
 interface Event {
   id: string;
@@ -546,6 +548,7 @@ export default function ArenaPage() {
 
   const [showSoloMode, setShowSoloMode] = useState(() => searchParams.get('auto') === '1' && searchParams.get('mode') === 'solo');
   const [showCreateBattle, setShowCreateBattle] = useState(false);
+  const [showCreateComp, setShowCreateComp] = useState(false);
   const [quickSearch, setQuickSearch] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const [selectedMode, setSelectedMode] = useState<'quick' | 'battle' | 'solo' | 'practice' | 'drop'>((searchParams.get('mode') as any) || 'drop');
@@ -1352,6 +1355,11 @@ export default function ArenaPage() {
             </motion.section>
           )}
 
+          {/* ═══ COMPETITIONS ═══ */}
+          {(activeFilter === "all") && (
+            <ArenaCompetitionsSection onCreateClick={() => profile ? setShowCreateComp(true) : navigate('/start')} />
+          )}
+
           {/* Quick 1v1s */}
           {(activeFilter === "all" || activeFilter === "quick") && (
             <motion.section key="quick-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -1490,6 +1498,12 @@ export default function ArenaPage() {
         isOpen={showCreateBattle}
         onClose={() => setShowCreateBattle(false)}
         onSuccess={(battleId) => { setShowCreateBattle(false); navigate(`/battle/${battleId}`); }}
+      />
+
+      <CreateCompetitionModal
+        isOpen={showCreateComp}
+        onClose={() => setShowCreateComp(false)}
+        onSuccess={(compId) => { setShowCreateComp(false); }}
       />
     </div>
   );
