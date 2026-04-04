@@ -509,44 +509,52 @@ function SubmissionDetailModal({
             </div>
           </div>
           
-          {/* QOI Scores */}
-          {submission.status === 'scored' && submission.qoi_score && (
-            <div className="grid grid-cols-4 gap-2 text-center p-3 bg-background">
-              <div>
-                <p className="text-lg font-bold">{submission.quality_score || '—'}</p>
+          {/* QOI Scores — always visible */}
+          {submission.qoi_score ? (
+            <div className="grid grid-cols-4 gap-0 text-center border border-border/30 overflow-hidden">
+              <div className="p-3 bg-background/50 border-r border-border/20">
+                <p className="text-lg font-bold tabular-nums">{submission.quality_score ?? '—'}</p>
                 <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Quality</p>
               </div>
-              <div>
-                <p className="text-lg font-bold">{submission.originality_score || '—'}</p>
+              <div className="p-3 bg-background/50 border-r border-border/20">
+                <p className="text-lg font-bold tabular-nums">{submission.originality_score ?? '—'}</p>
                 <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Original</p>
               </div>
-              <div>
-                <p className="text-lg font-bold">{submission.impact_score || '—'}</p>
+              <div className="p-3 bg-background/50 border-r border-border/20">
+                <p className="text-lg font-bold tabular-nums">{submission.impact_score ?? '—'}</p>
                 <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Impact</p>
               </div>
-              <div className="bg-gold/10 -my-1 py-1">
-                <p className="text-lg font-bold text-gold">{submission.qoi_score.toFixed(1)}</p>
-                <p className="text-[9px] text-gold uppercase tracking-wider">QOI</p>
+              <div className="p-3 bg-gold/10">
+                <p className="text-lg font-bold text-gold tabular-nums">{submission.qoi_score.toFixed(1)}</p>
+                <p className="text-[9px] text-gold uppercase tracking-wider font-semibold">QOI</p>
               </div>
+            </div>
+          ) : (
+            <div className="p-3 text-center bg-background/30 border border-border/20">
+              <p className="text-xs text-muted-foreground">Awaiting QOI score</p>
             </div>
           )}
           
           {/* Final Rank */}
           {submission.final_rank && (
-            <div className="text-center p-3 bg-gold/10 border border-gold/30">
-              <p className="text-2xl font-bold text-gold">#{submission.final_rank}</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Final Rank</p>
+            <div className="text-center p-4 bg-gold/5 border border-gold/30">
+              <p className="text-3xl font-display text-gold">#{submission.final_rank}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mt-1">Final Rank</p>
             </div>
           )}
           
-          {/* Visibility toggle */}
-          {userId && (
+          {/* QOI Visibility toggle — let users decide if QOI shows publicly */}
+          {userId && submission.qoi_score && (
             <button
-              onClick={() => { onToggleHidden(submission); onClose(); }}
-              className="flex items-center justify-center gap-2 w-full py-2 text-xs text-muted-foreground hover:text-foreground transition-colors border-t border-border/20"
+              onClick={() => { onToggleQoiHidden(submission); }}
+              className={`flex items-center justify-center gap-2 w-full py-2.5 text-xs transition-colors border-t border-border/20 ${
+                submission.qoi_hidden 
+                  ? 'text-gold hover:text-gold/80' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
             >
-              {submission.is_hidden ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-              {submission.is_hidden ? 'Show on public profile' : 'Hide from public profile'}
+              {submission.qoi_hidden ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+              {submission.qoi_hidden ? 'Show QOI on profile' : 'Hide QOI from profile'}
             </button>
           )}
           
@@ -555,7 +563,7 @@ function SubmissionDetailModal({
             href={submission.submission_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="block w-full py-2.5 text-center text-xs font-semibold uppercase tracking-wider text-foreground hover:text-gold transition-colors border-t border-border/20"
+            className="block w-full py-3 text-center text-xs font-semibold uppercase tracking-[0.15em] text-foreground hover:text-gold transition-colors border-t border-border/20"
           >
             View Submission →
           </a>
