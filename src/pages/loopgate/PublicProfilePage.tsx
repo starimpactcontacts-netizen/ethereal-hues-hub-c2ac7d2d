@@ -347,106 +347,88 @@ export default function PublicProfilePage() {
  
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Compact Hero Header */}
+      {/* ─── HERO HEADER ─── */}
       <div className="relative overflow-hidden">
-         {/* Dynamic background based on user settings */}
-         {hasBgImage ? (
-           <>
-             <div 
-               className="absolute inset-0 bg-cover bg-center"
-               style={{ backgroundImage: `url(${profile.profile_bg_image_url})` }}
-             />
-             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/70 to-background" />
-           </>
-         ) : (
-           <>
-             <div className={`absolute inset-0 bg-gradient-to-b ${bgColorGradients[selectedBgColor] || bgColorGradients.gold}`} />
-             <div 
-               className="absolute inset-0"
-               style={{ 
-                 background: `radial-gradient(ellipse at top, ${bgAccentColors[selectedBgColor] || bgAccentColors.gold}, transparent 60%)` 
-               }}
-             />
-           </>
-         )}
-        
-        {/* Decorative lines */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
-        
+        {/* Background */}
+        {hasBgImage ? (
+          <>
+            <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${profile.profile_bg_image_url})` }} />
+            <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/80 to-background" />
+          </>
+        ) : (
+          <div className="absolute inset-0" style={{
+            background: `radial-gradient(ellipse at 50% 0%, ${bgAccentColors[selectedBgColor] || bgAccentColors.gold} 0%, transparent 50%)`
+          }} />
+        )}
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border/40 to-transparent" />
+
         <div className="relative z-10">
-          {/* Top Bar - Clean */}
-          <div className="px-4 pt-3 pb-1 flex items-center justify-between">
+          {/* Top bar */}
+          <div className="px-4 pt-3 pb-0 flex items-center justify-between">
             <button onClick={() => navigate(-1)} className="p-1.5 -ml-1.5">
               <ArrowLeft size={18} className="text-muted-foreground" />
             </button>
-            <div className="w-8" /> {/* Spacer */}
-            <button 
-              onClick={handleShare}
-              className="p-1.5 -mr-1.5 text-muted-foreground hover:text-white"
-            >
+            <button onClick={handleShare} className="p-1.5 -mr-1.5 text-muted-foreground hover:text-foreground transition-colors">
               <Share2 size={16} />
             </button>
           </div>
 
-          {/* Profile Info */}
-          <div className="px-4 pt-6 pb-5 flex flex-col items-center text-center">
-            {/* Avatar — oversized with accent ring */}
-            <div className="mb-5 relative">
-              <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-gold/40 via-transparent to-gold/20 blur-sm" />
-              <Avatar className="relative w-28 h-28 border-[3px] border-foreground/15 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+          {/* Profile core */}
+          <div className="px-5 pt-4 pb-5 flex flex-col items-center text-center">
+            {/* Avatar */}
+            <div className="mb-3 relative">
+              <div className="absolute -inset-0.5 rounded-full bg-gradient-to-b from-gold/30 to-transparent opacity-60" />
+              <Avatar className="relative w-24 h-24 border-2 border-foreground/10">
                 <AvatarImage src={profile.avatar_url || undefined} alt={profile.username} className="object-cover" />
-                <AvatarFallback className="bg-surface-1 text-muted-foreground text-3xl font-display">
+                <AvatarFallback className="bg-surface-1 text-muted-foreground text-2xl font-display">
                   {profile.username[0].toUpperCase()}
                 </AvatarFallback>
               </Avatar>
             </div>
 
-            {/* Name & Badges */}
-            <div className="flex items-center gap-2 mb-1 flex-wrap justify-center">
-              <h1 className="font-display text-[26px] tracking-wide leading-none">{profile.display_name || profile.username}</h1>
+            {/* Name + badges — tight */}
+            <div className="flex items-center gap-1.5 mb-0.5 flex-wrap justify-center">
+              <h1 className="font-display text-[22px] tracking-wide leading-none">{profile.display_name || profile.username}</h1>
               {profile.level > 1 && <LevelBadge level={profile.level} size="sm" />}
               {profile.verification_status && <VerifiedBadge size="md" />}
               {authorityRole && <AuthorityBadge role={authorityRole} size="md" />}
               {(hasEquippedOG || profile.is_founding_member) && <FoundingBadge size="sm" />}
             </div>
-            
-            <p className="text-xs text-muted-foreground mb-4">@{profile.username}</p>
+            <p className="text-[11px] text-muted-foreground/60 mb-3">@{profile.username}</p>
 
-            {/* Stats Row — divider-separated */}
-            <div className="flex items-center justify-center gap-0 mb-4 w-full max-w-xs">
-              <div className="flex-1 text-center">
-               <p className="font-display text-xl tabular-nums">{isJudge ? videoCount : submissionCount}</p>
-                 <p className="text-[9px] text-muted-foreground uppercase tracking-widest">{isJudge ? 'Videos' : 'Edits'}</p>
+            {/* Inline stat chips — compact horizontal row */}
+            <div className="flex items-center gap-1.5 mb-3">
+              <div className="flex items-center gap-1 px-2.5 py-1 bg-foreground/[0.04] border border-border/30 rounded-md">
+                <span className="text-[11px] font-bold tabular-nums text-foreground">{isJudge ? videoCount : submissionCount}</span>
+                <span className="text-[9px] text-muted-foreground/60 uppercase tracking-wider">{isJudge ? 'vids' : 'edits'}</span>
               </div>
-              <div className="w-px h-9 bg-border/60" />
-              <div className="flex-1 text-center">
-                <p className="font-display text-xl tabular-nums">{profile.connection_count || 0}</p>
-                <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Connections</p>
+              <div className="flex items-center gap-1 px-2.5 py-1 bg-foreground/[0.04] border border-border/30 rounded-md">
+                <span className="text-[11px] font-bold tabular-nums text-foreground">{profile.connection_count || 0}</span>
+                <span className="text-[9px] text-muted-foreground/60 uppercase tracking-wider">connections</span>
               </div>
-              <div className="w-px h-9 bg-border/60" />
-              <div className="flex-1 text-center">
-                <p className="font-display text-xl text-gold tabular-nums">#{rank || "—"}</p>
-                <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Rank</p>
+              <div className="flex items-center gap-1 px-2.5 py-1 bg-foreground/[0.04] border border-border/30 rounded-md">
+                <span className="text-[11px] font-bold tabular-nums text-gold">#{rank || '—'}</span>
+                <span className="text-[9px] text-muted-foreground/60 uppercase tracking-wider">rank</span>
               </div>
             </div>
 
-            {/* Activity & Unit */}
-            <div className="flex items-center gap-3 mb-4">
+            {/* Activity + Unit */}
+            <div className="flex items-center gap-2.5 mb-3">
               <div className="flex items-center gap-1.5">
-                <span className={`w-2 h-2 rounded-full ${activityLabels[profile.activity_status || 'offline']?.color || 'bg-muted-foreground'}`} />
-                <span className="text-xs text-muted-foreground">
+                <span className={`w-1.5 h-1.5 rounded-full ${activityLabels[profile.activity_status || 'offline']?.color || 'bg-muted-foreground'}`} />
+                <span className="text-[10px] text-muted-foreground">
                   {activityLabels[profile.activity_status || 'offline']?.label || 'Offline'}
                 </span>
               </div>
               {userCrew && <CrewBadge crew={userCrew} size="md" />}
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex items-center gap-3 mb-4">
+            {/* Actions — tighter */}
+            <div className="flex items-center gap-2 mb-3">
               {isJudge && (
                 <button
                   onClick={() => navigate(`/judge/${profile.username}`)}
-                  className="px-4 py-2.5 bg-destructive text-destructive-foreground text-xs font-bold uppercase tracking-wider rounded-lg hover:opacity-90 transition-opacity"
+                  className="px-3.5 py-2 bg-destructive text-destructive-foreground text-[10px] font-bold uppercase tracking-wider rounded-lg hover:opacity-90 transition-opacity"
                 >
                   Get Rated
                 </button>
@@ -455,32 +437,26 @@ export default function PublicProfilePage() {
               <MessageButton userId={profile.id} username={profile.username} variant="icon" />
             </div>
 
-            {/* Bio */}
+            {/* Bio — condensed */}
             {profile.bio && (
-              <p className="text-sm text-foreground/90 max-w-sm text-center leading-relaxed mb-3">
+              <p className="text-[12px] text-foreground/70 max-w-[280px] text-center leading-relaxed mb-2.5">
                 {profile.bio}
               </p>
             )}
-            
-            {/* Platform Links */}
+
+            {/* Social icons — minimal */}
             {platforms.length > 0 && (
-              <div className="flex items-center gap-2 flex-wrap justify-center">
+              <div className="flex items-center gap-3">
                 {platforms.map((p) => {
-                  const Icon = p.platform === 'tiktok' ? SiTiktok 
-                    : p.platform === 'instagram' ? SiInstagram 
-                    : p.platform === 'youtube' ? SiYoutube 
+                  const Icon = p.platform === 'tiktok' ? SiTiktok
+                    : p.platform === 'instagram' ? SiInstagram
+                    : p.platform === 'youtube' ? SiYoutube
                     : p.platform === 'x' ? SiX
                     : ExternalLink;
                   return (
-                    <a
-                      key={p.id}
-                      href={p.platform_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-1 border border-border rounded-full text-xs text-muted-foreground hover:text-foreground hover:border-gold/40 transition-colors"
-                    >
-                      <Icon size={12} />
-                      {platformLabels[p.platform] || p.platform}
+                    <a key={p.id} href={p.platform_url} target="_blank" rel="noopener noreferrer"
+                      className="text-muted-foreground/50 hover:text-foreground transition-colors">
+                      <Icon size={14} />
                     </a>
                   );
                 })}
@@ -490,58 +466,67 @@ export default function PublicProfilePage() {
         </div>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="sticky top-0 z-30 bg-background border-b border-border">
+      {/* ─── STATS STRIP — always visible, not buried in About ─── */}
+      <div className="px-4 py-3 flex items-stretch gap-1.5 border-b border-border/30">
+        <div className="flex-1 text-center py-2 bg-foreground/[0.03] rounded-lg">
+          <p className={`font-display text-base uppercase leading-none ${leagueColors[league]?.split(' ')[0] || 'text-muted-foreground'}`}>
+            {league === 'elite' ? 'ELT' : league === 'pro' ? 'PRO' : 'OPN'}
+          </p>
+          <p className="text-[8px] text-muted-foreground/50 uppercase tracking-widest mt-0.5">League</p>
+        </div>
+        <div className="flex-1 text-center py-2 bg-foreground/[0.03] rounded-lg">
+          <p className={`font-display text-base leading-none ${editorClass.color}`}>{editorClass.letter}</p>
+          <p className="text-[8px] text-muted-foreground/50 uppercase tracking-widest mt-0.5">Class</p>
+        </div>
+        <div className="flex-1 text-center py-2 bg-foreground/[0.03] rounded-lg">
+          <p className="font-display text-base text-gold leading-none tabular-nums">{Number(profile.global_index_score || 0).toFixed(1)}</p>
+          <p className="text-[8px] text-muted-foreground/50 uppercase tracking-widest mt-0.5">Index</p>
+        </div>
+        <div className="flex-1 text-center py-2 bg-foreground/[0.03] rounded-lg">
+          <p className="font-display text-base leading-none tabular-nums">{realStats.winRate.toFixed(0)}%</p>
+          <p className="text-[8px] text-muted-foreground/50 uppercase tracking-widest mt-0.5">Wins</p>
+        </div>
+        <div className="flex-1 text-center py-2 bg-foreground/[0.03] rounded-lg">
+          <p className="font-display text-base leading-none tabular-nums">{realStats.totalEvents}</p>
+          <p className="text-[8px] text-muted-foreground/50 uppercase tracking-widest mt-0.5">Events</p>
+        </div>
+      </div>
+
+      {/* ─── TABS ─── */}
+      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border/20">
         <div className="flex">
           {isJudge && (
-            <button
-              onClick={() => setActiveTab('videos')}
-              className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 ${
-                activeTab === 'videos'
-                  ? 'text-gold border-b-2 border-gold'
-                  : 'text-muted-foreground hover:text-white'
-              }`}
-            >
-              <Video size={12} />
-              Videos
+            <button onClick={() => setActiveTab('videos')}
+              className={`flex-1 py-2.5 text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1 ${
+                activeTab === 'videos' ? 'text-gold border-b-2 border-gold' : 'text-muted-foreground/50 hover:text-foreground'
+              }`}>
+              <Video size={11} /> Videos
             </button>
           )}
-          <button
-            onClick={() => setActiveTab('edits')}
-            className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors ${
-              activeTab === 'edits'
-                ? 'text-gold border-b-2 border-gold'
-                : 'text-muted-foreground hover:text-white'
-            }`}
-          >
+          <button onClick={() => setActiveTab('edits')}
+            className={`flex-1 py-2.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${
+              activeTab === 'edits' ? 'text-gold border-b-2 border-gold' : 'text-muted-foreground/50 hover:text-foreground'
+            }`}>
             Edits
           </button>
           {platforms.length > 0 && (
-            <button
-              onClick={() => setActiveTab('links')}
-              className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors ${
-                activeTab === 'links'
-                  ? 'text-gold border-b-2 border-gold'
-                  : 'text-muted-foreground hover:text-white'
-              }`}
-            >
+            <button onClick={() => setActiveTab('links')}
+              className={`flex-1 py-2.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                activeTab === 'links' ? 'text-gold border-b-2 border-gold' : 'text-muted-foreground/50 hover:text-foreground'
+              }`}>
               Links
             </button>
           )}
-          <button
-            onClick={() => setActiveTab('about')}
-            className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors ${
-              activeTab === 'about'
-                ? 'text-gold border-b-2 border-gold'
-                : 'text-muted-foreground hover:text-white'
-            }`}
-          >
+          <button onClick={() => setActiveTab('about')}
+            className={`flex-1 py-2.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${
+              activeTab === 'about' ? 'text-gold border-b-2 border-gold' : 'text-muted-foreground/50 hover:text-foreground'
+            }`}>
             About
           </button>
         </div>
       </div>
 
-      {/* Tab Content */}
+      {/* ─── TAB CONTENT ─── */}
       {activeTab === 'videos' && isJudge ? (
         <PublicJudgeVideos userId={resolvedUserId || ''} />
       ) : activeTab === 'edits' ? (
@@ -557,116 +542,57 @@ export default function PublicProfilePage() {
             stats={{ classLetter: editorClass.letter, indexScore: profile.global_index_score || 0, rank: rank || 0 }}
           />
         ) : (
-          <div className="px-4 py-6 space-y-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-4">Connected Platforms</p>
-            <div className="space-y-3">
-              {platforms.map((p) => {
-                const PlatformIcon = p.platform === 'tiktok' ? SiTiktok 
-                  : p.platform === 'instagram' ? SiInstagram 
-                  : p.platform === 'youtube' ? SiYoutube 
-                  : Globe;
-                const platformColor = p.platform === 'tiktok' ? 'group-hover:text-white' 
-                  : p.platform === 'instagram' ? 'group-hover:text-pink-500' 
-                  : p.platform === 'youtube' ? 'group-hover:text-red-500' 
-                  : 'group-hover:text-white';
-                
-                return (
-                  <a key={p.id} href={p.platform_url} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-4 p-4 bg-surface-1 border border-border hover:border-gold/30 transition-all">
-                    <div className={`w-10 h-10 rounded-full bg-surface-2 flex items-center justify-center text-muted-foreground ${platformColor} transition-colors`}>
-                      <PlatformIcon size={20} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm text-foreground group-hover:text-gold transition-colors">{platformLabels[p.platform] || p.platform}</p>
-                      <p className="text-xs text-muted-foreground truncate">@{p.platform_username}</p>
-                    </div>
-                    <ExternalLink size={16} className="text-muted-foreground group-hover:text-gold transition-colors" />
-                  </a>
-                );
-              })}
-            </div>
+          <div className="px-4 py-5 space-y-2">
+            {platforms.map((p) => {
+              const PlatformIcon = p.platform === 'tiktok' ? SiTiktok
+                : p.platform === 'instagram' ? SiInstagram
+                : p.platform === 'youtube' ? SiYoutube
+                : Globe;
+              return (
+                <a key={p.id} href={p.platform_url} target="_blank" rel="noopener noreferrer"
+                  className="group flex items-center gap-3 p-3 bg-foreground/[0.03] border border-border/20 rounded-lg hover:border-gold/30 transition-all">
+                  <div className="w-8 h-8 rounded-full bg-foreground/[0.06] flex items-center justify-center text-muted-foreground group-hover:text-foreground transition-colors">
+                    <PlatformIcon size={16} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-xs text-foreground">{platformLabels[p.platform] || p.platform}</p>
+                    <p className="text-[10px] text-muted-foreground/50 truncate">@{p.platform_username}</p>
+                  </div>
+                  <ExternalLink size={12} className="text-muted-foreground/30 group-hover:text-gold transition-colors" />
+                </a>
+              );
+            })}
             {profile.portfolio_url && (
-              <a href={profile.portfolio_url} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-4 p-4 bg-surface-1 border border-border hover:border-gold/30 transition-all mt-4">
-                <div className="w-10 h-10 rounded-full bg-surface-2 flex items-center justify-center text-muted-foreground group-hover:text-gold transition-colors">
-                  <Globe size={20} />
+              <a href={profile.portfolio_url} target="_blank" rel="noopener noreferrer"
+                className="group flex items-center gap-3 p-3 bg-foreground/[0.03] border border-border/20 rounded-lg hover:border-gold/30 transition-all">
+                <div className="w-8 h-8 rounded-full bg-foreground/[0.06] flex items-center justify-center text-muted-foreground group-hover:text-foreground transition-colors">
+                  <Globe size={16} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm text-foreground group-hover:text-gold transition-colors">Portfolio</p>
-                  <p className="text-xs text-muted-foreground truncate">{profile.portfolio_url.replace(/^https?:\/\//, '').split('/')[0]}</p>
+                  <p className="font-semibold text-xs text-foreground">Portfolio</p>
+                  <p className="text-[10px] text-muted-foreground/50 truncate">{profile.portfolio_url.replace(/^https?:\/\//, '').split('/')[0]}</p>
                 </div>
-                <ExternalLink size={16} className="text-muted-foreground group-hover:text-gold transition-colors" />
+                <ExternalLink size={12} className="text-muted-foreground/30 group-hover:text-gold transition-colors" />
               </a>
             )}
           </div>
         )
       ) : (
-        <div className="px-4 py-6 space-y-6">
-          {/* League, Class & Index Grid */}
-          <div className="grid grid-cols-3 gap-2">
-            <div className="text-center p-4 bg-surface-1 border border-border rounded-xl">
-              <p className={`font-display text-2xl uppercase ${leagueColors[league]?.split(' ')[0] || 'text-muted-foreground'}`}>
-                {league.charAt(0)}
-              </p>
-              <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">
-                League
-              </p>
+        <div className="px-4 py-5 space-y-5">
+          {/* Earnings — only if shown */}
+          {profile.show_earnings && (
+            <div className="flex items-center gap-3 p-3 bg-foreground/[0.03] border border-border/20 rounded-lg">
+              <span className="text-emerald-400 font-display text-lg">${((profile.earnings_cents || 0) / 100).toFixed(0)}</span>
+              <span className="text-[9px] text-muted-foreground/50 uppercase tracking-widest">Lifetime Earned</span>
             </div>
-            <div className="text-center p-4 bg-surface-1 border border-border rounded-xl">
-              <p className={`font-display text-2xl ${editorClass.color}`}>
-                {editorClass.letter}
-              </p>
-              <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">
-                Class
-              </p>
-            </div>
-            <div className="text-center p-4 bg-surface-1 border border-border rounded-xl">
-              <p className="font-display text-2xl text-gold">
-                {Number(profile.global_index_score || 0).toFixed(1)}
-              </p>
-              <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">
-                Index
-              </p>
-            </div>
-          </div>
+          )}
 
-          {/* Win Rate, Events & Earnings */}
-          <div className={`grid ${profile.show_earnings ? 'grid-cols-3' : 'grid-cols-2'} gap-2`}>
-            <div className="text-center p-4 bg-surface-1 border border-border rounded-xl">
-              <p className="font-display text-2xl">
-                {realStats.winRate.toFixed(0)}%
-              </p>
-              <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">
-                Win Rate
-              </p>
-            </div>
-            <div className="text-center p-4 bg-surface-1 border border-border rounded-xl">
-              <p className="font-display text-2xl">
-                {realStats.totalEvents}
-              </p>
-              <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">
-                Events
-              </p>
-            </div>
-            {profile.show_earnings && (
-              <div className="text-center p-4 bg-surface-1 border border-border rounded-xl">
-                <p className="font-display text-2xl text-emerald-400">
-                  ${((profile.earnings_cents || 0) / 100).toFixed(0)}
-                </p>
-                <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">
-                  Earned
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Member Since - Prestige Display */}
+          {/* Member Since */}
           {profile.created_at && (
             <div>
-              <p className="text-[10px] text-gold uppercase tracking-widest mb-1 font-bold">On LOOPGATE Since</p>
-              <p className="text-lg font-display text-foreground">
-                {new Date(profile.created_at).toLocaleDateString('en-US', { 
-                  month: 'long', 
-                  year: 'numeric' 
-                })}
+              <p className="text-[9px] text-gold/70 uppercase tracking-widest mb-0.5 font-bold">On LOOPGATE Since</p>
+              <p className="text-sm font-display text-foreground/80">
+                {new Date(profile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
               </p>
             </div>
           )}
@@ -674,7 +600,7 @@ export default function PublicProfilePage() {
           {/* Software */}
           {profile.software && profile.software.length > 0 && (
             <div>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Software</p>
+              <p className="text-[9px] text-muted-foreground/50 uppercase tracking-widest mb-2">Software</p>
               <SoftwareBadges software={profile.software} size="sm" />
             </div>
           )}
@@ -682,67 +608,33 @@ export default function PublicProfilePage() {
           {/* Bio */}
           {profile.bio && (
             <div>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Bio</p>
-              <p className="text-sm text-foreground whitespace-pre-wrap">{profile.bio}</p>
+              <p className="text-[9px] text-muted-foreground/50 uppercase tracking-widest mb-1.5">Bio</p>
+              <p className="text-xs text-foreground/70 whitespace-pre-wrap leading-relaxed">{profile.bio}</p>
             </div>
           )}
 
-          {/* Contact Info */}
+          {/* Contact */}
           {(profile.discord || profile.portfolio_url) && (
-            <div className="space-y-3">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Contact</p>
+            <div className="space-y-2">
+              <p className="text-[9px] text-muted-foreground/50 uppercase tracking-widest">Contact</p>
               {profile.discord && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground/60">
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
                   </svg>
                   <span>{profile.discord}</span>
                 </div>
               )}
               {profile.portfolio_url && (
-                <a
-                  href={profile.portfolio_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-gold transition-colors"
-                >
-                  <Globe size={16} />
+                <a href={profile.portfolio_url} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-xs text-muted-foreground/60 hover:text-gold transition-colors">
+                  <Globe size={14} />
                   <span className="truncate">{profile.portfolio_url.replace(/^https?:\/\//, '')}</span>
-                  <ExternalLink size={12} className="flex-shrink-0" />
+                  <ExternalLink size={10} className="flex-shrink-0" />
                 </a>
               )}
             </div>
           )}
-
-          {/* Platforms */}
-          {platforms.length > 0 && (
-            <div className="space-y-3">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                <ExternalLink size={12} />
-                Platforms
-              </p>
-              {platforms.map((platform) => (
-                <a
-                  key={platform.id}
-                  href={platform.platform_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-surface-1 border border-border p-3 flex items-center justify-between hover:border-gold/50 transition-colors block"
-                >
-                  <div>
-                    <p className="font-semibold text-sm flex items-center gap-1.5">
-                      {platformLabels[platform.platform] || platform.platform}
-                      <ExternalLink size={12} className="text-muted-foreground" />
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      @{platform.platform_username}
-                    </p>
-                  </div>
-                </a>
-              ))}
-            </div>
-          )}
-
         </div>
       )}
     </div>
