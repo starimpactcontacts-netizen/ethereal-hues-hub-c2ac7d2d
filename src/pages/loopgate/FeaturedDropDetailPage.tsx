@@ -794,61 +794,76 @@ export default function FeaturedDropDetailPage() {
               </div>
             ) : (
               <>
-                {/* ── Top Edits Carousel ── */}
+                {/* ── Top Edits Showcase ── */}
                 {scored.length > 0 && (
                   <div className="-mx-4">
-                    <div className="flex gap-2.5 overflow-x-auto px-4 pb-2 scrollbar-hide snap-x snap-mandatory">
-                      {scored.slice(0, 8).map((sub, idx) => (
+                    <div className="flex gap-3 overflow-x-auto px-4 pb-3 scrollbar-hide snap-x snap-mandatory">
+                      {scored.slice(0, 6).map((sub, idx) => (
                         <a
                           key={sub.id}
                           href={sub.submission_url || '#'}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="shrink-0 snap-start w-[140px] group"
+                          className={cn(
+                            "shrink-0 snap-start w-[160px] rounded-2xl overflow-hidden border transition-all group relative",
+                            idx === 0
+                              ? "border-gold/30 shadow-[0_0_20px_-4px_rgba(255,215,0,0.15)]"
+                              : "border-border/30 hover:border-border/60"
+                          )}
                         >
+                          {/* Background — gradient based on rank */}
                           <div className={cn(
-                            "relative rounded-xl overflow-hidden border transition-all",
-                            idx === 0 ? "border-gold/30" : "border-border/30 hover:border-border/60"
+                            "aspect-[3/4] relative flex flex-col justify-end p-3",
+                            idx === 0 && "bg-gradient-to-b from-gold/10 via-surface-1 to-surface-0",
+                            idx === 1 && "bg-gradient-to-b from-foreground/5 via-surface-1 to-surface-0",
+                            idx === 2 && "bg-gradient-to-b from-amber-700/10 via-surface-1 to-surface-0",
+                            idx > 2 && "bg-gradient-to-b from-surface-2 to-surface-0"
                           )}>
-                            {/* Thumbnail */}
-                            <div className="aspect-[9/12] bg-surface-2 relative">
-                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-surface-2 to-surface-1">
-                                <Video className="w-6 h-6 text-muted-foreground/20" />
-                              </div>
-                              {/* Gradient overlay */}
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-                              {/* Rank badge */}
+                            {/* Rank — top left */}
+                            <div className={cn(
+                              "absolute top-2.5 left-2.5 font-display leading-none",
+                              idx === 0 ? "text-4xl text-gold/80" : "text-3xl text-foreground/15"
+                            )} style={teko}>
+                              {idx + 1}
+                            </div>
+
+                            {/* Play button — center */}
+                            <div className="absolute inset-0 flex items-center justify-center">
                               <div className={cn(
-                                "absolute top-1.5 left-1.5 w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-display font-bold",
-                                idx === 0 ? "bg-gold text-black" : "bg-black/70 text-foreground/80 border border-border/30"
+                                "w-12 h-12 rounded-full flex items-center justify-center transition-all",
+                                "bg-foreground/5 group-hover:bg-foreground/15 group-hover:scale-110"
                               )}>
-                                {idx + 1}
+                                <Play className="w-5 h-5 text-foreground/40 group-hover:text-foreground/80 transition-colors ml-0.5" />
                               </div>
-                              {/* Play icon */}
-                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Play className="w-8 h-8 text-white drop-shadow-lg" />
+                            </div>
+
+                            {/* Bottom — avatar + name + score */}
+                            <div>
+                              <div className="flex items-center gap-2 mb-1.5">
+                                <Avatar className={cn(
+                                  "border-2 shrink-0",
+                                  idx === 0 ? "w-8 h-8 border-gold/40" : "w-7 h-7 border-border/30"
+                                )}>
+                                  <AvatarImage src={sub.avatar_url || ''} />
+                                  <AvatarFallback className="text-[8px] bg-surface-2 font-bold">
+                                    {sub.username?.[0]?.toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="text-[11px] font-bold text-foreground truncate">
+                                  {sub.username}
+                                </span>
                               </div>
-                              {/* Bottom info */}
-                              <div className="absolute bottom-0 inset-x-0 p-2">
-                                <div className="flex items-center gap-1.5 mb-1">
-                                  <Avatar className="w-4 h-4 border border-white/20">
-                                    <AvatarImage src={sub.avatar_url || ''} />
-                                    <AvatarFallback className="text-[6px] bg-surface-2">{sub.username?.[0]?.toUpperCase()}</AvatarFallback>
-                                  </Avatar>
-                                  <span className="text-[9px] font-bold text-white truncate">@{sub.username}</span>
+                              {sub.qoi_score != null && (
+                                <div className="flex items-baseline gap-1">
+                                  <span className={cn(
+                                    "text-2xl font-display font-bold leading-none",
+                                    (sub.qoi_score || 0) >= 70 ? "text-gold" : "text-foreground/80"
+                                  )} style={teko}>
+                                    {Math.round(sub.qoi_score)}
+                                  </span>
+                                  <span className="text-[8px] text-muted-foreground/50 uppercase tracking-wider">QOI</span>
                                 </div>
-                                {sub.qoi_score != null && (
-                                  <div className="flex items-center gap-1">
-                                    <span className={cn(
-                                      "text-sm font-display font-bold leading-none",
-                                      (sub.qoi_score || 0) >= 70 ? "text-gold" : "text-white/90"
-                                    )}>
-                                      {Math.round(sub.qoi_score)}
-                                    </span>
-                                    <span className="text-[7px] text-white/50 uppercase">QOI</span>
-                                  </div>
-                                )}
-                              </div>
+                              )}
                             </div>
                           </div>
                         </a>
