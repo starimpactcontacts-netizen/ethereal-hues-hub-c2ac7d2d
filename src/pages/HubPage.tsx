@@ -555,27 +555,34 @@ export default function HubPage() {
           {/* Quick Access — Rolls Royce Starlight dock */}
           <div className="relative mt-4 mb-3">
             {/* ─── Bow arch — sharp edges + thick blur arch ─── */}
-            <div className="pointer-events-none absolute inset-x-0 -top-24 h-[200px] z-0 overflow-visible">
+            <div className="pointer-events-none absolute inset-x-0 -top-24 h-[220px] z-0 overflow-visible">
               {/* Left sharp edge */}
-              <div className="absolute left-0 top-0 h-full w-[2px] bg-gradient-to-b from-[hsl(var(--surface-1)/0.9)] via-[hsl(var(--surface-1)/0.4)] to-transparent" />
+              <div className="absolute left-0 top-0 h-full w-[3px] bg-gradient-to-b from-white/20 via-white/8 to-transparent" />
               {/* Left thick blur */}
-              <div className="absolute left-[2px] top-0 h-full w-[80px]"
+              <div className="absolute left-0 top-0 h-full w-[110px]"
                 style={{
-                  background: 'linear-gradient(to right, hsl(var(--surface-1) / 0.7) 0%, hsl(var(--surface-1) / 0.35) 40%, transparent 100%)',
-                  maskImage: 'linear-gradient(to bottom, black 0%, black 45%, transparent 100%)',
-                  WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 45%, transparent 100%)',
-                  filter: 'blur(16px)',
+                  background: 'linear-gradient(to right, hsl(var(--surface-1) / 0.9) 0%, hsl(var(--surface-1) / 0.5) 35%, hsl(var(--surface-1) / 0.15) 65%, transparent 100%)',
+                  maskImage: 'linear-gradient(to bottom, black 0%, black 50%, transparent 100%)',
+                  WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 50%, transparent 100%)',
+                  filter: 'blur(14px)',
                 }}
               />
               {/* Right sharp edge */}
-              <div className="absolute right-0 top-0 h-full w-[2px] bg-gradient-to-b from-[hsl(var(--surface-1)/0.9)] via-[hsl(var(--surface-1)/0.4)] to-transparent" />
+              <div className="absolute right-0 top-0 h-full w-[3px] bg-gradient-to-b from-white/20 via-white/8 to-transparent" />
               {/* Right thick blur */}
-              <div className="absolute right-[2px] top-0 h-full w-[80px]"
+              <div className="absolute right-0 top-0 h-full w-[110px]"
                 style={{
-                  background: 'linear-gradient(to left, hsl(var(--surface-1) / 0.7) 0%, hsl(var(--surface-1) / 0.35) 40%, transparent 100%)',
-                  maskImage: 'linear-gradient(to bottom, black 0%, black 45%, transparent 100%)',
-                  WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 45%, transparent 100%)',
-                  filter: 'blur(16px)',
+                  background: 'linear-gradient(to left, hsl(var(--surface-1) / 0.9) 0%, hsl(var(--surface-1) / 0.5) 35%, hsl(var(--surface-1) / 0.15) 65%, transparent 100%)',
+                  maskImage: 'linear-gradient(to bottom, black 0%, black 50%, transparent 100%)',
+                  WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 50%, transparent 100%)',
+                  filter: 'blur(14px)',
+                }}
+              />
+              {/* Bottom arch connector */}
+              <div className="absolute bottom-[30%] left-[80px] right-[80px] h-[60px]"
+                style={{
+                  background: 'radial-gradient(ellipse 100% 100% at 50% 100%, hsl(var(--surface-1) / 0.3) 0%, transparent 70%)',
+                  filter: 'blur(18px)',
                 }}
               />
             </div>
