@@ -159,6 +159,7 @@ export default function PublicProfilePage() {
         setRoles(userRoles);
         const userIsJudge = userRoles.includes('judge');
         setIsJudge(userIsJudge);
+        if (userIsJudge) setActiveTab('videos');
         
         // Fetch judge video count if judge
         if (userIsJudge) {
