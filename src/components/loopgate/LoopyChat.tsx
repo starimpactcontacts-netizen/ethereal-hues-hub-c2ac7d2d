@@ -144,7 +144,7 @@ export default function LoopyChat() {
               setDragY(clamped);
               sessionStorage.setItem('loopy-y', String(clamped));
             }}
-            className="fixed bottom-28 right-3 z-50 cursor-grab active:cursor-grabbing pointer-events-auto touch-none"
+            className="fixed bottom-20 right-3 z-50 cursor-grab active:cursor-grabbing pointer-events-auto touch-none"
           >
             <motion.button
               initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} transition={{ delay: 0.2 }}
