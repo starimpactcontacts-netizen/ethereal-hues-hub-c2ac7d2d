@@ -400,9 +400,11 @@ export default function LoopyChat() {
                             <button
                               key={action.label}
                               onClick={() => {
-                                if (action.route) {
+                                if ((action as any).action === 'ticket') {
+                                  handleTicket({ stopPropagation: () => {} } as any);
+                                } else if ((action as any).route) {
                                   setOpen(false);
-                                  navigate(action.route);
+                                  navigate((action as any).route);
                                 } else if (action.msg) {
                                   handleSend(action.msg);
                                 }
