@@ -19,6 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SiTiktok, SiInstagram, SiYoutube, SiX } from "@icons-pack/react-simple-icons";
 import ConnectButton from "@/components/loopgate/ConnectButton";
 import { Users } from "lucide-react";
+import StatsRadarChart from "@/components/loopgate/StatsRadarChart";
 // IndexEarnBadge removed — Index is NOT money
 import { useEquippedBadges } from "@/hooks/useEquippedBadges";
 import LinkTreePreview from "@/components/loopgate/LinkTreePreview";
