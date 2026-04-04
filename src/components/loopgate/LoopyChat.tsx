@@ -152,16 +152,19 @@ export default function LoopyChat() {
       <AnimatePresence>
         {!open && !docked && (
           <motion.div
-            drag="y"
-            dragConstraints={{ top: -300, bottom: 200 }}
-            dragElastic={0.1}
+            drag
+            dragConstraints={{ top: -400, bottom: 200, left: -300, right: 50 }}
+            dragElastic={0.15}
             dragMomentum={false}
-            style={{ y: dragY }}
+            style={{ x: dragPos.x, y: dragPos.y }}
             onDragEnd={(_, info) => {
-              const newY = dragY + info.offset.y;
-              const clamped = Math.max(-300, Math.min(200, newY));
-              setDragY(clamped);
-              sessionStorage.setItem('loopy-y', String(clamped));
+              const newX = dragPos.x + info.offset.x;
+              const newY = dragPos.y + info.offset.y;
+              const clampedX = Math.max(-300, Math.min(50, newX));
+              const clampedY = Math.max(-400, Math.min(200, newY));
+              setDragPos({ x: clampedX, y: clampedY });
+              sessionStorage.setItem('loopy-x', String(clampedX));
+              sessionStorage.setItem('loopy-y', String(clampedY));
             }}
             className="fixed bottom-20 right-3 z-50 cursor-grab active:cursor-grabbing pointer-events-auto touch-none"
           >
