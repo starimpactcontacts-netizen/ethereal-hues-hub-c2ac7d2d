@@ -383,18 +383,27 @@ export default function CreateCompetitionPage() {
               />
             </div>
 
-            {/* Deadline */}
+            {/* Duration */}
             <div>
               <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                <Calendar className="w-3 h-3" /> Submission Deadline
+                <Calendar className="w-3 h-3" /> Duration
               </label>
-              <input
-                type="datetime-local"
-                value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
-                min={new Date().toISOString().slice(0, 16)}
-                className="w-full bg-surface-1 border border-border/40 rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-gold/40 transition-colors"
-              />
+              <div className="grid grid-cols-4 gap-1.5">
+                {DURATION_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.hours}
+                    onClick={() => setDurationHours(opt.hours)}
+                    className={`py-2 rounded-lg text-center transition-all border ${
+                      durationHours === opt.hours
+                        ? "bg-gold/10 border-gold/30 text-gold"
+                        : "bg-surface-1 border-border/30 text-muted-foreground hover:border-border/60"
+                    }`}
+                  >
+                    <span className="text-[12px] font-bold block">{opt.label}</span>
+                    <span className="text-[8px] opacity-60">{opt.desc}</span>
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* League */}
