@@ -13,6 +13,8 @@ interface HostedCompHostDashboardProps {
   judges: HostedCompetitionJudge[];
   onInviteJudges: () => void;
   onRefresh: () => void;
+  competitionStatus?: string;
+  participantCount?: number;
 }
 
 function ScoringRow({ 
