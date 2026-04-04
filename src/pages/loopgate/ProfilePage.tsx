@@ -21,7 +21,7 @@ import ArchetypeBadge from "@/components/loopgate/ArchetypeBadge";
 import { SoftwareBadges } from "@/components/loopgate/SoftwareBadge";
 import MyJudgeReviews from "@/components/loopgate/MyJudgeReviews";
 import MyRatingVideos from "@/components/loopgate/MyRatingVideos";
-import { getRankFromScore } from "@/data/gqtConfig";
+
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import IndexEarnBadge from "@/components/loopgate/IndexEarnBadge";
