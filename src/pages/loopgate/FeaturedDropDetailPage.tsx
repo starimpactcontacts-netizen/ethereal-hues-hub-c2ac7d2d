@@ -876,12 +876,19 @@ export default function FeaturedDropDetailPage() {
           <div className="space-y-1">
             {/* Leaderboard header — lightweight */}
             <div className="flex items-center justify-between py-2">
-              <div className="flex items-center gap-2">
-                <ListOrdered className="w-4 h-4 text-destructive" />
-                <h3 className="text-xl text-foreground uppercase tracking-wider leading-none font-bold" style={teko}>
-                  Round {activeRound.round_number} Rankings
-                </h3>
-                <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
+              <div>
+                <div className="flex items-center gap-2">
+                  <Trophy className="w-4 h-4 text-gold" />
+                  <h3 className="text-xl text-foreground uppercase tracking-wider leading-none font-bold" style={teko}>
+                    Best Edits — Round {activeRound.round_number}
+                  </h3>
+                  <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
+                </div>
+                {drop?.song_name && (
+                  <p className="text-[10px] text-muted-foreground/60 uppercase tracking-widest mt-0.5 pl-6">
+                    for "{drop.song_name}"
+                  </p>
+                )}
               </div>
               <span className="text-sm text-muted-foreground font-bold tabular-nums" style={teko}>
                 {activeRoundSubs.length}/{activeRound.max_submissions}
