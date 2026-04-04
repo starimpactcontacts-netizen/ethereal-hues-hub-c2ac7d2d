@@ -119,13 +119,11 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
         <button
           onClick={(e) => { e.stopPropagation(); onJoin(comp.id); }}
           disabled={spotsLeft <= 0}
-          className="w-full py-2.5 rounded-xl font-display text-[11px] uppercase tracking-[0.15em] flex items-center justify-center gap-2 transition-all disabled:opacity-20 disabled:cursor-not-allowed bg-white text-black font-bold hover:bg-white/90 active:bg-white/80"
-          style={{ boxShadow: "0 2px 12px rgba(255,255,255,0.08)" }}
+          className="w-full py-3 rounded-xl uppercase tracking-[0.2em] flex items-center justify-center gap-2 transition-all disabled:opacity-20 disabled:cursor-not-allowed bg-emerald-500 text-white font-extrabold hover:bg-emerald-400 active:bg-emerald-600 text-[13px]"
+          style={{ fontFamily: "'Teko', sans-serif", boxShadow: "0 4px 20px rgba(16,185,129,0.35)", letterSpacing: "0.15em" }}
         >
-          {spotsLeft <= 0 ? "Full" : isLobby ? (
-            <><Play className="w-3 h-3" /> Join Lobby</>
-          ) : (
-            <>Join Competition <ChevronRight className="w-3 h-3" /></>
+          {spotsLeft <= 0 ? "FULL" : (
+            <><Play className="w-3.5 h-3.5" /> JOIN LOBBY</>
           )}
         </button>
       </div>
