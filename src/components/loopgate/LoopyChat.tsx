@@ -82,14 +82,11 @@ export default function LoopyChat() {
     setOpen(true);
     setShowPulse(false);
     setDocked(false);
-    if (isGuest) {
-      if (!activeConversationId || messages.length === 0) await startNewChat();
-      setView('chat');
-    } else if (activeConversationId && messages.length > 0) {
-      setView('chat');
-    } else {
-      setView('menu');
+    // Always go straight to chat — if no active conversation, start a new one
+    if (!activeConversationId || messages.length === 0) {
+      await startNewChat();
     }
+    setView('chat');
   };
 
   const handleNewChat = async () => { await startNewChat(); setView('chat'); };
