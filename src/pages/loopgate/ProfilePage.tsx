@@ -15,7 +15,7 @@ import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import FoundingBadge from "@/components/loopgate/FoundingBadge";
 import AvatarUploadModal from "@/components/loopgate/AvatarUploadModal";
 import ActivityStatusSelector from "@/components/loopgate/ActivityStatusSelector";
-import XPProgressBar from "@/components/loopgate/XPProgressBar";
+
 import SubmissionGrid from "@/components/loopgate/SubmissionGrid";
 import ArchetypeBadge from "@/components/loopgate/ArchetypeBadge";
 import { SoftwareBadges } from "@/components/loopgate/SoftwareBadge";
