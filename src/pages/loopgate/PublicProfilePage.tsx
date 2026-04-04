@@ -87,11 +87,12 @@ export default function PublicProfilePage() {
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [userCrew, setUserCrew] = useState<{ id: string; name: string; emblem: string; avatar_url: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'videos' | 'edits' | 'links' | 'about'>('videos');
+  const [activeTab, setActiveTab] = useState<'videos' | 'edits' | 'links' | 'about'>('edits');
    const [submissionCount, setSubmissionCount] = useState(0);
    const [videoCount, setVideoCount] = useState(0);
    const [isJudge, setIsJudge] = useState(false);
    const [realStats, setRealStats] = useState<{ totalEvents: number; winRate: number; totalWins: number }>({ totalEvents: 0, winRate: 0, totalWins: 0 });
+   const [realConnectionCount, setRealConnectionCount] = useState(0);
   const [linkPageSettings, setLinkPageSettings] = useState<LinkPageSettings | null>(null);
   const [editorLinks, setEditorLinks] = useState<EditorLink[]>([]);
   const { hasEquippedOG } = useEquippedBadges(resolvedUserId || undefined);
@@ -158,6 +159,7 @@ export default function PublicProfilePage() {
         setRoles(userRoles);
         const userIsJudge = userRoles.includes('judge');
         setIsJudge(userIsJudge);
+        if (userIsJudge) setActiveTab('videos');
         
         // Fetch judge video count if judge
         if (userIsJudge) {
@@ -226,14 +228,15 @@ export default function PublicProfilePage() {
           .eq("final_rank", 1),
       ]);
       
-      const submissionTotal = (eventParts.count || 0) + (roundParts.count || 0);
+      const battles = battlesData.data || [];
+      const battleCount = battles.length;
+      const battleWins = battles.filter(b => b.winner_id === uid).length;
+
+      const submissionTotal = (eventParts.count || 0) + (roundParts.count || 0) + (hostedSubs.count || 0) + battleCount;
       setSubmissionCount(submissionTotal);
       
       // Calculate real event stats - include ALL event types
       const eventCount = (roundParts.count || 0) + (hostedSubs.count || 0) + (eventParts.count || 0) + (friendlyTournaments.count || 0) + (sanctionedTournaments.count || 0);
-      const battles = battlesData.data || [];
-      const battleCount = battles.length;
-      const battleWins = battles.filter(b => b.winner_id === uid).length;
       
       // Total wins from ALL sources
       const totalWins = battleWins + (hostedWins.count || 0) + (eventWins.count || 0) + (friendlyWins.count || 0) + (sanctionedWins.count || 0);
@@ -241,6 +244,14 @@ export default function PublicProfilePage() {
       const winRate = totalEvents > 0 ? (totalWins / totalEvents) * 100 : 0;
       
       setRealStats({ totalEvents, winRate, totalWins });
+
+      // Fetch real connection count
+      const { count: connCount } = await supabase
+        .from("connections")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "accepted")
+        .or(`sender_id.eq.${uid},receiver_id.eq.${uid}`);
+      setRealConnectionCount(connCount || 0);
 
       // Fetch link page
       const [linkPageRes, linksRes] = await Promise.all([
@@ -404,7 +415,7 @@ export default function PublicProfilePage() {
                 <span className="text-[9px] text-muted-foreground/60 uppercase tracking-wider">{isJudge ? 'vids' : 'edits'}</span>
               </div>
               <div className="flex items-center gap-1 px-2.5 py-1 bg-foreground/[0.04] border border-border/30 rounded-md">
-                <span className="text-[11px] font-bold tabular-nums text-foreground">{profile.connection_count || 0}</span>
+                <span className="text-[11px] font-bold tabular-nums text-foreground">{realConnectionCount}</span>
                 <span className="text-[9px] text-muted-foreground/60 uppercase tracking-wider">connections</span>
               </div>
               <div className="flex items-center gap-1 px-2.5 py-1 bg-foreground/[0.04] border border-border/30 rounded-md">
