@@ -21,8 +21,7 @@ export default function LoadingScreen({ minimal = false }: LoadingScreenProps) {
 
   return (
     <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-50 gap-8">
-      <img src={loopgateLogo} alt="Loopgate" className="w-80 h-80 max-w-[82vw] max-h-[46vh]" style={{ imageRendering: '-webkit-optimize-contrast' }} />
-      <img src={loopgateBrand} alt="LOOPGATE" className="w-56 max-w-[64vw] h-auto" />
+      <img src={loopgateLogo} alt="Loopgate" className="w-[360px] h-[360px] max-w-[90vw] max-h-[60vh]" style={{ imageRendering: '-webkit-optimize-contrast' }} />
     </div>
   );
 }
