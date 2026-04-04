@@ -28,7 +28,7 @@ export default function CompetitionLobbyPage() {
   const [isJoining, setIsJoining] = useState(false);
   const [showSubmit, setShowSubmit] = useState(false);
   const [subUrl, setSubUrl] = useState("");
-  const [platform, setPlatform] = useState<PlatformType>("tiktok");
+  const [platform, setPlatform] = useState<"tiktok" | "instagram" | "youtube">("tiktok");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
 
