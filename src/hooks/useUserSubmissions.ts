@@ -19,6 +19,10 @@ export interface UserSubmission {
   source: 'standard' | 'round' | 'sanctioned' | 'featured' | 'battle';
   is_hidden?: boolean;
   qoi_hidden?: boolean;
+  earned_cents?: number;
+  rating?: string | null;
+  xp_awarded?: number;
+  view_count?: number;
   event?: {
     id: string;
     title: string;
