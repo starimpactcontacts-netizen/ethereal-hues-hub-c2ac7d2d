@@ -708,7 +708,7 @@ export default function FeaturedDropDetailPage() {
         )}
 
         {/* ─── SOUND — merged single section ─── */}
-        {drop.song_url && (
+        {(drop.song_url || drop.song_preview_url) && (
           <div className="space-y-2">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 bg-destructive/10 flex items-center justify-center shrink-0">
@@ -718,10 +718,12 @@ export default function FeaturedDropDetailPage() {
                 <p className="text-sm font-bold text-foreground truncate" style={teko}>{drop.song_name}</p>
                 <p className="text-[9px] text-destructive font-bold uppercase tracking-wider">⚡ Use this sound</p>
               </div>
-              <a href={drop.song_url} target="_blank" rel="noopener noreferrer"
-                className="p-2 hover:bg-foreground/[0.06] transition-colors">
-                <ExternalLink className="w-4 h-4 text-muted-foreground" />
-              </a>
+              {drop.song_url && (
+                <a href={drop.song_url} target="_blank" rel="noopener noreferrer"
+                  className="p-2 hover:bg-foreground/[0.06] transition-colors">
+                  <ExternalLink className="w-4 h-4 text-muted-foreground" />
+                </a>
+              )}
               {drop.song_preview_url && (
                 <button
                   onClick={() => downloadAudio(drop.song_preview_url!, `${drop.song_name || 'preview'}.m4a`)}
