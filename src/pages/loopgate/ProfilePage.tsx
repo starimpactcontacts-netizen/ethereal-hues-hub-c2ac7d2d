@@ -4,7 +4,7 @@ import { Camera, Lock, ArrowRight, Share2, BarChart3, Grid3X3, Shield, Gavel, Vi
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTempProfile } from "@/hooks/useTempProfile";
-import { useRealRankings, useActiveSession } from "@/hooks/useRealData";
+import { useActiveSession } from "@/hooks/useRealData";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useUserSubmissions } from "@/hooks/useUserSubmissions";
 import { useJudgeRatingVideos } from "@/hooks/useJudgeRatingVideos";
