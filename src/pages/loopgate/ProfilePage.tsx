@@ -33,7 +33,6 @@ export default function ProfilePage() {
   const { profile, refreshProfile, loading: authLoading } = useAuth();
   const { profile: tempProfile, isTemp, clearProfile: clearTempProfile } = useTempProfile();
   const { isGuest, clearGuest } = useGuestMode();
-  const { rankings } = useRealRankings();
   const { submissions } = useUserSubmissions();
   const { videos: judgeVideos } = useJudgeRatingVideos();
   const { primaryCrew } = useCrewMembership(profile?.id);
