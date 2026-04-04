@@ -235,7 +235,7 @@ export default function SubmissionGrid({ userId }: SubmissionGridProps) {
         {selectedSubmission && (
           <SubmissionDetailModal
             submission={submissions.find(s => s.id === selectedSubmission)!}
-            userId={user?.id}
+            isOwner={!userId || userId === user?.id}
             onClose={() => setSelectedSubmission(null)}
             onThumbnailUpdated={refetch}
             onToggleHidden={toggleHidden}
@@ -250,19 +250,20 @@ export default function SubmissionGrid({ userId }: SubmissionGridProps) {
 // ── Detail Modal with Thumbnail Override ──
 function SubmissionDetailModal({
   submission,
-  userId,
+  isOwner,
   onClose,
   onThumbnailUpdated,
   onToggleHidden,
   onToggleQoiHidden,
 }: {
   submission: any;
-  userId?: string;
+  isOwner: boolean;
   onClose: () => void;
   onThumbnailUpdated: () => void;
   onToggleHidden: (submission: any) => void;
   onToggleQoiHidden: (submission: any) => void;
 }) {
+  const { user } = useAuth();
   const [showThumbInput, setShowThumbInput] = useState(false);
   const [thumbMode, setThumbMode] = useState<'file' | 'url'>('file');
   const [thumbUrl, setThumbUrl] = useState('');
@@ -306,13 +307,13 @@ function SubmissionDetailModal({
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !userId) return;
+    if (!file || !user?.id) return;
     if (!file.type.startsWith('image/')) { toast.error('Please select an image'); return; }
     if (file.size > 5 * 1024 * 1024) { toast.error('Max 5MB'); return; }
 
     setSaving(true);
     const ext = file.name.split('.').pop() || 'jpg';
-    const path = `${userId}/${submission.id}.${ext}`;
+    const path = `${user.id}/${submission.id}.${ext}`;
 
     const { error: uploadErr } = await supabase.storage
       .from('video-thumbnails')
@@ -371,8 +372,8 @@ function SubmissionDetailModal({
             ×
           </button>
 
-          {/* Thumbnail edit button */}
-          {userId && (
+          {/* Thumbnail edit button — owner only */}
+          {isOwner && (
             <button
               onClick={() => setShowThumbInput(!showThumbInput)}
               className="absolute top-3 left-3 w-8 h-8 rounded-full bg-black/50 flex items-center justify-center text-white hover:bg-gold/30 hover:text-gold transition-colors"
@@ -443,8 +444,8 @@ function SubmissionDetailModal({
         
         {/* Content */}
         <div className="p-4 space-y-4">
-          {/* Custom title / edit name */}
-          {userId && (
+          {/* Custom title / edit name — owner only */}
+          {isOwner && (
             <div className="flex items-center gap-2">
               {editingTitle ? (
                 <div className="flex-1 flex items-center gap-1.5">
@@ -476,7 +477,7 @@ function SubmissionDetailModal({
               )}
             </div>
           )}
-          {!userId && (
+          {!isOwner && (
             <div>
               <span className="font-semibold text-sm">
                 {submission.custom_title || submission.event?.title || 'Unknown Event'}
@@ -545,7 +546,7 @@ function SubmissionDetailModal({
           )}
           
           {/* QOI Visibility toggle — let users decide if QOI shows publicly */}
-          {userId && submission.qoi_score && (
+          {isOwner && submission.qoi_score && (
             <button
               onClick={() => { onToggleQoiHidden(submission); }}
               className={`flex items-center justify-center gap-2 w-full py-2.5 text-xs transition-colors border-t border-border/20 ${
