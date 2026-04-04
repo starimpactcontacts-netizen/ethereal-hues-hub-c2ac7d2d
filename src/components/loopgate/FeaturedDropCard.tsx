@@ -338,7 +338,7 @@ export default function FeaturedDropCard({ drop }: Props) {
               <span className="text-gold font-bold truncate">@{drop.top_scorer_username}</span>
             </div>
           )}
-          {drop.random_pick_username && (
+          {drop.random_pick_username && drop.random_pick_username !== drop.top_scorer_username && (
             <div className="flex items-center gap-1 bg-brand/8 border border-brand/15 rounded-full px-2 py-0.5 truncate">
               <Star className="w-2.5 h-2.5 text-brand shrink-0" />
               <span className="text-brand font-bold truncate">@{drop.random_pick_username}</span>
