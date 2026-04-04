@@ -551,16 +551,15 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
      );
    }
  
-   return (
-     <Button
-       variant="outline"
-       size="sm"
-       className={cn('gap-1.5', className)}
-       onClick={handleConnect}
-      disabled={actionLoading || weeklyRemaining <= 0}
-     >
-       {actionLoading ? <Loader2 size={14} className="animate-spin" /> : <UserPlus size={14} />}
-       Connect
-     </Button>
-   );
- }
+    return (
+      <Button
+        size="sm"
+        className={cn('gap-1.5 bg-gold text-gold-foreground hover:bg-gold/90 font-semibold', className)}
+        onClick={handleConnect}
+       disabled={actionLoading || weeklyRemaining <= 0}
+      >
+        {actionLoading ? <Loader2 size={14} className="animate-spin" /> : <UserPlus size={14} />}
+        Connect
+      </Button>
+    );
+  }
