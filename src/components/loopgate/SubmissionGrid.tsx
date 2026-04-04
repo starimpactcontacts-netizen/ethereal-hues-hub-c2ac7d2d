@@ -131,7 +131,8 @@ export default function SubmissionGrid({ userId }: SubmissionGridProps) {
           // Custom thumbnail > auto-fetched thumbnail
           const thumbnail = submission.thumbnail_url || getThumbnailUrl(submission.submission_url, submission.platform);
           const gradient = platformColors[submission.platform] || "from-gray-600 to-gray-400";
-          const isScored = submission.status === 'scored' && submission.qoi_score && !submission.qoi_hidden;
+          const isOwn = !!userId;
+          const isScored = submission.status === 'scored' && submission.qoi_score && (isOwn || !submission.qoi_hidden);
           
             return (
             <motion.button
