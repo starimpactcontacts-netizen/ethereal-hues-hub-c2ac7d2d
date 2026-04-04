@@ -80,8 +80,8 @@ export default function CompetitionLobbyPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!subUrl.trim()) return;
-    const validation = validatePlatformUrl(subUrl, platform);
-    if (!validation.isValid) { toast.error(validation.error || "Invalid URL"); return; }
+    const validation = validatePlatformUrl(subUrl, platform as PlatformType);
+    if (!validation.valid) { toast.error(validation.error || "Invalid URL"); return; }
     setIsSubmitting(true);
     const ok = await submit(subUrl.trim(), platform);
     if (ok) { toast.success("🎬 Edit submitted!"); setShowSubmit(false); setSubUrl(""); }
