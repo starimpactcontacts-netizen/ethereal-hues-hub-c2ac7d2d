@@ -554,20 +554,20 @@ export default function HubPage() {
 
           {/* Quick Access — Rolls Royce Starlight dock */}
           <div className="relative mt-4 mb-3">
-            {/* ─── Edge legs — continuous with card background ─── */}
+            {/* ─── Edge legs — at outer edges of card ─── */}
             <div className="pointer-events-none absolute inset-x-0 -top-10 h-[140px] z-0 overflow-visible">
               <div
-                className="absolute left-4 top-0 h-full w-[36px]"
+                className="absolute left-0 top-0 h-full w-[40px]"
                 style={{
-                  background: 'linear-gradient(to bottom, hsl(var(--surface-1) / 0.8) 0%, hsl(var(--surface-1) / 0.5) 50%, hsl(var(--surface-1) / 0.15) 80%, transparent 100%)',
-                  filter: 'blur(6px)',
+                  background: 'linear-gradient(to bottom, hsl(var(--surface-1)) 0%, hsl(var(--surface-1) / 0.7) 40%, hsl(var(--surface-1) / 0.25) 75%, transparent 100%)',
+                  filter: 'blur(5px)',
                 }}
               />
               <div
-                className="absolute right-4 top-0 h-full w-[36px]"
+                className="absolute right-0 top-0 h-full w-[40px]"
                 style={{
-                  background: 'linear-gradient(to bottom, hsl(var(--surface-1) / 0.8) 0%, hsl(var(--surface-1) / 0.5) 50%, hsl(var(--surface-1) / 0.15) 80%, transparent 100%)',
-                  filter: 'blur(6px)',
+                  background: 'linear-gradient(to bottom, hsl(var(--surface-1)) 0%, hsl(var(--surface-1) / 0.7) 40%, hsl(var(--surface-1) / 0.25) 75%, transparent 100%)',
+                  filter: 'blur(5px)',
                 }}
               />
             </div>
