@@ -894,6 +894,63 @@ export type Database = {
           },
         ]
       }
+      competition_messages: {
+        Row: {
+          avatar_url: string | null
+          competition_id: string
+          created_at: string
+          id: string
+          is_system: boolean | null
+          message_text: string
+          reply_to_id: string | null
+          reply_to_text: string | null
+          reply_to_username: string | null
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          competition_id: string
+          created_at?: string
+          id?: string
+          is_system?: boolean | null
+          message_text: string
+          reply_to_id?: string | null
+          reply_to_text?: string | null
+          reply_to_username?: string | null
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          competition_id?: string
+          created_at?: string
+          id?: string
+          is_system?: boolean | null
+          message_text?: string
+          reply_to_id?: string | null
+          reply_to_text?: string | null
+          reply_to_username?: string | null
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competition_messages_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "competition_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       competition_participants: {
         Row: {
           avatar_url: string | null
