@@ -244,6 +244,14 @@ export default function PublicProfilePage() {
       
       setRealStats({ totalEvents, winRate, totalWins });
 
+      // Fetch real connection count
+      const { count: connCount } = await supabase
+        .from("connections")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "accepted")
+        .or(`sender_id.eq.${uid},receiver_id.eq.${uid}`);
+      setRealConnectionCount(connCount || 0);
+
       // Fetch link page
       const [linkPageRes, linksRes] = await Promise.all([
         supabase.from("editor_link_pages").select("*").eq("user_id", profileData.id).eq("is_published", true).maybeSingle(),
