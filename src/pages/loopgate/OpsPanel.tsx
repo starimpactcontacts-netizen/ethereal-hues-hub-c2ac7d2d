@@ -30,6 +30,7 @@ import TournamentProposalsAdmin from "@/components/loopgate/TournamentProposalsA
 import TournamentLifecycleAdmin from "@/components/loopgate/TournamentLifecycleAdmin";
 import FeedModerationAdmin from "@/components/loopgate/FeedModerationAdmin";
 import PlatformAnalyticsAdmin from "@/components/loopgate/PlatformAnalyticsAdmin";
+import SupportTicketsAdmin from "@/components/loopgate/SupportTicketsAdmin";
 
 interface RealEvent {
   id: string;
@@ -3516,6 +3517,9 @@ export default function OpsPanel() {
 
         {/* ━━━ FEED MODERATION ━━━ */}
         <FeedModerationAdmin />
+
+        {/* ━━━ SUPPORT TICKETS ━━━ */}
+        <SupportTicketsAdmin />
 
         {/* ━━━ GROWTH ANALYTICS ━━━ */}
         <PlatformAnalyticsAdmin />

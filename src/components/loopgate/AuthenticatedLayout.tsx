@@ -5,6 +5,7 @@ import BottomNav from './BottomNav';
 import LoadingScreen from './LoadingScreen';
 import BeginnerGuideModal from './BeginnerGuideModal';
 import LoopyChat from './LoopyChat';
+import TicketFAB from './TicketFAB';
 import { useGlobalNotifications } from '@/hooks/useGlobalNotifications';
 import { useGlobalTapSound } from '@/hooks/useGlobalTapSound';
 
@@ -34,6 +35,7 @@ export default function AuthenticatedLayout() {
       
       {/* Loopy AI chatbot */}
       <LoopyChat />
+      <TicketFAB />
       
       {/* Auto-show beginner guide for new users / official opening */}
       <BeginnerGuideModal autoShow />
