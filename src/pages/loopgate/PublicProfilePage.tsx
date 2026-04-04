@@ -92,6 +92,7 @@ export default function PublicProfilePage() {
    const [videoCount, setVideoCount] = useState(0);
    const [isJudge, setIsJudge] = useState(false);
    const [realStats, setRealStats] = useState<{ totalEvents: number; winRate: number; totalWins: number }>({ totalEvents: 0, winRate: 0, totalWins: 0 });
+   const [realConnectionCount, setRealConnectionCount] = useState(0);
   const [linkPageSettings, setLinkPageSettings] = useState<LinkPageSettings | null>(null);
   const [editorLinks, setEditorLinks] = useState<EditorLink[]>([]);
   const { hasEquippedOG } = useEquippedBadges(resolvedUserId || undefined);
