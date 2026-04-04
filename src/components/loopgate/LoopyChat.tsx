@@ -17,6 +17,7 @@ const QUICK_ACTIONS = [
   { label: '🏆 Drops', msg: 'whats dropping rn?', icon: Trophy },
   { label: '👥 Units', msg: 'tell me about units', icon: Users },
   { label: '📈 My Stats', msg: 'whats my current stats looking like?', icon: Zap },
+  { label: '🐛 Report Bug', action: 'ticket', icon: Bug },
 ];
 
 export default function LoopyChat() {
@@ -82,14 +83,11 @@ export default function LoopyChat() {
     setOpen(true);
     setShowPulse(false);
     setDocked(false);
-    if (isGuest) {
-      if (!activeConversationId || messages.length === 0) await startNewChat();
-      setView('chat');
-    } else if (activeConversationId && messages.length > 0) {
-      setView('chat');
-    } else {
-      setView('menu');
+    // Always go straight to chat — if no active conversation, start a new one
+    if (!activeConversationId || messages.length === 0) {
+      await startNewChat();
     }
+    setView('chat');
   };
 
   const handleNewChat = async () => { await startNewChat(); setView('chat'); };
@@ -402,9 +400,11 @@ export default function LoopyChat() {
                             <button
                               key={action.label}
                               onClick={() => {
-                                if (action.route) {
+                                if ((action as any).action === 'ticket') {
+                                  handleTicket({ stopPropagation: () => {} } as any);
+                                } else if ((action as any).route) {
                                   setOpen(false);
-                                  navigate(action.route);
+                                  navigate((action as any).route);
                                 } else if (action.msg) {
                                   handleSend(action.msg);
                                 }
