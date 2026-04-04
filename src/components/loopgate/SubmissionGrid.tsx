@@ -477,7 +477,7 @@ function SubmissionDetailModal({
               )}
             </div>
           )}
-          {!userId && (
+          {!isOwner && (
             <div>
               <span className="font-semibold text-sm">
                 {submission.custom_title || submission.event?.title || 'Unknown Event'}
