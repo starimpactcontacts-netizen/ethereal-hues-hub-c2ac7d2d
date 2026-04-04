@@ -444,8 +444,8 @@ function SubmissionDetailModal({
         
         {/* Content */}
         <div className="p-4 space-y-4">
-          {/* Custom title / edit name */}
-          {userId && (
+          {/* Custom title / edit name — owner only */}
+          {isOwner && (
             <div className="flex items-center gap-2">
               {editingTitle ? (
                 <div className="flex-1 flex items-center gap-1.5">
