@@ -179,7 +179,7 @@ export default function LoopyChat() {
             initial={{ opacity: 0, y: 40, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 350, damping: 28, mass: 0.8 }}
-            className="fixed bottom-28 right-2 left-2 sm:left-auto sm:w-[380px] z-50 max-h-[70vh] flex flex-col rounded-2xl border border-border bg-background shadow-2xl shadow-black/40 overflow-hidden"
+            className="fixed bottom-20 right-2 left-2 sm:left-auto sm:w-[380px] z-[60] max-h-[75vh] flex flex-col rounded-2xl border border-border bg-background shadow-2xl shadow-black/40 overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center gap-2 px-3 py-2.5 bg-card border-b border-border">
