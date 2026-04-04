@@ -63,7 +63,7 @@ export default function MessageButton({
       size={size}
       onClick={handleClick}
       disabled={loading}
-      className={`${variant === 'outline' ? 'border-border' : 'bg-surface-1 hover:bg-surface-1/80 text-foreground'} ${className}`}
+      className={`${variant === 'outline' ? 'border-border bg-transparent hover:bg-accent' : 'bg-surface-1 hover:bg-surface-1/80 text-foreground'} ${className}`}
     >
       {loading ? (
         <Loader2 className="w-4 h-4 animate-spin mr-2" />
