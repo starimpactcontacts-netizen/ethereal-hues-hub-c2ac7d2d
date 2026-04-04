@@ -76,6 +76,7 @@ export function useUserSubmissions(targetUserId?: string) {
         submitted_at: s.submitted_at, thumbnail_url: s.thumbnail_url || null,
         custom_title: (s as any).custom_title || null, source: 'standard',
         is_hidden: hiddenSet.has(`standard:${s.id}`), qoi_hidden: qoiHiddenSet.has(`standard:${s.id}`),
+        xp_awarded: s.xp_awarded || 0, view_count: s.view_count || 0,
       });
     }
 
