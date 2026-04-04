@@ -46,22 +46,13 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
 
         <div className="absolute top-2.5 left-2.5"><LeagueBadge league={comp.league} /></div>
 
-        <div className="absolute top-2.5 right-2.5">
-          <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-black/50 backdrop-blur-sm border border-white/[0.06] rounded">
-            {comp.scoring_mode === "judged" ? <Gavel className="w-2.5 h-2.5 text-white/50" /> : <Vote className="w-2.5 h-2.5 text-white/50" />}
-            <span className="text-[8px] font-bold uppercase tracking-wider text-white/50">
-              {comp.scoring_mode === "judged" ? "Judged" : "Votes"}
-            </span>
-          </div>
-        </div>
-
         {/* Status */}
         <div className="absolute bottom-2.5 right-2.5">
-          <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wider ${
-            isLobby ? "bg-amber-500/20 text-amber-300 border border-amber-500/20" : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/20"
-          }`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${isLobby ? "bg-amber-400" : "bg-emerald-400"} animate-pulse`} />
-            {isLobby ? "In Lobby" : "Live"}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/[0.12]">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+            <span className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-amber-300" style={{ fontFamily: "'Teko', sans-serif" }}>
+              {isLobby ? "Awaiting Start" : "In Progress"}
+            </span>
           </div>
         </div>
 
