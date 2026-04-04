@@ -171,16 +171,6 @@ export default function ArenaCompetitionsSection({ onCreateClick }: { onCreateCl
           <span className="text-[15px] font-extrabold text-foreground tracking-tight" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
             Competitions
           </span>
-          {liveCount > 0 && (
-            <span className="flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> {liveCount} Live
-            </span>
-          )}
-          {lobbyCount > 0 && liveCount === 0 && (
-            <span className="flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" /> {lobbyCount} Open
-            </span>
-          )}
         </div>
         <button
           onClick={onCreateClick}
