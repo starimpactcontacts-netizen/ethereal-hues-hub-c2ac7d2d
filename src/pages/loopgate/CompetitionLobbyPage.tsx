@@ -80,7 +80,7 @@ export default function CompetitionLobbyPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!subUrl.trim()) return;
-    const validation = validatePlatformUrl(subUrl, platform as PlatformType);
+    const validation = validatePlatformUrl(subUrl, platform);
     if (!validation.valid) { toast.error(validation.error || "Invalid URL"); return; }
     setIsSubmitting(true);
     const ok = await submit(subUrl.trim(), platform);
