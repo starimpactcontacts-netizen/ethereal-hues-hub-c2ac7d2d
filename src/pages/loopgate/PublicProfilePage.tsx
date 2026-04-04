@@ -467,31 +467,7 @@ export default function PublicProfilePage() {
         </div>
       </div>
 
-      {/* ─── STATS STRIP — always visible, not buried in About ─── */}
-      <div className="px-4 py-3 flex items-stretch gap-1.5 border-b border-border/30">
-        <div className="flex-1 text-center py-2 bg-foreground/[0.03] rounded-lg">
-          <p className={`font-display text-base uppercase leading-none ${leagueColors[league]?.split(' ')[0] || 'text-muted-foreground'}`}>
-            {league === 'elite' ? 'ELT' : league === 'pro' ? 'PRO' : 'OPN'}
-          </p>
-          <p className="text-[8px] text-muted-foreground/50 uppercase tracking-widest mt-0.5">League</p>
-        </div>
-        <div className="flex-1 text-center py-2 bg-foreground/[0.03] rounded-lg">
-          <p className={`font-display text-base leading-none ${editorClass.color}`}>{editorClass.letter}</p>
-          <p className="text-[8px] text-muted-foreground/50 uppercase tracking-widest mt-0.5">Class</p>
-        </div>
-        <div className="flex-1 text-center py-2 bg-foreground/[0.03] rounded-lg">
-          <p className="font-display text-base text-gold leading-none tabular-nums">{Number(profile.global_index_score || 0).toFixed(1)}</p>
-          <p className="text-[8px] text-muted-foreground/50 uppercase tracking-widest mt-0.5">Index</p>
-        </div>
-        <div className="flex-1 text-center py-2 bg-foreground/[0.03] rounded-lg">
-          <p className="font-display text-base leading-none tabular-nums">{realStats.winRate.toFixed(0)}%</p>
-          <p className="text-[8px] text-muted-foreground/50 uppercase tracking-widest mt-0.5">Wins</p>
-        </div>
-        <div className="flex-1 text-center py-2 bg-foreground/[0.03] rounded-lg">
-          <p className="font-display text-base leading-none tabular-nums">{realStats.totalEvents}</p>
-          <p className="text-[8px] text-muted-foreground/50 uppercase tracking-widest mt-0.5">Events</p>
-        </div>
-      </div>
+      {/* Stats strip removed — now in About tab as radar */}
 
       {/* ─── TABS ─── */}
       <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border/20">
