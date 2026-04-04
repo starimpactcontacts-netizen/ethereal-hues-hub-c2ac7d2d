@@ -19,6 +19,10 @@ export interface UserSubmission {
   source: 'standard' | 'round' | 'sanctioned' | 'featured' | 'battle';
   is_hidden?: boolean;
   qoi_hidden?: boolean;
+  earned_cents?: number;
+  rating?: string | null;
+  xp_awarded?: number;
+  view_count?: number;
   event?: {
     id: string;
     title: string;
@@ -72,6 +76,7 @@ export function useUserSubmissions(targetUserId?: string) {
         submitted_at: s.submitted_at, thumbnail_url: s.thumbnail_url || null,
         custom_title: (s as any).custom_title || null, source: 'standard',
         is_hidden: hiddenSet.has(`standard:${s.id}`), qoi_hidden: qoiHiddenSet.has(`standard:${s.id}`),
+        xp_awarded: s.xp_awarded || 0, view_count: s.view_count || 0,
       });
     }
 
@@ -101,7 +106,6 @@ export function useUserSubmissions(targetUserId?: string) {
 
     // Featured submissions (drops/solos)
     for (const s of featuredRes.data || []) {
-      // Avoid duplicates if already in event_participations
       allSubmissions.push({
         id: s.id, event_id: s.drop_id, submission_url: s.submission_url, platform: s.platform || 'tiktok',
         status: s.qoi_score ? 'scored' : (s.status || 'pending'),
@@ -110,6 +114,9 @@ export function useUserSubmissions(targetUserId?: string) {
         submitted_at: s.created_at || '', thumbnail_url: s.thumbnail_url || null,
         custom_title: s.video_title || null, source: 'featured',
         is_hidden: hiddenSet.has(`featured:${s.id}`), qoi_hidden: qoiHiddenSet.has(`featured:${s.id}`),
+        earned_cents: (s as any).earned_cents || 0,
+        rating: (s as any).rating || null,
+        xp_awarded: (s as any).xp_awarded || 0,
       });
     }
 
