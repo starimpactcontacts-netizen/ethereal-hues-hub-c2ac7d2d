@@ -9,17 +9,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 
 function LeagueBadge({ league }: { league: string }) {
-  const cfg: Record<string, { label: string; dot: string; text: string; border: string; bg: string }> = {
-    open: { label: "OPEN", dot: "bg-white/40", text: "text-white/70", border: "border-white/[0.12]", bg: "bg-white/[0.04]" },
-    pro: { label: "PRO", dot: "bg-blue-400", text: "text-blue-300", border: "border-blue-400/20", bg: "bg-blue-500/[0.06]" },
-    elite: { label: "ELITE", dot: "bg-amber-400", text: "text-amber-300", border: "border-amber-400/20", bg: "bg-amber-500/[0.06]" },
-  };
-  const c = cfg[league] || cfg.open;
+  const labels: Record<string, string> = { open: "OPEN LEAGUE", pro: "PRO LEAGUE", elite: "ELITE LEAGUE" };
   return (
-    <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 border rounded backdrop-blur-sm ${c.border} ${c.bg}`}>
-      <div className={`w-1 h-1 rounded-full ${c.dot}`} />
-      <span className={`text-[8px] font-bold uppercase tracking-[0.12em] ${c.text}`} style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
-        {c.label}
+    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-black/60 backdrop-blur-md border border-white/[0.15] rounded-lg">
+      <span className="text-[9px] font-extrabold uppercase tracking-[0.15em] text-white/90" style={{ fontFamily: "'Teko', sans-serif" }}>
+        {labels[league] || labels.open}
       </span>
     </div>
   );
