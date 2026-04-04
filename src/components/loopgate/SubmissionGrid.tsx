@@ -250,14 +250,14 @@ export default function SubmissionGrid({ userId }: SubmissionGridProps) {
 // ── Detail Modal with Thumbnail Override ──
 function SubmissionDetailModal({
   submission,
-  userId,
+  isOwner,
   onClose,
   onThumbnailUpdated,
   onToggleHidden,
   onToggleQoiHidden,
 }: {
   submission: any;
-  userId?: string;
+  isOwner: boolean;
   onClose: () => void;
   onThumbnailUpdated: () => void;
   onToggleHidden: (submission: any) => void;
