@@ -111,7 +111,7 @@ export default function LoopyChat() {
             initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 20, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             onClick={() => setDocked(false)}
-            className="fixed bottom-28 right-0 z-50 cursor-grab active:cursor-grabbing pointer-events-auto group touch-none"
+            className="fixed bottom-20 right-0 z-50 cursor-grab active:cursor-grabbing pointer-events-auto group touch-none"
           >
             <motion.div animate={{ x: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }} className="flex flex-col gap-6 items-end">
               {[0, 1].map(i => (
