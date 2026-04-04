@@ -420,8 +420,8 @@ export default function HubPage() {
         {/* Subtle top gradient */}
         <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-surface-1/50 to-transparent pointer-events-none" />
         {/* Side arch blurs — clipped to this container */}
-        <div className="absolute top-0 -left-10 w-48 h-64 bg-surface-1/80 rounded-full blur-[60px] pointer-events-none" />
-        <div className="absolute top-0 -right-10 w-48 h-64 bg-surface-1/80 rounded-full blur-[60px] pointer-events-none" />
+        <div className="absolute top-0 -left-10 w-48 h-64 bg-surface-1 rounded-full blur-[50px] pointer-events-none" />
+        <div className="absolute top-0 -right-10 w-48 h-64 bg-surface-1 rounded-full blur-[50px] pointer-events-none" />
 
         <div className="relative px-4 pt-5 pb-0">
           <motion.div
