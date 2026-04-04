@@ -812,13 +812,9 @@ export default function FeaturedDropDetailPage() {
                           )}>
                             {/* Thumbnail */}
                             <div className="aspect-[9/12] bg-surface-2 relative">
-                              {sub.thumbnail_url ? (
-                                <img src={sub.thumbnail_url} alt="" className="w-full h-full object-cover" loading="lazy" />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-surface-2 to-surface-1">
-                                  <Video className="w-6 h-6 text-muted-foreground/20" />
-                                </div>
-                              )}
+                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-surface-2 to-surface-1">
+                                <Video className="w-6 h-6 text-muted-foreground/20" />
+                              </div>
                               {/* Gradient overlay */}
                               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                               {/* Rank badge */}
