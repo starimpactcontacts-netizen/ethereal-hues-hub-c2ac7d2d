@@ -59,7 +59,7 @@ export default function CreateCompetitionPage() {
 
   // Advanced fields
   const [description, setDescription] = useState("");
-  const [deadline, setDeadline] = useState("");
+  const [durationHours, setDurationHours] = useState(12);
   const [league, setLeague] = useState("open");
   const [scoringMode, setScoringMode] = useState("judged");
   const [maxParticipants, setMaxParticipants] = useState(100);
