@@ -7,6 +7,9 @@ import loopyAvatar from '@/assets/loopy-avatar.png';
 import { useLoopyChat } from '@/hooks/useLoopyChat';
 import { useAuth } from '@/hooks/useAuth';
 import ReactMarkdown from 'react-markdown';
+import { useTicketStore } from './TicketFAB';
+import { useGuestMode } from '@/hooks/useGuestMode';
+import { useAccountPrompt } from '@/hooks/useAccountPrompt';
 
 const QUICK_ACTIONS = [
   { label: '⚔️ Battle', msg: 'how do i start a battle?', icon: Swords },
