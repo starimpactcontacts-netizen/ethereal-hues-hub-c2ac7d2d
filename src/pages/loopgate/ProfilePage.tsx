@@ -34,12 +34,11 @@ export default function ProfilePage() {
   const { profile: tempProfile, isTemp, clearProfile: clearTempProfile } = useTempProfile();
   const { isGuest, clearGuest } = useGuestMode();
   const { rankings } = useRealRankings();
-  const { xp, level } = useXP();
   const { submissions } = useUserSubmissions();
   const { videos: judgeVideos } = useJudgeRatingVideos();
   const { primaryCrew } = useCrewMembership(profile?.id);
   const { isAnyJudge } = useUserRoles(profile?.id);
-  const { hasEquippedOG } = useEquippedBadges(profile?.id);
+  const { badges, hasEquippedOG } = useEquippedBadges(profile?.id);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'edits' | 'reviews' | 'videos' | 'links'>('edits');
 
