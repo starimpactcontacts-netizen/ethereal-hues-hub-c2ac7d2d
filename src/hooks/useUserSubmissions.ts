@@ -18,6 +18,7 @@ export interface UserSubmission {
   custom_title: string | null;
   source: 'standard' | 'round' | 'sanctioned' | 'featured' | 'battle';
   is_hidden?: boolean;
+  qoi_hidden?: boolean;
   event?: {
     id: string;
     title: string;
