@@ -136,11 +136,16 @@ export default function ProfilePage() {
           >
             <Share2 className="w-3 h-3" />
           </button>
-          <ActivityStatusSelector
-            userId={profile.id}
-            currentStatus={(profile as any).activity_status || "online"}
-            onStatusChange={refreshProfile}
-          />
+          <div className="flex items-center gap-2">
+            <Link to="/shop" className="p-1.5 rounded-full hover:bg-surface-1/60 transition-colors">
+              <ShoppingBag className="w-4 h-4 text-muted-foreground hover:text-gold transition-colors" />
+            </Link>
+            <ActivityStatusSelector
+              userId={profile.id}
+              currentStatus={(profile as any).activity_status || "online"}
+              onStatusChange={refreshProfile}
+            />
+          </div>
         </div>
 
         {/* Centered avatar */}
@@ -177,56 +182,35 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {/* ═══ CUSTOMIZATION SHOWCASE ═══ */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-sm mb-3"
-          >
-            {/* Equipped items display */}
-            {badges.length > 0 ? (
-              <div className="bg-surface-1/60 border border-border/30 rounded-xl p-3 overflow-hidden">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-mono">Equipped</span>
-                  <Link to="/inventory" className="text-[9px] text-muted-foreground hover:text-foreground transition-colors">Edit →</Link>
-                </div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  {badges.map((badge) => (
-                    <div key={badge.id} className="flex items-center gap-1.5 px-2.5 py-1.5 bg-surface-1/80 border border-border/40 rounded-full">
-                      {badge.image_url ? (
-                        <img src={badge.image_url} alt={badge.item_name} className="w-4 h-4 rounded-sm object-cover" />
-                      ) : (
-                        <Sparkles className="w-3.5 h-3.5 text-gold" />
-                      )}
-                      <span className="text-[10px] font-medium">{badge.item_name}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <Link to="/shop" className="block">
-                <div className="bg-surface-1/60 border border-border/30 rounded-xl p-4 text-center hover:border-border/50 transition-colors group">
-                  <ShoppingBag className="w-5 h-5 text-muted-foreground/50 mx-auto mb-2 group-hover:text-gold transition-colors" />
-                  <p className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors">Customize your profile</p>
-                  <p className="text-[9px] text-muted-foreground/50 mt-0.5">Frames, badges, themes & more</p>
-                </div>
-              </Link>
-            )}
-
-            {/* Unit badge */}
-            {primaryCrew?.crew && (
-              <Link to={`/units/${primaryCrew.crew_id}`} className="mt-2 flex items-center gap-1.5 px-2 py-1 bg-surface-1/50 border border-border/20 rounded-full hover:border-border/40 transition-colors w-fit">
-                <div className="w-4 h-4 rounded-full overflow-hidden bg-muted/30 flex items-center justify-center shrink-0">
-                  {primaryCrew.crew.avatar_url ? (
-                    <img src={primaryCrew.crew.avatar_url} alt="" className="w-full h-full object-cover" />
+          {/* Equipped badges inline */}
+          {badges.length > 0 && (
+            <div className="flex items-center gap-1.5 flex-wrap justify-center mb-2">
+              {badges.map((badge) => (
+                <Link key={badge.id} to="/inventory" className="flex items-center gap-1 px-2 py-1 bg-surface-1/60 border border-border/30 rounded-full hover:border-border/50 transition-colors">
+                  {badge.image_url ? (
+                    <img src={badge.image_url} alt={badge.item_name} className="w-3.5 h-3.5 rounded-sm object-cover" />
                   ) : (
-                    <Shield className="w-2 h-2 text-muted-foreground" />
+                    <Sparkles className="w-3 h-3 text-gold" />
                   )}
-                </div>
-                <span className="text-[10px] font-medium truncate max-w-[80px]">{primaryCrew.crew.name}</span>
-              </Link>
-            )}
-          </motion.div>
+                  <span className="text-[9px] font-medium">{badge.item_name}</span>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {/* Unit badge */}
+          {primaryCrew?.crew && (
+            <Link to={`/units/${primaryCrew.crew_id}`} className="flex items-center gap-1.5 px-2 py-1 bg-surface-1/50 border border-border/20 rounded-full hover:border-border/40 transition-colors w-fit mb-2">
+              <div className="w-4 h-4 rounded-full overflow-hidden bg-muted/30 flex items-center justify-center shrink-0">
+                {primaryCrew.crew.avatar_url ? (
+                  <img src={primaryCrew.crew.avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <Shield className="w-2 h-2 text-muted-foreground" />
+                )}
+              </div>
+              <span className="text-[10px] font-medium truncate max-w-[80px]">{primaryCrew.crew.name}</span>
+            </Link>
+          )}
 
           {/* Quick nav — tiny circle icons */}
           <div className="flex items-center gap-3 mb-3">
