@@ -13,7 +13,7 @@ interface SEOProps {
 const defaultMeta = {
   title: 'Loopgate — #1 Edit Competition & Video Editing Tournament Platform',
   description: 'Loopgate is the world\'s #1 edit competition platform. Enter video editing competitions, 1v1 edit battles, editing tournaments, and contests. Get rated by certified judges and climb the global editor rankings. Free to join.',
-  image: 'https://storage.googleapis.com/gpt-engineer-file-uploads/mff08AeRisdvHL1tgv4VUuuN8iR2/social-images/social-1767675177062-Gemini_Generated_Image_h3v18bh3v18bh3v1.jpg',
+  image: 'https://tmfnqnmyxxydrxwjkaiq.supabase.co/storage/v1/object/public/loop-media/branding/loopgate-og.png',
   url: 'https://loopgate.io',
   keywords: 'edit competition, editing competition, video editing competition, editing tournament, editing contest, edit battle, 1v1 editing battle, video editing contest, editing challenge, competitive editing, editor vs editor, editing leaderboard, editor rankings, video editing tournament, film editing competition, editing contest 2025 2026, best editing competition, online editing competition, free editing competition, video editing battle, edit fest, editing championship, content creator competition, video editing rankings, competitive video editing platform',
 };
