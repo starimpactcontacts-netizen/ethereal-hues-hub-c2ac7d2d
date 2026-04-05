@@ -47,6 +47,10 @@ const config: CapacitorConfig = {
     Keyboard: {
       resize: 'body',
       resizeOnFullScreen: true
+    },
+    // Capgo live updates - OTA updates without App Store review
+    CapacitorUpdater: {
+      autoUpdate: true
     }
   }
 };
