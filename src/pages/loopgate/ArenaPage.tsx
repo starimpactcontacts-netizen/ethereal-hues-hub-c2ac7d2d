@@ -1490,7 +1490,7 @@ export default function ArenaPage() {
             </motion.section>
           )}
 
-          {/* (Official Events now shown above as Featured Drops with rounds) */}
+          {/* (King of the Hill now shown above as Featured Drops) */}
 
           <div className="h-8" />
         </div>
