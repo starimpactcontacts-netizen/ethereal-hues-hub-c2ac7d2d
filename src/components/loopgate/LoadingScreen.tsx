@@ -27,7 +27,7 @@ export default function LoadingScreen({ minimal = false }: LoadingScreenProps) {
         className="relative flex items-center justify-center"
       >
         <div className="absolute inset-[-18px] rounded-full bg-foreground/5 blur-2xl" aria-hidden="true" />
-        <GateIcon size={104} className="relative text-foreground" aria-hidden="true" />
+        <GateIcon size={48} className="relative text-foreground" aria-hidden="true" />
       </motion.div>
     </div>
   );
