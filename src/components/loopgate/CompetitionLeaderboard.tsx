@@ -177,10 +177,11 @@ export default function CompetitionLeaderboard({ submissions }: { submissions: C
   const carouselRef = useRef<HTMLDivElement>(null);
 
   const sorted = [...submissions].sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
-  if (sorted.length === 0) return null;
 
   const topEdits = sorted.slice(0, 6);
   const visibleList = showAll ? sorted : sorted.slice(0, 5);
+
+  const isEmpty = sorted.length === 0;
 
   return (
     <>
