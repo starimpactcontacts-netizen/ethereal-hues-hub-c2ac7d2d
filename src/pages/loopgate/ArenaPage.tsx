@@ -7,7 +7,7 @@ import {
   Search, X, TrendingUp, Plus, HelpCircle, CheckCircle2, Info,
   Clock, Award, UserPlus, Eye, Globe, Crown, Zap, UserRound,
   Sparkles, Star, Music, Mail, ArrowRight, History, Play, Loader2,
-  Clapperboard, ChevronDown, Crosshair, DollarSign
+  Clapperboard, ChevronDown, Crosshair, DollarSign, Shuffle
 } from "lucide-react";
 import { InfinityLoop } from "@/components/loopgate/InfinityLoop";
 import { supabase } from "@/integrations/supabase/client";
