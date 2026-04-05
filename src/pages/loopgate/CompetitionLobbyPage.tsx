@@ -198,22 +198,20 @@ export default function CompetitionLobbyPage() {
               <span className="text-[10px] text-muted-foreground/50 ml-1.5">Host</span>
             </div>
           </button>
-          {competition.index_reward_pool > 0 && (
-            <span className="flex items-center gap-1 text-[10px] font-bold text-gold">
-              <Trophy className="w-3 h-3" /> +{competition.index_reward_pool} IDX
-            </span>
-          )}
-        </div>
-
-        {/* ═══ COUNTDOWN — inline, no box ═══ */}
-        {isLive && competition.deadline && !deadlinePassed && (
-          <div className="text-center py-1">
-            <p className="text-[9px] text-muted-foreground/50 uppercase tracking-[0.2em] mb-1.5 font-bold" style={teko}>TIME REMAINING</p>
-            <div className="flex justify-center">
-              <LiveCountdown deadline={competition.deadline} />
-            </div>
+          <div className="flex items-center gap-3">
+            {isLive && competition.deadline && !deadlinePassed && (
+              <div className="flex items-center gap-1.5">
+                <Clock className="w-3 h-3 text-red-400" />
+                <LiveCountdown deadline={competition.deadline} />
+              </div>
+            )}
+            {competition.index_reward_pool > 0 && (
+              <span className="flex items-center gap-1 text-[10px] font-bold text-gold">
+                <Trophy className="w-3 h-3" /> +{competition.index_reward_pool} IDX
+              </span>
+            )}
           </div>
-        )}
+        </div>
 
         {/* ═══ THEME — simple inline text, no box ═══ */}
         {(competition.theme || competition.description) && (
