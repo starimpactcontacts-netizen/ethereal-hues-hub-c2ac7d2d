@@ -125,7 +125,7 @@ export default function SoloModeFlow({ onBack }: { onBack: () => void }) {
               <span className="text-[16px] font-extrabold uppercase tracking-[0.1em] text-foreground" style={teko}>Solo Mode</span>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-400/10 border border-amber-400/20">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-950/60 border border-amber-400/30">
             <Trophy className="w-3 h-3 text-amber-400" />
             <span className="text-[10px] text-amber-400 font-bold" style={teko}>100+ IDX</span>
           </div>
