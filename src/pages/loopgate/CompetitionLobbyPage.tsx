@@ -457,16 +457,14 @@ export default function CompetitionLobbyPage() {
 
         {/* ═══ EDITORS ═══ */}
         <div>
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-2 mb-2">
             <Users className="w-3.5 h-3.5 text-muted-foreground/50" />
             <span className="text-[14px] font-extrabold uppercase tracking-[0.1em] text-foreground" style={teko}>
               Editors ({participants.length})
             </span>
           </div>
           {participants.length === 0 ? (
-            <div className="bg-surface-1 border border-dashed border-white/[0.06] rounded-xl p-6 text-center">
-              <p className="text-xs text-muted-foreground/40">No editors yet — be the first</p>
-            </div>
+            <p className="text-xs text-muted-foreground/40 text-center py-3">No editors yet — be the first</p>
           ) : (
             <div className="flex flex-wrap gap-3">
               {participants.map(p => (
