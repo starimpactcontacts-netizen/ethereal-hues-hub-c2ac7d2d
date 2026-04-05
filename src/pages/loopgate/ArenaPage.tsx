@@ -1116,7 +1116,7 @@ export default function ArenaPage() {
                 disabled={isQfSearching}
                 className="relative overflow-hidden touch-manipulation transition-all min-h-[52px] px-8 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-500 active:bg-red-700"
               >
-                <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
+                <div className="absolute top-0 left-0 right-0 h-px bg-white/[0.12] pointer-events-none" />
                 {isQfSearching ? (
                   <>
                     <Loader2 className="w-4 h-4 text-amber-400 animate-spin relative z-10" />
