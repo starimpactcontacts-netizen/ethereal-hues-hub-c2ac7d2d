@@ -127,6 +127,21 @@ function getNotificationLink(notification: Notification): string | null {
       return data?.tournament_id ? `/sanctioned/${data.tournament_id}` : '/arena';
     case 'dm_received':
       return '/messages';
+    case 'chat_mention':
+    case 'chat_reply': {
+      const chatType = data?.chat_type;
+      if (chatType === 'featured_drop_messages' && data?.drop_id) return `/drop/${data.drop_id}`;
+      if (chatType === 'battle_messages' && data?.battle_id) return `/battle/${data.battle_id}`;
+      if (chatType === 'arena_messages' && data?.arena_id) return `/arena/${data.arena_id}`;
+      if (chatType === 'competition_messages' && data?.competition_id) return `/arena/competition/${data.competition_id}`;
+      return '/arena';
+    }
+    case 'quick_fight_result':
+      return data?.fight_id ? `/quick-fight/${data.fight_id}` : '/arena';
+    case 'practice_matched':
+      return data?.match_id ? `/practice/${data.match_id}` : '/arena';
+    case 'battle_invite':
+      return data?.battle_id ? `/battle/${data.battle_id}` : '/arena';
     default:
       return null;
   }
