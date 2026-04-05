@@ -1342,7 +1342,7 @@ export default function ArenaPage() {
                       const random = liveDrops[Math.floor(Math.random() * liveDrops.length)];
                       if (random) navigate(`/drop/${random.id}`);
                     }}
-                    className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-500/30 rounded-full px-3 py-1 hover:bg-emerald-900/60 transition-all active:scale-95"
+                    className="flex items-center gap-1.5 text-[10px] font-bold text-foreground bg-surface-2 border border-border rounded-full px-3 py-1 hover:bg-surface-1 transition-all active:scale-95"
                   >
                     <Shuffle className="w-3 h-3" />
                     Join Random
