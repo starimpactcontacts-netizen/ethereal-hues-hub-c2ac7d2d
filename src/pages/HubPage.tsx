@@ -28,7 +28,7 @@ import FeaturedDropCard from '@/components/loopgate/FeaturedDropCard';
 import FeaturedCarousel from '@/components/loopgate/FeaturedCarousel';
 import LoopMonster from '@/components/loopgate/LoopMonster';
 import QuickFightButton from '@/components/loopgate/QuickFightButton';
-import { findQuickFight, useMyQuickFights, leaveQueue } from '@/hooks/useQuickFight';
+import { useMyQuickFights, leaveQueue } from '@/hooks/useQuickFight';
 import { useSoloMode } from '@/hooks/useSoloMode';
 import { useAccountPrompt } from '@/hooks/useAccountPrompt';
 import GlitchEdge from '@/components/loopgate/GlitchEdge';
@@ -53,6 +53,7 @@ import { useEquippedBadges } from '@/hooks/useEquippedBadges';
 import CommissionsSection from '@/components/loopgate/CommissionsSection';
 import WalletDrawer from '@/components/loopgate/WalletDrawer';
 import LoopyWelcomeModal from '@/components/loopgate/LoopyWelcomeModal';
+import { startQuickMatch } from '@/lib/startQuickMatch';
 
 // ── Live Feed for Hub ──────────────────────────────────────────────────
 const actionColors: Record<string, string> = {
@@ -273,11 +274,20 @@ export default function HubPage() {
     if (qfActiveFight) { navigate(`/fight/${qfActiveFight.id}`); return; }
     setQfSearching(true);
     try {
-      const fightId = await findQuickFight(user.id, profile.username, profile.avatar_url);
-      if (fightId) {
+      const result = await startQuickMatch({
+        userId: user.id,
+        username: profile.username,
+        avatarUrl: profile.avatar_url,
+      });
+
+      if (result.type === 'battle') {
+        toast.success('⚔️ Opponent found!');
+        navigate(`/battle/${result.id}`);
+        setQfSearching(false);
+      } else if (result.type === 'fight') {
         toast.success('⚔️ Match found!');
-        navigate(`/fight/${fightId}`);
-        supabase.functions.invoke('notify-quick-fight-match', { body: { fight_id: fightId } }).catch(() => {});
+        navigate(`/fight/${result.id}`);
+        supabase.functions.invoke('notify-quick-fight-match', { body: { fight_id: result.id } }).catch(() => {});
         setQfSearching(false);
       } else {
         toast('🔍 In queue — we\'ll notify you when matched!', { duration: 4000 });

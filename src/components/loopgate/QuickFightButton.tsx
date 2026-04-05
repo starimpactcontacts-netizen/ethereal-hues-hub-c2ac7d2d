@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Swords, Loader2, Clock, X, Info, Zap } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { findQuickFight, useMyQuickFights } from '@/hooks/useQuickFight';
+import { useMyQuickFights } from '@/hooks/useQuickFight';
 import { useAccountPrompt } from '@/hooks/useAccountPrompt';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { startQuickMatch } from '@/lib/startQuickMatch';
 
 interface QuickFightButtonProps {
   size?: 'sm' | 'lg';
@@ -94,11 +95,20 @@ export default function QuickFightButton({ size = 'lg', className = '' }: QuickF
 
     setSearching(true);
     try {
-      const fightId = await findQuickFight(user.id, profile.username, profile.avatar_url);
-      if (fightId) {
+      const result = await startQuickMatch({
+        userId: user.id,
+        username: profile.username,
+        avatarUrl: profile.avatar_url,
+      });
+
+      if (result.type === 'battle') {
+        toast.success('⚔️ Opponent found!');
+        navigate(`/battle/${result.id}`);
+        setSearching(false);
+      } else if (result.type === 'fight') {
         toast.success('⚔️ Match found!');
-        navigate(`/fight/${fightId}`);
-        supabase.functions.invoke('notify-quick-fight-match', { body: { fight_id: fightId } }).catch(() => {});
+        navigate(`/fight/${result.id}`);
+        supabase.functions.invoke('notify-quick-fight-match', { body: { fight_id: result.id } }).catch(() => {});
         setSearching(false);
       } else {
         toast('🔍 In queue — we\'ll notify you when matched!', { duration: 4000 });
