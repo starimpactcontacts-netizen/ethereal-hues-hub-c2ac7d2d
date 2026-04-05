@@ -269,7 +269,7 @@ export default function FeaturedDropDetailPage() {
         {/* Info button */}
         <button
           onClick={() => setShowInfoDrawer(!showInfoDrawer)}
-          className="flex items-center gap-2 px-3 py-2.5 bg-foreground/[0.04] border border-foreground/[0.08] hover:border-emerald-500/30 hover:bg-emerald-500/[0.06] transition-all active:scale-[0.98] touch-manipulation group"
+          className="flex items-center gap-2 px-3 py-2.5 rounded-xl hover:bg-emerald-500/[0.06] transition-all active:scale-[0.98] touch-manipulation group"
         >
           <Info className="w-4 h-4 text-emerald-400" />
           <span className="text-sm font-bold text-foreground/70 group-hover:text-foreground uppercase tracking-wider" style={teko}>
