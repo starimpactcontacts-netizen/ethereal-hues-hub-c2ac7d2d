@@ -84,10 +84,9 @@ const CAPABILITIES = [
 interface StudioHomeProps {
   onNewProject: () => void;
   onOpenProject: (project: StudioProject) => void;
-  onOpenAutoEdit?: () => void;
 }
 
-export default function StudioHome({ onNewProject, onOpenProject, onOpenAutoEdit }: StudioHomeProps) {
+export default function StudioHome({ onNewProject, onOpenProject }: StudioHomeProps) {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [projects, setProjects] = useState<StudioProject[]>([]);
