@@ -395,9 +395,7 @@ export default function CompetitionLobbyPage() {
         </div>
 
         {/* ═══ LEADERBOARD ═══ */}
-        {submissions.length > 0 && (
-          <CompetitionLeaderboard submissions={submissions} />
-        )}
+        <CompetitionLeaderboard submissions={submissions} />
 
         {/* ═══ EDITORS ═══ */}
         <div>
