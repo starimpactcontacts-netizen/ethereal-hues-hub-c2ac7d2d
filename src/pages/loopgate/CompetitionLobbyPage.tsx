@@ -1,19 +1,61 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Trophy, Users, Clock, Play, Loader2, Send,
-  Share2, Check, MessageCircle, ExternalLink
+  Share2, Check, MessageCircle, ExternalLink, Layers, Swords
 } from "lucide-react";
 import { useCompetition } from "@/hooks/useCompetitions";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { formatDistanceToNow, isPast } from "date-fns";
+import { formatDistanceToNow, isPast, differenceInSeconds } from "date-fns";
 import { validatePlatformUrl, getPlatformUrlPlaceholder, type PlatformType } from "@/lib/urlValidation";
 import CompetitionChat from "@/components/loopgate/CompetitionChat";
 
 const teko = { fontFamily: "Teko, sans-serif" };
+
+function LiveCountdown({ deadline }: { deadline: string }) {
+  const [remaining, setRemaining] = useState(() => Math.max(0, differenceInSeconds(new Date(deadline), new Date())));
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const diff = Math.max(0, differenceInSeconds(new Date(deadline), new Date()));
+      setRemaining(diff);
+      if (diff <= 0) clearInterval(interval);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [deadline]);
+
+  const h = Math.floor(remaining / 3600);
+  const m = Math.floor((remaining % 3600) / 60);
+  const s = remaining % 60;
+
+  if (remaining <= 0) return <span className="text-red-400 font-bold text-sm tracking-wider" style={teko}>TIME'S UP</span>;
+
+  return (
+    <div className="flex items-center gap-1">
+      {h > 0 && (
+        <>
+          <div className="bg-black/40 border border-white/[0.08] rounded-lg px-2 py-1 min-w-[36px] text-center">
+            <span className="text-lg font-bold text-white tabular-nums" style={teko}>{String(h).padStart(2, '0')}</span>
+            <span className="text-[7px] text-zinc-500 block uppercase tracking-wider -mt-0.5">HR</span>
+          </div>
+          <span className="text-zinc-600 text-sm font-bold">:</span>
+        </>
+      )}
+      <div className="bg-black/40 border border-white/[0.08] rounded-lg px-2 py-1 min-w-[36px] text-center">
+        <span className="text-lg font-bold text-white tabular-nums" style={teko}>{String(m).padStart(2, '0')}</span>
+        <span className="text-[7px] text-zinc-500 block uppercase tracking-wider -mt-0.5">MIN</span>
+      </div>
+      <span className="text-zinc-600 text-sm font-bold">:</span>
+      <div className="bg-black/40 border border-white/[0.08] rounded-lg px-2 py-1 min-w-[36px] text-center">
+        <span className="text-lg font-bold text-white tabular-nums" style={teko}>{String(s).padStart(2, '0')}</span>
+        <span className="text-[7px] text-zinc-500 block uppercase tracking-wider -mt-0.5">SEC</span>
+      </div>
+    </div>
+  );
+}
 
 export default function CompetitionLobbyPage() {
   const { id } = useParams<{ id: string }>();
