@@ -1456,15 +1456,6 @@ export default function ArenaPage() {
                 </div>
               )}
 
-              {/* Quick fight rows merged here */}
-              {quickFights.length > 0 && (
-                <div className="px-4 mt-3 space-y-1">
-                  <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-wider mb-1.5 px-1">Quick Matches</p>
-                  {quickFights.slice(0, activeFilter === "battles" ? 20 : 5).map(fight => (
-                    <Quick1v1Row key={fight.id} fight={fight} onClick={() => navigate(`/fight/${fight.id}`)} />
-                  ))}
-                </div>
-              )}
             </motion.section>
           )}
 
