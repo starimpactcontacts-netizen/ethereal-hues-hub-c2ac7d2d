@@ -20,8 +20,16 @@ export default function LoadingScreen({ minimal = false }: LoadingScreenProps) {
   }
 
   return (
-      <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-50 gap-8">
-        <img src={loopgateLogo} alt="Loopgate" className="w-[240px] h-[240px] max-w-[48vw] max-h-[28vh] object-contain" style={{ imageRendering: '-webkit-optimize-contrast' }} />
+    <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-50">
+      <motion.img
+        src={loopgateLogo}
+        alt="Loopgate"
+        className="w-[120px] h-[120px] max-w-[30vw] max-h-[15vh] object-contain"
+        style={{ imageRendering: '-webkit-optimize-contrast', filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.06))' }}
+        initial={{ opacity: 0, scale: 0.92 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+      />
     </div>
   );
 }
