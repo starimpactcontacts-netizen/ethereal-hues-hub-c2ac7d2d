@@ -258,7 +258,13 @@ export default function CompetitionLobbyPage() {
             {/* GO EDIT + SUBMIT side by side */}
             <div className="flex gap-2">
               <button
-                onClick={() => navigate("/studio")}
+                onClick={() => {
+                  const params = new URLSearchParams();
+                  if (competition.theme) params.set("theme", competition.theme);
+                  if (competition.description) params.set("instructions", competition.description);
+                  if (competition.id) params.set("comp_id", competition.id);
+                  navigate(`/studio?${params.toString()}`);
+                }}
                 className="flex-[2] py-4 rounded-xl flex items-center justify-center gap-2.5 transition-all active:scale-[0.98]"
                 style={{
                   background: "linear-gradient(135deg, #ef4444, #dc2626)",
@@ -272,11 +278,16 @@ export default function CompetitionLobbyPage() {
               </button>
               <button
                 onClick={() => setShowSubmit(true)}
-                className="flex-1 py-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] border border-white/[0.1] bg-zinc-900/80 hover:bg-zinc-800/80"
-                style={teko}
+                className="flex-1 py-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                style={{
+                  background: "linear-gradient(135deg, hsl(142 71% 45%), hsl(142 76% 36%))",
+                  color: "#fff",
+                  boxShadow: "0 4px 24px rgba(34,197,94,0.25)",
+                  ...teko,
+                }}
               >
-                <Send className="w-4 h-4 text-white/70" />
-                <span className="text-[14px] font-extrabold uppercase tracking-[0.1em] text-white/70">SUBMIT</span>
+                <Send className="w-4 h-4" />
+                <span className="text-[14px] font-extrabold uppercase tracking-[0.1em]">SUBMIT</span>
               </button>
             </div>
 
