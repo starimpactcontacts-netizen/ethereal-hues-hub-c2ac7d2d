@@ -318,22 +318,7 @@ export default function CompetitionLobbyPage() {
           </button>
         )}
 
-        {/* Submit */}
-        {canSubmit && !showSubmit && (
-          <button
-            onClick={() => setShowSubmit(true)}
-            className="w-full py-4 rounded-xl flex items-center justify-center gap-2.5 transition-all"
-            style={{
-              background: "linear-gradient(135deg, #ef4444, #dc2626)",
-              color: "#fff",
-              boxShadow: "0 4px 24px rgba(239,68,68,0.25)",
-              ...teko,
-            }}
-          >
-            <Send className="w-4 h-4" />
-            <span className="text-[16px] font-extrabold uppercase tracking-[0.15em]">SUBMIT YOUR EDIT</span>
-          </button>
-        )}
+        {/* Submit fallback — only if somehow GO EDIT block didn't render */}
 
         {hasSubmitted && (
           <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 text-center">
