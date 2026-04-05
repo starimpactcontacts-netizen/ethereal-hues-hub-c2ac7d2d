@@ -34,25 +34,16 @@ function LiveCountdown({ deadline }: { deadline: string }) {
   if (remaining <= 0) return <span className="text-red-400 font-bold text-sm tracking-wider" style={teko}>TIME'S UP</span>;
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-0.5">
       {h > 0 && (
         <>
-          <div className="bg-black/40 border border-white/[0.08] rounded-lg px-2 py-1 min-w-[36px] text-center">
-            <span className="text-lg font-bold text-white tabular-nums" style={teko}>{String(h).padStart(2, '0')}</span>
-            <span className="text-[7px] text-zinc-500 block uppercase tracking-wider -mt-0.5">HR</span>
-          </div>
-          <span className="text-zinc-600 text-sm font-bold">:</span>
+          <span className="text-sm font-bold text-red-400 tabular-nums" style={teko}>{String(h).padStart(2, '0')}h</span>
+          <span className="text-red-400/40 text-xs">:</span>
         </>
       )}
-      <div className="bg-black/40 border border-white/[0.08] rounded-lg px-2 py-1 min-w-[36px] text-center">
-        <span className="text-lg font-bold text-white tabular-nums" style={teko}>{String(m).padStart(2, '0')}</span>
-        <span className="text-[7px] text-zinc-500 block uppercase tracking-wider -mt-0.5">MIN</span>
-      </div>
-      <span className="text-zinc-600 text-sm font-bold">:</span>
-      <div className="bg-black/40 border border-white/[0.08] rounded-lg px-2 py-1 min-w-[36px] text-center">
-        <span className="text-lg font-bold text-white tabular-nums" style={teko}>{String(s).padStart(2, '0')}</span>
-        <span className="text-[7px] text-zinc-500 block uppercase tracking-wider -mt-0.5">SEC</span>
-      </div>
+      <span className="text-sm font-bold text-red-400 tabular-nums" style={teko}>{String(m).padStart(2, '0')}m</span>
+      <span className="text-red-400/40 text-xs">:</span>
+      <span className="text-sm font-bold text-red-400 tabular-nums" style={teko}>{String(s).padStart(2, '0')}s</span>
     </div>
   );
 }
@@ -207,22 +198,20 @@ export default function CompetitionLobbyPage() {
               <span className="text-[10px] text-muted-foreground/50 ml-1.5">Host</span>
             </div>
           </button>
-          {competition.index_reward_pool > 0 && (
-            <span className="flex items-center gap-1 text-[10px] font-bold text-gold">
-              <Trophy className="w-3 h-3" /> +{competition.index_reward_pool} IDX
-            </span>
-          )}
-        </div>
-
-        {/* ═══ COUNTDOWN — inline, no box ═══ */}
-        {isLive && competition.deadline && !deadlinePassed && (
-          <div className="text-center py-1">
-            <p className="text-[9px] text-muted-foreground/50 uppercase tracking-[0.2em] mb-1.5 font-bold" style={teko}>TIME REMAINING</p>
-            <div className="flex justify-center">
-              <LiveCountdown deadline={competition.deadline} />
-            </div>
+          <div className="flex items-center gap-3">
+            {isLive && competition.deadline && !deadlinePassed && (
+              <div className="flex items-center gap-1.5">
+                <Clock className="w-3 h-3 text-red-400" />
+                <LiveCountdown deadline={competition.deadline} />
+              </div>
+            )}
+            {competition.index_reward_pool > 0 && (
+              <span className="flex items-center gap-1 text-[10px] font-bold text-gold">
+                <Trophy className="w-3 h-3" /> +{competition.index_reward_pool} IDX
+              </span>
+            )}
           </div>
-        )}
+        </div>
 
         {/* ═══ THEME — simple inline text, no box ═══ */}
         {(competition.theme || competition.description) && (
@@ -281,7 +270,7 @@ export default function CompetitionLobbyPage() {
                 <span className="text-[14px] font-extrabold uppercase tracking-[0.1em]">SUBMIT</span>
               </button>
             </div>
-            <p className="text-[10px] text-muted-foreground/30 text-center">Use any editor you want — submit your link when ready</p>
+            <p className="text-[10px] text-muted-foreground/30 text-center">Use any editing software you like (CapCut, Adobe, etc.) — submit your link when ready</p>
           </motion.div>
         )}
 
