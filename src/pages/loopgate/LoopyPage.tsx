@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -50,34 +51,50 @@ export default function LoopyPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [started, setStarted] = useState(false);
+  const promptCountRef = useRef(0);
+  const PROMPT_LIMIT = 20;
 
   // Auto-scroll on new messages
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, streaming]);
 
-  // Auto-start chat
+  // On mount: load last conversation if exists, but DON'T auto-create new ones
   useEffect(() => {
     if (!started) {
       setStarted(true);
       if (conversations.length > 0) {
         continueLastChat();
-      } else {
-        startNewChat();
       }
+      // If no conversations, just show welcome screen — no auto-create
     }
-  }, [started, conversations.length, continueLastChat, startNewChat]);
+  }, [started, conversations.length, continueLastChat]);
 
   // Focus input
   useEffect(() => {
     if (activeConversationId) setTimeout(() => inputRef.current?.focus(), 200);
   }, [activeConversationId]);
 
-  const handleSend = (text?: string) => {
+  const handleSend = async (text?: string) => {
     const msg = (text || input).trim();
     if (!msg || streaming) return;
     setInput('');
-    sendMessage(msg);
+
+    // Rate limit check
+    promptCountRef.current += 1;
+    if (promptCountRef.current > PROMPT_LIMIT) {
+      toast.error("yo chill 😭 ur running up our bills. we're pre-everything and broke asf. try again in a min 🙏");
+      setTimeout(() => { promptCountRef.current = 0; }, 60_000);
+      return;
+    }
+
+    // If no active conversation, create one first then send with the returned ID
+    if (!activeConversationId) {
+      const newId = await startNewChat();
+      if (newId) sendMessage(msg, newId);
+    } else {
+      sendMessage(msg);
+    }
   };
 
   const handleNewChat = async () => {
