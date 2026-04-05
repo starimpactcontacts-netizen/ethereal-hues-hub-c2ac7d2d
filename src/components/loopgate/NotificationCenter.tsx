@@ -50,6 +50,8 @@ const typeConfig: Record<string, { icon: typeof Bell; color: string; bg: string;
   house_accepted:      { icon: Star,           color: "text-gold",         bg: "bg-gold/15",         accent: "border-l-gold" },
   house_invited:       { icon: Star,           color: "text-gold",         bg: "bg-gold/15",         accent: "border-l-gold" },
   dm_received:         { icon: MessageSquare,  color: "text-cyan-400",     bg: "bg-cyan-400/15",     accent: "border-l-cyan-400" },
+  chat_mention:        { icon: MessageCircle,  color: "text-red-400",      bg: "bg-red-400/15",      accent: "border-l-red-400" },
+  chat_reply:          { icon: MessageCircle,  color: "text-blue-400",     bg: "bg-blue-400/15",     accent: "border-l-blue-400" },
   crew_mention:        { icon: Users,          color: "text-orange-400",   bg: "bg-orange-400/15",   accent: "border-l-orange-400" },
   // System
   system:              { icon: Megaphone,      color: "text-white",        bg: "bg-white/10",        accent: "border-l-white" },
@@ -125,6 +127,21 @@ function getNotificationLink(notification: Notification): string | null {
       return data?.tournament_id ? `/sanctioned/${data.tournament_id}` : '/arena';
     case 'dm_received':
       return '/messages';
+    case 'chat_mention':
+    case 'chat_reply': {
+      const chatType = data?.chat_type;
+      if (chatType === 'featured_drop_messages' && data?.drop_id) return `/drop/${data.drop_id}`;
+      if (chatType === 'battle_messages' && data?.battle_id) return `/battle/${data.battle_id}`;
+      if (chatType === 'arena_messages' && data?.arena_id) return `/arena/${data.arena_id}`;
+      if (chatType === 'competition_messages' && data?.competition_id) return `/arena/competition/${data.competition_id}`;
+      return '/arena';
+    }
+    case 'quick_fight_result':
+      return data?.fight_id ? `/quick-fight/${data.fight_id}` : '/arena';
+    case 'practice_matched':
+      return data?.match_id ? `/practice/${data.match_id}` : '/arena';
+    case 'battle_invite':
+      return data?.battle_id ? `/battle/${data.battle_id}` : '/arena';
     default:
       return null;
   }
