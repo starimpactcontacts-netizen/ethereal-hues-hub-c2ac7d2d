@@ -1325,11 +1325,6 @@ export default function ArenaPage() {
       {arenaView === 'arena' && !loading && (
         <div className="mt-2 space-y-6">
 
-          {/* ═══ SOLO MODE SHOWCASE — dominant section ═══ */}
-          {(activeFilter === "all") && (
-            <SoloShowcase onStartSolo={() => setShowSoloMode(true)} />
-          )}
-
           {/* King of the Hill — Featured Drops with leaderboard */}
           {(activeFilter === "all" || activeFilter === "official") && (
             <motion.section key="official-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>

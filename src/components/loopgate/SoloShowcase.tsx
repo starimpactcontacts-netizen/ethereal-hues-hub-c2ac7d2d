@@ -66,11 +66,9 @@ function SoloCard({ solo }: { solo: RecentSolo }) {
         )}
 
         {/* Theme label — centered */}
-        {!solo.thumbnail_url && (
-          <div className="absolute inset-0 flex items-center justify-center z-[1]">
-            <span className="text-[11px] font-black text-white/20 uppercase tracking-[0.2em] text-center px-4 leading-tight">{solo.theme}</span>
-          </div>
-        )}
+        <div className="absolute inset-0 flex items-center justify-center z-[1]">
+          <span className="text-[11px] font-black text-white/20 uppercase tracking-[0.2em] text-center px-4 leading-tight">{solo.theme}</span>
+        </div>
 
         {/* Bottom content */}
         <div className="absolute bottom-0 left-0 right-0 p-2.5 z-10">
