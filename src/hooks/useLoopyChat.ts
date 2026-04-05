@@ -127,10 +127,10 @@ export function useLoopyChat() {
     setStreaming(true);
 
     // Save user message
-    saveMessage(activeConversationId, userMsg);
+    saveMessage(convIdToUse, userMsg);
 
     let assistantContent = '';
-    const convId = activeConversationId;
+    const convId = convIdToUse;
 
     const updateAssistant = (chunk: string) => {
       assistantContent += chunk;
