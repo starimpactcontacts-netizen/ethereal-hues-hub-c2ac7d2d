@@ -248,25 +248,6 @@ export default function CompetitionLobbyPage() {
             animate={{ opacity: 1, scale: 1 }}
             className="space-y-3"
           >
-            {/* Dismissible theme instructions */}
-            {showThemeHint && (competition.theme || competition.description) && (
-              <div className="bg-zinc-900/60 border border-white/[0.08] rounded-xl p-3 flex items-start gap-3 relative">
-                <Layers className="w-4 h-4 text-zinc-400 shrink-0 mt-0.5" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-[9px] text-zinc-500 uppercase tracking-[0.15em] font-bold mb-0.5">THEME</p>
-                  <p className="text-xs text-white font-medium">{competition.theme || competition.description}</p>
-                  {competition.description && competition.theme && (
-                    <p className="text-[10px] text-zinc-500 mt-1">{competition.description}</p>
-                  )}
-                </div>
-                <button
-                  onClick={() => setShowThemeHint(false)}
-                  className="p-1 rounded-lg hover:bg-white/[0.05] text-zinc-600 hover:text-zinc-400 transition-colors shrink-0"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            )}
 
             {/* Round status */}
             <div className="flex items-center justify-center gap-2">
