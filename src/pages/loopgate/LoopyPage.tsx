@@ -83,6 +83,7 @@ export default function LoopyPage() {
     // Rate limit check
     promptCountRef.current += 1;
     if (promptCountRef.current > PROMPT_LIMIT) {
+      toast.error("yo chill 😭 ur running up our bills. we're pre-everything and broke asf. try again in a min 🙏");
       setTimeout(() => { promptCountRef.current = 0; }, 60_000);
       return;
     }
