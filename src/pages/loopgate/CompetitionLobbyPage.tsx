@@ -34,25 +34,16 @@ function LiveCountdown({ deadline }: { deadline: string }) {
   if (remaining <= 0) return <span className="text-red-400 font-bold text-sm tracking-wider" style={teko}>TIME'S UP</span>;
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-0.5">
       {h > 0 && (
         <>
-          <div className="bg-black/40 border border-white/[0.08] rounded-lg px-2 py-1 min-w-[36px] text-center">
-            <span className="text-lg font-bold text-white tabular-nums" style={teko}>{String(h).padStart(2, '0')}</span>
-            <span className="text-[7px] text-zinc-500 block uppercase tracking-wider -mt-0.5">HR</span>
-          </div>
-          <span className="text-zinc-600 text-sm font-bold">:</span>
+          <span className="text-sm font-bold text-red-400 tabular-nums" style={teko}>{String(h).padStart(2, '0')}h</span>
+          <span className="text-red-400/40 text-xs">:</span>
         </>
       )}
-      <div className="bg-black/40 border border-white/[0.08] rounded-lg px-2 py-1 min-w-[36px] text-center">
-        <span className="text-lg font-bold text-white tabular-nums" style={teko}>{String(m).padStart(2, '0')}</span>
-        <span className="text-[7px] text-zinc-500 block uppercase tracking-wider -mt-0.5">MIN</span>
-      </div>
-      <span className="text-zinc-600 text-sm font-bold">:</span>
-      <div className="bg-black/40 border border-white/[0.08] rounded-lg px-2 py-1 min-w-[36px] text-center">
-        <span className="text-lg font-bold text-white tabular-nums" style={teko}>{String(s).padStart(2, '0')}</span>
-        <span className="text-[7px] text-zinc-500 block uppercase tracking-wider -mt-0.5">SEC</span>
-      </div>
+      <span className="text-sm font-bold text-red-400 tabular-nums" style={teko}>{String(m).padStart(2, '0')}m</span>
+      <span className="text-red-400/40 text-xs">:</span>
+      <span className="text-sm font-bold text-red-400 tabular-nums" style={teko}>{String(s).padStart(2, '0')}s</span>
     </div>
   );
 }
