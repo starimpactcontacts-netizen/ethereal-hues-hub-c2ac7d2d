@@ -1114,14 +1114,9 @@ export default function ArenaPage() {
                   }
                 }}
                 disabled={isQfSearching}
-                className="relative overflow-hidden touch-manipulation transition-all min-h-[52px] px-8 flex items-center justify-center gap-2 bg-gradient-to-r from-red-600 via-red-500 to-red-600 hover:from-red-500 hover:via-red-400 hover:to-red-500"
-                style={{
-                  boxShadow: isQfSearching 
-                    ? '0 0 20px rgba(245, 158, 11, 0.3)' 
-                    : '0 0 30px rgba(239, 68, 68, 0.4), 0 0 60px rgba(239, 68, 68, 0.15)',
-                }}
+                className="relative overflow-hidden touch-manipulation transition-all min-h-[52px] px-8 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-500 active:bg-red-700"
               >
-                <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
+                <div className="absolute top-0 left-0 right-0 h-px bg-white/[0.12] pointer-events-none" />
                 {isQfSearching ? (
                   <>
                     <Loader2 className="w-4 h-4 text-amber-400 animate-spin relative z-10" />
@@ -1347,7 +1342,7 @@ export default function ArenaPage() {
                       const random = liveDrops[Math.floor(Math.random() * liveDrops.length)];
                       if (random) navigate(`/drop/${random.id}`);
                     }}
-                    className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-3 py-1 hover:bg-emerald-500/20 transition-all active:scale-95"
+                    className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-500/30 rounded-full px-3 py-1 hover:bg-emerald-900/60 transition-all active:scale-95"
                   >
                     <Shuffle className="w-3 h-3" />
                     Join Random
