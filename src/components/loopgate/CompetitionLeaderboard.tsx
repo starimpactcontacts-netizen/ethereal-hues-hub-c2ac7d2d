@@ -195,6 +195,15 @@ export default function CompetitionLeaderboard({ submissions }: { submissions: C
           <span className="text-[11px] text-muted-foreground/40 ml-auto" style={teko}>{sorted.length} EDIT{sorted.length !== 1 ? "S" : ""}</span>
         </div>
 
+        {isEmpty ? (
+          <div className="py-8 text-center space-y-2">
+            <div className="w-12 h-12 rounded-full bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mx-auto">
+              <Trophy className="w-5 h-5 text-muted-foreground/20" />
+            </div>
+            <p className="text-xs text-muted-foreground/40">No edits submitted yet — be the first to claim the top spot</p>
+          </div>
+        ) : (
+        <>
         {/* ═══ TOP EDITS CAROUSEL ═══ */}
         <div
           ref={carouselRef}
