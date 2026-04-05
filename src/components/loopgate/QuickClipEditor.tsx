@@ -963,9 +963,9 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
         <AlightTimeline
           layers={(() => {
             const alightLayers: AlightLayer[] = [];
-            if (videoFile) {
+            if (file) {
               alightLayers.push({
-                id: "v1", name: videoFile.name.substring(0, 20), type: "video",
+                id: "v1", name: file.name.substring(0, 20), type: "video",
                 color: "#4ECDC4", visible: true, locked: false,
                 startTime: trimStart, endTime: trimEnd || duration,
                 thumbnail: thumbnails[0],
