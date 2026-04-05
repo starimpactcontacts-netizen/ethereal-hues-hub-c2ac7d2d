@@ -1330,7 +1330,7 @@ export default function ArenaPage() {
             <SoloShowcase onStartSolo={() => setShowSoloMode(true)} />
           )}
 
-          {/* Official Events — Featured Drops with rounds */}
+          {/* King of the Hill — Featured Drops with leaderboard */}
           {(activeFilter === "all" || activeFilter === "official") && (
             <motion.section key="official-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <SectionHeader
