@@ -365,7 +365,7 @@ export default function FeaturedDropDetailPage() {
                 return (
                   <div
                     key={round.id}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 shrink-0 transition-colors ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full shrink-0 transition-colors ${
                       isActive
                         ? 'bg-destructive/10 text-destructive'
                         : isCurrentJudging
