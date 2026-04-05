@@ -13,7 +13,7 @@ const HERO_FEATURES = [
   { icon: Zap, label: "24+ Real-time FX", color: "#FF6B00" },
   { icon: Layers, label: "Multi-track PiP", color: "#00D4FF" },
   { icon: Diamond, label: "Keyframe Animation", color: "#AA44FF" },
-  { icon: Sparkles, label: "Auto-Edit", color: "#FF004F" },
+  { icon: Sparkles, label: "Real-time FX", color: "#FF004F" },
   { icon: Music, label: "Audio Mixing", color: "#A855F7" },
   { icon: ArrowUpCircle, label: "4K Upscale", color: "#22CC88" },
 ];
