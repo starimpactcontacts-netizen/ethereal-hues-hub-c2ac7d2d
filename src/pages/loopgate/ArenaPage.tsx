@@ -1114,12 +1114,7 @@ export default function ArenaPage() {
                   }
                 }}
                 disabled={isQfSearching}
-                className="relative overflow-hidden touch-manipulation transition-all min-h-[52px] px-8 flex items-center justify-center gap-2 bg-gradient-to-r from-red-600 via-red-500 to-red-600 hover:from-red-500 hover:via-red-400 hover:to-red-500"
-                style={{
-                  boxShadow: isQfSearching 
-                    ? '0 0 20px rgba(245, 158, 11, 0.3)' 
-                    : '0 0 30px rgba(239, 68, 68, 0.4), 0 0 60px rgba(239, 68, 68, 0.15)',
-                }}
+                className="relative overflow-hidden touch-manipulation transition-all min-h-[52px] px-8 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-500 active:bg-red-700"
               >
                 <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
                 {isQfSearching ? (
