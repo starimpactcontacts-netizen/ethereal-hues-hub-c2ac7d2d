@@ -7,7 +7,7 @@ import SoloModeBanner from "@/components/loopgate/SoloModeBanner";
 import StudioHome, { type StudioProject, saveStudioProject } from "@/components/loopgate/StudioHome";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Film, Upload, Target, ArrowRight, X, Loader2 } from "lucide-react";
+import { Film, Upload, Target, ArrowRight, X, Loader2, Layers } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { saveVideoFile, loadVideoFile, deleteVideoFile } from "@/lib/studioFileStore";
 import StudioCrashBoundary from "@/components/loopgate/studio/StudioCrashBoundary";
