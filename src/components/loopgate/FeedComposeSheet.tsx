@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Link2, Globe } from "lucide-react";
+import { X, Link2, Globe, Video } from "lucide-react";
 import GateIcon from '@/components/loopgate/GateIcon';
 import GifPicker from "./GifPicker";
 import MediaUploadButton from "./MediaUploadButton";
