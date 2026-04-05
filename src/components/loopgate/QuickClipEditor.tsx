@@ -959,28 +959,54 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
           )}
         </div>
 
-        {/* ─── Pro Timeline ─── */}
-        <StudioProTimeline
+        {/* ─── Alight Motion-style Timeline ─── */}
+        <AlightTimeline
+          layers={(() => {
+            const alightLayers: AlightLayer[] = [];
+            if (videoFile) {
+              alightLayers.push({
+                id: "v1", name: videoFile.name.substring(0, 20), type: "video",
+                color: "#4ECDC4", visible: true, locked: false,
+                startTime: trimStart, endTime: trimEnd || duration,
+                thumbnail: thumbnails[0],
+              });
+            }
+            if (audioName) {
+              alightLayers.push({
+                id: "a1", name: audioName, type: "audio",
+                color: "#FF6B6B", visible: true, locked: false,
+                startTime: 0, endTime: duration,
+              });
+            }
+            textOverlays.forEach(t => {
+              alightLayers.push({
+                id: `t-${t.id}`, name: t.text.substring(0, 15), type: "text",
+                color: "#FFE66D", visible: true, locked: false,
+                startTime: t.startTime, endTime: t.endTime,
+              });
+            });
+            return alightLayers;
+          })()}
           duration={duration}
           currentTime={currentTime}
-          trimStart={trimStart}
-          trimEnd={trimEnd}
           playing={playing}
-          thumbnails={thumbnails}
-          audioName={audioName}
-          markers={timelineMarkers}
           onSeek={seekTo}
-          onTrimStartChange={setTrimStart}
-          onTrimEndChange={setTrimEnd}
           onTogglePlay={togglePlay}
-          onAddMarker={(time) => {
-            setTimelineMarkers(prev => [...prev, { id: crypto.randomUUID(), time, color: "#FF6B00", label: `M${prev.length + 1}`, type: "beat" as const }]);
-            toast.success("Marker added");
+          onToggleVisibility={() => {}}
+          onToggleLock={() => {}}
+          onSelectLayer={(id) => {
+            if (id?.startsWith("t-")) {
+              const textId = id.replace("t-", "");
+              setEditingTextId(textId);
+              setActiveTool("text");
+            }
           }}
-          onSplit={(time) => {
-            setTimelineMarkers(prev => [...prev, { id: crypto.randomUUID(), time, color: "#FF004F", label: "Cut", type: "cut" as const }]);
-            toast.success("Split point added");
+          onReorderLayers={() => {}}
+          onAddLayer={() => {
+            // Trigger the add panel in toolbar
           }}
+          selectedLayerId={null}
+          thumbnails={thumbnails}
         />
 
         {/* ─── Tool Panel ─── */}
