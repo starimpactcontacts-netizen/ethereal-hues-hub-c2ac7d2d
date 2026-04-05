@@ -278,7 +278,7 @@ export default function FeaturedDropDetailPage() {
         </button>
 
         {/* Participant count */}
-        <div className="flex items-center gap-1.5 px-2.5 py-2.5 bg-foreground/[0.04] border border-foreground/[0.08]">
+        <div className="flex items-center gap-1.5 px-2.5 py-2.5 rounded-xl">
           <Users className="w-3.5 h-3.5 text-foreground/30" />
           <span className="text-sm font-bold text-foreground/40 tabular-nums" style={teko}>
             {allSubs.length + queueCount}
