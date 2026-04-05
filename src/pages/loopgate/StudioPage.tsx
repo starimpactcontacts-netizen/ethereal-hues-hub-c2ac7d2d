@@ -36,7 +36,7 @@ export default function StudioPage() {
   const [missionDismissed, setMissionDismissed] = useState(false);
   const [compHintDismissed, setCompHintDismissed] = useState(false);
   const [loadingProject, setLoadingProject] = useState(false);
-  const [autoEditOpen, setAutoEditOpen] = useState(false);
+  // auto-edit removed
 
   // Fetch mission data if mission param present
   useEffect(() => {
