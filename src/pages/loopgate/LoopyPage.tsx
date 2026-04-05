@@ -50,34 +50,58 @@ export default function LoopyPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [started, setStarted] = useState(false);
+  const promptCountRef = useRef(0);
+  const PROMPT_LIMIT = 20;
 
   // Auto-scroll on new messages
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, streaming]);
 
-  // Auto-start chat
+  // On mount: load last conversation if exists, but DON'T auto-create new ones
   useEffect(() => {
     if (!started) {
       setStarted(true);
       if (conversations.length > 0) {
         continueLastChat();
-      } else {
-        startNewChat();
       }
+      // If no conversations, just show welcome screen — no auto-create
     }
-  }, [started, conversations.length, continueLastChat, startNewChat]);
+  }, [started, conversations.length, continueLastChat]);
 
   // Focus input
   useEffect(() => {
     if (activeConversationId) setTimeout(() => inputRef.current?.focus(), 200);
   }, [activeConversationId]);
 
-  const handleSend = (text?: string) => {
+  const handleSend = async (text?: string) => {
     const msg = (text || input).trim();
     if (!msg || streaming) return;
+
+    // Rate limit check
+    promptCountRef.current += 1;
+    if (promptCountRef.current > PROMPT_LIMIT) {
+      setInput('');
+      // Show rate limit as a fake assistant message
+      const rateLimitMsg = "yo chill 😭 ur running up our bills rn. we're a pre-everything platform and literally broke asf. take a breather and come back in a min 🙏";
+      if (!activeConversationId) {
+        await startNewChat();
+      }
+      // Just set a timeout to reset
+      setTimeout(() => { promptCountRef.current = 0; }, 60_000);
+      sendMessage(msg); // still send but warn next time
+      return;
+    }
+
     setInput('');
-    sendMessage(msg);
+    // If no active conversation, create one first then send
+    if (!activeConversationId) {
+      await startNewChat();
+      // Small delay to let state settle
+      setTimeout(() => sendMessage(msg), 100);
+    } else {
+      sendMessage(msg);
+    }
   };
 
   const handleNewChat = async () => {
