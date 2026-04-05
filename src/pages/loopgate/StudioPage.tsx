@@ -381,7 +381,28 @@ export default function StudioPage() {
         </div>
       )}
 
-      {/* Loading overlay when restoring from IndexedDB */}
+      {/* Competition Theme Hint */}
+      {(compTheme || compInstructions) && !compHintDismissed && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-zinc-900/95 backdrop-blur-sm border-b border-white/[0.08] px-3 py-2.5 flex items-start gap-2.5"
+          style={{ top: activeMission && !missionDismissed ? '40px' : '0' }}
+        >
+          <Layers className="w-4 h-4 text-zinc-400 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <span className="text-[9px] font-black text-zinc-500 uppercase tracking-wider">Competition Theme</span>
+            {compTheme && <p className="text-xs font-bold text-white truncate">{compTheme}</p>}
+            {compInstructions && <p className="text-[10px] text-zinc-400 mt-0.5 line-clamp-2">{compInstructions}</p>}
+          </div>
+          {compId && (
+            <Link to={`/arena/competition/${compId}`} className="shrink-0 text-[9px] font-black text-white bg-white/10 px-2 py-1 rounded flex items-center gap-1 hover:bg-white/20 transition-colors">
+              Back <ArrowRight className="w-3 h-3" />
+            </Link>
+          )}
+          <button onClick={() => setCompHintDismissed(true)} className="shrink-0 text-zinc-600 hover:text-white transition-colors">
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
       {loadingProject && (
         <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center">
           <div className="flex flex-col items-center gap-3">
