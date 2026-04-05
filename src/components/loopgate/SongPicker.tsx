@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Music, Play, Pause, Check, VolumeX, Loader2, Crown } from "lucide-react";
+import { Music, Play, Pause, Check, VolumeX, Loader2, Crown, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const teko = { fontFamily: "Teko, sans-serif" };
