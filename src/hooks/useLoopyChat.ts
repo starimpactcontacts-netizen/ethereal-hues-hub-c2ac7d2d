@@ -117,8 +117,9 @@ export function useLoopyChat() {
   }, [isGuest]);
 
   // Send message with streaming
-  const sendMessage = useCallback(async (text: string) => {
-    if (!text.trim() || streaming || !activeConversationId) return;
+  const sendMessage = useCallback(async (text: string, overrideConvId?: string) => {
+    const convIdToUse = overrideConvId || activeConversationId;
+    if (!text.trim() || streaming || !convIdToUse) return;
 
     const userMsg: Message = { role: 'user', content: text.trim() };
     const allMessages = [...messages, userMsg];
