@@ -1374,8 +1374,6 @@ export default function ArenaPage() {
               <SectionHeader
                 icon={<Swords className="w-4 h-4 text-red-400" />}
                 title="1v1 Edit Battles"
-                badge={(liveBattles + liveQuick) > 0 ? `${liveBattles + liveQuick} Live` : undefined}
-                badgeColor="bg-red-500/20 border-red-500/40 text-red-400"
                 infoText="Go head-to-head with another editor. Quick Match instantly pairs you with someone in queue. Challenge lets you pick your opponent, set a song & deadline. Winner earns +20 IDX."
                 action={
                   <div className="flex items-center gap-1.5">
