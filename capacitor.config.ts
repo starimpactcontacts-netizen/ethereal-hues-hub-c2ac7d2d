@@ -18,7 +18,8 @@ const config: CapacitorConfig = {
     backgroundColor: '#000000',
     scrollEnabled: true,
     allowsLinkPreview: false,
-    overrideUserAgent: 'Loopgate iOS App'
+    overrideUserAgent: 'Loopgate iOS App',
+    webContentsDebuggingEnabled: false
   },
   
   plugins: {
