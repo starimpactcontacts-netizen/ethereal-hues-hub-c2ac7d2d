@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Link2, ImagePlus } from "lucide-react";
+import { Send, Link2, ImagePlus, Video } from "lucide-react";
 import GateIcon from '@/components/loopgate/GateIcon';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,7 +18,7 @@ interface FeedPostComposerProps {
 const POST_TYPE_OPTIONS: { id: FeedPostItem['post_type']; label: string; icon: React.ReactNode }[] = [
   { id: 'text', label: 'Loop', icon: null },
   { id: 'flex', label: 'Flex', icon: <GateIcon className="w-3 h-3" /> },
-  { id: 'edit_share', label: 'Edit', icon: <Link2 className="w-3 h-3" /> },
+  { id: 'edit_share', label: 'Edit', icon: <Video className="w-3 h-3" /> },
 ];
 
 const MAX_CHARS = 280;
