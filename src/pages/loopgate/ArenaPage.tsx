@@ -1335,10 +1335,10 @@ export default function ArenaPage() {
             <motion.section key="official-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <SectionHeader
                 icon={<InfinityIcon className="w-4 h-4 text-gold" />}
-                title="Official Events"
+                title="King of the Hill"
                 badge={liveDrops.length > 0 ? `${liveDrops.length} Live` : undefined}
                 badgeColor="bg-emerald-500/20 border-emerald-500/40 text-emerald-400"
-                infoText="Multi-round competitions with cash prizes. Submit your edit each round — judges score on a 0–100 QOI scale. Top scorers earn cash + Index."
+                infoText="30 edits decide the king. Stay #1 on the leaderboard each week to stack XP & Index. More submissions = bigger rewards for the reigning king — until the hill is taken."
               />
               {liveDrops.length > 0 ? (
                 <div className="px-4 flex gap-3 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory">
