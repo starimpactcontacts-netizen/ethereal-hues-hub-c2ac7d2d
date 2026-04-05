@@ -507,7 +507,7 @@ export default function FeaturedDropDetailPage() {
                 </div>
 
                 {/* Queue progress bar */}
-                <div className="w-full h-2.5 bg-foreground/[0.06] overflow-hidden relative z-10">
+                <div className="w-full h-2.5 bg-foreground/[0.06] overflow-hidden rounded-full relative z-10">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${Math.min((queueCount / 100) * 100, 100)}%` }}
