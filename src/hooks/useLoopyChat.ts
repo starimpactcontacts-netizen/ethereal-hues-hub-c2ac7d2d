@@ -55,19 +55,18 @@ export function useLoopyChat() {
   }, [isGuest]);
 
   // Create new conversation
-  const startNewChat = useCallback(async () => {
+  const startNewChat = useCallback(async (): Promise<string | null> => {
     const greeting: Message = {
       role: 'assistant',
       content: `yoo wsg${displayName ? ` ${displayName}` : ''}. ask me whatever about loopgate — battles, units, rankings, all that. i got u`
     };
 
     if (isGuest) {
-      // In-memory only for guests
       guestConvCounterRef.current += 1;
       const guestId = `guest-${guestConvCounterRef.current}`;
       setActiveConversationId(guestId);
       setMessages([greeting]);
-      return;
+      return guestId;
     }
 
     const { data } = await supabase
@@ -85,7 +84,9 @@ export function useLoopyChat() {
       setActiveConversationId(data.id);
       setMessages([greeting]);
       loadConversations();
+      return data.id;
     }
+    return null;
   }, [user, isGuest, displayName, loadConversations]);
 
   // Continue most recent conversation
