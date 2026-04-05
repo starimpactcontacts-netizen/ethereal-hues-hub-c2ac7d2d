@@ -128,11 +128,11 @@ export default function CompetitionLobbyPage() {
 
   const handleShare = async () => {
     const cleanUrl = `${window.location.origin}/competition/${competition.slug || competition.id}`;
-    const shareText = `🏆 ${competition.name}\n\n${competition.theme ? `Theme: ${competition.theme}\n` : ''}${competition.current_players}/${competition.max_players} editors competing${competition.index_reward_pool > 0 ? ` · +${competition.index_reward_pool} IDX reward` : ''}\n\nJoin the lobby 👇\n${cleanUrl}`;
+    const shareText = `🏆 ${competition.name}\n\n${competition.theme ? `Theme: ${competition.theme}\n` : ''}${competition.current_players}/${competition.max_players} editors competing${competition.index_reward_pool > 0 ? ` · +${competition.index_reward_pool} IDX reward` : ''}\n\nJoin the lobby 👇`;
     try {
       if (navigator.share) await navigator.share({ title: competition.name, text: shareText, url: cleanUrl });
       else {
-        await navigator.clipboard.writeText(shareText);
+        await navigator.clipboard.writeText(`${shareText}\n${cleanUrl}`);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
         toast.success("Link copied!");
