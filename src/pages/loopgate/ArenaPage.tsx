@@ -7,7 +7,7 @@ import {
   Search, X, TrendingUp, Plus, HelpCircle, CheckCircle2, Info,
   Clock, Award, UserPlus, Eye, Globe, Crown, Zap, UserRound,
   Sparkles, Star, Music, Mail, ArrowRight, History, Play, Loader2,
-  Clapperboard, ChevronDown, Crosshair, DollarSign
+  Clapperboard, ChevronDown, Crosshair, DollarSign, Shuffle
 } from "lucide-react";
 import { InfinityLoop } from "@/components/loopgate/InfinityLoop";
 import { supabase } from "@/integrations/supabase/client";
@@ -1336,9 +1336,19 @@ export default function ArenaPage() {
               <SectionHeader
                 icon={<InfinityIcon className="w-4 h-4 text-gold" />}
                 title="King of the Hill"
-                badge={liveDrops.length > 0 ? `${liveDrops.length} Live` : undefined}
-                badgeColor="bg-emerald-500/20 border-emerald-500/40 text-emerald-400"
                 infoText="30 edits decide the king. Stay #1 on the leaderboard each week to stack XP & Index. More submissions = bigger rewards for the reigning king — until the hill is taken."
+                action={liveDrops.length > 0 ? (
+                  <button
+                    onClick={() => {
+                      const random = liveDrops[Math.floor(Math.random() * liveDrops.length)];
+                      if (random) navigate(`/drop/${random.id}`);
+                    }}
+                    className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-3 py-1 hover:bg-emerald-500/20 transition-all active:scale-95"
+                  >
+                    <Shuffle className="w-3 h-3" />
+                    Join Random
+                  </button>
+                ) : undefined}
               />
               {liveDrops.length > 0 ? (
                 <div className="px-4 flex gap-3 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory">

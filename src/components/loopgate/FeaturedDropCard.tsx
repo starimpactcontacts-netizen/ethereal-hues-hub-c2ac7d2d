@@ -110,12 +110,6 @@ export default function FeaturedDropCard({ drop }: Props) {
             >
               {copied ? <Check className="w-2.5 h-2.5 text-emerald-400" /> : <Link2 className="w-2.5 h-2.5 text-white/60" />}
             </button>
-            {isLive && (
-              <div className="flex items-center gap-1 bg-black/60 backdrop-blur-md px-2 py-1 border border-emerald-500/40">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
-                <span className="text-[8px] font-black text-emerald-400 uppercase tracking-wider">Live</span>
-              </div>
-            )}
           </div>
 
           {/* Bottom — Title + Prize */}
@@ -290,12 +284,6 @@ export default function FeaturedDropCard({ drop }: Props) {
             >
               {copied ? <Check className="w-2.5 h-2.5 text-emerald-400" /> : <Link2 className="w-2.5 h-2.5 text-white/60" />}
             </button>
-            {isLive && (
-              <div className="flex items-center gap-1 bg-black/50 backdrop-blur-md rounded-full px-2 py-1 border border-emerald-500/25">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_rgba(52,211,153,0.7)]" />
-                <span className="text-[8px] font-bold text-emerald-400 uppercase tracking-wider">Live</span>
-              </div>
-            )}
           </div>
         </div>
 
