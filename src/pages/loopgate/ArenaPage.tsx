@@ -21,7 +21,7 @@ import BattleCard from "@/components/loopgate/BattleCard";
 import CreateBattleModal from "@/components/loopgate/CreateBattleModal";
 import { useSanctionedTournaments } from "@/hooks/useSanctionedTournaments";
 import { useBattles } from "@/hooks/useBattles";
-import { useRecentQuickFights, findQuickFight, leaveQueue } from "@/hooks/useQuickFight";
+import { useRecentQuickFights, leaveQueue } from "@/hooks/useQuickFight";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +36,7 @@ import EmailNotificationSettings from "@/components/loopgate/EmailNotificationSe
 import LiveWinnersTicker from "@/components/loopgate/LiveWinnersTicker";
 import LivePayoutsCarousel from "@/components/loopgate/LivePayoutsCarousel";
 import ArenaCompetitionsSection from "@/components/loopgate/ArenaCompetitionsSection";
+import { startQuickMatch } from "@/lib/startQuickMatch";
 
 
 interface Event {
@@ -690,10 +691,19 @@ export default function ArenaPage() {
     if (qfActiveFight) { navigate(`/fight/${qfActiveFight.id}`); return; }
     setQfSearching(true);
     try {
-      const fightId = await findQuickFight(user.id, profile.username, profile.avatar_url);
-      if (fightId) {
+      const result = await startQuickMatch({
+        userId: user.id,
+        username: profile.username,
+        avatarUrl: profile.avatar_url,
+      });
+
+      if (result.type === 'battle') {
+        toast.success('⚔️ Opponent found!');
+        navigate(`/battle/${result.id}`);
+        setQfSearching(false);
+      } else if (result.type === 'fight') {
         toast.success('⚔️ Match found!');
-        navigate(`/fight/${fightId}`);
+        navigate(`/fight/${result.id}`);
         setQfSearching(false);
       } else {
         toast('🔍 In queue — we\'ll notify you when matched!', { duration: 4000 });
