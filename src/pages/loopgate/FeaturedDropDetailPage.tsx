@@ -417,7 +417,7 @@ export default function FeaturedDropDetailPage() {
                   {Array.from({ length: slotsTotal }).map((_, i) => (
                     <div
                       key={i}
-                      className={`flex-1 h-9 flex items-center justify-center transition-all ${
+                      className={`flex-1 h-9 flex items-center justify-center transition-all rounded-lg ${
                         i < slotsFilled
                           ? 'bg-destructive/15'
                           : 'bg-foreground/[0.04]'
