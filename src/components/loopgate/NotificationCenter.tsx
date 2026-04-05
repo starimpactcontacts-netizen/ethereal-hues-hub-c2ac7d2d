@@ -50,6 +50,8 @@ const typeConfig: Record<string, { icon: typeof Bell; color: string; bg: string;
   house_accepted:      { icon: Star,           color: "text-gold",         bg: "bg-gold/15",         accent: "border-l-gold" },
   house_invited:       { icon: Star,           color: "text-gold",         bg: "bg-gold/15",         accent: "border-l-gold" },
   dm_received:         { icon: MessageSquare,  color: "text-cyan-400",     bg: "bg-cyan-400/15",     accent: "border-l-cyan-400" },
+  chat_mention:        { icon: MessageCircle,  color: "text-red-400",      bg: "bg-red-400/15",      accent: "border-l-red-400" },
+  chat_reply:          { icon: MessageCircle,  color: "text-blue-400",     bg: "bg-blue-400/15",     accent: "border-l-blue-400" },
   crew_mention:        { icon: Users,          color: "text-orange-400",   bg: "bg-orange-400/15",   accent: "border-l-orange-400" },
   // System
   system:              { icon: Megaphone,      color: "text-white",        bg: "bg-white/10",        accent: "border-l-white" },
