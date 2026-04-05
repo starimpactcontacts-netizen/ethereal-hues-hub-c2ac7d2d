@@ -102,8 +102,9 @@ export default function SoloModeFlow({ onBack }: { onBack: () => void }) {
       artist: null,
     };
     setPickedDrop(fakeDrop);
-    const solo = await startSolo({ id: "skip", song_name: "Your Choice", artist: null });
+    const solo = await startSolo({ id: null, song_name: "Your Choice", artist: null });
     if (solo) { setSoloId(solo.id); setTheme(solo.theme); setPhase("reveal"); }
+    else { toast.error("Failed to start solo mode"); }
     setSaving(false);
   };
 

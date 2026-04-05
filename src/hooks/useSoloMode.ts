@@ -72,7 +72,7 @@ export function useSoloMode() {
         user_id: user.id,
         username: profile.username || 'Unknown',
         avatar_url: profile.avatar_url || null,
-        drop_id: drop.id,
+        drop_id: (drop.id && drop.id !== 'skip') ? drop.id : null,
         song_name: drop.song_name,
         artist_name: drop.artist?.name || null,
         theme,
