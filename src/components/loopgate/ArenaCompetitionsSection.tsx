@@ -76,7 +76,7 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
 
         {comp.theme && (
           <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-            <Music className="w-3 h-3 shrink-0 text-muted-foreground/60" />
+            <Layers className="w-3 h-3 shrink-0 text-muted-foreground/60" />
             <span className="truncate">{comp.theme}</span>
           </div>
         )}
