@@ -22,6 +22,7 @@ import type { FeaturedDrop, FeaturedArtist, FeaturedSubmission } from "@/hooks/u
 import FeaturedSubmitModal from "@/components/loopgate/FeaturedSubmitModal";
 
 import DropLobbyChat from "@/components/loopgate/DropLobbyChat";
+import KothTracker from "@/components/loopgate/KothTracker";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 
