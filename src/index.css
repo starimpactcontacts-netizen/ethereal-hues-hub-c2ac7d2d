@@ -126,6 +126,9 @@
 
   html {
     background-color: #000000;
+    /* iOS: fill safe area insets with black */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    background: #000000;
   }
 
   body {
@@ -139,6 +142,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     /* NO transform here - breaks position:fixed on children */
+    background-color: #000000;
   }
   
   #root {
