@@ -41,21 +41,20 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
   };
 
   return (
-    <div className="shrink-0 w-[280px] relative">
-      {/* Share button — outside card, upper right */}
-      <button
-        onClick={handleShare}
-        className="absolute -top-1 -right-1 z-10 p-2 bg-surface-1 border border-white/[0.1] rounded-full hover:bg-surface-2 transition-colors active:scale-90"
-      >
-        <Share2 className="w-3.5 h-3.5 text-muted-foreground" />
-      </button>
-
+    <div className="shrink-0 w-[280px]">
       <motion.div
         whileTap={{ scale: 0.97 }}
         onClick={() => navigate(`/competition/${comp.slug || comp.id}`)}
-        className="w-full bg-surface-1 border border-white/[0.06] overflow-hidden group touch-manipulation rounded-xl cursor-pointer"
+        className="relative w-full bg-surface-1 border border-white/[0.06] overflow-hidden group touch-manipulation rounded-xl cursor-pointer"
         style={{ boxShadow: "0 2px 20px rgba(0,0,0,0.3)" }}
-    >
+      >
+      {/* Share button — inside card, upper right */}
+      <button
+        onClick={handleShare}
+        className="absolute top-2 right-2 z-20 p-2 bg-black/50 backdrop-blur-md border border-white/[0.1] rounded-full hover:bg-black/70 transition-colors active:scale-90"
+      >
+        <Share2 className="w-3.5 h-3.5 text-white/70" />
+      </button>
       {/* Cover */}
       <div className="relative h-32 overflow-hidden">
         {comp.cover_image_url ? (
