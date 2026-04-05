@@ -241,15 +241,25 @@ export default function LoopyPage() {
                     <>
                       <span className="text-[9px] font-bold text-white/15 uppercase tracking-[0.25em] px-2 mb-2 block" style={TEKO}>Recent</span>
                       {conversations.map((conv) => (
-                        <button
+                        <div
                           key={conv.id}
-                          onClick={() => handleSelectConversation(conv.id)}
-                          className={`w-full text-left px-2.5 py-2 rounded-sm hover:bg-white/[0.04] transition-colors ${
+                          className={`flex items-center gap-1 px-2.5 py-2 rounded-sm hover:bg-white/[0.04] transition-colors ${
                             activeConversationId === conv.id ? 'bg-white/[0.06]' : ''
                           }`}
                         >
-                          <p className="text-[11px] text-white/50 truncate">{conv.title}</p>
-                        </button>
+                          <button
+                            onClick={() => handleSelectConversation(conv.id)}
+                            className="flex-1 text-left min-w-0"
+                          >
+                            <p className="text-[11px] text-white/50 truncate">{conv.title}</p>
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); deleteConversation(conv.id); }}
+                            className="p-1.5 hover:bg-red-500/20 rounded transition-all shrink-0"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 text-red-400/60" />
+                          </button>
+                        </div>
                       ))}
                     </>
                   )}
