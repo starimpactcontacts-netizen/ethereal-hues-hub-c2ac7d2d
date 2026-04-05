@@ -177,10 +177,11 @@ export default function CompetitionLeaderboard({ submissions }: { submissions: C
   const carouselRef = useRef<HTMLDivElement>(null);
 
   const sorted = [...submissions].sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
-  if (sorted.length === 0) return null;
 
   const topEdits = sorted.slice(0, 6);
   const visibleList = showAll ? sorted : sorted.slice(0, 5);
+
+  const isEmpty = sorted.length === 0;
 
   return (
     <>
@@ -194,144 +195,132 @@ export default function CompetitionLeaderboard({ submissions }: { submissions: C
           <span className="text-[11px] text-muted-foreground/40 ml-auto" style={teko}>{sorted.length} EDIT{sorted.length !== 1 ? "S" : ""}</span>
         </div>
 
-        {/* ═══ TOP EDITS CAROUSEL ═══ */}
-        <div
-          ref={carouselRef}
-          className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory -mx-4 px-4"
-        >
-          {topEdits.map((sub, i) => {
-            const rank = i + 1;
-            const style = rankColors[rank] || { border: "border-white/[0.08]", glow: "", bg: "from-white/5 to-transparent", text: "text-muted-foreground" };
-            
-            return (
-              <motion.button
-                key={sub.id}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.06 }}
-                onClick={() => setSelectedEdit({ sub, rank })}
-                className={`relative shrink-0 w-[130px] h-[185px] rounded-2xl overflow-hidden border ${style.border} ${style.glow} snap-start transition-transform active:scale-[0.96]`}
-              >
-                {/* BG gradient */}
-                <div className={`absolute inset-0 bg-gradient-to-b ${style.bg}`} />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+        {isEmpty ? (
+          <div className="py-8 text-center space-y-2">
+            <div className="w-12 h-12 rounded-full bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mx-auto">
+              <Trophy className="w-5 h-5 text-muted-foreground/20" />
+            </div>
+            <p className="text-xs text-muted-foreground/40">No edits submitted yet — be the first to claim the top spot</p>
+          </div>
+        ) : (
+          <>
+            {/* ═══ TOP EDITS CAROUSEL ═══ */}
+            <div
+              ref={carouselRef}
+              className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory -mx-4 px-4"
+            >
+              {topEdits.map((sub, i) => {
+                const rank = i + 1;
+                const style = rankColors[rank] || { border: "border-white/[0.08]", glow: "", bg: "from-white/5 to-transparent", text: "text-muted-foreground" };
                 
-                {/* Rank badge */}
-                <div className="absolute top-2 left-2 z-[2]">
-                  <span className={`text-[28px] font-black leading-none ${style.text}`} style={teko}>
-                    {rank}
-                  </span>
-                </div>
+                return (
+                  <motion.button
+                    key={sub.id}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.06 }}
+                    onClick={() => setSelectedEdit({ sub, rank })}
+                    className={`relative shrink-0 w-[130px] h-[185px] rounded-2xl overflow-hidden border ${style.border} ${style.glow} snap-start transition-transform active:scale-[0.96]`}
+                  >
+                    <div className={`absolute inset-0 bg-gradient-to-b ${style.bg}`} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    
+                    <div className="absolute top-2 left-2 z-[2]">
+                      <span className={`text-[28px] font-black leading-none ${style.text}`} style={teko}>{rank}</span>
+                    </div>
 
-                {/* Crown for #1 */}
-                {rank === 1 && (
-                  <div className="absolute top-2 right-2 z-[2]">
-                    <Crown className="w-4 h-4 text-amber-400 drop-shadow-lg" />
-                  </div>
-                )}
+                    {rank === 1 && (
+                      <div className="absolute top-2 right-2 z-[2]">
+                        <Crown className="w-4 h-4 text-amber-400 drop-shadow-lg" />
+                      </div>
+                    )}
 
-                {/* QOI Score */}
-                {sub.score !== null && (
-                  <div className="absolute top-2 right-2 z-[2]">
-                    <span className="text-[13px] font-black text-amber-400 tabular-nums" style={teko}>
-                      {sub.score}
-                    </span>
-                  </div>
-                )}
+                    {sub.score !== null && rank !== 1 && (
+                      <div className="absolute top-2 right-2 z-[2]">
+                        <span className="text-[13px] font-black text-amber-400 tabular-nums" style={teko}>{sub.score}</span>
+                      </div>
+                    )}
 
-                {/* Play icon center */}
-                <div className="absolute inset-0 flex items-center justify-center z-[1]">
-                  <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
-                    <Play className="w-4 h-4 text-white ml-0.5" />
-                  </div>
-                </div>
+                    <div className="absolute inset-0 flex items-center justify-center z-[1]">
+                      <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
+                        <Play className="w-4 h-4 text-white ml-0.5" />
+                      </div>
+                    </div>
 
-                {/* Bottom info */}
-                <div className="absolute bottom-0 left-0 right-0 p-2 z-[2]">
-                  <div className="flex items-center gap-1.5">
-                    <Avatar className="w-5 h-5 border border-white/20">
+                    <div className="absolute bottom-0 left-0 right-0 p-2 z-[2]">
+                      <div className="flex items-center gap-1.5">
+                        <Avatar className="w-5 h-5 border border-white/20">
+                          <AvatarImage src={sub.avatar_url || ""} />
+                          <AvatarFallback className="text-[7px] bg-surface-1 font-bold">{sub.username?.[0]?.toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <span className="text-[10px] font-bold text-white truncate">{sub.username}</span>
+                      </div>
+                      <span className="text-[8px] text-white/40 uppercase mt-0.5 block">{sub.platform}</span>
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+
+            {/* ═══ FULL RANKINGS LIST ═══ */}
+            <div className="space-y-0">
+              {visibleList.map((sub, i) => {
+                const rank = i + 1;
+                const style = rankColors[rank] || { border: "", glow: "", bg: "", text: "text-muted-foreground/40" };
+                const isKing = rank === 1;
+
+                return (
+                  <motion.button
+                    key={sub.id}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.04 }}
+                    onClick={() => setSelectedEdit({ sub, rank })}
+                    className={`w-full flex items-center gap-3 py-2.5 border-b border-white/[0.04] last:border-0 text-left transition-all active:bg-white/[0.02] ${isKing ? 'bg-amber-400/[0.03]' : ''}`}
+                  >
+                    <span className={`text-[28px] font-black w-8 text-center leading-none ${style.text}`} style={teko}>{rank}</span>
+                    <Avatar className={`w-8 h-8 border ${isKing ? 'border-amber-400/40' : 'border-white/10'}`}>
                       <AvatarImage src={sub.avatar_url || ""} />
-                      <AvatarFallback className="text-[7px] bg-surface-1 font-bold">{sub.username?.[0]?.toUpperCase()}</AvatarFallback>
+                      <AvatarFallback className="text-[9px] bg-surface-2 font-bold">{sub.username?.[0]?.toUpperCase()}</AvatarFallback>
                     </Avatar>
-                    <span className="text-[10px] font-bold text-white truncate">{sub.username}</span>
-                  </div>
-                  <span className="text-[8px] text-white/40 uppercase mt-0.5 block">{sub.platform}</span>
-                </div>
-              </motion.button>
-            );
-          })}
-        </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-foreground truncate">{sub.username}</span>
+                        {isKing && <Crown className="w-3 h-3 text-amber-400 shrink-0" />}
+                      </div>
+                      <span className="text-[9px] text-muted-foreground/40 uppercase">{sub.platform}</span>
+                    </div>
+                    {sub.score !== null ? (
+                      <div className="text-right">
+                        <span className="text-sm font-black text-amber-400 tabular-nums" style={teko}>{sub.score}</span>
+                        <span className="text-[8px] text-amber-400/40 ml-0.5" style={teko}>QOI</span>
+                      </div>
+                    ) : (
+                      <span className="text-[9px] text-muted-foreground/30 uppercase">pending</span>
+                    )}
+                    <Play className="w-3 h-3 text-muted-foreground/30 shrink-0" />
+                  </motion.button>
+                );
+              })}
+            </div>
 
-        {/* ═══ FULL RANKINGS LIST ═══ */}
-        <div className="space-y-0">
-          {visibleList.map((sub, i) => {
-            const rank = i + 1;
-            const style = rankColors[rank] || { border: "", glow: "", bg: "", text: "text-muted-foreground/40" };
-            const isKing = rank === 1;
-
-            return (
-              <motion.button
-                key={sub.id}
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.04 }}
-                onClick={() => setSelectedEdit({ sub, rank })}
-                className={`w-full flex items-center gap-3 py-2.5 border-b border-white/[0.04] last:border-0 text-left transition-all active:bg-white/[0.02] ${isKing ? 'bg-amber-400/[0.03]' : ''}`}
+            {sorted.length > 5 && (
+              <button
+                onClick={() => setShowAll(!showAll)}
+                className="w-full flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider hover:text-foreground/60 transition-colors"
+                style={teko}
               >
-                {/* Rank number */}
-                <span className={`text-[28px] font-black w-8 text-center leading-none ${style.text}`} style={teko}>
-                  {rank}
-                </span>
-
-                {/* Avatar */}
-                <Avatar className={`w-8 h-8 border ${isKing ? 'border-amber-400/40' : 'border-white/10'}`}>
-                  <AvatarImage src={sub.avatar_url || ""} />
-                  <AvatarFallback className="text-[9px] bg-surface-2 font-bold">{sub.username?.[0]?.toUpperCase()}</AvatarFallback>
-                </Avatar>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-bold text-foreground truncate">{sub.username}</span>
-                    {isKing && <Crown className="w-3 h-3 text-amber-400 shrink-0" />}
-                  </div>
-                  <span className="text-[9px] text-muted-foreground/40 uppercase">{sub.platform}</span>
-                </div>
-
-                {/* Score */}
-                {sub.score !== null ? (
-                  <div className="text-right">
-                    <span className="text-sm font-black text-amber-400 tabular-nums" style={teko}>{sub.score}</span>
-                    <span className="text-[8px] text-amber-400/40 ml-0.5" style={teko}>QOI</span>
-                  </div>
+                {showAll ? (
+                  <><ChevronUp className="w-3 h-3" /> Show Less</>
                 ) : (
-                  <span className="text-[9px] text-muted-foreground/30 uppercase">pending</span>
+                  <><ChevronDown className="w-3 h-3" /> Show All ({sorted.length})</>
                 )}
-
-                {/* Play arrow */}
-                <Play className="w-3 h-3 text-muted-foreground/30 shrink-0" />
-              </motion.button>
-            );
-          })}
-        </div>
-
-        {/* Show more/less */}
-        {sorted.length > 5 && (
-          <button
-            onClick={() => setShowAll(!showAll)}
-            className="w-full flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider hover:text-foreground/60 transition-colors"
-            style={teko}
-          >
-            {showAll ? (
-              <><ChevronUp className="w-3 h-3" /> Show Less</>
-            ) : (
-              <><ChevronDown className="w-3 h-3" /> Show All ({sorted.length})</>
+              </button>
             )}
-          </button>
+          </>
         )}
       </div>
 
-      {/* ═══ DETAIL OVERLAY ═══ */}
       <AnimatePresence>
         {selectedEdit && (
           <EditDetailView
