@@ -27,10 +27,14 @@ export default function StudioPage() {
   const [searchParams] = useSearchParams();
   const soloId = searchParams.get("solo");
   const missionId = searchParams.get("mission");
+  const compTheme = searchParams.get("theme");
+  const compInstructions = searchParams.get("instructions");
+  const compId = searchParams.get("comp_id");
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [activeMission, setActiveMission] = useState<ActiveMission | null>(null);
   const [missionDismissed, setMissionDismissed] = useState(false);
+  const [compHintDismissed, setCompHintDismissed] = useState(false);
   const [loadingProject, setLoadingProject] = useState(false);
   const [autoEditOpen, setAutoEditOpen] = useState(false);
 
