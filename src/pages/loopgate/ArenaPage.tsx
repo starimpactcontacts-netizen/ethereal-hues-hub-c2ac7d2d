@@ -1376,33 +1376,28 @@ export default function ArenaPage() {
                 title="1v1 Edit Battles"
                 infoText="Go head-to-head with another editor. Quick Match instantly pairs you with someone in queue. Challenge lets you pick your opponent, set a song & deadline. Winner earns +20 IDX."
                 action={
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center rounded-lg overflow-hidden" style={{ boxShadow: '0 2px 12px rgba(16,185,129,0.2), 0 2px 12px rgba(239,68,68,0.15)' }}>
                     <button
                       onClick={handleQuickFight}
                       disabled={isQfSearching}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:brightness-110 disabled:opacity-60"
-                      style={{
-                        background: 'linear-gradient(135deg, #10B981, #059669)',
-                        color: '#fff',
-                        boxShadow: '0 2px 10px rgba(16,185,129,0.3)',
-                      }}
+                      className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-bold text-white transition-all hover:brightness-110 disabled:opacity-60"
+                      style={{ background: 'linear-gradient(135deg, #10B981, #059669)' }}
                     >
                       {isQfSearching ? (
-                        <><Loader2 className="w-3 h-3 animate-spin" /> Searching...</>
+                        <Loader2 className="w-3 h-3 animate-spin" />
                       ) : (
-                        <><Zap className="w-3 h-3" /> Quick Match</>
+                        <Zap className="w-3 h-3" />
                       )}
+                      Quick
                     </button>
+                    <div className="w-px h-5 bg-white/20" />
                     <button
                       onClick={() => profile ? setShowCreateBattle(true) : navigate('/start')}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:brightness-110"
-                      style={{
-                        background: 'linear-gradient(135deg, #3B82F6, #EF4444)',
-                        color: '#fff',
-                        boxShadow: '0 2px 10px rgba(59,130,246,0.25), 0 2px 10px rgba(239,68,68,0.25)',
-                      }}
+                      className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-bold text-white transition-all hover:brightness-110"
+                      style={{ background: 'linear-gradient(135deg, #3B82F6, #EF4444)' }}
                     >
-                      <Swords className="w-3 h-3" /> Challenge
+                      <Swords className="w-3 h-3" />
+                      Challenge
                     </button>
                   </div>
                 }
