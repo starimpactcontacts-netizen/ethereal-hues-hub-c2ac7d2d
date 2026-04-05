@@ -680,7 +680,6 @@ export default function ArenaPage() {
 
   const filters: { key: typeof activeFilter; label: string; icon?: React.ReactNode; accent?: string }[] = [
     { key: "all", label: "All" },
-    { key: "quick", label: "Quick 1v1", icon: <Zap className="w-3.5 h-3.5" />, accent: "red" },
     { key: "battles", label: "1v1", icon: <Swords className="w-3.5 h-3.5" />, accent: "red" },
     { key: "official", label: "King of the Hill", icon: <Crown className="w-3.5 h-3.5" />, accent: "gold" },
     { key: "sanctioned", label: "Sanctioned", icon: <Shield className="w-3.5 h-3.5" /> },
@@ -1367,75 +1366,7 @@ export default function ArenaPage() {
 
           {/* Competitions moved to top */}
 
-          {/* Quick 1v1s */}
-          {(activeFilter === "all" || activeFilter === "quick") && (
-            <motion.section key="quick-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <SectionHeader
-                icon={<Zap className="w-4 h-4 text-red-400" />}
-                title="Quick Edit 1v1s"
-                badge={liveQuick > 0 ? `${liveQuick} Live` : undefined}
-                badgeColor="bg-red-500/20 border-red-500/40 text-red-400"
-                infoText="Instant matchmaking. Auto-matched with another editor — both submit an edit within 3 hours. Judge picks the winner. Winner +20 IDX."
-                action={
-                  <button
-                    onClick={handleQuickFight}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:brightness-110"
-                    style={{
-                      background: 'linear-gradient(135deg, #10B981, #059669)',
-                      color: '#fff',
-                      boxShadow: '0 2px 10px rgba(16,185,129,0.3)',
-                    }}
-                  >
-                    <Zap className="w-3 h-3" /> Start Editing
-                  </button>
-                }
-              />
-
-
-
-
-              {/* Fight List */}
-              <div className="px-4 space-y-1">
-                {quickLoading ? (
-                  <div className="space-y-1.5">
-                    <Skeleton className="h-16 w-full" />
-                    <Skeleton className="h-16 w-full" />
-                    <Skeleton className="h-16 w-full" />
-                  </div>
-                ) : filteredQuickFights.length > 0 ? (
-                  <>
-                    {filteredQuickFights.slice(0, activeFilter === "quick" ? 50 : 5).map(fight => (
-                      <Quick1v1Row key={fight.id} fight={fight} onClick={() => navigate(`/fight/${fight.id}`)} />
-                    ))}
-                    {activeFilter !== "quick" && filteredQuickFights.length > 5 && (
-                      <button
-                        onClick={() => setActiveFilter("quick")}
-                        className="w-full py-3 text-[12px] font-bold text-red-400 hover:bg-red-500/5 transition-colors flex items-center justify-center gap-1.5"
-                      >
-                        View All {filteredQuickFights.length} Fights
-                        <ChevronRight className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                  </>
-                ) : (
-                  <div className="text-center py-10 bg-surface-1 border border-border">
-                    <div className="w-14 h-14 bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-3">
-                      <Zap className="w-6 h-6 text-red-400/40" />
-                    </div>
-                    <p className="text-[13px] text-muted-foreground font-medium mb-1">{quickSearch ? "No matches found" : "No Quick 1v1s Yet"}</p>
-                    <p className="text-[12px] text-muted-foreground/60 mb-4">Be the first to start a fight</p>
-                    <Button
-                      size="sm"
-                      onClick={handleQuickFight}
-                      className="bg-red-500 hover:bg-red-600 text-white text-[12px] h-9 px-5"
-                    >
-                      <Zap className="w-3.5 h-3.5 mr-1.5" /> Start Quick 1v1
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </motion.section>
-          )}
+          {/* Quick 1v1s section removed — merged into 1v1 Edit Battles */}
 
           {/* 1v1 Battles */}
           {(activeFilter === "all" || activeFilter === "battles") && (
@@ -1443,23 +1374,57 @@ export default function ArenaPage() {
               <SectionHeader
                 icon={<Swords className="w-4 h-4 text-red-400" />}
                 title="1v1 Edit Battles"
-                badge={liveBattles > 0 ? `${liveBattles} Live` : undefined}
+                badge={(liveBattles + liveQuick) > 0 ? `${liveBattles + liveQuick} Live` : undefined}
                 badgeColor="bg-red-500/20 border-red-500/40 text-red-400"
-                infoText="Challenge a specific editor to a head-to-head showdown. Pick a song, set the deadline, and go 1v1. Winner earns +20 IDX. No penalty for the loser."
+                infoText="Go head-to-head with another editor. Quick Match instantly pairs you with someone in queue. Challenge lets you pick your opponent, set a song & deadline. Winner earns +20 IDX."
                 action={
-                  <button
-                    onClick={() => profile ? setShowCreateBattle(true) : navigate('/start')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:brightness-110"
-                    style={{
-                      background: 'linear-gradient(135deg, #3B82F6, #EF4444)',
-                      color: '#fff',
-                      boxShadow: '0 2px 10px rgba(59,130,246,0.25), 0 2px 10px rgba(239,68,68,0.25)',
-                    }}
-                  >
-                    <Swords className="w-3 h-3" /> Challenge
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={handleQuickFight}
+                      disabled={isQfSearching}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:brightness-110 disabled:opacity-60"
+                      style={{
+                        background: 'linear-gradient(135deg, #10B981, #059669)',
+                        color: '#fff',
+                        boxShadow: '0 2px 10px rgba(16,185,129,0.3)',
+                      }}
+                    >
+                      {isQfSearching ? (
+                        <><Loader2 className="w-3 h-3 animate-spin" /> Searching...</>
+                      ) : (
+                        <><Zap className="w-3 h-3" /> Quick Match</>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => profile ? setShowCreateBattle(true) : navigate('/start')}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:brightness-110"
+                      style={{
+                        background: 'linear-gradient(135deg, #3B82F6, #EF4444)',
+                        color: '#fff',
+                        boxShadow: '0 2px 10px rgba(59,130,246,0.25), 0 2px 10px rgba(239,68,68,0.25)',
+                      }}
+                    >
+                      <Swords className="w-3 h-3" /> Challenge
+                    </button>
+                  </div>
                 }
               />
+
+              {/* Queue status bar */}
+              {isQfSearching && (
+                <div className="mx-4 mb-3 flex items-center justify-between px-3 py-2 rounded-xl border border-emerald-500/20 bg-emerald-500/[0.05]">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-3.5 h-3.5 text-emerald-400 animate-spin" />
+                    <span className="text-[11px] text-emerald-400 font-medium">Finding you an opponent...</span>
+                  </div>
+                  <button
+                    onClick={handleCancelQueue}
+                    className="text-[10px] font-bold text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-lg hover:bg-white/[0.05]"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
 
               {battlesLoading ? (
                 <div className="flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-2">
@@ -1490,6 +1455,16 @@ export default function ArenaPage() {
                       <Swords className="w-3.5 h-3.5 mr-1.5" /> Create Battle
                     </Button>
                   </div>
+                </div>
+              )}
+
+              {/* Quick fight rows merged here */}
+              {quickFights.length > 0 && (
+                <div className="px-4 mt-3 space-y-1">
+                  <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-wider mb-1.5 px-1">Quick Matches</p>
+                  {quickFights.slice(0, activeFilter === "battles" ? 20 : 5).map(fight => (
+                    <Quick1v1Row key={fight.id} fight={fight} onClick={() => navigate(`/fight/${fight.id}`)} />
+                  ))}
                 </div>
               )}
             </motion.section>
