@@ -26,9 +26,12 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
   const isJudging = battle.status === 'judging';
   const isRapid = (battle as any).is_rapid;
   const totalVotes = battle.challenger_votes + battle.opponent_votes;
-  const isDone = isCompleted || battle.status === 'cancelled';
+  
+  // Check if time has ended even if status hasn't updated yet
+  const hasTimeEnded = battle.ends_at ? new Date(battle.ends_at).getTime() < Date.now() : false;
+  const isDone = isCompleted || battle.status === 'cancelled' || (isLive && hasTimeEnded);
 
-  const statusText = isLive ? 'LIVE' : isJudging ? 'JUDGING' : isCompleted ? 'DECIDED' : isOpen ? 'OPEN' : 'PENDING';
+  const statusText = isDone && !isCompleted ? 'ENDED' : isLive ? 'LIVE' : isJudging ? 'JUDGING' : isCompleted ? 'DECIDED' : isOpen ? 'OPEN' : 'PENDING';
 
   return (
     <motion.div
