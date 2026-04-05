@@ -406,13 +406,13 @@ export default function CompetitionLobbyPage() {
         {/* ═══ LEADERBOARD / SUBMISSIONS ═══ */}
         {submissions.length > 0 && (
           <div>
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-2 mb-2">
               <Trophy className="w-3.5 h-3.5 text-gold" />
               <span className="text-[14px] font-extrabold uppercase tracking-[0.1em] text-foreground" style={teko}>
                 Leaderboard
               </span>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               {submissions
                 .sort((a, b) => (b.score ?? -1) - (a.score ?? -1))
                 .map((sub, i) => (
@@ -421,12 +421,12 @@ export default function CompetitionLobbyPage() {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="bg-surface-1 border border-white/[0.06] rounded-xl p-3 flex items-center gap-3"
+                  className="flex items-center gap-3 py-2 border-b border-white/[0.04] last:border-0"
                 >
                   <span className="text-2xl font-black text-muted-foreground/20 w-7 text-center" style={teko}>
                     {i + 1}
                   </span>
-                  <Avatar className="w-8 h-8 border border-white/10">
+                  <Avatar className="w-7 h-7 border border-white/10">
                     <AvatarImage src={sub.avatar_url || ""} />
                     <AvatarFallback className="text-[9px] bg-surface-2 font-bold">{sub.username?.[0]?.toUpperCase()}</AvatarFallback>
                   </Avatar>
@@ -439,15 +439,13 @@ export default function CompetitionLobbyPage() {
                       )}
                     </div>
                   </div>
-                  {sub.is_winner && (
-                    <span className="text-xs font-bold text-gold">🏆</span>
-                  )}
+                  {sub.is_winner && <span className="text-xs font-bold text-gold">🏆</span>}
                   <a
                     href={sub.submission_url}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={e => e.stopPropagation()}
-                    className="p-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-muted-foreground/50 hover:text-foreground transition-all"
+                    className="p-1.5 rounded-lg text-muted-foreground/50 hover:text-foreground transition-all"
                   >
                     <ExternalLink className="w-3 h-3" />
                   </a>
