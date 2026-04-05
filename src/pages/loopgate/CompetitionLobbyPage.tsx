@@ -171,18 +171,16 @@ export default function CompetitionLobbyPage() {
         <div className="absolute bottom-4 left-4 right-4">
           <div className="flex items-center gap-2 mb-1.5">
             {/* League */}
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-black/50 backdrop-blur-sm border border-white/[0.12] rounded">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-black/50 backdrop-blur-sm border border-white/[0.12] rounded">
               <span className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-white/80" style={teko}>
                 {competition.league === "elite" ? "ELITE" : competition.league === "pro" ? "PRO" : "OPEN"} LEAGUE
               </span>
             </div>
-            {/* Status */}
-            <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded ${
-              isLive ? "bg-emerald-500/20 border border-emerald-500/20" : "bg-amber-500/20 border border-amber-500/20"
-            }`}>
-              <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${isLive ? "bg-emerald-400" : "bg-amber-400"}`} />
-              <span className={`text-[9px] font-extrabold uppercase tracking-[0.1em] ${isLive ? "text-emerald-300" : "text-amber-300"}`} style={teko}>
-                {isLobby ? "Awaiting Start" : isLive ? "Live" : competition.status}
+            {/* Status — no green badge, just subtle amber/white text */}
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-black/50 backdrop-blur-sm border border-white/[0.08]">
+              <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${isLive ? "bg-red-500" : "bg-amber-400"}`} />
+              <span className="text-[9px] font-extrabold uppercase tracking-[0.1em] text-white/70" style={teko}>
+                {isLobby ? "AWAITING START" : isLive ? "IN PROGRESS" : competition.status.toUpperCase()}
               </span>
             </div>
           </div>
