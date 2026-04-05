@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { formatDistanceToNow, isPast, differenceInSeconds } from "date-fns";
 import { validatePlatformUrl, getPlatformUrlPlaceholder, type PlatformType } from "@/lib/urlValidation";
 import CompetitionChat from "@/components/loopgate/CompetitionChat";
+import CompetitionLeaderboard from "@/components/loopgate/CompetitionLeaderboard";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 
