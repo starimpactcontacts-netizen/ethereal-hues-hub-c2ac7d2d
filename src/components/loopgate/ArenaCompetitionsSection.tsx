@@ -29,12 +29,12 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const cleanUrl = `${window.location.origin}/competition/${comp.slug || comp.id}`;
-    const shareText = `🏆 ${comp.name}\n\n${comp.theme ? `Theme: ${comp.theme}\n` : ''}${comp.current_players}/${comp.max_players} editors competing${comp.index_reward_pool > 0 ? ` · +${comp.index_reward_pool} IDX reward` : ''}\n\nJoin the lobby 👇\n${cleanUrl}`;
+    const shareText = `🏆 ${comp.name}\n\n${comp.theme ? `Theme: ${comp.theme}\n` : ''}${comp.current_players}/${comp.max_players} editors competing${comp.index_reward_pool > 0 ? ` · +${comp.index_reward_pool} IDX reward` : ''}\n\nJoin the lobby 👇`;
     try {
       if (navigator.share) {
         await navigator.share({ title: comp.name, text: shareText, url: cleanUrl });
       } else {
-        await navigator.clipboard.writeText(shareText);
+        await navigator.clipboard.writeText(`${shareText}\n${cleanUrl}`);
         toast.success("Link copied!");
       }
     } catch {}
