@@ -210,12 +210,6 @@ export default function FeaturedDropDetailPage() {
             <ArrowLeft className="w-4 h-4 text-foreground" />
           </button>
           <div className="flex items-center gap-2">
-            {isLive && (
-              <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-sm border border-emerald-500/30 px-2.5 py-1 rounded-full shadow-[0_0_12px_rgba(16,185,129,0.2)]">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">Live</span>
-              </div>
-            )}
             {isJudging && (
               <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-sm border border-gold/30 px-2.5 py-1 rounded-full animate-pulse">
                 <span className="text-[9px] font-bold text-gold uppercase tracking-wider">⚡ Judging</span>
@@ -301,43 +295,39 @@ export default function FeaturedDropDetailPage() {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden mx-4 mt-1"
           >
-            <div className="border-2 border-emerald-500/20 bg-emerald-950/20 p-4 space-y-3">
+            <div className="p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Swords className="w-4 h-4 text-emerald-400" />
-                  <span className="text-lg font-bold text-emerald-400 uppercase tracking-wider" style={teko}>King of the Hill</span>
+                  <Crown className="w-4 h-4 text-gold" />
+                  <span className="text-lg font-bold text-gold uppercase tracking-wider" style={teko}>King of the Hill</span>
                 </div>
                 <button onClick={() => setShowInfoDrawer(false)} className="text-foreground/30 hover:text-foreground">
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
+              <p className="text-[11px] text-foreground/50 leading-relaxed">
+                30 edits decide the king. The editor with the <span className="text-gold font-bold">highest QOI score</span> holds the hill.
+                Every week you stay #1, you earn <span className="text-emerald-400 font-bold">XP + Index</span> rewards that stack.
+                More submissions = bigger rewards for the reigning king — until the hill is taken.
+              </p>
+
               <div className="space-y-2">
                 {[
-                  { icon: '🎧', title: 'Listen', desc: 'Grab the song and vibe with it' },
-                  { icon: '🎬', title: 'Edit', desc: 'Make a fire edit — any app, any style' },
-                  { icon: '📱', title: 'Post', desc: 'Upload to TikTok, IG, or YouTube' },
-                  { icon: '🔗', title: 'Submit', desc: 'Paste the link here to enter' },
-                  { icon: '⚡', title: 'Get Rated', desc: 'A judge scores your edit 0–100 QOI' },
-                  { icon: '🏆', title: 'Win', desc: 'Best edit + random pick split the prize' },
+                  { icon: '🎬', title: 'Make Your Edit', desc: 'Use any app, any style — just make it fire' },
+                  { icon: '🔗', title: 'Submit', desc: 'Post it and paste the link here' },
+                  { icon: '⚡', title: 'Get Scored', desc: 'Judges rate your edit on Quality · Originality · Impact (QOI)' },
+                  { icon: '👑', title: 'Take the Hill', desc: 'Highest QOI score = King. Hold #1 to stack weekly rewards' },
+                  { icon: '🏆', title: 'Survive', desc: 'Stay on top as 30 edits come in. The longer you reign, the more you earn' },
                 ].map((step, i) => (
                   <div key={i} className="flex items-start gap-2.5">
-                    <div className="w-6 h-6 bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
-                      <span className="text-xs">{step.icon}</span>
-                    </div>
+                    <span className="text-sm shrink-0 mt-0.5">{step.icon}</span>
                     <div>
                       <span className="text-sm font-bold text-foreground uppercase tracking-wider" style={teko}>{step.title}</span>
                       <p className="text-[10px] text-foreground/40 leading-snug">{step.desc}</p>
                     </div>
                   </div>
                 ))}
-              </div>
-
-              <div className="bg-foreground/[0.03] border border-foreground/[0.06] p-2.5 text-center">
-                <p className="text-[10px] text-foreground/30 leading-relaxed">
-                  Rounds fill up fast. Once full, join the <span className="text-gold font-bold">Next Round Queue</span> to secure your spot.
-                  Judges rate edits on <span className="text-red-400 font-bold">Quality · Originality · Impact</span>.
-                </p>
               </div>
             </div>
           </motion.div>
