@@ -67,7 +67,7 @@ export default function CompetitionLobbyPage() {
     join, start, submit,
   } = useCompetition(id);
 
-  const [showThemeHint, setShowThemeHint] = useState(true);
+  
 
   const [isStarting, setIsStarting] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
