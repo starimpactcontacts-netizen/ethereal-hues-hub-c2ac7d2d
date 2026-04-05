@@ -2093,16 +2093,6 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
           }}
         />
 
-        {/* Auto-Edit Wizard overlay (from empty state) */}
-        {autoEditOpen && (
-          <AutoEditWizard
-            onClose={() => setAutoEditOpen(false)}
-            onTimelineReady={(timeline, clips) => {
-              setAutoEditOpen(false);
-              toast.success("AI timeline generated! Use full Studio for multi-clip editing.");
-            }}
-          />
-        )}
 
         <input ref={fileInputRef} type="file" accept="video/*" onChange={handleFileSelect} className="hidden" />
       </motion.div>
