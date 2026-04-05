@@ -996,8 +996,6 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
           onToggleLock={() => {}}
           onSelectLayer={(id) => {
             if (id?.startsWith("t-")) {
-              const textId = id.replace("t-", "");
-              setEditingTextId(textId);
               setActiveTool("text");
             }
           }}
