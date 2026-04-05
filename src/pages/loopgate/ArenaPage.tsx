@@ -1495,7 +1495,10 @@ export default function ArenaPage() {
             </motion.section>
           )}
 
-          {/* (King of the Hill now shown above as Featured Drops) */}
+          {/* ═══ SOLO MODE SHOWCASE — at bottom ═══ */}
+          {(activeFilter === "all") && (
+            <SoloShowcase onStartSolo={() => setShowSoloMode(true)} />
+          )}
 
           <div className="h-8" />
         </div>
