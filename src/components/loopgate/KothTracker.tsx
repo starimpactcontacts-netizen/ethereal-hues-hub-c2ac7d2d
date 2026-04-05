@@ -62,13 +62,13 @@ export default function KothTracker({ submissions, songName, isLive }: KothTrack
         </div>
 
         {/* Clean progress bar */}
-        <div className="relative h-3 bg-foreground/[0.06] overflow-hidden rounded-sm">
+        <div className="relative h-3 bg-foreground/[0.06] overflow-hidden rounded-full">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${progress * 100}%` }}
             transition={{ duration: 1, ease: 'easeOut' }}
             className={cn(
-              "h-full relative rounded-sm",
+              "h-full relative rounded-full",
               isComplete
                 ? "bg-gradient-to-r from-gold to-amber-400"
                 : progress > 0.7
