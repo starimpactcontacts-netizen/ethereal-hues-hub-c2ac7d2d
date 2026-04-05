@@ -243,9 +243,9 @@ export default function FeaturedDropDetailPage() {
       {/* ═══ LOBBY ACTION BAR ═══ */}
       <div className="px-4 mt-2 flex items-center gap-2">
         {/* Chat quick-link */}
-        <button
+         <button
           onClick={() => chatRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-          className="flex-1 flex items-center gap-2.5 px-3 py-2.5 bg-foreground/[0.04] border border-foreground/[0.08] hover:border-red-500/30 hover:bg-red-500/[0.06] transition-all active:scale-[0.98] touch-manipulation group"
+          className="flex-1 flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-red-500/[0.06] transition-all active:scale-[0.98] touch-manipulation group"
         >
           <div className="relative">
             <MessageCircle className="w-4 h-4 text-red-400" />
@@ -259,7 +259,7 @@ export default function FeaturedDropDetailPage() {
               key={chatCount}
               initial={{ scale: 1.3 }}
               animate={{ scale: 1 }}
-              className="px-1.5 py-0.5 bg-red-500/20 text-red-400 text-[9px] font-black"
+              className="px-1.5 py-0.5 bg-red-500/20 text-red-400 text-[9px] font-black rounded-full"
             >
               {chatCount}
             </motion.span>
@@ -269,7 +269,7 @@ export default function FeaturedDropDetailPage() {
         {/* Info button */}
         <button
           onClick={() => setShowInfoDrawer(!showInfoDrawer)}
-          className="flex items-center gap-2 px-3 py-2.5 bg-foreground/[0.04] border border-foreground/[0.08] hover:border-emerald-500/30 hover:bg-emerald-500/[0.06] transition-all active:scale-[0.98] touch-manipulation group"
+          className="flex items-center gap-2 px-3 py-2.5 rounded-xl hover:bg-emerald-500/[0.06] transition-all active:scale-[0.98] touch-manipulation group"
         >
           <Info className="w-4 h-4 text-emerald-400" />
           <span className="text-sm font-bold text-foreground/70 group-hover:text-foreground uppercase tracking-wider" style={teko}>
@@ -278,7 +278,7 @@ export default function FeaturedDropDetailPage() {
         </button>
 
         {/* Participant count */}
-        <div className="flex items-center gap-1.5 px-2.5 py-2.5 bg-foreground/[0.04] border border-foreground/[0.08]">
+        <div className="flex items-center gap-1.5 px-2.5 py-2.5 rounded-xl">
           <Users className="w-3.5 h-3.5 text-foreground/30" />
           <span className="text-sm font-bold text-foreground/40 tabular-nums" style={teko}>
             {allSubs.length + queueCount}
@@ -365,7 +365,7 @@ export default function FeaturedDropDetailPage() {
                 return (
                   <div
                     key={round.id}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 shrink-0 transition-colors ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full shrink-0 transition-colors ${
                       isActive
                         ? 'bg-destructive/10 text-destructive'
                         : isCurrentJudging
@@ -405,7 +405,7 @@ export default function FeaturedDropDetailPage() {
                     </p>
                   </div>
                   {activeRound.judge_username && (
-                    <div className="flex items-center gap-1.5 px-2 py-1 bg-gold/10">
+                    <div className="flex items-center gap-1.5 px-2 py-1 bg-gold/10 rounded-full">
                       <Award className="w-3 h-3 text-gold" />
                       <span className="text-[9px] font-bold text-gold">Judge: @{activeRound.judge_username}</span>
                     </div>
@@ -417,7 +417,7 @@ export default function FeaturedDropDetailPage() {
                   {Array.from({ length: slotsTotal }).map((_, i) => (
                     <div
                       key={i}
-                      className={`flex-1 h-9 flex items-center justify-center transition-all ${
+                      className={`flex-1 h-9 flex items-center justify-center transition-all rounded-lg ${
                         i < slotsFilled
                           ? 'bg-destructive/15'
                           : 'bg-foreground/[0.04]'
@@ -452,7 +452,7 @@ export default function FeaturedDropDetailPage() {
                     <motion.button
                       whileTap={{ scale: 0.97 }}
                       onClick={() => setShowSubmit(true)}
-                      className="ml-auto relative overflow-hidden px-5 py-3 bg-gradient-to-r from-destructive to-destructive/80 text-white flex items-center gap-2 shadow-[0_4px_24px_-4px_hsl(var(--destructive)/0.4)] hover:shadow-[0_4px_32px_-4px_hsl(var(--destructive)/0.6)] transition-all"
+                      className="ml-auto relative overflow-hidden px-5 py-3 rounded-xl bg-gradient-to-r from-destructive to-destructive/80 text-white flex items-center gap-2 shadow-[0_4px_24px_-4px_hsl(var(--destructive)/0.4)] hover:shadow-[0_4px_32px_-4px_hsl(var(--destructive)/0.6)] transition-all"
                     >
                       <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
                       <Flame className="w-4 h-4 relative z-10" />
@@ -507,7 +507,7 @@ export default function FeaturedDropDetailPage() {
                 </div>
 
                 {/* Queue progress bar */}
-                <div className="w-full h-2.5 bg-foreground/[0.06] overflow-hidden relative z-10">
+                <div className="w-full h-2.5 bg-foreground/[0.06] overflow-hidden rounded-full relative z-10">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${Math.min((queueCount / 100) * 100, 100)}%` }}
@@ -560,7 +560,7 @@ export default function FeaturedDropDetailPage() {
                     whileTap={{ scale: 0.97 }}
                     whileHover={{ scale: 1.01 }}
                     onClick={() => setShowSubmit(true)}
-                    className="w-full relative overflow-hidden py-4 bg-gradient-to-r from-gold via-gold/90 to-gold/80 text-background flex items-center justify-center gap-3 shadow-[0_4px_24px_-4px_rgba(255,215,0,0.3)] hover:shadow-[0_4px_32px_-4px_rgba(255,215,0,0.5)] transition-all relative z-10"
+                    className="w-full relative overflow-hidden py-4 rounded-xl bg-gradient-to-r from-gold via-gold/90 to-gold/80 text-background flex items-center justify-center gap-3 shadow-[0_4px_24px_-4px_rgba(255,215,0,0.3)] hover:shadow-[0_4px_32px_-4px_rgba(255,215,0,0.5)] transition-all relative z-10"
                   >
                     <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
                     <Flame className="w-5 h-5 relative z-10" />
@@ -688,7 +688,7 @@ export default function FeaturedDropDetailPage() {
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setShowSubmit(true)}
-                className="w-full relative overflow-hidden py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white flex items-center justify-center gap-3 shadow-[0_4px_24px_-4px_rgba(16,185,129,0.35)] hover:shadow-[0_4px_32px_-4px_rgba(16,185,129,0.5)] transition-all"
+                className="w-full relative overflow-hidden py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white flex items-center justify-center gap-3 shadow-[0_4px_24px_-4px_rgba(16,185,129,0.35)] hover:shadow-[0_4px_32px_-4px_rgba(16,185,129,0.5)] transition-all"
               >
                 <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
                 <Flame className="w-5 h-5 relative z-10" />
