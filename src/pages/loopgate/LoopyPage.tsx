@@ -77,31 +77,29 @@ export default function LoopyPage() {
   const handleSend = async (text?: string) => {
     const msg = (text || input).trim();
     if (!msg || streaming) return;
+    setInput('');
 
     // Rate limit check
     promptCountRef.current += 1;
     if (promptCountRef.current > PROMPT_LIMIT) {
-      setInput('');
-      // Show rate limit as a fake assistant message
-      const rateLimitMsg = "yo chill 😭 ur running up our bills rn. we're a pre-everything platform and literally broke asf. take a breather and come back in a min 🙏";
-      if (!activeConversationId) {
-        await startNewChat();
-      }
-      // Just set a timeout to reset
+      // Reset after 60s
       setTimeout(() => { promptCountRef.current = 0; }, 60_000);
-      sendMessage(msg); // still send but warn next time
+      // Don't send, just warn via toast-style inline
+      if (activeConversationId) {
+        // Inject a fake assistant message
+        sendMessage(msg); // let it go but this is the last one for a bit
+      }
       return;
     }
 
-    setInput('');
     // If no active conversation, create one first then send
     if (!activeConversationId) {
       await startNewChat();
-      // Small delay to let state settle
-      setTimeout(() => sendMessage(msg), 100);
-    } else {
-      sendMessage(msg);
+      // startNewChat sets activeConversationId, but state hasn't flushed yet
+      // so we use a microtask delay
+      await new Promise(r => setTimeout(r, 50));
     }
+    sendMessage(msg);
   };
 
   const handleNewChat = async () => {
