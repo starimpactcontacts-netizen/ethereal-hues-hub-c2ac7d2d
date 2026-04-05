@@ -242,30 +242,64 @@ export default function CompetitionLobbyPage() {
         )}
 
         {/* ═══ GO EDIT — visible when live + joined + hasn't submitted ═══ */}
-        {isLive && hasJoined && !hasSubmitted && !showSubmit && (
+        {isLive && hasJoined && !hasSubmitted && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-gradient-to-br from-red-500/10 to-red-900/5 border border-red-500/20 rounded-xl p-5 text-center"
+            className="space-y-3"
           >
-            <div className="flex items-center justify-center gap-2 mb-2">
+            {/* Dismissible theme instructions */}
+            {showThemeHint && (competition.theme || competition.description) && (
+              <div className="bg-zinc-900/60 border border-white/[0.08] rounded-xl p-3 flex items-start gap-3 relative">
+                <Layers className="w-4 h-4 text-zinc-400 shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[9px] text-zinc-500 uppercase tracking-[0.15em] font-bold mb-0.5">THEME</p>
+                  <p className="text-xs text-white font-medium">{competition.theme || competition.description}</p>
+                  {competition.description && competition.theme && (
+                    <p className="text-[10px] text-zinc-500 mt-1">{competition.description}</p>
+                  )}
+                </div>
+                <button
+                  onClick={() => setShowThemeHint(false)}
+                  className="p-1 rounded-lg hover:bg-white/[0.05] text-zinc-600 hover:text-zinc-400 transition-colors shrink-0"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
+            {/* Round status */}
+            <div className="flex items-center justify-center gap-2">
               <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
               <span className="text-[10px] text-red-400 font-bold uppercase tracking-[0.2em]" style={teko}>ROUND IS OPEN</span>
             </div>
-            <p className="text-xs text-zinc-400 mb-4">Go make your edit now — submit when ready</p>
-            <button
-              onClick={() => setShowSubmit(true)}
-              className="w-full py-4 rounded-xl flex items-center justify-center gap-2.5 transition-all active:scale-[0.98]"
-              style={{
-                background: "linear-gradient(135deg, #ef4444, #dc2626)",
-                color: "#fff",
-                boxShadow: "0 4px 24px rgba(239,68,68,0.25)",
-                ...teko,
-              }}
-            >
-              <Swords className="w-5 h-5" />
-              <span className="text-[18px] font-extrabold uppercase tracking-[0.15em]">GO EDIT</span>
-            </button>
+
+            {/* GO EDIT + SUBMIT side by side */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => navigate("/studio")}
+                className="flex-[2] py-4 rounded-xl flex items-center justify-center gap-2.5 transition-all active:scale-[0.98]"
+                style={{
+                  background: "linear-gradient(135deg, #ef4444, #dc2626)",
+                  color: "#fff",
+                  boxShadow: "0 4px 24px rgba(239,68,68,0.25)",
+                  ...teko,
+                }}
+              >
+                <Pencil className="w-5 h-5" />
+                <span className="text-[18px] font-extrabold uppercase tracking-[0.15em]">GO EDIT</span>
+              </button>
+              <button
+                onClick={() => setShowSubmit(true)}
+                className="flex-1 py-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] border border-white/[0.1] bg-zinc-900/80 hover:bg-zinc-800/80"
+                style={teko}
+              >
+                <Send className="w-4 h-4 text-white/70" />
+                <span className="text-[14px] font-extrabold uppercase tracking-[0.1em] text-white/70">SUBMIT</span>
+              </button>
+            </div>
+
+            <p className="text-[10px] text-zinc-600 text-center">Use any editor you want — submit your link when ready</p>
           </motion.div>
         )}
 
