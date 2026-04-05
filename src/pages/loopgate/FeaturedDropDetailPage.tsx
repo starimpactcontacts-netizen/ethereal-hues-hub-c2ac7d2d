@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Music, ExternalLink, Flame, Trophy, Crown, Star,
-  Zap, Send, ChevronRight, Users, Clock, Eye, Share2, Check,
+  Zap, Send, ChevronRight, Users, Clock, Eye, Share2, Check, Target,
   TrendingUp, ChevronDown, Play, Lock, Video, Award, Link2, Download,
   ListOrdered, MessageCircle, Info, X, Swords
 } from "lucide-react";
