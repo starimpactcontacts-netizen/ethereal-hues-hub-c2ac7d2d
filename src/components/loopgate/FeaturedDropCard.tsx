@@ -78,7 +78,7 @@ export default function FeaturedDropCard({ drop }: Props) {
         <div className="absolute top-3 left-0 z-20 bg-emerald-500 px-3 py-1 flex items-center gap-1.5"
           style={{ clipPath: 'polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%)' }}>
           <Swords className="w-3 h-3 text-black" />
-          <span className="text-[8px] font-black text-black uppercase tracking-[0.15em]">Official Event</span>
+          <span className="text-[8px] font-black text-black uppercase tracking-[0.15em]">King of the Hill</span>
         </div>
 
         {/* Poster — taller for official */}
