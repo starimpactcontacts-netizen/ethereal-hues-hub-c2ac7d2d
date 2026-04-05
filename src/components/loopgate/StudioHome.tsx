@@ -84,10 +84,9 @@ const CAPABILITIES = [
 interface StudioHomeProps {
   onNewProject: () => void;
   onOpenProject: (project: StudioProject) => void;
-  onOpenAutoEdit?: () => void;
 }
 
-export default function StudioHome({ onNewProject, onOpenProject, onOpenAutoEdit }: StudioHomeProps) {
+export default function StudioHome({ onNewProject, onOpenProject }: StudioHomeProps) {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [projects, setProjects] = useState<StudioProject[]>([]);
@@ -209,43 +208,6 @@ export default function StudioHome({ onNewProject, onOpenProject, onOpenAutoEdit
               </motion.button>
             </div>
 
-            {/* ═══ AUTO-EDIT CTA ═══ */}
-            {onOpenAutoEdit && (
-              <motion.button
-                onClick={onOpenAutoEdit}
-                whileTap={{ scale: 0.98 }}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="w-full col-span-full rounded-2xl overflow-hidden relative group cursor-pointer p-5 text-left"
-                style={{
-                  background: "linear-gradient(135deg, rgba(153,153,255,0.08) 0%, rgba(255,107,107,0.04) 50%, rgba(0,0,0,0.96) 100%)",
-                  border: "1px solid rgba(153,153,255,0.15)",
-                }}
-              >
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                  style={{ background: "radial-gradient(circle at 30% 50%, rgba(153,153,255,0.12), transparent 60%)" }} />
-                <div className="relative flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
-                    style={{ background: "linear-gradient(135deg, #9999FF, #FF6B6B)", boxShadow: "0 8px 30px rgba(153,153,255,0.3)" }}>
-                    <Wand2 className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <p className="font-black text-white text-[15px] tracking-tight" style={{ fontFamily: "'Teko', sans-serif", fontSize: "20px", letterSpacing: "0.03em" }}>
-                        LOOPY AUTO-EDIT
-                      </p>
-                      <span className="text-[7px] font-bold tracking-[0.2em] uppercase px-1.5 py-0.5 rounded"
-                        style={{ color: "#FF6B6B", background: "rgba(255,107,107,0.12)", border: "1px solid rgba(255,107,107,0.2)" }}>
-                        SMART
-                      </span>
-                    </div>
-                    <p className="text-[10px] text-white/30">Upload clips → pick a style → get a pro edit in seconds</p>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-[#9999FF]/40 group-hover:text-[#9999FF] group-hover:translate-x-1 transition-all shrink-0" />
-                </div>
-              </motion.button>
-            )}
 
 
             {/* Capabilities Grid */}

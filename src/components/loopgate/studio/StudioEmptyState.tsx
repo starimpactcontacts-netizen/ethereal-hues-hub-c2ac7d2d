@@ -13,18 +13,18 @@ const HERO_FEATURES = [
   { icon: Zap, label: "24+ Real-time FX", color: "#FF6B00" },
   { icon: Layers, label: "Multi-track PiP", color: "#00D4FF" },
   { icon: Diamond, label: "Keyframe Animation", color: "#AA44FF" },
-  { icon: Sparkles, label: "Auto-Edit", color: "#FF004F" },
+  { icon: Sparkles, label: "Real-time FX", color: "#FF004F" },
   { icon: Music, label: "Audio Mixing", color: "#A855F7" },
   { icon: ArrowUpCircle, label: "4K Upscale", color: "#22CC88" },
 ];
 
 interface StudioEmptyStateProps {
   onOpenPicker: () => void;
-  onAutoEdit: () => void;
+  onAutoEdit?: () => void;
   onBack?: () => void;
 }
 
-export default function StudioEmptyState({ onOpenPicker, onAutoEdit, onBack }: StudioEmptyStateProps) {
+export default function StudioEmptyState({ onOpenPicker, onBack }: StudioEmptyStateProps) {
   const navigate = useNavigate();
 
   return (
@@ -121,19 +121,6 @@ export default function StudioEmptyState({ onOpenPicker, onAutoEdit, onBack }: S
             <Upload className="w-5 h-5" /> Import Video
           </motion.button>
 
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={(e) => { e.stopPropagation(); onAutoEdit(); }}
-            className="h-11 px-7 rounded-xl text-[13px] font-semibold flex items-center gap-2.5 transition-all"
-            style={{
-              background: "rgba(255,0,79,0.06)",
-              color: "#FF004F",
-              border: "1px solid rgba(255,0,79,0.15)",
-              boxShadow: "0 2px 12px rgba(255,0,79,0.05)",
-            }}
-          >
-            <Wand2 className="w-4 h-4" /> Auto-Edit
-          </motion.button>
         </div>
 
         {/* Feature grid */}

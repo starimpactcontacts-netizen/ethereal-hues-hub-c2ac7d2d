@@ -15,11 +15,9 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import StudioSubmitButton from "./StudioSubmitButton";
-import AutoEditWizard from "./studio/AutoEditWizard";
 import MobileAITools from "./studio/MobileAITools";
-import GestureTimeline from "./studio/GestureTimeline";
+import AlightTimeline, { type TimelineLayer as AlightLayer } from "./studio/AlightTimeline";
 import StudioProToolbar, { type EditorTool } from "./studio/StudioProToolbar";
-import StudioProTimeline from "./studio/StudioProTimeline";
 import StudioEmptyState from "./studio/StudioEmptyState";
 import KeyframeEditor, { interpolateKeyframes, type Keyframe, type KeyframedProperty } from "./studio/KeyframeEditor";
 import BlendModePanel, { BLEND_MODES, OVERLAY_PRESETS, applyOverlay, type BlendMode, type OverlayPreset } from "./studio/BlendModes";
@@ -745,15 +743,6 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
           onAutoEdit={() => setAutoEditOpen(true)}
           onBack={onBack}
         />
-        {autoEditOpen && (
-          <AutoEditWizard
-            onClose={() => setAutoEditOpen(false)}
-            onTimelineReady={(timeline, clips) => {
-              setAutoEditOpen(false);
-              toast.success("AI edit ready! Apply it in the full Studio for multi-clip timelines.");
-            }}
-          />
-        )}
         <input ref={fileInputRef} type="file" accept="video/*" onChange={handleFileSelect} className="hidden" />
       </>
     );
@@ -961,28 +950,52 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
           )}
         </div>
 
-        {/* ─── Pro Timeline ─── */}
-        <StudioProTimeline
+        {/* ─── Alight Motion-style Timeline ─── */}
+        <AlightTimeline
+          layers={(() => {
+            const alightLayers: AlightLayer[] = [];
+            if (file) {
+              alightLayers.push({
+                id: "v1", name: file.name.substring(0, 20), type: "video",
+                color: "#4ECDC4", visible: true, locked: false,
+                startTime: trimStart, endTime: trimEnd || duration,
+                thumbnail: thumbnails[0],
+              });
+            }
+            if (audioName) {
+              alightLayers.push({
+                id: "a1", name: audioName, type: "audio",
+                color: "#FF6B6B", visible: true, locked: false,
+                startTime: 0, endTime: duration,
+              });
+            }
+            textOverlays.forEach(t => {
+              alightLayers.push({
+                id: `t-${t.id}`, name: t.text.substring(0, 15), type: "text",
+                color: "#FFE66D", visible: true, locked: false,
+                startTime: t.startTime, endTime: t.endTime,
+              });
+            });
+            return alightLayers;
+          })()}
           duration={duration}
           currentTime={currentTime}
-          trimStart={trimStart}
-          trimEnd={trimEnd}
           playing={playing}
-          thumbnails={thumbnails}
-          audioName={audioName}
-          markers={timelineMarkers}
           onSeek={seekTo}
-          onTrimStartChange={setTrimStart}
-          onTrimEndChange={setTrimEnd}
           onTogglePlay={togglePlay}
-          onAddMarker={(time) => {
-            setTimelineMarkers(prev => [...prev, { id: crypto.randomUUID(), time, color: "#FF6B00", label: `M${prev.length + 1}`, type: "beat" as const }]);
-            toast.success("Marker added");
+          onToggleVisibility={() => {}}
+          onToggleLock={() => {}}
+          onSelectLayer={(id) => {
+            if (id?.startsWith("t-")) {
+              setActiveTool("text");
+            }
           }}
-          onSplit={(time) => {
-            setTimelineMarkers(prev => [...prev, { id: crypto.randomUUID(), time, color: "#FF004F", label: "Cut", type: "cut" as const }]);
-            toast.success("Split point added");
+          onReorderLayers={() => {}}
+          onAddLayer={() => {
+            // Trigger the add panel in toolbar
           }}
+          selectedLayerId={null}
+          thumbnails={thumbnails}
         />
 
         {/* ─── Tool Panel ─── */}
@@ -2080,16 +2093,6 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
           }}
         />
 
-        {/* Auto-Edit Wizard overlay (from empty state) */}
-        {autoEditOpen && (
-          <AutoEditWizard
-            onClose={() => setAutoEditOpen(false)}
-            onTimelineReady={(timeline, clips) => {
-              setAutoEditOpen(false);
-              toast.success("AI timeline generated! Use full Studio for multi-clip editing.");
-            }}
-          />
-        )}
 
         <input ref={fileInputRef} type="file" accept="video/*" onChange={handleFileSelect} className="hidden" />
       </motion.div>
