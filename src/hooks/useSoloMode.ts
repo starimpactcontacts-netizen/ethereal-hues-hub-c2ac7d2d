@@ -63,7 +63,7 @@ export function useSoloMode() {
 
   useEffect(() => { fetchActive(); }, [fetchActive]);
 
-  const startSolo = useCallback(async (drop: { id: string; song_name: string; artist?: { name: string } | null }) => {
+  const startSolo = useCallback(async (drop: { id: string | null; song_name: string; artist?: { name: string } | null }) => {
     if (!user || !profile) return null;
     const theme = getRandomTheme();
     const { data, error } = await supabase
