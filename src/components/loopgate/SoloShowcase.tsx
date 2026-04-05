@@ -153,9 +153,9 @@ export default function SoloShowcase({ onStartSolo }: { onStartSolo: () => void 
       {/* Submissions carousel — compact poster cards */}
       {loading ? (
         <div className="flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-2">
-          <Skeleton className="h-[210px] w-[160px] shrink-0 rounded-lg" />
-          <Skeleton className="h-[210px] w-[160px] shrink-0 rounded-lg" />
-          <Skeleton className="h-[210px] w-[160px] shrink-0 rounded-lg" />
+          <Skeleton className="h-[220px] w-[150px] shrink-0 rounded-xl" />
+          <Skeleton className="h-[220px] w-[150px] shrink-0 rounded-xl" />
+          <Skeleton className="h-[220px] w-[150px] shrink-0 rounded-xl" />
         </div>
       ) : submissions.length > 0 ? (
         <div className="flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory">
