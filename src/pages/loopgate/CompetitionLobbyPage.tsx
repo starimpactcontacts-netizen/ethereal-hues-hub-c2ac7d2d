@@ -192,7 +192,7 @@ export default function CompetitionLobbyPage() {
         </div>
       </div>
 
-      <div className="px-4 mt-4 space-y-4">
+      <div className="px-4 mt-3 space-y-3">
         {/* ═══ HOST + META ═══ */}
         <div className="flex items-center justify-between">
           <button onClick={() => navigate(`/u/${competition.creator_username}`)} className="flex items-center gap-2 group">
@@ -207,37 +207,31 @@ export default function CompetitionLobbyPage() {
               <span className="text-[10px] text-muted-foreground/50 ml-1.5">Host</span>
             </div>
           </button>
-          <div className="flex items-center gap-3">
-            {competition.index_reward_pool > 0 && (
-              <span className="flex items-center gap-1 text-[10px] font-bold text-gold">
-                <Trophy className="w-3 h-3" /> +{competition.index_reward_pool} IDX
-              </span>
-            )}
-          </div>
+          {competition.index_reward_pool > 0 && (
+            <span className="flex items-center gap-1 text-[10px] font-bold text-gold">
+              <Trophy className="w-3 h-3" /> +{competition.index_reward_pool} IDX
+            </span>
+          )}
         </div>
 
-        {/* ═══ COUNTDOWN TIMER ═══ */}
+        {/* ═══ COUNTDOWN — inline, no box ═══ */}
         {isLive && competition.deadline && !deadlinePassed && (
-          <div className="bg-zinc-900/60 border border-red-500/10 rounded-xl p-4 text-center">
-            <p className="text-[9px] text-zinc-500 uppercase tracking-[0.2em] mb-2 font-bold" style={teko}>TIME REMAINING</p>
+          <div className="text-center py-1">
+            <p className="text-[9px] text-muted-foreground/50 uppercase tracking-[0.2em] mb-1.5 font-bold" style={teko}>TIME REMAINING</p>
             <div className="flex justify-center">
               <LiveCountdown deadline={competition.deadline} />
             </div>
           </div>
         )}
 
-        {/* ═══ THEME / DESCRIPTION ═══ */}
+        {/* ═══ THEME — simple inline text, no box ═══ */}
         {(competition.theme || competition.description) && (
-          <div className="bg-zinc-900/50 border border-white/[0.06] rounded-xl p-3.5">
-            {competition.theme && (
-              <div className="flex items-center gap-2 mb-1">
-                <Layers className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                <p className="text-sm font-bold text-white">{competition.theme}</p>
-              </div>
-            )}
-            {competition.description && (
-              <p className="text-xs text-zinc-500 pl-5.5">{competition.description}</p>
-            )}
+          <div className="flex items-start gap-2 px-1">
+            <Layers className="w-3.5 h-3.5 text-muted-foreground/40 shrink-0 mt-0.5" />
+            <div>
+              {competition.theme && <p className="text-sm font-bold text-foreground">{competition.theme}</p>}
+              {competition.description && <p className="text-xs text-muted-foreground/50 mt-0.5">{competition.description}</p>}
+            </div>
           </div>
         )}
 
@@ -246,16 +240,13 @@ export default function CompetitionLobbyPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="space-y-3"
+            className="space-y-2"
           >
-
-            {/* Round status */}
             <div className="flex items-center justify-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
               <span className="text-[10px] text-red-400 font-bold uppercase tracking-[0.2em]" style={teko}>ROUND IS OPEN</span>
             </div>
 
-            {/* GO EDIT + SUBMIT side by side */}
             <div className="flex gap-2">
               <button
                 onClick={() => {
@@ -265,7 +256,7 @@ export default function CompetitionLobbyPage() {
                   if (competition.id) params.set("comp_id", competition.id);
                   navigate(`/studio?${params.toString()}`);
                 }}
-                className="flex-[2] py-4 rounded-xl flex items-center justify-center gap-2.5 transition-all active:scale-[0.98]"
+                className="flex-[2] py-3.5 rounded-xl flex items-center justify-center gap-2.5 transition-all active:scale-[0.98]"
                 style={{
                   background: "linear-gradient(135deg, #ef4444, #dc2626)",
                   color: "#fff",
@@ -278,7 +269,7 @@ export default function CompetitionLobbyPage() {
               </button>
               <button
                 onClick={() => setShowSubmit(true)}
-                className="flex-1 py-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                className="flex-1 py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
                 style={{
                   background: "linear-gradient(135deg, hsl(142 71% 45%), hsl(142 76% 36%))",
                   color: "#fff",
@@ -290,19 +281,17 @@ export default function CompetitionLobbyPage() {
                 <span className="text-[14px] font-extrabold uppercase tracking-[0.1em]">SUBMIT</span>
               </button>
             </div>
-
-            <p className="text-[10px] text-zinc-600 text-center">Use any editor you want — submit your link when ready</p>
+            <p className="text-[10px] text-muted-foreground/30 text-center">Use any editor you want — submit your link when ready</p>
           </motion.div>
         )}
 
         {/* ═══ PRIMARY ACTION ═══ */}
-        {/* Host: Start button */}
         {isCreator && isLobby && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
             <button
               onClick={handleStart}
               disabled={!canStart || isStarting}
-              className="w-full py-4 rounded-xl flex items-center justify-center gap-2.5 transition-all disabled:opacity-20 disabled:cursor-not-allowed"
+              className="w-full py-3.5 rounded-xl flex items-center justify-center gap-2.5 transition-all disabled:opacity-20 disabled:cursor-not-allowed"
               style={{
                 background: canStart ? "linear-gradient(135deg, #10B981, #059669)" : "rgba(255,255,255,0.04)",
                 color: canStart ? "#fff" : "rgba(255,255,255,0.3)",
@@ -322,12 +311,11 @@ export default function CompetitionLobbyPage() {
           </motion.div>
         )}
 
-        {/* Join */}
         {!hasJoined && !isCreator && (isLobby || isLive) && (
           <button
             onClick={handleJoin}
             disabled={isJoining || competition.current_players >= competition.max_players}
-            className="w-full py-4 rounded-xl flex items-center justify-center gap-2.5 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+            className="w-full py-3.5 rounded-xl flex items-center justify-center gap-2.5 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
             style={{
               background: "linear-gradient(135deg, #10B981, #059669)",
               color: "#fff",
@@ -346,10 +334,8 @@ export default function CompetitionLobbyPage() {
           </button>
         )}
 
-        {/* Submit fallback — only if somehow GO EDIT block didn't render */}
-
         {hasSubmitted && (
-          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 text-center">
+          <div className="text-center py-2">
             <span className="text-xs font-bold text-emerald-400">✓ Edit Submitted</span>
           </div>
         )}
@@ -360,7 +346,7 @@ export default function CompetitionLobbyPage() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             onSubmit={handleSubmit}
-            className="bg-surface-1 border border-white/[0.06] rounded-xl p-4 space-y-3"
+            className="space-y-3"
           >
             <div className="flex gap-2">
               {(["tiktok", "instagram", "youtube"] as PlatformType[]).map(p => (
@@ -368,7 +354,7 @@ export default function CompetitionLobbyPage() {
                   key={p}
                   type="button"
                   onClick={() => setPlatform(p)}
-                  className={`flex-1 py-2 rounded-lg text-[11px] font-bold uppercase transition-all border ${
+                  className={`flex-1 py-2 rounded-xl text-[11px] font-bold uppercase transition-all border ${
                     platform === p
                       ? "bg-white/10 border-white/20 text-foreground"
                       : "bg-surface-2 border-white/[0.06] text-muted-foreground"
@@ -382,16 +368,16 @@ export default function CompetitionLobbyPage() {
               value={subUrl}
               onChange={e => setSubUrl(e.target.value)}
               placeholder={getPlatformUrlPlaceholder(platform)}
-              className="w-full bg-surface-2 border border-white/[0.06] rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:border-red-500/40"
+              className="w-full bg-surface-2 border border-white/[0.06] rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:border-red-500/40"
             />
             <div className="flex gap-2">
-              <button type="button" onClick={() => setShowSubmit(false)} className="flex-1 py-2.5 rounded-lg text-xs font-bold text-muted-foreground bg-surface-2 border border-white/[0.06]">
+              <button type="button" onClick={() => setShowSubmit(false)} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-muted-foreground bg-surface-2 border border-white/[0.06]">
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting || !subUrl.trim()}
-                className="flex-1 py-2.5 rounded-lg text-xs font-bold text-white disabled:opacity-30 transition-all"
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-30 transition-all"
                 style={{ background: "linear-gradient(135deg, #ef4444, #dc2626)" }}
               >
                 {isSubmitting ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : "Submit"}
@@ -400,16 +386,16 @@ export default function CompetitionLobbyPage() {
           </motion.form>
         )}
 
-        {/* ═══ QUICK ACTIONS BAR ═══ */}
+        {/* ═══ QUICK ACTIONS — borderless ═══ */}
         <div className="flex gap-2">
           <button
             onClick={() => chatRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-surface-1 border border-white/[0.06] rounded-xl hover:border-red-500/20 transition-all"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl hover:bg-white/[0.04] transition-all active:scale-[0.98]"
           >
             <MessageCircle className="w-3.5 h-3.5 text-red-400" />
             <span className="text-[11px] font-bold text-foreground/60 uppercase tracking-wider" style={teko}>Chat</span>
           </button>
-          <div className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-surface-1 border border-white/[0.06] rounded-xl">
+          <div className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl">
             <Users className="w-3.5 h-3.5 text-muted-foreground/50" />
             <span className="text-[11px] font-bold text-foreground/60 uppercase tracking-wider" style={teko}>
               {participants.length} Editor{participants.length !== 1 ? "s" : ""}
