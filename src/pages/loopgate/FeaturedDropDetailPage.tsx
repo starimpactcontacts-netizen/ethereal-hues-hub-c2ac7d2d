@@ -243,9 +243,9 @@ export default function FeaturedDropDetailPage() {
       {/* ═══ LOBBY ACTION BAR ═══ */}
       <div className="px-4 mt-2 flex items-center gap-2">
         {/* Chat quick-link */}
-        <button
+         <button
           onClick={() => chatRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-          className="flex-1 flex items-center gap-2.5 px-3 py-2.5 bg-foreground/[0.04] border border-foreground/[0.08] hover:border-red-500/30 hover:bg-red-500/[0.06] transition-all active:scale-[0.98] touch-manipulation group"
+          className="flex-1 flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-red-500/[0.06] transition-all active:scale-[0.98] touch-manipulation group"
         >
           <div className="relative">
             <MessageCircle className="w-4 h-4 text-red-400" />
