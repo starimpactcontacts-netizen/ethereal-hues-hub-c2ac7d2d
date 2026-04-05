@@ -405,7 +405,7 @@ export default function FeaturedDropDetailPage() {
                     </p>
                   </div>
                   {activeRound.judge_username && (
-                    <div className="flex items-center gap-1.5 px-2 py-1 bg-gold/10">
+                    <div className="flex items-center gap-1.5 px-2 py-1 bg-gold/10 rounded-full">
                       <Award className="w-3 h-3 text-gold" />
                       <span className="text-[9px] font-bold text-gold">Judge: @{activeRound.judge_username}</span>
                     </div>
