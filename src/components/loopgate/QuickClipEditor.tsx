@@ -15,11 +15,9 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import StudioSubmitButton from "./StudioSubmitButton";
-import AutoEditWizard from "./studio/AutoEditWizard";
 import MobileAITools from "./studio/MobileAITools";
-import GestureTimeline from "./studio/GestureTimeline";
+import AlightTimeline, { type TimelineLayer as AlightLayer } from "./studio/AlightTimeline";
 import StudioProToolbar, { type EditorTool } from "./studio/StudioProToolbar";
-import StudioProTimeline from "./studio/StudioProTimeline";
 import StudioEmptyState from "./studio/StudioEmptyState";
 import KeyframeEditor, { interpolateKeyframes, type Keyframe, type KeyframedProperty } from "./studio/KeyframeEditor";
 import BlendModePanel, { BLEND_MODES, OVERLAY_PRESETS, applyOverlay, type BlendMode, type OverlayPreset } from "./studio/BlendModes";
