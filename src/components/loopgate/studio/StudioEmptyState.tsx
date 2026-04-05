@@ -20,11 +20,11 @@ const HERO_FEATURES = [
 
 interface StudioEmptyStateProps {
   onOpenPicker: () => void;
-  onAutoEdit: () => void;
+  onAutoEdit?: () => void;
   onBack?: () => void;
 }
 
-export default function StudioEmptyState({ onOpenPicker, onAutoEdit, onBack }: StudioEmptyStateProps) {
+export default function StudioEmptyState({ onOpenPicker, onBack }: StudioEmptyStateProps) {
   const navigate = useNavigate();
 
   return (
