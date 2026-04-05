@@ -682,7 +682,7 @@ export default function ArenaPage() {
     { key: "all", label: "All" },
     { key: "quick", label: "Quick 1v1", icon: <Zap className="w-3.5 h-3.5" />, accent: "red" },
     { key: "battles", label: "1v1", icon: <Swords className="w-3.5 h-3.5" />, accent: "red" },
-    { key: "official", label: "Official", icon: <InfinityIcon className="w-3.5 h-3.5" />, accent: "gold" },
+    { key: "official", label: "King of the Hill", icon: <Crown className="w-3.5 h-3.5" />, accent: "gold" },
     { key: "sanctioned", label: "Sanctioned", icon: <Shield className="w-3.5 h-3.5" /> },
   ];
 
@@ -1203,7 +1203,7 @@ export default function ArenaPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-lg shadow-red-500/50" />
-                    <span className="text-[10px] font-black text-red-400 uppercase tracking-[0.2em]">Official Event Live</span>
+                    <span className="text-[10px] font-black text-red-400 uppercase tracking-[0.2em]">King of the Hill — Live</span>
                   </div>
                   <h3 className="text-[18px] font-black text-white leading-tight truncate tracking-tight" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
                     {liveDrops[0].title}
@@ -1330,15 +1330,15 @@ export default function ArenaPage() {
             <SoloShowcase onStartSolo={() => setShowSoloMode(true)} />
           )}
 
-          {/* Official Events — Featured Drops with rounds */}
+          {/* King of the Hill — Featured Drops with leaderboard */}
           {(activeFilter === "all" || activeFilter === "official") && (
             <motion.section key="official-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <SectionHeader
                 icon={<InfinityIcon className="w-4 h-4 text-gold" />}
-                title="Official Events"
+                title="King of the Hill"
                 badge={liveDrops.length > 0 ? `${liveDrops.length} Live` : undefined}
                 badgeColor="bg-emerald-500/20 border-emerald-500/40 text-emerald-400"
-                infoText="Multi-round competitions with cash prizes. Submit your edit each round — judges score on a 0–100 QOI scale. Top scorers earn cash + Index."
+                infoText="30 edits decide the king. Stay #1 on the leaderboard each week to stack XP & Index. More submissions = bigger rewards for the reigning king — until the hill is taken."
               />
               {liveDrops.length > 0 ? (
                 <div className="px-4 flex gap-3 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory">
@@ -1352,8 +1352,8 @@ export default function ArenaPage() {
                     <div className="w-12 h-12 bg-gold/10 border border-gold/20 flex items-center justify-center mx-auto mb-3">
                       <InfinityIcon className="w-6 h-6 text-gold/30" />
                     </div>
-                    <p className="text-[13px] text-muted-foreground font-medium">No active official events</p>
-                    <p className="text-[11px] text-muted-foreground/50 mt-1">New drops announced weekly — stay tuned</p>
+                    <p className="text-[13px] text-muted-foreground font-medium">No active King of the Hill</p>
+                    <p className="text-[11px] text-muted-foreground/50 mt-1">New hills drop weekly — stay tuned</p>
                   </div>
                 </div>
               )}
@@ -1490,7 +1490,7 @@ export default function ArenaPage() {
             </motion.section>
           )}
 
-          {/* (Official Events now shown above as Featured Drops with rounds) */}
+          {/* (King of the Hill now shown above as Featured Drops) */}
 
           <div className="h-8" />
         </div>
