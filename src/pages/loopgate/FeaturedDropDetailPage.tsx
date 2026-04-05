@@ -259,7 +259,7 @@ export default function FeaturedDropDetailPage() {
               key={chatCount}
               initial={{ scale: 1.3 }}
               animate={{ scale: 1 }}
-              className="px-1.5 py-0.5 bg-red-500/20 text-red-400 text-[9px] font-black"
+              className="px-1.5 py-0.5 bg-red-500/20 text-red-400 text-[9px] font-black rounded-full"
             >
               {chatCount}
             </motion.span>
