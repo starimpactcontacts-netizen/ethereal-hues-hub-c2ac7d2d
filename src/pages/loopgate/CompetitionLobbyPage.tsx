@@ -272,7 +272,7 @@ export default function CompetitionLobbyPage() {
                 <span className="text-[14px] font-extrabold uppercase tracking-[0.1em]">SUBMIT</span>
               </button>
             </div>
-            <p className="text-[10px] text-muted-foreground/30 text-center">Use any editor you want — submit your link when ready</p>
+            <p className="text-[10px] text-muted-foreground/30 text-center">Use any editing software you like (CapCut, Adobe, etc.) — submit your link when ready</p>
           </motion.div>
         )}
 
