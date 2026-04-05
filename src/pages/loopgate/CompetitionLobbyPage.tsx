@@ -127,11 +127,12 @@ export default function CompetitionLobbyPage() {
   };
 
   const handleShare = async () => {
-    const url = `${window.location.origin}/competition/${competition.slug || competition.id}`;
+    const cleanUrl = `${window.location.origin}/competition/${competition.slug || competition.id}`;
+    const shareText = `🏆 ${competition.name}\n\n${competition.theme ? `Theme: ${competition.theme}\n` : ''}${competition.current_players}/${competition.max_players} editors competing${competition.index_reward_pool > 0 ? ` · +${competition.index_reward_pool} IDX reward` : ''}\n\nJoin the lobby 👇\n${cleanUrl}`;
     try {
-      if (navigator.share) await navigator.share({ title: competition.name, url });
+      if (navigator.share) await navigator.share({ title: competition.name, text: shareText, url: cleanUrl });
       else {
-        await navigator.clipboard.writeText(url);
+        await navigator.clipboard.writeText(shareText);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
         toast.success("Link copied!");
