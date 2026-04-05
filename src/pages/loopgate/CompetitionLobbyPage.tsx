@@ -1,19 +1,61 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Trophy, Users, Clock, Play, Loader2, Send,
-  Share2, Check, MessageCircle, ExternalLink
+  Share2, Check, MessageCircle, ExternalLink, Layers, Swords
 } from "lucide-react";
 import { useCompetition } from "@/hooks/useCompetitions";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { formatDistanceToNow, isPast } from "date-fns";
+import { formatDistanceToNow, isPast, differenceInSeconds } from "date-fns";
 import { validatePlatformUrl, getPlatformUrlPlaceholder, type PlatformType } from "@/lib/urlValidation";
 import CompetitionChat from "@/components/loopgate/CompetitionChat";
 
 const teko = { fontFamily: "Teko, sans-serif" };
+
+function LiveCountdown({ deadline }: { deadline: string }) {
+  const [remaining, setRemaining] = useState(() => Math.max(0, differenceInSeconds(new Date(deadline), new Date())));
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const diff = Math.max(0, differenceInSeconds(new Date(deadline), new Date()));
+      setRemaining(diff);
+      if (diff <= 0) clearInterval(interval);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [deadline]);
+
+  const h = Math.floor(remaining / 3600);
+  const m = Math.floor((remaining % 3600) / 60);
+  const s = remaining % 60;
+
+  if (remaining <= 0) return <span className="text-red-400 font-bold text-sm tracking-wider" style={teko}>TIME'S UP</span>;
+
+  return (
+    <div className="flex items-center gap-1">
+      {h > 0 && (
+        <>
+          <div className="bg-black/40 border border-white/[0.08] rounded-lg px-2 py-1 min-w-[36px] text-center">
+            <span className="text-lg font-bold text-white tabular-nums" style={teko}>{String(h).padStart(2, '0')}</span>
+            <span className="text-[7px] text-zinc-500 block uppercase tracking-wider -mt-0.5">HR</span>
+          </div>
+          <span className="text-zinc-600 text-sm font-bold">:</span>
+        </>
+      )}
+      <div className="bg-black/40 border border-white/[0.08] rounded-lg px-2 py-1 min-w-[36px] text-center">
+        <span className="text-lg font-bold text-white tabular-nums" style={teko}>{String(m).padStart(2, '0')}</span>
+        <span className="text-[7px] text-zinc-500 block uppercase tracking-wider -mt-0.5">MIN</span>
+      </div>
+      <span className="text-zinc-600 text-sm font-bold">:</span>
+      <div className="bg-black/40 border border-white/[0.08] rounded-lg px-2 py-1 min-w-[36px] text-center">
+        <span className="text-lg font-bold text-white tabular-nums" style={teko}>{String(s).padStart(2, '0')}</span>
+        <span className="text-[7px] text-zinc-500 block uppercase tracking-wider -mt-0.5">SEC</span>
+      </div>
+    </div>
+  );
+}
 
 export default function CompetitionLobbyPage() {
   const { id } = useParams<{ id: string }>();
@@ -129,18 +171,16 @@ export default function CompetitionLobbyPage() {
         <div className="absolute bottom-4 left-4 right-4">
           <div className="flex items-center gap-2 mb-1.5">
             {/* League */}
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-black/50 backdrop-blur-sm border border-white/[0.12] rounded">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-black/50 backdrop-blur-sm border border-white/[0.12] rounded">
               <span className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-white/80" style={teko}>
                 {competition.league === "elite" ? "ELITE" : competition.league === "pro" ? "PRO" : "OPEN"} LEAGUE
               </span>
             </div>
-            {/* Status */}
-            <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded ${
-              isLive ? "bg-emerald-500/20 border border-emerald-500/20" : "bg-amber-500/20 border border-amber-500/20"
-            }`}>
-              <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${isLive ? "bg-emerald-400" : "bg-amber-400"}`} />
-              <span className={`text-[9px] font-extrabold uppercase tracking-[0.1em] ${isLive ? "text-emerald-300" : "text-amber-300"}`} style={teko}>
-                {isLobby ? "Awaiting Start" : isLive ? "Live" : competition.status}
+            {/* Status — no green badge, just subtle amber/white text */}
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-black/50 backdrop-blur-sm border border-white/[0.08]">
+              <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${isLive ? "bg-red-500" : "bg-amber-400"}`} />
+              <span className="text-[9px] font-extrabold uppercase tracking-[0.1em] text-white/70" style={teko}>
+                {isLobby ? "AWAITING START" : isLive ? "IN PROGRESS" : competition.status.toUpperCase()}
               </span>
             </div>
           </div>
@@ -166,12 +206,6 @@ export default function CompetitionLobbyPage() {
             </div>
           </button>
           <div className="flex items-center gap-3">
-            {competition.deadline && isLive && !deadlinePassed && (
-              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                <Clock className="w-3 h-3" />
-                {formatDistanceToNow(new Date(competition.deadline), { addSuffix: true })}
-              </span>
-            )}
             {competition.index_reward_pool > 0 && (
               <span className="flex items-center gap-1 text-[10px] font-bold text-gold">
                 <Trophy className="w-3 h-3" /> +{competition.index_reward_pool} IDX
@@ -180,16 +214,57 @@ export default function CompetitionLobbyPage() {
           </div>
         </div>
 
+        {/* ═══ COUNTDOWN TIMER ═══ */}
+        {isLive && competition.deadline && !deadlinePassed && (
+          <div className="bg-zinc-900/60 border border-red-500/10 rounded-xl p-4 text-center">
+            <p className="text-[9px] text-zinc-500 uppercase tracking-[0.2em] mb-2 font-bold" style={teko}>TIME REMAINING</p>
+            <div className="flex justify-center">
+              <LiveCountdown deadline={competition.deadline} />
+            </div>
+          </div>
+        )}
+
         {/* ═══ THEME / DESCRIPTION ═══ */}
         {(competition.theme || competition.description) && (
-          <div className="bg-surface-1 border border-white/[0.06] rounded-xl p-3.5">
+          <div className="bg-zinc-900/50 border border-white/[0.06] rounded-xl p-3.5">
             {competition.theme && (
-              <p className="text-sm font-bold text-foreground mb-1">{competition.theme}</p>
+              <div className="flex items-center gap-2 mb-1">
+                <Layers className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                <p className="text-sm font-bold text-white">{competition.theme}</p>
+              </div>
             )}
             {competition.description && (
-              <p className="text-xs text-muted-foreground/60">{competition.description}</p>
+              <p className="text-xs text-zinc-500 pl-5.5">{competition.description}</p>
             )}
           </div>
+        )}
+
+        {/* ═══ GO EDIT — visible when live + joined + hasn't submitted ═══ */}
+        {isLive && hasJoined && !hasSubmitted && !showSubmit && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-gradient-to-br from-red-500/10 to-red-900/5 border border-red-500/20 rounded-xl p-5 text-center"
+          >
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+              <span className="text-[10px] text-red-400 font-bold uppercase tracking-[0.2em]" style={teko}>ROUND IS OPEN</span>
+            </div>
+            <p className="text-xs text-zinc-400 mb-4">Go make your edit now — submit when ready</p>
+            <button
+              onClick={() => setShowSubmit(true)}
+              className="w-full py-4 rounded-xl flex items-center justify-center gap-2.5 transition-all active:scale-[0.98]"
+              style={{
+                background: "linear-gradient(135deg, #ef4444, #dc2626)",
+                color: "#fff",
+                boxShadow: "0 4px 24px rgba(239,68,68,0.25)",
+                ...teko,
+              }}
+            >
+              <Swords className="w-5 h-5" />
+              <span className="text-[18px] font-extrabold uppercase tracking-[0.15em]">GO EDIT</span>
+            </button>
+          </motion.div>
         )}
 
         {/* ═══ PRIMARY ACTION ═══ */}
@@ -243,22 +318,7 @@ export default function CompetitionLobbyPage() {
           </button>
         )}
 
-        {/* Submit */}
-        {canSubmit && !showSubmit && (
-          <button
-            onClick={() => setShowSubmit(true)}
-            className="w-full py-4 rounded-xl flex items-center justify-center gap-2.5 transition-all"
-            style={{
-              background: "linear-gradient(135deg, #ef4444, #dc2626)",
-              color: "#fff",
-              boxShadow: "0 4px 24px rgba(239,68,68,0.25)",
-              ...teko,
-            }}
-          >
-            <Send className="w-4 h-4" />
-            <span className="text-[16px] font-extrabold uppercase tracking-[0.15em]">SUBMIT YOUR EDIT</span>
-          </button>
-        )}
+        {/* Submit fallback — only if somehow GO EDIT block didn't render */}
 
         {hasSubmitted && (
           <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 text-center">
