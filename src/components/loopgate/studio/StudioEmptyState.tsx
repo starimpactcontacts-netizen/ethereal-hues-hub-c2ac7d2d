@@ -121,19 +121,6 @@ export default function StudioEmptyState({ onOpenPicker, onBack }: StudioEmptySt
             <Upload className="w-5 h-5" /> Import Video
           </motion.button>
 
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={(e) => { e.stopPropagation(); onAutoEdit(); }}
-            className="h-11 px-7 rounded-xl text-[13px] font-semibold flex items-center gap-2.5 transition-all"
-            style={{
-              background: "rgba(255,0,79,0.06)",
-              color: "#FF004F",
-              border: "1px solid rgba(255,0,79,0.15)",
-              boxShadow: "0 2px 12px rgba(255,0,79,0.05)",
-            }}
-          >
-            <Wand2 className="w-4 h-4" /> Auto-Edit
-          </motion.button>
         </div>
 
         {/* Feature grid */}
