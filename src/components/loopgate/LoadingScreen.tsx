@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
-import loopgateLogo from '@/assets/loopgate-logo.png';
-import loopgateBrand from '@/assets/loopgate-brand.png';
+import GateIcon from '@/components/loopgate/GateIcon';
 
 interface LoadingScreenProps {
   minimal?: boolean;
@@ -20,16 +19,16 @@ export default function LoadingScreen({ minimal = false }: LoadingScreenProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-50">
-      <motion.img
-        src={loopgateLogo}
-        alt="Loopgate"
-        className="w-[120px] h-[120px] max-w-[30vw] max-h-[15vh] object-contain"
-        style={{ imageRendering: '-webkit-optimize-contrast', filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.06))' }}
-        initial={{ opacity: 0, scale: 0.92 }}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.94 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4, ease: 'easeOut' }}
-      />
+        transition={{ duration: 0.28, ease: 'easeOut' }}
+        className="relative flex items-center justify-center"
+      >
+        <div className="absolute inset-[-18px] rounded-full bg-foreground/5 blur-2xl" aria-hidden="true" />
+        <GateIcon size={104} className="relative text-foreground" aria-hidden="true" />
+      </motion.div>
     </div>
   );
 }
