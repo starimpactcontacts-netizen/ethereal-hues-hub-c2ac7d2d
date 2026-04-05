@@ -1203,7 +1203,7 @@ export default function ArenaPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-lg shadow-red-500/50" />
-                    <span className="text-[10px] font-black text-red-400 uppercase tracking-[0.2em]">Official Event Live</span>
+                    <span className="text-[10px] font-black text-red-400 uppercase tracking-[0.2em]">King of the Hill — Live</span>
                   </div>
                   <h3 className="text-[18px] font-black text-white leading-tight truncate tracking-tight" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
                     {liveDrops[0].title}
