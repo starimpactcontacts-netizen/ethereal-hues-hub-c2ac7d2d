@@ -413,7 +413,7 @@ export default function StudioPage() {
       )}
 
       {!editorOpen ? (
-        <StudioHome onNewProject={handleNewProject} onOpenProject={handleOpenProject} onOpenAutoEdit={() => setAutoEditOpen(true)} />
+        <StudioHome onNewProject={handleNewProject} onOpenProject={handleOpenProject} />
       ) : (
         <Suspense fallback={<LoadingScreen minimal />}>
           {isMobile ? (
