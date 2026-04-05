@@ -688,7 +688,7 @@ export default function FeaturedDropDetailPage() {
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setShowSubmit(true)}
-                className="w-full relative overflow-hidden py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white flex items-center justify-center gap-3 shadow-[0_4px_24px_-4px_rgba(16,185,129,0.35)] hover:shadow-[0_4px_32px_-4px_rgba(16,185,129,0.5)] transition-all"
+                className="w-full relative overflow-hidden py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white flex items-center justify-center gap-3 shadow-[0_4px_24px_-4px_rgba(16,185,129,0.35)] hover:shadow-[0_4px_32px_-4px_rgba(16,185,129,0.5)] transition-all"
               >
                 <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
                 <Flame className="w-5 h-5 relative z-10" />
