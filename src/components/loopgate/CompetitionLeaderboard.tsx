@@ -340,6 +340,8 @@ export default function CompetitionLeaderboard({ submissions }: { submissions: C
           </button>
         )}
       </div>
+        </>
+        )}
 
       {/* ═══ DETAIL OVERLAY ═══ */}
       <AnimatePresence>
