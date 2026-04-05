@@ -210,12 +210,6 @@ export default function FeaturedDropDetailPage() {
             <ArrowLeft className="w-4 h-4 text-foreground" />
           </button>
           <div className="flex items-center gap-2">
-            {isLive && (
-              <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-sm border border-emerald-500/30 px-2.5 py-1 rounded-full shadow-[0_0_12px_rgba(16,185,129,0.2)]">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">Live</span>
-              </div>
-            )}
             {isJudging && (
               <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-sm border border-gold/30 px-2.5 py-1 rounded-full animate-pulse">
                 <span className="text-[9px] font-bold text-gold uppercase tracking-wider">⚡ Judging</span>
