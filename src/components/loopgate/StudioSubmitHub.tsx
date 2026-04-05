@@ -169,7 +169,7 @@ export default function StudioSubmitHub() {
       for (const e of events) {
         allItems.push({
           id: e.id, type: "event", label: e.title,
-          subLabel: "Official Event", icon: Target, color: "#F59E0B",
+          subLabel: "King of the Hill", icon: Target, color: "#F59E0B",
           deadline: e.end_date || undefined, alreadySubmitted: submittedEventIds.has(e.id),
         });
       }

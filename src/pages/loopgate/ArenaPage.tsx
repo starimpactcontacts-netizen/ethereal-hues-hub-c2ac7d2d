@@ -1352,8 +1352,8 @@ export default function ArenaPage() {
                     <div className="w-12 h-12 bg-gold/10 border border-gold/20 flex items-center justify-center mx-auto mb-3">
                       <InfinityIcon className="w-6 h-6 text-gold/30" />
                     </div>
-                    <p className="text-[13px] text-muted-foreground font-medium">No active official events</p>
-                    <p className="text-[11px] text-muted-foreground/50 mt-1">New drops announced weekly — stay tuned</p>
+                    <p className="text-[13px] text-muted-foreground font-medium">No active King of the Hill</p>
+                    <p className="text-[11px] text-muted-foreground/50 mt-1">New hills drop weekly — stay tuned</p>
                   </div>
                 </div>
               )}

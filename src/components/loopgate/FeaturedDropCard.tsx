@@ -206,8 +206,8 @@ export default function FeaturedDropCard({ drop }: Props) {
               )}
               style={{ clipPath: 'polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%)' }}
             >
-              <Swords className="w-4 h-4" />
-              Enter Event
+              <Crown className="w-4 h-4" />
+              Take the Hill
             </motion.button>
           ) : (
             <Link

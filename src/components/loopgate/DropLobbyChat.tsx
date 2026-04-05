@@ -213,7 +213,7 @@ export default function DropLobbyChat({ dropId }: DropLobbyChatProps) {
                 </button>
               </div>
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                Official event lobby — talk trash, hype your edit, and vibe with the community. 
+                King of the Hill lobby — talk trash, hype your edit, and vibe with the community. 
                 Tap a name to @mention. Tap the arrow to reply.
               </p>
             </div>

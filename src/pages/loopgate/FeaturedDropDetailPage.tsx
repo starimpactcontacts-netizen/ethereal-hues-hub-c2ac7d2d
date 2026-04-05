@@ -304,7 +304,7 @@ export default function FeaturedDropDetailPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Swords className="w-4 h-4 text-emerald-400" />
-                  <span className="text-lg font-bold text-emerald-400 uppercase tracking-wider" style={teko}>Official Event</span>
+                  <span className="text-lg font-bold text-emerald-400 uppercase tracking-wider" style={teko}>King of the Hill</span>
                 </div>
                 <button onClick={() => setShowInfoDrawer(false)} className="text-foreground/30 hover:text-foreground">
                   <X className="w-4 h-4" />
