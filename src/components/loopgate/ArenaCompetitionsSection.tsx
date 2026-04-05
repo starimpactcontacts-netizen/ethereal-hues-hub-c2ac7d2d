@@ -151,6 +151,7 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
         </button>
       </div>
     </motion.div>
+    </div>
   );
 }
 
