@@ -1366,75 +1366,7 @@ export default function ArenaPage() {
 
           {/* Competitions moved to top */}
 
-          {/* Quick 1v1s */}
-          {(activeFilter === "all" || activeFilter === "quick") && (
-            <motion.section key="quick-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <SectionHeader
-                icon={<Zap className="w-4 h-4 text-red-400" />}
-                title="Quick Edit 1v1s"
-                badge={liveQuick > 0 ? `${liveQuick} Live` : undefined}
-                badgeColor="bg-red-500/20 border-red-500/40 text-red-400"
-                infoText="Instant matchmaking. Auto-matched with another editor — both submit an edit within 3 hours. Judge picks the winner. Winner +20 IDX."
-                action={
-                  <button
-                    onClick={handleQuickFight}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:brightness-110"
-                    style={{
-                      background: 'linear-gradient(135deg, #10B981, #059669)',
-                      color: '#fff',
-                      boxShadow: '0 2px 10px rgba(16,185,129,0.3)',
-                    }}
-                  >
-                    <Zap className="w-3 h-3" /> Start Editing
-                  </button>
-                }
-              />
-
-
-
-
-              {/* Fight List */}
-              <div className="px-4 space-y-1">
-                {quickLoading ? (
-                  <div className="space-y-1.5">
-                    <Skeleton className="h-16 w-full" />
-                    <Skeleton className="h-16 w-full" />
-                    <Skeleton className="h-16 w-full" />
-                  </div>
-                ) : filteredQuickFights.length > 0 ? (
-                  <>
-                    {filteredQuickFights.slice(0, activeFilter === "quick" ? 50 : 5).map(fight => (
-                      <Quick1v1Row key={fight.id} fight={fight} onClick={() => navigate(`/fight/${fight.id}`)} />
-                    ))}
-                    {activeFilter !== "quick" && filteredQuickFights.length > 5 && (
-                      <button
-                        onClick={() => setActiveFilter("quick")}
-                        className="w-full py-3 text-[12px] font-bold text-red-400 hover:bg-red-500/5 transition-colors flex items-center justify-center gap-1.5"
-                      >
-                        View All {filteredQuickFights.length} Fights
-                        <ChevronRight className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                  </>
-                ) : (
-                  <div className="text-center py-10 bg-surface-1 border border-border">
-                    <div className="w-14 h-14 bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-3">
-                      <Zap className="w-6 h-6 text-red-400/40" />
-                    </div>
-                    <p className="text-[13px] text-muted-foreground font-medium mb-1">{quickSearch ? "No matches found" : "No Quick 1v1s Yet"}</p>
-                    <p className="text-[12px] text-muted-foreground/60 mb-4">Be the first to start a fight</p>
-                    <Button
-                      size="sm"
-                      onClick={handleQuickFight}
-                      className="bg-red-500 hover:bg-red-600 text-white text-[12px] h-9 px-5"
-                    >
-                      <Zap className="w-3.5 h-3.5 mr-1.5" /> Start Quick 1v1
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </motion.section>
-          )}
+          {/* Quick 1v1s section removed — merged into 1v1 Edit Battles */}
 
           {/* 1v1 Battles */}
           {(activeFilter === "all" || activeFilter === "battles") && (
