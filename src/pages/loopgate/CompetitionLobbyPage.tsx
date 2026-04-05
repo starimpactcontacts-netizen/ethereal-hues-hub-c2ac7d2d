@@ -206,12 +206,6 @@ export default function CompetitionLobbyPage() {
             </div>
           </button>
           <div className="flex items-center gap-3">
-            {competition.deadline && isLive && !deadlinePassed && (
-              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                <Clock className="w-3 h-3" />
-                {formatDistanceToNow(new Date(competition.deadline), { addSuffix: true })}
-              </span>
-            )}
             {competition.index_reward_pool > 0 && (
               <span className="flex items-center gap-1 text-[10px] font-bold text-gold">
                 <Trophy className="w-3 h-3" /> +{competition.index_reward_pool} IDX
@@ -220,16 +214,57 @@ export default function CompetitionLobbyPage() {
           </div>
         </div>
 
+        {/* ═══ COUNTDOWN TIMER ═══ */}
+        {isLive && competition.deadline && !deadlinePassed && (
+          <div className="bg-zinc-900/60 border border-red-500/10 rounded-xl p-4 text-center">
+            <p className="text-[9px] text-zinc-500 uppercase tracking-[0.2em] mb-2 font-bold" style={teko}>TIME REMAINING</p>
+            <div className="flex justify-center">
+              <LiveCountdown deadline={competition.deadline} />
+            </div>
+          </div>
+        )}
+
         {/* ═══ THEME / DESCRIPTION ═══ */}
         {(competition.theme || competition.description) && (
-          <div className="bg-surface-1 border border-white/[0.06] rounded-xl p-3.5">
+          <div className="bg-zinc-900/50 border border-white/[0.06] rounded-xl p-3.5">
             {competition.theme && (
-              <p className="text-sm font-bold text-foreground mb-1">{competition.theme}</p>
+              <div className="flex items-center gap-2 mb-1">
+                <Layers className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                <p className="text-sm font-bold text-white">{competition.theme}</p>
+              </div>
             )}
             {competition.description && (
-              <p className="text-xs text-muted-foreground/60">{competition.description}</p>
+              <p className="text-xs text-zinc-500 pl-5.5">{competition.description}</p>
             )}
           </div>
+        )}
+
+        {/* ═══ GO EDIT — visible when live + joined + hasn't submitted ═══ */}
+        {isLive && hasJoined && !hasSubmitted && !showSubmit && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-gradient-to-br from-red-500/10 to-red-900/5 border border-red-500/20 rounded-xl p-5 text-center"
+          >
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+              <span className="text-[10px] text-red-400 font-bold uppercase tracking-[0.2em]" style={teko}>ROUND IS OPEN</span>
+            </div>
+            <p className="text-xs text-zinc-400 mb-4">Go make your edit now — submit when ready</p>
+            <button
+              onClick={() => setShowSubmit(true)}
+              className="w-full py-4 rounded-xl flex items-center justify-center gap-2.5 transition-all active:scale-[0.98]"
+              style={{
+                background: "linear-gradient(135deg, #ef4444, #dc2626)",
+                color: "#fff",
+                boxShadow: "0 4px 24px rgba(239,68,68,0.25)",
+                ...teko,
+              }}
+            >
+              <Swords className="w-5 h-5" />
+              <span className="text-[18px] font-extrabold uppercase tracking-[0.15em]">GO EDIT</span>
+            </button>
+          </motion.div>
         )}
 
         {/* ═══ PRIMARY ACTION ═══ */}
