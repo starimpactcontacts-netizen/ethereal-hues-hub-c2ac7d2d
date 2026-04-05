@@ -560,7 +560,7 @@ export default function FeaturedDropDetailPage() {
                     whileTap={{ scale: 0.97 }}
                     whileHover={{ scale: 1.01 }}
                     onClick={() => setShowSubmit(true)}
-                    className="w-full relative overflow-hidden py-4 bg-gradient-to-r from-gold via-gold/90 to-gold/80 text-background flex items-center justify-center gap-3 shadow-[0_4px_24px_-4px_rgba(255,215,0,0.3)] hover:shadow-[0_4px_32px_-4px_rgba(255,215,0,0.5)] transition-all relative z-10"
+                    className="w-full relative overflow-hidden py-4 rounded-xl bg-gradient-to-r from-gold via-gold/90 to-gold/80 text-background flex items-center justify-center gap-3 shadow-[0_4px_24px_-4px_rgba(255,215,0,0.3)] hover:shadow-[0_4px_32px_-4px_rgba(255,215,0,0.5)] transition-all relative z-10"
                   >
                     <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
                     <Flame className="w-5 h-5 relative z-10" />
