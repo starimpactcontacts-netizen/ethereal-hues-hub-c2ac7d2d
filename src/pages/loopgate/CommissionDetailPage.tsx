@@ -360,6 +360,8 @@ export default function CommissionDetailPage() {
   const [reviewingSubmission, setReviewingSubmission] = useState<any>(null);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
   const [showBrief, setShowBrief] = useState(false);
+  const [editingBrief, setEditingBrief] = useState(false);
+  const [briefText, setBriefText] = useState('');
   const showcaseRef = useRef<HTMLDivElement>(null);
 
   if (loading) {
