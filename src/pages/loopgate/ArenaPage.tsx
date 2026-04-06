@@ -859,11 +859,11 @@ export default function ArenaPage() {
             )}
           </AnimatePresence>
 
-          {/* Arena / My Arena toggle — big prominent tabs */}
-          <div className="grid grid-cols-2 gap-0 mb-3 border border-border overflow-hidden bg-surface-1">
+          {/* Arena / My Arena toggle */}
+          <div className="grid grid-cols-2 gap-0 mb-3 rounded-xl border border-border overflow-hidden bg-surface-1">
             <button
               onClick={() => setArenaView('arena')}
-              className={`relative py-3 text-[14px] font-black uppercase tracking-wider transition-all touch-manipulation ${
+              className={`relative py-3 text-[14px] font-black uppercase tracking-wider transition-all touch-manipulation rounded-l-xl ${
                 arenaView === 'arena'
                   ? 'bg-red-600 text-white'
                   : 'bg-transparent text-muted-foreground hover:text-foreground hover:bg-surface-2'
@@ -874,11 +874,10 @@ export default function ArenaPage() {
                 <Swords className="w-4 h-4" />
                 <span>Arena</span>
               </div>
-              {arenaView === 'arena' && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-white/30" />}
             </button>
             <button
               onClick={() => setArenaView('my')}
-              className={`relative py-3 text-[14px] font-black uppercase tracking-wider transition-all touch-manipulation ${
+              className={`relative py-3 text-[14px] font-black uppercase tracking-wider transition-all touch-manipulation rounded-r-xl ${
                 arenaView === 'my'
                   ? 'bg-gold text-background'
                   : 'bg-transparent text-muted-foreground hover:text-foreground hover:bg-surface-2'
@@ -892,7 +891,6 @@ export default function ArenaPage() {
                   <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                 )}
               </div>
-              {arenaView === 'my' && <div className="absolute bottom-0 left-0 h-[2px] bg-background/20" style={{ right: 0 }} />}
             </button>
           </div>
 
