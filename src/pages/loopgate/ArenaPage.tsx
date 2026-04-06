@@ -1116,7 +1116,7 @@ export default function ArenaPage() {
           </div>
 
           {/* ═══ COMPETITIONS ═══ */}
-          {(activeFilter === "all") && (
+          {(activeFilter === "all" || activeFilter === "competitions") && (
             <div className="-mx-4">
               <ArenaCompetitionsSection onCreateClick={() => navigate(profile ? '/competition/create' : '/start')} />
             </div>
