@@ -3111,6 +3111,7 @@ export type Database = {
           prize_usd: number | null
           random_pick_id: string | null
           random_pick_username: string | null
+          scenepack_url: string | null
           slug: string | null
           song_name: string
           song_preview_url: string | null
@@ -3152,6 +3153,7 @@ export type Database = {
           prize_usd?: number | null
           random_pick_id?: string | null
           random_pick_username?: string | null
+          scenepack_url?: string | null
           slug?: string | null
           song_name: string
           song_preview_url?: string | null
@@ -3193,6 +3195,7 @@ export type Database = {
           prize_usd?: number | null
           random_pick_id?: string | null
           random_pick_username?: string | null
+          scenepack_url?: string | null
           slug?: string | null
           song_name?: string
           song_preview_url?: string | null
