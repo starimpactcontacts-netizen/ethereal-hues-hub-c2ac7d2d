@@ -184,7 +184,7 @@ function PayoutCard({ payout, idx }: { payout: Payout; idx: number }) {
       <div className="absolute inset-0 rounded-lg border border-white/[0.08] group-hover:border-emerald-400/20 transition-colors duration-300" />
 
       {/* Content */}
-      <div className="relative p-2.5 flex flex-col h-[130px] justify-between">
+      <div className="relative p-2.5 flex flex-col h-[160px] justify-between">
         {/* Top — user info */}
         <div className="flex items-center gap-2">
           <Avatar className="w-6 h-6 border border-white/[0.15]">
