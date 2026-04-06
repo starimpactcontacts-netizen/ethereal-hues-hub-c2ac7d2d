@@ -445,22 +445,8 @@ export default function CommissionDetailPage() {
         </div>
       </div>
 
-      {/* ═══════════════════════════════════════════════════ */}
-      {/* ENTER MISSION CTA                                   */}
-      {/* ═══════════════════════════════════════════════════ */}
-      {!showContent ? (
-        <motion.button
-          whileTap={{ scale: 0.97 }}
-          onClick={() => setShowContent(true)}
-          className="w-full bg-destructive py-4 flex items-center justify-center gap-3 active:brightness-90"
-        >
-          <Crosshair className="w-6 h-6 text-white/80" />
-          <span className="font-display text-2xl font-black uppercase tracking-wider text-white">
-            ENTER <span className="text-white">MISSION</span>
-          </span>
-        </motion.button>
-      ) : (
-        <div className="px-4 pb-20 space-y-4 mt-4">
+
+      <div className="px-4 pb-20 space-y-4 mt-4">
           {/* Mission info bar */}
           <div className="flex items-center gap-4 flex-wrap text-xs text-muted-foreground">
             <div className="flex items-center gap-1">
