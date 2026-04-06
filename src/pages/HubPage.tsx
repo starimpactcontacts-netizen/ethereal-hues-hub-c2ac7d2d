@@ -893,13 +893,15 @@ export default function HubPage() {
                 <button 
                   className={cn(
                     "relative overflow-hidden flex items-center justify-center px-5 py-5 transition-colors touch-manipulation select-none border-l",
-                    quickAction === 'solo'
+                    quickAction === 'mission'
                       ? "hover:brightness-110 border-white/10"
-                      : "bg-red-700/80 hover:bg-red-600/80 border-red-900/40"
+                      : quickAction === 'solo'
+                        ? "hover:brightness-110 border-white/10"
+                        : "bg-red-700/80 hover:bg-red-600/80 border-red-900/40"
                   )}
-                  style={quickAction === 'solo' ? { background: 'hsl(33 100% 38%)' } : undefined}
+                  style={quickAction === 'mission' ? { background: 'hsl(152 72% 28%)' } : quickAction === 'solo' ? { background: 'hsl(33 100% 38%)' } : undefined}
                 >
-                   {quickAction === 'solo' && (
+                   {(quickAction === 'solo' || quickAction === 'mission') && (
                      <div className="absolute inset-0 pointer-events-none opacity-[0.06]" style={{
                        backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(255,255,255,0.5) 6px, rgba(255,255,255,0.5) 7px),
                          repeating-linear-gradient(-45deg, transparent, transparent 6px, rgba(255,255,255,0.5) 6px, rgba(255,255,255,0.5) 7px)`,
