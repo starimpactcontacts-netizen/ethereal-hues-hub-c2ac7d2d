@@ -879,6 +879,7 @@ export type Database = {
           reference_urls: string[] | null
           reference_video_url: string | null
           requirements: string | null
+          scenepack_url: string | null
           song_name: string | null
           status: string
           submission_count: number
@@ -911,6 +912,7 @@ export type Database = {
           reference_urls?: string[] | null
           reference_video_url?: string | null
           requirements?: string | null
+          scenepack_url?: string | null
           song_name?: string | null
           status?: string
           submission_count?: number
@@ -943,6 +945,7 @@ export type Database = {
           reference_urls?: string[] | null
           reference_video_url?: string | null
           requirements?: string | null
+          scenepack_url?: string | null
           song_name?: string | null
           status?: string
           submission_count?: number
