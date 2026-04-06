@@ -232,7 +232,7 @@ function RatingModal({ submission, onRate, onClose, getPayoutForRating }: {
                 <motion.button key={r} whileTap={{ scale: 0.92 }} onClick={() => setSelectedRating(r)}
                   className={`flex flex-col items-center py-3 rounded-xl border-2 transition-all ${isSelected ? RATING_COLORS[r] + ' ring-2 ring-offset-1 ring-offset-background' : 'border-border/30 bg-surface-1 hover:border-border/60'}`}>
                   <span className={`text-xl font-black ${isSelected ? '' : 'text-foreground'}`}>{r}</span>
-                  {payout > 0 ? <span className="text-[9px] font-bold text-emerald-400 mt-0.5">${(payout / 100 % 1 === 0) ? (payout / 100).toFixed(0) : (payout / 100).toFixed(2)}</span> : r === 'F' ? <span className="text-[9px] font-bold text-purple-400 mt-0.5">50 XP</span> : <span className="text-[9px] text-muted-foreground mt-0.5">IDX</span>}
+                  {payout > 0 ? <span className="text-[9px] font-bold text-emerald-400 mt-0.5">${(payout / 100 % 1 === 0) ? (payout / 100).toFixed(0) : (payout / 100).toFixed(2)}</span> : r === 'F' ? <span className="text-[8px] font-bold text-amber-400 mt-0.5">🎰 $50</span> : <span className="text-[9px] text-muted-foreground mt-0.5">IDX</span>}
                 </motion.button>
               );
             })}
