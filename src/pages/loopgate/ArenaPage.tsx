@@ -207,7 +207,7 @@ function ArenaMissionsSection() {
         {isStaff && (
           <button
             onClick={() => navigate('/missions')}
-            className="shrink-0 w-[160px] h-[160px] border border-dashed border-border/30 bg-surface-1/30 flex flex-col items-center justify-center gap-2 snap-start hover:border-border/50 transition-colors rounded-lg"
+            className="shrink-0 w-[200px] h-[240px] border border-dashed border-border/30 bg-surface-1/30 flex flex-col items-center justify-center gap-2 snap-start hover:border-border/50 transition-colors rounded-lg"
           >
             <Plus className="w-4 h-4 text-muted-foreground/30" />
             <span className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-wider">Post</span>
