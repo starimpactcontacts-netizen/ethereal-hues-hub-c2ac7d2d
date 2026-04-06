@@ -5063,8 +5063,9 @@ export type Database = {
       mission_lobby_presence: {
         Row: {
           avatar_url: string | null
+          commission_id: string | null
           created_at: string
-          drop_id: string
+          drop_id: string | null
           id: string
           last_seen_at: string
           user_id: string
@@ -5072,8 +5073,9 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          commission_id?: string | null
           created_at?: string
-          drop_id: string
+          drop_id?: string | null
           id?: string
           last_seen_at?: string
           user_id: string
@@ -5081,8 +5083,9 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          commission_id?: string | null
           created_at?: string
-          drop_id?: string
+          drop_id?: string | null
           id?: string
           last_seen_at?: string
           user_id?: string
