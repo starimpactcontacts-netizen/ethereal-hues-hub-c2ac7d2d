@@ -210,6 +210,24 @@ function ArenaMissionsSection() {
           );
         })}
 
+        {/* Coming Soon poster */}
+        <div className="shrink-0 w-[200px] h-[260px] rounded-lg overflow-hidden relative snap-start"
+          style={{ background: 'linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%)' }}
+        >
+          <div className="absolute inset-0 border border-white/[0.06] rounded-lg" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-4">
+            <div className="w-10 h-10 rounded-full border border-emerald-500/20 bg-emerald-500/5 flex items-center justify-center">
+              <Zap className="w-5 h-5 text-emerald-400/40" />
+            </div>
+            <p className="text-[12px] font-black text-white/60 uppercase tracking-wider text-center leading-tight" style={{ fontFamily: 'Teko, sans-serif' }}>
+              More Missions<br />Coming Soon
+            </p>
+            <p className="text-[8px] text-white/20 text-center leading-relaxed">
+              New paid opportunities drop regularly
+            </p>
+          </div>
+        </div>
+
         {/* Post Mission CTA — admin only */}
         {isStaff && (
           <button
@@ -626,7 +644,7 @@ export default function ArenaPage() {
   };
 
   return (
-    <div className="min-h-screen pb-32" style={{ background: '#111111' }}>
+    <div className="min-h-screen bg-black pb-32">
       <LoopMonster />
 
       {/* ═══ HERO ═══ */}
