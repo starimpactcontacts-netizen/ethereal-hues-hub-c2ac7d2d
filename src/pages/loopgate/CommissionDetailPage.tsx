@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import MissionLobbyChat from '@/components/loopgate/MissionLobbyChat';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DollarSign, ArrowLeft, Clock, Users, CheckCircle2, XCircle, Send, ExternalLink, MessageSquare, Loader2, Star, Zap, ShieldCheck, AlertTriangle } from 'lucide-react';
