@@ -97,8 +97,7 @@ export default function BottomNav() {
             <div className="relative">
               {/* Outer glow */}
               <div className="absolute -inset-3 rotate-45 bg-white/[0.04] blur-lg" />
-              <GlitchEdge side="left" className="absolute w-[46px] h-[46px] rotate-45" style={{ left: '-3px', top: '0px' }} />
-              <GlitchEdge side="right" className="absolute w-[46px] h-[46px] rotate-45" style={{ left: '3px', top: '0px' }} />
+              <div className="absolute -inset-3 rotate-45 bg-white/[0.04] blur-lg" />
               <div className="relative w-[46px] h-[46px] bg-white rotate-45 flex items-center justify-center group-active:scale-90 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.18)]">
                 {/* Subtle gate pattern */}
                 <div className="absolute inset-0 overflow-hidden opacity-[0.04]">
