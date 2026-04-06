@@ -399,7 +399,7 @@ export default function CommissionDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ background: '#111114' }}>
       {/* ═══ HERO — Cinematic immersive header ═══ */}
       <div className="relative w-full aspect-[9/14] max-h-[480px]">
         {coverUrl ? (
