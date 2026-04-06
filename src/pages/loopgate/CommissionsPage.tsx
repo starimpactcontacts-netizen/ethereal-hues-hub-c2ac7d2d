@@ -36,7 +36,7 @@ function MissionCard({ bounty }: { bounty: MarketplaceBounty }) {
   const Icon = tc.icon;
 
   return (
-    <Link to={`/commissions/${bounty.id}`}>
+    <Link to={`/mission/${bounty.id}`}>
       <motion.div whileTap={{ scale: 0.98 }}
         className={`bg-surface-1 border overflow-hidden transition-all ${
           isOpen ? `${tc.border} hover:border-opacity-60` : 'border-border/20 opacity-50'
@@ -247,31 +247,35 @@ export default function CommissionsPage() {
             </h1>
             <p className="text-xs text-muted-foreground mt-1">Paid editing jobs from artists, brands & studios.</p>
           </div>
-          <Button onClick={() => openCreate()} size="sm" className="bg-emerald-600 hover:bg-emerald-500 text-white">
-            <Plus className="w-4 h-4 mr-1" /> Post
-          </Button>
+          {isStaff && (
+            <Button onClick={() => openCreate()} size="sm" className="bg-emerald-600 hover:bg-emerald-500 text-white">
+              <Plus className="w-4 h-4 mr-1" /> Post
+            </Button>
+          )}
         </div>
 
-        {/* Quick-launch tiles */}
-        <div className="grid grid-cols-3 gap-2 mt-4">
-          {([
-            { type: 'artist' as MissionType, label: 'Artist Mission', icon: Music, color: 'border-emerald-500/30 bg-emerald-500/8 text-emerald-400' },
-            { type: 'brand' as MissionType, label: 'Brand Mission', icon: Briefcase, color: 'border-blue-500/30 bg-blue-500/8 text-blue-400' },
-            { type: 'film' as MissionType, label: 'Film Mission', icon: Film, color: 'border-purple-500/30 bg-purple-500/8 text-purple-400' },
-          ]).map(tile => {
-            const TileIcon = tile.icon;
-            return (
-              <button
-                key={tile.type}
-                onClick={() => openCreate(tile.type)}
-                className={`border ${tile.color} p-3 rounded-lg flex flex-col items-center gap-1.5 hover:opacity-80 transition-opacity`}
-              >
-                <TileIcon className="w-5 h-5" />
-                <span className="text-[9px] font-bold uppercase tracking-wider">{tile.label}</span>
-              </button>
-            );
-          })}
-        </div>
+        {/* Quick-launch tiles — admin only */}
+        {isStaff && (
+          <div className="grid grid-cols-3 gap-2 mt-4">
+            {([
+              { type: 'artist' as MissionType, label: 'Artist Mission', icon: Music, color: 'border-emerald-500/30 bg-emerald-500/8 text-emerald-400' },
+              { type: 'brand' as MissionType, label: 'Brand Mission', icon: Briefcase, color: 'border-blue-500/30 bg-blue-500/8 text-blue-400' },
+              { type: 'film' as MissionType, label: 'Film Mission', icon: Film, color: 'border-purple-500/30 bg-purple-500/8 text-purple-400' },
+            ]).map(tile => {
+              const TileIcon = tile.icon;
+              return (
+                <button
+                  key={tile.type}
+                  onClick={() => openCreate(tile.type)}
+                  className={`border ${tile.color} p-3 rounded-lg flex flex-col items-center gap-1.5 hover:opacity-80 transition-opacity`}
+                >
+                  <TileIcon className="w-5 h-5" />
+                  <span className="text-[9px] font-bold uppercase tracking-wider">{tile.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="flex gap-2 mt-4">
@@ -281,12 +285,14 @@ export default function CommissionsPage() {
             }`}>
             Browse
           </button>
-          <button onClick={() => setView('my-missions')}
-            className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors ${
-              view === 'my-missions' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-surface-1 text-muted-foreground border border-border/30 hover:text-foreground'
-            }`}>
-            My Missions
-          </button>
+          {isStaff && (
+            <button onClick={() => setView('my-missions')}
+              className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors ${
+                view === 'my-missions' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-surface-1 text-muted-foreground border border-border/30 hover:text-foreground'
+              }`}>
+              My Missions
+            </button>
+          )}
         </div>
       </div>
 
@@ -322,9 +328,11 @@ export default function CommissionsPage() {
                   {activeCategory !== 'all' ? `No ${TYPE_CONFIG[activeCategory].label.toLowerCase()} missions yet` : 'No missions yet'}
                 </p>
                 <p className="text-[11px] text-muted-foreground/60 mt-1">Be the first to post one</p>
-                <Button onClick={() => openCreate(activeCategory !== 'all' ? activeCategory : undefined)} size="sm" className="mt-4 bg-emerald-600 hover:bg-emerald-500 text-white">
-                  Post Mission
-                </Button>
+                {isStaff && (
+                  <Button onClick={() => openCreate(activeCategory !== 'all' ? activeCategory : undefined)} size="sm" className="mt-4 bg-emerald-600 hover:bg-emerald-500 text-white">
+                    Post Mission
+                  </Button>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-2.5">
