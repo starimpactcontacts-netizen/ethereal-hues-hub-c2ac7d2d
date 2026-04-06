@@ -878,7 +878,7 @@ export default function ArenaPage() {
               {/* Active Solo Session */}
               {activeSolo && (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
-                  <div className="bg-gradient-to-r from-gold/10 via-surface-1 to-gold/5 border border-gold/40 p-4">
+                  <div className="bg-surface-1 border border-gold/30 p-4">
                     <div className="flex items-center gap-3 mb-3">
                       <div className="w-10 h-10 bg-gold/20 flex items-center justify-center shrink-0">
                         <Star className="w-5 h-5 text-gold" />
