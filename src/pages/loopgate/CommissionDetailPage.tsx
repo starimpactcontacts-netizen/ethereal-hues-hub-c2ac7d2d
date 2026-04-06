@@ -359,6 +359,7 @@ export default function CommissionDetailPage() {
   const canRate = isStaff || isPoster;
   const [reviewingSubmission, setReviewingSubmission] = useState<any>(null);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
+  const [showBrief, setShowBrief] = useState(false);
   const showcaseRef = useRef<HTMLDivElement>(null);
 
   if (loading) {
