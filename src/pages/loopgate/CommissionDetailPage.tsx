@@ -768,6 +768,66 @@ export default function CommissionDetailPage() {
         )}
       </AnimatePresence>
 
+      {/* QOI Info Modal */}
+      <AnimatePresence>
+        {showQoiInfo && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center">
+            <div className="absolute inset-0 bg-black/85 backdrop-blur-sm" onClick={() => setShowQoiInfo(false)} />
+            <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }}
+              className="relative w-full max-w-sm bg-card border border-white/10 rounded-t-2xl sm:rounded-2xl p-5 mx-3 mb-0 sm:mb-0 max-h-[85vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xs font-black text-foreground uppercase tracking-wider">🎯 What's QOI?</h3>
+                <button onClick={() => setShowQoiInfo(false)} className="p-1 hover:bg-white/10 rounded-full"><X className="w-4 h-4 text-muted-foreground" /></button>
+              </div>
+
+              <p className="text-[11px] text-muted-foreground leading-relaxed mb-4">
+                QOI stands for <span className="text-foreground font-bold">Quality + Originality + Impact</span>. Judges score each pillar 1–10, giving you a combined score out of 30 that maps to your class (S through F).
+              </p>
+
+              <div className="space-y-2 mb-4">
+                <div className="bg-white/5 rounded-lg p-3">
+                  <span className="text-[9px] font-black text-amber-400 uppercase tracking-wider">Quality (1-10)</span>
+                  <p className="text-[10px] text-muted-foreground mt-1">Clean cuts, smooth transitions, color grading, audio sync. Technical precision matters.</p>
+                </div>
+                <div className="bg-white/5 rounded-lg p-3">
+                  <span className="text-[9px] font-black text-emerald-400 uppercase tracking-wider">Originality (1-10)</span>
+                  <p className="text-[10px] text-muted-foreground mt-1">Unique concept, creative angles, effects that haven't been recycled. Stand out from the crowd.</p>
+                </div>
+                <div className="bg-white/5 rounded-lg p-3">
+                  <span className="text-[9px] font-black text-blue-400 uppercase tracking-wider">Impact (1-10)</span>
+                  <p className="text-[10px] text-muted-foreground mt-1">Emotional punch, replay value, shareability. Does it make someone stop scrolling?</p>
+                </div>
+              </div>
+
+              <div className="border border-amber-500/20 bg-amber-500/5 rounded-xl p-3 mb-3">
+                <span className="text-[9px] font-black text-amber-400 uppercase tracking-wider flex items-center gap-1">🔓 Insider Tips</span>
+                <div className="mt-2 space-y-2">
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">
+                    <span className="text-foreground font-bold">→ First 3 seconds matter most.</span> Judges form their first impression instantly — hook hard.
+                  </p>
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">
+                    <span className="text-foreground font-bold">→ Audio sync is free points.</span> Beat-matching your cuts to the music is the easiest way to boost Quality score.
+                  </p>
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">
+                    <span className="text-foreground font-bold">→ Post performance matters.</span> High views, likes, and comments signal Impact — judges notice virality.
+                  </p>
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">
+                    <span className="text-foreground font-bold">→ Don't copy trending templates.</span> Judges penalize recycled concepts hard on Originality.
+                  </p>
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">
+                    <span className="text-foreground font-bold">→ Color grade everything.</span> Raw footage with no grading instantly drops your Quality ceiling.
+                  </p>
+                </div>
+              </div>
+
+              <div className="text-center">
+                <p className="text-[8px] text-white/20 uppercase tracking-wider">Score 90+ QOI for S-Class payouts</p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Submit Edit Modal */}
       <AnimatePresence>
         {showSubmitModal && canSubmit && (
