@@ -117,7 +117,7 @@ export default function EditoriumPicks({ limit = 10 }: { limit?: number }) {
 
   if (loading) {
     return (
-      <div className="flex gap-2.5 px-4 overflow-x-auto scrollbar-hide">
+      <div className="flex gap-2.5 pl-4 overflow-x-auto scrollbar-hide">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="w-[200px] h-[155px] flex-shrink-0 bg-surface-1 animate-pulse rounded-sm" />
         ))}
