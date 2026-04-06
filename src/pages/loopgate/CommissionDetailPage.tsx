@@ -499,18 +499,35 @@ export default function CommissionDetailPage() {
       {/* ═══ MAIN CONTENT ═══ */}
       <div className="px-4 pb-24 space-y-5 -mt-1">
 
-        {/* ── LOBBY HEADS ── */}
+        {/* ── LOBBY ── */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-surface-1 border border-border rounded-2xl px-4 py-3"
+          className="px-0 py-2"
         >
-          <div className="flex items-center gap-2 mb-2.5">
-            <Eye className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-[10px] font-black text-foreground uppercase tracking-[0.15em]">In the Lobby</span>
+          <div className="flex items-center gap-2 mb-3">
+            <Users className="w-4 h-4 text-muted-foreground" />
+            <span className="text-xs font-black text-foreground uppercase tracking-[0.12em]">
+              Editors {visitors.length > 0 ? `(${visitors.length})` : ''}
+            </span>
           </div>
           {visitors.length > 0 ? (
-            <LobbyHeads visitors={visitors} />
+            <div className="flex flex-wrap gap-3">
+              {visitors.map((v) => (
+                <Link key={v.user_id} to={`/editor/${v.username}`} className="flex flex-col items-center gap-1.5 w-16">
+                  <div className="w-14 h-14 rounded-full bg-muted border-2 border-border overflow-hidden">
+                    {v.avatar_url ? (
+                      <img src={v.avatar_url} alt={v.username} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-lg font-bold text-muted-foreground">
+                        {v.username[0]?.toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-[10px] text-muted-foreground font-medium truncate w-full text-center">{v.username}</span>
+                </Link>
+              ))}
+            </div>
           ) : (
             <div className="flex items-center gap-2 py-1">
               <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30" />
@@ -842,7 +859,7 @@ export default function CommissionDetailPage() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-end justify-center">
             <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={() => setShowQoiInfo(false)} />
             <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="relative w-full max-h-[92vh] bg-black border-t border-white/10 rounded-t-3xl flex flex-col">
+              className="relative w-full max-h-[92vh] bg-[#1a1a1a] border-t border-white/15 rounded-t-3xl flex flex-col">
               
               {/* Drag handle */}
               <div className="flex justify-center pt-3 pb-1 shrink-0">
