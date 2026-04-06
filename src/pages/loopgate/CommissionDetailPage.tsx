@@ -607,7 +607,7 @@ export default function CommissionDetailPage() {
                       )}
                       {canRate && (
                         <button onClick={() => { setBriefText(commission.description || ''); setEditingBrief(true); }}
-                          className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold text-gold/70 hover:text-gold border border-dashed border-gold/20 hover:border-gold/40 rounded-xl transition-colors">
+                          className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold text-muted-foreground hover:text-foreground border border-dashed border-border hover:border-foreground/30 rounded-xl transition-colors">
                           <Pencil className="w-3 h-3" /> {commission.description ? 'Edit Brief' : 'Add Brief'}
                         </button>
                       )}
