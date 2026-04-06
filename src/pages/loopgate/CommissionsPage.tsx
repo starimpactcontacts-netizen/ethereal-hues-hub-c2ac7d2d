@@ -280,6 +280,7 @@ export default function CommissionsPage() {
               key={b.id} 
               bounty={b} 
               onView={(id) => navigate(`/commissions/${id}`)}
+              onEdit={(bounty) => setEditingMission(bounty)}
               onClose={async (id) => {
                 try { 
                   await closeBounty(id); 
