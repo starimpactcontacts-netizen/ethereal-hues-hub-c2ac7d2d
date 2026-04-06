@@ -65,8 +65,8 @@ function useLobbyPresence(commissionId: string | undefined) {
         .from('mission_lobby_presence' as any)
         .select('user_id, username, avatar_url')
         .eq('commission_id', commissionId)
-        .order('last_seen_at', { ascending: false })
-        .limit(50);
+        .order('created_at', { ascending: true })
+        .limit(100);
       if (data) setVisitors(data as any);
     };
     fetchVisitors();
