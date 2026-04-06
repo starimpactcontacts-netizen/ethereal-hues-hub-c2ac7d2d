@@ -118,7 +118,7 @@ export default function CreateBountyModal({ onClose, onCreate, defaultType }: Cr
       className="fixed inset-0 z-50 bg-black/80 flex items-end sm:items-center justify-center" onClick={onClose}>
       <motion.div
         initial={{ y: 200, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 200, opacity: 0 }}
-        className="bg-card border border-border rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[90vh] overflow-y-auto overscroll-contain"
+        className="bg-card border border-border rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[85vh] overflow-y-auto overscroll-contain"
         onClick={e => e.stopPropagation()}>
         
         <div className="sticky top-0 bg-card border-b border-border/50 p-4 flex items-center justify-between z-10">
