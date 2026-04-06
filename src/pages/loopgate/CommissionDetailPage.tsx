@@ -420,7 +420,7 @@ export default function CommissionDetailPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-black/40" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent" />
 
-        <button onClick={() => navigate('/index')}
+        <button onClick={() => navigate(-1)}
           className="absolute top-4 left-4 z-20 w-9 h-9 bg-black/50 backdrop-blur-sm flex items-center justify-center border border-white/10">
           <ArrowLeft className="w-4 h-4 text-white" />
         </button>

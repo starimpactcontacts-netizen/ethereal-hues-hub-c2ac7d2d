@@ -80,8 +80,9 @@ export default function MissionLobbyChat({ missionId }: MissionLobbyChatProps) {
   }, [missionId]);
 
   useEffect(() => {
-    if (isAtBottom && messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (isAtBottom && scrollContainerRef.current) {
+      const el = scrollContainerRef.current;
+      el.scrollTop = el.scrollHeight;
       setNewCount(0);
     }
   }, [messages, isAtBottom]);
@@ -95,7 +96,9 @@ export default function MissionLobbyChat({ missionId }: MissionLobbyChatProps) {
   };
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
     setNewCount(0);
     setIsAtBottom(true);
   };
