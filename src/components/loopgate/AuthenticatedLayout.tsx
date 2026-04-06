@@ -22,10 +22,17 @@ export default function AuthenticatedLayout() {
   useGlobalTapSound();
 
   return (
-    <div className="fixed inset-0 bg-inherit text-foreground flex flex-col overflow-hidden">
+    <div className="fixed inset-0 flex flex-col overflow-hidden" style={{ backgroundColor: '#000000' }}>
+      {/* Top safe area black fill */}
+      <div className="shrink-0" style={{ height: 'env(safe-area-inset-top, 0px)', backgroundColor: '#000000' }} />
       {!hideNav && !hideHeader && <AppHeader />}
       <main
-        className={`flex-1 min-h-0 overflow-y-auto bg-inherit overscroll-none ${!hideNav && !hideHeader ? 'pb-[calc(4.5rem+env(safe-area-inset-bottom))]' : ''}`}
+        className="flex-1 min-h-0 overflow-y-auto overscroll-none"
+        style={{ 
+          backgroundColor: '#000000',
+          paddingBottom: !hideNav && !hideHeader ? 'calc(4.5rem + env(safe-area-inset-bottom, 0px))' : undefined,
+          WebkitOverflowScrolling: 'touch',
+        }}
       >
         <Suspense fallback={<LoadingScreen minimal />}>
           <Outlet />
