@@ -626,7 +626,7 @@ export default function ArenaPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black pb-32">
+    <div className="min-h-screen pb-32" style={{ background: '#0a0a0a' }}>
       <LoopMonster />
 
       {/* ═══ HERO ═══ */}
