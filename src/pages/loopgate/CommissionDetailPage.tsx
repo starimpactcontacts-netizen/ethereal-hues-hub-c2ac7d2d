@@ -201,7 +201,7 @@ function RatingModal({ submission, onRate, onClose, getPayoutForRating }: {
     try {
       await onRate(submission.id, selectedRating, feedback.trim());
       const payout = getPayoutForRating(selectedRating);
-      toast.success(payout > 0 ? `Rated ${selectedRating} — $${(payout / 100).toFixed(0)} instant payout to @${submission.username}` : `Rated ${selectedRating} — Index points only`);
+      toast.success(payout > 0 ? `Rated ${selectedRating} — $${(payout / 100).toFixed(2)} instant payout to @${submission.username}` : `Rated ${selectedRating} — Index points only`);
       onClose();
     } catch { toast.error('Rating failed'); }
     setSubmitting(false);
@@ -461,7 +461,7 @@ export default function CommissionDetailPage() {
             className="bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 p-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/40">Payout Scale</span>
-              <button onClick={() => setShowHowItWorks(true)} className="flex items-center gap-1 text-[8px] font-bold text-white/30 hover:text-white/60 transition-colors">
+              <button onClick={() => { setShowHowItWorks(true); setTimeout(() => document.getElementById('how-it-works-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100); }} className="flex items-center gap-1 text-[8px] font-bold text-white/30 hover:text-white/60 transition-colors">
                 <Info className="w-3 h-3" /> What's QOI?
               </button>
             </div>
@@ -479,7 +479,7 @@ export default function CommissionDetailPage() {
                 <div key={t.rank} className="flex-1 flex flex-col items-center relative z-10">
                   <span className={`text-[10px] font-black ${t.color} leading-none`}>{t.rank}</span>
                   <span className="text-[9px] font-bold text-white mt-0.5">
-                    {t.pay > 0 ? `$${(t.pay / 100).toFixed(0)}` : 'IDX'}
+                    {t.pay > 0 ? `$${(t.pay / 100 % 1 === 0) ? (t.pay / 100).toFixed(0) : (t.pay / 100).toFixed(2)}` : 'IDX'}
                   </span>
                   <div className={`w-2 h-2 rounded-full ${t.dotColor} my-1 shadow-sm`} />
                   <span className="text-[7px] text-white/25 font-medium">{t.qoi}</span>
@@ -609,7 +609,7 @@ export default function CommissionDetailPage() {
         </div>
 
         {/* ── HOW IT WORKS ── */}
-        <div className="rounded-2xl overflow-hidden">
+        <div id="how-it-works-section" className="rounded-2xl overflow-hidden">
           <button onClick={() => setShowHowItWorks(!showHowItWorks)}
             className="w-full flex items-center justify-between py-3 px-4 bg-white/3 border border-white/5 rounded-2xl hover:border-white/10 transition-colors">
             <div className="flex items-center gap-2">
