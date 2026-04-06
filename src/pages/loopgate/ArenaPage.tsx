@@ -1166,8 +1166,7 @@ export default function ArenaPage() {
           ) : (
           <>
 
-          {/* ═══ MISSIONS — TOP OF ARENA ═══ */}
-          <ArenaMissionsSection />
+          {/* Missions moved below GO button */}
 
           {/* ═══ GAME LOBBY — Dropdown + GO ═══ */}
           <div className="mb-1">
