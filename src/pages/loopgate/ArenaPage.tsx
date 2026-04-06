@@ -572,7 +572,7 @@ export default function ArenaPage() {
     { key: "all", label: "All" },
     { key: "battles", label: "1v1", icon: <Swords className="w-3.5 h-3.5" />, accent: "red" },
     { key: "official", label: "King of the Hill", icon: <Crown className="w-3.5 h-3.5" />, accent: "gold" },
-    { key: "sanctioned", label: "Sanctioned", icon: <Shield className="w-3.5 h-3.5" /> },
+    { key: "competitions", label: "Competitions", icon: <Trophy className="w-3.5 h-3.5" /> },
   ];
 
   const handleQuickFight = async () => {
