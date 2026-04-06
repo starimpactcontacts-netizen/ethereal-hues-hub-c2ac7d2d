@@ -125,21 +125,19 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
         </div>
       </div>
 
-      {/* Bottom — reward + views */}
-      <div className="px-2.5 pb-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-0.5">
-            <Trophy className={`w-2.5 h-2.5 ${isDone ? 'text-zinc-600' : 'text-gold'}`} />
-            <span className={`text-[9px] font-bold tabular-nums ${isDone ? 'text-zinc-600' : 'text-gold'}`}>+{battle.winner_index_awarded}</span>
-          </div>
-          {isLive && battle.ends_at && (
-            <span className="text-[8px] font-bold text-red-400">{formatTimeLeft(battle.ends_at)}</span>
-          )}
-          <div className="flex items-center gap-0.5">
-            <Eye className="w-2.5 h-2.5 text-zinc-600" />
-            <span className="text-[8px] text-zinc-600 tabular-nums">{battle.view_count}</span>
-          </div>
+      {/* Bottom — reward + CTA */}
+      <div className="px-2.5 pb-2 flex items-center justify-between">
+        <div className="flex items-center gap-0.5">
+          <Trophy className={`w-2.5 h-2.5 ${isDone ? 'text-zinc-600' : 'text-gold'}`} />
+          <span className={`text-[9px] font-bold tabular-nums ${isDone ? 'text-zinc-600' : 'text-gold'}`}>+{battle.winner_index_awarded}</span>
         </div>
+        {!isDone && (
+          <span className={`text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-md ${
+            isOpen ? 'bg-amber-500/20 text-amber-400' : isLive ? 'bg-red-500/20 text-red-400' : 'bg-white/[0.06] text-zinc-400'
+          }`} style={{ fontFamily: 'Teko, sans-serif' }}>
+            {isOpen ? "FIGHT" : isLive ? "WATCH" : "VIEW"}
+          </span>
+        )}
       </div>
     </motion.div>
   );
