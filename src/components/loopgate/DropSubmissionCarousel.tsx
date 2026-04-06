@@ -298,7 +298,7 @@ export default function DropSubmissionCarousel({ submissions, loading }: Props) 
 
       <div
         ref={scrollRef}
-        className="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-2 -mx-4 px-4"
+        className="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-2 pl-4"
       >
         {scored.map((sub, idx) => (
           <SubmissionShowcaseCard
