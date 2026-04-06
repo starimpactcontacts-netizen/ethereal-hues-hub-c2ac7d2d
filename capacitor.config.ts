@@ -12,7 +12,7 @@ const config: CapacitorConfig = {
   },
   
   ios: {
-    contentInset: 'always',
+    contentInset: 'never',
     preferredContentMode: 'mobile',
     scheme: 'io.loopgate.app',
     backgroundColor: '#000000',
