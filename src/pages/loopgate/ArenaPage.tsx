@@ -96,18 +96,18 @@ function ArenaMissionsSection() {
 
   return (
     <div className="mb-3">
-      <div className="flex items-center justify-between px-4 mb-2">
-        <div className="flex items-center gap-1.5">
-          <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
-          <span className="text-[11px] font-black text-foreground uppercase tracking-wider">Missions</span>
-          <span className="text-[9px] text-emerald-400/60 font-bold ml-1">GET PAID</span>
+      <div className="flex items-center justify-between px-4 mb-3">
+        <div className="flex items-center gap-2">
+          <DollarSign className="w-4 h-4 text-emerald-400" />
+          <span className="text-[15px] font-extrabold text-foreground tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Missions</span>
+          <span className="text-[9px] text-emerald-400/60 font-bold ml-0.5">GET PAID</span>
         </div>
-        <button onClick={() => navigate('/missions')} className="text-[9px] font-bold text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5">
-          View All <ArrowRight className="w-2.5 h-2.5" />
+        <button onClick={() => navigate('/missions')} className="text-[10px] font-bold text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5">
+          View All <ArrowRight className="w-3 h-3" />
         </button>
       </div>
 
-      <div className="flex gap-2 pl-4 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory">
+      <div className="flex gap-3 pl-4 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
         {bounties.map(b => {
           const payout = (b.payout_cents / 100).toFixed(0);
           const slotsLeft = b.max_slots - b.accepted_count;
@@ -123,71 +123,65 @@ function ArenaMissionsSection() {
           return (
             <motion.button
               key={b.id}
-              whileTap={{ scale: 0.96 }}
-              whileHover={{ y: -4 }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => navigate(`/commissions/${b.id}`)}
-              className="shrink-0 relative w-[220px] h-[300px] overflow-hidden group text-left touch-manipulation snap-start"
-              style={{ boxShadow: `0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03)` }}
+              className="shrink-0 relative w-[200px] h-[240px] rounded-lg overflow-hidden group text-left touch-manipulation snap-start"
+              style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}
             >
-              {/* Full bleed cover */}
+              {/* Cover */}
               {b.cover_url ? (
-                <img src={b.cover_url} alt={b.title} className="absolute inset-0 w-full h-full object-cover scale-[1.02] group-hover:scale-[1.08] transition-transform duration-1000 ease-out" />
+                <img src={b.cover_url} alt={b.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
               ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-zinc-950 via-black to-zinc-950" />
+                <div className="absolute inset-0 bg-gradient-to-br from-surface-2 to-black" />
               )}
-
-              {/* Cinematic overlays */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/20" />
-              <div className="absolute bottom-0 left-0 right-0 h-[65%] bg-gradient-to-t from-black to-transparent" />
-              <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.04) 3px, rgba(255,255,255,0.04) 4px)' }} />
-              <div className="absolute inset-0 border border-white/[0.04] group-hover:border-emerald-500/30 transition-colors duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/20" />
+              <div className="absolute inset-0 border border-white/[0.06] rounded-lg" />
 
               {/* Type badge */}
-              <div className="absolute top-0 left-0 z-10 p-2.5 flex flex-col gap-1.5">
-                <div className={`flex items-center gap-1 ${ta.badge} backdrop-blur-md px-2 py-1 w-fit border ${ta.border}`}>
-                  <span className={`text-[7px] font-black uppercase tracking-[0.2em] ${ta.badgeText}`}>{typeLabel}</span>
-                </div>
-                <div className="bg-black/90 backdrop-blur-md px-2.5 py-1.5 w-fit border border-emerald-500/10">
-                  <span className="font-display text-2xl text-emerald-400 leading-none" style={{ textShadow: '0 0 20px rgba(52, 211, 153, 0.4)' }}>
-                    ${maxPay > 0 ? maxPay : payout}
-                  </span>
+              <div className="absolute top-2 left-2 z-10">
+                <div className={`flex items-center gap-1 ${ta.badge} backdrop-blur-md px-2 py-0.5 border ${ta.border} rounded-sm`}>
+                  <span className={`text-[7px] font-black uppercase tracking-[0.15em] ${ta.badgeText}`}>{typeLabel}</span>
                 </div>
               </div>
 
-              {/* Instant pay ribbon */}
-              <div className="absolute top-2.5 right-0 z-10 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white text-[7px] font-black uppercase tracking-wider pl-2.5 pr-1.5 py-0.5 shadow-lg shadow-emerald-900/50">
-                ⚡ INSTANT
+              {/* Price */}
+              <div className="absolute top-2 right-2 z-10 bg-black/70 backdrop-blur-sm px-2 py-0.5 rounded-sm">
+                <span className="text-[14px] font-black text-emerald-400 leading-none">${maxPay > 0 ? maxPay : payout}</span>
               </div>
 
-              {/* Close button for poster */}
+              {/* Instant badge */}
+              <div className="absolute top-8 right-2 z-10">
+                <span className="text-[7px] font-black text-emerald-400/60 uppercase tracking-wider">⚡ Instant</span>
+              </div>
+
+              {/* Close for poster */}
               {isPoster && (
                 <button
                   onClick={(e) => handleClose(b.id, e)}
-                  className="absolute top-2.5 right-2.5 z-20 w-6 h-6 rounded-full bg-black/70 backdrop-blur-sm border border-white/10 flex items-center justify-center hover:bg-red-500/50 transition-colors"
-                  title="Close mission"
+                  className="absolute top-2 right-2 z-20 w-5 h-5 rounded-full bg-black/70 border border-white/10 flex items-center justify-center hover:bg-red-500/50 transition-colors"
                 >
-                  <X className="w-3 h-3 text-white/70" />
+                  <X className="w-2.5 h-2.5 text-white/70" />
                 </button>
               )}
 
-              {/* Bottom content */}
-              <div className="absolute bottom-0 left-0 right-0 p-2.5 pb-3">
+              {/* Bottom */}
+              <div className="absolute bottom-0 left-0 right-0 p-2.5">
                 {(b.client_name || b.artist_name) && (
-                  <p className="text-[8px] font-black text-white/40 uppercase tracking-[0.2em] mb-0.5">{b.client_name || b.artist_name}</p>
+                  <p className="text-[7px] font-black text-white/30 uppercase tracking-[0.15em] mb-0.5 truncate">{b.client_name || b.artist_name}</p>
                 )}
-                <h4 className="font-display text-lg text-white leading-tight tracking-wider truncate mb-2 drop-shadow-2xl">{b.title}</h4>
+                <h4 className="text-[13px] font-black text-white leading-tight truncate mb-1.5">{b.title}</h4>
 
-                {/* Rating tiers */}
+                {/* Compact tier row */}
                 {(sRate > 0 || aRate > 0 || bRate > 0) && (
-                  <div className="flex items-stretch gap-[1px] mb-2 bg-black/60 backdrop-blur-sm">
+                  <div className="flex items-stretch gap-[1px] mb-1.5">
                     {[
-                      { rank: 'S', color: 'text-amber-400 bg-amber-500/20 border-amber-500/40', pay: sRate },
-                      { rank: 'A', color: 'text-emerald-400 bg-emerald-500/15 border-emerald-500/30', pay: aRate },
-                      { rank: 'B', color: 'text-blue-400 bg-blue-500/15 border-blue-500/30', pay: bRate },
+                      { rank: 'S', color: 'text-amber-400 bg-amber-500/20 border-amber-500/30', pay: sRate },
+                      { rank: 'A', color: 'text-emerald-400 bg-emerald-500/15 border-emerald-500/25', pay: aRate },
+                      { rank: 'B', color: 'text-blue-400 bg-blue-500/15 border-blue-500/25', pay: bRate },
                     ].map(tier => (
-                      <div key={tier.rank} className={`flex-1 border ${tier.color} py-1.5 flex flex-col items-center gap-0.5`}>
-                        <span className="text-[10px] font-black leading-none">{tier.rank}</span>
-                        <span className={`text-[7px] font-black leading-none ${tier.pay > 0 ? 'text-white' : 'text-white/10'}`}>
+                      <div key={tier.rank} className={`flex-1 border ${tier.color} py-1 flex flex-col items-center`}>
+                        <span className="text-[9px] font-black leading-none">{tier.rank}</span>
+                        <span className={`text-[7px] font-bold leading-none ${tier.pay > 0 ? 'text-white/80' : 'text-white/10'}`}>
                           {tier.pay > 0 ? `$${tier.pay}` : '—'}
                         </span>
                       </div>
@@ -195,15 +189,10 @@ function ArenaMissionsSection() {
                   </div>
                 )}
 
-                {/* Stats */}
-                <div className="flex items-center gap-3 text-[9px] text-white/40">
-                  <span className="flex items-center gap-0.5">
-                    <Users className="w-2.5 h-2.5" /> {slotsLeft}/{b.max_slots}
-                  </span>
+                <div className="flex items-center gap-2 text-[8px] text-white/30">
+                  <span className="flex items-center gap-0.5"><Users className="w-2.5 h-2.5" /> {slotsLeft}/{b.max_slots}</span>
                   {b.submission_count > 0 && (
-                    <span className="flex items-center gap-0.5 text-emerald-400/60">
-                      <CheckCircle2 className="w-2.5 h-2.5" /> {b.submission_count}
-                    </span>
+                    <span className="flex items-center gap-0.5 text-emerald-400/50"><CheckCircle2 className="w-2.5 h-2.5" /> {b.submission_count}</span>
                   )}
                 </div>
               </div>
@@ -215,10 +204,10 @@ function ArenaMissionsSection() {
         {isStaff && (
           <button
             onClick={() => navigate('/missions')}
-            className="shrink-0 w-[140px] h-[300px] border border-dashed border-emerald-500/20 bg-emerald-500/[0.03] flex flex-col items-center justify-center gap-2 snap-start hover:border-emerald-500/40 transition-colors rounded-xl"
+            className="shrink-0 w-[120px] h-[240px] border border-dashed border-border/30 bg-surface-1/30 flex flex-col items-center justify-center gap-2 snap-start hover:border-border/50 transition-colors rounded-lg"
           >
-            <Plus className="w-5 h-5 text-emerald-400/40" />
-            <span className="text-[9px] font-bold text-emerald-400/50 uppercase tracking-wider">Post Mission</span>
+            <Plus className="w-4 h-4 text-muted-foreground/30" />
+            <span className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-wider">Post</span>
           </button>
         )}
       </div>
