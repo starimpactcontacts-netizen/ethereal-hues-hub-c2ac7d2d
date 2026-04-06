@@ -352,10 +352,9 @@ export default function CommissionsSection() {
               <div className="w-8 h-[1px] bg-emerald-500/10" />
             </div>
             <div className="flex gap-2.5 pl-4 overflow-x-auto scrollbar-hide pb-2" ref={scrollRef}>
-                {drops.map(drop => (
-                  <MissionCard key={drop.id} drop={drop} />
-                ))}
-              </div>
+              {drops.map(drop => (
+                <MissionCard key={drop.id} drop={drop} />
+              ))}
             </div>
           </div>
         )}
