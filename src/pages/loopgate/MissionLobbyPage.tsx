@@ -187,28 +187,35 @@ export default function MissionLobbyPage() {
       setMyVotes(map);
     }
   }, [user, id]);
-  // Fetch lobby profiles — unique submitters to this mission
+  // Register lobby presence for logged-in user
+  useEffect(() => {
+    if (!id || !user) return;
+    const registerPresence = async () => {
+      const { data: prof } = await supabase.from('profiles').select('username, avatar_url').eq('id', user.id).single();
+      if (!prof) return;
+      await supabase.from('mission_lobby_presence' as any).upsert({
+        drop_id: id,
+        user_id: user.id,
+        username: prof.username,
+        avatar_url: prof.avatar_url,
+        last_seen_at: new Date().toISOString(),
+      } as any, { onConflict: 'drop_id,user_id' });
+    };
+    registerPresence();
+  }, [id, user]);
+
+  // Fetch lobby profiles from presence table
   const fetchLobbyProfiles = useCallback(async () => {
     if (!id) return;
     const { data } = await supabase
-      .from('featured_submissions')
+      .from('mission_lobby_presence' as any)
       .select('user_id, username, avatar_url')
       .eq('drop_id', id)
-      .not('user_id', 'is', null)
-      .order('created_at', { ascending: false })
+      .order('last_seen_at', { ascending: false })
       .limit(50);
 
     if (data) {
-      // Deduplicate by user_id
-      const seen = new Set<string>();
-      const unique: LobbyProfile[] = [];
-      for (const row of data as any[]) {
-        if (row.user_id && !seen.has(row.user_id)) {
-          seen.add(row.user_id);
-          unique.push({ user_id: row.user_id, username: row.username, avatar_url: row.avatar_url });
-        }
-      }
-      setLobbyProfiles(unique);
+      setLobbyProfiles(data as any as LobbyProfile[]);
     }
   }, [id]);
 
