@@ -584,7 +584,7 @@ export default function CommissionDetailPage() {
                 <div className="bg-surface-1 border border-t-0 border-border rounded-b-xl p-4">
                   {editingBrief ? (
                     <div className="space-y-2">
-                      <Textarea value={briefText} onChange={e => setBriefText(e.target.value)} placeholder="Write the mission brief..." className="min-h-[120px] resize-none bg-black/30 border-gold/20 text-xs rounded-xl" />
+                      <Textarea value={briefText} onChange={e => setBriefText(e.target.value)} placeholder="Write the mission brief..." className="min-h-[120px] resize-none bg-surface-2 border-border text-xs rounded-xl" />
                       <div className="flex gap-2">
                         <Button size="sm" className="bg-gold hover:bg-gold/80 text-background text-xs font-bold flex-1 rounded-lg"
                           onClick={async () => {
