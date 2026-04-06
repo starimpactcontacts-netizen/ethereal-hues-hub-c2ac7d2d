@@ -290,7 +290,7 @@ export default function FeaturedDropCard({ drop }: Props) {
         {/* Title + Song — bottom overlay */}
         <div className="absolute bottom-0 left-0 right-0 px-3 pb-2.5 flex items-end gap-2">
           <div className="flex-1 min-w-0">
-            <h3 className="font-display text-base sm:text-lg text-white leading-tight tracking-wide uppercase truncate drop-shadow-lg font-extrabold">
+            <h3 className="font-display text-sm text-white leading-tight tracking-wide uppercase truncate drop-shadow-lg font-extrabold">
               {drop.title}
             </h3>
             <p className="text-[9px] sm:text-[10px] text-white/50 mt-0.5 flex items-center gap-1 truncate">
