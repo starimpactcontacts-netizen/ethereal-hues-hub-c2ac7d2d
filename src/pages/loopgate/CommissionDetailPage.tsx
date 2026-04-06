@@ -524,6 +524,87 @@ export default function CommissionDetailPage() {
           </Link>
         </div>
 
+        {/* ── MISSION BRIEF ── */}
+        <div>
+          <button
+            onClick={() => setShowBrief(!showBrief)}
+            className="w-full flex items-center justify-between py-3 px-3 bg-gradient-to-r from-amber-950/40 to-surface-1 border border-gold/30 hover:border-gold/50 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <FileText className="w-4 h-4 text-gold" />
+              <span className="text-[11px] font-black text-gold uppercase tracking-wider">Mission Brief</span>
+            </div>
+            <motion.div animate={{ rotate: showBrief ? 180 : 0 }} transition={{ duration: 0.2 }}>
+              <ChevronRight className="w-4 h-4 text-gold/60 rotate-90" />
+            </motion.div>
+          </button>
+          <AnimatePresence>
+            {showBrief && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="overflow-hidden"
+              >
+                <div className="bg-surface-0 border border-t-0 border-gold/20 p-4">
+                  {editingBrief ? (
+                    <div className="space-y-2">
+                      <Textarea
+                        value={briefText}
+                        onChange={e => setBriefText(e.target.value)}
+                        placeholder="Write the mission brief — creative direction, requirements, what you want editors to do..."
+                        className="min-h-[120px] resize-none bg-surface-1 border-gold/20 text-xs"
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          className="bg-gold hover:bg-gold/80 text-background text-xs font-bold flex-1"
+                          onClick={async () => {
+                            const { error } = await supabase
+                              .from('commissions')
+                              .update({ description: briefText } as any)
+                              .eq('id', id);
+                            if (error) { toast.error('Failed to save brief'); return; }
+                            toast.success('Brief saved!');
+                            setEditingBrief(false);
+                            window.location.reload();
+                          }}
+                        >
+                          Save Brief
+                        </Button>
+                        <Button size="sm" variant="outline" className="text-xs" onClick={() => setEditingBrief(false)}>
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {commission.description ? (
+                        <p className="text-xs text-foreground/90 leading-relaxed whitespace-pre-wrap">{commission.description}</p>
+                      ) : (
+                        <div className="flex flex-col items-center gap-2 py-4">
+                          <FileText className="w-5 h-5 text-muted-foreground/20" />
+                          <p className="text-[10px] text-muted-foreground/50 text-center italic">Looks like this mission still doesn't know what its objective is.</p>
+                          <p className="text-[8px] text-muted-foreground/30">Brief will be added soon</p>
+                        </div>
+                      )}
+                      {canRate && (
+                        <button
+                          onClick={() => { setBriefText(commission.description || ''); setEditingBrief(true); }}
+                          className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold text-gold/70 hover:text-gold border border-dashed border-gold/20 hover:border-gold/40 transition-colors"
+                        >
+                          <Pencil className="w-3 h-3" /> {commission.description ? 'Edit Brief' : 'Add Brief'}
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
         {/* ── HOW IT WORKS ── */}
         <div>
           <button
