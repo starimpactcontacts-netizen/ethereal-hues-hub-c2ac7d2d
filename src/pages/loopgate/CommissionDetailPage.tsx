@@ -520,7 +520,7 @@ export default function CommissionDetailPage() {
         </motion.div>
 
         {/* ── PROGRESS ── */}
-        <div className="bg-black/20 backdrop-blur-sm rounded-2xl border border-white/5 p-4">
+        <div className="bg-surface-1 border border-border rounded-2xl p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5 text-emerald-400" />
