@@ -6,7 +6,7 @@ import {
   Target, ArrowRight, Crown, Shield, Users, Trophy, 
   Users2, TrendingUp, Coins, ShoppingBag, Gavel, Gift,
   ChevronRight, Plus, Infinity as InfinityIcon, Star, Swords, Loader2,
-  Zap, UserRound, ChevronDown, Check, Clock, X, Info, Clapperboard, DollarSign
+  Zap, UserRound, ChevronDown, Check, Clock, X, Info, Clapperboard, DollarSign, Crosshair
 } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
