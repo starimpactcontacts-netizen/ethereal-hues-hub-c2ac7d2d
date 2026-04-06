@@ -21,7 +21,6 @@ interface TrendingPost {
 export default function TrendingLoops({ limit = 10 }: { limit?: number }) {
   const [posts, setPosts] = useState<TrendingPost[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loading, setLoading] = useState(true);
   const fetchPosts = async () => {
     const { data } = await supabase
       .from('feed_posts')
