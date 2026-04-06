@@ -337,24 +337,24 @@ export default function CommissionsSection() {
         </Link>
       </div>
 
-      <div className="px-4 space-y-2.5">
+      <div className="space-y-2.5">
         {/* Balance */}
-        <BalanceTicker />
+        <div className="px-4">
+          <BalanceTicker />
+        </div>
 
         {/* Mission Board - Featured Drops Carousel */}
         {drops.length > 0 && (
           <div>
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-2 px-4">
               <div className="w-full h-[1px] bg-gradient-to-r from-emerald-500/30 via-emerald-500/10 to-transparent" />
               <span className="text-[7px] font-black text-emerald-400/40 uppercase tracking-[0.25em] whitespace-nowrap">Missions</span>
               <div className="w-8 h-[1px] bg-emerald-500/10" />
             </div>
-            <div className="overflow-x-auto scrollbar-hide -mx-4 px-4" ref={scrollRef}>
-              <div className="flex gap-2.5 pb-2">
-                {drops.map(drop => (
-                  <MissionCard key={drop.id} drop={drop} />
-                ))}
-              </div>
+            <div className="flex gap-2.5 pl-4 overflow-x-auto scrollbar-hide pb-2" ref={scrollRef}>
+              {drops.map(drop => (
+                <MissionCard key={drop.id} drop={drop} />
+              ))}
             </div>
           </div>
         )}

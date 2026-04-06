@@ -54,7 +54,7 @@ export default function EditoriumCarousel() {
       </div>
 
       {/* Carousel */}
-      <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide pb-1">
+      <div className="flex gap-3 pl-4 overflow-x-auto scrollbar-hide pb-1">
         {articles.map((article, i) => (
           <Link key={article.id} to={`/editorium/${article.slug}`} className="shrink-0 group">
             <motion.div

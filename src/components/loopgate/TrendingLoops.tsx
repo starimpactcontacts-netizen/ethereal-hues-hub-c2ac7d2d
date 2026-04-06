@@ -58,7 +58,7 @@ export default function TrendingLoops({ limit = 10 }: { limit?: number }) {
 
   if (loading) {
     return (
-      <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide pb-2">
+      <div className="flex gap-3 pl-4 overflow-x-auto scrollbar-hide pb-2">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="w-[200px] h-[260px] shrink-0 bg-surface-1 animate-pulse rounded-xl" />
         ))}
@@ -69,7 +69,7 @@ export default function TrendingLoops({ limit = 10 }: { limit?: number }) {
   if (posts.length === 0) return null;
 
   return (
-    <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide pb-2">
+    <div className="flex gap-3 pl-4 overflow-x-auto scrollbar-hide pb-2">
       {posts.map((post, i) => (
         <Link
           key={post.id}

@@ -207,7 +207,7 @@ export default function CompetitionLeaderboard({ submissions }: { submissions: C
             {/* ═══ TOP EDITS CAROUSEL ═══ */}
             <div
               ref={carouselRef}
-              className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory -mx-4 px-4"
+              className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory pl-4"
             >
               {topEdits.map((sub, i) => {
                 const rank = i + 1;
