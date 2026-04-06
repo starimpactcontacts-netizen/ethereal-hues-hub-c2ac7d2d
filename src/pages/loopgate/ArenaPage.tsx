@@ -1328,7 +1328,7 @@ export default function ArenaPage() {
             <SoloShowcase onStartSolo={() => setShowSoloMode(true)} />
           )}
 
-          <div className="h-8" />
+          <div className="h-2" />
         </div>
       )}
 
