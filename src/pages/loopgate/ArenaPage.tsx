@@ -644,7 +644,7 @@ export default function ArenaPage() {
   };
 
   return (
-    <div className="min-h-screen pb-32" style={{ background: '#0f1923' }}>
+    <div className="min-h-screen pb-4" style={{ background: '#0f1923' }}>
       <LoopMonster />
 
       {/* ═══ HERO ═══ */}
@@ -1136,28 +1136,22 @@ export default function ArenaPage() {
           {/* search bar moved to top */}
 
           {/* ═══ MISSIONS — BELOW GO, ABOVE COMPETITIONS ═══ */}
-          <div className="-mx-4">
-            <ArenaMissionsSection />
-          </div>
+          <ArenaMissionsSection />
 
           {/* ═══ COMPETITIONS ═══ */}
           {(activeFilter === "all" || activeFilter === "competitions") && (
-            <div className="-mx-4">
               <ArenaCompetitionsSection onCreateClick={() => navigate(profile ? '/competition/create' : '/start')} />
-            </div>
           )}
 
           {/* ArenaMissionsCarousel removed — missions already shown in ArenaMissionsSection above */}
 
           {/* ═══ LIVE PAYOUTS CAROUSEL ═══ */}
-          <div className="-mx-4">
-            <LivePayoutsCarousel />
-          </div>
+          <LivePayoutsCarousel />
 
           {/* Marketplace removed */}
 
           {/* ═══ FILTER PILLS — small rounded ═══ */}
-          <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide -mx-4 pl-4 pb-1">
+          <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide pl-4 pb-1">
             {filters.map(f => {
               const active = activeFilter === f.key;
               return (
@@ -1334,7 +1328,7 @@ export default function ArenaPage() {
             <SoloShowcase onStartSolo={() => setShowSoloMode(true)} />
           )}
 
-          <div className="h-8" />
+          <div className="h-2" />
         </div>
       )}
 
