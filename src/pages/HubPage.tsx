@@ -210,6 +210,7 @@ export default function HubPage() {
   const [eventsActiveIdx, setEventsActiveIdx] = useState(0);
   const eventsAutoScrollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { hasEquippedOG } = useEquippedBadges(user?.id);
+  const [dismissedBanners, setDismissedBanners] = useState<{ battles?: boolean; solo?: boolean }>({});
 
   // Split drops: artist featured vs event drops (brand/film/official)
   const artistDrops = useMemo(() => {
