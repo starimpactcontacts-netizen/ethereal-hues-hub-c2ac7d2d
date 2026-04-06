@@ -324,7 +324,7 @@ export default function CommissionDetailPage() {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
         <p className="text-muted-foreground">Mission not found</p>
-        <Link to="/missions" className="text-emerald-400 text-sm hover:underline">← Back to Missions</Link>
+        <Link to="/index" className="text-emerald-400 text-sm hover:underline">← Back to Arena</Link>
       </div>
     );
   }
@@ -344,8 +344,8 @@ export default function CommissionDetailPage() {
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
       <div className="bg-gradient-to-b from-emerald-950/40 to-background border-b border-emerald-500/10 px-4 pt-4 pb-5">
-        <Link to="/missions" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-4">
-          <ArrowLeft className="w-3.5 h-3.5" /> Missions
+        <Link to="/index" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-4">
+          <ArrowLeft className="w-3.5 h-3.5" /> Back to Arena
         </Link>
 
         <div className="flex items-start justify-between gap-3">
@@ -525,9 +525,7 @@ export default function CommissionDetailPage() {
         )}
 
         {/* ═══ MISSION CHAT ═══ */}
-        <div className="px-4 pb-4">
-          <MissionLobbyChat missionId={id!} />
-        </div>
+        <MissionLobbyChat missionId={id!} />
       </div>
 
       {/* Rating Modal */}
