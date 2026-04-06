@@ -322,7 +322,6 @@ export default function CommissionDetailPage() {
   const isPoster = !!user && commission?.created_by === user.id;
   const canRate = isStaff || isPoster;
   const [reviewingSubmission, setReviewingSubmission] = useState<any>(null);
-  const [showContent, setShowContent] = useState(false);
 
   if (loading) {
     return <div className="min-h-screen bg-background flex items-center justify-center"><Loader2 className="w-6 h-6 text-emerald-400 animate-spin" /></div>;
