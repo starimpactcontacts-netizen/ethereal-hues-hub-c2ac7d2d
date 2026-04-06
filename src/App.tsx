@@ -95,6 +95,7 @@ const MissionLobbyPage = lazy(() => import("./pages/loopgate/MissionLobbyPage"))
 const LoopyPage = lazy(() => import("./pages/loopgate/LoopyPage"));
 const CreateCompetitionPage = lazy(() => import("./pages/loopgate/CreateCompetitionPage"));
 const LoopyRatePage = lazy(() => import("./pages/loopgate/LoopyRatePage"));
+const StandaloneLinkPage = lazy(() => import("./pages/loopgate/StandaloneLinkPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // GLOBAL DEV MODE DETECTION - runs BEFORE React
@@ -393,9 +394,8 @@ export default function App() {
             <Route path="/crews" element={<Navigate to="/units" replace />} />
             <Route path="/crews/*" element={<CrewsRedirect />} />
 
-            {/* 404 - public */}
-            {/* Clean username links: loopgate.io/username */}
-            <Route path="/:username" element={<UsernameLookupPage />} />
+            {/* Clean username links: loopgate.io/username → standalone link page */}
+            <Route path="/:username" element={<StandaloneLinkPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           </Suspense>

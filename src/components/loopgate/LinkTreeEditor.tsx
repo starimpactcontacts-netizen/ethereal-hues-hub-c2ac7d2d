@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, Reorder } from "framer-motion";
-import { Plus, Trash2, GripVertical, Eye, EyeOff, Link2, Video, Globe, ChevronRight, Copy } from "lucide-react";
+import { Plus, Trash2, GripVertical, Eye, EyeOff, Link2, Video, Globe, ChevronRight, Copy, ChevronDown, Image } from "lucide-react";
 import { useEditorLinkPage } from "@/hooks/useEditorLinkPage";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -12,11 +12,19 @@ const BG_PRESETS = [
   { label: "Midnight", bg_type: "solid", bg_color: "#0a0a0a" },
   { label: "Obsidian", bg_type: "solid", bg_color: "#0c0c0c" },
   { label: "Dark Blue", bg_type: "solid", bg_color: "#0c1220" },
+  { label: "White", bg_type: "solid", bg_color: "#ffffff" },
+  { label: "Cream", bg_type: "solid", bg_color: "#faf5ef" },
+  { label: "Blush", bg_type: "solid", bg_color: "#fce4ec" },
   { label: "Crimson", bg_type: "gradient", bg_gradient_from: "#1a0000", bg_gradient_to: "#0a0a0a" },
   { label: "Gold Rush", bg_type: "gradient", bg_gradient_from: "#1a1400", bg_gradient_to: "#0a0a0a" },
   { label: "Cyber", bg_type: "gradient", bg_gradient_from: "#001a1a", bg_gradient_to: "#0a0a0a" },
   { label: "Purple Haze", bg_type: "gradient", bg_gradient_from: "#150020", bg_gradient_to: "#0a0a0a" },
   { label: "Neon", bg_type: "gradient", bg_gradient_from: "#001a0a", bg_gradient_to: "#0a0a0a" },
+  { label: "Sunset", bg_type: "gradient", bg_gradient_from: "#f8a4c8", bg_gradient_to: "#f06868" },
+  { label: "Ocean", bg_type: "gradient", bg_gradient_from: "#0f4c75", bg_gradient_to: "#3282b8" },
+  { label: "Lavender", bg_type: "gradient", bg_gradient_from: "#c4b5fd", bg_gradient_to: "#818cf8" },
+  { label: "Peach", bg_type: "gradient", bg_gradient_from: "#fcd5ce", bg_gradient_to: "#f8ad9d" },
+  { label: "Forest", bg_type: "gradient", bg_gradient_from: "#0b3d0b", bg_gradient_to: "#1a5c1a" },
 ];
 
 const ACCENT_COLORS = ["#d4af37", "#ef4444", "#3b82f6", "#10b981", "#a855f7", "#f97316", "#ec4899", "#06b6d4", "#f59e0b", "#14b8a6"];
@@ -36,6 +44,7 @@ export default function LinkTreeEditor() {
 
   const [mode, setMode] = useState<'overview' | 'edit' | 'preview' | 'style'>('overview');
   const [adding, setAdding] = useState(false);
+  const [expandedLink, setExpandedLink] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");
   const [newUrl, setNewUrl] = useState("");
   const [newType, setNewType] = useState<"link" | "embed">("link");
@@ -272,11 +281,49 @@ export default function LinkTreeEditor() {
               );
             })}
           </div>
+          <div className="mt-2">
+            <label className="text-[9px] text-muted-foreground mb-1 block uppercase tracking-wider font-medium">Custom Color</label>
+            <div className="flex gap-2 items-center">
+              <input
+                type="color"
+                defaultValue={settings.bg_color || "#0a0a0a"}
+                onChange={e => saveSettings({ bg_type: "solid", bg_color: e.target.value, bg_gradient_from: null, bg_gradient_to: null })}
+                className="w-8 h-8 rounded-lg cursor-pointer border border-border/30 bg-transparent"
+              />
+              <span className="text-[9px] text-muted-foreground">Pick any color</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label className="text-[9px] text-muted-foreground mb-1.5 block uppercase tracking-wider font-medium">Custom Avatar URL</label>
+          <input
+            placeholder="https://... (leave empty for profile avatar)"
+            defaultValue={settings.custom_avatar_url || ""}
+            onBlur={e => saveSettings({ custom_avatar_url: e.target.value || null })}
+            className="w-full h-8 px-3 text-[11px] bg-background border border-border/30 rounded-lg focus:outline-none focus:border-border/60 text-foreground placeholder:text-muted-foreground/40"
+          />
+        </div>
+
+        <div>
+          <label className="text-[9px] text-muted-foreground mb-1.5 block uppercase tracking-wider font-medium">Background Image URL</label>
+          <input
+            placeholder="https://... (overrides color/gradient)"
+            defaultValue={settings.bg_image_url || ""}
+            onBlur={e => {
+              if (e.target.value) {
+                saveSettings({ bg_type: "image", bg_image_url: e.target.value });
+              } else {
+                saveSettings({ bg_image_url: null });
+              }
+            }}
+            className="w-full h-8 px-3 text-[11px] bg-background border border-border/30 rounded-lg focus:outline-none focus:border-border/60 text-foreground placeholder:text-muted-foreground/40"
+          />
         </div>
 
         <div>
           <label className="text-[9px] text-muted-foreground mb-1.5 block uppercase tracking-wider font-medium">Accent Color</label>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap items-center">
             {ACCENT_COLORS.map(color => (
               <button
                 key={color}
@@ -285,6 +332,29 @@ export default function LinkTreeEditor() {
                 style={{ backgroundColor: color, boxShadow: settings.accent_color === color ? `0 0 12px ${color}40` : undefined }}
               />
             ))}
+            <input
+              type="color"
+              defaultValue={settings.accent_color || "#d4af37"}
+              onChange={e => saveSettings({ accent_color: e.target.value })}
+              className="w-6 h-6 rounded-full cursor-pointer border border-border/30 bg-transparent"
+              title="Custom accent"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="text-[9px] text-muted-foreground mb-1.5 block uppercase tracking-wider font-medium">Text Color</label>
+          <div className="flex gap-2 items-center">
+            {["#ffffff", "#000000", "#f5f5f5", "#1a1a1a", "#d4af37"].map(c => (
+              <button key={c} onClick={() => saveSettings({ text_color: c })} className={`w-6 h-6 rounded-full border transition-all ${settings.text_color === c ? "ring-2 ring-foreground/40 ring-offset-2 ring-offset-background scale-110" : "border-border/30 hover:scale-105"}`} style={{ backgroundColor: c }} />
+            ))}
+            <input
+              type="color"
+              defaultValue={settings.text_color || "#ffffff"}
+              onChange={e => saveSettings({ text_color: e.target.value })}
+              className="w-6 h-6 rounded-full cursor-pointer border border-border/30 bg-transparent"
+              title="Custom text color"
+            />
           </div>
         </div>
 
@@ -330,19 +400,44 @@ export default function LinkTreeEditor() {
         <Reorder.Group axis="y" values={links} onReorder={reorderLinks} className="space-y-1.5">
           {links.map((link) => (
             <Reorder.Item key={link.id} value={link}>
-              <div className="flex items-center gap-2 px-2.5 py-2.5 bg-surface-1/30 border border-border/20 rounded-lg group hover:border-border/40 transition-all hover:bg-surface-1/50">
-                <GripVertical className="w-3 h-3 text-muted-foreground/30 cursor-grab shrink-0 group-hover:text-muted-foreground/60" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-semibold truncate">{link.title}</p>
-                  <p className="text-[9px] text-muted-foreground/60 truncate">{link.url}</p>
+              <div className="bg-surface-1/30 border border-border/20 rounded-lg group hover:border-border/40 transition-all hover:bg-surface-1/50">
+                <div className="flex items-center gap-2 px-2.5 py-2.5">
+                  <GripVertical className="w-3 h-3 text-muted-foreground/30 cursor-grab shrink-0 group-hover:text-muted-foreground/60" />
+                  {link.thumbnail_url && <img src={link.thumbnail_url} alt="" className="w-6 h-6 rounded object-cover shrink-0" />}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] font-semibold truncate">{link.title}</p>
+                    <p className="text-[9px] text-muted-foreground/60 truncate">{link.url}</p>
+                  </div>
+                  <span className="text-[8px] text-muted-foreground/40 tabular-nums shrink-0">{link.click_count || 0}</span>
+                  <button onClick={() => setExpandedLink(expandedLink === link.id ? null : link.id)} className="p-1 rounded hover:bg-surface-1 transition-colors" title="Edit details">
+                    <ChevronDown className={`w-3 h-3 text-muted-foreground/40 transition-transform ${expandedLink === link.id ? "rotate-180" : ""}`} />
+                  </button>
+                  <button onClick={() => updateLink(link.id, { is_active: !link.is_active })} className="p-1 rounded hover:bg-surface-1 transition-colors" title={link.is_active ? "Hide" : "Show"}>
+                    {link.is_active ? <Eye className="w-3 h-3 text-emerald-400" /> : <EyeOff className="w-3 h-3 text-muted-foreground/40" />}
+                  </button>
+                  <button onClick={() => removeLink(link.id)} className="p-1 rounded hover:bg-destructive/10 transition-colors" title="Delete">
+                    <Trash2 className="w-3 h-3 text-muted-foreground/40 hover:text-destructive" />
+                  </button>
                 </div>
-                <span className="text-[8px] text-muted-foreground/40 tabular-nums shrink-0">{link.click_count || 0}</span>
-                <button onClick={() => updateLink(link.id, { is_active: !link.is_active })} className="p-1 rounded hover:bg-surface-1 transition-colors" title={link.is_active ? "Hide" : "Show"}>
-                  {link.is_active ? <Eye className="w-3 h-3 text-emerald-400" /> : <EyeOff className="w-3 h-3 text-muted-foreground/40" />}
-                </button>
-                <button onClick={() => removeLink(link.id)} className="p-1 rounded hover:bg-destructive/10 transition-colors" title="Delete">
-                  <Trash2 className="w-3 h-3 text-muted-foreground/40 hover:text-destructive" />
-                </button>
+                {expandedLink === link.id && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="px-2.5 pb-2.5 space-y-1.5 overflow-hidden">
+                    <input
+                      placeholder="Description (optional)"
+                      defaultValue={link.description || ""}
+                      onBlur={e => updateLink(link.id, { description: e.target.value || null })}
+                      className="w-full h-7 px-2.5 text-[10px] bg-background border border-border/30 rounded-md focus:outline-none focus:border-border/60 text-foreground placeholder:text-muted-foreground/40"
+                    />
+                    <div className="flex gap-1.5 items-center">
+                      <Image className="w-3 h-3 text-muted-foreground/40 shrink-0" />
+                      <input
+                        placeholder="Thumbnail URL (optional)"
+                        defaultValue={link.thumbnail_url || ""}
+                        onBlur={e => updateLink(link.id, { thumbnail_url: e.target.value || null })}
+                        className="flex-1 h-7 px-2.5 text-[10px] bg-background border border-border/30 rounded-md focus:outline-none focus:border-border/60 text-foreground placeholder:text-muted-foreground/40"
+                      />
+                    </div>
+                  </motion.div>
+                )}
               </div>
             </Reorder.Item>
           ))}
