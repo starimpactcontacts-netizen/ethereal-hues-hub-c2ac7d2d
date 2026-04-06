@@ -21,8 +21,8 @@ function SoloCard({ solo }: { solo: RecentSolo }) {
   const timeAgo = formatDistanceToNow(new Date(solo.created_at), { addSuffix: false });
 
   return (
-    <Link to={`/solo/${solo.id}`} className="shrink-0 w-[150px] snap-start block group">
-      <div className="relative h-[220px] overflow-hidden rounded-xl" style={{
+    <Link to={`/solo/${solo.id}`} className="shrink-0 w-[160px] snap-start block group">
+      <div className="relative h-[160px] overflow-hidden rounded-lg" style={{
         boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
       }}>
         {/* Background — warm gradient instead of pure black */}

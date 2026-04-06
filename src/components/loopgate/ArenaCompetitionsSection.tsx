@@ -208,11 +208,11 @@ export default function ArenaCompetitionsSection({ onCreateClick }: { onCreateCl
           {comps.map(comp => <CompetitionCard key={comp.id} comp={comp} onJoin={handleJoin} />)}
 
           {/* Create Your Own — poster card */}
-          <div className="shrink-0 w-[200px]">
+          <div className="shrink-0 w-[160px]">
             <motion.div
               whileTap={{ scale: 0.97 }}
               onClick={onCreateClick}
-              className="relative w-full bg-surface-1 border border-dashed border-white/[0.1] overflow-hidden rounded-xl cursor-pointer hover:border-gold/30 transition-colors"
+              className="relative w-full h-[160px] bg-surface-1 border border-dashed border-white/[0.1] overflow-hidden rounded-lg cursor-pointer hover:border-gold/30 transition-colors"
               style={{ boxShadow: "0 2px 20px rgba(0,0,0,0.2)" }}
             >
               {/* Visual area */}
