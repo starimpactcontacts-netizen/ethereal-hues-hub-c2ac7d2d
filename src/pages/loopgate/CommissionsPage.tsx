@@ -328,9 +328,11 @@ export default function CommissionsPage() {
                   {activeCategory !== 'all' ? `No ${TYPE_CONFIG[activeCategory].label.toLowerCase()} missions yet` : 'No missions yet'}
                 </p>
                 <p className="text-[11px] text-muted-foreground/60 mt-1">Be the first to post one</p>
-                <Button onClick={() => openCreate(activeCategory !== 'all' ? activeCategory : undefined)} size="sm" className="mt-4 bg-emerald-600 hover:bg-emerald-500 text-white">
-                  Post Mission
-                </Button>
+                {isStaff && (
+                  <Button onClick={() => openCreate(activeCategory !== 'all' ? activeCategory : undefined)} size="sm" className="mt-4 bg-emerald-600 hover:bg-emerald-500 text-white">
+                    Post Mission
+                  </Button>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-2.5">
