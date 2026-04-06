@@ -81,7 +81,7 @@ function ArenaMissionCard({ drop }: { drop: ArenaMission }) {
     <motion.button
       whileTap={{ scale: 0.96 }}
       whileHover={{ y: -4 }}
-      onClick={() => navigate(`/mission/${drop.id}`)}
+      onClick={() => navigate(`/commissions/${drop.id}`)}
       className="shrink-0 relative w-[280px] h-[380px] overflow-hidden group text-left touch-manipulation"
       style={{ 
         boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03)',

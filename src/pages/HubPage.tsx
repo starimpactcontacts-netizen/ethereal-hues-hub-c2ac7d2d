@@ -815,7 +815,7 @@ export default function HubPage() {
               onClick={() => {
                 if (!profile) { navigate('/start'); return; }
                 if (quickAction === 'mission') {
-                  navigate('/arena?filter=missions');
+                  navigate('/commissions/414605a8-ac2f-4ab5-9955-15339ba4633c');
                 } else if (quickAction === 'solo') {
                   navigate('/arena?mode=solo&auto=1');
                 } else {
