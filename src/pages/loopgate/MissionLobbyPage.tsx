@@ -5,7 +5,7 @@ import {
   ArrowLeft, Crosshair, DollarSign, Trophy, Send, ExternalLink,
   Loader2, Star, Clock, Eye, Zap, Target, TrendingUp, ChevronRight,
   Music, Shield, Flame, Swords, ArrowRight, Sparkles, ThumbsUp, ThumbsDown,
-  Film, ChevronLeft
+  Film, ChevronLeft, Users
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
