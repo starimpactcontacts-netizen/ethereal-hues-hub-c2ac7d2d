@@ -567,15 +567,15 @@ export default function CommissionDetailPage() {
         )}
 
         {/* ── MISSION BRIEF ── */}
-        <div className="rounded-2xl overflow-hidden">
+        <div className="rounded-xl overflow-hidden">
           <button onClick={() => setShowBrief(!showBrief)}
-            className="w-full flex items-center justify-between py-3.5 px-4 bg-amber-500/5 border border-gold/20 hover:border-gold/30 rounded-2xl transition-colors">
+            className="w-full flex items-center justify-between py-3.5 px-4 bg-surface-1 border border-border hover:border-foreground/20 rounded-xl transition-colors">
             <div className="flex items-center gap-2">
-              <FileText className="w-4 h-4 text-gold" />
-              <span className="text-[11px] font-black text-gold uppercase tracking-wider">Mission Brief</span>
+              <FileText className="w-4 h-4 text-amber-400" />
+              <span className="text-[11px] font-black text-foreground uppercase tracking-wider">Mission Brief</span>
             </div>
             <motion.div animate={{ rotate: showBrief ? 180 : 0 }} transition={{ duration: 0.2 }}>
-              <ChevronRight className="w-4 h-4 text-gold/60 rotate-90" />
+              <ChevronRight className="w-4 h-4 text-muted-foreground rotate-90" />
             </motion.div>
           </button>
           <AnimatePresence>
