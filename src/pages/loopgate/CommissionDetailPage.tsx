@@ -65,8 +65,8 @@ function useLobbyPresence(commissionId: string | undefined) {
         .from('mission_lobby_presence' as any)
         .select('user_id, username, avatar_url')
         .eq('commission_id', commissionId)
-        .order('last_seen_at', { ascending: false })
-        .limit(50);
+        .order('created_at', { ascending: true })
+        .limit(100);
       if (data) setVisitors(data as any);
     };
     fetchVisitors();
@@ -408,8 +408,8 @@ export default function CommissionDetailPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-zinc-800 to-black" />
         )}
         {/* Layered gradients for depth */}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" style={{ top: '50%' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, #111114 0%, #111114cc 30%, transparent 100%)' }} />
+        <div className="absolute inset-0" style={{ top: '50%', background: 'linear-gradient(to top, #111114cc 0%, transparent 100%)' }} />
 
         {/* Back button — frosted glass */}
         <button onClick={() => navigate(-1)}
