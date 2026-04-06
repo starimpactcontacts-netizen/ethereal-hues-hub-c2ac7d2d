@@ -781,21 +781,15 @@ export default function CommissionDetailPage() {
           </div>
         )}
 
-        {/* ── SUBMIT FORM ── */}
+        {/* Submit form moved to modal — keep anchor for backwards compat */}
         {canSubmit && (
           <div id="mission-submit-area">
-            <h3 className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
-              <Crosshair className="w-3.5 h-3.5" />
-              {mySubmissions.length > 0 ? 'Submit Another Edit' : 'Submit Your Edit'}
-            </h3>
-            <SubmitForm
-              onSubmit={async (url, platform, message) => {
-                await submitEdit({ submission_url: url, platform, message: message || undefined });
-              }}
-              disabled={false}
-              userId={user?.id}
-              previousSubmissions={mySubmissions.length}
-            />
+            <button
+              onClick={() => setShowSubmitModal(true)}
+              className="w-full flex items-center justify-center gap-2 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-wider text-sm transition-colors"
+            >
+              <Send className="w-4 h-4" /> {mySubmissions.length > 0 ? 'Submit Another Edit' : 'Submit Your Edit'}
+            </button>
           </div>
         )}
 
