@@ -31,6 +31,7 @@ import TournamentLifecycleAdmin from "@/components/loopgate/TournamentLifecycleA
 import FeedModerationAdmin from "@/components/loopgate/FeedModerationAdmin";
 import PlatformAnalyticsAdmin from "@/components/loopgate/PlatformAnalyticsAdmin";
 import SupportTicketsAdmin from "@/components/loopgate/SupportTicketsAdmin";
+import EditAnalyzerAdmin from "@/components/loopgate/EditAnalyzerAdmin";
 
 interface RealEvent {
   id: string;
