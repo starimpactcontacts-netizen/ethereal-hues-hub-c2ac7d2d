@@ -578,7 +578,6 @@ export default function CommissionDetailPage() {
           {/* Mission Chat */}
           <MissionLobbyChat missionId={id!} />
         </div>
-      )}
 
       {/* Rating Modal */}
       <AnimatePresence>
