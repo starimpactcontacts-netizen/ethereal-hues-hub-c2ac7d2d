@@ -151,7 +151,7 @@ export default function FeaturedDropCard({ drop }: Props) {
         </div>
 
         {/* Stats bar */}
-        <div className="px-3 py-2 flex items-center gap-2 border-t border-emerald-500/20 bg-emerald-950/20">
+        <div className="px-2 py-1.5 flex items-center gap-1.5 border-t border-emerald-500/20 bg-emerald-950/20">
           <ActivityIcon className={cn("w-3 h-3 shrink-0", activity.color)} />
           <span className={cn("text-[9px] font-semibold tracking-tight flex-1 truncate", activity.color)}>
             {activity.text}
