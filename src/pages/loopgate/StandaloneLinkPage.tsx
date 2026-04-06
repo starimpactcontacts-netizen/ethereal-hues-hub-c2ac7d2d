@@ -149,11 +149,32 @@ export default function StandaloneLinkPage() {
   const classInfo = getClassInfo(profile);
   const showStats = settings.show_stats !== false;
 
-  // Always show stats — class is always available, others show value
-  const stats: { label: string; value: number | string }[] = [];
-  stats.push({ label: "Index", value: profile.global_index_score || 0 });
-  stats.push({ label: "Battles", value: profile.total_events || 0 });
-  stats.push({ label: "Wins", value: profile.total_wins || 0 });
+  // Calculate editor star rating (1-5) based on overall stats
+  const calcStarRating = (): number => {
+    let score = 0;
+    const idx = profile.global_index_score || 0;
+    const battles = profile.total_events || 0;
+    const wins = profile.total_wins || 0;
+    const winRate = profile.win_rate || 0;
+    const level = profile.level || 1;
+    // Index contribution (0-1.5)
+    if (idx >= 200) score += 1.5;
+    else if (idx >= 100) score += 1;
+    else if (idx >= 30) score += 0.5;
+    // Battle experience (0-1)
+    if (battles >= 20) score += 1;
+    else if (battles >= 5) score += 0.5;
+    // Win rate (0-1)
+    if (winRate >= 60) score += 1;
+    else if (winRate >= 40) score += 0.5;
+    // Level (0-1)
+    if (level >= 5) score += 1;
+    else if (level >= 3) score += 0.5;
+    // Class bonus (0-0.5)
+    if (["S++","S+","S","A"].includes(classInfo.letter)) score += 0.5;
+    return Math.max(1, Math.min(5, Math.round(score)));
+  };
+  const starRating = calcStarRating();
 
   return (
     <div className="min-h-screen" style={{ ...getBackground(settings), color: textColor }}>
@@ -197,42 +218,37 @@ export default function StandaloneLinkPage() {
           </motion.div>
         )}
 
-        {/* Editor Stats — clean inline row */}
+        {/* Editor Stats — Class, Rank, Stars */}
         {showStats && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.12 }} className="mb-6">
-            <div className="flex items-center justify-center gap-5">
-              {/* Class Badge */}
+            <div className="flex items-center justify-center gap-6">
+              {/* Class */}
               <div className="flex flex-col items-center">
-                <div
-                  className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-black"
-                  style={{ backgroundColor: `${classInfo.hex}15`, border: `1.5px solid ${classInfo.hex}40`, color: classInfo.hex }}
-                >
-                  {classInfo.letter}
-                </div>
-                <span className="text-[9px] text-white/30 mt-1 font-medium uppercase">Class</span>
+                <p className="text-lg font-black text-white/80">{classInfo.letter}</p>
+                <span className="text-[9px] text-white/30 font-medium uppercase tracking-wide">Class</span>
               </div>
 
-              {/* Divider */}
-              <div className="w-px h-8 bg-white/10" />
+              <div className="w-px h-7 bg-white/10" />
 
-              {/* Stats */}
-              {stats.map((stat) => (
-                <div key={stat.label} className="flex flex-col items-center">
-                  <p className="text-lg font-black tabular-nums text-white/90">{stat.value}</p>
-                  <span className="text-[9px] text-white/30 font-medium uppercase">{stat.label}</span>
+              {/* Global Rank */}
+              <div className="flex flex-col items-center">
+                <p className="text-lg font-black tabular-nums text-white/80">#{profile.global_index_score || 0}</p>
+                <span className="text-[9px] text-white/30 font-medium uppercase tracking-wide">Rank</span>
+              </div>
+
+              <div className="w-px h-7 bg-white/10" />
+
+              {/* Star Rating */}
+              <div className="flex flex-col items-center">
+                <div className="flex gap-0.5">
+                  {[1,2,3,4,5].map(s => (
+                    <svg key={s} className={`w-3.5 h-3.5 ${s <= starRating ? 'text-white/80' : 'text-white/15'}`} fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
                 </div>
-              ))}
-
-              {/* League */}
-              {profile.league && (
-                <>
-                  <div className="w-px h-8 bg-white/10" />
-                  <div className="flex flex-col items-center">
-                    <p className="text-xs font-bold text-white/70">{LEAGUE_LABELS[profile.league] || profile.league}</p>
-                    <span className="text-[9px] text-white/30 font-medium uppercase">League</span>
-                  </div>
-                </>
-              )}
+                <span className="text-[9px] text-white/30 font-medium uppercase tracking-wide mt-0.5">Trust</span>
+              </div>
             </div>
           </motion.div>
         )}
@@ -290,14 +306,16 @@ export default function StandaloneLinkPage() {
           </div>
         )}
 
-        {/* Footer — Powered by Loopgate */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="mt-auto pt-12 flex flex-col items-center gap-5">
+        {/* Powered by Loopgate — always visible below links */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="pt-8 pb-2 flex justify-center">
           <a
-            href="/"
-            className="flex items-center gap-2.5 text-white/30 hover:text-white/50 transition-colors"
+            href="/hub"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-white/25 hover:text-white/40 transition-colors"
           >
-            <img src={loopgateLogo} alt="Loopgate" className="w-4 h-4 opacity-50" />
-            <span className="text-[10px] font-semibold tracking-[0.2em] uppercase">Powered by Loopgate</span>
+            <img src={loopgateLogo} alt="Loopgate" className="w-3.5 h-3.5 opacity-40" />
+            <span className="text-[10px] font-medium tracking-[0.15em] uppercase">Powered by Loopgate</span>
           </a>
         </motion.div>
       </div>
