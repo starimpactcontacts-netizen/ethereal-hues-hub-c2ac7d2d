@@ -39,7 +39,10 @@ export default function LandingPage() {
   return (
     <>
       <IOSAppBanner onVisibilityChange={setBannerVisible} />
-      <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+      <div
+        className="h-full overflow-y-auto overflow-x-hidden bg-background text-foreground"
+        style={{ WebkitOverflowScrolling: 'touch' }}
+      >
         <SEO {...pageSEO.home} />
         <LandingHeader bannerVisible={bannerVisible} />
 
