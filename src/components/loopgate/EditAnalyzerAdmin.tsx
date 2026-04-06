@@ -34,10 +34,12 @@ interface EditAnalysis {
   technical_verdict: string;
   creative_verdict: string;
   sync_verdict: string;
+  viral_potential?: string;
   recommended_grade: string;
   grade_justification: string;
   improvement_notes: string;
   judge_summary: string;
+  judge_feedback?: string;
 }
 
 const GRADE_COLORS: Record<string, string> = {
