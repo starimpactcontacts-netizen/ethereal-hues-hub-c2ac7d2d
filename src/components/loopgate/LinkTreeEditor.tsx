@@ -400,19 +400,44 @@ export default function LinkTreeEditor() {
         <Reorder.Group axis="y" values={links} onReorder={reorderLinks} className="space-y-1.5">
           {links.map((link) => (
             <Reorder.Item key={link.id} value={link}>
-              <div className="flex items-center gap-2 px-2.5 py-2.5 bg-surface-1/30 border border-border/20 rounded-lg group hover:border-border/40 transition-all hover:bg-surface-1/50">
-                <GripVertical className="w-3 h-3 text-muted-foreground/30 cursor-grab shrink-0 group-hover:text-muted-foreground/60" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-semibold truncate">{link.title}</p>
-                  <p className="text-[9px] text-muted-foreground/60 truncate">{link.url}</p>
+              <div className="bg-surface-1/30 border border-border/20 rounded-lg group hover:border-border/40 transition-all hover:bg-surface-1/50">
+                <div className="flex items-center gap-2 px-2.5 py-2.5">
+                  <GripVertical className="w-3 h-3 text-muted-foreground/30 cursor-grab shrink-0 group-hover:text-muted-foreground/60" />
+                  {link.thumbnail_url && <img src={link.thumbnail_url} alt="" className="w-6 h-6 rounded object-cover shrink-0" />}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] font-semibold truncate">{link.title}</p>
+                    <p className="text-[9px] text-muted-foreground/60 truncate">{link.url}</p>
+                  </div>
+                  <span className="text-[8px] text-muted-foreground/40 tabular-nums shrink-0">{link.click_count || 0}</span>
+                  <button onClick={() => setExpandedLink(expandedLink === link.id ? null : link.id)} className="p-1 rounded hover:bg-surface-1 transition-colors" title="Edit details">
+                    <ChevronDown className={`w-3 h-3 text-muted-foreground/40 transition-transform ${expandedLink === link.id ? "rotate-180" : ""}`} />
+                  </button>
+                  <button onClick={() => updateLink(link.id, { is_active: !link.is_active })} className="p-1 rounded hover:bg-surface-1 transition-colors" title={link.is_active ? "Hide" : "Show"}>
+                    {link.is_active ? <Eye className="w-3 h-3 text-emerald-400" /> : <EyeOff className="w-3 h-3 text-muted-foreground/40" />}
+                  </button>
+                  <button onClick={() => removeLink(link.id)} className="p-1 rounded hover:bg-destructive/10 transition-colors" title="Delete">
+                    <Trash2 className="w-3 h-3 text-muted-foreground/40 hover:text-destructive" />
+                  </button>
                 </div>
-                <span className="text-[8px] text-muted-foreground/40 tabular-nums shrink-0">{link.click_count || 0}</span>
-                <button onClick={() => updateLink(link.id, { is_active: !link.is_active })} className="p-1 rounded hover:bg-surface-1 transition-colors" title={link.is_active ? "Hide" : "Show"}>
-                  {link.is_active ? <Eye className="w-3 h-3 text-emerald-400" /> : <EyeOff className="w-3 h-3 text-muted-foreground/40" />}
-                </button>
-                <button onClick={() => removeLink(link.id)} className="p-1 rounded hover:bg-destructive/10 transition-colors" title="Delete">
-                  <Trash2 className="w-3 h-3 text-muted-foreground/40 hover:text-destructive" />
-                </button>
+                {expandedLink === link.id && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="px-2.5 pb-2.5 space-y-1.5 overflow-hidden">
+                    <input
+                      placeholder="Description (optional)"
+                      defaultValue={link.description || ""}
+                      onBlur={e => updateLink(link.id, { description: e.target.value || null })}
+                      className="w-full h-7 px-2.5 text-[10px] bg-background border border-border/30 rounded-md focus:outline-none focus:border-border/60 text-foreground placeholder:text-muted-foreground/40"
+                    />
+                    <div className="flex gap-1.5 items-center">
+                      <Image className="w-3 h-3 text-muted-foreground/40 shrink-0" />
+                      <input
+                        placeholder="Thumbnail URL (optional)"
+                        defaultValue={link.thumbnail_url || ""}
+                        onBlur={e => updateLink(link.id, { thumbnail_url: e.target.value || null })}
+                        className="flex-1 h-7 px-2.5 text-[10px] bg-background border border-border/30 rounded-md focus:outline-none focus:border-border/60 text-foreground placeholder:text-muted-foreground/40"
+                      />
+                    </div>
+                  </motion.div>
+                )}
               </div>
             </Reorder.Item>
           ))}
