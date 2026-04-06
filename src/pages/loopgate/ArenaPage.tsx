@@ -284,7 +284,7 @@ function ArenaMissionsSection() {
 
   return (
     <div className="mb-3">
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between px-4 mb-2">
         <div className="flex items-center gap-1.5">
           <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
           <span className="text-[11px] font-black text-foreground uppercase tracking-wider">Missions</span>
@@ -295,7 +295,7 @@ function ArenaMissionsSection() {
         </button>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory">
+      <div className="flex gap-2 px-4 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory">
         {bounties.map(b => {
           const payout = (b.payout_cents / 100).toFixed(0);
           const slotsLeft = b.max_slots - b.accepted_count;
