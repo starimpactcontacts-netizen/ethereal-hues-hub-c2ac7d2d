@@ -838,7 +838,7 @@ export default function ArenaPage() {
               <div className="flex items-center justify-center gap-2">
                 <UserRound className="w-4 h-4" />
                 <span>My Arena</span>
-                {(activeSolo || myBattles.length > 0 || myActiveQuickFights.length > 0) && (
+                {(activeSolo || myBattles.length > 0 || myActiveQuickFights.length > 0 || myJudgingBattles.length > 0) && (
                   <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                 )}
               </div>
