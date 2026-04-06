@@ -320,11 +320,18 @@ export default function CommissionsPage() {
 
 /* ─── Mission Edit Dialog ─── */
 function MissionEditDialog({ mission, onClose, onSaved }: { mission: MarketplaceBounty; onClose: () => void; onSaved: () => void }) {
+  const mType = (mission.mission_type as MissionType) || 'standard';
+  const tc = TYPE_CONFIG[mType] || TYPE_CONFIG.standard;
+  const isFilm = mType === 'film';
+  const isBrand = mType === 'brand';
+  const isArtist = mType === 'artist';
+
   const [form, setForm] = useState({
     title: mission.title || '',
     description: mission.description || '',
     song_name: mission.song_name || '',
     artist_name: mission.artist_name || '',
+    client_name: mission.client_name || '',
     max_slots: mission.max_slots,
     payout_cents: mission.payout_cents,
     cover_url: (mission as any).cover_url || '',
@@ -341,6 +348,7 @@ function MissionEditDialog({ mission, onClose, onSaved }: { mission: Marketplace
       description: form.description || null,
       song_name: form.song_name || null,
       artist_name: form.artist_name || null,
+      client_name: form.client_name || null,
       max_slots: form.max_slots,
       payout_cents: form.payout_cents,
       cover_url: form.cover_url || null,
@@ -357,29 +365,66 @@ function MissionEditDialog({ mission, onClose, onSaved }: { mission: Marketplace
       <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto pb-24">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
-            <Pencil size={18} className="text-purple-400" /> Edit Mission
+            <Pencil size={18} className={tc.color} /> Edit {tc.label} Mission
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-2">
+          {/* Type badge */}
+          <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest ${tc.bg} ${tc.color}`}>
+            {(() => { const Icon = tc.icon; return <Icon className="w-3 h-3" />; })()}
+            {tc.label} Campaign
+          </div>
+
           {/* Core Info */}
           <div className="space-y-2">
-            <Label className="text-xs font-bold text-purple-400">📋 Core Info</Label>
+            <Label className={`text-xs font-bold ${tc.color}`}>📋 Core Info</Label>
             <div>
               <Label className="text-[10px]">Title</Label>
               <Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="mt-1 h-8 text-xs" />
             </div>
+
+            {/* Film/Brand: Client Name */}
+            {(isFilm || isBrand) && (
+              <div>
+                <Label className="text-[10px]">{isFilm ? 'Production / Studio' : 'Brand Name'}</Label>
+                <Input value={form.client_name} onChange={e => setForm({ ...form, client_name: e.target.value })} 
+                  placeholder={isFilm ? 'e.g. WeirdCity Studios' : 'e.g. Nike'} className="mt-1 h-8 text-xs" />
+              </div>
+            )}
+
+            {/* Artist: Artist + Song */}
+            {isArtist && (
+              <>
+                <div>
+                  <Label className="text-[10px]">Artist Name</Label>
+                  <Input value={form.artist_name} onChange={e => setForm({ ...form, artist_name: e.target.value })} className="mt-1 h-8 text-xs" />
+                </div>
+                <div>
+                  <Label className="text-[10px]">Song Name</Label>
+                  <Input value={form.song_name} onChange={e => setForm({ ...form, song_name: e.target.value })} className="mt-1 h-8 text-xs" />
+                </div>
+              </>
+            )}
+
+            {/* Standard: show both */}
+            {mType === 'standard' && (
+              <>
+                <div>
+                  <Label className="text-[10px]">Song Name</Label>
+                  <Input value={form.song_name} onChange={e => setForm({ ...form, song_name: e.target.value })} className="mt-1 h-8 text-xs" />
+                </div>
+                <div>
+                  <Label className="text-[10px]">Artist / Client Name</Label>
+                  <Input value={form.artist_name} onChange={e => setForm({ ...form, artist_name: e.target.value })} className="mt-1 h-8 text-xs" />
+                </div>
+              </>
+            )}
+
             <div>
-              <Label className="text-[10px]">Song Name</Label>
-              <Input value={form.song_name} onChange={e => setForm({ ...form, song_name: e.target.value })} className="mt-1 h-8 text-xs" />
-            </div>
-            <div>
-              <Label className="text-[10px]">Artist Name</Label>
-              <Input value={form.artist_name} onChange={e => setForm({ ...form, artist_name: e.target.value })} className="mt-1 h-8 text-xs" />
-            </div>
-            <div>
-              <Label className="text-[10px]">Description / Mission Brief</Label>
+              <Label className="text-[10px]">{isFilm ? 'Series Brief / Description' : isBrand ? 'Campaign Brief' : 'Mission Brief'}</Label>
               <Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
-                placeholder="Mission brief..." className="mt-1 text-xs" rows={3} />
+                placeholder={isFilm ? 'Describe the series, tone, and what editors should capture...' : isBrand ? 'Brand guidelines, tone, deliverables...' : 'Mission brief...'} 
+                className="mt-1 text-xs" rows={3} />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
@@ -410,9 +455,9 @@ function MissionEditDialog({ mission, onClose, onSaved }: { mission: Marketplace
 
           {/* Scenepacks */}
           <div className="border-t border-border pt-3 space-y-2">
-            <Label className="text-xs font-bold text-amber-400">📦 Scenepacks</Label>
+            <Label className="text-xs font-bold text-amber-400">📦 {isFilm ? 'Footage / Assets' : 'Scenepacks'}</Label>
             <div>
-              <Label className="text-[10px]">Scenepack URL (Google Drive link)</Label>
+              <Label className="text-[10px]">{isFilm ? 'Footage Link (Google Drive)' : 'Scenepack URL (Google Drive link)'}</Label>
               <Input value={form.scenepack_url} onChange={e => setForm({ ...form, scenepack_url: e.target.value })}
                 placeholder="https://drive.google.com/..." className="mt-1 h-8 text-xs" />
             </div>
