@@ -163,7 +163,7 @@ function PayoutCard({ payout, idx }: { payout: Payout; idx: number }) {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: idx * 0.05 }}
-      className="shrink-0 w-[160px] h-[160px] snap-start relative overflow-hidden rounded-lg group"
+      className="shrink-0 w-[100px] h-[100px] snap-start relative overflow-hidden rounded-lg group"
       style={{
         boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
       }}
@@ -184,44 +184,27 @@ function PayoutCard({ payout, idx }: { payout: Payout; idx: number }) {
       <div className="absolute inset-0 rounded-lg border border-white/[0.08] group-hover:border-emerald-400/20 transition-colors duration-300" />
 
       {/* Content */}
-      <div className="relative p-2.5 flex flex-col h-[160px] justify-between">
+      <div className="relative p-2 flex flex-col h-[100px] justify-between">
         {/* Top — user info */}
-        <div className="flex items-center gap-2">
-          <Avatar className="w-6 h-6 border border-white/[0.15]">
+        <div className="flex items-center gap-1.5">
+          <Avatar className="w-5 h-5 border border-white/[0.15]">
             <AvatarImage src={payout.avatar_url || ""} />
-            <AvatarFallback className="bg-emerald-500/20 text-emerald-300 text-[10px] font-black">
+            <AvatarFallback className="bg-emerald-500/20 text-emerald-300 text-[8px] font-black">
               {payout.username?.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div className="min-w-0">
-            <span className="text-[11px] font-bold text-white truncate block">{payout.username}</span>
-            <span className="text-[9px] text-white/40">{timeAgo} ago</span>
-          </div>
+          <span className="text-[9px] font-bold text-white truncate">{payout.username}</span>
         </div>
 
-        {/* Center — big money */}
-        <div className="flex items-end gap-1.5">
-          <span className="text-2xl font-black text-emerald-400 leading-none tabular-nums tracking-tight" style={teko}>
-            ${amount}
-          </span>
-          <TrendingUp className="w-3.5 h-3.5 text-emerald-400/60 mb-0.5" />
-        </div>
+        {/* Center — money */}
+        <span className="text-lg font-black text-emerald-400 leading-none tabular-nums tracking-tight" style={teko}>
+          ${amount}
+        </span>
 
-        {/* Bottom — drop info + rating */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1 min-w-0 flex-1">
-            <Zap className="w-3 h-3 text-gold shrink-0" />
-            <span className="text-[9px] font-bold text-white/50 uppercase tracking-wider truncate">
-              {payout.drop_title || "Feature"}
-            </span>
-          </div>
-          {payout.rating && (
-            <div className="flex flex-col items-center ml-2 shrink-0">
-              <span className="text-sm font-black text-white/30 leading-none" style={teko}>{payout.rating}</span>
-              <span className="text-[6px] font-bold text-white/15 uppercase tracking-[0.15em]">Rank</span>
-            </div>
-          )}
-        </div>
+        {/* Bottom — drop name */}
+        <span className="text-[7px] font-bold text-white/40 uppercase tracking-wider truncate">
+          {payout.drop_title || "Feature"}
+        </span>
       </div>
     </motion.div>
   );
