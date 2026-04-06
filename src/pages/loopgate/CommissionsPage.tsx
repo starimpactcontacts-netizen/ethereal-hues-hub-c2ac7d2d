@@ -115,6 +115,12 @@ function AdminMissionRow({ bounty, onClose, onView, onEdit }: {
             >
               <Eye className="w-3 h-3" /> View
             </button>
+            <button 
+              onClick={() => onEdit(bounty)}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 transition-colors"
+            >
+              <Pencil className="w-3 h-3" /> Edit
+            </button>
             {isOpen && (
               <button 
                 onClick={() => onClose(bounty.id)}
