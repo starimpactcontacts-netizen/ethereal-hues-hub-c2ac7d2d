@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DollarSign, ImagePlus, X, Loader2, Send, AlertTriangle, ChevronDown, Link as LinkIcon } from 'lucide-react';
+import { DollarSign, ImagePlus, X, Loader2, Send, AlertTriangle, ChevronDown, Music, Film, Briefcase, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,22 +8,34 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import type { SubmissionRating } from '@/hooks/useCommissions';
+import type { MissionType } from '@/hooks/useBountyMarketplace';
 
 const RATINGS: SubmissionRating[] = ['S', 'A', 'B', 'C', 'D', 'F'];
 const PLATFORM_FEE = 0.10;
 
+const MISSION_TYPES: { value: MissionType; label: string; icon: typeof Music; color: string; desc: string }[] = [
+  { value: 'artist', label: 'Artist', icon: Music, color: 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10', desc: 'Music artist needs edits for their song/album' },
+  { value: 'brand', label: 'Brand', icon: Briefcase, color: 'text-blue-400 border-blue-500/30 bg-blue-500/10', desc: 'Brand wants promotional content edited' },
+  { value: 'film', label: 'Film', icon: Film, color: 'text-purple-400 border-purple-500/30 bg-purple-500/10', desc: 'Film/studio needs trailer or promo edits' },
+  { value: 'standard', label: 'Personal', icon: User, color: 'text-foreground border-border/50 bg-surface-1', desc: 'Personal bounty from a community member' },
+];
+
 interface CreateBountyModalProps {
   onClose: () => void;
   onCreate: (params: any) => Promise<any>;
+  defaultType?: MissionType;
 }
 
-export default function CreateBountyModal({ onClose, onCreate }: CreateBountyModalProps) {
+export default function CreateBountyModal({ onClose, onCreate, defaultType }: CreateBountyModalProps) {
   const { user } = useAuth();
+  const [missionType, setMissionType] = useState<MissionType>(defaultType || 'standard');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [requirements, setRequirements] = useState('');
+  const [clientName, setClientName] = useState('');
   const [artistName, setArtistName] = useState('');
   const [songName, setSongName] = useState('');
+  const [referenceVideoUrl, setReferenceVideoUrl] = useState('');
   const [payoutDollars, setPayoutDollars] = useState('');
   const [maxSlots, setMaxSlots] = useState('3');
   const [deadline, setDeadline] = useState('');
@@ -39,6 +51,8 @@ export default function CreateBountyModal({ onClose, onCreate }: CreateBountyMod
   const payoutCents = Math.round(parseFloat(payoutDollars || '0') * 100);
   const feeCents = Math.round(payoutCents * PLATFORM_FEE);
   const totalCost = payoutCents + feeCents;
+
+  const typeConfig = MISSION_TYPES.find(t => t.value === missionType)!;
 
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -74,6 +88,9 @@ export default function CreateBountyModal({ onClose, onCreate }: CreateBountyMod
         max_slots: parseInt(maxSlots) || 3,
         deadline: deadline ? new Date(deadline).toISOString() : undefined,
         cover_url: coverUrl || undefined,
+        mission_type: missionType,
+        client_name: clientName.trim() || undefined,
+        reference_video_url: referenceVideoUrl.trim() || undefined,
       };
 
       if (useCustomPayouts) {
@@ -85,13 +102,16 @@ export default function CreateBountyModal({ onClose, onCreate }: CreateBountyMod
       }
 
       await onCreate(params);
-      toast.success('Bounty posted!');
+      toast.success('Mission posted!');
       onClose();
     } catch (err: any) {
-      toast.error(err.message || 'Failed to create bounty');
+      toast.error(err.message || 'Failed to create mission');
     }
     setSubmitting(false);
   };
+
+  const showArtistFields = missionType === 'artist' || missionType === 'standard';
+  const showClientField = missionType === 'brand' || missionType === 'film';
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -103,23 +123,45 @@ export default function CreateBountyModal({ onClose, onCreate }: CreateBountyMod
         
         <div className="sticky top-0 bg-card border-b border-border/50 p-4 flex items-center justify-between z-10">
           <h3 className="text-lg font-bold flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-emerald-400" /> Post a Bounty
+            <DollarSign className="w-5 h-5 text-emerald-400" /> Post a Mission
           </h3>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-xl">×</button>
         </div>
 
-        <div className="p-4 space-y-3">
-          {/* Warning banner */}
-          <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/20 p-3 rounded-lg">
-            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-            <div>
-              <p className="text-[11px] font-bold text-amber-400">Honor System</p>
-              <p className="text-[10px] text-amber-400/70 mt-0.5">
-                Bounties are settled directly between poster and editor. Loopgate takes a 10% platform fee. 
-                Editors can rate bounty posters — build your reputation.
-              </p>
+        <div className="p-4 space-y-4">
+          {/* Mission Type Selector */}
+          <div>
+            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Mission Type *</label>
+            <div className="grid grid-cols-4 gap-2">
+              {MISSION_TYPES.map(t => {
+                const Icon = t.icon;
+                const isSelected = missionType === t.value;
+                return (
+                  <button
+                    key={t.value}
+                    onClick={() => setMissionType(t.value)}
+                    className={`flex flex-col items-center gap-1.5 p-3 border rounded-lg transition-all ${
+                      isSelected ? t.color + ' ring-1 ring-current' : 'border-border/30 bg-surface-1 text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider">{t.label}</span>
+                  </button>
+                );
+              })}
             </div>
+            <p className="text-[10px] text-muted-foreground mt-1.5">{typeConfig.desc}</p>
           </div>
+
+          {/* Client name for brand/film */}
+          {showClientField && (
+            <div>
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">
+                {missionType === 'brand' ? 'Brand Name' : 'Studio / Production'} *
+              </label>
+              <Input value={clientName} onChange={e => setClientName(e.target.value)} placeholder={missionType === 'brand' ? 'e.g. Nike, Red Bull' : 'e.g. A24, Paramount'} />
+            </div>
+          )}
 
           {/* Cover upload */}
           <div>
@@ -135,14 +177,14 @@ export default function CreateBountyModal({ onClose, onCreate }: CreateBountyMod
               <button
                 onClick={() => inputRef.current?.click()}
                 disabled={uploading}
-                className="w-full h-28 border-2 border-dashed border-border/50 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-emerald-500/40 transition-colors"
+                className="w-full h-24 border-2 border-dashed border-border/50 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-emerald-500/40 transition-colors"
               >
                 {uploading ? (
                   <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
                 ) : (
                   <>
                     <ImagePlus className="w-5 h-5 text-muted-foreground" />
-                    <span className="text-[10px] text-muted-foreground">Upload cover (optional)</span>
+                    <span className="text-[10px] text-muted-foreground">Upload cover</span>
                   </>
                 )}
               </button>
@@ -153,12 +195,17 @@ export default function CreateBountyModal({ onClose, onCreate }: CreateBountyMod
           {/* Title */}
           <div>
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Title *</label>
-            <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Need a fire edit for my track" />
+            <Input value={title} onChange={e => setTitle(e.target.value)} placeholder={
+              missionType === 'artist' ? 'e.g. Need a fire edit for my track' :
+              missionType === 'brand' ? 'e.g. Summer campaign promo edit' :
+              missionType === 'film' ? 'e.g. Trailer re-cut for social media' :
+              'e.g. Edit my gaming montage'
+            } />
           </div>
 
           {/* Description */}
           <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Description</label>
+            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Brief / Description</label>
             <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="What vibe are you looking for? Style references, mood, etc." className="min-h-[80px] resize-none" />
           </div>
 
@@ -168,16 +215,24 @@ export default function CreateBountyModal({ onClose, onCreate }: CreateBountyMod
             <Textarea value={requirements} onChange={e => setRequirements(e.target.value)} placeholder="Platform to post on, min duration, specific effects..." className="min-h-[60px] resize-none" />
           </div>
 
-          {/* Artist / Song */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Artist</label>
-              <Input value={artistName} onChange={e => setArtistName(e.target.value)} placeholder="Artist name" />
+          {/* Artist / Song (for artist type) */}
+          {showArtistFields && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Artist</label>
+                <Input value={artistName} onChange={e => setArtistName(e.target.value)} placeholder="Artist name" />
+              </div>
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Song</label>
+                <Input value={songName} onChange={e => setSongName(e.target.value)} placeholder="Song name" />
+              </div>
             </div>
-            <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Song</label>
-              <Input value={songName} onChange={e => setSongName(e.target.value)} placeholder="Song name" />
-            </div>
+          )}
+
+          {/* Reference video URL */}
+          <div>
+            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Reference / Inspo Link</label>
+            <Input value={referenceVideoUrl} onChange={e => setReferenceVideoUrl(e.target.value)} placeholder="YouTube, TikTok, or Instagram URL" />
           </div>
 
           {/* Payout / Slots */}
@@ -252,12 +307,20 @@ export default function CreateBountyModal({ onClose, onCreate }: CreateBountyMod
             <Input type="datetime-local" value={deadline} onChange={e => setDeadline(e.target.value)} />
           </div>
 
+          {/* Honor system note */}
+          <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/20 p-3 rounded-lg">
+            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+            <p className="text-[10px] text-amber-400/70">
+              Missions are honor-system. Loopgate takes a 10% platform fee. Editors can rate mission posters.
+            </p>
+          </div>
+
           <Button
             onClick={handleCreate}
-            disabled={submitting || !title.trim() || payoutCents < 500}
+            disabled={submitting || !title.trim() || payoutCents < 500 || (showClientField && !clientName.trim())}
             className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold"
           >
-            {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Send className="w-4 h-4 mr-2" /> Post Bounty — ${(totalCost / 100).toFixed(2)}</>}
+            {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Send className="w-4 h-4 mr-2" /> Post Mission — ${(totalCost / 100).toFixed(2)}</>}
           </Button>
         </div>
       </motion.div>
