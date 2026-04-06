@@ -21,6 +21,7 @@ interface ProfileData {
   best_gatekeeper_qoi?: number;
   level?: number;
   win_rate?: number;
+  global_rank?: number;
 }
 
 interface PlatformData {
