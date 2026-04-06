@@ -2402,7 +2402,7 @@ export default function OpsPanel() {
         <BattleAdminPanel />
 
         {/* ═══ MISSION ADMIN ═══ */}
-        <div className="mb-6 p-4 bg-surface-0 border border-emerald-500/20 rounded-lg">
+        <div id="mission-admin" className="mb-6 p-4 bg-surface-0 border border-emerald-500/20 rounded-lg scroll-mt-20">
           <MissionAdmin />
         </div>
 
