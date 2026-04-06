@@ -187,11 +187,36 @@ export default function MissionLobbyPage() {
       setMyVotes(map);
     }
   }, [user, id]);
+  // Fetch lobby profiles — unique submitters to this mission
+  const fetchLobbyProfiles = useCallback(async () => {
+    if (!id) return;
+    const { data } = await supabase
+      .from('featured_submissions')
+      .select('user_id, username, avatar_url')
+      .eq('drop_id', id)
+      .not('user_id', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (data) {
+      // Deduplicate by user_id
+      const seen = new Set<string>();
+      const unique: LobbyProfile[] = [];
+      for (const row of data as any[]) {
+        if (row.user_id && !seen.has(row.user_id)) {
+          seen.add(row.user_id);
+          unique.push({ user_id: row.user_id, username: row.username, avatar_url: row.avatar_url });
+        }
+      }
+      setLobbyProfiles(unique);
+    }
+  }, [id]);
 
   useEffect(() => { fetchMission(); }, [fetchMission]);
   useEffect(() => { fetchSubmissions(); }, [fetchSubmissions]);
   useEffect(() => { fetchRatedSubmissions(); }, [fetchRatedSubmissions]);
   useEffect(() => { fetchMyVotes(); }, [fetchMyVotes]);
+  useEffect(() => { fetchLobbyProfiles(); }, [fetchLobbyProfiles]);
 
   const detectPlatform = (u: string) => {
     if (u.includes('tiktok.com') || u.includes('vm.tiktok.com')) return 'tiktok';
