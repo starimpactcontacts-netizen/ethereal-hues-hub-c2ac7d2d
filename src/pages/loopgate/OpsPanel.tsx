@@ -2407,7 +2407,9 @@ export default function OpsPanel() {
         <RadioAdmin />
 
         {/* Edit Analyzer — AI Judge Tool */}
-        <EditAnalyzerAdmin />
+        <div id="edit-analyzer" className="scroll-mt-20">
+          <EditAnalyzerAdmin />
+        </div>
 
         {/* 1v1 Battle Admin */}
         <BattleAdminPanel />
