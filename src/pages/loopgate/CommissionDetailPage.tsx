@@ -386,9 +386,6 @@ export default function CommissionDetailPage() {
 
   const coverUrl = (commission as any).cover_url || commission.thumbnail_url;
 
-  const tierS = getPayoutForRating('S');
-  const tierA = getPayoutForRating('A');
-  const tierB = getPayoutForRating('B');
 
   const ratedSubmissions = submissions.filter(s => s.rating);
   const RANK_ORDER: Record<string, number> = { S: 0, A: 1, B: 2, C: 3, D: 4, F: 5 };
