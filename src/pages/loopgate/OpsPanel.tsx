@@ -443,6 +443,22 @@ export default function OpsPanel() {
   });
   const [broadcasting, setBroadcasting] = useState(false);
 
+  // Fix body scroll lock — Radix Dialog can leave overflow:hidden on body on mobile
+  useEffect(() => {
+    const fixScroll = () => {
+      const hasOpenDialog = document.querySelector('[data-state="open"][role="dialog"]');
+      if (!hasOpenDialog) {
+        document.body.style.overflow = '';
+        document.body.style.pointerEvents = '';
+        document.documentElement.style.overflow = '';
+      }
+    };
+    fixScroll();
+    const observer = new MutationObserver(fixScroll);
+    observer.observe(document.body, { attributes: true, attributeFilter: ['style'] });
+    return () => observer.disconnect();
+  }, []);
+
   // Role check - redirect if no ops access (handled by ProtectedRoute, but double-check)
   useEffect(() => {
     if (!hasOpsAccess && !loading && !(window as any).__LOOPGATE_DEV_AUTH__) {
