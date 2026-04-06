@@ -459,20 +459,36 @@ export default function CommissionDetailPage() {
             </h1>
           </motion.div>
 
-          {/* Payout tier grid — clean glass cards */}
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="flex gap-2">
-            {[
-              { rank: 'S', textColor: 'text-amber-400', borderColor: 'border-amber-500/40', pay: tierS, qoi: '90+' },
-              { rank: 'A', textColor: 'text-emerald-400', borderColor: 'border-emerald-500/40', pay: tierA, qoi: '75+' },
-              { rank: 'B', textColor: 'text-blue-400', borderColor: 'border-blue-500/40', pay: tierB, qoi: '60+' },
-              { rank: 'C-F', textColor: 'text-white/40', borderColor: 'border-white/10', pay: 0, qoi: '<60' },
-            ].map(t => (
-              <div key={t.rank} className={`flex-1 bg-black/50 backdrop-blur-xl border ${t.borderColor} rounded-xl py-2.5 px-2 text-center`}>
-                <p className={`font-black text-lg leading-none ${t.textColor}`}>{t.rank}</p>
-                <p className="text-white font-bold text-sm mt-0.5">{t.pay > 0 ? `$${(t.pay / 100).toFixed(0)}` : 'IDX'}</p>
-                <p className="text-[7px] text-white/30 uppercase tracking-wider mt-0.5">QOI {t.qoi}</p>
-              </div>
-            ))}
+          {/* Payout timeline — S to F */}
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+            className="bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 p-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/40">Payout Scale</span>
+              <button onClick={() => setShowHowItWorks(true)} className="flex items-center gap-1 text-[8px] font-bold text-white/30 hover:text-white/60 transition-colors">
+                <Info className="w-3 h-3" /> What's QOI?
+              </button>
+            </div>
+            <div className="relative flex items-center gap-0">
+              {/* Timeline line */}
+              <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-gradient-to-r from-amber-500/60 via-emerald-500/40 via-blue-500/30 to-red-500/20" />
+              {[
+                { rank: 'S', color: 'text-amber-400', dotColor: 'bg-amber-400', pay: getPayoutForRating('S'), qoi: '90+' },
+                { rank: 'A', color: 'text-emerald-400', dotColor: 'bg-emerald-400', pay: getPayoutForRating('A'), qoi: '75+' },
+                { rank: 'B', color: 'text-blue-400', dotColor: 'bg-blue-400', pay: getPayoutForRating('B'), qoi: '60+' },
+                { rank: 'C', color: 'text-cyan-400', dotColor: 'bg-cyan-400', pay: getPayoutForRating('C'), qoi: '45+' },
+                { rank: 'D', color: 'text-orange-400', dotColor: 'bg-orange-400', pay: getPayoutForRating('D'), qoi: '30+' },
+                { rank: 'F', color: 'text-red-400', dotColor: 'bg-red-400', pay: getPayoutForRating('F'), qoi: '<30' },
+              ].map((t) => (
+                <div key={t.rank} className="flex-1 flex flex-col items-center relative z-10">
+                  <span className={`text-[10px] font-black ${t.color} leading-none`}>{t.rank}</span>
+                  <span className="text-[9px] font-bold text-white mt-0.5">
+                    {t.pay > 0 ? `$${(t.pay / 100).toFixed(0)}` : 'IDX'}
+                  </span>
+                  <div className={`w-2 h-2 rounded-full ${t.dotColor} my-1 shadow-sm`} />
+                  <span className="text-[7px] text-white/25 font-medium">{t.qoi}</span>
+                </div>
+              ))}
+            </div>
           </motion.div>
         </div>
       </div>
