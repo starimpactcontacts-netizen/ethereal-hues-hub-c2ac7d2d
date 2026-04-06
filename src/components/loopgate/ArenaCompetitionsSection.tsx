@@ -97,7 +97,7 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
         <button
           onClick={(e) => { e.stopPropagation(); onJoin(comp.id); }}
           disabled={spotsLeft <= 0}
-          className="w-full py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-500 text-white hover:bg-emerald-400 active:bg-emerald-600 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+          className="w-full py-2.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-emerald-500 text-white hover:bg-emerald-400 active:bg-emerald-600 transition-all disabled:opacity-30 disabled:cursor-not-allowed touch-manipulation"
           style={{ fontFamily: "'Teko', sans-serif" }}
         >
           {spotsLeft <= 0 ? "FULL" : "JOIN"}
