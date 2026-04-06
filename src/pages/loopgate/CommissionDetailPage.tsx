@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import MissionLobbyChat from '@/components/loopgate/MissionLobbyChat';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DollarSign, ArrowLeft, Clock, Users, CheckCircle2, XCircle, Send, ExternalLink, MessageSquare, Loader2, Star, Zap, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { DollarSign, ArrowLeft, Clock, Users, CheckCircle2, Send, ExternalLink, MessageSquare, Loader2, Star, Zap, ShieldCheck, AlertTriangle, Crosshair, ChevronDown } from 'lucide-react';
 import { useCommissionDetail, type SubmissionRating, RATING_PAYOUTS, RATING_COLORS } from '@/hooks/useCommissions';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
@@ -40,6 +40,14 @@ function extractPlatformUsername(url: string, platform: string): string | null {
   return null;
 }
 
+/* ── Tier colors for the payout grid ── */
+const TIER_COLORS: Record<string, string> = {
+  S: 'border-amber-600/60 bg-amber-900/40',
+  A: 'border-emerald-600/60 bg-emerald-900/40',
+  B: 'border-blue-600/60 bg-blue-900/40',
+  'C-F': 'border-border/40 bg-card/60',
+};
+
 /* ── Submit Form ── */
 function SubmitForm({ onSubmit, disabled, userId, previousSubmissions }: { 
   onSubmit: (url: string, platform: string, message: string) => Promise<void>; 
@@ -53,7 +61,6 @@ function SubmitForm({ onSubmit, disabled, userId, previousSubmissions }: {
   const [verified, setVerified] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(false);
 
-  // Verify platform link ownership
   useEffect(() => {
     if (!url.trim() || !userId) { setVerified(null); return; }
     const platform = detectPlatform(url);
@@ -74,7 +81,7 @@ function SubmitForm({ onSubmit, disabled, userId, previousSubmissions }: {
         const match = data.some(p => p.platform_username.toLowerCase() === urlUsername);
         setVerified(match);
       } else {
-        setVerified(null); // No connected platform — can't verify
+        setVerified(null);
       }
       setChecking(false);
     }, 500);
@@ -97,7 +104,7 @@ function SubmitForm({ onSubmit, disabled, userId, previousSubmissions }: {
   };
 
   return (
-    <div className="bg-surface-1 border border-emerald-500/20 p-4 space-y-3">
+    <div className="space-y-3">
       <h3 className="font-display text-sm text-emerald-400 flex items-center gap-2">
         <Send className="w-4 h-4" /> Submit Your Edit
         {previousSubmissions > 0 && (
@@ -108,8 +115,8 @@ function SubmitForm({ onSubmit, disabled, userId, previousSubmissions }: {
         <Input
           value={url}
           onChange={e => setUrl(e.target.value)}
-          placeholder="Paste your edit link (TikTok, YouTube, Instagram)"
-          className="h-10 pr-8"
+          placeholder="Paste your edit link (TikTok, YouTube, IG)"
+          className="h-10 pr-8 bg-black/40 border-border/30"
           disabled={disabled}
         />
         {checking && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground animate-spin" />}
@@ -126,13 +133,13 @@ function SubmitForm({ onSubmit, disabled, userId, previousSubmissions }: {
         value={message}
         onChange={e => setMessage(e.target.value)}
         placeholder="Optional note..."
-        className="min-h-[50px] resize-none bg-background"
+        className="min-h-[50px] resize-none bg-black/40 border-border/30"
         disabled={disabled}
       />
       <Button
         onClick={handleSubmit}
         disabled={submitting || !url.trim() || disabled}
-        className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold"
+        className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg"
       >
         {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Send className="w-4 h-4 mr-2" /> Submit Edit</>}
       </Button>
@@ -194,7 +201,6 @@ function RatingModal({ submission, onRate, onClose, getPayoutForRating }: {
           {submission.message && <p className="text-xs text-muted-foreground mt-2 italic">"{submission.message}"</p>}
         </div>
 
-        {/* Rating grid */}
         <div>
           <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Rating</label>
           <div className="grid grid-cols-6 gap-2">
@@ -253,9 +259,9 @@ function RatingBadge({ rating, earnedCents }: { rating: string; earnedCents: num
 /* ── Submission Card ── */
 function SubmissionCard({ sub, canRate, onRate }: { sub: any; canRate: boolean; onRate: (sub: any) => void }) {
   return (
-    <div className={`bg-surface-1 border rounded-lg p-3 ${
+    <div className={`bg-black/30 border rounded-lg p-3 ${
       sub.status === 'accepted' ? 'border-emerald-500/30' :
-      sub.status === 'declined' ? 'border-red-500/30 opacity-60' : 'border-border/50'
+      sub.status === 'declined' ? 'border-red-500/30 opacity-60' : 'border-border/30'
     }`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -308,6 +314,7 @@ function SubmissionCard({ sub, canRate, onRate }: { sub: any; canRate: boolean; 
 
 export default function CommissionDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { commission, submissions, loading, submitEdit, rateSubmission } = useCommissionDetail(id);
   const { user } = useAuth();
   const { isDev, isAdmin } = useUserRoles(user?.id);
@@ -315,6 +322,7 @@ export default function CommissionDetailPage() {
   const isPoster = !!user && commission?.created_by === user.id;
   const canRate = isStaff || isPoster;
   const [reviewingSubmission, setReviewingSubmission] = useState<any>(null);
+  const [showContent, setShowContent] = useState(false);
 
   if (loading) {
     return <div className="min-h-screen bg-background flex items-center justify-center"><Loader2 className="w-6 h-6 text-emerald-400 animate-spin" /></div>;
@@ -331,202 +339,261 @@ export default function CommissionDetailPage() {
 
   const payoutMap = commission.custom_payouts as Record<string, number> | null;
   const getPayoutForRating = (r: SubmissionRating) => payoutMap ? (payoutMap[r] ?? RATING_PAYOUTS[r]) : RATING_PAYOUTS[r];
-  const payout = (commission.payout_cents / 100).toFixed(0);
+  const maxPayout = (commission.payout_cents / 100).toFixed(1);
   const slotsLeft = commission.max_slots - commission.accepted_count;
   const isOpen = commission.status === 'open' && slotsLeft > 0 && (!commission.deadline || new Date(commission.deadline) > new Date());
   
-  // Allow unlimited submissions — just need to be logged in and mission open
   const mySubmissions = submissions.filter(s => s.user_id === user?.id);
   const canSubmit = isOpen && !!user && !isPoster;
   const totalPaidOut = submissions.reduce((acc, s) => acc + (s.earned_cents || 0), 0);
 
-  return (
-    <div className="min-h-screen bg-background pb-20">
-      {/* Header */}
-      <div className="bg-gradient-to-b from-emerald-950/40 to-background border-b border-emerald-500/10 px-4 pt-4 pb-5">
-        <Link to="/index" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-4">
-          <ArrowLeft className="w-3.5 h-3.5" /> Back to Arena
-        </Link>
+  const missionType = (commission as any).mission_type || 'standard';
+  const coverUrl = (commission as any).cover_url || commission.thumbnail_url;
+  const deadlineLabel = commission.deadline ? formatDistanceToNow(new Date(commission.deadline), { addSuffix: true }) : null;
 
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <span className={`text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 ${
-                isOpen ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-muted/50 text-muted-foreground'
-              }`}>
-                {isOpen ? 'Open' : commission.status === 'filled' ? 'Filled' : 'Closed'}
-              </span>
-              {isPoster && (
-                <span className="text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                  Your Mission
+  // Build payout tiers for the grid
+  const tierS = getPayoutForRating('S');
+  const tierA = getPayoutForRating('A');
+  const tierB = getPayoutForRating('B');
+
+  return (
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* ═══════════════════════════════════════════════════ */}
+      {/* HERO — Full-bleed cinematic poster                  */}
+      {/* ═══════════════════════════════════════════════════ */}
+      <div className="relative w-full" style={{ minHeight: showContent ? '320px' : 'calc(100vh - 60px)' }}>
+        {/* Cover image */}
+        {coverUrl ? (
+          <img src={coverUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-zinc-800 to-black" />
+        )}
+        {/* Deep gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent" />
+
+        {/* Back button */}
+        <button onClick={() => navigate('/index')}
+          className="absolute top-4 left-4 z-20 w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center border border-white/10">
+          <ArrowLeft className="w-4 h-4 text-white" />
+        </button>
+
+        {/* Content overlay */}
+        <div className="relative z-10 flex flex-col justify-end h-full px-4 pb-4 pt-16" style={{ minHeight: 'inherit' }}>
+          {/* Top badges row */}
+          <div className="flex items-start justify-between mb-auto pt-2">
+            <div className="flex items-center gap-0">
+              {/* Green left bar accent */}
+              <div className="w-1 h-7 bg-emerald-500 rounded-sm" />
+              <div className="bg-black/70 backdrop-blur-sm px-3 py-1.5 flex items-center gap-2">
+                {isOpen && <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />}
+                <span className="text-[11px] font-bold uppercase tracking-wider text-white">
+                  {isOpen ? 'Live' : commission.status === 'filled' ? 'Filled' : 'Closed'}
                 </span>
-              )}
+                <span className="text-[11px] font-black uppercase tracking-wider text-destructive">MISSION</span>
+              </div>
             </div>
-            <h1 className="font-display text-2xl text-foreground leading-tight">{commission.title}</h1>
-            {commission.artist_name && (
-              <p className="text-sm text-muted-foreground mt-1">
-                {commission.artist_name}{commission.song_name ? ` · ${commission.song_name}` : ''}
-              </p>
+            {deadlineLabel && (
+              <div className="bg-destructive px-2.5 py-1 flex items-center gap-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-white">
+                  {commission.deadline ? `${Math.max(0, Math.ceil((new Date(commission.deadline).getTime() - Date.now()) / (1000 * 60 * 60)))}H` : ''} PAY
+                </span>
+              </div>
             )}
           </div>
-          <div className="shrink-0 text-right">
-            <div className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-2">
-              <DollarSign className="w-5 h-5 text-emerald-400" />
-              <span className="font-display text-2xl text-emerald-400">{payout}</span>
-            </div>
-          </div>
-        </div>
 
-        <div className="flex items-center gap-4 mt-3 flex-wrap">
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Users className="w-3.5 h-3.5" />
-            <span>{slotsLeft > 0 ? `${slotsLeft}/${commission.max_slots} slots` : 'All slots filled'}</span>
+          {/* Payout amount */}
+          <div className="mb-auto" />
+          <div className="bg-black/60 backdrop-blur-sm inline-flex items-center self-start px-2.5 py-1 mb-3">
+            <span className="font-display text-4xl font-black text-emerald-400">${maxPayout}</span>
           </div>
-          {commission.deadline && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Clock className="w-3.5 h-3.5" />
-              <span>{formatDistanceToNow(new Date(commission.deadline), { addSuffix: true })}</span>
-            </div>
-          )}
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <MessageSquare className="w-3.5 h-3.5" />
-            <span>{submissions.length} edit{submissions.length !== 1 ? 's' : ''}</span>
+
+          {/* Artist / Song */}
+          <div className="mb-3">
+            {commission.artist_name && (
+              <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-white/60 mb-0.5">
+                {commission.artist_name}
+              </p>
+            )}
+            <h1 className="font-display text-3xl font-black uppercase text-white leading-none">
+              {commission.song_name || commission.title}
+            </h1>
           </div>
-          {totalPaidOut > 0 && (
-            <div className="flex items-center gap-1 text-xs text-emerald-400">
-              <DollarSign className="w-3.5 h-3.5" />
-              <span>${(totalPaidOut / 100).toFixed(0)} paid</span>
+
+          {/* Payout tier grid */}
+          <div className="flex gap-1.5 mb-2">
+            <div className={`flex-1 border rounded py-2 px-2 text-center ${TIER_COLORS.S}`}>
+              <p className="font-black text-amber-400 text-base">S</p>
+              <p className="text-white font-bold text-sm">${(tierS / 100).toFixed(1)}</p>
+              <p className="text-[8px] text-white/50 uppercase tracking-wider">QOI 90+</p>
             </div>
-          )}
+            <div className={`flex-1 border rounded py-2 px-2 text-center ${TIER_COLORS.A}`}>
+              <p className="font-black text-emerald-400 text-base">A</p>
+              <p className="text-white font-bold text-sm">${(tierA / 100).toFixed(1)}</p>
+              <p className="text-[8px] text-white/50 uppercase tracking-wider">QOI 75+</p>
+            </div>
+            <div className={`flex-1 border rounded py-2 px-2 text-center ${TIER_COLORS.B}`}>
+              <p className="font-black text-blue-400 text-base">B</p>
+              <p className="text-white font-bold text-sm">${(tierB / 100).toFixed(1)}</p>
+              <p className="text-[8px] text-white/50 uppercase tracking-wider">QOI 60+</p>
+            </div>
+            <div className={`flex-1 border rounded py-2 px-2 text-center ${TIER_COLORS['C-F']}`}>
+              <p className="font-black text-muted-foreground text-base">C-F</p>
+              <p className="text-muted-foreground font-bold text-sm">IDX</p>
+              <p className="text-[8px] text-white/30 uppercase tracking-wider">QOI &lt;60</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="px-4 mt-4 space-y-4">
-        {/* Payout tiers */}
-        <div className="bg-surface-1/60 border border-amber-500/10 p-3 rounded-lg">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-amber-400 mb-2">
-            ⚡ Instant Payout Tiers {payoutMap ? '(Custom)' : ''}
-          </p>
-          <div className="flex gap-2 flex-wrap">
-            {RATINGS.map(r => {
-              const p = getPayoutForRating(r);
-              return (
-                <div key={r} className={`px-2 py-1 rounded border text-[10px] font-bold ${RATING_COLORS[r]}`}>
-                  {r}{p > 0 ? ` = $${p / 100}` : ' = IDX'}
-                </div>
-              );
-            })}
+      {/* ═══════════════════════════════════════════════════ */}
+      {/* ENTER MISSION CTA                                   */}
+      {/* ═══════════════════════════════════════════════════ */}
+      {!showContent ? (
+        <motion.button
+          whileTap={{ scale: 0.97 }}
+          onClick={() => setShowContent(true)}
+          className="w-full bg-destructive py-4 flex items-center justify-center gap-3 active:brightness-90"
+        >
+          <Crosshair className="w-6 h-6 text-white/80" />
+          <span className="font-display text-2xl font-black uppercase tracking-wider text-white">
+            ENTER <span className="text-white">MISSION</span>
+          </span>
+        </motion.button>
+      ) : (
+        <div className="px-4 pb-20 space-y-4 mt-4">
+          {/* Mission info bar */}
+          <div className="flex items-center gap-4 flex-wrap text-xs text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <Users className="w-3.5 h-3.5" />
+              <span>{slotsLeft > 0 ? `${slotsLeft}/${commission.max_slots} slots` : 'All slots filled'}</span>
+            </div>
+            {deadlineLabel && (
+              <div className="flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5" />
+                <span>{deadlineLabel}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-1">
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>{submissions.length} edit{submissions.length !== 1 ? 's' : ''}</span>
+            </div>
+            {totalPaidOut > 0 && (
+              <div className="flex items-center gap-1 text-emerald-400">
+                <DollarSign className="w-3.5 h-3.5" />
+                <span>${(totalPaidOut / 100).toFixed(0)} paid</span>
+              </div>
+            )}
           </div>
-          <p className="text-[9px] text-muted-foreground mt-2">Editors get paid instantly when rated. Performance-based.</p>
-        </div>
 
-        {/* Description */}
-        {commission.description && (
-          <div className="bg-surface-1/60 border border-border/30 p-4 rounded-lg">
-            <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">{commission.description}</p>
-          </div>
-        )}
+          {/* Description */}
+          {commission.description && (
+            <div className="bg-black/30 border border-border/20 p-4 rounded-lg">
+              <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">{commission.description}</p>
+            </div>
+          )}
 
-        {/* Previous submissions by this user */}
-        {mySubmissions.length > 0 && (
-          <div>
-            <h3 className="font-display text-sm text-foreground mb-2 flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Your Submissions ({mySubmissions.length})
-            </h3>
-            <div className="space-y-2 mb-4">
-              {mySubmissions.map(sub => (
-                <div key={sub.id} className={`border p-3 rounded-lg flex items-center gap-3 ${
-                  sub.rating ? 'bg-emerald-950/20 border-emerald-500/20' :
-                  sub.status === 'declined' ? 'bg-red-950/20 border-red-500/30' :
-                  'bg-surface-1 border-border/50'
-                }`}>
-                  <div className="flex-1 min-w-0">
-                    <button onClick={() => window.open(sub.submission_url, '_blank', 'noopener,noreferrer')}
-                      className="text-xs text-emerald-400 hover:underline flex items-center gap-1">
-                      <ExternalLink className="w-3 h-3" /> {sub.platform || 'View'}
-                    </button>
-                    {sub.earned_cents > 0 && (
-                      <p className="text-[10px] text-emerald-400 font-bold mt-0.5">+${(sub.earned_cents / 100).toFixed(0)} earned</p>
+          {/* My previous submissions */}
+          {mySubmissions.length > 0 && (
+            <div>
+              <h3 className="font-display text-sm text-foreground mb-2 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Your Submissions ({mySubmissions.length})
+              </h3>
+              <div className="space-y-2 mb-4">
+                {mySubmissions.map(sub => (
+                  <div key={sub.id} className={`border p-3 rounded-lg flex items-center gap-3 ${
+                    sub.rating ? 'bg-emerald-950/20 border-emerald-500/20' :
+                    sub.status === 'declined' ? 'bg-red-950/20 border-red-500/30' :
+                    'bg-black/30 border-border/30'
+                  }`}>
+                    <div className="flex-1 min-w-0">
+                      <button onClick={() => window.open(sub.submission_url, '_blank', 'noopener,noreferrer')}
+                        className="text-xs text-emerald-400 hover:underline flex items-center gap-1">
+                        <ExternalLink className="w-3 h-3" /> {sub.platform || 'View'}
+                      </button>
+                      {sub.earned_cents > 0 && (
+                        <p className="text-[10px] text-emerald-400 font-bold mt-0.5">+${(sub.earned_cents / 100).toFixed(0)} earned</p>
+                      )}
+                      {sub.feedback && <p className="text-[10px] text-muted-foreground mt-1 italic">"{sub.feedback}"</p>}
+                    </div>
+                    {sub.rating ? (
+                      <RatingBadge rating={sub.rating} earnedCents={sub.earned_cents} />
+                    ) : (
+                      <span className="text-[9px] text-amber-400 font-bold">Pending</span>
                     )}
-                    {sub.feedback && <p className="text-[10px] text-muted-foreground mt-1 italic">"{sub.feedback}"</p>}
                   </div>
-                  {sub.rating ? (
-                    <RatingBadge rating={sub.rating} earnedCents={sub.earned_cents} />
-                  ) : (
-                    <span className="text-[9px] text-amber-400 font-bold">Pending</span>
-                  )}
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Submit Form — unlimited submissions */}
-        {canSubmit && (
-          <SubmitForm
-            onSubmit={async (url, platform, message) => {
-              await submitEdit({ submission_url: url, platform, message: message || undefined });
-            }}
-            disabled={false}
-            userId={user?.id}
-            previousSubmissions={mySubmissions.length}
-          />
-        )}
+          {/* Submit Form */}
+          {canSubmit && (
+            <SubmitForm
+              onSubmit={async (url, platform, message) => {
+                await submitEdit({ submission_url: url, platform, message: message || undefined });
+              }}
+              disabled={false}
+              userId={user?.id}
+              previousSubmissions={mySubmissions.length}
+            />
+          )}
 
-        {!user && isOpen && (
-          <div className="bg-surface-1 border border-border/30 p-4 rounded-lg text-center">
-            <p className="text-sm text-muted-foreground">Sign in to submit your edit</p>
-          </div>
-        )}
-
-        {/* All submissions — visible to poster and staff */}
-        {canRate && submissions.length > 0 && (
-          <div>
-            <h3 className="font-display text-sm text-foreground mb-3 flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-emerald-400" />
-              All Submissions ({submissions.length})
-              <span className="text-[9px] text-muted-foreground ml-auto font-mono">
-                {submissions.filter(s => s.status === 'pending').length} pending
-              </span>
-            </h3>
-            <div className="space-y-2">
-              {submissions.map(sub => (
-                <SubmissionCard key={sub.id} sub={sub} canRate={canRate} onRate={setReviewingSubmission} />
-              ))}
+          {!user && isOpen && (
+            <div className="bg-black/30 border border-border/20 p-4 rounded-lg text-center">
+              <p className="text-sm text-muted-foreground">Sign in to submit your edit</p>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Non-poster/staff: show rated submissions only */}
-        {!canRate && submissions.filter(s => s.rating).length > 0 && (
-          <div>
-            <h3 className="font-display text-sm text-foreground mb-3 flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Rated Edits
-            </h3>
-            <div className="space-y-2">
-              {submissions.filter(s => s.rating).map(sub => (
-                <div key={sub.id} className="bg-emerald-950/20 border border-emerald-500/20 rounded-lg p-3 flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden">
-                    {sub.avatar_url ? <img src={sub.avatar_url} alt="" className="w-full h-full object-cover" /> :
-                      <span className="text-xs font-bold">{sub.username?.charAt(0).toUpperCase()}</span>}
+          {/* All submissions — visible to poster and staff */}
+          {canRate && submissions.length > 0 && (
+            <div>
+              <h3 className="font-display text-sm text-foreground mb-3 flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-emerald-400" />
+                All Submissions ({submissions.length})
+                <span className="text-[9px] text-muted-foreground ml-auto font-mono">
+                  {submissions.filter(s => s.status === 'pending').length} pending
+                </span>
+              </h3>
+              <div className="space-y-2">
+                {submissions.map(sub => (
+                  <SubmissionCard key={sub.id} sub={sub} canRate={canRate} onRate={setReviewingSubmission} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Non-poster/staff: show rated submissions only */}
+          {!canRate && submissions.filter(s => s.rating).length > 0 && (
+            <div>
+              <h3 className="font-display text-sm text-foreground mb-3 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Rated Edits
+              </h3>
+              <div className="space-y-2">
+                {submissions.filter(s => s.rating).map(sub => (
+                  <div key={sub.id} className="bg-emerald-950/20 border border-emerald-500/20 rounded-lg p-3 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+                      {sub.avatar_url ? <img src={sub.avatar_url} alt="" className="w-full h-full object-cover" /> :
+                        <span className="text-xs font-bold">{sub.username?.charAt(0).toUpperCase()}</span>}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm font-semibold text-foreground">@{sub.username}</span>
+                      <button onClick={() => window.open(sub.submission_url, '_blank', 'noopener,noreferrer')}
+                        className="text-[10px] text-emerald-400 hover:underline flex items-center gap-1">
+                        <ExternalLink className="w-2.5 h-2.5" /> Watch Edit
+                      </button>
+                    </div>
+                    <RatingBadge rating={sub.rating!} earnedCents={sub.earned_cents} />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <span className="text-sm font-semibold text-foreground">@{sub.username}</span>
-                    <button onClick={() => window.open(sub.submission_url, '_blank', 'noopener,noreferrer')}
-                      className="text-[10px] text-emerald-400 hover:underline flex items-center gap-1">
-                      <ExternalLink className="w-2.5 h-2.5" /> Watch Edit
-                    </button>
-                  </div>
-                  <RatingBadge rating={sub.rating!} earnedCents={sub.earned_cents} />
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* ═══ MISSION CHAT ═══ */}
-        <MissionLobbyChat missionId={id!} />
-      </div>
+          {/* Mission Chat */}
+          <MissionLobbyChat missionId={id!} />
+        </div>
+      )}
 
       {/* Rating Modal */}
       <AnimatePresence>
