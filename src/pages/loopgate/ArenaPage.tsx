@@ -1146,9 +1146,7 @@ export default function ArenaPage() {
           {/* ArenaMissionsCarousel removed — missions already shown in ArenaMissionsSection above */}
 
           {/* ═══ LIVE PAYOUTS CAROUSEL ═══ */}
-          <div className="-mx-4">
-            <LivePayoutsCarousel />
-          </div>
+          <LivePayoutsCarousel />
 
           {/* Marketplace removed */}
 
