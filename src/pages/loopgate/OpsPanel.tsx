@@ -2319,6 +2319,14 @@ export default function OpsPanel() {
               {inviteAnalytics.total_invites} invites • {inviteAnalytics.conversion_rate}% conv
             </span>
           </div>
+          {/* Missions — Primary CTA */}
+          <button 
+            onClick={() => document.getElementById('mission-admin')?.scrollIntoView({ behavior: 'smooth' })}
+            className="w-full flex items-center justify-center gap-2 bg-emerald-500 text-black font-bold py-4 rounded-lg text-base mb-2 hover:bg-emerald-400 transition-colors"
+          >
+            <DollarSign size={20} />
+            Missions — Create & Manage
+          </button>
           <div className="grid grid-cols-4 gap-2">
             <button 
               onClick={() => setShowCreateEvent(true)}
