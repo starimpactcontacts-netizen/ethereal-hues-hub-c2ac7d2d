@@ -188,20 +188,13 @@ export default function ArenaCompetitionsSection({ onCreateClick }: { onCreateCl
 
   return (
     <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <div className="flex items-center justify-between px-4 mb-3">
+      <div className="flex items-center px-4 mb-3">
         <div className="flex items-center gap-2">
           <Trophy className="w-4 h-4 text-gold" />
           <span className="text-[15px] font-extrabold text-foreground tracking-tight" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
             Competitions
           </span>
         </div>
-        <button
-          onClick={onCreateClick}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all hover:brightness-110"
-          style={{ background: "linear-gradient(135deg, #D4AF37, #B8860B)", color: "#000", boxShadow: "0 2px 10px rgba(212,175,55,0.25)" }}
-        >
-          <Plus className="w-3 h-3" /> Create
-        </button>
       </div>
 
       {loading ? (
@@ -210,21 +203,41 @@ export default function ArenaCompetitionsSection({ onCreateClick }: { onCreateCl
             <div key={i} className="w-[280px] h-[300px] shrink-0 bg-surface-1 animate-pulse rounded-xl" />
           ))}
         </div>
-      ) : comps.length > 0 ? (
+      ) : (
         <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide pb-2">
           {comps.map(comp => <CompetitionCard key={comp.id} comp={comp} onJoin={handleJoin} />)}
-        </div>
-      ) : (
-        <div className="px-4">
-          <div className="bg-surface-1 border border-white/[0.06] border-dashed p-8 text-center rounded-xl">
-            <div className="w-12 h-12 bg-white/[0.04] border border-white/[0.08] flex items-center justify-center mx-auto mb-3 rounded-xl">
-              <Trophy className="w-6 h-6 text-white/[0.15]" />
-            </div>
-            <p className="text-[13px] text-muted-foreground font-medium mb-1">No competitions yet</p>
-            <p className="text-[11px] text-muted-foreground/50 mb-4">Be the first to launch one</p>
-            <button onClick={onCreateClick} className="px-5 py-2.5 rounded-xl text-[12px] font-bold bg-white text-black hover:bg-white/90 transition-colors">
-              <Plus className="w-3.5 h-3.5 mr-1.5 inline" /> Create Competition
-            </button>
+
+          {/* Create Your Own — poster card */}
+          <div className="shrink-0 w-[280px]">
+            <motion.div
+              whileTap={{ scale: 0.97 }}
+              onClick={onCreateClick}
+              className="relative w-full bg-surface-1 border border-dashed border-white/[0.1] overflow-hidden rounded-xl cursor-pointer hover:border-gold/30 transition-colors"
+              style={{ boxShadow: "0 2px 20px rgba(0,0,0,0.2)" }}
+            >
+              {/* Visual area */}
+              <div className="relative h-32 bg-gradient-to-br from-gold/[0.08] via-surface-2 to-black flex items-center justify-center">
+                <div className="w-14 h-14 rounded-2xl bg-gold/10 border border-gold/20 flex items-center justify-center">
+                  <Plus className="w-7 h-7 text-gold" />
+                </div>
+              </div>
+
+              <div className="p-3.5 space-y-2.5">
+                <h3 className="text-[14px] font-bold text-foreground tracking-tight" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
+                  Create Your Competition
+                </h3>
+                <p className="text-[10px] text-muted-foreground leading-relaxed">
+                  Set your theme, invite editors, and crown a winner.
+                </p>
+
+                <button
+                  className="w-full py-3 rounded-xl uppercase tracking-[0.15em] flex items-center justify-center gap-2 text-[13px] font-extrabold transition-all hover:brightness-110"
+                  style={{ fontFamily: "'Teko', sans-serif", background: "linear-gradient(135deg, #D4AF37, #B8860B)", color: "#000", boxShadow: "0 4px 20px rgba(212,175,55,0.25)" }}
+                >
+                  <Plus className="w-3.5 h-3.5" /> CREATE
+                </button>
+              </div>
+            </motion.div>
           </div>
         </div>
       )}
