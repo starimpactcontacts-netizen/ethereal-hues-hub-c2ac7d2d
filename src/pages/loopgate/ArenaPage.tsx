@@ -311,7 +311,7 @@ function ArenaMissionsSection() {
               key={b.id}
               whileTap={{ scale: 0.96 }}
               whileHover={{ y: -4 }}
-              onClick={() => navigate(`/mission/${b.id}`)}
+              onClick={() => navigate(`/commissions/${b.id}`)}
               className="shrink-0 relative w-[220px] h-[300px] overflow-hidden group text-left touch-manipulation snap-start"
               style={{ boxShadow: `0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03)` }}
             >
