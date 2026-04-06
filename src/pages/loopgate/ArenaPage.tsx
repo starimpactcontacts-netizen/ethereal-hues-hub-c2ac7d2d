@@ -137,6 +137,13 @@ function ArenaMissionsSection() {
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/20" />
               <div className="absolute inset-0 border border-white/[0.06] rounded-lg" />
 
+              {/* Center play button */}
+              <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+                <div className="w-12 h-12 rounded-full bg-black/50 backdrop-blur-sm border border-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity">
+                  <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
+                </div>
+              </div>
+
               {/* Type badge */}
               <div className="absolute top-2 left-2 z-10">
                 <div className={`flex items-center gap-1 ${ta.badge} backdrop-blur-md px-2 py-0.5 border ${ta.border} rounded-sm`}>
