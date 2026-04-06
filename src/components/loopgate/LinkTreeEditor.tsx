@@ -44,6 +44,7 @@ export default function LinkTreeEditor() {
 
   const [mode, setMode] = useState<'overview' | 'edit' | 'preview' | 'style'>('overview');
   const [adding, setAdding] = useState(false);
+  const [expandedLink, setExpandedLink] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");
   const [newUrl, setNewUrl] = useState("");
   const [newType, setNewType] = useState<"link" | "embed">("link");
