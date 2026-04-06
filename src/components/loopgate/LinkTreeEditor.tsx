@@ -280,11 +280,49 @@ export default function LinkTreeEditor() {
               );
             })}
           </div>
+          <div className="mt-2">
+            <label className="text-[9px] text-muted-foreground mb-1 block uppercase tracking-wider font-medium">Custom Color</label>
+            <div className="flex gap-2 items-center">
+              <input
+                type="color"
+                defaultValue={settings.bg_color || "#0a0a0a"}
+                onChange={e => saveSettings({ bg_type: "solid", bg_color: e.target.value, bg_gradient_from: null, bg_gradient_to: null })}
+                className="w-8 h-8 rounded-lg cursor-pointer border border-border/30 bg-transparent"
+              />
+              <span className="text-[9px] text-muted-foreground">Pick any color</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label className="text-[9px] text-muted-foreground mb-1.5 block uppercase tracking-wider font-medium">Custom Avatar URL</label>
+          <input
+            placeholder="https://... (leave empty for profile avatar)"
+            defaultValue={settings.custom_avatar_url || ""}
+            onBlur={e => saveSettings({ custom_avatar_url: e.target.value || null })}
+            className="w-full h-8 px-3 text-[11px] bg-background border border-border/30 rounded-lg focus:outline-none focus:border-border/60 text-foreground placeholder:text-muted-foreground/40"
+          />
+        </div>
+
+        <div>
+          <label className="text-[9px] text-muted-foreground mb-1.5 block uppercase tracking-wider font-medium">Background Image URL</label>
+          <input
+            placeholder="https://... (overrides color/gradient)"
+            defaultValue={settings.bg_image_url || ""}
+            onBlur={e => {
+              if (e.target.value) {
+                saveSettings({ bg_type: "image", bg_image_url: e.target.value });
+              } else {
+                saveSettings({ bg_image_url: null });
+              }
+            }}
+            className="w-full h-8 px-3 text-[11px] bg-background border border-border/30 rounded-lg focus:outline-none focus:border-border/60 text-foreground placeholder:text-muted-foreground/40"
+          />
         </div>
 
         <div>
           <label className="text-[9px] text-muted-foreground mb-1.5 block uppercase tracking-wider font-medium">Accent Color</label>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap items-center">
             {ACCENT_COLORS.map(color => (
               <button
                 key={color}
@@ -293,6 +331,29 @@ export default function LinkTreeEditor() {
                 style={{ backgroundColor: color, boxShadow: settings.accent_color === color ? `0 0 12px ${color}40` : undefined }}
               />
             ))}
+            <input
+              type="color"
+              defaultValue={settings.accent_color || "#d4af37"}
+              onChange={e => saveSettings({ accent_color: e.target.value })}
+              className="w-6 h-6 rounded-full cursor-pointer border border-border/30 bg-transparent"
+              title="Custom accent"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="text-[9px] text-muted-foreground mb-1.5 block uppercase tracking-wider font-medium">Text Color</label>
+          <div className="flex gap-2 items-center">
+            {["#ffffff", "#000000", "#f5f5f5", "#1a1a1a", "#d4af37"].map(c => (
+              <button key={c} onClick={() => saveSettings({ text_color: c })} className={`w-6 h-6 rounded-full border transition-all ${settings.text_color === c ? "ring-2 ring-foreground/40 ring-offset-2 ring-offset-background scale-110" : "border-border/30 hover:scale-105"}`} style={{ backgroundColor: c }} />
+            ))}
+            <input
+              type="color"
+              defaultValue={settings.text_color || "#ffffff"}
+              onChange={e => saveSettings({ text_color: e.target.value })}
+              className="w-6 h-6 rounded-full cursor-pointer border border-border/30 bg-transparent"
+              title="Custom text color"
+            />
           </div>
         </div>
 
