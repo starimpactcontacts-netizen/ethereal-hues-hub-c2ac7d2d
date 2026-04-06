@@ -180,25 +180,21 @@ function ArenaMissionsSection() {
 
                 {/* Compact tier row */}
                 {(sRate > 0 || aRate > 0 || bRate > 0) && (
-                  <div className="flex items-stretch gap-[1px] mb-1.5">
+                  <div className="flex items-stretch gap-1 mb-2">
                     {[
-                      { rank: 'S', color: 'text-amber-400 bg-amber-500/20 border-amber-500/30', pay: sRate },
-                      { rank: 'A', color: 'text-emerald-400 bg-emerald-500/15 border-emerald-500/25', pay: aRate },
-                      { rank: 'B', color: 'text-blue-400 bg-blue-500/15 border-blue-500/25', pay: bRate },
+                      { rank: 'S', border: 'border-amber-500/50', text: 'text-amber-400', pay: sRate },
+                      { rank: 'A', border: 'border-emerald-500/50', text: 'text-emerald-400', pay: aRate },
+                      { rank: 'B', border: 'border-blue-500/50', text: 'text-blue-400', pay: bRate },
                     ].map(tier => (
-                      <div key={tier.rank} className={`flex-1 border ${tier.color} py-1 flex flex-col items-center`}>
-                        <span className="text-[9px] font-black leading-none">{tier.rank}</span>
-                        <span className={`text-[7px] font-bold leading-none ${tier.pay > 0 ? 'text-white/80' : 'text-white/10'}`}>
+                      <div key={tier.rank} className={`flex-1 border ${tier.border} bg-black/60 backdrop-blur-sm rounded-sm py-1.5 flex flex-col items-center gap-0.5`}>
+                        <span className={`text-[11px] font-black leading-none ${tier.text}`}>{tier.rank}</span>
+                        <span className="text-[10px] font-bold text-white leading-none">
                           {tier.pay > 0 ? `$${tier.pay}` : '—'}
                         </span>
                       </div>
                     ))}
                   </div>
                 )}
-
-                <div className="flex items-center justify-between mb-2">
-                  <span className="flex items-center gap-0.5 text-[8px] text-white/30"><Users className="w-2.5 h-2.5" /> {slotsLeft}/{b.max_slots}</span>
-                </div>
                 <div
                   className="w-full py-2.5 rounded-md bg-emerald-500 text-white text-center text-[12px] font-bold uppercase tracking-wider touch-manipulation"
                   style={{ fontFamily: 'Teko, sans-serif' }}
