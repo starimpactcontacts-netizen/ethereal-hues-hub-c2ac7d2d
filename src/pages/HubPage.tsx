@@ -231,7 +231,7 @@ export default function HubPage() {
           song_name: d.title,
           poster_url: d.cover_url,
           artist_name: d.artist_name || d.client_name || null,
-          max_pay: Math.max((payouts.S || 0) / 100, (payouts.A || 0) / 100, (payouts.B || 0) / 100),
+          max_pay: d.payout_cents / 100,
         };
       }));
     };
