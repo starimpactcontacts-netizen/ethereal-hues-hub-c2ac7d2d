@@ -895,7 +895,30 @@ export default function ArenaPage() {
                 </motion.div>
               )}
 
-              {/* Active Solo Session */}
+              {/* ⚖️ Judging Assignments */}
+              {myJudgingBattles.length > 0 && (
+                <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
+                  <div className="space-y-1.5">
+                    {myJudgingBattles.map(battle => (
+                      <Link key={battle.id} to={`/battle/${battle.id}`}
+                        className="flex items-center gap-3 bg-surface-1 border border-purple-500/30 hover:border-purple-500/50 p-3 transition-all">
+                        <div className="w-9 h-9 rounded-full bg-purple-500/15 flex items-center justify-center shrink-0">
+                          <Award className="w-4.5 h-4.5 text-purple-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400">
+                            ⚖️ JUDGING · {battle.status.toUpperCase()}
+                          </span>
+                          <p className="text-xs text-foreground truncate">{battle.challenger_username} vs {battle.opponent_username || '???'}</p>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                      </Link>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+
               {activeSolo && (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
                   <div className="bg-surface-1 border border-gold/30 p-4">
