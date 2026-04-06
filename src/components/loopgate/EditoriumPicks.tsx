@@ -128,7 +128,7 @@ export default function EditoriumPicks({ limit = 10 }: { limit?: number }) {
   if (edits.length === 0) return null;
 
   return (
-    <div className="flex gap-2.5 px-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-1">
+    <div className="flex gap-2.5 pl-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-1">
       {edits.map((edit) => (
         <PickCard key={edit.id} edit={edit} />
       ))}

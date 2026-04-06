@@ -577,7 +577,7 @@ export default function DiscoverEditsCarousel() {
 
         <div
           ref={scrollRef}
-          className="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-4 pb-2"
+          className="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory pl-4 pb-2"
         >
           {entries.map((entry, i) => (
             <motion.div
