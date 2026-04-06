@@ -58,7 +58,7 @@ export default function FeaturedDropCard({ drop }: Props) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
         className={cn(
-          "relative w-[240px] sm:w-[260px] shrink-0 snap-start overflow-hidden group",
+          "relative w-[200px] sm:w-[200px] shrink-0 snap-start overflow-hidden group",
           "bg-black border-2 border-emerald-500/60",
           "shadow-[0_0_30px_rgba(16,185,129,0.2),0_0_60px_rgba(16,185,129,0.08)]",
           "hover:shadow-[0_0_40px_rgba(16,185,129,0.35),0_0_80px_rgba(16,185,129,0.12)]",
