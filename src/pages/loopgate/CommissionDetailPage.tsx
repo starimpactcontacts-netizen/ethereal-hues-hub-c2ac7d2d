@@ -232,7 +232,7 @@ function RatingModal({ submission, onRate, onClose, getPayoutForRating }: {
                 <motion.button key={r} whileTap={{ scale: 0.92 }} onClick={() => setSelectedRating(r)}
                   className={`flex flex-col items-center py-3 rounded-xl border-2 transition-all ${isSelected ? RATING_COLORS[r] + ' ring-2 ring-offset-1 ring-offset-background' : 'border-border/30 bg-surface-1 hover:border-border/60'}`}>
                   <span className={`text-xl font-black ${isSelected ? '' : 'text-foreground'}`}>{r}</span>
-                  {payout > 0 ? <span className="text-[9px] font-bold text-emerald-400 mt-0.5">${(payout / 100 % 1 === 0) ? (payout / 100).toFixed(0) : (payout / 100).toFixed(2)}</span> : r === 'F' ? <span className="text-[9px] font-bold text-purple-400 mt-0.5">50 XP</span> : <span className="text-[9px] text-muted-foreground mt-0.5">IDX</span>}
+                  {payout > 0 ? <span className="text-[9px] font-bold text-emerald-400 mt-0.5">${(payout / 100 % 1 === 0) ? (payout / 100).toFixed(0) : (payout / 100).toFixed(2)}</span> : r === 'F' ? <span className="text-[8px] font-bold text-amber-400 mt-0.5">🎰 $50</span> : <span className="text-[9px] text-muted-foreground mt-0.5">IDX</span>}
                 </motion.button>
               );
             })}
@@ -479,8 +479,8 @@ export default function CommissionDetailPage() {
               ].map((t) => (
                 <div key={t.rank} className="flex-1 flex flex-col items-center relative z-10">
                   <span className={`text-[10px] font-black ${t.color} leading-none`}>{t.rank}</span>
-                  <span className={`text-[9px] font-bold mt-0.5 ${t.rank === 'F' ? 'text-purple-400' : 'text-white'}`}>
-                    {t.pay > 0 ? `$${(t.pay / 100 % 1 === 0) ? (t.pay / 100).toFixed(0) : (t.pay / 100).toFixed(2)}` : t.rank === 'F' ? '50 XP' : 'IDX'}
+                  <span className={`text-[9px] font-bold mt-0.5 ${t.rank === 'F' ? 'text-amber-400' : 'text-white'}`}>
+                    {t.pay > 0 ? `$${(t.pay / 100 % 1 === 0) ? (t.pay / 100).toFixed(0) : (t.pay / 100).toFixed(2)}` : t.rank === 'F' ? '🎰 $50' : 'IDX'}
                   </span>
                   <div className={`w-2 h-2 rounded-full ${t.dotColor} my-1 shadow-sm`} />
                   <span className="text-[7px] text-white/25 font-medium">{t.qoi}</span>
@@ -818,6 +818,13 @@ export default function CommissionDetailPage() {
                     <span className="text-foreground font-bold">→ Color grade everything.</span> Raw footage with no grading instantly drops your Quality ceiling.
                   </p>
                 </div>
+              </div>
+
+              <div className="border border-amber-500/20 bg-gradient-to-br from-amber-500/10 to-orange-500/5 rounded-xl p-3 mb-3">
+                <span className="text-[9px] font-black text-amber-400 uppercase tracking-wider flex items-center gap-1">🎰 Jackpot Edit Bonus</span>
+                <p className="text-[10px] text-muted-foreground mt-1.5 leading-relaxed">
+                  Even F-rated edits can earn <span className="text-amber-400 font-bold">$50</span> if they go viral. Hit <span className="text-foreground font-bold">100k+ views</span> on any platform and the Jackpot Edit bonus unlocks automatically. Post well, promote hard.
+                </p>
               </div>
 
               <div className="text-center">

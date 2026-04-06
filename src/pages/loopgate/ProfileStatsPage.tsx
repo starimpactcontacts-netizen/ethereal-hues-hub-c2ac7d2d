@@ -9,6 +9,7 @@ import { useUserActivityStats } from "@/hooks/useUserActivityStats";
 import { motion } from "framer-motion";
 import XPProgressBar from "@/components/loopgate/XPProgressBar";
 import XPHistory from "@/components/loopgate/XPHistory";
+import JackpotEditStats from "@/components/loopgate/JackpotEditStats";
 import { getRankFromScore } from "@/data/gqtConfig";
 
 export default function ProfileStatsPage() {
@@ -202,6 +203,12 @@ export default function ProfileStatsPage() {
               </div>
             </div>
           </Link>
+        </section>
+
+        {/* ─── Jackpot Edits ─── */}
+        <section className="space-y-3">
+          <h3 className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Jackpot Edits</h3>
+          <JackpotEditStats jackpotCount={0} totalEarned={0} bestViews={0} />
         </section>
 
         {/* ─── XP History ─── */}
