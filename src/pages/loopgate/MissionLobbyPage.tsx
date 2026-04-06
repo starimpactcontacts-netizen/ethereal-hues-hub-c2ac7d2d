@@ -52,6 +52,12 @@ interface MissionSubmission {
   thumbnail_url?: string | null;
 }
 
+interface LobbyProfile {
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+}
+
 interface OfficialEvent {
   id: string;
   title: string;
