@@ -15,8 +15,7 @@ export default function MobileLayout() {
 
   return (
     <div className="fixed inset-0 text-foreground flex flex-col overflow-hidden" style={shellStyle}>
-      <div aria-hidden className="pointer-events-none fixed inset-x-0 top-0 z-40" style={{ height: 'env(safe-area-inset-top, 0px)', backgroundColor: 'hsl(var(--app-safe-fill))' }} />
-      <div aria-hidden className="pointer-events-none fixed inset-x-0 bottom-0 z-40" style={{ height: 'calc(env(safe-area-inset-bottom, 0px) + 320px)', backgroundColor: 'hsl(var(--app-safe-fill))' }} />
+      <div aria-hidden className="pointer-events-none fixed inset-x-0 top-0 z-[60]" style={{ height: 'env(safe-area-inset-top, 0px)', backgroundColor: 'hsl(var(--app-safe-fill))' }} />
       <main className="flex-1 min-h-0 overflow-y-auto overscroll-none" style={{ backgroundColor: 'hsl(var(--app-safe-fill))', paddingBottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px))', WebkitOverflowScrolling: 'touch' }}>
         <Outlet />
       </main>
