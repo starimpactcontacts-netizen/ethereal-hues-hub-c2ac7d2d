@@ -12,11 +12,19 @@ const BG_PRESETS = [
   { label: "Midnight", bg_type: "solid", bg_color: "#0a0a0a" },
   { label: "Obsidian", bg_type: "solid", bg_color: "#0c0c0c" },
   { label: "Dark Blue", bg_type: "solid", bg_color: "#0c1220" },
+  { label: "White", bg_type: "solid", bg_color: "#ffffff" },
+  { label: "Cream", bg_type: "solid", bg_color: "#faf5ef" },
+  { label: "Blush", bg_type: "solid", bg_color: "#fce4ec" },
   { label: "Crimson", bg_type: "gradient", bg_gradient_from: "#1a0000", bg_gradient_to: "#0a0a0a" },
   { label: "Gold Rush", bg_type: "gradient", bg_gradient_from: "#1a1400", bg_gradient_to: "#0a0a0a" },
   { label: "Cyber", bg_type: "gradient", bg_gradient_from: "#001a1a", bg_gradient_to: "#0a0a0a" },
   { label: "Purple Haze", bg_type: "gradient", bg_gradient_from: "#150020", bg_gradient_to: "#0a0a0a" },
   { label: "Neon", bg_type: "gradient", bg_gradient_from: "#001a0a", bg_gradient_to: "#0a0a0a" },
+  { label: "Sunset", bg_type: "gradient", bg_gradient_from: "#f8a4c8", bg_gradient_to: "#f06868" },
+  { label: "Ocean", bg_type: "gradient", bg_gradient_from: "#0f4c75", bg_gradient_to: "#3282b8" },
+  { label: "Lavender", bg_type: "gradient", bg_gradient_from: "#c4b5fd", bg_gradient_to: "#818cf8" },
+  { label: "Peach", bg_type: "gradient", bg_gradient_from: "#fcd5ce", bg_gradient_to: "#f8ad9d" },
+  { label: "Forest", bg_type: "gradient", bg_gradient_from: "#0b3d0b", bg_gradient_to: "#1a5c1a" },
 ];
 
 const ACCENT_COLORS = ["#d4af37", "#ef4444", "#3b82f6", "#10b981", "#a855f7", "#f97316", "#ec4899", "#06b6d4", "#f59e0b", "#14b8a6"];
