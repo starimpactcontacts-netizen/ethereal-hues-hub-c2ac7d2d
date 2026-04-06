@@ -53,7 +53,7 @@ const defaultSettings: Omit<LinkPageSettings, "user_id"> = {
   show_stats: true,
   show_socials: true,
   custom_avatar_url: null,
-  is_published: false,
+  is_published: true,
   view_count: 0,
 };
 
