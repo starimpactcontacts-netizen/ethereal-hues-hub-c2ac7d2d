@@ -96,7 +96,9 @@ export default function MissionLobbyChat({ missionId }: MissionLobbyChatProps) {
   };
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
     setNewCount(0);
     setIsAtBottom(true);
   };
