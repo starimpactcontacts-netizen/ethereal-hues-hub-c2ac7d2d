@@ -2321,7 +2321,7 @@ export default function OpsPanel() {
           </div>
           {/* Missions — Primary CTA */}
           <button 
-            onClick={() => document.getElementById('mission-admin')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() => navigate('/missions')}
             className="w-full flex items-center justify-center gap-2 bg-emerald-500 text-black font-bold py-4 rounded-lg text-base mb-2 hover:bg-emerald-400 transition-colors"
           >
             <DollarSign size={20} />
