@@ -358,6 +358,7 @@ export default function CommissionDetailPage() {
   const isPoster = !!user && commission?.created_by === user.id;
   const canRate = isStaff || isPoster;
   const [reviewingSubmission, setReviewingSubmission] = useState<any>(null);
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
   const [showBrief, setShowBrief] = useState(false);
   const [editingBrief, setEditingBrief] = useState(false);
