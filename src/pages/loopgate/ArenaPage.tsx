@@ -630,9 +630,6 @@ export default function ArenaPage() {
           {/* Title row — merged with stats */}
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-foreground flex items-center justify-center">
-                <InfinityIcon className="w-5 h-5 text-background" strokeWidth={2.5} />
-              </div>
               <h1 className="text-[22px] font-black text-foreground leading-none tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', textTransform: 'none' }}>Arena</h1>
               {profile && (
                 <div className="flex items-center gap-1.5 ml-1">
