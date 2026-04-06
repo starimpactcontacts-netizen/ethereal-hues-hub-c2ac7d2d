@@ -1211,7 +1211,10 @@ export default function ArenaPage() {
             </motion.section>
           )}
 
-          {/* Competitions moved to top */}
+          {/* Competitions */}
+          {(activeFilter === "competitions") && (
+            <ArenaCompetitionsSection onCreateClick={() => navigate(profile ? '/competition/create' : '/start')} />
+          )}
 
           {/* Quick 1v1s section removed — merged into 1v1 Edit Battles */}
 
