@@ -859,7 +859,7 @@ export default function CommissionDetailPage() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-end justify-center">
             <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={() => setShowQoiInfo(false)} />
             <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="relative w-full max-h-[92vh] bg-black border-t border-white/10 rounded-t-3xl flex flex-col">
+              className="relative w-full max-h-[92vh] bg-[#1a1a1a] border-t border-white/15 rounded-t-3xl flex flex-col">
               
               {/* Drag handle */}
               <div className="flex justify-center pt-3 pb-1 shrink-0">
