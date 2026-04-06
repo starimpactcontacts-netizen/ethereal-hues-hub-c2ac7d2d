@@ -310,6 +310,7 @@ function MissionEditDialog({ mission, onClose, onSaved }: { mission: MissionDrop
       inspo_url: form.inspo_url || null,
       inspo_thumbnail_url: form.inspo_thumbnail_url || null,
       theme_description: form.theme_description || null,
+      scenepack_url: form.scenepack_url || null,
     } as any).eq('id', mission.id);
     if (error) toast.error(error.message);
     else { toast.success('Mission saved!'); onSaved(); }
