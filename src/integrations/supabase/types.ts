@@ -802,6 +802,7 @@ export type Database = {
           artist_name: string | null
           bounty_type: string
           campaign_id: string | null
+          client_name: string | null
           cover_url: string | null
           created_at: string
           created_by: string
@@ -811,6 +812,7 @@ export type Database = {
           id: string
           is_marketplace: boolean
           max_slots: number
+          mission_type: string
           payout_cents: number
           platform_fee_cents: number
           poster_avatar_url: string | null
@@ -818,6 +820,7 @@ export type Database = {
           poster_rating_count: number | null
           poster_username: string | null
           reference_urls: string[] | null
+          reference_video_url: string | null
           requirements: string | null
           song_name: string | null
           status: string
@@ -831,6 +834,7 @@ export type Database = {
           artist_name?: string | null
           bounty_type?: string
           campaign_id?: string | null
+          client_name?: string | null
           cover_url?: string | null
           created_at?: string
           created_by: string
@@ -840,6 +844,7 @@ export type Database = {
           id?: string
           is_marketplace?: boolean
           max_slots?: number
+          mission_type?: string
           payout_cents?: number
           platform_fee_cents?: number
           poster_avatar_url?: string | null
@@ -847,6 +852,7 @@ export type Database = {
           poster_rating_count?: number | null
           poster_username?: string | null
           reference_urls?: string[] | null
+          reference_video_url?: string | null
           requirements?: string | null
           song_name?: string | null
           status?: string
@@ -860,6 +866,7 @@ export type Database = {
           artist_name?: string | null
           bounty_type?: string
           campaign_id?: string | null
+          client_name?: string | null
           cover_url?: string | null
           created_at?: string
           created_by?: string
@@ -869,6 +876,7 @@ export type Database = {
           id?: string
           is_marketplace?: boolean
           max_slots?: number
+          mission_type?: string
           payout_cents?: number
           platform_fee_cents?: number
           poster_avatar_url?: string | null
@@ -876,6 +884,7 @@ export type Database = {
           poster_rating_count?: number | null
           poster_username?: string | null
           reference_urls?: string[] | null
+          reference_video_url?: string | null
           requirements?: string | null
           song_name?: string | null
           status?: string
