@@ -765,52 +765,55 @@ export default function CommissionDetailPage() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-gradient-to-br from-amber-500/10 via-surface-1 to-orange-500/5 border border-amber-500/20 rounded-2xl p-4 overflow-hidden relative"
+          className="rounded-2xl overflow-hidden relative"
         >
-          {/* Decorative bg */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(245,158,11,0.08),transparent_60%)] pointer-events-none" />
+          {/* Cinematic dark poster bg */}
+          <div className="absolute inset-0 bg-black" />
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGZpbHRlciBpZD0ibiI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuOCIgbnVtT2N0YXZlcz0iNCIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPjwvZmlsdGVyPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWx0ZXI9InVybCgjbikiIG9wYWNpdHk9IjAuMDMiLz48L3N2Zz4=')] opacity-50" />
+          <div className="absolute inset-0 bg-gradient-to-b from-amber-900/20 via-transparent to-black/60" />
+          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-500/40 to-transparent" />
           
-          <div className="relative z-10">
-            <div className="flex items-center gap-2.5 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center shrink-0">
-                <Ticket className="w-5 h-5 text-amber-400" />
-              </div>
+          <div className="relative z-10 p-5">
+            {/* Header */}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="text-2xl">🎰</div>
               <div>
-                <p className="text-xs font-black text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                  🎰 Jackpot Edit
-                </p>
-                <p className="text-[10px] text-amber-400/80 font-bold">$50 Viral Bonus</p>
+                <h3 style={teko} className="text-xl font-black text-white uppercase leading-none tracking-wide">Jackpot Edit</h3>
+                <p className="text-[10px] font-bold text-amber-400 uppercase tracking-[0.15em]">$50 Viral Bonus</p>
               </div>
             </div>
 
-            <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
-              Make a viral edit of <span className="text-foreground font-bold">{commission.song_name || commission.title}</span> that 
-              hits <span className="text-amber-400 font-bold">100k+ views</span> on any platform and win the 
-              <span className="text-amber-400 font-bold"> $50 Jackpot Edit</span> bonus — regardless of your QOI score.
+            {/* Description */}
+            <p className="text-[11px] text-white/60 leading-relaxed mb-4">
+              Go viral with <span className="text-white font-bold">{commission.song_name || commission.title}</span>. 
+              Hit <span className="text-amber-400 font-bold">100k+ views</span> on any platform — earn 
+              <span className="text-emerald-400 font-bold"> $50</span>, the Jackpot Badge, and get showcased below.
             </p>
 
-            <div className="bg-black/20 rounded-xl p-3 mb-3 space-y-2">
-              <div className="flex items-start gap-2">
-                <span className="text-amber-400 text-[11px] mt-0.5">1.</span>
-                <p className="text-[10px] text-foreground/80">Submit your edit to this mission like normal</p>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-amber-400 text-[11px] mt-0.5">2.</span>
-                <p className="text-[10px] text-foreground/80">Post it on TikTok, YouTube, or Instagram and push it to <span className="text-amber-400 font-bold">100k+ views</span></p>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-amber-400 text-[11px] mt-0.5">3.</span>
-                <p className="text-[10px] text-foreground/80">Earn the <span className="text-amber-400 font-bold">🎰 Jackpot Badge</span>, get <span className="text-emerald-400 font-bold">$50</span>, and your edit gets showcased here</p>
-              </div>
+            {/* Steps — compact inline */}
+            <div className="flex gap-2 mb-4">
+              {[
+                { num: '01', text: 'Submit your edit' },
+                { num: '02', text: 'Go viral — 100k+ views' },
+                { num: '03', text: 'Claim $50 + Badge' },
+              ].map(s => (
+                <div key={s.num} className="flex-1 bg-white/[0.03] border border-white/[0.06] rounded-xl p-2.5 text-center">
+                  <span className="text-[8px] font-black text-amber-400/60 uppercase tracking-widest block">{s.num}</span>
+                  <p className="text-[9px] text-white/70 font-medium mt-0.5 leading-tight">{s.text}</p>
+                </div>
+              ))}
             </div>
 
-            {/* Showcase slot — empty state */}
-            <div className="border border-dashed border-amber-500/20 rounded-xl p-4 flex flex-col items-center justify-center text-center">
-              <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center mb-2">
-                <Trophy className="w-5 h-5 text-amber-500/40" />
+            {/* Winner showcase — empty state */}
+            <div className="relative bg-white/[0.02] border border-white/[0.06] rounded-xl overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-b from-amber-500/[0.03] to-transparent" />
+              <div className="relative flex flex-col items-center py-6 text-center">
+                <div className="w-10 h-10 rounded-full border border-white/[0.08] flex items-center justify-center mb-2.5">
+                  <Trophy className="w-4 h-4 text-white/15" />
+                </div>
+                <p style={teko} className="text-sm font-bold text-white/30 uppercase tracking-wider">No Winner Yet</p>
+                <p className="text-[9px] text-white/15 mt-0.5">First to 100k views claims the Jackpot</p>
               </div>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">No Jackpot Winner Yet</p>
-              <p className="text-[9px] text-muted-foreground/60 mt-0.5">Be the first to hit 100k views</p>
             </div>
           </div>
         </motion.div>
