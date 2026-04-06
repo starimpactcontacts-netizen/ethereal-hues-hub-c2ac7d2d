@@ -661,6 +661,9 @@ export default function ArenaPage() {
   const myBattles = useMemo(() => battles.filter(b => 
     user && (b.challenger_id === user.id || b.opponent_id === user.id)
   ), [battles, user]);
+  const myJudgingBattles = useMemo(() => battles.filter(b =>
+    user && b.judge_id === user.id && b.status !== 'completed'
+  ), [battles, user]);
   const myActiveQuickFights = useMemo(() => myQuickFights.filter(f => 
     f.status === 'active' || f.status === 'judging' || f.status === 'submitted'
   ), [myQuickFights]);
@@ -806,28 +809,40 @@ export default function ArenaPage() {
             )}
           </AnimatePresence>
 
-          {/* Arena / My Arena toggle — minimal underline style */}
-          <div className="flex gap-4 mb-2 border-b border-border">
+          {/* Arena / My Arena toggle — big prominent tabs */}
+          <div className="grid grid-cols-2 gap-0 mb-3 border border-border overflow-hidden bg-surface-1">
             <button
               onClick={() => setArenaView('arena')}
-              className={`pb-1.5 text-[12px] font-bold transition-all relative ${
-                arenaView === 'arena' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+              className={`relative py-3 text-[14px] font-black uppercase tracking-wider transition-all touch-manipulation ${
+                arenaView === 'arena'
+                  ? 'bg-red-600 text-white'
+                  : 'bg-transparent text-muted-foreground hover:text-foreground hover:bg-surface-2'
               }`}
+              style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}
             >
-              {arenaView === 'arena' && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-red-500" />}
-              Arena
+              <div className="flex items-center justify-center gap-2">
+                <Swords className="w-4 h-4" />
+                <span>Arena</span>
+              </div>
+              {arenaView === 'arena' && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-white/30" />}
             </button>
             <button
               onClick={() => setArenaView('my')}
-              className={`pb-1.5 text-[12px] font-bold transition-all relative ${
-                arenaView === 'my' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+              className={`relative py-3 text-[14px] font-black uppercase tracking-wider transition-all touch-manipulation ${
+                arenaView === 'my'
+                  ? 'bg-gold text-background'
+                  : 'bg-transparent text-muted-foreground hover:text-foreground hover:bg-surface-2'
               }`}
+              style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}
             >
-              {arenaView === 'my' && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gold" />}
-              My Arena
-              {(activeSolo || myBattles.length > 0 || myActiveQuickFights.length > 0) && (
-                <span className="ml-1.5 w-1.5 h-1.5 rounded-full bg-gold animate-pulse inline-block" />
-              )}
+              <div className="flex items-center justify-center gap-2">
+                <UserRound className="w-4 h-4" />
+                <span>My Arena</span>
+                {(activeSolo || myBattles.length > 0 || myActiveQuickFights.length > 0 || myJudgingBattles.length > 0) && (
+                  <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                )}
+              </div>
+              {arenaView === 'my' && <div className="absolute bottom-0 left-0 h-[2px] bg-background/20" style={{ right: 0 }} />}
             </button>
           </div>
 
@@ -880,7 +895,30 @@ export default function ArenaPage() {
                 </motion.div>
               )}
 
-              {/* Active Solo Session */}
+              {/* ⚖️ Judging Assignments */}
+              {myJudgingBattles.length > 0 && (
+                <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
+                  <div className="space-y-1.5">
+                    {myJudgingBattles.map(battle => (
+                      <Link key={battle.id} to={`/battle/${battle.id}`}
+                        className="flex items-center gap-3 bg-surface-1 border border-purple-500/30 hover:border-purple-500/50 p-3 transition-all">
+                        <div className="w-9 h-9 rounded-full bg-purple-500/15 flex items-center justify-center shrink-0">
+                          <Award className="w-4.5 h-4.5 text-purple-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400">
+                            ⚖️ JUDGING · {battle.status.toUpperCase()}
+                          </span>
+                          <p className="text-xs text-foreground truncate">{battle.challenger_username} vs {battle.opponent_username || '???'}</p>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                      </Link>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+
               {activeSolo && (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
                   <div className="bg-surface-1 border border-gold/30 p-4">
