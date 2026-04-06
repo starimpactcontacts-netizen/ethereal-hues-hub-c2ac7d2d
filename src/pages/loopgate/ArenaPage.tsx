@@ -1140,9 +1140,7 @@ export default function ArenaPage() {
 
           {/* ═══ COMPETITIONS ═══ */}
           {(activeFilter === "all" || activeFilter === "competitions") && (
-            <div className="-mx-4">
               <ArenaCompetitionsSection onCreateClick={() => navigate(profile ? '/competition/create' : '/start')} />
-            </div>
           )}
 
           {/* ArenaMissionsCarousel removed — missions already shown in ArenaMissionsSection above */}
