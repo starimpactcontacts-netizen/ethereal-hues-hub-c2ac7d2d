@@ -89,11 +89,33 @@ export default function TrendingLoops({ limit = 10 }: { limit?: number }) {
             ) : (
               <img src={post.uploaded_media_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
             )
-          ) : (
-            <div className="w-full h-full p-3 flex items-center justify-center bg-surface-1">
-              <p className="text-[11px] text-foreground/70 line-clamp-6 text-center leading-relaxed">{post.content}</p>
-            </div>
-          )}
+          ) : (() => {
+            // Extract GIF URL from content
+            const gifMatch = post.content.match(/https?:\/\/[^\s]+\.gif(\?[^\s]*)?/i);
+            // Extract any image URL
+            const imgMatch = !gifMatch ? post.content.match(/https?:\/\/media[^\s]+/i) : null;
+            const mediaUrl = gifMatch?.[0] || imgMatch?.[0];
+            const textContent = post.content.replace(/https?:\/\/[^\s]+/gi, '').trim();
+            
+            if (mediaUrl) {
+              return (
+                <div className="w-full h-full flex flex-col bg-surface-1">
+                  <img src={mediaUrl} alt="" className="w-full flex-1 object-cover" loading="lazy" />
+                  {textContent && (
+                    <div className="p-2">
+                      <p className="text-[10px] text-foreground/70 line-clamp-2 leading-snug">{textContent}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            }
+            
+            return (
+              <div className="w-full h-full p-3 flex items-center justify-center bg-surface-1">
+                <p className="text-[11px] text-foreground/70 line-clamp-6 text-center leading-relaxed">{post.content}</p>
+              </div>
+            );
+          })()}
 
           {/* Rank badge */}
           {i < 3 && (
