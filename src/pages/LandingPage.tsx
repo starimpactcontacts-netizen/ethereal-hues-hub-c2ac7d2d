@@ -94,7 +94,7 @@ export default function LandingPage() {
               initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               transition={{ delay: 0.15, duration: 0.6 }}
             >
-              Submit Edits. Get Judged. Climb The Global Rankings.
+              Enter. Edit. Survive.
             </motion.p>
             <motion.div
               className="flex flex-col sm:flex-row gap-3 items-center justify-center"
