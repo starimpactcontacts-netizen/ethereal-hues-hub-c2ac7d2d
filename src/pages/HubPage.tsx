@@ -217,25 +217,20 @@ export default function HubPage() {
   useEffect(() => {
     const fetchMissions = async () => {
       const { data } = await supabase
-        .from('featured_drops')
-        .select('id, song_name, poster_url, mission_live, mission_custom_payouts, artist_id')
-        .eq('mission_live', true)
+        .from('commissions')
+        .select('id, title, cover_url, artist_name, client_name, mission_type, custom_payouts')
+        .eq('is_marketplace', true)
+        .eq('status', 'open')
         .order('created_at', { ascending: false })
         .limit(5);
       if (!data || data.length === 0) { setMissionDrops([]); return; }
-      const artistIds = [...new Set(data.map((d: any) => d.artist_id).filter(Boolean))];
-      let artistMap: Record<string, string> = {};
-      if (artistIds.length > 0) {
-        const { data: artists } = await supabase.from('featured_artists').select('id, name').in('id', artistIds);
-        if (artists) artists.forEach(a => { artistMap[a.id] = a.name; });
-      }
       setMissionDrops(data.map((d: any) => {
-        const payouts = d.mission_custom_payouts || {};
+        const payouts = d.custom_payouts || {};
         return {
           id: d.id,
-          song_name: d.song_name,
-          poster_url: d.poster_url,
-          artist_name: d.artist_id ? artistMap[d.artist_id] || null : null,
+          song_name: d.title,
+          poster_url: d.cover_url,
+          artist_name: d.artist_name || d.client_name || null,
           max_pay: Math.max((payouts.S || 0) / 100, (payouts.A || 0) / 100, (payouts.B || 0) / 100),
         };
       }));
