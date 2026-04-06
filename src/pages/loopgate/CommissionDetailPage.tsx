@@ -6,7 +6,7 @@ import {
   DollarSign, ArrowLeft, Clock, Users, CheckCircle2, Send, ExternalLink,
   MessageSquare, Loader2, Star, Zap, ShieldCheck, AlertTriangle,
   HelpCircle, ChevronRight, ChevronLeft, Film, Target, Music, Trophy,
-  Flame, Info, X, Crosshair, Play, FileText, Pencil, FolderOpen, Eye
+  Flame, Info, X, Crosshair, Play, FileText, Pencil, FolderOpen, Eye, Ticket
 } from 'lucide-react';
 import { useCommissionDetail, type SubmissionRating, RATING_PAYOUTS, RATING_COLORS } from '@/hooks/useCommissions';
 import { useAuth } from '@/hooks/useAuth';
@@ -759,6 +759,61 @@ export default function CommissionDetailPage() {
 
         {/* ── MISSION CHAT ── */}
         <MissionLobbyChat missionId={id!} />
+
+        {/* ── JACKPOT EDIT SHOWCASE ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-gradient-to-br from-amber-500/10 via-surface-1 to-orange-500/5 border border-amber-500/20 rounded-2xl p-4 overflow-hidden relative"
+        >
+          {/* Decorative bg */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(245,158,11,0.08),transparent_60%)] pointer-events-none" />
+          
+          <div className="relative z-10">
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center shrink-0">
+                <Ticket className="w-5 h-5 text-amber-400" />
+              </div>
+              <div>
+                <p className="text-xs font-black text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                  🎰 Jackpot Edit
+                </p>
+                <p className="text-[10px] text-amber-400/80 font-bold">$50 Viral Bonus</p>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
+              Make a viral edit of <span className="text-foreground font-bold">{commission.song_name || commission.title}</span> that 
+              hits <span className="text-amber-400 font-bold">100k+ views</span> on any platform and win the 
+              <span className="text-amber-400 font-bold"> $50 Jackpot Edit</span> bonus — regardless of your QOI score.
+            </p>
+
+            <div className="bg-black/20 rounded-xl p-3 mb-3 space-y-2">
+              <div className="flex items-start gap-2">
+                <span className="text-amber-400 text-[11px] mt-0.5">1.</span>
+                <p className="text-[10px] text-foreground/80">Submit your edit to this mission like normal</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-amber-400 text-[11px] mt-0.5">2.</span>
+                <p className="text-[10px] text-foreground/80">Post it on TikTok, YouTube, or Instagram and push it to <span className="text-amber-400 font-bold">100k+ views</span></p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-amber-400 text-[11px] mt-0.5">3.</span>
+                <p className="text-[10px] text-foreground/80">Earn the <span className="text-amber-400 font-bold">🎰 Jackpot Badge</span>, get <span className="text-emerald-400 font-bold">$50</span>, and your edit gets showcased here</p>
+              </div>
+            </div>
+
+            {/* Showcase slot — empty state */}
+            <div className="border border-dashed border-amber-500/20 rounded-xl p-4 flex flex-col items-center justify-center text-center">
+              <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center mb-2">
+                <Trophy className="w-5 h-5 text-amber-500/40" />
+              </div>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">No Jackpot Winner Yet</p>
+              <p className="text-[9px] text-muted-foreground/60 mt-0.5">Be the first to hit 100k views</p>
+            </div>
+          </div>
+        </motion.div>
       </div>
 
       {/* Rating Modal */}
