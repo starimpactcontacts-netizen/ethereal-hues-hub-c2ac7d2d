@@ -125,29 +125,33 @@
   }
 
   html {
-    background-color: hsl(var(--background));
-    overscroll-behavior-y: none;
+    background-color: #000000;
+    overscroll-behavior: none;
+    overflow: hidden;
+    height: 100%;
   }
 
   body {
-    @apply bg-background text-foreground overflow-x-hidden;
+    @apply bg-background text-foreground;
     font-family: var(--font-body);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     width: 100%;
-    max-width: 100vw;
-    min-height: 100vh;
-    min-height: 100dvh;
+    height: 100%;
+    overflow: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: none;
-    /* NO transform here - breaks position:fixed on children */
-    background-color: hsl(var(--background));
+    overscroll-behavior: none;
+    background-color: #000000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
   }
   
   #root {
-    min-height: 100vh;
-    min-height: 100dvh;
+    height: 100%;
+    overflow: hidden;
     background-color: inherit;
   }
   
