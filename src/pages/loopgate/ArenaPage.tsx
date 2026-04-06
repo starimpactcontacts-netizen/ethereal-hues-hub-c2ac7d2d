@@ -12,6 +12,7 @@ import {
 import { InfinityLoop } from "@/components/loopgate/InfinityLoop";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRoles } from "@/hooks/useUserRoles";
 import LoopMonster from "@/components/loopgate/LoopMonster";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
 import SoloModeFlow from "@/components/loopgate/SoloModeFlow";
