@@ -820,6 +820,13 @@ export default function CommissionDetailPage() {
                 </div>
               </div>
 
+              <div className="border border-amber-500/20 bg-gradient-to-br from-amber-500/10 to-orange-500/5 rounded-xl p-3 mb-3">
+                <span className="text-[9px] font-black text-amber-400 uppercase tracking-wider flex items-center gap-1">🎰 Jackpot Edit Bonus</span>
+                <p className="text-[10px] text-muted-foreground mt-1.5 leading-relaxed">
+                  Even F-rated edits can earn <span className="text-amber-400 font-bold">$50</span> if they go viral. Hit <span className="text-foreground font-bold">100k+ views</span> on any platform and the Jackpot Edit bonus unlocks automatically. Post well, promote hard.
+                </p>
+              </div>
+
               <div className="text-center">
                 <p className="text-[8px] text-white/20 uppercase tracking-wider">Score 90+ QOI for S-Class payouts</p>
               </div>
