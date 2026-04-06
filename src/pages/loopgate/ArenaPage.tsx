@@ -248,6 +248,8 @@ function ArenaMissionsCarousel() {
 function ArenaMissionsSection() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isDev, isAdmin } = useUserRoles(user?.id);
+  const isStaff = isDev || isAdmin;
   const [bounties, setBounties] = useState<any[]>([]);
 
   useEffect(() => {
