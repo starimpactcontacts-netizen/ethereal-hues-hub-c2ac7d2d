@@ -41,7 +41,7 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
   };
 
   return (
-    <div className="shrink-0 w-[280px]">
+    <div className="shrink-0 w-[200px]">
       <motion.div
         whileTap={{ scale: 0.97 }}
         onClick={() => navigate(`/competition/${comp.slug || comp.id}`)}
