@@ -218,7 +218,7 @@ export default function HubPage() {
     const fetchMissions = async () => {
       const { data } = await supabase
         .from('commissions')
-        .select('id, title, cover_url, artist_name, client_name, mission_type, custom_payouts')
+        .select('id, title, cover_url, artist_name, client_name, mission_type, custom_payouts, payout_cents')
         .eq('is_marketplace', true)
         .eq('status', 'open')
         .order('created_at', { ascending: false })
