@@ -134,7 +134,7 @@ export default function FeaturedCarousel({
       {/* Scrollable container */}
       <div
         ref={scrollRef}
-        className="relative flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-3 scroll-smooth"
+        className="relative flex gap-2.5 pl-4 overflow-x-auto scrollbar-hide pb-3 scroll-smooth"
       >
         {children}
       </div>
