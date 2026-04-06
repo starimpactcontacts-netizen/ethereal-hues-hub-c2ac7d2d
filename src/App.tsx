@@ -324,6 +324,7 @@ export default function App() {
               <Route path="/editorium/:slug" element={<EditoriumArticlePage />} />
               <Route path="/solo/:id" element={<SoloDetailPage />} />
               <Route path="/commissions" element={<CommissionsPage />} />
+              <Route path="/missions" element={<CommissionsPage />} />
               <Route path="/commissions/:id" element={<CommissionDetailPage />} />
               <Route path="/payouts" element={<PayoutsPage />} />
               <Route path="/solo-arena" element={<SoloArenaPage />} />
