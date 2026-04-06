@@ -525,6 +525,18 @@ export default function CommissionDetailPage() {
           </Link>
         </div>
 
+        {/* ── SCENEPACKS BUTTON ── */}
+        {(commission as any).scenepack_url && (
+          <a
+            href={(commission as any).scenepack_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2.5 py-3 w-full bg-amber-500/10 border border-amber-500/30 hover:border-amber-500/50 hover:bg-amber-500/15 text-amber-400 font-black uppercase tracking-wider text-sm transition-colors"
+          >
+            <FolderOpen className="w-4 h-4" /> Go Get Scenepacks
+          </a>
+        )}
+
         {/* ── MISSION BRIEF ── */}
         <div>
           <button
