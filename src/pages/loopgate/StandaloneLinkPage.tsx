@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ExternalLink, Music2, Video, Globe, Copyright, Instagram, Mail } from "lucide-react";
+import { ExternalLink, Music2, Video, Globe, Instagram, Mail, ChevronRight } from "lucide-react";
 import { SiTiktok, SiYoutube, SiX, SiTwitch, SiSpotify, SiSoundcloud } from "@icons-pack/react-simple-icons";
 import { supabase } from "@/integrations/supabase/client";
 import type { LinkPageSettings, EditorLink } from "@/hooks/useEditorLinkPage";
-import GateIcon from "@/components/loopgate/GateIcon";
+import loopgateLogo from "@/assets/loopgate-logo.png";
 import LoadingScreen from "@/components/loopgate/LoadingScreen";
-
-const teko = { fontFamily: "Teko, sans-serif" };
 
 interface ProfileData {
   id: string;
@@ -36,15 +34,28 @@ function getBackground(settings: LinkPageSettings) {
 function getCardStyle(cardStyle: string, accent: string) {
   switch (cardStyle) {
     case "solid":
-      return { className: "border-0", style: { backgroundColor: `${accent}18` } };
-    case "outline":
-      return { className: "bg-transparent", style: { border: `1px solid ${accent}50` } };
-    case "minimal":
-      return { className: "bg-transparent rounded-2xl", style: { border: "1px solid rgba(255,255,255,0.08)" } };
-    default:
       return {
-        className: "backdrop-blur-xl",
-        style: { backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.16)", boxShadow: "0 12px 30px rgba(0,0,0,0.28)" },
+        className: "border-0",
+        style: { backgroundColor: `${accent}12` },
+      };
+    case "outline":
+      return {
+        className: "bg-transparent",
+        style: { border: `1.5px solid ${accent}40` },
+      };
+    case "minimal":
+      return {
+        className: "bg-transparent",
+        style: { borderBottom: "1px solid rgba(255,255,255,0.06)" },
+      };
+    default: // glass
+      return {
+        className: "backdrop-blur-2xl",
+        style: {
+          backgroundColor: "rgba(255,255,255,0.05)",
+          border: "1px solid rgba(255,255,255,0.1)",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06)",
+        },
       };
   }
 }
@@ -90,7 +101,6 @@ export default function StandaloneLinkPage() {
     async function fetchData() {
       if (!username) { setNotFound(true); setLoading(false); return; }
 
-      // Lookup profile by username or UUID
       let profileData: ProfileData | null = null;
       const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(username);
 
@@ -105,7 +115,6 @@ export default function StandaloneLinkPage() {
       if (!profileData) { setNotFound(true); setLoading(false); return; }
       setProfile(profileData);
 
-      // Fetch link page, links, and platforms in parallel
       const [settingsRes, linksRes, platformsRes] = await Promise.all([
         supabase.from("editor_link_pages").select("*").eq("user_id", profileData.id).eq("is_published", true).maybeSingle(),
         supabase.from("editor_links").select("*").eq("user_id", profileData.id).eq("is_active", true).order("sort_order", { ascending: true }),
@@ -118,9 +127,7 @@ export default function StandaloneLinkPage() {
       setLinks((linksRes.data as unknown as EditorLink[]) || []);
       setPlatforms((platformsRes.data as PlatformData[]) || []);
 
-      // Increment view count
       await supabase.from("editor_link_pages").update({ view_count: (settingsRes.data as any).view_count + 1 }).eq("id", (settingsRes.data as any).id);
-
       setLoading(false);
     }
     fetchData();
@@ -130,11 +137,11 @@ export default function StandaloneLinkPage() {
 
   if (notFound || !settings || !profile) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center text-white">
-        <GateIcon size={32} color="#d4af37" />
-        <h1 className="text-2xl font-black mt-4" style={teko}>PAGE NOT FOUND</h1>
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white">
+        <img src={loopgateLogo} alt="Loopgate" className="w-8 h-8 opacity-40" />
+        <h1 className="text-2xl font-black mt-4 font-display">PAGE NOT FOUND</h1>
         <p className="text-sm text-white/40 mt-1">This link page doesn't exist or isn't published yet.</p>
-        <a href="/" className="mt-6 px-6 py-2 bg-white/10 rounded-full text-sm hover:bg-white/15 transition-colors">Go Home</a>
+        <a href="/" className="mt-6 px-6 py-2.5 bg-white/10 rounded-full text-sm hover:bg-white/15 transition-colors">Go Home</a>
       </div>
     );
   }
@@ -143,46 +150,51 @@ export default function StandaloneLinkPage() {
   const textColor = settings.text_color || "#ffffff";
   const displayName = settings.page_title || (profile as any)?.display_name || profile.username;
   const avatarUrl = settings.custom_avatar_url || profile.avatar_url;
-  const year = new Date().getFullYear();
 
   return (
     <div className="min-h-screen relative" style={{ ...getBackground(settings), color: textColor }}>
-      {/* Overlay */}
-      <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.3) 100%)" }} />
-      {/* Noise */}
-      <div className="absolute inset-0 opacity-[0.012]" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E\")" }} />
+      {/* Subtle vignette overlay */}
+      <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at center top, transparent 40%, rgba(0,0,0,0.4) 100%)" }} />
 
-      <div className="relative max-w-md mx-auto px-5 py-12 min-h-screen flex flex-col">
+      <div className="relative max-w-[420px] mx-auto px-5 pt-14 pb-8 min-h-screen flex flex-col">
         {/* Avatar + Name */}
         {settings.show_avatar && (
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center mb-4">
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="flex flex-col items-center mb-5">
             <div
-              className="w-24 h-24 rounded-full overflow-hidden mb-3"
-              style={{ border: `3px solid ${accent}`, boxShadow: `0 0 30px ${accent}25` }}
+              className="w-[100px] h-[100px] rounded-full overflow-hidden mb-4 relative"
+              style={{ border: `3px solid ${accent}`, boxShadow: `0 0 40px ${accent}20, 0 0 80px ${accent}08` }}
             >
               {avatarUrl ? (
                 <img src={avatarUrl} alt={profile.username} className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: `${accent}20` }}>
-                  <span className="text-4xl font-black" style={{ color: accent, ...teko }}>{profile.username.charAt(0).toUpperCase()}</span>
+                <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: `${accent}15` }}>
+                  <span className="text-[42px] font-black" style={{ color: accent, fontFamily: "Inter, sans-serif" }}>
+                    {profile.username.charAt(0).toUpperCase()}
+                  </span>
                 </div>
               )}
             </div>
-            <h1 className="text-3xl font-black uppercase tracking-wide leading-none" style={teko}>{displayName}</h1>
-            <p className="text-xs mt-1" style={{ color: `${textColor}70` }}>@{profile.username}</p>
+            <h1 className="text-[28px] font-black uppercase tracking-wide leading-none font-display">{displayName}</h1>
+            <p className="text-[13px] mt-1.5 font-medium" style={{ color: `${textColor}55` }}>@{profile.username}</p>
           </motion.div>
         )}
 
         {/* Bio */}
         {settings.bio && (
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="text-center text-sm mb-5 max-w-xs mx-auto leading-relaxed" style={{ color: `${textColor}bb` }}>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1 }}
+            className="text-center text-[14px] mb-6 max-w-[320px] mx-auto leading-relaxed"
+            style={{ color: `${textColor}aa` }}
+          >
             {settings.bio}
           </motion.p>
         )}
 
         {/* Social Icons */}
         {settings.show_socials && platforms.length > 0 && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }} className="flex justify-center gap-3 mb-6">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }} className="flex justify-center gap-2.5 mb-7">
             {platforms.map((p) => {
               const IconComponent = SOCIAL_ICONS[p.platform.toLowerCase()];
               return (
@@ -191,14 +203,17 @@ export default function StandaloneLinkPage() {
                   href={p.platform_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110 hover:brightness-125"
-                  style={{ backgroundColor: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }}
+                  className="w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110"
+                  style={{
+                    backgroundColor: "rgba(255,255,255,0.07)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                  }}
                   title={p.platform_username}
                 >
                   {IconComponent ? (
-                    <IconComponent size={18} className="opacity-80" />
+                    <IconComponent size={18} className="opacity-70" />
                   ) : (
-                    <span className="text-xs font-bold opacity-70">{p.platform.charAt(0).toUpperCase()}</span>
+                    <span className="text-xs font-bold opacity-60">{p.platform.charAt(0).toUpperCase()}</span>
                   )}
                 </a>
               );
@@ -207,13 +222,14 @@ export default function StandaloneLinkPage() {
         )}
 
         {/* Links */}
-        <div className="space-y-3 flex-1">
+        <div className="space-y-2.5 flex-1">
           {links.map((link, i) => {
             const embedHtml = link.link_type === "embed" && link.url ? getEmbedHtml(link.url) : null;
-            const card = getCardStyle(settings.card_style, accent);
+            const card = getCardStyle(settings.card_style || "glass", accent);
+            const hostname = getHostname(link.url);
 
             return (
-              <motion.div key={link.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.05 }}>
+              <motion.div key={link.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.04, duration: 0.35 }}>
                 {embedHtml ? (
                   <div className={`overflow-hidden rounded-2xl ${card.className}`} style={card.style}>
                     <div dangerouslySetInnerHTML={{ __html: embedHtml }} />
@@ -226,22 +242,27 @@ export default function StandaloneLinkPage() {
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`group block w-full rounded-2xl px-4 py-4 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${card.className}`}
+                    className={`group block w-full rounded-2xl px-4 py-3.5 transition-all duration-200 hover:scale-[1.015] active:scale-[0.98] ${card.className}`}
                     style={card.style}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3.5">
                       {link.thumbnail_url ? (
-                        <img src={link.thumbnail_url} alt="" className="w-12 h-12 rounded-xl object-cover shrink-0" />
+                        <img src={link.thumbnail_url} alt="" className="w-11 h-11 rounded-xl object-cover shrink-0" />
                       ) : (
-                        <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.16)" }}>
-                          <span style={{ color: `${textColor}80` }}>{getLinkIcon(link)}</span>
+                        <div
+                          className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+                          style={{ backgroundColor: "rgba(255,255,255,0.06)" }}
+                        >
+                          <span style={{ color: `${textColor}60` }}>{getLinkIcon(link)}</span>
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="text-[15px] font-semibold truncate" style={{ color: `${textColor}f0` }}>{link.title}</p>
-                        {link.description && <p className="text-xs truncate mt-0.5" style={{ color: `${textColor}60` }}>{link.description}</p>}
+                        <p className="text-[15px] font-semibold truncate leading-tight" style={{ color: `${textColor}ee` }}>{link.title}</p>
+                        <p className="text-[11px] truncate mt-0.5" style={{ color: `${textColor}40` }}>
+                          {link.description || hostname}
+                        </p>
                       </div>
-                      <ExternalLink className="w-4 h-4 opacity-30 group-hover:opacity-60 transition-opacity shrink-0" />
+                      <ChevronRight className="w-4 h-4 opacity-20 group-hover:opacity-50 transition-opacity shrink-0" />
                     </div>
                   </a>
                 )}
@@ -251,20 +272,37 @@ export default function StandaloneLinkPage() {
         </div>
 
         {links.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-sm" style={{ color: `${textColor}40` }}>No links yet</p>
+          <div className="text-center py-16">
+            <p className="text-sm" style={{ color: `${textColor}35` }}>No links yet</p>
           </div>
         )}
 
-        {/* Footer */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="mt-auto pt-10 flex flex-col items-center gap-2">
-          <a href="/" className="flex items-center gap-1.5 opacity-30 hover:opacity-55 transition-opacity">
-            <GateIcon size={12} color={accent} />
-            <span className="text-[9px] font-semibold tracking-[0.18em] uppercase">Loopgate</span>
+        {/* Loopgate Branding Footer — always visible, promotes the platform */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.7 }}
+          className="mt-auto pt-10 flex flex-col items-center gap-4"
+        >
+          {/* Main CTA */}
+          <a
+            href="/"
+            className="group flex items-center gap-2 px-5 py-2.5 rounded-full transition-all duration-300 hover:scale-105"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(255,255,255,0.1)",
+            }}
+          >
+            <img src={loopgateLogo} alt="Loopgate" className="w-4 h-4 opacity-60 group-hover:opacity-90 transition-opacity" />
+            <span className="text-[11px] font-bold tracking-[0.2em] uppercase opacity-50 group-hover:opacity-80 transition-opacity">
+              Create Your Own
+            </span>
           </a>
-          <div className="flex items-center gap-1 opacity-15">
-            <Copyright className="w-2.5 h-2.5" />
-            <span className="text-[8px]">@{profile.username} {year}</span>
+
+          {/* Powered by line */}
+          <div className="flex items-center gap-1.5 opacity-30">
+            <img src={loopgateLogo} alt="" className="w-3 h-3" />
+            <span className="text-[9px] font-semibold tracking-[0.15em] uppercase">Powered by Loopgate</span>
           </div>
         </motion.div>
       </div>
