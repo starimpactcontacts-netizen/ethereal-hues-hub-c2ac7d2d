@@ -661,6 +661,9 @@ export default function ArenaPage() {
   const myBattles = useMemo(() => battles.filter(b => 
     user && (b.challenger_id === user.id || b.opponent_id === user.id)
   ), [battles, user]);
+  const myJudgingBattles = useMemo(() => battles.filter(b =>
+    user && b.judge_id === user.id && b.status !== 'completed'
+  ), [battles, user]);
   const myActiveQuickFights = useMemo(() => myQuickFights.filter(f => 
     f.status === 'active' || f.status === 'judging' || f.status === 'submitted'
   ), [myQuickFights]);
