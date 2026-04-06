@@ -44,8 +44,8 @@ export default function BottomNav() {
         </div>
       )}
 
-      <nav className="fixed bottom-0 left-0 right-0 z-50" style={{ backgroundColor: '#000000', paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        <div className="absolute inset-0" style={{ bottom: 'calc(-1 * env(safe-area-inset-bottom, 0px))', backgroundColor: '#000000' }} />
+      <nav className="fixed bottom-0 left-0 right-0 z-50" style={{ backgroundColor: '#000000', paddingBottom: 'calc(env(safe-area-inset-bottom) + 20px)' }}>
+        <div className="absolute inset-0" style={{ bottom: '-100px', backgroundColor: '#000000' }} />
         {/* Top border with synced arena color glow */}
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-white/[0.04]" />
         {/* Core bright line — hue-synced, subtle */}
