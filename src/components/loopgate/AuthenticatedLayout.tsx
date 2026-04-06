@@ -22,10 +22,10 @@ export default function AuthenticatedLayout() {
   useGlobalTapSound();
 
   return (
-    <div className="min-h-screen bg-inherit text-foreground flex flex-col overflow-hidden">
+    <div className="h-full bg-inherit text-foreground flex flex-col overflow-hidden">
       {!hideNav && !hideHeader && <AppHeader />}
       <main
-        className={`flex-1 overflow-y-auto bg-inherit ${!hideNav && !hideHeader ? 'pb-[calc(4.5rem+env(safe-area-inset-bottom))]' : ''}`}
+        className={`flex-1 overflow-y-auto bg-inherit overscroll-none ${!hideNav && !hideHeader ? 'pb-[calc(4.5rem+env(safe-area-inset-bottom))]' : ''}`}
       >
         <Suspense fallback={<LoadingScreen minimal />}>
           <Outlet />
