@@ -33,6 +33,7 @@ interface MissionDrop {
   inspo_thumbnail_url: string | null;
   theme_description: string | null;
   submission_count: number;
+  scenepack_url: string | null;
 }
 
 interface MissionSub {
