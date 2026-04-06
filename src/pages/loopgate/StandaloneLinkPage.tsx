@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ExternalLink, Music2, Video, Globe, Copyright, Instagram, Mail } from "lucide-react";
-import { SiTiktok, SiYoutube, SiTwitter, SiTwitch, SiSpotify, SiSoundcloud } from "@icons-pack/react-simple-icons";
+import { SiTiktok, SiYoutube, SiX, SiTwitch, SiSpotify, SiSoundcloud } from "@icons-pack/react-simple-icons";
 import { supabase } from "@/integrations/supabase/client";
 import type { LinkPageSettings, EditorLink } from "@/hooks/useEditorLinkPage";
 import GateIcon from "@/components/loopgate/GateIcon";
