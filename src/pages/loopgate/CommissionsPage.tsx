@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   DollarSign, ArrowLeft, Plus, Users, Clock, CheckCircle2, Loader2, 
   Star, XCircle, Music, Film, Briefcase, User, Shield, Eye,
-  Trash2, ToggleLeft, ToggleRight
+  Trash2, ToggleLeft, ToggleRight, Pencil, FolderOpen
 } from 'lucide-react';
 import { useCommissions, type SubmissionRating } from '@/hooks/useCommissions';
 import { useBountyMarketplace, type MarketplaceBounty, type MissionType } from '@/hooks/useBountyMarketplace';
