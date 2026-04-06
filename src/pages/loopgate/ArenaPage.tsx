@@ -224,7 +224,7 @@ function ArenaMissionsCarousel() {
 
   return (
     <div className="mb-2">
-      <div className="flex items-center justify-between mb-1.5">
+      <div className="flex items-center justify-between px-4 mb-1.5">
         <div className="flex items-center gap-1.5">
           <InfinityLoop size={14} />
           <span className="text-[10px] font-black text-foreground uppercase tracking-wider">Get Paid</span>
@@ -234,8 +234,7 @@ function ArenaMissionsCarousel() {
           All <ChevronRight className="w-2.5 h-2.5" />
         </Link>
       </div>
-      <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
-        <div className="flex gap-2 pb-1">
+      <div className="flex gap-2 px-4 overflow-x-auto scrollbar-hide pb-1">
           {drops.map(drop => (
             <ArenaMissionCard key={drop.id} drop={drop} />
           ))}
