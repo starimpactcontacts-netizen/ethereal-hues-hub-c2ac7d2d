@@ -6,7 +6,7 @@ import {
   DollarSign, ArrowLeft, Clock, Users, CheckCircle2, Send, ExternalLink,
   MessageSquare, Loader2, Star, Zap, ShieldCheck, AlertTriangle,
   HelpCircle, ChevronRight, ChevronLeft, Film, Target, Music, Trophy,
-  Flame, Info, X, Crosshair, Play, FileText
+  Flame, Info, X, Crosshair, Play, FileText, Pencil
 } from 'lucide-react';
 import { useCommissionDetail, type SubmissionRating, RATING_PAYOUTS, RATING_COLORS } from '@/hooks/useCommissions';
 import { useAuth } from '@/hooks/useAuth';
