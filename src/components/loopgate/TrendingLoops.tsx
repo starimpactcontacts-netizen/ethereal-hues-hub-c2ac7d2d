@@ -1,12 +1,8 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Heart, MessageCircle, Flame, Play, ImagePlus, Loader2, X } from 'lucide-react';
+import { Heart, MessageCircle, Flame, Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/hooks/useAuth';
-import { toast } from 'sonner';
-
-const TEKO = { fontFamily: 'Teko, sans-serif' };
 
 interface TrendingPost {
   id: string;
