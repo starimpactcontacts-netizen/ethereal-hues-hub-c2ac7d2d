@@ -88,6 +88,7 @@ export default function MissionLobbyPage() {
   const [ratingTarget, setRatingTarget] = useState<MissionSubmission | null>(null);
   const [officialEvent, setOfficialEvent] = useState<OfficialEvent | null>(null);
   const [myVotes, setMyVotes] = useState<Record<string, string>>({});
+  const [lobbyProfiles, setLobbyProfiles] = useState<LobbyProfile[]>([]);
 
   const carouselRef = useRef<HTMLDivElement>(null);
 
