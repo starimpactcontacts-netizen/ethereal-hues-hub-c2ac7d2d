@@ -459,10 +459,10 @@ export default function CommissionDetailPage() {
 
           {/* Payout timeline — S to F */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-            className="bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 p-3">
+            className="bg-white/[0.08] backdrop-blur-xl rounded-xl border border-white/20 p-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/40">Payout Scale</span>
-              <button onClick={() => setShowQoiInfo(true)} className="flex items-center gap-1 text-[8px] font-bold text-white/30 hover:text-white/60 transition-colors">
+              <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/60">Payout Scale</span>
+              <button onClick={() => setShowQoiInfo(true)} className="flex items-center gap-1 text-[8px] font-bold text-white/40 hover:text-white/70 transition-colors">
                 <Info className="w-3 h-3" /> What's QOI?
               </button>
             </div>
@@ -483,9 +483,14 @@ export default function CommissionDetailPage() {
                     {t.pay > 0 ? `$${(t.pay / 100 % 1 === 0) ? (t.pay / 100).toFixed(0) : (t.pay / 100).toFixed(2)}` : t.rank === 'F' ? '50 XP' : 'IDX'}
                   </span>
                   <div className={`w-2 h-2 rounded-full ${t.dotColor} my-1 shadow-sm`} />
-                  <span className="text-[7px] text-white/25 font-medium">{t.qoi}</span>
+                  <span className="text-[7px] text-white/35 font-medium">{t.qoi}</span>
                 </div>
               ))}
+            </div>
+            {/* Jackpot indicator */}
+            <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-center gap-2">
+              <span className="text-sm">🎰</span>
+              <span className="text-[8px] font-black text-amber-400 uppercase tracking-wider">Jackpot Edit: $50 bonus at 100k+ views</span>
             </div>
           </motion.div>
         </div>
