@@ -631,8 +631,8 @@ export default function CommissionDetailPage() {
                     { step: '01', icon: Target, label: 'Follow the brief', desc: 'Read the mission brief and understand the creative direction' },
                     { step: '02', icon: Film, label: 'Create your edit', desc: 'Use any editing software (CapCut, Adobe, Premiere, etc.)' },
                     { step: '03', icon: Send, label: 'Post on socials', desc: 'Upload to TikTok, YouTube, or Instagram and paste the link' },
-                    { step: '04', icon: Star, label: 'Get rated & paid', desc: 'Your edit gets a QOI score and tier rating (S/A/B/C-F)' },
-                    { step: '05', icon: DollarSign, label: 'Earn instantly', desc: 'S/A/B rated edits get instant USD payouts. C-F earn Index points' },
+                    { step: '04', icon: Star, label: 'Get rated & paid', desc: 'QOI = Quality + Originality + Impact, scored 1-10 each by judges. Your combined score determines your class (S through F)' },
+                    { step: '05', icon: DollarSign, label: 'Earn instantly', desc: 'Higher QOI = higher class = bigger payout. Lower classes still earn Index reputation points to boost your rank' },
                   ].map(({ step, icon: Icon, label, desc }) => (
                     <div key={step} className="flex items-start gap-3">
                       <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
