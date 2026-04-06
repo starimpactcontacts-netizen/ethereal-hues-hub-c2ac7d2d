@@ -196,48 +196,42 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Active Battle Banner */}
+      {/* Active Battle Reminders — compact inline pills */}
       {activeBattles.length > 0 && (
-        <section className="px-4 pt-3">
+        <section className="px-4 pt-2 space-y-1.5">
           {activeBattles.map(battle => {
             const isJudge = battle.judge_id === user?.id;
             const isChallenger = battle.challenger_id === user?.id;
-            const roleLabel = isJudge ? '⚖️ YOU\'RE JUDGING' : isChallenger ? '🗡️ YOUR CHALLENGE' : '🛡️ YOU\'RE DEFENDING';
+            const accentColor = isJudge ? 'purple' : 'red';
+            const statusIcon = isJudge 
+              ? <Gavel className="w-3.5 h-3.5 text-purple-400" /> 
+              : <Swords className="w-3.5 h-3.5 text-red-400" />;
+            const statusLabel = battle.status === 'active' ? 'LIVE' 
+              : battle.status === 'judging' ? 'JUDGING' 
+              : 'PENDING';
+            const roleTag = isJudge ? 'JUDGE' : isChallenger ? 'CHALLENGER' : 'OPPONENT';
             
             return (
               <Link
                 key={battle.id}
                 to={`/battle/${battle.id}`}
-                className="block mb-2 bg-gradient-to-r from-red-500/15 via-surface-1 to-red-500/15 border border-red-500/40 p-3 hover:border-red-500/60 transition-all"
+                className={`flex items-center gap-2.5 bg-surface-1 border border-${accentColor}-500/30 rounded-lg px-3 py-2 active:scale-[0.98] transition-transform`}
               >
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <div className="w-9 h-9 rounded-full bg-red-500/20 flex items-center justify-center">
-                      {isJudge ? <Gavel className="w-4 h-4 text-purple-400" /> : <Swords className="w-4 h-4 text-red-400" />}
-                    </div>
-                    <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className={`text-[10px] font-bold uppercase tracking-wider ${isJudge ? 'text-purple-400' : 'text-red-400'}`}>
-                        {battle.status === 'active' ? `⚔️ LIVE — ${roleLabel}` : 
-                         battle.status === 'pending' ? `⏳ PENDING — ${roleLabel}` : `⚖️ JUDGING — ${roleLabel}`}
-                      </span>
-                      {battle.is_rapid && (
-                        <span className="text-[8px] bg-amber-500/20 text-amber-400 px-1 py-0.5 rounded">⚡ RAPID</span>
-                      )}
-                    </div>
-                    <p className="text-xs text-foreground truncate mt-0.5">
-                      {battle.challenger_username} vs {battle.opponent_username || '???'}
-                    </p>
-                  </div>
-                  {battle.status === 'active' && battle.ends_at && (
-                    <div className="text-right flex-shrink-0">
-                      <CountdownTimer endDate={battle.ends_at} />
-                    </div>
-                  )}
-                  <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                <div className="relative flex-shrink-0">
+                  {statusIcon}
+                  <span className={`absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-${accentColor}-500 animate-pulse`} />
                 </div>
+                <div className="flex-1 min-w-0 flex items-center gap-1.5">
+                  <span className={`text-[9px] font-bold uppercase tracking-wider text-${accentColor}-400`}>
+                    {statusLabel}
+                  </span>
+                  <span className="text-[9px] text-muted-foreground">·</span>
+                  <span className="text-[9px] text-muted-foreground uppercase">{roleTag}</span>
+                </div>
+                <p className="text-[11px] text-foreground truncate max-w-[120px]">
+                  {battle.challenger_username} vs {battle.opponent_username || '???'}
+                </p>
+                <ChevronRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />
               </Link>
             );
           })}
