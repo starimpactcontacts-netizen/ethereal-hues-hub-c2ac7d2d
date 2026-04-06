@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import MissionLobbyChat from '@/components/loopgate/MissionLobbyChat';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DollarSign, ArrowLeft, Clock, Users, CheckCircle2, XCircle, Send, ExternalLink, MessageSquare, Loader2, Star, Zap, ShieldCheck, AlertTriangle } from 'lucide-react';
@@ -522,6 +523,11 @@ export default function CommissionDetailPage() {
             </div>
           </div>
         )}
+
+        {/* ═══ MISSION CHAT ═══ */}
+        <div className="px-4 pb-4">
+          <MissionLobbyChat missionId={id!} />
+        </div>
       </div>
 
       {/* Rating Modal */}
