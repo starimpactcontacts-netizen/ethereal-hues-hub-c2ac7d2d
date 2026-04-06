@@ -6,7 +6,7 @@ import {
   Target, ArrowRight, Crown, Shield, Users, Trophy, 
   Users2, TrendingUp, Coins, ShoppingBag, Gavel, Gift,
   ChevronRight, Plus, Infinity as InfinityIcon, Star, Swords, Loader2,
-  Zap, UserRound, ChevronDown, Check, Clock, X, Info, Clapperboard, DollarSign
+  Zap, UserRound, ChevronDown, Check, Clock, X, Info, Clapperboard, DollarSign, Crosshair
 } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
@@ -197,7 +197,7 @@ export default function HubPage() {
   const [walletOpen, setWalletOpen] = useState(false);
   const [judgeReviewCount, setJudgeReviewCount] = useState(0);
   const [userCrew, setUserCrew] = useState<UserCrew | null>(null);
-  const [quickAction, setQuickAction] = useState<'solo' | 'quick'>('solo');
+  const [quickAction, setQuickAction] = useState<'mission' | 'solo' | 'quick'>('mission');
   const [qfSearching, setQfSearching] = useState(false);
   const [qfElapsed, setQfElapsed] = useState(0);
   const [qfTipIdx, setQfTipIdx] = useState(0);
@@ -211,6 +211,37 @@ export default function HubPage() {
   const eventsAutoScrollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { hasEquippedOG } = useEquippedBadges(user?.id);
   const [dismissedBanners, setDismissedBanners] = useState<{ battles?: boolean; solo?: boolean }>({});
+  const [missionDrops, setMissionDrops] = useState<Array<{ id: string; song_name: string; poster_url: string | null; artist_name: string | null; max_pay: number }>>([]);
+
+  // Fetch live missions for featured drops billboard
+  useEffect(() => {
+    const fetchMissions = async () => {
+      const { data } = await supabase
+        .from('featured_drops')
+        .select('id, song_name, poster_url, mission_live, mission_custom_payouts, artist_id')
+        .eq('mission_live', true)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      if (!data || data.length === 0) { setMissionDrops([]); return; }
+      const artistIds = [...new Set(data.map((d: any) => d.artist_id).filter(Boolean))];
+      let artistMap: Record<string, string> = {};
+      if (artistIds.length > 0) {
+        const { data: artists } = await supabase.from('featured_artists').select('id, name').in('id', artistIds);
+        if (artists) artists.forEach(a => { artistMap[a.id] = a.name; });
+      }
+      setMissionDrops(data.map((d: any) => {
+        const payouts = d.mission_custom_payouts || {};
+        return {
+          id: d.id,
+          song_name: d.song_name,
+          poster_url: d.poster_url,
+          artist_name: d.artist_id ? artistMap[d.artist_id] || null : null,
+          max_pay: Math.max((payouts.S || 0) / 100, (payouts.A || 0) / 100, (payouts.B || 0) / 100),
+        };
+      }));
+    };
+    fetchMissions();
+  }, []);
 
   // Split drops: artist featured vs event drops (brand/film/official)
   const artistDrops = useMemo(() => {
@@ -387,7 +418,7 @@ export default function HubPage() {
   );
   
   // Total counts
-  const totalArtistFeatured = artistDrops.length;
+  const totalArtistFeatured = artistDrops.length + missionDrops.length;
   const totalEvents = eventDrops.length + premiumComps.length + activeSanctioned.length + featuredBattles.length;
   const totalFeatured = totalArtistFeatured + totalEvents;
 
@@ -774,10 +805,12 @@ export default function HubPage() {
           <div 
             className="flex overflow-hidden rounded-xl border"
             style={{ 
-              borderColor: quickAction === 'solo' ? 'rgba(255,255,255,0.20)' : 'rgba(239,68,68,0.35)',
-              boxShadow: quickAction === 'solo' 
-                ? '0 4px 30px rgba(255,255,255,0.12), 0 0 60px rgba(255,255,255,0.06)' 
-                : '0 4px 30px rgba(239,68,68,0.25), 0 0 60px rgba(239,68,68,0.08)'
+              borderColor: quickAction === 'mission' ? 'rgba(16,185,129,0.35)' : quickAction === 'solo' ? 'rgba(255,255,255,0.20)' : 'rgba(239,68,68,0.35)',
+              boxShadow: quickAction === 'mission'
+                ? '0 4px 30px rgba(16,185,129,0.25), 0 0 60px rgba(16,185,129,0.08)'
+                : quickAction === 'solo' 
+                  ? '0 4px 30px rgba(255,255,255,0.12), 0 0 60px rgba(255,255,255,0.06)' 
+                  : '0 4px 30px rgba(239,68,68,0.25), 0 0 60px rgba(239,68,68,0.08)'
             }}
           >
             <motion.button
@@ -786,7 +819,9 @@ export default function HubPage() {
               disabled={quickAction === 'quick' && qfIsSearching}
               onClick={() => {
                 if (!profile) { navigate('/start'); return; }
-                if (quickAction === 'solo') {
+                if (quickAction === 'mission') {
+                  navigate('/arena?filter=missions');
+                } else if (quickAction === 'solo') {
                   navigate('/arena?mode=solo&auto=1');
                 } else {
                   if (qfActiveFight) {
@@ -798,16 +833,20 @@ export default function HubPage() {
               }}
               className={cn(
                 "flex-1 relative overflow-hidden flex items-center justify-center gap-3 px-6 py-5 transition-all duration-300 touch-manipulation select-none",
-                quickAction === 'solo'
+                quickAction === 'mission'
                   ? ""
-                  : "bg-gradient-to-r from-red-600 via-red-500 to-red-600"
+                  : quickAction === 'solo'
+                    ? ""
+                    : "bg-gradient-to-r from-red-600 via-red-500 to-red-600"
               )}
-              style={quickAction === 'solo' ? {
+              style={quickAction === 'mission' ? {
+                background: 'linear-gradient(135deg, hsl(160 84% 39%) 0%, hsl(152 76% 36%) 40%, hsl(145 72% 30%) 100%)',
+              } : quickAction === 'solo' ? {
                 background: 'linear-gradient(135deg, hsl(43 96% 56%) 0%, hsl(40 100% 50%) 40%, hsl(36 100% 48%) 100%)',
               } : undefined}
             >
                {/* Luxury geometric pattern overlay */}
-               {quickAction === 'solo' && (
+               {(quickAction === 'solo' || quickAction === 'mission') && (
                  <div className="absolute inset-0 pointer-events-none opacity-[0.07]" style={{
                    backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(255,255,255,0.5) 8px, rgba(255,255,255,0.5) 9px),
                      repeating-linear-gradient(-45deg, transparent, transparent 8px, rgba(255,255,255,0.5) 8px, rgba(255,255,255,0.5) 9px)`,
@@ -822,7 +861,19 @@ export default function HubPage() {
                {/* Top gloss */}
                <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/[0.22] to-transparent pointer-events-none" />
               
-              {quickAction === 'solo' ? (
+              {quickAction === 'mission' ? (
+                <>
+                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-white/30 to-white/10 flex items-center justify-center relative z-10 border border-white/40 shadow-lg shadow-black/20">
+                     <Crosshair className="w-4.5 h-4.5 text-white drop-shadow-lg" />
+                  </div>
+                  <div className="flex flex-col relative z-10">
+                    <span className="text-[28px] font-bold text-white uppercase tracking-wider leading-none drop-shadow-lg" style={{ fontFamily: 'Teko, sans-serif' }}>
+                      Mission Edit
+                    </span>
+                    <span className="text-[9px] text-white/60 font-bold tracking-wider">GET PAID PER EDIT</span>
+                  </div>
+                </>
+              ) : quickAction === 'solo' ? (
                 <>
                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-white/30 to-white/10 flex items-center justify-center relative z-10 border border-white/40 shadow-lg shadow-black/20">
                      <UserRound className="w-4.5 h-4.5 text-white drop-shadow-lg" />
@@ -873,13 +924,15 @@ export default function HubPage() {
                 <button 
                   className={cn(
                     "relative overflow-hidden flex items-center justify-center px-5 py-5 transition-colors touch-manipulation select-none border-l",
-                    quickAction === 'solo'
+                    quickAction === 'mission'
                       ? "hover:brightness-110 border-white/10"
-                      : "bg-red-700/80 hover:bg-red-600/80 border-red-900/40"
+                      : quickAction === 'solo'
+                        ? "hover:brightness-110 border-white/10"
+                        : "bg-red-700/80 hover:bg-red-600/80 border-red-900/40"
                   )}
-                  style={quickAction === 'solo' ? { background: 'hsl(33 100% 38%)' } : undefined}
+                  style={quickAction === 'mission' ? { background: 'hsl(152 72% 28%)' } : quickAction === 'solo' ? { background: 'hsl(33 100% 38%)' } : undefined}
                 >
-                   {quickAction === 'solo' && (
+                   {(quickAction === 'solo' || quickAction === 'mission') && (
                      <div className="absolute inset-0 pointer-events-none opacity-[0.06]" style={{
                        backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(255,255,255,0.5) 6px, rgba(255,255,255,0.5) 7px),
                          repeating-linear-gradient(-45deg, transparent, transparent 6px, rgba(255,255,255,0.5) 6px, rgba(255,255,255,0.5) 7px)`,
@@ -892,6 +945,14 @@ export default function HubPage() {
               <DropdownMenuContent align="end" className="w-52 bg-surface-1 border-border">
                 <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">Quick Action</DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setQuickAction('mission')} className="flex items-center gap-2 cursor-pointer">
+                  <Crosshair className="w-4 h-4 text-emerald-400" />
+                  <div className="flex-1">
+                    <span className="text-sm font-semibold">Mission Edit</span>
+                    <span className="text-[10px] text-emerald-400 ml-1.5">GET PAID</span>
+                  </div>
+                  {quickAction === 'mission' && <Check className="w-3.5 h-3.5 text-emerald-400" />}
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setQuickAction('solo')} className="flex items-center gap-2 cursor-pointer">
                   <UserRound className="w-4 h-4 text-gold" />
                   <div className="flex-1">
@@ -1032,6 +1093,39 @@ export default function HubPage() {
             autoScrollRef={featuredAutoScrollRef}
             totalFeatured={totalArtistFeatured}
           >
+            {/* Mission billboard cards — pinned first */}
+            {missionDrops.map(mission => (
+              <Link key={`mission-${mission.id}`} to={`/mission/${mission.id}`} className="shrink-0">
+                <div className="relative w-[220px] h-[300px] overflow-hidden group cursor-pointer rounded-lg border-2 border-emerald-500/30">
+                  {mission.poster_url ? (
+                    <img src={mission.poster_url} alt={mission.song_name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/60 to-black" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+                  {/* MISSION badge */}
+                  <div className="absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5 bg-emerald-600/90 backdrop-blur-sm px-2.5 py-1 rounded-sm">
+                    <DollarSign className="w-3 h-3 text-white" />
+                    <span className="text-[8px] font-black text-white uppercase tracking-[0.2em]">Mission</span>
+                  </div>
+                  {mission.max_pay > 0 && (
+                    <div className="absolute top-2.5 right-2.5 z-10 bg-black/70 backdrop-blur-sm px-2 py-1 rounded-sm">
+                      <span className="font-display text-2xl text-emerald-400 leading-none">${mission.max_pay}</span>
+                    </div>
+                  )}
+                  <div className="absolute bottom-0 left-0 right-0 p-3">
+                    {mission.artist_name && (
+                      <p className="text-[8px] font-black text-emerald-400/70 uppercase tracking-[0.2em] mb-0.5">{mission.artist_name}</p>
+                    )}
+                    <h4 className="font-display text-lg text-white leading-tight truncate">{mission.song_name}</h4>
+                    <div className="mt-2 flex items-center justify-center gap-2 bg-emerald-600 py-2 rounded-sm">
+                      <Crosshair className="w-3.5 h-3.5 text-white" />
+                      <span className="text-[11px] font-black text-white uppercase tracking-wider">Enter Mission</span>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
             {artistDrops.map(drop => (
               <FeaturedDropCard key={drop.id} drop={drop} />
             ))}
