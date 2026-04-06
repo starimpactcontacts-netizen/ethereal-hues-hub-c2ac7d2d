@@ -105,7 +105,31 @@ export function useEditorLinkPage(userId?: string) {
       if (settingsRes.data) {
         setSettings(settingsRes.data as unknown as LinkPageSettings);
       } else {
-        setSettings({ ...defaultSettings, user_id: userId });
+        // Auto-create published link page with default profile link
+        const newSettings = { ...defaultSettings, user_id: userId, is_published: true };
+        const { data: created } = await supabase.from("editor_link_pages").insert(newSettings).select().single();
+        if (created) {
+          setSettings(created as unknown as LinkPageSettings);
+          // Auto-add Loopgate profile link
+          await supabase.from("editor_links").insert({
+            user_id: userId,
+            title: "My Loopgate Profile",
+            url: `${window.location.origin}/editor/${userId}`,
+            link_type: "link",
+            description: "View my full editor profile",
+            sort_order: 0,
+            is_active: true,
+          });
+          // Re-fetch links
+          const { data: newLinks } = await supabase
+            .from("editor_links")
+            .select("*")
+            .eq("user_id", userId)
+            .order("sort_order", { ascending: true });
+          setLinks((newLinks as unknown as EditorLink[]) || []);
+        } else {
+          setSettings({ ...defaultSettings, user_id: userId });
+        }
       }
 
       setLinks((linksRes.data as unknown as EditorLink[]) || []);
