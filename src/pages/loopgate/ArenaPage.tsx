@@ -1207,7 +1207,7 @@ export default function ArenaPage() {
                 ) : undefined}
               />
               {liveDrops.length > 0 ? (
-                <div className="pl-4 flex gap-3 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory">
+                <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory" style={{ paddingLeft: '16px' }}>
                   {liveDrops.map(drop => (
                     <FeaturedDropCard key={drop.id} drop={drop} />
                   ))}

@@ -152,13 +152,13 @@ export default function SoloShowcase({ onStartSolo }: { onStartSolo: () => void 
 
       {/* Submissions carousel — compact poster cards */}
       {loading ? (
-        <div className="flex gap-2.5 pl-4 overflow-x-auto scrollbar-hide pb-2">
+        <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-2" style={{ paddingLeft: '16px' }}>
           <Skeleton className="h-[220px] w-[150px] shrink-0 rounded-xl" />
           <Skeleton className="h-[220px] w-[150px] shrink-0 rounded-xl" />
           <Skeleton className="h-[220px] w-[150px] shrink-0 rounded-xl" />
         </div>
       ) : submissions.length > 0 ? (
-        <div className="flex gap-2.5 pl-4 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory">
+        <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory" style={{ paddingLeft: '16px' }}>
           {submissions.map(solo => (
             <SoloCard key={solo.id} solo={solo} />
           ))}
