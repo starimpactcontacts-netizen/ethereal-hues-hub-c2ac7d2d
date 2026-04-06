@@ -137,20 +137,6 @@ export default function CommissionsPage() {
 
   const loading = commLoading || bountyLoading;
 
-  // Not staff? Block access
-  if (!loading && !isStaff) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="text-center">
-          <Shield className="w-12 h-12 text-red-400/30 mx-auto mb-3" />
-          <h2 className="text-lg font-bold text-foreground mb-1">Admin Access Only</h2>
-          <p className="text-sm text-muted-foreground mb-4">This page is restricted to platform administrators.</p>
-          <Button onClick={() => navigate('/hub')} variant="outline">Back to Hub</Button>
-        </div>
-      </div>
-    );
-  }
-
   // All missions (marketplace)
   const allMissions = bounties;
   const openMissions = allMissions.filter(b => b.status === 'open');
@@ -165,6 +151,20 @@ export default function CommissionsPage() {
     setCreateType(type);
     setShowCreate(true);
   };
+
+  // Not staff? Block access
+  if (!loading && !isStaff) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="text-center">
+          <Shield className="w-12 h-12 text-red-400/30 mx-auto mb-3" />
+          <h2 className="text-lg font-bold text-foreground mb-1">Admin Access Only</h2>
+          <p className="text-sm text-muted-foreground mb-4">This page is restricted to platform administrators.</p>
+          <Button onClick={() => navigate('/hub')} variant="outline">Back to Hub</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-24">
