@@ -349,6 +349,7 @@ export default function CommissionDetailPage() {
   const [reviewingSubmission, setReviewingSubmission] = useState<any>(null);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
+  const [showQoiInfo, setShowQoiInfo] = useState(false);
   const [showBrief, setShowBrief] = useState(false);
   const [editingBrief, setEditingBrief] = useState(false);
   const [briefText, setBriefText] = useState('');
