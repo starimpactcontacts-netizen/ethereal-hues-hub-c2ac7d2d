@@ -734,6 +734,63 @@ export type Database = {
           },
         ]
       }
+      commission_messages: {
+        Row: {
+          avatar_url: string | null
+          commission_id: string
+          created_at: string
+          id: string
+          is_system: boolean | null
+          message_text: string
+          reply_to_id: string | null
+          reply_to_text: string | null
+          reply_to_username: string | null
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          commission_id: string
+          created_at?: string
+          id?: string
+          is_system?: boolean | null
+          message_text: string
+          reply_to_id?: string | null
+          reply_to_text?: string | null
+          reply_to_username?: string | null
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          commission_id?: string
+          created_at?: string
+          id?: string
+          is_system?: boolean | null
+          message_text?: string
+          reply_to_id?: string | null
+          reply_to_text?: string | null
+          reply_to_username?: string | null
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commission_messages_commission_id_fkey"
+            columns: ["commission_id"]
+            isOneToOne: false
+            referencedRelation: "commissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commission_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "commission_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       commission_submissions: {
         Row: {
           avatar_url: string | null
