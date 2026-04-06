@@ -210,6 +210,7 @@ export default function HubPage() {
   const [eventsActiveIdx, setEventsActiveIdx] = useState(0);
   const eventsAutoScrollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { hasEquippedOG } = useEquippedBadges(user?.id);
+  const [dismissedBanners, setDismissedBanners] = useState<{ battles?: boolean; solo?: boolean }>({});
 
   // Split drops: artist featured vs event drops (brand/film/official)
   const artistDrops = useMemo(() => {
@@ -706,82 +707,63 @@ export default function HubPage() {
         </div>
       </div>
 
-      {/* ═══════════════════════════════════════════════════════════════════
-          ⚔️ ACTIVE BATTLE BANNER - First thing users see
-      ═══════════════════════════════════════════════════════════════════ */}
-      {activeBattles.length > 0 && (
-        <div className="px-4 mt-2 space-y-2">
-          {activeBattles.map(battle => {
+      {/* ⚔️ ACTIVE REMINDERS — clean, dismissible */}
+      {activeBattles.length > 0 && !dismissedBanners.battles && (
+        <div className="px-4 mt-2 space-y-1.5">
+          {activeBattles.slice(0, 2).map(battle => {
             const isJudgeRole = battle.judge_id === user?.id;
             const isChallenger = battle.challenger_id === user?.id;
-            const roleLabel = isJudgeRole ? "YOU'RE JUDGING" : isChallenger ? 'YOUR CHALLENGE' : "YOU'RE DEFENDING";
+            const roleLabel = isJudgeRole ? "JUDGING" : isChallenger ? 'CHALLENGER' : "DEFENDER";
             const roleEmoji = isJudgeRole ? '⚖️' : isChallenger ? '🗡️' : '🛡️';
-            const accentColor = isJudgeRole ? 'purple' : 'red';
-            
             return (
-              <motion.div
-                key={battle.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: 'spring', stiffness: 300 }}
-              >
-                <Link
-                  to={`/battle/${battle.id}`}
-                  className={`block bg-gradient-to-r ${accentColor === 'purple' ? 'from-purple-500/15 via-surface-1 to-purple-500/15 border-purple-500/40 hover:border-purple-500/60' : 'from-red-500/15 via-surface-1 to-red-500/15 border-red-500/40 hover:border-red-500/60'} border p-3 transition-all`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <div className={`w-9 h-9 rounded-full ${accentColor === 'purple' ? 'bg-purple-500/20' : 'bg-red-500/20'} flex items-center justify-center`}>
-                        {isJudgeRole ? <Gavel className="w-4 h-4 text-purple-400" /> : <Swords className="w-4 h-4 text-red-400" />}
-                      </div>
-                      <span className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ${accentColor === 'purple' ? 'bg-purple-500' : 'bg-red-500'} animate-pulse`} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className={`text-[10px] font-bold uppercase tracking-wider ${accentColor === 'purple' ? 'text-purple-400' : 'text-red-400'}`}>
-                          {battle.status === 'active' ? `⚔️ LIVE — ${roleEmoji} ${roleLabel}` :
-                           battle.status === 'pending' ? `⏳ PENDING — ${roleEmoji} ${roleLabel}` : `⚖️ JUDGING — ${roleEmoji} ${roleLabel}`}
-                        </span>
-                        {battle.is_rapid && (
-                          <span className="text-[8px] bg-amber-500/20 text-amber-400 px-1 py-0.5">⚡ RAPID</span>
-                        )}
-                      </div>
-                      <p className="text-xs text-foreground truncate mt-0.5">
-                        {battle.challenger_username} vs {battle.opponent_username || '???'}
-                      </p>
-                    </div>
-                    {battle.status === 'active' && battle.ends_at && (
-                      <div className="text-right flex-shrink-0">
-                        <CountdownTimer endDate={battle.ends_at} />
-                      </div>
-                    )}
-                    <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              <div key={battle.id} className="flex items-center gap-1.5">
+                <Link to={`/battle/${battle.id}`}
+                  className="flex-1 flex items-center gap-3 bg-surface-1 border border-border hover:border-foreground/20 p-3 transition-all">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isJudgeRole ? 'bg-purple-500/15' : 'bg-red-500/15'}`}>
+                    {isJudgeRole ? <Gavel className="w-4 h-4 text-purple-400" /> : <Swords className="w-4 h-4 text-red-400" />}
                   </div>
+                  <div className="flex-1 min-w-0">
+                    <span className={`text-[10px] font-bold uppercase tracking-wider ${isJudgeRole ? 'text-purple-400' : 'text-red-400'}`}>
+                      {roleEmoji} {roleLabel} · {battle.status}
+                    </span>
+                    <p className="text-xs text-foreground truncate">{battle.challenger_username} vs {battle.opponent_username || '???'}</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
                 </Link>
-              </motion.div>
+                <button onClick={() => setDismissedBanners(prev => ({ ...prev, battles: true }))}
+                  className="p-2 text-muted-foreground hover:text-foreground transition-colors shrink-0" aria-label="Dismiss">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
             );
           })}
+          {activeBattles.length > 2 && (
+            <Link to="/arena" className="block text-center text-[10px] text-muted-foreground hover:text-foreground">
+              +{activeBattles.length - 2} more in My Arena →
+            </Link>
+          )}
         </div>
       )}
 
-      {/* 🎵 ACTIVE SOLO RESUME BANNER */}
-      {activeSolo && (
+      {activeSolo && !dismissedBanners.solo && (
         <div className="px-4 mt-2">
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-            <button
-              onClick={() => navigate(`/studio?solo=${activeSolo.id}`)}
-              className="w-full bg-gradient-to-r from-gold/15 via-surface-1 to-gold/15 border border-gold/40 hover:border-gold/60 p-3 flex items-center gap-3 transition-all text-left"
-            >
-              <div className="w-9 h-9 bg-gold/20 flex items-center justify-center shrink-0">
+          <div className="flex items-center gap-1.5">
+            <button onClick={() => navigate(`/studio?solo=${activeSolo.id}`)}
+              className="flex-1 flex items-center gap-3 bg-surface-1 border border-border hover:border-foreground/20 p-3 transition-all text-left">
+              <div className="w-8 h-8 rounded-full bg-gold/15 flex items-center justify-center shrink-0">
                 <Star className="w-4 h-4 text-gold" />
               </div>
               <div className="flex-1 min-w-0">
-                <span className="text-[10px] text-gold font-bold uppercase tracking-wider block">Active Solo — {activeSolo.status}</span>
-                <span className="text-xs text-foreground font-bold truncate block">{activeSolo.theme} · {activeSolo.song_name}</span>
+                <span className="text-[10px] text-gold font-bold uppercase tracking-wider">Solo · {activeSolo.status}</span>
+                <p className="text-xs text-foreground font-bold truncate">{activeSolo.song_name}</p>
               </div>
-              <span className="text-[11px] font-bold text-gold shrink-0">Resume →</span>
+              <span className="text-[10px] font-bold text-gold shrink-0">Resume →</span>
             </button>
-          </motion.div>
+            <button onClick={() => setDismissedBanners(prev => ({ ...prev, solo: true }))}
+              className="p-2 text-muted-foreground hover:text-foreground transition-colors shrink-0" aria-label="Dismiss">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       )}
 
