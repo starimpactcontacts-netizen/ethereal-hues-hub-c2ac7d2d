@@ -507,7 +507,7 @@ export default function CommissionDetailPage() {
         <div className="flex gap-2">
           {canSubmit ? (
             <button
-              onClick={() => document.getElementById('mission-submit-area')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => setShowSubmitModal(true)}
               className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-wider text-sm transition-colors"
             >
               <Send className="w-4 h-4" /> Submit Edit
