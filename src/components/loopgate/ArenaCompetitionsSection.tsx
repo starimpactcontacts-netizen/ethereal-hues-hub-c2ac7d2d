@@ -160,26 +160,19 @@ export default function ArenaCompetitionsSection({ onCreateClick }: { onCreateCl
               style={{ boxShadow: "0 2px 20px rgba(0,0,0,0.2)" }}
             >
               {/* Visual area */}
-              <div className="relative h-32 bg-gradient-to-br from-gold/[0.08] via-surface-2 to-black flex items-center justify-center">
-                <div className="w-14 h-14 rounded-2xl bg-gold/10 border border-gold/20 flex items-center justify-center">
-                  <Plus className="w-7 h-7 text-gold" />
+              <div className="relative h-[90px] bg-gradient-to-br from-gold/[0.08] via-surface-2 to-black flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center">
+                  <Plus className="w-5 h-5 text-gold" />
                 </div>
               </div>
 
-              <div className="p-3.5 space-y-2.5">
-                <h3 className="text-[14px] font-bold text-foreground tracking-tight" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
-                  Create Your Competition
+              <div className="p-2 space-y-1">
+                <h3 className="text-[11px] font-bold text-foreground tracking-tight" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
+                  Create Competition
                 </h3>
-                <p className="text-[10px] text-muted-foreground leading-relaxed">
-                  Set your theme, invite editors, and crown a winner.
+                <p className="text-[8px] text-muted-foreground leading-relaxed truncate">
+                  Set theme, invite editors
                 </p>
-
-                <button
-                  className="w-full py-3 rounded-xl uppercase tracking-[0.15em] flex items-center justify-center gap-2 text-[13px] font-extrabold transition-all hover:brightness-110"
-                  style={{ fontFamily: "'Teko', sans-serif", background: "linear-gradient(135deg, #D4AF37, #B8860B)", color: "#000", boxShadow: "0 4px 20px rgba(212,175,55,0.25)" }}
-                >
-                  <Plus className="w-3.5 h-3.5" /> CREATE
-                </button>
               </div>
             </motion.div>
           </div>
