@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,7 +7,7 @@
 
 :root {
   --font-size: 16px;
-  --font-display: 'Teko', sans-serif;
+  --font-display: 'Anton', sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
   
   /* Loopgate Dark Authority Theme - Pure Black */
