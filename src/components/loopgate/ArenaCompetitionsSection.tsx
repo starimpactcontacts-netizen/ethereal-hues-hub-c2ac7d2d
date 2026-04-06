@@ -97,7 +97,7 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
         <button
           onClick={(e) => { e.stopPropagation(); onJoin(comp.id); }}
           disabled={spotsLeft <= 0}
-          className="w-full py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-500 text-white hover:bg-emerald-400 active:bg-emerald-600 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+          className="w-full py-2.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-emerald-500 text-white hover:bg-emerald-400 active:bg-emerald-600 transition-all disabled:opacity-30 disabled:cursor-not-allowed touch-manipulation"
           style={{ fontFamily: "'Teko', sans-serif" }}
         >
           {spotsLeft <= 0 ? "FULL" : "JOIN"}
@@ -142,13 +142,19 @@ export default function ArenaCompetitionsSection({ onCreateClick }: { onCreateCl
 
   return (
     <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <div className="flex items-center px-4 mb-3">
+      <div className="flex items-center justify-between px-4 mb-3">
         <div className="flex items-center gap-2">
           <Trophy className="w-4 h-4 text-gold" />
           <span className="text-[15px] font-extrabold text-foreground tracking-tight" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
             Competitions
           </span>
         </div>
+        <button
+          onClick={onCreateClick}
+          className="flex items-center gap-1 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-gold border border-gold/20 hover:bg-gold/10 rounded transition-colors"
+        >
+          <Plus className="w-3 h-3" /> Create
+        </button>
       </div>
 
       {loading ? (
