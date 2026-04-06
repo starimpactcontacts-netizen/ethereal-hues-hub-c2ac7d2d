@@ -500,19 +500,24 @@ export default function CommissionDetailPage() {
       <div className="px-4 pb-24 space-y-5 -mt-1">
 
         {/* ── LOBBY HEADS ── */}
-        {visitors.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-black/20 backdrop-blur-sm rounded-2xl border border-white/5 px-4 py-3"
-          >
-            <div className="flex items-center gap-2 mb-2.5">
-              <Eye className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="text-[10px] font-black text-foreground uppercase tracking-[0.15em]">In the Lobby</span>
-            </div>
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-surface-1 border border-border rounded-2xl px-4 py-3"
+        >
+          <div className="flex items-center gap-2 mb-2.5">
+            <Eye className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="text-[10px] font-black text-foreground uppercase tracking-[0.15em]">In the Lobby</span>
+          </div>
+          {visitors.length > 0 ? (
             <LobbyHeads visitors={visitors} />
-          </motion.div>
-        )}
+          ) : (
+            <div className="flex items-center gap-2 py-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30" />
+              <span className="text-[10px] text-muted-foreground italic">No one here yet — be the first</span>
+            </div>
+          )}
+        </motion.div>
 
         {/* ── PROGRESS ── */}
         <div className="bg-black/20 backdrop-blur-sm rounded-2xl border border-white/5 p-4">
