@@ -44,9 +44,9 @@ export default function BottomNav() {
         </div>
       )}
 
-      <nav className="fixed bottom-0 left-0 right-0 z-50" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 50px)', backgroundColor: '#000000' }}>
-        {/* Infinite black fill below nav */}
-        <div className="absolute left-0 right-0" style={{ top: '-2px', bottom: '-500px', backgroundColor: '#000000' }} />
+      <nav className="fixed bottom-0 left-0 right-0 z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)', backgroundColor: 'hsl(var(--app-safe-fill, var(--background)))' }}>
+        <div className="absolute left-0 right-0" style={{ top: '-2px', bottom: '-500px', backgroundColor: 'hsl(var(--app-safe-fill, var(--background)))' }} />
+        <div className="absolute left-0 right-0 bottom-full h-6" style={{ backgroundColor: 'hsl(var(--app-safe-fill, var(--background)))' }} />
         {/* Top border with synced arena color glow */}
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-white/[0.04]" />
         {/* Core bright line — hue-synced, subtle */}

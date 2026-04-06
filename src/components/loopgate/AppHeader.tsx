@@ -56,7 +56,7 @@ export default function AppHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-background backdrop-blur-xl border-b border-border/30" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+    <header className="sticky top-0 z-50 backdrop-blur-xl border-b border-border/30" style={{ paddingTop: 'env(safe-area-inset-top, 0px)', backgroundColor: 'hsl(var(--app-safe-fill, var(--background)))' }}>
       {/* Subtle bottom glow line */}
       <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-foreground/[0.06] to-transparent" />
       
