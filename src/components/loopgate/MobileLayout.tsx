@@ -7,7 +7,7 @@ export default function MobileLayout() {
   const showNav = !hideNavPaths.includes(location.pathname);
 
   return (
-    <div className="h-full bg-background text-foreground flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
       <main className="flex-1 pb-14">
         <Outlet />
       </main>
