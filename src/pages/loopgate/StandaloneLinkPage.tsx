@@ -306,14 +306,16 @@ export default function StandaloneLinkPage() {
           </div>
         )}
 
-        {/* Footer — Powered by Loopgate */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="mt-auto pt-12 flex flex-col items-center gap-5">
+        {/* Powered by Loopgate — always visible below links */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="pt-8 pb-2 flex justify-center">
           <a
-            href="/"
-            className="flex items-center gap-2.5 text-white/30 hover:text-white/50 transition-colors"
+            href="/hub"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-white/25 hover:text-white/40 transition-colors"
           >
-            <img src={loopgateLogo} alt="Loopgate" className="w-4 h-4 opacity-50" />
-            <span className="text-[10px] font-semibold tracking-[0.2em] uppercase">Powered by Loopgate</span>
+            <img src={loopgateLogo} alt="Loopgate" className="w-3.5 h-3.5 opacity-40" />
+            <span className="text-[10px] font-medium tracking-[0.15em] uppercase">Powered by Loopgate</span>
           </a>
         </motion.div>
       </div>
