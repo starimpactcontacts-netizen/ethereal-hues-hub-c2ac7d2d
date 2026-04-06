@@ -11,7 +11,7 @@
   --font-body: 'Inter', system-ui, sans-serif;
   
   /* Loopgate Dark Authority Theme - Pure Black */
-  --background: 0 0% 2%;
+  --background: 0 0% 0%;
   --foreground: 0 0% 95%;
   --card: 0 0% 7%;
   --card-foreground: 45 10% 92%;
@@ -61,7 +61,7 @@
 }
 
 .dark {
-  --background: 0 0% 4%;
+  --background: 0 0% 0%;
   --foreground: 45 10% 92%;
   --card: 0 0% 7%;
   --card-foreground: 45 10% 92%;
@@ -340,9 +340,9 @@ html.editorium-active header,
 html.editorium-active header *,
 html.editorium-active nav.fixed.bottom-0,
 html.editorium-active nav.fixed.bottom-0 > div {
-  --background: 0 0% 2% !important;
+  --background: 0 0% 0% !important;
   --foreground: 0 0% 95% !important;
-  background-color: hsl(0 0% 2%) !important;
+  background-color: hsl(0 0% 0%) !important;
   color: inherit;
 }
 html.editorium-active nav.fixed.bottom-0 a,
