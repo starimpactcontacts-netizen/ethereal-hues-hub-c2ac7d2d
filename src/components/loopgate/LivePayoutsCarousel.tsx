@@ -123,9 +123,23 @@ export default function LivePayoutsCarousel() {
   }
 
   return (
-    <div className="mb-4">
+    <div className="mb-4 mx-4 relative overflow-hidden rounded-xl border border-emerald-500/10"
+      style={{
+        background: 'linear-gradient(135deg, rgba(16,185,129,0.06) 0%, rgba(0,0,0,0.95) 40%, rgba(16,185,129,0.04) 100%)',
+      }}
+    >
+      {/* Background pattern — subtle dollar grid */}
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+        style={{
+          backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(16,185,129,0.3) 20px, rgba(16,185,129,0.3) 21px),
+                            repeating-linear-gradient(-45deg, transparent, transparent 20px, rgba(16,185,129,0.3) 20px, rgba(16,185,129,0.3) 21px)`,
+        }}
+      />
+      {/* Top accent line */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent" />
+
       {/* Header */}
-      <div className="flex items-center justify-between mb-2.5 px-4">
+      <div className="flex items-center justify-between mb-2.5 px-4 pt-3 relative z-10">
         <div className="flex items-center gap-2">
           <DollarSign className="w-4 h-4 text-emerald-400" />
           <span className="text-[13px] font-black text-foreground uppercase tracking-wider" style={teko}>Live Payouts</span>
@@ -134,14 +148,14 @@ export default function LivePayoutsCarousel() {
       </div>
 
       {/* Cards carousel */}
-      <div className="flex gap-3 pl-4 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory">
+      <div className="flex gap-3 pl-4 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory relative z-10">
         {payouts.map((payout, idx) => (
           <PayoutCard key={payout.id} payout={payout} idx={idx} />
         ))}
       </div>
 
       {/* Footer stats */}
-      <div className="flex items-center gap-3 px-4 mt-2 text-[9px] text-muted-foreground">
+      <div className="flex items-center gap-3 px-4 pb-3 mt-1 text-[9px] text-muted-foreground relative z-10">
         <span>Total paid: <span className="text-emerald-400 font-bold">${(totalCents / 100).toFixed(2)}</span></span>
         <span className="text-border/30">|</span>
         <span>Avg: <span className="text-foreground/60 font-bold">${(avgCents / 100).toFixed(2)}</span></span>
@@ -150,6 +164,9 @@ export default function LivePayoutsCarousel() {
           <span className="font-bold">Recent</span>
         </div>
       </div>
+
+      {/* Bottom accent line */}
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
     </div>
   );
 }
