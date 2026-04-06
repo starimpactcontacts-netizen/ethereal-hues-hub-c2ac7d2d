@@ -462,7 +462,7 @@ export default function CommissionDetailPage() {
             className="bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 p-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/40">Payout Scale</span>
-              <button onClick={() => { setShowHowItWorks(true); setTimeout(() => document.getElementById('how-it-works-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100); }} className="flex items-center gap-1 text-[8px] font-bold text-white/30 hover:text-white/60 transition-colors">
+              <button onClick={() => setShowQoiInfo(true)} className="flex items-center gap-1 text-[8px] font-bold text-white/30 hover:text-white/60 transition-colors">
                 <Info className="w-3 h-3" /> What's QOI?
               </button>
             </div>
