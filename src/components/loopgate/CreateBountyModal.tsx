@@ -128,7 +128,7 @@ export default function CreateBountyModal({ onClose, onCreate, defaultType }: Cr
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-xl">×</button>
         </div>
 
-        <div className="p-4 space-y-4">
+        <div className="p-4 pb-24 space-y-4">
           {/* Mission Type Selector */}
           <div>
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Mission Type *</label>
