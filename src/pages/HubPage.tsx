@@ -418,7 +418,7 @@ export default function HubPage() {
   );
   
   // Total counts
-  const totalArtistFeatured = artistDrops.length;
+  const totalArtistFeatured = artistDrops.length + missionDrops.length;
   const totalEvents = eventDrops.length + premiumComps.length + activeSanctioned.length + featuredBattles.length;
   const totalFeatured = totalArtistFeatured + totalEvents;
 
