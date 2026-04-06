@@ -289,6 +289,7 @@ function MissionEditDialog({ mission, onClose, onSaved }: { mission: MissionDrop
     inspo_url: mission.inspo_url || '',
     inspo_thumbnail_url: mission.inspo_thumbnail_url || '',
     theme_description: mission.theme_description || '',
+    scenepack_url: mission.scenepack_url || '',
   });
   const [saving, setSaving] = useState(false);
 
