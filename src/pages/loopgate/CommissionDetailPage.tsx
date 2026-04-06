@@ -547,9 +547,9 @@ export default function CommissionDetailPage() {
               >
                 <div className="bg-surface-0 border border-t-0 border-border/30 p-3 space-y-2.5">
                   {[
-                    { step: '01', icon: Music, label: 'Listen to the track', desc: 'Study the vibe, tempo & mood of the song' },
-                    { step: '02', icon: Film, label: 'Create your edit', desc: 'Use any editing software (CapCut, Adobe, etc.)' },
-                    { step: '03', icon: Send, label: 'Submit your link', desc: 'Post on TikTok, YouTube, or Instagram and paste the link' },
+                    { step: '01', icon: Target, label: 'Follow the brief', desc: 'Read the mission brief and understand the creative direction' },
+                    { step: '02', icon: Film, label: 'Create your edit', desc: 'Use any editing software (CapCut, Adobe, Premiere, etc.)' },
+                    { step: '03', icon: Send, label: 'Post on socials', desc: 'Upload to TikTok, YouTube, or Instagram and paste the link' },
                     { step: '04', icon: Star, label: 'Get rated & paid', desc: 'Your edit gets a QOI score and tier rating (S/A/B/C-F)' },
                     { step: '05', icon: DollarSign, label: 'Earn instantly', desc: 'S/A/B rated edits get instant USD payouts. C-F earn Index points' },
                   ].map(({ step, icon: Icon, label, desc }) => (
