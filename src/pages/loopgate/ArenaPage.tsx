@@ -1392,40 +1392,8 @@ export default function ArenaPage() {
                   </button>
                 ) : undefined}
               />
-              {(liveDrops.length > 0 || missionBillboards.length > 0) ? (
+              {liveDrops.length > 0 ? (
                 <div className="pl-4 flex gap-3 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory">
-                  {/* Mission billboard cards — pinned first */}
-                  {missionBillboards.map(mission => (
-                    <Link key={`mission-${mission.id}`} to={`/commissions/${mission.id}`} className="shrink-0 snap-start">
-                      <div className="relative w-[220px] h-[300px] overflow-hidden group cursor-pointer rounded-lg border-2 border-emerald-500/30 hover:border-emerald-500/50 transition-colors">
-                        {mission.poster_url ? (
-                          <img src={mission.poster_url} alt={mission.song_name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                        ) : (
-                          <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/60 to-black" />
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-                        <div className="absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5 bg-emerald-600/90 backdrop-blur-sm px-2.5 py-1 rounded-sm">
-                          <DollarSign className="w-3 h-3 text-white" />
-                          <span className="text-[8px] font-black text-white uppercase tracking-[0.2em]">Mission</span>
-                        </div>
-                        {mission.max_pay > 0 && (
-                          <div className="absolute top-2.5 right-2.5 z-10 bg-black/70 backdrop-blur-sm px-2 py-1 rounded-sm">
-                            <span className="font-display text-2xl text-emerald-400 leading-none">${mission.max_pay}</span>
-                          </div>
-                        )}
-                        <div className="absolute bottom-0 left-0 right-0 p-3">
-                          {mission.artist_name && (
-                            <p className="text-[8px] font-black text-emerald-400/70 uppercase tracking-[0.2em] mb-0.5">{mission.artist_name}</p>
-                          )}
-                          <h4 className="font-display text-lg text-white leading-tight truncate">{mission.song_name}</h4>
-                          <div className="mt-2 flex items-center justify-center gap-2 bg-emerald-600 py-2 rounded-sm">
-                            <Crosshair className="w-3.5 h-3.5 text-white" />
-                            <span className="text-[11px] font-black text-white uppercase tracking-wider">Enter Mission</span>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
                   {liveDrops.map(drop => (
                     <FeaturedDropCard key={drop.id} drop={drop} />
                   ))}
