@@ -148,13 +148,12 @@ export default function StandaloneLinkPage() {
   const avatarUrl = settings.custom_avatar_url || profile.avatar_url;
   const classInfo = getClassInfo(profile);
   const showStats = settings.show_stats !== false;
-  const hasStats = (profile.total_events || 0) > 0 || (profile.global_index_score || 0) > 0 || (profile.total_wins || 0) > 0;
 
-  // Build stats array for clean rendering
-  const stats: { label: string; value: number; icon: React.ReactNode }[] = [];
-  if ((profile.global_index_score || 0) > 0) stats.push({ label: "Index", value: profile.global_index_score!, icon: <TrendingUp className="w-3.5 h-3.5 text-white/30" /> });
-  if ((profile.total_events || 0) > 0) stats.push({ label: "Battles", value: profile.total_events!, icon: <Swords className="w-3.5 h-3.5 text-white/30" /> });
-  if ((profile.total_wins || 0) > 0) stats.push({ label: "Wins", value: profile.total_wins!, icon: <Trophy className="w-3.5 h-3.5 text-white/30" /> });
+  // Always show stats — class is always available, others show value
+  const stats: { label: string; value: number | string }[] = [];
+  stats.push({ label: "Index", value: profile.global_index_score || 0 });
+  stats.push({ label: "Battles", value: profile.total_events || 0 });
+  stats.push({ label: "Wins", value: profile.total_wins || 0 });
 
   return (
     <div className="min-h-screen" style={{ ...getBackground(settings), color: textColor }}>
@@ -199,7 +198,7 @@ export default function StandaloneLinkPage() {
         )}
 
         {/* Editor Stats — clean inline row */}
-        {showStats && hasStats && (
+        {showStats && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.12 }} className="mb-6">
             <div className="flex items-center justify-center gap-5">
               {/* Class Badge */}
