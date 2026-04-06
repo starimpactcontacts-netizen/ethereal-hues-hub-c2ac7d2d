@@ -30,10 +30,11 @@ const TYPE_CONFIG: Record<MissionType, { label: string; icon: typeof Music; colo
 };
 
 /* ── Admin Mission Row ── */
-function AdminMissionRow({ bounty, onClose, onView }: { 
+function AdminMissionRow({ bounty, onClose, onView, onEdit }: { 
   bounty: MarketplaceBounty; 
   onClose: (id: string) => void;
   onView: (id: string) => void;
+  onEdit: (bounty: MarketplaceBounty) => void;
 }) {
   const payout = (bounty.payout_cents / 100).toFixed(0);
   const slotsLeft = bounty.max_slots - bounty.accepted_count;
