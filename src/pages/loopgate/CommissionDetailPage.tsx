@@ -609,7 +609,7 @@ export default function CommissionDetailPage() {
         </div>
 
         {/* ── HOW IT WORKS ── */}
-        <div className="rounded-2xl overflow-hidden">
+        <div id="how-it-works-section" className="rounded-2xl overflow-hidden">
           <button onClick={() => setShowHowItWorks(!showHowItWorks)}
             className="w-full flex items-center justify-between py-3 px-4 bg-white/3 border border-white/5 rounded-2xl hover:border-white/10 transition-colors">
             <div className="flex items-center gap-2">
