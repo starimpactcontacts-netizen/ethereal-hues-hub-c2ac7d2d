@@ -125,7 +125,8 @@
   }
 
   html {
-    background-color: #000000;
+    background-color: hsl(var(--background));
+    overscroll-behavior-y: none;
   }
 
   body {
@@ -138,14 +139,16 @@
     min-height: 100dvh;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: none;
     /* NO transform here - breaks position:fixed on children */
-    background-color: #000000;
+    background-color: hsl(var(--background));
   }
   
   #root {
     min-height: 100vh;
     min-height: 100dvh;
-    background-color: #000000;
+    background-color: inherit;
   }
   
   * {
