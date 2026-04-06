@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Swords, Play, Smartphone } from 'lucide-react';
+import { Swords, Play, Smartphone, DollarSign, Crosshair } from 'lucide-react';
 import { HubIcon, ArenaIcon, RankingsIcon, RateIcon, UnitsIcon, MissionsIcon } from '@/components/loopgate/LandingIcons';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
@@ -14,7 +14,8 @@ import loopgateLogo from '@/assets/loopgate-logo.png';
 import loopgateHeroCinematic from '@/assets/hero-collage.jpeg';
 import editoriumLogo from '@/assets/editorium-logo.png';
 import loopyAvatar from '@/assets/loopy-avatar.png';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 const quickLinks = [
   { to: '/hub', label: 'Hub', Icon: HubIcon, desc: 'Browse edits & editors', color: '#ffffff', bgGrad: 'from-white/[0.07] to-white/[0.02]', glowColor: 'rgba(255,255,255,0.08)' },
