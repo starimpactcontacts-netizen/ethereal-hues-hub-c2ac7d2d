@@ -168,6 +168,8 @@ export default function FeaturedDropCard({ drop }: Props) {
             ENTER
           </button>
         </div>
+      </motion.div>
+    );
   }
 
   // ═══════════════════════════════════════════════════
