@@ -115,7 +115,7 @@ export default function FeaturedDropCard({ drop }: Props) {
           {/* Bottom — Title + Prize */}
           <div className="absolute bottom-0 left-0 right-0 px-3 pb-3 flex items-end gap-2">
             <div className="flex-1 min-w-0">
-              <h3 className="font-display text-lg sm:text-xl text-white leading-tight tracking-wide uppercase truncate font-black drop-shadow-lg">
+              <h3 className="font-display text-sm text-white leading-tight tracking-wide uppercase truncate font-black drop-shadow-lg">
                 {drop.title}
               </h3>
               <div className="flex items-center gap-2 mt-1">
