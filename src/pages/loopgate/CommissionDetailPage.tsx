@@ -525,9 +525,7 @@ export default function CommissionDetailPage() {
         )}
 
         {/* ═══ MISSION CHAT ═══ */}
-        <div className="px-4 pb-4">
-          <MissionLobbyChat missionId={id!} />
-        </div>
+        <MissionLobbyChat missionId={id!} />
       </div>
 
       {/* Rating Modal */}
