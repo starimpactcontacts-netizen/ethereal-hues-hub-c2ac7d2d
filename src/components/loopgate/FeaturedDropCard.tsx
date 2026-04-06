@@ -249,13 +249,9 @@ export default function FeaturedDropCard({ drop }: Props) {
         </div>
       </div>
 
-      {/* Activity signal + Rewards */}
-      <div className="px-2.5 py-2 flex items-center gap-1.5 border-t border-white/[0.04]">
-        <ActivityIcon className={cn("w-2.5 h-2.5 shrink-0", activity.color)} />
-        <span className={cn("text-[8px] font-semibold tracking-tight flex-1 truncate", activity.color)}>
-          {activity.text}
-        </span>
-        <div className="flex items-center gap-1.5 text-[8px] font-bold shrink-0">
+      {/* Stats + CTA */}
+      <div className="px-2.5 py-1.5 flex items-center justify-between border-t border-white/[0.04]">
+        <div className="flex items-center gap-1.5 text-[8px] font-bold">
           <span className="flex items-center gap-0.5 text-brand">
             <Zap className="w-2.5 h-2.5" />+{drop.xp_reward}
           </span>
@@ -263,6 +259,13 @@ export default function FeaturedDropCard({ drop }: Props) {
             <Trophy className="w-2.5 h-2.5" />+{drop.index_reward}
           </span>
         </div>
+        <button
+          onClick={() => navigate(`/drop/${drop.id}`)}
+          className="text-[9px] font-bold uppercase tracking-wider px-3 py-1 rounded-md bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-colors"
+          style={{ fontFamily: 'Teko, sans-serif' }}
+        >
+          {isLive ? "ENTER" : "VIEW"}
+        </button>
       </div>
 
     </motion.div>
