@@ -125,7 +125,7 @@ function ArenaMissionsSection() {
               key={b.id}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate(`/commissions/${b.id}`)}
-              className="shrink-0 relative w-[200px] h-[240px] rounded-lg overflow-hidden group text-left touch-manipulation snap-start"
+              className="shrink-0 relative w-[160px] h-[160px] rounded-lg overflow-hidden group text-left touch-manipulation snap-start"
               style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}
             >
               {/* Cover */}
@@ -204,7 +204,7 @@ function ArenaMissionsSection() {
         {isStaff && (
           <button
             onClick={() => navigate('/missions')}
-            className="shrink-0 w-[120px] h-[240px] border border-dashed border-border/30 bg-surface-1/30 flex flex-col items-center justify-center gap-2 snap-start hover:border-border/50 transition-colors rounded-lg"
+            className="shrink-0 w-[160px] h-[160px] border border-dashed border-border/30 bg-surface-1/30 flex flex-col items-center justify-center gap-2 snap-start hover:border-border/50 transition-colors rounded-lg"
           >
             <Plus className="w-4 h-4 text-muted-foreground/30" />
             <span className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-wider">Post</span>
@@ -267,7 +267,7 @@ function EventCard({ event }: { event: Event }) {
 }
 
 // ─── Ghost Placeholder Slot ────────────────────────────────────
-function GhostSlot({ icon, label, width = "w-[240px]", height = "h-44", accentColor = "border-border/40" }: {
+function GhostSlot({ icon, label, width = "w-[160px]", height = "h-[160px]", accentColor = "border-border/40" }: {
   icon: React.ReactNode;
   label: string;
   width?: string;
@@ -275,7 +275,7 @@ function GhostSlot({ icon, label, width = "w-[240px]", height = "h-44", accentCo
   accentColor?: string;
 }) {
   return (
-    <div className={`shrink-0 ${width} ${height} border border-dashed ${accentColor} bg-surface-0/40 flex flex-col items-center justify-center gap-2`}>
+    <div className={`shrink-0 ${width} ${height} border border-dashed ${accentColor} bg-surface-0/40 flex flex-col items-center justify-center gap-2 rounded-lg`}>
       <div className="w-8 h-8 bg-surface-2/60 flex items-center justify-center">
         {icon}
       </div>
@@ -1161,8 +1161,8 @@ export default function ArenaPage() {
         <div className="px-4 py-6 space-y-4">
           <Skeleton className="h-8 w-40" />
           <div className="flex gap-3 overflow-hidden">
-            <Skeleton className="h-48 w-[200px] shrink-0" />
-            <Skeleton className="h-48 w-[200px] shrink-0" />
+            <Skeleton className="h-[160px] w-[160px] shrink-0 rounded-lg" />
+            <Skeleton className="h-[160px] w-[160px] shrink-0 rounded-lg" />
           </div>
         </div>
       )}
@@ -1268,8 +1268,8 @@ export default function ArenaPage() {
 
               {battlesLoading ? (
                 <div className="flex gap-3 pl-4 overflow-x-auto scrollbar-hide pb-2">
-                  <Skeleton className="h-44 w-[200px] shrink-0" />
-                  <Skeleton className="h-44 w-[200px] shrink-0" />
+                  <Skeleton className="h-[160px] w-[160px] shrink-0 rounded-lg" />
+                  <Skeleton className="h-[160px] w-[160px] shrink-0 rounded-lg" />
                 </div>
               ) : battles.length > 0 ? (
                 <div className="flex gap-3 pl-4 overflow-x-auto scrollbar-hide pb-2">

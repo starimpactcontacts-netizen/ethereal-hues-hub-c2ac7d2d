@@ -58,7 +58,7 @@ export default function FeaturedDropCard({ drop }: Props) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
         className={cn(
-          "relative w-[200px] sm:w-[200px] shrink-0 snap-start overflow-hidden group",
+          "relative w-[160px] h-[160px] shrink-0 snap-start overflow-hidden group",
           "bg-black border-2 border-emerald-500/60",
           "shadow-[0_0_30px_rgba(16,185,129,0.2),0_0_60px_rgba(16,185,129,0.08)]",
           "hover:shadow-[0_0_40px_rgba(16,185,129,0.35),0_0_80px_rgba(16,185,129,0.12)]",
@@ -82,7 +82,7 @@ export default function FeaturedDropCard({ drop }: Props) {
         </div>
 
         {/* Poster — taller for official */}
-        <div className="relative w-full h-48 sm:h-52 overflow-hidden">
+        <div className="relative w-full h-[100px] overflow-hidden">
           {drop.poster_url ? (
             <img
               src={drop.poster_url}
@@ -115,7 +115,7 @@ export default function FeaturedDropCard({ drop }: Props) {
           {/* Bottom — Title + Prize */}
           <div className="absolute bottom-0 left-0 right-0 px-3 pb-3 flex items-end gap-2">
             <div className="flex-1 min-w-0">
-              <h3 className="font-display text-lg sm:text-xl text-white leading-tight tracking-wide uppercase truncate font-black drop-shadow-lg">
+              <h3 className="font-display text-sm text-white leading-tight tracking-wide uppercase truncate font-black drop-shadow-lg">
                 {drop.title}
               </h3>
               <div className="flex items-center gap-2 mt-1">
@@ -141,8 +141,8 @@ export default function FeaturedDropCard({ drop }: Props) {
             <div className="shrink-0 flex flex-col items-end">
               <span className="text-[8px] font-bold text-emerald-400/60 uppercase tracking-wider">Prize</span>
               <span
-                className="font-display text-4xl sm:text-5xl text-emerald-400 font-black leading-none"
-                style={{ textShadow: '0 0 30px rgba(16,185,129,0.6), 0 4px 20px rgba(16,185,129,0.4), 0 10px 40px rgba(16,185,129,0.2)' }}
+                className="font-display text-2xl text-emerald-400 font-black leading-none"
+                style={{ textShadow: '0 0 20px rgba(16,185,129,0.5)' }}
               >
                 ${drop.prize_usd}
               </span>
@@ -151,7 +151,7 @@ export default function FeaturedDropCard({ drop }: Props) {
         </div>
 
         {/* Stats bar */}
-        <div className="px-3 py-2 flex items-center gap-2 border-t border-emerald-500/20 bg-emerald-950/20">
+        <div className="px-2 py-1.5 flex items-center gap-1.5 border-t border-emerald-500/20 bg-emerald-950/20">
           <ActivityIcon className={cn("w-3 h-3 shrink-0", activity.color)} />
           <span className={cn("text-[9px] font-semibold tracking-tight flex-1 truncate", activity.color)}>
             {activity.text}
@@ -166,58 +166,6 @@ export default function FeaturedDropCard({ drop }: Props) {
           </div>
         </div>
 
-        {/* Winners */}
-        {(drop.top_scorer_username || drop.random_pick_username) && (
-          <div className="px-3 pb-1.5 flex items-center gap-1.5 text-[9px] overflow-hidden">
-            {drop.top_scorer_username && (
-              <div className="flex items-center gap-1 bg-gold/8 border border-gold/15 px-2 py-0.5 truncate">
-                <Crown className="w-2.5 h-2.5 text-gold shrink-0" />
-                <span className="text-gold font-bold truncate">@{drop.top_scorer_username}</span>
-              </div>
-            )}
-            {drop.random_pick_username && (
-              <div className="flex items-center gap-1 bg-brand/8 border border-brand/15 px-2 py-0.5 truncate">
-                <Star className="w-2.5 h-2.5 text-brand shrink-0" />
-                <span className="text-brand font-bold truncate">@{drop.random_pick_username}</span>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* CTA */}
-        <div className="px-3 pb-3 pt-1">
-          {isLive ? (
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              onClick={() => navigate(profile ? `/drop/${drop.id}` : '/start')}
-              className={cn(
-                "w-full py-3.5 font-display text-sm uppercase tracking-[0.25em]",
-                "flex items-center justify-center gap-2",
-                "bg-emerald-500 text-black font-black",
-                "shadow-[0_4px_20px_rgba(16,185,129,0.4)]",
-                "hover:bg-emerald-400 hover:shadow-[0_6px_30px_rgba(16,185,129,0.5)]",
-                "active:bg-emerald-600 transition-all duration-200 touch-manipulation"
-              )}
-              style={{ clipPath: 'polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%)' }}
-            >
-              <Crown className="w-4 h-4" />
-              Take the Hill
-            </motion.button>
-          ) : (
-            <Link
-              to={`/drop/${drop.id}`}
-              className={cn(
-                "w-full py-3 font-display text-xs uppercase tracking-widest",
-                "flex items-center justify-center gap-1.5",
-                "bg-white/[0.04] border border-white/[0.08] text-white/60",
-                "hover:bg-white/[0.08] hover:text-white/80 transition-all duration-200"
-              )}
-            >
-              View Results
-              <ChevronRight className="w-3 h-3" />
-            </Link>
-          )}
-        </div>
       </motion.div>
     );
   }
@@ -231,7 +179,7 @@ export default function FeaturedDropCard({ drop }: Props) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
       className={cn(
-        "relative w-[200px] sm:w-[200px] shrink-0 snap-start overflow-hidden rounded-lg",
+        "relative w-[160px] h-[160px] shrink-0 snap-start overflow-hidden rounded-lg",
         "bg-black",
         "border transition-all duration-300 group",
         isPromoted
@@ -240,7 +188,7 @@ export default function FeaturedDropCard({ drop }: Props) {
       )}
     >
       {/* Poster */}
-      <div className="relative w-full h-48 sm:h-52 overflow-hidden">
+      <div className="relative w-full h-[100px] overflow-hidden">
         {drop.poster_url ? (
           <img
             src={drop.poster_url}
@@ -290,7 +238,7 @@ export default function FeaturedDropCard({ drop }: Props) {
         {/* Title + Song — bottom overlay */}
         <div className="absolute bottom-0 left-0 right-0 px-3 pb-2.5 flex items-end gap-2">
           <div className="flex-1 min-w-0">
-            <h3 className="font-display text-base sm:text-lg text-white leading-tight tracking-wide uppercase truncate drop-shadow-lg font-extrabold">
+            <h3 className="font-display text-sm text-white leading-tight tracking-wide uppercase truncate drop-shadow-lg font-extrabold">
               {drop.title}
             </h3>
             <p className="text-[9px] sm:text-[10px] text-white/50 mt-0.5 flex items-center gap-1 truncate">
@@ -317,58 +265,6 @@ export default function FeaturedDropCard({ drop }: Props) {
         </div>
       </div>
 
-      {/* Winner / Pick chips */}
-      {(drop.top_scorer_username || drop.random_pick_username) && (
-        <div className="px-3 pb-1.5 flex items-center gap-1.5 text-[9px] overflow-hidden">
-          {drop.top_scorer_username && (
-            <div className="flex items-center gap-1 bg-gold/8 border border-gold/15 rounded-full px-2 py-0.5 truncate">
-              <Crown className="w-2.5 h-2.5 text-gold shrink-0" />
-              <span className="text-gold font-bold truncate">@{drop.top_scorer_username}</span>
-            </div>
-          )}
-          {drop.random_pick_username && drop.random_pick_username !== drop.top_scorer_username && (
-            <div className="flex items-center gap-1 bg-brand/8 border border-brand/15 rounded-full px-2 py-0.5 truncate">
-              <Star className="w-2.5 h-2.5 text-brand shrink-0" />
-              <span className="text-brand font-bold truncate">@{drop.random_pick_username}</span>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* CTA Buttons */}
-      <div className="px-2.5 pb-2.5 pt-0.5">
-        {isLive ? (
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={() => navigate(`/drop/${drop.id}`)}
-            className={cn(
-              "w-full py-2.5 rounded-md font-display text-[11px] uppercase tracking-widest",
-              "flex items-center justify-center gap-1.5",
-              "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold",
-              "shadow-[0_2px_12px_rgba(16,185,129,0.3)]",
-              "hover:from-emerald-400 hover:to-emerald-500",
-              "active:from-emerald-600 active:to-emerald-700",
-              "transition-all duration-200 touch-manipulation"
-            )}
-          >
-            View Event <ChevronRight className="w-3 h-3" />
-          </motion.button>
-        ) : (
-          <Link
-            to={`/drop/${drop.id}`}
-            className={cn(
-              "w-full py-2.5 rounded-md font-display text-[10px] uppercase tracking-widest",
-              "flex items-center justify-center gap-1.5",
-              "bg-white/[0.04] border border-white/[0.06] text-white/50",
-              "hover:bg-white/[0.08] hover:text-white/70",
-              "transition-all duration-200"
-            )}
-          >
-            View Results
-            <ChevronRight className="w-3 h-3" />
-          </Link>
-        )}
-      </div>
     </motion.div>
   );
 }
