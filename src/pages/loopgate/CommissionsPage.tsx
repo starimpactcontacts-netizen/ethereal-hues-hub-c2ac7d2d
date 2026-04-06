@@ -36,7 +36,7 @@ function MissionCard({ bounty }: { bounty: MarketplaceBounty }) {
   const Icon = tc.icon;
 
   return (
-    <Link to={`/commissions/${bounty.id}`}>
+    <Link to={`/mission/${bounty.id}`}>
       <motion.div whileTap={{ scale: 0.98 }}
         className={`bg-surface-1 border overflow-hidden transition-all ${
           isOpen ? `${tc.border} hover:border-opacity-60` : 'border-border/20 opacity-50'
