@@ -1090,7 +1090,7 @@ export default function HubPage() {
           >
             {/* Mission billboard cards — pinned first */}
             {missionDrops.map(mission => (
-              <Link key={`mission-${mission.id}`} to={`/mission/${mission.id}`} className="shrink-0">
+              <Link key={`mission-${mission.id}`} to={`/commissions/${mission.id}`} className="shrink-0">
                 <div className="relative w-[220px] h-[300px] overflow-hidden group cursor-pointer rounded-lg border-2 border-emerald-500/30">
                   {mission.poster_url ? (
                     <img src={mission.poster_url} alt={mission.song_name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
