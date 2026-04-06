@@ -586,7 +586,7 @@ export default function CommissionDetailPage() {
                     <div className="space-y-2">
                       <Textarea value={briefText} onChange={e => setBriefText(e.target.value)} placeholder="Write the mission brief..." className="min-h-[120px] resize-none bg-surface-2 border-border text-xs rounded-xl" />
                       <div className="flex gap-2">
-                        <Button size="sm" className="bg-gold hover:bg-gold/80 text-background text-xs font-bold flex-1 rounded-lg"
+                        <Button size="sm" className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex-1 rounded-lg"
                           onClick={async () => {
                             const { error } = await supabase.from('commissions').update({ description: briefText } as any).eq('id', id);
                             if (error) { toast.error('Failed to save brief'); return; }
