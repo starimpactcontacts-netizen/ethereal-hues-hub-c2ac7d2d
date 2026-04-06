@@ -285,12 +285,14 @@ export default function CommissionsPage() {
             }`}>
             Browse
           </button>
-          <button onClick={() => setView('my-missions')}
-            className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors ${
-              view === 'my-missions' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-surface-1 text-muted-foreground border border-border/30 hover:text-foreground'
-            }`}>
-            My Missions
-          </button>
+          {isStaff && (
+            <button onClick={() => setView('my-missions')}
+              className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors ${
+                view === 'my-missions' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-surface-1 text-muted-foreground border border-border/30 hover:text-foreground'
+              }`}>
+              My Missions
+            </button>
+          )}
         </div>
       </div>
 
