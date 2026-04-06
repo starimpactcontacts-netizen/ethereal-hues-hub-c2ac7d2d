@@ -31,6 +31,27 @@ export default function LandingPage() {
   const { setGuest } = useGuestMode();
   const { stats } = useGlobalStats();
   const [bannerVisible, setBannerVisible] = useState(false);
+  const [billboard, setBillboard] = useState<{ id: string; title: string; poster_url: string | null; artist_name: string | null; max_pay: number } | null>(null);
+
+  useEffect(() => {
+    const fetch = async () => {
+      const { data } = await supabase
+        .from('commissions')
+        .select('id, title, cover_url, artist_name, client_name, payout_cents')
+        .eq('is_marketplace', true)
+        .eq('status', 'open')
+        .order('created_at', { ascending: false })
+        .limit(1);
+      if (data && data[0]) {
+        setBillboard({
+          id: data[0].id, title: data[0].title, poster_url: data[0].cover_url,
+          artist_name: data[0].artist_name || data[0].client_name || null,
+          max_pay: (data[0].payout_cents || 0) / 100,
+        });
+      }
+    };
+    fetch();
+  }, []);
 
   const handleGuestExplore = () => {
     setGuest(true);
