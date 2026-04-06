@@ -6,7 +6,7 @@ import {
   DollarSign, ArrowLeft, Clock, Users, CheckCircle2, Send, ExternalLink,
   MessageSquare, Loader2, Star, Zap, ShieldCheck, AlertTriangle,
   HelpCircle, ChevronRight, ChevronLeft, Film, Target, Music, Trophy,
-  Flame, Info, X, Crosshair, Play
+  Flame, Info, X, Crosshair, Play, FileText
 } from 'lucide-react';
 import { useCommissionDetail, type SubmissionRating, RATING_PAYOUTS, RATING_COLORS } from '@/hooks/useCommissions';
 import { useAuth } from '@/hooks/useAuth';
@@ -359,6 +359,7 @@ export default function CommissionDetailPage() {
   const canRate = isStaff || isPoster;
   const [reviewingSubmission, setReviewingSubmission] = useState<any>(null);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
+  const [showBrief, setShowBrief] = useState(false);
   const showcaseRef = useRef<HTMLDivElement>(null);
 
   if (loading) {
@@ -546,9 +547,9 @@ export default function CommissionDetailPage() {
               >
                 <div className="bg-surface-0 border border-t-0 border-border/30 p-3 space-y-2.5">
                   {[
-                    { step: '01', icon: Music, label: 'Listen to the track', desc: 'Study the vibe, tempo & mood of the song' },
-                    { step: '02', icon: Film, label: 'Create your edit', desc: 'Use any editing software (CapCut, Adobe, etc.)' },
-                    { step: '03', icon: Send, label: 'Submit your link', desc: 'Post on TikTok, YouTube, or Instagram and paste the link' },
+                    { step: '01', icon: Target, label: 'Follow the brief', desc: 'Read the mission brief and understand the creative direction' },
+                    { step: '02', icon: Film, label: 'Create your edit', desc: 'Use any editing software (CapCut, Adobe, Premiere, etc.)' },
+                    { step: '03', icon: Send, label: 'Post on socials', desc: 'Upload to TikTok, YouTube, or Instagram and paste the link' },
                     { step: '04', icon: Star, label: 'Get rated & paid', desc: 'Your edit gets a QOI score and tier rating (S/A/B/C-F)' },
                     { step: '05', icon: DollarSign, label: 'Earn instantly', desc: 'S/A/B rated edits get instant USD payouts. C-F earn Index points' },
                   ].map(({ step, icon: Icon, label, desc }) => (
@@ -666,12 +667,54 @@ export default function CommissionDetailPage() {
         {/* ── DIVIDER ── */}
         <div className="h-px bg-border/30" />
 
-        {/* ── DESCRIPTION ── */}
-        {commission.description && (
-          <div className="bg-surface-1 border border-border/20 p-3">
-            <p className="text-xs text-foreground/90 leading-relaxed whitespace-pre-wrap">{commission.description}</p>
-          </div>
-        )}
+        {/* ── MISSION BRIEF ── */}
+        <div>
+          <button
+            onClick={() => setShowBrief(!showBrief)}
+            className="w-full flex items-center justify-between py-3 px-3 bg-gradient-to-r from-amber-950/40 to-surface-1 border border-gold/30 hover:border-gold/50 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <FileText className="w-4 h-4 text-gold" />
+              <span className="text-[11px] font-black text-gold uppercase tracking-wider">Mission Brief</span>
+            </div>
+            <motion.div animate={{ rotate: showBrief ? 180 : 0 }} transition={{ duration: 0.2 }}>
+              <ChevronRight className="w-4 h-4 text-gold/60 rotate-90" />
+            </motion.div>
+          </button>
+          <AnimatePresence>
+            {showBrief && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="overflow-hidden"
+              >
+                <div className="bg-surface-0 border border-t-0 border-gold/20 p-4">
+                  {(commission.description || (commission as any).requirements) ? (
+                    <div className="space-y-2">
+                      {commission.description && (
+                        <p className="text-xs text-foreground/90 leading-relaxed whitespace-pre-wrap">{commission.description}</p>
+                      )}
+                      {(commission as any).requirements && (
+                        <div className="mt-2 pt-2 border-t border-border/20">
+                          <p className="text-[9px] font-bold text-gold/60 uppercase tracking-wider mb-1">Requirements</p>
+                          <p className="text-xs text-foreground/80 leading-relaxed whitespace-pre-wrap">{(commission as any).requirements}</p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2 py-4">
+                      <FileText className="w-5 h-5 text-muted-foreground/20" />
+                      <p className="text-[10px] text-muted-foreground/50 text-center italic">Looks like this mission still doesn't know what its objective is.</p>
+                      <p className="text-[8px] text-muted-foreground/30">Brief will be added soon</p>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         {/* ── MY SUBMISSIONS ── */}
         {mySubmissions.length > 0 && (
