@@ -665,59 +665,6 @@ export default function CommissionDetailPage() {
             </div>
           )}
         </div>
-
-        {/* ── DIVIDER ── */}
-        <div className="h-px bg-border/30" />
-
-        {/* ── MISSION BRIEF ── */}
-        <div>
-          <button
-            onClick={() => setShowBrief(!showBrief)}
-            className="w-full flex items-center justify-between py-3 px-3 bg-gradient-to-r from-amber-950/40 to-surface-1 border border-gold/30 hover:border-gold/50 transition-colors"
-          >
-            <div className="flex items-center gap-2">
-              <FileText className="w-4 h-4 text-gold" />
-              <span className="text-[11px] font-black text-gold uppercase tracking-wider">Mission Brief</span>
-            </div>
-            <motion.div animate={{ rotate: showBrief ? 180 : 0 }} transition={{ duration: 0.2 }}>
-              <ChevronRight className="w-4 h-4 text-gold/60 rotate-90" />
-            </motion.div>
-          </button>
-          <AnimatePresence>
-            {showBrief && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.25 }}
-                className="overflow-hidden"
-              >
-                <div className="bg-surface-0 border border-t-0 border-gold/20 p-4">
-                  {(commission.description || (commission as any).requirements) ? (
-                    <div className="space-y-2">
-                      {commission.description && (
-                        <p className="text-xs text-foreground/90 leading-relaxed whitespace-pre-wrap">{commission.description}</p>
-                      )}
-                      {(commission as any).requirements && (
-                        <div className="mt-2 pt-2 border-t border-border/20">
-                          <p className="text-[9px] font-bold text-gold/60 uppercase tracking-wider mb-1">Requirements</p>
-                          <p className="text-xs text-foreground/80 leading-relaxed whitespace-pre-wrap">{(commission as any).requirements}</p>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center gap-2 py-4">
-                      <FileText className="w-5 h-5 text-muted-foreground/20" />
-                      <p className="text-[10px] text-muted-foreground/50 text-center italic">Looks like this mission still doesn't know what its objective is.</p>
-                      <p className="text-[8px] text-muted-foreground/30">Brief will be added soon</p>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
         {/* ── MY SUBMISSIONS ── */}
         {mySubmissions.length > 0 && (
           <div>
