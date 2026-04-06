@@ -5,7 +5,7 @@ import {
   ArrowLeft, Crosshair, DollarSign, Trophy, Send, ExternalLink,
   Loader2, Star, Clock, Eye, Zap, Target, TrendingUp, ChevronRight,
   Music, Shield, Flame, Swords, ArrowRight, Sparkles, ThumbsUp, ThumbsDown,
-  Film, ChevronLeft
+  Film, ChevronLeft, Users
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -52,6 +52,12 @@ interface MissionSubmission {
   thumbnail_url?: string | null;
 }
 
+interface LobbyProfile {
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+}
+
 interface OfficialEvent {
   id: string;
   title: string;
@@ -82,6 +88,7 @@ export default function MissionLobbyPage() {
   const [ratingTarget, setRatingTarget] = useState<MissionSubmission | null>(null);
   const [officialEvent, setOfficialEvent] = useState<OfficialEvent | null>(null);
   const [myVotes, setMyVotes] = useState<Record<string, string>>({});
+  const [lobbyProfiles, setLobbyProfiles] = useState<LobbyProfile[]>([]);
 
   const carouselRef = useRef<HTMLDivElement>(null);
 
@@ -180,11 +187,36 @@ export default function MissionLobbyPage() {
       setMyVotes(map);
     }
   }, [user, id]);
+  // Fetch lobby profiles — unique submitters to this mission
+  const fetchLobbyProfiles = useCallback(async () => {
+    if (!id) return;
+    const { data } = await supabase
+      .from('featured_submissions')
+      .select('user_id, username, avatar_url')
+      .eq('drop_id', id)
+      .not('user_id', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (data) {
+      // Deduplicate by user_id
+      const seen = new Set<string>();
+      const unique: LobbyProfile[] = [];
+      for (const row of data as any[]) {
+        if (row.user_id && !seen.has(row.user_id)) {
+          seen.add(row.user_id);
+          unique.push({ user_id: row.user_id, username: row.username, avatar_url: row.avatar_url });
+        }
+      }
+      setLobbyProfiles(unique);
+    }
+  }, [id]);
 
   useEffect(() => { fetchMission(); }, [fetchMission]);
   useEffect(() => { fetchSubmissions(); }, [fetchSubmissions]);
   useEffect(() => { fetchRatedSubmissions(); }, [fetchRatedSubmissions]);
   useEffect(() => { fetchMyVotes(); }, [fetchMyVotes]);
+  useEffect(() => { fetchLobbyProfiles(); }, [fetchLobbyProfiles]);
 
   const detectPlatform = (u: string) => {
     if (u.includes('tiktok.com') || u.includes('vm.tiktok.com')) return 'tiktok';
@@ -213,7 +245,7 @@ export default function MissionLobbyPage() {
       } as any);
 
     if (error) toast.error(error.message);
-    else { toast.success('Edit submitted!'); setUrl(''); fetchSubmissions(); fetchRatedSubmissions(); }
+    else { toast.success('Edit submitted!'); setUrl(''); fetchSubmissions(); fetchRatedSubmissions(); fetchLobbyProfiles(); }
     setSubmitting(false);
   };
 
@@ -305,6 +337,47 @@ export default function MissionLobbyPage() {
           <p className="text-[10px] text-muted-foreground mt-1">{mission.title}</p>
         </div>
       </div>
+
+      {/* ═══ LOBBY PROFILES ═══ */}
+      {lobbyProfiles.length > 0 && (
+        <div className="px-4 mt-3 mb-2">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center -space-x-2.5">
+              {lobbyProfiles.slice(0, 8).map((p, i) => (
+                <motion.button
+                  key={p.user_id}
+                  initial={{ opacity: 0, scale: 0.5, x: -10 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  onClick={() => navigate(`/u/${p.username}`)}
+                  className="relative w-9 h-9 rounded-full border-2 border-background overflow-hidden hover:z-10 hover:scale-110 transition-transform"
+                  style={{ zIndex: 8 - i }}
+                >
+                  {p.avatar_url ? (
+                    <img src={p.avatar_url} alt={p.username} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-muted flex items-center justify-center text-[11px] font-black text-muted-foreground">
+                      {p.username[0]?.toUpperCase()}
+                    </div>
+                  )}
+                </motion.button>
+              ))}
+              {lobbyProfiles.length > 8 && (
+                <div className="w-9 h-9 rounded-full border-2 border-background bg-surface-1 flex items-center justify-center text-[10px] font-black text-muted-foreground">
+                  +{lobbyProfiles.length - 8}
+                </div>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-[11px] font-black text-foreground">{lobbyProfiles.length} in lobby</span>
+              </div>
+              <p className="text-[9px] text-muted-foreground/60 mt-0.5">Editors competing on this mission</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ═══ ENTER LOBBY — Only shows when a real official event exists ═══ */}
       {officialEvent && (
