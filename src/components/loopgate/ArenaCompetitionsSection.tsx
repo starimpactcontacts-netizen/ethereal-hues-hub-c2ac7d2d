@@ -200,7 +200,7 @@ export default function ArenaCompetitionsSection({ onCreateClick }: { onCreateCl
       {loading ? (
         <div className="flex gap-3 pl-4 overflow-x-auto scrollbar-hide pb-2">
           {[1, 2].map(i => (
-            <div key={i} className="w-[280px] h-[300px] shrink-0 bg-surface-1 animate-pulse rounded-xl" />
+            <div key={i} className="w-[200px] h-[240px] shrink-0 bg-surface-1 animate-pulse rounded-xl" />
           ))}
         </div>
       ) : (
