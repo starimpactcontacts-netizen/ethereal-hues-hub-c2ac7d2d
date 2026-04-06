@@ -320,9 +320,9 @@ export default function MissionLobbyPage() {
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-red-500 to-transparent" />
 
         <div className="absolute top-4 left-4 z-10">
-          <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-foreground/60 hover:text-foreground transition-colors">
+          <button onClick={() => navigate('/index')} className="flex items-center gap-1.5 text-foreground/60 hover:text-foreground transition-colors">
             <ArrowLeft className="w-4 h-4" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Back</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Arena</span>
           </button>
         </div>
 
