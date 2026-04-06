@@ -41,7 +41,7 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
   };
 
   return (
-    <div className="shrink-0 w-[280px]">
+    <div className="shrink-0 w-[200px]">
       <motion.div
         whileTap={{ scale: 0.97 }}
         onClick={() => navigate(`/competition/${comp.slug || comp.id}`)}
@@ -200,7 +200,7 @@ export default function ArenaCompetitionsSection({ onCreateClick }: { onCreateCl
       {loading ? (
         <div className="flex gap-3 pl-4 overflow-x-auto scrollbar-hide pb-2">
           {[1, 2].map(i => (
-            <div key={i} className="w-[280px] h-[300px] shrink-0 bg-surface-1 animate-pulse rounded-xl" />
+            <div key={i} className="w-[200px] h-[240px] shrink-0 bg-surface-1 animate-pulse rounded-xl" />
           ))}
         </div>
       ) : (
@@ -208,7 +208,7 @@ export default function ArenaCompetitionsSection({ onCreateClick }: { onCreateCl
           {comps.map(comp => <CompetitionCard key={comp.id} comp={comp} onJoin={handleJoin} />)}
 
           {/* Create Your Own — poster card */}
-          <div className="shrink-0 w-[280px]">
+          <div className="shrink-0 w-[200px]">
             <motion.div
               whileTap={{ scale: 0.97 }}
               onClick={onCreateClick}
