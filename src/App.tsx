@@ -95,6 +95,7 @@ const MissionLobbyPage = lazy(() => import("./pages/loopgate/MissionLobbyPage"))
 const LoopyPage = lazy(() => import("./pages/loopgate/LoopyPage"));
 const CreateCompetitionPage = lazy(() => import("./pages/loopgate/CreateCompetitionPage"));
 const LoopyRatePage = lazy(() => import("./pages/loopgate/LoopyRatePage"));
+const StandaloneLinkPage = lazy(() => import("./pages/loopgate/StandaloneLinkPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // GLOBAL DEV MODE DETECTION - runs BEFORE React
