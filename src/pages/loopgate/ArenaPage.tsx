@@ -1161,8 +1161,8 @@ export default function ArenaPage() {
         <div className="px-4 py-6 space-y-4">
           <Skeleton className="h-8 w-40" />
           <div className="flex gap-3 overflow-hidden">
-            <Skeleton className="h-48 w-[200px] shrink-0" />
-            <Skeleton className="h-48 w-[200px] shrink-0" />
+            <Skeleton className="h-[160px] w-[160px] shrink-0 rounded-lg" />
+            <Skeleton className="h-[160px] w-[160px] shrink-0 rounded-lg" />
           </div>
         </div>
       )}
