@@ -125,7 +125,7 @@ function ArenaMissionsSection() {
               key={b.id}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate(`/commissions/${b.id}`)}
-              className="shrink-0 relative w-[160px] h-[160px] rounded-lg overflow-hidden group text-left touch-manipulation snap-start"
+              className="shrink-0 relative w-[200px] h-[240px] rounded-lg overflow-hidden group text-left touch-manipulation snap-start"
               style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}
             >
               {/* Cover */}
@@ -189,11 +189,14 @@ function ArenaMissionsSection() {
                   </div>
                 )}
 
-                <div className="flex items-center gap-2 text-[8px] text-white/30">
-                  <span className="flex items-center gap-0.5"><Users className="w-2.5 h-2.5" /> {slotsLeft}/{b.max_slots}</span>
-                  {b.submission_count > 0 && (
-                    <span className="flex items-center gap-0.5 text-emerald-400/50"><CheckCircle2 className="w-2.5 h-2.5" /> {b.submission_count}</span>
-                  )}
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-0.5 text-[8px] text-white/30"><Users className="w-2.5 h-2.5" /> {slotsLeft}/{b.max_slots}</span>
+                  <span
+                    className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-md bg-emerald-500/20 text-emerald-400"
+                    style={{ fontFamily: 'Teko, sans-serif' }}
+                  >
+                    ENTER
+                  </span>
                 </div>
               </div>
             </motion.button>
