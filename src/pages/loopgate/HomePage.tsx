@@ -202,7 +202,6 @@ export default function HomePage() {
           {activeBattles.map(battle => {
             const isJudge = battle.judge_id === user?.id;
             const isChallenger = battle.challenger_id === user?.id;
-            const accentColor = isJudge ? 'purple' : 'red';
             const statusIcon = isJudge 
               ? <Gavel className="w-3.5 h-3.5 text-purple-400" /> 
               : <Swords className="w-3.5 h-3.5 text-red-400" />;
@@ -215,14 +214,14 @@ export default function HomePage() {
               <Link
                 key={battle.id}
                 to={`/battle/${battle.id}`}
-                className={`flex items-center gap-2.5 bg-surface-1 border border-${accentColor}-500/30 rounded-lg px-3 py-2 active:scale-[0.98] transition-transform`}
+                className={`flex items-center gap-2.5 bg-surface-1 border rounded-lg px-3 py-2 active:scale-[0.98] transition-transform ${isJudge ? 'border-purple-500/30' : 'border-red-500/30'}`}
               >
                 <div className="relative flex-shrink-0">
                   {statusIcon}
-                  <span className={`absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-${accentColor}-500 animate-pulse`} />
+                  <span className={`absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full animate-pulse ${isJudge ? 'bg-purple-500' : 'bg-red-500'}`} />
                 </div>
                 <div className="flex-1 min-w-0 flex items-center gap-1.5">
-                  <span className={`text-[9px] font-bold uppercase tracking-wider text-${accentColor}-400`}>
+                  <span className={`text-[9px] font-bold uppercase tracking-wider ${isJudge ? 'text-purple-400' : 'text-red-400'}`}>
                     {statusLabel}
                   </span>
                   <span className="text-[9px] text-muted-foreground">·</span>
