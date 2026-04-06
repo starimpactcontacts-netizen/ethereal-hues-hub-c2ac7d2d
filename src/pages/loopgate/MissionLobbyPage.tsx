@@ -338,6 +338,47 @@ export default function MissionLobbyPage() {
         </div>
       </div>
 
+      {/* ═══ LOBBY PROFILES ═══ */}
+      {lobbyProfiles.length > 0 && (
+        <div className="px-4 mt-3 mb-2">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center -space-x-2.5">
+              {lobbyProfiles.slice(0, 8).map((p, i) => (
+                <motion.button
+                  key={p.user_id}
+                  initial={{ opacity: 0, scale: 0.5, x: -10 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  onClick={() => navigate(`/u/${p.username}`)}
+                  className="relative w-9 h-9 rounded-full border-2 border-background overflow-hidden hover:z-10 hover:scale-110 transition-transform"
+                  style={{ zIndex: 8 - i }}
+                >
+                  {p.avatar_url ? (
+                    <img src={p.avatar_url} alt={p.username} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-muted flex items-center justify-center text-[11px] font-black text-muted-foreground">
+                      {p.username[0]?.toUpperCase()}
+                    </div>
+                  )}
+                </motion.button>
+              ))}
+              {lobbyProfiles.length > 8 && (
+                <div className="w-9 h-9 rounded-full border-2 border-background bg-surface-1 flex items-center justify-center text-[10px] font-black text-muted-foreground">
+                  +{lobbyProfiles.length - 8}
+                </div>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-[11px] font-black text-foreground">{lobbyProfiles.length} in lobby</span>
+              </div>
+              <p className="text-[9px] text-muted-foreground/60 mt-0.5">Editors competing on this mission</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ═══ ENTER LOBBY — Only shows when a real official event exists ═══ */}
       {officialEvent && (
         <motion.div 
