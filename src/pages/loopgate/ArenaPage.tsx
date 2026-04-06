@@ -125,7 +125,7 @@ function ArenaMissionsSection() {
               key={b.id}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate(`/commissions/${b.id}`)}
-              className="shrink-0 relative w-[200px] h-[240px] rounded-lg overflow-hidden group text-left touch-manipulation snap-start"
+              className="shrink-0 relative w-[200px] h-[260px] rounded-lg overflow-hidden group text-left touch-manipulation snap-start"
               style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}
             >
               {/* Cover */}
