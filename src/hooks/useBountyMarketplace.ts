@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+export type MissionType = 'artist' | 'brand' | 'film' | 'standard';
+
 export interface MarketplaceBounty {
   id: string;
   created_by: string;
@@ -26,11 +28,14 @@ export interface MarketplaceBounty {
   bounty_type: string;
   is_marketplace: boolean;
   reference_urls: string[] | null;
+  mission_type: MissionType;
+  client_name: string | null;
+  reference_video_url: string | null;
   created_at: string;
 }
 
-const PLATFORM_FEE_RATE = 0.10; // 10%
-const MIN_BOUNTY_CENTS = 500; // $5
+const PLATFORM_FEE_RATE = 0.10;
+const MIN_BOUNTY_CENTS = 500;
 
 export function useBountyMarketplace() {
   const [bounties, setBounties] = useState<MarketplaceBounty[]>([]);
@@ -77,6 +82,9 @@ export function useBountyMarketplace() {
     cover_url?: string;
     custom_payouts?: Record<string, number>;
     reference_urls?: string[];
+    mission_type?: MissionType;
+    client_name?: string;
+    reference_video_url?: string;
   }) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
@@ -114,6 +122,9 @@ export function useBountyMarketplace() {
         poster_avatar_url: profile?.avatar_url || null,
         is_marketplace: true,
         bounty_type: 'standard',
+        mission_type: params.mission_type || 'standard',
+        client_name: params.client_name || null,
+        reference_video_url: params.reference_video_url || null,
         status: 'open',
       } as any)
       .select()
