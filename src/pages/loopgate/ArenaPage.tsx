@@ -1303,18 +1303,26 @@ export default function ArenaPage() {
           {/* search bar moved to top */}
 
           {/* ═══ MISSIONS — BELOW GO, ABOVE COMPETITIONS ═══ */}
-          <ArenaMissionsSection />
+          <div className="-mx-4">
+            <ArenaMissionsSection />
+          </div>
 
           {/* ═══ COMPETITIONS ═══ */}
           {(activeFilter === "all") && (
-            <ArenaCompetitionsSection onCreateClick={() => navigate(profile ? '/competition/create' : '/start')} />
+            <div className="-mx-4">
+              <ArenaCompetitionsSection onCreateClick={() => navigate(profile ? '/competition/create' : '/start')} />
+            </div>
           )}
 
           {/* ═══ MISSIONS CAROUSEL — GET PAID ═══ */}
-          <ArenaMissionsCarousel />
+          <div className="-mx-4">
+            <ArenaMissionsCarousel />
+          </div>
 
           {/* ═══ LIVE PAYOUTS CAROUSEL ═══ */}
-          <LivePayoutsCarousel />
+          <div className="-mx-4">
+            <LivePayoutsCarousel />
+          </div>
 
           {/* Marketplace removed */}
 
