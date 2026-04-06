@@ -9,6 +9,7 @@ import { useUserActivityStats } from "@/hooks/useUserActivityStats";
 import { motion } from "framer-motion";
 import XPProgressBar from "@/components/loopgate/XPProgressBar";
 import XPHistory from "@/components/loopgate/XPHistory";
+import JackpotEditStats from "@/components/loopgate/JackpotEditStats";
 import { getRankFromScore } from "@/data/gqtConfig";
 
 export default function ProfileStatsPage() {
