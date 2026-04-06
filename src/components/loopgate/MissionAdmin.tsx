@@ -81,6 +81,7 @@ export default function MissionAdmin() {
         instant_payout: d.instant_payout ?? false,
         inspo_url: d.inspo_url || null, inspo_thumbnail_url: d.inspo_thumbnail_url || null,
         theme_description: d.theme_description || null, submission_count: d.submission_count || 0,
+        scenepack_url: d.scenepack_url || null,
       })));
     }
     if (sRes.data) setSubs(sRes.data as any as MissionSub[]);
