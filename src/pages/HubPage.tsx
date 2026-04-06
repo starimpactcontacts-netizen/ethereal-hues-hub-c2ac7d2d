@@ -774,10 +774,12 @@ export default function HubPage() {
           <div 
             className="flex overflow-hidden rounded-xl border"
             style={{ 
-              borderColor: quickAction === 'solo' ? 'rgba(255,255,255,0.20)' : 'rgba(239,68,68,0.35)',
-              boxShadow: quickAction === 'solo' 
-                ? '0 4px 30px rgba(255,255,255,0.12), 0 0 60px rgba(255,255,255,0.06)' 
-                : '0 4px 30px rgba(239,68,68,0.25), 0 0 60px rgba(239,68,68,0.08)'
+              borderColor: quickAction === 'mission' ? 'rgba(16,185,129,0.35)' : quickAction === 'solo' ? 'rgba(255,255,255,0.20)' : 'rgba(239,68,68,0.35)',
+              boxShadow: quickAction === 'mission'
+                ? '0 4px 30px rgba(16,185,129,0.25), 0 0 60px rgba(16,185,129,0.08)'
+                : quickAction === 'solo' 
+                  ? '0 4px 30px rgba(255,255,255,0.12), 0 0 60px rgba(255,255,255,0.06)' 
+                  : '0 4px 30px rgba(239,68,68,0.25), 0 0 60px rgba(239,68,68,0.08)'
             }}
           >
             <motion.button
@@ -786,7 +788,9 @@ export default function HubPage() {
               disabled={quickAction === 'quick' && qfIsSearching}
               onClick={() => {
                 if (!profile) { navigate('/start'); return; }
-                if (quickAction === 'solo') {
+                if (quickAction === 'mission') {
+                  navigate('/arena?filter=missions');
+                } else if (quickAction === 'solo') {
                   navigate('/arena?mode=solo&auto=1');
                 } else {
                   if (qfActiveFight) {
@@ -798,11 +802,15 @@ export default function HubPage() {
               }}
               className={cn(
                 "flex-1 relative overflow-hidden flex items-center justify-center gap-3 px-6 py-5 transition-all duration-300 touch-manipulation select-none",
-                quickAction === 'solo'
+                quickAction === 'mission'
                   ? ""
-                  : "bg-gradient-to-r from-red-600 via-red-500 to-red-600"
+                  : quickAction === 'solo'
+                    ? ""
+                    : "bg-gradient-to-r from-red-600 via-red-500 to-red-600"
               )}
-              style={quickAction === 'solo' ? {
+              style={quickAction === 'mission' ? {
+                background: 'linear-gradient(135deg, hsl(160 84% 39%) 0%, hsl(152 76% 36%) 40%, hsl(145 72% 30%) 100%)',
+              } : quickAction === 'solo' ? {
                 background: 'linear-gradient(135deg, hsl(43 96% 56%) 0%, hsl(40 100% 50%) 40%, hsl(36 100% 48%) 100%)',
               } : undefined}
             >
