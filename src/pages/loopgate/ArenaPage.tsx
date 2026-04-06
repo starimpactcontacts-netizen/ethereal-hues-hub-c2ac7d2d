@@ -397,14 +397,16 @@ function ArenaMissionsSection() {
           );
         })}
 
-        {/* Post Mission CTA */}
-        <button
-          onClick={() => navigate('/missions')}
-          className="shrink-0 w-[140px] h-[300px] border border-dashed border-emerald-500/20 bg-emerald-500/[0.03] flex flex-col items-center justify-center gap-2 snap-start hover:border-emerald-500/40 transition-colors"
-        >
-          <Plus className="w-5 h-5 text-emerald-400/40" />
-          <span className="text-[9px] font-bold text-emerald-400/50 uppercase tracking-wider">Post Mission</span>
-        </button>
+        {/* Post Mission CTA — admin only */}
+        {isStaff && (
+          <button
+            onClick={() => navigate('/missions')}
+            className="shrink-0 w-[140px] h-[300px] border border-dashed border-emerald-500/20 bg-emerald-500/[0.03] flex flex-col items-center justify-center gap-2 snap-start hover:border-emerald-500/40 transition-colors rounded-xl"
+          >
+            <Plus className="w-5 h-5 text-emerald-400/40" />
+            <span className="text-[9px] font-bold text-emerald-400/50 uppercase tracking-wider">Post Mission</span>
+          </button>
+        )}
       </div>
     </div>
   );
