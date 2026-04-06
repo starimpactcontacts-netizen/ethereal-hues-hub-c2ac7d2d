@@ -45,11 +45,11 @@ export default function BottomNav() {
       )}
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-[55] bg-background"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        className="fixed inset-x-0 bottom-0 z-[55] pb-[env(safe-area-inset-bottom,0px)]"
+        style={{ backgroundColor: '#000000' }}
       >
         {/* Infinite backfill below */}
-        <div className="absolute left-0 right-0 bg-background" style={{ top: 0, bottom: '-600px' }} />
+        <div className="absolute left-0 right-0" style={{ top: 0, bottom: '-600px', backgroundColor: '#000000' }} />
         {/* Top border with synced arena color glow */}
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-white/[0.04]" />
         {/* Core bright line — hue-synced, subtle */}
@@ -66,7 +66,7 @@ export default function BottomNav() {
           animate={{ filter: ["hue-rotate(0deg)", "hue-rotate(360deg)"] }}
           transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
         />
-        <div className="relative grid grid-cols-5 h-16 max-w-lg mx-auto" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+        <div className="relative grid grid-cols-5 h-16 max-w-lg mx-auto">
           {/* Left side items (Hub, Loop) */}
           {navItems.slice(0, 2).map((item) => (
             <NavLink
