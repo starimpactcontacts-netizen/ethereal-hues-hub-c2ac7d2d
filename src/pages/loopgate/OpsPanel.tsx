@@ -2399,6 +2399,9 @@ export default function OpsPanel() {
         {/* LOOPGATE Radio Admin */}
         <RadioAdmin />
 
+        {/* Edit Analyzer — AI Judge Tool */}
+        <EditAnalyzerAdmin />
+
         {/* 1v1 Battle Admin */}
         <BattleAdminPanel />
 
