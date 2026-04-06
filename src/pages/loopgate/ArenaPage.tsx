@@ -408,7 +408,7 @@ export default function ArenaPage() {
   const [searchParams] = useSearchParams();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState<"all" | "official" | "sanctioned" | "battles" | "quick">("all");
+  const [activeFilter, setActiveFilter] = useState<"all" | "official" | "competitions" | "battles" | "quick">("all");
 
   const [showSoloMode, setShowSoloMode] = useState(() => searchParams.get('auto') === '1' && searchParams.get('mode') === 'solo');
   const [showCreateBattle, setShowCreateBattle] = useState(false);
@@ -572,7 +572,7 @@ export default function ArenaPage() {
     { key: "all", label: "All" },
     { key: "battles", label: "1v1", icon: <Swords className="w-3.5 h-3.5" />, accent: "red" },
     { key: "official", label: "King of the Hill", icon: <Crown className="w-3.5 h-3.5" />, accent: "gold" },
-    { key: "sanctioned", label: "Sanctioned", icon: <Shield className="w-3.5 h-3.5" /> },
+    { key: "competitions", label: "Competitions", icon: <Trophy className="w-3.5 h-3.5" /> },
   ];
 
   const handleQuickFight = async () => {
@@ -1116,7 +1116,7 @@ export default function ArenaPage() {
           </div>
 
           {/* ═══ COMPETITIONS ═══ */}
-          {(activeFilter === "all") && (
+          {(activeFilter === "all" || activeFilter === "competitions") && (
             <div className="-mx-4">
               <ArenaCompetitionsSection onCreateClick={() => navigate(profile ? '/competition/create' : '/start')} />
             </div>
