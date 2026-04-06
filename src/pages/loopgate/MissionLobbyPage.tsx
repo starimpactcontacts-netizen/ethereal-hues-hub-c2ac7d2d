@@ -245,7 +245,7 @@ export default function MissionLobbyPage() {
       } as any);
 
     if (error) toast.error(error.message);
-    else { toast.success('Edit submitted!'); setUrl(''); fetchSubmissions(); fetchRatedSubmissions(); }
+    else { toast.success('Edit submitted!'); setUrl(''); fetchSubmissions(); fetchRatedSubmissions(); fetchLobbyProfiles(); }
     setSubmitting(false);
   };
 
