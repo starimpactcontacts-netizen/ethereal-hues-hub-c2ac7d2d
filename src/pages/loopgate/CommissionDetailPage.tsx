@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import MissionLobbyChat from '@/components/loopgate/MissionLobbyChat';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DollarSign, ArrowLeft, Clock, Users, CheckCircle2, Send, ExternalLink, MessageSquare, Loader2, Star, Zap, ShieldCheck, AlertTriangle, Crosshair, ChevronDown } from 'lucide-react';
+import { DollarSign, ArrowLeft, Clock, Users, CheckCircle2, Send, ExternalLink, MessageSquare, Loader2, Star, Zap, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { useCommissionDetail, type SubmissionRating, RATING_PAYOUTS, RATING_COLORS } from '@/hooks/useCommissions';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
