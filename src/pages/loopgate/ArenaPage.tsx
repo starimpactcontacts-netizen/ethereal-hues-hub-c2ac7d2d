@@ -275,7 +275,7 @@ function GhostSlot({ icon, label, width = "w-[240px]", height = "h-44", accentCo
   accentColor?: string;
 }) {
   return (
-    <div className={`shrink-0 ${width} ${height} border border-dashed ${accentColor} bg-surface-0/40 flex flex-col items-center justify-center gap-2`}>
+    <div className={`shrink-0 ${width} ${height} border border-dashed ${accentColor} bg-surface-0/40 flex flex-col items-center justify-center gap-2 rounded-lg`}>
       <div className="w-8 h-8 bg-surface-2/60 flex items-center justify-center">
         {icon}
       </div>
