@@ -1091,32 +1091,32 @@ export default function HubPage() {
             {/* Mission billboard cards — pinned first */}
             {missionDrops.map(mission => (
               <Link key={`mission-${mission.id}`} to={`/commissions/${mission.id}`} className="shrink-0">
-                <div className="relative w-[220px] h-[300px] overflow-hidden group cursor-pointer rounded-lg border-2 border-emerald-500/30">
+                <div className="relative w-[160px] h-[160px] overflow-hidden group cursor-pointer rounded-lg border border-emerald-500/30 snap-start">
                   {mission.poster_url ? (
-                    <img src={mission.poster_url} alt={mission.song_name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                    <img src={mission.poster_url} alt={mission.song_name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   ) : (
                     <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/60 to-black" />
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/20" />
                   {/* MISSION badge */}
-                  <div className="absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5 bg-emerald-600/90 backdrop-blur-sm px-2.5 py-1 rounded-sm">
-                    <DollarSign className="w-3 h-3 text-white" />
-                    <span className="text-[8px] font-black text-white uppercase tracking-[0.2em]">Mission</span>
+                  <div className="absolute top-2 left-2 z-10 flex items-center gap-1 bg-emerald-600/90 backdrop-blur-sm px-2 py-0.5 rounded-sm">
+                    <DollarSign className="w-2.5 h-2.5 text-white" />
+                    <span className="text-[7px] font-black text-white uppercase tracking-[0.15em]">Mission</span>
                   </div>
                   {mission.max_pay > 0 && (
-                    <div className="absolute top-2.5 right-2.5 z-10 bg-black/70 backdrop-blur-sm px-2 py-1 rounded-sm">
-                      <span className="font-display text-2xl text-emerald-400 leading-none">${mission.max_pay}</span>
+                    <div className="absolute top-2 right-2 z-10 bg-black/70 backdrop-blur-sm px-1.5 py-0.5 rounded-sm">
+                      <span className="font-display text-sm text-emerald-400 leading-none">${mission.max_pay}</span>
                     </div>
                   )}
-                  <div className="absolute bottom-0 left-0 right-0 p-3">
+                  <div className="absolute bottom-0 left-0 right-0 px-2.5 pb-2">
                     {mission.artist_name && (
-                      <p className="text-[8px] font-black text-emerald-400/70 uppercase tracking-[0.2em] mb-0.5">{mission.artist_name}</p>
+                      <p className="text-[7px] font-black text-emerald-400/70 uppercase tracking-[0.15em] mb-0.5">{mission.artist_name}</p>
                     )}
-                    <h4 className="font-display text-lg text-white leading-tight truncate">{mission.song_name}</h4>
-                    <div className="mt-2 flex items-center justify-center gap-2 bg-emerald-600 py-2 rounded-sm">
-                      <Crosshair className="w-3.5 h-3.5 text-white" />
-                      <span className="text-[11px] font-black text-white uppercase tracking-wider">Enter Mission</span>
-                    </div>
+                    <h4 className="font-display text-[11px] text-white leading-tight truncate">{mission.song_name}</h4>
+                    <button className="mt-1.5 w-full flex items-center justify-center gap-1.5 bg-emerald-600 py-1 rounded-sm">
+                      <Crosshair className="w-2.5 h-2.5 text-white" />
+                      <span className="text-[9px] font-black text-white uppercase tracking-wider">Enter</span>
+                    </button>
                   </div>
                 </div>
               </Link>
