@@ -88,7 +88,7 @@ export default function BottomNav() {
           {/* Center Arena Button — Diamond shape with glitch aura */}
           <button
             onClick={handleArenaClick}
-            className="flex flex-col items-center justify-center group relative -mt-3"
+            className="flex flex-col items-center justify-center group relative -mt-1"
           >
             {/* Active battle indicator */}
             {hasActiveBattle && (
