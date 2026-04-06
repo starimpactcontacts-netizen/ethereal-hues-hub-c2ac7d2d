@@ -125,7 +125,7 @@ function ArenaMissionsSection() {
               key={b.id}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate(`/commissions/${b.id}`)}
-              className="shrink-0 relative w-[200px] h-[240px] rounded-lg overflow-hidden group text-left touch-manipulation snap-start"
+              className="shrink-0 relative w-[200px] h-[260px] rounded-lg overflow-hidden group text-left touch-manipulation snap-start"
               style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}
             >
               {/* Cover */}
@@ -136,6 +136,13 @@ function ArenaMissionsSection() {
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/20" />
               <div className="absolute inset-0 border border-white/[0.06] rounded-lg" />
+
+              {/* Center play button */}
+              <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+                <div className="w-12 h-12 rounded-full bg-black/50 backdrop-blur-sm border border-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity">
+                  <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
+                </div>
+              </div>
 
               {/* Type badge */}
               <div className="absolute top-2 left-2 z-10">
@@ -189,14 +196,14 @@ function ArenaMissionsSection() {
                   </div>
                 )}
 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-2">
                   <span className="flex items-center gap-0.5 text-[8px] text-white/30"><Users className="w-2.5 h-2.5" /> {slotsLeft}/{b.max_slots}</span>
-                  <span
-                    className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-md bg-emerald-500/20 text-emerald-400"
-                    style={{ fontFamily: 'Teko, sans-serif' }}
-                  >
-                    ENTER
-                  </span>
+                </div>
+                <div
+                  className="w-full py-2.5 rounded-md bg-emerald-500 text-white text-center text-[12px] font-bold uppercase tracking-wider touch-manipulation"
+                  style={{ fontFamily: 'Teko, sans-serif' }}
+                >
+                  ENTER
                 </div>
               </div>
             </motion.button>
@@ -207,7 +214,7 @@ function ArenaMissionsSection() {
         {isStaff && (
           <button
             onClick={() => navigate('/missions')}
-            className="shrink-0 w-[200px] h-[240px] border border-dashed border-border/30 bg-surface-1/30 flex flex-col items-center justify-center gap-2 snap-start hover:border-border/50 transition-colors rounded-lg"
+            className="shrink-0 w-[200px] h-[260px] border border-dashed border-border/30 bg-surface-1/30 flex flex-col items-center justify-center gap-2 snap-start hover:border-border/50 transition-colors rounded-lg"
           >
             <Plus className="w-4 h-4 text-muted-foreground/30" />
             <span className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-wider">Post</span>
