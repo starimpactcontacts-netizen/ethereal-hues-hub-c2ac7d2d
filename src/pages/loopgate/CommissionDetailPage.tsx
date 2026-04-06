@@ -459,10 +459,10 @@ export default function CommissionDetailPage() {
 
           {/* Payout timeline — S to F */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-            className="bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 p-3">
+            className="bg-white/[0.08] backdrop-blur-xl rounded-xl border border-white/20 p-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/40">Payout Scale</span>
-              <button onClick={() => setShowQoiInfo(true)} className="flex items-center gap-1 text-[8px] font-bold text-white/30 hover:text-white/60 transition-colors">
+              <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/60">Payout Scale</span>
+              <button onClick={() => setShowQoiInfo(true)} className="flex items-center gap-1 text-[8px] font-bold text-white/40 hover:text-white/70 transition-colors">
                 <Info className="w-3 h-3" /> What's QOI?
               </button>
             </div>
@@ -483,9 +483,14 @@ export default function CommissionDetailPage() {
                     {t.pay > 0 ? `$${(t.pay / 100 % 1 === 0) ? (t.pay / 100).toFixed(0) : (t.pay / 100).toFixed(2)}` : t.rank === 'F' ? '50 XP' : 'IDX'}
                   </span>
                   <div className={`w-2 h-2 rounded-full ${t.dotColor} my-1 shadow-sm`} />
-                  <span className="text-[7px] text-white/25 font-medium">{t.qoi}</span>
+                  <span className="text-[7px] text-white/35 font-medium">{t.qoi}</span>
                 </div>
               ))}
+            </div>
+            {/* Jackpot indicator */}
+            <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-center gap-2">
+              <span className="text-sm">🎰</span>
+              <span className="text-[8px] font-black text-amber-400 uppercase tracking-wider">Jackpot Edit: $50 bonus at 100k+ views</span>
             </div>
           </motion.div>
         </div>
@@ -495,22 +500,27 @@ export default function CommissionDetailPage() {
       <div className="px-4 pb-24 space-y-5 -mt-1">
 
         {/* ── LOBBY HEADS ── */}
-        {visitors.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-black/20 backdrop-blur-sm rounded-2xl border border-white/5 px-4 py-3"
-          >
-            <div className="flex items-center gap-2 mb-2.5">
-              <Eye className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="text-[10px] font-black text-foreground uppercase tracking-[0.15em]">In the Lobby</span>
-            </div>
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-surface-1 border border-border rounded-2xl px-4 py-3"
+        >
+          <div className="flex items-center gap-2 mb-2.5">
+            <Eye className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="text-[10px] font-black text-foreground uppercase tracking-[0.15em]">In the Lobby</span>
+          </div>
+          {visitors.length > 0 ? (
             <LobbyHeads visitors={visitors} />
-          </motion.div>
-        )}
+          ) : (
+            <div className="flex items-center gap-2 py-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30" />
+              <span className="text-[10px] text-muted-foreground italic">No one here yet — be the first</span>
+            </div>
+          )}
+        </motion.div>
 
         {/* ── PROGRESS ── */}
-        <div className="bg-black/20 backdrop-blur-sm rounded-2xl border border-white/5 p-4">
+        <div className="bg-surface-1 border border-border rounded-2xl p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5 text-emerald-400" />
@@ -551,32 +561,32 @@ export default function CommissionDetailPage() {
         {/* ── SCENEPACKS BUTTON ── */}
         {(commission as any).scenepack_url && (
           <a href={(commission as any).scenepack_url} target="_blank" rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2.5 py-3.5 w-full bg-amber-500/10 border border-amber-500/20 hover:border-amber-500/40 text-amber-400 font-black uppercase tracking-wider text-sm rounded-xl transition-colors">
-            <FolderOpen className="w-4 h-4" /> Go Get Scenepacks
+            className="flex items-center justify-center gap-2.5 py-3.5 w-full bg-surface-1 border border-border hover:border-foreground/20 text-foreground font-black uppercase tracking-wider text-sm rounded-xl transition-colors active:scale-[0.98]">
+            <FolderOpen className="w-4 h-4 text-amber-400" /> Go Get Scenepacks
           </a>
         )}
 
         {/* ── MISSION BRIEF ── */}
-        <div className="rounded-2xl overflow-hidden">
+        <div className="rounded-xl overflow-hidden">
           <button onClick={() => setShowBrief(!showBrief)}
-            className="w-full flex items-center justify-between py-3.5 px-4 bg-amber-500/5 border border-gold/20 hover:border-gold/30 rounded-2xl transition-colors">
+            className="w-full flex items-center justify-between py-3.5 px-4 bg-surface-1 border border-border hover:border-foreground/20 rounded-xl transition-colors">
             <div className="flex items-center gap-2">
-              <FileText className="w-4 h-4 text-gold" />
-              <span className="text-[11px] font-black text-gold uppercase tracking-wider">Mission Brief</span>
+              <FileText className="w-4 h-4 text-amber-400" />
+              <span className="text-[11px] font-black text-foreground uppercase tracking-wider">Mission Brief</span>
             </div>
             <motion.div animate={{ rotate: showBrief ? 180 : 0 }} transition={{ duration: 0.2 }}>
-              <ChevronRight className="w-4 h-4 text-gold/60 rotate-90" />
+              <ChevronRight className="w-4 h-4 text-muted-foreground rotate-90" />
             </motion.div>
           </button>
           <AnimatePresence>
             {showBrief && (
               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
-                <div className="bg-black/20 border border-t-0 border-gold/10 rounded-b-2xl p-4">
+                <div className="bg-surface-1 border border-t-0 border-border rounded-b-xl p-4">
                   {editingBrief ? (
                     <div className="space-y-2">
-                      <Textarea value={briefText} onChange={e => setBriefText(e.target.value)} placeholder="Write the mission brief..." className="min-h-[120px] resize-none bg-black/30 border-gold/20 text-xs rounded-xl" />
+                      <Textarea value={briefText} onChange={e => setBriefText(e.target.value)} placeholder="Write the mission brief..." className="min-h-[120px] resize-none bg-surface-2 border-border text-xs rounded-xl" />
                       <div className="flex gap-2">
-                        <Button size="sm" className="bg-gold hover:bg-gold/80 text-background text-xs font-bold flex-1 rounded-lg"
+                        <Button size="sm" className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex-1 rounded-lg"
                           onClick={async () => {
                             const { error } = await supabase.from('commissions').update({ description: briefText } as any).eq('id', id);
                             if (error) { toast.error('Failed to save brief'); return; }
@@ -597,7 +607,7 @@ export default function CommissionDetailPage() {
                       )}
                       {canRate && (
                         <button onClick={() => { setBriefText(commission.description || ''); setEditingBrief(true); }}
-                          className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold text-gold/70 hover:text-gold border border-dashed border-gold/20 hover:border-gold/40 rounded-xl transition-colors">
+                          className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold text-muted-foreground hover:text-foreground border border-dashed border-border hover:border-foreground/30 rounded-xl transition-colors">
                           <Pencil className="w-3 h-3" /> {commission.description ? 'Edit Brief' : 'Add Brief'}
                         </button>
                       )}
