@@ -123,7 +123,7 @@ export default function LivePayoutsCarousel() {
   }
 
   return (
-    <div className="mb-4 mx-4 relative overflow-hidden rounded-xl border border-emerald-500/10"
+    <div className="mb-4 relative overflow-hidden border-y border-emerald-500/10"
       style={{
         background: 'linear-gradient(135deg, rgba(16,185,129,0.06) 0%, rgba(0,0,0,0.95) 40%, rgba(16,185,129,0.04) 100%)',
       }}
@@ -136,7 +136,7 @@ export default function LivePayoutsCarousel() {
         }}
       />
       {/* Top accent line */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent" />
+      <div className="absolute top-0 left-0 right-0 h-px bg-emerald-500/20" />
 
       {/* Header */}
       <div className="flex items-center justify-between mb-2.5 px-4 pt-3 relative z-10">
@@ -166,7 +166,7 @@ export default function LivePayoutsCarousel() {
       </div>
 
       {/* Bottom accent line */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-emerald-500/20" />
     </div>
   );
 }
