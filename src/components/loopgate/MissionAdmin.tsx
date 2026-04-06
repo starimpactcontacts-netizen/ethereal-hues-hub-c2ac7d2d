@@ -21,6 +21,9 @@ interface MissionDrop {
   poster_url: string | null;
   artist_name: string | null;
   status: string;
+  description: string | null;
+  submission_goal: number;
+  song_url: string | null;
   mission_live: boolean;
   mission_custom_payouts: Record<string, number> | null;
   mission_views_milestone: number;
@@ -58,7 +61,7 @@ export default function MissionAdmin() {
   const fetchAll = useCallback(async () => {
     const [mRes, sRes] = await Promise.all([
       supabase.from('featured_drops')
-        .select('id, title, song_name, poster_url, status, mission_live, mission_custom_payouts, mission_views_milestone, mission_views_bonus_cents, instant_payout, inspo_url, inspo_thumbnail_url, theme_description, submission_count, featured_artists(name)')
+        .select('id, title, song_name, poster_url, status, description, submission_goal, song_url, mission_live, mission_custom_payouts, mission_views_milestone, mission_views_bonus_cents, instant_payout, inspo_url, inspo_thumbnail_url, theme_description, submission_count, featured_artists(name)')
         .order('created_at', { ascending: false }),
       supabase.from('featured_submissions')
         .select('id, drop_id, user_id, username, avatar_url, submission_url, platform, status, rating, earned_cents, feedback, created_at')
@@ -68,6 +71,8 @@ export default function MissionAdmin() {
       setMissions(mRes.data.map((d: any) => ({
         id: d.id, title: d.title, song_name: d.song_name, poster_url: d.poster_url,
         artist_name: d.featured_artists?.name || null, status: d.status || 'draft',
+        description: d.description || null, submission_goal: d.submission_goal || 25,
+        song_url: d.song_url || null,
         mission_live: d.mission_live ?? false,
         mission_custom_payouts: d.mission_custom_payouts as Record<string, number> | null,
         mission_views_milestone: d.mission_views_milestone || 0,
@@ -268,6 +273,13 @@ function MissionRow({ m, subs, expanded, onToggleExpand, onToggleLive, onToggleI
 /* ─── Edit Dialog ─── */
 function MissionEditDialog({ mission, onClose, onSaved }: { mission: MissionDrop; onClose: () => void; onSaved: () => void }) {
   const [form, setForm] = useState({
+    title: mission.title || '',
+    song_name: mission.song_name || '',
+    description: mission.description || '',
+    poster_url: mission.poster_url || '',
+    song_url: mission.song_url || '',
+    submission_goal: mission.submission_goal,
+    status: mission.status,
     mission_custom_payouts: mission.mission_custom_payouts || { S: 0, A: 0, B: 0, C: 0, D: 0, F: 0 } as Record<string, number>,
     mission_views_milestone: mission.mission_views_milestone,
     mission_views_bonus_cents: mission.mission_views_bonus_cents,
@@ -281,6 +293,13 @@ function MissionEditDialog({ mission, onClose, onSaved }: { mission: MissionDrop
   const handleSave = async () => {
     setSaving(true);
     const { error } = await supabase.from('featured_drops').update({
+      title: form.title,
+      song_name: form.song_name,
+      description: form.description || null,
+      poster_url: form.poster_url || null,
+      song_url: form.song_url || null,
+      submission_goal: form.submission_goal,
+      status: form.status,
       mission_custom_payouts: form.mission_custom_payouts,
       mission_views_milestone: form.mission_views_milestone,
       mission_views_bonus_cents: form.mission_views_bonus_cents,
@@ -290,7 +309,7 @@ function MissionEditDialog({ mission, onClose, onSaved }: { mission: MissionDrop
       theme_description: form.theme_description || null,
     } as any).eq('id', mission.id);
     if (error) toast.error(error.message);
-    else { toast.success('Mission settings saved!'); onSaved(); }
+    else { toast.success('Mission saved!'); onSaved(); }
     setSaving(false);
   };
 
@@ -299,12 +318,66 @@ function MissionEditDialog({ mission, onClose, onSaved }: { mission: MissionDrop
       <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
-            <DollarSign size={18} className="text-emerald-400" /> Mission — {mission.song_name}
+            <DollarSign size={18} className="text-emerald-400" /> Edit Mission
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-2">
-          <div>
-            <Label className="text-xs text-emerald-400 font-bold">Payout per Rating (cents)</Label>
+          {/* Core Info */}
+          <div className="space-y-2">
+            <Label className="text-xs font-bold text-purple-400">📋 Core Info</Label>
+            <div>
+              <Label className="text-[10px]">Title</Label>
+              <Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="mt-1 h-8 text-xs" />
+            </div>
+            <div>
+              <Label className="text-[10px]">Song Name</Label>
+              <Input value={form.song_name} onChange={e => setForm({ ...form, song_name: e.target.value })} className="mt-1 h-8 text-xs" />
+            </div>
+            <div>
+              <Label className="text-[10px]">Description</Label>
+              <Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
+                placeholder="Mission description..." className="mt-1 text-xs" rows={2} />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label className="text-[10px]">Status</Label>
+                <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}
+                  className="mt-1 w-full h-8 text-xs rounded-md border border-border bg-background px-2">
+                  <option value="draft">Draft</option>
+                  <option value="active">Active</option>
+                  <option value="closed">Closed</option>
+                </select>
+              </div>
+              <div>
+                <Label className="text-[10px]">Max Slots</Label>
+                <Input type="number" value={form.submission_goal} onChange={e => setForm({ ...form, submission_goal: Number(e.target.value) })} className="mt-1 h-8 text-xs" />
+              </div>
+            </div>
+          </div>
+
+          {/* Media */}
+          <div className="border-t border-border pt-3 space-y-2">
+            <Label className="text-xs font-bold text-blue-400">🖼 Media</Label>
+            <div>
+              <Label className="text-[10px]">Poster URL</Label>
+              <Input value={form.poster_url} onChange={e => setForm({ ...form, poster_url: e.target.value })}
+                placeholder="Image URL for poster" className="mt-1 h-8 text-xs" />
+            </div>
+            {form.poster_url && (
+              <div className="rounded-lg border border-border overflow-hidden">
+                <img src={form.poster_url} alt="Poster" className="w-full h-24 object-cover" />
+              </div>
+            )}
+            <div>
+              <Label className="text-[10px]">Song/Audio URL</Label>
+              <Input value={form.song_url} onChange={e => setForm({ ...form, song_url: e.target.value })}
+                placeholder="Link to song file" className="mt-1 h-8 text-xs" />
+            </div>
+          </div>
+
+          {/* Payouts */}
+          <div className="border-t border-border pt-3">
+            <Label className="text-xs text-emerald-400 font-bold">💰 Payout per Rating (cents)</Label>
             <p className="text-[9px] text-muted-foreground mb-2">1000 = $10, 500 = $5</p>
             <div className="grid grid-cols-3 gap-2">
               {RATINGS.map(r => (
@@ -334,12 +407,14 @@ function MissionEditDialog({ mission, onClose, onSaved }: { mission: MissionDrop
             </div>
             <input type="checkbox" checked={form.instant_payout} onChange={e => setForm({ ...form, instant_payout: e.target.checked })} className="w-4 h-4 accent-red-500" />
           </label>
+
+          {/* Mission Brief */}
           <div className="border-t border-border pt-3">
-            <Label className="text-xs font-bold text-purple-400">🎨 Theme & Inspo for Editors</Label>
-            <p className="text-[9px] text-muted-foreground mb-2">Editors see this when they open this mission</p>
+            <Label className="text-xs font-bold text-purple-400">🎨 Mission Brief & Inspo</Label>
+            <p className="text-[9px] text-muted-foreground mb-2">Editors see this when they open the mission</p>
             <div className="space-y-2">
               <div>
-                <Label className="text-[10px]">Theme Description</Label>
+                <Label className="text-[10px]">Mission Brief / Theme</Label>
                 <Textarea value={form.theme_description} onChange={e => setForm({ ...form, theme_description: e.target.value })}
                   placeholder="Dark moody edit with glitch transitions..." className="mt-1 text-xs" rows={3} />
               </div>
@@ -361,7 +436,7 @@ function MissionEditDialog({ mission, onClose, onSaved }: { mission: MissionDrop
             </div>
           </div>
           <Button onClick={handleSave} disabled={saving} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold">
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Mission Settings'}
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Mission'}
           </Button>
         </div>
       </DialogContent>
