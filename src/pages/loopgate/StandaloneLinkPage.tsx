@@ -70,7 +70,7 @@ const SOCIAL_ICONS: Record<string, React.FC<{ size?: number; className?: string 
   instagram: ({ size = 20, className }) => <Instagram size={size} className={className} />,
   tiktok: ({ size = 20, className }) => <SiTiktok size={size} className={className} />,
   youtube: ({ size = 20, className }) => <SiYoutube size={size} className={className} />,
-  twitter: ({ size = 20, className }) => <SiTwitter size={size} className={className} />,
+  twitter: ({ size = 20, className }) => <SiX size={size} className={className} />,
   twitch: ({ size = 20, className }) => <SiTwitch size={size} className={className} />,
   spotify: ({ size = 20, className }) => <SiSpotify size={size} className={className} />,
   soundcloud: ({ size = 20, className }) => <SiSoundcloud size={size} className={className} />,
