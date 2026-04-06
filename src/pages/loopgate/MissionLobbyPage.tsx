@@ -193,13 +193,15 @@ export default function MissionLobbyPage() {
     const registerPresence = async () => {
       const { data: prof } = await supabase.from('profiles').select('username, avatar_url').eq('id', user.id).single();
       if (!prof) return;
-      await supabase.from('mission_lobby_presence' as any).upsert({
+      const { error } = await supabase.from('mission_lobby_presence').upsert({
         drop_id: id,
         user_id: user.id,
         username: prof.username,
         avatar_url: prof.avatar_url,
         last_seen_at: new Date().toISOString(),
-      } as any, { onConflict: 'drop_id,user_id' });
+      }, { onConflict: 'drop_id,user_id' });
+      if (error) console.error('Presence upsert error:', error);
+      else fetchLobbyProfiles();
     };
     registerPresence();
   }, [id, user]);
@@ -207,15 +209,16 @@ export default function MissionLobbyPage() {
   // Fetch lobby profiles from presence table
   const fetchLobbyProfiles = useCallback(async () => {
     if (!id) return;
-    const { data } = await supabase
-      .from('mission_lobby_presence' as any)
+    const { data, error } = await supabase
+      .from('mission_lobby_presence')
       .select('user_id, username, avatar_url')
       .eq('drop_id', id)
       .order('last_seen_at', { ascending: false })
       .limit(50);
 
+    if (error) console.error('Lobby profiles fetch error:', error);
     if (data) {
-      setLobbyProfiles(data as any as LobbyProfile[]);
+      setLobbyProfiles(data as LobbyProfile[]);
     }
   }, [id]);
 
