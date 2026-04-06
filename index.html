@@ -51,26 +51,19 @@
   </head>
 
   <body style="background-color: #000000;">
-    <!-- Instant Splash Screen - shows before React loads -->
+    <!-- Splash: simple spinner while React loads -->
     <div id="splash" style="
       position: fixed;
       inset: 0;
       z-index: 9999;
       background: #000000;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 20px;
       transition: opacity 0.3s ease-out;
-      margin: 0;
-      padding: 0;
     ">
-      <img 
-        src="/loopgate-splash.png?v=7" 
-        alt="Loopgate" 
-        style="height: 120px; width: 120px; max-width: 28vw; max-height: 14vh; display: block; image-rendering: -webkit-optimize-contrast; object-fit: contain;"
-      />
+      <div style="width: 28px; height: 28px; border: 2px solid rgba(255,255,255,0.1); border-top-color: rgba(255,255,255,0.5); border-radius: 50%; animation: sp 0.6s linear infinite;"></div>
+      <style>@keyframes sp{to{transform:rotate(360deg)}}</style>
     </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
