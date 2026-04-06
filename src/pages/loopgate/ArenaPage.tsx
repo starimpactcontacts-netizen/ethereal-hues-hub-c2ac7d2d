@@ -1396,7 +1396,7 @@ export default function ArenaPage() {
                 <div className="pl-4 flex gap-3 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory">
                   {/* Mission billboard cards — pinned first */}
                   {missionBillboards.map(mission => (
-                    <Link key={`mission-${mission.id}`} to={`/mission/${mission.id}`} className="shrink-0 snap-start">
+                    <Link key={`mission-${mission.id}`} to={`/commissions/${mission.id}`} className="shrink-0 snap-start">
                       <div className="relative w-[220px] h-[300px] overflow-hidden group cursor-pointer rounded-lg border-2 border-emerald-500/30 hover:border-emerald-500/50 transition-colors">
                         {mission.poster_url ? (
                           <img src={mission.poster_url} alt={mission.song_name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
