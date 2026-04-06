@@ -914,6 +914,14 @@ export default function HubPage() {
               <DropdownMenuContent align="end" className="w-52 bg-surface-1 border-border">
                 <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">Quick Action</DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setQuickAction('mission')} className="flex items-center gap-2 cursor-pointer">
+                  <Crosshair className="w-4 h-4 text-emerald-400" />
+                  <div className="flex-1">
+                    <span className="text-sm font-semibold">Mission Edit</span>
+                    <span className="text-[10px] text-emerald-400 ml-1.5">GET PAID</span>
+                  </div>
+                  {quickAction === 'mission' && <Check className="w-3.5 h-3.5 text-emerald-400" />}
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setQuickAction('solo')} className="flex items-center gap-2 cursor-pointer">
                   <UserRound className="w-4 h-4 text-gold" />
                   <div className="flex-1">
