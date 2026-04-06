@@ -358,6 +358,7 @@ export default function CommissionDetailPage() {
   const isPoster = !!user && commission?.created_by === user.id;
   const canRate = isStaff || isPoster;
   const [reviewingSubmission, setReviewingSubmission] = useState<any>(null);
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
   const [showBrief, setShowBrief] = useState(false);
   const [editingBrief, setEditingBrief] = useState(false);
@@ -506,7 +507,7 @@ export default function CommissionDetailPage() {
         <div className="flex gap-2">
           {canSubmit ? (
             <button
-              onClick={() => document.getElementById('mission-submit-area')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => setShowSubmitModal(true)}
               className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-wider text-sm transition-colors"
             >
               <Send className="w-4 h-4" /> Submit Edit
@@ -780,21 +781,15 @@ export default function CommissionDetailPage() {
           </div>
         )}
 
-        {/* ── SUBMIT FORM ── */}
+        {/* Submit form moved to modal — keep anchor for backwards compat */}
         {canSubmit && (
           <div id="mission-submit-area">
-            <h3 className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
-              <Crosshair className="w-3.5 h-3.5" />
-              {mySubmissions.length > 0 ? 'Submit Another Edit' : 'Submit Your Edit'}
-            </h3>
-            <SubmitForm
-              onSubmit={async (url, platform, message) => {
-                await submitEdit({ submission_url: url, platform, message: message || undefined });
-              }}
-              disabled={false}
-              userId={user?.id}
-              previousSubmissions={mySubmissions.length}
-            />
+            <button
+              onClick={() => setShowSubmitModal(true)}
+              className="w-full flex items-center justify-center gap-2 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-wider text-sm transition-colors"
+            >
+              <Send className="w-4 h-4" /> {mySubmissions.length > 0 ? 'Submit Another Edit' : 'Submit Your Edit'}
+            </button>
           </div>
         )}
 
@@ -835,6 +830,45 @@ export default function CommissionDetailPage() {
             onClose={() => setReviewingSubmission(null)}
             getPayoutForRating={getPayoutForRating}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Submit Edit Modal */}
+      <AnimatePresence>
+        {showSubmitModal && canSubmit && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+          >
+            <div className="absolute inset-0 bg-black/70" onClick={() => setShowSubmitModal(false)} />
+            <motion.div
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 100, opacity: 0 }}
+              className="relative w-full max-w-md bg-card border border-border/30 p-5 mx-4 mb-4 sm:mb-0"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-black text-foreground uppercase tracking-wider flex items-center gap-2">
+                  <Crosshair className="w-4 h-4 text-emerald-400" />
+                  {mySubmissions.length > 0 ? 'Submit Another Edit' : 'Submit Your Edit'}
+                </h3>
+                <button onClick={() => setShowSubmitModal(false)} className="p-1 hover:bg-surface-1 rounded transition-colors">
+                  <X className="w-4 h-4 text-muted-foreground" />
+                </button>
+              </div>
+              <SubmitForm
+                onSubmit={async (url, platform, message) => {
+                  await submitEdit({ submission_url: url, platform, message: message || undefined });
+                  setShowSubmitModal(false);
+                }}
+                disabled={false}
+                userId={user?.id}
+                previousSubmissions={mySubmissions.length}
+              />
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
