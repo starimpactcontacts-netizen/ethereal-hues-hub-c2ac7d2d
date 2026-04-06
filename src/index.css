@@ -127,27 +127,38 @@
   html {
     background-color: #000000;
     overscroll-behavior: none;
-    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
   }
 
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-body);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-    width: 100%;
-    min-height: 100%;
-    min-height: 100dvh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overscroll-behavior: none;
     background-color: #000000;
-    overflow-x: hidden;
   }
   
   #root {
-    min-height: 100vh;
-    min-height: 100dvh;
-    background-color: inherit;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    background-color: #000000;
   }
   
   * {
@@ -409,7 +420,7 @@ html {
 }
 
 html, body {
-  overflow-x: hidden;
+  overflow: hidden;
   max-width: 100vw;
 }
 
