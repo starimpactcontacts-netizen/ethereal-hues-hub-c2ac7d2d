@@ -479,8 +479,8 @@ export default function CommissionDetailPage() {
               ].map((t) => (
                 <div key={t.rank} className="flex-1 flex flex-col items-center relative z-10">
                   <span className={`text-[10px] font-black ${t.color} leading-none`}>{t.rank}</span>
-                  <span className={`text-[9px] font-bold mt-0.5 ${t.rank === 'F' ? 'text-purple-400' : 'text-white'}`}>
-                    {t.pay > 0 ? `$${(t.pay / 100 % 1 === 0) ? (t.pay / 100).toFixed(0) : (t.pay / 100).toFixed(2)}` : t.rank === 'F' ? '50 XP' : 'IDX'}
+                  <span className={`text-[9px] font-bold mt-0.5 ${t.rank === 'F' ? 'text-amber-400' : 'text-white'}`}>
+                    {t.pay > 0 ? `$${(t.pay / 100 % 1 === 0) ? (t.pay / 100).toFixed(0) : (t.pay / 100).toFixed(2)}` : t.rank === 'F' ? '🎰 $50' : 'IDX'}
                   </span>
                   <div className={`w-2 h-2 rounded-full ${t.dotColor} my-1 shadow-sm`} />
                   <span className="text-[7px] text-white/25 font-medium">{t.qoi}</span>
