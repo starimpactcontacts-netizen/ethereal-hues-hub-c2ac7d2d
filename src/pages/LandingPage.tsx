@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Swords, Play, Smartphone } from 'lucide-react';
+import { Swords, Play, Smartphone, DollarSign, Crosshair } from 'lucide-react';
 import { HubIcon, ArenaIcon, RankingsIcon, RateIcon, UnitsIcon, MissionsIcon } from '@/components/loopgate/LandingIcons';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
@@ -14,7 +14,8 @@ import loopgateLogo from '@/assets/loopgate-logo.png';
 import loopgateHeroCinematic from '@/assets/hero-collage.jpeg';
 import editoriumLogo from '@/assets/editorium-logo.png';
 import loopyAvatar from '@/assets/loopy-avatar.png';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 const quickLinks = [
   { to: '/hub', label: 'Hub', Icon: HubIcon, desc: 'Browse edits & editors', color: '#ffffff', bgGrad: 'from-white/[0.07] to-white/[0.02]', glowColor: 'rgba(255,255,255,0.08)' },
@@ -30,6 +31,27 @@ export default function LandingPage() {
   const { setGuest } = useGuestMode();
   const { stats } = useGlobalStats();
   const [bannerVisible, setBannerVisible] = useState(false);
+  const [billboard, setBillboard] = useState<{ id: string; title: string; poster_url: string | null; artist_name: string | null; max_pay: number } | null>(null);
+
+  useEffect(() => {
+    const fetch = async () => {
+      const { data } = await supabase
+        .from('commissions')
+        .select('id, title, cover_url, artist_name, client_name, payout_cents')
+        .eq('is_marketplace', true)
+        .eq('status', 'open')
+        .order('created_at', { ascending: false })
+        .limit(1);
+      if (data && data[0]) {
+        setBillboard({
+          id: data[0].id, title: data[0].title, poster_url: data[0].cover_url,
+          artist_name: data[0].artist_name || data[0].client_name || null,
+          max_pay: (data[0].payout_cents || 0) / 100,
+        });
+      }
+    };
+    fetch();
+  }, []);
 
   const handleGuestExplore = () => {
     setGuest(true);
@@ -140,6 +162,49 @@ export default function LandingPage() {
         {/* ═══════════════ DIRECT ACCESS — Premium Grid ═══════════════ */}
         <section className="relative pt-0 pb-8 sm:pt-2 sm:pb-12 px-5 sm:px-6 -mt-8">
           <div className="max-w-sm mx-auto">
+          {/* ═══ MISSION BILLBOARD ═══ */}
+          {billboard && (
+            <motion.button
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => navigate(`/commissions/${billboard.id}`)}
+              className="relative w-full overflow-hidden touch-manipulation group mb-3 rounded-lg"
+              style={{ boxShadow: '0 4px 24px rgba(16, 185, 129, 0.15)' }}
+            >
+              {billboard.poster_url ? (
+                <div className="absolute inset-0 bg-cover bg-center scale-[1.02] group-hover:scale-[1.06] transition-transform duration-700" style={{ backgroundImage: `url(${billboard.poster_url})` }} />
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-950 via-background to-emerald-950/50" />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/40" />
+              <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent" />
+              <div className="relative px-4 py-3.5 flex items-center gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <DollarSign className="w-3 h-3 text-emerald-400" />
+                    <span className="text-[9px] font-black text-emerald-400 uppercase tracking-[0.15em]">Mission — Live</span>
+                  </div>
+                  <h3 className="text-[16px] font-black text-white leading-tight truncate tracking-tight" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                    {billboard.title}
+                  </h3>
+                  {billboard.artist_name && (
+                    <p className="text-[9px] text-white/40 font-bold uppercase tracking-wider mt-0.5 truncate">{billboard.artist_name}</p>
+                  )}
+                </div>
+                <div className="shrink-0 flex items-center gap-3">
+                  {billboard.max_pay > 0 && (
+                    <span className="font-display text-xl text-emerald-400 font-black leading-none">${billboard.max_pay}</span>
+                  )}
+                  <div className="bg-emerald-600 px-4 py-2 rounded-sm flex items-center gap-1.5 group-hover:bg-emerald-500 transition-colors">
+                    <Crosshair className="w-3.5 h-3.5 text-white" />
+                    <span className="text-[12px] font-black text-white uppercase tracking-wider" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>Enter</span>
+                  </div>
+                </div>
+              </div>
+            </motion.button>
+          )}
+
             {/* Top row — 2 big tiles (Hub + Arena) */}
             <motion.div
               className="grid grid-cols-2 gap-2 mb-2"
