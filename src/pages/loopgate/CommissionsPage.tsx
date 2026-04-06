@@ -303,6 +303,142 @@ export default function CommissionsPage() {
           />
         )}
       </AnimatePresence>
+
+      {editingMission && (
+        <MissionEditDialog
+          mission={editingMission}
+          onClose={() => setEditingMission(null)}
+          onSaved={() => {
+            setEditingMission(null);
+            window.location.reload();
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+/* ─── Mission Edit Dialog ─── */
+function MissionEditDialog({ mission, onClose, onSaved }: { mission: MarketplaceBounty; onClose: () => void; onSaved: () => void }) {
+  const [form, setForm] = useState({
+    title: mission.title || '',
+    description: mission.description || '',
+    song_name: mission.song_name || '',
+    artist_name: mission.artist_name || '',
+    max_slots: mission.max_slots,
+    payout_cents: mission.payout_cents,
+    cover_url: (mission as any).cover_url || '',
+    scenepack_url: (mission as any).scenepack_url || '',
+    custom_payouts: (mission.custom_payouts || { S: 0, A: 0, B: 0, C: 0, D: 0, F: 0 }) as Record<string, number>,
+  });
+  const [saving, setSaving] = useState(false);
+  const RATINGS = ['S', 'A', 'B', 'C', 'D', 'F'];
+
+  const handleSave = async () => {
+    setSaving(true);
+    const { error } = await supabase.from('commissions').update({
+      title: form.title,
+      description: form.description || null,
+      song_name: form.song_name || null,
+      artist_name: form.artist_name || null,
+      max_slots: form.max_slots,
+      payout_cents: form.payout_cents,
+      cover_url: form.cover_url || null,
+      scenepack_url: form.scenepack_url || null,
+      custom_payouts: form.custom_payouts,
+    } as any).eq('id', mission.id);
+    if (error) toast.error(error.message);
+    else { toast.success('Mission updated!'); onSaved(); }
+    setSaving(false);
+  };
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto pb-24">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-base">
+            <Pencil size={18} className="text-purple-400" /> Edit Mission
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 pt-2">
+          {/* Core Info */}
+          <div className="space-y-2">
+            <Label className="text-xs font-bold text-purple-400">📋 Core Info</Label>
+            <div>
+              <Label className="text-[10px]">Title</Label>
+              <Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="mt-1 h-8 text-xs" />
+            </div>
+            <div>
+              <Label className="text-[10px]">Song Name</Label>
+              <Input value={form.song_name} onChange={e => setForm({ ...form, song_name: e.target.value })} className="mt-1 h-8 text-xs" />
+            </div>
+            <div>
+              <Label className="text-[10px]">Artist Name</Label>
+              <Input value={form.artist_name} onChange={e => setForm({ ...form, artist_name: e.target.value })} className="mt-1 h-8 text-xs" />
+            </div>
+            <div>
+              <Label className="text-[10px]">Description / Mission Brief</Label>
+              <Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
+                placeholder="Mission brief..." className="mt-1 text-xs" rows={3} />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label className="text-[10px]">Max Slots</Label>
+                <Input type="number" value={form.max_slots} onChange={e => setForm({ ...form, max_slots: Number(e.target.value) })} className="mt-1 h-8 text-xs" />
+              </div>
+              <div>
+                <Label className="text-[10px]">Total Payout (cents)</Label>
+                <Input type="number" value={form.payout_cents} onChange={e => setForm({ ...form, payout_cents: Number(e.target.value) })} className="mt-1 h-8 text-xs" />
+              </div>
+            </div>
+          </div>
+
+          {/* Media */}
+          <div className="border-t border-border pt-3 space-y-2">
+            <Label className="text-xs font-bold text-blue-400">🖼 Media</Label>
+            <div>
+              <Label className="text-[10px]">Cover Image URL</Label>
+              <Input value={form.cover_url} onChange={e => setForm({ ...form, cover_url: e.target.value })}
+                placeholder="Image URL" className="mt-1 h-8 text-xs" />
+            </div>
+            {form.cover_url && (
+              <div className="rounded-lg border border-border overflow-hidden">
+                <img src={form.cover_url} alt="Cover" className="w-full h-24 object-cover" />
+              </div>
+            )}
+          </div>
+
+          {/* Scenepacks */}
+          <div className="border-t border-border pt-3 space-y-2">
+            <Label className="text-xs font-bold text-amber-400">📦 Scenepacks</Label>
+            <div>
+              <Label className="text-[10px]">Scenepack URL (Google Drive link)</Label>
+              <Input value={form.scenepack_url} onChange={e => setForm({ ...form, scenepack_url: e.target.value })}
+                placeholder="https://drive.google.com/..." className="mt-1 h-8 text-xs" />
+            </div>
+          </div>
+
+          {/* Payouts */}
+          <div className="border-t border-border pt-3">
+            <Label className="text-xs text-emerald-400 font-bold">💰 Payout per Rating (cents)</Label>
+            <p className="text-[9px] text-muted-foreground mb-2">1000 = $10, 500 = $5</p>
+            <div className="grid grid-cols-3 gap-2">
+              {RATINGS.map(r => (
+                <div key={r} className="flex items-center gap-1.5">
+                  <span className={`text-xs font-black w-4 ${r === 'S' ? 'text-amber-400' : r === 'A' ? 'text-emerald-400' : r === 'B' ? 'text-blue-400' : 'text-muted-foreground'}`}>{r}</span>
+                  <Input type="number" value={form.custom_payouts[r] || 0}
+                    onChange={e => setForm({ ...form, custom_payouts: { ...form.custom_payouts, [r]: Number(e.target.value) } })}
+                    className="h-8 text-xs" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <Button onClick={handleSave} disabled={saving} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Mission'}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
