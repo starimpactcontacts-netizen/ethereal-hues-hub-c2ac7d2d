@@ -196,14 +196,14 @@ function ArenaMissionsSection() {
                   </div>
                 )}
 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-2">
                   <span className="flex items-center gap-0.5 text-[8px] text-white/30"><Users className="w-2.5 h-2.5" /> {slotsLeft}/{b.max_slots}</span>
-                  <span
-                    className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-md bg-emerald-500/20 text-emerald-400"
-                    style={{ fontFamily: 'Teko, sans-serif' }}
-                  >
-                    ENTER
-                  </span>
+                </div>
+                <div
+                  className="w-full py-2.5 rounded-md bg-emerald-500 text-white text-center text-[12px] font-bold uppercase tracking-wider touch-manipulation"
+                  style={{ fontFamily: 'Teko, sans-serif' }}
+                >
+                  ENTER
                 </div>
               </div>
             </motion.button>
