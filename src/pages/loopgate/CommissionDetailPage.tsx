@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import MissionLobbyChat from '@/components/loopgate/MissionLobbyChat';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,6 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
+import { useTempProfile } from '@/hooks/useTempProfile';
 
 const teko = { fontFamily: 'Teko, sans-serif' };
 
@@ -40,26 +41,38 @@ function extractPlatformUsername(url: string, platform: string): string | null {
 
 /* ── Lobby Presence Hook ── */
 function useLobbyPresence(commissionId: string | undefined) {
-  const { user, profile } = useAuth();
+  const { user, profile, loading } = useAuth();
+  const { profile: tempProfile } = useTempProfile();
   const [visitors, setVisitors] = useState<{ user_id: string; username: string; avatar_url: string | null }[]>([]);
+  const trackedRef = useRef(false);
 
+  // Track presence — works for both real and temp profiles
   useEffect(() => {
-    if (!commissionId) return;
+    if (!commissionId || loading) return;
 
-    // Track this user's presence
     const trackPresence = async () => {
-      if (!user || !profile) return;
-      await supabase.from('mission_lobby_presence' as any).upsert({
-        commission_id: commissionId,
-        user_id: user.id,
-        username: profile.username,
-        avatar_url: profile.avatar_url,
-        last_seen_at: new Date().toISOString(),
-      }, { onConflict: 'user_id,commission_id' } as any);
+      if (user && profile) {
+        // Real authenticated user
+        await supabase.from('mission_lobby_presence' as any).upsert({
+          commission_id: commissionId,
+          user_id: user.id,
+          username: profile.username,
+          avatar_url: profile.avatar_url,
+          last_seen_at: new Date().toISOString(),
+        }, { onConflict: 'user_id,commission_id' } as any);
+        trackedRef.current = true;
+      }
     };
     trackPresence();
 
-    // Fetch all visitors
+    const interval = setInterval(trackPresence, 30000);
+    return () => clearInterval(interval);
+  }, [commissionId, user, profile, loading]);
+
+  // Fetch all visitors
+  useEffect(() => {
+    if (!commissionId) return;
+
     const fetchVisitors = async () => {
       const { data } = await supabase
         .from('mission_lobby_presence' as any)
@@ -71,9 +84,9 @@ function useLobbyPresence(commissionId: string | undefined) {
     };
     fetchVisitors();
 
-    // Heartbeat
-    const interval = setInterval(trackPresence, 30000);
-    return () => clearInterval(interval);
+    // Re-fetch after a short delay to catch our own insert
+    const timeout = setTimeout(fetchVisitors, 2000);
+    return () => clearTimeout(timeout);
   }, [commissionId, user, profile]);
 
   return visitors;
