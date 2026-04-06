@@ -324,7 +324,7 @@ export default function CommissionDetailPage() {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
         <p className="text-muted-foreground">Mission not found</p>
-        <Link to="/missions" className="text-emerald-400 text-sm hover:underline">← Back to Missions</Link>
+        <Link to="/index" className="text-emerald-400 text-sm hover:underline">← Back to Arena</Link>
       </div>
     );
   }
