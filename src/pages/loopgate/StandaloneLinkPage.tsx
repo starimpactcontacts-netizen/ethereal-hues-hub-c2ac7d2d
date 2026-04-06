@@ -198,7 +198,7 @@ export default function StandaloneLinkPage() {
         )}
 
         {/* Editor Stats — clean inline row */}
-        {showStats && hasStats && (
+        {showStats && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.12 }} className="mb-6">
             <div className="flex items-center justify-center gap-5">
               {/* Class Badge */}
