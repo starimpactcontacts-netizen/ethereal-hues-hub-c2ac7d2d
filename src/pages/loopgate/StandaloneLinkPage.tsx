@@ -111,6 +111,15 @@ export default function StandaloneLinkPage() {
       }
 
       if (!profileData) { setNotFound(true); setLoading(false); return; }
+
+      // Fetch actual global rank (position among all editors by index score)
+      const { count: rankCount } = await supabase
+        .from("profiles")
+        .select("id", { count: "exact", head: true })
+        .gt("global_index_score", profileData.global_index_score || 0)
+        .eq("is_hidden", false);
+      profileData.global_rank = (rankCount || 0) + 1;
+
       setProfile(profileData);
 
       const [settingsRes, linksRes, platformsRes] = await Promise.all([
