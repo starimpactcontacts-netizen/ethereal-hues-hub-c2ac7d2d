@@ -239,7 +239,6 @@ function ArenaMissionsCarousel() {
             <ArenaMissionCard key={drop.id} drop={drop} />
           ))}
         </div>
-      </div>
     </div>
   );
 }
