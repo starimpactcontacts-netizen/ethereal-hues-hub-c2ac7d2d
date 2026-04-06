@@ -13,7 +13,10 @@ export default function EnterpriseClientDashboard() {
   const { isAuthenticated, isLoading } = useEnterpriseAuth();
 
   return (
-    <div className="min-h-screen relative overflow-hidden pb-20" style={{ background: '#060606' }}>
+    <div
+      className="relative h-full overflow-y-auto overflow-x-hidden pb-20"
+      style={{ background: '#060606', WebkitOverflowScrolling: 'touch' }}
+    >
       {/* Top Bar */}
       <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-2xl border-b border-white/[0.04]" style={{ background: 'rgba(6,6,6,0.85)' }}>
         <div className="max-w-7xl mx-auto px-6 h-12 flex items-center justify-between">

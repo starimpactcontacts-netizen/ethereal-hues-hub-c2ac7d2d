@@ -299,7 +299,10 @@ export default function CampaignPortalPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-neutral-900">
+    <div
+      className="h-full overflow-y-auto bg-white text-neutral-900"
+      style={{ WebkitOverflowScrolling: 'touch' }}
+    >
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-8">
         {/* Top bar */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center justify-between">
