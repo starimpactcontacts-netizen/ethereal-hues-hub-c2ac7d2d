@@ -62,7 +62,7 @@ export default function MissionAdmin() {
   const fetchAll = useCallback(async () => {
     const [mRes, sRes] = await Promise.all([
       supabase.from('featured_drops')
-        .select('id, title, song_name, poster_url, status, description, submission_goal, song_url, mission_live, mission_custom_payouts, mission_views_milestone, mission_views_bonus_cents, instant_payout, inspo_url, inspo_thumbnail_url, theme_description, submission_count, featured_artists(name)')
+        .select('id, title, song_name, poster_url, status, description, submission_goal, song_url, mission_live, mission_custom_payouts, mission_views_milestone, mission_views_bonus_cents, instant_payout, inspo_url, inspo_thumbnail_url, theme_description, submission_count, scenepack_url, featured_artists(name)')
         .order('created_at', { ascending: false }),
       supabase.from('featured_submissions')
         .select('id, drop_id, user_id, username, avatar_url, submission_url, platform, status, rating, earned_cents, feedback, created_at')
