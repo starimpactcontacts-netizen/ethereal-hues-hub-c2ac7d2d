@@ -21,6 +21,9 @@ interface MissionDrop {
   poster_url: string | null;
   artist_name: string | null;
   status: string;
+  description: string | null;
+  submission_goal: number;
+  song_url: string | null;
   mission_live: boolean;
   mission_custom_payouts: Record<string, number> | null;
   mission_views_milestone: number;
