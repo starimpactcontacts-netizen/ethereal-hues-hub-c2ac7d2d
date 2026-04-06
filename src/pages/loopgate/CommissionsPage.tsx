@@ -247,31 +247,35 @@ export default function CommissionsPage() {
             </h1>
             <p className="text-xs text-muted-foreground mt-1">Paid editing jobs from artists, brands & studios.</p>
           </div>
-          <Button onClick={() => openCreate()} size="sm" className="bg-emerald-600 hover:bg-emerald-500 text-white">
-            <Plus className="w-4 h-4 mr-1" /> Post
-          </Button>
+          {isStaff && (
+            <Button onClick={() => openCreate()} size="sm" className="bg-emerald-600 hover:bg-emerald-500 text-white">
+              <Plus className="w-4 h-4 mr-1" /> Post
+            </Button>
+          )}
         </div>
 
-        {/* Quick-launch tiles */}
-        <div className="grid grid-cols-3 gap-2 mt-4">
-          {([
-            { type: 'artist' as MissionType, label: 'Artist Mission', icon: Music, color: 'border-emerald-500/30 bg-emerald-500/8 text-emerald-400' },
-            { type: 'brand' as MissionType, label: 'Brand Mission', icon: Briefcase, color: 'border-blue-500/30 bg-blue-500/8 text-blue-400' },
-            { type: 'film' as MissionType, label: 'Film Mission', icon: Film, color: 'border-purple-500/30 bg-purple-500/8 text-purple-400' },
-          ]).map(tile => {
-            const TileIcon = tile.icon;
-            return (
-              <button
-                key={tile.type}
-                onClick={() => openCreate(tile.type)}
-                className={`border ${tile.color} p-3 rounded-lg flex flex-col items-center gap-1.5 hover:opacity-80 transition-opacity`}
-              >
-                <TileIcon className="w-5 h-5" />
-                <span className="text-[9px] font-bold uppercase tracking-wider">{tile.label}</span>
-              </button>
-            );
-          })}
-        </div>
+        {/* Quick-launch tiles — admin only */}
+        {isStaff && (
+          <div className="grid grid-cols-3 gap-2 mt-4">
+            {([
+              { type: 'artist' as MissionType, label: 'Artist Mission', icon: Music, color: 'border-emerald-500/30 bg-emerald-500/8 text-emerald-400' },
+              { type: 'brand' as MissionType, label: 'Brand Mission', icon: Briefcase, color: 'border-blue-500/30 bg-blue-500/8 text-blue-400' },
+              { type: 'film' as MissionType, label: 'Film Mission', icon: Film, color: 'border-purple-500/30 bg-purple-500/8 text-purple-400' },
+            ]).map(tile => {
+              const TileIcon = tile.icon;
+              return (
+                <button
+                  key={tile.type}
+                  onClick={() => openCreate(tile.type)}
+                  className={`border ${tile.color} p-3 rounded-lg flex flex-col items-center gap-1.5 hover:opacity-80 transition-opacity`}
+                >
+                  <TileIcon className="w-5 h-5" />
+                  <span className="text-[9px] font-bold uppercase tracking-wider">{tile.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="flex gap-2 mt-4">
