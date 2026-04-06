@@ -205,6 +205,12 @@ export default function ProfileStatsPage() {
           </Link>
         </section>
 
+        {/* ─── Jackpot Edits ─── */}
+        <section className="space-y-3">
+          <h3 className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Jackpot Edits</h3>
+          <JackpotEditStats jackpotCount={0} totalEarned={0} bestViews={0} />
+        </section>
+
         {/* ─── XP History ─── */}
         <section className="space-y-3">
           <h3 className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Recent XP Activity</h3>
