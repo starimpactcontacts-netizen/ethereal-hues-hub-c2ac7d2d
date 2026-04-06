@@ -150,24 +150,24 @@ export default function FeaturedDropCard({ drop }: Props) {
           </div>
         </div>
 
-        {/* Stats bar */}
-        <div className="px-2 py-1.5 flex items-center gap-1.5 border-t border-emerald-500/20 bg-emerald-950/20">
-          <ActivityIcon className={cn("w-3 h-3 shrink-0", activity.color)} />
-          <span className={cn("text-[9px] font-semibold tracking-tight flex-1 truncate", activity.color)}>
-            {activity.text}
-          </span>
-          <div className="flex items-center gap-2 text-[9px] font-bold shrink-0">
+        {/* Stats + CTA */}
+        <div className="px-2 py-1.5 flex items-center justify-between border-t border-emerald-500/20 bg-emerald-950/20">
+          <div className="flex items-center gap-1.5 text-[8px] font-bold">
             <span className="flex items-center gap-0.5 text-brand">
-              <Zap className="w-3 h-3" />+{drop.xp_reward}
+              <Zap className="w-2.5 h-2.5" />+{drop.xp_reward}
             </span>
             <span className="flex items-center gap-0.5 text-gold">
-              <Trophy className="w-3 h-3" />+{drop.index_reward}
+              <Trophy className="w-2.5 h-2.5" />+{drop.index_reward}
             </span>
           </div>
+          <button
+            onClick={() => navigate(profile ? `/drop/${drop.id}` : '/start')}
+            className="text-[9px] font-bold uppercase tracking-wider px-3 py-1 rounded-md bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-colors"
+            style={{ fontFamily: 'Teko, sans-serif' }}
+          >
+            ENTER
+          </button>
         </div>
-
-      </motion.div>
-    );
   }
 
   // ═══════════════════════════════════════════════════
