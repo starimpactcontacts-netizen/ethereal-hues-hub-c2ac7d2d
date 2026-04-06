@@ -649,6 +649,34 @@ export default function ArenaPage() {
     }
   }, [myQuickFights, isQfSearching]);
 
+  // Fetch mission billboards for Featured Drops
+  useEffect(() => {
+    const fetchMissions = async () => {
+      const { data } = await supabase
+        .from('featured_drops')
+        .select('id, song_name, poster_url, mission_live, mission_custom_payouts, artist_id')
+        .eq('mission_live', true)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      if (!data || data.length === 0) { setMissionBillboards([]); return; }
+      const artistIds = [...new Set(data.map((d: any) => d.artist_id).filter(Boolean))];
+      let artistMap: Record<string, string> = {};
+      if (artistIds.length > 0) {
+        const { data: artists } = await supabase.from('featured_artists').select('id, name').in('id', artistIds);
+        if (artists) artists.forEach(a => { artistMap[a.id] = a.name; });
+      }
+      setMissionBillboards(data.map((d: any) => {
+        const payouts = d.mission_custom_payouts || {};
+        return {
+          id: d.id, song_name: d.song_name, poster_url: d.poster_url,
+          artist_name: d.artist_id ? artistMap[d.artist_id] || null : null,
+          max_pay: Math.max((payouts.S || 0) / 100, (payouts.A || 0) / 100, (payouts.B || 0) / 100),
+        };
+      }));
+    };
+    fetchMissions();
+  }, []);
+
   useEffect(() => {
     async function fetchEvents() {
       const { data, error } = await supabase.from("events").select("*").order("start_date", { ascending: true });
