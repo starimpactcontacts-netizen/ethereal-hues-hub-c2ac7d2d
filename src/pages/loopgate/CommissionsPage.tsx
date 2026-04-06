@@ -146,6 +146,7 @@ export default function CommissionsPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [createType, setCreateType] = useState<MissionType | undefined>(undefined);
   const [filter, setFilter] = useState<'all' | 'open' | 'closed'>('all');
+  const [editingMission, setEditingMission] = useState<MarketplaceBounty | null>(null);
 
   const loading = commLoading || bountyLoading;
 
