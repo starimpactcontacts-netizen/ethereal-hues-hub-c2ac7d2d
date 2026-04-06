@@ -234,7 +234,7 @@ function ArenaMissionsCarousel() {
           All <ChevronRight className="w-2.5 h-2.5" />
         </Link>
       </div>
-      <div className="flex gap-2 px-4 overflow-x-auto scrollbar-hide pb-1">
+      <div className="flex gap-2 pl-4 overflow-x-auto scrollbar-hide pb-1">
           {drops.map(drop => (
             <ArenaMissionCard key={drop.id} drop={drop} />
           ))}
@@ -294,7 +294,7 @@ function ArenaMissionsSection() {
         </button>
       </div>
 
-      <div className="flex gap-2 px-4 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory">
+      <div className="flex gap-2 pl-4 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory">
         {bounties.map(b => {
           const payout = (b.payout_cents / 100).toFixed(0);
           const slotsLeft = b.max_slots - b.accepted_count;
@@ -1355,7 +1355,7 @@ export default function ArenaPage() {
                 ) : undefined}
               />
               {liveDrops.length > 0 ? (
-                <div className="px-4 flex gap-3 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory">
+                <div className="pl-4 flex gap-3 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory">
                   {liveDrops.map(drop => (
                     <FeaturedDropCard key={drop.id} drop={drop} />
                   ))}
@@ -1430,12 +1430,12 @@ export default function ArenaPage() {
               )}
 
               {battlesLoading ? (
-                <div className="flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-2">
+                <div className="flex gap-2.5 pl-4 overflow-x-auto scrollbar-hide pb-2">
                   <Skeleton className="h-44 w-[200px] shrink-0" />
                   <Skeleton className="h-44 w-[200px] shrink-0" />
                 </div>
               ) : battles.length > 0 ? (
-                <div className="flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-2">
+                <div className="flex gap-2.5 pl-4 overflow-x-auto scrollbar-hide pb-2">
                   {battles.slice(0, 10).map(battle => (
                     <BattleCard key={battle.id} battle={battle} onClick={() => navigate(`/battle/${battle.id}`)} />
                   ))}

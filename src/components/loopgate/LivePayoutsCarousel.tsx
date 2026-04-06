@@ -134,7 +134,7 @@ export default function LivePayoutsCarousel() {
       </div>
 
       {/* Cards carousel */}
-      <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory">
+      <div className="flex gap-3 pl-4 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory">
         {payouts.map((payout, idx) => (
           <PayoutCard key={payout.id} payout={payout} idx={idx} />
         ))}
