@@ -1136,9 +1136,7 @@ export default function ArenaPage() {
           {/* search bar moved to top */}
 
           {/* ═══ MISSIONS — BELOW GO, ABOVE COMPETITIONS ═══ */}
-          <div className="-mx-4">
-            <ArenaMissionsSection />
-          </div>
+          <ArenaMissionsSection />
 
           {/* ═══ COMPETITIONS ═══ */}
           {(activeFilter === "all" || activeFilter === "competitions") && (
