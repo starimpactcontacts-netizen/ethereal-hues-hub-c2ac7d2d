@@ -265,58 +265,6 @@ export default function FeaturedDropCard({ drop }: Props) {
         </div>
       </div>
 
-      {/* Winner / Pick chips */}
-      {(drop.top_scorer_username || drop.random_pick_username) && (
-        <div className="px-3 pb-1.5 flex items-center gap-1.5 text-[9px] overflow-hidden">
-          {drop.top_scorer_username && (
-            <div className="flex items-center gap-1 bg-gold/8 border border-gold/15 rounded-full px-2 py-0.5 truncate">
-              <Crown className="w-2.5 h-2.5 text-gold shrink-0" />
-              <span className="text-gold font-bold truncate">@{drop.top_scorer_username}</span>
-            </div>
-          )}
-          {drop.random_pick_username && drop.random_pick_username !== drop.top_scorer_username && (
-            <div className="flex items-center gap-1 bg-brand/8 border border-brand/15 rounded-full px-2 py-0.5 truncate">
-              <Star className="w-2.5 h-2.5 text-brand shrink-0" />
-              <span className="text-brand font-bold truncate">@{drop.random_pick_username}</span>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* CTA Buttons */}
-      <div className="px-2.5 pb-2.5 pt-0.5">
-        {isLive ? (
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={() => navigate(`/drop/${drop.id}`)}
-            className={cn(
-              "w-full py-2.5 rounded-md font-display text-[11px] uppercase tracking-widest",
-              "flex items-center justify-center gap-1.5",
-              "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold",
-              "shadow-[0_2px_12px_rgba(16,185,129,0.3)]",
-              "hover:from-emerald-400 hover:to-emerald-500",
-              "active:from-emerald-600 active:to-emerald-700",
-              "transition-all duration-200 touch-manipulation"
-            )}
-          >
-            View Event <ChevronRight className="w-3 h-3" />
-          </motion.button>
-        ) : (
-          <Link
-            to={`/drop/${drop.id}`}
-            className={cn(
-              "w-full py-2.5 rounded-md font-display text-[10px] uppercase tracking-widest",
-              "flex items-center justify-center gap-1.5",
-              "bg-white/[0.04] border border-white/[0.06] text-white/50",
-              "hover:bg-white/[0.08] hover:text-white/70",
-              "transition-all duration-200"
-            )}
-          >
-            View Results
-            <ChevronRight className="w-3 h-3" />
-          </Link>
-        )}
-      </div>
     </motion.div>
   );
 }
