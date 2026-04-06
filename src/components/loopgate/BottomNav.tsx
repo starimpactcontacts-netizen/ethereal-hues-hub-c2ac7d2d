@@ -102,14 +102,14 @@ export default function BottomNav() {
               <div className="relative w-[40px] h-[40px] bg-white rotate-45 flex items-center justify-center group-active:scale-90 transition-transform shadow-[0_0_16px_rgba(255,255,255,0.15)]">
                 {/* Subtle gate pattern */}
                 <div className="absolute inset-0 overflow-hidden opacity-[0.04]">
-                  <svg className="w-full h-full" viewBox="0 0 46 46">
+                  <svg className="w-full h-full" viewBox="0 0 40 40">
                     <pattern id="nav-gate-d" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
                       <polygon points="5,1 9,4 9,8 5,10 1,8 1,4" fill="none" stroke="black" strokeWidth="0.5" />
                     </pattern>
                     <rect width="100%" height="100%" fill="url(#nav-gate-d)" />
                   </svg>
                 </div>
-                <InfinityIcon className="w-5 h-5 text-black relative z-10 -rotate-45" strokeWidth={2.5} />
+                <InfinityIcon className="w-4 h-4 text-black relative z-10 -rotate-45" strokeWidth={2.5} />
               </div>
             </div>
           </button>
