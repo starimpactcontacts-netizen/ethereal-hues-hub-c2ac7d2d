@@ -581,7 +581,7 @@ export default function CommissionDetailPage() {
           <AnimatePresence>
             {showBrief && (
               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
-                <div className="bg-black/20 border border-t-0 border-gold/10 rounded-b-2xl p-4">
+                <div className="bg-surface-1 border border-t-0 border-border rounded-b-xl p-4">
                   {editingBrief ? (
                     <div className="space-y-2">
                       <Textarea value={briefText} onChange={e => setBriefText(e.target.value)} placeholder="Write the mission brief..." className="min-h-[120px] resize-none bg-black/30 border-gold/20 text-xs rounded-xl" />
