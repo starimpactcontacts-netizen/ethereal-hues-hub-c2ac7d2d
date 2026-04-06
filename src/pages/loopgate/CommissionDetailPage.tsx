@@ -6,7 +6,7 @@ import {
   DollarSign, ArrowLeft, Clock, Users, CheckCircle2, Send, ExternalLink,
   MessageSquare, Loader2, Star, Zap, ShieldCheck, AlertTriangle,
   HelpCircle, ChevronRight, ChevronLeft, Film, Target, Music, Trophy,
-  Flame, Info, X, Crosshair, Play, FileText, Pencil
+  Flame, Info, X, Crosshair, Play, FileText, Pencil, FolderOpen
 } from 'lucide-react';
 import { useCommissionDetail, type SubmissionRating, RATING_PAYOUTS, RATING_COLORS } from '@/hooks/useCommissions';
 import { useAuth } from '@/hooks/useAuth';
@@ -524,6 +524,18 @@ export default function CommissionDetailPage() {
             <Film className="w-4 h-4 text-emerald-400" /> Go Edit
           </Link>
         </div>
+
+        {/* ── SCENEPACKS BUTTON ── */}
+        {(commission as any).scenepack_url && (
+          <a
+            href={(commission as any).scenepack_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2.5 py-3 w-full bg-amber-500/10 border border-amber-500/30 hover:border-amber-500/50 hover:bg-amber-500/15 text-amber-400 font-black uppercase tracking-wider text-sm transition-colors"
+          >
+            <FolderOpen className="w-4 h-4" /> Go Get Scenepacks
+          </a>
+        )}
 
         {/* ── MISSION BRIEF ── */}
         <div>

@@ -1,0 +1,1 @@
+ALTER TABLE public.commissions ADD COLUMN scenepack_url text DEFAULT NULL;

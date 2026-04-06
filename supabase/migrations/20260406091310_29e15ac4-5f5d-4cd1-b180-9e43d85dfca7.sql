@@ -1,0 +1,1 @@
+ALTER TABLE public.featured_drops ADD COLUMN scenepack_url text DEFAULT NULL;

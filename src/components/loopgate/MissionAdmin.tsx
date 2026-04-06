@@ -33,6 +33,7 @@ interface MissionDrop {
   inspo_thumbnail_url: string | null;
   theme_description: string | null;
   submission_count: number;
+  scenepack_url: string | null;
 }
 
 interface MissionSub {
@@ -61,7 +62,7 @@ export default function MissionAdmin() {
   const fetchAll = useCallback(async () => {
     const [mRes, sRes] = await Promise.all([
       supabase.from('featured_drops')
-        .select('id, title, song_name, poster_url, status, description, submission_goal, song_url, mission_live, mission_custom_payouts, mission_views_milestone, mission_views_bonus_cents, instant_payout, inspo_url, inspo_thumbnail_url, theme_description, submission_count, featured_artists(name)')
+        .select('id, title, song_name, poster_url, status, description, submission_goal, song_url, mission_live, mission_custom_payouts, mission_views_milestone, mission_views_bonus_cents, instant_payout, inspo_url, inspo_thumbnail_url, theme_description, submission_count, scenepack_url, featured_artists(name)')
         .order('created_at', { ascending: false }),
       supabase.from('featured_submissions')
         .select('id, drop_id, user_id, username, avatar_url, submission_url, platform, status, rating, earned_cents, feedback, created_at')
@@ -80,6 +81,7 @@ export default function MissionAdmin() {
         instant_payout: d.instant_payout ?? false,
         inspo_url: d.inspo_url || null, inspo_thumbnail_url: d.inspo_thumbnail_url || null,
         theme_description: d.theme_description || null, submission_count: d.submission_count || 0,
+        scenepack_url: d.scenepack_url || null,
       })));
     }
     if (sRes.data) setSubs(sRes.data as any as MissionSub[]);
@@ -287,6 +289,7 @@ function MissionEditDialog({ mission, onClose, onSaved }: { mission: MissionDrop
     inspo_url: mission.inspo_url || '',
     inspo_thumbnail_url: mission.inspo_thumbnail_url || '',
     theme_description: mission.theme_description || '',
+    scenepack_url: mission.scenepack_url || '',
   });
   const [saving, setSaving] = useState(false);
 
@@ -307,6 +310,7 @@ function MissionEditDialog({ mission, onClose, onSaved }: { mission: MissionDrop
       inspo_url: form.inspo_url || null,
       inspo_thumbnail_url: form.inspo_thumbnail_url || null,
       theme_description: form.theme_description || null,
+      scenepack_url: form.scenepack_url || null,
     } as any).eq('id', mission.id);
     if (error) toast.error(error.message);
     else { toast.success('Mission saved!'); onSaved(); }
@@ -433,6 +437,16 @@ function MissionEditDialog({ mission, onClose, onSaved }: { mission: MissionDrop
                   <img src={form.inspo_thumbnail_url} alt="Inspo" className="w-full h-32 object-cover" />
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Scenepacks */}
+          <div className="border-t border-border pt-3 space-y-2">
+            <Label className="text-xs font-bold text-amber-400">📦 Scenepacks</Label>
+            <div>
+              <Label className="text-[10px]">Scenepack URL (Google Drive link)</Label>
+              <Input value={form.scenepack_url} onChange={e => setForm({ ...form, scenepack_url: e.target.value })}
+                placeholder="https://drive.google.com/..." className="mt-1 h-8 text-xs" />
             </div>
           </div>
           <Button onClick={handleSave} disabled={saving} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold">
