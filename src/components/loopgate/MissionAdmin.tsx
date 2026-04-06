@@ -71,6 +71,8 @@ export default function MissionAdmin() {
       setMissions(mRes.data.map((d: any) => ({
         id: d.id, title: d.title, song_name: d.song_name, poster_url: d.poster_url,
         artist_name: d.featured_artists?.name || null, status: d.status || 'draft',
+        description: d.description || null, submission_goal: d.submission_goal || 25,
+        song_url: d.song_url || null,
         mission_live: d.mission_live ?? false,
         mission_custom_payouts: d.mission_custom_payouts as Record<string, number> | null,
         mission_views_milestone: d.mission_views_milestone || 0,
