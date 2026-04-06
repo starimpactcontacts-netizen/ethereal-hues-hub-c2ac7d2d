@@ -141,8 +141,8 @@ export default function FeaturedDropCard({ drop }: Props) {
             <div className="shrink-0 flex flex-col items-end">
               <span className="text-[8px] font-bold text-emerald-400/60 uppercase tracking-wider">Prize</span>
               <span
-                className="font-display text-4xl sm:text-5xl text-emerald-400 font-black leading-none"
-                style={{ textShadow: '0 0 30px rgba(16,185,129,0.6), 0 4px 20px rgba(16,185,129,0.4), 0 10px 40px rgba(16,185,129,0.2)' }}
+                className="font-display text-2xl text-emerald-400 font-black leading-none"
+                style={{ textShadow: '0 0 20px rgba(16,185,129,0.5)' }}
               >
                 ${drop.prize_usd}
               </span>
