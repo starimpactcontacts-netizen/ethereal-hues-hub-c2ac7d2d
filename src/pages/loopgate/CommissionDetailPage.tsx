@@ -691,15 +691,15 @@ export default function CommissionDetailPage() {
                 className="overflow-hidden"
               >
                 <div className="bg-surface-0 border border-t-0 border-gold/20 p-4">
-                  {(commission.description || commission.requirements) ? (
+                  {(commission.description || (commission as any).requirements) ? (
                     <div className="space-y-2">
                       {commission.description && (
                         <p className="text-xs text-foreground/90 leading-relaxed whitespace-pre-wrap">{commission.description}</p>
                       )}
-                      {commission.requirements && (
+                      {(commission as any).requirements && (
                         <div className="mt-2 pt-2 border-t border-border/20">
                           <p className="text-[9px] font-bold text-gold/60 uppercase tracking-wider mb-1">Requirements</p>
-                          <p className="text-xs text-foreground/80 leading-relaxed whitespace-pre-wrap">{commission.requirements}</p>
+                          <p className="text-xs text-foreground/80 leading-relaxed whitespace-pre-wrap">{(commission as any).requirements}</p>
                         </div>
                       )}
                     </div>
