@@ -360,7 +360,7 @@ export default function CommissionDetailPage() {
       {/* ═══════════════════════════════════════════════════ */}
       {/* HERO — Full-bleed cinematic poster                  */}
       {/* ═══════════════════════════════════════════════════ */}
-      <div className="relative w-full" style={{ minHeight: showContent ? '320px' : 'calc(100vh - 60px)' }}>
+      <div className="relative w-full" style={{ minHeight: '320px' }}>
         {/* Cover image */}
         {coverUrl ? (
           <img src={coverUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
