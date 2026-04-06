@@ -149,11 +149,32 @@ export default function StandaloneLinkPage() {
   const classInfo = getClassInfo(profile);
   const showStats = settings.show_stats !== false;
 
-  // Always show stats — class is always available, others show value
-  const stats: { label: string; value: number | string }[] = [];
-  stats.push({ label: "Index", value: profile.global_index_score || 0 });
-  stats.push({ label: "Battles", value: profile.total_events || 0 });
-  stats.push({ label: "Wins", value: profile.total_wins || 0 });
+  // Calculate editor star rating (1-5) based on overall stats
+  const calcStarRating = (): number => {
+    let score = 0;
+    const idx = profile.global_index_score || 0;
+    const battles = profile.total_events || 0;
+    const wins = profile.total_wins || 0;
+    const winRate = profile.win_rate || 0;
+    const level = profile.level || 1;
+    // Index contribution (0-1.5)
+    if (idx >= 200) score += 1.5;
+    else if (idx >= 100) score += 1;
+    else if (idx >= 30) score += 0.5;
+    // Battle experience (0-1)
+    if (battles >= 20) score += 1;
+    else if (battles >= 5) score += 0.5;
+    // Win rate (0-1)
+    if (winRate >= 60) score += 1;
+    else if (winRate >= 40) score += 0.5;
+    // Level (0-1)
+    if (level >= 5) score += 1;
+    else if (level >= 3) score += 0.5;
+    // Class bonus (0-0.5)
+    if (["S++","S+","S","A"].includes(classInfo.letter)) score += 0.5;
+    return Math.max(1, Math.min(5, Math.round(score)));
+  };
+  const starRating = calcStarRating();
 
   return (
     <div className="min-h-screen" style={{ ...getBackground(settings), color: textColor }}>
