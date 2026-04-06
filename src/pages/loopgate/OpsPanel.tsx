@@ -2380,6 +2380,13 @@ export default function OpsPanel() {
               <Megaphone size={16} />
               Broadcast
             </button>
+            <button
+              onClick={() => document.getElementById('edit-analyzer')?.scrollIntoView({ behavior: 'smooth' })}
+              className="flex items-center justify-center gap-2 bg-purple-500/20 border border-purple-500/50 text-purple-300 font-semibold py-3 rounded-lg text-sm hover:bg-purple-500/30 transition-colors"
+            >
+              <Eye size={16} />
+              AI Analyzer
+            </button>
           </div>
           
           {/* Live Stats Bar */}
