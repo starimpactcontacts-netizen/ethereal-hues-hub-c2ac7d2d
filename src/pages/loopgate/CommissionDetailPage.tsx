@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import MissionLobbyChat from '@/components/loopgate/MissionLobbyChat';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DollarSign, ArrowLeft, Clock, Users, CheckCircle2, Send, ExternalLink, MessageSquare, Loader2, Star, Zap, ShieldCheck, AlertTriangle, Crosshair, ChevronDown } from 'lucide-react';
+import { DollarSign, ArrowLeft, Clock, Users, CheckCircle2, Send, ExternalLink, MessageSquare, Loader2, Star, Zap, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { useCommissionDetail, type SubmissionRating, RATING_PAYOUTS, RATING_COLORS } from '@/hooks/useCommissions';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
@@ -322,7 +322,6 @@ export default function CommissionDetailPage() {
   const isPoster = !!user && commission?.created_by === user.id;
   const canRate = isStaff || isPoster;
   const [reviewingSubmission, setReviewingSubmission] = useState<any>(null);
-  const [showContent, setShowContent] = useState(false);
 
   if (loading) {
     return <div className="min-h-screen bg-background flex items-center justify-center"><Loader2 className="w-6 h-6 text-emerald-400 animate-spin" /></div>;
@@ -361,7 +360,7 @@ export default function CommissionDetailPage() {
       {/* ═══════════════════════════════════════════════════ */}
       {/* HERO — Full-bleed cinematic poster                  */}
       {/* ═══════════════════════════════════════════════════ */}
-      <div className="relative w-full" style={{ minHeight: showContent ? '320px' : 'calc(100vh - 60px)' }}>
+      <div className="relative w-full" style={{ minHeight: '320px' }}>
         {/* Cover image */}
         {coverUrl ? (
           <img src={coverUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
@@ -446,22 +445,8 @@ export default function CommissionDetailPage() {
         </div>
       </div>
 
-      {/* ═══════════════════════════════════════════════════ */}
-      {/* ENTER MISSION CTA                                   */}
-      {/* ═══════════════════════════════════════════════════ */}
-      {!showContent ? (
-        <motion.button
-          whileTap={{ scale: 0.97 }}
-          onClick={() => setShowContent(true)}
-          className="w-full bg-destructive py-4 flex items-center justify-center gap-3 active:brightness-90"
-        >
-          <Crosshair className="w-6 h-6 text-white/80" />
-          <span className="font-display text-2xl font-black uppercase tracking-wider text-white">
-            ENTER <span className="text-white">MISSION</span>
-          </span>
-        </motion.button>
-      ) : (
-        <div className="px-4 pb-20 space-y-4 mt-4">
+
+      <div className="px-4 pb-20 space-y-4 mt-4">
           {/* Mission info bar */}
           <div className="flex items-center gap-4 flex-wrap text-xs text-muted-foreground">
             <div className="flex items-center gap-1">
@@ -593,7 +578,6 @@ export default function CommissionDetailPage() {
           {/* Mission Chat */}
           <MissionLobbyChat missionId={id!} />
         </div>
-      )}
 
       {/* Rating Modal */}
       <AnimatePresence>
