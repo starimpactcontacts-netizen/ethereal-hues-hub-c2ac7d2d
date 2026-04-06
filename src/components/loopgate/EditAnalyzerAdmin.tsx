@@ -503,11 +503,49 @@ export default function EditAnalyzerAdmin() {
                     <p className="text-xs text-foreground mt-1 leading-relaxed">{analysis.grade_justification}</p>
                   </div>
 
+                  {/* Viral Potential */}
+                  {analysis.viral_potential && (
+                    <div className={`p-3 rounded-lg border ${
+                      analysis.viral_potential === 'high' ? 'bg-emerald-500/5 border-emerald-500/20' :
+                      analysis.viral_potential === 'medium' ? 'bg-amber-500/5 border-amber-500/20' :
+                      'bg-red-500/5 border-red-500/20'
+                    }`}>
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Viral Potential</span>
+                      <p className={`text-sm font-bold mt-1 uppercase ${
+                        analysis.viral_potential === 'high' ? 'text-emerald-400' :
+                        analysis.viral_potential === 'medium' ? 'text-amber-400' : 'text-red-400'
+                      }`}>
+                        {analysis.viral_potential === 'high' ? '🔥 HIGH' : analysis.viral_potential === 'medium' ? '⚡ MEDIUM' : '❄️ LOW'}
+                      </p>
+                    </div>
+                  )}
+
                   {/* Improvement Notes */}
                   {analysis.improvement_notes && (
                     <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
                       <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Improvement Notes</span>
                       <p className="text-xs text-foreground mt-1 leading-relaxed">{analysis.improvement_notes}</p>
+                    </div>
+                  )}
+
+                  {/* Copy-Paste Judge Feedback */}
+                  {analysis.judge_feedback && (
+                    <div className="p-3 rounded-lg bg-primary/5 border-2 border-primary/30 relative">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-primary uppercase tracking-wider">📋 Copy-Paste Judge Feedback</span>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(analysis.judge_feedback || '');
+                            const btn = document.getElementById('copy-feedback-btn');
+                            if (btn) { btn.textContent = '✓ Copied!'; setTimeout(() => { btn.textContent = 'Copy'; }, 1500); }
+                          }}
+                          id="copy-feedback-btn"
+                          className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded hover:bg-primary/20 transition-colors"
+                        >
+                          Copy
+                        </button>
+                      </div>
+                      <p className="text-xs text-foreground mt-2 leading-relaxed whitespace-pre-wrap">{analysis.judge_feedback}</p>
                     </div>
                   )}
                 </motion.div>
