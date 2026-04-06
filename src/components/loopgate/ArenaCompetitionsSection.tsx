@@ -41,11 +41,11 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
   };
 
   return (
-    <div className="shrink-0 w-[200px]">
+    <div className="shrink-0 w-[160px]">
       <motion.div
         whileTap={{ scale: 0.97 }}
         onClick={() => navigate(`/competition/${comp.slug || comp.id}`)}
-        className="relative w-full bg-surface-1 border border-white/[0.06] overflow-hidden group touch-manipulation rounded-xl cursor-pointer"
+        className="relative w-full h-[160px] bg-surface-1 border border-white/[0.06] overflow-hidden group touch-manipulation rounded-lg cursor-pointer"
         style={{ boxShadow: "0 2px 20px rgba(0,0,0,0.3)" }}
       >
       {/* Share button — inside card, upper right */}
