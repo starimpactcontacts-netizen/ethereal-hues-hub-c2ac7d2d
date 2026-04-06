@@ -44,8 +44,8 @@ export default function BottomNav() {
         </div>
       )}
 
-      <nav className="fixed bottom-0 left-0 right-0 z-50" style={{ backgroundColor: '#000000', paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        <div className="absolute inset-0" style={{ bottom: 'calc(-1 * env(safe-area-inset-bottom, 0px))', backgroundColor: '#000000' }} />
+      <nav className="fixed bottom-0 left-0 right-0 z-50" style={{ backgroundColor: '#000000', paddingBottom: 'calc(env(safe-area-inset-bottom) + 20px)' }}>
+        <div className="absolute inset-0" style={{ bottom: '-100px', backgroundColor: '#000000' }} />
         {/* Top border with synced arena color glow */}
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-white/[0.04]" />
         {/* Core bright line — hue-synced, subtle */}
@@ -88,7 +88,7 @@ export default function BottomNav() {
           {/* Center Arena Button — Diamond shape with glitch aura */}
           <button
             onClick={handleArenaClick}
-            className="flex flex-col items-center justify-center group relative -mt-3"
+            className="flex flex-col items-center justify-center group relative -mt-1"
           >
             {/* Active battle indicator */}
             {hasActiveBattle && (
@@ -96,19 +96,20 @@ export default function BottomNav() {
             )}
             <div className="relative">
               {/* Outer glow */}
-              <div className="absolute -inset-3 rotate-45 bg-white/[0.04] blur-lg" />
-              <div className="absolute -inset-3 rotate-45 bg-white/[0.04] blur-lg" />
-              <div className="relative w-[46px] h-[46px] bg-white rotate-45 flex items-center justify-center group-active:scale-90 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.18)]">
+              <div className="absolute -inset-2 rotate-45 bg-white/[0.04] blur-lg" />
+              <GlitchEdge side="left" className="absolute w-[40px] h-[40px] rotate-45" style={{ left: '-2px', top: '0px' }} />
+              <GlitchEdge side="right" className="absolute w-[40px] h-[40px] rotate-45" style={{ left: '2px', top: '0px' }} />
+              <div className="relative w-[40px] h-[40px] bg-white rotate-45 flex items-center justify-center group-active:scale-90 transition-transform shadow-[0_0_16px_rgba(255,255,255,0.15)]">
                 {/* Subtle gate pattern */}
                 <div className="absolute inset-0 overflow-hidden opacity-[0.04]">
-                  <svg className="w-full h-full" viewBox="0 0 46 46">
+                  <svg className="w-full h-full" viewBox="0 0 40 40">
                     <pattern id="nav-gate-d" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
                       <polygon points="5,1 9,4 9,8 5,10 1,8 1,4" fill="none" stroke="black" strokeWidth="0.5" />
                     </pattern>
                     <rect width="100%" height="100%" fill="url(#nav-gate-d)" />
                   </svg>
                 </div>
-                <InfinityIcon className="w-5 h-5 text-black relative z-10 -rotate-45" strokeWidth={2.5} />
+                <InfinityIcon className="w-4 h-4 text-black relative z-10 -rotate-45" strokeWidth={2.5} />
               </div>
             </div>
           </button>
