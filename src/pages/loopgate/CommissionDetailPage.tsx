@@ -201,7 +201,7 @@ function RatingModal({ submission, onRate, onClose, getPayoutForRating }: {
     try {
       await onRate(submission.id, selectedRating, feedback.trim());
       const payout = getPayoutForRating(selectedRating);
-      toast.success(payout > 0 ? `Rated ${selectedRating} — $${(payout / 100).toFixed(0)} instant payout to @${submission.username}` : `Rated ${selectedRating} — Index points only`);
+      toast.success(payout > 0 ? `Rated ${selectedRating} — $${(payout / 100).toFixed(2)} instant payout to @${submission.username}` : `Rated ${selectedRating} — Index points only`);
       onClose();
     } catch { toast.error('Rating failed'); }
     setSubmitting(false);
