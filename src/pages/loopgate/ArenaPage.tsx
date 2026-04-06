@@ -1267,7 +1267,7 @@ export default function ArenaPage() {
               )}
 
               {battlesLoading ? (
-                <div className="flex gap-2.5 pl-4 overflow-x-auto scrollbar-hide pb-2">
+                <div className="flex gap-3 pl-4 overflow-x-auto scrollbar-hide pb-2">
                   <Skeleton className="h-44 w-[200px] shrink-0" />
                   <Skeleton className="h-44 w-[200px] shrink-0" />
                 </div>
