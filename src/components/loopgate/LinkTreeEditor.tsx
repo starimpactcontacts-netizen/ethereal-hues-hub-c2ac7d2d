@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, Reorder } from "framer-motion";
-import { Plus, Trash2, GripVertical, Eye, EyeOff, Link2, Video, Globe, ChevronRight, Copy } from "lucide-react";
+import { Plus, Trash2, GripVertical, Eye, EyeOff, Link2, Video, Globe, ChevronRight, Copy, ChevronDown, Image } from "lucide-react";
 import { useEditorLinkPage } from "@/hooks/useEditorLinkPage";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
