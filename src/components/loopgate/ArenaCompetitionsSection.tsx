@@ -77,21 +77,31 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
       </div>
 
       {/* Content — compact */}
-      <div className="p-2 space-y-1">
-        <h3 className="text-[11px] font-bold text-foreground truncate leading-tight tracking-tight" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
-          {comp.name}
-        </h3>
-        <div className="flex items-center justify-between text-[8px]">
-          <span className="text-muted-foreground font-bold flex items-center gap-0.5">
-            <Users className="w-2.5 h-2.5" />
-            {comp.current_players}/{comp.max_players}
-          </span>
-          {comp.index_reward_pool > 0 && (
-            <span className="flex items-center gap-0.5 text-gold font-bold">
-              <Trophy className="w-2.5 h-2.5" /> +{comp.index_reward_pool}
+      <div className="p-2 flex flex-col justify-between flex-1">
+        <div>
+          <h3 className="text-[11px] font-bold text-foreground truncate leading-tight tracking-tight" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
+            {comp.name}
+          </h3>
+          <div className="flex items-center justify-between text-[8px] mt-1">
+            <span className="text-muted-foreground font-bold flex items-center gap-0.5">
+              <Users className="w-2.5 h-2.5" />
+              {comp.current_players}/{comp.max_players}
             </span>
-          )}
+            {comp.index_reward_pool > 0 && (
+              <span className="flex items-center gap-0.5 text-gold font-bold">
+                <Trophy className="w-2.5 h-2.5" /> +{comp.index_reward_pool}
+              </span>
+            )}
+          </div>
         </div>
+        <button
+          onClick={(e) => { e.stopPropagation(); onJoin(comp.id); }}
+          disabled={spotsLeft <= 0}
+          className="w-full py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-500 text-white hover:bg-emerald-400 active:bg-emerald-600 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+          style={{ fontFamily: "'Teko', sans-serif" }}
+        >
+          {spotsLeft <= 0 ? "FULL" : "JOIN"}
+        </button>
       </div>
     </motion.div>
     </div>

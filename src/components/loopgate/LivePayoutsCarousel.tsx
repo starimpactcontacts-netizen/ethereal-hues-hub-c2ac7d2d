@@ -163,7 +163,7 @@ function PayoutCard({ payout, idx }: { payout: Payout; idx: number }) {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: idx * 0.05 }}
-      className="shrink-0 w-[200px] snap-start relative overflow-hidden rounded-lg group"
+      className="shrink-0 w-[160px] h-[160px] snap-start relative overflow-hidden rounded-lg group"
       style={{
         boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
       }}
@@ -184,7 +184,7 @@ function PayoutCard({ payout, idx }: { payout: Payout; idx: number }) {
       <div className="absolute inset-0 rounded-lg border border-white/[0.08] group-hover:border-emerald-400/20 transition-colors duration-300" />
 
       {/* Content */}
-      <div className="relative p-2.5 flex flex-col h-[130px] justify-between">
+      <div className="relative p-2.5 flex flex-col h-[160px] justify-between">
         {/* Top — user info */}
         <div className="flex items-center gap-2">
           <Avatar className="w-6 h-6 border border-white/[0.15]">
