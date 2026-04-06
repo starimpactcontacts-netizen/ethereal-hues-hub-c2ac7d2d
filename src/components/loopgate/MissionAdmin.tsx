@@ -439,6 +439,16 @@ function MissionEditDialog({ mission, onClose, onSaved }: { mission: MissionDrop
               )}
             </div>
           </div>
+
+          {/* Scenepacks */}
+          <div className="border-t border-border pt-3 space-y-2">
+            <Label className="text-xs font-bold text-amber-400">📦 Scenepacks</Label>
+            <div>
+              <Label className="text-[10px]">Scenepack URL (Google Drive link)</Label>
+              <Input value={form.scenepack_url} onChange={e => setForm({ ...form, scenepack_url: e.target.value })}
+                placeholder="https://drive.google.com/..." className="mt-1 h-8 text-xs" />
+            </div>
+          </div>
           <Button onClick={handleSave} disabled={saving} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Mission'}
           </Button>
