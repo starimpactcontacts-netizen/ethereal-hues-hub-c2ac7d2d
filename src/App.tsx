@@ -309,6 +309,7 @@ export default function App() {
               <Route path="/competition/create" element={<CreateCompetitionPage />} />
               <Route path="/sanctioned/:id" element={<SanctionedTournamentPage />} />
               <Route path="/battle/:battleId" element={<BattleDetailPage />} />
+              <Route path="/cash-battle/:battleId" element={<CashBattlePage />} />
               <Route path="/fight/:fightId" element={<QuickFightPage />} />
               <Route path="/quick-fight" element={<QuickFightPage />} />
               <Route path="/judge-queue" element={<JudgeQueuePage />} />
