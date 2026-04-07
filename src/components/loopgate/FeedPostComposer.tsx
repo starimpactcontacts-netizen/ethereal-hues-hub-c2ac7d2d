@@ -93,7 +93,7 @@ export default function FeedPostComposer({ userProfile, onPost, onMobileTap }: F
           What's happening in the loop?
         </span>
         <span className="px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[12px] font-bold">
-          Loop
+          Post
         </span>
       </button>
     );
