@@ -167,21 +167,51 @@ export default function CashBattlePage() {
         </div>
       </div>
 
-      {/* Sponsor Banner */}
+      {/* F1-Style Sponsor Hero Banner */}
       {battle.sponsor_name && (
-        <div className="mx-4 mt-3 rounded-xl py-2.5 px-4 flex items-center gap-3" style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.12), rgba(239,68,68,0.12))", border: "1px solid rgba(255,255,255,0.08)" }}>
-          {battle.sponsor_logo_url && <img src={battle.sponsor_logo_url} alt="" className="w-7 h-7 rounded-lg object-cover" />}
-          <div className="flex-1 min-w-0">
-            <p className="text-[9px] uppercase tracking-[0.15em] text-zinc-500" style={{ fontFamily: "Teko, sans-serif" }}>Sponsored By</p>
-            <p className="text-[13px] font-black text-white uppercase" style={{ fontFamily: "Teko, sans-serif" }}>{battle.sponsor_name}</p>
+        <div className="mx-4 mt-3 rounded-2xl overflow-hidden relative" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
+          {/* Background cover image */}
+          <div className="relative h-28">
+            {sponsorCover ? (
+              <img src={sponsorCover} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            ) : (
+              <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #1a1a2e, #16213e)" }} />
+            )}
+            {/* Cinematic gradient overlays */}
+            <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(10,10,12,0.3) 0%, rgba(10,10,12,0.85) 100%)" }} />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(59,130,246,0.15) 0%, transparent 50%, rgba(239,68,68,0.15) 100%)" }} />
+            
+            {/* Content overlay */}
+            <div className="absolute inset-0 flex items-end p-3">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                {battle.sponsor_logo_url && (
+                  <img src={battle.sponsor_logo_url} alt="" className="w-10 h-10 rounded-xl object-cover ring-1 ring-white/20 shrink-0" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-[9px] uppercase tracking-[0.2em] text-white/50 mb-0.5" style={{ fontFamily: "Teko, sans-serif" }}>
+                    Sponsored By
+                  </p>
+                  <p className="text-[16px] font-black text-white uppercase leading-tight truncate" style={{ fontFamily: "Teko, sans-serif" }}>
+                    {battle.sponsor_name}
+                  </p>
+                </div>
+              </div>
+              {battle.scenepack_url && (
+                <a href={battle.scenepack_url} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold text-emerald-400 uppercase shrink-0"
+                  style={{ background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.3)", backdropFilter: "blur(8px)" }}>
+                  <Download className="w-3 h-3" /> Scenepack
+                </a>
+              )}
+            </div>
           </div>
-          {battle.scenepack_url && (
-            <a href={battle.scenepack_url} target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold text-emerald-400 uppercase"
-              style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)" }}>
-              <Download className="w-3 h-3" /> Scenepack
-            </a>
-          )}
+          
+          {/* Tagline strip */}
+          <div className="px-3 py-2" style={{ background: "rgba(255,255,255,0.02)", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+            <p className="text-[10px] text-zinc-500 text-center">
+              Use the <strong className="text-white">WeirdCity scenepack</strong> to create your edit — best edit wins <strong className="text-white">{formatPrize(battle.prize_cents)}</strong>
+            </p>
+          </div>
         </div>
       )}
 
