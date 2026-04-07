@@ -266,7 +266,7 @@ export default function CashBattlesSection() {
           </div>
         </div>
         <button
-          onClick={() => setApplyOpen(true)}
+          onClick={handleEnter}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white text-[10px] font-black uppercase tracking-wider transition-all hover:scale-105"
           style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}
         >
@@ -284,7 +284,7 @@ export default function CashBattlesSection() {
         {/* Apply teaser card */}
         <motion.div
           whileTap={{ scale: 0.97 }}
-          onClick={() => setApplyOpen(true)}
+          onClick={handleEnter}
           className="w-[180px] shrink-0 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer"
           style={{
             background: 'rgba(59,130,246,0.03)',
