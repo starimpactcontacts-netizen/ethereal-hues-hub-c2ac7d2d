@@ -2,8 +2,8 @@
  * EditAnalyzerAdmin — Frame-by-frame video edit analyzer (Admin/Judge tool only)
  * Upload a video → extracts frames → AI analyzes → returns S-F grade with detailed breakdown
  */
-import { useState, useRef, useCallback } from "react";
-import { Upload, Play, Loader2, Film, AlertTriangle, ChevronDown, ChevronUp, Eye } from "lucide-react";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { Upload, Play, Loader2, Film, ChevronDown, ChevronUp, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -42,6 +42,22 @@ interface EditAnalysis {
   judge_feedback?: string;
 }
 
+interface MissionOption {
+  id: string;
+  title: string;
+  description: string | null;
+  requirements: string | null;
+  artist_name: string | null;
+  client_name: string | null;
+  status: string;
+}
+
+interface MissionEditor {
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+}
+
 const GRADE_COLORS: Record<string, string> = {
   "S++": "#FFD700",
   "S+": "#FFD700",
@@ -73,9 +89,72 @@ export default function EditAnalyzerAdmin() {
   const [videoTitle, setVideoTitle] = useState("");
   const [frameCount, setFrameCount] = useState(8);
   const [showFrameDetails, setShowFrameDetails] = useState(false);
+  const [missions, setMissions] = useState<MissionOption[]>([]);
+  const [missionsLoading, setMissionsLoading] = useState(false);
+  const [selectedMissionId, setSelectedMissionId] = useState("");
+  const [missionEditors, setMissionEditors] = useState<MissionEditor[]>([]);
+  const [missionEditorsLoading, setMissionEditorsLoading] = useState(false);
+  const [selectedEditorId, setSelectedEditorId] = useState("");
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const selectedMission = missions.find((mission) => mission.id === selectedMissionId) || null;
+  const selectedEditor = missionEditors.find((editor) => editor.user_id === selectedEditorId) || null;
+
+  useEffect(() => {
+    const loadMissions = async () => {
+      setMissionsLoading(true);
+      const { data, error } = await supabase
+        .from("commissions")
+        .select("id, title, description, requirements, artist_name, client_name, status")
+        .order("created_at", { ascending: false })
+        .limit(100);
+
+      if (error) {
+        console.error("Failed to load missions", error);
+        toast.error("Failed to load missions");
+      } else {
+        setMissions((data || []) as MissionOption[]);
+      }
+
+      setMissionsLoading(false);
+    };
+
+    void loadMissions();
+  }, []);
+
+  useEffect(() => {
+    const loadMissionEditors = async () => {
+      if (!selectedMissionId) {
+        setMissionEditors([]);
+        setSelectedEditorId("");
+        return;
+      }
+
+      setMissionEditorsLoading(true);
+      const { data, error } = await supabase
+        .from("mission_lobby_presence")
+        .select("user_id, username, avatar_url")
+        .eq("commission_id", selectedMissionId)
+        .order("created_at", { ascending: true })
+        .limit(100);
+
+      if (error) {
+        console.error("Failed to load mission editors", error);
+        toast.error("Failed to load editor taps");
+        setMissionEditors([]);
+      } else {
+        const editors = (data || []).filter((editor) => editor.user_id && editor.username) as MissionEditor[];
+        setMissionEditors(editors);
+        setSelectedEditorId((current) => editors.some((editor) => editor.user_id === current) ? current : "");
+      }
+
+      setMissionEditorsLoading(false);
+    };
+
+    void loadMissionEditors();
+  }, [selectedMissionId]);
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -118,7 +197,6 @@ export default function EditAnalyzerAdmin() {
         return;
       }
 
-      // Set canvas to video dimensions (capped for performance)
       const maxDim = 720;
       const scale = Math.min(1, maxDim / Math.max(video.videoWidth, video.videoHeight));
       canvas.width = Math.round(video.videoWidth * scale);
@@ -160,15 +238,32 @@ export default function EditAnalyzerAdmin() {
       toast.error("Extract frames first");
       return;
     }
+
     setAnalyzing(true);
     setAnalysis(null);
 
     try {
       const { data, error } = await supabase.functions.invoke("analyze-edit", {
         body: {
-          frames: frames.map((f) => ({ dataUrl: f.dataUrl, timestamp: f.timestamp })),
+          frames: frames.map((frame) => ({ dataUrl: frame.dataUrl, timestamp: frame.timestamp })),
           editorNotes: editorNotes || undefined,
           videoTitle: videoTitle || videoFile?.name || undefined,
+          selectedMission: selectedMission
+            ? {
+                id: selectedMission.id,
+                title: selectedMission.title,
+                description: selectedMission.description,
+                requirements: selectedMission.requirements,
+                brandOrArtist: selectedMission.client_name || selectedMission.artist_name || undefined,
+                status: selectedMission.status,
+              }
+            : undefined,
+          selectedEditor: selectedEditor
+            ? {
+                userId: selectedEditor.user_id,
+                username: selectedEditor.username,
+              }
+            : undefined,
         },
       });
 
@@ -182,20 +277,19 @@ export default function EditAnalyzerAdmin() {
     } finally {
       setAnalyzing(false);
     }
-  }, [frames, editorNotes, videoTitle, videoFile]);
+  }, [editorNotes, frames, selectedEditor, selectedMission, videoFile?.name, videoTitle]);
 
   const gradeColor = analysis ? GRADE_COLORS[analysis.grade] || "#888" : "#888";
 
   return (
     <section className="rounded-xl border border-border/60 bg-surface-1 overflow-hidden">
-      {/* Header */}
       <button
         onClick={() => setCollapsed(!collapsed)}
         className="w-full flex items-center justify-between p-4 hover:bg-accent/30 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-purple-500/20 flex items-center justify-center">
-            <Film className="w-5 h-5 text-purple-400" />
+          <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center">
+            <Film className="w-5 h-5 text-primary" />
           </div>
           <div className="text-left">
             <h3 className="font-bold text-sm text-foreground">Edit Analyzer</h3>
@@ -215,7 +309,101 @@ export default function EditAnalyzerAdmin() {
             className="overflow-hidden"
           >
             <div className="p-4 pt-0 space-y-4">
-              {/* Upload Section */}
+              <div className="space-y-3 rounded-lg border border-border/40 bg-background/40 p-3">
+                <div>
+                  <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                    Pick Mission
+                  </label>
+                  <select
+                    value={selectedMissionId}
+                    onChange={(e) => setSelectedMissionId(e.target.value)}
+                    className="w-full mt-1 px-3 py-2 rounded-lg bg-background border border-border text-sm text-foreground"
+                  >
+                    <option value="">No mission context</option>
+                    {missions.map((mission) => (
+                      <option key={mission.id} value={mission.id}>
+                        {mission.title}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    {missionsLoading ? "Loading missions..." : "Pick the exact mission so the judge reads the real brief."}
+                  </p>
+                </div>
+
+                {selectedMission && (
+                  <div className="rounded-lg border border-border/40 bg-surface-1 p-3 space-y-1.5">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-sm font-semibold text-foreground truncate">{selectedMission.title}</p>
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground shrink-0">{selectedMission.status}</span>
+                    </div>
+                    {(selectedMission.client_name || selectedMission.artist_name) && (
+                      <p className="text-[11px] text-muted-foreground">
+                        {selectedMission.client_name ? `Brand: ${selectedMission.client_name}` : `Artist: ${selectedMission.artist_name}`}
+                      </p>
+                    )}
+                    {(selectedMission.description || selectedMission.requirements) && (
+                      <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-3">
+                        {selectedMission.description || selectedMission.requirements}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {selectedMissionId && (
+                  <div>
+                    <div className="flex items-center justify-between gap-3 mb-2">
+                      <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                        Editor Taps
+                      </label>
+                      <span className="text-[10px] text-muted-foreground">
+                        {missionEditorsLoading ? "Loading..." : `${missionEditors.length} in lobby`}
+                      </span>
+                    </div>
+
+                    {missionEditorsLoading ? (
+                      <div className="rounded-lg border border-border/40 bg-surface-1 px-3 py-2 text-xs text-muted-foreground">
+                        Loading mission lobby...
+                      </div>
+                    ) : missionEditors.length === 0 ? (
+                      <div className="rounded-lg border border-border/40 bg-surface-1 px-3 py-2 text-xs text-muted-foreground">
+                        No editor taps tracked for this mission yet.
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {missionEditors.map((editor) => {
+                          const isActive = editor.user_id === selectedEditorId;
+                          return (
+                            <button
+                              key={editor.user_id}
+                              type="button"
+                              onClick={() => setSelectedEditorId(isActive ? "" : editor.user_id)}
+                              className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition-colors ${
+                                isActive
+                                  ? "border-primary/50 bg-primary/10 text-primary"
+                                  : "border-border bg-background text-foreground hover:border-primary/30"
+                              }`}
+                            >
+                              {editor.avatar_url ? (
+                                <img src={editor.avatar_url} alt={editor.username} className="w-5 h-5 rounded-full object-cover" />
+                              ) : (
+                                <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center text-[9px] font-bold text-muted-foreground">
+                                  {editor.username.slice(0, 1).toUpperCase()}
+                                </div>
+                              )}
+                              <span>@{editor.username}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                    <p className="text-[10px] text-muted-foreground mt-2">
+                      Tap an editor so the feedback is written for the exact person in this mission lobby.
+                    </p>
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-3">
                 <input
                   ref={fileInputRef}
@@ -226,7 +414,7 @@ export default function EditAnalyzerAdmin() {
                 />
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full border-2 border-dashed border-border/60 rounded-lg p-6 flex flex-col items-center gap-2 hover:border-purple-500/50 hover:bg-purple-500/5 transition-all"
+                  className="w-full border-2 border-dashed border-border/60 rounded-lg p-6 flex flex-col items-center gap-2 hover:border-primary/40 hover:bg-primary/5 transition-all"
                 >
                   <Upload className="w-8 h-8 text-muted-foreground" />
                   <span className="text-sm font-medium text-foreground">
@@ -239,7 +427,6 @@ export default function EditAnalyzerAdmin() {
 
                 {videoUrl && (
                   <div className="space-y-3">
-                    {/* Hidden video element for frame extraction */}
                     <video
                       ref={videoRef}
                       src={videoUrl}
@@ -250,7 +437,6 @@ export default function EditAnalyzerAdmin() {
                     />
                     <canvas ref={canvasRef} className="hidden" />
 
-                    {/* Controls */}
                     <div className="grid grid-cols-2 gap-2">
                       <div>
                         <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
@@ -288,17 +474,16 @@ export default function EditAnalyzerAdmin() {
                       <textarea
                         value={editorNotes}
                         onChange={(e) => setEditorNotes(e.target.value)}
-                        placeholder="Any context for the analysis — e.g. 'Check sync quality' or 'Focus on color grading'"
+                        placeholder="Any context for the analysis — e.g. 'Check sync quality' or 'Focus on mission fit'"
                         rows={2}
                         className="w-full mt-1 px-3 py-2 rounded-lg bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground/50 resize-none"
                       />
                     </div>
 
-                    {/* Extract Frames Button */}
                     <button
                       onClick={extractFrames}
                       disabled={extracting}
-                      className="w-full py-2.5 rounded-lg bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white text-sm font-bold flex items-center justify-center gap-2 transition-colors"
+                      className="w-full py-2.5 rounded-lg bg-primary hover:opacity-90 disabled:opacity-50 text-primary-foreground text-sm font-bold flex items-center justify-center gap-2 transition-colors"
                     >
                       {extracting ? (
                         <>
@@ -316,7 +501,6 @@ export default function EditAnalyzerAdmin() {
                 )}
               </div>
 
-              {/* Extracted Frames Preview */}
               {frames.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -325,7 +509,7 @@ export default function EditAnalyzerAdmin() {
                     </span>
                     <button
                       onClick={() => setShowFrameDetails(!showFrameDetails)}
-                      className="text-[10px] text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                      className="text-[10px] text-primary hover:opacity-80 flex items-center gap-1"
                     >
                       <Eye className="w-3 h-3" />
                       {showFrameDetails ? "Hide" : "Show"} Full
@@ -349,11 +533,16 @@ export default function EditAnalyzerAdmin() {
                     ))}
                   </div>
 
-                  {/* Analyze Button */}
+                  <div className="rounded-lg border border-border/40 bg-background/40 px-3 py-2 text-[11px] text-muted-foreground">
+                    <span className="font-semibold text-foreground">Context:</span>{" "}
+                    {selectedMission ? selectedMission.title : "No mission selected"}
+                    {selectedEditor ? ` • @${selectedEditor.username}` : " • No editor tapped"}
+                  </div>
+
                   <button
                     onClick={analyzeEdit}
                     disabled={analyzing}
-                    className="w-full py-3 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 disabled:opacity-50 text-white text-sm font-bold flex items-center justify-center gap-2 transition-all"
+                    className="w-full py-3 rounded-lg bg-gradient-to-r from-primary to-primary/70 hover:opacity-90 disabled:opacity-50 text-primary-foreground text-sm font-bold flex items-center justify-center gap-2 transition-all"
                   >
                     {analyzing ? (
                       <>
@@ -370,14 +559,12 @@ export default function EditAnalyzerAdmin() {
                 </div>
               )}
 
-              {/* Analysis Results */}
               {analysis && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="space-y-4 border-t border-border/40 pt-4"
                 >
-                  {/* Grade Badge */}
                   <div className="flex items-center gap-4">
                     <div
                       className="w-20 h-20 rounded-xl flex items-center justify-center border-2"
@@ -398,7 +585,6 @@ export default function EditAnalyzerAdmin() {
                     </div>
                   </div>
 
-                  {/* Pillar Scores */}
                   <div className="space-y-2">
                     <span className="text-[10px] font-bold text-foreground uppercase tracking-wider">QOI Breakdown</span>
                     {PILLARS.map((p) => {
@@ -424,7 +610,6 @@ export default function EditAnalyzerAdmin() {
                     })}
                   </div>
 
-                  {/* Verdicts */}
                   <div className="space-y-3">
                     {[
                       { label: "Technical", text: analysis.technical_verdict },
@@ -438,7 +623,6 @@ export default function EditAnalyzerAdmin() {
                     ))}
                   </div>
 
-                  {/* Strengths & Weaknesses */}
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
                       <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Strengths</span>
@@ -458,7 +642,6 @@ export default function EditAnalyzerAdmin() {
                     </div>
                   </div>
 
-                  {/* Frame-by-Frame Analysis */}
                   {analysis.frame_analysis && analysis.frame_analysis.length > 0 && (
                     <div className="space-y-2">
                       <span className="text-[10px] font-bold text-foreground uppercase tracking-wider">Frame-by-Frame Analysis</span>
@@ -481,8 +664,8 @@ export default function EditAnalyzerAdmin() {
                                   fa.score_impact?.toLowerCase().includes("positive")
                                     ? "bg-emerald-500/20 text-emerald-400"
                                     : fa.score_impact?.toLowerCase().includes("negative")
-                                    ? "bg-red-500/20 text-red-400"
-                                    : "bg-zinc-500/20 text-zinc-400"
+                                      ? "bg-red-500/20 text-red-400"
+                                      : "bg-zinc-500/20 text-zinc-400"
                                 }`}>
                                   {fa.score_impact?.toLowerCase().includes("positive") ? "↑" : fa.score_impact?.toLowerCase().includes("negative") ? "↓" : "—"}
                                 </span>
@@ -497,30 +680,27 @@ export default function EditAnalyzerAdmin() {
                     </div>
                   )}
 
-                  {/* Grade Justification */}
                   <div className="p-3 rounded-lg bg-background border border-border/40">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Grade Justification</span>
                     <p className="text-xs text-foreground mt-1 leading-relaxed">{analysis.grade_justification}</p>
                   </div>
 
-                  {/* Viral Potential */}
                   {analysis.viral_potential && (
                     <div className={`p-3 rounded-lg border ${
-                      analysis.viral_potential === 'high' ? 'bg-emerald-500/5 border-emerald-500/20' :
-                      analysis.viral_potential === 'medium' ? 'bg-amber-500/5 border-amber-500/20' :
-                      'bg-red-500/5 border-red-500/20'
+                      analysis.viral_potential === "high" ? "bg-emerald-500/5 border-emerald-500/20" :
+                      analysis.viral_potential === "medium" ? "bg-amber-500/5 border-amber-500/20" :
+                      "bg-red-500/5 border-red-500/20"
                     }`}>
                       <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Viral Potential</span>
                       <p className={`text-sm font-bold mt-1 uppercase ${
-                        analysis.viral_potential === 'high' ? 'text-emerald-400' :
-                        analysis.viral_potential === 'medium' ? 'text-amber-400' : 'text-red-400'
+                        analysis.viral_potential === "high" ? "text-emerald-400" :
+                        analysis.viral_potential === "medium" ? "text-amber-400" : "text-red-400"
                       }`}>
-                        {analysis.viral_potential === 'high' ? '🔥 HIGH' : analysis.viral_potential === 'medium' ? '⚡ MEDIUM' : '❄️ LOW'}
+                        {analysis.viral_potential === "high" ? "🔥 HIGH" : analysis.viral_potential === "medium" ? "⚡ MEDIUM" : "❄️ LOW"}
                       </p>
                     </div>
                   )}
 
-                  {/* Improvement Notes */}
                   {analysis.improvement_notes && (
                     <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
                       <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Improvement Notes</span>
@@ -528,16 +708,20 @@ export default function EditAnalyzerAdmin() {
                     </div>
                   )}
 
-                  {/* Copy-Paste Judge Feedback */}
                   {analysis.judge_feedback && (
                     <div className="p-3 rounded-lg bg-primary/5 border-2 border-primary/30 relative">
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] font-bold text-primary uppercase tracking-wider">📋 Copy-Paste Judge Feedback</span>
                         <button
                           onClick={() => {
-                            navigator.clipboard.writeText(analysis.judge_feedback || '');
-                            const btn = document.getElementById('copy-feedback-btn');
-                            if (btn) { btn.textContent = '✓ Copied!'; setTimeout(() => { btn.textContent = 'Copy'; }, 1500); }
+                            navigator.clipboard.writeText(analysis.judge_feedback || "");
+                            const btn = document.getElementById("copy-feedback-btn");
+                            if (btn) {
+                              btn.textContent = "✓ Copied!";
+                              setTimeout(() => {
+                                btn.textContent = "Copy";
+                              }, 1500);
+                            }
                           }}
                           id="copy-feedback-btn"
                           className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded hover:bg-primary/20 transition-colors"

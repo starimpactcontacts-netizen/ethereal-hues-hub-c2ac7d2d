@@ -443,20 +443,35 @@ export default function OpsPanel() {
   });
   const [broadcasting, setBroadcasting] = useState(false);
 
-  // Fix body scroll lock — Radix Dialog can leave overflow:hidden on body on mobile
+  // Fix iOS scroll lock — dialogs can leave the page stuck after closing on mobile Safari
   useEffect(() => {
-    const fixScroll = () => {
+    const unlockScroll = () => {
       const hasOpenDialog = document.querySelector('[data-state="open"][role="dialog"]');
-      if (!hasOpenDialog) {
-        document.body.style.overflow = '';
-        document.body.style.pointerEvents = '';
-        document.documentElement.style.overflow = '';
-      }
+      if (hasOpenDialog) return;
+
+      document.body.style.overflow = '';
+      document.body.style.overflowY = 'auto';
+      document.body.style.pointerEvents = '';
+      document.body.style.touchAction = 'auto';
+      document.body.removeAttribute('data-scroll-locked');
+
+      document.documentElement.style.overflow = '';
+      document.documentElement.style.overflowY = 'auto';
+      document.documentElement.style.pointerEvents = '';
+      document.documentElement.style.touchAction = 'auto';
+      document.documentElement.removeAttribute('data-scroll-locked');
     };
-    fixScroll();
-    const observer = new MutationObserver(fixScroll);
-    observer.observe(document.body, { attributes: true, attributeFilter: ['style'] });
-    return () => observer.disconnect();
+
+    unlockScroll();
+    const observer = new MutationObserver(unlockScroll);
+    observer.observe(document.body, { attributes: true, attributeFilter: ['style', 'data-scroll-locked'] });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style', 'data-scroll-locked'] });
+    const interval = window.setInterval(unlockScroll, 500);
+
+    return () => {
+      observer.disconnect();
+      window.clearInterval(interval);
+    };
   }, []);
 
   // Role check - redirect if no ops access (handled by ProtectedRoute, but double-check)
@@ -2305,7 +2320,7 @@ export default function OpsPanel() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-20">
+    <div className="min-h-screen bg-background text-foreground pb-20 overflow-y-auto overscroll-y-contain" style={{ WebkitOverflowScrolling: "touch" }}>
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background border-b border-border">
         <div className="px-4 py-3 flex items-center gap-3">
@@ -4003,7 +4018,7 @@ export default function OpsPanel() {
       </div>
 
       {/* Create Event Dialog */}
-      <Dialog open={showCreateEvent} onOpenChange={setShowCreateEvent}>
+      <Dialog modal={false} open={showCreateEvent} onOpenChange={setShowCreateEvent}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create New Event</DialogTitle>
@@ -4358,7 +4373,7 @@ export default function OpsPanel() {
       </Dialog>
 
       {/* Edit Event Dialog */}
-      <Dialog open={!!editingEvent} onOpenChange={(open) => !open && setEditingEvent(null)}>
+      <Dialog modal={false} open={!!editingEvent} onOpenChange={(open) => !open && setEditingEvent(null)}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Event</DialogTitle>
@@ -4718,7 +4733,7 @@ export default function OpsPanel() {
       </AlertDialog>
 
       {/* Ban User Dialog */}
-      <Dialog open={!!banningUserId} onOpenChange={(open) => !open && setBanningUserId(null)}>
+      <Dialog modal={false} open={!!banningUserId} onOpenChange={(open) => !open && setBanningUserId(null)}>
         <DialogContent>
           <DialogHeader><DialogTitle>Ban User</DialogTitle></DialogHeader>
           <div className="space-y-4 pt-4">
@@ -4734,7 +4749,7 @@ export default function OpsPanel() {
       </Dialog>
 
       {/* Create Shop Item Dialog */}
-      <Dialog open={showCreateItem} onOpenChange={(open) => {
+      <Dialog modal={false} open={showCreateItem} onOpenChange={(open) => {
         if (!open) {
           setShowCreateItem(false);
           setItemImageFile(null);
@@ -4805,7 +4820,7 @@ export default function OpsPanel() {
       </Dialog>
 
       {/* Edit Shop Item Dialog */}
-      <Dialog open={!!editingItem} onOpenChange={(open) => {
+      <Dialog modal={false} open={!!editingItem} onOpenChange={(open) => {
         if (!open) {
           setEditingItem(null);
           setEditItemImageFile(null);
@@ -4876,7 +4891,7 @@ export default function OpsPanel() {
       </Dialog>
 
       {/* Invite to House Dialog */}
-      <Dialog open={showInviteModal} onOpenChange={(open) => {
+      <Dialog modal={false} open={showInviteModal} onOpenChange={(open) => {
         if (!open) {
           setShowInviteModal(false);
           setInviteUsername('');
@@ -4935,7 +4950,7 @@ export default function OpsPanel() {
       </Dialog>
 
       {/* Broadcast Notification Dialog */}
-      <Dialog open={showBroadcastModal} onOpenChange={(open) => {
+      <Dialog modal={false} open={showBroadcastModal} onOpenChange={(open) => {
         if (!open) {
           setShowBroadcastModal(false);
           setBroadcastData({ title: '', message: '', type: 'announcement' });
