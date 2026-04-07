@@ -363,7 +363,7 @@ export default function EditAnalyzerAdmin() {
 
                     {missionEditorsLoading ? (
                       <div className="rounded-lg border border-border/40 bg-surface-1 px-3 py-2 text-xs text-muted-foreground">
-                        Loading mission lobby...
+                        Loading submissions...
                       </div>
                     ) : missionEditors.length === 0 ? (
                       <div className="rounded-lg border border-border/40 bg-surface-1 px-3 py-2 text-xs text-muted-foreground">
