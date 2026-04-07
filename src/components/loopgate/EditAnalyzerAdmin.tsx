@@ -568,23 +568,34 @@ export default function EditAnalyzerAdmin() {
                     {selectedEditor ? ` • @${selectedEditor.username}` : " • No editor tapped"}
                   </div>
 
-                  <button
-                    onClick={analyzeEdit}
-                    disabled={analyzing}
-                    className="w-full py-3 rounded-lg bg-gradient-to-r from-primary to-primary/70 hover:opacity-90 disabled:opacity-50 text-primary-foreground text-sm font-bold flex items-center justify-center gap-2 transition-all"
-                  >
-                    {analyzing ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Analyzing Edit Frame-by-Frame...
-                      </>
-                    ) : (
-                      <>
-                        <Film className="w-4 h-4" />
-                        Analyze Edit
-                      </>
-                    )}
-                  </button>
+                  {analyzing ? (
+                    <div className="space-y-2 rounded-lg border border-primary/30 bg-primary/5 p-3">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-foreground font-semibold flex items-center gap-2">
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                          {analyzeStage || "Starting analysis..."}
+                        </span>
+                        <span className="text-muted-foreground font-mono">{analyzeProgress}%</span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-primary transition-all duration-700 ease-out"
+                          style={{ width: `${analyzeProgress}%` }}
+                        />
+                      </div>
+                      <p className="text-[10px] text-muted-foreground">
+                        Usually takes 15-30s depending on frame count
+                      </p>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={analyzeEdit}
+                      className="w-full py-3 rounded-lg bg-gradient-to-r from-primary to-primary/70 hover:opacity-90 text-primary-foreground text-sm font-bold flex items-center justify-center gap-2 transition-all"
+                    >
+                      <Film className="w-4 h-4" />
+                      Analyze Edit
+                    </button>
+                  )}
                 </div>
               )}
 
