@@ -26,51 +26,57 @@ function buildEmailHtml(opts: {
     <img src="${coverUrl}" alt="${missionTitle}" style="width:100%;height:auto;display:block;border-radius:12px;" />
   </div>` : ''
 
-  const artistSection = artistName ? `<p style="color:#a78bfa;font-size:14px;text-align:center;margin:0 0 20px 0;font-weight:500;">Artist: ${artistName}</p>` : ''
+  const artistSection = artistName ? `<p style="color:#d4af37;font-size:13px;text-align:center;margin:0 0 20px 0;font-weight:600;letter-spacing:1px;text-transform:uppercase;">${artistName}</p>` : ''
 
-  const deadlineSection = deadline ? `<p style="color:#f97316;font-size:14px;margin:8px 0 0 0;font-weight:600;">⏰ ${deadline}</p>` : ''
+  const deadlineSection = deadline ? `<p style="color:#f97316;font-size:13px;margin:10px 0 0 0;font-weight:600;">⏰ ${deadline}</p>` : ''
 
   const descSection = description ? `
-  <div style="margin:20px 0;padding:16px;background-color:#141416;border-radius:10px;border:1px solid #2a2a2e;">
-    <p style="color:#b0b0b0;font-size:14px;line-height:1.7;margin:0;">${description}</p>
+  <div style="margin:20px 0;padding:16px 18px;background-color:#111114;border-radius:10px;border-left:3px solid #22c55e;">
+    <p style="color:#a0a0a5;font-size:13px;line-height:1.7;margin:0;">${description}</p>
   </div>` : ''
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body style="background-color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;padding:0;">
-<div style="padding:32px 16px;margin:0 auto;max-width:520px;">
+<body style="background-color:#08080a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;padding:0;">
+<div style="padding:0;margin:0 auto;max-width:520px;">
 
-  <!-- Logo -->
-  <div style="text-align:center;margin-bottom:28px;">
-    <img src="${LOGO_URL}" alt="Loopgate" width="48" height="48" style="width:48px;height:48px;border-radius:10px;" />
-  </div>
-
-  <!-- Cover Image -->
+  <!-- Hero: Cover Image full-bleed -->
   ${coverSection}
 
-  <!-- Title -->
-  <h1 style="color:#ffffff;font-size:22px;font-weight:700;text-align:center;margin:0 0 6px 0;">${missionTitle}</h1>
-  ${artistSection}
+  <!-- Content area -->
+  <div style="padding:24px 20px 32px 20px;">
 
-  <!-- Payout Card -->
-  <div style="background-color:#1a1a1e;border-radius:12px;padding:20px;text-align:center;border:1px solid #2a2a2e;margin:20px 0;">
-    <p style="color:#22c55e;font-size:11px;font-weight:700;letter-spacing:2px;margin:0 0 8px 0;">💰 PAYOUT</p>
-    <p style="color:#ffffff;font-size:22px;font-weight:700;margin:0;">${payoutText}</p>
-    ${deadlineSection}
+    <!-- Logo + badge row -->
+    <div style="text-align:center;margin-bottom:20px;">
+      <img src="${LOGO_URL}" alt="Loopgate" width="36" height="36" style="width:36px;height:36px;border-radius:8px;margin-bottom:8px;" />
+      <p style="color:#555;font-size:10px;font-weight:600;letter-spacing:3px;text-transform:uppercase;margin:0;">NEW MISSION</p>
+    </div>
+
+    <!-- Title -->
+    <h1 style="color:#ffffff;font-size:24px;font-weight:800;text-align:center;margin:0 0 6px 0;letter-spacing:-0.3px;">${missionTitle}</h1>
+    ${artistSection}
+
+    <!-- Payout Card -->
+    <div style="background:linear-gradient(135deg,#141418 0%,#1a1a20 100%);border-radius:14px;padding:22px;text-align:center;border:1px solid #22c55e22;margin:20px 0;">
+      <p style="color:#22c55e;font-size:10px;font-weight:700;letter-spacing:3px;margin:0 0 10px 0;">PAYOUT</p>
+      <p style="color:#ffffff;font-size:26px;font-weight:800;margin:0;letter-spacing:-0.5px;">${payoutText}</p>
+      ${deadlineSection}
+    </div>
+
+    <!-- Description -->
+    ${descSection}
+
+    <!-- CTA -->
+    <a href="${missionUrl}" target="_blank" style="display:block;background-color:#22c55e;color:#000000;font-size:15px;font-weight:800;text-decoration:none;text-align:center;padding:16px 24px;border-radius:12px;margin:24px 0 0 0;letter-spacing:0.3px;">View Mission →</a>
+
   </div>
 
-  <!-- Description -->
-  ${descSection}
-
-  <!-- CTA -->
-  <a href="${missionUrl}" target="_blank" style="display:block;background-color:#22c55e;color:#000000;font-size:16px;font-weight:700;text-decoration:none;text-align:center;padding:14px 24px;border-radius:10px;margin:24px 0;">View Mission →</a>
-
   <!-- Footer -->
-  <div style="margin-top:32px;padding-top:20px;border-top:1px solid #1f1f23;text-align:center;">
-    <p style="color:#555;font-size:12px;margin:0 0 8px 0;">You're receiving this because you opted in to mission notifications on Loopgate.</p>
-    <a href="https://loopgate.io/settings" style="color:#666;font-size:12px;text-decoration:underline;">Unsubscribe from mission emails</a>
-    <p style="color:#3a3a3a;font-size:11px;margin:12px 0 0 0;">© Loopgate — Competitive Editing Index</p>
+  <div style="padding:20px;border-top:1px solid #1a1a1e;text-align:center;">
+    <p style="color:#444;font-size:11px;margin:0 0 6px 0;">You're receiving this because you opted in to mission alerts on Loopgate.</p>
+    <a href="https://loopgate.io/settings" style="color:#555;font-size:11px;text-decoration:underline;">Unsubscribe from mission emails</a>
+    <p style="color:#2a2a2e;font-size:10px;margin:10px 0 0 0;">© Loopgate — Competitive Editing Index</p>
   </div>
 
 </div>
