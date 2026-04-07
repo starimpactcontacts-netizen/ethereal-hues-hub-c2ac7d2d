@@ -208,11 +208,38 @@ function RatingModal({ submission, onRate, onClose, getPayoutForRating }: {
   const [feedback, setFeedback] = useState('');
   const [selectedRating, setSelectedRating] = useState<SubmissionRating | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const thumbnailInputRef = useRef<HTMLInputElement>(null);
+
+  const handleThumbnailSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setThumbnailFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setThumbnailPreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const uploadThumbnail = async (submissionId: string): Promise<string | null> => {
+    if (!thumbnailFile) return null;
+    const ext = thumbnailFile.name.split('.').pop() || 'jpg';
+    const path = `${submissionId}.${ext}`;
+    const { error } = await supabase.storage.from('submission-thumbnails').upload(path, thumbnailFile, { upsert: true });
+    if (error) { console.error('Thumbnail upload error:', error); return null; }
+    const { data: { publicUrl } } = supabase.storage.from('submission-thumbnails').getPublicUrl(path);
+    return publicUrl;
+  };
 
   const handleRate = async () => {
     if (!selectedRating) { toast.error('Pick a rating'); return; }
     setSubmitting(true);
     try {
+      // Upload thumbnail first if provided
+      const thumbUrl = await uploadThumbnail(submission.id);
+      if (thumbUrl) {
+        await supabase.from('commission_submissions').update({ thumbnail_url: thumbUrl } as any).eq('id', submission.id);
+      }
       await onRate(submission.id, selectedRating, feedback.trim());
       const payout = getPayoutForRating(selectedRating);
       toast.success(payout > 0 ? `Rated ${selectedRating} — $${(payout / 100).toFixed(2)} instant payout to @${submission.username}` : `Rated ${selectedRating} — Index points only`);
@@ -225,7 +252,7 @@ function RatingModal({ submission, onRate, onClose, getPayoutForRating }: {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
       <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-        className="bg-card border border-border/30 w-full max-w-md p-5 space-y-4 rounded-2xl" onClick={e => e.stopPropagation()}>
+        className="bg-card border border-border/30 w-full max-w-md p-5 space-y-4 rounded-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <h3 style={teko} className="text-xl text-foreground flex items-center gap-2"><Zap className="w-5 h-5 text-amber-400" /> RATE @{submission.username}</h3>
         <div className="bg-black/30 rounded-xl p-3">
           <div className="flex items-center gap-2 mb-2">
@@ -236,6 +263,25 @@ function RatingModal({ submission, onRate, onClose, getPayoutForRating }: {
           </div>
           <button onClick={() => window.open(submission.submission_url, '_blank', 'noopener,noreferrer')} className="text-xs text-emerald-400 hover:underline flex items-center gap-1"><ExternalLink className="w-3 h-3" /> Watch Edit</button>
         </div>
+
+        {/* Thumbnail Upload */}
+        <div>
+          <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Showcase Thumbnail</label>
+          <input ref={thumbnailInputRef} type="file" accept="image/*" onChange={handleThumbnailSelect} className="hidden" />
+          {thumbnailPreview ? (
+            <div className="relative rounded-xl overflow-hidden border border-white/10">
+              <img src={thumbnailPreview} alt="Thumbnail" className="w-full h-24 object-cover" />
+              <button onClick={() => { setThumbnailFile(null); setThumbnailPreview(null); }} className="absolute top-1 right-1 bg-black/70 rounded-full p-1"><X className="w-3 h-3" /></button>
+            </div>
+          ) : (
+            <button onClick={() => thumbnailInputRef.current?.click()}
+              className="w-full h-20 border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center gap-1 hover:border-white/20 transition-colors">
+              <ImagePlus className="w-5 h-5 text-muted-foreground" />
+              <span className="text-[10px] text-muted-foreground">Tap to add thumbnail</span>
+            </button>
+          )}
+        </div>
+
         <div>
           <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Rating</label>
           <div className="grid grid-cols-6 gap-1.5">
