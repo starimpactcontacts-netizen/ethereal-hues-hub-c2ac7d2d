@@ -526,6 +526,12 @@ export default function CommissionDetailPage() {
           <ArrowLeft className="w-4 h-4 text-white" />
         </button>
 
+        {/* Instant Payout badge — upper right */}
+        <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/20 backdrop-blur-xl border border-emerald-400/30">
+          <Zap className="w-3 h-3 text-emerald-400" />
+          <span className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-emerald-300" style={teko}>Instant Payout</span>
+        </div>
+
         {/* Content over hero */}
         <div className="absolute inset-0 z-10 flex flex-col justify-end px-4 pb-5">
           {/* Status badge */}
