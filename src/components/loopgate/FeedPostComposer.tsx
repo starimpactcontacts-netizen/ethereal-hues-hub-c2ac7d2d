@@ -79,23 +79,29 @@ export default function FeedPostComposer({ userProfile, onPost, onMobileTap }: F
   // Mobile: show a compact tappable bar that opens full-screen sheet
   if (isMobile && onMobileTap) {
     return (
-      <button
-        onClick={onMobileTap}
-        className="w-full border-b border-border/20 px-4 py-3 flex items-center gap-3 active:bg-muted/10 transition-colors"
-      >
-        <Avatar className="w-9 h-9 border border-border/30 shrink-0">
-          <AvatarImage src={userProfile?.avatar_url || undefined} className="object-cover" />
-          <AvatarFallback className="bg-muted text-foreground text-[10px] font-bold">
-            {(userProfile?.username || 'U')[0]?.toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-        <span className="text-[14px] text-muted-foreground/50 flex-1 text-left">
-          What's happening in the loop?
-        </span>
-        <span className="px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[12px] font-bold">
-          Post
-        </span>
-      </button>
+      <div className="w-full border-b border-border/20 px-4 py-3 space-y-3">
+        <button
+          onClick={onMobileTap}
+          className="w-full rounded-2xl border border-border/30 bg-card/40 px-3 py-3 flex items-center gap-3 text-left transition-colors active:bg-muted/20"
+        >
+          <Avatar className="w-9 h-9 border border-border/30 shrink-0">
+            <AvatarImage src={userProfile?.avatar_url || undefined} className="object-cover" />
+            <AvatarFallback className="bg-muted text-foreground text-[10px] font-bold">
+              {(userProfile?.username || 'U')[0]?.toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-[14px] text-muted-foreground/50 flex-1 min-w-0">
+            What's happening in the loop?
+          </span>
+        </button>
+
+        <button
+          onClick={onMobileTap}
+          className="w-full rounded-2xl border border-border/30 bg-primary text-primary-foreground py-3.5 font-display text-[1.3rem] leading-none tracking-[0.12em] shadow-sm transition-transform active:scale-[0.98]"
+        >
+          POST
+        </button>
+      </div>
     );
   }
 
