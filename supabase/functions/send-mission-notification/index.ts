@@ -58,7 +58,7 @@ const MissionNotificationEmail = ({
   if (deadline) {
     detailChildren.push(React.createElement(Text, { key: 'deadline', style: deadlineText }, `⏰ ${deadline}`))
   }
-  children.push(React.createElement(Section, { key: 'details', style: detailsSection }, ...detailChildren))
+  children.push(React.createElement(Section, { key: 'details', style: detailsSection }, detailChildren))
 
   if (description) {
     children.push(React.createElement(Hr, { key: 'hr1', style: divider }))
