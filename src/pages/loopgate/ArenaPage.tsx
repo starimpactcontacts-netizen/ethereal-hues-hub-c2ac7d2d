@@ -38,7 +38,7 @@ import LiveWinnersTicker from "@/components/loopgate/LiveWinnersTicker";
 import LivePayoutsCarousel from "@/components/loopgate/LivePayoutsCarousel";
 import ArenaCompetitionsSection from "@/components/loopgate/ArenaCompetitionsSection";
 import { startQuickMatch } from "@/lib/startQuickMatch";
-
+import CashBattlesSection from "@/components/loopgate/CashBattlesSection";
 
 interface Event {
   id: string;
