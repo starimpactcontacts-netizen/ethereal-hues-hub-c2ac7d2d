@@ -55,6 +55,7 @@ const CreateJudgeDivisionPage = lazy(() => import("./pages/loopgate/CreateJudgeD
 const OpsPanel = lazy(() => import("./pages/loopgate/OpsPanel"));
 const SanctionedTournamentPage = lazy(() => import("./pages/loopgate/SanctionedTournamentPage"));
 const BattleDetailPage = lazy(() => import("./pages/loopgate/BattleDetailPage"));
+const CashBattlePage = lazy(() => import("./pages/loopgate/CashBattlePage"));
 const QuickFightPage = lazy(() => import("./pages/loopgate/QuickFightPage"));
 const JudgeQueuePage = lazy(() => import("./pages/loopgate/JudgeQueuePage"));
 const EnterpriseDashboard = lazy(() => import("./pages/loopgate/EnterpriseDashboard"));
