@@ -822,7 +822,7 @@ export default function CommissionDetailPage() {
             </div>
           ) : (
             <div ref={showcaseRef} className="flex gap-2.5 overflow-x-auto scrollbar-hide scroll-smooth pb-2 snap-x snap-mandatory">
-              {ratedSubmissions.map(sub => <ShowcaseCard key={sub.id} sub={sub} />)}
+              {ratedSubmissions.map(sub => <ShowcaseCard key={sub.id} sub={sub} canEdit={canRate} />)}
             </div>
           )}
         </div>
