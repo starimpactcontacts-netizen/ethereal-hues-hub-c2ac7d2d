@@ -46,7 +46,7 @@ export default function CashBattleApplyModal({ open, onClose }: Props) {
             exit={{ scale: 0.95, opacity: 0 }}
             onClick={e => e.stopPropagation()}
             className="w-full max-w-sm rounded-2xl overflow-hidden"
-            style={{ background: '#111', border: '1px solid rgba(212,175,55,0.2)' }}
+            style={{ background: '#111', border: '1px solid rgba(59,130,246,0.2)' }}
           >
             {/* Header */}
             <div className="relative px-5 pt-5 pb-2">
@@ -54,15 +54,15 @@ export default function CashBattleApplyModal({ open, onClose }: Props) {
                 <X className="w-4 h-4 text-black" />
               </button>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #d4af37, #b8960c)' }}>
-                  <DollarSign className="w-5 h-5 text-black" />
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}>
+                  <DollarSign className="w-5 h-5 text-white" />
                 </div>
                 <div>
                   <h2 className="text-lg font-black text-white uppercase tracking-wider" style={{ fontFamily: 'Teko, sans-serif' }}>
                     Apply to Compete
                   </h2>
-                  <p className="text-[10px] uppercase tracking-wider" style={{ fontFamily: 'Teko, sans-serif', color: 'rgba(212,175,55,0.6)' }}>
-                    Cash Battle Application
+                   <p className="text-[10px] uppercase tracking-wider" style={{ fontFamily: 'Teko, sans-serif', color: 'rgba(239,68,68,0.6)' }}>
+                     Cash Battle Application
                   </p>
                 </div>
               </div>
@@ -70,10 +70,10 @@ export default function CashBattleApplyModal({ open, onClose }: Props) {
 
             {alreadyApplied ? (
               <div className="px-5 pb-6 pt-2">
-                <div className="rounded-xl p-4 text-center" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
-                  <Shield className="w-8 h-8 mx-auto mb-2" style={{ color: '#d4af37' }} />
-                  <p className="text-sm font-bold uppercase" style={{ fontFamily: 'Teko, sans-serif', color: '#d4af37' }}>
-                    {application.status === 'pending' ? 'Under Review' : application.status.toUpperCase()}
+                 <div className="rounded-xl p-4 text-center" style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)' }}>
+                   <Shield className="w-8 h-8 mx-auto mb-2" style={{ color: '#3b82f6' }} />
+                   <p className="text-sm font-bold uppercase" style={{ fontFamily: 'Teko, sans-serif', color: '#3b82f6' }}>
+                     {application.status === 'pending' ? 'Under Review' : application.status.toUpperCase()}
                   </p>
                   <p className="text-[11px] text-zinc-400 mt-1">
                     {application.status === 'pending'
@@ -116,7 +116,7 @@ export default function CashBattleApplyModal({ open, onClose }: Props) {
                     type="checkbox"
                     checked={agreed}
                     onChange={e => setAgreed(e.target.checked)}
-                    className="mt-0.5 accent-yellow-600"
+                    className="mt-0.5 accent-red-500"
                   />
                   <span className="text-[10px] text-zinc-400 leading-relaxed">
                     I confirm I'm eligible to compete, my work is original, and I agree to competition rules. Matches are curated by Loopgate for fairness.
@@ -126,12 +126,12 @@ export default function CashBattleApplyModal({ open, onClose }: Props) {
                 <button
                   onClick={handleSubmit}
                   disabled={!demoUrl || !tiktokUrl || !agreed || submitting}
-                  className="w-full py-3 rounded-xl text-black font-black uppercase tracking-wider disabled:opacity-30 transition-all"
-                  style={{
-                    fontFamily: 'Teko, sans-serif',
-                    fontSize: '16px',
-                    background: demoUrl && tiktokUrl && agreed ? 'linear-gradient(135deg, #d4af37, #b8960c)' : '#333',
-                  }}
+                   className="w-full py-3 rounded-xl text-white font-black uppercase tracking-wider disabled:opacity-30 transition-all"
+                   style={{
+                     fontFamily: 'Teko, sans-serif',
+                     fontSize: '16px',
+                     background: demoUrl && tiktokUrl && agreed ? 'linear-gradient(135deg, #3b82f6, #ef4444)' : '#333',
+                   }}
                 >
                   {submitting ? 'Submitting...' : 'Submit Application'}
                 </button>

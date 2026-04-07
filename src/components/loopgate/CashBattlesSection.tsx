@@ -68,6 +68,16 @@ function CashBattleCard({ battle }: { battle: any }) {
             <span className="ml-1 text-red-500/70">· {formatTimeLeft(battle.ends_at)} left</span>
           )}
         </div>
+        {battle.sponsor_name && (
+          <div className="flex items-center gap-1.5 mt-1.5">
+            {battle.sponsor_logo_url ? (
+              <img src={battle.sponsor_logo_url} alt="" className="w-3.5 h-3.5 rounded-sm object-cover" />
+            ) : (
+              <span className="text-[8px]">🏢</span>
+            )}
+            <span className="text-[9px] text-blue-400/80 font-semibold truncate">by {battle.sponsor_name}</span>
+          </div>
+        )}
       </div>
 
       {/* VS Display — Blue vs Red UFC corners */}
