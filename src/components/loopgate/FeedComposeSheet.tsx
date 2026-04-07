@@ -63,11 +63,11 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
       className="fixed inset-0 flex flex-col bg-background"
       style={{ zIndex: 9999 }}
     >
+      {/* Safe area spacer for notch */}
+      <div className="shrink-0" style={{ height: 'env(safe-area-inset-top, 0px)' }} />
+
       {/* Media buttons + Close */}
-      <div
-        className="flex items-center gap-1.5 px-4 py-2 border-b border-border/15 shrink-0"
-        style={{ paddingTop: 'env(safe-area-inset-top, 8px)' }}
-      >
+      <div className="flex items-center gap-1.5 px-4 py-3 border-b border-border/15 shrink-0">
         {!uploadedMedia && !selectedGif && (
           <MediaUploadButton
             onUpload={(url, type) => { setUploadedMedia({ url, type }); setSelectedGif(null); }}
