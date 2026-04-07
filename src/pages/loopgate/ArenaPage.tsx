@@ -107,7 +107,7 @@ function ArenaMissionsSection() {
         </button>
       </div>
 
-      <div className="flex gap-3 pl-4 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
+      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory" style={{ paddingLeft: '16px' }}>
         {bounties.map(b => {
           const payout = (b.payout_cents / 100).toFixed(0);
           const slotsLeft = b.max_slots - b.accepted_count;
