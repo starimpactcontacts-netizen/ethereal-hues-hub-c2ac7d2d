@@ -806,6 +806,7 @@ export type Database = {
           reviewed_by: string | null
           status: string
           submission_url: string
+          thumbnail_url: string | null
           user_id: string
           username: string
         }
@@ -823,6 +824,7 @@ export type Database = {
           reviewed_by?: string | null
           status?: string
           submission_url: string
+          thumbnail_url?: string | null
           user_id: string
           username: string
         }
@@ -840,6 +842,7 @@ export type Database = {
           reviewed_by?: string | null
           status?: string
           submission_url?: string
+          thumbnail_url?: string | null
           user_id?: string
           username?: string
         }
