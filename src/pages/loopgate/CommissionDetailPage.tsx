@@ -798,7 +798,7 @@ export default function CommissionDetailPage() {
                     </div>
                     <span className="text-xs font-bold text-foreground truncate flex-1">@{sub.username}</span>
                     <div className={`px-2 py-0.5 rounded-md border text-[10px] font-black ${RATING_COLORS[sub.rating as SubmissionRating] || 'border-border text-muted-foreground'}`}>{sub.rating}</div>
-                    {sub.earned_cents > 0 && <span className="text-[9px] font-bold text-emerald-400">${(sub.earned_cents / 100).toFixed(0)}</span>}
+                    {sub.earned_cents > 0 && <span className="text-[9px] font-bold text-emerald-400">${(sub.earned_cents / 100).toFixed(2)}</span>}
                   </div>
                 );
               })}
