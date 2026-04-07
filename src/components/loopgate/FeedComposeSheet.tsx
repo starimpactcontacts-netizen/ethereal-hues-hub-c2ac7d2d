@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { X } from "lucide-react";
-
 import GifPicker from "./GifPicker";
 import MediaUploadButton from "./MediaUploadButton";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -14,13 +13,10 @@ interface FeedComposeSheetProps {
   onPost: (content: string, postType: FeedPostItem['post_type'], mediaUrl?: string, mediaPlatform?: string, uploadedMediaUrl?: string, uploadedMediaType?: string) => Promise<void>;
 }
 
-
 const MAX_CHARS = 280;
 
 export default function FeedComposeSheet({ open, onClose, userProfile, onPost }: FeedComposeSheetProps) {
   const [content, setContent] = useState("");
-  const [mediaUrl, setMediaUrl] = useState("");
-  const [postType, setPostType] = useState<FeedPostItem['post_type']>('text');
   const [submitting, setSubmitting] = useState(false);
   const [showGifPicker, setShowGifPicker] = useState(false);
   const [selectedGif, setSelectedGif] = useState<string | null>(null);
@@ -30,40 +26,25 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
   const isOverLimit = charsLeft < 0;
   const canSubmit = (content.trim().length > 0 || selectedGif || uploadedMedia) && !isOverLimit && !submitting;
 
-  const detectPlatform = (url: string): string | undefined => {
-    if (url.includes("tiktok.com")) return "tiktok";
-    if (url.includes("youtube.com") || url.includes("youtu.be")) return "youtube";
-    if (url.includes("instagram.com")) return "instagram";
-    return undefined;
-  };
-
   const handleSubmit = async () => {
     if (!canSubmit) return;
     setSubmitting(true);
     const finalContent = selectedGif ? (content.trim() ? `${content.trim()} ${selectedGif}` : selectedGif) : content.trim();
-    const platform = mediaUrl ? detectPlatform(mediaUrl) : undefined;
-    
-    // Close immediately for snappy UX — fire and forget
+
     const savedContent = finalContent;
-    const savedPostType = postType;
-    const savedMediaUrl = mediaUrl.trim() || undefined;
-    const savedPlatform = platform;
     const savedUploadedMedia = uploadedMedia ? { ...uploadedMedia } : null;
-    
+
     setContent("");
-    setMediaUrl("");
-    setPostType('text');
     setSelectedGif(null);
     setUploadedMedia(null);
     setSubmitting(false);
     onClose();
 
-    // Post in background
     await onPost(
       savedContent,
-      savedPostType,
-      savedMediaUrl,
-      savedPlatform,
+      'text',
+      undefined,
+      undefined,
       savedUploadedMedia?.url,
       savedUploadedMedia?.type,
     );
@@ -75,173 +56,143 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
     setUploadedMedia(null);
   };
 
-  const progressPct = Math.min(100, (content.length / MAX_CHARS) * 100);
-  const circumference = 2 * Math.PI * 9;
+  if (!open) return null;
 
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
-          className="fixed inset-0 z-[60] bg-background flex flex-col safe-top"
+    <div
+      className="fixed inset-0 flex flex-col bg-background"
+      style={{ zIndex: 9999 }}
+    >
+      {/* Header — Cancel + Post */}
+      <div
+        className="flex items-center justify-between px-4 shrink-0 border-b border-border/30"
+        style={{ paddingTop: 'env(safe-area-inset-top, 12px)', minHeight: 52 }}
+      >
+        <button
+          onClick={onClose}
+          className="p-2 -ml-2 rounded-full hover:bg-muted/30 transition-colors"
         >
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 h-12 border-b border-border/30 shrink-0">
-            <button onClick={onClose} className="p-1.5 -ml-1.5 rounded-full hover:bg-muted/30 transition-colors">
-              <X className="w-5 h-5 text-foreground" />
-            </button>
+          <X className="w-6 h-6 text-foreground" />
+        </button>
 
-            <div className="flex items-center gap-3">
-              {content.length > 0 && (
-                <div className="flex items-center gap-1.5">
-                  <svg width="24" height="24" viewBox="0 0 24 24" className="shrink-0">
-                    <circle cx="12" cy="12" r="9" fill="none" strokeWidth="2" className="stroke-muted/20" />
-                    <circle
-                      cx="12" cy="12" r="9" fill="none" strokeWidth="2"
-                      className={isOverLimit ? 'stroke-destructive' : charsLeft <= 20 ? 'stroke-gold' : 'stroke-primary'}
-                      strokeDasharray={`${(progressPct / 100) * circumference} ${circumference}`}
-                      strokeLinecap="round"
-                      transform="rotate(-90 12 12)"
-                    />
-                  </svg>
-                  {charsLeft <= 20 && (
-                    <span className={`text-[11px] font-mono tabular-nums ${isOverLimit ? 'text-destructive' : 'text-gold'}`}>
-                      {charsLeft}
-                    </span>
-                  )}
-                </div>
-              )}
+        <button
+          onClick={handleSubmit}
+          disabled={!canSubmit}
+          className={`px-6 py-1.5 rounded-full text-[14px] font-bold transition-all ${
+            canSubmit
+              ? "bg-foreground text-background shadow-sm active:scale-95"
+              : "bg-muted/40 text-muted-foreground/40 cursor-not-allowed"
+          }`}
+        >
+          {submitting ? (
+            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+          ) : "Post"}
+        </button>
+      </div>
 
-              <button
-                onClick={handleSubmit}
-                disabled={!canSubmit}
-                className={`px-5 py-1.5 rounded-full text-[13px] font-bold transition-all ${
-                  canSubmit
-                    ? "bg-primary text-primary-foreground shadow-sm active:scale-95"
-                    : "bg-primary/30 text-primary-foreground/40 cursor-not-allowed"
-                }`}
-              >
-                {submitting ? (
-                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                ) : "Post"}
-              </button>
-            </div>
-          </div>
+      {/* Media buttons */}
+      <div className="flex items-center gap-1.5 px-4 py-2 border-b border-border/15 shrink-0">
+        {!uploadedMedia && !selectedGif && (
+          <MediaUploadButton
+            onUpload={(url, type) => { setUploadedMedia({ url, type }); setSelectedGif(null); }}
+            uploadedUrl={null}
+            onClear={() => {}}
+          />
+        )}
+        <button
+          onClick={() => setShowGifPicker(!showGifPicker)}
+          className={`px-3 py-1.5 rounded-full text-[11px] font-black tracking-tight transition-all ${
+            showGifPicker || selectedGif
+              ? "bg-primary/15 text-primary border border-primary/30"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+          }`}
+        >
+          GIF
+        </button>
 
-          {/* Media buttons bar */}
-          <div className="flex items-center gap-1.5 px-4 py-2 border-b border-border/15 shrink-0">
-            <div className="flex items-center gap-1">
-              {/* Upload button */}
-              {!uploadedMedia && !selectedGif && (
+        {content.length > 0 && (
+          <span className={`ml-auto text-[11px] font-mono tabular-nums ${
+            isOverLimit ? 'text-destructive' : charsLeft <= 20 ? 'text-gold' : 'text-muted-foreground/50'
+          }`}>
+            {charsLeft}
+          </span>
+        )}
+      </div>
+
+      {/* Compose body */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="flex gap-3 px-4 pt-4 pb-32">
+          <Avatar className="w-10 h-10 border border-border/40 shrink-0">
+            <AvatarImage src={userProfile?.avatar_url || undefined} className="object-cover" />
+            <AvatarFallback className="bg-muted text-foreground text-xs font-bold">
+              {(userProfile?.username || 'U')[0]?.toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+
+          <div className="flex-1 min-w-0">
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="What's on your mind?"
+              autoFocus
+              className="w-full bg-transparent text-foreground text-[17px] placeholder:text-muted-foreground/40 resize-none focus:outline-none leading-relaxed min-h-[160px]"
+              maxLength={300}
+              style={{ caretColor: 'hsl(var(--primary))' }}
+            />
+
+            {uploadedMedia && (
+              <div className="mt-3">
                 <MediaUploadButton
-                  onUpload={(url, type) => { setUploadedMedia({ url, type }); setSelectedGif(null); }}
-                  uploadedUrl={null}
-                  onClear={() => {}}
+                  onUpload={() => {}}
+                  uploadedUrl={uploadedMedia.url}
+                  onClear={() => setUploadedMedia(null)}
                 />
-              )}
-              {/* GIF button */}
-              <button
-                onClick={() => setShowGifPicker(!showGifPicker)}
-                className={`px-3 py-1.5 rounded-full text-[11px] font-black tracking-tight transition-all ${
-                  showGifPicker || selectedGif
-                    ? "bg-primary/15 text-primary border border-primary/30"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                }`}
-              >
-                GIF
-              </button>
-            </div>
-          </div>
-
-          {/* Compose body */}
-          <div className="flex-1 overflow-y-auto">
-            <div className="flex gap-3 px-4 pt-4 pb-24">
-              <Avatar className="w-10 h-10 border border-border/40 shrink-0">
-                <AvatarImage src={userProfile?.avatar_url || undefined} className="object-cover" />
-                <AvatarFallback className="bg-muted text-foreground text-xs font-bold">
-                  {(userProfile?.username || 'U')[0]?.toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-
-              <div className="flex-1 min-w-0">
-                <textarea
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder="What's on your mind?"
-                  autoFocus
-                  className="w-full bg-transparent text-foreground text-[17px] placeholder:text-muted-foreground/40 resize-none focus:outline-none leading-relaxed min-h-[160px]"
-                  maxLength={300}
-                  style={{ caretColor: 'hsl(var(--primary))' }}
-                />
-
-                {/* Media URL for edit_share */}
-                {postType === 'edit_share' && (
-                  <input
-                    value={mediaUrl}
-                    onChange={(e) => setMediaUrl(e.target.value)}
-                    placeholder="Paste edit link (TikTok, YT, IG)..."
-                    className="w-full bg-muted/20 border border-border/30 rounded-xl px-3 py-2.5 text-[13px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-primary/40 mt-2"
-                  />
-                )}
-
-                {/* Uploaded media preview */}
-                {uploadedMedia && (
-                  <div className="mt-3">
-                    <MediaUploadButton
-                      onUpload={() => {}}
-                      uploadedUrl={uploadedMedia.url}
-                      onClear={() => setUploadedMedia(null)}
-                    />
-                  </div>
-                )}
-
-                {/* Selected GIF preview */}
-                {selectedGif && !uploadedMedia && (
-                  <div className="relative mt-3 inline-block">
-                    <img src={selectedGif} alt="Selected GIF" className="max-w-[200px] max-h-[160px] rounded-xl" />
-                    <button
-                      onClick={() => setSelectedGif(null)}
-                      className="absolute -top-2 -right-2 w-6 h-6 bg-background border border-border rounded-full flex items-center justify-center shadow-sm"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                )}
-
-                {/* GIF Picker */}
-                {showGifPicker && (
-                  <div className="mt-3 rounded-xl overflow-hidden border border-border">
-                    <GifPicker
-                      onSelect={handleGifSelect}
-                      onClose={() => setShowGifPicker(false)}
-                    />
-                  </div>
-                )}
               </div>
-            </div>
-          </div>
+            )}
 
-          {/* Bottom POST button */}
-          <div className="border-t border-border/20 bg-background/95 backdrop-blur px-4 py-3 safe-bottom shrink-0">
-            <button
-              onClick={handleSubmit}
-              disabled={!canSubmit}
-              className={`w-full py-3.5 rounded-xl text-[16px] font-black tracking-wide transition-all ${
-                canSubmit
-                  ? "bg-foreground text-background shadow-lg active:scale-[0.98]"
-                  : "bg-muted/40 text-muted-foreground/40 cursor-not-allowed"
-              }`}
-            >
-              {submitting ? (
-                <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin mx-auto" />
-              ) : "POST"}
-            </button>
+            {selectedGif && !uploadedMedia && (
+              <div className="relative mt-3 inline-block">
+                <img src={selectedGif} alt="Selected GIF" className="max-w-[200px] max-h-[160px] rounded-xl" />
+                <button
+                  onClick={() => setSelectedGif(null)}
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-background border border-border rounded-full flex items-center justify-center shadow-sm"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
+            {showGifPicker && (
+              <div className="mt-3 rounded-xl overflow-hidden border border-border">
+                <GifPicker
+                  onSelect={handleGifSelect}
+                  onClose={() => setShowGifPicker(false)}
+                />
+              </div>
+            )}
           </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Bottom POST button */}
+      <div
+        className="border-t border-border/20 bg-background px-4 py-3 shrink-0"
+        style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 12px), 12px)' }}
+      >
+        <button
+          onClick={handleSubmit}
+          disabled={!canSubmit}
+          className={`w-full py-4 rounded-xl text-[16px] font-black tracking-wider transition-all ${
+            canSubmit
+              ? "bg-foreground text-background shadow-lg active:scale-[0.98]"
+              : "bg-muted/40 text-muted-foreground/40 cursor-not-allowed"
+          }`}
+        >
+          {submitting ? (
+            <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin mx-auto" />
+          ) : "POST"}
+        </button>
+      </div>
+    </div>
   );
 }
