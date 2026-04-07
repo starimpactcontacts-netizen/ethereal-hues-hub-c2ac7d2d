@@ -286,8 +286,20 @@ function RatingModal({ submission, onRate, onClose, getPayoutForRating }: {
           )}
         </div>
 
+        {/* Video URL */}
         <div>
-          <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Rating</label>
+          <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Video URL</label>
+          <input
+            type="url"
+            value={videoUrl}
+            onChange={e => setVideoUrl(e.target.value)}
+            placeholder="https://tiktok.com/... or youtube.com/..."
+            className="w-full h-10 px-3 bg-black/30 border border-white/10 rounded-xl text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-emerald-500/50 transition-colors"
+          />
+          <p className="text-[9px] text-muted-foreground/50 mt-1">Override the submission video link for showcase</p>
+        </div>
+
+        <div>
           <div className="grid grid-cols-6 gap-1.5">
             {RATINGS.map(r => {
               const payout = getPayoutForRating(r);
