@@ -44,6 +44,11 @@ function CashBattleCard({ battle }: { battle: any }) {
         background: "linear-gradient(90deg, #3b82f6, transparent 40%, transparent 60%, #ef4444)",
       }} />
 
+      {/* TESTING label */}
+      <div className="absolute top-2 right-2 z-10 px-2 py-0.5 rounded-md" style={{ background: "rgba(234,179,8,0.9)" }}>
+        <span className="text-[8px] font-black text-black uppercase tracking-wider" style={{ fontFamily: "Teko, sans-serif" }}>Testing</span>
+      </div>
+
       {/* Prize + Status */}
       <div className="px-4 pt-4 pb-1">
         <div className="flex items-center justify-between">
@@ -174,9 +179,14 @@ export default function CashBattlesSection() {
             <h2 className="text-[15px] font-black uppercase tracking-wider text-white" style={{ fontFamily: "Teko, sans-serif" }}>
               Cash Battles
             </h2>
-            <p className="text-[11px] uppercase tracking-[0.15em]" style={{ fontFamily: "Teko, sans-serif", color: 'rgba(255,255,255,0.5)' }}>
-              1v1 · Winner takes all
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-[11px] uppercase tracking-[0.15em]" style={{ fontFamily: "Teko, sans-serif", color: 'rgba(255,255,255,0.5)' }}>
+                1v1 · Winner takes all
+              </p>
+              <span className="px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider text-white" style={{ background: "linear-gradient(135deg, #3b82f6, #ef4444)", fontFamily: "Teko, sans-serif" }}>
+                New Arena
+              </span>
+            </div>
           </div>
         </div>
         <button
