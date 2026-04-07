@@ -357,7 +357,7 @@ function SubmissionCard({ sub, canRate, onRate }: { sub: any; canRate: boolean; 
         </div>
       )}
       {sub.earned_cents > 0 && (
-        <div className="mt-1.5 flex items-center gap-1 text-[10px] text-emerald-400 font-bold"><DollarSign className="w-3 h-3" /> ${(sub.earned_cents / 100).toFixed(0)} paid instantly</div>
+        <div className="mt-1.5 flex items-center gap-1 text-[10px] text-emerald-400 font-bold"><DollarSign className="w-3 h-3" /> ${(sub.earned_cents / 100).toFixed(2)} paid instantly</div>
       )}
     </div>
   );
