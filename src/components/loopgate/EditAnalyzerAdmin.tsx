@@ -367,7 +367,7 @@ export default function EditAnalyzerAdmin() {
                       </div>
                     ) : missionEditors.length === 0 ? (
                       <div className="rounded-lg border border-border/40 bg-surface-1 px-3 py-2 text-xs text-muted-foreground">
-                        No editor taps tracked for this mission yet.
+                        No submissions for this mission yet.
                       </div>
                     ) : (
                       <div className="flex flex-wrap gap-2">
