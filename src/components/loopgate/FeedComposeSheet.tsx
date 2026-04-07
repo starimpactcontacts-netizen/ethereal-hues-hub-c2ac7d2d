@@ -63,21 +63,11 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
       className="fixed inset-0 flex flex-col bg-background"
       style={{ zIndex: 9999 }}
     >
-      {/* Close button — top right, white circle + black X */}
+      {/* Media buttons + Close */}
       <div
-        className="flex items-center justify-end px-4 shrink-0"
-        style={{ paddingTop: 'env(safe-area-inset-top, 12px)', minHeight: 52 }}
+        className="flex items-center gap-1.5 px-4 py-2 border-b border-border/15 shrink-0"
+        style={{ paddingTop: 'env(safe-area-inset-top, 8px)' }}
       >
-        <button
-          onClick={onClose}
-          className="w-9 h-9 rounded-full bg-white flex items-center justify-center shadow-lg active:scale-95 transition-transform"
-        >
-          <X className="w-5 h-5 text-black" strokeWidth={2.5} />
-        </button>
-      </div>
-
-      {/* Media buttons */}
-      <div className="flex items-center gap-1.5 px-4 py-2 border-b border-border/15 shrink-0">
         {!uploadedMedia && !selectedGif && (
           <MediaUploadButton
             onUpload={(url, type) => { setUploadedMedia({ url, type }); setSelectedGif(null); }}
@@ -97,12 +87,19 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
         </button>
 
         {content.length > 0 && (
-          <span className={`ml-auto text-[11px] font-mono tabular-nums ${
+          <span className={`text-[11px] font-mono tabular-nums ${
             isOverLimit ? 'text-destructive' : charsLeft <= 20 ? 'text-gold' : 'text-muted-foreground/50'
           }`}>
             {charsLeft}
           </span>
         )}
+
+        <button
+          onClick={onClose}
+          className="ml-auto w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-md active:scale-95 transition-transform"
+        >
+          <X className="w-4 h-4 text-black" strokeWidth={2.5} />
+        </button>
       </div>
 
       {/* Compose body */}
