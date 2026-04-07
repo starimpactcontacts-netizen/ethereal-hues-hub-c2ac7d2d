@@ -22,11 +22,11 @@ function buildEmailHtml(opts: {
   const { missionTitle, artistName, payoutText, deadline, missionUrl, description, coverUrl } = opts
 
   const coverSection = coverUrl ? `
-  <div style="margin-bottom:24px;border-radius:12px;overflow:hidden;">
-    <img src="${coverUrl}" alt="${missionTitle}" style="width:100%;height:auto;display:block;border-radius:12px;" />
+  <div style="overflow:hidden;">
+    <img src="${coverUrl}" alt="${missionTitle}" style="width:100%;height:auto;display:block;" />
   </div>` : ''
 
-  const artistSection = artistName ? `<p style="color:#d4af37;font-size:13px;text-align:center;margin:0 0 20px 0;font-weight:600;letter-spacing:1px;text-transform:uppercase;">${artistName}</p>` : ''
+  const artistSection = artistName ? `<p style="color:#d4af37;font-size:13px;text-align:center;margin:0 0 20px 0;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Film: ${artistName}</p>` : ''
 
   const deadlineSection = deadline ? `<p style="color:#f97316;font-size:13px;margin:10px 0 0 0;font-weight:600;">⏰ ${deadline}</p>` : ''
 
@@ -41,15 +41,19 @@ function buildEmailHtml(opts: {
 <body style="background-color:#08080a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;padding:0;">
 <div style="padding:0;margin:0 auto;max-width:520px;">
 
+  <!-- Logo above poster -->
+  <div style="text-align:center;padding:24px 0 16px 0;background-color:#08080a;">
+    <img src="${LOGO_URL}" alt="Loopgate" width="40" height="40" style="width:40px;height:40px;border-radius:8px;" />
+  </div>
+
   <!-- Hero: Cover Image full-bleed -->
   ${coverSection}
 
   <!-- Content area -->
   <div style="padding:24px 20px 32px 20px;">
 
-    <!-- Logo + badge row -->
-    <div style="text-align:center;margin-bottom:20px;">
-      <img src="${LOGO_URL}" alt="Loopgate" width="36" height="36" style="width:36px;height:36px;border-radius:8px;margin-bottom:8px;" />
+    <!-- Badge -->
+    <div style="text-align:center;margin-bottom:16px;">
       <p style="color:#555;font-size:10px;font-weight:600;letter-spacing:3px;text-transform:uppercase;margin:0;">NEW MISSION</p>
     </div>
 
