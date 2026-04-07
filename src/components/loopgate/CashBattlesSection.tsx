@@ -32,22 +32,20 @@ function CashBattleCard({ battle }: { battle: any }) {
       style={{
         background: "linear-gradient(160deg, rgba(22,22,28,1) 0%, rgba(6,6,8,1) 100%)",
         boxShadow: isLive
-          ? "0 0 40px rgba(16,185,129,0.15), 0 12px 40px rgba(0,0,0,0.7)"
+          ? "0 0 40px rgba(59,130,246,0.12), 0 0 40px rgba(239,68,68,0.12), 0 12px 40px rgba(0,0,0,0.7)"
           : "0 12px 40px rgba(0,0,0,0.6)",
       }}
     >
-      {/* Top accent line */}
+      {/* Top accent — blue to red gradient */}
       <div className="absolute top-0 left-0 right-0 h-[2px]" style={{
-        background: isLive
-          ? "linear-gradient(90deg, transparent, #10b981, transparent)"
-          : "linear-gradient(90deg, transparent, rgba(234,179,8,0.6), transparent)",
+        background: "linear-gradient(90deg, #3b82f6, transparent 40%, transparent 60%, #ef4444)",
       }} />
 
       {/* Prize + Status */}
       <div className="px-4 pt-4 pb-1">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>
+            <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #d4af37, #b8960c)' }}>
               <DollarSign className="w-3.5 h-3.5 text-black" />
             </div>
             <span className="text-2xl font-black text-white" style={{ fontFamily: "Teko, sans-serif" }}>
@@ -55,9 +53,9 @@ function CashBattleCard({ battle }: { battle: any }) {
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            {isLive && <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />}
+            {isLive && <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
             <span className={`text-[10px] font-black uppercase tracking-[0.15em] ${
-              isLive ? "text-emerald-400" : isUpcoming ? "text-amber-400" : "text-zinc-500"
+              isLive ? "text-red-400" : isUpcoming ? "text-amber-400" : "text-zinc-500"
             }`} style={{ fontFamily: "Teko, sans-serif" }}>
               {battle.status.toUpperCase()}
             </span>
@@ -67,26 +65,27 @@ function CashBattleCard({ battle }: { battle: any }) {
           <Clock className="w-3 h-3" />
           <span>{battle.duration_hours}h battle</span>
           {isLive && battle.ends_at && (
-            <span className="ml-1 text-emerald-500/70">· {formatTimeLeft(battle.ends_at)} left</span>
+            <span className="ml-1 text-red-500/70">· {formatTimeLeft(battle.ends_at)} left</span>
           )}
         </div>
       </div>
 
-      {/* VS Display — UFC-style */}
+      {/* VS Display — Blue vs Red UFC corners */}
       <div className="px-4 py-4 flex items-center justify-between">
+        {/* Blue corner */}
         <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
           <div className="relative">
-            <Avatar className="w-14 h-14 ring-2 ring-emerald-500/40">
+            <Avatar className="w-14 h-14 ring-2 ring-blue-500/50">
               <AvatarImage src={battle.challenger_avatar_url || ""} />
-              <AvatarFallback className="text-sm font-black bg-emerald-500/10 text-emerald-400">
+              <AvatarFallback className="text-sm font-black bg-blue-500/15 text-blue-400">
                 {battle.challenger_username?.charAt(0)}
               </AvatarFallback>
             </Avatar>
-            <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
-              <Zap className="w-3 h-3 text-black" />
+            <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
+              <Zap className="w-3 h-3 text-white" />
             </div>
           </div>
-          <span className="text-[10px] font-black truncate max-w-[75px] uppercase text-white" style={{ fontFamily: "Teko, sans-serif" }}>
+          <span className="text-[10px] font-black truncate max-w-[75px] uppercase text-blue-400" style={{ fontFamily: "Teko, sans-serif" }}>
             {battle.challenger_username}
           </span>
         </div>
@@ -94,27 +93,28 @@ function CashBattleCard({ battle }: { battle: any }) {
         {/* VS badge */}
         <div className="mx-2 shrink-0">
           <div className="w-10 h-10 rounded-full flex items-center justify-center relative" style={{
-            background: "radial-gradient(circle, rgba(16,185,129,0.3) 0%, transparent 70%)",
+            background: "radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)",
           }}>
-            <span className="text-lg font-black text-white/80" style={{ fontFamily: "Teko, sans-serif" }}>VS</span>
+            <span className="text-lg font-black text-white/90" style={{ fontFamily: "Teko, sans-serif" }}>VS</span>
           </div>
         </div>
 
+        {/* Red corner */}
         <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
           {battle.opponent_username ? (
             <>
               <div className="relative">
-                <Avatar className="w-14 h-14 ring-2 ring-red-500/40">
+                <Avatar className="w-14 h-14 ring-2 ring-red-500/50">
                   <AvatarImage src={battle.opponent_avatar_url || ""} />
-                  <AvatarFallback className="text-sm font-black bg-red-500/10 text-red-400">
+                  <AvatarFallback className="text-sm font-black bg-red-500/15 text-red-400">
                     {battle.opponent_username?.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
-                  <Zap className="w-3 h-3 text-black" />
+                  <Zap className="w-3 h-3 text-white" />
                 </div>
               </div>
-              <span className="text-[10px] font-black truncate max-w-[75px] uppercase text-white" style={{ fontFamily: "Teko, sans-serif" }}>
+              <span className="text-[10px] font-black truncate max-w-[75px] uppercase text-red-400" style={{ fontFamily: "Teko, sans-serif" }}>
                 {battle.opponent_username}
               </span>
             </>
@@ -129,16 +129,16 @@ function CashBattleCard({ battle }: { battle: any }) {
         </div>
       </div>
 
-      {/* CTA */}
+      {/* CTA — full-width block button */}
       <div className="px-4 pb-4">
         <div className={`w-full text-center py-2.5 rounded-xl text-[13px] font-black uppercase tracking-wider ${
           isLive
-            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+            ? "bg-red-500/20 text-red-400 border border-red-500/30"
             : isUpcoming
             ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
             : "bg-zinc-800 text-zinc-400"
         }`} style={{ fontFamily: "Teko, sans-serif" }}>
-          {isLive ? "WATCH LIVE" : isUpcoming ? "COMING SOON" : "VIEW"}
+          {isLive ? "WATCH" : isUpcoming ? "SOON" : "VIEW"}
         </div>
       </div>
     </motion.div>
@@ -151,25 +151,25 @@ export default function CashBattlesSection() {
 
   return (
     <div className="mb-2">
-      {/* Header — UFC energy */}
+      {/* Header */}
       <div className="flex items-center justify-between px-4 mb-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>
+          <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #d4af37, #b8960c)' }}>
             <DollarSign className="w-4 h-4 text-black" />
           </div>
           <div>
             <h2 className="text-[15px] font-black uppercase tracking-wider text-white" style={{ fontFamily: "Teko, sans-serif" }}>
               Cash Battles
             </h2>
-            <p className="text-[9px] text-emerald-500/60 uppercase tracking-[0.15em]" style={{ fontFamily: "Teko, sans-serif" }}>
-              Winner takes all · Curated matchups
+            <p className="text-[9px] uppercase tracking-[0.15em]" style={{ fontFamily: "Teko, sans-serif", color: 'rgba(212,175,55,0.6)' }}>
+              1v1 · Winner takes all
             </p>
           </div>
         </div>
         <button
           onClick={() => setApplyOpen(true)}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-black text-[10px] font-black uppercase tracking-wider transition-all hover:scale-105"
-          style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}
+          style={{ background: 'linear-gradient(135deg, #d4af37, #b8960c)' }}
         >
           <Plus className="w-3 h-3" />
           <span>Apply</span>
@@ -186,14 +186,18 @@ export default function CashBattlesSection() {
         <motion.div
           whileTap={{ scale: 0.97 }}
           onClick={() => setApplyOpen(true)}
-          className="w-[180px] shrink-0 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer border border-dashed border-emerald-500/20"
-          style={{ background: 'rgba(16,185,129,0.03)', minHeight: 200 }}
+          className="w-[180px] shrink-0 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer"
+          style={{
+            background: 'rgba(212,175,55,0.03)',
+            border: '1px dashed rgba(212,175,55,0.2)',
+            minHeight: 200,
+          }}
         >
-          <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.15)' }}>
-            <Swords className="w-6 h-6 text-emerald-500/50" />
+          <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(212,175,55,0.12)' }}>
+            <Swords className="w-6 h-6" style={{ color: 'rgba(212,175,55,0.5)' }} />
           </div>
           <div className="text-center px-4">
-            <p className="text-[12px] text-emerald-400/80 font-black uppercase" style={{ fontFamily: "Teko, sans-serif" }}>
+            <p className="text-[12px] font-black uppercase" style={{ fontFamily: "Teko, sans-serif", color: 'rgba(212,175,55,0.8)' }}>
               Think you got it?
             </p>
             <p className="text-[9px] text-zinc-600 mt-0.5">
