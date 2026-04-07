@@ -395,6 +395,23 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
           </div>
         </div>
       </div>
+      {/* Inline comments */}
+      <AnimatePresence>
+        {showComments && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden border-t border-border/20 bg-muted/5"
+          >
+            <FeedInlineComments
+              submissionId={post.id}
+              submissionType={'feed_post' as any}
+              onCommentCountChange={(count) => setCommentCount(count)}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.article>
   );
 });
