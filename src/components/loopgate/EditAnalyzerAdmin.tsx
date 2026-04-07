@@ -680,6 +680,19 @@ export default function EditAnalyzerAdmin() {
                       <p className="text-xs text-foreground mt-2 leading-relaxed whitespace-pre-wrap">{analysis.long_feedback}</p>
                     </div>
                   )}
+
+                  {/* Editor Note — the actual copy-paste line */}
+                  {(analysis as any).editor_note && (
+                    <div className="p-4 rounded-lg border-2 border-yellow-500/40 bg-yellow-500/5">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-bold text-yellow-400 uppercase tracking-wider">📝 Editor Note — Copy & Paste</span>
+                        <button onClick={() => copyText((analysis as any).editor_note || "", setCopiedShort)} className="text-[10px] font-bold text-yellow-400 bg-yellow-500/10 px-2 py-0.5 rounded hover:bg-yellow-500/20 transition-colors flex items-center gap-1">
+                          {copiedShort ? <><Check className="w-3 h-3" />Copied</> : <><Copy className="w-3 h-3" />Copy</>}
+                        </button>
+                      </div>
+                      <p className="text-sm text-foreground font-medium leading-relaxed">{(analysis as any).editor_note}</p>
+                    </div>
+                  )}
                 </motion.div>
               )}
             </div>

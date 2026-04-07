@@ -67,18 +67,22 @@ RESPOND IN VALID JSON ONLY:
   "improvement_notes": "<2-3 specific actionable improvements>",
   "long_feedback": "<5-8 sentences of detailed judge feedback covering all three QOI pillars, what worked, what didn't, specific techniques to improve. Written in authentic editor community voice — mix technical terms with natural language. Ready to copy-paste as official judge notes.>",
   "short_feedback": "<1-2 sentences. Straight to the point. What grade, why, and one thing to improve. Write like a real person texting — no forced slang, no corporate speak. Just honest and direct.>",
+  "editor_note": "<EXACTLY 1-2 sentences formatted as: 'Grade [LETTER]. [reason + one improvement tip].' — this is the copy-paste line the judge sends to the editor. Keep it tight, professional, no fluff. Include the QOI total score.>",
   "recommended_grade": "<S|A|B|C|D|F>",
   "viral_potential": "<high/medium/low>"
 }
 
 === CRITICAL RULES ===
-1. Be BRUTALLY HONEST. This determines real payouts. No sugarcoating, no inflating.
-2. S grade is EXCEPTIONALLY rare. Most edits are B-C range.
+1. Be BRUTALLY HONEST. This determines real payouts. No sugarcoating, no inflating. Real money is on the line.
+2. S grade is EXCEPTIONALLY rare — reserved for genuinely elite, professional-tier work. A is also uncommon. Most edits land B-C range. Don't be generous.
 3. Reference specific frames in your analysis.
 4. The short_feedback MUST sound like a real human — not an AI. 1-2 sentences max. No emojis, no forced slang.
 5. The long_feedback should be copy-paste ready for posting as judge notes.
-6. If engagement stats are provided (views, likes), factor them heavily into Impact score.
-7. NEVER return anything other than the JSON object.`;
+6. If engagement stats are provided (views, likes), factor them heavily into Impact score. Low engagement = lower Impact, period.
+7. NEVER return anything other than the JSON object.
+8. The editor_note is what the judge literally copies and pastes to the editor — make it professional, concise, and include the score.
+9. Actually STUDY the frames — look at transitions between them, CC consistency, masking quality, effects polish. Don't assume quality from aesthetics alone.
+10. Default to skepticism. If something looks like a template or basic velocity edit, score it accordingly. Creativity means the editor brought something ORIGINAL.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
