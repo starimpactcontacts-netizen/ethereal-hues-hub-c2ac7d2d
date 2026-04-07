@@ -134,7 +134,7 @@ export default function EditAnalyzerAdmin() {
 
       setMissionEditorsLoading(true);
       const { data, error } = await supabase
-        .from("mission_lobby_presence")
+        .from("commission_submissions")
         .select("user_id, username, avatar_url")
         .eq("commission_id", selectedMissionId)
         .order("created_at", { ascending: true })
