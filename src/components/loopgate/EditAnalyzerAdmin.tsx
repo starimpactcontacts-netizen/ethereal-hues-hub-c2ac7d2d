@@ -134,7 +134,7 @@ export default function EditAnalyzerAdmin() {
 
       setMissionEditorsLoading(true);
       const { data, error } = await supabase
-        .from("mission_lobby_presence")
+        .from("commission_submissions")
         .select("user_id, username, avatar_url")
         .eq("commission_id", selectedMissionId)
         .order("created_at", { ascending: true })
@@ -357,17 +357,17 @@ export default function EditAnalyzerAdmin() {
                         Editor Taps
                       </label>
                       <span className="text-[10px] text-muted-foreground">
-                        {missionEditorsLoading ? "Loading..." : `${missionEditors.length} in lobby`}
+                        {missionEditorsLoading ? "Loading..." : `${missionEditors.length} submitted`}
                       </span>
                     </div>
 
                     {missionEditorsLoading ? (
                       <div className="rounded-lg border border-border/40 bg-surface-1 px-3 py-2 text-xs text-muted-foreground">
-                        Loading mission lobby...
+                        Loading submissions...
                       </div>
                     ) : missionEditors.length === 0 ? (
                       <div className="rounded-lg border border-border/40 bg-surface-1 px-3 py-2 text-xs text-muted-foreground">
-                        No editor taps tracked for this mission yet.
+                        No submissions for this mission yet.
                       </div>
                     ) : (
                       <div className="flex flex-wrap gap-2">
