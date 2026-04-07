@@ -60,6 +60,17 @@ export default function CashBattlePage() {
     const { data } = await supabase.from("cash_battles").select("*").eq("id", battleId!).single();
     setBattle(data);
     setLoading(false);
+    
+    // Fetch sponsor campaign cover image
+    if (data?.sponsor_campaign_id) {
+      const { data: missions } = await supabase
+        .from("commissions")
+        .select("cover_url")
+        .eq("campaign_id", data.sponsor_campaign_id)
+        .not("cover_url", "is", null)
+        .limit(1);
+      if (missions?.[0]?.cover_url) setSponsorCover(missions[0].cover_url);
+    }
   }
 
   const countdown = useCountdown(battle?.ends_at);
