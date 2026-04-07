@@ -165,11 +165,13 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
               <div className="mt-2 rounded-xl overflow-hidden border border-border/20 max-w-full">
                 {isUploadedVideo ? (
                   <video
+                    ref={videoRef}
                     src={post.uploaded_media_url!}
                     className="w-full max-h-[360px] object-cover"
                     controls
                     muted
                     playsInline
+                    loop
                     preload="metadata"
                   />
                 ) : (
@@ -183,18 +185,36 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
               </div>
             )}
 
-            {/* Media link preview */}
+            {/* Media link preview — YouTube thumbnail or fallback */}
             {post.media_url && !hasUploadedMedia && (
               <a
                 href={post.media_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-2 block bg-muted/20 border border-border/30 rounded-xl px-3 py-2.5 hover:bg-muted/30 transition-colors"
+                className="mt-2 block rounded-xl overflow-hidden border border-border/20"
               >
-                <div className="flex items-center gap-2">
-                  <Link2 className="w-4 h-4 text-primary shrink-0" />
-                  <span className="text-[12px] text-primary truncate">{post.media_url}</span>
-                </div>
+                {ytThumbnail ? (
+                  <div className="relative">
+                    <img
+                      src={ytThumbnail}
+                      alt="Video thumbnail"
+                      className="w-full aspect-video object-cover"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                      <div className="w-12 h-12 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center">
+                        <Play className="w-5 h-5 text-white fill-white ml-0.5" />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-muted/20 px-3 py-2.5 hover:bg-muted/30 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <Link2 className="w-4 h-4 text-primary shrink-0" />
+                      <span className="text-[12px] text-primary truncate">{post.media_url}</span>
+                    </div>
+                  </div>
+                )}
               </a>
             )}
 
