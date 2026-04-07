@@ -712,7 +712,7 @@ export default function HubPage() {
             )}
 
             {/* My Arena */}
-            <Link to="/arena" className="group flex flex-col items-center gap-3">
+            <Link to="/arena?tab=my" className="group flex flex-col items-center gap-3">
               <div className="relative w-[68px] h-[68px] rounded-[22px] overflow-hidden"
                 style={{
                   background: 'linear-gradient(145deg, hsl(0 0% 4%) 0%, hsl(0 0% 6%) 50%, hsl(0 0% 3%) 100%)',
