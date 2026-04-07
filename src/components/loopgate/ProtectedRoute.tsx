@@ -21,7 +21,7 @@ export default function ProtectedRoute({
   const { user, profile, loading, isAdmin, isJudge, isDev, hasOpsAccess, roles } = useAuth();
   const { isGuest } = useGuestMode();
   
-  const isEnterprise = roles.includes('enterprise');
+  const isEnterprise = (roles as string[]).includes('enterprise');
   // Judge access = judge OR admin OR dev
   const hasJudgeAccess = isJudge || isAdmin || isDev;
   
