@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { DollarSign, Swords, Clock, Flame, Plus, Zap, Info, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCashBattles } from "@/hooks/useCashBattles";
+import { useGuestMode } from "@/hooks/useGuestMode";
+import { useAccountPrompt } from "@/hooks/useAccountPrompt";
 import CashBattleApplyModal from "./CashBattleApplyModal";
 
 function formatPrize(cents: number): string {
@@ -227,6 +229,16 @@ export default function CashBattlesSection() {
   const { battles, loading } = useCashBattles();
   const [applyOpen, setApplyOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
+  const { isGuest } = useGuestMode();
+  const accountPrompt = useAccountPrompt();
+
+  const handleEnter = () => {
+    if (isGuest) {
+      accountPrompt.open('enter_battle' as any);
+      return;
+    }
+    setApplyOpen(true);
+  };
 
   return (
     <div className="mb-2">
@@ -254,7 +266,7 @@ export default function CashBattlesSection() {
           </div>
         </div>
         <button
-          onClick={() => setApplyOpen(true)}
+          onClick={handleEnter}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white text-[10px] font-black uppercase tracking-wider transition-all hover:scale-105"
           style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}
         >
@@ -272,7 +284,7 @@ export default function CashBattlesSection() {
         {/* Apply teaser card */}
         <motion.div
           whileTap={{ scale: 0.97 }}
-          onClick={() => setApplyOpen(true)}
+          onClick={handleEnter}
           className="w-[180px] shrink-0 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer"
           style={{
             background: 'rgba(59,130,246,0.03)',
