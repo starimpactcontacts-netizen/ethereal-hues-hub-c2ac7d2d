@@ -210,6 +210,7 @@ function RatingModal({ submission, onRate, onClose, getPayoutForRating }: {
   const [submitting, setSubmitting] = useState(false);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const [videoUrl, setVideoUrl] = useState(submission.submission_url || '');
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
 
   const handleThumbnailSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -235,10 +236,13 @@ function RatingModal({ submission, onRate, onClose, getPayoutForRating }: {
     if (!selectedRating) { toast.error('Pick a rating'); return; }
     setSubmitting(true);
     try {
-      // Upload thumbnail first if provided
+      // Upload thumbnail and update video URL if changed
       const thumbUrl = await uploadThumbnail(submission.id);
-      if (thumbUrl) {
-        await supabase.from('commission_submissions').update({ thumbnail_url: thumbUrl } as any).eq('id', submission.id);
+      const updates: Record<string, any> = {};
+      if (thumbUrl) updates.thumbnail_url = thumbUrl;
+      if (videoUrl.trim() && videoUrl.trim() !== submission.submission_url) updates.submission_url = videoUrl.trim();
+      if (Object.keys(updates).length > 0) {
+        await supabase.from('commission_submissions').update(updates as any).eq('id', submission.id);
       }
       await onRate(submission.id, selectedRating, feedback.trim());
       const payout = getPayoutForRating(selectedRating);
@@ -282,8 +286,20 @@ function RatingModal({ submission, onRate, onClose, getPayoutForRating }: {
           )}
         </div>
 
+        {/* Video URL */}
         <div>
-          <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Rating</label>
+          <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Video URL</label>
+          <input
+            type="url"
+            value={videoUrl}
+            onChange={e => setVideoUrl(e.target.value)}
+            placeholder="https://tiktok.com/... or youtube.com/..."
+            className="w-full h-10 px-3 bg-black/30 border border-white/10 rounded-xl text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-emerald-500/50 transition-colors"
+          />
+          <p className="text-[9px] text-muted-foreground/50 mt-1">Override the submission video link for showcase</p>
+        </div>
+
+        <div>
           <div className="grid grid-cols-6 gap-1.5">
             {RATINGS.map(r => {
               const payout = getPayoutForRating(r);
@@ -312,7 +328,7 @@ function RatingBadge({ rating, earnedCents }: { rating: string; earnedCents: num
   return (
     <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-black ${colors}`}>
       <span className="text-base">{rating}</span>
-      {earnedCents > 0 && <span className="text-emerald-400 font-bold text-[10px]">+${earnedCents / 100}</span>}
+      {earnedCents > 0 && <span className="text-emerald-400 font-bold text-[10px]">+${(earnedCents / 100).toFixed(2)}</span>}
     </div>
   );
 }
@@ -357,7 +373,7 @@ function SubmissionCard({ sub, canRate, onRate }: { sub: any; canRate: boolean; 
         </div>
       )}
       {sub.earned_cents > 0 && (
-        <div className="mt-1.5 flex items-center gap-1 text-[10px] text-emerald-400 font-bold"><DollarSign className="w-3 h-3" /> ${(sub.earned_cents / 100).toFixed(0)} paid instantly</div>
+        <div className="mt-1.5 flex items-center gap-1 text-[10px] text-emerald-400 font-bold"><DollarSign className="w-3 h-3" /> ${(sub.earned_cents / 100).toFixed(2)} paid instantly</div>
       )}
     </div>
   );
@@ -416,7 +432,7 @@ function ShowcaseCard({ sub, canEdit = false }: { sub: any; canEdit?: boolean })
         </div>
         <div className="min-w-0 flex-1">
           <span className="text-[10px] font-bold text-foreground truncate block">@{sub.username}</span>
-          {sub.earned_cents > 0 && <span className="text-[8px] font-black text-emerald-400">+${(sub.earned_cents / 100).toFixed(0)}</span>}
+          {sub.earned_cents > 0 && <span className="text-[8px] font-black text-emerald-400">+${(sub.earned_cents / 100).toFixed(2)}</span>}
         </div>
       </div>
       <div className="px-2.5 py-1.5">
@@ -798,7 +814,7 @@ export default function CommissionDetailPage() {
                     </div>
                     <span className="text-xs font-bold text-foreground truncate flex-1">@{sub.username}</span>
                     <div className={`px-2 py-0.5 rounded-md border text-[10px] font-black ${RATING_COLORS[sub.rating as SubmissionRating] || 'border-border text-muted-foreground'}`}>{sub.rating}</div>
-                    {sub.earned_cents > 0 && <span className="text-[9px] font-bold text-emerald-400">${(sub.earned_cents / 100).toFixed(0)}</span>}
+                    {sub.earned_cents > 0 && <span className="text-[9px] font-bold text-emerald-400">${(sub.earned_cents / 100).toFixed(2)}</span>}
                   </div>
                 );
               })}
@@ -840,7 +856,7 @@ export default function CommissionDetailPage() {
                 }`}>
                   <div className="flex-1 min-w-0">
                     <button onClick={() => window.open(sub.submission_url, '_blank', 'noopener,noreferrer')} className="text-xs text-emerald-400 hover:underline flex items-center gap-1"><ExternalLink className="w-3 h-3" /> {sub.platform || 'View'}</button>
-                    {sub.earned_cents > 0 && <p className="text-[10px] text-emerald-400 font-bold mt-0.5">+${(sub.earned_cents / 100).toFixed(0)} earned</p>}
+                    {sub.earned_cents > 0 && <p className="text-[10px] text-emerald-400 font-bold mt-0.5">+${(sub.earned_cents / 100).toFixed(2)} earned</p>}
                     {sub.feedback && <p className="text-[10px] text-muted-foreground mt-1 italic">"{sub.feedback}"</p>}
                   </div>
                   {sub.rating ? <RatingBadge rating={sub.rating} earnedCents={sub.earned_cents} /> : <span className="text-[9px] text-amber-400 font-bold">Pending</span>}
