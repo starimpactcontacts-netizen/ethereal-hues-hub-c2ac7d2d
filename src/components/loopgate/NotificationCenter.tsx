@@ -142,6 +142,10 @@ function getNotificationLink(notification: Notification): string | null {
       return data?.match_id ? `/practice/${data.match_id}` : '/arena';
     case 'battle_invite':
       return data?.battle_id ? `/battle/${data.battle_id}` : '/arena';
+    case 'announcement':
+    case 'system':
+      if (data?.mission_id) return `/mission/${data.mission_id}`;
+      return null;
     default:
       return null;
   }
