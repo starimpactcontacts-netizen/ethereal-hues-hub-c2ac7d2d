@@ -905,8 +905,7 @@ export default function ArenaPage() {
                     })}
                   </div>
                 </motion.div>
-              )
-
+              )}
 
               {activeSolo && (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
