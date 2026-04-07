@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { DollarSign, Swords, Clock, Flame, Plus, Zap } from "lucide-react";
+import { DollarSign, Swords, Clock, Flame, Plus, Zap, Info, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCashBattles } from "@/hooks/useCashBattles";
 import CashBattleApplyModal from "./CashBattleApplyModal";
@@ -25,6 +25,7 @@ function CashBattleCard({ battle }: { battle: any }) {
   const navigate = useNavigate();
   const isLive = battle.status === "live";
   const isUpcoming = battle.status === "upcoming";
+  const isCompleted = battle.status === "completed" || battle.status === "ended";
 
   return (
     <motion.div
@@ -33,21 +34,33 @@ function CashBattleCard({ battle }: { battle: any }) {
       onClick={() => navigate(`/cash-battle/${battle.id}`)}
       className="w-[220px] shrink-0 rounded-2xl overflow-hidden cursor-pointer group relative"
       style={{
-        background: "linear-gradient(160deg, rgba(22,22,28,1) 0%, rgba(6,6,8,1) 100%)",
+        background: isCompleted
+          ? "linear-gradient(160deg, rgba(30,30,30,1) 0%, rgba(18,18,18,1) 100%)"
+          : "linear-gradient(160deg, rgba(22,22,28,1) 0%, rgba(6,6,8,1) 100%)",
         boxShadow: isLive
           ? "0 0 40px rgba(59,130,246,0.12), 0 0 40px rgba(239,68,68,0.12), 0 12px 40px rgba(0,0,0,0.7)"
           : "0 12px 40px rgba(0,0,0,0.6)",
+        filter: isCompleted ? "grayscale(60%)" : "none",
+        opacity: isCompleted ? 0.55 : 1,
       }}
     >
       {/* Top accent — blue to red gradient */}
       <div className="absolute top-0 left-0 right-0 h-[2px]" style={{
-        background: "linear-gradient(90deg, #3b82f6, transparent 40%, transparent 60%, #ef4444)",
+        background: isCompleted
+          ? "linear-gradient(90deg, #555, #555)"
+          : "linear-gradient(90deg, #3b82f6, transparent 40%, transparent 60%, #ef4444)",
       }} />
 
-      {/* TESTING label */}
-      <div className="absolute top-2 right-2 z-10 px-2 py-0.5 rounded-md" style={{ background: "rgba(234,179,8,0.9)" }}>
-        <span className="text-[8px] font-black text-black uppercase tracking-wider" style={{ fontFamily: "Teko, sans-serif" }}>Testing</span>
-      </div>
+      {/* TESTING overlay for completed */}
+      {isCompleted && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+          <div className="px-4 py-1.5 rounded-lg" style={{ background: "rgba(234,179,8,0.95)" }}>
+            <span className="text-sm font-black text-black uppercase tracking-widest" style={{ fontFamily: "Teko, sans-serif", fontSize: 18 }}>
+              TESTING
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Prize + Status */}
       <div className="px-4 pt-4 pb-1">
@@ -163,9 +176,57 @@ function CashBattleCard({ battle }: { battle: any }) {
   );
 }
 
+function CashBattleInfoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+      <motion.div
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 100, opacity: 0 }}
+        onClick={e => e.stopPropagation()}
+        className="relative w-full max-w-md mx-4 mb-4 sm:mb-0 rounded-2xl overflow-hidden"
+        style={{ background: "#141416", border: "1px solid rgba(255,255,255,0.08)" }}
+      >
+        <div className="p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}>
+                <Swords className="w-4 h-4 text-white" />
+              </div>
+              <h3 className="text-lg font-black text-white uppercase tracking-wider" style={{ fontFamily: "Teko, sans-serif" }}>
+                What are Cash Battles?
+              </h3>
+            </div>
+            <button onClick={onClose} className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
+              <X className="w-4 h-4 text-zinc-400" />
+            </button>
+          </div>
+          <div className="space-y-3 text-[13px] text-zinc-300 leading-relaxed">
+            <p>
+              <span className="text-white font-bold">Cash Battles</span> are sponsored 1v1 edit competitions where the winner takes the entire cash prize.
+            </p>
+            <p>
+              🎬 Two editors go head-to-head using a provided scenepack from a sponsor campaign. You submit your TikTok edit before the timer runs out.
+            </p>
+            <p>
+              💰 The best edit wins the full prize pool — judged by the sponsor or community vote.
+            </p>
+            <p>
+              ⚡ To compete, apply through the <span className="text-blue-400 font-semibold">+ Apply</span> button. If selected, you'll be matched and notified in <span className="text-amber-400 font-semibold">My Arena</span>.
+            </p>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 export default function CashBattlesSection() {
   const { battles, loading } = useCashBattles();
   const [applyOpen, setApplyOpen] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
 
   return (
     <div className="mb-2">
@@ -180,12 +241,15 @@ export default function CashBattlesSection() {
               Cash Battles
             </h2>
             <div className="flex items-center gap-2">
-              <p className="text-[11px] uppercase tracking-[0.15em]" style={{ fontFamily: "Teko, sans-serif", color: 'rgba(255,255,255,0.5)' }}>
+              <p className="text-[11px] font-semibold" style={{ color: 'rgba(255,255,255,0.55)' }}>
                 1v1 · Winner takes all
               </p>
-              <span className="px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider text-white" style={{ background: "linear-gradient(135deg, #3b82f6, #ef4444)", fontFamily: "Teko, sans-serif" }}>
-                New Arena
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider text-white flex items-center gap-0.5" style={{ background: "rgba(239,68,68,0.85)", fontFamily: "Teko, sans-serif" }}>
+                ✨ New Arena
               </span>
+              <button onClick={() => setInfoOpen(true)} className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center hover:bg-zinc-700 transition-colors">
+                <Info className="w-3 h-3 text-zinc-400" />
+              </button>
             </div>
           </div>
         </div>
@@ -231,6 +295,7 @@ export default function CashBattlesSection() {
       </div>
 
       <CashBattleApplyModal open={applyOpen} onClose={() => setApplyOpen(false)} />
+      <CashBattleInfoModal open={infoOpen} onClose={() => setInfoOpen(false)} />
     </div>
   );
 }
