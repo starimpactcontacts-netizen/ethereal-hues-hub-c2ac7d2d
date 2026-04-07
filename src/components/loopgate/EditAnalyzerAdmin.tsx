@@ -84,6 +84,8 @@ export default function EditAnalyzerAdmin() {
   const [frames, setFrames] = useState<FrameData[]>([]);
   const [extracting, setExtracting] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
+  const [analyzeStage, setAnalyzeStage] = useState("");
+  const [analyzeProgress, setAnalyzeProgress] = useState(0);
   const [analysis, setAnalysis] = useState<EditAnalysis | null>(null);
   const [editorNotes, setEditorNotes] = useState("");
   const [videoTitle, setVideoTitle] = useState("");
@@ -241,6 +243,24 @@ export default function EditAnalyzerAdmin() {
 
     setAnalyzing(true);
     setAnalysis(null);
+    setAnalyzeStage("Uploading frames to AI...");
+    setAnalyzeProgress(10);
+
+    // Simulate progress stages since the API is a single call
+    const progressTimer = setInterval(() => {
+      setAnalyzeProgress((prev) => {
+        if (prev >= 90) return prev;
+        const increment = prev < 30 ? 8 : prev < 60 ? 4 : 2;
+        return Math.min(prev + increment, 90);
+      });
+    }, 1500);
+
+    const stageTimer = setTimeout(() => {
+      setAnalyzeStage("AI reading frames...");
+      setTimeout(() => setAnalyzeStage("Scoring pillars (Emotion, Sync, Execution)..."), 5000);
+      setTimeout(() => setAnalyzeStage("Writing judge feedback..."), 12000);
+      setTimeout(() => setAnalyzeStage("Finalizing grade & verdict..."), 18000);
+    }, 2000);
 
     try {
       const { data, error } = await supabase.functions.invoke("analyze-edit", {
@@ -267,15 +287,24 @@ export default function EditAnalyzerAdmin() {
         },
       });
 
+      clearInterval(progressTimer);
+      clearTimeout(stageTimer);
+      setAnalyzeProgress(100);
+      setAnalyzeStage("Done!");
+
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setAnalysis(data);
       toast.success(`Analysis complete — Grade: ${data.grade}`);
     } catch (err: any) {
+      clearInterval(progressTimer);
+      clearTimeout(stageTimer);
       console.error("Analysis error:", err);
       toast.error(err.message || "Analysis failed");
     } finally {
       setAnalyzing(false);
+      setAnalyzeProgress(0);
+      setAnalyzeStage("");
     }
   }, [editorNotes, frames, selectedEditor, selectedMission, videoFile?.name, videoTitle]);
 
@@ -539,23 +568,34 @@ export default function EditAnalyzerAdmin() {
                     {selectedEditor ? ` • @${selectedEditor.username}` : " • No editor tapped"}
                   </div>
 
-                  <button
-                    onClick={analyzeEdit}
-                    disabled={analyzing}
-                    className="w-full py-3 rounded-lg bg-gradient-to-r from-primary to-primary/70 hover:opacity-90 disabled:opacity-50 text-primary-foreground text-sm font-bold flex items-center justify-center gap-2 transition-all"
-                  >
-                    {analyzing ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Analyzing Edit Frame-by-Frame...
-                      </>
-                    ) : (
-                      <>
-                        <Film className="w-4 h-4" />
-                        Analyze Edit
-                      </>
-                    )}
-                  </button>
+                  {analyzing ? (
+                    <div className="space-y-2 rounded-lg border border-primary/30 bg-primary/5 p-3">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-foreground font-semibold flex items-center gap-2">
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                          {analyzeStage || "Starting analysis..."}
+                        </span>
+                        <span className="text-muted-foreground font-mono">{analyzeProgress}%</span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-primary transition-all duration-700 ease-out"
+                          style={{ width: `${analyzeProgress}%` }}
+                        />
+                      </div>
+                      <p className="text-[10px] text-muted-foreground">
+                        Usually takes 15-30s depending on frame count
+                      </p>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={analyzeEdit}
+                      className="w-full py-3 rounded-lg bg-gradient-to-r from-primary to-primary/70 hover:opacity-90 text-primary-foreground text-sm font-bold flex items-center justify-center gap-2 transition-all"
+                    >
+                      <Film className="w-4 h-4" />
+                      Analyze Edit
+                    </button>
+                  )}
                 </div>
               )}
 
