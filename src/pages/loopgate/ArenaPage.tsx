@@ -817,6 +817,96 @@ export default function ArenaPage() {
                 </motion.div>
               )}
 
+              {/* 💰 Cash Battles — Accept & Compete */}
+              {myCashBattles.length > 0 && (
+                <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <DollarSign className="w-4 h-4 text-red-400" />
+                    <span className="text-[13px] font-bold text-foreground">Cash Battles</span>
+                    <span className="text-[11px] text-red-400 font-semibold">{myCashBattles.length}</span>
+                  </div>
+                  <div className="space-y-2">
+                    {myCashBattles.map(battle => {
+                      const isChallenger = user?.id === battle.challenger_id;
+                      const myAccepted = isChallenger ? battle.challenger_accepted : battle.opponent_accepted;
+                      const opponentName = isChallenger ? battle.opponent_username : battle.challenger_username;
+                      const isLive = battle.status === 'live';
+
+                      return (
+                        <div key={battle.id} className="bg-surface-1 border rounded-xl overflow-hidden" style={{
+                          borderColor: isLive ? 'rgba(239,68,68,0.4)' : myAccepted ? 'rgba(59,130,246,0.3)' : 'rgba(239,68,68,0.5)',
+                        }}>
+                          <div className="p-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}>
+                                  <DollarSign className="w-3 h-3 text-white" />
+                                </div>
+                                <span className="text-lg font-black text-white" style={{ fontFamily: 'Teko, sans-serif' }}>
+                                  ${(battle.prize_cents / 100).toFixed(0)}
+                                </span>
+                                {battle.sponsor_name && (
+                                  <span className="text-[9px] text-blue-400/80 font-semibold">· {battle.sponsor_name}</span>
+                                )}
+                              </div>
+                              <span className={`text-[10px] font-black uppercase tracking-wider ${isLive ? 'text-red-400' : 'text-amber-400'}`} style={{ fontFamily: 'Teko, sans-serif' }}>
+                                {isLive ? '🔴 LIVE' : myAccepted ? 'WAITING' : 'ACCEPT'}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center justify-center gap-3 mb-3">
+                              <div className="flex flex-col items-center">
+                                <Avatar className="w-10 h-10 ring-2 ring-blue-500/50">
+                                  <AvatarImage src={battle.challenger_avatar_url || ''} />
+                                  <AvatarFallback className="text-xs bg-blue-500/15 text-blue-400">{battle.challenger_username?.[0]}</AvatarFallback>
+                                </Avatar>
+                                <span className="text-[9px] font-bold text-blue-400 mt-1" style={{ fontFamily: 'Teko, sans-serif' }}>{battle.challenger_username}</span>
+                              </div>
+                              <span className="text-sm font-black text-white/60" style={{ fontFamily: 'Teko, sans-serif' }}>VS</span>
+                              <div className="flex flex-col items-center">
+                                <Avatar className="w-10 h-10 ring-2 ring-red-500/50">
+                                  <AvatarImage src={battle.opponent_avatar_url || ''} />
+                                  <AvatarFallback className="text-xs bg-red-500/15 text-red-400">{battle.opponent_username?.[0]}</AvatarFallback>
+                                </Avatar>
+                                <span className="text-[9px] font-bold text-red-400 mt-1" style={{ fontFamily: 'Teko, sans-serif' }}>{battle.opponent_username}</span>
+                              </div>
+                            </div>
+
+                            {isLive ? (
+                              <div className="text-center py-2 bg-red-500/10 rounded-lg border border-red-500/20">
+                                <span className="text-[12px] font-black text-red-400 uppercase" style={{ fontFamily: 'Teko, sans-serif' }}>
+                                  Battle is LIVE — Go edit!
+                                </span>
+                              </div>
+                            ) : !myAccepted ? (
+                              <button
+                                onClick={async () => {
+                                  const ok = await acceptCashBattle(battle.id);
+                                  if (ok) toast.success('Accepted! Waiting for opponent...');
+                                  else toast.error('Failed to accept');
+                                }}
+                                className="w-full py-3 rounded-xl text-white font-black uppercase tracking-wider text-[14px] transition-all active:scale-[0.98]"
+                                style={{
+                                  fontFamily: 'Teko, sans-serif',
+                                  background: 'linear-gradient(135deg, #3b82f6, #ef4444)',
+                                  boxShadow: '0 4px 20px rgba(239,68,68,0.3)',
+                                }}
+                              >
+                                ⚔️ ACCEPT BATTLE
+                              </button>
+                            ) : (
+                              <div className="text-center py-2 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                                <span className="text-[11px] font-bold text-blue-400">✓ You accepted — waiting for {opponentName}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )
+
 
               {activeSolo && (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
