@@ -63,48 +63,51 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
       className="fixed inset-0 flex flex-col bg-background"
       style={{ zIndex: 9999 }}
     >
-      {/* Safe area spacer for notch */}
-      <div className="shrink-0" style={{ height: 'env(safe-area-inset-top, 0px)' }} />
+      {/* Top action bar */}
+      <div
+        className="shrink-0 border-b border-border/15 bg-background"
+        style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 10px)' }}
+      >
+        <div className="flex items-center gap-1.5 px-4 py-3 min-h-[52px]">
+          {!uploadedMedia && !selectedGif && (
+            <MediaUploadButton
+              onUpload={(url, type) => { setUploadedMedia({ url, type }); setSelectedGif(null); }}
+              uploadedUrl={null}
+              onClear={() => {}}
+            />
+          )}
+          <button
+            onClick={() => setShowGifPicker(!showGifPicker)}
+            className={`px-3 py-1.5 rounded-full text-[11px] font-black tracking-tight transition-all ${
+              showGifPicker || selectedGif
+                ? "bg-primary/15 text-primary border border-primary/30"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+            }`}
+          >
+            GIF
+          </button>
 
-      {/* Media buttons + Close */}
-      <div className="flex items-center gap-1.5 px-4 py-3 border-b border-border/15 shrink-0">
-        {!uploadedMedia && !selectedGif && (
-          <MediaUploadButton
-            onUpload={(url, type) => { setUploadedMedia({ url, type }); setSelectedGif(null); }}
-            uploadedUrl={null}
-            onClear={() => {}}
-          />
-        )}
-        <button
-          onClick={() => setShowGifPicker(!showGifPicker)}
-          className={`px-3 py-1.5 rounded-full text-[11px] font-black tracking-tight transition-all ${
-            showGifPicker || selectedGif
-              ? "bg-primary/15 text-primary border border-primary/30"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
-          }`}
-        >
-          GIF
-        </button>
+          {content.length > 0 && (
+            <span className={`text-[11px] font-mono tabular-nums ml-1 ${
+              isOverLimit ? 'text-destructive' : charsLeft <= 20 ? 'text-gold' : 'text-muted-foreground/50'
+            }`}>
+              {charsLeft}
+            </span>
+          )}
 
-        {content.length > 0 && (
-          <span className={`text-[11px] font-mono tabular-nums ${
-            isOverLimit ? 'text-destructive' : charsLeft <= 20 ? 'text-gold' : 'text-muted-foreground/50'
-          }`}>
-            {charsLeft}
-          </span>
-        )}
-
-        <button
-          onClick={onClose}
-          className="ml-auto w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-md active:scale-95 transition-transform"
-        >
-          <X className="w-4 h-4 text-black" strokeWidth={2.5} />
-        </button>
+          <button
+            onClick={onClose}
+            className="ml-auto w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-md active:scale-95 transition-transform"
+            aria-label="Close composer"
+          >
+            <X className="w-4 h-4 text-black" strokeWidth={2.5} />
+          </button>
+        </div>
       </div>
 
       {/* Compose body */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="flex gap-3 px-4 pt-4 pb-32">
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="flex gap-3 px-4 pt-3 pb-8">
           <Avatar className="w-10 h-10 border border-border/40 shrink-0">
             <AvatarImage src={userProfile?.avatar_url || undefined} className="object-cover" />
             <AvatarFallback className="bg-muted text-foreground text-xs font-bold">
@@ -118,7 +121,7 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
               onChange={(e) => setContent(e.target.value)}
               placeholder="What's on your mind?"
               autoFocus
-              className="w-full bg-transparent text-foreground text-[17px] placeholder:text-muted-foreground/40 resize-none focus:outline-none leading-relaxed min-h-[160px]"
+              className="w-full bg-transparent text-foreground text-[17px] placeholder:text-muted-foreground/40 resize-none focus:outline-none leading-relaxed min-h-[96px]"
               maxLength={300}
               style={{ caretColor: 'hsl(var(--primary))' }}
             />
