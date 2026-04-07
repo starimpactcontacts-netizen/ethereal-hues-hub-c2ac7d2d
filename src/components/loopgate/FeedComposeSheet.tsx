@@ -63,17 +63,19 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
       className="fixed inset-0 flex flex-col bg-background"
       style={{ zIndex: 9999 }}
     >
-      {/* Close button — top right, white circle + black X */}
+      {/* Close button — centered top bar, impossible to miss */}
       <div
-        className="flex items-center justify-end px-4 shrink-0"
-        style={{ paddingTop: 'env(safe-area-inset-top, 12px)', minHeight: 52 }}
+        className="flex items-center justify-between px-4 shrink-0"
+        style={{ paddingTop: 'env(safe-area-inset-top, 12px)', minHeight: 56 }}
       >
         <button
           onClick={onClose}
-          className="w-9 h-9 rounded-full bg-white flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-lg active:scale-95 transition-transform"
         >
           <X className="w-5 h-5 text-black" strokeWidth={2.5} />
+          <span className="text-black text-sm font-bold">Close</span>
         </button>
+        <span className="text-muted-foreground/50 text-xs font-medium">New Post</span>
       </div>
 
       {/* Media buttons */}
