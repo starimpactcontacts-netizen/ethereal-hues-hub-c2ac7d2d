@@ -46,6 +46,7 @@ export const PROTECTED_ACTIONS = [
   'save_score',
   'redeem_shop',
   'send_message',
+  'enter_battle',
 ] as const;
 
 export type ProtectedAction = typeof PROTECTED_ACTIONS[number];
@@ -58,6 +59,7 @@ export const requiresAccount = (action: ProtectedAction): string => {
     save_score: 'Create an account to save your progress',
     redeem_shop: 'Create an account to redeem items',
     send_message: 'Create an account to send messages',
+    enter_battle: 'Create an account to enter Cash Battles',
   };
   return messages[action];
 };
