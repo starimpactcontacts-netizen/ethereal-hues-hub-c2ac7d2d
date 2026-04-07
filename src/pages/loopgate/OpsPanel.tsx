@@ -527,36 +527,44 @@ export default function OpsPanel() {
   }, []);
 
   async function fetchData() {
+    let initialViewReleased = false;
+    const releaseInitialView = () => {
+      if (!initialViewReleased) {
+        initialViewReleased = true;
+        setLoading(false);
+      }
+    };
+
     try {
-      // Fetch events
-      const { data: eventsData, error: eventsError } = await supabase
-        .from('events')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
+      const [
+        { data: eventsData, error: eventsError },
+        { data: standardSubmissions, error: standardError },
+        { data: roundSubmissions, error: roundError },
+      ] = await Promise.all([
+        supabase
+          .from('events')
+          .select('*')
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('event_participations')
+          .select('*')
+          .order('submitted_at', { ascending: false }),
+        supabase
+          .from('round_participations')
+          .select('*')
+          .not('submission_url', 'is', null)
+          .order('submitted_at', { ascending: false }),
+      ]);
+
       if (eventsError) throw eventsError;
+      if (standardError) throw standardError;
+      if (roundError) throw roundError;
+
       setEvents(eventsData || []);
       
       if (eventsData && eventsData.length > 0 && !activeEventFilter) {
         setActiveEventFilter(eventsData[0].id);
       }
-      
-      // Fetch submissions from both tables (standard + Open Arena)
-      const { data: standardSubmissions, error: standardError } = await supabase
-        .from('event_participations')
-        .select('*')
-        .order('submitted_at', { ascending: false });
-      
-      if (standardError) throw standardError;
-      
-      // Fetch Open Arena round submissions
-      const { data: roundSubmissions, error: roundError } = await supabase
-        .from('round_participations')
-        .select('*')
-        .not('submission_url', 'is', null)
-        .order('submitted_at', { ascending: false });
-      
-      if (roundError) throw roundError;
       
       // Merge both submission types, normalizing the structure
       const allSubmissions = [
@@ -591,6 +599,14 @@ export default function OpsPanel() {
         const dateB = new Date(b.submitted_at || '').getTime();
         return dateB - dateA;
       });
+
+      setSubmissions(allSubmissions.map(s => ({
+        ...s,
+        username: 'Unknown',
+        verification_status: false,
+      })));
+
+      releaseInitialView();
       
       // Fetch usernames and verification status for submissions
       const userIds = [...new Set(allSubmissions.map(s => s.user_id))];
@@ -880,7 +896,7 @@ export default function OpsPanel() {
       console.error('Error fetching data:', error);
       toast.error('Failed to load data');
     } finally {
-      setLoading(false);
+      releaseInitialView();
     }
   }
 
