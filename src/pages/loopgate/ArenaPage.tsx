@@ -450,6 +450,7 @@ export default function ArenaPage() {
   const [missionBillboards, setMissionBillboards] = useState<Array<{ id: string; song_name: string; poster_url: string | null; artist_name: string | null; max_pay: number }>>([]);
   const { activeSolo, loading: soloLoading, cancelSolo } = useSoloMode();
   const { fights: myQuickFights, inQueue: qfInQueue } = useMyQuickFights();
+  const { battles: myCashBattles, acceptBattle: acceptCashBattle } = useMyCashBattles();
   const [arenaView, setArenaView] = useState<'arena' | 'my'>(() => (searchParams.get('tab') === 'my' || searchParams.get('view') === 'my') ? 'my' : 'arena');
   const [emailInput, setEmailInput] = useState("");
   const [savingEmail, setSavingEmail] = useState(false);
