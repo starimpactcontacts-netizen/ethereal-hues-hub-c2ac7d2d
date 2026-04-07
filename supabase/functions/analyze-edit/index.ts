@@ -8,6 +8,7 @@ const corsHeaders = {
 const SYSTEM_PROMPT = `You are the Loopgate Bureau's internal edit analysis engine — a professional-grade video editing judge used exclusively by admin judges. You analyze video edits frame-by-frame with extreme precision and deliver comprehensive diagnostic reports with AUTHENTIC editor community language.
 
 You will receive multiple extracted frames from a video edit at different timestamps. Analyze EACH frame and the edit as a whole.
+If mission context is provided, you must also judge how well the edit fits the exact mission brief and requirements.
 
 === EDITOR TERMINOLOGY YOU MUST USE ===
 
@@ -83,6 +84,7 @@ For each frame, evaluate:
 - Creative vision & concept
 - Storytelling / narrative arc
 - Audio-visual sync indicators (beat sync, bass drops, impact frames)
+- Mission fit / brief adherence when mission context is provided
 
 === SCORING PILLARS ===
 - emotion (0-15): Emotional impact, storytelling, mood, atmosphere
@@ -142,13 +144,14 @@ YOU MUST RESPOND IN VALID JSON ONLY:
 6. Identify edit style (AMV, velocity edit, flow edit, etc.) and judge accordingly.
 7. Call out specific effects, plugins, and techniques you can identify from frames.
 8. Assess viral potential based on hook, pacing, trending elements.
-9. NEVER return anything other than the JSON object.`;
+9. If mission context is provided, judge how well the edit matches that mission brief.
+10. NEVER return anything other than the JSON object.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { frames, editorNotes, videoTitle } = await req.json();
+    const { frames, editorNotes, videoTitle, selectedMission, selectedEditor } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -175,10 +178,20 @@ serve(async (req) => {
       `\nAnalyze this video edit using the ${frames.length} frames extracted above.`,
       `Total frames extracted: ${frames.length}`,
     ];
+
     if (videoTitle) contextParts.push(`Video title: ${videoTitle}`);
     if (editorNotes) contextParts.push(`Judge notes: ${editorNotes}`);
-    contextParts.push(`\nProvide your complete frame-by-frame analysis and rating. Return ONLY valid JSON.`);
+    if (selectedEditor?.username) contextParts.push(`Target editor on Loopgate: @${selectedEditor.username}`);
+    if (selectedMission?.title) {
+      contextParts.push(`Mission title: ${selectedMission.title}`);
+      if (selectedMission.brandOrArtist) contextParts.push(`Mission client/artist: ${selectedMission.brandOrArtist}`);
+      if (selectedMission.status) contextParts.push(`Mission status: ${selectedMission.status}`);
+      if (selectedMission.description) contextParts.push(`Mission brief: ${selectedMission.description}`);
+      if (selectedMission.requirements) contextParts.push(`Mission requirements: ${selectedMission.requirements}`);
+      contextParts.push("Judge how well the edit fits this exact mission brief in addition to normal quality scoring.");
+    }
 
+    contextParts.push(`\nProvide your complete frame-by-frame analysis and rating. Return ONLY valid JSON.`);
     content.push({ type: "text", text: contextParts.join("\n") });
 
     const messages = [
