@@ -240,12 +240,12 @@ export default function CashBattlesSection() {
             <h2 className="text-[15px] font-black uppercase tracking-wider text-white" style={{ fontFamily: "Teko, sans-serif" }}>
               Cash Battles
             </h2>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <p className="text-[11px] font-semibold" style={{ color: 'rgba(255,255,255,0.55)' }}>
                 1v1 · Winner takes all
               </p>
               <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider text-white flex items-center gap-0.5" style={{ background: "rgba(239,68,68,0.85)", fontFamily: "Teko, sans-serif" }}>
-                ✨ New Arena
+                ✨ New
               </span>
               <button onClick={() => setInfoOpen(true)} className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center hover:bg-zinc-700 transition-colors">
                 <Info className="w-3 h-3 text-zinc-400" />
