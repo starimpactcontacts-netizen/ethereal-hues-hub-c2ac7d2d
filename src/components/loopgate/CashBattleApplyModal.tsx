@@ -59,10 +59,10 @@ export default function CashBattleApplyModal({ open, onClose }: Props) {
                 </div>
                 <div>
                   <h2 className="text-lg font-black text-white uppercase tracking-wider" style={{ fontFamily: 'Teko, sans-serif' }}>
-                    Apply to Compete
+                    Enter the Arena
                   </h2>
                    <p className="text-[10px] uppercase tracking-wider" style={{ fontFamily: 'Teko, sans-serif', color: 'rgba(239,68,68,0.6)' }}>
-                     Cash Battle Application
+                     1v1 Edit Battle — Winner takes cash
                   </p>
                 </div>
               </div>
@@ -87,11 +87,11 @@ export default function CashBattleApplyModal({ open, onClose }: Props) {
             ) : (
               <div className="px-5 pb-5 pt-1 space-y-3">
                 <p className="text-[11px] text-zinc-400 leading-relaxed">
-                  Show us your best edit and your TikTok. We handpick the most exciting matchups.
+                  Submit your best edit. If you're good, we match you. If not… stay watching.
                 </p>
 
                 <div>
-                  <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1" style={{ fontFamily: 'Teko, sans-serif' }}>Your Best Edit *</label>
+                  <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1" style={{ fontFamily: 'Teko, sans-serif' }}>Drop your best edit 🔥 *</label>
                   <Input
                     placeholder="Link to your best edit (TikTok, YT, IG)"
                     value={demoUrl}
@@ -101,7 +101,7 @@ export default function CashBattleApplyModal({ open, onClose }: Props) {
                 </div>
 
                 <div>
-                  <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1" style={{ fontFamily: 'Teko, sans-serif' }}>TikTok Profile *</label>
+                  <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1" style={{ fontFamily: 'Teko, sans-serif' }}>Your TikTok @ *</label>
                   <Input
                     placeholder="https://tiktok.com/@yourhandle"
                     value={tiktokUrl}
@@ -119,7 +119,7 @@ export default function CashBattleApplyModal({ open, onClose }: Props) {
                     className="mt-0.5 accent-red-500"
                   />
                   <span className="text-[10px] text-zinc-400 leading-relaxed">
-                    I confirm I'm eligible to compete, my work is original, and I agree to competition rules. Matches are curated by Loopgate for fairness.
+                    I confirm this is my work & I'm ready to compete
                   </span>
                 </label>
 
@@ -133,7 +133,7 @@ export default function CashBattleApplyModal({ open, onClose }: Props) {
                      background: demoUrl && tiktokUrl && agreed ? 'linear-gradient(135deg, #3b82f6, #ef4444)' : '#333',
                    }}
                 >
-                  {submitting ? 'Submitting...' : 'Submit Application'}
+                  {submitting ? 'Submitting...' : 'ENTER BATTLE'}
                 </button>
               </div>
             )}
