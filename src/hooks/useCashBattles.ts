@@ -34,6 +34,13 @@ export interface CashBattle {
   ends_at: string | null;
   winner_id: string | null;
   created_at: string;
+  sponsor_name: string | null;
+  sponsor_logo_url: string | null;
+  sponsor_campaign_id: string | null;
+  challenger_accepted: boolean;
+  opponent_accepted: boolean;
+  challenger_accepted_at: string | null;
+  opponent_accepted_at: string | null;
 }
 
 export function useCashBattles() {
@@ -145,7 +152,7 @@ export function useAdminCashBattles() {
     await fetchAll();
   }
 
-  async function createMatch(challengerId: string, opponentId: string, prizeCents: number, durationHours: number) {
+  async function createMatch(challengerId: string, opponentId: string, prizeCents: number, durationHours: number, sponsor?: { name: string; logo_url?: string; campaign_id?: string }) {
     const challApp = applications.find(a => a.user_id === challengerId);
     const oppApp = applications.find(a => a.user_id === opponentId);
     if (!challApp || !oppApp) return;
@@ -160,7 +167,10 @@ export function useAdminCashBattles() {
       prize_cents: prizeCents,
       duration_hours: durationHours,
       status: 'upcoming',
-    });
+      sponsor_name: sponsor?.name || null,
+      sponsor_logo_url: sponsor?.logo_url || null,
+      sponsor_campaign_id: sponsor?.campaign_id || null,
+    } as any);
 
     if (error) {
       toast.error('Failed to create match');
@@ -177,5 +187,93 @@ export function useAdminCashBattles() {
     await fetchAll();
   }
 
-  return { applications, battles, loading, updateApplicationStatus, createMatch, refetch: fetchAll };
+  async function acceptBattle(battleId: string, userId: string) {
+    const battle = battles.find(b => b.id === battleId);
+    if (!battle) return false;
+
+    const isChallenger = battle.challenger_id === userId;
+    const updateField = isChallenger ? 'challenger_accepted' : 'opponent_accepted';
+    const acceptedAtField = isChallenger ? 'challenger_accepted_at' : 'opponent_accepted_at';
+
+    const { error } = await supabase.from('cash_battles').update({
+      [updateField]: true,
+      [acceptedAtField]: new Date().toISOString(),
+    } as any).eq('id', battleId);
+
+    if (error) return false;
+
+    // Check if both accepted — if so, start the battle
+    const otherAccepted = isChallenger ? battle.opponent_accepted : battle.challenger_accepted;
+    if (otherAccepted) {
+      const now = new Date();
+      const endsAt = new Date(now.getTime() + battle.duration_hours * 60 * 60 * 1000);
+      await supabase.from('cash_battles').update({
+        status: 'live',
+        starts_at: now.toISOString(),
+        ends_at: endsAt.toISOString(),
+      }).eq('id', battleId);
+    }
+
+    await fetchAll();
+    return true;
+  }
+
+  return { applications, battles, loading, updateApplicationStatus, createMatch, acceptBattle, refetch: fetchAll };
+}
+
+export function useMyCashBattles() {
+  const { user } = useAuth();
+  const [battles, setBattles] = useState<CashBattle[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) { setLoading(false); return; }
+    fetchBattles();
+  }, [user]);
+
+  async function fetchBattles() {
+    if (!user) return;
+    const { data } = await supabase
+      .from('cash_battles')
+      .select('*')
+      .or(`challenger_id.eq.${user.id},opponent_id.eq.${user.id}`)
+      .in('status', ['upcoming', 'live'])
+      .order('created_at', { ascending: false });
+    setBattles((data as any[]) || []);
+    setLoading(false);
+  }
+
+  async function acceptBattle(battleId: string) {
+    if (!user) return false;
+    const battle = battles.find(b => b.id === battleId);
+    if (!battle) return false;
+
+    const isChallenger = battle.challenger_id === user.id;
+    const updateField = isChallenger ? 'challenger_accepted' : 'opponent_accepted';
+    const acceptedAtField = isChallenger ? 'challenger_accepted_at' : 'opponent_accepted_at';
+
+    const { error } = await supabase.from('cash_battles').update({
+      [updateField]: true,
+      [acceptedAtField]: new Date().toISOString(),
+    } as any).eq('id', battleId);
+
+    if (error) return false;
+
+    // Check if both accepted
+    const otherAccepted = isChallenger ? battle.opponent_accepted : battle.challenger_accepted;
+    if (otherAccepted) {
+      const now = new Date();
+      const endsAt = new Date(now.getTime() + battle.duration_hours * 60 * 60 * 1000);
+      await supabase.from('cash_battles').update({
+        status: 'live',
+        starts_at: now.toISOString(),
+        ends_at: endsAt.toISOString(),
+      }).eq('id', battleId);
+    }
+
+    await fetchBattles();
+    return true;
+  }
+
+  return { battles, loading, acceptBattle, refetch: fetchBattles };
 }
