@@ -236,10 +236,13 @@ function RatingModal({ submission, onRate, onClose, getPayoutForRating }: {
     if (!selectedRating) { toast.error('Pick a rating'); return; }
     setSubmitting(true);
     try {
-      // Upload thumbnail first if provided
+      // Upload thumbnail and update video URL if changed
       const thumbUrl = await uploadThumbnail(submission.id);
-      if (thumbUrl) {
-        await supabase.from('commission_submissions').update({ thumbnail_url: thumbUrl } as any).eq('id', submission.id);
+      const updates: Record<string, any> = {};
+      if (thumbUrl) updates.thumbnail_url = thumbUrl;
+      if (videoUrl.trim() && videoUrl.trim() !== submission.submission_url) updates.submission_url = videoUrl.trim();
+      if (Object.keys(updates).length > 0) {
+        await supabase.from('commission_submissions').update(updates as any).eq('id', submission.id);
       }
       await onRate(submission.id, selectedRating, feedback.trim());
       const payout = getPayoutForRating(selectedRating);
