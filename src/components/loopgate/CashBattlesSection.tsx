@@ -179,7 +179,7 @@ function CashBattleCard({ battle }: { battle: any }) {
 function CashBattleInfoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
       <motion.div
         initial={{ y: 100, opacity: 0 }}
