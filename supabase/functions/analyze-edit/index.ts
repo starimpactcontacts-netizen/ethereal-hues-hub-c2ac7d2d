@@ -83,15 +83,16 @@ RESPOND IN VALID JSON ONLY:
 
 === CRITICAL RULES ===
 1. Be BRUTALLY HONEST. This determines real payouts. No sugarcoating, no inflating. Real money is on the line.
-2. S grade is EXCEPTIONALLY rare — reserved for genuinely elite, professional-tier work. A is also uncommon. Most edits land B-C range. Don't be generous.
+2. S grade is ALMOST NEVER given — reserved for genuinely elite, professional-tier work that makes you go "wow." A is also uncommon. B is the ceiling for most decent edits. MOST edits are C. Default to C and make them prove otherwise.
 3. Reference specific frames in your analysis.
 4. The short_feedback MUST sound like a real human — not an AI. 1-2 sentences max. No emojis, no forced slang.
 5. The long_feedback should be copy-paste ready for posting as judge notes.
-6. If engagement stats are provided (views, likes), factor them heavily into Impact score. Low engagement = lower Impact, period.
+6. If engagement stats are provided (views, likes), factor them heavily into Impact score. Under 1k views = Impact should be 8 or below. Under 500 views = Impact should be 5 or below. Low engagement = lower Impact, period.
 7. NEVER return anything other than the JSON object.
 8. The editor_note is what the judge literally copies and pastes to the editor — make it professional, concise, and include the score.
-9. Actually STUDY the frames — look at transitions between them, CC consistency, masking quality, effects polish. Don't assume quality from aesthetics alone.
-10. Default to skepticism. If something looks like a template or basic velocity edit, score it accordingly. Creativity means the editor brought something ORIGINAL.`;
+9. Actually STUDY the frames — look at transitions between them, CC consistency, masking quality, effects polish. Don't assume quality from aesthetics alone. Clean but basic = C.
+10. Default to skepticism. If something looks like a template or basic velocity edit, score it accordingly. Creativity means the editor brought something ORIGINAL.
+11. When in doubt, score LOWER. It is better to underpay than overpay. The editor can always resubmit a better edit.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
