@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { DollarSign, ArrowRight, Wallet, ChevronRight, Eye, Crosshair, Flame, Plus } from 'lucide-react';
+import { DollarSign, ArrowRight, Wallet, ChevronRight, Eye, Crosshair, Flame, Plus, Zap, Gavel } from 'lucide-react';
 import { useCommissions, useEditorEarnings, type Commission } from '@/hooks/useCommissions';
 import { useAuth } from '@/hooks/useAuth';
 import { InfinityLoop } from '@/components/loopgate/InfinityLoop';
