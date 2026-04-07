@@ -1147,7 +1147,7 @@ export default function ArenaPage() {
           {/* Marketplace removed */}
 
           {/* ═══ FILTER PILLS — small rounded ═══ */}
-          <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide pl-4 pb-1">
+          <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide pb-1" style={{ paddingLeft: '16px' }}>
             {filters.map(f => {
               const active = activeFilter === f.key;
               return (
