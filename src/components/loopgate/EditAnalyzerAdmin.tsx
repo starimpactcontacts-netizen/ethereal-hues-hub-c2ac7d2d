@@ -243,6 +243,24 @@ export default function EditAnalyzerAdmin() {
 
     setAnalyzing(true);
     setAnalysis(null);
+    setAnalyzeStage("Uploading frames to AI...");
+    setAnalyzeProgress(10);
+
+    // Simulate progress stages since the API is a single call
+    const progressTimer = setInterval(() => {
+      setAnalyzeProgress((prev) => {
+        if (prev >= 90) return prev;
+        const increment = prev < 30 ? 8 : prev < 60 ? 4 : 2;
+        return Math.min(prev + increment, 90);
+      });
+    }, 1500);
+
+    const stageTimer = setTimeout(() => {
+      setAnalyzeStage("AI reading frames...");
+      setTimeout(() => setAnalyzeStage("Scoring pillars (Emotion, Sync, Execution)..."), 5000);
+      setTimeout(() => setAnalyzeStage("Writing judge feedback..."), 12000);
+      setTimeout(() => setAnalyzeStage("Finalizing grade & verdict..."), 18000);
+    }, 2000);
 
     try {
       const { data, error } = await supabase.functions.invoke("analyze-edit", {
@@ -269,15 +287,24 @@ export default function EditAnalyzerAdmin() {
         },
       });
 
+      clearInterval(progressTimer);
+      clearTimeout(stageTimer);
+      setAnalyzeProgress(100);
+      setAnalyzeStage("Done!");
+
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setAnalysis(data);
       toast.success(`Analysis complete — Grade: ${data.grade}`);
     } catch (err: any) {
+      clearInterval(progressTimer);
+      clearTimeout(stageTimer);
       console.error("Analysis error:", err);
       toast.error(err.message || "Analysis failed");
     } finally {
       setAnalyzing(false);
+      setAnalyzeProgress(0);
+      setAnalyzeStage("");
     }
   }, [editorNotes, frames, selectedEditor, selectedMission, videoFile?.name, videoTitle]);
 
