@@ -334,11 +334,6 @@ function ShowcaseCard({ sub }: { sub: any }) {
           {sub.earned_cents > 0 && <span className="text-[8px] font-black text-emerald-400">+${(sub.earned_cents / 100).toFixed(0)}</span>}
         </div>
       </div>
-      {sub.feedback && (
-        <div className="px-2.5 py-1.5 border-b border-white/5">
-          <p className="text-[8px] text-muted-foreground italic leading-relaxed line-clamp-2">"{sub.feedback}"</p>
-        </div>
-      )}
       <div className="px-2.5 py-1.5">
         <button onClick={() => window.open(sub.submission_url, '_blank')} className="text-[9px] text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1"><ExternalLink className="w-3 h-3" /> Watch</button>
       </div>
