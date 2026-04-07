@@ -801,6 +801,9 @@ export type Database = {
           challenger_accepted_at: string | null
           challenger_avatar_url: string | null
           challenger_id: string
+          challenger_submission_platform: string | null
+          challenger_submission_url: string | null
+          challenger_submitted_at: string | null
           challenger_username: string
           created_at: string
           created_by: string | null
@@ -811,8 +814,12 @@ export type Database = {
           opponent_accepted_at: string | null
           opponent_avatar_url: string | null
           opponent_id: string | null
+          opponent_submission_platform: string | null
+          opponent_submission_url: string | null
+          opponent_submitted_at: string | null
           opponent_username: string | null
           prize_cents: number
+          scenepack_url: string | null
           sponsor_campaign_id: string | null
           sponsor_logo_url: string | null
           sponsor_name: string | null
@@ -827,6 +834,9 @@ export type Database = {
           challenger_accepted_at?: string | null
           challenger_avatar_url?: string | null
           challenger_id: string
+          challenger_submission_platform?: string | null
+          challenger_submission_url?: string | null
+          challenger_submitted_at?: string | null
           challenger_username: string
           created_at?: string
           created_by?: string | null
@@ -837,8 +847,12 @@ export type Database = {
           opponent_accepted_at?: string | null
           opponent_avatar_url?: string | null
           opponent_id?: string | null
+          opponent_submission_platform?: string | null
+          opponent_submission_url?: string | null
+          opponent_submitted_at?: string | null
           opponent_username?: string | null
           prize_cents?: number
+          scenepack_url?: string | null
           sponsor_campaign_id?: string | null
           sponsor_logo_url?: string | null
           sponsor_name?: string | null
@@ -853,6 +867,9 @@ export type Database = {
           challenger_accepted_at?: string | null
           challenger_avatar_url?: string | null
           challenger_id?: string
+          challenger_submission_platform?: string | null
+          challenger_submission_url?: string | null
+          challenger_submitted_at?: string | null
           challenger_username?: string
           created_at?: string
           created_by?: string | null
@@ -863,8 +880,12 @@ export type Database = {
           opponent_accepted_at?: string | null
           opponent_avatar_url?: string | null
           opponent_id?: string | null
+          opponent_submission_platform?: string | null
+          opponent_submission_url?: string | null
+          opponent_submitted_at?: string | null
           opponent_username?: string | null
           prize_cents?: number
+          scenepack_url?: string | null
           sponsor_campaign_id?: string | null
           sponsor_logo_url?: string | null
           sponsor_name?: string | null
