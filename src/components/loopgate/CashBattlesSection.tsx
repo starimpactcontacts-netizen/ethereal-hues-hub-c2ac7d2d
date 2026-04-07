@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { DollarSign, Swords, Clock, Flame, Plus, Zap, Info, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCashBattles } from "@/hooks/useCashBattles";
+import { useGuestMode } from "@/hooks/useGuestMode";
+import { useAccountPrompt } from "@/hooks/useAccountPrompt";
 import CashBattleApplyModal from "./CashBattleApplyModal";
 
 function formatPrize(cents: number): string {
