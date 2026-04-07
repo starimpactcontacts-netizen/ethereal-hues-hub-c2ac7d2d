@@ -47,6 +47,8 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
   const { user } = useAuth();
   const [showMenu, setShowMenu] = useState(false);
   const [showChallengeConfirm, setShowChallengeConfirm] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [commentCount, setCommentCount] = useState(post.comment_count || 0);
   const [challengeLoading, setChallengeLoading] = useState(false);
   const isOwn = user?.id === post.user_id;
 
