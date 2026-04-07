@@ -176,8 +176,7 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
 
       {/* Bottom POST button */}
       <div
-        className="border-t border-border/20 bg-background px-4 py-3 shrink-0"
-        style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 12px), 12px)' }}
+        className="border-t border-border/20 bg-background px-4 pt-3 pb-24 shrink-0"
       >
         <button
           onClick={handleSubmit}
