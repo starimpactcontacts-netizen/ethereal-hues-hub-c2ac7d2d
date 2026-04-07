@@ -18,6 +18,7 @@ import JudgeManagementSection from "@/components/loopgate/JudgeManagementSection
 import JudgeApplicationsSection from "@/components/loopgate/JudgeApplicationsSection";
 import SanctionedTournamentManagement from "@/components/loopgate/SanctionedTournamentManagement";
 import LeagueApplicationsAdmin from "@/components/loopgate/LeagueApplicationsAdmin";
+import CashBattleAdminPanel from "@/components/loopgate/CashBattleAdminPanel";
 
 import { awardReviewXP } from "@/hooks/useJudgeXP";
 import BattleAdminPanel from "@/components/loopgate/BattleAdminPanel";
@@ -3591,6 +3592,9 @@ export default function OpsPanel() {
 
         {/* Admin: League Applications */}
         <LeagueApplicationsAdmin />
+
+        {/* Admin: Cash Battle Applications & Matchmaking */}
+        <CashBattleAdminPanel />
 
         <section>
           <div className="flex items-center justify-between mb-4">

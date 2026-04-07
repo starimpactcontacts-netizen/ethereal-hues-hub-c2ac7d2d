@@ -1,57 +1,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { DollarSign, Swords, Clock, Trophy, Flame, ChevronRight, Zap, Plus } from "lucide-react";
+import { DollarSign, Swords, Clock, Flame, Plus, Zap } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useNavigate } from "react-router-dom";
-
-interface CashBattle {
-  id: string;
-  challenger_username: string;
-  challenger_avatar_url: string | null;
-  opponent_username: string | null;
-  opponent_avatar_url: string | null;
-  prize_cents: number;
-  status: "open" | "live" | "completed";
-  duration_hours: number;
-  ends_at: string | null;
-}
-
-// Placeholder data until backend is wired
-const DEMO_BATTLES: CashBattle[] = [
-  {
-    id: "cash-1",
-    challenger_username: "RXZOR",
-    challenger_avatar_url: null,
-    opponent_username: null,
-    opponent_avatar_url: null,
-    prize_cents: 2500,
-    status: "open",
-    duration_hours: 24,
-    ends_at: null,
-  },
-  {
-    id: "cash-2",
-    challenger_username: "VFXGOD",
-    challenger_avatar_url: null,
-    opponent_username: "CUTZILLA",
-    opponent_avatar_url: null,
-    prize_cents: 5000,
-    status: "live",
-    duration_hours: 12,
-    ends_at: new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: "cash-3",
-    challenger_username: "EDITKING",
-    challenger_avatar_url: null,
-    opponent_username: "WAVEFX",
-    opponent_avatar_url: null,
-    prize_cents: 10000,
-    status: "live",
-    duration_hours: 48,
-    ends_at: new Date(Date.now() + 22 * 60 * 60 * 1000).toISOString(),
-  },
-];
+import { useCashBattles } from "@/hooks/useCashBattles";
+import CashBattleApplyModal from "./CashBattleApplyModal";
 
 function formatPrize(cents: number): string {
   return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
@@ -68,116 +20,125 @@ function formatTimeLeft(endDate: string | null): string {
   return `${minutes}m`;
 }
 
-function CashBattleCard({ battle }: { battle: CashBattle }) {
-  const navigate = useNavigate();
-  const isOpen = battle.status === "open";
+function CashBattleCard({ battle }: { battle: any }) {
   const isLive = battle.status === "live";
+  const isUpcoming = battle.status === "upcoming";
 
   return (
     <motion.div
       whileTap={{ scale: 0.97 }}
       whileHover={{ y: -2 }}
-      onClick={() => {/* navigate to cash battle detail */}}
-      className="w-[200px] shrink-0 rounded-xl overflow-hidden cursor-pointer group relative"
+      className="w-[220px] shrink-0 rounded-2xl overflow-hidden cursor-pointer group relative"
       style={{
-        background: "linear-gradient(160deg, rgba(22,22,28,1) 0%, rgba(8,8,12,1) 100%)",
+        background: "linear-gradient(160deg, rgba(22,22,28,1) 0%, rgba(6,6,8,1) 100%)",
         boxShadow: isLive
-          ? "0 0 30px rgba(16,185,129,0.12), 0 8px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04)"
-          : "0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)",
+          ? "0 0 40px rgba(16,185,129,0.15), 0 12px 40px rgba(0,0,0,0.7)"
+          : "0 12px 40px rgba(0,0,0,0.6)",
       }}
     >
-      {/* Top glow */}
-      <div className="absolute top-0 left-0 right-0 h-[1px]" style={{
+      {/* Top accent line */}
+      <div className="absolute top-0 left-0 right-0 h-[2px]" style={{
         background: isLive
-          ? "linear-gradient(90deg, transparent, rgba(16,185,129,0.6), transparent)"
-          : "linear-gradient(90deg, transparent, rgba(234,179,8,0.5), transparent)",
+          ? "linear-gradient(90deg, transparent, #10b981, transparent)"
+          : "linear-gradient(90deg, transparent, rgba(234,179,8,0.6), transparent)",
       }} />
 
-      {/* Prize banner */}
-      <div className="px-3 pt-3 pb-1">
+      {/* Prize + Status */}
+      <div className="px-4 pt-4 pb-1">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
-              <DollarSign className="w-3 h-3 text-emerald-400" />
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>
+              <DollarSign className="w-3.5 h-3.5 text-black" />
             </div>
-            <span className="text-lg font-black text-emerald-400" style={{ fontFamily: "Teko, sans-serif" }}>
+            <span className="text-2xl font-black text-white" style={{ fontFamily: "Teko, sans-serif" }}>
               {formatPrize(battle.prize_cents)}
             </span>
           </div>
-          <div className="flex items-center gap-1">
-            {isLive && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />}
-            <span className={`text-[9px] font-bold uppercase tracking-[0.12em] ${
-              isLive ? "text-emerald-400" : "text-amber-400"
+          <div className="flex items-center gap-1.5">
+            {isLive && <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />}
+            <span className={`text-[10px] font-black uppercase tracking-[0.15em] ${
+              isLive ? "text-emerald-400" : isUpcoming ? "text-amber-400" : "text-zinc-500"
             }`} style={{ fontFamily: "Teko, sans-serif" }}>
-              {isLive ? "LIVE" : "OPEN"}
+              {battle.status.toUpperCase()}
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-1 mt-0.5 text-[8px] text-zinc-500">
-          <Clock className="w-2.5 h-2.5" />
+        <div className="flex items-center gap-1 mt-1 text-[9px] text-zinc-600">
+          <Clock className="w-3 h-3" />
           <span>{battle.duration_hours}h battle</span>
-          {isLive && <span className="ml-1 text-emerald-500/70">· {formatTimeLeft(battle.ends_at)}</span>}
+          {isLive && battle.ends_at && (
+            <span className="ml-1 text-emerald-500/70">· {formatTimeLeft(battle.ends_at)} left</span>
+          )}
         </div>
       </div>
 
-      {/* VS Display */}
-      <div className="px-3 py-3 flex items-center justify-between">
-        {/* Challenger */}
-        <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
-          <Avatar className="w-11 h-11 border-2 border-emerald-500/30">
-            <AvatarImage src={battle.challenger_avatar_url || ""} />
-            <AvatarFallback className="text-xs font-bold bg-emerald-500/10 text-emerald-400">
-              {battle.challenger_username.charAt(0)}
-            </AvatarFallback>
-          </Avatar>
-          <span className="text-[9px] font-bold truncate max-w-[65px] uppercase text-foreground" style={{ fontFamily: "Teko, sans-serif" }}>
+      {/* VS Display — UFC-style */}
+      <div className="px-4 py-4 flex items-center justify-between">
+        <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+          <div className="relative">
+            <Avatar className="w-14 h-14 ring-2 ring-emerald-500/40">
+              <AvatarImage src={battle.challenger_avatar_url || ""} />
+              <AvatarFallback className="text-sm font-black bg-emerald-500/10 text-emerald-400">
+                {battle.challenger_username?.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
+              <Zap className="w-3 h-3 text-black" />
+            </div>
+          </div>
+          <span className="text-[10px] font-black truncate max-w-[75px] uppercase text-white" style={{ fontFamily: "Teko, sans-serif" }}>
             {battle.challenger_username}
           </span>
         </div>
 
-        {/* VS */}
-        <div className="mx-1 shrink-0">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{
-            background: "linear-gradient(135deg, rgba(16,185,129,0.25), rgba(234,179,8,0.25))",
-            border: "1px solid rgba(255,255,255,0.06)",
+        {/* VS badge */}
+        <div className="mx-2 shrink-0">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center relative" style={{
+            background: "radial-gradient(circle, rgba(16,185,129,0.3) 0%, transparent 70%)",
           }}>
-            <Swords className="w-3.5 h-3.5 text-white/70" />
+            <span className="text-lg font-black text-white/80" style={{ fontFamily: "Teko, sans-serif" }}>VS</span>
           </div>
         </div>
 
-        {/* Opponent */}
-        <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+        <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
           {battle.opponent_username ? (
             <>
-              <Avatar className="w-11 h-11 border-2 border-amber-500/30">
-                <AvatarImage src={battle.opponent_avatar_url || ""} />
-                <AvatarFallback className="text-xs font-bold bg-amber-500/10 text-amber-400">
-                  {battle.opponent_username.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-[9px] font-bold truncate max-w-[65px] uppercase text-foreground" style={{ fontFamily: "Teko, sans-serif" }}>
+              <div className="relative">
+                <Avatar className="w-14 h-14 ring-2 ring-red-500/40">
+                  <AvatarImage src={battle.opponent_avatar_url || ""} />
+                  <AvatarFallback className="text-sm font-black bg-red-500/10 text-red-400">
+                    {battle.opponent_username?.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
+                  <Zap className="w-3 h-3 text-black" />
+                </div>
+              </div>
+              <span className="text-[10px] font-black truncate max-w-[75px] uppercase text-white" style={{ fontFamily: "Teko, sans-serif" }}>
                 {battle.opponent_username}
               </span>
             </>
           ) : (
             <>
-              <div className="w-11 h-11 rounded-full border-2 border-dashed border-emerald-500/20 flex items-center justify-center bg-white/[0.02]">
-                <DollarSign className="w-4 h-4 text-emerald-500/30" />
+              <div className="w-14 h-14 rounded-full border-2 border-dashed border-zinc-700 flex items-center justify-center">
+                <span className="text-lg text-zinc-600">?</span>
               </div>
-              <span className="text-[9px] text-zinc-600 uppercase" style={{ fontFamily: "Teko, sans-serif" }}>Waiting</span>
+              <span className="text-[10px] text-zinc-600 uppercase" style={{ fontFamily: "Teko, sans-serif" }}>TBA</span>
             </>
           )}
         </div>
       </div>
 
       {/* CTA */}
-      <div className="px-3 pb-3">
-        <div className={`w-full text-center py-2 rounded-lg text-[12px] font-black uppercase tracking-wider ${
-          isOpen
-            ? "bg-emerald-500 text-black"
-            : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+      <div className="px-4 pb-4">
+        <div className={`w-full text-center py-2.5 rounded-xl text-[13px] font-black uppercase tracking-wider ${
+          isLive
+            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+            : isUpcoming
+            ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+            : "bg-zinc-800 text-zinc-400"
         }`} style={{ fontFamily: "Teko, sans-serif" }}>
-          {isOpen ? "ACCEPT — " + formatPrize(battle.prize_cents) : "WATCH LIVE"}
+          {isLive ? "WATCH LIVE" : isUpcoming ? "COMING SOON" : "VIEW"}
         </div>
       </div>
     </motion.div>
@@ -185,28 +146,33 @@ function CashBattleCard({ battle }: { battle: CashBattle }) {
 }
 
 export default function CashBattlesSection() {
-  const battles = DEMO_BATTLES;
+  const { battles, loading } = useCashBattles();
+  const [applyOpen, setApplyOpen] = useState(false);
 
   return (
     <div className="mb-2">
-      {/* Header */}
+      {/* Header — UFC energy */}
       <div className="flex items-center justify-between px-4 mb-3">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-lg bg-emerald-500/15 flex items-center justify-center">
-            <DollarSign className="w-4 h-4 text-emerald-400" />
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>
+            <DollarSign className="w-4 h-4 text-black" />
           </div>
           <div>
-            <h2 className="text-[14px] font-black uppercase tracking-wider text-foreground" style={{ fontFamily: "Teko, sans-serif" }}>
+            <h2 className="text-[15px] font-black uppercase tracking-wider text-white" style={{ fontFamily: "Teko, sans-serif" }}>
               Cash Battles
             </h2>
-            <p className="text-[9px] text-emerald-500/60 uppercase tracking-wider" style={{ fontFamily: "Teko, sans-serif" }}>
-              Real money · winner takes all
+            <p className="text-[9px] text-emerald-500/60 uppercase tracking-[0.15em]" style={{ fontFamily: "Teko, sans-serif" }}>
+              Winner takes all · Curated matchups
             </p>
           </div>
         </div>
-        <button className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase hover:bg-emerald-500/20 transition-colors">
+        <button
+          onClick={() => setApplyOpen(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-black text-[10px] font-black uppercase tracking-wider transition-all hover:scale-105"
+          style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}
+        >
           <Plus className="w-3 h-3" />
-          <span>Create</span>
+          <span>Apply</span>
         </button>
       </div>
 
@@ -216,14 +182,28 @@ export default function CashBattlesSection() {
           <CashBattleCard key={battle.id} battle={battle} />
         ))}
 
-        {/* Coming soon teaser */}
-        <div className="w-[160px] shrink-0 rounded-xl flex flex-col items-center justify-center gap-2 border border-dashed border-emerald-500/15 bg-emerald-500/[0.02]">
-          <Flame className="w-5 h-5 text-emerald-500/30" />
-          <span className="text-[10px] text-emerald-500/40 font-bold uppercase text-center px-3" style={{ fontFamily: "Teko, sans-serif" }}>
-            More cash battles dropping soon
-          </span>
-        </div>
+        {/* Apply teaser card */}
+        <motion.div
+          whileTap={{ scale: 0.97 }}
+          onClick={() => setApplyOpen(true)}
+          className="w-[180px] shrink-0 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer border border-dashed border-emerald-500/20"
+          style={{ background: 'rgba(16,185,129,0.03)', minHeight: 200 }}
+        >
+          <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.15)' }}>
+            <Swords className="w-6 h-6 text-emerald-500/50" />
+          </div>
+          <div className="text-center px-4">
+            <p className="text-[12px] text-emerald-400/80 font-black uppercase" style={{ fontFamily: "Teko, sans-serif" }}>
+              Think you got it?
+            </p>
+            <p className="text-[9px] text-zinc-600 mt-0.5">
+              Apply to compete for real money
+            </p>
+          </div>
+        </motion.div>
       </div>
+
+      <CashBattleApplyModal open={applyOpen} onClose={() => setApplyOpen(false)} />
     </div>
   );
 }

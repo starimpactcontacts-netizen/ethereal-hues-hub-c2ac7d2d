@@ -1,0 +1,181 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
+
+export interface CashBattleApplication {
+  id: string;
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+  tiktok_url: string | null;
+  instagram_url: string | null;
+  youtube_url: string | null;
+  demo_reel_url: string;
+  pitch: string | null;
+  agreed_to_terms: boolean;
+  status: string;
+  admin_notes: string | null;
+  created_at: string;
+}
+
+export interface CashBattle {
+  id: string;
+  challenger_id: string;
+  challenger_username: string;
+  challenger_avatar_url: string | null;
+  opponent_id: string | null;
+  opponent_username: string | null;
+  opponent_avatar_url: string | null;
+  prize_cents: number;
+  status: string;
+  duration_hours: number;
+  starts_at: string | null;
+  ends_at: string | null;
+  winner_id: string | null;
+  created_at: string;
+}
+
+export function useCashBattles() {
+  const [battles, setBattles] = useState<CashBattle[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchBattles();
+  }, []);
+
+  async function fetchBattles() {
+    const { data } = await supabase
+      .from('cash_battles')
+      .select('*')
+      .order('created_at', { ascending: false });
+    setBattles((data as any[]) || []);
+    setLoading(false);
+  }
+
+  return { battles, loading, refetch: fetchBattles };
+}
+
+export function useMyCashBattleApplication() {
+  const { user } = useAuth();
+  const [application, setApplication] = useState<CashBattleApplication | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) { setLoading(false); return; }
+    fetchApplication();
+  }, [user]);
+
+  async function fetchApplication() {
+    if (!user) return;
+    const { data } = await supabase
+      .from('cash_battle_applications')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    setApplication(data as any);
+    setLoading(false);
+  }
+
+  async function submitApplication(form: {
+    tiktok_url?: string;
+    instagram_url?: string;
+    youtube_url?: string;
+    demo_reel_url: string;
+    pitch?: string;
+  }) {
+    if (!user) return;
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('username, avatar_url')
+      .eq('id', user.id)
+      .single();
+
+    const { error } = await supabase.from('cash_battle_applications').insert({
+      user_id: user.id,
+      username: profile?.username || 'Unknown',
+      avatar_url: profile?.avatar_url,
+      tiktok_url: form.tiktok_url || null,
+      instagram_url: form.instagram_url || null,
+      youtube_url: form.youtube_url || null,
+      demo_reel_url: form.demo_reel_url,
+      pitch: form.pitch || null,
+      agreed_to_terms: true,
+    });
+
+    if (error) {
+      toast.error('Failed to submit application');
+      return false;
+    }
+    toast.success('Application submitted!');
+    await fetchApplication();
+    return true;
+  }
+
+  return { application, loading, submitApplication };
+}
+
+export function useAdminCashBattles() {
+  const [applications, setApplications] = useState<CashBattleApplication[]>([]);
+  const [battles, setBattles] = useState<CashBattle[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAll();
+  }, []);
+
+  async function fetchAll() {
+    const [appsRes, battlesRes] = await Promise.all([
+      supabase.from('cash_battle_applications').select('*').order('created_at', { ascending: false }),
+      supabase.from('cash_battles').select('*').order('created_at', { ascending: false }),
+    ]);
+    setApplications((appsRes.data as any[]) || []);
+    setBattles((battlesRes.data as any[]) || []);
+    setLoading(false);
+  }
+
+  async function updateApplicationStatus(id: string, status: string, notes?: string) {
+    await supabase.from('cash_battle_applications').update({
+      status,
+      admin_notes: notes || null,
+      reviewed_at: new Date().toISOString(),
+    }).eq('id', id);
+    await fetchAll();
+  }
+
+  async function createMatch(challengerId: string, opponentId: string, prizeCents: number, durationHours: number) {
+    const challApp = applications.find(a => a.user_id === challengerId);
+    const oppApp = applications.find(a => a.user_id === opponentId);
+    if (!challApp || !oppApp) return;
+
+    const { error } = await supabase.from('cash_battles').insert({
+      challenger_id: challengerId,
+      challenger_username: challApp.username,
+      challenger_avatar_url: challApp.avatar_url,
+      opponent_id: opponentId,
+      opponent_username: oppApp.username,
+      opponent_avatar_url: oppApp.avatar_url,
+      prize_cents: prizeCents,
+      duration_hours: durationHours,
+      status: 'upcoming',
+    });
+
+    if (error) {
+      toast.error('Failed to create match');
+      return;
+    }
+
+    // Mark both as matched
+    await Promise.all([
+      supabase.from('cash_battle_applications').update({ status: 'matched' }).eq('user_id', challengerId),
+      supabase.from('cash_battle_applications').update({ status: 'matched' }).eq('user_id', opponentId),
+    ]);
+
+    toast.success('Match created!');
+    await fetchAll();
+  }
+
+  return { applications, battles, loading, updateApplicationStatus, createMatch, refetch: fetchAll };
+}

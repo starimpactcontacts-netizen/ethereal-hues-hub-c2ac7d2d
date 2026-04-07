@@ -734,6 +734,126 @@ export type Database = {
           },
         ]
       }
+      cash_battle_applications: {
+        Row: {
+          admin_notes: string | null
+          agreed_to_terms: boolean
+          avatar_url: string | null
+          created_at: string
+          demo_reel_url: string
+          id: string
+          instagram_url: string | null
+          matched_battle_id: string | null
+          pitch: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          tiktok_url: string | null
+          updated_at: string
+          user_id: string
+          username: string
+          youtube_url: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          agreed_to_terms?: boolean
+          avatar_url?: string | null
+          created_at?: string
+          demo_reel_url: string
+          id?: string
+          instagram_url?: string | null
+          matched_battle_id?: string | null
+          pitch?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          tiktok_url?: string | null
+          updated_at?: string
+          user_id: string
+          username: string
+          youtube_url?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          agreed_to_terms?: boolean
+          avatar_url?: string | null
+          created_at?: string
+          demo_reel_url?: string
+          id?: string
+          instagram_url?: string | null
+          matched_battle_id?: string | null
+          pitch?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          tiktok_url?: string | null
+          updated_at?: string
+          user_id?: string
+          username?: string
+          youtube_url?: string | null
+        }
+        Relationships: []
+      }
+      cash_battles: {
+        Row: {
+          admin_notes: string | null
+          challenger_avatar_url: string | null
+          challenger_id: string
+          challenger_username: string
+          created_at: string
+          created_by: string | null
+          duration_hours: number
+          ends_at: string | null
+          id: string
+          opponent_avatar_url: string | null
+          opponent_id: string | null
+          opponent_username: string | null
+          prize_cents: number
+          starts_at: string | null
+          status: string
+          updated_at: string
+          winner_id: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          challenger_avatar_url?: string | null
+          challenger_id: string
+          challenger_username: string
+          created_at?: string
+          created_by?: string | null
+          duration_hours?: number
+          ends_at?: string | null
+          id?: string
+          opponent_avatar_url?: string | null
+          opponent_id?: string | null
+          opponent_username?: string | null
+          prize_cents?: number
+          starts_at?: string | null
+          status?: string
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          challenger_avatar_url?: string | null
+          challenger_id?: string
+          challenger_username?: string
+          created_at?: string
+          created_by?: string | null
+          duration_hours?: number
+          ends_at?: string | null
+          id?: string
+          opponent_avatar_url?: string | null
+          opponent_id?: string | null
+          opponent_username?: string | null
+          prize_cents?: number
+          starts_at?: string | null
+          status?: string
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Relationships: []
+      }
       commission_messages: {
         Row: {
           avatar_url: string | null
