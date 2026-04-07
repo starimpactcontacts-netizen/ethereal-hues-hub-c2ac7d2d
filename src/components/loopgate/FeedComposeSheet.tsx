@@ -170,11 +170,7 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
                 <textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder={
-                    postType === 'flex' ? "What's your flex? 🔥" :
-                    postType === 'edit_share' ? "Share your latest edit..." :
-                    "What's happening in the loop?"
-                  }
+                  placeholder="What's on your mind?"
                   autoFocus
                   className="w-full bg-transparent text-foreground text-[17px] placeholder:text-muted-foreground/40 resize-none focus:outline-none leading-relaxed min-h-[160px]"
                   maxLength={300}
