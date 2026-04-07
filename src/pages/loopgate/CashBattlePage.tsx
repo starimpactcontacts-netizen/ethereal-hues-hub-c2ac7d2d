@@ -1,12 +1,13 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, DollarSign, Clock, Send, Trophy, ExternalLink, Zap, AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, DollarSign, Clock, Send, Trophy, ExternalLink, Zap, ChevronDown, CheckCircle, Loader2, Camera, Image as ImageIcon, Download } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import CashBattleChat from "@/components/loopgate/CashBattleChat";
 
 function formatPrize(cents: number): string {
   return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
@@ -29,8 +30,6 @@ function useCountdown(endDate: string | null) {
   return { text: `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`, expired: false };
 }
 
-const PLATFORMS = ["tiktok", "youtube", "instagram"];
-
 export default function CashBattlePage() {
   const { battleId } = useParams();
   const navigate = useNavigate();
@@ -38,8 +37,11 @@ export default function CashBattlePage() {
   const [battle, setBattle] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [url, setUrl] = useState("");
-  const [platform, setPlatform] = useState("tiktok");
   const [submitting, setSubmitting] = useState(false);
+  const [rulesOpen, setRulesOpen] = useState(false);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!battleId) return;
@@ -64,17 +66,46 @@ export default function CashBattlePage() {
   const isOpponent = user?.id === battle?.opponent_id;
   const isFighter = isChallenger || isOpponent;
   const mySubmissionUrl = isChallenger ? battle?.challenger_submission_url : battle?.opponent_submission_url;
-  const opponentSubmissionUrl = isChallenger ? battle?.opponent_submission_url : battle?.challenger_submission_url;
+
+  function handleThumbnailSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setThumbnailFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setThumbnailPreview(reader.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  async function uploadThumbnail(): Promise<string | null> {
+    if (!thumbnailFile || !battleId || !user) return null;
+    const ext = thumbnailFile.name.split('.').pop();
+    const path = `cash-battles/${battleId}/${user.id}.${ext}`;
+    const { error } = await supabase.storage.from("battle-thumbnails").upload(path, thumbnailFile, { upsert: true });
+    if (error) return null;
+    const { data } = supabase.storage.from("battle-thumbnails").getPublicUrl(path);
+    return data.publicUrl;
+  }
 
   async function handleSubmit() {
     if (!url.trim() || !battleId || !user) return;
     setSubmitting(true);
     const prefix = isChallenger ? "challenger" : "opponent";
-    const { error } = await supabase.from("cash_battles").update({
+    
+    let thumbUrl: string | null = null;
+    if (thumbnailFile) {
+      thumbUrl = await uploadThumbnail();
+    }
+
+    const updatePayload: any = {
       [`${prefix}_submission_url`]: url.trim(),
-      [`${prefix}_submission_platform`]: platform,
+      [`${prefix}_submission_platform`]: "tiktok",
       [`${prefix}_submitted_at`]: new Date().toISOString(),
-    } as any).eq("id", battleId);
+    };
+    if (thumbUrl) {
+      updatePayload[`${prefix}_thumbnail_url`] = thumbUrl;
+    }
+
+    const { error } = await supabase.from("cash_battles").update(updatePayload).eq("id", battleId);
     if (error) toast.error("Failed to submit");
     else { toast.success("Edit submitted! 🔥"); await fetchBattle(); }
     setSubmitting(false);
@@ -99,6 +130,8 @@ export default function CashBattlePage() {
 
   const isLive = battle.status === "live";
   const isCompleted = battle.status === "completed";
+  const challengerThumb = battle.challenger_thumbnail_url;
+  const opponentThumb = battle.opponent_thumbnail_url;
 
   return (
     <div className="min-h-screen" style={{ background: "#0a0a0c" }}>
@@ -122,24 +155,42 @@ export default function CashBattlePage() {
         </div>
       </div>
 
+      {/* Sponsor Banner */}
+      {battle.sponsor_name && (
+        <div className="mx-4 mt-3 rounded-xl py-2.5 px-4 flex items-center gap-3" style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.12), rgba(239,68,68,0.12))", border: "1px solid rgba(255,255,255,0.08)" }}>
+          {battle.sponsor_logo_url && <img src={battle.sponsor_logo_url} alt="" className="w-7 h-7 rounded-lg object-cover" />}
+          <div className="flex-1 min-w-0">
+            <p className="text-[9px] uppercase tracking-[0.15em] text-zinc-500" style={{ fontFamily: "Teko, sans-serif" }}>Sponsored By</p>
+            <p className="text-[13px] font-black text-white uppercase" style={{ fontFamily: "Teko, sans-serif" }}>{battle.sponsor_name}</p>
+          </div>
+          {battle.scenepack_url && (
+            <a href={battle.scenepack_url} target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold text-emerald-400 uppercase"
+              style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)" }}>
+              <Download className="w-3 h-3" /> Scenepack
+            </a>
+          )}
+        </div>
+      )}
+
       {/* Countdown Timer */}
       {isLive && (
-        <div className="mx-4 mt-4 rounded-2xl py-4 text-center" style={{
+        <div className="mx-4 mt-3 rounded-2xl py-3 text-center" style={{
           background: countdown.expired ? "rgba(239,68,68,0.1)" : "rgba(255,255,255,0.03)",
           border: `1px solid ${countdown.expired ? "rgba(239,68,68,0.3)" : "rgba(255,255,255,0.06)"}`,
         }}>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-1" style={{ fontFamily: "Teko, sans-serif" }}>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-0.5" style={{ fontFamily: "Teko, sans-serif" }}>
             {countdown.expired ? "Submissions Closed" : "Time Remaining"}
           </p>
-          <p className={`text-4xl font-black ${countdown.expired ? "text-red-400" : "text-white"}`} style={{ fontFamily: "Teko, sans-serif", letterSpacing: "0.1em" }}>
+          <p className={`text-3xl font-black ${countdown.expired ? "text-red-400" : "text-white"}`} style={{ fontFamily: "Teko, sans-serif", letterSpacing: "0.1em" }}>
             {countdown.text}
           </p>
         </div>
       )}
 
       {isCompleted && (
-        <div className="mx-4 mt-4 rounded-2xl py-4 text-center" style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)" }}>
-          <Trophy className="w-8 h-8 text-emerald-400 mx-auto mb-1" />
+        <div className="mx-4 mt-3 rounded-2xl py-3 text-center" style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)" }}>
+          <Trophy className="w-7 h-7 text-emerald-400 mx-auto mb-1" />
           <p className="text-lg font-black text-emerald-400 uppercase" style={{ fontFamily: "Teko, sans-serif" }}>
             {battle.winner_id === battle.challenger_id ? battle.challenger_username : battle.opponent_username} wins {formatPrize(battle.prize_cents)}!
           </p>
@@ -147,8 +198,7 @@ export default function CashBattlePage() {
       )}
 
       {/* VS Display */}
-      <div className="flex items-center justify-center gap-4 py-6 px-4">
-        {/* Blue Corner */}
+      <div className="flex items-center justify-center gap-4 py-5 px-4">
         <FighterCorner
           username={battle.challenger_username}
           avatarUrl={battle.challenger_avatar_url}
@@ -156,14 +206,11 @@ export default function CashBattlePage() {
           submitted={!!battle.challenger_submission_url}
           isWinner={isCompleted && battle.winner_id === battle.challenger_id}
         />
-
         <div className="shrink-0">
-          <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: "radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)" }}>
-            <span className="text-xl font-black text-white/60" style={{ fontFamily: "Teko, sans-serif" }}>VS</span>
+          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)" }}>
+            <span className="text-lg font-black text-white/60" style={{ fontFamily: "Teko, sans-serif" }}>VS</span>
           </div>
         </div>
-
-        {/* Red Corner */}
         <FighterCorner
           username={battle.opponent_username || "TBA"}
           avatarUrl={battle.opponent_avatar_url}
@@ -173,45 +220,70 @@ export default function CashBattlePage() {
         />
       </div>
 
-      {/* Sponsor / Rules */}
-      <div className="mx-4 mb-4 rounded-2xl p-4 space-y-3" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
-        <div className="flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-amber-400" />
-          <span className="text-[12px] font-black text-white uppercase tracking-wider" style={{ fontFamily: "Teko, sans-serif" }}>Rules</span>
-        </div>
-        <ul className="space-y-2 text-[12px] text-zinc-400 leading-relaxed">
-          <li className="flex items-start gap-2">
-            <span className="text-blue-400 mt-0.5">1.</span>
-            <span>Create an edit using the <strong className="text-white">sponsor's scenepack/content</strong> — edits without it are disqualified.</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-blue-400 mt-0.5">2.</span>
-            <span>Post your edit on TikTok, YouTube, or Instagram and paste the link below.</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-blue-400 mt-0.5">3.</span>
-            <span>Submit before the timer runs out. Late submissions = auto-forfeit.</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-blue-400 mt-0.5">4.</span>
-            <span>A judge will review both edits and pick the winner. <strong className="text-white">{formatPrize(battle.prize_cents)}</strong> goes to the best edit.</span>
-          </li>
-        </ul>
-        {battle.sponsor_name && (
-          <div className="flex items-center gap-2 pt-2" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-            {battle.sponsor_logo_url && <img src={battle.sponsor_logo_url} alt="" className="w-5 h-5 rounded object-cover" />}
-            <span className="text-[11px] text-blue-400 font-semibold">Sponsored by {battle.sponsor_name}</span>
-          </div>
-        )}
-        {battle.scenepack_url && (
-          <a href={battle.scenepack_url} target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-[11px] text-emerald-400 hover:underline">
-            <ExternalLink className="w-3.5 h-3.5" /> Download Scenepack
-          </a>
-        )}
+      {/* Edit Showcase — side by side blocks */}
+      <div className="mx-4 mb-4 grid grid-cols-2 gap-2">
+        <EditBlock
+          username={battle.challenger_username}
+          color="blue"
+          thumbnailUrl={challengerThumb}
+          submissionUrl={battle.challenger_submission_url}
+          submitted={!!battle.challenger_submission_url}
+          isCompleted={isCompleted}
+        />
+        <EditBlock
+          username={battle.opponent_username || "TBA"}
+          color="red"
+          thumbnailUrl={opponentThumb}
+          submissionUrl={battle.opponent_submission_url}
+          submitted={!!battle.opponent_submission_url}
+          isCompleted={isCompleted}
+        />
       </div>
 
-      {/* Submit Section — only for fighters, only if live and not yet submitted */}
+      {/* Collapsible Rules */}
+      <div className="mx-4 mb-4">
+        <button
+          onClick={() => setRulesOpen(!rulesOpen)}
+          className="w-full flex items-center justify-between px-4 py-3 rounded-xl"
+          style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
+        >
+          <div className="flex items-center gap-2">
+            <span className="text-[12px] font-black text-white uppercase tracking-wider" style={{ fontFamily: "Teko, sans-serif" }}>Rules</span>
+          </div>
+          <ChevronDown className={`w-4 h-4 text-zinc-500 transition-transform ${rulesOpen ? "rotate-180" : ""}`} />
+        </button>
+        <AnimatePresence>
+          {rulesOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="px-4 py-3 space-y-2 text-[12px] text-zinc-400 leading-relaxed" style={{ borderLeft: "1px solid rgba(255,255,255,0.06)", borderRight: "1px solid rgba(255,255,255,0.06)", borderBottom: "1px solid rgba(255,255,255,0.06)", borderRadius: "0 0 12px 12px" }}>
+                <div className="flex items-start gap-2">
+                  <span className="text-blue-400 mt-0.5 font-bold">1.</span>
+                  <span>Create an edit using the <strong className="text-white">sponsor's scenepack/content</strong> — edits without it are disqualified.</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-blue-400 mt-0.5 font-bold">2.</span>
+                  <span>Post your edit on <strong className="text-white">TikTok</strong> and paste the link below.</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-blue-400 mt-0.5 font-bold">3.</span>
+                  <span>Submit before the timer runs out. Late submissions = auto-forfeit.</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-blue-400 mt-0.5 font-bold">4.</span>
+                  <span>A judge will review both edits and pick the winner. <strong className="text-white">{formatPrize(battle.prize_cents)}</strong> goes to the best edit.</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Submit Section — TikTok only, with optional thumbnail */}
       {isFighter && isLive && !mySubmissionUrl && !countdown.expired && (
         <motion.div
           initial={{ opacity: 0, y: 8 }}
@@ -223,30 +295,46 @@ export default function CashBattlePage() {
             Submit Your Edit
           </p>
 
-          {/* Platform picker */}
-          <div className="flex gap-2 mb-3">
-            {PLATFORMS.map((p) => (
-              <button
-                key={p}
-                onClick={() => setPlatform(p)}
-                className="px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase transition-all"
-                style={{
-                  background: platform === p ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.04)",
-                  color: platform === p ? "#000" : "rgba(255,255,255,0.4)",
-                  border: `1px solid ${platform === p ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.08)"}`,
-                }}
-              >
-                {p}
-              </button>
-            ))}
+          {/* TikTok label */}
+          <div className="flex items-center gap-2 mb-3">
+            <span className="px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase" style={{ background: "rgba(255,255,255,0.9)", color: "#000", border: "1px solid rgba(255,255,255,0.9)" }}>
+              TikTok
+            </span>
+            <span className="text-[10px] text-zinc-500">Post your edit on TikTok</span>
           </div>
 
           <Input
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="Paste your video link..."
+            placeholder="https://tiktok.com/@handle/video/..."
             className="bg-white/[0.04] border-white/10 text-sm text-white placeholder:text-white/20 rounded-xl mb-3"
           />
+
+          {/* Optional thumbnail */}
+          <div className="mb-3">
+            <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2" style={{ fontFamily: "Teko, sans-serif" }}>
+              Thumbnail <span className="text-zinc-600">(optional)</span>
+            </p>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailSelect} />
+            {thumbnailPreview ? (
+              <div className="relative w-full h-28 rounded-xl overflow-hidden border border-white/10">
+                <img src={thumbnailPreview} alt="Thumbnail" className="w-full h-full object-cover" />
+                <button
+                  onClick={() => { setThumbnailFile(null); setThumbnailPreview(null); }}
+                  className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 flex items-center justify-center text-white text-xs"
+                >×</button>
+              </div>
+            ) : (
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full py-4 rounded-xl flex flex-col items-center gap-1.5 transition-all"
+                style={{ background: "rgba(255,255,255,0.02)", border: "1px dashed rgba(255,255,255,0.1)" }}
+              >
+                <Camera className="w-5 h-5 text-zinc-500" />
+                <span className="text-[10px] text-zinc-500">Add a cover image for your edit</span>
+              </button>
+            )}
+          </div>
 
           <button
             onClick={handleSubmit}
@@ -273,22 +361,16 @@ export default function CashBattlePage() {
         </div>
       )}
 
-      {/* Submission status overview */}
-      <div className="mx-4 mb-6 space-y-2">
-        <p className="text-[11px] text-zinc-600 uppercase tracking-wider" style={{ fontFamily: "Teko, sans-serif" }}>Submission Status</p>
-        <SubmissionRow
-          username={battle.challenger_username}
-          color="blue"
-          submitted={!!battle.challenger_submission_url}
-          url={isCompleted ? battle.challenger_submission_url : undefined}
-        />
-        <SubmissionRow
-          username={battle.opponent_username || "TBA"}
-          color="red"
-          submitted={!!battle.opponent_submission_url}
-          url={isCompleted ? battle.opponent_submission_url : undefined}
-        />
-      </div>
+      {/* Chat */}
+      {battleId && (
+        <div className="mx-4 mb-4 rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.06)" }}>
+          <CashBattleChat
+            battleId={battleId}
+            challengerId={battle.challenger_id}
+            opponentId={battle.opponent_id}
+          />
+        </div>
+      )}
 
       <div className="h-24" />
     </div>
@@ -306,7 +388,7 @@ function FighterCorner({ username, avatarUrl, color, submitted, isWinner }: {
   return (
     <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
       <div className="relative">
-        <Avatar className={`w-16 h-16 ring-2 ${ring}`}>
+        <Avatar className={`w-14 h-14 ring-2 ${ring}`}>
           <AvatarImage src={avatarUrl || ""} />
           <AvatarFallback className={`text-lg font-black ${bg} ${textColor}`}>{username?.charAt(0)}</AvatarFallback>
         </Avatar>
@@ -319,35 +401,50 @@ function FighterCorner({ username, avatarUrl, color, submitted, isWinner }: {
           </div>
         )}
       </div>
-      <span className={`text-[12px] font-black truncate max-w-[80px] uppercase ${textColor}`} style={{ fontFamily: "Teko, sans-serif" }}>
+      <span className={`text-[13px] font-black truncate max-w-[80px] uppercase ${textColor}`} style={{ fontFamily: "Teko, sans-serif" }}>
         {username}
       </span>
     </div>
   );
 }
 
-function SubmissionRow({ username, color, submitted, url }: {
-  username: string; color: "blue" | "red"; submitted: boolean; url?: string;
+function EditBlock({ username, color, thumbnailUrl, submissionUrl, submitted, isCompleted }: {
+  username: string; color: "blue" | "red"; thumbnailUrl: string | null; submissionUrl: string | null; submitted: boolean; isCompleted: boolean;
 }) {
-  const dotColor = color === "blue" ? "bg-blue-500" : "bg-red-500";
+  const borderColor = color === "blue" ? "rgba(59,130,246,0.3)" : "rgba(239,68,68,0.3)";
+  const accentColor = color === "blue" ? "#3b82f6" : "#ef4444";
+  const labelColor = color === "blue" ? "text-blue-400" : "text-red-400";
+
   return (
-    <div className="flex items-center justify-between px-3 py-2.5 rounded-xl" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}>
-      <div className="flex items-center gap-2">
-        <span className={`w-2 h-2 rounded-full ${dotColor}`} />
-        <span className="text-[12px] font-bold text-white uppercase" style={{ fontFamily: "Teko, sans-serif" }}>{username}</span>
-      </div>
-      {submitted ? (
-        <div className="flex items-center gap-1.5">
-          <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
-          <span className="text-[10px] text-emerald-400 font-semibold">Submitted</span>
-          {url && (
-            <a href={url} target="_blank" rel="noopener noreferrer" className="ml-1">
-              <ExternalLink className="w-3 h-3 text-zinc-500 hover:text-zinc-300" />
-            </a>
-          )}
+    <div className="rounded-xl overflow-hidden" style={{ background: "rgba(255,255,255,0.02)", border: `1px solid ${borderColor}` }}>
+      {/* Thumbnail area */}
+      <div className="aspect-[9/12] relative flex items-center justify-center" style={{ background: `linear-gradient(180deg, ${accentColor}08 0%, transparent 100%)` }}>
+        {thumbnailUrl ? (
+          <img src={thumbnailUrl} alt={`${username}'s edit`} className="w-full h-full object-cover" />
+        ) : (
+          <div className="flex flex-col items-center gap-1.5 text-center px-4">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: `${accentColor}15` }}>
+              {submitted ? <CheckCircle className="w-5 h-5" style={{ color: accentColor }} /> : <Zap className="w-5 h-5 text-zinc-600" />}
+            </div>
+            <span className="text-[10px] text-zinc-600">
+              {submitted ? "Edit submitted" : "Awaiting submission"}
+            </span>
+          </div>
+        )}
+        {/* Overlay label */}
+        <div className="absolute bottom-0 left-0 right-0 px-2 py-1.5" style={{ background: "linear-gradient(transparent, rgba(0,0,0,0.8))" }}>
+          <p className={`text-[11px] font-black uppercase truncate ${labelColor}`} style={{ fontFamily: "Teko, sans-serif" }}>
+            {username}
+          </p>
         </div>
-      ) : (
-        <span className="text-[10px] text-zinc-600">Waiting...</span>
+      </div>
+      {/* Watch button */}
+      {submissionUrl && isCompleted && (
+        <a href={submissionUrl} target="_blank" rel="noopener noreferrer"
+          className="flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-wider transition-all"
+          style={{ background: `${accentColor}15`, color: accentColor }}>
+          <ExternalLink className="w-3 h-3" /> Watch
+        </a>
       )}
     </div>
   );
