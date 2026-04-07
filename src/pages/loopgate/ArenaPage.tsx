@@ -1131,7 +1131,10 @@ export default function ArenaPage() {
 
           {/* search bar moved to top */}
 
-          {/* ═══ MISSIONS — BELOW GO, ABOVE COMPETITIONS ═══ */}
+          {/* ═══ CASH BATTLES — ABOVE MISSIONS ═══ */}
+          <CashBattlesSection />
+
+          {/* ═══ MISSIONS — BELOW CASH BATTLES, ABOVE COMPETITIONS ═══ */}
           <ArenaMissionsSection />
 
           {/* ═══ COMPETITIONS ═══ */}

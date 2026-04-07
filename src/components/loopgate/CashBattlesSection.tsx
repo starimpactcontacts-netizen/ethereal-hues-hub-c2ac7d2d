@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { DollarSign, Swords, Clock, Trophy, Flame, ChevronRight, Zap } from "lucide-react";
+import { DollarSign, Swords, Clock, Trophy, Flame, ChevronRight, Zap, Plus } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 
