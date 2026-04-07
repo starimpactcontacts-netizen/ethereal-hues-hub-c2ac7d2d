@@ -794,6 +794,63 @@ export type Database = {
         }
         Relationships: []
       }
+      cash_battle_messages: {
+        Row: {
+          avatar_url: string | null
+          battle_id: string
+          created_at: string
+          id: string
+          is_system: boolean | null
+          message_text: string
+          reply_to_id: string | null
+          reply_to_text: string | null
+          reply_to_username: string | null
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          battle_id: string
+          created_at?: string
+          id?: string
+          is_system?: boolean | null
+          message_text: string
+          reply_to_id?: string | null
+          reply_to_text?: string | null
+          reply_to_username?: string | null
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          battle_id?: string
+          created_at?: string
+          id?: string
+          is_system?: boolean | null
+          message_text?: string
+          reply_to_id?: string | null
+          reply_to_text?: string | null
+          reply_to_username?: string | null
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_battle_messages_battle_id_fkey"
+            columns: ["battle_id"]
+            isOneToOne: false
+            referencedRelation: "cash_battles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_battle_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "cash_battle_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cash_battles: {
         Row: {
           admin_notes: string | null
@@ -804,6 +861,7 @@ export type Database = {
           challenger_submission_platform: string | null
           challenger_submission_url: string | null
           challenger_submitted_at: string | null
+          challenger_thumbnail_url: string | null
           challenger_username: string
           created_at: string
           created_by: string | null
@@ -817,6 +875,7 @@ export type Database = {
           opponent_submission_platform: string | null
           opponent_submission_url: string | null
           opponent_submitted_at: string | null
+          opponent_thumbnail_url: string | null
           opponent_username: string | null
           prize_cents: number
           scenepack_url: string | null
@@ -837,6 +896,7 @@ export type Database = {
           challenger_submission_platform?: string | null
           challenger_submission_url?: string | null
           challenger_submitted_at?: string | null
+          challenger_thumbnail_url?: string | null
           challenger_username: string
           created_at?: string
           created_by?: string | null
@@ -850,6 +910,7 @@ export type Database = {
           opponent_submission_platform?: string | null
           opponent_submission_url?: string | null
           opponent_submitted_at?: string | null
+          opponent_thumbnail_url?: string | null
           opponent_username?: string | null
           prize_cents?: number
           scenepack_url?: string | null
@@ -870,6 +931,7 @@ export type Database = {
           challenger_submission_platform?: string | null
           challenger_submission_url?: string | null
           challenger_submitted_at?: string | null
+          challenger_thumbnail_url?: string | null
           challenger_username?: string
           created_at?: string
           created_by?: string | null
@@ -883,6 +945,7 @@ export type Database = {
           opponent_submission_platform?: string | null
           opponent_submission_url?: string | null
           opponent_submitted_at?: string | null
+          opponent_thumbnail_url?: string | null
           opponent_username?: string | null
           prize_cents?: number
           scenepack_url?: string | null
