@@ -31,15 +31,24 @@ Total: /100
 CC, Null layers, Topaz, Twixtor, RSMB, Sapphire, Keyframes, Velocity, Shake, Displacement, Glitch, Chromatic aberration, Vignette, LUTs, Masking, Rotoscoping, Blend modes, Expressions, Motion tracking, 3D layers, Parallax, AMV, Velocity edit, Flow edit, Hard cuts, Beat sync, Impact frames, Flash transitions, Zoom cuts, Whip pans, Glow, Light leaks, Particles, RGB split, Grain
 
 === GRADE SCALE (total /100) ===
-- S (85-100): Elite — professional quality, genuinely impressive work
-- A (70-84): Solid — clean work, strong fundamentals, minor improvements needed
-- B (55-69): Decent — shows promise, needs polish and more advanced techniques
-- C (40-54): Mid — needs significant work, basic execution
-- D (25-39): Below average — fundamental issues
-- F (0-24): Rough — start over
+- S (85-100): Elite — professional quality, genuinely impressive work. ALMOST NEVER given. Maybe 1 in 50 edits.
+- A (70-84): Solid — clean work, strong fundamentals, minor improvements needed. Rare — maybe 1 in 10.
+- B (55-69): Above average — shows promise but needs more advanced techniques. This is the CEILING for most edits.
+- C (40-54): Average — basic execution, nothing special. THIS IS WHERE MOST EDITS LAND. Default assumption.
+- D (25-39): Below average — fundamental issues, lazy work, template-tier
+- F (0-24): Rough — start over, barely tried
+
+=== SCORING BIAS ===
+Your DEFAULT starting assumption for any edit is C-range (40-54). The editor must PROVE they deserve higher through visible technical skill, creative originality, and measurable impact. Do NOT round up. Do NOT give benefit of the doubt. If you're torn between two grades, ALWAYS pick the lower one.
+
+Common traps to avoid:
+- Clean ≠ good. A clean but basic edit with simple cuts and no effects is C at best.
+- Using a popular song doesn't make it original. Template-style velocity edits on trending audio = C or D.
+- Aesthetic ≠ technical skill. Nice color grading alone doesn't carry an edit past B.
+- Low engagement (under 1k views, under 50 likes) should actively LOWER the Impact score, not be ignored.
 
 === PAYOUT CONTEXT ===
-If mission payout tiers are provided, your grade directly determines what the editor earns. Be BRUTALLY HONEST. Don't inflate grades. Most edits are B-C range. S is rare and reserved for genuinely elite work. We are not giving out free money.
+If mission payout tiers are provided, your grade directly determines what the editor earns. Be BRUTALLY HONEST. Don't inflate grades. Most edits are C range. B is above average. A is uncommon. S is almost never given. We are not giving out free money — every dollar must be earned through visible skill.
 
 === RESPONSE FORMAT ===
 
@@ -74,15 +83,16 @@ RESPOND IN VALID JSON ONLY:
 
 === CRITICAL RULES ===
 1. Be BRUTALLY HONEST. This determines real payouts. No sugarcoating, no inflating. Real money is on the line.
-2. S grade is EXCEPTIONALLY rare — reserved for genuinely elite, professional-tier work. A is also uncommon. Most edits land B-C range. Don't be generous.
+2. S grade is ALMOST NEVER given — reserved for genuinely elite, professional-tier work that makes you go "wow." A is also uncommon. B is the ceiling for most decent edits. MOST edits are C. Default to C and make them prove otherwise.
 3. Reference specific frames in your analysis.
 4. The short_feedback MUST sound like a real human — not an AI. 1-2 sentences max. No emojis, no forced slang.
 5. The long_feedback should be copy-paste ready for posting as judge notes.
-6. If engagement stats are provided (views, likes), factor them heavily into Impact score. Low engagement = lower Impact, period.
+6. If engagement stats are provided (views, likes), factor them heavily into Impact score. Under 1k views = Impact should be 8 or below. Under 500 views = Impact should be 5 or below. Low engagement = lower Impact, period.
 7. NEVER return anything other than the JSON object.
 8. The editor_note is what the judge literally copies and pastes to the editor — make it professional, concise, and include the score.
-9. Actually STUDY the frames — look at transitions between them, CC consistency, masking quality, effects polish. Don't assume quality from aesthetics alone.
-10. Default to skepticism. If something looks like a template or basic velocity edit, score it accordingly. Creativity means the editor brought something ORIGINAL.`;
+9. Actually STUDY the frames — look at transitions between them, CC consistency, masking quality, effects polish. Don't assume quality from aesthetics alone. Clean but basic = C.
+10. Default to skepticism. If something looks like a template or basic velocity edit, score it accordingly. Creativity means the editor brought something ORIGINAL.
+11. When in doubt, score LOWER. It is better to underpay than overpay. The editor can always resubmit a better edit.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
