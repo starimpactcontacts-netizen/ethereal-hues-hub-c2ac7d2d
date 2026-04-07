@@ -198,7 +198,12 @@ export default function EditAnalyzerAdmin() {
       for (let i = 1; i <= frameCount; i++) {
         const time = interval * i;
         await new Promise<void>((resolve) => {
+          const timeout = setTimeout(() => {
+            console.warn(`Frame ${i} seek timed out at ${time.toFixed(1)}s, skipping`);
+            resolve();
+          }, 8000);
           video.onseeked = () => {
+            clearTimeout(timeout);
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
             const mins = Math.floor(time / 60);
