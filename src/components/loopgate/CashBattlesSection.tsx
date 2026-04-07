@@ -45,8 +45,8 @@ function CashBattleCard({ battle }: { battle: any }) {
       <div className="px-4 pt-4 pb-1">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #d4af37, #b8960c)' }}>
-              <DollarSign className="w-3.5 h-3.5 text-black" />
+            <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}>
+              <DollarSign className="w-3.5 h-3.5 text-white" />
             </div>
             <span className="text-2xl font-black text-white" style={{ fontFamily: "Teko, sans-serif" }}>
               {formatPrize(battle.prize_cents)}
@@ -154,22 +154,22 @@ export default function CashBattlesSection() {
       {/* Header */}
       <div className="flex items-center justify-between px-4 mb-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #d4af37, #b8960c)' }}>
-            <DollarSign className="w-4 h-4 text-black" />
+          <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}>
+            <DollarSign className="w-4 h-4 text-white" />
           </div>
           <div>
             <h2 className="text-[15px] font-black uppercase tracking-wider text-white" style={{ fontFamily: "Teko, sans-serif" }}>
               Cash Battles
             </h2>
-            <p className="text-[9px] uppercase tracking-[0.15em]" style={{ fontFamily: "Teko, sans-serif", color: 'rgba(212,175,55,0.6)' }}>
+            <p className="text-[9px] uppercase tracking-[0.15em]" style={{ fontFamily: "Teko, sans-serif", color: 'rgba(239,68,68,0.6)' }}>
               1v1 · Winner takes all
             </p>
           </div>
         </div>
         <button
           onClick={() => setApplyOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-black text-[10px] font-black uppercase tracking-wider transition-all hover:scale-105"
-          style={{ background: 'linear-gradient(135deg, #d4af37, #b8960c)' }}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white text-[10px] font-black uppercase tracking-wider transition-all hover:scale-105"
+          style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}
         >
           <Plus className="w-3 h-3" />
           <span>Apply</span>
@@ -188,16 +188,16 @@ export default function CashBattlesSection() {
           onClick={() => setApplyOpen(true)}
           className="w-[180px] shrink-0 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer"
           style={{
-            background: 'rgba(212,175,55,0.03)',
-            border: '1px dashed rgba(212,175,55,0.2)',
+            background: 'rgba(59,130,246,0.03)',
+            border: '1px dashed rgba(59,130,246,0.2)',
             minHeight: 200,
           }}
         >
-          <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(212,175,55,0.12)' }}>
-            <Swords className="w-6 h-6" style={{ color: 'rgba(212,175,55,0.5)' }} />
+          <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(239,68,68,0.12)' }}>
+            <Swords className="w-6 h-6" style={{ color: 'rgba(239,68,68,0.5)' }} />
           </div>
           <div className="text-center px-4">
-            <p className="text-[12px] font-black uppercase" style={{ fontFamily: "Teko, sans-serif", color: 'rgba(212,175,55,0.8)' }}>
+            <p className="text-[12px] font-black uppercase" style={{ fontFamily: "Teko, sans-serif", color: 'rgba(239,68,68,0.8)' }}>
               Think you got it?
             </p>
             <p className="text-[9px] text-zinc-600 mt-0.5">
