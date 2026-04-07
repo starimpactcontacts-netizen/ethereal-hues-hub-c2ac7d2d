@@ -63,30 +63,16 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
       className="fixed inset-0 flex flex-col bg-background"
       style={{ zIndex: 9999 }}
     >
-      {/* Header — Cancel + Post */}
+      {/* Close button — top right, white circle + black X */}
       <div
-        className="flex items-center justify-between px-4 shrink-0 border-b border-border/30"
+        className="flex items-center justify-end px-4 shrink-0"
         style={{ paddingTop: 'env(safe-area-inset-top, 12px)', minHeight: 52 }}
       >
         <button
           onClick={onClose}
-          className="p-2 -ml-2 rounded-full hover:bg-muted/30 transition-colors"
+          className="w-9 h-9 rounded-full bg-white flex items-center justify-center shadow-lg active:scale-95 transition-transform"
         >
-          <X className="w-6 h-6 text-foreground" />
-        </button>
-
-        <button
-          onClick={handleSubmit}
-          disabled={!canSubmit}
-          className={`px-6 py-1.5 rounded-full text-[14px] font-bold transition-all ${
-            canSubmit
-              ? "bg-foreground text-background shadow-sm active:scale-95"
-              : "bg-muted/40 text-muted-foreground/40 cursor-not-allowed"
-          }`}
-        >
-          {submitting ? (
-            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-          ) : "Post"}
+          <X className="w-5 h-5 text-black" strokeWidth={2.5} />
         </button>
       </div>
 
