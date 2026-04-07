@@ -317,6 +317,17 @@ export default function FeedPage() {
                   </button>
                 ))}
               </div>
+
+              {user && (
+                <div className="px-4 pb-3 lg:hidden">
+                  <button
+                    onClick={() => setShowCompose(true)}
+                    className="w-full h-12 rounded-2xl border border-border/30 bg-primary text-primary-foreground font-display text-[1.2rem] leading-none tracking-[0.14em] shadow-sm transition-transform active:scale-[0.98]"
+                  >
+                    POST
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
