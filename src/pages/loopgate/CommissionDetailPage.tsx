@@ -370,8 +370,46 @@ function ShowcaseCard({ sub }: { sub: any }) {
     sub.rating === 'B' ? 'text-blue-400 border-blue-500/30 bg-blue-500/10' :
     'text-foreground/60 border-white/10 bg-white/5';
 
+  const [uploading, setUploading] = useState(false);
+  const thumbInputRef = useRef<HTMLInputElement>(null);
+  const [thumbUrl, setThumbUrl] = useState<string | null>(sub.thumbnail_url || null);
+
+  const handleThumbUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const ext = file.name.split('.').pop() || 'jpg';
+    const path = `${sub.id}.${ext}`;
+    const { error } = await supabase.storage.from('submission-thumbnails').upload(path, file, { upsert: true });
+    if (error) { toast.error('Upload failed'); setUploading(false); return; }
+    const { data: { publicUrl } } = supabase.storage.from('submission-thumbnails').getPublicUrl(path);
+    await supabase.from('commission_submissions').update({ thumbnail_url: publicUrl } as any).eq('id', sub.id);
+    setThumbUrl(publicUrl);
+    toast.success('Thumbnail uploaded!');
+    setUploading(false);
+  };
+
   return (
     <div className="shrink-0 w-[160px] bg-black/30 backdrop-blur-sm border border-white/5 overflow-hidden rounded-xl hover:border-white/10 transition-all snap-start">
+      {/* Thumbnail */}
+      <input ref={thumbInputRef} type="file" accept="image/*" onChange={handleThumbUpload} className="hidden" />
+      {thumbUrl ? (
+        <div className="relative w-full h-[90px] cursor-pointer group" onClick={() => window.open(sub.submission_url, '_blank')}>
+          <img src={thumbUrl} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+            <Play className="w-6 h-6 text-white" />
+          </div>
+        </div>
+      ) : (
+        <button onClick={() => thumbInputRef.current?.click()} className="w-full h-[90px] bg-black/40 flex flex-col items-center justify-center gap-1 hover:bg-black/50 transition-colors">
+          {uploading ? <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /> : (
+            <>
+              <ImagePlus className="w-4 h-4 text-muted-foreground/40" />
+              <span className="text-[7px] text-muted-foreground/30 font-bold uppercase">Add Thumbnail</span>
+            </>
+          )}
+        </button>
+      )}
       <div className="flex items-center gap-2 px-2.5 py-2 border-b border-white/5">
         <div className={`w-6 h-6 rounded-md border flex items-center justify-center shrink-0 ${ratingColor}`}>
           <span className="text-xs font-black">{sub.rating}</span>
