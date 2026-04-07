@@ -711,8 +711,8 @@ export default function HubPage() {
               </Link>
             )}
 
-            {/* GQT */}
-            <Link to="/gqt" className="group flex flex-col items-center gap-3">
+            {/* My Arena */}
+            <Link to="/index?view=my" className="group flex flex-col items-center gap-3">
               <div className="relative w-[68px] h-[68px] rounded-[22px] overflow-hidden"
                 style={{
                   background: 'linear-gradient(145deg, hsl(0 0% 4%) 0%, hsl(0 0% 6%) 50%, hsl(0 0% 3%) 100%)',
@@ -723,10 +723,10 @@ export default function HubPage() {
                 <div className="absolute w-[1px] h-[1px] rounded-full bg-white/25 bottom-5 right-4" style={{ boxShadow: '0 0 2px hsl(0 0% 100% / 0.2)' }} />
                 <div className="absolute inset-[6px] rounded-[16px]" style={{ border: '1px solid hsl(0 0% 100% / 0.03)' }} />
                 <div className="relative z-10 flex h-full w-full items-center justify-center">
-                  <Target className="w-7 h-7" style={{ color: 'hsl(0 0% 100% / 0.45)' }} />
+                  <Swords className="w-7 h-7" style={{ color: 'hsl(0 0% 100% / 0.45)' }} />
                 </div>
               </div>
-              <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'hsl(0 0% 100% / 0.35)' }}>GQT</span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'hsl(0 0% 100% / 0.35)' }}>My Arena</span>
             </Link>
             </div>
           </div>
