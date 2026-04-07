@@ -133,12 +133,19 @@ function MissionCard({ drop }: { drop: ArenaDrop }) {
         {/* Corner cut */}
         <div className="absolute bottom-0 right-0 w-7 h-7 bg-background" style={{ clipPath: 'polygon(100% 0, 100% 100%, 0 100%)' }} />
 
-        {/* 24H PAY ribbon */}
+        {/* Instant Payout badge */}
         {drop.instant_payout && (
-          <div className="absolute top-3 right-0 z-10 bg-red-600 text-white text-[7px] font-black uppercase tracking-wider pl-3 pr-2 py-1">
-            24H PAY
+          <div className="absolute top-3 right-3 z-10 flex items-center gap-1 bg-emerald-500/20 backdrop-blur-xl px-2.5 py-1 rounded-full border border-emerald-400/30">
+            <Zap className="w-2.5 h-2.5 text-emerald-400" />
+            <span className="text-[8px] font-black text-emerald-300 uppercase tracking-[0.12em]" style={teko}>Instant</span>
           </div>
         )}
+
+        {/* Active Judge badge */}
+        <div className="absolute top-10 right-3 z-10 flex items-center gap-1 bg-red-500/15 backdrop-blur-xl px-2.5 py-1 rounded-full border border-red-400/25">
+          <Gavel className="w-2.5 h-2.5 text-red-400" />
+          <span className="text-[8px] font-black text-red-300 uppercase tracking-[0.12em]" style={teko}>Judge Active</span>
+        </div>
 
         {/* Top left — LIVE + Max payout */}
         <div className="absolute top-0 left-0 z-10 p-3 flex flex-col gap-2">
