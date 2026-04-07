@@ -202,9 +202,12 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
 
             {/* Action bar */}
             <div className="flex items-center justify-between mt-2 -ml-2 max-w-[320px]">
-              <button className="flex items-center gap-1.5 px-2 py-1.5 rounded-full hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors group">
+              <button 
+                onClick={() => setShowComments(!showComments)}
+                className={`flex items-center gap-1.5 px-2 py-1.5 rounded-full transition-colors group ${showComments ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-primary hover:bg-primary/10'}`}
+              >
                 <MessageCircle className="w-[15px] h-[15px]" />
-                {post.comment_count > 0 && <span className="text-[11px]">{post.comment_count}</span>}
+                {commentCount > 0 && <span className="text-[11px]">{commentCount}</span>}
               </button>
 
               <button
