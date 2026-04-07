@@ -609,41 +609,39 @@ export default function CommissionDetailPage() {
       <div className="px-4 pb-24 space-y-5 -mt-1">
 
         {/* ── LOBBY ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="px-0 py-2"
-        >
-          <div className="flex items-center gap-2 mb-3">
-            <Users className="w-4 h-4 text-muted-foreground" />
-            <span className="text-xs font-black text-foreground uppercase tracking-[0.12em]">
-              Editors {visitors.length > 0 ? `(${visitors.length})` : ''}
-            </span>
-          </div>
-          {visitors.length > 0 ? (
-            <div className="flex flex-wrap gap-3">
-              {visitors.map((v) => (
-                <Link key={v.user_id} to={`/editor/${v.username}`} className="flex flex-col items-center gap-1.5 w-16">
-                  <div className="w-14 h-14 rounded-full bg-muted border-2 border-border overflow-hidden">
-                    {v.avatar_url ? (
-                      <img src={v.avatar_url} alt={v.username} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-lg font-bold text-muted-foreground">
-                        {v.username[0]?.toUpperCase()}
-                      </div>
-                    )}
-                  </div>
-                  <span className="text-[10px] text-muted-foreground font-medium truncate w-full text-center">{v.username}</span>
+        {visitors.length > 0 && (
+          <div className="flex items-center justify-between py-2">
+            <div className="flex items-center gap-2">
+              <Users className="w-3.5 h-3.5 text-muted-foreground/50" />
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                {visitors.length} in lobby
+              </span>
+            </div>
+            <div className="flex -space-x-2">
+              {visitors.slice(0, 12).map((v, i) => (
+                <Link
+                  key={v.user_id}
+                  to={`/editor/${v.username}`}
+                  className="relative w-8 h-8 rounded-full border-2 border-background overflow-hidden hover:scale-110 transition-transform"
+                  style={{ zIndex: visitors.length - i }}
+                >
+                  {v.avatar_url ? (
+                    <img src={v.avatar_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-[10px] font-bold bg-surface-1 text-muted-foreground">
+                      {v.username[0]?.toUpperCase()}
+                    </div>
+                  )}
                 </Link>
               ))}
+              {visitors.length > 12 && (
+                <div className="relative w-8 h-8 rounded-full border-2 border-background bg-surface-1 flex items-center justify-center">
+                  <span className="text-[9px] font-bold text-muted-foreground">+{visitors.length - 12}</span>
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="flex items-center gap-2 py-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30" />
-              <span className="text-[10px] text-muted-foreground italic">No one here yet — be the first</span>
-            </div>
-          )}
-        </motion.div>
+          </div>
+        )}
 
         {/* ── PROGRESS ── */}
         <div className="bg-surface-1 border border-border rounded-2xl p-4">
