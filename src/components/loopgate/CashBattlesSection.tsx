@@ -214,7 +214,7 @@ function CashBattleInfoModal({ open, onClose }: { open: boolean; onClose: () => 
               💰 The best edit wins the full prize pool — judged by the sponsor or community vote.
             </p>
             <p>
-              ⚡ To compete, apply through the <span className="text-blue-400 font-semibold">+ Apply</span> button. If selected, you'll be matched and notified in <span className="text-amber-400 font-semibold">My Arena</span>.
+              ⚡ Hit <span className="text-blue-400 font-semibold">Enter Battle</span> to throw your name in. If selected, you'll be matched and notified in <span className="text-amber-400 font-semibold">My Arena</span>.
             </p>
           </div>
         </div>
