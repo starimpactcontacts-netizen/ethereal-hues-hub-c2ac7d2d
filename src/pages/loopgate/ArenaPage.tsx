@@ -1290,7 +1290,7 @@ export default function ArenaPage() {
                   <Skeleton className="h-[160px] w-[160px] shrink-0 rounded-lg" />
                 </div>
               ) : battles.length > 0 ? (
-                <div className="flex gap-3 pl-4 overflow-x-auto scrollbar-hide pb-2">
+                <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2" style={{ paddingLeft: '16px' }}>
                   {battles.slice(0, 10).map(battle => (
                     <BattleCard key={battle.id} battle={battle} onClick={() => navigate(`/battle/${battle.id}`)} />
                   ))}
