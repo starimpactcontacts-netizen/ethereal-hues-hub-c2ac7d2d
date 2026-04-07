@@ -210,6 +210,7 @@ function RatingModal({ submission, onRate, onClose, getPayoutForRating }: {
   const [submitting, setSubmitting] = useState(false);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const [videoUrl, setVideoUrl] = useState(submission.submission_url || '');
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
 
   const handleThumbnailSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
