@@ -105,9 +105,9 @@ Deno.serve(async (req) => {
       mission_title,
       artist_name,
       payout_text,
-      deadline,
       description,
       cover_url,
+      mission_type,
     } = await req.json()
 
     if (!to_emails || !Array.isArray(to_emails) || to_emails.length === 0) {
@@ -125,10 +125,10 @@ Deno.serve(async (req) => {
       missionTitle: mission_title,
       artistName: artist_name,
       payoutText: payout_text || 'Paid per edit',
-      deadline,
       missionUrl,
       description,
       coverUrl: cover_url,
+      missionType: mission_type,
     })
 
     // Send individual emails so recipients don't see each other
