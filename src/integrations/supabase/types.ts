@@ -797,6 +797,8 @@ export type Database = {
       cash_battles: {
         Row: {
           admin_notes: string | null
+          challenger_accepted: boolean
+          challenger_accepted_at: string | null
           challenger_avatar_url: string | null
           challenger_id: string
           challenger_username: string
@@ -805,10 +807,15 @@ export type Database = {
           duration_hours: number
           ends_at: string | null
           id: string
+          opponent_accepted: boolean
+          opponent_accepted_at: string | null
           opponent_avatar_url: string | null
           opponent_id: string | null
           opponent_username: string | null
           prize_cents: number
+          sponsor_campaign_id: string | null
+          sponsor_logo_url: string | null
+          sponsor_name: string | null
           starts_at: string | null
           status: string
           updated_at: string
@@ -816,6 +823,8 @@ export type Database = {
         }
         Insert: {
           admin_notes?: string | null
+          challenger_accepted?: boolean
+          challenger_accepted_at?: string | null
           challenger_avatar_url?: string | null
           challenger_id: string
           challenger_username: string
@@ -824,10 +833,15 @@ export type Database = {
           duration_hours?: number
           ends_at?: string | null
           id?: string
+          opponent_accepted?: boolean
+          opponent_accepted_at?: string | null
           opponent_avatar_url?: string | null
           opponent_id?: string | null
           opponent_username?: string | null
           prize_cents?: number
+          sponsor_campaign_id?: string | null
+          sponsor_logo_url?: string | null
+          sponsor_name?: string | null
           starts_at?: string | null
           status?: string
           updated_at?: string
@@ -835,6 +849,8 @@ export type Database = {
         }
         Update: {
           admin_notes?: string | null
+          challenger_accepted?: boolean
+          challenger_accepted_at?: string | null
           challenger_avatar_url?: string | null
           challenger_id?: string
           challenger_username?: string
@@ -843,16 +859,29 @@ export type Database = {
           duration_hours?: number
           ends_at?: string | null
           id?: string
+          opponent_accepted?: boolean
+          opponent_accepted_at?: string | null
           opponent_avatar_url?: string | null
           opponent_id?: string | null
           opponent_username?: string | null
           prize_cents?: number
+          sponsor_campaign_id?: string | null
+          sponsor_logo_url?: string | null
+          sponsor_name?: string | null
           starts_at?: string | null
           status?: string
           updated_at?: string
           winner_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "cash_battles_sponsor_campaign_id_fkey"
+            columns: ["sponsor_campaign_id"]
+            isOneToOne: false
+            referencedRelation: "artist_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       commission_messages: {
         Row: {
