@@ -158,13 +158,13 @@ export default function ArenaCompetitionsSection({ onCreateClick }: { onCreateCl
       </div>
 
       {loading ? (
-        <div className="flex gap-3 pl-4 overflow-x-auto scrollbar-hide pb-2">
+        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2" style={{ paddingLeft: '16px' }}>
           {[1, 2].map(i => (
             <div key={i} className="w-[160px] h-[160px] shrink-0 bg-surface-1 animate-pulse rounded-lg" />
           ))}
         </div>
       ) : (
-        <div className="flex gap-3 pl-4 overflow-x-auto scrollbar-hide pb-2">
+        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2" style={{ paddingLeft: '16px' }}>
           {comps.map(comp => <CompetitionCard key={comp.id} comp={comp} onJoin={handleJoin} />)}
 
           {/* Create Your Own — poster card */}

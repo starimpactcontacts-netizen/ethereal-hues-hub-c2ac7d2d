@@ -22,85 +22,75 @@ function SoloCard({ solo }: { solo: RecentSolo }) {
 
   return (
     <Link to={`/solo/${solo.id}`} className="shrink-0 w-[160px] snap-start block group">
-      <div className="relative h-[160px] overflow-hidden rounded-lg" style={{
+      <div className="relative h-[200px] overflow-hidden rounded-lg flex flex-col" style={{
         boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
       }}>
-        {/* Background — warm gradient instead of pure black */}
-        {solo.thumbnail_url ? (
-          <img src={solo.thumbnail_url} alt="" className="absolute inset-0 w-full h-full object-cover scale-[1.02] group-hover:scale-[1.06] transition-transform duration-700" />
-        ) : (
+        {/* Background */}
+        <div className="relative flex-1 min-h-0 overflow-hidden">
+          {solo.thumbnail_url ? (
+            <img src={solo.thumbnail_url} alt="" className="absolute inset-0 w-full h-full object-cover scale-[1.02] group-hover:scale-[1.06] transition-transform duration-700" />
+          ) : (
+            <div className="absolute inset-0" style={{
+              background: 'linear-gradient(160deg, #1a1520 0%, #0d0d12 40%, #141018 100%)',
+            }} />
+          )}
+
+          {/* Fade overlay */}
           <div className="absolute inset-0" style={{
-            background: 'linear-gradient(160deg, #1a1520 0%, #0d0d12 40%, #141018 100%)',
+            background: 'linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, transparent 30%, transparent 50%, rgba(0,0,0,0.6) 85%, rgba(0,0,0,0.85) 100%)',
           }} />
-        )}
+          
+          {/* Border glow */}
+          <div className="absolute inset-0 rounded-lg border border-white/[0.08] group-hover:border-gold/30 transition-colors duration-300" />
 
-        {/* TikTok-style white fade overlay — soft bottom fade */}
-        <div className="absolute inset-0" style={{
-          background: 'linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, transparent 30%, transparent 50%, rgba(0,0,0,0.6) 85%, rgba(0,0,0,0.85) 100%)',
-        }} />
-        
-        {/* Border glow */}
-        <div className="absolute inset-0 rounded-xl border border-white/[0.08] group-hover:border-gold/30 transition-colors duration-300" />
+          {/* Status badge — top left */}
+          <div className="absolute top-2 left-2 z-10">
+            <div className={`flex items-center gap-1 px-2 py-0.5 border rounded-full backdrop-blur-md ${s.bg}`}>
+              {s.pulse && <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />}
+              <span className={`text-[8px] font-black uppercase tracking-wider ${s.color}`}>{s.label}</span>
+            </div>
+          </div>
 
-        {/* Status badge — top left */}
-        <div className="absolute top-2 left-2 z-10">
-          <div className={`flex items-center gap-1 px-2 py-0.5 border rounded-full backdrop-blur-md ${s.bg}`}>
-            {s.pulse && <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />}
-            <span className={`text-[8px] font-black uppercase tracking-wider ${s.color}`}>{s.label}</span>
+          {/* Index badge — top right */}
+          {solo.index_awarded > 0 && (
+            <div className="absolute top-2 right-2 z-10 flex items-center gap-0.5 bg-black/50 border border-white/[0.1] px-1.5 py-0.5 rounded-full backdrop-blur-md">
+              <Zap className="w-2.5 h-2.5 text-gold" />
+              <span className="text-[8px] font-black text-gold">+{solo.index_awarded}</span>
+            </div>
+          )}
+
+          {/* QOI Score — bottom right */}
+          {solo.qoi_score != null && (
+            <div className="absolute bottom-2 right-2 z-10">
+              <div className="bg-black/50 backdrop-blur-md px-2 py-1 rounded-lg border border-white/[0.08]">
+                <span className="text-lg font-black text-gold leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>{Math.round(solo.qoi_score)}</span>
+                <span className="text-[7px] text-gold/50 ml-0.5 font-bold">QOI</span>
+              </div>
+            </div>
+          )}
+
+          {/* Bottom content overlay */}
+          <div className="absolute bottom-0 left-0 right-0 p-2.5 z-10">
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <Avatar className="w-4 h-4 border border-white/10">
+                <AvatarImage src={solo.avatar_url || ''} />
+                <AvatarFallback className="bg-white/10 text-[6px] font-bold text-white">
+                  {solo.username?.[0]?.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-[10px] font-bold text-white truncate">@{solo.username}</span>
+            </div>
+            <div className="flex items-center gap-1 text-[9px] text-white/50 truncate">
+              <Music className="w-2.5 h-2.5 shrink-0" />
+              <span className="truncate">{solo.song_name}</span>
+            </div>
+            <span className="text-[8px] text-white/25 block mt-0.5">{timeAgo}</span>
           </div>
         </div>
 
-        {/* Index badge — top right */}
-        {solo.index_awarded > 0 && (
-          <div className="absolute top-2 right-2 z-10 flex items-center gap-0.5 bg-black/50 border border-white/[0.1] px-1.5 py-0.5 rounded-full backdrop-blur-md">
-            <Zap className="w-2.5 h-2.5 text-gold" />
-            <span className="text-[8px] font-black text-gold">+{solo.index_awarded}</span>
-          </div>
-        )}
-
-        {/* Theme label — truly centered in the card */}
-        <div className="absolute inset-0 flex items-center justify-center z-[2] pointer-events-none">
-          <span className="text-[13px] font-black text-white/[0.15] uppercase tracking-[0.25em] text-center px-3 leading-snug" style={{ fontFamily: 'Teko, sans-serif' }}>{solo.theme}</span>
-        </div>
-
-        {/* QOI Score — bottom right above user info */}
-        {solo.qoi_score != null && (
-          <div className="absolute bottom-[54px] right-2 z-10">
-            <div className="bg-black/50 backdrop-blur-md px-2 py-1 rounded-lg border border-white/[0.08]">
-              <span className="text-lg font-black text-gold leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>{Math.round(solo.qoi_score)}</span>
-              <span className="text-[7px] text-gold/50 ml-0.5 font-bold">QOI</span>
-            </div>
-          </div>
-        )}
-
-        {/* Bottom content */}
-        <div className="absolute bottom-0 left-0 right-0 p-2.5 z-10">
-          <div className="flex items-center gap-1.5 mb-1">
-            <Avatar className="w-4 h-4 border border-white/10">
-              <AvatarImage src={solo.avatar_url || ''} />
-              <AvatarFallback className="bg-white/10 text-[6px] font-bold text-white">
-                {solo.username?.[0]?.toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <span className="text-[10px] font-bold text-white truncate">@{solo.username}</span>
-          </div>
-          <div className="flex items-center gap-1 text-[9px] text-white/50 truncate">
-            <Music className="w-2.5 h-2.5 shrink-0" />
-            <span className="truncate">{solo.song_name}</span>
-          </div>
-          <div className="flex items-center justify-between mt-1">
-            <div className="flex items-center gap-2 text-[8px] text-white/35">
-              {(solo as any).upvotes > 0 && (
-                <span className="flex items-center gap-0.5"><ThumbsUp className="w-2 h-2" />{(solo as any).upvotes}</span>
-              )}
-              {(solo as any).comment_count > 0 && (
-                <span className="flex items-center gap-0.5"><MessageCircle className="w-2 h-2" />{(solo as any).comment_count}</span>
-              )}
-            </div>
-            <span className="text-[8px] text-white/25">{timeAgo}</span>
-          </div>
-          {/* Big VIEW button */}
-          <div className="w-full text-center py-1.5 mt-1.5 rounded-lg bg-gold text-black text-[11px] font-black uppercase tracking-wider" style={{ fontFamily: 'Teko, sans-serif' }}>
+        {/* Big VIEW button — outside the image area */}
+        <div className="px-2 py-1.5 bg-black border-t border-white/[0.04]">
+          <div className="w-full text-center py-1.5 rounded-lg bg-gold text-black text-[11px] font-black uppercase tracking-wider" style={{ fontFamily: 'Teko, sans-serif' }}>
             VIEW
           </div>
         </div>

@@ -58,7 +58,7 @@ export default function FeaturedDropCard({ drop }: Props) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
         className={cn(
-          "relative w-[160px] h-[160px] shrink-0 snap-start overflow-hidden group",
+          "relative w-[160px] h-[200px] shrink-0 snap-start overflow-hidden group flex flex-col",
           "bg-black border-2 border-emerald-500/60",
           "shadow-[0_0_30px_rgba(16,185,129,0.2),0_0_60px_rgba(16,185,129,0.08)]",
           "hover:shadow-[0_0_40px_rgba(16,185,129,0.35),0_0_80px_rgba(16,185,129,0.12)]",
@@ -82,7 +82,7 @@ export default function FeaturedDropCard({ drop }: Props) {
         </div>
 
         {/* Poster — taller for official */}
-        <div className="relative w-full h-[100px] overflow-hidden">
+        <div className="relative w-full flex-1 min-h-0 overflow-hidden">
           {drop.poster_url ? (
             <img
               src={drop.poster_url}
@@ -151,7 +151,7 @@ export default function FeaturedDropCard({ drop }: Props) {
         </div>
 
         {/* Stats + CTA */}
-        <div className="px-2 py-1.5 flex items-center justify-between border-t border-emerald-500/20 bg-emerald-950/20">
+        <div className="px-2 py-1.5 border-t border-emerald-500/20 bg-emerald-950/20 space-y-1.5">
           <div className="flex items-center gap-1.5 text-[8px] font-bold">
             <span className="flex items-center gap-0.5 text-brand">
               <Zap className="w-2.5 h-2.5" />+{drop.xp_reward}
@@ -162,7 +162,7 @@ export default function FeaturedDropCard({ drop }: Props) {
           </div>
           <button
             onClick={() => navigate(profile ? `/drop/${drop.id}` : '/start')}
-            className="text-[9px] font-bold uppercase tracking-wider px-3 py-1 rounded-md bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-colors"
+            className="w-full text-center py-1.5 rounded-lg bg-emerald-500 text-black text-[11px] font-black uppercase tracking-wider hover:bg-emerald-400 transition-colors"
             style={{ fontFamily: 'Teko, sans-serif' }}
           >
             ENTER
@@ -181,7 +181,7 @@ export default function FeaturedDropCard({ drop }: Props) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
       className={cn(
-        "relative w-[160px] h-[160px] shrink-0 snap-start overflow-hidden rounded-lg",
+        "relative w-[160px] h-[200px] shrink-0 snap-start overflow-hidden rounded-lg flex flex-col",
         "bg-black",
         "border transition-all duration-300 group",
         isPromoted
@@ -190,7 +190,7 @@ export default function FeaturedDropCard({ drop }: Props) {
       )}
     >
       {/* Poster */}
-      <div className="relative w-full h-[100px] overflow-hidden">
+      <div className="relative w-full flex-1 min-h-0 overflow-hidden">
         {drop.poster_url ? (
           <img
             src={drop.poster_url}
@@ -252,7 +252,7 @@ export default function FeaturedDropCard({ drop }: Props) {
       </div>
 
       {/* Stats + CTA */}
-      <div className="px-2.5 py-1.5 flex items-center justify-between border-t border-white/[0.04]">
+      <div className="px-2.5 py-1.5 border-t border-white/[0.04] space-y-1.5">
         <div className="flex items-center gap-1.5 text-[8px] font-bold">
           <span className="flex items-center gap-0.5 text-brand">
             <Zap className="w-2.5 h-2.5" />+{drop.xp_reward}
@@ -263,7 +263,7 @@ export default function FeaturedDropCard({ drop }: Props) {
         </div>
         <button
           onClick={() => navigate(`/drop/${drop.id}`)}
-          className="text-[9px] font-bold uppercase tracking-wider px-3 py-1 rounded-md bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-colors"
+          className="w-full text-center py-1.5 rounded-lg bg-emerald-500 text-black text-[11px] font-black uppercase tracking-wider hover:bg-emerald-400 transition-colors"
           style={{ fontFamily: 'Teko, sans-serif' }}
         >
           {isLive ? "ENTER" : "VIEW"}

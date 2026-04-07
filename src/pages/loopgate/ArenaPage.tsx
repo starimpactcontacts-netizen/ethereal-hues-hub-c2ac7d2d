@@ -107,7 +107,7 @@ function ArenaMissionsSection() {
         </button>
       </div>
 
-      <div className="flex gap-3 pl-4 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
+      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory" style={{ paddingLeft: '16px' }}>
         {bounties.map(b => {
           const payout = (b.payout_cents / 100).toFixed(0);
           const slotsLeft = b.max_slots - b.accepted_count;
@@ -1147,7 +1147,7 @@ export default function ArenaPage() {
           {/* Marketplace removed */}
 
           {/* ═══ FILTER PILLS — small rounded ═══ */}
-          <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide pl-4 pb-1">
+          <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide pb-1" style={{ paddingLeft: '16px' }}>
             {filters.map(f => {
               const active = activeFilter === f.key;
               return (
@@ -1285,12 +1285,12 @@ export default function ArenaPage() {
               )}
 
               {battlesLoading ? (
-                <div className="flex gap-3 pl-4 overflow-x-auto scrollbar-hide pb-2">
+                <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2" style={{ paddingLeft: '16px' }}>
                   <Skeleton className="h-[160px] w-[160px] shrink-0 rounded-lg" />
                   <Skeleton className="h-[160px] w-[160px] shrink-0 rounded-lg" />
                 </div>
               ) : battles.length > 0 ? (
-                <div className="flex gap-3 pl-4 overflow-x-auto scrollbar-hide pb-2">
+                <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2" style={{ paddingLeft: '16px' }}>
                   {battles.slice(0, 10).map(battle => (
                     <BattleCard key={battle.id} battle={battle} onClick={() => navigate(`/battle/${battle.id}`)} />
                   ))}
