@@ -229,6 +229,16 @@ export default function CashBattlesSection() {
   const { battles, loading } = useCashBattles();
   const [applyOpen, setApplyOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
+  const { isGuest } = useGuestMode();
+  const accountPrompt = useAccountPrompt();
+
+  const handleEnter = () => {
+    if (isGuest) {
+      accountPrompt.open('enter_battle' as any);
+      return;
+    }
+    setApplyOpen(true);
+  };
 
   return (
     <div className="mb-2">
