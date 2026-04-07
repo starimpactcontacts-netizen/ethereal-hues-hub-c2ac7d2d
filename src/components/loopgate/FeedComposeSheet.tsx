@@ -136,24 +136,9 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
             </div>
           </div>
 
-          {/* Post type chips + media buttons */}
+          {/* Media buttons bar */}
           <div className="flex items-center gap-1.5 px-4 py-2 border-b border-border/15 shrink-0">
-            {POST_TYPES.map(opt => (
-              <button
-                key={opt.id}
-                onClick={() => setPostType(opt.id)}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all ${
-                  postType === opt.id
-                    ? "bg-primary/15 text-primary border border-primary/30"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                }`}
-              >
-                {opt.icon}
-                {opt.label}
-              </button>
-            ))}
-
-            <div className="ml-auto flex items-center gap-1">
+            <div className="flex items-center gap-1">
               {/* Upload button */}
               {!uploadedMedia && !selectedGif && (
                 <MediaUploadButton
