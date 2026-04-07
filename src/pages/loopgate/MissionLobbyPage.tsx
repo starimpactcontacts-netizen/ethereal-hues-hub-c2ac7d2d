@@ -349,36 +349,35 @@ export default function MissionLobbyPage() {
       </div>
 
       {/* ═══ LOBBY PROFILES ═══ */}
-      <div className="px-4 mt-3 mb-2">
-        <div className="flex items-center gap-2 mb-2">
-          <Users className="w-3.5 h-3.5 text-muted-foreground/50" />
-          <span className="text-[14px] font-extrabold uppercase tracking-[0.1em] text-foreground" style={teko}>
-            Editors ({lobbyProfiles.length})
-          </span>
-        </div>
-        {lobbyProfiles.length === 0 ? (
-          <p className="text-xs text-muted-foreground/40 text-center py-3">No editors yet — be the first</p>
-        ) : (
-          <div className="flex flex-wrap gap-3">
-            {lobbyProfiles.map(p => (
-              <button key={p.user_id} onClick={() => navigate(`/u/${p.username}`)} className="flex flex-col items-center gap-1 group">
-                <div className="w-10 h-10 rounded-full border border-white/10 group-hover:border-white/30 transition-all overflow-hidden">
-                  {p.avatar_url ? (
-                    <img src={p.avatar_url} alt={p.username} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-muted flex items-center justify-center text-[10px] font-bold text-foreground">
-                      {p.username[0]?.toUpperCase()}
-                    </div>
-                  )}
-                </div>
-                <span className="text-[9px] text-muted-foreground/60 group-hover:text-foreground truncate max-w-[48px] text-center transition-colors">
-                  {p.username}
-                </span>
+      {lobbyProfiles.length > 0 && (
+        <div className="px-4 mt-3 mb-2">
+          <div className="flex items-center gap-2 mb-1.5">
+            <Users className="w-3 h-3 text-muted-foreground/40" />
+            <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60">
+              {lobbyProfiles.length} in lobby
+            </span>
+          </div>
+          <div className="flex flex-wrap -space-x-1.5">
+            {lobbyProfiles.map((p, i) => (
+              <button
+                key={p.user_id}
+                onClick={() => navigate(`/u/${p.username}`)}
+                className="relative w-8 h-8 rounded-full border-2 border-background overflow-hidden hover:scale-110 hover:z-10 transition-transform"
+                style={{ zIndex: lobbyProfiles.length - i }}
+                title={p.username}
+              >
+                {p.avatar_url ? (
+                  <img src={p.avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-muted flex items-center justify-center text-[9px] font-bold text-foreground">
+                    {p.username[0]?.toUpperCase()}
+                  </div>
+                )}
               </button>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* ═══ ENTER LOBBY — Only shows when a real official event exists ═══ */}
       {officialEvent && (
