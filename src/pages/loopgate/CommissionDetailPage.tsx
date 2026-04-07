@@ -400,7 +400,7 @@ function ShowcaseCard({ sub, canEdit = false }: { sub: any; canEdit?: boolean })
             <Play className="w-6 h-6 text-white" />
           </div>
         </div>
-      ) : (
+      ) : canEdit ? (
         <button onClick={() => thumbInputRef.current?.click()} className="w-full h-[90px] bg-black/40 flex flex-col items-center justify-center gap-1 hover:bg-black/50 transition-colors">
           {uploading ? <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /> : (
             <>
@@ -409,7 +409,7 @@ function ShowcaseCard({ sub, canEdit = false }: { sub: any; canEdit?: boolean })
             </>
           )}
         </button>
-      )}
+      ) : null}
       <div className="flex items-center gap-2 px-2.5 py-2 border-b border-white/5">
         <div className={`w-6 h-6 rounded-md border flex items-center justify-center shrink-0 ${ratingColor}`}>
           <span className="text-xs font-black">{sub.rating}</span>
