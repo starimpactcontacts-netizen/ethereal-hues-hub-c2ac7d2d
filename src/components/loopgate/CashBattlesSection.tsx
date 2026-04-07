@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { DollarSign, Swords, Clock, Flame, Plus, Zap } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -21,6 +22,7 @@ function formatTimeLeft(endDate: string | null): string {
 }
 
 function CashBattleCard({ battle }: { battle: any }) {
+  const navigate = useNavigate();
   const isLive = battle.status === "live";
   const isUpcoming = battle.status === "upcoming";
 
@@ -28,6 +30,7 @@ function CashBattleCard({ battle }: { battle: any }) {
     <motion.div
       whileTap={{ scale: 0.97 }}
       whileHover={{ y: -2 }}
+      onClick={() => navigate(`/cash-battle/${battle.id}`)}
       className="w-[220px] shrink-0 rounded-2xl overflow-hidden cursor-pointer group relative"
       style={{
         background: "linear-gradient(160deg, rgba(22,22,28,1) 0%, rgba(6,6,8,1) 100%)",
