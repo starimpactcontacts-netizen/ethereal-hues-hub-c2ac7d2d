@@ -14,11 +14,6 @@ interface FeedComposeSheetProps {
   onPost: (content: string, postType: FeedPostItem['post_type'], mediaUrl?: string, mediaPlatform?: string, uploadedMediaUrl?: string, uploadedMediaType?: string) => Promise<void>;
 }
 
-const POST_TYPES: { id: FeedPostItem['post_type']; label: string; icon: React.ReactNode }[] = [
-  { id: 'text', label: 'Loop', icon: <Globe className="w-3.5 h-3.5" /> },
-  { id: 'flex', label: 'Flex', icon: <GateIcon className="w-3.5 h-3.5" /> },
-  { id: 'edit_share', label: 'Edit', icon: <Video className="w-3.5 h-3.5" /> },
-];
 
 const MAX_CHARS = 280;
 
