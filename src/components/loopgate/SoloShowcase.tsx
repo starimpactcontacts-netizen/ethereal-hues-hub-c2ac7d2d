@@ -99,6 +99,10 @@ function SoloCard({ solo }: { solo: RecentSolo }) {
             </div>
             <span className="text-[8px] text-white/25">{timeAgo}</span>
           </div>
+          {/* Big VIEW button */}
+          <div className="w-full text-center py-1.5 mt-1.5 rounded-lg bg-gold text-black text-[11px] font-black uppercase tracking-wider" style={{ fontFamily: 'Teko, sans-serif' }}>
+            VIEW
+          </div>
         </div>
       </div>
     </Link>
