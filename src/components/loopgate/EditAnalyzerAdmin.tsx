@@ -357,7 +357,7 @@ export default function EditAnalyzerAdmin() {
                         Editor Taps
                       </label>
                       <span className="text-[10px] text-muted-foreground">
-                        {missionEditorsLoading ? "Loading..." : `${missionEditors.length} in lobby`}
+                        {missionEditorsLoading ? "Loading..." : `${missionEditors.length} submitted`}
                       </span>
                     </div>
 
