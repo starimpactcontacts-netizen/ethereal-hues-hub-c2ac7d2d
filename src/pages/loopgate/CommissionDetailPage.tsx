@@ -416,7 +416,7 @@ function ShowcaseCard({ sub, canEdit = false }: { sub: any; canEdit?: boolean })
         </div>
         <div className="min-w-0 flex-1">
           <span className="text-[10px] font-bold text-foreground truncate block">@{sub.username}</span>
-          {sub.earned_cents > 0 && <span className="text-[8px] font-black text-emerald-400">+${(sub.earned_cents / 100).toFixed(0)}</span>}
+          {sub.earned_cents > 0 && <span className="text-[8px] font-black text-emerald-400">+${(sub.earned_cents / 100).toFixed(2)}</span>}
         </div>
       </div>
       <div className="px-2.5 py-1.5">
