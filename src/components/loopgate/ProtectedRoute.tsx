@@ -1,6 +1,5 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { useUserRoles } from '@/hooks/useUserRoles';
 import { useGuestMode } from '@/hooks/useGuestMode';
 import LoadingScreen from './LoadingScreen';
 
@@ -19,16 +18,10 @@ export default function ProtectedRoute({
   requireJudge = false,
   allowGuest = false 
 }: ProtectedRouteProps) {
-  const { user, profile, loading, isAdmin } = useAuth();
-  const { roles, loading: rolesLoading } = useUserRoles(user?.id);
+  const { user, profile, loading, isAdmin, isJudge, isDev, hasOpsAccess, roles } = useAuth();
   const { isGuest } = useGuestMode();
   
   const isEnterprise = roles.includes('enterprise');
-  const isDev = roles.includes('dev');
-  const isJudge = roles.includes('judge');
-  
-  // Ops access = admin OR dev ONLY (not judges)
-  const hasOpsAccess = isAdmin || isDev;
   // Judge access = judge OR admin OR dev
   const hasJudgeAccess = isJudge || isAdmin || isDev;
   
@@ -38,7 +31,7 @@ export default function ProtectedRoute({
   }
   
   // CRITICAL: Show loading screen while auth state is being determined
-  if (loading || (user && rolesLoading)) {
+  if (loading) {
     return <LoadingScreen />;
   }
   
