@@ -63,7 +63,7 @@ export default function MediaUploadButton({ onUpload, uploadedUrl, onClear }: Me
         {isVideo ? (
           <video
             src={uploadedUrl}
-            className="max-w-full max-h-[200px] rounded-xl object-cover"
+            className="max-w-[220px] max-h-[160px] rounded-xl object-cover"
             controls
             muted
           />
@@ -71,7 +71,7 @@ export default function MediaUploadButton({ onUpload, uploadedUrl, onClear }: Me
           <img
             src={uploadedUrl}
             alt="Upload preview"
-            className="max-w-full max-h-[200px] rounded-xl object-cover"
+            className="max-w-[220px] max-h-[160px] rounded-xl object-cover"
           />
         )}
         <button
