@@ -312,7 +312,7 @@ function RatingBadge({ rating, earnedCents }: { rating: string; earnedCents: num
   return (
     <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-black ${colors}`}>
       <span className="text-base">{rating}</span>
-      {earnedCents > 0 && <span className="text-emerald-400 font-bold text-[10px]">+${earnedCents / 100}</span>}
+      {earnedCents > 0 && <span className="text-emerald-400 font-bold text-[10px]">+${(earnedCents / 100).toFixed(2)}</span>}
     </div>
   );
 }
