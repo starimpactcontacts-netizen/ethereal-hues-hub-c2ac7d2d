@@ -39,46 +39,42 @@ const MissionNotificationEmail = ({
   missionUrl: string
   description?: string
 }) => {
+  const children = [
+    React.createElement(Section, { key: 'header', style: headerSection },
+      React.createElement(Text, { style: logoText }, "LOOPGATE")
+    ),
+    React.createElement(Heading, { key: 'h1', style: h1 }, "🎬 New Mission Drop"),
+    React.createElement(Text, { key: 'title', style: missionTitleStyle }, missionTitle),
+  ]
+
+  if (artistName) {
+    children.push(React.createElement(Text, { key: 'artist', style: artistText }, `Artist: ${artistName}`))
+  }
+
+  const detailChildren = [
+    React.createElement(Text, { key: 'label', style: detailLabel }, "💰 PAYOUT"),
+    React.createElement(Text, { key: 'value', style: detailValue }, payoutText),
+  ]
+  if (deadline) {
+    detailChildren.push(React.createElement(Text, { key: 'deadline', style: deadlineText }, `⏰ ${deadline}`))
+  }
+  children.push(React.createElement(Section, { key: 'details', style: detailsSection }, ...detailChildren))
+
+  if (description) {
+    children.push(React.createElement(Hr, { key: 'hr1', style: divider }))
+    children.push(React.createElement(Text, { key: 'desc', style: descText }, description))
+  }
+
+  children.push(React.createElement(Hr, { key: 'hr2', style: divider }))
+  children.push(React.createElement(Link, { key: 'cta', href: missionUrl, target: "_blank", style: linkButton }, "View Mission →"))
+  children.push(React.createElement(Text, { key: 'footer', style: footer }, "Get in early. Limited slots available."))
+  children.push(React.createElement(Text, { key: 'brand', style: footerBrand }, "© Loopgate — Competitive Editing Index"))
+
   return React.createElement(Html, null,
     React.createElement(Head),
     React.createElement(Preview, null, `New Mission Available: ${missionTitle}`),
     React.createElement(Body, { style: main },
-      React.createElement(Container, { style: container },
-        // Logo
-        React.createElement(Section, { style: headerSection },
-          React.createElement(Text, { style: logoText }, "LOOPGATE")
-        ),
-        React.createElement(Heading, { style: h1 }, "🎬 New Mission Drop"),
-        React.createElement(Text, { style: missionTitleStyle }, missionTitle),
-        
-        // Artist / Client
-        artistName ? React.createElement(Text, { style: artistText }, `Artist: ${artistName}`) : null,
-        
-        // Details Section
-        React.createElement(Section, { style: detailsSection },
-          React.createElement(Text, { style: detailLabel }, "💰 PAYOUT"),
-          React.createElement(Text, { style: detailValue }, payoutText),
-          deadline ? React.createElement(Text, { style: deadlineText }, `⏰ Deadline: ${deadline}`) : null,
-        ),
-        
-        // Description
-        description ? React.createElement(Section, null,
-          React.createElement(Hr, { style: divider }),
-          React.createElement(Text, { style: descText }, description),
-        ) : null,
-        
-        React.createElement(Hr, { style: divider }),
-        
-        // CTA
-        React.createElement(Link, { href: missionUrl, target: "_blank", style: linkButton }, 
-          "View Mission →"
-        ),
-        
-        React.createElement(Text, { style: footer }, 
-          "Get in early. Limited slots available."
-        ),
-        React.createElement(Text, { style: footerBrand }, "© Loopgate — Competitive Editing Index")
-      )
+      React.createElement(Container, { style: container }, ...children)
     )
   )
 }
