@@ -38,6 +38,7 @@ export default function CashBattlePage() {
   const [loading, setLoading] = useState(true);
   const [url, setUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [sponsorCover, setSponsorCover] = useState<string | null>(null);
   const [rulesOpen, setRulesOpen] = useState(false);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
