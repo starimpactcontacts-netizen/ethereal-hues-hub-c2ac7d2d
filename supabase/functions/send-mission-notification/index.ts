@@ -74,7 +74,7 @@ const MissionNotificationEmail = ({
     React.createElement(Head),
     React.createElement(Preview, null, `New Mission Available: ${missionTitle}`),
     React.createElement(Body, { style: main },
-      React.createElement(Container, { style: container }, ...children)
+      React.createElement(Container, { style: container }, children)
     )
   )
 }
