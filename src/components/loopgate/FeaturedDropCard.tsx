@@ -252,7 +252,7 @@ export default function FeaturedDropCard({ drop }: Props) {
       </div>
 
       {/* Stats + CTA */}
-      <div className="px-2.5 py-1.5 flex items-center justify-between border-t border-white/[0.04]">
+      <div className="px-2.5 py-1.5 border-t border-white/[0.04] space-y-1.5">
         <div className="flex items-center gap-1.5 text-[8px] font-bold">
           <span className="flex items-center gap-0.5 text-brand">
             <Zap className="w-2.5 h-2.5" />+{drop.xp_reward}
@@ -263,7 +263,7 @@ export default function FeaturedDropCard({ drop }: Props) {
         </div>
         <button
           onClick={() => navigate(`/drop/${drop.id}`)}
-          className="text-[9px] font-bold uppercase tracking-wider px-3 py-1 rounded-md bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-colors"
+          className="w-full text-center py-1.5 rounded-lg bg-emerald-500 text-black text-[11px] font-black uppercase tracking-wider hover:bg-emerald-400 transition-colors"
           style={{ fontFamily: 'Teko, sans-serif' }}
         >
           {isLive ? "ENTER" : "VIEW"}
