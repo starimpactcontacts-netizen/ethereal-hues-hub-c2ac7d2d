@@ -67,7 +67,6 @@ function buildEmailHtml(opts: {
     <div style="background:linear-gradient(135deg,#141418 0%,#1a1a20 100%);border-radius:14px;padding:22px;text-align:center;border:1px solid #22c55e22;margin:20px 0;">
       <p style="color:#22c55e;font-size:10px;font-weight:700;letter-spacing:3px;margin:0 0 10px 0;">PAYOUT</p>
       <p style="color:#ffffff;font-size:26px;font-weight:800;margin:0;letter-spacing:-0.5px;">${payoutText}</p>
-      ${deadlineSection}
     </div>
 
     <!-- Description -->
