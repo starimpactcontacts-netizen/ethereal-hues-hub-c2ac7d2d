@@ -22,8 +22,10 @@ function buildEmailHtml(opts: {
   const { missionTitle, artistName, payoutText, deadline, missionUrl, description, coverUrl } = opts
 
   const coverSection = coverUrl ? `
-  <div style="overflow:hidden;">
-    <img src="${coverUrl}" alt="${missionTitle}" style="width:100%;height:auto;display:block;" />
+  <div style="padding:0 24px;">
+    <div style="border-radius:14px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.6);">
+      <img src="${coverUrl}" alt="${missionTitle}" style="width:100%;height:auto;display:block;" />
+    </div>
   </div>` : ''
 
   const artistSection = artistName ? `<p style="color:#d4af37;font-size:13px;text-align:center;margin:0 0 20px 0;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Film: ${artistName}</p>` : ''
@@ -42,11 +44,11 @@ function buildEmailHtml(opts: {
 <div style="padding:0;margin:0 auto;max-width:520px;">
 
   <!-- Logo above poster -->
-  <div style="text-align:center;padding:24px 0 16px 0;background-color:#08080a;">
+  <div style="text-align:center;padding:28px 0 20px 0;background-color:#08080a;">
     <img src="${LOGO_URL}" alt="Loopgate" width="40" height="40" style="width:40px;height:40px;border-radius:8px;" />
   </div>
 
-  <!-- Hero: Cover Image full-bleed -->
+  <!-- Hero: Cinematic poster with padding + rounded corners -->
   ${coverSection}
 
   <!-- Content area -->
