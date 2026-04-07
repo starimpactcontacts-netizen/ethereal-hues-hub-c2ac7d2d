@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Heart, MessageCircle, Share2, Bookmark, Trash2, Trophy, ArrowUp, Link2, MoreHorizontal, Swords, X } from "lucide-react";
+import FeedInlineComments from "./FeedInlineComments";
 import GateIcon from '@/components/loopgate/GateIcon';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
