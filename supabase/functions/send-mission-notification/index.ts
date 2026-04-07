@@ -132,24 +132,25 @@ Deno.serve(async (req) => {
       coverUrl: cover_url,
     })
 
-    // Send emails in batches
-    const batchSize = 50
+    // Send individual emails so recipients don't see each other
     let sentCount = 0
+    const concurrency = 10
     
-    for (let i = 0; i < to_emails.length; i += batchSize) {
-      const batch = to_emails.slice(i, i + batchSize)
-      
-      const { error } = await resend.emails.send({
-        from: 'Loopgate Missions <noreply@loopgate.io>',
-        to: batch,
-        subject: `🎬 New Mission: ${mission_title}`,
-        html: emailHtml,
-      })
-
-      if (error) {
-        console.error('Batch send error:', error)
-      } else {
-        sentCount += batch.length
+    for (let i = 0; i < to_emails.length; i += concurrency) {
+      const chunk = to_emails.slice(i, i + concurrency)
+      const results = await Promise.allSettled(
+        chunk.map((email: string) =>
+          resend.emails.send({
+            from: 'Loopgate Missions <noreply@loopgate.io>',
+            to: [email],
+            subject: `🎬 New Mission: ${mission_title}`,
+            html: emailHtml,
+          })
+        )
+      )
+      for (const r of results) {
+        if (r.status === 'fulfilled' && !r.value.error) sentCount++
+        else console.error('Send error:', r.status === 'rejected' ? r.reason : r.value.error)
       }
     }
 
