@@ -3593,6 +3593,9 @@ export default function OpsPanel() {
         {/* Admin: League Applications */}
         <LeagueApplicationsAdmin />
 
+        {/* Admin: Cash Battle Applications & Matchmaking */}
+        <CashBattleAdminPanel />
+
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Unit Management</h2>
