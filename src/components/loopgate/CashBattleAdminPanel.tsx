@@ -1,14 +1,25 @@
-import { useState } from 'react';
-import { Check, X, Swords, ExternalLink, DollarSign, User, Clock, Crown } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Check, X, Swords, ExternalLink, DollarSign, User, Clock, Crown, Building2 } from 'lucide-react';
 import { useAdminCashBattles } from '@/hooks/useCashBattles';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function CashBattleAdminPanel() {
   const { applications, battles, loading, updateApplicationStatus, createMatch } = useAdminCashBattles();
   const [matchPrize, setMatchPrize] = useState('25');
   const [matchDuration, setMatchDuration] = useState('24');
   const [selectedFighters, setSelectedFighters] = useState<string[]>([]);
+  const [sponsorName, setSponsorName] = useState('');
+  const [sponsorLogoUrl, setSponsorLogoUrl] = useState('');
+  const [sponsorCampaignId, setSponsorCampaignId] = useState('');
+  const [campaigns, setCampaigns] = useState<any[]>([]);
+
+  useEffect(() => {
+    supabase.from('artist_campaigns').select('id, name, logo_url, status').eq('status', 'active').then(({ data }) => {
+      setCampaigns(data || []);
+    });
+  }, []);
 
   const pending = applications.filter(a => a.status === 'pending');
   const approved = applications.filter(a => a.status === 'approved');
@@ -19,10 +30,28 @@ export default function CashBattleAdminPanel() {
     );
   }
 
+  function handleCampaignSelect(campaignId: string) {
+    setSponsorCampaignId(campaignId);
+    const c = campaigns.find(c => c.id === campaignId);
+    if (c) {
+      setSponsorName(c.name);
+      setSponsorLogoUrl(c.logo_url || '');
+    }
+  }
+
   async function handleCreateMatch() {
     if (selectedFighters.length !== 2) return;
-    await createMatch(selectedFighters[0], selectedFighters[1], Math.round(parseFloat(matchPrize) * 100), parseInt(matchDuration));
+    await createMatch(
+      selectedFighters[0],
+      selectedFighters[1],
+      Math.round(parseFloat(matchPrize) * 100),
+      parseInt(matchDuration),
+      sponsorName ? { name: sponsorName, logo_url: sponsorLogoUrl || undefined, campaign_id: sponsorCampaignId || undefined } : undefined
+    );
     setSelectedFighters([]);
+    setSponsorName('');
+    setSponsorLogoUrl('');
+    setSponsorCampaignId('');
   }
 
   if (loading) return <div className="text-xs text-muted-foreground py-4">Loading cash battle data...</div>;
@@ -57,16 +86,6 @@ export default function CashBattleAdminPanel() {
             {app.tiktok_url && (
               <a href={app.tiktok_url} target="_blank" rel="noopener" className="text-[9px] px-2 py-0.5 rounded-full bg-white/5 text-zinc-400 flex items-center gap-1">
                 TikTok
-              </a>
-            )}
-            {app.instagram_url && (
-              <a href={app.instagram_url} target="_blank" rel="noopener" className="text-[9px] px-2 py-0.5 rounded-full bg-white/5 text-zinc-400 flex items-center gap-1">
-                IG
-              </a>
-            )}
-            {app.youtube_url && (
-              <a href={app.youtube_url} target="_blank" rel="noopener" className="text-[9px] px-2 py-0.5 rounded-full bg-white/5 text-zinc-400 flex items-center gap-1">
-                YT
               </a>
             )}
           </div>
@@ -115,6 +134,39 @@ export default function CashBattleAdminPanel() {
               <Input value={matchDuration} onChange={e => setMatchDuration(e.target.value)} className="text-xs h-8" />
             </div>
           </div>
+
+          {/* Sponsor */}
+          <div className="mb-3 border border-blue-500/20 rounded-lg p-2.5" style={{ background: 'rgba(59,130,246,0.05)' }}>
+            <div className="flex items-center gap-1.5 mb-2">
+              <Building2 size={12} className="text-blue-400" />
+              <span className="text-[9px] font-bold uppercase tracking-widest text-blue-400">Sponsor / Campaign</span>
+            </div>
+            {campaigns.length > 0 && (
+              <select
+                value={sponsorCampaignId}
+                onChange={e => handleCampaignSelect(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded text-xs text-foreground p-1.5 mb-2"
+              >
+                <option value="">No sponsor</option>
+                {campaigns.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            )}
+            <Input
+              placeholder="Sponsor name (or custom)"
+              value={sponsorName}
+              onChange={e => setSponsorName(e.target.value)}
+              className="text-xs h-8 mb-1.5"
+            />
+            <Input
+              placeholder="Sponsor logo URL (optional)"
+              value={sponsorLogoUrl}
+              onChange={e => setSponsorLogoUrl(e.target.value)}
+              className="text-xs h-8"
+            />
+          </div>
+
           <button
             onClick={handleCreateMatch}
             disabled={selectedFighters.length !== 2}
@@ -132,15 +184,27 @@ export default function CashBattleAdminPanel() {
             {battles.length} cash battle(s) created
           </summary>
           {battles.map(b => (
-            <div key={b.id} className="bg-surface-0 border border-border p-3 mb-1 rounded-lg flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold">{b.challenger_username}</span>
-                <Swords size={10} className="text-zinc-500" />
-                <span className="text-xs font-bold">{b.opponent_username || '???'}</span>
+            <div key={b.id} className="bg-surface-0 border border-border p-3 mb-1 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold">{b.challenger_username}</span>
+                  <Swords size={10} className="text-zinc-500" />
+                  <span className="text-xs font-bold">{b.opponent_username || '???'}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-emerald-400 font-bold">${(b.prize_cents / 100).toFixed(0)}</span>
+                  <span className={`text-[9px] uppercase font-bold ${b.status === 'live' ? 'text-emerald-400' : 'text-zinc-500'}`}>{b.status}</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-emerald-400 font-bold">${(b.prize_cents / 100).toFixed(0)}</span>
-                <span className={`text-[9px] uppercase font-bold ${b.status === 'live' ? 'text-emerald-400' : 'text-zinc-500'}`}>{b.status}</span>
+              {b.sponsor_name && (
+                <div className="flex items-center gap-1.5 mt-1">
+                  <Building2 size={9} className="text-blue-400" />
+                  <span className="text-[9px] text-blue-400">Sponsored by {b.sponsor_name}</span>
+                </div>
+              )}
+              <div className="flex items-center gap-2 mt-1 text-[9px] text-zinc-500">
+                <span>🔵 {b.challenger_accepted ? '✓' : '✗'}</span>
+                <span>🔴 {b.opponent_accepted ? '✓' : '✗'}</span>
               </div>
             </div>
           ))}
