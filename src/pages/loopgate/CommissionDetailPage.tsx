@@ -364,7 +364,7 @@ function SubmissionCard({ sub, canRate, onRate }: { sub: any; canRate: boolean; 
 }
 
 /* ── Showcase Card ── */
-function ShowcaseCard({ sub }: { sub: any }) {
+function ShowcaseCard({ sub, canEdit = false }: { sub: any; canEdit?: boolean }) {
   const ratingColor = sub.rating === 'S' ? 'text-amber-400 border-amber-500/30 bg-amber-500/10' :
     sub.rating === 'A' ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10' :
     sub.rating === 'B' ? 'text-blue-400 border-blue-500/30 bg-blue-500/10' :
