@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Heart, MessageCircle, Share2, Bookmark, Trash2, Trophy, ArrowUp, Link2, MoreHorizontal, Swords, X } from "lucide-react";
+import FeedInlineComments from "./FeedInlineComments";
 import GateIcon from '@/components/loopgate/GateIcon';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
@@ -46,6 +47,8 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
   const { user } = useAuth();
   const [showMenu, setShowMenu] = useState(false);
   const [showChallengeConfirm, setShowChallengeConfirm] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [commentCount, setCommentCount] = useState(post.comment_count || 0);
   const [challengeLoading, setChallengeLoading] = useState(false);
   const isOwn = user?.id === post.user_id;
 
@@ -199,9 +202,12 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
 
             {/* Action bar */}
             <div className="flex items-center justify-between mt-2 -ml-2 max-w-[320px]">
-              <button className="flex items-center gap-1.5 px-2 py-1.5 rounded-full hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors group">
+              <button 
+                onClick={() => setShowComments(!showComments)}
+                className={`flex items-center gap-1.5 px-2 py-1.5 rounded-full transition-colors group ${showComments ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-primary hover:bg-primary/10'}`}
+              >
                 <MessageCircle className="w-[15px] h-[15px]" />
-                {post.comment_count > 0 && <span className="text-[11px]">{post.comment_count}</span>}
+                {commentCount > 0 && <span className="text-[11px]">{commentCount}</span>}
               </button>
 
               <button
@@ -389,6 +395,23 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
           </div>
         </div>
       </div>
+      {/* Inline comments */}
+      <AnimatePresence>
+        {showComments && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden border-t border-border/20 bg-muted/5"
+          >
+            <FeedInlineComments
+              submissionId={post.id}
+              submissionType={'feed_post' as any}
+              onCommentCountChange={(count) => setCommentCount(count)}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.article>
   );
 });
