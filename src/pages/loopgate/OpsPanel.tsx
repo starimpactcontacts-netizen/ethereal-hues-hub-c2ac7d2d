@@ -450,13 +450,13 @@ export default function OpsPanel() {
       if (hasOpenDialog) return;
 
       document.body.style.overflow = '';
-      document.body.style.overflowY = 'auto';
+      document.body.style.overflowY = '';
       document.body.style.pointerEvents = '';
       document.body.style.touchAction = 'auto';
       document.body.removeAttribute('data-scroll-locked');
 
       document.documentElement.style.overflow = '';
-      document.documentElement.style.overflowY = 'auto';
+      document.documentElement.style.overflowY = '';
       document.documentElement.style.pointerEvents = '';
       document.documentElement.style.touchAction = 'auto';
       document.documentElement.removeAttribute('data-scroll-locked');
@@ -2329,14 +2329,16 @@ export default function OpsPanel() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+      <div className="h-full overflow-y-auto overflow-x-hidden bg-background" style={{ WebkitOverflowScrolling: "touch" }}>
+        <div className="min-h-full flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-20 overflow-y-auto overscroll-y-contain" style={{ WebkitOverflowScrolling: "touch" }}>
+    <div className="h-full overflow-y-auto overflow-x-hidden overscroll-none bg-background text-foreground" style={{ WebkitOverflowScrolling: "touch" }}>
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background border-b border-border">
         <div className="px-4 py-3 flex items-center gap-3">
@@ -2352,7 +2354,7 @@ export default function OpsPanel() {
         </div>
       </header>
 
-      <div className="p-4 space-y-6">
+      <div className="p-4 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] space-y-6 min-h-full">
         {/* ━━━ PLATFORM DASHBOARD ━━━ */}
         <OpsAdminDashboard />
 
