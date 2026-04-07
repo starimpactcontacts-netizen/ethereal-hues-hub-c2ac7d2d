@@ -44,6 +44,11 @@ function CashBattleCard({ battle }: { battle: any }) {
         background: "linear-gradient(90deg, #3b82f6, transparent 40%, transparent 60%, #ef4444)",
       }} />
 
+      {/* TESTING label */}
+      <div className="absolute top-2 right-2 z-10 px-2 py-0.5 rounded-md" style={{ background: "rgba(234,179,8,0.9)" }}>
+        <span className="text-[8px] font-black text-black uppercase tracking-wider" style={{ fontFamily: "Teko, sans-serif" }}>Testing</span>
+      </div>
+
       {/* Prize + Status */}
       <div className="px-4 pt-4 pb-1">
         <div className="flex items-center justify-between">
