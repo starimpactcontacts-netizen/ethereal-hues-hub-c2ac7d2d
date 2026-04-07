@@ -6,7 +6,8 @@ import {
   DollarSign, ArrowLeft, Clock, Users, CheckCircle2, Send, ExternalLink,
   MessageSquare, Loader2, Star, Zap, ShieldCheck, AlertTriangle,
   HelpCircle, ChevronRight, ChevronLeft, Film, Target, Music, Trophy,
-  Flame, Info, X, Crosshair, Play, FileText, Pencil, FolderOpen, Eye, Ticket
+  Flame, Info, X, Crosshair, Play, FileText, Pencil, FolderOpen, Eye, Ticket,
+  ImagePlus, Upload
 } from 'lucide-react';
 import { useCommissionDetail, type SubmissionRating, RATING_PAYOUTS, RATING_COLORS } from '@/hooks/useCommissions';
 import { useAuth } from '@/hooks/useAuth';
@@ -207,11 +208,38 @@ function RatingModal({ submission, onRate, onClose, getPayoutForRating }: {
   const [feedback, setFeedback] = useState('');
   const [selectedRating, setSelectedRating] = useState<SubmissionRating | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const thumbnailInputRef = useRef<HTMLInputElement>(null);
+
+  const handleThumbnailSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setThumbnailFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setThumbnailPreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const uploadThumbnail = async (submissionId: string): Promise<string | null> => {
+    if (!thumbnailFile) return null;
+    const ext = thumbnailFile.name.split('.').pop() || 'jpg';
+    const path = `${submissionId}.${ext}`;
+    const { error } = await supabase.storage.from('submission-thumbnails').upload(path, thumbnailFile, { upsert: true });
+    if (error) { console.error('Thumbnail upload error:', error); return null; }
+    const { data: { publicUrl } } = supabase.storage.from('submission-thumbnails').getPublicUrl(path);
+    return publicUrl;
+  };
 
   const handleRate = async () => {
     if (!selectedRating) { toast.error('Pick a rating'); return; }
     setSubmitting(true);
     try {
+      // Upload thumbnail first if provided
+      const thumbUrl = await uploadThumbnail(submission.id);
+      if (thumbUrl) {
+        await supabase.from('commission_submissions').update({ thumbnail_url: thumbUrl } as any).eq('id', submission.id);
+      }
       await onRate(submission.id, selectedRating, feedback.trim());
       const payout = getPayoutForRating(selectedRating);
       toast.success(payout > 0 ? `Rated ${selectedRating} — $${(payout / 100).toFixed(2)} instant payout to @${submission.username}` : `Rated ${selectedRating} — Index points only`);
@@ -224,7 +252,7 @@ function RatingModal({ submission, onRate, onClose, getPayoutForRating }: {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
       <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-        className="bg-card border border-border/30 w-full max-w-md p-5 space-y-4 rounded-2xl" onClick={e => e.stopPropagation()}>
+        className="bg-card border border-border/30 w-full max-w-md p-5 space-y-4 rounded-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <h3 style={teko} className="text-xl text-foreground flex items-center gap-2"><Zap className="w-5 h-5 text-amber-400" /> RATE @{submission.username}</h3>
         <div className="bg-black/30 rounded-xl p-3">
           <div className="flex items-center gap-2 mb-2">
@@ -235,6 +263,25 @@ function RatingModal({ submission, onRate, onClose, getPayoutForRating }: {
           </div>
           <button onClick={() => window.open(submission.submission_url, '_blank', 'noopener,noreferrer')} className="text-xs text-emerald-400 hover:underline flex items-center gap-1"><ExternalLink className="w-3 h-3" /> Watch Edit</button>
         </div>
+
+        {/* Thumbnail Upload */}
+        <div>
+          <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Showcase Thumbnail</label>
+          <input ref={thumbnailInputRef} type="file" accept="image/*" onChange={handleThumbnailSelect} className="hidden" />
+          {thumbnailPreview ? (
+            <div className="relative rounded-xl overflow-hidden border border-white/10">
+              <img src={thumbnailPreview} alt="Thumbnail" className="w-full h-24 object-cover" />
+              <button onClick={() => { setThumbnailFile(null); setThumbnailPreview(null); }} className="absolute top-1 right-1 bg-black/70 rounded-full p-1"><X className="w-3 h-3" /></button>
+            </div>
+          ) : (
+            <button onClick={() => thumbnailInputRef.current?.click()}
+              className="w-full h-20 border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center gap-1 hover:border-white/20 transition-colors">
+              <ImagePlus className="w-5 h-5 text-muted-foreground" />
+              <span className="text-[10px] text-muted-foreground">Tap to add thumbnail</span>
+            </button>
+          )}
+        </div>
+
         <div>
           <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Rating</label>
           <div className="grid grid-cols-6 gap-1.5">
@@ -317,14 +364,52 @@ function SubmissionCard({ sub, canRate, onRate }: { sub: any; canRate: boolean; 
 }
 
 /* ── Showcase Card ── */
-function ShowcaseCard({ sub }: { sub: any }) {
+function ShowcaseCard({ sub, canEdit = false }: { sub: any; canEdit?: boolean }) {
   const ratingColor = sub.rating === 'S' ? 'text-amber-400 border-amber-500/30 bg-amber-500/10' :
     sub.rating === 'A' ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10' :
     sub.rating === 'B' ? 'text-blue-400 border-blue-500/30 bg-blue-500/10' :
     'text-foreground/60 border-white/10 bg-white/5';
 
+  const [uploading, setUploading] = useState(false);
+  const thumbInputRef = useRef<HTMLInputElement>(null);
+  const [thumbUrl, setThumbUrl] = useState<string | null>(sub.thumbnail_url || null);
+
+  const handleThumbUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const ext = file.name.split('.').pop() || 'jpg';
+    const path = `${sub.id}.${ext}`;
+    const { error } = await supabase.storage.from('submission-thumbnails').upload(path, file, { upsert: true });
+    if (error) { toast.error('Upload failed'); setUploading(false); return; }
+    const { data: { publicUrl } } = supabase.storage.from('submission-thumbnails').getPublicUrl(path);
+    await supabase.from('commission_submissions').update({ thumbnail_url: publicUrl } as any).eq('id', sub.id);
+    setThumbUrl(publicUrl);
+    toast.success('Thumbnail uploaded!');
+    setUploading(false);
+  };
+
   return (
     <div className="shrink-0 w-[160px] bg-black/30 backdrop-blur-sm border border-white/5 overflow-hidden rounded-xl hover:border-white/10 transition-all snap-start">
+      {/* Thumbnail */}
+      <input ref={thumbInputRef} type="file" accept="image/*" onChange={handleThumbUpload} className="hidden" />
+      {thumbUrl ? (
+        <div className="relative w-full h-[90px] cursor-pointer group" onClick={() => window.open(sub.submission_url, '_blank')}>
+          <img src={thumbUrl} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+            <Play className="w-6 h-6 text-white" />
+          </div>
+        </div>
+      ) : canEdit ? (
+        <button onClick={() => thumbInputRef.current?.click()} className="w-full h-[90px] bg-black/40 flex flex-col items-center justify-center gap-1 hover:bg-black/50 transition-colors">
+          {uploading ? <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /> : (
+            <>
+              <ImagePlus className="w-4 h-4 text-muted-foreground/40" />
+              <span className="text-[7px] text-muted-foreground/30 font-bold uppercase">Add Thumbnail</span>
+            </>
+          )}
+        </button>
+      ) : null}
       <div className="flex items-center gap-2 px-2.5 py-2 border-b border-white/5">
         <div className={`w-6 h-6 rounded-md border flex items-center justify-center shrink-0 ${ratingColor}`}>
           <span className="text-xs font-black">{sub.rating}</span>
@@ -737,7 +822,7 @@ export default function CommissionDetailPage() {
             </div>
           ) : (
             <div ref={showcaseRef} className="flex gap-2.5 overflow-x-auto scrollbar-hide scroll-smooth pb-2 snap-x snap-mandatory">
-              {ratedSubmissions.map(sub => <ShowcaseCard key={sub.id} sub={sub} />)}
+              {ratedSubmissions.map(sub => <ShowcaseCard key={sub.id} sub={sub} canEdit={canRate} />)}
             </div>
           )}
         </div>
