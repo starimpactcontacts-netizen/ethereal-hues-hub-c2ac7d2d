@@ -840,7 +840,7 @@ export default function CommissionDetailPage() {
                 }`}>
                   <div className="flex-1 min-w-0">
                     <button onClick={() => window.open(sub.submission_url, '_blank', 'noopener,noreferrer')} className="text-xs text-emerald-400 hover:underline flex items-center gap-1"><ExternalLink className="w-3 h-3" /> {sub.platform || 'View'}</button>
-                    {sub.earned_cents > 0 && <p className="text-[10px] text-emerald-400 font-bold mt-0.5">+${(sub.earned_cents / 100).toFixed(0)} earned</p>}
+                    {sub.earned_cents > 0 && <p className="text-[10px] text-emerald-400 font-bold mt-0.5">+${(sub.earned_cents / 100).toFixed(2)} earned</p>}
                     {sub.feedback && <p className="text-[10px] text-muted-foreground mt-1 italic">"{sub.feedback}"</p>}
                   </div>
                   {sub.rating ? <RatingBadge rating={sub.rating} earnedCents={sub.earned_cents} /> : <span className="text-[9px] text-amber-400 font-bold">Pending</span>}
