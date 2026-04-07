@@ -84,6 +84,8 @@ export default function EditAnalyzerAdmin() {
   const [frames, setFrames] = useState<FrameData[]>([]);
   const [extracting, setExtracting] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
+  const [analyzeStage, setAnalyzeStage] = useState("");
+  const [analyzeProgress, setAnalyzeProgress] = useState(0);
   const [analysis, setAnalysis] = useState<EditAnalysis | null>(null);
   const [editorNotes, setEditorNotes] = useState("");
   const [videoTitle, setVideoTitle] = useState("");
