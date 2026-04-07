@@ -123,15 +123,15 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
               <button
                 onClick={handleSubmit}
                 disabled={!canSubmit}
-                className={`min-w-[120px] h-12 inline-flex items-center justify-center rounded-2xl border border-border/30 font-display text-[1.05rem] leading-none tracking-[0.12em] transition-all ${
+                className={`px-5 py-1.5 rounded-full text-[13px] font-bold transition-all ${
                   canSubmit
-                    ? "bg-primary text-primary-foreground shadow-sm active:scale-[0.97]"
-                    : "bg-muted text-muted-foreground cursor-not-allowed"
+                    ? "bg-primary text-primary-foreground shadow-sm active:scale-95"
+                    : "bg-primary/30 text-primary-foreground/40 cursor-not-allowed"
                 }`}
               >
                 {submitting ? (
                   <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                ) : "POST"}
+                ) : "Post"}
               </button>
             </div>
           </div>
