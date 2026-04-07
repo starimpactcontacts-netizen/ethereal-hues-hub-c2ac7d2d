@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Heart, MessageCircle, Share2, Bookmark, Trash2, Trophy, ArrowUp, Link2, MoreHorizontal, Swords, X } from "lucide-react";
+import { Heart, MessageCircle, Share2, Bookmark, Trash2, Trophy, ArrowUp, Link2, MoreHorizontal, Swords, X, Play } from "lucide-react";
 import FeedInlineComments from "./FeedInlineComments";
 import GateIcon from '@/components/loopgate/GateIcon';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -15,6 +15,7 @@ import { ReactionGroup } from "@/hooks/useLoopReactions";
 import { createBattle } from "@/hooks/useBattles";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAutoplayVideo } from "@/hooks/useAutoplayVideo";
 
 interface FeedPostCardProps {
   post: FeedPostItem;
@@ -67,6 +68,11 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
   const urlMatch = post.media_url || post.content.match(/https?:\/\/[^\s]+/)?.[0];
   const hasUploadedMedia = !!post.uploaded_media_url;
   const isUploadedVideo = hasUploadedMedia && post.uploaded_media_type === 'video';
+  const videoRef = useAutoplayVideo(isUploadedVideo);
+
+  // Extract YouTube video ID for thumbnail
+  const ytMatch = post.media_url?.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?\s]+)/);
+  const ytThumbnail = ytMatch ? `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg` : null;
 
   return (
     <motion.article
@@ -159,11 +165,13 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
               <div className="mt-2 rounded-xl overflow-hidden border border-border/20 max-w-full">
                 {isUploadedVideo ? (
                   <video
+                    ref={videoRef}
                     src={post.uploaded_media_url!}
                     className="w-full max-h-[360px] object-cover"
                     controls
                     muted
                     playsInline
+                    loop
                     preload="metadata"
                   />
                 ) : (
@@ -177,18 +185,36 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
               </div>
             )}
 
-            {/* Media link preview */}
+            {/* Media link preview — YouTube thumbnail or fallback */}
             {post.media_url && !hasUploadedMedia && (
               <a
                 href={post.media_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-2 block bg-muted/20 border border-border/30 rounded-xl px-3 py-2.5 hover:bg-muted/30 transition-colors"
+                className="mt-2 block rounded-xl overflow-hidden border border-border/20"
               >
-                <div className="flex items-center gap-2">
-                  <Link2 className="w-4 h-4 text-primary shrink-0" />
-                  <span className="text-[12px] text-primary truncate">{post.media_url}</span>
-                </div>
+                {ytThumbnail ? (
+                  <div className="relative">
+                    <img
+                      src={ytThumbnail}
+                      alt="Video thumbnail"
+                      className="w-full aspect-video object-cover"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                      <div className="w-12 h-12 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center">
+                        <Play className="w-5 h-5 text-white fill-white ml-0.5" />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-muted/20 px-3 py-2.5 hover:bg-muted/30 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <Link2 className="w-4 h-4 text-primary shrink-0" />
+                      <span className="text-[12px] text-primary truncate">{post.media_url}</span>
+                    </div>
+                  </div>
+                )}
               </a>
             )}
 
