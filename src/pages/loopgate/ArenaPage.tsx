@@ -39,6 +39,7 @@ import LivePayoutsCarousel from "@/components/loopgate/LivePayoutsCarousel";
 import ArenaCompetitionsSection from "@/components/loopgate/ArenaCompetitionsSection";
 import { startQuickMatch } from "@/lib/startQuickMatch";
 import CashBattlesSection from "@/components/loopgate/CashBattlesSection";
+import { useMyCashBattles } from "@/hooks/useCashBattles";
 
 interface Event {
   id: string;
