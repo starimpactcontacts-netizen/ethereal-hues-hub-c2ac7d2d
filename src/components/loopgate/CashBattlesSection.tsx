@@ -161,7 +161,7 @@ export default function CashBattlesSection() {
             <h2 className="text-[15px] font-black uppercase tracking-wider text-white" style={{ fontFamily: "Teko, sans-serif" }}>
               Cash Battles
             </h2>
-            <p className="text-[9px] uppercase tracking-[0.15em]" style={{ fontFamily: "Teko, sans-serif", color: 'rgba(239,68,68,0.6)' }}>
+            <p className="text-[11px] uppercase tracking-[0.15em]" style={{ fontFamily: "Teko, sans-serif", color: 'rgba(255,255,255,0.5)' }}>
               1v1 · Winner takes all
             </p>
           </div>
