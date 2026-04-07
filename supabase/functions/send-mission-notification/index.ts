@@ -14,23 +14,23 @@ function buildEmailHtml(opts: {
   missionTitle: string
   artistName?: string
   payoutText: string
-  deadline?: string
   missionUrl: string
   description?: string
   coverUrl?: string
+  missionType?: string
 }) {
-  const { missionTitle, artistName, payoutText, deadline, missionUrl, description, coverUrl } = opts
+  const { missionTitle, artistName, payoutText, missionUrl, description, coverUrl, missionType } = opts
 
+  // Use direct img with explicit width/height for email client compatibility
   const coverSection = coverUrl ? `
   <div style="padding:0 24px;">
     <div style="border-radius:14px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.6);">
-      <img src="${coverUrl}" alt="${missionTitle}" style="width:100%;height:auto;display:block;" />
+      <img src="${coverUrl}" alt="${missionTitle}" width="472" style="width:100%;max-width:472px;height:auto;display:block;border:0;outline:none;" />
     </div>
   </div>` : ''
 
-  const artistSection = artistName ? `<p style="color:#d4af37;font-size:13px;text-align:center;margin:0 0 20px 0;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Film: ${artistName}</p>` : ''
-
-  const deadlineSection = deadline ? `<p style="color:#f97316;font-size:13px;margin:10px 0 0 0;font-weight:600;">⏰ ${deadline}</p>` : ''
+  const typeLabel = missionType === 'film' ? 'FILM' : missionType === 'brand' ? 'BRAND' : missionType === 'artist' ? 'ARTIST' : ''
+  const artistSection = artistName && typeLabel ? `<p style="color:#d4af37;font-size:13px;text-align:center;margin:0 0 20px 0;font-weight:600;letter-spacing:1px;text-transform:uppercase;">${typeLabel}: ${artistName}</p>` : ''
 
   const descSection = description ? `
   <div style="margin:20px 0;padding:16px 18px;background-color:#111114;border-radius:10px;border-left:3px solid #22c55e;">
