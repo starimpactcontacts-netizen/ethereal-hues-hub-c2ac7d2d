@@ -233,28 +233,21 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
             </div>
           </div>
 
-          {/* Bottom action bar */}
-          <div className="border-t border-border/20 bg-background/95 backdrop-blur px-4 py-2 safe-bottom shrink-0">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-[11px] text-muted-foreground/70">
-                {uploadedMedia ? `${uploadedMedia.type === 'video' ? 'Video' : 'Image'} attached ✓` :
-                 selectedGif ? 'GIF attached ✓' : 
-                 postType === 'edit_share' ? 'Add your edit link' : 'Write your loop'}
-              </p>
-              <button
-                onClick={handleSubmit}
-                disabled={!canSubmit}
-                className={`px-5 py-2 rounded-full text-[13px] font-bold transition-all ${
-                  canSubmit
-                    ? "bg-primary text-primary-foreground shadow-sm active:scale-95"
-                    : "bg-primary/30 text-primary-foreground/40 cursor-not-allowed"
-                }`}
-              >
-                {submitting ? (
-                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                ) : "Post"}
-              </button>
-            </div>
+          {/* Bottom POST button */}
+          <div className="border-t border-border/20 bg-background/95 backdrop-blur px-4 py-3 safe-bottom shrink-0">
+            <button
+              onClick={handleSubmit}
+              disabled={!canSubmit}
+              className={`w-full py-3.5 rounded-xl text-[16px] font-black tracking-wide transition-all ${
+                canSubmit
+                  ? "bg-foreground text-background shadow-lg active:scale-[0.98]"
+                  : "bg-muted/40 text-muted-foreground/40 cursor-not-allowed"
+              }`}
+            >
+              {submitting ? (
+                <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin mx-auto" />
+              ) : "POST"}
+            </button>
           </div>
         </motion.div>
       )}
