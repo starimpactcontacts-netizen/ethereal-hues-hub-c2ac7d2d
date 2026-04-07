@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { X, Link2, Globe, Video } from "lucide-react";
-import GateIcon from '@/components/loopgate/GateIcon';
+import { X } from "lucide-react";
+
 import GifPicker from "./GifPicker";
 import MediaUploadButton from "./MediaUploadButton";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -14,11 +14,6 @@ interface FeedComposeSheetProps {
   onPost: (content: string, postType: FeedPostItem['post_type'], mediaUrl?: string, mediaPlatform?: string, uploadedMediaUrl?: string, uploadedMediaType?: string) => Promise<void>;
 }
 
-const POST_TYPES: { id: FeedPostItem['post_type']; label: string; icon: React.ReactNode }[] = [
-  { id: 'text', label: 'Loop', icon: <Globe className="w-3.5 h-3.5" /> },
-  { id: 'flex', label: 'Flex', icon: <GateIcon className="w-3.5 h-3.5" /> },
-  { id: 'edit_share', label: 'Edit', icon: <Video className="w-3.5 h-3.5" /> },
-];
 
 const MAX_CHARS = 280;
 
@@ -136,24 +131,9 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
             </div>
           </div>
 
-          {/* Post type chips + media buttons */}
+          {/* Media buttons bar */}
           <div className="flex items-center gap-1.5 px-4 py-2 border-b border-border/15 shrink-0">
-            {POST_TYPES.map(opt => (
-              <button
-                key={opt.id}
-                onClick={() => setPostType(opt.id)}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all ${
-                  postType === opt.id
-                    ? "bg-primary/15 text-primary border border-primary/30"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                }`}
-              >
-                {opt.icon}
-                {opt.label}
-              </button>
-            ))}
-
-            <div className="ml-auto flex items-center gap-1">
+            <div className="flex items-center gap-1">
               {/* Upload button */}
               {!uploadedMedia && !selectedGif && (
                 <MediaUploadButton
@@ -190,11 +170,7 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
                 <textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder={
-                    postType === 'flex' ? "What's your flex? 🔥" :
-                    postType === 'edit_share' ? "Share your latest edit..." :
-                    "What's happening in the loop?"
-                  }
+                  placeholder="What's on your mind?"
                   autoFocus
                   className="w-full bg-transparent text-foreground text-[17px] placeholder:text-muted-foreground/40 resize-none focus:outline-none leading-relaxed min-h-[160px]"
                   maxLength={300}
@@ -248,28 +224,21 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
             </div>
           </div>
 
-          {/* Bottom action bar */}
-          <div className="border-t border-border/20 bg-background/95 backdrop-blur px-4 py-2 safe-bottom shrink-0">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-[11px] text-muted-foreground/70">
-                {uploadedMedia ? `${uploadedMedia.type === 'video' ? 'Video' : 'Image'} attached ✓` :
-                 selectedGif ? 'GIF attached ✓' : 
-                 postType === 'edit_share' ? 'Add your edit link' : 'Write your loop'}
-              </p>
-              <button
-                onClick={handleSubmit}
-                disabled={!canSubmit}
-                className={`px-5 py-2 rounded-full text-[13px] font-bold transition-all ${
-                  canSubmit
-                    ? "bg-primary text-primary-foreground shadow-sm active:scale-95"
-                    : "bg-primary/30 text-primary-foreground/40 cursor-not-allowed"
-                }`}
-              >
-                {submitting ? (
-                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                ) : "Post"}
-              </button>
-            </div>
+          {/* Bottom POST button */}
+          <div className="border-t border-border/20 bg-background/95 backdrop-blur px-4 py-3 safe-bottom shrink-0">
+            <button
+              onClick={handleSubmit}
+              disabled={!canSubmit}
+              className={`w-full py-3.5 rounded-xl text-[16px] font-black tracking-wide transition-all ${
+                canSubmit
+                  ? "bg-foreground text-background shadow-lg active:scale-[0.98]"
+                  : "bg-muted/40 text-muted-foreground/40 cursor-not-allowed"
+              }`}
+            >
+              {submitting ? (
+                <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin mx-auto" />
+              ) : "POST"}
+            </button>
           </div>
         </motion.div>
       )}
