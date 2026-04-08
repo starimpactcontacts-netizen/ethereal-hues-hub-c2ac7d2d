@@ -830,13 +830,17 @@ export default function HubPage() {
               }}
               className={cn(
                 "flex-1 relative overflow-hidden flex items-center justify-center gap-3 px-6 py-5 transition-all duration-300 touch-manipulation select-none",
-                quickAction === 'mission'
+                quickAction === 'cash_battle'
                   ? ""
-                  : quickAction === 'solo'
+                  : quickAction === 'mission'
                     ? ""
-                    : "bg-gradient-to-r from-red-600 via-red-500 to-red-600"
+                    : quickAction === 'solo'
+                      ? ""
+                      : "bg-gradient-to-r from-red-600 via-red-500 to-red-600"
               )}
-              style={quickAction === 'mission' ? {
+              style={quickAction === 'cash_battle' ? {
+                background: 'linear-gradient(135deg, #3b82f6 0%, #7c3aed 50%, #ef4444 100%)',
+              } : quickAction === 'mission' ? {
                 background: 'linear-gradient(135deg, hsl(160 84% 39%) 0%, hsl(152 76% 36%) 40%, hsl(145 72% 30%) 100%)',
               } : quickAction === 'solo' ? {
                 background: 'linear-gradient(135deg, hsl(43 96% 56%) 0%, hsl(40 100% 50%) 40%, hsl(36 100% 48%) 100%)',
