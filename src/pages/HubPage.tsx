@@ -816,7 +816,7 @@ export default function HubPage() {
               onClick={() => {
                 if (!profile) { navigate('/start'); return; }
                 if (quickAction === 'cash_battle') {
-                  navigate('/arena?tab=main');
+                  setCashModalOpen(true);
                 } else if (quickAction === 'mission') {
                   navigate('/commissions/414605a8-ac2f-4ab5-9955-15339ba4633c');
                 } else if (quickAction === 'solo') {
