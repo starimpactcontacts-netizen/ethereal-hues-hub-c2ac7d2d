@@ -198,6 +198,7 @@ export default function HubPage() {
   const [walletOpen, setWalletOpen] = useState(false);
   const [judgeReviewCount, setJudgeReviewCount] = useState(0);
   const [userCrew, setUserCrew] = useState<UserCrew | null>(null);
+  const [cashModalOpen, setCashModalOpen] = useState(false);
   const [quickAction, setQuickAction] = useState<'cash_battle' | 'mission' | 'solo' | 'quick'>('cash_battle');
   const [qfSearching, setQfSearching] = useState(false);
   const [qfElapsed, setQfElapsed] = useState(0);
