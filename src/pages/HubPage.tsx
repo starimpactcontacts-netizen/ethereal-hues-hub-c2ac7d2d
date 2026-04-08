@@ -847,7 +847,7 @@ export default function HubPage() {
               } : undefined}
             >
                {/* Luxury geometric pattern overlay */}
-               {(quickAction === 'solo' || quickAction === 'mission') && (
+               {(quickAction === 'solo' || quickAction === 'mission' || quickAction === 'cash_battle') && (
                  <div className="absolute inset-0 pointer-events-none opacity-[0.07]" style={{
                    backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(255,255,255,0.5) 8px, rgba(255,255,255,0.5) 9px),
                      repeating-linear-gradient(-45deg, transparent, transparent 8px, rgba(255,255,255,0.5) 8px, rgba(255,255,255,0.5) 9px)`,
@@ -862,7 +862,19 @@ export default function HubPage() {
                {/* Top gloss */}
                <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/[0.22] to-transparent pointer-events-none" />
               
-              {quickAction === 'mission' ? (
+              {quickAction === 'cash_battle' ? (
+                <>
+                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-white/30 to-white/10 flex items-center justify-center relative z-10 border border-white/40 shadow-lg shadow-black/20">
+                     <DollarSign className="w-4.5 h-4.5 text-white drop-shadow-lg" />
+                  </div>
+                  <div className="flex flex-col relative z-10">
+                    <span className="text-[28px] font-bold text-white uppercase tracking-wider leading-none drop-shadow-lg" style={{ fontFamily: 'Teko, sans-serif' }}>
+                      Cash Battle
+                    </span>
+                    <span className="text-[9px] text-white/60 font-bold tracking-wider">1v1 · WINNER TAKES ALL</span>
+                  </div>
+                </>
+              ) : quickAction === 'mission' ? (
                 <>
                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-white/30 to-white/10 flex items-center justify-center relative z-10 border border-white/40 shadow-lg shadow-black/20">
                      <Crosshair className="w-4.5 h-4.5 text-white drop-shadow-lg" />
