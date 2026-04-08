@@ -1291,6 +1291,7 @@ export default function HubPage() {
 
       <InviteModal open={inviteModalOpen} onOpenChange={setInviteModalOpen} />
       <WalletDrawer open={walletOpen} onClose={() => setWalletOpen(false)} />
+      <CashBattleApplyModal open={cashModalOpen} onClose={() => setCashModalOpen(false)} />
     </div>
   );
 }
