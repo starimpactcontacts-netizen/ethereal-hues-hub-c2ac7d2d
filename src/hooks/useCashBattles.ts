@@ -253,21 +253,21 @@ export function useMyCashBattleApplication() {
       return (((data as any[]) || [])[0] as CashBattleApplication | undefined) ?? null;
     };
 
-    if (existingApplication?.status === 'pending') {
-      const olderOpenApplication = await fetchTargetApplication(existingApplication.created_at);
-      if (olderOpenApplication) {
-        const liveBattle = await tryCreateLiveBattle(olderOpenApplication);
-        if (liveBattle) return liveBattle;
-      }
+    // --- INSTANT MATCHMAKING: always try to pair first, regardless of own status ---
 
-      setApplication(existingApplication as any);
-      return { state: 'waiting' } as const;
-    }
-
+    // Step 1: check for ANY pending application (not ours)
     const openApplication = await fetchTargetApplication();
     if (openApplication) {
+      // If we already have a pending application, that's fine — tryCreateLiveBattle will handle it
       const liveBattle = await tryCreateLiveBattle(openApplication);
       if (liveBattle) return liveBattle;
+    }
+
+    // Step 2: No one to pair with — place ourselves in the pool (or update existing)
+    if (existingApplication?.status === 'pending') {
+      // Already in pool, just wait
+      setApplication(existingApplication as any);
+      return { state: 'waiting' } as const;
     }
 
     const queueMutation = existingApplication?.id
@@ -298,25 +298,10 @@ export function useMyCashBattleApplication() {
     toast.success('You\'re in — waiting for opponent');
     await fetchApplication();
 
-    const refreshedApplication = existingApplication?.id
-      ? {
-          ...existingApplication,
-          ...queuePayload,
-          status: 'pending',
-          matched_battle_id: null,
-        }
-      : await supabase
-          .from('cash_battle_applications')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle()
-          .then((res) => res.data as CashBattleApplication | null);
-
-    const olderOpenApplication = await fetchTargetApplication(refreshedApplication?.created_at ?? null);
-    if (olderOpenApplication) {
-      const liveBattle = await tryCreateLiveBattle(olderOpenApplication);
+    // Step 3: One more immediate check — someone may have joined between our insert and now
+    const lastChanceApp = await fetchTargetApplication();
+    if (lastChanceApp) {
+      const liveBattle = await tryCreateLiveBattle(lastChanceApp);
       if (liveBattle) return liveBattle;
     }
 
