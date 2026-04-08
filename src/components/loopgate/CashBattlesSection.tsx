@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { DollarSign, Swords, Clock, Flame, Zap, Info, X } from "lucide-react";
+import { DollarSign, Swords, Clock, Zap, Info, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useCashBattles, useMyCashBattles } from "@/hooks/useCashBattles";
+import { useCashBattles, useMyCashBattles, CashBattleApplication } from "@/hooks/useCashBattles";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useAccountPrompt } from "@/hooks/useAccountPrompt";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 function formatPrize(cents: number): string {
   return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
@@ -177,6 +179,98 @@ function CashBattleCard({ battle }: { battle: any }) {
   );
 }
 
+/** Card for a pending application — shows as an open matchup slot anyone can tap to accept */
+function OpenMatchupCard({ app, onJoin }: { app: CashBattleApplication; onJoin: () => void }) {
+  return (
+    <motion.div
+      whileTap={{ scale: 0.97 }}
+      whileHover={{ y: -2 }}
+      onClick={onJoin}
+      className="w-[220px] shrink-0 rounded-2xl overflow-hidden cursor-pointer relative"
+      style={{
+        background: "linear-gradient(160deg, rgba(22,22,28,1) 0%, rgba(6,6,8,1) 100%)",
+        boxShadow: "0 0 30px rgba(59,130,246,0.08), 0 0 30px rgba(239,68,68,0.08), 0 12px 40px rgba(0,0,0,0.7)",
+      }}
+    >
+      <div className="absolute top-0 left-0 right-0 h-[2px]" style={{
+        background: "linear-gradient(90deg, #3b82f6, transparent 40%, transparent 60%, #ef4444)",
+      }} />
+
+      <div className="px-4 pt-4 pb-1">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}>
+              <DollarSign className="w-3.5 h-3.5 text-white" />
+            </div>
+            <span className="text-2xl font-black text-white" style={{ fontFamily: "Teko, sans-serif" }}>
+              $$$
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-[0.15em] text-amber-400" style={{ fontFamily: "Teko, sans-serif" }}>
+              OPEN
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center gap-1 mt-1 text-[9px] text-zinc-600">
+          <Clock className="w-3 h-3" />
+          <span>24h battle</span>
+        </div>
+      </div>
+
+      <div className="px-4 py-4 flex items-center justify-between">
+        {/* Challenger (the waiting user) */}
+        <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+          <div className="relative">
+            <Avatar className="w-14 h-14 ring-2 ring-blue-500/50">
+              <AvatarImage src={app.avatar_url || ""} />
+              <AvatarFallback className="text-sm font-black bg-blue-500/15 text-blue-400">
+                {app.username?.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
+              <Zap className="w-3 h-3 text-white" />
+            </div>
+          </div>
+          <span className="text-[10px] font-black truncate max-w-[75px] uppercase text-blue-400" style={{ fontFamily: "Teko, sans-serif" }}>
+            {app.username}
+          </span>
+        </div>
+
+        <div className="mx-2 shrink-0">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{
+            background: "radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)",
+          }}>
+            <span className="text-lg font-black text-white/90" style={{ fontFamily: "Teko, sans-serif" }}>VS</span>
+          </div>
+        </div>
+
+        {/* Open opponent slot */}
+        <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+          <div className="w-14 h-14 rounded-full border-2 border-dashed border-amber-500/30 flex items-center justify-center bg-amber-500/5">
+            <span className="text-lg text-amber-400/60">?</span>
+          </div>
+          <span className="text-[10px] font-black uppercase text-amber-400" style={{ fontFamily: "Teko, sans-serif" }}>
+            YOU?
+          </span>
+        </div>
+      </div>
+
+      <div className="px-4 pb-4">
+        <div className="w-full text-center py-2.5 rounded-xl text-[13px] font-black uppercase tracking-wider border" style={{
+          fontFamily: "Teko, sans-serif",
+          background: "linear-gradient(135deg, rgba(59,130,246,0.15), rgba(239,68,68,0.15))",
+          borderColor: "rgba(239,68,68,0.3)",
+          color: "#fff",
+        }}>
+          ACCEPT FIGHT
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 function CashBattleInfoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   if (!open) return null;
   return (
@@ -205,18 +299,10 @@ function CashBattleInfoModal({ open, onClose }: { open: boolean; onClose: () => 
             </button>
           </div>
           <div className="space-y-3 text-[13px] text-zinc-300 leading-relaxed">
-            <p>
-              <span className="text-white font-bold">Cash Battles</span> are sponsored 1v1 edit competitions where the winner takes the entire cash prize.
-            </p>
-            <p>
-              🎬 Two editors go head-to-head using a provided scenepack from a sponsor campaign. You submit your TikTok edit before the timer runs out.
-            </p>
-            <p>
-              💰 The best edit wins the full prize pool — judged by the sponsor or community vote.
-            </p>
-            <p>
-              ⚡ Hit <span className="text-blue-400 font-semibold">Enter Battle</span> to throw your name in. If selected, you'll be matched and notified in <span className="text-amber-400 font-semibold">My Arena</span>.
-            </p>
+            <p><span className="text-white font-bold">Cash Battles</span> are sponsored 1v1 edit competitions where the winner takes the entire cash prize.</p>
+            <p>🎬 Two editors go head-to-head using a provided scenepack from a sponsor campaign. You submit your TikTok edit before the timer runs out.</p>
+            <p>💰 The best edit wins the full prize pool — judged by the sponsor or community vote.</p>
+            <p>⚡ Hit <span className="text-blue-400 font-semibold">Accept Fight</span> on any open matchup to jump in instantly.</p>
           </div>
         </div>
       </motion.div>
@@ -228,9 +314,30 @@ export default function CashBattlesSection() {
   const navigate = useNavigate();
   const { battles, loading } = useCashBattles();
   const { battles: myBattles } = useMyCashBattles();
+  const { user } = useAuth();
   const [infoOpen, setInfoOpen] = useState(false);
   const { isGuest } = useGuestMode();
   const accountPrompt = useAccountPrompt();
+  const [pendingApps, setPendingApps] = useState<CashBattleApplication[]>([]);
+
+  // Fetch pending applications (open matchup slots) — exclude current user's own
+  useEffect(() => {
+    async function fetchPending() {
+      let query = supabase
+        .from('cash_battle_applications')
+        .select('*')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: true });
+
+      const { data } = await query;
+      const apps = (data as CashBattleApplication[] | null) || [];
+      // Filter out current user's own application
+      setPendingApps(user ? apps.filter(a => a.user_id !== user.id) : apps);
+    }
+    fetchPending();
+    const interval = setInterval(fetchPending, 6000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   const handleEnter = () => {
     if (isGuest) {
@@ -241,6 +348,15 @@ export default function CashBattlesSection() {
       navigate(`/cash-battle/${myBattles[0].id}`);
       return;
     }
+    navigate('/cash-battle');
+  };
+
+  const handleAcceptFight = (app: CashBattleApplication) => {
+    if (isGuest) {
+      accountPrompt.open('enter_battle' as any);
+      return;
+    }
+    // Navigate to ready page — the auto-join logic will handle matching
     navigate('/cash-battle');
   };
 
@@ -260,9 +376,11 @@ export default function CashBattlesSection() {
               <p className="text-[11px] font-semibold" style={{ color: 'rgba(255,255,255,0.55)' }}>
                 1v1 · Winner takes all
               </p>
-              <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider text-white flex items-center gap-0.5" style={{ background: "rgba(239,68,68,0.85)", fontFamily: "Teko, sans-serif" }}>
-                LIVE NOW
-              </span>
+              {pendingApps.length > 0 && (
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider text-white flex items-center gap-0.5" style={{ background: "rgba(234,179,8,0.85)", fontFamily: "Teko, sans-serif" }}>
+                  {pendingApps.length} OPEN
+                </span>
+              )}
               <button onClick={() => setInfoOpen(true)} className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center hover:bg-zinc-700 transition-colors">
                 <Info className="w-3 h-3 text-zinc-400" />
               </button>
@@ -279,35 +397,43 @@ export default function CashBattlesSection() {
         </button>
       </div>
 
-      {/* Horizontal scroll */}
+      {/* Horizontal scroll — open matchups first, then existing battles */}
       <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2" style={{ paddingLeft: 16, paddingRight: 16 }}>
+        {/* Open matchup cards from pending applications */}
+        {pendingApps.map((app) => (
+          <OpenMatchupCard key={app.id} app={app} onJoin={() => handleAcceptFight(app)} />
+        ))}
+
+        {/* Existing battles */}
         {battles.map((battle) => (
           <CashBattleCard key={battle.id} battle={battle} />
         ))}
 
-        {/* Apply teaser card */}
-        <motion.div
-          whileTap={{ scale: 0.97 }}
-          onClick={handleEnter}
-          className="w-[180px] shrink-0 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer"
-          style={{
-            background: 'rgba(59,130,246,0.03)',
-            border: '1px dashed rgba(59,130,246,0.2)',
-            minHeight: 200,
-          }}
-        >
-          <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(239,68,68,0.12)' }}>
-            <Swords className="w-6 h-6" style={{ color: 'rgba(239,68,68,0.5)' }} />
-          </div>
-          <div className="text-center px-4">
-            <p className="text-[12px] font-black uppercase" style={{ fontFamily: "Teko, sans-serif", color: 'rgba(239,68,68,0.8)' }}>
-              Waiting for opponent
-            </p>
-            <p className="text-[9px] text-zinc-600 mt-0.5">
-              Jump straight into a live-ready 1v1 screen
-            </p>
-          </div>
-        </motion.div>
+        {/* Join teaser — only show if no pending apps */}
+        {pendingApps.length === 0 && (
+          <motion.div
+            whileTap={{ scale: 0.97 }}
+            onClick={handleEnter}
+            className="w-[180px] shrink-0 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer"
+            style={{
+              background: 'rgba(59,130,246,0.03)',
+              border: '1px dashed rgba(59,130,246,0.2)',
+              minHeight: 200,
+            }}
+          >
+            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(239,68,68,0.12)' }}>
+              <Swords className="w-6 h-6" style={{ color: 'rgba(239,68,68,0.5)' }} />
+            </div>
+            <div className="text-center px-4">
+              <p className="text-[12px] font-black uppercase" style={{ fontFamily: "Teko, sans-serif", color: 'rgba(239,68,68,0.8)' }}>
+                Waiting for opponent
+              </p>
+              <p className="text-[9px] text-zinc-600 mt-0.5">
+                Jump straight into a live-ready 1v1 screen
+              </p>
+            </div>
+          </motion.div>
+        )}
       </div>
 
       <CashBattleInfoModal open={infoOpen} onClose={() => setInfoOpen(false)} />
