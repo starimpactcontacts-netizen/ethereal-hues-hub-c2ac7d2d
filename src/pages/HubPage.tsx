@@ -939,15 +939,17 @@ export default function HubPage() {
                 <button 
                   className={cn(
                     "relative overflow-hidden flex items-center justify-center px-5 py-5 transition-colors touch-manipulation select-none border-l",
-                    quickAction === 'mission'
+                    quickAction === 'cash_battle'
                       ? "hover:brightness-110 border-white/10"
-                      : quickAction === 'solo'
+                      : quickAction === 'mission'
                         ? "hover:brightness-110 border-white/10"
-                        : "bg-red-700/80 hover:bg-red-600/80 border-red-900/40"
+                        : quickAction === 'solo'
+                          ? "hover:brightness-110 border-white/10"
+                          : "bg-red-700/80 hover:bg-red-600/80 border-red-900/40"
                   )}
-                  style={quickAction === 'mission' ? { background: 'hsl(152 72% 28%)' } : quickAction === 'solo' ? { background: 'hsl(33 100% 38%)' } : undefined}
+                  style={quickAction === 'cash_battle' ? { background: 'linear-gradient(135deg, #6d28d9, #dc2626)' } : quickAction === 'mission' ? { background: 'hsl(152 72% 28%)' } : quickAction === 'solo' ? { background: 'hsl(33 100% 38%)' } : undefined}
                 >
-                   {(quickAction === 'solo' || quickAction === 'mission') && (
+                   {(quickAction === 'solo' || quickAction === 'mission' || quickAction === 'cash_battle') && (
                      <div className="absolute inset-0 pointer-events-none opacity-[0.06]" style={{
                        backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(255,255,255,0.5) 6px, rgba(255,255,255,0.5) 7px),
                          repeating-linear-gradient(-45deg, transparent, transparent 6px, rgba(255,255,255,0.5) 6px, rgba(255,255,255,0.5) 7px)`,
@@ -960,6 +962,14 @@ export default function HubPage() {
               <DropdownMenuContent align="end" className="w-52 bg-surface-1 border-border">
                 <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">Quick Action</DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setQuickAction('cash_battle')} className="flex items-center gap-2 cursor-pointer">
+                  <DollarSign className="w-4 h-4 text-blue-400" />
+                  <div className="flex-1">
+                    <span className="text-sm font-semibold">Cash Battle</span>
+                    <span className="text-[10px] text-blue-400 ml-1.5">1v1 CASH</span>
+                  </div>
+                  {quickAction === 'cash_battle' && <Check className="w-3.5 h-3.5 text-blue-400" />}
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setQuickAction('mission')} className="flex items-center gap-2 cursor-pointer">
                   <Crosshair className="w-4 h-4 text-emerald-400" />
                   <div className="flex-1">
