@@ -276,10 +276,40 @@ export default function CashBattleAdminPanel() {
                     <label className="text-[9px] text-zinc-500 uppercase block mb-0.5">Scenepack URL</label>
                     <Input value={editFields.scenepack_url || ''} onChange={e => setEditFields(f => ({ ...f, scenepack_url: e.target.value }))} placeholder="https://..." className="text-xs h-7" />
                   </div>
-                  <div>
-                    <label className="text-[9px] text-zinc-500 uppercase block mb-0.5">Theme / Sponsor one-liner</label>
-                    <Input value={editFields.sponsor_name || ''} onChange={e => setEditFields(f => ({ ...f, sponsor_name: e.target.value }))} placeholder="e.g. WeirdCity Film Campaign" className="text-xs h-7" />
+
+                  {/* Campaign Sponsor Selector */}
+                  <div className="border border-blue-500/20 rounded-lg p-2" style={{ background: 'rgba(59,130,246,0.05)' }}>
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <Building2 size={10} className="text-blue-400" />
+                      <span className="text-[9px] font-bold uppercase tracking-widest text-blue-400">Sponsor Campaign</span>
+                    </div>
+                    {campaigns.length > 0 && (
+                      <select
+                        value={editFields.sponsor_campaign_id || ''}
+                        onChange={e => handleEditCampaignSelect(e.target.value)}
+                        className="w-full bg-white/5 border border-white/10 rounded text-xs text-foreground p-1.5 mb-1.5"
+                      >
+                        <option value="">No sponsor</option>
+                        {campaigns.map(c => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+                    )}
+                    <div>
+                      <label className="text-[9px] text-zinc-500 uppercase block mb-0.5">Theme / Sponsor one-liner</label>
+                      <Input value={editFields.sponsor_name || ''} onChange={e => setEditFields(f => ({ ...f, sponsor_name: e.target.value }))} placeholder="e.g. WeirdCity Film Campaign" className="text-xs h-7" />
+                    </div>
+                    <div className="mt-1.5">
+                      <label className="text-[9px] text-zinc-500 uppercase block mb-0.5">Cover Image URL</label>
+                      <Input value={editFields.cover_image_url || ''} onChange={e => setEditFields(f => ({ ...f, cover_image_url: e.target.value }))} placeholder="Auto-pulled from campaign mission" className="text-xs h-7" />
+                    </div>
+                    {editFields.cover_image_url && (
+                      <div className="mt-1.5 rounded overflow-hidden border border-white/10">
+                        <img src={editFields.cover_image_url} alt="Cover preview" className="w-full h-16 object-cover" />
+                      </div>
+                    )}
                   </div>
+
                   <div>
                     <label className="text-[9px] text-zinc-500 uppercase block mb-0.5">Admin Notes</label>
                     <Input value={editFields.admin_notes || ''} onChange={e => setEditFields(f => ({ ...f, admin_notes: e.target.value }))} placeholder="Internal notes..." className="text-xs h-7" />
