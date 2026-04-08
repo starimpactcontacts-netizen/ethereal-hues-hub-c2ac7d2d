@@ -356,8 +356,7 @@ export default function CashBattlesSection() {
       accountPrompt.open('enter_battle' as any);
       return;
     }
-    // Navigate to ready page — the auto-join logic will handle matching
-    navigate('/cash-battle');
+    navigate(`/cash-battle?match=${app.id}`);
   };
 
   return (

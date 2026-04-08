@@ -17,8 +17,10 @@ export default function CashBattleReadyPage() {
   const [autoJoining, setAutoJoining] = useState(false);
   const autoJoinRef = useRef(false);
   const routedBattleRef = useRef(false);
+  const attemptedTargetAppRef = useRef<string | null>(null);
   const [email, setEmail] = useState("");
   const [emailSaved, setEmailSaved] = useState(false);
+  const targetAppId = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("match") : null;
 
   const featuredBattle = useMemo(
     () =>
@@ -45,11 +47,17 @@ export default function CashBattleReadyPage() {
     if (application || myBattles.length > 0) return;
     autoJoinRef.current = true;
     setAutoJoining(true);
-    void joinPool().then((joined) => {
+    attemptedTargetAppRef.current = targetAppId;
+    void joinPool(targetAppId || undefined).then((joined) => {
       if (!joined) autoJoinRef.current = false;
+      if (joined && joined.state === "live" && joined.battleId) {
+        routedBattleRef.current = true;
+        navigate(`/cash-battle/${joined.battleId}`, { replace: true });
+        return;
+      }
       setAutoJoining(false);
     });
-  }, [user, profile, applicationLoading, myBattlesLoading, application, myBattles.length, joinPool]);
+  }, [user, profile, applicationLoading, myBattlesLoading, application, myBattles.length, joinPool, navigate, targetAppId]);
 
   useEffect(() => {
     if (!user || myBattles.length > 0) return;
@@ -59,6 +67,15 @@ export default function CashBattleReadyPage() {
     }, 4000);
     return () => window.clearInterval(interval);
   }, [user, myBattles.length, refetchApplication, refetchMyBattles]);
+
+  useEffect(() => {
+    if (!application || !targetAppId || attemptedTargetAppRef.current !== targetAppId) return;
+    if (application.id === targetAppId) return;
+    if (application.status === "pending" && autoJoinRef.current) {
+      autoJoinRef.current = false;
+      setAutoJoining(false);
+    }
+  }, [application, targetAppId]);
 
   const handleEmailReminder = async () => {
     if (!email || !user) return;

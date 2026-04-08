@@ -821,6 +821,7 @@ export default function HubPage() {
                     return;
                   }
                   navigate('/cash-battle');
+                  return;
                 } else if (quickAction === 'mission') {
                   navigate('/commissions/414605a8-ac2f-4ab5-9955-15339ba4633c');
                 } else if (quickAction === 'solo') {
