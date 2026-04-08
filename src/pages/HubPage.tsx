@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import CashBattleApplyModal from '@/components/loopgate/CashBattleApplyModal';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -55,6 +54,7 @@ import CommissionsSection from '@/components/loopgate/CommissionsSection';
 import WalletDrawer from '@/components/loopgate/WalletDrawer';
 import LoopyWelcomeModal from '@/components/loopgate/LoopyWelcomeModal';
 import { startQuickMatch } from '@/lib/startQuickMatch';
+import { useMyCashBattleApplication, useMyCashBattles } from '@/hooks/useCashBattles';
 
 // ── Live Feed for Hub ──────────────────────────────────────────────────
 const actionColors: Record<string, string> = {
@@ -198,8 +198,8 @@ export default function HubPage() {
   const [walletOpen, setWalletOpen] = useState(false);
   const [judgeReviewCount, setJudgeReviewCount] = useState(0);
   const [userCrew, setUserCrew] = useState<UserCrew | null>(null);
-  const [cashModalOpen, setCashModalOpen] = useState(false);
   const [quickAction, setQuickAction] = useState<'cash_battle' | 'mission' | 'solo' | 'quick'>('cash_battle');
+  const [cashJoining, setCashJoining] = useState(false);
   const [qfSearching, setQfSearching] = useState(false);
   const [qfElapsed, setQfElapsed] = useState(0);
   const [qfTipIdx, setQfTipIdx] = useState(0);
@@ -212,6 +212,8 @@ export default function HubPage() {
   const [eventsActiveIdx, setEventsActiveIdx] = useState(0);
   const eventsAutoScrollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { hasEquippedOG } = useEquippedBadges(user?.id);
+  const { application: cashApplication, loading: cashApplicationLoading, joinPool } = useMyCashBattleApplication();
+  const { battles: myCashBattles, loading: myCashBattlesLoading } = useMyCashBattles();
   const [dismissedBanners, setDismissedBanners] = useState<{ battles?: boolean; solo?: boolean }>({});
   const [missionDrops, setMissionDrops] = useState<Array<{ id: string; song_name: string; poster_url: string | null; artist_name: string | null; max_pay: number }>>([]);
 
@@ -812,11 +814,22 @@ export default function HubPage() {
             <motion.button
               whileTap={{ scale: 0.96 }}
               whileHover={{ scale: 1.01 }}
-              disabled={quickAction === 'quick' && qfIsSearching}
-              onClick={() => {
+              disabled={(quickAction === 'quick' && qfIsSearching) || (quickAction === 'cash_battle' && (cashJoining || cashApplicationLoading || myCashBattlesLoading))}
+              onClick={async () => {
                 if (!profile) { navigate('/start'); return; }
                 if (quickAction === 'cash_battle') {
-                  setCashModalOpen(true);
+                  if (cashApplication || myCashBattles.length > 0) {
+                    navigate('/arena?tab=my');
+                    return;
+                  }
+
+                  setCashJoining(true);
+                  const joined = await joinPool();
+                  setCashJoining(false);
+
+                  if (joined) {
+                    navigate('/arena?tab=my');
+                  }
                 } else if (quickAction === 'mission') {
                   navigate('/commissions/414605a8-ac2f-4ab5-9955-15339ba4633c');
                 } else if (quickAction === 'solo') {
@@ -1291,7 +1304,6 @@ export default function HubPage() {
 
       <InviteModal open={inviteModalOpen} onOpenChange={setInviteModalOpen} />
       <WalletDrawer open={walletOpen} onClose={() => setWalletOpen(false)} />
-      <CashBattleApplyModal open={cashModalOpen} onClose={() => setCashModalOpen(false)} />
     </div>
   );
 }
