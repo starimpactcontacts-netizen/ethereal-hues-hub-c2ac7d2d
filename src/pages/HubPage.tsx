@@ -54,7 +54,7 @@ import CommissionsSection from '@/components/loopgate/CommissionsSection';
 import WalletDrawer from '@/components/loopgate/WalletDrawer';
 import LoopyWelcomeModal from '@/components/loopgate/LoopyWelcomeModal';
 import { startQuickMatch } from '@/lib/startQuickMatch';
-import { useMyCashBattles } from '@/hooks/useCashBattles';
+import { useMyCashBattles, useMyCashBattleApplication } from '@/hooks/useCashBattles';
 
 // ── Live Feed for Hub ──────────────────────────────────────────────────
 const actionColors: Record<string, string> = {
@@ -212,6 +212,7 @@ export default function HubPage() {
   const eventsAutoScrollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { hasEquippedOG } = useEquippedBadges(user?.id);
   const { battles: myCashBattles, loading: myCashBattlesLoading } = useMyCashBattles();
+  const { joinPool: hubJoinPool } = useMyCashBattleApplication();
   const [dismissedBanners, setDismissedBanners] = useState<{ battles?: boolean; solo?: boolean }>({});
   const [missionDrops, setMissionDrops] = useState<Array<{ id: string; song_name: string; poster_url: string | null; artist_name: string | null; max_pay: number }>>([]);
 
@@ -820,7 +821,13 @@ export default function HubPage() {
                     navigate(`/cash-battle/${myCashBattles[0].id}`);
                     return;
                   }
-                  navigate('/cash-battle');
+                  const result = await hubJoinPool();
+                  if (result && result.state === 'live' && result.battleId) {
+                    navigate(`/cash-battle/${result.battleId}`);
+                  } else {
+                    navigate('/arena?tab=main');
+                    toast.success("You're in the queue — visible on the carousel now");
+                  }
                   return;
                 } else if (quickAction === 'mission') {
                   navigate('/commissions/414605a8-ac2f-4ab5-9955-15339ba4633c');
