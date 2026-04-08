@@ -142,7 +142,7 @@ export function useMyCashBattleApplication() {
       agreed_to_terms: true,
     };
 
-    const tryCreateLiveBattle = async (openApplication: CashBattleApplication) => {
+    const tryCreateLiveBattle = async (openApplication: CashBattleApplication): Promise<CashBattleEntryResult | false> => {
       const { data: claimedApplication, error: claimError } = await supabase
         .from('cash_battle_applications')
         .update({ status: 'matched' } as any)
@@ -218,7 +218,7 @@ export function useMyCashBattleApplication() {
         ]);
 
         await fetchApplication();
-        return { state: 'live', battleId: createdBattle.id };
+        return { state: 'live', battleId: createdBattle.id } as const;
       }
 
       return false;
@@ -261,7 +261,7 @@ export function useMyCashBattleApplication() {
       }
 
       setApplication(existingApplication as any);
-      return { state: 'waiting' };
+      return { state: 'waiting' } as const;
     }
 
     const openApplication = await fetchTargetApplication();
@@ -290,7 +290,7 @@ export function useMyCashBattleApplication() {
       const isDuplicate = error.code === '23505' || error.message?.toLowerCase().includes('duplicate');
       if (isDuplicate) {
         await fetchApplication();
-        return { state: 'waiting' };
+        return { state: 'waiting' } as const;
       }
       toast.error('Failed to join');
       return false;
@@ -320,7 +320,7 @@ export function useMyCashBattleApplication() {
       if (liveBattle) return liveBattle;
     }
 
-    return { state: 'waiting' };
+    return { state: 'waiting' } as const;
   }
 
   return { application, loading, joinPool, refetch: fetchApplication };
