@@ -29,9 +29,6 @@ export default function CashBattleReadyPage() {
     [publicBattles],
   );
 
-  const liveNowCount = publicBattles.filter((b) => b.status === "live").length;
-  const lobbyCount = publicBattles.filter((b) => b.status === "upcoming").length;
-
   useEffect(() => {
     if (!user || !profile) navigate("/start", { replace: true });
   }, [user, profile, navigate]);
@@ -78,7 +75,7 @@ export default function CashBattleReadyPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Header */}
+      {/* Header — clean, no "live now" */}
       <div className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur-xl">
         <div className="flex items-center gap-3 px-4 py-3">
           <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-surface-1 border border-border flex items-center justify-center">
@@ -89,42 +86,25 @@ export default function CashBattleReadyPage() {
               <DollarSign className="w-4.5 h-4.5 text-foreground" />
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] uppercase tracking-[0.2em] text-destructive font-bold">Live now</p>
               <h1 className="text-[26px] leading-none font-display">Cash Battle</h1>
+              <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground font-bold">1v1 · Winner takes all</p>
             </div>
-          </div>
-          <div className="rounded-full border border-destructive/25 bg-destructive/10 px-2.5 py-1">
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-destructive">1v1</span>
           </div>
         </div>
       </div>
 
       <div className="px-4 pt-4 pb-10 space-y-3">
-        {/* VS Card — visual focal point */}
+        {/* VS Card */}
         <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           className="rounded-[24px] border border-border bg-card overflow-hidden relative"
         >
-          <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-destructive/8 to-transparent pointer-events-none" />
-
-          <div className="p-4 pb-0 relative">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="inline-flex items-center gap-1 rounded-full border border-destructive/25 bg-destructive/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-destructive">
-                <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
-                Live
-              </span>
-              <span className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground font-bold">
-                {liveNowCount} active · {Math.max(lobbyCount, 1)} in lobby
-              </span>
-            </div>
-          </div>
-
           {/* VS Layout */}
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-0 px-4 py-5">
-            {/* You */}
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-0 px-4 py-6">
+            {/* You — blue corner */}
             <div className="flex flex-col items-center text-center">
-              <Avatar className="w-[60px] h-[60px] ring-2 ring-blue-500/30">
+              <Avatar className="w-[56px] h-[56px] ring-2 ring-blue-500/30">
                 <AvatarImage src={profile.avatar_url || ""} />
                 <AvatarFallback className="bg-accent text-foreground text-lg font-black">
                   {profile.username?.charAt(0)?.toUpperCase() || "Y"}
@@ -137,16 +117,16 @@ export default function CashBattleReadyPage() {
               </div>
             </div>
 
-            {/* VS divider */}
+            {/* VS */}
             <div className="flex flex-col items-center px-3">
               <div className="w-10 h-10 rounded-full border border-border bg-surface-1 flex items-center justify-center">
                 <span className="text-xs font-black text-muted-foreground">VS</span>
               </div>
             </div>
 
-            {/* Opponent */}
+            {/* Opponent — red corner */}
             <div className="flex flex-col items-center text-center">
-              <div className="w-[60px] h-[60px] rounded-full border-2 border-dashed border-border bg-surface-1 flex items-center justify-center">
+              <div className="w-[56px] h-[56px] rounded-full border-2 border-dashed border-border bg-surface-1 flex items-center justify-center">
                 {autoJoining ? (
                   <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
                 ) : (
@@ -165,7 +145,7 @@ export default function CashBattleReadyPage() {
             <div className="bg-card px-4 py-3 flex items-center gap-2.5">
               <Clock className="w-4 h-4 text-muted-foreground shrink-0" />
               <div>
-                <p className="text-lg leading-none font-display">60m</p>
+                <p className="text-lg leading-none font-display">24h</p>
                 <p className="text-[9px] uppercase tracking-[0.14em] text-muted-foreground mt-0.5">Timer</p>
               </div>
             </div>
@@ -191,7 +171,7 @@ export default function CashBattleReadyPage() {
           </div>
         </motion.section>
 
-        {/* Email reminder block */}
+        {/* Email reminder */}
         <motion.section
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
@@ -203,9 +183,7 @@ export default function CashBattleReadyPage() {
               <div className="w-8 h-8 rounded-full bg-emerald-500/15 flex items-center justify-center shrink-0">
                 <Mail className="w-4 h-4 text-emerald-400" />
               </div>
-              <p className="text-xs text-muted-foreground">
-                We'll email you when your opponent locks in.
-              </p>
+              <p className="text-xs text-muted-foreground">We'll email you when your opponent locks in.</p>
             </div>
           ) : (
             <>
