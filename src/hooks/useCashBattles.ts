@@ -86,14 +86,8 @@ export function useMyCashBattleApplication() {
     setLoading(false);
   }
 
-  async function submitApplication(form: {
-    tiktok_url?: string;
-    instagram_url?: string;
-    youtube_url?: string;
-    demo_reel_url: string;
-    pitch?: string;
-  }) {
-    if (!user) return;
+  async function joinPool() {
+    if (!user) return false;
     const { data: profile } = await supabase
       .from('profiles')
       .select('username, avatar_url')
@@ -104,24 +98,20 @@ export function useMyCashBattleApplication() {
       user_id: user.id,
       username: profile?.username || 'Unknown',
       avatar_url: profile?.avatar_url,
-      tiktok_url: form.tiktok_url || null,
-      instagram_url: form.instagram_url || null,
-      youtube_url: form.youtube_url || null,
-      demo_reel_url: form.demo_reel_url,
-      pitch: form.pitch || null,
+      demo_reel_url: '-',
       agreed_to_terms: true,
-    });
+    } as any);
 
     if (error) {
-      toast.error('Failed to submit application');
+      toast.error('Failed to join');
       return false;
     }
-    toast.success('Application submitted!');
+    toast.success("You're in the pool! 🔥");
     await fetchApplication();
     return true;
   }
 
-  return { application, loading, submitApplication };
+  return { application, loading, joinPool };
 }
 
 export function useAdminCashBattles() {

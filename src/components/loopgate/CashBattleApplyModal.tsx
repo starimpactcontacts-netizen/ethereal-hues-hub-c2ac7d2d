@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { X, DollarSign, Shield } from 'lucide-react';
+import { X, DollarSign, Shield, Zap, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Input } from '@/components/ui/input';
 import { useMyCashBattleApplication } from '@/hooks/useCashBattles';
 
 interface Props {
@@ -10,23 +9,17 @@ interface Props {
 }
 
 export default function CashBattleApplyModal({ open, onClose }: Props) {
-  const { application, submitApplication } = useMyCashBattleApplication();
-  const [demoUrl, setDemoUrl] = useState('');
-  const [tiktokUrl, setTiktokUrl] = useState('');
-  const [agreed, setAgreed] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const { application, joinPool } = useMyCashBattleApplication();
+  const [joining, setJoining] = useState(false);
+  const [justJoined, setJustJoined] = useState(false);
 
-  const alreadyApplied = !!application;
+  const alreadyIn = !!application;
 
-  async function handleSubmit() {
-    if (!demoUrl || !tiktokUrl || !agreed) return;
-    setSubmitting(true);
-    const ok = await submitApplication({
-      demo_reel_url: demoUrl,
-      tiktok_url: tiktokUrl,
-    });
-    setSubmitting(false);
-    if (ok) onClose();
+  async function handleJoin() {
+    setJoining(true);
+    const ok = await joinPool();
+    setJoining(false);
+    if (ok) setJustJoined(true);
   }
 
   return (
@@ -59,82 +52,53 @@ export default function CashBattleApplyModal({ open, onClose }: Props) {
                 </div>
                 <div>
                   <h2 className="text-lg font-black text-white uppercase tracking-wider" style={{ fontFamily: 'Teko, sans-serif' }}>
-                    Enter the Arena
+                    Cash Battles
                   </h2>
-                   <p className="text-[10px] uppercase tracking-wider" style={{ fontFamily: 'Teko, sans-serif', color: 'rgba(239,68,68,0.6)' }}>
-                     1v1 Edit Battle — Winner takes cash
+                  <p className="text-[10px] uppercase tracking-wider" style={{ fontFamily: 'Teko, sans-serif', color: 'rgba(239,68,68,0.6)' }}>
+                    1v1 Edit Battle — Winner takes cash
                   </p>
                 </div>
               </div>
             </div>
 
-            {alreadyApplied ? (
-              <div className="px-5 pb-6 pt-2">
-                 <div className="rounded-xl p-4 text-center" style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)' }}>
-                   <Shield className="w-8 h-8 mx-auto mb-2" style={{ color: '#3b82f6' }} />
-                   <p className="text-sm font-bold uppercase" style={{ fontFamily: 'Teko, sans-serif', color: '#3b82f6' }}>
-                     {application.status === 'pending' ? 'Under Review' : application.status.toUpperCase()}
+            {alreadyIn || justJoined ? (
+              <div className="px-5 pb-6 pt-3">
+                <div className="rounded-xl p-5 text-center" style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)' }}>
+                  <CheckCircle className="w-8 h-8 mx-auto mb-2" style={{ color: '#3b82f6' }} />
+                  <p className="text-sm font-bold uppercase" style={{ fontFamily: 'Teko, sans-serif', color: '#3b82f6' }}>
+                    You're In
                   </p>
                   <p className="text-[11px] text-zinc-400 mt-1">
-                    {application.status === 'pending'
-                      ? "We're reviewing your profile. You'll be notified when matched."
-                      : application.status === 'approved'
-                      ? "You're approved! Waiting for matchmaking."
-                      : "Check back later for updates."}
+                    You're in the fighter pool. When a match is set up, you'll be notified in <span className="text-amber-400 font-semibold">My Arena</span>.
                   </p>
                 </div>
               </div>
             ) : (
-              <div className="px-5 pb-5 pt-1 space-y-3">
-                <p className="text-[11px] text-zinc-400 leading-relaxed">
-                  Submit your best edit. If you're good, we match you. If not… stay watching.
-                </p>
-
-                <div>
-                  <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1" style={{ fontFamily: 'Teko, sans-serif' }}>Drop your best edit 🔥 *</label>
-                  <Input
-                    placeholder="Link to your best edit (TikTok, YT, IG)"
-                    value={demoUrl}
-                    onChange={e => setDemoUrl(e.target.value)}
-                    className="bg-white/5 border-white/10 text-white text-xs"
-                  />
+              <div className="px-5 pb-5 pt-2 space-y-4">
+                {/* Rules — super simple */}
+                <div className="space-y-2 text-[11px] text-zinc-400 leading-relaxed">
+                  <p>⚡ Join the fighter pool with one tap. When it's time, you get matched 1v1.</p>
+                  <p>🎬 Use the sponsor's scenepack to make your edit. Submit before the clock runs out.</p>
+                  <p>💰 Winner takes the full cash prize. Go viral (100k+ views) and earn up to <span className="text-emerald-400 font-bold">$50 bonus</span>.</p>
                 </div>
-
-                <div>
-                  <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1" style={{ fontFamily: 'Teko, sans-serif' }}>Your TikTok @ *</label>
-                  <Input
-                    placeholder="https://tiktok.com/@yourhandle"
-                    value={tiktokUrl}
-                    onChange={e => setTiktokUrl(e.target.value)}
-                    className="bg-white/5 border-white/10 text-white text-xs"
-                  />
-                </div>
-
-                {/* Legal agreement */}
-                <label className="flex items-start gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={agreed}
-                    onChange={e => setAgreed(e.target.checked)}
-                    className="mt-0.5 accent-red-500"
-                  />
-                  <span className="text-[10px] text-zinc-400 leading-relaxed">
-                    I confirm this is my work & I'm ready to compete
-                  </span>
-                </label>
 
                 <button
-                  onClick={handleSubmit}
-                  disabled={!demoUrl || !tiktokUrl || !agreed || submitting}
-                   className="w-full py-3 rounded-xl text-white font-black uppercase tracking-wider disabled:opacity-30 transition-all"
-                   style={{
-                     fontFamily: 'Teko, sans-serif',
-                     fontSize: '16px',
-                     background: demoUrl && tiktokUrl && agreed ? 'linear-gradient(135deg, #3b82f6, #ef4444)' : '#333',
-                   }}
+                  onClick={handleJoin}
+                  disabled={joining}
+                  className="w-full py-3 rounded-xl text-white font-black uppercase tracking-wider disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                  style={{
+                    fontFamily: 'Teko, sans-serif',
+                    fontSize: '16px',
+                    background: 'linear-gradient(135deg, #3b82f6, #ef4444)',
+                  }}
                 >
-                  {submitting ? 'Submitting...' : 'ENTER BATTLE'}
+                  <Zap className="w-4 h-4" />
+                  {joining ? 'Joining...' : 'JOIN'}
                 </button>
+
+                <p className="text-[9px] text-zinc-600 text-center">
+                  By joining you confirm your edits are original & you're ready to compete.
+                </p>
               </div>
             )}
           </motion.div>

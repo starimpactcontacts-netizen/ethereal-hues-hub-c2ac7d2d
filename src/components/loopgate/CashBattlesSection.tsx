@@ -271,7 +271,7 @@ export default function CashBattlesSection() {
           style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}
         >
           <Zap className="w-3 h-3" />
-          <span>Enter</span>
+          <span>Join</span>
         </button>
       </div>
 
