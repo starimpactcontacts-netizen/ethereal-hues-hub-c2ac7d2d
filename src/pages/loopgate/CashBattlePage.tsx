@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import CashBattleChat from "@/components/loopgate/CashBattleChat";
+import weirdCityPoster from "@/assets/weird-city-poster.jpeg";
 
 function formatPrize(cents: number): string {
   return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
@@ -79,7 +80,8 @@ export default function CashBattlePage() {
           .limit(1),
       ]);
 
-      setSponsorCover(campaign?.cover_image_url || missions?.[0]?.cover_url || null);
+      const weirdCityFallback = (data.sponsor_name || campaign?.name || "").toLowerCase().includes("weirdcity") ? weirdCityPoster : null;
+      setSponsorCover(campaign?.cover_image_url || missions?.[0]?.cover_url || weirdCityFallback);
     }
   }
 
