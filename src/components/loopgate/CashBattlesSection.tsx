@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { DollarSign, Swords, Clock, Flame, Plus, Zap, Info, X } from "lucide-react";
+import { DollarSign, Swords, Clock, Flame, Zap, Info, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useCashBattles } from "@/hooks/useCashBattles";
+import { useCashBattles, useMyCashBattles } from "@/hooks/useCashBattles";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useAccountPrompt } from "@/hooks/useAccountPrompt";
-import CashBattleApplyModal from "./CashBattleApplyModal";
 
 function formatPrize(cents: number): string {
   return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
@@ -226,8 +225,9 @@ function CashBattleInfoModal({ open, onClose }: { open: boolean; onClose: () => 
 }
 
 export default function CashBattlesSection() {
+  const navigate = useNavigate();
   const { battles, loading } = useCashBattles();
-  const [applyOpen, setApplyOpen] = useState(false);
+  const { battles: myBattles } = useMyCashBattles();
   const [infoOpen, setInfoOpen] = useState(false);
   const { isGuest } = useGuestMode();
   const accountPrompt = useAccountPrompt();
@@ -237,7 +237,11 @@ export default function CashBattlesSection() {
       accountPrompt.open('enter_battle' as any);
       return;
     }
-    setApplyOpen(true);
+    if (myBattles.length > 0) {
+      navigate(`/cash-battle/${myBattles[0].id}`);
+      return;
+    }
+    navigate('/cash-battle');
   };
 
   return (
@@ -257,7 +261,7 @@ export default function CashBattlesSection() {
                 1v1 · Winner takes all
               </p>
               <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider text-white flex items-center gap-0.5" style={{ background: "rgba(239,68,68,0.85)", fontFamily: "Teko, sans-serif" }}>
-                ✨ New
+                LIVE NOW
               </span>
               <button onClick={() => setInfoOpen(true)} className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center hover:bg-zinc-700 transition-colors">
                 <Info className="w-3 h-3 text-zinc-400" />
@@ -271,7 +275,7 @@ export default function CashBattlesSection() {
           style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}
         >
           <Zap className="w-3 h-3" />
-          <span>Join</span>
+          <span>Join Battle</span>
         </button>
       </div>
 
@@ -297,16 +301,15 @@ export default function CashBattlesSection() {
           </div>
           <div className="text-center px-4">
             <p className="text-[12px] font-black uppercase" style={{ fontFamily: "Teko, sans-serif", color: 'rgba(239,68,68,0.8)' }}>
-              Think you got it?
+              Waiting for opponent
             </p>
             <p className="text-[9px] text-zinc-600 mt-0.5">
-              Enter the arena for real money
+              Jump straight into a live-ready 1v1 screen
             </p>
           </div>
         </motion.div>
       </div>
 
-      <CashBattleApplyModal open={applyOpen} onClose={() => setApplyOpen(false)} />
       <CashBattleInfoModal open={infoOpen} onClose={() => setInfoOpen(false)} />
     </div>
   );

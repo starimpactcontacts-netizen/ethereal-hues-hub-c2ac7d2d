@@ -42,7 +42,9 @@ export default function CashBattlePage() {
   const [rulesOpen, setRulesOpen] = useState(false);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const [accepting, setAccepting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const autoAcceptRef = useRef(false);
 
   useEffect(() => {
     if (!battleId) return;
@@ -77,7 +79,61 @@ export default function CashBattlePage() {
   const isChallenger = user?.id === battle?.challenger_id;
   const isOpponent = user?.id === battle?.opponent_id;
   const isFighter = isChallenger || isOpponent;
+  const myAccepted = isChallenger ? battle?.challenger_accepted : isOpponent ? battle?.opponent_accepted : false;
   const mySubmissionUrl = isChallenger ? battle?.challenger_submission_url : battle?.opponent_submission_url;
+
+  async function acceptBattleSlot() {
+    if (!battleId || !user || !battle) return;
+
+    const joiningAsChallenger = user.id === battle.challenger_id;
+    const joiningAsOpponent = user.id === battle.opponent_id;
+    if (!joiningAsChallenger && !joiningAsOpponent) return;
+
+    const updateField = joiningAsChallenger ? "challenger_accepted" : "opponent_accepted";
+    const acceptedAtField = joiningAsChallenger ? "challenger_accepted_at" : "opponent_accepted_at";
+    const otherAccepted = joiningAsChallenger ? battle.opponent_accepted : battle.challenger_accepted;
+
+    setAccepting(true);
+
+    const { error } = await supabase
+      .from("cash_battles")
+      .update({
+        [updateField]: true,
+        [acceptedAtField]: new Date().toISOString(),
+      } as any)
+      .eq("id", battleId);
+
+    if (error) {
+      setAccepting(false);
+      autoAcceptRef.current = false;
+      toast.error("Couldn’t join the battle right now");
+      return;
+    }
+
+    if (otherAccepted) {
+      const now = new Date();
+      const endsAt = new Date(now.getTime() + battle.duration_hours * 60 * 60 * 1000);
+      await supabase
+        .from("cash_battles")
+        .update({
+          status: "live",
+          starts_at: now.toISOString(),
+          ends_at: endsAt.toISOString(),
+        } as any)
+        .eq("id", battleId);
+    }
+
+    await fetchBattle();
+    setAccepting(false);
+  }
+
+  useEffect(() => {
+    if (!battle || !battleId || !user || battle.status !== "upcoming") return;
+    if (!isFighter || myAccepted || autoAcceptRef.current) return;
+
+    autoAcceptRef.current = true;
+    void acceptBattleSlot();
+  }, [battle, battleId, user, isFighter, myAccepted]);
 
   function handleThumbnailSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -227,6 +283,60 @@ export default function CashBattlePage() {
           <p className={`text-3xl font-black ${countdown.expired ? "text-red-400" : "text-white"}`} style={{ fontFamily: "Teko, sans-serif", letterSpacing: "0.1em" }}>
             {countdown.text}
           </p>
+        </div>
+      )}
+
+      {isFighter && battle.status === "upcoming" && (
+        <div className="mx-4 mt-3 rounded-2xl p-4 bg-card border border-border">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="inline-flex items-center gap-1 rounded-full bg-destructive/15 border border-destructive/25 px-2 py-1 mb-2">
+                <span className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-destructive">Live now</span>
+              </div>
+              <p className="text-xl font-black text-white uppercase" style={{ fontFamily: "Teko, sans-serif" }}>
+                {accepting ? "Joining battle..." : "Waiting for opponent"}
+              </p>
+              <p className="text-[12px] text-zinc-400 mt-1">
+                You’re locked in. The timer starts the second the other editor joins.
+              </p>
+            </div>
+            {battle.scenepack_url && (
+              <a
+                href={battle.scenepack_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-wider"
+              >
+                <Download className="w-3 h-3" />
+                Scenepack
+              </a>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 mt-3">
+            <div className="rounded-xl border border-border bg-background/60 p-3">
+              <div className="flex items-center gap-2 text-zinc-500 mb-2">
+                <Clock className="w-3.5 h-3.5" />
+                <span className="text-[10px] uppercase tracking-[0.18em]">Timer</span>
+              </div>
+              <p className="text-2xl font-black text-white leading-none" style={{ fontFamily: "Teko, sans-serif" }}>
+                {battle.duration_hours}H
+              </p>
+              <p className="text-[11px] text-zinc-500 mt-1">Starts on lock-in</p>
+            </div>
+
+            <div className="rounded-xl border border-dashed border-border bg-background/60 p-3">
+              <div className="flex items-center gap-2 text-zinc-500 mb-2">
+                <Zap className="w-3.5 h-3.5" />
+                <span className="text-[10px] uppercase tracking-[0.18em]">Opponent slot</span>
+              </div>
+              <p className="text-lg font-black text-white leading-none" style={{ fontFamily: "Teko, sans-serif" }}>
+                OPEN
+              </p>
+              <p className="text-[11px] text-zinc-500 mt-1">Match goes live instantly</p>
+            </div>
+          </div>
         </div>
       )}
 
