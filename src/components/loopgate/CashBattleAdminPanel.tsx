@@ -64,7 +64,34 @@ export default function CashBattleAdminPanel() {
       scenepack_url: battle.scenepack_url || '',
       sponsor_name: battle.sponsor_name || '',
       admin_notes: battle.admin_notes || '',
+      sponsor_campaign_id: battle.sponsor_campaign_id || '',
+      cover_image_url: battle.cover_image_url || '',
     });
+  }
+
+  async function handleEditCampaignSelect(campaignId: string) {
+    const c = campaigns.find(c => c.id === campaignId);
+    if (c) {
+      // Auto-pull cover from the campaign's mission
+      let coverUrl = c.cover_image_url || '';
+      if (!coverUrl) {
+        const { data: missions } = await supabase
+          .from('commissions')
+          .select('cover_url')
+          .eq('campaign_id', campaignId)
+          .not('cover_url', 'is', null)
+          .limit(1);
+        if (missions && missions.length > 0) coverUrl = missions[0].cover_url || '';
+      }
+      setEditFields(f => ({
+        ...f,
+        sponsor_campaign_id: campaignId,
+        sponsor_name: c.name,
+        cover_image_url: coverUrl,
+      }));
+    } else {
+      setEditFields(f => ({ ...f, sponsor_campaign_id: '', cover_image_url: '' }));
+    }
   }
 
   async function saveBattleSettings(battleId: string) {
@@ -73,6 +100,8 @@ export default function CashBattleAdminPanel() {
       scenepack_url: editFields.scenepack_url || null,
       sponsor_name: editFields.sponsor_name || null,
       admin_notes: editFields.admin_notes || null,
+      sponsor_campaign_id: editFields.sponsor_campaign_id || null,
+      cover_image_url: editFields.cover_image_url || null,
     } as any).eq('id', battleId);
     if (error) toast.error('Failed to save');
     else { toast.success('Battle updated'); setEditingBattle(null); }
