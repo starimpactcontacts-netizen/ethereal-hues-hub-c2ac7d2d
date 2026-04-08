@@ -83,7 +83,7 @@ export default function CashBattleVoteBar({ battleId, challengerUsername, oppone
             {blueVotes}
           </button>
           <span className="text-[8px] text-zinc-600 uppercase tracking-widest" style={{ fontFamily: "Teko, sans-serif" }}>
-            HYPE
+            VOTE
           </span>
           <button
             onClick={(e) => vote("opponent", e)}
@@ -122,7 +122,7 @@ export default function CashBattleVoteBar({ battleId, challengerUsername, oppone
   return (
     <div className="mx-4 mb-4 rounded-2xl p-4" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
       <p className="text-[11px] font-black text-center uppercase tracking-[0.2em] text-zinc-500 mb-3" style={{ fontFamily: "Teko, sans-serif" }}>
-        Who you got?
+        Who will win?
       </p>
 
       <div className="flex items-center gap-2 mb-2">
@@ -177,7 +177,7 @@ export default function CashBattleVoteBar({ battleId, challengerUsername, oppone
 
       {total > 0 && (
         <p className="text-[9px] text-zinc-600 text-center mt-2">
-          {total} vote{total !== 1 ? "s" : ""} · purely for hype
+          {total} vote{total !== 1 ? "s" : ""}
         </p>
       )}
     </div>
