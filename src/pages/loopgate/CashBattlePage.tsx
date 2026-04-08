@@ -64,8 +64,10 @@ export default function CashBattlePage() {
     setBattle(data);
     setLoading(false);
     
-    // Fetch sponsor campaign poster / cover image
-    if (data?.sponsor_campaign_id) {
+    // Use cover_image_url directly from battle record first
+    if ((data as any)?.cover_image_url) {
+      setSponsorCover((data as any).cover_image_url);
+    } else if (data?.sponsor_campaign_id) {
       const [{ data: campaign }, { data: missions }] = await Promise.all([
         supabase
           .from("artist_campaigns")
