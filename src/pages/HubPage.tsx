@@ -800,8 +800,10 @@ export default function HubPage() {
           <div 
             className="flex overflow-hidden rounded-xl border"
             style={{ 
-              borderColor: quickAction === 'mission' ? 'rgba(16,185,129,0.35)' : quickAction === 'solo' ? 'rgba(255,255,255,0.20)' : 'rgba(239,68,68,0.35)',
-              boxShadow: quickAction === 'mission'
+              borderColor: quickAction === 'cash_battle' ? 'rgba(139,92,246,0.35)' : quickAction === 'mission' ? 'rgba(16,185,129,0.35)' : quickAction === 'solo' ? 'rgba(255,255,255,0.20)' : 'rgba(239,68,68,0.35)',
+              boxShadow: quickAction === 'cash_battle'
+                ? '0 4px 30px rgba(139,92,246,0.25), 0 0 60px rgba(59,130,246,0.08)'
+                : quickAction === 'mission'
                 ? '0 4px 30px rgba(16,185,129,0.25), 0 0 60px rgba(16,185,129,0.08)'
                 : quickAction === 'solo' 
                   ? '0 4px 30px rgba(255,255,255,0.12), 0 0 60px rgba(255,255,255,0.06)' 
