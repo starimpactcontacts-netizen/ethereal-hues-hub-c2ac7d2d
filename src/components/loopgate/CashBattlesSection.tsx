@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { DollarSign, Swords, Clock, Zap, Info, X } from "lucide-react";
+import CashBattleVoteBar from "@/components/loopgate/CashBattleVoteBar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCashBattles, useMyCashBattles, useMyCashBattleApplication, CashBattleApplication } from "@/hooks/useCashBattles";
 import { toast } from "sonner";
@@ -163,6 +164,16 @@ function CashBattleCard({ battle }: { battle: any }) {
           )}
         </div>
       </div>
+
+      {/* Hype vote bar — only for live battles with both fighters */}
+      {isLive && battle.opponent_username && (
+        <CashBattleVoteBar
+          battleId={battle.id}
+          challengerUsername={battle.challenger_username}
+          opponentUsername={battle.opponent_username}
+          compact
+        />
+      )}
 
       {/* CTA — full-width block button */}
       <div className="px-4 pb-4">
