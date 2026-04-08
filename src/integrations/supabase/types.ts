@@ -851,6 +851,38 @@ export type Database = {
           },
         ]
       }
+      cash_battle_votes: {
+        Row: {
+          battle_id: string
+          created_at: string
+          id: string
+          team: string
+          user_id: string
+        }
+        Insert: {
+          battle_id: string
+          created_at?: string
+          id?: string
+          team: string
+          user_id: string
+        }
+        Update: {
+          battle_id?: string
+          created_at?: string
+          id?: string
+          team?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_battle_votes_battle_id_fkey"
+            columns: ["battle_id"]
+            isOneToOne: false
+            referencedRelation: "cash_battles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cash_battles: {
         Row: {
           admin_notes: string | null
