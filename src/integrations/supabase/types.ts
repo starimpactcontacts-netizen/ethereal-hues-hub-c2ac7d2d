@@ -863,6 +863,7 @@ export type Database = {
           challenger_submitted_at: string | null
           challenger_thumbnail_url: string | null
           challenger_username: string
+          cover_image_url: string | null
           created_at: string
           created_by: string | null
           duration_hours: number
@@ -901,6 +902,7 @@ export type Database = {
           challenger_submitted_at?: string | null
           challenger_thumbnail_url?: string | null
           challenger_username: string
+          cover_image_url?: string | null
           created_at?: string
           created_by?: string | null
           duration_hours?: number
@@ -939,6 +941,7 @@ export type Database = {
           challenger_submitted_at?: string | null
           challenger_thumbnail_url?: string | null
           challenger_username?: string
+          cover_image_url?: string | null
           created_at?: string
           created_by?: string | null
           duration_hours?: number

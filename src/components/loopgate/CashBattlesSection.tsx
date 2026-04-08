@@ -384,25 +384,27 @@ export default function CashBattlesSection() {
               <p className="text-[11px] font-semibold" style={{ color: 'rgba(255,255,255,0.55)' }}>
                 1v1 · Winner takes all
               </p>
-              {pendingApps.length > 0 && (
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider text-white flex items-center gap-0.5" style={{ background: "rgba(234,179,8,0.85)", fontFamily: "Teko, sans-serif" }}>
-                  {pendingApps.length} OPEN
-                </span>
-              )}
               <button onClick={() => setInfoOpen(true)} className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center hover:bg-zinc-700 transition-colors">
                 <Info className="w-3 h-3 text-zinc-400" />
               </button>
             </div>
           </div>
         </div>
-        <button
-          onClick={handleEnter}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white text-[10px] font-black uppercase tracking-wider transition-all hover:scale-105"
-          style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}
-        >
-          <Zap className="w-3 h-3" />
-          <span>Join Battle</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {pendingApps.length > 0 && (
+            <span className="px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider text-black flex items-center gap-1" style={{ background: "rgba(234,179,8,0.9)", fontFamily: "Teko, sans-serif" }}>
+              {pendingApps.length} OPEN
+            </span>
+          )}
+          <button
+            onClick={handleEnter}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white text-[10px] font-black uppercase tracking-wider transition-all hover:scale-105"
+            style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}
+          >
+            <Zap className="w-3 h-3" />
+            <span>Join Battle</span>
+          </button>
+        </div>
       </div>
 
       {/* Horizontal scroll — open matchups first, then existing battles */}
