@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { DollarSign, Swords, Clock, Zap, Info, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useCashBattles, useMyCashBattles, CashBattleApplication } from "@/hooks/useCashBattles";
+import { useCashBattles, useMyCashBattles, useMyCashBattleApplication, CashBattleApplication } from "@/hooks/useCashBattles";
+import { toast } from "sonner";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useAccountPrompt } from "@/hooks/useAccountPrompt";
 import { useAuth } from "@/hooks/useAuth";
@@ -314,6 +315,7 @@ export default function CashBattlesSection() {
   const navigate = useNavigate();
   const { battles, loading } = useCashBattles();
   const { battles: myBattles } = useMyCashBattles();
+  const { joinPool } = useMyCashBattleApplication();
   const { user } = useAuth();
   const [infoOpen, setInfoOpen] = useState(false);
   const { isGuest } = useGuestMode();
@@ -339,7 +341,7 @@ export default function CashBattlesSection() {
     return () => clearInterval(interval);
   }, [user]);
 
-  const handleEnter = () => {
+  const handleEnter = async () => {
     if (isGuest) {
       accountPrompt.open('enter_battle' as any);
       return;
@@ -348,15 +350,25 @@ export default function CashBattlesSection() {
       navigate(`/cash-battle/${myBattles[0].id}`);
       return;
     }
-    navigate('/cash-battle');
+    const result = await joinPool();
+    if (result && result.state === 'live' && result.battleId) {
+      navigate(`/cash-battle/${result.battleId}`);
+    } else {
+      toast.success("You're live — waiting for an opponent");
+    }
   };
 
-  const handleAcceptFight = (app: CashBattleApplication) => {
+  const handleAcceptFight = async (app: CashBattleApplication) => {
     if (isGuest) {
       accountPrompt.open('enter_battle' as any);
       return;
     }
-    navigate(`/cash-battle?match=${app.id}`);
+    const result = await joinPool(app.id);
+    if (result && result.state === 'live' && result.battleId) {
+      navigate(`/cash-battle/${result.battleId}`);
+    } else {
+      toast.success("You're live — waiting for match confirmation");
+    }
   };
 
   return (
