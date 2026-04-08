@@ -322,24 +322,21 @@ export default function CashBattlesSection() {
   const accountPrompt = useAccountPrompt();
   const [pendingApps, setPendingApps] = useState<CashBattleApplication[]>([]);
 
-  // Fetch pending applications (open matchup slots) — exclude current user's own
+  // Fetch pending applications (open matchup slots) — include the current user so they instantly see their own live card
   useEffect(() => {
     async function fetchPending() {
-      let query = supabase
+      const { data } = await supabase
         .from('cash_battle_applications')
         .select('*')
         .eq('status', 'pending')
         .order('created_at', { ascending: true });
 
-      const { data } = await query;
-      const apps = (data as CashBattleApplication[] | null) || [];
-      // Filter out current user's own application
-      setPendingApps(user ? apps.filter(a => a.user_id !== user.id) : apps);
+      setPendingApps((data as CashBattleApplication[] | null) || []);
     }
     fetchPending();
-    const interval = setInterval(fetchPending, 6000);
+    const interval = setInterval(fetchPending, 4000);
     return () => clearInterval(interval);
-  }, [user]);
+  }, []);
 
   const handleEnter = async () => {
     if (isGuest) {
