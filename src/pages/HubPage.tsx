@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import CashBattleApplyModal from '@/components/loopgate/CashBattleApplyModal';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -197,6 +198,7 @@ export default function HubPage() {
   const [walletOpen, setWalletOpen] = useState(false);
   const [judgeReviewCount, setJudgeReviewCount] = useState(0);
   const [userCrew, setUserCrew] = useState<UserCrew | null>(null);
+  const [cashModalOpen, setCashModalOpen] = useState(false);
   const [quickAction, setQuickAction] = useState<'cash_battle' | 'mission' | 'solo' | 'quick'>('cash_battle');
   const [qfSearching, setQfSearching] = useState(false);
   const [qfElapsed, setQfElapsed] = useState(0);
@@ -814,7 +816,7 @@ export default function HubPage() {
               onClick={() => {
                 if (!profile) { navigate('/start'); return; }
                 if (quickAction === 'cash_battle') {
-                  navigate('/arena?tab=main');
+                  setCashModalOpen(true);
                 } else if (quickAction === 'mission') {
                   navigate('/commissions/414605a8-ac2f-4ab5-9955-15339ba4633c');
                 } else if (quickAction === 'solo') {
@@ -1289,6 +1291,7 @@ export default function HubPage() {
 
       <InviteModal open={inviteModalOpen} onOpenChange={setInviteModalOpen} />
       <WalletDrawer open={walletOpen} onClose={() => setWalletOpen(false)} />
+      <CashBattleApplyModal open={cashModalOpen} onClose={() => setCashModalOpen(false)} />
     </div>
   );
 }
