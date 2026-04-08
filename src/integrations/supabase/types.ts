@@ -885,6 +885,9 @@ export type Database = {
           starts_at: string | null
           status: string
           updated_at: string
+          viral_bonus_awarded: boolean
+          viral_bonus_cents: number
+          viral_bonus_threshold_views: number
           winner_id: string | null
         }
         Insert: {
@@ -920,6 +923,9 @@ export type Database = {
           starts_at?: string | null
           status?: string
           updated_at?: string
+          viral_bonus_awarded?: boolean
+          viral_bonus_cents?: number
+          viral_bonus_threshold_views?: number
           winner_id?: string | null
         }
         Update: {
@@ -955,6 +961,9 @@ export type Database = {
           starts_at?: string | null
           status?: string
           updated_at?: string
+          viral_bonus_awarded?: boolean
+          viral_bonus_cents?: number
+          viral_bonus_threshold_views?: number
           winner_id?: string | null
         }
         Relationships: [
