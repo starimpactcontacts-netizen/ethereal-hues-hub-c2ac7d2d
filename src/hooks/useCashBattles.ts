@@ -142,28 +142,7 @@ export function useMyCashBattleApplication() {
       agreed_to_terms: true,
     };
 
-    let openApplicationQuery = supabase
-      .from('cash_battle_applications')
-      .select('*')
-      .eq('status', 'pending')
-      .neq('user_id', user.id)
-      .order('created_at', { ascending: true })
-      .limit(1);
-
-    if (preferredApplicationId) {
-      openApplicationQuery = supabase
-        .from('cash_battle_applications')
-        .select('*')
-        .eq('id', preferredApplicationId)
-        .eq('status', 'pending')
-        .neq('user_id', user.id)
-        .limit(1);
-    }
-
-    const { data: openApplications } = await openApplicationQuery;
-    const openApplication = ((openApplications as any[]) || [])[0] as CashBattleApplication | undefined;
-
-    if (openApplication) {
+    const tryCreateLiveBattle = async (openApplication: CashBattleApplication) => {
       const { data: claimedApplication, error: claimError } = await supabase
         .from('cash_battle_applications')
         .update({ status: 'matched' } as any)
@@ -241,11 +220,54 @@ export function useMyCashBattleApplication() {
         await fetchApplication();
         return { state: 'live', battleId: createdBattle.id };
       }
-    }
+
+      return false;
+    };
+
+    const fetchTargetApplication = async (createdBefore?: string | null) => {
+      if (preferredApplicationId) {
+        const { data } = await supabase
+          .from('cash_battle_applications')
+          .select('*')
+          .eq('id', preferredApplicationId)
+          .eq('status', 'pending')
+          .neq('user_id', user.id)
+          .limit(1);
+
+        return (((data as any[]) || [])[0] as CashBattleApplication | undefined) ?? null;
+      }
+
+      let query = supabase
+        .from('cash_battle_applications')
+        .select('*')
+        .eq('status', 'pending')
+        .neq('user_id', user.id)
+        .order('created_at', { ascending: true })
+        .limit(1);
+
+      if (createdBefore) {
+        query = query.lt('created_at', createdBefore);
+      }
+
+      const { data } = await query;
+      return (((data as any[]) || [])[0] as CashBattleApplication | undefined) ?? null;
+    };
 
     if (existingApplication?.status === 'pending') {
+      const olderOpenApplication = await fetchTargetApplication(existingApplication.created_at);
+      if (olderOpenApplication) {
+        const liveBattle = await tryCreateLiveBattle(olderOpenApplication);
+        if (liveBattle) return liveBattle;
+      }
+
       setApplication(existingApplication as any);
       return { state: 'waiting' };
+    }
+
+    const openApplication = await fetchTargetApplication();
+    if (openApplication) {
+      const liveBattle = await tryCreateLiveBattle(openApplication);
+      if (liveBattle) return liveBattle;
     }
 
     const queueMutation = existingApplication?.id
@@ -275,6 +297,29 @@ export function useMyCashBattleApplication() {
     }
     toast.success('You\'re in — waiting for opponent');
     await fetchApplication();
+
+    const refreshedApplication = existingApplication?.id
+      ? {
+          ...existingApplication,
+          ...queuePayload,
+          status: 'pending',
+          matched_battle_id: null,
+        }
+      : await supabase
+          .from('cash_battle_applications')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+          .then((res) => res.data as CashBattleApplication | null);
+
+    const olderOpenApplication = await fetchTargetApplication(refreshedApplication?.created_at ?? null);
+    if (olderOpenApplication) {
+      const liveBattle = await tryCreateLiveBattle(olderOpenApplication);
+      if (liveBattle) return liveBattle;
+    }
+
     return { state: 'waiting' };
   }
 
