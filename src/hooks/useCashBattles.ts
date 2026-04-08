@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
+const CASH_BATTLE_DURATION_HOURS = 24;
+
 export interface CashBattleApplication {
   id: string;
   user_id: string;
@@ -44,12 +46,28 @@ export interface CashBattle {
   opponent_accepted_at: string | null;
 }
 
+export interface CashBattleEntryResult {
+  state: 'waiting' | 'live';
+  battleId?: string;
+}
+
 export function useCashBattles() {
   const [battles, setBattles] = useState<CashBattle[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchBattles();
+    void fetchBattles();
+
+    const channel = supabase
+      .channel('cash-battles-feed')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'cash_battles' }, () => {
+        void fetchBattles();
+      })
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
   }, []);
 
   async function fetchBattles() {
@@ -87,9 +105,29 @@ export function useMyCashBattleApplication() {
     setLoading(false);
   }
 
-  async function joinPool() {
+  async function joinPool(preferredApplicationId?: string): Promise<CashBattleEntryResult | false> {
     if (!user) return false;
-    if (application) return true;
+
+    const { data: activeBattle } = await supabase
+      .from('cash_battles')
+      .select('id')
+      .or(`challenger_id.eq.${user.id},opponent_id.eq.${user.id}`)
+      .in('status', ['upcoming', 'live'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (activeBattle?.id) {
+      return { state: 'live', battleId: activeBattle.id };
+    }
+
+    const { data: existingApplication } = await supabase
+      .from('cash_battle_applications')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
     const { data: profile } = await supabase
       .from('profiles')
@@ -97,26 +135,147 @@ export function useMyCashBattleApplication() {
       .eq('id', user.id)
       .single();
 
-    const { error } = await supabase.from('cash_battle_applications').insert({
-      user_id: user.id,
+    const queuePayload = {
       username: profile?.username || 'Unknown',
       avatar_url: profile?.avatar_url,
       demo_reel_url: '-',
       agreed_to_terms: true,
-    } as any);
+    };
+
+    let openApplicationQuery = supabase
+      .from('cash_battle_applications')
+      .select('*')
+      .eq('status', 'pending')
+      .neq('user_id', user.id)
+      .order('created_at', { ascending: true })
+      .limit(1);
+
+    if (preferredApplicationId) {
+      openApplicationQuery = supabase
+        .from('cash_battle_applications')
+        .select('*')
+        .eq('id', preferredApplicationId)
+        .eq('status', 'pending')
+        .neq('user_id', user.id)
+        .limit(1);
+    }
+
+    const { data: openApplications } = await openApplicationQuery;
+    const openApplication = ((openApplications as any[]) || [])[0] as CashBattleApplication | undefined;
+
+    if (openApplication) {
+      const { data: claimedApplication, error: claimError } = await supabase
+        .from('cash_battle_applications')
+        .update({ status: 'matched' } as any)
+        .eq('id', openApplication.id)
+        .eq('status', 'pending')
+        .select('*')
+        .maybeSingle();
+
+      if (claimError) {
+        toast.error('Failed to join');
+        return false;
+      }
+
+      if (claimedApplication) {
+        const now = new Date();
+        const nowIso = now.toISOString();
+        const endsAtIso = new Date(now.getTime() + CASH_BATTLE_DURATION_HOURS * 60 * 60 * 1000).toISOString();
+
+        const { data: createdBattle, error: createError } = await supabase
+          .from('cash_battles')
+          .insert({
+            challenger_id: claimedApplication.user_id,
+            challenger_username: claimedApplication.username,
+            challenger_avatar_url: claimedApplication.avatar_url,
+            opponent_id: user.id,
+            opponent_username: queuePayload.username,
+            opponent_avatar_url: queuePayload.avatar_url,
+            duration_hours: CASH_BATTLE_DURATION_HOURS,
+            status: 'live',
+            starts_at: nowIso,
+            ends_at: endsAtIso,
+            challenger_accepted: true,
+            opponent_accepted: true,
+            challenger_accepted_at: nowIso,
+            opponent_accepted_at: nowIso,
+          } as any)
+          .select('id')
+          .single();
+
+        if (createError || !createdBattle?.id) {
+          await supabase
+            .from('cash_battle_applications')
+            .update({ status: 'pending' } as any)
+            .eq('id', claimedApplication.id);
+          toast.error('Failed to start battle');
+          return false;
+        }
+
+        const ownApplicationMutation = existingApplication?.id
+          ? supabase
+              .from('cash_battle_applications')
+              .update({
+                ...queuePayload,
+                status: 'matched',
+                matched_battle_id: createdBattle.id,
+              } as any)
+              .eq('id', existingApplication.id)
+          : supabase
+              .from('cash_battle_applications')
+              .insert({
+                user_id: user.id,
+                ...queuePayload,
+                status: 'matched',
+                matched_battle_id: createdBattle.id,
+              } as any);
+
+        await Promise.all([
+          supabase
+            .from('cash_battle_applications')
+            .update({ matched_battle_id: createdBattle.id } as any)
+            .eq('id', claimedApplication.id),
+          ownApplicationMutation,
+        ]);
+
+        await fetchApplication();
+        return { state: 'live', battleId: createdBattle.id };
+      }
+    }
+
+    if (existingApplication?.status === 'pending') {
+      setApplication(existingApplication as any);
+      return { state: 'waiting' };
+    }
+
+    const queueMutation = existingApplication?.id
+      ? supabase
+          .from('cash_battle_applications')
+          .update({
+            ...queuePayload,
+            status: 'pending',
+            matched_battle_id: null,
+          } as any)
+          .eq('id', existingApplication.id)
+      : supabase.from('cash_battle_applications').insert({
+          user_id: user.id,
+          ...queuePayload,
+        } as any);
+
+    const { error } = await queueMutation;
 
     if (error) {
       const isDuplicate = error.code === '23505' || error.message?.toLowerCase().includes('duplicate');
       if (isDuplicate) {
         await fetchApplication();
-        return true;
+        return { state: 'waiting' };
       }
       toast.error('Failed to join');
       return false;
     }
     toast.success('You\'re in — waiting for opponent');
     await fetchApplication();
-    return true;
+    return { state: 'waiting' };
   }
 
   return { application, loading, joinPool, refetch: fetchApplication };
@@ -226,7 +385,18 @@ export function useMyCashBattles() {
 
   useEffect(() => {
     if (!user) { setLoading(false); return; }
-    fetchBattles();
+    void fetchBattles();
+
+    const channel = supabase
+      .channel(`my-cash-battles-${user.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'cash_battles' }, () => {
+        void fetchBattles();
+      })
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
   }, [user]);
 
   async function fetchBattles() {
