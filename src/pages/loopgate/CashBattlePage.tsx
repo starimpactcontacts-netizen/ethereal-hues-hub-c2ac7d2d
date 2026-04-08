@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import CashBattleChat from "@/components/loopgate/CashBattleChat";
+import weirdCityPoster from "@/assets/weird-city-poster.jpeg";
 
 function formatPrize(cents: number): string {
   return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
@@ -63,15 +64,24 @@ export default function CashBattlePage() {
     setBattle(data);
     setLoading(false);
     
-    // Fetch sponsor campaign cover image
+    // Fetch sponsor campaign poster / cover image
     if (data?.sponsor_campaign_id) {
-      const { data: missions } = await supabase
-        .from("commissions")
-        .select("cover_url")
-        .eq("campaign_id", data.sponsor_campaign_id)
-        .not("cover_url", "is", null)
-        .limit(1);
-      if (missions?.[0]?.cover_url) setSponsorCover(missions[0].cover_url);
+      const [{ data: campaign }, { data: missions }] = await Promise.all([
+        supabase
+          .from("artist_campaigns")
+          .select("cover_image_url, logo_url, name")
+          .eq("id", data.sponsor_campaign_id)
+          .maybeSingle(),
+        supabase
+          .from("commissions")
+          .select("cover_url")
+          .eq("campaign_id", data.sponsor_campaign_id)
+          .not("cover_url", "is", null)
+          .limit(1),
+      ]);
+
+      const weirdCityFallback = (data.sponsor_name || campaign?.name || "").toLowerCase().includes("weirdcity") ? weirdCityPoster : null;
+      setSponsorCover(campaign?.cover_image_url || missions?.[0]?.cover_url || weirdCityFallback);
     }
   }
 
@@ -265,7 +275,7 @@ export default function CashBattlePage() {
           {/* Tagline strip */}
           <div className="px-3 py-2" style={{ background: "rgba(255,255,255,0.02)", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
             <p className="text-[10px] text-zinc-500 text-center">
-              Use the <strong className="text-white">WeirdCity scenepack</strong> to create your edit — best edit wins <strong className="text-white">{formatPrize(battle.prize_cents)}</strong>
+              Use the <strong className="text-white">official scenepack</strong> to create your edit — best edit wins <strong className="text-white">{formatPrize(battle.prize_cents)}</strong>
             </p>
           </div>
         </div>
