@@ -1,0 +1,1 @@
+ALTER TABLE public.commission_submissions DROP CONSTRAINT commission_submissions_unique_user;
