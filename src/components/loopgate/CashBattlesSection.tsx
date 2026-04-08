@@ -322,7 +322,7 @@ export default function CashBattlesSection() {
   const accountPrompt = useAccountPrompt();
   const [pendingApps, setPendingApps] = useState<CashBattleApplication[]>([]);
 
-  // Fetch pending applications (open matchup slots) — include the current user so they instantly see their own live card
+  // Fetch pending applications with realtime subscription for instant updates
   useEffect(() => {
     async function fetchPending() {
       const { data } = await supabase
@@ -334,8 +334,18 @@ export default function CashBattlesSection() {
       setPendingApps((data as CashBattleApplication[] | null) || []);
     }
     fetchPending();
-    const interval = setInterval(fetchPending, 4000);
-    return () => clearInterval(interval);
+
+    // Realtime subscription for instant card updates
+    const channel = supabase
+      .channel('cash-battle-apps-carousel')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'cash_battle_applications' },
+        () => { fetchPending(); }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   const handleEnter = async () => {

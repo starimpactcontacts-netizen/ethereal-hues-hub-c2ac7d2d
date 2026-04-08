@@ -59,13 +59,39 @@ export default function CashBattleReadyPage() {
     });
   }, [user, profile, applicationLoading, myBattlesLoading, application, myBattles.length, joinPool, navigate, targetAppId]);
 
+  // Realtime subscription + fast polling for instant matchmaking feedback
   useEffect(() => {
     if (!user || myBattles.length > 0) return;
+
+    // Fast poll every 2s as backup
     const interval = window.setInterval(() => {
       void refetchApplication();
       void refetchMyBattles();
-    }, 4000);
-    return () => window.clearInterval(interval);
+    }, 2000);
+
+    // Realtime: detect when a cash_battle is created with this user
+    const channel = supabase
+      .channel('cash-battle-ready-rt')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'cash_battles' },
+        (payload: any) => {
+          if (payload.new?.challenger_id === user.id || payload.new?.opponent_id === user.id) {
+            void refetchMyBattles();
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'cash_battle_applications' },
+        () => { void refetchApplication(); }
+      )
+      .subscribe();
+
+    return () => {
+      window.clearInterval(interval);
+      supabase.removeChannel(channel);
+    };
   }, [user, myBattles.length, refetchApplication, refetchMyBattles]);
 
   useEffect(() => {
