@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Check, X, Swords, ExternalLink, DollarSign, User, Clock, Crown, Building2 } from 'lucide-react';
+import { Check, X, Swords, ExternalLink, DollarSign, Building2, Settings, Download, Save } from 'lucide-react';
 import { useAdminCashBattles } from '@/hooks/useCashBattles';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export default function CashBattleAdminPanel() {
   const { applications, battles, loading, updateApplicationStatus, createMatch } = useAdminCashBattles();
@@ -14,6 +15,8 @@ export default function CashBattleAdminPanel() {
   const [sponsorLogoUrl, setSponsorLogoUrl] = useState('');
   const [sponsorCampaignId, setSponsorCampaignId] = useState('');
   const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [editingBattle, setEditingBattle] = useState<string | null>(null);
+  const [editFields, setEditFields] = useState<Record<string, any>>({});
 
   useEffect(() => {
     supabase.from('artist_campaigns').select('id, name, logo_url, status').eq('status', 'active').then(({ data }) => {
@@ -52,6 +55,27 @@ export default function CashBattleAdminPanel() {
     setSponsorName('');
     setSponsorLogoUrl('');
     setSponsorCampaignId('');
+  }
+
+  function startEditing(battle: any) {
+    setEditingBattle(battle.id);
+    setEditFields({
+      prize: (battle.prize_cents / 100).toString(),
+      scenepack_url: battle.scenepack_url || '',
+      sponsor_name: battle.sponsor_name || '',
+      admin_notes: battle.admin_notes || '',
+    });
+  }
+
+  async function saveBattleSettings(battleId: string) {
+    const { error } = await supabase.from('cash_battles').update({
+      prize_cents: Math.round(parseFloat(editFields.prize || '0') * 100),
+      scenepack_url: editFields.scenepack_url || null,
+      sponsor_name: editFields.sponsor_name || null,
+      admin_notes: editFields.admin_notes || null,
+    } as any).eq('id', battleId);
+    if (error) toast.error('Failed to save');
+    else { toast.success('Battle updated'); setEditingBattle(null); }
   }
 
   if (loading) return <div className="text-xs text-muted-foreground py-4">Loading cash battle data...</div>;
@@ -177,14 +201,14 @@ export default function CashBattleAdminPanel() {
         </div>
       )}
 
-      {/* Active Battles */}
+      {/* Active Battles with Settings */}
       {battles.length > 0 && (
-        <details className="mt-3">
+        <details className="mt-3" open>
           <summary className="text-[10px] text-muted-foreground cursor-pointer uppercase tracking-wider mb-2">
             {battles.length} cash battle(s) created
           </summary>
           {battles.map(b => (
-            <div key={b.id} className="bg-surface-0 border border-border p-3 mb-1 rounded-lg">
+            <div key={b.id} className="bg-surface-0 border border-border p-3 mb-2 rounded-lg">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold">{b.challenger_username}</span>
@@ -194,6 +218,9 @@ export default function CashBattleAdminPanel() {
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] text-emerald-400 font-bold">${(b.prize_cents / 100).toFixed(0)}</span>
                   <span className={`text-[9px] uppercase font-bold ${b.status === 'live' ? 'text-emerald-400' : 'text-zinc-500'}`}>{b.status}</span>
+                  <button onClick={() => editingBattle === b.id ? setEditingBattle(null) : startEditing(b)} className="w-6 h-6 rounded-md bg-white/5 flex items-center justify-center">
+                    <Settings size={11} className="text-zinc-400" />
+                  </button>
                 </div>
               </div>
               {b.sponsor_name && (
@@ -202,10 +229,37 @@ export default function CashBattleAdminPanel() {
                   <span className="text-[9px] text-blue-400">Sponsored by {b.sponsor_name}</span>
                 </div>
               )}
-              <div className="flex items-center gap-2 mt-1 text-[9px] text-zinc-500">
-                <span>🔵 {b.challenger_accepted ? '✓' : '✗'}</span>
-                <span>🔴 {b.opponent_accepted ? '✓' : '✗'}</span>
-              </div>
+              {b.scenepack_url && (
+                <div className="flex items-center gap-1.5 mt-1">
+                  <Download size={9} className="text-emerald-400" />
+                  <span className="text-[9px] text-emerald-400 truncate">Scenepack attached</span>
+                </div>
+              )}
+
+              {/* Inline edit panel */}
+              {editingBattle === b.id && (
+                <div className="mt-2 pt-2 border-t border-border space-y-2">
+                  <div>
+                    <label className="text-[9px] text-zinc-500 uppercase block mb-0.5">Prize ($)</label>
+                    <Input value={editFields.prize || ''} onChange={e => setEditFields(f => ({ ...f, prize: e.target.value }))} className="text-xs h-7" />
+                  </div>
+                  <div>
+                    <label className="text-[9px] text-zinc-500 uppercase block mb-0.5">Scenepack URL</label>
+                    <Input value={editFields.scenepack_url || ''} onChange={e => setEditFields(f => ({ ...f, scenepack_url: e.target.value }))} placeholder="https://..." className="text-xs h-7" />
+                  </div>
+                  <div>
+                    <label className="text-[9px] text-zinc-500 uppercase block mb-0.5">Theme / Sponsor one-liner</label>
+                    <Input value={editFields.sponsor_name || ''} onChange={e => setEditFields(f => ({ ...f, sponsor_name: e.target.value }))} placeholder="e.g. WeirdCity Film Campaign" className="text-xs h-7" />
+                  </div>
+                  <div>
+                    <label className="text-[9px] text-zinc-500 uppercase block mb-0.5">Admin Notes</label>
+                    <Input value={editFields.admin_notes || ''} onChange={e => setEditFields(f => ({ ...f, admin_notes: e.target.value }))} placeholder="Internal notes..." className="text-xs h-7" />
+                  </div>
+                  <button onClick={() => saveBattleSettings(b.id)} className="w-full py-1.5 bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[10px] font-bold rounded flex items-center justify-center gap-1">
+                    <Save size={11} /> Save Settings
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </details>

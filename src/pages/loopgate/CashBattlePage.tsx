@@ -271,6 +271,22 @@ export default function CashBattlePage() {
         </div>
       )}
 
+      {/* Scenepack Quick Button — always visible if available */}
+      {battle.scenepack_url && !battle.sponsor_name && (
+        <div className="mx-4 mt-3">
+          <a
+            href={battle.scenepack_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-[13px] font-black uppercase tracking-wider text-emerald-400 transition-all active:scale-[0.98]"
+            style={{ background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.25)" }}
+          >
+            <Download className="w-4 h-4" />
+            Download Scenepack
+          </a>
+        </div>
+      )}
+
       {/* Countdown Timer */}
       {isLive && (
         <div className="mx-4 mt-3 rounded-2xl py-3 text-center" style={{
