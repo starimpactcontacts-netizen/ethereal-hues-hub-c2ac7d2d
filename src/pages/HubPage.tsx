@@ -735,37 +735,28 @@ export default function HubPage() {
 
       {/* ⚔️ ACTIVE REMINDERS — clean, rounded, dismissible */}
       {activeBattles.length > 0 && !dismissedBanners.battles && (
-        <div className="px-4 mt-2 space-y-2">
+        <div className="px-4 mt-2 space-y-1.5">
           {activeBattles.slice(0, 2).map(battle => {
             const isJudgeRole = battle.judge_id === user?.id;
             const isChallenger = battle.challenger_id === user?.id;
-            const roleLabel = isJudgeRole ? "JUDGING" : isChallenger ? 'CHALLENGER' : "DEFENDER";
-            const roleEmoji = isJudgeRole ? '⚖️' : isChallenger ? '🗡️' : '🛡️';
-            const statusColor = isJudgeRole ? 'text-purple-400' : 'text-red-400';
-            const bgAccent = isJudgeRole ? 'rgba(168,85,247,0.08)' : 'rgba(239,68,68,0.08)';
-            const borderAccent = isJudgeRole ? 'rgba(168,85,247,0.2)' : 'rgba(239,68,68,0.2)';
+            const roleLabel = isJudgeRole ? "Judge" : isChallenger ? 'Challenger' : "Defender";
+            const dotColor = isJudgeRole ? 'bg-purple-400' : 'bg-red-400';
             return (
-              <div key={battle.id} className="rounded-xl overflow-hidden" style={{ background: bgAccent, border: `1px solid ${borderAccent}` }}>
-                <Link to={`/battle/${battle.id}`} className="flex items-center gap-3 px-3.5 py-3">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${isJudgeRole ? 'bg-purple-500/15' : 'bg-red-500/15'}`}>
-                    {isJudgeRole ? <Gavel className="w-4 h-4 text-purple-400" /> : <Swords className="w-4 h-4 text-red-400" />}
-                  </div>
+              <div key={battle.id} className="flex items-center gap-2.5 bg-surface-1 border border-border rounded-lg px-3 py-2">
+                <Link to={`/battle/${battle.id}`} className="flex items-center gap-2.5 flex-1 min-w-0">
+                  <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotColor}`} />
                   <div className="flex-1 min-w-0">
-                    <span className={`text-[10px] font-bold uppercase tracking-wider ${statusColor}`}>
-                      {roleEmoji} {roleLabel} · {battle.status.toUpperCase()}
-                    </span>
-                    <p className="text-[13px] text-foreground font-semibold truncate mt-0.5">{battle.challenger_username} vs {battle.opponent_username || '???'}</p>
+                    <p className="text-xs text-foreground font-medium truncate">{battle.challenger_username} vs {battle.opponent_username || '???'}</p>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <span className="text-[9px] text-muted-foreground font-medium uppercase tracking-wider shrink-0">{roleLabel}</span>
+                  <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                 </Link>
-                <div className="flex items-center border-t px-3.5 py-1.5" style={{ borderColor: borderAccent }}>
-                  <button 
-                    onClick={() => setDismissedBanners(prev => ({ ...prev, battles: true }))}
-                    className="text-[10px] text-muted-foreground hover:text-foreground transition-colors font-medium"
-                  >
-                    Dismiss
-                  </button>
-                </div>
+                <button
+                  onClick={() => setDismissedBanners(prev => ({ ...prev, battles: true }))}
+                  className="text-[9px] text-muted-foreground/60 hover:text-foreground transition-colors pl-2 border-l border-border shrink-0"
+                >
+                  ✕
+                </button>
               </div>
             );
           })}
