@@ -197,7 +197,7 @@ export default function HubPage() {
   const [walletOpen, setWalletOpen] = useState(false);
   const [judgeReviewCount, setJudgeReviewCount] = useState(0);
   const [userCrew, setUserCrew] = useState<UserCrew | null>(null);
-  const [quickAction, setQuickAction] = useState<'mission' | 'solo' | 'quick'>('mission');
+  const [quickAction, setQuickAction] = useState<'cash_battle' | 'mission' | 'solo' | 'quick'>('cash_battle');
   const [qfSearching, setQfSearching] = useState(false);
   const [qfElapsed, setQfElapsed] = useState(0);
   const [qfTipIdx, setQfTipIdx] = useState(0);
@@ -814,7 +814,9 @@ export default function HubPage() {
               disabled={quickAction === 'quick' && qfIsSearching}
               onClick={() => {
                 if (!profile) { navigate('/start'); return; }
-                if (quickAction === 'mission') {
+                if (quickAction === 'cash_battle') {
+                  navigate('/arena?tab=main');
+                } else if (quickAction === 'mission') {
                   navigate('/commissions/414605a8-ac2f-4ab5-9955-15339ba4633c');
                 } else if (quickAction === 'solo') {
                   navigate('/arena?mode=solo&auto=1');
