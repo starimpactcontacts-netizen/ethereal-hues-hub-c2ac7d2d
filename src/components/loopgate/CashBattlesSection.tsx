@@ -390,21 +390,19 @@ export default function CashBattlesSection() {
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <button
+          onClick={handleEnter}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white text-[10px] font-black uppercase tracking-wider transition-all hover:scale-105 relative"
+          style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}
+        >
+          <Zap className="w-3 h-3" />
+          <span>Join Battle</span>
           {pendingApps.length > 0 && (
-            <span className="px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider text-black flex items-center gap-1" style={{ background: "rgba(234,179,8,0.9)", fontFamily: "Teko, sans-serif" }}>
-              {pendingApps.length} OPEN
+            <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-amber-400 text-black text-[9px] font-black flex items-center justify-center shadow-lg" style={{ fontFamily: "Teko, sans-serif" }}>
+              {pendingApps.length}
             </span>
           )}
-          <button
-            onClick={handleEnter}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white text-[10px] font-black uppercase tracking-wider transition-all hover:scale-105"
-            style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}
-          >
-            <Zap className="w-3 h-3" />
-            <span>Join Battle</span>
-          </button>
-        </div>
+        </button>
       </div>
 
       {/* Horizontal scroll — open matchups first, then existing battles */}
