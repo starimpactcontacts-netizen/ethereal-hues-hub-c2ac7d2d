@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import CashBattleChat from "@/components/loopgate/CashBattleChat";
+import CashBattleVoteBar from "@/components/loopgate/CashBattleVoteBar";
 import weirdCityPoster from "@/assets/weird-city-poster.jpeg";
 
 function formatPrize(cents: number): string {
@@ -399,6 +400,15 @@ export default function CashBattlePage() {
           isWinner={isCompleted && battle.winner_id === battle.opponent_id}
         />
       </div>
+
+      {/* Hype Vote Bar */}
+      {(battle.status === "live" || battle.status === "completed") && battle.opponent_username && (
+        <CashBattleVoteBar
+          battleId={battle.id}
+          challengerUsername={battle.challenger_username}
+          opponentUsername={battle.opponent_username}
+        />
+      )}
 
       {/* Edit Showcase — side by side blocks */}
       <div className="mx-4 mb-4 grid grid-cols-2 gap-2">
