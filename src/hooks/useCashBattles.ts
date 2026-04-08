@@ -37,6 +37,7 @@ export interface CashBattle {
   sponsor_name: string | null;
   sponsor_logo_url: string | null;
   sponsor_campaign_id: string | null;
+  scenepack_url: string | null;
   challenger_accepted: boolean;
   opponent_accepted: boolean;
   challenger_accepted_at: string | null;
@@ -88,6 +89,8 @@ export function useMyCashBattleApplication() {
 
   async function joinPool() {
     if (!user) return false;
+    if (application) return true;
+
     const { data: profile } = await supabase
       .from('profiles')
       .select('username, avatar_url')
@@ -103,15 +106,20 @@ export function useMyCashBattleApplication() {
     } as any);
 
     if (error) {
+      const isDuplicate = error.code === '23505' || error.message?.toLowerCase().includes('duplicate');
+      if (isDuplicate) {
+        await fetchApplication();
+        return true;
+      }
       toast.error('Failed to join');
       return false;
     }
-    toast.success("You're in the pool! 🔥");
+    toast.success('You\'re in — waiting for opponent');
     await fetchApplication();
     return true;
   }
 
-  return { application, loading, joinPool };
+  return { application, loading, joinPool, refetch: fetchApplication };
 }
 
 export function useAdminCashBattles() {
