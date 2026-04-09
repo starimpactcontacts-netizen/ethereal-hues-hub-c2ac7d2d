@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import MissionLobbyChat from '@/components/loopgate/MissionLobbyChat';
+import ScenepackButtons from '@/components/loopgate/ScenepackButtons';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
