@@ -91,6 +91,28 @@ export default function CashBattlePage() {
   }
 
   const countdown = useCountdown(battle?.ends_at);
+
+  async function handleCancelBattle() {
+    if (!battleId || !user) return;
+    setCancellingBattle(true);
+    // Delete the battle
+    const { error } = await supabase.from("cash_battles").delete().eq("id", battleId);
+    if (error) {
+      toast.error("Failed to cancel");
+      setCancellingBattle(false);
+      setShowCancelConfirm(false);
+      return;
+    }
+    // Also reset any matched applications back
+    await supabase
+      .from("cash_battle_applications")
+      .update({ status: 'cancelled' } as any)
+      .eq("matched_battle_id", battleId);
+    toast.info("Battle cancelled");
+    setCancellingBattle(false);
+    navigate("/arena");
+  }
+
   const isChallenger = user?.id === battle?.challenger_id;
   const isOpponent = user?.id === battle?.opponent_id;
   const isFighter = isChallenger || isOpponent;
