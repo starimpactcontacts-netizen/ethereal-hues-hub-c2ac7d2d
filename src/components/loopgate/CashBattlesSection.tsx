@@ -511,10 +511,16 @@ export default function CashBattlesSection() {
           <OpenMatchupCard key={app.id} app={app} onJoin={() => handleAcceptFight(app)} currentUserId={user?.id} />
         ))}
 
-        {/* Existing battles */}
-        {battles.map((battle) => (
-          <CashBattleCard key={battle.id} battle={battle} currentUserId={user?.id} />
-        ))}
+        {/* Existing battles — hide cancelled, show live first */}
+        {battles
+          .filter((b) => b.status !== 'cancelled')
+          .sort((a, b) => {
+            const order: Record<string, number> = { live: 0, upcoming: 1, completed: 2 };
+            return (order[a.status] ?? 3) - (order[b.status] ?? 3);
+          })
+          .map((battle) => (
+            <CashBattleCard key={battle.id} battle={battle} currentUserId={user?.id} />
+          ))}
 
         {/* Join teaser — only show if no pending apps */}
         {pendingApps.length === 0 && (
