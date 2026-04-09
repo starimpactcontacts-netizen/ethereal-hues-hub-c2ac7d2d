@@ -78,7 +78,7 @@ export default function ScenepackButtons({ youtubeUrl, gdriveUrl, legacyUrl, var
           <Download className="w-3 h-3" /> Scenepack
         </button>
         {showPicker && (
-          <div className="absolute top-full mt-1 right-0 z-50 bg-card border border-border rounded-xl shadow-xl overflow-hidden min-w-[180px]">
+          <div className="absolute bottom-full mb-1 right-0 z-50 bg-card border border-border rounded-xl shadow-xl overflow-hidden min-w-[180px]">
             <a href={yt!} target="_blank" rel="noopener noreferrer" onClick={() => setShowPicker(false)}
               className="flex items-center gap-2.5 px-4 py-3 hover:bg-white/5 transition-colors border-b border-border">
               <SiYoutube className="w-4 h-4 text-red-400" />
