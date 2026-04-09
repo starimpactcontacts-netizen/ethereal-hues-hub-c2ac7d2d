@@ -290,12 +290,6 @@ export default function CashBattlePage() {
                   </p>
                 </div>
               </div>
-              <ScenepackButtons
-                youtubeUrl={battle.scenepack_youtube_url}
-                gdriveUrl={battle.scenepack_gdrive_url}
-                legacyUrl={battle.scenepack_url}
-                variant="inline"
-              />
             </div>
           </div>
           
@@ -305,6 +299,18 @@ export default function CashBattlePage() {
               Use the <strong className="text-white">official scenepack</strong> to create your edit — best edit wins <strong className="text-white">{formatPrize(battle.prize_cents)}</strong>
             </p>
           </div>
+        </div>
+      )}
+
+      {/* Scenepack for sponsored battles — placed outside overflow-hidden banner */}
+      {battle.sponsor_name && (battle.scenepack_youtube_url || battle.scenepack_gdrive_url || battle.scenepack_url) && (
+        <div className="mx-4 mt-2">
+          <ScenepackButtons
+            youtubeUrl={battle.scenepack_youtube_url}
+            gdriveUrl={battle.scenepack_gdrive_url}
+            legacyUrl={battle.scenepack_url}
+            variant="full"
+          />
         </div>
       )}
 
