@@ -192,12 +192,32 @@ function CashBattleCard({ battle }: { battle: any }) {
 }
 
 /** Card for a pending application — shows as an open matchup slot anyone can tap to accept */
-function OpenMatchupCard({ app, onJoin }: { app: CashBattleApplication; onJoin: () => void }) {
+function OpenMatchupCard({ app, onJoin, currentUserId }: { app: CashBattleApplication; onJoin: () => void; currentUserId?: string }) {
+  const [confirmCancel, setConfirmCancel] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const isOwnApp = currentUserId === app.user_id;
+
+  async function handleCancel() {
+    setCancelling(true);
+    const { error } = await supabase
+      .from('cash_battle_applications')
+      .update({ status: 'cancelled' } as any)
+      .eq('id', app.id)
+      .eq('user_id', app.user_id);
+    if (error) {
+      toast.error('Failed to cancel');
+    } else {
+      toast.info('Matchup cancelled');
+    }
+    setCancelling(false);
+    setConfirmCancel(false);
+  }
+
   return (
     <motion.div
       whileTap={{ scale: 0.97 }}
       whileHover={{ y: -2 }}
-      onClick={onJoin}
+      onClick={isOwnApp ? undefined : onJoin}
       className="w-[220px] shrink-0 rounded-2xl overflow-hidden cursor-pointer relative"
       style={{
         background: "linear-gradient(160deg, rgba(22,22,28,1) 0%, rgba(6,6,8,1) 100%)",
@@ -207,6 +227,42 @@ function OpenMatchupCard({ app, onJoin }: { app: CashBattleApplication; onJoin: 
       <div className="absolute top-0 left-0 right-0 h-[2px]" style={{
         background: "linear-gradient(90deg, #3b82f6, transparent 40%, transparent 60%, #ef4444)",
       }} />
+
+      {/* Cancel confirmation overlay */}
+      <AnimatePresence>
+        {confirmCancel && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 rounded-2xl"
+            style={{ background: "rgba(10,10,12,0.95)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="text-[13px] font-black text-white uppercase tracking-wider text-center px-4" style={{ fontFamily: "Teko, sans-serif" }}>
+              Cancel matchup?
+            </p>
+            <p className="text-[10px] text-zinc-400 text-center px-6">You'll leave the queue and can rejoin anytime</p>
+            <div className="flex gap-2">
+              <button
+                onClick={handleCancel}
+                disabled={cancelling}
+                className="px-4 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider text-red-400 border border-red-500/30"
+                style={{ background: "rgba(239,68,68,0.12)" }}
+              >
+                {cancelling ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Yes, Cancel"}
+              </button>
+              <button
+                onClick={() => setConfirmCancel(false)}
+                className="px-4 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider text-zinc-300 border border-zinc-700"
+                style={{ background: "rgba(255,255,255,0.04)" }}
+              >
+                Go Back
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="px-4 pt-4 pb-1">
         <div className="flex items-center justify-between">
@@ -221,7 +277,7 @@ function OpenMatchupCard({ app, onJoin }: { app: CashBattleApplication; onJoin: 
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
             <span className="text-[10px] font-black uppercase tracking-[0.15em] text-amber-400" style={{ fontFamily: "Teko, sans-serif" }}>
-              OPEN
+              {isOwnApp ? "YOUR MATCH" : "OPEN"}
             </span>
           </div>
         </div>
@@ -264,20 +320,35 @@ function OpenMatchupCard({ app, onJoin }: { app: CashBattleApplication; onJoin: 
             <span className="text-lg text-amber-400/60">?</span>
           </div>
           <span className="text-[10px] font-black uppercase text-amber-400" style={{ fontFamily: "Teko, sans-serif" }}>
-            YOU?
+            {isOwnApp ? "WAITING" : "YOU?"}
           </span>
         </div>
       </div>
 
       <div className="px-4 pb-4">
-        <div className="w-full text-center py-2.5 rounded-xl text-[13px] font-black uppercase tracking-wider border" style={{
-          fontFamily: "Teko, sans-serif",
-          background: "linear-gradient(135deg, rgba(59,130,246,0.15), rgba(239,68,68,0.15))",
-          borderColor: "rgba(239,68,68,0.3)",
-          color: "#fff",
-        }}>
-          ACCEPT FIGHT
-        </div>
+        {isOwnApp ? (
+          <button
+            onClick={(e) => { e.stopPropagation(); setConfirmCancel(true); }}
+            className="w-full text-center py-2.5 rounded-xl text-[13px] font-black uppercase tracking-wider border"
+            style={{
+              fontFamily: "Teko, sans-serif",
+              background: "rgba(239,68,68,0.08)",
+              borderColor: "rgba(239,68,68,0.25)",
+              color: "rgba(239,68,68,0.8)",
+            }}
+          >
+            CANCEL
+          </button>
+        ) : (
+          <div className="w-full text-center py-2.5 rounded-xl text-[13px] font-black uppercase tracking-wider border" style={{
+            fontFamily: "Teko, sans-serif",
+            background: "linear-gradient(135deg, rgba(59,130,246,0.15), rgba(239,68,68,0.15))",
+            borderColor: "rgba(239,68,68,0.3)",
+            color: "#fff",
+          }}>
+            ACCEPT FIGHT
+          </div>
+        )}
       </div>
     </motion.div>
   );
