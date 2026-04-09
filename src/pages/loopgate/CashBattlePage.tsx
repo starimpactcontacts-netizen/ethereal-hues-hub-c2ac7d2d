@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, DollarSign, Clock, Send, Trophy, ExternalLink, Zap, ChevronDown, CheckCircle, Loader2, Camera, Image as ImageIcon, Download } from "lucide-react";
+import { ArrowLeft, DollarSign, Clock, Send, Trophy, ExternalLink, Zap, ChevronDown, CheckCircle, Loader2, Camera, Image as ImageIcon, Download, XCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,6 +45,8 @@ export default function CashBattlePage() {
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const [accepting, setAccepting] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [cancellingBattle, setCancellingBattle] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const autoAcceptRef = useRef(false);
 
@@ -89,6 +91,28 @@ export default function CashBattlePage() {
   }
 
   const countdown = useCountdown(battle?.ends_at);
+
+  async function handleCancelBattle() {
+    if (!battleId || !user) return;
+    setCancellingBattle(true);
+    // Delete the battle
+    const { error } = await supabase.from("cash_battles").delete().eq("id", battleId);
+    if (error) {
+      toast.error("Failed to cancel");
+      setCancellingBattle(false);
+      setShowCancelConfirm(false);
+      return;
+    }
+    // Also reset any matched applications back
+    await supabase
+      .from("cash_battle_applications")
+      .update({ status: 'cancelled' } as any)
+      .eq("matched_battle_id", battleId);
+    toast.info("Battle cancelled");
+    setCancellingBattle(false);
+    navigate("/arena");
+  }
+
   const isChallenger = user?.id === battle?.challenger_id;
   const isOpponent = user?.id === battle?.opponent_id;
   const isFighter = isChallenger || isOpponent;
@@ -366,6 +390,43 @@ export default function CashBattlePage() {
               <p className="text-[11px] text-zinc-500 mt-1">Match goes live instantly</p>
             </div>
           </div>
+
+          {/* Cancel button */}
+          {!showCancelConfirm ? (
+            <button
+              onClick={() => setShowCancelConfirm(true)}
+              className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] font-bold uppercase tracking-wider transition-all"
+              style={{
+                background: "rgba(239,68,68,0.06)",
+                border: "1px solid rgba(239,68,68,0.2)",
+                color: "rgba(239,68,68,0.7)",
+              }}
+            >
+              <XCircle className="w-3.5 h-3.5" />
+              Cancel Matchup
+            </button>
+          ) : (
+            <div className="mt-3 rounded-xl p-3 text-center" style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)" }}>
+              <p className="text-[12px] text-zinc-300 mb-2">Are you sure you want to cancel?</p>
+              <div className="flex gap-2 justify-center">
+                <button
+                  onClick={handleCancelBattle}
+                  disabled={cancellingBattle}
+                  className="px-4 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider text-red-400 border border-red-500/30"
+                  style={{ background: "rgba(239,68,68,0.15)" }}
+                >
+                  {cancellingBattle ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Yes, Cancel"}
+                </button>
+                <button
+                  onClick={() => setShowCancelConfirm(false)}
+                  className="px-4 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider text-zinc-300 border border-zinc-700"
+                  style={{ background: "rgba(255,255,255,0.04)" }}
+                >
+                  Go Back
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
