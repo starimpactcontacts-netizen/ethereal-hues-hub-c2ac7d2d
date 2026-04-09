@@ -390,6 +390,43 @@ export default function CashBattlePage() {
               <p className="text-[11px] text-zinc-500 mt-1">Match goes live instantly</p>
             </div>
           </div>
+
+          {/* Cancel button */}
+          {!showCancelConfirm ? (
+            <button
+              onClick={() => setShowCancelConfirm(true)}
+              className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] font-bold uppercase tracking-wider transition-all"
+              style={{
+                background: "rgba(239,68,68,0.06)",
+                border: "1px solid rgba(239,68,68,0.2)",
+                color: "rgba(239,68,68,0.7)",
+              }}
+            >
+              <XCircle className="w-3.5 h-3.5" />
+              Cancel Matchup
+            </button>
+          ) : (
+            <div className="mt-3 rounded-xl p-3 text-center" style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)" }}>
+              <p className="text-[12px] text-zinc-300 mb-2">Are you sure you want to cancel?</p>
+              <div className="flex gap-2 justify-center">
+                <button
+                  onClick={handleCancelBattle}
+                  disabled={cancellingBattle}
+                  className="px-4 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider text-red-400 border border-red-500/30"
+                  style={{ background: "rgba(239,68,68,0.15)" }}
+                >
+                  {cancellingBattle ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Yes, Cancel"}
+                </button>
+                <button
+                  onClick={() => setShowCancelConfirm(false)}
+                  className="px-4 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider text-zinc-300 border border-zinc-700"
+                  style={{ background: "rgba(255,255,255,0.04)" }}
+                >
+                  Go Back
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
