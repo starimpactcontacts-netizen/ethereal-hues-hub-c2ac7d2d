@@ -40,6 +40,8 @@ export interface CashBattle {
   sponsor_logo_url: string | null;
   sponsor_campaign_id: string | null;
   scenepack_url: string | null;
+  scenepack_youtube_url: string | null;
+  scenepack_gdrive_url: string | null;
   challenger_accepted: boolean;
   opponent_accepted: boolean;
   challenger_accepted_at: string | null;
