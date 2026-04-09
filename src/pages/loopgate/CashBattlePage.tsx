@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, DollarSign, Clock, Send, Trophy, ExternalLink, Zap, ChevronDown, CheckCircle, Loader2, Camera, Image as ImageIcon, Download } from "lucide-react";
+import { ArrowLeft, DollarSign, Clock, Send, Trophy, ExternalLink, Zap, ChevronDown, CheckCircle, Loader2, Camera, Image as ImageIcon, Download, XCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
