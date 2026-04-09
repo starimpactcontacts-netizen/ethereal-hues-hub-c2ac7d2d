@@ -26,7 +26,7 @@ function formatTimeLeft(endDate: string | null): string {
   return `${minutes}m`;
 }
 
-function CashBattleCard({ battle }: { battle: any }) {
+function CashBattleCard({ battle, currentUserId }: { battle: any; currentUserId?: string }) {
   const navigate = useNavigate();
   const isLive = battle.status === "live";
   const isUpcoming = battle.status === "upcoming";
@@ -177,15 +177,22 @@ function CashBattleCard({ battle }: { battle: any }) {
 
       {/* CTA — full-width block button */}
       <div className="px-4 pb-4">
-        <div className={`w-full text-center py-2.5 rounded-xl text-[13px] font-black uppercase tracking-wider ${
-          isLive
+        {(() => {
+          const isParticipant = currentUserId && (battle.challenger_id === currentUserId || battle.opponent_id === currentUserId);
+          const ctaLabel = isParticipant && isLive ? "YOUR FIGHT" : isLive ? "WATCH" : isUpcoming ? "SOON" : "VIEW";
+          const ctaStyle = isParticipant && isLive
+            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+            : isLive
             ? "bg-red-500/20 text-red-400 border border-red-500/30"
             : isUpcoming
             ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-            : "bg-zinc-800 text-zinc-400"
-        }`} style={{ fontFamily: "Teko, sans-serif" }}>
-          {isLive ? "WATCH" : isUpcoming ? "SOON" : "VIEW"}
-        </div>
+            : "bg-zinc-800 text-zinc-400";
+          return (
+            <div className={`w-full text-center py-2.5 rounded-xl text-[13px] font-black uppercase tracking-wider ${ctaStyle}`} style={{ fontFamily: "Teko, sans-serif" }}>
+              {ctaLabel}
+            </div>
+          );
+        })()}
       </div>
     </motion.div>
   );
@@ -506,7 +513,7 @@ export default function CashBattlesSection() {
 
         {/* Existing battles */}
         {battles.map((battle) => (
-          <CashBattleCard key={battle.id} battle={battle} />
+          <CashBattleCard key={battle.id} battle={battle} currentUserId={user?.id} />
         ))}
 
         {/* Join teaser — only show if no pending apps */}
