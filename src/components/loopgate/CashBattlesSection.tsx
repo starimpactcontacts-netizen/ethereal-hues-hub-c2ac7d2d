@@ -501,7 +501,7 @@ export default function CashBattlesSection() {
       <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2" style={{ paddingLeft: 16, paddingRight: 16 }}>
         {/* Open matchup cards from pending applications */}
         {pendingApps.map((app) => (
-          <OpenMatchupCard key={app.id} app={app} onJoin={() => handleAcceptFight(app)} />
+          <OpenMatchupCard key={app.id} app={app} onJoin={() => handleAcceptFight(app)} currentUserId={user?.id} />
         ))}
 
         {/* Existing battles */}
