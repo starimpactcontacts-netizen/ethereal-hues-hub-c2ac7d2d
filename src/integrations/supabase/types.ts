@@ -911,7 +911,9 @@ export type Database = {
           opponent_thumbnail_url: string | null
           opponent_username: string | null
           prize_cents: number
+          scenepack_gdrive_url: string | null
           scenepack_url: string | null
+          scenepack_youtube_url: string | null
           sponsor_campaign_id: string | null
           sponsor_logo_url: string | null
           sponsor_name: string | null
@@ -950,7 +952,9 @@ export type Database = {
           opponent_thumbnail_url?: string | null
           opponent_username?: string | null
           prize_cents?: number
+          scenepack_gdrive_url?: string | null
           scenepack_url?: string | null
+          scenepack_youtube_url?: string | null
           sponsor_campaign_id?: string | null
           sponsor_logo_url?: string | null
           sponsor_name?: string | null
@@ -989,7 +993,9 @@ export type Database = {
           opponent_thumbnail_url?: string | null
           opponent_username?: string | null
           prize_cents?: number
+          scenepack_gdrive_url?: string | null
           scenepack_url?: string | null
+          scenepack_youtube_url?: string | null
           sponsor_campaign_id?: string | null
           sponsor_logo_url?: string | null
           sponsor_name?: string | null
@@ -1159,7 +1165,9 @@ export type Database = {
           reference_urls: string[] | null
           reference_video_url: string | null
           requirements: string | null
+          scenepack_gdrive_url: string | null
           scenepack_url: string | null
+          scenepack_youtube_url: string | null
           song_name: string | null
           status: string
           submission_count: number
@@ -1192,7 +1200,9 @@ export type Database = {
           reference_urls?: string[] | null
           reference_video_url?: string | null
           requirements?: string | null
+          scenepack_gdrive_url?: string | null
           scenepack_url?: string | null
+          scenepack_youtube_url?: string | null
           song_name?: string | null
           status?: string
           submission_count?: number
@@ -1225,7 +1235,9 @@ export type Database = {
           reference_urls?: string[] | null
           reference_video_url?: string | null
           requirements?: string | null
+          scenepack_gdrive_url?: string | null
           scenepack_url?: string | null
+          scenepack_youtube_url?: string | null
           song_name?: string | null
           status?: string
           submission_count?: number
