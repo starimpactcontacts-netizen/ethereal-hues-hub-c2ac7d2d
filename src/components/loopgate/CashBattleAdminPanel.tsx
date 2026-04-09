@@ -62,6 +62,8 @@ export default function CashBattleAdminPanel() {
     setEditFields({
       prize: (battle.prize_cents / 100).toString(),
       scenepack_url: battle.scenepack_url || '',
+      scenepack_youtube_url: battle.scenepack_youtube_url || '',
+      scenepack_gdrive_url: battle.scenepack_gdrive_url || '',
       sponsor_name: battle.sponsor_name || '',
       admin_notes: battle.admin_notes || '',
       sponsor_campaign_id: battle.sponsor_campaign_id || '',
@@ -98,6 +100,8 @@ export default function CashBattleAdminPanel() {
     const { error } = await supabase.from('cash_battles').update({
       prize_cents: Math.round(parseFloat(editFields.prize || '0') * 100),
       scenepack_url: editFields.scenepack_url || null,
+      scenepack_youtube_url: editFields.scenepack_youtube_url || null,
+      scenepack_gdrive_url: editFields.scenepack_gdrive_url || null,
       sponsor_name: editFields.sponsor_name || null,
       admin_notes: editFields.admin_notes || null,
       sponsor_campaign_id: editFields.sponsor_campaign_id || null,
@@ -272,9 +276,13 @@ export default function CashBattleAdminPanel() {
                     <label className="text-[9px] text-zinc-500 uppercase block mb-0.5">Prize ($)</label>
                     <Input value={editFields.prize || ''} onChange={e => setEditFields(f => ({ ...f, prize: e.target.value }))} className="text-xs h-7" />
                   </div>
+                   <div>
+                    <label className="text-[9px] text-zinc-500 uppercase block mb-0.5">Scenepack — YouTube URL</label>
+                    <Input value={editFields.scenepack_youtube_url || ''} onChange={e => setEditFields(f => ({ ...f, scenepack_youtube_url: e.target.value }))} placeholder="https://youtube.com/..." className="text-xs h-7" />
+                  </div>
                   <div>
-                    <label className="text-[9px] text-zinc-500 uppercase block mb-0.5">Scenepack URL</label>
-                    <Input value={editFields.scenepack_url || ''} onChange={e => setEditFields(f => ({ ...f, scenepack_url: e.target.value }))} placeholder="https://..." className="text-xs h-7" />
+                    <label className="text-[9px] text-zinc-500 uppercase block mb-0.5">Scenepack — Google Drive URL</label>
+                    <Input value={editFields.scenepack_gdrive_url || ''} onChange={e => setEditFields(f => ({ ...f, scenepack_gdrive_url: e.target.value }))} placeholder="https://drive.google.com/..." className="text-xs h-7" />
                   </div>
 
                   {/* Campaign Sponsor Selector */}
