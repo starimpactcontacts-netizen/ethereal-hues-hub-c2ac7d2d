@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Clock, DollarSign, Download, Loader2, Mail, Swords, Zap } from "lucide-react";
+import ScenepackButtons from "@/components/loopgate/ScenepackButtons";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { useCashBattles, useMyCashBattleApplication, useMyCashBattles } from "@/hooks/useCashBattles";
@@ -193,14 +194,15 @@ export default function CashBattleReadyPage() {
               </div>
             </div>
             <div className="bg-card px-4 py-3 flex items-center gap-2.5">
-              {featuredBattle?.scenepack_url ? (
-                <a href={featuredBattle.scenepack_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 w-full">
-                  <Download className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <div>
-                    <p className="text-lg leading-none font-display text-emerald-400">Pack</p>
-                    <p className="text-[9px] uppercase tracking-[0.14em] text-muted-foreground mt-0.5">Scenepack</p>
-                  </div>
-                </a>
+              {(featuredBattle?.scenepack_youtube_url || featuredBattle?.scenepack_gdrive_url || featuredBattle?.scenepack_url) ? (
+                <div className="w-full">
+                  <ScenepackButtons
+                    youtubeUrl={featuredBattle?.scenepack_youtube_url}
+                    gdriveUrl={featuredBattle?.scenepack_gdrive_url}
+                    legacyUrl={featuredBattle?.scenepack_url}
+                    variant="compact"
+                  />
+                </div>
               ) : (
                 <>
                   <Download className="w-4 h-4 text-muted-foreground shrink-0" />
