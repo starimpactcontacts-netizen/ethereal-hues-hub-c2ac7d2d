@@ -96,15 +96,19 @@ export default function CashBattlePage() {
   async function handleCancelBattle() {
     if (!battleId || !user) return;
     setCancellingBattle(true);
-    // Delete the battle
-    const { error } = await supabase.from("cash_battles").delete().eq("id", battleId);
+    // Update status to cancelled instead of deleting (RLS blocks delete)
+    const { error } = await supabase
+      .from("cash_battles")
+      .update({ status: 'cancelled' } as any)
+      .eq("id", battleId);
     if (error) {
+      console.error("Cancel battle error:", error);
       toast.error("Failed to cancel");
       setCancellingBattle(false);
       setShowCancelConfirm(false);
       return;
     }
-    // Also reset any matched applications back
+    // Also reset any matched applications
     await supabase
       .from("cash_battle_applications")
       .update({ status: 'cancelled' } as any)
