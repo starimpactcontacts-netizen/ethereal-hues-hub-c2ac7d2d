@@ -45,6 +45,8 @@ export default function CashBattlePage() {
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const [accepting, setAccepting] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [cancellingBattle, setCancellingBattle] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const autoAcceptRef = useRef(false);
 
