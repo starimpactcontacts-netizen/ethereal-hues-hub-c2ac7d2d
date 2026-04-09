@@ -688,12 +688,14 @@ export default function CommissionDetailPage() {
           </Link>
         </div>
 
-        {/* ── SCENEPACKS BUTTON ── */}
-        {(commission as any).scenepack_url && (
-          <a href={(commission as any).scenepack_url} target="_blank" rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2.5 py-3.5 w-full bg-surface-1 border border-border hover:border-foreground/20 text-foreground font-black uppercase tracking-wider text-sm rounded-xl transition-colors active:scale-[0.98]">
-            <FolderOpen className="w-4 h-4 text-amber-400" /> Go Get Scenepacks
-          </a>
+        {/* ── SCENEPACKS BUTTONS ── */}
+        {((commission as any).scenepack_youtube_url || (commission as any).scenepack_gdrive_url || (commission as any).scenepack_url) && (
+          <ScenepackButtons
+            youtubeUrl={(commission as any).scenepack_youtube_url}
+            gdriveUrl={(commission as any).scenepack_gdrive_url}
+            legacyUrl={(commission as any).scenepack_url}
+            variant="full"
+          />
         )}
 
         {/* ── MISSION BRIEF ── */}

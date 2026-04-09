@@ -336,6 +336,8 @@ function MissionEditDialog({ mission, onClose, onSaved }: { mission: Marketplace
     payout_cents: mission.payout_cents,
     cover_url: (mission as any).cover_url || '',
     scenepack_url: (mission as any).scenepack_url || '',
+    scenepack_youtube_url: (mission as any).scenepack_youtube_url || '',
+    scenepack_gdrive_url: (mission as any).scenepack_gdrive_url || '',
     custom_payouts: (mission.custom_payouts || { S: 0, A: 0, B: 0, C: 0, D: 0, F: 0 }) as Record<string, number>,
   });
   const [saving, setSaving] = useState(false);
@@ -353,6 +355,8 @@ function MissionEditDialog({ mission, onClose, onSaved }: { mission: Marketplace
       payout_cents: form.payout_cents,
       cover_url: form.cover_url || null,
       scenepack_url: form.scenepack_url || null,
+      scenepack_youtube_url: form.scenepack_youtube_url || null,
+      scenepack_gdrive_url: form.scenepack_gdrive_url || null,
       custom_payouts: form.custom_payouts,
     } as any).eq('id', mission.id);
     if (error) toast.error(error.message);
@@ -457,8 +461,13 @@ function MissionEditDialog({ mission, onClose, onSaved }: { mission: Marketplace
           <div className="border-t border-border pt-3 space-y-2">
             <Label className="text-xs font-bold text-amber-400">📦 {isFilm ? 'Footage / Assets' : 'Scenepacks'}</Label>
             <div>
-              <Label className="text-[10px]">{isFilm ? 'Footage Link (Google Drive)' : 'Scenepack URL (Google Drive link)'}</Label>
-              <Input value={form.scenepack_url} onChange={e => setForm({ ...form, scenepack_url: e.target.value })}
+              <Label className="text-[10px]">YouTube Scenepack URL</Label>
+              <Input value={form.scenepack_youtube_url} onChange={e => setForm({ ...form, scenepack_youtube_url: e.target.value })}
+                placeholder="https://youtube.com/..." className="mt-1 h-8 text-xs" />
+            </div>
+            <div>
+              <Label className="text-[10px]">{isFilm ? 'Footage Link (Google Drive)' : 'Google Drive Scenepack URL'}</Label>
+              <Input value={form.scenepack_gdrive_url} onChange={e => setForm({ ...form, scenepack_gdrive_url: e.target.value })}
                 placeholder="https://drive.google.com/..." className="mt-1 h-8 text-xs" />
             </div>
           </div>
