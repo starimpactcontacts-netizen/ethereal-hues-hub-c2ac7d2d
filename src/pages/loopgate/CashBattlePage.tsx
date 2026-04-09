@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, DollarSign, Clock, Send, Trophy, ExternalLink, Zap, ChevronDown, CheckCircle, Loader2, Camera, Image as ImageIcon, Download, XCircle } from "lucide-react";
+import { ArrowLeft, DollarSign, Clock, Send, Trophy, ExternalLink, Zap, ChevronDown, CheckCircle, Loader2, Camera, Image as ImageIcon, XCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import CashBattleChat from "@/components/loopgate/CashBattleChat";
 import CashBattleVoteBar from "@/components/loopgate/CashBattleVoteBar";
+import ScenepackButtons from "@/components/loopgate/ScenepackButtons";
 import weirdCityPoster from "@/assets/weird-city-poster.jpeg";
 
 function formatPrize(cents: number): string {
@@ -289,13 +290,12 @@ export default function CashBattlePage() {
                   </p>
                 </div>
               </div>
-              {battle.scenepack_url && (
-                <a href={battle.scenepack_url} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold text-emerald-400 uppercase shrink-0"
-                  style={{ background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.3)", backdropFilter: "blur(8px)" }}>
-                  <Download className="w-3 h-3" /> Scenepack
-                </a>
-              )}
+              <ScenepackButtons
+                youtubeUrl={battle.scenepack_youtube_url}
+                gdriveUrl={battle.scenepack_gdrive_url}
+                legacyUrl={battle.scenepack_url}
+                variant="inline"
+              />
             </div>
           </div>
           
@@ -308,19 +308,15 @@ export default function CashBattlePage() {
         </div>
       )}
 
-      {/* Scenepack Quick Button — always visible if available */}
-      {battle.scenepack_url && !battle.sponsor_name && (
+      {/* Scenepack Quick Buttons — always visible if available */}
+      {(battle.scenepack_youtube_url || battle.scenepack_gdrive_url || battle.scenepack_url) && !battle.sponsor_name && (
         <div className="mx-4 mt-3">
-          <a
-            href={battle.scenepack_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-[13px] font-black uppercase tracking-wider text-emerald-400 transition-all active:scale-[0.98]"
-            style={{ background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.25)" }}
-          >
-            <Download className="w-4 h-4" />
-            Download Scenepack
-          </a>
+          <ScenepackButtons
+            youtubeUrl={battle.scenepack_youtube_url}
+            gdriveUrl={battle.scenepack_gdrive_url}
+            legacyUrl={battle.scenepack_url}
+            variant="full"
+          />
         </div>
       )}
 
@@ -354,17 +350,12 @@ export default function CashBattlePage() {
                 You’re locked in. The timer starts the second the other editor joins.
               </p>
             </div>
-            {battle.scenepack_url && (
-              <a
-                href={battle.scenepack_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-wider"
-              >
-                <Download className="w-3 h-3" />
-                Scenepack
-              </a>
-            )}
+            <ScenepackButtons
+              youtubeUrl={battle.scenepack_youtube_url}
+              gdriveUrl={battle.scenepack_gdrive_url}
+              legacyUrl={battle.scenepack_url}
+              variant="inline"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-2 mt-3">
