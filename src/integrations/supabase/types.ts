@@ -2500,6 +2500,9 @@ export type Database = {
           id: string
           message_text: string
           read_at: string | null
+          reply_to_id: string | null
+          reply_to_sender_id: string | null
+          reply_to_text: string | null
           sender_id: string
         }
         Insert: {
@@ -2508,6 +2511,9 @@ export type Database = {
           id?: string
           message_text: string
           read_at?: string | null
+          reply_to_id?: string | null
+          reply_to_sender_id?: string | null
+          reply_to_text?: string | null
           sender_id: string
         }
         Update: {
@@ -2516,11 +2522,53 @@ export type Database = {
           id?: string
           message_text?: string
           read_at?: string | null
+          reply_to_id?: string | null
+          reply_to_sender_id?: string | null
+          reply_to_text?: string | null
           sender_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "direct_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "direct_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "direct_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dm_typing_status: {
+        Row: {
+          conversation_id: string
+          id: string
+          started_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          conversation_id: string
+          id?: string
+          started_at?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          conversation_id?: string
+          id?: string
+          started_at?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dm_typing_status_conversation_id_fkey"
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "conversations"
