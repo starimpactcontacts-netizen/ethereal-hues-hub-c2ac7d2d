@@ -134,6 +134,91 @@ function ScoreRing({ score, max, color, size = 44 }: { score: number; max: numbe
   );
 }
 
+function QOIRadar({ rating, animate }: { rating: LoopyRating; animate: boolean }) {
+  const size = 220;
+  const cx = size / 2;
+  const cy = size / 2;
+  const levels = 4;
+  const maxR = 85;
+
+  const pillars = PILLARS.map((p, i) => {
+    const score = rating[p.key as keyof LoopyRating] as number;
+    const pct = score / p.max;
+    const angle = (Math.PI * 2 * i) / PILLARS.length - Math.PI / 2;
+    return { ...p, pct, angle, score };
+  });
+
+  const getPoint = (angle: number, r: number) => ({
+    x: cx + Math.cos(angle) * r,
+    y: cy + Math.sin(angle) * r,
+  });
+
+  const gridPaths = Array.from({ length: levels }, (_, lvl) => {
+    const r = (maxR / levels) * (lvl + 1);
+    return pillars.map((p) => getPoint(p.angle, r)).map((pt, i) => `${i === 0 ? 'M' : 'L'}${pt.x},${pt.y}`).join(' ') + 'Z';
+  });
+
+  const dataPoints = pillars.map((p) => getPoint(p.angle, maxR * p.pct));
+  const dataPath = dataPoints.map((pt, i) => `${i === 0 ? 'M' : 'L'}${pt.x},${pt.y}`).join(' ') + 'Z';
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      {/* Grid */}
+      {gridPaths.map((d, i) => (
+        <path key={i} d={d} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={1} />
+      ))}
+      {/* Axes */}
+      {pillars.map((p, i) => {
+        const end = getPoint(p.angle, maxR);
+        return <line key={i} x1={cx} y1={cy} x2={end.x} y2={end.y} stroke="rgba(255,255,255,0.06)" strokeWidth={1} />;
+      })}
+      {/* Data fill */}
+      <motion.path
+        d={dataPath}
+        fill="rgba(245,158,11,0.15)"
+        stroke="#f59e0b"
+        strokeWidth={2}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: animate ? 1 : 0 }}
+        transition={{ duration: 0.8 }}
+      />
+      {/* Data dots */}
+      {dataPoints.map((pt, i) => (
+        <motion.circle
+          key={i}
+          cx={pt.x} cy={pt.y} r={3}
+          fill={pillars[i].ring}
+          stroke="#222222"
+          strokeWidth={1.5}
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: animate ? 1 : 0, scale: animate ? 1 : 0 }}
+          transition={{ delay: 0.3 + i * 0.1, duration: 0.4 }}
+        />
+      ))}
+      {/* Labels */}
+      {pillars.map((p, i) => {
+        const labelR = maxR + 18;
+        const pt = getPoint(p.angle, labelR);
+        return (
+          <text
+            key={i}
+            x={pt.x} y={pt.y}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fill="rgba(255,255,255,0.35)"
+            fontSize={9}
+            fontWeight={700}
+            fontFamily="Teko, sans-serif"
+            letterSpacing="0.1em"
+          >
+            {p.label}
+          </text>
+        );
+      })}
+    </svg>
+  );
+}
+
 const MAX_VIDEO_SIZE_MB = 50;
 const ACCEPTED_VIDEO = 'video/mp4,video/webm,video/quicktime,video/x-msvideo';
 
