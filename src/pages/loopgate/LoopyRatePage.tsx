@@ -155,6 +155,7 @@ export default function LoopyPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const shareCardRef = useRef<HTMLDivElement>(null);
 
   // Form state
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -332,16 +333,36 @@ export default function LoopyPage() {
   };
 
   const handleShare = async () => {
-    const reaction = GRADE_REACTIONS[rating?.grade || 'C'];
-    const text = `${reaction?.emoji} I got a ${rating?.grade} (${rating?.total}/100) on Loopy Rating\n\n"${rating?.vibe_check}"\n\n${reaction?.headline}\n\nRate your edit free → loopgate.io/loopy`;
+    if (!shareCardRef.current) return;
     try {
-      if (navigator.share) {
-        await navigator.share({ title: `My Loopy Rating: ${rating?.grade}`, text });
-      } else {
-        await navigator.clipboard.writeText(text);
-        toast.success('Copied to clipboard!');
-      }
-    } catch {}
+      const canvas = await html2canvas(shareCardRef.current, {
+        backgroundColor: '#111128',
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const file = new File([blob], 'loopy-rating.png', { type: 'image/png' });
+        if (navigator.share && navigator.canShare?.({ files: [file] })) {
+          navigator.share({
+            files: [file],
+            title: `My Loopy Rating: ${rating?.grade} (${rating?.total}/100)`,
+            text: `${GRADE_REACTIONS[rating?.grade || 'C']?.emoji} I scored ${rating?.total}/100 on Loopy Rating!\n\nRate your edit → loopgate.io/loopy`,
+          }).catch(() => {});
+        } else {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `loopy-rating-${rating?.grade}-${rating?.total}.png`;
+          a.click();
+          URL.revokeObjectURL(url);
+          toast.success('Screenshot saved!');
+        }
+      }, 'image/png');
+    } catch {
+      toast.error('Failed to capture screenshot');
+    }
   };
 
   const gradeScore = rating?.total ?? 0;
