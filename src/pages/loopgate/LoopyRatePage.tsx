@@ -557,7 +557,7 @@ export default function LoopyPage() {
                   {PILLARS.map((p) => {
                     const Icon = p.icon;
                     return (
-                      <div key={p.key} className="flex items-center gap-1 px-2.5 py-1 bg-white rounded-full border border-white/[0.06] shadow-sm">
+                      <div key={p.key} className="flex items-center gap-1 px-2.5 py-1 bg-[#333338] rounded-full border border-white/[0.06] shadow-sm">
                         <Icon className={`w-3 h-3 ${p.accent}`} />
                         <span className="text-[10px] text-white/50 font-bold tracking-wider" style={TEKO}>{p.label}</span>
                         <span className="text-[9px] text-white/25" style={TEKO}>/{p.max}</span>
@@ -874,7 +874,7 @@ export default function LoopyPage() {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: 1.2 + i * 0.1 }}
                           onClick={() => navigate(action.route)}
-                          className={`w-full flex items-center gap-3 p-3.5 bg-white rounded-2xl border shadow-sm hover:shadow-md transition-all text-left group ${action.color}`}
+                          className={`w-full flex items-center gap-3 p-3.5 bg-[#2a2a2e] rounded-2xl border shadow-sm hover:shadow-md transition-all text-left group ${action.color}`}
                         >
                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${action.color}`}>
                             <action.icon className="w-5 h-5" />
@@ -896,7 +896,7 @@ export default function LoopyPage() {
                 {/* Rate Another */}
                 <button
                   onClick={handleReset}
-                  className="w-full h-12 bg-white border border-violet-500/30 hover:border-violet-400/50 rounded-2xl text-violet-400 font-bold transition-all active:scale-[0.98]"
+                  className="w-full h-12 bg-[#2a2a2e] border border-violet-500/30 hover:border-violet-400/50 rounded-2xl text-violet-400 font-bold transition-all active:scale-[0.98]"
                 >
                   <span className="flex items-center justify-center gap-2">
                     <RotateCcw className="w-3.5 h-3.5" />
@@ -916,7 +916,7 @@ export default function LoopyPage() {
               {history.map((r) => (
                 <div
                   key={r.id}
-                  className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-white/[0.06] shadow-sm"
+                  className="flex items-center gap-3 p-3 bg-[#2a2a2e] rounded-2xl border border-white/[0.06] shadow-sm"
                 >
                   <div className={`w-10 h-10 bg-gradient-to-br ${GRADE_COLORS[r.grade] || 'from-gray-500 to-gray-400 text-white'} flex items-center justify-center rounded-xl shrink-0`}>
                     <span className="text-[16px] font-black" style={TEKO}>{r.grade}</span>
