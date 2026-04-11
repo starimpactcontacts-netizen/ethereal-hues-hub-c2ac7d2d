@@ -7,9 +7,10 @@ import {
   Trophy, TrendingUp, Star, Clock, ChevronRight,
   RotateCcw, Brain, Shield, Target, Activity,
   Award, BarChart3, Eye, Swords, DollarSign, ArrowRight, Sparkles, Users,
-  Share2, Upload, Film, Play, X
+  Share2, Upload, Film, Play, X, Download
 } from 'lucide-react';
 import GateIcon from '@/components/loopgate/GateIcon';
+import html2canvas from 'html2canvas';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
