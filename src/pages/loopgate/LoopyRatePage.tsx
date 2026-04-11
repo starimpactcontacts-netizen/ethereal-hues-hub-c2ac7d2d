@@ -7,9 +7,10 @@ import {
   Trophy, TrendingUp, Star, Clock, ChevronRight,
   RotateCcw, Brain, Shield, Target, Activity,
   Award, BarChart3, Eye, Swords, DollarSign, ArrowRight, Sparkles, Users,
-  Share2, Upload, Film, Play, X
+  Share2, Upload, Film, Play, X, Download
 } from 'lucide-react';
 import GateIcon from '@/components/loopgate/GateIcon';
+import html2canvas from 'html2canvas';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
@@ -133,6 +134,91 @@ function ScoreRing({ score, max, color, size = 44 }: { score: number; max: numbe
   );
 }
 
+function QOIRadar({ rating, animate }: { rating: LoopyRating; animate: boolean }) {
+  const size = 220;
+  const cx = size / 2;
+  const cy = size / 2;
+  const levels = 4;
+  const maxR = 85;
+
+  const pillars = PILLARS.map((p, i) => {
+    const score = rating[p.key as keyof LoopyRating] as number;
+    const pct = score / p.max;
+    const angle = (Math.PI * 2 * i) / PILLARS.length - Math.PI / 2;
+    return { ...p, pct, angle, score };
+  });
+
+  const getPoint = (angle: number, r: number) => ({
+    x: cx + Math.cos(angle) * r,
+    y: cy + Math.sin(angle) * r,
+  });
+
+  const gridPaths = Array.from({ length: levels }, (_, lvl) => {
+    const r = (maxR / levels) * (lvl + 1);
+    return pillars.map((p) => getPoint(p.angle, r)).map((pt, i) => `${i === 0 ? 'M' : 'L'}${pt.x},${pt.y}`).join(' ') + 'Z';
+  });
+
+  const dataPoints = pillars.map((p) => getPoint(p.angle, maxR * p.pct));
+  const dataPath = dataPoints.map((pt, i) => `${i === 0 ? 'M' : 'L'}${pt.x},${pt.y}`).join(' ') + 'Z';
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      {/* Grid */}
+      {gridPaths.map((d, i) => (
+        <path key={i} d={d} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={1} />
+      ))}
+      {/* Axes */}
+      {pillars.map((p, i) => {
+        const end = getPoint(p.angle, maxR);
+        return <line key={i} x1={cx} y1={cy} x2={end.x} y2={end.y} stroke="rgba(255,255,255,0.06)" strokeWidth={1} />;
+      })}
+      {/* Data fill */}
+      <motion.path
+        d={dataPath}
+        fill="rgba(245,158,11,0.15)"
+        stroke="#f59e0b"
+        strokeWidth={2}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: animate ? 1 : 0 }}
+        transition={{ duration: 0.8 }}
+      />
+      {/* Data dots */}
+      {dataPoints.map((pt, i) => (
+        <motion.circle
+          key={i}
+          cx={pt.x} cy={pt.y} r={3}
+          fill={pillars[i].ring}
+          stroke="#222222"
+          strokeWidth={1.5}
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: animate ? 1 : 0, scale: animate ? 1 : 0 }}
+          transition={{ delay: 0.3 + i * 0.1, duration: 0.4 }}
+        />
+      ))}
+      {/* Labels */}
+      {pillars.map((p, i) => {
+        const labelR = maxR + 18;
+        const pt = getPoint(p.angle, labelR);
+        return (
+          <text
+            key={i}
+            x={pt.x} y={pt.y}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fill="rgba(255,255,255,0.35)"
+            fontSize={9}
+            fontWeight={700}
+            fontFamily="Teko, sans-serif"
+            letterSpacing="0.1em"
+          >
+            {p.label}
+          </text>
+        );
+      })}
+    </svg>
+  );
+}
+
 const MAX_VIDEO_SIZE_MB = 50;
 const ACCEPTED_VIDEO = 'video/mp4,video/webm,video/quicktime,video/x-msvideo';
 
@@ -154,6 +240,7 @@ export default function LoopyPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const shareCardRef = useRef<HTMLDivElement>(null);
 
   // Form state
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -331,16 +418,36 @@ export default function LoopyPage() {
   };
 
   const handleShare = async () => {
-    const reaction = GRADE_REACTIONS[rating?.grade || 'C'];
-    const text = `${reaction?.emoji} I got a ${rating?.grade} (${rating?.total}/100) on Loopy Rating\n\n"${rating?.vibe_check}"\n\n${reaction?.headline}\n\nRate your edit free → loopgate.io/loopy`;
+    if (!shareCardRef.current) return;
     try {
-      if (navigator.share) {
-        await navigator.share({ title: `My Loopy Rating: ${rating?.grade}`, text });
-      } else {
-        await navigator.clipboard.writeText(text);
-        toast.success('Copied to clipboard!');
-      }
-    } catch {}
+      const canvas = await html2canvas(shareCardRef.current, {
+        backgroundColor: '#111128',
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const file = new File([blob], 'loopy-rating.png', { type: 'image/png' });
+        if (navigator.share && navigator.canShare?.({ files: [file] })) {
+          navigator.share({
+            files: [file],
+            title: `My Loopy Rating: ${rating?.grade} (${rating?.total}/100)`,
+            text: `${GRADE_REACTIONS[rating?.grade || 'C']?.emoji} I scored ${rating?.total}/100 on Loopy Rating!\n\nRate your edit → loopgate.io/loopy`,
+          }).catch(() => {});
+        } else {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `loopy-rating-${rating?.grade}-${rating?.total}.png`;
+          a.click();
+          URL.revokeObjectURL(url);
+          toast.success('Screenshot saved!');
+        }
+      }, 'image/png');
+    } catch {
+      toast.error('Failed to capture screenshot');
+    }
   };
 
   const gradeScore = rating?.total ?? 0;
@@ -615,8 +722,8 @@ export default function LoopyPage() {
                   )}
                 </AnimatePresence>
 
-                {/* ═══ GRADE HERO ═══ */}
-                <div className="bg-gradient-to-b from-[#1a1a2e] to-[#111128] rounded-2xl overflow-hidden shadow-xl">
+                {/* ═══ GRADE HERO (screenshot-able) ═══ */}
+                <div ref={shareCardRef} className="bg-gradient-to-b from-[#1a1a2e] to-[#111128] rounded-2xl overflow-hidden shadow-xl">
                   <motion.div
                     className="h-1 bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500"
                     initial={{ scaleX: 0 }}
@@ -692,6 +799,35 @@ export default function LoopyPage() {
                         )}
                       </AnimatePresence>
                     </div>
+
+                    {/* Watermark for screenshots */}
+                    <div className="text-center mt-4">
+                      <span className="text-[8px] text-white/10 uppercase tracking-[0.3em]" style={TEKO}>loopgate.io/loopy</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ═══ QOI RADAR CHART ═══ */}
+                <div className="bg-[#2a2a2e] rounded-2xl shadow-sm border border-white/[0.06] p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[12px] font-bold text-white/40 uppercase tracking-widest flex items-center gap-2" style={TEKO}>
+                      <Activity className="w-3.5 h-3.5 text-amber-400" /> QOI OVERVIEW
+                    </span>
+                  </div>
+                  <div className="flex justify-center">
+                    <QOIRadar rating={rating} animate={animateScores} />
+                  </div>
+                  <div className="flex items-center justify-center gap-4 mt-3 flex-wrap">
+                    {PILLARS.map((p) => {
+                      const score = rating[p.key as keyof LoopyRating] as number;
+                      return (
+                        <div key={p.key} className="flex items-center gap-1">
+                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.ring }} />
+                          <span className="text-[9px] text-white/40 font-bold tracking-wider" style={TEKO}>{p.label}</span>
+                          <span className="text-[9px] text-white/60 font-bold" style={TEKO}>{score}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
