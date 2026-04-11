@@ -637,8 +637,8 @@ export default function LoopyPage() {
                   )}
                 </AnimatePresence>
 
-                {/* ═══ GRADE HERO ═══ */}
-                <div className="bg-gradient-to-b from-[#1a1a2e] to-[#111128] rounded-2xl overflow-hidden shadow-xl">
+                {/* ═══ GRADE HERO (screenshot-able) ═══ */}
+                <div ref={shareCardRef} className="bg-gradient-to-b from-[#1a1a2e] to-[#111128] rounded-2xl overflow-hidden shadow-xl">
                   <motion.div
                     className="h-1 bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500"
                     initial={{ scaleX: 0 }}
@@ -714,6 +714,35 @@ export default function LoopyPage() {
                         )}
                       </AnimatePresence>
                     </div>
+
+                    {/* Watermark for screenshots */}
+                    <div className="text-center mt-4">
+                      <span className="text-[8px] text-white/10 uppercase tracking-[0.3em]" style={TEKO}>loopgate.io/loopy</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ═══ QOI RADAR CHART ═══ */}
+                <div className="bg-[#2a2a2e] rounded-2xl shadow-sm border border-white/[0.06] p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[12px] font-bold text-white/40 uppercase tracking-widest flex items-center gap-2" style={TEKO}>
+                      <Activity className="w-3.5 h-3.5 text-amber-400" /> QOI OVERVIEW
+                    </span>
+                  </div>
+                  <div className="flex justify-center">
+                    <QOIRadar rating={rating} animate={animateScores} />
+                  </div>
+                  <div className="flex items-center justify-center gap-4 mt-3 flex-wrap">
+                    {PILLARS.map((p) => {
+                      const score = rating[p.key as keyof LoopyRating] as number;
+                      return (
+                        <div key={p.key} className="flex items-center gap-1">
+                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.ring }} />
+                          <span className="text-[9px] text-white/40 font-bold tracking-wider" style={TEKO}>{p.label}</span>
+                          <span className="text-[9px] text-white/60 font-bold" style={TEKO}>{score}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
