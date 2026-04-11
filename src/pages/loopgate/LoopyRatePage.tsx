@@ -60,9 +60,9 @@ interface SavedRating {
 const TEKO = { fontFamily: 'Teko, sans-serif' };
 
 const PILLARS = [
-  { key: 'emotion', label: 'EMOTION', max: 15, icon: Heart, accent: 'text-pink-400', bar: 'bg-pink-500', ring: '#ec4899' },
-  { key: 'creativity', label: 'CREATIVITY', max: 25, icon: Lightbulb, accent: 'text-amber-400', bar: 'bg-amber-500', ring: '#f59e0b' },
-  { key: 'sync', label: 'SYNC', max: 25, icon: Music, accent: 'text-purple-400', bar: 'bg-purple-500', ring: '#a855f7' },
+  { key: 'emotion', label: 'EMOTION', max: 15, icon: Heart, accent: 'text-pink-400', bar: 'bg-pink-500/150', ring: '#ec4899' },
+  { key: 'creativity', label: 'CREATIVITY', max: 25, icon: Lightbulb, accent: 'text-amber-400', bar: 'bg-amber-500/150', ring: '#f59e0b' },
+  { key: 'sync', label: 'SYNC', max: 25, icon: Music, accent: 'text-purple-400', bar: 'bg-purple-500/150', ring: '#a855f7' },
   { key: 'identity', label: 'IDENTITY', max: 10, icon: Fingerprint, accent: 'text-cyan-400', bar: 'bg-cyan-500', ring: '#06b6d4' },
   { key: 'execution', label: 'EXECUTION', max: 25, icon: Zap, accent: 'text-green-400', bar: 'bg-green-500', ring: '#22c55e' },
 ];
@@ -107,11 +107,11 @@ const GRADE_PERCENTILE: Record<string, string> = {
 
 const VERDICT = (score: number, max: number) => {
   const pct = (score / max) * 100;
-  if (pct >= 90) return { label: 'ELITE', cls: 'text-amber-400 bg-amber-500/15' };
-  if (pct >= 70) return { label: 'STRONG', cls: 'text-emerald-400 bg-emerald-500/15' };
-  if (pct >= 50) return { label: 'AVERAGE', cls: 'text-blue-400 bg-blue-500/15' };
+  if (pct >= 90) return { label: 'ELITE', cls: 'text-amber-400 bg-amber-500/150/15' };
+  if (pct >= 70) return { label: 'STRONG', cls: 'text-emerald-400 bg-emerald-500/150/15' };
+  if (pct >= 50) return { label: 'AVERAGE', cls: 'text-blue-400 bg-blue-500/150/15' };
   if (pct >= 30) return { label: 'WEAK', cls: 'text-orange-400 bg-orange-500/15' };
-  return { label: 'CRITICAL', cls: 'text-red-400 bg-red-500/15' };
+  return { label: 'CRITICAL', cls: 'text-red-400 bg-red-500/150/15' };
 };
 
 function ScoreRing({ score, max, color, size = 44 }: { score: number; max: number; color: string; size?: number }) {
@@ -363,7 +363,7 @@ export default function LoopyPage() {
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 
-      <div className="min-h-screen bg-[#f5f5f7] pb-32 relative">
+      <div className="min-h-screen bg-[#222222] pb-32 relative">
         {/* ═══ HERO ═══ */}
         <div className="relative overflow-hidden bg-gradient-to-b from-[#1a1a2e] via-[#16162a] to-[#0f0f1a]">
           {/* Subtle grid */}
@@ -383,10 +383,10 @@ export default function LoopyPage() {
               className="relative w-20 h-20 mx-auto mb-5"
             >
               <div className="absolute inset-[-6px] bg-gradient-to-br from-purple-500/30 to-fuchsia-500/20 rounded-2xl blur-xl" />
-              <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-white/10 shadow-xl">
+              <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-[#222222]/10 shadow-xl">
                 <img src={loopyAvatar} alt="Loopy" className="w-full h-full object-cover" />
               </div>
-              <div className="absolute -bottom-1.5 -right-1.5 w-7 h-7 bg-violet-500 rounded-full flex items-center justify-center border-2 border-[#1a1a2e] shadow-lg">
+              <div className="absolute -bottom-1.5 -right-1.5 w-7 h-7 bg-violet-500/150 rounded-full flex items-center justify-center border-2 border-[#1a1a2e] shadow-lg">
                 <Brain className="w-3.5 h-3.5 text-white" />
               </div>
             </motion.div>
@@ -423,7 +423,7 @@ export default function LoopyPage() {
           </div>
 
           {/* Rounded bottom edge */}
-          <div className="absolute bottom-0 left-0 right-0 h-6 bg-[#f5f5f7] rounded-t-3xl" />
+          <div className="absolute bottom-0 left-0 right-0 h-6 bg-[#222222] rounded-t-3xl" />
         </div>
 
         {/* ═══ MAIN CONTENT ═══ */}
@@ -432,37 +432,37 @@ export default function LoopyPage() {
             {!showResult ? (
               <motion.div key="form" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
                 {/* ═══ UPLOAD CARD ═══ */}
-                <div className="bg-white rounded-2xl shadow-lg shadow-black/[0.04] border border-black/[0.04] overflow-hidden">
+                <div className="bg-[#2a2a2e] rounded-2xl shadow-lg shadow-black/20 border border-white/[0.06] overflow-hidden">
                   {/* Top accent */}
                   <div className="h-1 bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500" />
 
                   <div className="p-5 space-y-5">
                     {/* Upload area */}
                     <div>
-                      <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5 mb-2.5" style={TEKO}>
+                      <label className="text-[11px] font-bold text-white/40 uppercase tracking-widest flex items-center gap-1.5 mb-2.5" style={TEKO}>
                         <Film className="w-3.5 h-3.5 text-violet-500" /> YOUR EDIT
                       </label>
 
                       {!videoFile ? (
                         <button
                           onClick={() => fileInputRef.current?.click()}
-                          className="w-full border-2 border-dashed border-gray-200 hover:border-violet-300 rounded-2xl p-8 flex flex-col items-center gap-3 transition-all group hover:bg-violet-50/50"
+                          className="w-full border-2 border-dashed border-white/[0.1] hover:border-violet-400/40 rounded-2xl p-8 flex flex-col items-center gap-3 transition-all group hover:bg-violet-500/150/10"
                         >
-                          <div className="w-14 h-14 rounded-2xl bg-violet-50 flex items-center justify-center group-hover:bg-violet-100 transition-colors">
+                          <div className="w-14 h-14 rounded-2xl bg-violet-500/15 flex items-center justify-center group-hover:bg-violet-500/20 transition-colors">
                             <Upload className="w-6 h-6 text-violet-500" />
                           </div>
                           <div className="text-center">
-                            <p className="text-sm font-semibold text-gray-700">Upload your video</p>
-                            <p className="text-xs text-gray-400 mt-0.5">MP4, WebM, MOV — up to {MAX_VIDEO_SIZE_MB}MB</p>
+                            <p className="text-sm font-semibold text-white/80">Upload your video</p>
+                            <p className="text-xs text-white/40 mt-0.5">MP4, WebM, MOV — up to {MAX_VIDEO_SIZE_MB}MB</p>
                           </div>
                         </button>
                       ) : (
-                        <div className="relative rounded-2xl overflow-hidden bg-gray-100 border border-gray-200">
+                        <div className="relative rounded-2xl overflow-hidden bg-white/[0.06] border border-white/[0.08]">
                           {videoPreview ? (
                             <img src={videoPreview} alt="Preview" className="w-full h-44 object-cover" />
                           ) : (
                             <div className="w-full h-44 flex items-center justify-center">
-                              <Play className="w-10 h-10 text-gray-300" />
+                              <Play className="w-10 h-10 text-white/25" />
                             </div>
                           )}
                           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
@@ -494,29 +494,29 @@ export default function LoopyPage() {
 
                     {/* Title */}
                     <div>
-                      <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5 mb-2" style={TEKO}>
+                      <label className="text-[11px] font-bold text-white/40 uppercase tracking-widest flex items-center gap-1.5 mb-2" style={TEKO}>
                         <Award className="w-3.5 h-3.5 text-violet-500" /> TITLE
-                        <span className="text-gray-300 text-[9px] normal-case tracking-normal font-normal">optional</span>
+                        <span className="text-white/25 text-[9px] normal-case tracking-normal font-normal">optional</span>
                       </label>
                       <Input
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         placeholder="e.g., Demon Slayer AMV — Akeboshi"
-                        className="bg-gray-50 border-gray-200 h-11 text-sm rounded-xl focus:border-violet-400 focus:ring-1 focus:ring-violet-200 placeholder:text-gray-300"
+                        className="bg-[#333338] border-white/[0.08] text-white/80 placeholder:text-white/25 h-11 text-sm rounded-xl focus:border-violet-400 focus:ring-1 focus:ring-violet-200 placeholder:text-white/25"
                       />
                     </div>
 
                     {/* Notes */}
                     <div>
-                      <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5 mb-2" style={TEKO}>
+                      <label className="text-[11px] font-bold text-white/40 uppercase tracking-widest flex items-center gap-1.5 mb-2" style={TEKO}>
                         <Brain className="w-3.5 h-3.5 text-violet-500" /> NOTES FOR LOOPY
-                        <span className="text-gray-300 text-[9px] normal-case tracking-normal font-normal">optional</span>
+                        <span className="text-white/25 text-[9px] normal-case tracking-normal font-normal">optional</span>
                       </label>
                       <Textarea
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
                         placeholder="anything u want loopy to know — editing software, how long it took, what u tried new..."
-                        className="bg-gray-50 border-gray-200 resize-none h-20 text-sm rounded-xl focus:border-violet-400 focus:ring-1 focus:ring-violet-200 placeholder:text-gray-300"
+                        className="bg-[#333338] border-white/[0.08] text-white/80 placeholder:text-white/25 resize-none h-20 text-sm rounded-xl focus:border-violet-400 focus:ring-1 focus:ring-violet-200 placeholder:text-white/25"
                       />
                     </div>
 
@@ -540,7 +540,7 @@ export default function LoopyPage() {
                     </button>
 
                     {loading && (
-                      <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="w-full h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
                         <motion.div
                           className="h-full bg-gradient-to-r from-violet-500 to-purple-500 rounded-full"
                           initial={{ width: '0%' }}
@@ -557,34 +557,34 @@ export default function LoopyPage() {
                   {PILLARS.map((p) => {
                     const Icon = p.icon;
                     return (
-                      <div key={p.key} className="flex items-center gap-1 px-2.5 py-1 bg-white rounded-full border border-gray-100 shadow-sm">
+                      <div key={p.key} className="flex items-center gap-1 px-2.5 py-1 bg-white rounded-full border border-white/[0.06] shadow-sm">
                         <Icon className={`w-3 h-3 ${p.accent}`} />
-                        <span className="text-[10px] text-gray-500 font-bold tracking-wider" style={TEKO}>{p.label}</span>
-                        <span className="text-[9px] text-gray-300" style={TEKO}>/{p.max}</span>
+                        <span className="text-[10px] text-white/50 font-bold tracking-wider" style={TEKO}>{p.label}</span>
+                        <span className="text-[9px] text-white/25" style={TEKO}>/{p.max}</span>
                       </div>
                     );
                   })}
                 </div>
 
                 {/* How it works */}
-                <div className="mt-6 bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                  <h3 className="text-[13px] font-bold text-gray-400 uppercase tracking-widest mb-4 text-center" style={TEKO}>
+                <div className="mt-6 bg-[#2a2a2e] rounded-2xl shadow-sm border border-white/[0.06] p-5">
+                  <h3 className="text-[13px] font-bold text-white/40 uppercase tracking-widest mb-4 text-center" style={TEKO}>
                     <GateIcon className="w-3 h-3 inline mr-1.5 text-violet-400" /> How It Works
                   </h3>
                   <div className="space-y-3.5">
                     {[
-                      { icon: Upload, title: 'Upload your edit', desc: 'Any video file — MP4, WebM, MOV. Direct from your camera roll.', color: 'bg-violet-50 text-violet-500' },
-                      { icon: Film, title: 'Loopy extracts 12 key frames', desc: 'Spread across your entire edit for comprehensive analysis.', color: 'bg-purple-50 text-purple-500' },
-                      { icon: Brain, title: 'Pro AI analyzes every frame', desc: 'Color grading, transitions, effects, composition — nothing escapes Loopy.', color: 'bg-fuchsia-50 text-fuchsia-500' },
-                      { icon: BarChart3, title: 'Get your scores + roast', desc: 'Pillar breakdown, grade, and a brutally honest verdict.', color: 'bg-pink-50 text-pink-500' },
+                      { icon: Upload, title: 'Upload your edit', desc: 'Any video file — MP4, WebM, MOV. Direct from your camera roll.', color: 'bg-violet-500/15 text-violet-500' },
+                      { icon: Film, title: 'Loopy extracts 12 key frames', desc: 'Spread across your entire edit for comprehensive analysis.', color: 'bg-purple-500/15 text-purple-500' },
+                      { icon: Brain, title: 'Pro AI analyzes every frame', desc: 'Color grading, transitions, effects, composition — nothing escapes Loopy.', color: 'bg-fuchsia-500/15 text-fuchsia-500' },
+                      { icon: BarChart3, title: 'Get your scores + roast', desc: 'Pillar breakdown, grade, and a brutally honest verdict.', color: 'bg-pink-500/15 text-pink-500' },
                     ].map((step, i) => (
                       <div key={i} className="flex items-start gap-3">
                         <div className={`w-8 h-8 rounded-xl ${step.color} flex items-center justify-center shrink-0`}>
                           <step.icon className="w-4 h-4" />
                         </div>
                         <div>
-                          <p className="text-[12px] font-bold text-gray-700">{step.title}</p>
-                          <p className="text-[11px] text-gray-400 leading-relaxed">{step.desc}</p>
+                          <p className="text-[12px] font-bold text-white/80">{step.title}</p>
+                          <p className="text-[11px] text-white/40 leading-relaxed">{step.desc}</p>
                         </div>
                       </div>
                     ))}
@@ -592,8 +592,8 @@ export default function LoopyPage() {
                 </div>
 
                 {/* Viral social proof */}
-                <div className="mt-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-2xl border border-violet-100 p-4 text-center">
-                  <p className="text-[11px] text-violet-600 font-semibold">
+                <div className="mt-4 bg-[#2a2a2e] rounded-2xl border border-violet-500/20 p-4 text-center">
+                  <p className="text-[11px] text-violet-400 font-semibold">
                     💀 People share Loopy's roasts on TikTok. Will yours be screenshot-worthy?
                   </p>
                 </div>
@@ -644,7 +644,7 @@ export default function LoopyPage() {
                             <motion.div
                               animate={{ scale: [1, 1.03, 1] }}
                               transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                              className={`relative w-28 h-28 bg-gradient-to-br ${GRADE_COLORS[rating.grade] || 'from-gray-500 to-gray-400 text-white'} flex items-center justify-center rounded-3xl border-2 border-white/20 ${GRADE_GLOW[rating.grade] || ''}`}
+                              className={`relative w-28 h-28 bg-gradient-to-br ${GRADE_COLORS[rating.grade] || 'from-gray-500 to-gray-400 text-white'} flex items-center justify-center rounded-3xl border-2 border-[#222222]/20 ${GRADE_GLOW[rating.grade] || ''}`}
                             >
                               <span className="text-[64px] font-black leading-none" style={TEKO}>{rating.grade}</span>
                             </motion.div>
@@ -696,12 +696,12 @@ export default function LoopyPage() {
                 </div>
 
                 {/* ═══ PILLAR BREAKDOWN ═══ */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-4">
+                <div className="bg-[#2a2a2e] rounded-2xl shadow-sm border border-white/[0.06] p-5 space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-[12px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2" style={TEKO}>
+                    <span className="text-[12px] font-bold text-white/40 uppercase tracking-widest flex items-center gap-2" style={TEKO}>
                       <Trophy className="w-3.5 h-3.5 text-amber-400" /> PILLAR BREAKDOWN
                     </span>
-                    <span className="text-[9px] text-gray-300 uppercase tracking-wider" style={TEKO}>scored by loopy</span>
+                    <span className="text-[9px] text-white/25 uppercase tracking-wider" style={TEKO}>scored by loopy</span>
                   </div>
 
                   {PILLARS.map((pillar, i) => {
@@ -718,16 +718,16 @@ export default function LoopyPage() {
                               <ScoreRing score={score} max={pillar.max} color={pillar.ring} size={34} />
                               <Icon size={12} className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${pillar.accent}`} />
                             </div>
-                            <span className="text-[13px] font-bold text-gray-600 tracking-wider" style={TEKO}>{pillar.label}</span>
+                            <span className="text-[13px] font-bold text-white/70 tracking-wider" style={TEKO}>{pillar.label}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <span className={`text-[9px] font-black tracking-wider px-1.5 py-0.5 rounded ${verdict.cls}`} style={TEKO}>{verdict.label}</span>
-                            <span className="text-[14px] font-black text-gray-700 tabular-nums" style={TEKO}>
-                              {score}<span className="text-gray-300 text-[11px]">/{pillar.max}</span>
+                            <span className="text-[14px] font-black text-white/80 tabular-nums" style={TEKO}>
+                              {score}<span className="text-white/25 text-[11px]">/{pillar.max}</span>
                             </span>
                           </div>
                         </div>
-                        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: animateScores ? `${pct}%` : 0 }}
@@ -742,24 +742,24 @@ export default function LoopyPage() {
 
                 {/* ═══ STRENGTHS & IMPROVEMENTS ═══ */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-2.5">
+                  <div className="bg-[#2a2a2e] rounded-2xl shadow-sm border border-white/[0.06] p-4 space-y-2.5">
                     <div className="h-1 bg-gradient-to-r from-emerald-400 to-emerald-300 rounded-full -mx-4 -mt-4 mx-0 mt-0 mb-2 rounded-t-2xl rounded-b-none" style={{ margin: '-1rem -1rem 0.5rem -1rem', borderRadius: '1rem 1rem 0 0' }} />
                     <span className="text-[11px] font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-1.5" style={TEKO}>
                       <Star className="w-3 h-3" /> STRENGTHS
                     </span>
                     {rating.strengths.map((s, i) => (
-                      <p key={i} className="flex items-start gap-2 text-[11px] text-gray-500 leading-relaxed">
+                      <p key={i} className="flex items-start gap-2 text-[11px] text-white/50 leading-relaxed">
                         <span className="text-emerald-400 mt-0.5 shrink-0">✦</span>{s}
                       </p>
                     ))}
                   </div>
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-2.5">
+                  <div className="bg-[#2a2a2e] rounded-2xl shadow-sm border border-white/[0.06] p-4 space-y-2.5">
                     <div className="h-1 bg-gradient-to-r from-amber-400 to-orange-300 rounded-full" style={{ margin: '-1rem -1rem 0.5rem -1rem', borderRadius: '1rem 1rem 0 0' }} />
                     <span className="text-[11px] font-bold text-amber-500 uppercase tracking-widest flex items-center gap-1.5" style={TEKO}>
                       <TrendingUp className="w-3 h-3" /> LEVEL UP
                     </span>
                     {rating.improvements.map((s, i) => (
-                      <p key={i} className="flex items-start gap-2 text-[11px] text-gray-500 leading-relaxed">
+                      <p key={i} className="flex items-start gap-2 text-[11px] text-white/50 leading-relaxed">
                         <span className="text-amber-400 mt-0.5 shrink-0">→</span>{s}
                       </p>
                     ))}
@@ -767,21 +767,21 @@ export default function LoopyPage() {
                 </div>
 
                 {/* ═══ LOOPY FEEDBACK ═══ */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+                <div className="bg-[#2a2a2e] rounded-2xl shadow-sm border border-white/[0.06] p-4">
                   <div className="h-1 bg-gradient-to-r from-violet-400 to-purple-400" style={{ margin: '-1rem -1rem 0.75rem -1rem', borderRadius: '1rem 1rem 0 0' }} />
                   <div className="flex items-start gap-3">
                     <div className="relative shrink-0">
-                      <img src={loopyAvatar} alt="Loopy" className="w-10 h-10 rounded-xl border border-gray-100" />
-                      <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-violet-500 rounded-full border-2 border-white flex items-center justify-center">
+                      <img src={loopyAvatar} alt="Loopy" className="w-10 h-10 rounded-xl border border-white/[0.06]" />
+                      <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-violet-500/150 rounded-full border-2 border-[#222222] flex items-center justify-center">
                         <GateIcon className="w-2 h-2 text-white" />
                       </div>
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-1.5 mb-1.5">
-                        <span className="text-[13px] font-bold text-gray-700" style={TEKO}>LOOPY</span>
-                        <span className="text-[8px] px-1.5 py-0.5 bg-violet-100 text-violet-600 font-bold uppercase tracking-wider rounded-full" style={TEKO}>AI JUDGE</span>
+                        <span className="text-[13px] font-bold text-white/80" style={TEKO}>LOOPY</span>
+                        <span className="text-[8px] px-1.5 py-0.5 bg-violet-500/20 text-violet-400 font-bold uppercase tracking-wider rounded-full" style={TEKO}>AI JUDGE</span>
                       </div>
-                      <p className="text-[12px] text-gray-500 leading-relaxed">{rating.detailed_feedback}</p>
+                      <p className="text-[12px] text-white/50 leading-relaxed">{rating.detailed_feedback}</p>
                     </div>
                   </div>
                 </div>
@@ -852,8 +852,8 @@ export default function LoopyPage() {
                     transition={{ delay: 1 }}
                     className="space-y-2.5"
                   >
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 text-center">
-                      <p className="text-[12px] text-gray-500">
+                    <div className="bg-[#2a2a2e] rounded-2xl shadow-sm border border-white/[0.06] p-4 text-center">
+                      <p className="text-[12px] text-white/50">
                         {isHighScore
                           ? <>Your <span className="text-amber-500 font-bold">{rating.grade}</span> grade is competition-ready. Take it to the arena.</>
                           : <>Now you know where you stand. Time to sharpen up and compete.</>
@@ -863,10 +863,10 @@ export default function LoopyPage() {
 
                     <div className="grid grid-cols-1 gap-2">
                       {[
-                        { icon: Swords, title: '1v1 CASH BATTLE', desc: 'Put your skills on the line for real money', route: '/arena', color: 'bg-red-50 text-red-500 border-red-100', cta: 'Enter Arena' },
-                        { icon: DollarSign, title: 'EARN FROM MISSIONS', desc: isHighScore ? `Your ${rating.grade} grade could earn S-tier payouts` : 'Complete editing missions for cash', route: '/hub', color: 'bg-emerald-50 text-emerald-500 border-emerald-100', cta: 'View Missions' },
-                        { icon: Shield, title: 'GET RATED BY REAL JUDGES', desc: 'Official QOI score on your profile', route: '/arena', color: 'bg-amber-50 text-amber-500 border-amber-100', cta: 'Submit Edit' },
-                        { icon: Users, title: 'JOIN A UNIT', desc: 'Find your crew and compete together', route: '/units', color: 'bg-blue-50 text-blue-500 border-blue-100', cta: 'Browse' },
+                        { icon: Swords, title: '1v1 CASH BATTLE', desc: 'Put your skills on the line for real money', route: '/arena', color: 'bg-red-500/15 text-red-500 border-red-500/20', cta: 'Enter Arena' },
+                        { icon: DollarSign, title: 'EARN FROM MISSIONS', desc: isHighScore ? `Your ${rating.grade} grade could earn S-tier payouts` : 'Complete editing missions for cash', route: '/hub', color: 'bg-emerald-500/15 text-emerald-500 border-emerald-500/20', cta: 'View Missions' },
+                        { icon: Shield, title: 'GET RATED BY REAL JUDGES', desc: 'Official QOI score on your profile', route: '/arena', color: 'bg-amber-500/15 text-amber-500 border-amber-500/20', cta: 'Submit Edit' },
+                        { icon: Users, title: 'JOIN A UNIT', desc: 'Find your crew and compete together', route: '/units', color: 'bg-blue-500/15 text-blue-500 border-blue-500/20', cta: 'Browse' },
                       ].map((action, i) => (
                         <motion.button
                           key={i}
@@ -880,8 +880,8 @@ export default function LoopyPage() {
                             <action.icon className="w-5 h-5" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-[12px] font-bold text-gray-700 tracking-wider" style={TEKO}>{action.title}</p>
-                            <p className="text-[10px] text-gray-400 truncate">{action.desc}</p>
+                            <p className="text-[12px] font-bold text-white/80 tracking-wider" style={TEKO}>{action.title}</p>
+                            <p className="text-[10px] text-white/40 truncate">{action.desc}</p>
                           </div>
                           <div className="flex items-center gap-1 shrink-0">
                             <span className="text-[10px] font-bold tracking-wider" style={TEKO}>{action.cta}</span>
@@ -896,7 +896,7 @@ export default function LoopyPage() {
                 {/* Rate Another */}
                 <button
                   onClick={handleReset}
-                  className="w-full h-12 bg-white border border-violet-200 hover:border-violet-300 rounded-2xl text-violet-600 font-bold transition-all active:scale-[0.98]"
+                  className="w-full h-12 bg-white border border-violet-500/30 hover:border-violet-400/50 rounded-2xl text-violet-400 font-bold transition-all active:scale-[0.98]"
                 >
                   <span className="flex items-center justify-center gap-2">
                     <RotateCcw className="w-3.5 h-3.5" />
@@ -910,23 +910,23 @@ export default function LoopyPage() {
           {/* ═══ HISTORY ═══ */}
           {history.length > 0 && (
             <div className="space-y-2 mt-6">
-              <h3 className="text-[12px] font-bold text-gray-300 uppercase tracking-widest text-center" style={TEKO}>
+              <h3 className="text-[12px] font-bold text-white/25 uppercase tracking-widest text-center" style={TEKO}>
                 <Clock className="w-3 h-3 inline mr-1" /> Rating History
               </h3>
               {history.map((r) => (
                 <div
                   key={r.id}
-                  className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-gray-100 shadow-sm"
+                  className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-white/[0.06] shadow-sm"
                 >
                   <div className={`w-10 h-10 bg-gradient-to-br ${GRADE_COLORS[r.grade] || 'from-gray-500 to-gray-400 text-white'} flex items-center justify-center rounded-xl shrink-0`}>
                     <span className="text-[16px] font-black" style={TEKO}>{r.grade}</span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11px] text-gray-600 truncate">{r.vibe_check}</p>
+                    <p className="text-[11px] text-white/70 truncate">{r.vibe_check}</p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] text-gray-400 font-bold" style={TEKO}>{r.total_score}/100</span>
-                      <span className="text-[10px] text-gray-300">•</span>
-                      <span className="text-[10px] text-gray-300">{new Date(r.created_at).toLocaleDateString()}</span>
+                      <span className="text-[10px] text-white/40 font-bold" style={TEKO}>{r.total_score}/100</span>
+                      <span className="text-[10px] text-white/25">•</span>
+                      <span className="text-[10px] text-white/25">{new Date(r.created_at).toLocaleDateString()}</span>
                     </div>
                   </div>
                 </div>

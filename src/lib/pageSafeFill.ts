@@ -4,7 +4,7 @@ export function getPageSafeFill(pathname: string) {
   }
 
   if (pathname.startsWith('/loopy')) {
-    return '0 0% 96%'; // #f5f5f7 equivalent
+    return '0 0% 13%'; // #222222 equivalent
   }
 
   return '0 0% 0%';
