@@ -41,11 +41,11 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
   };
 
   return (
-    <div className="shrink-0 w-[160px]">
+    <div className="shrink-0 w-[180px]">
       <motion.div
         whileTap={{ scale: 0.97 }}
         onClick={() => navigate(`/competition/${comp.slug || comp.id}`)}
-        className="relative w-full h-[160px] bg-surface-1 border border-white/[0.06] overflow-hidden group touch-manipulation rounded-lg cursor-pointer"
+        className="relative w-full h-[180px] bg-surface-1 border border-white/[0.06] overflow-hidden group touch-manipulation rounded-2xl cursor-pointer"
         style={{ boxShadow: "0 2px 20px rgba(0,0,0,0.3)" }}
       >
       {/* Share button — inside card, upper right */}
@@ -158,21 +158,21 @@ export default function ArenaCompetitionsSection({ onCreateClick }: { onCreateCl
       </div>
 
       {loading ? (
-        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2" style={{ paddingLeft: '16px' }}>
+        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 px-4">
           {[1, 2].map(i => (
-            <div key={i} className="w-[160px] h-[160px] shrink-0 bg-surface-1 animate-pulse rounded-lg" />
+            <div key={i} className="w-[180px] h-[180px] shrink-0 bg-surface-1 animate-pulse rounded-2xl" />
           ))}
         </div>
       ) : (
-        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2" style={{ paddingLeft: '16px' }}>
+        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 px-4">
           {comps.map(comp => <CompetitionCard key={comp.id} comp={comp} onJoin={handleJoin} />)}
 
           {/* Create Your Own — poster card */}
-          <div className="shrink-0 w-[160px]">
+          <div className="shrink-0 w-[180px]">
             <motion.div
               whileTap={{ scale: 0.97 }}
               onClick={onCreateClick}
-              className="relative w-full h-[160px] bg-surface-1 border border-dashed border-white/[0.1] overflow-hidden rounded-lg cursor-pointer hover:border-gold/30 transition-colors"
+              className="relative w-full h-[180px] bg-surface-1 border border-dashed border-white/[0.1] overflow-hidden rounded-2xl cursor-pointer hover:border-gold/30 transition-colors"
               style={{ boxShadow: "0 2px 20px rgba(0,0,0,0.2)" }}
             >
               {/* Visual area */}
