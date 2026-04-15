@@ -1247,7 +1247,7 @@ export default function ArenaPage() {
           {/* Marketplace removed */}
 
           {/* ═══ FILTER PILLS — small rounded ═══ */}
-          <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide pb-1" style={{ paddingLeft: '16px' }}>
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide pb-1 px-4">
             {filters.map(f => {
               const active = activeFilter === f.key;
               return (
@@ -1276,8 +1276,8 @@ export default function ArenaPage() {
         <div className="px-4 py-6 space-y-4">
           <Skeleton className="h-8 w-40" />
           <div className="flex gap-3 overflow-hidden">
-            <Skeleton className="h-[160px] w-[160px] shrink-0 rounded-lg" />
-            <Skeleton className="h-[160px] w-[160px] shrink-0 rounded-lg" />
+            <Skeleton className="h-[180px] w-[180px] shrink-0 rounded-2xl" />
+            <Skeleton className="h-[180px] w-[180px] shrink-0 rounded-2xl" />
           </div>
         </div>
       )}
