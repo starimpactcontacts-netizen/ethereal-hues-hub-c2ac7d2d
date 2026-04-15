@@ -37,7 +37,7 @@ function CashBattleCard({ battle, currentUserId }: { battle: any; currentUserId?
       whileTap={{ scale: 0.97 }}
       whileHover={{ y: -2 }}
       onClick={() => navigate(`/cash-battle/${battle.id}`)}
-      className="w-[220px] shrink-0 rounded-2xl overflow-hidden cursor-pointer group relative"
+      className="w-[180px] shrink-0 rounded-2xl overflow-hidden cursor-pointer group relative"
       style={{
         background: isCompleted
           ? "linear-gradient(160deg, rgba(30,30,30,1) 0%, rgba(18,18,18,1) 100%)"
@@ -107,11 +107,11 @@ function CashBattleCard({ battle, currentUserId }: { battle: any; currentUserId?
       </div>
 
       {/* VS Display — Blue vs Red UFC corners */}
-      <div className="px-4 py-4 flex items-center justify-between">
+      <div className="px-3 py-3 flex items-center justify-between">
         {/* Blue corner */}
-        <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+        <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
           <div className="relative">
-            <Avatar className="w-14 h-14 ring-2 ring-blue-500/50">
+            <Avatar className="w-11 h-11 ring-2 ring-blue-500/50">
               <AvatarImage src={battle.challenger_avatar_url || ""} />
               <AvatarFallback className="text-sm font-black bg-blue-500/15 text-blue-400">
                 {battle.challenger_username?.charAt(0)}
@@ -136,11 +136,11 @@ function CashBattleCard({ battle, currentUserId }: { battle: any; currentUserId?
         </div>
 
         {/* Red corner */}
-        <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+        <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
           {battle.opponent_username ? (
             <>
               <div className="relative">
-                <Avatar className="w-14 h-14 ring-2 ring-red-500/50">
+                <Avatar className="w-11 h-11 ring-2 ring-red-500/50">
                   <AvatarImage src={battle.opponent_avatar_url || ""} />
                   <AvatarFallback className="text-sm font-black bg-red-500/15 text-red-400">
                     {battle.opponent_username?.charAt(0)}
@@ -156,8 +156,8 @@ function CashBattleCard({ battle, currentUserId }: { battle: any; currentUserId?
             </>
           ) : (
             <>
-              <div className="w-14 h-14 rounded-full border-2 border-dashed border-zinc-700 flex items-center justify-center">
-                <span className="text-lg text-zinc-600">?</span>
+              <div className="w-11 h-11 rounded-full border-2 border-dashed border-zinc-700 flex items-center justify-center">
+                <span className="text-base text-zinc-600">?</span>
               </div>
               <span className="text-[10px] text-zinc-600 uppercase" style={{ fontFamily: "Teko, sans-serif" }}>TBA</span>
             </>
@@ -225,7 +225,7 @@ function OpenMatchupCard({ app, onJoin, currentUserId }: { app: CashBattleApplic
       whileTap={{ scale: 0.97 }}
       whileHover={{ y: -2 }}
       onClick={isOwnApp ? undefined : onJoin}
-      className="w-[220px] shrink-0 rounded-2xl overflow-hidden cursor-pointer relative"
+      className="w-[180px] shrink-0 rounded-2xl overflow-hidden cursor-pointer relative"
       style={{
         background: "linear-gradient(160deg, rgba(22,22,28,1) 0%, rgba(6,6,8,1) 100%)",
         boxShadow: "0 0 30px rgba(59,130,246,0.08), 0 0 30px rgba(239,68,68,0.08), 0 12px 40px rgba(0,0,0,0.7)",
@@ -294,11 +294,11 @@ function OpenMatchupCard({ app, onJoin, currentUserId }: { app: CashBattleApplic
         </div>
       </div>
 
-      <div className="px-4 py-4 flex items-center justify-between">
+      <div className="px-3 py-3 flex items-center justify-between">
         {/* Challenger (the waiting user) */}
-        <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+        <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
           <div className="relative">
-            <Avatar className="w-14 h-14 ring-2 ring-blue-500/50">
+            <Avatar className="w-11 h-11 ring-2 ring-blue-500/50">
               <AvatarImage src={app.avatar_url || ""} />
               <AvatarFallback className="text-sm font-black bg-blue-500/15 text-blue-400">
                 {app.username?.charAt(0)}
@@ -322,9 +322,9 @@ function OpenMatchupCard({ app, onJoin, currentUserId }: { app: CashBattleApplic
         </div>
 
         {/* Open opponent slot */}
-        <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
-          <div className="w-14 h-14 rounded-full border-2 border-dashed border-amber-500/30 flex items-center justify-center bg-amber-500/5">
-            <span className="text-lg text-amber-400/60">?</span>
+        <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+          <div className="w-11 h-11 rounded-full border-2 border-dashed border-amber-500/30 flex items-center justify-center bg-amber-500/5">
+            <span className="text-base text-amber-400/60">?</span>
           </div>
           <span className="text-[10px] font-black uppercase text-amber-400" style={{ fontFamily: "Teko, sans-serif" }}>
             {isOwnApp ? "WAITING" : "YOU?"}
@@ -505,7 +505,7 @@ export default function CashBattlesSection() {
       </div>
 
       {/* Horizontal scroll — open matchups first, then existing battles */}
-      <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2" style={{ paddingLeft: 16, paddingRight: 16 }}>
+      <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 px-4">
         {/* Open matchup cards from pending applications */}
         {pendingApps.map((app) => (
           <OpenMatchupCard key={app.id} app={app} onJoin={() => handleAcceptFight(app)} currentUserId={user?.id} />
@@ -531,7 +531,7 @@ export default function CashBattlesSection() {
             style={{
               background: 'rgba(59,130,246,0.03)',
               border: '1px dashed rgba(59,130,246,0.2)',
-              minHeight: 200,
+              minHeight: 180,
             }}
           >
             <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(239,68,68,0.12)' }}>

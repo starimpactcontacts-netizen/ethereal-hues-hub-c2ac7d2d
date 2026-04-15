@@ -108,7 +108,7 @@ function ArenaMissionsSection() {
         </button>
       </div>
 
-      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory" style={{ paddingLeft: '16px' }}>
+      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory px-4">
         {bounties.map(b => {
           const payout = (b.payout_cents / 100).toFixed(0);
           const slotsLeft = b.max_slots - b.accepted_count;
@@ -126,8 +126,8 @@ function ArenaMissionsSection() {
               key={b.id}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate(`/commissions/${b.id}`)}
-              className="shrink-0 relative w-[200px] h-[260px] rounded-lg overflow-hidden group text-left touch-manipulation snap-start"
-              style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}
+              className="shrink-0 relative w-[180px] h-[240px] rounded-2xl overflow-hidden group text-left touch-manipulation snap-start"
+              style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.4)' }}
             >
               {/* Cover */}
               {b.cover_url ? (
@@ -208,7 +208,7 @@ function ArenaMissionsSection() {
         })}
 
         {/* Coming Soon poster */}
-        <div className="shrink-0 w-[200px] h-[260px] rounded-lg overflow-hidden relative snap-start"
+        <div className="shrink-0 w-[180px] h-[240px] rounded-2xl overflow-hidden relative snap-start"
           style={{ background: 'linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%)' }}
         >
           <div className="absolute inset-0 border border-white/[0.06] rounded-lg" />
@@ -229,7 +229,7 @@ function ArenaMissionsSection() {
         {isStaff && (
           <button
             onClick={() => navigate('/missions')}
-            className="shrink-0 w-[200px] h-[260px] border border-dashed border-border/30 bg-surface-1/30 flex flex-col items-center justify-center gap-2 snap-start hover:border-border/50 transition-colors rounded-lg"
+            className="shrink-0 w-[180px] h-[240px] border border-dashed border-border/30 bg-surface-1/30 flex flex-col items-center justify-center gap-2 snap-start hover:border-border/50 transition-colors rounded-2xl"
           >
             <Plus className="w-4 h-4 text-muted-foreground/30" />
             <span className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-wider">Post</span>
@@ -292,7 +292,7 @@ function EventCard({ event }: { event: Event }) {
 }
 
 // ─── Ghost Placeholder Slot ────────────────────────────────────
-function GhostSlot({ icon, label, width = "w-[160px]", height = "h-[160px]", accentColor = "border-border/40" }: {
+function GhostSlot({ icon, label, width = "w-[180px]", height = "h-[180px]", accentColor = "border-border/40" }: {
   icon: React.ReactNode;
   label: string;
   width?: string;
@@ -300,7 +300,7 @@ function GhostSlot({ icon, label, width = "w-[160px]", height = "h-[160px]", acc
   accentColor?: string;
 }) {
   return (
-    <div className={`shrink-0 ${width} ${height} border border-dashed ${accentColor} bg-surface-0/40 flex flex-col items-center justify-center gap-2 rounded-lg`}>
+    <div className={`shrink-0 ${width} ${height} border border-dashed ${accentColor} bg-surface-0/40 flex flex-col items-center justify-center gap-2 rounded-2xl`}>
       <div className="w-8 h-8 bg-surface-2/60 flex items-center justify-center">
         {icon}
       </div>
@@ -1222,26 +1222,32 @@ export default function ArenaPage() {
 
           {/* search bar moved to top */}
 
-          {/* ═══ CASH BATTLES — ABOVE MISSIONS ═══ */}
-          <CashBattlesSection />
+          {/* ═══ CASH BATTLES ═══ */}
+          <div className="mb-5">
+            <CashBattlesSection />
+          </div>
 
-          {/* ═══ MISSIONS — BELOW CASH BATTLES, ABOVE COMPETITIONS ═══ */}
-          <ArenaMissionsSection />
+          {/* ═══ MISSIONS ═══ */}
+          <div className="mb-5">
+            <ArenaMissionsSection />
+          </div>
 
           {/* ═══ COMPETITIONS ═══ */}
           {(activeFilter === "all" || activeFilter === "competitions") && (
+            <div className="mb-5">
               <ArenaCompetitionsSection onCreateClick={() => navigate(profile ? '/competition/create' : '/start')} />
+            </div>
           )}
 
-          {/* ArenaMissionsCarousel removed — missions already shown in ArenaMissionsSection above */}
-
           {/* ═══ LIVE PAYOUTS CAROUSEL ═══ */}
-          <LivePayoutsCarousel />
+          <div className="mb-5">
+            <LivePayoutsCarousel />
+          </div>
 
           {/* Marketplace removed */}
 
           {/* ═══ FILTER PILLS — small rounded ═══ */}
-          <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide pb-1" style={{ paddingLeft: '16px' }}>
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide pb-1 px-4">
             {filters.map(f => {
               const active = activeFilter === f.key;
               return (
@@ -1270,15 +1276,15 @@ export default function ArenaPage() {
         <div className="px-4 py-6 space-y-4">
           <Skeleton className="h-8 w-40" />
           <div className="flex gap-3 overflow-hidden">
-            <Skeleton className="h-[160px] w-[160px] shrink-0 rounded-lg" />
-            <Skeleton className="h-[160px] w-[160px] shrink-0 rounded-lg" />
+            <Skeleton className="h-[180px] w-[180px] shrink-0 rounded-2xl" />
+            <Skeleton className="h-[180px] w-[180px] shrink-0 rounded-2xl" />
           </div>
         </div>
       )}
 
       {/* ═══ MAIN CONTENT ═══ */}
       {arenaView === 'arena' && !loading && (
-        <div className="mt-2 space-y-6">
+        <div className="mt-3 space-y-5">
 
           {/* King of the Hill — Featured Drops with leaderboard */}
           {(activeFilter === "all" || activeFilter === "official") && (
@@ -1301,7 +1307,7 @@ export default function ArenaPage() {
                 ) : undefined}
               />
               {liveDrops.length > 0 ? (
-                <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory" style={{ paddingLeft: '16px' }}>
+                <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory px-4">
                   {liveDrops.map(drop => (
                     <FeaturedDropCard key={drop.id} drop={drop} />
                   ))}
@@ -1379,12 +1385,12 @@ export default function ArenaPage() {
               )}
 
               {battlesLoading ? (
-                <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2" style={{ paddingLeft: '16px' }}>
-                  <Skeleton className="h-[160px] w-[160px] shrink-0 rounded-lg" />
-                  <Skeleton className="h-[160px] w-[160px] shrink-0 rounded-lg" />
+                <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 px-4">
+                  <Skeleton className="h-[180px] w-[180px] shrink-0 rounded-2xl" />
+                  <Skeleton className="h-[180px] w-[180px] shrink-0 rounded-2xl" />
                 </div>
               ) : battles.length > 0 ? (
-                <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2" style={{ paddingLeft: '16px' }}>
+                <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 px-4">
                   {battles.slice(0, 10).map(battle => (
                     <BattleCard key={battle.id} battle={battle} onClick={() => navigate(`/battle/${battle.id}`)} />
                   ))}

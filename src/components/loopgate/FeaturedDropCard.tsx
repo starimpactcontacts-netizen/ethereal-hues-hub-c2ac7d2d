@@ -58,7 +58,7 @@ export default function FeaturedDropCard({ drop }: Props) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
         className={cn(
-          "relative w-[160px] h-[200px] shrink-0 snap-start overflow-hidden group flex flex-col",
+          "relative w-[180px] h-[240px] shrink-0 snap-start overflow-hidden group flex flex-col",
           "bg-black border-2 border-emerald-500/60",
           "shadow-[0_0_30px_rgba(16,185,129,0.2),0_0_60px_rgba(16,185,129,0.08)]",
           "hover:shadow-[0_0_40px_rgba(16,185,129,0.35),0_0_80px_rgba(16,185,129,0.12)]",
@@ -181,7 +181,7 @@ export default function FeaturedDropCard({ drop }: Props) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
       className={cn(
-        "relative w-[160px] h-[200px] shrink-0 snap-start overflow-hidden rounded-lg flex flex-col",
+        "relative w-[180px] h-[240px] shrink-0 snap-start overflow-hidden rounded-2xl flex flex-col",
         "bg-black",
         "border transition-all duration-300 group",
         isPromoted
