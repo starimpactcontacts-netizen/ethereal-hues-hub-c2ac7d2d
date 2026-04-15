@@ -1222,21 +1222,27 @@ export default function ArenaPage() {
 
           {/* search bar moved to top */}
 
-          {/* ═══ CASH BATTLES — ABOVE MISSIONS ═══ */}
-          <CashBattlesSection />
+          {/* ═══ CASH BATTLES ═══ */}
+          <div className="mb-5">
+            <CashBattlesSection />
+          </div>
 
-          {/* ═══ MISSIONS — BELOW CASH BATTLES, ABOVE COMPETITIONS ═══ */}
-          <ArenaMissionsSection />
+          {/* ═══ MISSIONS ═══ */}
+          <div className="mb-5">
+            <ArenaMissionsSection />
+          </div>
 
           {/* ═══ COMPETITIONS ═══ */}
           {(activeFilter === "all" || activeFilter === "competitions") && (
+            <div className="mb-5">
               <ArenaCompetitionsSection onCreateClick={() => navigate(profile ? '/competition/create' : '/start')} />
+            </div>
           )}
 
-          {/* ArenaMissionsCarousel removed — missions already shown in ArenaMissionsSection above */}
-
           {/* ═══ LIVE PAYOUTS CAROUSEL ═══ */}
-          <LivePayoutsCarousel />
+          <div className="mb-5">
+            <LivePayoutsCarousel />
+          </div>
 
           {/* Marketplace removed */}
 
