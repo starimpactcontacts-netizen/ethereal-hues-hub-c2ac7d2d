@@ -555,7 +555,7 @@ export default function CashBattlesSection() {
             </motion.div>
           </ArenaRailCard>
         )}
-      </Arena>}
+      </ArenaRail>}
 
       <CashBattleInfoModal open={infoOpen} onClose={() => setInfoOpen(false)} />
     </div>
