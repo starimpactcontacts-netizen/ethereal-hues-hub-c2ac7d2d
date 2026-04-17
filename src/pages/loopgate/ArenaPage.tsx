@@ -1284,7 +1284,7 @@ export default function ArenaPage() {
 
       {/* ═══ MAIN CONTENT ═══ */}
       {arenaView === 'arena' && !loading && (
-        <div className="mt-3 space-y-5">
+        <div className="mt-3 space-y-5 max-w-2xl mx-auto">
 
           {/* King of the Hill — Featured Drops with leaderboard */}
           {(activeFilter === "all" || activeFilter === "official") && (
