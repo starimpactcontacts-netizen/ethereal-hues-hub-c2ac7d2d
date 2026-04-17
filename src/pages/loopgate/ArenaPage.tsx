@@ -1276,8 +1276,8 @@ export default function ArenaPage() {
         <div className="px-4 py-6 space-y-4">
           <Skeleton className="h-8 w-40" />
           <div className="flex gap-3 overflow-hidden">
-            <Skeleton className="h-[180px] w-[180px] shrink-0 rounded-2xl" />
-            <Skeleton className="h-[180px] w-[180px] shrink-0 rounded-2xl" />
+            <Skeleton className="h-[260px] w-[180px] shrink-0 rounded-2xl" />
+            <Skeleton className="h-[260px] w-[180px] shrink-0 rounded-2xl" />
           </div>
         </div>
       )}
@@ -1386,8 +1386,8 @@ export default function ArenaPage() {
 
               {battlesLoading ? (
                 <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 px-4">
-                  <Skeleton className="h-[180px] w-[180px] shrink-0 rounded-2xl" />
-                  <Skeleton className="h-[180px] w-[180px] shrink-0 rounded-2xl" />
+                  <Skeleton className="h-[260px] w-[180px] shrink-0 rounded-2xl" />
+                  <Skeleton className="h-[260px] w-[180px] shrink-0 rounded-2xl" />
                 </div>
               ) : battles.length > 0 ? (
                 <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 px-4">
