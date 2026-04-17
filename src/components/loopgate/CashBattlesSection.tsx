@@ -10,6 +10,7 @@ import { useGuestMode } from "@/hooks/useGuestMode";
 import { useAccountPrompt } from "@/hooks/useAccountPrompt";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { ArenaRail, ArenaRailCard, ArenaRailSkeleton } from "@/components/loopgate/ArenaCarouselSystem";
 
 function formatPrize(cents: number): string {
   return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
@@ -37,7 +38,7 @@ function CashBattleCard({ battle, currentUserId }: { battle: any; currentUserId?
       whileTap={{ scale: 0.97 }}
       whileHover={{ y: -2 }}
       onClick={() => navigate(`/cash-battle/${battle.id}`)}
-      className="w-[180px] h-[220px] shrink-0 rounded-2xl overflow-hidden cursor-pointer group relative flex flex-col"
+      className="w-full h-full rounded-2xl overflow-hidden cursor-pointer group relative flex flex-col"
       style={{
         background: isCompleted
           ? "linear-gradient(160deg, rgba(30,30,30,1) 0%, rgba(18,18,18,1) 100%)"
@@ -107,7 +108,7 @@ function CashBattleCard({ battle, currentUserId }: { battle: any; currentUserId?
       </div>
 
       {/* VS Display — Blue vs Red UFC corners */}
-      <div className="px-3 py-3 flex items-center justify-between">
+      <div className="px-3 py-2.5 flex items-center justify-between">
         {/* Blue corner */}
         <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
           <div className="relative">
@@ -227,7 +228,7 @@ function OpenMatchupCard({ app, onJoin, currentUserId }: { app: CashBattleApplic
       whileTap={{ scale: 0.97 }}
       whileHover={{ y: -2 }}
       onClick={isOwnApp ? undefined : onJoin}
-      className="w-[180px] h-[220px] shrink-0 rounded-2xl overflow-hidden cursor-pointer relative flex flex-col"
+      className="w-full h-full rounded-2xl overflow-hidden cursor-pointer relative flex flex-col"
       style={{
         background: "linear-gradient(160deg, rgba(22,22,28,1) 0%, rgba(6,6,8,1) 100%)",
         boxShadow: "0 0 30px rgba(59,130,246,0.08), 0 0 30px rgba(239,68,68,0.08), 0 12px 40px rgba(0,0,0,0.7)",
@@ -296,7 +297,7 @@ function OpenMatchupCard({ app, onJoin, currentUserId }: { app: CashBattleApplic
         </div>
       </div>
 
-      <div className="px-3 py-3 flex items-center justify-between">
+      <div className="px-3 py-2.5 flex items-center justify-between">
         {/* Challenger (the waiting user) */}
         <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
           <div className="relative">
@@ -507,10 +508,12 @@ export default function CashBattlesSection() {
       </div>
 
       {/* Horizontal scroll — open matchups first, then existing battles */}
-      <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 px-4">
+      {loading ? <ArenaRailSkeleton count={3} /> : <ArenaRail>
         {/* Open matchup cards from pending applications */}
         {pendingApps.map((app) => (
-          <OpenMatchupCard key={app.id} app={app} onJoin={() => handleAcceptFight(app)} currentUserId={user?.id} />
+          <ArenaRailCard key={app.id}>
+            <OpenMatchupCard app={app} onJoin={() => handleAcceptFight(app)} currentUserId={user?.id} />
+          </ArenaRailCard>
         ))}
 
         {/* Existing battles — hide cancelled, show live first */}
@@ -521,35 +524,38 @@ export default function CashBattlesSection() {
             return (order[a.status] ?? 3) - (order[b.status] ?? 3);
           })
           .map((battle) => (
-            <CashBattleCard key={battle.id} battle={battle} currentUserId={user?.id} />
+            <ArenaRailCard key={battle.id}>
+              <CashBattleCard battle={battle} currentUserId={user?.id} />
+            </ArenaRailCard>
           ))}
 
         {/* Join teaser — only show if no pending apps */}
         {pendingApps.length === 0 && (
-          <motion.div
-            whileTap={{ scale: 0.97 }}
-            onClick={handleEnter}
-            className="w-[180px] shrink-0 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer"
-            style={{
-              background: 'rgba(59,130,246,0.03)',
-              border: '1px dashed rgba(59,130,246,0.2)',
-              minHeight: 180,
-            }}
-          >
-            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(239,68,68,0.12)' }}>
-              <Swords className="w-6 h-6" style={{ color: 'rgba(239,68,68,0.5)' }} />
-            </div>
-            <div className="text-center px-4">
-              <p className="text-[12px] font-black uppercase" style={{ fontFamily: "Teko, sans-serif", color: 'rgba(239,68,68,0.8)' }}>
-                Waiting for opponent
-              </p>
-              <p className="text-[9px] text-zinc-600 mt-0.5">
-                Jump straight into a live-ready 1v1 screen
-              </p>
-            </div>
-          </motion.div>
+          <ArenaRailCard>
+            <motion.div
+              whileTap={{ scale: 0.97 }}
+              onClick={handleEnter}
+              className="w-full h-full rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer"
+              style={{
+                background: 'rgba(59,130,246,0.03)',
+                border: '1px dashed rgba(59,130,246,0.2)',
+              }}
+            >
+              <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(239,68,68,0.12)' }}>
+                <Swords className="w-6 h-6" style={{ color: 'rgba(239,68,68,0.5)' }} />
+              </div>
+              <div className="text-center px-4">
+                <p className="text-[12px] font-black uppercase" style={{ fontFamily: "Teko, sans-serif", color: 'rgba(239,68,68,0.8)' }}>
+                  Waiting for opponent
+                </p>
+                <p className="text-[9px] text-zinc-600 mt-0.5">
+                  Jump straight into a live-ready 1v1 screen
+                </p>
+              </div>
+            </motion.div>
+          </ArenaRailCard>
         )}
-      </div>
+      </ArenaRail>}
 
       <CashBattleInfoModal open={infoOpen} onClose={() => setInfoOpen(false)} />
     </div>

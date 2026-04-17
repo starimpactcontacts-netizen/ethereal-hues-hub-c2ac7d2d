@@ -40,6 +40,7 @@ import ArenaCompetitionsSection from "@/components/loopgate/ArenaCompetitionsSec
 import { startQuickMatch } from "@/lib/startQuickMatch";
 import CashBattlesSection from "@/components/loopgate/CashBattlesSection";
 import { useMyCashBattles } from "@/hooks/useCashBattles";
+import { ArenaRail, ArenaRailCard, ArenaRailSkeleton } from "@/components/loopgate/ArenaCarouselSystem";
 
 interface Event {
   id: string;
@@ -108,7 +109,7 @@ function ArenaMissionsSection() {
         </button>
       </div>
 
-      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory px-4">
+      <ArenaRail>
         {bounties.map(b => {
           const payout = (b.payout_cents / 100).toFixed(0);
           const slotsLeft = b.max_slots - b.accepted_count;
@@ -122,11 +123,11 @@ function ArenaMissionsSection() {
           const isPoster = user?.id === b.created_by;
 
           return (
+            <ArenaRailCard key={b.id}>
             <motion.button
-              key={b.id}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate(`/commissions/${b.id}`)}
-              className="shrink-0 relative w-[180px] h-[220px] rounded-2xl overflow-hidden group text-left touch-manipulation snap-start"
+              className="relative w-full h-full rounded-2xl overflow-hidden group text-left touch-manipulation"
               style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.4)' }}
             >
               {/* Cover */}
@@ -173,7 +174,7 @@ function ArenaMissionsSection() {
               )}
 
               {/* Bottom */}
-              <div className="absolute bottom-0 left-0 right-0 p-2.5">
+               <div className="absolute bottom-0 left-0 right-0 p-3">
                 {(b.client_name || b.artist_name) && (
                   <p className="text-[7px] font-black text-white/30 uppercase tracking-[0.15em] mb-0.5 truncate">{b.client_name || b.artist_name}</p>
                 )}
@@ -204,11 +205,13 @@ function ArenaMissionsSection() {
                 </div>
               </div>
             </motion.button>
+            </ArenaRailCard>
           );
         })}
 
         {/* Coming Soon poster */}
-        <div className="shrink-0 w-[180px] h-[220px] rounded-2xl overflow-hidden relative snap-start"
+        <ArenaRailCard>
+        <div className="w-full h-full rounded-2xl overflow-hidden relative"
           style={{ background: 'linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%)' }}
         >
           <div className="absolute inset-0 border border-white/[0.06] rounded-lg" />
@@ -224,18 +227,21 @@ function ArenaMissionsSection() {
             </p>
           </div>
         </div>
+        </ArenaRailCard>
 
         {/* Post Mission CTA — admin only */}
         {isStaff && (
+          <ArenaRailCard>
           <button
             onClick={() => navigate('/missions')}
-            className="shrink-0 w-[180px] h-[220px] border border-dashed border-border/30 bg-surface-1/30 flex flex-col items-center justify-center gap-2 snap-start hover:border-border/50 transition-colors rounded-2xl"
+            className="w-full h-full border border-dashed border-border/30 bg-surface-1/30 flex flex-col items-center justify-center gap-2 hover:border-border/50 transition-colors rounded-2xl"
           >
             <Plus className="w-4 h-4 text-muted-foreground/30" />
             <span className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-wider">Post</span>
           </button>
+          </ArenaRailCard>
         )}
-      </div>
+      </ArenaRail>
     </div>
   );
 }
@@ -292,7 +298,7 @@ function EventCard({ event }: { event: Event }) {
 }
 
 // ─── Ghost Placeholder Slot ────────────────────────────────────
-function GhostSlot({ icon, label, width = "w-[180px]", height = "h-[220px]", accentColor = "border-border/40" }: {
+function GhostSlot({ icon, label, width = "w-full", height = "h-full", accentColor = "border-border/40" }: {
   icon: React.ReactNode;
   label: string;
   width?: string;
@@ -1307,11 +1313,13 @@ export default function ArenaPage() {
                 ) : undefined}
               />
               {liveDrops.length > 0 ? (
-                <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory px-4">
+                <ArenaRail className="pb-1">
                   {liveDrops.map(drop => (
-                    <FeaturedDropCard key={drop.id} drop={drop} />
+                    <ArenaRailCard key={drop.id}>
+                      <FeaturedDropCard drop={drop} />
+                    </ArenaRailCard>
                   ))}
-                </div>
+                </ArenaRail>
               ) : (
                 <div className="px-4">
                   <div className="bg-surface-1 border border-border border-dashed p-8 text-center">
@@ -1385,19 +1393,20 @@ export default function ArenaPage() {
               )}
 
               {battlesLoading ? (
-                <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 px-4">
-                  <Skeleton className="h-[220px] w-[180px] shrink-0 rounded-2xl" />
-                  <Skeleton className="h-[220px] w-[180px] shrink-0 rounded-2xl" />
-                </div>
+                <ArenaRailSkeleton count={3} />
               ) : battles.length > 0 ? (
-                <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 px-4">
+                <ArenaRail>
                   {battles.slice(0, 10).map(battle => (
-                    <BattleCard key={battle.id} battle={battle} onClick={() => navigate(`/battle/${battle.id}`)} />
+                    <ArenaRailCard key={battle.id}>
+                      <BattleCard battle={battle} onClick={() => navigate(`/battle/${battle.id}`)} />
+                    </ArenaRailCard>
                   ))}
                   {battles.length < 4 && Array.from({ length: Math.max(0, 3 - battles.length) }).map((_, i) => (
-                    <GhostSlot key={`ghost-battle-${i}`} icon={<Swords className="w-4 h-4 text-muted-foreground/20" />} label="More battles" accentColor="border-red-500/15" />
+                    <ArenaRailCard key={`ghost-battle-${i}`}>
+                      <GhostSlot icon={<Swords className="w-4 h-4 text-muted-foreground/20" />} label="More battles" accentColor="border-red-500/15" />
+                    </ArenaRailCard>
                   ))}
-                </div>
+                </ArenaRail>
               ) : (
                 <div className="px-4">
                   <div className="bg-surface-1 border border-red-500/15 border-dashed p-8 text-center">
