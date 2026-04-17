@@ -38,7 +38,7 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
       whileTap={{ scale: 0.97 }}
       whileHover={{ y: -3 }}
       onClick={onClick}
-      className={`w-[180px] h-[220px] shrink-0 overflow-hidden cursor-pointer group rounded-2xl relative flex flex-col ${isDone ? 'opacity-50 grayscale-[60%]' : ''}`}
+      className={`w-full h-full overflow-hidden cursor-pointer group rounded-2xl relative flex flex-col ${isDone ? 'opacity-50 grayscale-[60%]' : ''}`}
       style={{
         background: isDone
           ? 'linear-gradient(160deg, rgba(25,25,28,1) 0%, rgba(15,15,17,1) 100%)'
@@ -74,7 +74,7 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
       </div>
 
       {/* VS Display — compact */}
-      <div className="relative px-2.5 py-2 flex-1 flex items-center">
+      <div className="relative px-3 py-3 flex-1 flex items-center">
         <div className="relative flex items-center justify-between w-full">
           {/* Challenger */}
           <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
@@ -126,7 +126,7 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
       </div>
 
       {/* Bottom — reward + CTA */}
-      <div className="px-2.5 pb-2 space-y-1.5">
+      <div className="px-3 pb-3 mt-auto space-y-1.5">
         <div className="flex items-center gap-0.5">
           <Trophy className={`w-2.5 h-2.5 ${isDone ? 'text-zinc-600' : 'text-gold'}`} />
           <span className={`text-[9px] font-bold tabular-nums ${isDone ? 'text-zinc-600' : 'text-gold'}`}>+{battle.winner_index_awarded}</span>
