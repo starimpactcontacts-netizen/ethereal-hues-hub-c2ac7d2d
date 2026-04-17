@@ -292,7 +292,7 @@ function EventCard({ event }: { event: Event }) {
 }
 
 // ─── Ghost Placeholder Slot ────────────────────────────────────
-function GhostSlot({ icon, label, width = "w-[180px]", height = "h-[180px]", accentColor = "border-border/40" }: {
+function GhostSlot({ icon, label, width = "w-[180px]", height = "h-[220px]", accentColor = "border-border/40" }: {
   icon: React.ReactNode;
   label: string;
   width?: string;
@@ -1284,7 +1284,7 @@ export default function ArenaPage() {
 
       {/* ═══ MAIN CONTENT ═══ */}
       {arenaView === 'arena' && !loading && (
-        <div className="mt-3 space-y-5">
+        <div className="mt-3 space-y-5 max-w-2xl mx-auto">
 
           {/* King of the Hill — Featured Drops with leaderboard */}
           {(activeFilter === "all" || activeFilter === "official") && (
