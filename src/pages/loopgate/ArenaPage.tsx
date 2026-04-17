@@ -123,9 +123,8 @@ function ArenaMissionsSection() {
           const isPoster = user?.id === b.created_by;
 
           return (
-            <ArenaRailCard>
+            <ArenaRailCard key={b.id}>
             <motion.button
-              key={b.id}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate(`/commissions/${b.id}`)}
               className="relative w-full h-full rounded-2xl overflow-hidden group text-left touch-manipulation"
