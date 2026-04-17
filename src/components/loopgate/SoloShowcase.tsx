@@ -22,7 +22,7 @@ function SoloCard({ solo }: { solo: RecentSolo }) {
 
   return (
     <Link to={`/solo/${solo.id}`} className="shrink-0 w-[180px] snap-start block group">
-      <div className="relative h-[220px] overflow-hidden rounded-lg flex flex-col" style={{
+      <div className="relative h-[220px] overflow-hidden rounded-2xl flex flex-col" style={{
         boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
       }}>
         {/* Background */}
@@ -146,13 +146,13 @@ export default function SoloShowcase({ onStartSolo }: { onStartSolo: () => void 
 
       {/* Submissions carousel — compact poster cards */}
       {loading ? (
-        <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-2" style={{ paddingLeft: '16px' }}>
-          <Skeleton className="h-[220px] w-[180px] shrink-0 rounded-xl" />
-          <Skeleton className="h-[220px] w-[180px] shrink-0 rounded-xl" />
-          <Skeleton className="h-[220px] w-[180px] shrink-0 rounded-xl" />
+        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 px-4">
+          <Skeleton className="h-[220px] w-[180px] shrink-0 rounded-2xl" />
+          <Skeleton className="h-[220px] w-[180px] shrink-0 rounded-2xl" />
+          <Skeleton className="h-[220px] w-[180px] shrink-0 rounded-2xl" />
         </div>
       ) : submissions.length > 0 ? (
-        <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory" style={{ paddingLeft: '16px' }}>
+        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory px-4">
           {submissions.map(solo => (
             <SoloCard key={solo.id} solo={solo} />
           ))}
