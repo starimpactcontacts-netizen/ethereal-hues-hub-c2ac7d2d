@@ -8,6 +8,7 @@ import { useRecentSoloSubmissions, type RecentSolo } from "@/hooks/useRecentSolo
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
+import { ArenaRail, ArenaRailCard, ArenaRailSkeleton } from "@/components/loopgate/ArenaCarouselSystem";
 
 // ─── Solo Submission Card — Cinematic Poster Style ─────────────
 function SoloCard({ solo }: { solo: RecentSolo }) {
@@ -21,8 +22,8 @@ function SoloCard({ solo }: { solo: RecentSolo }) {
   const timeAgo = formatDistanceToNow(new Date(solo.created_at), { addSuffix: false });
 
   return (
-    <Link to={`/solo/${solo.id}`} className="shrink-0 w-[180px] snap-start block group">
-      <div className="relative h-[220px] overflow-hidden rounded-2xl flex flex-col" style={{
+    <Link to={`/solo/${solo.id}`} className="block h-full group">
+      <div className="relative h-full overflow-hidden rounded-2xl flex flex-col" style={{
         boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
       }}>
         {/* Background */}
@@ -70,7 +71,7 @@ function SoloCard({ solo }: { solo: RecentSolo }) {
           )}
 
           {/* Bottom content overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-2.5 z-10">
+           <div className="absolute bottom-0 left-0 right-0 p-3 z-10">
             <div className="flex items-center gap-1.5 mb-0.5">
               <Avatar className="w-4 h-4 border border-white/10">
                 <AvatarImage src={solo.avatar_url || ''} />
@@ -89,7 +90,7 @@ function SoloCard({ solo }: { solo: RecentSolo }) {
         </div>
 
         {/* Big VIEW button — outside the image area */}
-        <div className="px-2 py-1.5 bg-black border-t border-white/[0.04]">
+        <div className="px-3 py-2 bg-black border-t border-white/[0.04] mt-auto">
           <div className="w-full text-center py-1.5 rounded-lg bg-gold text-black text-[11px] font-black uppercase tracking-wider" style={{ fontFamily: 'Teko, sans-serif' }}>
             VIEW
           </div>
@@ -146,17 +147,15 @@ export default function SoloShowcase({ onStartSolo }: { onStartSolo: () => void 
 
       {/* Submissions carousel — compact poster cards */}
       {loading ? (
-        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 px-4">
-          <Skeleton className="h-[220px] w-[180px] shrink-0 rounded-2xl" />
-          <Skeleton className="h-[220px] w-[180px] shrink-0 rounded-2xl" />
-          <Skeleton className="h-[220px] w-[180px] shrink-0 rounded-2xl" />
-        </div>
+        <ArenaRailSkeleton count={3} />
       ) : submissions.length > 0 ? (
-        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory px-4">
+        <ArenaRail>
           {submissions.map(solo => (
-            <SoloCard key={solo.id} solo={solo} />
+            <ArenaRailCard key={solo.id}>
+              <SoloCard solo={solo} />
+            </ArenaRailCard>
           ))}
-        </div>
+        </ArenaRail>
       ) : (
         <div className="px-4">
           <motion.button
