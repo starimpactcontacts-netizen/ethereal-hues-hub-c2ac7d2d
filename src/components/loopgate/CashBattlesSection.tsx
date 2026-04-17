@@ -37,7 +37,7 @@ function CashBattleCard({ battle, currentUserId }: { battle: any; currentUserId?
       whileTap={{ scale: 0.97 }}
       whileHover={{ y: -2 }}
       onClick={() => navigate(`/cash-battle/${battle.id}`)}
-      className="w-[180px] h-[260px] shrink-0 rounded-2xl overflow-hidden cursor-pointer group relative flex flex-col"
+      className="w-[180px] h-[220px] shrink-0 rounded-2xl overflow-hidden cursor-pointer group relative flex flex-col"
       style={{
         background: isCompleted
           ? "linear-gradient(160deg, rgba(30,30,30,1) 0%, rgba(18,18,18,1) 100%)"
@@ -227,7 +227,7 @@ function OpenMatchupCard({ app, onJoin, currentUserId }: { app: CashBattleApplic
       whileTap={{ scale: 0.97 }}
       whileHover={{ y: -2 }}
       onClick={isOwnApp ? undefined : onJoin}
-      className="w-[180px] h-[260px] shrink-0 rounded-2xl overflow-hidden cursor-pointer relative flex flex-col"
+      className="w-[180px] h-[220px] shrink-0 rounded-2xl overflow-hidden cursor-pointer relative flex flex-col"
       style={{
         background: "linear-gradient(160deg, rgba(22,22,28,1) 0%, rgba(6,6,8,1) 100%)",
         boxShadow: "0 0 30px rgba(59,130,246,0.08), 0 0 30px rgba(239,68,68,0.08), 0 12px 40px rgba(0,0,0,0.7)",
