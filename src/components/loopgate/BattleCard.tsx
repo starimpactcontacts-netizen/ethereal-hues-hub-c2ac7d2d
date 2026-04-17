@@ -38,7 +38,7 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
       whileTap={{ scale: 0.97 }}
       whileHover={{ y: -3 }}
       onClick={onClick}
-      className={`w-[180px] h-[180px] shrink-0 overflow-hidden cursor-pointer group rounded-2xl relative ${isDone ? 'opacity-50 grayscale-[60%]' : ''}`}
+      className={`w-[180px] h-[260px] shrink-0 overflow-hidden cursor-pointer group rounded-2xl relative flex flex-col ${isDone ? 'opacity-50 grayscale-[60%]' : ''}`}
       style={{
         background: isDone
           ? 'linear-gradient(160deg, rgba(25,25,28,1) 0%, rgba(15,15,17,1) 100%)'

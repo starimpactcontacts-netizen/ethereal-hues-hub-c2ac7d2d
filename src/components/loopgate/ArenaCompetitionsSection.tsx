@@ -45,7 +45,7 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
       <motion.div
         whileTap={{ scale: 0.97 }}
         onClick={() => navigate(`/competition/${comp.slug || comp.id}`)}
-        className="relative w-full h-[180px] bg-surface-1 border border-white/[0.06] overflow-hidden group touch-manipulation rounded-2xl cursor-pointer"
+        className="relative w-full h-[260px] bg-surface-1 border border-white/[0.06] overflow-hidden group touch-manipulation rounded-2xl cursor-pointer flex flex-col"
         style={{ boxShadow: "0 2px 20px rgba(0,0,0,0.3)" }}
       >
       {/* Share button — inside card, upper right */}
@@ -56,7 +56,7 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
         <Share2 className="w-3.5 h-3.5 text-white/70" />
       </button>
       {/* Cover */}
-      <div className="relative h-[90px] overflow-hidden">
+      <div className="relative h-[140px] shrink-0 overflow-hidden">
         {comp.cover_image_url ? (
           <img src={comp.cover_image_url} alt={comp.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
         ) : (
@@ -172,11 +172,11 @@ export default function ArenaCompetitionsSection({ onCreateClick }: { onCreateCl
             <motion.div
               whileTap={{ scale: 0.97 }}
               onClick={onCreateClick}
-              className="relative w-full h-[180px] bg-surface-1 border border-dashed border-white/[0.1] overflow-hidden rounded-2xl cursor-pointer hover:border-gold/30 transition-colors"
+              className="relative w-full h-[260px] bg-surface-1 border border-dashed border-white/[0.1] overflow-hidden rounded-2xl cursor-pointer hover:border-gold/30 transition-colors flex flex-col"
               style={{ boxShadow: "0 2px 20px rgba(0,0,0,0.2)" }}
             >
               {/* Visual area */}
-              <div className="relative h-[90px] bg-gradient-to-br from-gold/[0.08] via-surface-2 to-black flex items-center justify-center">
+              <div className="relative h-[140px] shrink-0 bg-gradient-to-br from-gold/[0.08] via-surface-2 to-black flex items-center justify-center">
                 <div className="w-10 h-10 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center">
                   <Plus className="w-5 h-5 text-gold" />
                 </div>
