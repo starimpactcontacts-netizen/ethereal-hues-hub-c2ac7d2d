@@ -292,7 +292,7 @@ function EventCard({ event }: { event: Event }) {
 }
 
 // ─── Ghost Placeholder Slot ────────────────────────────────────
-function GhostSlot({ icon, label, width = "w-[180px]", height = "h-[180px]", accentColor = "border-border/40" }: {
+function GhostSlot({ icon, label, width = "w-[180px]", height = "h-[220px]", accentColor = "border-border/40" }: {
   icon: React.ReactNode;
   label: string;
   width?: string;
