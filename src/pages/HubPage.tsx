@@ -1141,7 +1141,9 @@ export default function HubPage() {
               </Link>
             ))}
             {artistDrops.map(drop => (
-              <FeaturedDropCard key={drop.id} drop={drop} />
+              <div key={drop.id} className="shrink-0 w-[160px] h-[220px] snap-start">
+                <FeaturedDropCard drop={drop} />
+              </div>
             ))}
           </FeaturedCarousel>
         </motion.div>
