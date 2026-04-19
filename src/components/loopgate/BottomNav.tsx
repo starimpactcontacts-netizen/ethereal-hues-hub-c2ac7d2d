@@ -46,10 +46,10 @@ export default function BottomNav() {
 
       <nav
         className="fixed inset-x-0 bottom-0 z-[55] pb-[env(safe-area-inset-bottom,0px)]"
-        style={{ backgroundColor: '#1a1a1a' }}
+        style={{ backgroundColor: '#0A0A0A' }}
       >
         {/* Infinite backfill below */}
-        <div className="absolute left-0 right-0" style={{ top: 0, bottom: '-600px', backgroundColor: '#1a1a1a' }} />
+        <div className="absolute left-0 right-0" style={{ top: 0, bottom: '-600px', backgroundColor: '#0A0A0A' }} />
         {/* Top border with synced arena color glow */}
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-white/[0.04]" />
         {/* Core bright line — hue-synced, subtle */}

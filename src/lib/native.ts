@@ -11,7 +11,7 @@ export async function initializeNativeApp() {
   try {
     // Set status bar style (dark content on dark background)
     await StatusBar.setStyle({ style: Style.Dark });
-    await StatusBar.setBackgroundColor({ color: '#1a1a1a' });
+    await StatusBar.setBackgroundColor({ color: '#0A0A0A' });
     
     // Hide splash screen after app is ready
     // The web app's LoadingScreen will take over
