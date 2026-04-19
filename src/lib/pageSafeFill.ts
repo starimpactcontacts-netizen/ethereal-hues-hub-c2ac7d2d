@@ -8,7 +8,7 @@ export function getPageSafeFill(pathname: string) {
   }
 
   if (pathname.startsWith('/arena')) {
-    return '0 0% 4%'; // #0A0A0A premium dark
+    return '0 0% 10.2%'; // #1a1a1a — synced with nav
   }
 
   return '0 0% 10.2%'; // #1a1a1a
