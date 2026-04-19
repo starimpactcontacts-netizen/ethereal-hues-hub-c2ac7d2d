@@ -11,5 +11,5 @@ export function getPageSafeFill(pathname: string) {
     return '0 0% 4%'; // #0A0A0A premium dark
   }
 
-  return '0 0% 0%';
+  return '0 0% 10.2%'; // #1a1a1a
 }
