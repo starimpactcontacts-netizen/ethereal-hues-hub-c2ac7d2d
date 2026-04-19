@@ -30,7 +30,7 @@ export default function BottomNav() {
     <>
       {/* Guest Mode Banner */}
       {isGuest && (
-        <div className="fixed left-0 right-0 z-50 bg-gold/10 border-t border-gold/30 px-4 py-2 flex items-center justify-between" style={{ bottom: 'var(--app-bottom-nav-height, calc(env(safe-area-inset-bottom, 0px) + 52px))' }}>
+        <div className="fixed left-0 right-0 z-50 bg-gold/10 border-t border-gold/30 px-4 py-2 flex items-center justify-between" style={{ bottom: 'var(--app-bottom-nav-height, calc(env(safe-area-inset-bottom, 0px) + 49px))' }}>
           <span className="text-xs text-gold font-medium">
             Browsing as guest (read-only)
           </span>
@@ -47,7 +47,7 @@ export default function BottomNav() {
       <nav
         className="fixed inset-x-0 bottom-0 z-[55]"
         style={{
-          minHeight: 'var(--app-bottom-nav-height, calc(env(safe-area-inset-bottom, 0px) + 52px))',
+          minHeight: 'var(--app-bottom-nav-height, calc(env(safe-area-inset-bottom, 0px) + 49px))',
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
           backgroundColor: '#0A0A0A',
         }}
@@ -70,7 +70,7 @@ export default function BottomNav() {
           animate={{ filter: ["hue-rotate(0deg)", "hue-rotate(360deg)"] }}
           transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
         />
-        <div className="relative grid grid-cols-5 max-w-lg mx-auto" style={{ height: 'var(--app-bottom-nav-bar-height, 52px)' }}>
+        <div className="relative grid grid-cols-5 max-w-lg mx-auto" style={{ height: 'var(--app-bottom-nav-bar-height, 49px)' }}>
           {/* Left side items (Hub, Loop) */}
           {navItems.slice(0, 2).map((item) => (
             <NavLink

@@ -22,7 +22,7 @@ export default function AuthenticatedLayout() {
     '--app-safe-fill': safeFill,
     '--app-header-bar-height': '44px',
     '--app-header-height': 'calc(env(safe-area-inset-top, 0px) + var(--app-header-bar-height))',
-    '--app-bottom-nav-bar-height': '52px',
+    '--app-bottom-nav-bar-height': '49px',
     '--app-bottom-nav-height': 'calc(env(safe-area-inset-bottom, 0px) + var(--app-bottom-nav-bar-height))',
     backgroundColor: 'hsl(var(--app-safe-fill))',
   } as CSSProperties;
