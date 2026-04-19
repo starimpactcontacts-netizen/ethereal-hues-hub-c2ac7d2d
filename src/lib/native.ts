@@ -9,6 +9,11 @@ export async function initializeNativeApp() {
   }
 
   try {
+    // Let the native webview sit below the iOS status bar/home indicator.
+    // Our shared app layout already uses safe areas on the web, but native iOS
+    // can otherwise apply an extra inset visually and make bars look mispositioned.
+    await StatusBar.setOverlaysWebView({ overlay: false });
+
     // Set status bar style (dark content on dark background)
     await StatusBar.setStyle({ style: Style.Dark });
     await StatusBar.setBackgroundColor({ color: '#0A0A0A' });
