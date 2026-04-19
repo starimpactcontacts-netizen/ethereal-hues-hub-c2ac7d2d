@@ -30,7 +30,7 @@ export default function BottomNav() {
     <>
       {/* Guest Mode Banner */}
       {isGuest && (
-        <div className="fixed bottom-14 left-0 right-0 z-50 bg-gold/10 border-t border-gold/30 px-4 py-2 flex items-center justify-between safe-bottom">
+        <div className="fixed left-0 right-0 z-50 bg-gold/10 border-t border-gold/30 px-4 py-2 flex items-center justify-between" style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))' }}>
           <span className="text-xs text-gold font-medium">
             Browsing as guest (read-only)
           </span>
