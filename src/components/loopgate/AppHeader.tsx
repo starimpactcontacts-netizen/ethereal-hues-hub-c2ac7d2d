@@ -56,11 +56,18 @@ export default function AppHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-xl border-b border-border/30" style={{ paddingTop: 'env(safe-area-inset-top, 0px)', backgroundColor: 'hsl(var(--app-safe-fill, var(--background)))' }}>
+    <header
+      className="sticky top-0 z-50 backdrop-blur-xl border-b border-border/30"
+      style={{
+        minHeight: 'var(--app-header-height, calc(env(safe-area-inset-top, 0px) + 44px))',
+        paddingTop: 'env(safe-area-inset-top, 0px)',
+        backgroundColor: 'hsl(var(--app-safe-fill, var(--background)))',
+      }}
+    >
       {/* Subtle bottom glow line */}
       <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-foreground/[0.06] to-transparent" />
       
-      <div className="flex items-center justify-between px-4 h-14">
+      <div className="flex items-center justify-between px-4" style={{ height: 'var(--app-header-bar-height, 44px)' }}>
         {/* Left side: Logo + Music Player */}
         <div className="flex items-center gap-3">
           <Link to="/hub" className="flex items-center gap-1.5 group">

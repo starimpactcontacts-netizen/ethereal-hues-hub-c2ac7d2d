@@ -20,6 +20,10 @@ export default function AuthenticatedLayout() {
   const safeFill = getPageSafeFill(location.pathname);
   const shellStyle = {
     '--app-safe-fill': safeFill,
+    '--app-header-bar-height': '44px',
+    '--app-header-height': 'calc(env(safe-area-inset-top, 0px) + var(--app-header-bar-height))',
+    '--app-bottom-nav-bar-height': '52px',
+    '--app-bottom-nav-height': 'calc(env(safe-area-inset-bottom, 0px) + var(--app-bottom-nav-bar-height))',
     backgroundColor: 'hsl(var(--app-safe-fill))',
   } as CSSProperties;
 
@@ -35,7 +39,7 @@ export default function AuthenticatedLayout() {
         className="flex-1 min-h-0 overflow-y-auto overscroll-none"
         style={{
           backgroundColor: 'hsl(var(--app-safe-fill))',
-          paddingBottom: showNav ? 'calc(4rem + env(safe-area-inset-bottom, 0px))' : 'env(safe-area-inset-bottom, 0px)',
+          paddingBottom: showNav ? 'var(--app-bottom-nav-height)' : 'env(safe-area-inset-bottom, 0px)',
           WebkitOverflowScrolling: 'touch',
         }}
       >
