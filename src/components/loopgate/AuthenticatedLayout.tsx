@@ -35,7 +35,7 @@ export default function AuthenticatedLayout() {
         className="flex-1 min-h-0 overflow-y-auto overscroll-none"
         style={{
           backgroundColor: 'hsl(var(--app-safe-fill))',
-          paddingBottom: !hideNav && !hideHeader ? 'calc(4.5rem + env(safe-area-inset-bottom, 0px))' : undefined,
+          paddingBottom: showNav ? 'calc(4rem + env(safe-area-inset-bottom, 0px))' : 'env(safe-area-inset-bottom, 0px)',
           WebkitOverflowScrolling: 'touch',
         }}
       >
