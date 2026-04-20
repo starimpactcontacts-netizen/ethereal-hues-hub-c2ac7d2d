@@ -167,7 +167,7 @@ export default function ArenaCompetitionsSection({ onCreateClick }: { onCreateCl
                 </p>
               </div>
             </motion.div>
-          </ArenaRailCard>
+          </div>
         </ArenaRail>
       )}
     </motion.section>
