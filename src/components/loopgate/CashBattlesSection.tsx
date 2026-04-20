@@ -152,25 +152,7 @@ function CashBattleCard({ battle, currentUserId }: { battle: any; currentUserId?
         </div>
       )}
 
-      {/* CTA — full-width block button (always at bottom) */}
-      <div className="px-4 pb-4 mt-auto">
-        {(() => {
-          const isParticipant = currentUserId && (battle.challenger_id === currentUserId || battle.opponent_id === currentUserId);
-          const ctaLabel = isParticipant && isLive ? "YOUR FIGHT" : isLive ? "WATCH" : isUpcoming ? "SOON" : "VIEW";
-          const ctaStyle = isParticipant && isLive
-            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-            : isLive
-            ? "bg-red-500/20 text-red-400 border border-red-500/30"
-            : isUpcoming
-            ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-            : "bg-zinc-800 text-zinc-400";
-          return (
-            <div className={`w-full text-center py-2.5 rounded-xl text-[13px] font-black uppercase tracking-wider ${ctaStyle}`} style={{ fontFamily: "Teko, sans-serif" }}>
-              {ctaLabel}
-            </div>
-          );
-        })()}
-      </div>
+      <div className="pb-3" />
     </motion.div>
   );
 }
@@ -293,24 +275,15 @@ function OpenMatchupCard({ app, onJoin, currentUserId }: { app: CashBattleApplic
         </div>
       </div>
 
-      <div className="px-4 pb-4 mt-auto">
-        {isOwnApp ? (
+      <div className="px-4 pb-3 mt-auto">
+        {isOwnApp && (
           <button
             onClick={(e) => { e.stopPropagation(); setConfirmCancel(true); }}
-            className="w-full text-center py-2.5 rounded-xl text-[13px] font-black uppercase tracking-wider border"
-            style={{
-              fontFamily: "Teko, sans-serif",
-              background: "rgba(239,68,68,0.08)",
-              borderColor: "rgba(239,68,68,0.25)",
-              color: "rgba(239,68,68,0.8)",
-            }}
+            className="w-full text-center py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider text-red-400/70"
+            style={{ fontFamily: "Teko, sans-serif" }}
           >
-            CANCEL
+            Cancel
           </button>
-        ) : (
-          <div className="w-full text-center py-2.5 rounded-xl text-[13px] font-black uppercase tracking-wider border bg-white/[0.04] border-white/10 text-zinc-200" style={{ fontFamily: "Teko, sans-serif" }}>
-            ACCEPT FIGHT
-          </div>
         )}
       </div>
     </motion.div>

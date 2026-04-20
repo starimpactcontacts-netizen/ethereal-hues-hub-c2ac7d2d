@@ -36,6 +36,7 @@ import InviteModal from '@/components/loopgate/InviteModal';
 import CountdownTimer from '@/components/loopgate/CountdownTimer';
 import JudgeReviewsFeed from '@/components/loopgate/JudgeReviewsFeed';
 import TrendingLoops from '@/components/loopgate/TrendingLoops';
+import ArenaCompetitionsSection from '@/components/loopgate/ArenaCompetitionsSection';
 import EditoriumPicks from '@/components/loopgate/EditoriumPicks';
 import JudgeClassBadge from '@/components/loopgate/JudgeClassBadge';
 import XPProgressBar from '@/components/loopgate/XPProgressBar';
@@ -1242,6 +1243,22 @@ export default function HubPage() {
         transition={{ delay: 0.25 }}
         className="mt-3 space-y-4"
       >
+        {/* Featured Competitions */}
+        <div>
+          <div className="px-4 mb-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-1 h-5 bg-gold rounded-full" />
+                <h2 className="font-display text-lg text-foreground">FEATURED</h2>
+              </div>
+              <Link to="/arena" className="text-[9px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
+                VIEW ALL <ArrowRight size={10} />
+              </Link>
+            </div>
+          </div>
+          <ArenaCompetitionsSection onCreateClick={() => navigate(profile ? '/competition/create' : '/start')} hideHeader />
+        </div>
+
         {/* Trending Loops */}
         <div>
           <div className="px-4 mb-2">
