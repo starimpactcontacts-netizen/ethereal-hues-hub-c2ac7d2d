@@ -111,47 +111,33 @@ function CashBattleCard({ battle, currentUserId }: { battle: any; currentUserId?
       <div className="px-3 py-2.5 flex items-center justify-between">
         {/* Blue corner */}
         <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
-          <div className="relative">
-            <Avatar className="w-11 h-11 ring-2 ring-blue-500/50">
-              <AvatarImage src={battle.challenger_avatar_url || ""} />
-              <AvatarFallback className="text-sm font-black bg-blue-500/15 text-blue-400">
-                {battle.challenger_username?.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
-              <Zap className="w-3 h-3 text-white" />
-            </div>
-          </div>
-          <span className="text-[10px] font-black truncate max-w-[75px] uppercase text-blue-400" style={{ fontFamily: "Teko, sans-serif" }}>
+          <Avatar className="w-11 h-11 ring-1 ring-white/10">
+            <AvatarImage src={battle.challenger_avatar_url || ""} />
+            <AvatarFallback className="text-sm font-bold bg-zinc-800 text-zinc-300">
+              {battle.challenger_username?.charAt(0)}
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-[10px] font-bold truncate max-w-[75px] uppercase text-zinc-200" style={{ fontFamily: "Teko, sans-serif" }}>
             {battle.challenger_username}
           </span>
         </div>
 
         {/* VS badge */}
         <div className="mx-2 shrink-0">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center relative" style={{
-            background: "radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)",
-          }}>
-            <span className="text-lg font-black text-white/90" style={{ fontFamily: "Teko, sans-serif" }}>VS</span>
-          </div>
+          <span className="text-base font-black text-white/40" style={{ fontFamily: "Teko, sans-serif" }}>VS</span>
         </div>
 
         {/* Red corner */}
         <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
           {battle.opponent_username ? (
             <>
-              <div className="relative">
-                <Avatar className="w-11 h-11 ring-2 ring-red-500/50">
-                  <AvatarImage src={battle.opponent_avatar_url || ""} />
-                  <AvatarFallback className="text-sm font-black bg-red-500/15 text-red-400">
-                    {battle.opponent_username?.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
-                  <Zap className="w-3 h-3 text-white" />
-                </div>
-              </div>
-              <span className="text-[10px] font-black truncate max-w-[75px] uppercase text-red-400" style={{ fontFamily: "Teko, sans-serif" }}>
+              <Avatar className="w-11 h-11 ring-1 ring-white/10">
+                <AvatarImage src={battle.opponent_avatar_url || ""} />
+                <AvatarFallback className="text-sm font-bold bg-zinc-800 text-zinc-300">
+                  {battle.opponent_username?.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-[10px] font-bold truncate max-w-[75px] uppercase text-zinc-200" style={{ fontFamily: "Teko, sans-serif" }}>
                 {battle.opponent_username}
               </span>
             </>
@@ -300,28 +286,19 @@ function OpenMatchupCard({ app, onJoin, currentUserId }: { app: CashBattleApplic
       <div className="px-3 py-2.5 flex items-center justify-between">
         {/* Challenger (the waiting user) */}
         <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
-          <div className="relative">
-            <Avatar className="w-11 h-11 ring-2 ring-blue-500/50">
-              <AvatarImage src={app.avatar_url || ""} />
-              <AvatarFallback className="text-sm font-black bg-blue-500/15 text-blue-400">
-                {app.username?.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
-              <Zap className="w-3 h-3 text-white" />
-            </div>
-          </div>
-          <span className="text-[10px] font-black truncate max-w-[75px] uppercase text-blue-400" style={{ fontFamily: "Teko, sans-serif" }}>
+          <Avatar className="w-11 h-11 ring-1 ring-white/10">
+            <AvatarImage src={app.avatar_url || ""} />
+            <AvatarFallback className="text-sm font-bold bg-zinc-800 text-zinc-300">
+              {app.username?.charAt(0)}
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-[10px] font-bold truncate max-w-[75px] uppercase text-zinc-200" style={{ fontFamily: "Teko, sans-serif" }}>
             {app.username}
           </span>
         </div>
 
         <div className="mx-2 shrink-0">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{
-            background: "radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)",
-          }}>
-            <span className="text-lg font-black text-white/90" style={{ fontFamily: "Teko, sans-serif" }}>VS</span>
-          </div>
+          <span className="text-base font-black text-white/40" style={{ fontFamily: "Teko, sans-serif" }}>VS</span>
         </div>
 
         {/* Open opponent slot */}
@@ -350,12 +327,7 @@ function OpenMatchupCard({ app, onJoin, currentUserId }: { app: CashBattleApplic
             CANCEL
           </button>
         ) : (
-          <div className="w-full text-center py-2.5 rounded-xl text-[13px] font-black uppercase tracking-wider border" style={{
-            fontFamily: "Teko, sans-serif",
-            background: "linear-gradient(135deg, rgba(59,130,246,0.15), rgba(239,68,68,0.15))",
-            borderColor: "rgba(239,68,68,0.3)",
-            color: "#fff",
-          }}>
+          <div className="w-full text-center py-2.5 rounded-xl text-[13px] font-black uppercase tracking-wider border bg-white/[0.04] border-white/10 text-zinc-200" style={{ fontFamily: "Teko, sans-serif" }}>
             ACCEPT FIGHT
           </div>
         )}

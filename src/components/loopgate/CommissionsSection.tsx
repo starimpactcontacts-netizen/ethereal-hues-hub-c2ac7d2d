@@ -167,32 +167,26 @@ function MissionCard({ drop }: { drop: ArenaDrop }) {
           )}
           <h4 className="font-display text-2xl text-foreground leading-none tracking-wider truncate mb-3">{drop.song_name}</h4>
 
-          {/* Rating tiers with QOI */}
-          <div className="flex items-stretch gap-[1px] mb-3 bg-black/40 backdrop-blur-sm">
+          {/* Minimal tier row */}
+          <div className="flex items-stretch gap-1 mb-3">
             {[
-              { rank: 'S', color: 'text-amber-400 bg-amber-500/25 border-amber-500/50', pay: sRate, qoi: '90+' },
-              { rank: 'A', color: 'text-emerald-400 bg-emerald-500/20 border-emerald-500/40', pay: aRate, qoi: '75+' },
-              { rank: 'B', color: 'text-blue-400 bg-blue-500/20 border-blue-500/40', pay: bRate, qoi: '60+' },
-              { rank: 'C-F', color: 'text-foreground/25 bg-foreground/[0.04] border-foreground/10', pay: 0, qoi: '<60' },
+              { rank: 'S', pay: sRate },
+              { rank: 'A', pay: aRate },
+              { rank: 'B', pay: bRate },
             ].map(tier => (
-              <div key={tier.rank} className={`flex-1 border ${tier.color} py-2 flex flex-col items-center gap-0.5`}>
-                <span className="text-[11px] font-black leading-none">{tier.rank}</span>
-                <span className={`text-[8px] font-black leading-none ${tier.pay > 0 ? 'text-white' : 'text-foreground/15'}`}>
-                  {tier.pay > 0 ? `$${tier.pay}` : 'IDX'}
+              <div key={tier.rank} className="flex-1 bg-white/[0.04] border border-white/10 py-1.5 flex flex-col items-center gap-0.5">
+                <span className="text-[10px] font-bold leading-none text-zinc-400">{tier.rank}</span>
+                <span className="text-[10px] font-bold leading-none text-white">
+                  {tier.pay > 0 ? `$${tier.pay}` : '—'}
                 </span>
-                <span className="text-[6px] font-bold text-foreground/20 uppercase">QOI {tier.qoi}</span>
               </div>
             ))}
           </div>
 
-          {/* CTA — Fortnite-style skewed button */}
-          <div className="relative overflow-hidden bg-red-600 group-hover:bg-red-500 active:bg-red-400 transition-colors flex items-center justify-center gap-3 py-4 -mx-3 -mb-4">
-            <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.14] to-transparent pointer-events-none" />
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-white/20 to-white/5 flex items-center justify-center relative z-10 border border-white/20">
-              <Crosshair className="w-3.5 h-3.5 text-white" />
-            </div>
-            <span className="text-[20px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
-              Enter Mission
+          {/* CTA — minimal ENTER button */}
+          <div className="w-full bg-white/[0.06] border border-white/10 group-hover:bg-white/[0.10] active:bg-white/[0.14] transition-colors flex items-center justify-center py-3 -mx-3 -mb-4">
+            <span className="text-[18px] font-bold text-white uppercase tracking-wider" style={{ fontFamily: 'Teko, sans-serif' }}>
+              Enter
             </span>
           </div>
         </div>

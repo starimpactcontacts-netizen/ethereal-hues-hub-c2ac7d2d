@@ -180,16 +180,16 @@ function ArenaMissionsSection() {
                 )}
                 <h4 className="text-[13px] font-black text-white leading-tight truncate mb-1.5">{b.title}</h4>
 
-                {/* Compact tier row */}
+                {/* Compact tier row — minimal */}
                 {(sRate > 0 || aRate > 0 || bRate > 0) && (
                   <div className="flex items-stretch gap-1 mb-2">
                     {[
-                      { rank: 'S', border: 'border-amber-500/50', text: 'text-amber-400', pay: sRate },
-                      { rank: 'A', border: 'border-emerald-500/50', text: 'text-emerald-400', pay: aRate },
-                      { rank: 'B', border: 'border-blue-500/50', text: 'text-blue-400', pay: bRate },
+                      { rank: 'S', pay: sRate },
+                      { rank: 'A', pay: aRate },
+                      { rank: 'B', pay: bRate },
                     ].map(tier => (
-                      <div key={tier.rank} className={`flex-1 border ${tier.border} bg-black/60 backdrop-blur-sm rounded-sm py-1.5 flex flex-col items-center gap-0.5`}>
-                        <span className={`text-[11px] font-black leading-none ${tier.text}`}>{tier.rank}</span>
+                      <div key={tier.rank} className="flex-1 bg-white/[0.04] border border-white/10 rounded-sm py-1.5 flex flex-col items-center gap-0.5">
+                        <span className="text-[10px] font-bold leading-none text-zinc-400">{tier.rank}</span>
                         <span className="text-[10px] font-bold text-white leading-none">
                           {tier.pay > 0 ? `$${tier.pay}` : '—'}
                         </span>
@@ -198,7 +198,7 @@ function ArenaMissionsSection() {
                   </div>
                 )}
                 <div
-                  className="w-full py-2.5 rounded-md bg-emerald-500 text-white text-center text-[12px] font-bold uppercase tracking-wider touch-manipulation"
+                  className="w-full py-2.5 rounded-md bg-white/[0.06] border border-white/10 text-white text-center text-[12px] font-bold uppercase tracking-wider touch-manipulation"
                   style={{ fontFamily: 'Teko, sans-serif' }}
                 >
                   ENTER
