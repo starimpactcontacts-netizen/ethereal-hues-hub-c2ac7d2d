@@ -38,14 +38,9 @@ function CashBattleCard({ battle, currentUserId }: { battle: any; currentUserId?
       whileTap={{ scale: 0.97 }}
       whileHover={{ y: -2 }}
       onClick={() => navigate(`/cash-battle/${battle.id}`)}
-      className="w-full h-full rounded-2xl overflow-hidden cursor-pointer group relative flex flex-col"
+      className="w-full h-full rounded-2xl overflow-hidden cursor-pointer group relative flex flex-col border border-white/[0.06]"
       style={{
-        background: isCompleted
-          ? "linear-gradient(160deg, rgba(30,30,30,1) 0%, rgba(18,18,18,1) 100%)"
-          : "linear-gradient(160deg, rgba(22,22,28,1) 0%, rgba(6,6,8,1) 100%)",
-        boxShadow: isLive
-          ? "0 0 40px rgba(59,130,246,0.12), 0 0 40px rgba(239,68,68,0.12), 0 12px 40px rgba(0,0,0,0.7)"
-          : "0 12px 40px rgba(0,0,0,0.6)",
+        background: "transparent",
         filter: isCompleted ? "grayscale(60%)" : "none",
         opacity: isCompleted ? 0.55 : 1,
       }}
@@ -87,13 +82,6 @@ function CashBattleCard({ battle, currentUserId }: { battle: any; currentUserId?
               {battle.status.toUpperCase()}
             </span>
           </div>
-        </div>
-        <div className="flex items-center gap-1 mt-1 text-[9px] text-zinc-600">
-          <Clock className="w-3 h-3" />
-          <span>{battle.duration_hours}h battle</span>
-          {isLive && battle.ends_at && (
-            <span className="ml-1 text-red-500/70">· {formatTimeLeft(battle.ends_at)} left</span>
-          )}
         </div>
         {battle.sponsor_name && (
           <div className="flex items-center gap-1.5 mt-1.5">
@@ -214,11 +202,8 @@ function OpenMatchupCard({ app, onJoin, currentUserId }: { app: CashBattleApplic
       whileTap={{ scale: 0.97 }}
       whileHover={{ y: -2 }}
       onClick={isOwnApp ? undefined : onJoin}
-      className="w-full h-full rounded-2xl overflow-hidden cursor-pointer relative flex flex-col"
-      style={{
-        background: "linear-gradient(160deg, rgba(22,22,28,1) 0%, rgba(6,6,8,1) 100%)",
-        boxShadow: "0 0 30px rgba(59,130,246,0.08), 0 0 30px rgba(239,68,68,0.08), 0 12px 40px rgba(0,0,0,0.7)",
-      }}
+      className="w-full h-full rounded-2xl overflow-hidden cursor-pointer relative flex flex-col border border-white/[0.06]"
+      style={{ background: "transparent" }}
     >
       <div className="absolute top-0 left-0 right-0 h-[2px]" style={{
         background: "linear-gradient(90deg, #3b82f6, transparent 40%, transparent 60%, #ef4444)",
@@ -276,10 +261,6 @@ function OpenMatchupCard({ app, onJoin, currentUserId }: { app: CashBattleApplic
               {isOwnApp ? "YOUR MATCH" : "OPEN"}
             </span>
           </div>
-        </div>
-        <div className="flex items-center gap-1 mt-1 text-[9px] text-zinc-600">
-          <Clock className="w-3 h-3" />
-          <span>24h battle</span>
         </div>
       </div>
 
