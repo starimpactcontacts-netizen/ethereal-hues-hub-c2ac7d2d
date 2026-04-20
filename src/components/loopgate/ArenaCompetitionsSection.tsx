@@ -42,7 +42,7 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
   };
 
   return (
-    <ArenaRailCard>
+    <div className="shrink-0 snap-start" style={{ width: 176, height: 220 }}>
       <motion.div
         whileTap={{ scale: 0.97 }}
         onClick={() => navigate(`/competition/${comp.slug || comp.id}`)}
@@ -67,45 +67,24 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-surface-1 via-black/40 to-transparent" />
         <div className="absolute top-2 left-2"><LeagueBadge league={comp.league} /></div>
-        <div className="absolute bottom-1.5 right-2">
-          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-md border border-white/[0.12]">
-            <span className="w-1 h-1 rounded-full bg-amber-400 animate-pulse" />
-            <span className="text-[7px] font-extrabold uppercase tracking-[0.1em] text-amber-300" style={{ fontFamily: "'Teko', sans-serif" }}>
-              {isLobby ? "Lobby" : "Live"}
-            </span>
-          </div>
-        </div>
       </div>
 
-      {/* Content — compact */}
-       <div className="p-3 flex flex-col justify-between flex-1">
-        <div>
-          <h3 className="text-[11px] font-bold text-foreground truncate leading-tight tracking-tight" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
-            {comp.name}
-          </h3>
-          <div className="flex items-center justify-between text-[8px] mt-1">
-            <span className="text-muted-foreground font-bold flex items-center gap-0.5">
-              <Users className="w-2.5 h-2.5" />
-              {comp.current_players}/{comp.max_players}
-            </span>
-            {comp.index_reward_pool > 0 && (
-              <span className="flex items-center gap-0.5 text-gold font-bold">
-                <Trophy className="w-2.5 h-2.5" /> +{comp.index_reward_pool}
-              </span>
-            )}
-          </div>
-        </div>
+      {/* Content */}
+       <div className="p-3 flex flex-col justify-between flex-1 gap-2">
+        <h3 className="text-[12px] font-bold text-foreground leading-tight tracking-tight line-clamp-2" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
+          {comp.name}
+        </h3>
         <button
           onClick={(e) => { e.stopPropagation(); onJoin(comp.id); }}
           disabled={spotsLeft <= 0}
-          className="w-full py-2.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-emerald-500 text-white hover:bg-emerald-400 active:bg-emerald-600 transition-all disabled:opacity-30 disabled:cursor-not-allowed touch-manipulation"
+          className="w-full py-2 rounded-md text-[11px] font-bold uppercase tracking-wider bg-emerald-500 text-white hover:bg-emerald-400 active:bg-emerald-600 transition-all disabled:opacity-30 disabled:cursor-not-allowed touch-manipulation"
           style={{ fontFamily: "'Teko', sans-serif" }}
         >
           {spotsLeft <= 0 ? "FULL" : "JOIN"}
         </button>
       </div>
      </motion.div>
-     </ArenaRailCard>
+     </div>
   );
 }
 
@@ -165,7 +144,7 @@ export default function ArenaCompetitionsSection({ onCreateClick }: { onCreateCl
           {comps.map(comp => <CompetitionCard key={comp.id} comp={comp} onJoin={handleJoin} />)}
 
           {/* Create Your Own — poster card */}
-          <ArenaRailCard>
+          <div className="shrink-0 snap-start" style={{ width: 176, height: 220 }}>
             <motion.div
               whileTap={{ scale: 0.97 }}
               onClick={onCreateClick}
@@ -188,7 +167,7 @@ export default function ArenaCompetitionsSection({ onCreateClick }: { onCreateCl
                 </p>
               </div>
             </motion.div>
-          </ArenaRailCard>
+          </div>
         </ArenaRail>
       )}
     </motion.section>
