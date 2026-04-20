@@ -144,7 +144,7 @@ export default function ArenaCompetitionsSection({ onCreateClick }: { onCreateCl
           {comps.map(comp => <CompetitionCard key={comp.id} comp={comp} onJoin={handleJoin} />)}
 
           {/* Create Your Own — poster card */}
-          <ArenaRailCard>
+          <div className="shrink-0 snap-start" style={{ width: 176, height: 220 }}>
             <motion.div
               whileTap={{ scale: 0.97 }}
               onClick={onCreateClick}
