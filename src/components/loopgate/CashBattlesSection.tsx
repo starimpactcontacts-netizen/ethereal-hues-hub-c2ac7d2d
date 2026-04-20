@@ -327,12 +327,7 @@ function OpenMatchupCard({ app, onJoin, currentUserId }: { app: CashBattleApplic
             CANCEL
           </button>
         ) : (
-          <div className="w-full text-center py-2.5 rounded-xl text-[13px] font-black uppercase tracking-wider border" style={{
-            fontFamily: "Teko, sans-serif",
-            background: "linear-gradient(135deg, rgba(59,130,246,0.15), rgba(239,68,68,0.15))",
-            borderColor: "rgba(239,68,68,0.3)",
-            color: "#fff",
-          }}>
+          <div className="w-full text-center py-2.5 rounded-xl text-[13px] font-black uppercase tracking-wider border bg-white/[0.04] border-white/10 text-zinc-200" style={{ fontFamily: "Teko, sans-serif" }}>
             ACCEPT FIGHT
           </div>
         )}
