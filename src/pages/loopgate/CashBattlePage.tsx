@@ -351,16 +351,59 @@ export default function CashBattlePage() {
 
       {/* Countdown Timer */}
       {isLive && (
-        <div className="mx-4 mt-3 rounded-2xl py-3 text-center" style={{
-          background: countdown.expired ? "rgba(239,68,68,0.1)" : "rgba(255,255,255,0.03)",
-          border: `1px solid ${countdown.expired ? "rgba(239,68,68,0.3)" : "rgba(255,255,255,0.06)"}`,
-        }}>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-0.5" style={{ fontFamily: "Teko, sans-serif" }}>
-            {countdown.expired ? "Submissions Closed" : "Time Remaining"}
+        <motion.div
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mx-4 mt-3 rounded-2xl py-4 text-center relative overflow-hidden"
+          style={{
+            background: countdown.expired
+              ? "linear-gradient(135deg, rgba(239,68,68,0.18), rgba(120,20,30,0.25))"
+              : "linear-gradient(135deg, rgba(59,130,246,0.12), rgba(168,85,247,0.12), rgba(239,68,68,0.12))",
+            border: `1px solid ${countdown.expired ? "rgba(239,68,68,0.45)" : "rgba(255,255,255,0.08)"}`,
+            boxShadow: countdown.expired
+              ? "0 0 32px rgba(239,68,68,0.25), inset 0 1px 0 rgba(255,255,255,0.05)"
+              : "0 0 24px rgba(59,130,246,0.15), inset 0 1px 0 rgba(255,255,255,0.06)",
+          }}
+        >
+          {/* animated shine */}
+          {!countdown.expired && (
+            <motion.div
+              className="absolute inset-0 pointer-events-none"
+              style={{ background: "linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.08) 50%, transparent 70%)" }}
+              animate={{ x: ["-100%", "100%"] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+            />
+          )}
+          <p className="text-[10px] uppercase tracking-[0.25em] text-white/60 mb-1 relative" style={{ fontFamily: "Teko, sans-serif" }}>
+            {countdown.expired ? "⛔ Submissions Closed" : "⏱ Time Remaining"}
           </p>
-          <p className={`text-3xl font-black ${countdown.expired ? "text-red-400" : "text-white"}`} style={{ fontFamily: "Teko, sans-serif", letterSpacing: "0.1em" }}>
+          <p
+            className={`text-4xl font-black relative ${countdown.expired ? "text-red-300" : "text-white"}`}
+            style={{
+              fontFamily: "Teko, sans-serif",
+              letterSpacing: "0.12em",
+              textShadow: countdown.expired ? "0 0 20px rgba(239,68,68,0.6)" : "0 0 20px rgba(255,255,255,0.3)",
+            }}
+          >
             {countdown.text}
           </p>
+        </motion.div>
+      )}
+
+      {/* Cancelled banner */}
+      {isCancelled && (
+        <div
+          className="mx-4 mt-3 rounded-2xl py-4 text-center"
+          style={{
+            background: "linear-gradient(135deg, rgba(80,80,90,0.25), rgba(40,40,50,0.4))",
+            border: "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          <XCircle className="w-7 h-7 text-zinc-400 mx-auto mb-1" />
+          <p className="text-lg font-black text-zinc-300 uppercase tracking-[0.15em]" style={{ fontFamily: "Teko, sans-serif" }}>
+            Battle Cancelled
+          </p>
+          <p className="text-[11px] text-zinc-500 mt-1">No submissions before the timer ran out.</p>
         </div>
       )}
 
