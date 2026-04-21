@@ -735,25 +735,47 @@ export default function CashBattlePage() {
 function FighterCorner({ username, avatarUrl, color, submitted, isWinner }: {
   username: string; avatarUrl: string | null; color: "blue" | "red"; submitted: boolean; isWinner: boolean;
 }) {
-  const ring = color === "blue" ? "ring-blue-500/50" : "ring-red-500/50";
   const bg = color === "blue" ? "bg-blue-500/15" : "bg-red-500/15";
   const textColor = color === "blue" ? "text-blue-400" : "text-red-400";
   const accentBg = color === "blue" ? "bg-blue-500" : "bg-red-500";
+  const glow = color === "blue" ? "rgba(59,130,246,0.55)" : "rgba(239,68,68,0.55)";
+  const ringGrad = color === "blue"
+    ? "conic-gradient(from 0deg, #60a5fa, #3b82f6, #1d4ed8, #60a5fa)"
+    : "conic-gradient(from 0deg, #fca5a5, #ef4444, #991b1b, #fca5a5)";
 
   return (
     <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
       <div className="relative">
-        <Avatar className={`w-14 h-14 ring-2 ${ring}`}>
+        {/* Spinning conic ring */}
+        <motion.div
+          className="absolute -inset-1 rounded-full"
+          style={{ background: ringGrad, filter: "blur(0.5px)" }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+        />
+        {/* Inner mask */}
+        <div className="absolute -inset-[2px] rounded-full" style={{ background: "#0a0a0c" }} />
+        <Avatar
+          className="w-16 h-16 relative"
+          style={{ boxShadow: `0 0 18px ${glow}` }}
+        >
           <AvatarImage src={avatarUrl || ""} />
           <AvatarFallback className={`text-lg font-black ${bg} ${textColor}`}>{username?.charAt(0)}</AvatarFallback>
         </Avatar>
-        <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full ${accentBg} flex items-center justify-center`}>
+        <div
+          className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full ${accentBg} flex items-center justify-center ring-2`}
+          style={{ boxShadow: `0 0 10px ${glow}`, ...(submitted ? {} : {}) }}
+        >
           {submitted ? <CheckCircle className="w-3 h-3 text-white" /> : <Zap className="w-3 h-3 text-white" />}
         </div>
         {isWinner && (
-          <div className="absolute -top-2 -right-2">
-            <Trophy className="w-5 h-5 text-amber-400" />
-          </div>
+          <motion.div
+            className="absolute -top-2 -right-2"
+            animate={{ scale: [1, 1.15, 1], rotate: [0, -8, 8, 0] }}
+            transition={{ duration: 1.6, repeat: Infinity }}
+          >
+            <Trophy className="w-5 h-5 text-amber-400" style={{ filter: "drop-shadow(0 0 6px rgba(251,191,36,0.7))" }} />
+          </motion.div>
         )}
       </div>
       <span className={`text-[13px] font-black truncate max-w-[80px] uppercase ${textColor}`} style={{ fontFamily: "Teko, sans-serif" }}>
