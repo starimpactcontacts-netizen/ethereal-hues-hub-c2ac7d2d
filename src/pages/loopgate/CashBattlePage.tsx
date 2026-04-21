@@ -766,7 +766,7 @@ function FighterCorner({ username, avatarUrl, color, submitted, isWinner }: {
           className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full ${accentBg} flex items-center justify-center ring-2`}
           style={{ boxShadow: `0 0 10px ${glow}`, ...(submitted ? {} : {}) }}
         >
-          {submitted ? <CheckCircle className="w-3 h-3 text-white" /> : <Zap className="w-3 h-3 text-white" />}
+          {submitted ? <CheckCircle className="w-3 h-3 text-white" /> : <Film className="w-3 h-3 text-white" />}
         </div>
         {isWinner && (
           <motion.div
