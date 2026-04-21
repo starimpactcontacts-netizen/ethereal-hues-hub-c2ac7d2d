@@ -244,24 +244,36 @@ export default function CompetitionLobbyPage() {
   return (
     <div className="min-h-screen bg-background pb-32">
       {/* ═══ HERO ═══ */}
-      <div className="relative overflow-hidden">
+      <div className={`relative overflow-hidden ${competition.inspo_video_url && inspoIsDirectVideo ? 'h-[420px]' : ''}`}>
         {competition.inspo_video_url && inspoIsDirectVideo ? (
-          <video
-            ref={inspoVideoRef}
-            src={competition.inspo_video_url}
-            poster={competition.inspo_thumbnail_url || competition.cover_image_url || undefined}
-            className="w-full h-52 object-cover"
-            muted
-            loop
-            playsInline
-            preload="metadata"
-          />
+          <>
+            <video
+              ref={inspoVideoRef}
+              src={competition.inspo_video_url}
+              poster={competition.inspo_thumbnail_url || competition.cover_image_url || undefined}
+              className="w-full h-full object-cover"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+            />
+            {/* INSPO badge — top center */}
+            <div className="absolute top-16 left-1/2 -translate-x-1/2 z-10">
+              <div className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 flex items-center gap-1.5">
+                <Sparkles className="w-3 h-3 text-amber-400" />
+                <span className="text-[9px] font-extrabold uppercase tracking-[0.15em] text-white" style={teko}>
+                  Inspo Edit
+                </span>
+              </div>
+            </div>
+          </>
         ) : competition.cover_image_url ? (
           <img src={competition.cover_image_url} alt="" className="w-full h-52 object-cover" />
         ) : (
           <div className="w-full h-52 bg-gradient-to-br from-white/[0.03] via-surface-2 to-black" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-black/40 pointer-events-none" />
 
         {/* Nav */}
         <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
