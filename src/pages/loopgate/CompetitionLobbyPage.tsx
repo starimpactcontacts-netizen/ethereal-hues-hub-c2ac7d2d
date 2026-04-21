@@ -173,12 +173,6 @@ export default function CompetitionLobbyPage() {
     setSavingInspo(false);
   };
 
-  // Detect if inspo URL is a direct video file (mp4/webm) — then we can autoplay inline.
-  const inspoIsDirectVideo = useMemo(() => {
-    const u = competition?.inspo_video_url || "";
-    return /\.(mp4|webm|mov)(\?|$)/i.test(u);
-  }, [competition?.inspo_video_url]);
-
   return (
     <div className="min-h-screen bg-background pb-32">
       {/* ═══ HERO ═══ */}
