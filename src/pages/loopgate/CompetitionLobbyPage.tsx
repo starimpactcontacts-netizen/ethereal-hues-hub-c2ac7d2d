@@ -284,6 +284,82 @@ export default function CompetitionLobbyPage() {
           </div>
         )}
 
+        {/* ═══ INSPO EDIT — embedded player (when not a direct video) ═══ */}
+        {competition.inspo_video_url && !inspoIsDirectVideo && (
+          <a
+            href={competition.inspo_video_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block relative rounded-xl overflow-hidden border border-white/[0.08] bg-surface-2 group"
+          >
+            <div className="aspect-video bg-black flex items-center justify-center relative">
+              {competition.inspo_thumbnail_url ? (
+                <img src={competition.inspo_thumbnail_url} alt="Inspo edit" className="w-full h-full object-cover" />
+              ) : (
+                <Sparkles className="w-8 h-8 text-white/20" />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Sparkles className="w-3 h-3 text-amber-300" />
+                  <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-white/90" style={teko}>Inspo Edit</span>
+                </div>
+                <span className="text-[9px] uppercase tracking-wider text-white/60">{competition.inspo_video_platform}</span>
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center opacity-80 group-active:opacity-100">
+                <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
+                  <Play className="w-5 h-5 text-white fill-white ml-0.5" />
+                </div>
+              </div>
+            </div>
+          </a>
+        )}
+
+        {/* ═══ ADD INSPO EDIT — creator only, when none set ═══ */}
+        {isCreator && !competition.inspo_video_url && !showInspoForm && (
+          <button
+            onClick={() => setShowInspoForm(true)}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-white/[0.12] bg-white/[0.02] hover:bg-white/[0.04] transition-all"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-foreground/70" style={teko}>
+              Add Inspo Edit
+            </span>
+          </button>
+        )}
+
+        {isCreator && showInspoForm && (
+          <motion.form
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            onSubmit={handleSaveInspo}
+            className="space-y-2"
+          >
+            <p className="text-[10px] text-muted-foreground/60 px-1">
+              Drop a TikTok / Instagram / YouTube link to inspire editors. It'll autoplay in your lobby.
+            </p>
+            <input
+              value={inspoUrl}
+              onChange={e => setInspoUrl(e.target.value)}
+              placeholder="https://tiktok.com/..."
+              className="w-full bg-surface-2 border border-white/[0.06] rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:border-amber-400/40"
+            />
+            <div className="flex gap-2">
+              <button type="button" onClick={() => { setShowInspoForm(false); setInspoUrl(""); }} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-muted-foreground bg-surface-2 border border-white/[0.06]">
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={savingInspo || !inspoUrl.trim()}
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-30 transition-all"
+                style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)" }}
+              >
+                {savingInspo ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : "Save Inspo"}
+              </button>
+            </div>
+          </motion.form>
+        )}
+
         {/* ═══ GO EDIT — visible when live + joined + hasn't submitted ═══ */}
         {isLive && hasJoined && !hasSubmitted && (
           <motion.div
