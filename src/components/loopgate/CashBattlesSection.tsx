@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { DollarSign, Swords, Clock, Zap, Info, X, Loader2 } from "lucide-react";
@@ -329,7 +329,25 @@ function CashBattleInfoModal({ open, onClose }: { open: boolean; onClose: () => 
   );
 }
 
-export default function CashBattlesSection() {
+interface EditBattlesSectionProps {
+  idxBattles?: any[];
+  idxBattlesLoading?: boolean;
+  renderIdxBattleCard?: (battle: any) => ReactNode;
+  onQuickFight?: () => void;
+  onChallenge?: () => void;
+  isQfSearching?: boolean;
+  onCancelQueue?: () => void;
+}
+
+export default function CashBattlesSection({
+  idxBattles = [],
+  idxBattlesLoading = false,
+  renderIdxBattleCard,
+  onQuickFight,
+  onChallenge,
+  isQfSearching = false,
+  onCancelQueue,
+}: EditBattlesSectionProps = {}) {
   const navigate = useNavigate();
   const { battles, loading } = useCashBattles();
   const { battles: myBattles } = useMyCashBattles();
@@ -402,15 +420,15 @@ export default function CashBattlesSection() {
       <div className="flex items-center justify-between px-4 mb-3">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}>
-            <DollarSign className="w-4 h-4 text-white" />
+            <Swords className="w-4 h-4 text-white" />
           </div>
           <div>
             <h2 className="text-[15px] font-black uppercase tracking-wider text-white" style={{ fontFamily: "Teko, sans-serif" }}>
-              Cash Battles
+              Edit Battles
             </h2>
             <div className="flex items-center gap-1.5">
               <p className="text-[11px] font-semibold" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                1v1 · Winner takes all
+                1v1 · Cash & ranked
               </p>
               <button onClick={() => setInfoOpen(true)} className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center hover:bg-zinc-700 transition-colors">
                 <Info className="w-3 h-3 text-zinc-400" />
@@ -418,23 +436,64 @@ export default function CashBattlesSection() {
             </div>
           </div>
         </div>
-        <button
-          onClick={handleEnter}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white text-[10px] font-black uppercase tracking-wider transition-all hover:scale-105 relative"
-          style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}
-        >
-          <Zap className="w-3 h-3" />
-          <span>Join Battle</span>
-          {pendingApps.length > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-amber-400 text-black text-[9px] font-black flex items-center justify-center shadow-lg" style={{ fontFamily: "Teko, sans-serif" }}>
-              {pendingApps.length}
-            </span>
+        <div className="flex items-center gap-1.5">
+          {onQuickFight && (
+            <button
+              onClick={onQuickFight}
+              disabled={isQfSearching}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-white text-[10px] font-black uppercase tracking-wider transition-all hover:brightness-110 disabled:opacity-60"
+              style={{ background: 'linear-gradient(135deg, #10B981, #059669)' }}
+            >
+              {isQfSearching ? <Loader2 className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />}
+              Quick
+            </button>
           )}
-        </button>
+          <button
+            onClick={handleEnter}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-white text-[10px] font-black uppercase tracking-wider transition-all hover:scale-105 relative"
+            style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}
+          >
+            <DollarSign className="w-3 h-3" />
+            <span>Cash</span>
+            {pendingApps.length > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-amber-400 text-black text-[9px] font-black flex items-center justify-center shadow-lg" style={{ fontFamily: "Teko, sans-serif" }}>
+                {pendingApps.length}
+              </span>
+            )}
+          </button>
+          {onChallenge && (
+            <button
+              onClick={onChallenge}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-white text-[10px] font-black uppercase tracking-wider transition-all hover:brightness-110"
+              style={{ background: 'linear-gradient(135deg, #3B82F6, #EF4444)' }}
+            >
+              <Swords className="w-3 h-3" />
+              Challenge
+            </button>
+          )}
+        </div>
       </div>
 
+      {/* Queue status bar */}
+      {isQfSearching && (
+        <div className="mx-4 mb-3 flex items-center justify-between px-3 py-2 rounded-xl border border-emerald-500/20 bg-emerald-500/[0.05]">
+          <div className="flex items-center gap-2">
+            <Loader2 className="w-3.5 h-3.5 text-emerald-400 animate-spin" />
+            <span className="text-[11px] text-emerald-400 font-medium">Finding you an opponent...</span>
+          </div>
+          {onCancelQueue && (
+            <button
+              onClick={onCancelQueue}
+              className="text-[10px] font-bold text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-lg hover:bg-white/[0.05]"
+            >
+              Cancel
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Horizontal scroll — open matchups first, then existing battles */}
-      {loading ? <ArenaRailSkeleton count={3} /> : <ArenaRail>
+      {(loading || idxBattlesLoading) ? <ArenaRailSkeleton count={3} /> : <ArenaRail>
         {/* Open matchup cards from pending applications */}
         {pendingApps.map((app) => (
           <ArenaRailCard key={app.id}>
@@ -455,8 +514,15 @@ export default function CashBattlesSection() {
             </ArenaRailCard>
           ))}
 
+        {/* Ranked IDX 1v1 battles — merged in */}
+        {renderIdxBattleCard && idxBattles.slice(0, 10).map((battle) => (
+          <ArenaRailCard key={`idx-${battle.id}`}>
+            {renderIdxBattleCard(battle)}
+          </ArenaRailCard>
+        ))}
+
         {/* Join teaser — only show if no pending apps */}
-        {pendingApps.length === 0 && (
+        {pendingApps.length === 0 && battles.length === 0 && idxBattles.length === 0 && (
           <ArenaRailCard>
             <motion.div
               whileTap={{ scale: 0.97 }}
