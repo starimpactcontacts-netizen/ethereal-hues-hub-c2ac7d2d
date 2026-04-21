@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Swords, Clock, Trophy, Search, User, Gavel, Zap, Music } from "lucide-react";
+import { X, Swords, Clock, Trophy, Search, User, Gavel, Zap, Music, Globe2, Target, Film } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
