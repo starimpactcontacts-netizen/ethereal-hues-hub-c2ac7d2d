@@ -56,8 +56,8 @@ export default function CompetitionLobbyPage() {
   const { user, profile } = useAuth();
   const {
     competition, participants, submissions, loading,
-    isCreator, hasJoined, hasSubmitted,
-    join, start, submit,
+    isCreator, hasJoined, hasSubmitted, hasUpvoted,
+    join, start, submit, toggleUpvote, updateInspo,
   } = useCompetition(id);
 
   
@@ -69,7 +69,11 @@ export default function CompetitionLobbyPage() {
   const [platform, setPlatform] = useState<PlatformType>("tiktok");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showInspoForm, setShowInspoForm] = useState(false);
+  const [inspoUrl, setInspoUrl] = useState("");
+  const [savingInspo, setSavingInspo] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
+  const inspoVideoRef = useAutoplayVideo(true);
 
   if (loading) {
     return (
