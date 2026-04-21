@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Trophy, Users, Clock, Play, Loader2, Send,
-  Share2, Check, MessageCircle, Layers, Pencil, X, ThumbsUp, Sparkles, Upload
+  Share2, Check, MessageCircle, Layers, Pencil, X, ThumbsUp, Sparkles, Upload, Volume2, VolumeX
 } from "lucide-react";
 import { useCompetition } from "@/hooks/useCompetitions";
 import { useAuth } from "@/hooks/useAuth";
@@ -75,6 +75,19 @@ export default function CompetitionLobbyPage() {
   const inspoFileInputRef = useRef<HTMLInputElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
   const inspoVideoRef = useAutoplayVideo(true);
+  const [inspoMuted, setInspoMuted] = useState(true);
+
+  const toggleInspoMute = () => {
+    const v = inspoVideoRef.current;
+    if (!v) return;
+    const next = !v.muted;
+    v.muted = next;
+    if (!next) {
+      v.volume = 1;
+      v.play().catch(() => {});
+    }
+    setInspoMuted(next);
+  };
 
   // Detect if inspo URL is a direct video file (mp4/webm) — then we can autoplay inline.
   // MUST be declared before any early return to keep hook order stable.
@@ -267,6 +280,18 @@ export default function CompetitionLobbyPage() {
                 </span>
               </div>
             </div>
+            {/* Mute toggle — bottom right of hero */}
+            <button
+              onClick={toggleInspoMute}
+              className="absolute bottom-4 right-4 z-20 w-10 h-10 rounded-full bg-black/60 backdrop-blur-md border border-white/10 flex items-center justify-center active:scale-95 transition-all hover:bg-black/80"
+              aria-label={inspoMuted ? "Unmute" : "Mute"}
+            >
+              {inspoMuted ? (
+                <VolumeX className="w-4 h-4 text-white" />
+              ) : (
+                <Volume2 className="w-4 h-4 text-emerald-400" />
+              )}
+            </button>
           </>
         ) : competition.cover_image_url ? (
           <img src={competition.cover_image_url} alt="" className="w-full h-52 object-cover" />
