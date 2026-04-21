@@ -232,11 +232,11 @@ export async function acceptBattle(battleId: string, opponentId: string, opponen
       .from('battles')
       .select('duration_hours')
       .eq('id', battleId)
-      .single();
+      .maybeSingle();
 
     const endsAt = new Date(startsAt.getTime() + (battle?.duration_hours || 48) * 60 * 60 * 1000);
 
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from('battles')
       .update({
         opponent_id: opponentId,
@@ -248,9 +248,15 @@ export async function acceptBattle(battleId: string, opponentId: string, opponen
         ends_at: endsAt.toISOString(),
       })
       .eq('id', battleId)
-      .eq('status', 'pending');
+      .eq('status', 'pending')
+      .select('id');
 
-    return !error;
+    if (error) {
+      console.error('acceptBattle error:', error);
+      return false;
+    }
+    // If RLS or a race blocks the update, no row will come back
+    return Array.isArray(updated) && updated.length > 0;
   } catch (error) {
     console.error('Error accepting battle:', error);
     return false;
