@@ -741,44 +741,68 @@ export default function ArenaPage() {
                MY ARENA — Personal dashboard
             ═══════════════════════════════════════════════════ */
             <div className="space-y-4 pb-4">
-              {/* Profile Card */}
+              {/* Profile Card — iPhone 17 glass + Roblox vibrancy */}
               {profile && (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
-                  <Link to="/profile" className="block">
-                    <div className="bg-surface-1 border border-border p-4 flex items-center gap-4 hover:border-foreground/20 transition-all">
-                      <Avatar className="w-14 h-14 border-2 border-gold/40 shrink-0">
-                        <AvatarImage src={profile.avatar_url || ''} />
-                        <AvatarFallback className="bg-gold/10 text-gold text-lg font-bold">
-                          {profile.username?.charAt(0).toUpperCase() || '?'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[15px] font-black text-foreground truncate" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-                          {profile.display_name || profile.username}
-                        </p>
-                        <p className="text-[11px] text-muted-foreground">@{profile.username}</p>
-                        <div className="flex items-center gap-3 mt-1.5">
-                          {userStats && (
-                            <>
-                              <span className="text-[11px] font-bold text-emerald-400">{userStats.wins}W</span>
-                              <span className="text-[11px] font-bold text-red-400">{userStats.losses}L</span>
-                              {userStats.streak > 0 && (
-                                <span className="text-[11px] font-bold text-gold flex items-center gap-0.5">
-                                  <Flame className="w-3 h-3" />{userStats.streak}
-                                </span>
-                              )}
-                              <span className="text-[11px] text-muted-foreground">{userStats.events} events</span>
-                            </>
-                          )}
+                  <Link to="/profile" className="block group">
+                    <div
+                      className="relative overflow-hidden rounded-3xl p-[1px] transition-all active:scale-[0.99]"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(255,200,80,0.55) 0%, rgba(255,255,255,0.06) 35%, rgba(124,58,237,0.35) 70%, rgba(239,68,68,0.45) 100%)',
+                        boxShadow: '0 18px 40px -18px rgba(255,180,60,0.35), 0 8px 24px -12px rgba(0,0,0,0.6)',
+                      }}
+                    >
+                      <div
+                        className="relative rounded-[22px] p-4 flex items-center gap-4 overflow-hidden"
+                        style={{
+                          background: 'linear-gradient(160deg, hsl(0 0% 11%) 0%, hsl(0 0% 7%) 100%)',
+                        }}
+                      >
+                        <div className="absolute -top-12 -right-10 w-40 h-40 rounded-full opacity-40 blur-3xl" style={{ background: 'radial-gradient(circle, rgba(255,180,60,0.45), transparent 70%)' }} />
+                        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+
+                        <div className="relative shrink-0">
+                          <div className="absolute -inset-1 rounded-full opacity-70 blur-md" style={{ background: 'conic-gradient(from 0deg, #f59e0b, #ef4444, #7c3aed, #3b82f6, #f59e0b)' }} />
+                          <Avatar className="relative w-14 h-14 ring-2 ring-black">
+                            <AvatarImage src={profile.avatar_url || ''} />
+                            <AvatarFallback className="bg-gold/10 text-gold text-lg font-bold">
+                              {profile.username?.charAt(0).toUpperCase() || '?'}
+                            </AvatarFallback>
+                          </Avatar>
                         </div>
-                      </div>
-                      <div className="shrink-0 flex flex-col items-end gap-1">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-gold">
-                          {(profile as any).league || 'Open'}
-                        </span>
-                        <span className="text-[11px] text-muted-foreground font-semibold tabular-nums">
-                          Lv.{(profile as any).level || 1}
-                        </span>
+
+                        <div className="relative flex-1 min-w-0">
+                          <p className="text-[15px] font-black text-foreground truncate tracking-tight">
+                            {profile.display_name || profile.username}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground">@{profile.username}</p>
+                          <div className="flex items-center gap-1.5 mt-2">
+                            {userStats && (
+                              <>
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-black tabular-nums bg-emerald-500/15 text-emerald-300 border border-emerald-500/25">{userStats.wins}W</span>
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-black tabular-nums bg-red-500/15 text-red-300 border border-red-500/25">{userStats.losses}L</span>
+                                {userStats.streak > 0 && (
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black tabular-nums bg-amber-500/15 text-amber-300 border border-amber-500/25 flex items-center gap-0.5">
+                                    <Flame className="w-2.5 h-2.5" />{userStats.streak}
+                                  </span>
+                                )}
+                                <span className="text-[10px] text-muted-foreground/80 ml-0.5">{userStats.events} events</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="relative shrink-0 flex flex-col items-end gap-1">
+                          <span
+                            className="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.15em] text-amber-200 border border-amber-400/30"
+                            style={{ background: 'linear-gradient(135deg, rgba(245,158,11,0.18), rgba(239,68,68,0.12))' }}
+                          >
+                            {(profile as any).league || 'Open'}
+                          </span>
+                          <span className="text-[11px] text-foreground/80 font-bold tabular-nums">
+                            Lv.{(profile as any).level || 1}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </Link>
