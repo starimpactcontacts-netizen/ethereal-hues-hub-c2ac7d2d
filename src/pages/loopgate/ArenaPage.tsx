@@ -1038,22 +1038,24 @@ export default function ArenaPage() {
               {/* Active Quick Fights */}
               {myActiveQuickFights.length > 0 && (
                 <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Zap className="w-4 h-4 text-red-400" />
-                    <span className="text-[13px] font-bold text-foreground">Active Quick Fights</span>
-                    <span className="text-[11px] text-red-400 font-semibold">{myActiveQuickFights.length}</span>
+                  <div className="flex items-center gap-2 mb-2 px-1">
+                    <Zap className="w-3.5 h-3.5 text-red-400" />
+                    <span className="text-[11px] font-black text-foreground/90 uppercase tracking-[0.15em]">Active Quick Fights</span>
+                    <span className="ml-auto text-[10px] text-red-300 font-black px-1.5 py-0.5 rounded-full bg-red-500/15 border border-red-500/25">{myActiveQuickFights.length}</span>
                   </div>
                   <div className="space-y-1.5">
                     {myActiveQuickFights.map(fight => (
                       <button key={fight.id} onClick={() => navigate(`/fight/${fight.id}`)}
-                        className="w-full flex items-center gap-3 p-3 bg-surface-1 border border-red-500/30 hover:border-red-500/50 transition-all text-left">
+                        className="w-full flex items-center gap-3 p-3 rounded-2xl border border-red-500/25 hover:border-red-500/50 transition-all text-left active:scale-[0.99]"
+                        style={{ background: 'linear-gradient(160deg, hsl(0 0% 11%) 0%, hsl(0 0% 7%) 100%)' }}
+                      >
                         <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0" />
+                          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0 shadow-[0_0_8px_rgba(239,68,68,0.7)]" />
                           <span className="text-[12px] font-bold text-foreground truncate">
                             {fight.player_1_username} vs {fight.player_2_username || '???'}
                           </span>
                         </div>
-                        <span className="text-[11px] font-bold text-red-400 uppercase">{fight.status}</span>
+                        <span className="text-[10px] font-black text-red-300 uppercase px-2 py-0.5 rounded-full bg-red-500/15 border border-red-500/25">{fight.status}</span>
                         <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
                       </button>
                     ))}
@@ -1064,22 +1066,26 @@ export default function ArenaPage() {
               {/* Active 1v1 Battles */}
               {myBattles.filter(b => b.status !== 'completed').length > 0 && (
                 <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Swords className="w-4 h-4 text-red-400" />
-                    <span className="text-[13px] font-bold text-foreground">Active 1v1 Battles</span>
+                  <div className="flex items-center gap-2 mb-2 px-1">
+                    <Swords className="w-3.5 h-3.5 text-red-400" />
+                    <span className="text-[11px] font-black text-foreground/90 uppercase tracking-[0.15em]">Active 1v1 Battles</span>
                   </div>
                   <div className="space-y-1.5">
                     {myBattles.filter(b => b.status !== 'completed').map(battle => (
                       <button key={battle.id} onClick={() => navigate(`/battle/${battle.id}`)}
-                        className="w-full flex items-center gap-3 p-3 bg-surface-1 border border-border hover:border-red-500/40 transition-all text-left">
+                        className="w-full flex items-center gap-3 p-3 rounded-2xl border border-white/[0.06] hover:border-red-500/40 transition-all text-left active:scale-[0.99]"
+                        style={{ background: 'linear-gradient(160deg, hsl(0 0% 11%) 0%, hsl(0 0% 7%) 100%)' }}
+                      >
                         <div className="flex-1 min-w-0">
                           <span className="text-[12px] font-bold text-foreground truncate block">
                             {battle.challenger_username} vs {battle.opponent_username || '???'}
                           </span>
                           <span className="text-[10px] text-muted-foreground">{(battle as any).theme_song_name || 'No song'}</span>
                         </div>
-                        <span className={`text-[10px] font-bold uppercase ${
-                          battle.status === 'active' ? 'text-red-400' : battle.status === 'judging' ? 'text-purple-400' : 'text-amber-400'
+                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full border ${
+                          battle.status === 'active' ? 'text-red-300 bg-red-500/15 border-red-500/25'
+                          : battle.status === 'judging' ? 'text-purple-300 bg-purple-500/15 border-purple-500/25'
+                          : 'text-amber-300 bg-amber-500/15 border-amber-500/25'
                         }`}>{battle.status}</span>
                         <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
                       </button>
@@ -1090,32 +1096,35 @@ export default function ArenaPage() {
 
               {/* Battle History */}
               <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <History className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-[13px] font-bold text-foreground">Battle History</span>
+                <div className="flex items-center gap-2 mb-2 px-1">
+                  <History className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span className="text-[11px] font-black text-foreground/90 uppercase tracking-[0.15em]">Battle History</span>
                 </div>
                 {(myCompletedQuickFights.length + myBattles.filter(b => b.status === 'completed').length) > 0 ? (
-                  <div className="space-y-1">
+                  <div
+                    className="rounded-2xl border border-white/[0.06] overflow-hidden divide-y divide-white/[0.05]"
+                    style={{ background: 'linear-gradient(160deg, hsl(0 0% 10%) 0%, hsl(0 0% 6%) 100%)' }}
+                  >
                     {myBattles.filter(b => b.status === 'completed').slice(0, 10).map(battle => (
                       <button key={battle.id} onClick={() => navigate(`/battle/${battle.id}`)}
-                        className="w-full flex items-center gap-3 p-2.5 bg-surface-1 border border-border hover:border-border/80 transition-all text-left">
+                        className="w-full flex items-center gap-3 px-3.5 py-2.5 hover:bg-white/[0.02] transition-all text-left">
                         <div className="flex-1 min-w-0">
                           <span className="text-[12px] text-foreground truncate block">
                             {battle.challenger_username} vs {battle.opponent_username}
                           </span>
                         </div>
                         {battle.winner_id === user?.id ? (
-                          <span className="text-[10px] font-bold text-emerald-400">WON</span>
+                          <span className="text-[10px] font-black text-emerald-300 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/25">WON</span>
                         ) : battle.winner_id ? (
-                          <span className="text-[10px] font-bold text-red-400">LOST</span>
+                          <span className="text-[10px] font-black text-red-300 px-2 py-0.5 rounded-full bg-red-500/15 border border-red-500/25">LOST</span>
                         ) : (
-                          <span className="text-[10px] font-bold text-muted-foreground">DRAW</span>
+                          <span className="text-[10px] font-black text-muted-foreground px-2 py-0.5 rounded-full bg-white/5 border border-white/10">DRAW</span>
                         )}
                       </button>
                     ))}
                     {myCompletedQuickFights.slice(0, 10).map(fight => (
                       <button key={fight.id} onClick={() => navigate(`/fight/${fight.id}`)}
-                        className="w-full flex items-center gap-3 p-2.5 bg-surface-1 border border-border hover:border-border/80 transition-all text-left">
+                        className="w-full flex items-center gap-3 px-3.5 py-2.5 hover:bg-white/[0.02] transition-all text-left">
                         <div className="flex-1 min-w-0">
                           <span className="text-[12px] text-foreground truncate block">
                             {fight.player_1_username} vs {fight.player_2_username}
@@ -1123,17 +1132,20 @@ export default function ArenaPage() {
                           <span className="text-[10px] text-muted-foreground">Quick 1v1</span>
                         </div>
                         {fight.winner_id === user?.id ? (
-                          <span className="text-[10px] font-bold text-emerald-400">WON</span>
+                          <span className="text-[10px] font-black text-emerald-300 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/25">WON</span>
                         ) : fight.winner_id ? (
-                          <span className="text-[10px] font-bold text-red-400">LOST</span>
+                          <span className="text-[10px] font-black text-red-300 px-2 py-0.5 rounded-full bg-red-500/15 border border-red-500/25">LOST</span>
                         ) : (
-                          <span className="text-[10px] font-bold text-muted-foreground">—</span>
+                          <span className="text-[10px] font-black text-muted-foreground px-2 py-0.5 rounded-full bg-white/5 border border-white/10">—</span>
                         )}
                       </button>
                     ))}
                   </div>
                 ) : (
-                  <div className="bg-surface-1 border border-border p-6 text-center">
+                  <div
+                    className="rounded-2xl border border-white/[0.06] p-6 text-center"
+                    style={{ background: 'linear-gradient(160deg, hsl(0 0% 10%) 0%, hsl(0 0% 6%) 100%)' }}
+                  >
                     <p className="text-[12px] text-muted-foreground">No completed battles yet</p>
                   </div>
                 )}
