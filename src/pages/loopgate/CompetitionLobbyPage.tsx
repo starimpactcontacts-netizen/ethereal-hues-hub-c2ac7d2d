@@ -146,6 +146,32 @@ export default function CompetitionLobbyPage() {
     } catch {}
   };
 
+  const handleUpvote = async () => {
+    if (!user) { navigate("/start"); return; }
+    await toggleUpvote();
+  };
+
+  const handleSaveInspo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = inspoUrl.trim();
+    if (!trimmed) return;
+    const detected = detectPlatform(trimmed);
+    if (!detected) { toast.error("Use a TikTok, Instagram, or YouTube link"); return; }
+    const validation = validatePlatformUrl(detected, trimmed);
+    if (!validation.valid) { toast.error(validation.error || "Invalid URL"); return; }
+    setSavingInspo(true);
+    const ok = await updateInspo({ url: trimmed, platform: detected });
+    if (ok) { toast.success("Inspo edit added!"); setShowInspoForm(false); setInspoUrl(""); }
+    else toast.error("Failed to save");
+    setSavingInspo(false);
+  };
+
+  // Detect if inspo URL is a direct video file (mp4/webm) — then we can autoplay inline.
+  const inspoIsDirectVideo = useMemo(() => {
+    const u = competition?.inspo_video_url || "";
+    return /\.(mp4|webm|mov)(\?|$)/i.test(u);
+  }, [competition?.inspo_video_url]);
+
   return (
     <div className="min-h-screen bg-background pb-32">
       {/* ═══ HERO ═══ */}
