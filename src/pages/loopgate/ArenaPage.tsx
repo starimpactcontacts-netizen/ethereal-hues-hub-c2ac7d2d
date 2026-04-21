@@ -1097,51 +1097,55 @@ export default function ArenaPage() {
 
           {/* Game lobby dropdown removed — direct actions via section buttons */}
 
-          {/* ═══ MISSION BILLBOARD — WeirdCity Campaign ═══ */}
-          {missionBillboards.length > 0 && (
-            <motion.button
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => navigate(`/commissions/${missionBillboards[0].id}`)}
-              className="relative w-full overflow-hidden touch-manipulation group mb-2 rounded-lg"
-              style={{ boxShadow: '0 4px 24px rgba(16, 185, 129, 0.15)' }}
-            >
-              {/* Background */}
-              {missionBillboards[0].poster_url ? (
-                <div className="absolute inset-0 bg-cover bg-center scale-[1.02] group-hover:scale-[1.06] transition-transform duration-700" style={{ backgroundImage: `url(${missionBillboards[0].poster_url})` }} />
-              ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-950 via-background to-emerald-950/50" />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/40" />
-              <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent" />
+          {/* ═══ EDIT BATTLES HERO CTA — the heartbeat of Loopgate ═══ */}
+          <motion.button
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={isQfSearching ? handleCancelQueue : handleQuickFight}
+            className="relative w-full overflow-hidden touch-manipulation group mb-3 rounded-2xl"
+            style={{ boxShadow: '0 8px 32px rgba(59,130,246,0.25), 0 4px 16px rgba(239,68,68,0.18)' }}
+          >
+            {/* Animated gradient background */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background: 'linear-gradient(120deg, #1e3a8a 0%, #3b82f6 35%, #7c3aed 55%, #ef4444 100%)',
+              }}
+            />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.18),transparent_60%)]" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
-              {/* Content */}
-              <div className="relative px-4 py-3.5 flex items-center gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <DollarSign className="w-3 h-3 text-emerald-400" />
-                    <span className="text-[9px] font-black text-emerald-400 uppercase tracking-[0.15em]">Mission — Live</span>
-                  </div>
-                  <h3 className="text-[16px] font-black text-white leading-tight truncate tracking-tight" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
-                    {missionBillboards[0].song_name}
-                  </h3>
-                  {missionBillboards[0].artist_name && (
-                    <p className="text-[9px] text-white/40 font-bold uppercase tracking-wider mt-0.5 truncate">{missionBillboards[0].artist_name}</p>
-                  )}
-                </div>
-                <div className="shrink-0 flex items-center gap-3">
-                  {missionBillboards[0].max_pay > 0 && (
-                    <span className="font-display text-xl text-emerald-400 font-black leading-none">${missionBillboards[0].max_pay}</span>
-                  )}
-                  <div className="bg-emerald-600 px-4 py-2 rounded-sm flex items-center gap-1.5 group-hover:bg-emerald-500 transition-colors">
-                    <Crosshair className="w-3.5 h-3.5 text-white" />
-                    <span className="text-[12px] font-black text-white uppercase tracking-wider" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>Enter</span>
-                  </div>
-                </div>
+            {/* Content */}
+            <div className="relative px-4 py-4 flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center shrink-0">
+                {isQfSearching ? (
+                  <Loader2 className="w-6 h-6 text-white animate-spin" />
+                ) : (
+                  <Swords className="w-6 h-6 text-white" />
+                )}
               </div>
-            </motion.button>
-          )}
+              <div className="flex-1 min-w-0 text-left">
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-[9px] font-black text-white/90 uppercase tracking-[0.18em]">
+                    {isQfSearching ? 'Finding opponent…' : 'Edit Battle · 1v1'}
+                  </span>
+                </div>
+                <h3 className="text-[22px] font-black text-white leading-none tracking-tight" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                  {isQfSearching ? 'IN QUEUE' : 'JOIN A BATTLE'}
+                </h3>
+                <p className="text-[10px] text-white/70 font-semibold mt-1 truncate">
+                  Tap to instantly queue — earn IDX, cash & rank
+                </p>
+              </div>
+              <div className="shrink-0 bg-white text-black px-4 py-2.5 rounded-xl flex items-center gap-1.5 group-hover:scale-105 transition-transform">
+                <span className="text-[13px] font-black uppercase tracking-wider" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                  {isQfSearching ? 'Cancel' : 'Enter'}
+                </span>
+              </div>
+            </div>
+          </motion.button>
 
           {/* KotH live drop promo — only if no missions */}
           {missionBillboards.length === 0 && liveDrops.length > 0 && (
