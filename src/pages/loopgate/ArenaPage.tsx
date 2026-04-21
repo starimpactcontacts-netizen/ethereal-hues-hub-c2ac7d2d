@@ -1213,9 +1213,19 @@ export default function ArenaPage() {
 
           {/* search bar moved to top */}
 
-          {/* ═══ CASH BATTLES ═══ */}
+          {/* ═══ EDIT BATTLES (Cash + Ranked merged) ═══ */}
           <div className="mb-5">
-            <CashBattlesSection />
+            <CashBattlesSection
+              idxBattles={battles}
+              idxBattlesLoading={battlesLoading}
+              renderIdxBattleCard={(battle) => (
+                <BattleCard battle={battle} onClick={() => navigate(`/battle/${battle.id}`)} />
+              )}
+              onQuickFight={handleQuickFight}
+              onChallenge={() => profile ? setShowCreateBattle(true) : navigate('/start')}
+              isQfSearching={isQfSearching}
+              onCancelQueue={handleCancelQueue}
+            />
           </div>
 
           {/* ═══ MISSIONS ═══ */}
