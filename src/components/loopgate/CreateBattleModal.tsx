@@ -226,28 +226,36 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
           exit={{ y: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
           onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-md bg-background border-t border-red-500/30 rounded-t-2xl overflow-hidden"
-          style={{ maxHeight: "85vh", marginBottom: "calc(56px + env(safe-area-inset-bottom, 0px))" }}
+          className="w-full max-w-md rounded-t-[28px] overflow-hidden relative"
+          style={{
+            maxHeight: "88vh",
+            marginBottom: "calc(56px + env(safe-area-inset-bottom, 0px))",
+            background: "linear-gradient(180deg, rgba(28,28,32,0.98) 0%, rgba(18,18,22,0.98) 100%)",
+            boxShadow: "0 -20px 60px -10px rgba(239,68,68,0.25), inset 0 1px 0 rgba(255,255,255,0.08)",
+            border: "1px solid rgba(255,255,255,0.06)",
+          }}
         >
+          {/* Drag handle */}
+          <div className="flex justify-center pt-2 pb-1">
+            <div className="w-10 h-1 rounded-full bg-white/15" />
+          </div>
+
           {/* Header */}
-          <div className="relative p-4 bg-gradient-to-r from-red-500/20 via-surface-1 to-red-500/20 border-b border-border flex-shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center shadow-lg shadow-red-500/40">
-                <Swords className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h2 className="font-display text-lg text-foreground">Create 1v1 Battle</h2>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                  Head-to-head showdown
-                </p>
-              </div>
+          <div className="relative px-5 pt-2 pb-4 flex items-center justify-between">
+            <div>
+              <h2 className="font-display text-xl text-white tracking-tight">New Edit Battle</h2>
+              <p className="text-[11px] text-zinc-400 mt-0.5">Challenge an editor — winner takes Index</p>
             </div>
-            <button onClick={onClose} className="absolute top-4 right-4 p-2 hover:bg-surface-1 rounded-full transition-colors">
-              <X className="w-5 h-5 text-muted-foreground" />
+            <button
+              onClick={onClose}
+              aria-label="Close"
+              className="w-9 h-9 rounded-full bg-white/[0.08] hover:bg-white/[0.14] active:scale-95 transition-all flex items-center justify-center backdrop-blur-xl border border-white/10"
+            >
+              <X className="w-4 h-4 text-white" strokeWidth={2.5} />
             </button>
           </div>
 
-          <div className="p-4 space-y-4 overflow-y-auto overscroll-contain" style={{ maxHeight: "calc(85vh - 80px)", WebkitOverflowScrolling: "touch" }}>
+          <div className="px-4 pb-6 space-y-4 overflow-y-auto overscroll-contain" style={{ maxHeight: "calc(88vh - 80px)", WebkitOverflowScrolling: "touch" }}>
             {/* Rapid Mode Toggle */}
             <div>
               <button
@@ -255,42 +263,52 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
                   setIsRapid(!isRapid);
                   setDuration(!isRapid ? 3 : 48);
                 }}
-                className={`w-full p-3 border text-left transition-all flex items-center gap-3 ${
-                  isRapid ? 'border-amber-500 bg-amber-500/10' : 'border-border hover:border-amber-500/50'
+                className={`w-full p-3.5 rounded-2xl text-left transition-all flex items-center gap-3 active:scale-[0.99] ${
+                  isRapid
+                    ? 'bg-gradient-to-r from-amber-500/20 to-orange-500/10 border border-amber-400/40 shadow-[0_0_20px_-4px_rgba(245,158,11,0.4)]'
+                    : 'bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.06]'
                 }`}
               >
-                <Zap className={`w-5 h-5 ${isRapid ? 'text-amber-400' : 'text-muted-foreground'}`} />
-                <div className="flex-1">
-                  <span className="text-sm font-display text-foreground block">⚡ Rapid Mode</span>
-                  <span className="text-[10px] text-muted-foreground">1-3 hour battles · reuse existing edits · instant action</span>
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${isRapid ? 'bg-amber-500/25' : 'bg-white/[0.06]'}`}>
+                  <Zap className={`w-4.5 h-4.5 ${isRapid ? 'text-amber-300 fill-amber-300' : 'text-zinc-500'}`} />
                 </div>
-                <div className={`w-10 h-5 rounded-full transition-colors ${isRapid ? 'bg-amber-500' : 'bg-surface-2'}`}>
-                  <div className={`w-4 h-4 rounded-full bg-white mt-0.5 transition-transform ${isRapid ? 'ml-5.5 translate-x-0.5' : 'ml-0.5'}`} />
+                <div className="flex-1">
+                  <span className="text-sm font-semibold text-white block">Rapid Mode</span>
+                  <span className="text-[10px] text-zinc-500">1-3h battles · instant action</span>
+                </div>
+                <div className={`w-11 h-6 rounded-full transition-colors relative ${isRapid ? 'bg-amber-500' : 'bg-white/10'}`}>
+                  <div className={`w-5 h-5 rounded-full bg-white absolute top-0.5 transition-all shadow-md ${isRapid ? 'left-[22px]' : 'left-0.5'}`} />
                 </div>
               </button>
             </div>
 
             {/* Challenge Type */}
             <div>
-              <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2 block">Challenge Type</label>
-              <div className="grid grid-cols-2 gap-2">
+              <label className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2 block font-semibold">Challenge Type</label>
+              <div className="grid grid-cols-2 gap-2.5">
                 <button
                   onClick={() => setChallengeType('open')}
-                  className={`p-3 border text-left transition-all ${
-                    challengeType === 'open' ? 'border-red-500 bg-red-500/10' : 'border-border hover:border-red-500/50'
+                  className={`p-3.5 rounded-2xl text-left transition-all active:scale-[0.98] ${
+                    challengeType === 'open'
+                      ? 'bg-gradient-to-br from-red-500/25 to-red-600/10 border border-red-400/50 shadow-[0_0_20px_-4px_rgba(239,68,68,0.5)]'
+                      : 'bg-white/[0.04] border border-white/[0.06]'
                   }`}
                 >
-                  <span className="text-sm font-display text-foreground block">Open Challenge</span>
-                  <span className="text-[10px] text-muted-foreground">Anyone can accept</span>
+                  <Globe2 className={`w-4 h-4 mb-1.5 ${challengeType === 'open' ? 'text-red-300' : 'text-zinc-500'}`} />
+                  <span className="text-sm font-semibold text-white block">Open</span>
+                  <span className="text-[10px] text-zinc-500">Anyone can join</span>
                 </button>
                 <button
                   onClick={() => setChallengeType('direct')}
-                  className={`p-3 border text-left transition-all ${
-                    challengeType === 'direct' ? 'border-red-500 bg-red-500/10' : 'border-border hover:border-red-500/50'
+                  className={`p-3.5 rounded-2xl text-left transition-all active:scale-[0.98] ${
+                    challengeType === 'direct'
+                      ? 'bg-gradient-to-br from-red-500/25 to-red-600/10 border border-red-400/50 shadow-[0_0_20px_-4px_rgba(239,68,68,0.5)]'
+                      : 'bg-white/[0.04] border border-white/[0.06]'
                   }`}
                 >
-                  <span className="text-sm font-display text-foreground block">Direct Challenge</span>
-                  <span className="text-[10px] text-muted-foreground">Challenge a specific editor</span>
+                  <Target className={`w-4 h-4 mb-1.5 ${challengeType === 'direct' ? 'text-red-300' : 'text-zinc-500'}`} />
+                  <span className="text-sm font-semibold text-white block">Invite</span>
+                  <span className="text-[10px] text-zinc-500">Pick an editor</span>
                 </button>
               </div>
             </div>
