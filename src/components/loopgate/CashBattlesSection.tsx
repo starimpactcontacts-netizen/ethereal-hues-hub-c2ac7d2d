@@ -1,7 +1,7 @@
 import { useState, useEffect, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { DollarSign, Swords, Clock, Info, X, Loader2 } from "lucide-react";
+import { DollarSign, Swords, Clock, Info, X, Loader2, Building2 } from "lucide-react";
 import CashBattleVoteBar from "@/components/loopgate/CashBattleVoteBar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCashBattles, useMyCashBattles, useMyCashBattleApplication, CashBattleApplication } from "@/hooks/useCashBattles";
@@ -85,11 +85,11 @@ function CashBattleCard({ battle, currentUserId }: { battle: any; currentUserId?
           </div>
         </div>
         {battle.sponsor_name && (
-          <div className="flex items-center gap-1.5 mt-1.5">
+          <div className="flex items-center gap-1 mt-1 min-w-0">
             {battle.sponsor_logo_url ? (
-              <img src={battle.sponsor_logo_url} alt="" className="w-3.5 h-3.5 rounded-sm object-cover" />
+              <img src={battle.sponsor_logo_url} alt="" className="w-3 h-3 rounded-sm object-cover shrink-0" />
             ) : (
-              <span className="text-[8px]">🏢</span>
+              <Building2 className="w-2.5 h-2.5 text-blue-400/70 shrink-0" strokeWidth={2.5} />
             )}
             <span className="text-[9px] text-blue-400/80 font-semibold truncate">by {battle.sponsor_name}</span>
           </div>
