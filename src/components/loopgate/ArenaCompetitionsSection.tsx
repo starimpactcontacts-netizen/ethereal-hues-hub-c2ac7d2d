@@ -7,7 +7,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ArenaRail, ArenaRailSkeleton } from "@/components/loopgate/ArenaCarouselSystem";
 
-const SQUARE_SIZE = 180;
+const CARD_W = 160;
+const CARD_H = 220;
 
 function formatCount(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -36,7 +37,7 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
   };
 
   return (
-    <div className="shrink-0 snap-start" style={{ width: SQUARE_SIZE, height: SQUARE_SIZE }}>
+    <div className="shrink-0 snap-start" style={{ width: CARD_W, height: CARD_H }}>
       <motion.div
         whileTap={{ scale: 0.97 }}
         onClick={() => navigate(`/competition/${comp.slug || comp.id}`)}
@@ -149,7 +150,7 @@ export default function ArenaCompetitionsSection({ onCreateClick, hideHeader = f
           {comps.map(comp => <CompetitionCard key={comp.id} comp={comp} onJoin={handleJoin} />)}
 
           {/* Create Your Own — square poster */}
-          <div className="shrink-0 snap-start" style={{ width: SQUARE_SIZE, height: SQUARE_SIZE }}>
+          <div className="shrink-0 snap-start" style={{ width: CARD_W, height: CARD_H }}>
             <motion.div
               whileTap={{ scale: 0.97 }}
               onClick={onCreateClick}
