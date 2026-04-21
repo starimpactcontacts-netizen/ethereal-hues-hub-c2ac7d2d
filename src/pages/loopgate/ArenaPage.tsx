@@ -983,29 +983,55 @@ export default function ArenaPage() {
 
               {/* Open Editor — Studio CTA */}
               <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-                <Link to="/studio" className="block">
-                  <div className="group relative bg-surface-1 border border-border hover:border-foreground/20 transition-all overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#9999FF]/5 via-transparent to-[#9999FF]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="relative flex items-center gap-4 p-4">
-                      <div className="w-12 h-12 bg-[#9999FF]/10 border border-[#9999FF]/20 flex items-center justify-center shrink-0">
-                        <Clapperboard className="w-6 h-6 text-[#9999FF]" />
+                <Link to="/studio" className="block group">
+                  <div
+                    className="relative overflow-hidden rounded-2xl p-[1px] transition-all active:scale-[0.99]"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(153,153,255,0.45) 0%, rgba(255,255,255,0.05) 50%, rgba(124,58,237,0.35) 100%)',
+                      boxShadow: '0 14px 32px -16px rgba(124,58,237,0.45)',
+                    }}
+                  >
+                    <div
+                      className="relative rounded-[14px] flex items-center gap-3.5 p-3.5 overflow-hidden"
+                      style={{ background: 'linear-gradient(160deg, hsl(0 0% 11%) 0%, hsl(0 0% 7%) 100%)' }}
+                    >
+                      <div className="absolute -top-10 -left-6 w-32 h-32 rounded-full opacity-30 blur-3xl" style={{ background: 'radial-gradient(circle, rgba(153,153,255,0.6), transparent 70%)' }} />
+                      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+                      <div
+                        className="relative w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border border-white/10"
+                        style={{ background: 'linear-gradient(135deg, rgba(153,153,255,0.22), rgba(124,58,237,0.15))', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12)' }}
+                      >
+                        <Clapperboard className="w-5 h-5 text-[#b4b4ff]" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[14px] font-black text-foreground tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Open Editor</p>
-                        <p className="text-[11px] text-muted-foreground">Studio — create, edit & export</p>
+                      <div className="relative flex-1 min-w-0">
+                        <p className="text-[14px] font-black text-foreground tracking-tight">Open Studio</p>
+                        <p className="text-[11px] text-muted-foreground">Create, edit & export</p>
                       </div>
-                      <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-[#9999FF] transition-colors shrink-0" />
+                      <div className="relative shrink-0 w-7 h-7 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center group-hover:bg-white/[0.1] transition-colors">
+                        <ArrowRight className="w-3.5 h-3.5 text-foreground/80" />
+                      </div>
                     </div>
                   </div>
                 </Link>
               </motion.div>
 
               {!activeSolo && profile && (
-                <div className="bg-surface-1 border border-border p-4 text-center">
-                  <Sparkles className="w-5 h-5 text-muted-foreground/30 mx-auto mb-2" />
+                <div
+                  className="relative overflow-hidden rounded-2xl p-5 text-center border border-white/[0.06]"
+                  style={{ background: 'linear-gradient(160deg, hsl(0 0% 10%) 0%, hsl(0 0% 6%) 100%)' }}
+                >
+                  <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/30 to-transparent" />
+                  <div className="w-10 h-10 mx-auto mb-2 rounded-2xl flex items-center justify-center border border-amber-400/20" style={{ background: 'linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.05))' }}>
+                    <Sparkles className="w-4.5 h-4.5 text-amber-300" />
+                  </div>
                   <p className="text-[12px] text-muted-foreground mb-3">No active solo — start one from the Arena tab</p>
-                  <button onClick={() => { setArenaView('arena'); setShowSoloMode(true); }}
-                    className="text-[12px] text-gold font-bold hover:underline">Start Solo Edit →</button>
+                  <button
+                    onClick={() => { setArenaView('arena'); setShowSoloMode(true); }}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[12px] text-amber-200 font-black tracking-wide border border-amber-400/30 active:scale-95 transition-transform"
+                    style={{ background: 'linear-gradient(135deg, rgba(245,158,11,0.18), rgba(239,68,68,0.12))' }}
+                  >
+                    Start Solo Edit <ArrowRight className="w-3 h-3" />
+                  </button>
                 </div>
               )}
 
