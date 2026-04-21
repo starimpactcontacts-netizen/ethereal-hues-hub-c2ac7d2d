@@ -1,7 +1,7 @@
 import { useState, useEffect, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { DollarSign, Swords, Clock, Zap, Info, X, Loader2 } from "lucide-react";
+import { DollarSign, Swords, Clock, Info, X, Loader2 } from "lucide-react";
 import CashBattleVoteBar from "@/components/loopgate/CashBattleVoteBar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCashBattles, useMyCashBattles, useMyCashBattleApplication, CashBattleApplication } from "@/hooks/useCashBattles";
@@ -417,46 +417,31 @@ export default function CashBattlesSection({
   return (
     <div className="mb-2">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 mb-3">
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}>
-            <Swords className="w-4 h-4 text-white" />
-          </div>
-          <div>
-            <h2 className="text-[15px] font-black uppercase tracking-wider text-white" style={{ fontFamily: "Teko, sans-serif" }}>
-              Edit Battles
-            </h2>
-            <div className="flex items-center gap-1.5">
-              <p className="text-[11px] font-semibold" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                1v1 · Cash & ranked
-              </p>
-              <button onClick={() => setInfoOpen(true)} className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center hover:bg-zinc-700 transition-colors">
-                <Info className="w-3 h-3 text-zinc-400" />
-              </button>
-            </div>
-          </div>
+      <div className="flex items-end justify-between px-4 mb-3">
+        <div className="flex items-center gap-2">
+          <h2
+            className="text-[15px] font-extrabold tracking-tight text-foreground"
+            style={{ fontFamily: "Inter, system-ui, sans-serif" }}
+          >
+            Live Battles
+          </h2>
+          <button
+            onClick={() => setInfoOpen(true)}
+            className="w-4 h-4 rounded-full flex items-center justify-center text-muted-foreground/70 hover:text-foreground transition-colors"
+            aria-label="About edit battles"
+          >
+            <Info className="w-3 h-3" />
+          </button>
         </div>
-        <div className="flex items-center gap-1.5">
-          {onQuickFight && (
-            <button
-              onClick={onQuickFight}
-              disabled={isQfSearching}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-white text-[10px] font-black uppercase tracking-wider transition-all hover:brightness-110 disabled:opacity-60"
-              style={{ background: 'linear-gradient(135deg, #10B981, #059669)' }}
-            >
-              {isQfSearching ? <Loader2 className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />}
-              Quick
-            </button>
-          )}
+        <div className="flex items-center gap-1">
           <button
             onClick={handleEnter}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-white text-[10px] font-black uppercase tracking-wider transition-all hover:scale-105 relative"
-            style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}
+            className="relative flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-foreground/80 hover:text-foreground hover:bg-white/[0.04] rounded-md transition-colors"
           >
             <DollarSign className="w-3 h-3" />
-            <span>Cash</span>
+            Cash
             {pendingApps.length > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-amber-400 text-black text-[9px] font-black flex items-center justify-center shadow-lg" style={{ fontFamily: "Teko, sans-serif" }}>
+              <span className="ml-1 min-w-[14px] h-[14px] px-1 rounded-full bg-amber-400 text-black text-[9px] font-black flex items-center justify-center">
                 {pendingApps.length}
               </span>
             )}
@@ -464,8 +449,7 @@ export default function CashBattlesSection({
           {onChallenge && (
             <button
               onClick={onChallenge}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-white text-[10px] font-black uppercase tracking-wider transition-all hover:brightness-110"
-              style={{ background: 'linear-gradient(135deg, #3B82F6, #EF4444)' }}
+              className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-foreground/80 hover:text-foreground hover:bg-white/[0.04] rounded-md transition-colors"
             >
               <Swords className="w-3 h-3" />
               Challenge
