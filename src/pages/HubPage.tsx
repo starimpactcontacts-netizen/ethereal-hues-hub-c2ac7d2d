@@ -1085,15 +1085,12 @@ export default function HubPage() {
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
           </div>
 
-          {/* Section Header */}
+          {/* Section Header — matches FEATURED below for visual consistency */}
           <div className="relative flex items-center justify-between px-4 pt-2.5 mb-2">
             <div className="flex items-center gap-2">
-              <div className="relative">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 block" />
-                <span className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-              </div>
-              <h3 className="font-display text-sm text-foreground">FEATURED DROPS</h3>
-              <span className="text-[9px] text-muted-foreground">({totalArtistFeatured} active)</span>
+              <div className="w-1 h-5 bg-gold rounded-full" />
+              <h2 className="font-display text-lg text-foreground">FEATURED DROPS</h2>
+              <span className="text-[9px] text-muted-foreground">({totalArtistFeatured})</span>
             </div>
             <Link to="/arena?filter=official" className="text-[9px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
               VIEW ALL <ArrowRight size={10} />
