@@ -94,6 +94,16 @@ export function useBattle(battleId: string | undefined) {
   const [battle, setBattle] = useState<Battle | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const refetch = async () => {
+    if (!battleId) return;
+    const { data, error } = await supabase
+      .from('battles')
+      .select('*')
+      .eq('id', battleId)
+      .maybeSingle();
+    if (!error && data) setBattle(data as Battle);
+  };
+
   useEffect(() => {
     if (!battleId) {
       setLoading(false);
@@ -120,9 +130,9 @@ export function useBattle(battleId: string | undefined) {
       .channel(`battle_${battleId}`)
       .on(
         'postgres_changes',
-        { 
-          event: '*', 
-          schema: 'public', 
+        {
+          event: '*',
+          schema: 'public',
           table: 'battles',
           filter: `id=eq.${battleId}`
         },
@@ -139,7 +149,7 @@ export function useBattle(battleId: string | undefined) {
     };
   }, [battleId]);
 
-  return { battle, loading };
+  return { battle, loading, refetch, setBattle };
 }
 
 export function useMyBattles() {
