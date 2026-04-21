@@ -93,6 +93,23 @@ export default function CashBattlePage() {
 
   const countdown = useCountdown(battle?.ends_at);
 
+  // Auto-cancel battle when time runs out and no submissions are in
+  useEffect(() => {
+    if (!battle || !battleId) return;
+    if (battle.status !== "live") return;
+    if (!countdown.expired) return;
+    const bothSubmitted = battle.challenger_submission_url && battle.opponent_submission_url;
+    if (bothSubmitted) return; // let it go to judging instead
+    // Only run once per client; safe-guarded by status update
+    (async () => {
+      await supabase
+        .from("cash_battles")
+        .update({ status: "cancelled" } as any)
+        .eq("id", battleId)
+        .eq("status", "live");
+    })();
+  }, [countdown.expired, battle?.status, battleId]);
+
   async function handleCancelBattle() {
     if (!battleId || !user) return;
     setCancellingBattle(true);
@@ -240,11 +257,13 @@ export default function CashBattlePage() {
 
   const isLive = battle.status === "live";
   const isCompleted = battle.status === "completed";
+  const isCancelled = battle.status === "cancelled";
+  const isDead = isCancelled || (isLive && countdown.expired && !(battle.challenger_submission_url && battle.opponent_submission_url));
   const challengerThumb = battle.challenger_thumbnail_url;
   const opponentThumb = battle.opponent_thumbnail_url;
 
   return (
-    <div className="min-h-screen" style={{ background: "#0a0a0c" }}>
+    <div className={`min-h-screen ${isDead ? "grayscale-[70%] opacity-80" : ""}`} style={{ background: "#0a0a0c" }}>
       {/* Header */}
       <div className="sticky top-0 z-30 flex items-center gap-3 px-4 py-3" style={{ background: "rgba(10,10,12,0.95)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
         <button onClick={() => navigate(-1)} className="w-8 h-8 flex items-center justify-center rounded-full" style={{ background: "rgba(255,255,255,0.06)" }}>
@@ -332,16 +351,59 @@ export default function CashBattlePage() {
 
       {/* Countdown Timer */}
       {isLive && (
-        <div className="mx-4 mt-3 rounded-2xl py-3 text-center" style={{
-          background: countdown.expired ? "rgba(239,68,68,0.1)" : "rgba(255,255,255,0.03)",
-          border: `1px solid ${countdown.expired ? "rgba(239,68,68,0.3)" : "rgba(255,255,255,0.06)"}`,
-        }}>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-0.5" style={{ fontFamily: "Teko, sans-serif" }}>
-            {countdown.expired ? "Submissions Closed" : "Time Remaining"}
+        <motion.div
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mx-4 mt-3 rounded-2xl py-4 text-center relative overflow-hidden"
+          style={{
+            background: countdown.expired
+              ? "linear-gradient(135deg, rgba(239,68,68,0.18), rgba(120,20,30,0.25))"
+              : "linear-gradient(135deg, rgba(59,130,246,0.12), rgba(168,85,247,0.12), rgba(239,68,68,0.12))",
+            border: `1px solid ${countdown.expired ? "rgba(239,68,68,0.45)" : "rgba(255,255,255,0.08)"}`,
+            boxShadow: countdown.expired
+              ? "0 0 32px rgba(239,68,68,0.25), inset 0 1px 0 rgba(255,255,255,0.05)"
+              : "0 0 24px rgba(59,130,246,0.15), inset 0 1px 0 rgba(255,255,255,0.06)",
+          }}
+        >
+          {/* animated shine */}
+          {!countdown.expired && (
+            <motion.div
+              className="absolute inset-0 pointer-events-none"
+              style={{ background: "linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.08) 50%, transparent 70%)" }}
+              animate={{ x: ["-100%", "100%"] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+            />
+          )}
+          <p className="text-[10px] uppercase tracking-[0.25em] text-white/60 mb-1 relative" style={{ fontFamily: "Teko, sans-serif" }}>
+            {countdown.expired ? "⛔ Submissions Closed" : "⏱ Time Remaining"}
           </p>
-          <p className={`text-3xl font-black ${countdown.expired ? "text-red-400" : "text-white"}`} style={{ fontFamily: "Teko, sans-serif", letterSpacing: "0.1em" }}>
+          <p
+            className={`text-4xl font-black relative ${countdown.expired ? "text-red-300" : "text-white"}`}
+            style={{
+              fontFamily: "Teko, sans-serif",
+              letterSpacing: "0.12em",
+              textShadow: countdown.expired ? "0 0 20px rgba(239,68,68,0.6)" : "0 0 20px rgba(255,255,255,0.3)",
+            }}
+          >
             {countdown.text}
           </p>
+        </motion.div>
+      )}
+
+      {/* Cancelled banner */}
+      {isCancelled && (
+        <div
+          className="mx-4 mt-3 rounded-2xl py-4 text-center"
+          style={{
+            background: "linear-gradient(135deg, rgba(80,80,90,0.25), rgba(40,40,50,0.4))",
+            border: "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          <XCircle className="w-7 h-7 text-zinc-400 mx-auto mb-1" />
+          <p className="text-lg font-black text-zinc-300 uppercase tracking-[0.15em]" style={{ fontFamily: "Teko, sans-serif" }}>
+            Battle Cancelled
+          </p>
+          <p className="text-[11px] text-zinc-500 mt-1">No submissions before the timer ran out.</p>
         </div>
       )}
 
@@ -673,25 +735,47 @@ export default function CashBattlePage() {
 function FighterCorner({ username, avatarUrl, color, submitted, isWinner }: {
   username: string; avatarUrl: string | null; color: "blue" | "red"; submitted: boolean; isWinner: boolean;
 }) {
-  const ring = color === "blue" ? "ring-blue-500/50" : "ring-red-500/50";
   const bg = color === "blue" ? "bg-blue-500/15" : "bg-red-500/15";
   const textColor = color === "blue" ? "text-blue-400" : "text-red-400";
   const accentBg = color === "blue" ? "bg-blue-500" : "bg-red-500";
+  const glow = color === "blue" ? "rgba(59,130,246,0.55)" : "rgba(239,68,68,0.55)";
+  const ringGrad = color === "blue"
+    ? "conic-gradient(from 0deg, #60a5fa, #3b82f6, #1d4ed8, #60a5fa)"
+    : "conic-gradient(from 0deg, #fca5a5, #ef4444, #991b1b, #fca5a5)";
 
   return (
     <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
       <div className="relative">
-        <Avatar className={`w-14 h-14 ring-2 ${ring}`}>
+        {/* Spinning conic ring */}
+        <motion.div
+          className="absolute -inset-1 rounded-full"
+          style={{ background: ringGrad, filter: "blur(0.5px)" }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+        />
+        {/* Inner mask */}
+        <div className="absolute -inset-[2px] rounded-full" style={{ background: "#0a0a0c" }} />
+        <Avatar
+          className="w-16 h-16 relative"
+          style={{ boxShadow: `0 0 18px ${glow}` }}
+        >
           <AvatarImage src={avatarUrl || ""} />
           <AvatarFallback className={`text-lg font-black ${bg} ${textColor}`}>{username?.charAt(0)}</AvatarFallback>
         </Avatar>
-        <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full ${accentBg} flex items-center justify-center`}>
+        <div
+          className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full ${accentBg} flex items-center justify-center ring-2`}
+          style={{ boxShadow: `0 0 10px ${glow}`, ...(submitted ? {} : {}) }}
+        >
           {submitted ? <CheckCircle className="w-3 h-3 text-white" /> : <Zap className="w-3 h-3 text-white" />}
         </div>
         {isWinner && (
-          <div className="absolute -top-2 -right-2">
-            <Trophy className="w-5 h-5 text-amber-400" />
-          </div>
+          <motion.div
+            className="absolute -top-2 -right-2"
+            animate={{ scale: [1, 1.15, 1], rotate: [0, -8, 8, 0] }}
+            transition={{ duration: 1.6, repeat: Infinity }}
+          >
+            <Trophy className="w-5 h-5 text-amber-400" style={{ filter: "drop-shadow(0 0 6px rgba(251,191,36,0.7))" }} />
+          </motion.div>
         )}
       </div>
       <span className={`text-[13px] font-black truncate max-w-[80px] uppercase ${textColor}`} style={{ fontFamily: "Teko, sans-serif" }}>
