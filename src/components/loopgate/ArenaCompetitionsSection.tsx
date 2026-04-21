@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Trophy, Plus, Share2 } from "lucide-react";
+import { Trophy, Plus, Share2, User, ThumbsUp } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCompetitionsList, type Competition } from "@/hooks/useCompetitions";
 import { toast } from "sonner";
@@ -70,9 +70,15 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
 
         {/* Roblox-style footer: stats + join */}
         <div className="px-2.5 py-2 flex items-center justify-between gap-2 border-t border-white/[0.04]">
-          <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-300 min-w-0">
-            <span className="flex items-center gap-1 whitespace-nowrap">👤 {formatCount(comp.current_players)}</span>
-            <span className="flex items-center gap-1 whitespace-nowrap text-emerald-400">👍 {approval}%</span>
+          <div className="flex items-center gap-2.5 text-[10px] font-bold text-zinc-300 min-w-0">
+            <span className="flex items-center gap-1 whitespace-nowrap">
+              <User className="w-3 h-3 text-zinc-400" strokeWidth={2.5} />
+              {formatCount(comp.current_players)}
+            </span>
+            <span className="flex items-center gap-1 whitespace-nowrap text-emerald-400">
+              <ThumbsUp className="w-3 h-3" strokeWidth={2.5} />
+              {approval}%
+            </span>
           </div>
           <button
             onClick={(e) => { e.stopPropagation(); onJoin(comp.id); }}
