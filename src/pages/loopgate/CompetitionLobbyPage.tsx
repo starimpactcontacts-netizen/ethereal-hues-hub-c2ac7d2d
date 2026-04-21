@@ -162,6 +162,10 @@ export default function CompetitionLobbyPage() {
   // Generate a thumbnail from a video file's first frame
   const generateVideoThumb = (file: File): Promise<Blob | null> =>
     new Promise((resolve) => {
+      let settled = false;
+      const done = (b: Blob | null) => { if (!settled) { settled = true; resolve(b); } };
+      // Hard safety timeout — never let thumb gen block the upload
+      const timeout = setTimeout(() => done(null), 5000);
       try {
         const video = document.createElement("video");
         video.preload = "metadata";
@@ -171,19 +175,19 @@ export default function CompetitionLobbyPage() {
         video.onloadeddata = () => {
           try {
             video.currentTime = Math.min(0.1, (video.duration || 1) / 2);
-          } catch { resolve(null); }
+          } catch { clearTimeout(timeout); done(null); }
         };
         video.onseeked = () => {
           const canvas = document.createElement("canvas");
           canvas.width = video.videoWidth || 720;
           canvas.height = video.videoHeight || 1280;
           const ctx = canvas.getContext("2d");
-          if (!ctx) return resolve(null);
+          if (!ctx) { clearTimeout(timeout); return done(null); }
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          canvas.toBlob((b) => resolve(b), "image/jpeg", 0.85);
+          canvas.toBlob((b) => { clearTimeout(timeout); done(b); }, "image/jpeg", 0.85);
         };
-        video.onerror = () => resolve(null);
-      } catch { resolve(null); }
+        video.onerror = () => { clearTimeout(timeout); done(null); };
+      } catch { clearTimeout(timeout); done(null); }
     });
 
   const handleInspoFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
