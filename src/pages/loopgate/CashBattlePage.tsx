@@ -801,7 +801,7 @@ function EditBlock({ username, color, thumbnailUrl, submissionUrl, submitted, is
         ) : (
           <div className="flex flex-col items-center gap-1.5 text-center px-4">
             <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: `${accentColor}15` }}>
-              {submitted ? <CheckCircle className="w-5 h-5" style={{ color: accentColor }} /> : <Zap className="w-5 h-5 text-zinc-600" />}
+              {submitted ? <CheckCircle className="w-5 h-5" style={{ color: accentColor }} /> : <Film className="w-5 h-5 text-zinc-600" />}
             </div>
             <span className="text-[10px] text-zinc-600">
               {submitted ? "Edit submitted" : "Awaiting submission"}
