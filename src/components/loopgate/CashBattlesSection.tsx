@@ -1,7 +1,7 @@
 import { useState, useEffect, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { DollarSign, Swords, Clock, Zap, Info, X, Loader2 } from "lucide-react";
+import { DollarSign, Swords, Clock, Info, X, Loader2 } from "lucide-react";
 import CashBattleVoteBar from "@/components/loopgate/CashBattleVoteBar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCashBattles, useMyCashBattles, useMyCashBattleApplication, CashBattleApplication } from "@/hooks/useCashBattles";
