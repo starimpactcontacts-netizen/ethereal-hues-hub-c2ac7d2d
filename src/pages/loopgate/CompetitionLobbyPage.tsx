@@ -392,35 +392,45 @@ export default function CompetitionLobbyPage() {
         )}
 
         {isCreator && showInspoForm && (
-          <motion.form
+          <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
-            onSubmit={handleSaveInspo}
             className="space-y-2"
           >
             <p className="text-[10px] text-muted-foreground/60 px-1">
-              Drop a TikTok / Instagram / YouTube link to inspire editors. It'll autoplay in your lobby.
+              Upload a video or image from your device — it'll autoplay in your lobby with an auto-generated thumbnail.
             </p>
             <input
-              value={inspoUrl}
-              onChange={e => setInspoUrl(e.target.value)}
-              placeholder="https://tiktok.com/..."
-              className="w-full bg-surface-2 border border-white/[0.06] rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:border-amber-400/40"
+              ref={inspoFileInputRef}
+              type="file"
+              accept="video/mp4,video/webm,video/quicktime,image/jpeg,image/png,image/webp"
+              onChange={handleInspoFile}
+              className="hidden"
             />
             <div className="flex gap-2">
-              <button type="button" onClick={() => { setShowInspoForm(false); setInspoUrl(""); }} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-muted-foreground bg-surface-2 border border-white/[0.06]">
+              <button
+                type="button"
+                onClick={() => setShowInspoForm(false)}
+                disabled={savingInspo}
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold text-muted-foreground bg-surface-2 border border-white/[0.06] disabled:opacity-30"
+              >
                 Cancel
               </button>
               <button
-                type="submit"
-                disabled={savingInspo || !inspoUrl.trim()}
-                className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-30 transition-all"
+                type="button"
+                onClick={() => inspoFileInputRef.current?.click()}
+                disabled={savingInspo}
+                className="flex-[2] py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-50 transition-all flex items-center justify-center gap-2"
                 style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)" }}
               >
-                {savingInspo ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : "Save Inspo"}
+                {savingInspo ? (
+                  <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Uploading…</>
+                ) : (
+                  <><Upload className="w-3.5 h-3.5" /> Choose Video / Photo</>
+                )}
               </button>
             </div>
-          </motion.form>
+          </motion.div>
         )}
 
         {/* ═══ GO EDIT — visible when live + joined + hasn't submitted ═══ */}
