@@ -226,22 +226,21 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
           exit={{ y: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
           onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-md rounded-t-[28px] overflow-hidden relative"
+          className="w-full max-w-md rounded-t-[28px] overflow-hidden relative flex flex-col"
           style={{
-            maxHeight: "88vh",
-            marginBottom: "calc(56px + env(safe-area-inset-bottom, 0px))",
+            maxHeight: "calc(100dvh - env(safe-area-inset-top, 0px) - 24px)",
             background: "linear-gradient(180deg, rgba(28,28,32,0.98) 0%, rgba(18,18,22,0.98) 100%)",
             boxShadow: "0 -20px 60px -10px rgba(239,68,68,0.25), inset 0 1px 0 rgba(255,255,255,0.08)",
             border: "1px solid rgba(255,255,255,0.06)",
           }}
         >
           {/* Drag handle */}
-          <div className="flex justify-center pt-2 pb-1">
+          <div className="flex justify-center pt-2 pb-1 shrink-0">
             <div className="w-10 h-1 rounded-full bg-white/15" />
           </div>
 
           {/* Header */}
-          <div className="relative px-5 pt-2 pb-4 flex items-center justify-between">
+          <div className="relative px-5 pt-2 pb-4 flex items-center justify-between shrink-0">
             <div>
               <h2 className="font-display text-xl text-white tracking-tight">New Edit Battle</h2>
               <p className="text-[11px] text-zinc-400 mt-0.5">Challenge an editor — winner takes Index</p>
@@ -255,7 +254,13 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
             </button>
           </div>
 
-          <div className="px-4 pb-6 space-y-4 overflow-y-auto overscroll-contain" style={{ maxHeight: "calc(88vh - 80px)", WebkitOverflowScrolling: "touch" }}>
+          <div
+            className="px-4 space-y-4 overflow-y-auto overscroll-contain flex-1 min-h-0"
+            style={{
+              paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 24px)",
+              WebkitOverflowScrolling: "touch",
+            }}
+          >
             {/* Rapid Mode Toggle */}
             <div>
               <button
