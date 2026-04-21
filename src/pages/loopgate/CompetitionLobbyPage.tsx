@@ -159,19 +159,80 @@ export default function CompetitionLobbyPage() {
     await toggleUpvote();
   };
 
-  const handleSaveInspo = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = inspoUrl.trim();
-    if (!trimmed) return;
-    const detected = detectPlatform(trimmed);
-    if (!detected) { toast.error("Use a TikTok, Instagram, or YouTube link"); return; }
-    const validation = validatePlatformUrl(detected, trimmed);
-    if (!validation.valid) { toast.error(validation.error || "Invalid URL"); return; }
+  // Generate a thumbnail from a video file's first frame
+  const generateVideoThumb = (file: File): Promise<Blob | null> =>
+    new Promise((resolve) => {
+      try {
+        const video = document.createElement("video");
+        video.preload = "metadata";
+        video.muted = true;
+        video.playsInline = true;
+        video.src = URL.createObjectURL(file);
+        video.onloadeddata = () => {
+          try {
+            video.currentTime = Math.min(0.1, (video.duration || 1) / 2);
+          } catch { resolve(null); }
+        };
+        video.onseeked = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = video.videoWidth || 720;
+          canvas.height = video.videoHeight || 1280;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return resolve(null);
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob((b) => resolve(b), "image/jpeg", 0.85);
+        };
+        video.onerror = () => resolve(null);
+      } catch { resolve(null); }
+    });
+
+  const handleInspoFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user || !competition) return;
+    if (file.size > 100 * 1024 * 1024) { toast.error("Keep it under 100MB"); return; }
+    const isVideo = file.type.startsWith("video/");
+    const isImage = file.type.startsWith("image/");
+    if (!isVideo && !isImage) { toast.error("Upload a video or image"); return; }
+
     setSavingInspo(true);
-    const ok = await updateInspo({ url: trimmed, platform: detected });
-    if (ok) { toast.success("Inspo edit added!"); setShowInspoForm(false); setInspoUrl(""); }
-    else toast.error("Failed to save");
-    setSavingInspo(false);
+    try {
+      const ext = file.name.split(".").pop() || (isVideo ? "mp4" : "jpg");
+      const path = `${user.id}/inspo-${competition.id}-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("loop-media")
+        .upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type });
+      if (upErr) throw upErr;
+      const { data: urlData } = supabase.storage.from("loop-media").getPublicUrl(path);
+
+      // Auto-thumbnail for videos
+      let thumbUrl: string | null = null;
+      if (isVideo) {
+        const thumb = await generateVideoThumb(file);
+        if (thumb) {
+          const thumbPath = `${user.id}/inspo-${competition.id}-${Date.now()}.jpg`;
+          const { error: thumbErr } = await supabase.storage
+            .from("loop-media")
+            .upload(thumbPath, thumb, { contentType: "image/jpeg", upsert: false });
+          if (!thumbErr) {
+            thumbUrl = supabase.storage.from("loop-media").getPublicUrl(thumbPath).data.publicUrl;
+          }
+        }
+      }
+
+      const ok = await updateInspo({
+        url: urlData.publicUrl,
+        platform: isVideo ? "upload" : "image",
+        thumbnail_url: thumbUrl,
+      });
+      if (ok) { toast.success("Inspo edit added!"); setShowInspoForm(false); }
+      else toast.error("Failed to save");
+    } catch (err: any) {
+      console.error("Inspo upload error:", err);
+      toast.error(err?.message || "Upload failed");
+    } finally {
+      setSavingInspo(false);
+      if (inspoFileInputRef.current) inspoFileInputRef.current.value = "";
+    }
   };
 
   return (
