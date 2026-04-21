@@ -80,8 +80,10 @@ export default function CompetitionLobbyPage() {
   // MUST be declared before any early return to keep hook order stable.
   const inspoIsDirectVideo = useMemo(() => {
     const u = competition?.inspo_video_url || "";
-    return /\.(mp4|webm|mov)(\?|$)/i.test(u);
-  }, [competition?.inspo_video_url]);
+    const p = competition?.inspo_video_platform || "";
+    // Platform "upload" = uploaded video. Also fallback to extension sniff.
+    return p === "upload" || /\.(mp4|webm|mov|m4v)(\?|$)/i.test(u);
+  }, [competition?.inspo_video_url, competition?.inspo_video_platform]);
 
   if (loading) {
     return (
