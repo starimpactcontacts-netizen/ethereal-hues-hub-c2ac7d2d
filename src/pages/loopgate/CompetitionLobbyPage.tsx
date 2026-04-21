@@ -75,6 +75,13 @@ export default function CompetitionLobbyPage() {
   const chatRef = useRef<HTMLDivElement>(null);
   const inspoVideoRef = useAutoplayVideo(true);
 
+  // Detect if inspo URL is a direct video file (mp4/webm) — then we can autoplay inline.
+  // MUST be declared before any early return to keep hook order stable.
+  const inspoIsDirectVideo = useMemo(() => {
+    const u = competition?.inspo_video_url || "";
+    return /\.(mp4|webm|mov)(\?|$)/i.test(u);
+  }, [competition?.inspo_video_url]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-background">
