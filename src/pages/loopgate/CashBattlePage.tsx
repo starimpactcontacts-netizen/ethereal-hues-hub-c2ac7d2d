@@ -93,6 +93,23 @@ export default function CashBattlePage() {
 
   const countdown = useCountdown(battle?.ends_at);
 
+  // Auto-cancel battle when time runs out and no submissions are in
+  useEffect(() => {
+    if (!battle || !battleId) return;
+    if (battle.status !== "live") return;
+    if (!countdown.expired) return;
+    const bothSubmitted = battle.challenger_submission_url && battle.opponent_submission_url;
+    if (bothSubmitted) return; // let it go to judging instead
+    // Only run once per client; safe-guarded by status update
+    (async () => {
+      await supabase
+        .from("cash_battles")
+        .update({ status: "cancelled" } as any)
+        .eq("id", battleId)
+        .eq("status", "live");
+    })();
+  }, [countdown.expired, battle?.status, battleId]);
+
   async function handleCancelBattle() {
     if (!battleId || !user) return;
     setCancellingBattle(true);
