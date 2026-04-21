@@ -1403,6 +1403,35 @@ export type Database = {
           },
         ]
       }
+      competition_upvotes: {
+        Row: {
+          competition_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          competition_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          competition_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competition_upvotes_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       competitions: {
         Row: {
           cover_image_url: string | null
@@ -1415,6 +1444,9 @@ export type Database = {
           description: string | null
           id: string
           index_reward_pool: number
+          inspo_thumbnail_url: string | null
+          inspo_video_platform: string | null
+          inspo_video_url: string | null
           league: string
           max_players: number
           name: string
@@ -1424,6 +1456,7 @@ export type Database = {
           status: string
           theme: string | null
           updated_at: string
+          upvote_count: number
         }
         Insert: {
           cover_image_url?: string | null
@@ -1436,6 +1469,9 @@ export type Database = {
           description?: string | null
           id?: string
           index_reward_pool?: number
+          inspo_thumbnail_url?: string | null
+          inspo_video_platform?: string | null
+          inspo_video_url?: string | null
           league?: string
           max_players?: number
           name: string
@@ -1445,6 +1481,7 @@ export type Database = {
           status?: string
           theme?: string | null
           updated_at?: string
+          upvote_count?: number
         }
         Update: {
           cover_image_url?: string | null
@@ -1457,6 +1494,9 @@ export type Database = {
           description?: string | null
           id?: string
           index_reward_pool?: number
+          inspo_thumbnail_url?: string | null
+          inspo_video_platform?: string | null
+          inspo_video_url?: string | null
           league?: string
           max_players?: number
           name?: string
@@ -1466,6 +1506,7 @@ export type Database = {
           status?: string
           theme?: string | null
           updated_at?: string
+          upvote_count?: number
         }
         Relationships: []
       }
