@@ -1,16 +1,17 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Trophy, Users, Clock, Play, Loader2, Send,
-  Share2, Check, MessageCircle, Layers, Pencil, X
+  Share2, Check, MessageCircle, Layers, Pencil, X, ThumbsUp, Sparkles
 } from "lucide-react";
 import { useCompetition } from "@/hooks/useCompetitions";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { formatDistanceToNow, isPast, differenceInSeconds } from "date-fns";
-import { validatePlatformUrl, getPlatformUrlPlaceholder, type PlatformType } from "@/lib/urlValidation";
+import { validatePlatformUrl, getPlatformUrlPlaceholder, detectPlatform, type PlatformType } from "@/lib/urlValidation";
+import { useAutoplayVideo } from "@/hooks/useAutoplayVideo";
 import CompetitionChat from "@/components/loopgate/CompetitionChat";
 import CompetitionLeaderboard from "@/components/loopgate/CompetitionLeaderboard";
 
