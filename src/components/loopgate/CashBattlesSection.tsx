@@ -493,7 +493,7 @@ export default function CashBattlesSection({
       )}
 
       {/* Horizontal scroll — open matchups first, then existing battles */}
-      {loading ? <ArenaRailSkeleton count={3} /> : <ArenaRail>
+      {(loading || idxBattlesLoading) ? <ArenaRailSkeleton count={3} /> : <ArenaRail>
         {/* Open matchup cards from pending applications */}
         {pendingApps.map((app) => (
           <ArenaRailCard key={app.id}>
@@ -514,8 +514,15 @@ export default function CashBattlesSection({
             </ArenaRailCard>
           ))}
 
+        {/* Ranked IDX 1v1 battles — merged in */}
+        {renderIdxBattleCard && idxBattles.slice(0, 10).map((battle) => (
+          <ArenaRailCard key={`idx-${battle.id}`}>
+            {renderIdxBattleCard(battle)}
+          </ArenaRailCard>
+        ))}
+
         {/* Join teaser — only show if no pending apps */}
-        {pendingApps.length === 0 && (
+        {pendingApps.length === 0 && battles.length === 0 && idxBattles.length === 0 && (
           <ArenaRailCard>
             <motion.div
               whileTap={{ scale: 0.97 }}
