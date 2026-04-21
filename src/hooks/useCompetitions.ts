@@ -22,6 +22,10 @@ export interface Competition {
   slug: string | null;
   created_at: string;
   updated_at: string;
+  inspo_video_url?: string | null;
+  inspo_video_platform?: string | null;
+  inspo_thumbnail_url?: string | null;
+  upvote_count?: number;
 }
 
 export interface CompetitionParticipant {
@@ -82,6 +86,7 @@ export function useCompetition(idOrSlug: string | undefined) {
   const [participants, setParticipants] = useState<CompetitionParticipant[]>([]);
   const [submissions, setSubmissions] = useState<CompetitionSubmission[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasUpvoted, setHasUpvoted] = useState(false);
 
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug || "");
 
@@ -107,6 +112,19 @@ export function useCompetition(idOrSlug: string | undefined) {
 
     if (parts) setParticipants(parts as any as CompetitionParticipant[]);
     if (subs) setSubmissions(subs as any as CompetitionSubmission[]);
+
+    if (user?.id) {
+      const { data: uv } = await supabase
+        .from("competition_upvotes")
+        .select("id")
+        .eq("competition_id", comp.id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      setHasUpvoted(!!uv);
+    } else {
+      setHasUpvoted(false);
+    }
+
     setLoading(false);
   };
 
@@ -118,9 +136,10 @@ export function useCompetition(idOrSlug: string | undefined) {
       .channel(`comp-${idOrSlug}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "competitions" }, () => fetchAll())
       .on("postgres_changes", { event: "*", schema: "public", table: "competition_participants" }, () => fetchAll())
+      .on("postgres_changes", { event: "*", schema: "public", table: "competition_upvotes" }, () => fetchAll())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [idOrSlug]);
+  }, [idOrSlug, user?.id]);
 
   const isCreator = user?.id === competition?.creator_id;
   const hasJoined = participants.some(p => p.user_id === user?.id);
@@ -166,9 +185,42 @@ export function useCompetition(idOrSlug: string | undefined) {
     return true;
   };
 
+  const toggleUpvote = async () => {
+    if (!user || !competition) return false;
+    if (hasUpvoted) {
+      await supabase
+        .from("competition_upvotes")
+        .delete()
+        .eq("competition_id", competition.id)
+        .eq("user_id", user.id);
+      setHasUpvoted(false);
+      setCompetition(c => c ? { ...c, upvote_count: Math.max(0, (c.upvote_count || 0) - 1) } : c);
+    } else {
+      const { error } = await supabase
+        .from("competition_upvotes")
+        .insert({ competition_id: competition.id, user_id: user.id });
+      if (error) return false;
+      setHasUpvoted(true);
+      setCompetition(c => c ? { ...c, upvote_count: (c.upvote_count || 0) + 1 } : c);
+    }
+    return true;
+  };
+
+  const updateInspo = async (params: { url: string; platform: string; thumbnail_url?: string | null }) => {
+    if (!competition || !isCreator) return false;
+    const { error } = await supabase.from("competitions").update({
+      inspo_video_url: params.url,
+      inspo_video_platform: params.platform,
+      inspo_thumbnail_url: params.thumbnail_url ?? null,
+    } as any).eq("id", competition.id);
+    if (error) return false;
+    await fetchAll();
+    return true;
+  };
+
   return {
     competition, participants, submissions, loading,
-    isCreator, hasJoined, hasSubmitted,
-    join, start, submit, refetch: fetchAll,
+    isCreator, hasJoined, hasSubmitted, hasUpvoted,
+    join, start, submit, toggleUpvote, updateInspo, refetch: fetchAll,
   };
 }

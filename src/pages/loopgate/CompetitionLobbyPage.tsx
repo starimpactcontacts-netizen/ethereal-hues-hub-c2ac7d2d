@@ -1,16 +1,17 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Trophy, Users, Clock, Play, Loader2, Send,
-  Share2, Check, MessageCircle, Layers, Pencil, X
+  Share2, Check, MessageCircle, Layers, Pencil, X, ThumbsUp, Sparkles
 } from "lucide-react";
 import { useCompetition } from "@/hooks/useCompetitions";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { formatDistanceToNow, isPast, differenceInSeconds } from "date-fns";
-import { validatePlatformUrl, getPlatformUrlPlaceholder, type PlatformType } from "@/lib/urlValidation";
+import { validatePlatformUrl, getPlatformUrlPlaceholder, detectPlatform, type PlatformType } from "@/lib/urlValidation";
+import { useAutoplayVideo } from "@/hooks/useAutoplayVideo";
 import CompetitionChat from "@/components/loopgate/CompetitionChat";
 import CompetitionLeaderboard from "@/components/loopgate/CompetitionLeaderboard";
 
@@ -55,8 +56,8 @@ export default function CompetitionLobbyPage() {
   const { user, profile } = useAuth();
   const {
     competition, participants, submissions, loading,
-    isCreator, hasJoined, hasSubmitted,
-    join, start, submit,
+    isCreator, hasJoined, hasSubmitted, hasUpvoted,
+    join, start, submit, toggleUpvote, updateInspo,
   } = useCompetition(id);
 
   
@@ -68,7 +69,11 @@ export default function CompetitionLobbyPage() {
   const [platform, setPlatform] = useState<PlatformType>("tiktok");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showInspoForm, setShowInspoForm] = useState(false);
+  const [inspoUrl, setInspoUrl] = useState("");
+  const [savingInspo, setSavingInspo] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
+  const inspoVideoRef = useAutoplayVideo(true);
 
   if (loading) {
     return (
@@ -141,11 +146,48 @@ export default function CompetitionLobbyPage() {
     } catch {}
   };
 
+  const handleUpvote = async () => {
+    if (!user) { navigate("/start"); return; }
+    await toggleUpvote();
+  };
+
+  const handleSaveInspo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = inspoUrl.trim();
+    if (!trimmed) return;
+    const detected = detectPlatform(trimmed);
+    if (!detected) { toast.error("Use a TikTok, Instagram, or YouTube link"); return; }
+    const validation = validatePlatformUrl(detected, trimmed);
+    if (!validation.valid) { toast.error(validation.error || "Invalid URL"); return; }
+    setSavingInspo(true);
+    const ok = await updateInspo({ url: trimmed, platform: detected });
+    if (ok) { toast.success("Inspo edit added!"); setShowInspoForm(false); setInspoUrl(""); }
+    else toast.error("Failed to save");
+    setSavingInspo(false);
+  };
+
+  // Detect if inspo URL is a direct video file (mp4/webm) — then we can autoplay inline.
+  const inspoIsDirectVideo = useMemo(() => {
+    const u = competition?.inspo_video_url || "";
+    return /\.(mp4|webm|mov)(\?|$)/i.test(u);
+  }, [competition?.inspo_video_url]);
+
   return (
     <div className="min-h-screen bg-background pb-32">
       {/* ═══ HERO ═══ */}
       <div className="relative overflow-hidden">
-        {competition.cover_image_url ? (
+        {competition.inspo_video_url && inspoIsDirectVideo ? (
+          <video
+            ref={inspoVideoRef}
+            src={competition.inspo_video_url}
+            poster={competition.inspo_thumbnail_url || competition.cover_image_url || undefined}
+            className="w-full h-52 object-cover"
+            muted
+            loop
+            playsInline
+            preload="metadata"
+          />
+        ) : competition.cover_image_url ? (
           <img src={competition.cover_image_url} alt="" className="w-full h-52 object-cover" />
         ) : (
           <div className="w-full h-52 bg-gradient-to-br from-white/[0.03] via-surface-2 to-black" />
@@ -157,9 +199,25 @@ export default function CompetitionLobbyPage() {
           <button onClick={() => navigate(-1)} className="p-2 bg-black/50 backdrop-blur-sm rounded-full">
             <ArrowLeft className="w-4 h-4 text-white" />
           </button>
-          <button onClick={handleShare} className="p-2 bg-black/50 backdrop-blur-sm rounded-full">
-            {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4 text-white" />}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleUpvote}
+              className={`flex items-center gap-1.5 px-2.5 h-8 rounded-full backdrop-blur-sm transition-all active:scale-95 ${
+                hasUpvoted
+                  ? "bg-emerald-500/90 text-white"
+                  : "bg-black/50 text-white hover:bg-black/70"
+              }`}
+              aria-label="Upvote"
+            >
+              <ThumbsUp className={`w-3.5 h-3.5 ${hasUpvoted ? "fill-current" : ""}`} />
+              <span className="text-[11px] font-bold tabular-nums" style={teko}>
+                {competition.upvote_count || 0}
+              </span>
+            </button>
+            <button onClick={handleShare} className="p-2 bg-black/50 backdrop-blur-sm rounded-full">
+              {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4 text-white" />}
+            </button>
+          </div>
         </div>
 
         {/* Title overlay */}
@@ -224,6 +282,82 @@ export default function CompetitionLobbyPage() {
               {competition.description && <p className="text-xs text-muted-foreground/50 mt-0.5">{competition.description}</p>}
             </div>
           </div>
+        )}
+
+        {/* ═══ INSPO EDIT — embedded player (when not a direct video) ═══ */}
+        {competition.inspo_video_url && !inspoIsDirectVideo && (
+          <a
+            href={competition.inspo_video_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block relative rounded-xl overflow-hidden border border-white/[0.08] bg-surface-2 group"
+          >
+            <div className="aspect-video bg-black flex items-center justify-center relative">
+              {competition.inspo_thumbnail_url ? (
+                <img src={competition.inspo_thumbnail_url} alt="Inspo edit" className="w-full h-full object-cover" />
+              ) : (
+                <Sparkles className="w-8 h-8 text-white/20" />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Sparkles className="w-3 h-3 text-amber-300" />
+                  <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-white/90" style={teko}>Inspo Edit</span>
+                </div>
+                <span className="text-[9px] uppercase tracking-wider text-white/60">{competition.inspo_video_platform}</span>
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center opacity-80 group-active:opacity-100">
+                <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
+                  <Play className="w-5 h-5 text-white fill-white ml-0.5" />
+                </div>
+              </div>
+            </div>
+          </a>
+        )}
+
+        {/* ═══ ADD INSPO EDIT — creator only, when none set ═══ */}
+        {isCreator && !competition.inspo_video_url && !showInspoForm && (
+          <button
+            onClick={() => setShowInspoForm(true)}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-white/[0.12] bg-white/[0.02] hover:bg-white/[0.04] transition-all"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-foreground/70" style={teko}>
+              Add Inspo Edit
+            </span>
+          </button>
+        )}
+
+        {isCreator && showInspoForm && (
+          <motion.form
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            onSubmit={handleSaveInspo}
+            className="space-y-2"
+          >
+            <p className="text-[10px] text-muted-foreground/60 px-1">
+              Drop a TikTok / Instagram / YouTube link to inspire editors. It'll autoplay in your lobby.
+            </p>
+            <input
+              value={inspoUrl}
+              onChange={e => setInspoUrl(e.target.value)}
+              placeholder="https://tiktok.com/..."
+              className="w-full bg-surface-2 border border-white/[0.06] rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:border-amber-400/40"
+            />
+            <div className="flex gap-2">
+              <button type="button" onClick={() => { setShowInspoForm(false); setInspoUrl(""); }} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-muted-foreground bg-surface-2 border border-white/[0.06]">
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={savingInspo || !inspoUrl.trim()}
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-30 transition-all"
+                style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)" }}
+              >
+                {savingInspo ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : "Save Inspo"}
+              </button>
+            </div>
+          </motion.form>
         )}
 
         {/* ═══ GO EDIT — visible when live + joined + hasn't submitted ═══ */}
