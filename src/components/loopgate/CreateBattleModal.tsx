@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Swords, Clock, Trophy, Search, User, Gavel, Zap, Music } from "lucide-react";
+import { X, Swords, Clock, Trophy, Search, User, Gavel, Zap, Music, Globe2, Target, Film } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
@@ -226,28 +226,36 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
           exit={{ y: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
           onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-md bg-background border-t border-red-500/30 rounded-t-2xl overflow-hidden"
-          style={{ maxHeight: "85vh", marginBottom: "calc(56px + env(safe-area-inset-bottom, 0px))" }}
+          className="w-full max-w-md rounded-t-[28px] overflow-hidden relative"
+          style={{
+            maxHeight: "88vh",
+            marginBottom: "calc(56px + env(safe-area-inset-bottom, 0px))",
+            background: "linear-gradient(180deg, rgba(28,28,32,0.98) 0%, rgba(18,18,22,0.98) 100%)",
+            boxShadow: "0 -20px 60px -10px rgba(239,68,68,0.25), inset 0 1px 0 rgba(255,255,255,0.08)",
+            border: "1px solid rgba(255,255,255,0.06)",
+          }}
         >
+          {/* Drag handle */}
+          <div className="flex justify-center pt-2 pb-1">
+            <div className="w-10 h-1 rounded-full bg-white/15" />
+          </div>
+
           {/* Header */}
-          <div className="relative p-4 bg-gradient-to-r from-red-500/20 via-surface-1 to-red-500/20 border-b border-border flex-shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center shadow-lg shadow-red-500/40">
-                <Swords className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h2 className="font-display text-lg text-foreground">Create 1v1 Battle</h2>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                  Head-to-head showdown
-                </p>
-              </div>
+          <div className="relative px-5 pt-2 pb-4 flex items-center justify-between">
+            <div>
+              <h2 className="font-display text-xl text-white tracking-tight">New Edit Battle</h2>
+              <p className="text-[11px] text-zinc-400 mt-0.5">Challenge an editor — winner takes Index</p>
             </div>
-            <button onClick={onClose} className="absolute top-4 right-4 p-2 hover:bg-surface-1 rounded-full transition-colors">
-              <X className="w-5 h-5 text-muted-foreground" />
+            <button
+              onClick={onClose}
+              aria-label="Close"
+              className="w-9 h-9 rounded-full bg-white/[0.08] hover:bg-white/[0.14] active:scale-95 transition-all flex items-center justify-center backdrop-blur-xl border border-white/10"
+            >
+              <X className="w-4 h-4 text-white" strokeWidth={2.5} />
             </button>
           </div>
 
-          <div className="p-4 space-y-4 overflow-y-auto overscroll-contain" style={{ maxHeight: "calc(85vh - 80px)", WebkitOverflowScrolling: "touch" }}>
+          <div className="px-4 pb-6 space-y-4 overflow-y-auto overscroll-contain" style={{ maxHeight: "calc(88vh - 80px)", WebkitOverflowScrolling: "touch" }}>
             {/* Rapid Mode Toggle */}
             <div>
               <button
@@ -255,42 +263,52 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
                   setIsRapid(!isRapid);
                   setDuration(!isRapid ? 3 : 48);
                 }}
-                className={`w-full p-3 border text-left transition-all flex items-center gap-3 ${
-                  isRapid ? 'border-amber-500 bg-amber-500/10' : 'border-border hover:border-amber-500/50'
+                className={`w-full p-3.5 rounded-2xl text-left transition-all flex items-center gap-3 active:scale-[0.99] ${
+                  isRapid
+                    ? 'bg-gradient-to-r from-amber-500/20 to-orange-500/10 border border-amber-400/40 shadow-[0_0_20px_-4px_rgba(245,158,11,0.4)]'
+                    : 'bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.06]'
                 }`}
               >
-                <Zap className={`w-5 h-5 ${isRapid ? 'text-amber-400' : 'text-muted-foreground'}`} />
-                <div className="flex-1">
-                  <span className="text-sm font-display text-foreground block">⚡ Rapid Mode</span>
-                  <span className="text-[10px] text-muted-foreground">1-3 hour battles · reuse existing edits · instant action</span>
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${isRapid ? 'bg-amber-500/25' : 'bg-white/[0.06]'}`}>
+                  <Zap className={`w-4.5 h-4.5 ${isRapid ? 'text-amber-300 fill-amber-300' : 'text-zinc-500'}`} />
                 </div>
-                <div className={`w-10 h-5 rounded-full transition-colors ${isRapid ? 'bg-amber-500' : 'bg-surface-2'}`}>
-                  <div className={`w-4 h-4 rounded-full bg-white mt-0.5 transition-transform ${isRapid ? 'ml-5.5 translate-x-0.5' : 'ml-0.5'}`} />
+                <div className="flex-1">
+                  <span className="text-sm font-semibold text-white block">Rapid Mode</span>
+                  <span className="text-[10px] text-zinc-500">1-3h battles · instant action</span>
+                </div>
+                <div className={`w-11 h-6 rounded-full transition-colors relative ${isRapid ? 'bg-amber-500' : 'bg-white/10'}`}>
+                  <div className={`w-5 h-5 rounded-full bg-white absolute top-0.5 transition-all shadow-md ${isRapid ? 'left-[22px]' : 'left-0.5'}`} />
                 </div>
               </button>
             </div>
 
             {/* Challenge Type */}
             <div>
-              <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2 block">Challenge Type</label>
-              <div className="grid grid-cols-2 gap-2">
+              <label className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2 block font-semibold">Challenge Type</label>
+              <div className="grid grid-cols-2 gap-2.5">
                 <button
                   onClick={() => setChallengeType('open')}
-                  className={`p-3 border text-left transition-all ${
-                    challengeType === 'open' ? 'border-red-500 bg-red-500/10' : 'border-border hover:border-red-500/50'
+                  className={`p-3.5 rounded-2xl text-left transition-all active:scale-[0.98] ${
+                    challengeType === 'open'
+                      ? 'bg-gradient-to-br from-red-500/25 to-red-600/10 border border-red-400/50 shadow-[0_0_20px_-4px_rgba(239,68,68,0.5)]'
+                      : 'bg-white/[0.04] border border-white/[0.06]'
                   }`}
                 >
-                  <span className="text-sm font-display text-foreground block">Open Challenge</span>
-                  <span className="text-[10px] text-muted-foreground">Anyone can accept</span>
+                  <Globe2 className={`w-4 h-4 mb-1.5 ${challengeType === 'open' ? 'text-red-300' : 'text-zinc-500'}`} />
+                  <span className="text-sm font-semibold text-white block">Open</span>
+                  <span className="text-[10px] text-zinc-500">Anyone can join</span>
                 </button>
                 <button
                   onClick={() => setChallengeType('direct')}
-                  className={`p-3 border text-left transition-all ${
-                    challengeType === 'direct' ? 'border-red-500 bg-red-500/10' : 'border-border hover:border-red-500/50'
+                  className={`p-3.5 rounded-2xl text-left transition-all active:scale-[0.98] ${
+                    challengeType === 'direct'
+                      ? 'bg-gradient-to-br from-red-500/25 to-red-600/10 border border-red-400/50 shadow-[0_0_20px_-4px_rgba(239,68,68,0.5)]'
+                      : 'bg-white/[0.04] border border-white/[0.06]'
                   }`}
                 >
-                  <span className="text-sm font-display text-foreground block">Direct Challenge</span>
-                  <span className="text-[10px] text-muted-foreground">Challenge a specific editor</span>
+                  <Target className={`w-4 h-4 mb-1.5 ${challengeType === 'direct' ? 'text-red-300' : 'text-zinc-500'}`} />
+                  <span className="text-sm font-semibold text-white block">Invite</span>
+                  <span className="text-[10px] text-zinc-500">Pick an editor</span>
                 </button>
               </div>
             </div>
@@ -298,27 +316,27 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
             {/* Search Opponent (for direct) */}
             {challengeType === 'direct' && (
               <div>
-                <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2 block">Search Opponent</label>
+                <label className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2 block font-semibold">Search Opponent</label>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input placeholder="Search by username..." value={searchQuery} onChange={(e) => handleSearch(e.target.value)} className="pl-10 bg-surface-1 border-border" />
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                  <Input placeholder="@username" value={searchQuery} onChange={(e) => handleSearch(e.target.value)} className="pl-10 h-11 rounded-xl bg-white/[0.04] border-white/[0.06] text-white placeholder:text-zinc-600" />
                 </div>
                 {searchResults.length > 0 && (
-                  <div className="mt-2 border border-border bg-surface-1 divide-y divide-border max-h-32 overflow-y-auto">
+                  <div className="mt-2 rounded-xl border border-white/[0.06] bg-white/[0.03] overflow-hidden max-h-40 overflow-y-auto">
                     {searchResults.map((u) => (
-                      <button key={u.id} onClick={() => { setSelectedOpponent(u); setSearchQuery(""); setSearchResults([]); }} className="w-full flex items-center gap-3 p-2 hover:bg-surface-2 transition-colors">
+                      <button key={u.id} onClick={() => { setSelectedOpponent(u); setSearchQuery(""); setSearchResults([]); }} className="w-full flex items-center gap-3 p-2.5 hover:bg-white/[0.04] transition-colors border-b border-white/[0.04] last:border-0">
                         <Avatar className="w-7 h-7"><AvatarImage src={u.avatar_url || ''} /><AvatarFallback className="bg-red-500/20 text-red-400 text-xs">{u.username.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
-                        <span className="text-sm text-foreground">{u.username}</span>
-                        <span className="text-[10px] text-muted-foreground ml-auto uppercase">{u.league}</span>
+                        <span className="text-sm text-white">{u.username}</span>
+                        <span className="text-[10px] text-zinc-500 ml-auto uppercase">{u.league}</span>
                       </button>
                     ))}
                   </div>
                 )}
                 {selectedOpponent && (
-                  <div className="mt-2 flex items-center gap-3 p-2 border border-red-500/50 bg-red-500/10">
+                  <div className="mt-2 flex items-center gap-3 p-3 rounded-xl border border-red-400/40 bg-red-500/10">
                     <Avatar className="w-8 h-8 border-2 border-red-500"><AvatarImage src={selectedOpponent.avatar_url || ''} /><AvatarFallback className="bg-red-500/20 text-red-400">{selectedOpponent.username.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
-                    <span className="text-sm font-medium text-foreground flex-1">{selectedOpponent.username}</span>
-                    <button onClick={() => setSelectedOpponent(null)}><X className="w-4 h-4 text-muted-foreground" /></button>
+                    <span className="text-sm font-medium text-white flex-1">{selectedOpponent.username}</span>
+                    <button onClick={() => setSelectedOpponent(null)} className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center"><X className="w-3.5 h-3.5 text-white" /></button>
                   </div>
                 )}
               </div>
@@ -326,33 +344,33 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
 
             {/* Pick Judge */}
             <div>
-              <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2 block flex items-center gap-1.5">
-                <Gavel className="w-3 h-3" /> Pick Your Judge
-                <span className="text-[8px] text-muted-foreground/60 ml-1">(optional)</span>
+              <label className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2 flex items-center gap-1.5 font-semibold">
+                <Gavel className="w-3 h-3" /> Judge
+                <span className="text-[9px] text-zinc-600 ml-1 normal-case tracking-normal">optional</span>
               </label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input placeholder="Search judges..." value={judgeQuery} onChange={(e) => handleJudgeSearch(e.target.value)} className="pl-10 bg-surface-1 border-border" />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                <Input placeholder="Search judges" value={judgeQuery} onChange={(e) => handleJudgeSearch(e.target.value)} className="pl-10 h-11 rounded-xl bg-white/[0.04] border-white/[0.06] text-white placeholder:text-zinc-600" />
               </div>
               {judgeResults.length > 0 && (
-                <div className="mt-2 border border-border bg-surface-1 divide-y divide-border max-h-32 overflow-y-auto">
+                <div className="mt-2 rounded-xl border border-white/[0.06] bg-white/[0.03] overflow-hidden max-h-40 overflow-y-auto">
                   {judgeResults.map((j) => (
-                    <button key={j.id} onClick={() => { setSelectedJudge(j); setJudgeQuery(""); setJudgeResults([]); }} className="w-full flex items-center gap-3 p-2 hover:bg-surface-2 transition-colors">
+                    <button key={j.id} onClick={() => { setSelectedJudge(j); setJudgeQuery(""); setJudgeResults([]); }} className="w-full flex items-center gap-3 p-2.5 hover:bg-white/[0.04] transition-colors border-b border-white/[0.04] last:border-0">
                       <Avatar className="w-7 h-7"><AvatarImage src={j.avatar_url || ''} /><AvatarFallback className="bg-purple-500/20 text-purple-400 text-xs">{j.username.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
-                      <span className="text-sm text-foreground">{j.username}</span>
+                      <span className="text-sm text-white">{j.username}</span>
                       <span className="text-[8px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded ml-auto">JUDGE</span>
                     </button>
                   ))}
                 </div>
               )}
               {selectedJudge && (
-                <div className="mt-2 flex items-center gap-3 p-2 border border-purple-500/50 bg-purple-500/10">
+                <div className="mt-2 flex items-center gap-3 p-3 rounded-xl border border-purple-400/40 bg-purple-500/10">
                   <Avatar className="w-8 h-8 border-2 border-purple-500"><AvatarImage src={selectedJudge.avatar_url || ''} /><AvatarFallback className="bg-purple-500/20 text-purple-400">{selectedJudge.username.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
                   <div className="flex-1">
-                    <span className="text-sm font-medium text-foreground">{selectedJudge.username}</span>
+                    <span className="text-sm font-medium text-white">{selectedJudge.username}</span>
                     <span className="text-[9px] text-purple-400 block">Will be requested to judge</span>
                   </div>
-                  <button onClick={() => setSelectedJudge(null)}><X className="w-4 h-4 text-muted-foreground" /></button>
+                  <button onClick={() => setSelectedJudge(null)} className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center"><X className="w-3.5 h-3.5 text-white" /></button>
                 </div>
               )}
             </div>
@@ -360,23 +378,27 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
             {/* Theme Song */}
             {themeSongs.length > 0 && (
               <div>
-                <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2 block flex items-center gap-1.5">
-                  <Music className="w-3 h-3" /> Battle Theme Song
-                  <span className="text-[8px] text-muted-foreground/60 ml-1">(optional)</span>
+                <label className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2 flex items-center gap-1.5 font-semibold">
+                  <Music className="w-3 h-3" /> Theme Song
+                  <span className="text-[9px] text-zinc-600 ml-1 normal-case tracking-normal">optional</span>
                 </label>
-                <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
                   {themeSongs.map((song) => (
                     <button
                       key={song.id}
                       onClick={() => setSelectedTheme(selectedTheme?.id === song.id ? null : song)}
-                      className={`w-full flex items-center gap-2 p-2 border rounded-lg text-left transition-all ${
-                        selectedTheme?.id === song.id ? 'border-purple-500 bg-purple-500/10' : 'border-border hover:border-purple-500/50'
+                      className={`w-full flex items-center gap-2.5 p-2.5 rounded-xl text-left transition-all ${
+                        selectedTheme?.id === song.id
+                          ? 'border border-purple-400/50 bg-purple-500/10'
+                          : 'border border-white/[0.06] bg-white/[0.03]'
                       }`}
                     >
-                      <Music className={`w-4 h-4 shrink-0 ${selectedTheme?.id === song.id ? 'text-purple-400' : 'text-muted-foreground'}`} />
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${selectedTheme?.id === song.id ? 'bg-purple-500/25' : 'bg-white/[0.06]'}`}>
+                        <Music className={`w-4 h-4 ${selectedTheme?.id === song.id ? 'text-purple-300' : 'text-zinc-500'}`} />
+                      </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-xs font-bold text-foreground truncate block">{song.song_name}</span>
-                        <span className="text-[9px] text-muted-foreground">{song.artist_name} • {song.title}</span>
+                        <span className="text-xs font-semibold text-white truncate block">{song.song_name}</span>
+                        <span className="text-[10px] text-zinc-500 truncate block">{song.artist_name}</span>
                       </div>
                       {song.song_preview_url && selectedTheme?.id === song.id && (
                         <audio src={song.song_preview_url} controls className="h-6 w-24 shrink-0" onClick={(e) => e.stopPropagation()} />
@@ -389,56 +411,65 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
 
             {/* Duration */}
             <div>
-              <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2 block">
-                {isRapid ? 'Rapid Duration' : 'Battle Duration'}
+              <label className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2 block font-semibold">
+                Duration
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-2.5">
                 {durationOptions.map((hours) => (
                   <button
                     key={hours}
                     onClick={() => setDuration(hours)}
-                    className={`p-3 border text-center transition-all ${
-                      duration === hours ? 'border-red-500 bg-red-500/10' : 'border-border hover:border-red-500/50'
+                    className={`p-3 rounded-2xl text-center transition-all active:scale-[0.97] ${
+                      duration === hours
+                        ? 'bg-gradient-to-br from-red-500/25 to-red-600/10 border border-red-400/50 shadow-[0_0_16px_-4px_rgba(239,68,68,0.5)]'
+                        : 'bg-white/[0.04] border border-white/[0.06]'
                     }`}
                   >
-                    <Clock className="w-4 h-4 mx-auto mb-1 text-muted-foreground" />
-                    <span className="text-lg font-display text-foreground">{hours}h</span>
+                    <Clock className={`w-3.5 h-3.5 mx-auto mb-1 ${duration === hours ? 'text-red-300' : 'text-zinc-500'}`} />
+                    <span className="text-base font-display text-white">{hours}H</span>
                   </button>
                 ))}
               </div>
             </div>
 
             {/* Stakes */}
-            <div className="bg-surface-1 border border-border p-3">
-              <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-2 flex items-center gap-2">
-                <Trophy className="w-4 h-4 text-gold" /> Battle Stakes
-              </h3>
-              <div className="space-y-1.5 text-[11px]">
-                <div className="flex justify-between"><span className="text-muted-foreground">Winner gets</span><span className="text-gold font-bold">+20 Index</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Loser penalty</span><span className="text-red-400 font-bold">-5 Index</span></div>
+            <div className="rounded-2xl p-3.5 bg-gradient-to-br from-amber-500/[0.08] to-transparent border border-amber-500/20">
+              <div className="flex items-center gap-2 mb-2">
+                <Trophy className="w-4 h-4 text-amber-400 fill-amber-400/30" />
+                <span className="text-[11px] font-bold text-white uppercase tracking-wider">Stakes</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-3 py-2">
+                  <span className="text-[9px] text-emerald-300/70 uppercase block">Winner</span>
+                  <span className="text-sm font-display text-emerald-300">+20 IDX</span>
+                </div>
+                <div className="flex-1 rounded-xl bg-red-500/10 border border-red-500/20 px-3 py-2">
+                  <span className="text-[9px] text-red-300/70 uppercase block">Loser</span>
+                  <span className="text-sm font-display text-red-300">−5 IDX</span>
+                </div>
               </div>
             </div>
 
             {/* Your Info */}
-            <div className="flex items-center gap-3 p-3 bg-surface-1 border border-border">
-              <Avatar className="w-10 h-10 border-2 border-gold"><AvatarImage src={profile?.avatar_url || ''} /><AvatarFallback className="bg-gold/20 text-gold">{profile?.username?.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
+            <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/[0.04] border border-white/[0.06]">
+              <Avatar className="w-10 h-10 ring-2 ring-amber-400/60"><AvatarImage src={profile?.avatar_url || ''} /><AvatarFallback className="bg-amber-500/20 text-amber-400">{profile?.username?.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
               <div className="flex-1">
-                <span className="text-sm font-medium text-foreground">{profile?.username}</span>
-                <span className="text-[10px] text-muted-foreground block uppercase">{profile?.league} League</span>
+                <span className="text-sm font-semibold text-white">{profile?.username}</span>
+                <span className="text-[10px] text-zinc-500 block uppercase">{profile?.league} League</span>
               </div>
-              <span className="text-[10px] text-gold uppercase">Challenger</span>
+              <span className="text-[9px] font-bold text-amber-400 uppercase tracking-wider px-2 py-1 rounded-full bg-amber-500/10 border border-amber-400/30">You</span>
             </div>
 
             {/* Create Button */}
             <Button
               onClick={handleCreate}
               disabled={loading || (challengeType === 'direct' && !selectedOpponent)}
-              className="w-full h-12 bg-gradient-to-r from-red-500 via-red-400 to-red-500 hover:shadow-lg hover:shadow-red-500/30 text-white font-display text-sm uppercase tracking-wider"
+              className="w-full h-14 rounded-2xl bg-gradient-to-r from-red-500 via-red-400 to-red-500 hover:shadow-[0_8px_30px_-4px_rgba(239,68,68,0.6)] text-white font-display text-sm uppercase tracking-wider shadow-[0_4px_20px_-4px_rgba(239,68,68,0.5)]"
             >
               {loading ? <span className="animate-pulse">Creating...</span> : (
                 <>
                   <Swords className="w-4 h-4 mr-2" />
-                  {isRapid ? '⚡ Post Rapid Battle' : challengeType === 'open' ? 'Post Open Challenge' : 'Send Challenge'}
+                  {challengeType === 'open' ? 'Post Edit Battle' : 'Send Challenge'}
                 </>
               )}
             </Button>
