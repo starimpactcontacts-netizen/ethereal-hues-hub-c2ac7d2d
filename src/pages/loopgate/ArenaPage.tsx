@@ -1102,9 +1102,8 @@ export default function ArenaPage() {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             whileTap={{ scale: 0.98 }}
-            onClick={handleQuickFight}
-            disabled={isQfSearching}
-            className="relative w-full overflow-hidden touch-manipulation group mb-3 rounded-2xl disabled:opacity-90"
+            onClick={isQfSearching ? handleCancelQueue : handleQuickFight}
+            className="relative w-full overflow-hidden touch-manipulation group mb-3 rounded-2xl"
             style={{ boxShadow: '0 8px 32px rgba(59,130,246,0.25), 0 4px 16px rgba(239,68,68,0.18)' }}
           >
             {/* Animated gradient background */}
