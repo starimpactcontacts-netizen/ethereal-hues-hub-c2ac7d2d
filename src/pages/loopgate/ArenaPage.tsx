@@ -1133,7 +1133,7 @@ export default function ArenaPage() {
                   </span>
                 </div>
                 <h3 className="text-[22px] font-black text-white leading-none tracking-tight" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
-                  {isQfSearching ? 'IN QUEUE' : 'JOIN A BATTLE'}
+                  {isQfSearching ? 'IN QUEUE' : 'JOIN EDIT BATTLE'}
                 </h3>
                 <p className="text-[10px] text-white/70 font-semibold mt-1 truncate">
                   Tap to instantly queue — earn IDX, cash & rank

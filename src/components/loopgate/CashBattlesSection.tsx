@@ -423,7 +423,7 @@ export default function CashBattlesSection({
             className="text-[15px] font-extrabold tracking-tight text-foreground"
             style={{ fontFamily: "Inter, system-ui, sans-serif" }}
           >
-            Live Battles
+            Edit Battles
           </h2>
           <button
             onClick={() => setInfoOpen(true)}
