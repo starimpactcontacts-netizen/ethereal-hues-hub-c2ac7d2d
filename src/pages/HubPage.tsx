@@ -1147,6 +1147,29 @@ export default function HubPage() {
         </motion.div>
       )}
 
+      {/* ═══════════════════════════════════════════════════════════════════
+          🏆 FEATURED — Competitions carousel (paired with FEATURED DROPS, Roblox-style stack)
+      ═══════════════════════════════════════════════════════════════════ */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.1 }}
+        className="mt-3"
+      >
+        <div className="px-4 mb-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-1 h-5 bg-gold rounded-full" />
+              <h2 className="font-display text-lg text-foreground">FEATURED</h2>
+            </div>
+            <Link to="/arena" className="text-[9px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
+              VIEW ALL <ArrowRight size={10} />
+            </Link>
+          </div>
+        </div>
+        <ArenaCompetitionsSection onCreateClick={() => navigate(profile ? '/competition/create' : '/start')} hideHeader />
+      </motion.div>
+
 
       {/* ═══════════════════════════════════════════════════════════════════
           💰 GET PAID — Commissions Section
