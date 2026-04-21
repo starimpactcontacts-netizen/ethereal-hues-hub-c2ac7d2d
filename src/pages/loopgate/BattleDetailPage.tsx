@@ -29,7 +29,7 @@ export default function BattleDetailPage() {
   const { battleId } = useParams();
   const navigate = useNavigate();
   const { profile, user } = useAuth();
-  const { battle, loading } = useBattle(battleId);
+  const { battle, loading, setBattle, refetch } = useBattle(battleId);
   const [submissionUrl, setSubmissionUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [accepting, setAccepting] = useState(false);
@@ -106,9 +106,27 @@ export default function BattleDetailPage() {
     if (!profile) return;
     setAccepting(true);
     const success = await acceptBattle(battle.id, profile.id, profile.username, profile.avatar_url);
+    if (success) {
+      // Optimistic update — instantly flip the UI into LIVE / edit mode
+      const startsAt = new Date().toISOString();
+      const endsAt = new Date(Date.now() + (battle.duration_hours || 48) * 60 * 60 * 1000).toISOString();
+      setBattle({
+        ...battle,
+        opponent_id: profile.id,
+        opponent_username: profile.username,
+        opponent_avatar_url: profile.avatar_url,
+        status: 'active',
+        accepted_at: startsAt,
+        starts_at: startsAt,
+        ends_at: endsAt,
+      } as any);
+      toast.success("Battle accepted! Time to edit!");
+      // Reconcile with server in the background
+      refetch();
+    } else {
+      toast.error("Failed to accept battle");
+    }
     setAccepting(false);
-    if (success) toast.success("Battle accepted! Time to edit!");
-    else toast.error("Failed to accept battle");
   };
 
   const handleSubmit = async () => {
