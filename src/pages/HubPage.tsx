@@ -1107,8 +1107,9 @@ export default function HubPage() {
           >
             {/* Mission billboard cards — pinned first */}
             {missionDrops.map(mission => (
-              <Link key={`mission-${mission.id}`} to={`/commissions/${mission.id}`} className="shrink-0">
-                <div className="relative w-[160px] h-[160px] overflow-hidden group cursor-pointer rounded-lg border border-emerald-500/30 snap-start">
+              <Link key={`mission-${mission.id}`} to={`/commissions/${mission.id}`} className="shrink-0 w-[160px] h-[220px] snap-start">
+                <div className="relative w-full h-full overflow-hidden group cursor-pointer rounded-2xl border border-emerald-500/30 bg-black flex flex-col">
+                  <div className="relative w-full flex-1 min-h-0 overflow-hidden">
                   {mission.poster_url ? (
                     <img src={mission.poster_url} alt={mission.song_name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   ) : (
@@ -1125,14 +1126,17 @@ export default function HubPage() {
                       <span className="font-display text-sm text-emerald-400 leading-none">${mission.max_pay}</span>
                     </div>
                   )}
-                  <div className="absolute bottom-0 left-0 right-0 px-2.5 pb-2">
+                  <div className="absolute bottom-0 left-0 right-0 px-3 pb-2.5">
                     {mission.artist_name && (
                       <p className="text-[7px] font-black text-emerald-400/70 uppercase tracking-[0.15em] mb-0.5">{mission.artist_name}</p>
                     )}
-                    <h4 className="font-display text-[11px] text-white leading-tight truncate">{mission.song_name}</h4>
-                    <button className="mt-1.5 w-full flex items-center justify-center gap-1.5 bg-emerald-600 py-1 rounded-sm">
-                      <Crosshair className="w-2.5 h-2.5 text-white" />
-                      <span className="text-[9px] font-black text-white uppercase tracking-wider">Enter</span>
+                    <h4 className="font-display text-sm text-white leading-tight truncate uppercase font-extrabold drop-shadow-lg">{mission.song_name}</h4>
+                  </div>
+                  </div>
+                  {/* CTA footer — matches FeaturedDropCard */}
+                  <div className="px-3 py-2 border-t border-white/[0.04] mt-auto">
+                    <button className="w-full text-center py-1.5 rounded-lg bg-emerald-500 text-black text-[11px] font-black uppercase tracking-wider hover:bg-emerald-400 transition-colors" style={{ fontFamily: 'Teko, sans-serif' }}>
+                      ENTER
                     </button>
                   </div>
                 </div>
