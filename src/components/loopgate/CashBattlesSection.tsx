@@ -329,7 +329,25 @@ function CashBattleInfoModal({ open, onClose }: { open: boolean; onClose: () => 
   );
 }
 
-export default function CashBattlesSection() {
+interface EditBattlesSectionProps {
+  idxBattles?: any[];
+  idxBattlesLoading?: boolean;
+  renderIdxBattleCard?: (battle: any) => ReactNode;
+  onQuickFight?: () => void;
+  onChallenge?: () => void;
+  isQfSearching?: boolean;
+  onCancelQueue?: () => void;
+}
+
+export default function CashBattlesSection({
+  idxBattles = [],
+  idxBattlesLoading = false,
+  renderIdxBattleCard,
+  onQuickFight,
+  onChallenge,
+  isQfSearching = false,
+  onCancelQueue,
+}: EditBattlesSectionProps = {}) {
   const navigate = useNavigate();
   const { battles, loading } = useCashBattles();
   const { battles: myBattles } = useMyCashBattles();
