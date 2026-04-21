@@ -176,7 +176,18 @@ export default function CompetitionLobbyPage() {
     <div className="min-h-screen bg-background pb-32">
       {/* ═══ HERO ═══ */}
       <div className="relative overflow-hidden">
-        {competition.cover_image_url ? (
+        {competition.inspo_video_url && inspoIsDirectVideo ? (
+          <video
+            ref={inspoVideoRef}
+            src={competition.inspo_video_url}
+            poster={competition.inspo_thumbnail_url || competition.cover_image_url || undefined}
+            className="w-full h-52 object-cover"
+            muted
+            loop
+            playsInline
+            preload="metadata"
+          />
+        ) : competition.cover_image_url ? (
           <img src={competition.cover_image_url} alt="" className="w-full h-52 object-cover" />
         ) : (
           <div className="w-full h-52 bg-gradient-to-br from-white/[0.03] via-surface-2 to-black" />
@@ -188,9 +199,25 @@ export default function CompetitionLobbyPage() {
           <button onClick={() => navigate(-1)} className="p-2 bg-black/50 backdrop-blur-sm rounded-full">
             <ArrowLeft className="w-4 h-4 text-white" />
           </button>
-          <button onClick={handleShare} className="p-2 bg-black/50 backdrop-blur-sm rounded-full">
-            {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4 text-white" />}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleUpvote}
+              className={`flex items-center gap-1.5 px-2.5 h-8 rounded-full backdrop-blur-sm transition-all active:scale-95 ${
+                hasUpvoted
+                  ? "bg-emerald-500/90 text-white"
+                  : "bg-black/50 text-white hover:bg-black/70"
+              }`}
+              aria-label="Upvote"
+            >
+              <ThumbsUp className={`w-3.5 h-3.5 ${hasUpvoted ? "fill-current" : ""}`} />
+              <span className="text-[11px] font-bold tabular-nums" style={teko}>
+                {competition.upvote_count || 0}
+              </span>
+            </button>
+            <button onClick={handleShare} className="p-2 bg-black/50 backdrop-blur-sm rounded-full">
+              {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4 text-white" />}
+            </button>
+          </div>
         </div>
 
         {/* Title overlay */}
