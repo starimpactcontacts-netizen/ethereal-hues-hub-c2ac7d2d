@@ -741,44 +741,68 @@ export default function ArenaPage() {
                MY ARENA — Personal dashboard
             ═══════════════════════════════════════════════════ */
             <div className="space-y-4 pb-4">
-              {/* Profile Card */}
+              {/* Profile Card — iPhone 17 glass + Roblox vibrancy */}
               {profile && (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
-                  <Link to="/profile" className="block">
-                    <div className="bg-surface-1 border border-border p-4 flex items-center gap-4 hover:border-foreground/20 transition-all">
-                      <Avatar className="w-14 h-14 border-2 border-gold/40 shrink-0">
-                        <AvatarImage src={profile.avatar_url || ''} />
-                        <AvatarFallback className="bg-gold/10 text-gold text-lg font-bold">
-                          {profile.username?.charAt(0).toUpperCase() || '?'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[15px] font-black text-foreground truncate" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-                          {profile.display_name || profile.username}
-                        </p>
-                        <p className="text-[11px] text-muted-foreground">@{profile.username}</p>
-                        <div className="flex items-center gap-3 mt-1.5">
-                          {userStats && (
-                            <>
-                              <span className="text-[11px] font-bold text-emerald-400">{userStats.wins}W</span>
-                              <span className="text-[11px] font-bold text-red-400">{userStats.losses}L</span>
-                              {userStats.streak > 0 && (
-                                <span className="text-[11px] font-bold text-gold flex items-center gap-0.5">
-                                  <Flame className="w-3 h-3" />{userStats.streak}
-                                </span>
-                              )}
-                              <span className="text-[11px] text-muted-foreground">{userStats.events} events</span>
-                            </>
-                          )}
+                  <Link to="/profile" className="block group">
+                    <div
+                      className="relative overflow-hidden rounded-3xl p-[1px] transition-all active:scale-[0.99]"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(255,200,80,0.55) 0%, rgba(255,255,255,0.06) 35%, rgba(124,58,237,0.35) 70%, rgba(239,68,68,0.45) 100%)',
+                        boxShadow: '0 18px 40px -18px rgba(255,180,60,0.35), 0 8px 24px -12px rgba(0,0,0,0.6)',
+                      }}
+                    >
+                      <div
+                        className="relative rounded-[22px] p-4 flex items-center gap-4 overflow-hidden"
+                        style={{
+                          background: 'linear-gradient(160deg, hsl(0 0% 11%) 0%, hsl(0 0% 7%) 100%)',
+                        }}
+                      >
+                        <div className="absolute -top-12 -right-10 w-40 h-40 rounded-full opacity-40 blur-3xl" style={{ background: 'radial-gradient(circle, rgba(255,180,60,0.45), transparent 70%)' }} />
+                        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+
+                        <div className="relative shrink-0">
+                          <div className="absolute -inset-1 rounded-full opacity-70 blur-md" style={{ background: 'conic-gradient(from 0deg, #f59e0b, #ef4444, #7c3aed, #3b82f6, #f59e0b)' }} />
+                          <Avatar className="relative w-14 h-14 ring-2 ring-black">
+                            <AvatarImage src={profile.avatar_url || ''} />
+                            <AvatarFallback className="bg-gold/10 text-gold text-lg font-bold">
+                              {profile.username?.charAt(0).toUpperCase() || '?'}
+                            </AvatarFallback>
+                          </Avatar>
                         </div>
-                      </div>
-                      <div className="shrink-0 flex flex-col items-end gap-1">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-gold">
-                          {(profile as any).league || 'Open'}
-                        </span>
-                        <span className="text-[11px] text-muted-foreground font-semibold tabular-nums">
-                          Lv.{(profile as any).level || 1}
-                        </span>
+
+                        <div className="relative flex-1 min-w-0">
+                          <p className="text-[15px] font-black text-foreground truncate tracking-tight">
+                            {profile.display_name || profile.username}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground">@{profile.username}</p>
+                          <div className="flex items-center gap-1.5 mt-2">
+                            {userStats && (
+                              <>
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-black tabular-nums bg-emerald-500/15 text-emerald-300 border border-emerald-500/25">{userStats.wins}W</span>
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-black tabular-nums bg-red-500/15 text-red-300 border border-red-500/25">{userStats.losses}L</span>
+                                {userStats.streak > 0 && (
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black tabular-nums bg-amber-500/15 text-amber-300 border border-amber-500/25 flex items-center gap-0.5">
+                                    <Flame className="w-2.5 h-2.5" />{userStats.streak}
+                                  </span>
+                                )}
+                                <span className="text-[10px] text-muted-foreground/80 ml-0.5">{userStats.events} events</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="relative shrink-0 flex flex-col items-end gap-1">
+                          <span
+                            className="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.15em] text-amber-200 border border-amber-400/30"
+                            style={{ background: 'linear-gradient(135deg, rgba(245,158,11,0.18), rgba(239,68,68,0.12))' }}
+                          >
+                            {(profile as any).league || 'Open'}
+                          </span>
+                          <span className="text-[11px] text-foreground/80 font-bold tabular-nums">
+                            Lv.{(profile as any).level || 1}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </Link>
@@ -959,51 +983,79 @@ export default function ArenaPage() {
 
               {/* Open Editor — Studio CTA */}
               <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-                <Link to="/studio" className="block">
-                  <div className="group relative bg-surface-1 border border-border hover:border-foreground/20 transition-all overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#9999FF]/5 via-transparent to-[#9999FF]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="relative flex items-center gap-4 p-4">
-                      <div className="w-12 h-12 bg-[#9999FF]/10 border border-[#9999FF]/20 flex items-center justify-center shrink-0">
-                        <Clapperboard className="w-6 h-6 text-[#9999FF]" />
+                <Link to="/studio" className="block group">
+                  <div
+                    className="relative overflow-hidden rounded-2xl p-[1px] transition-all active:scale-[0.99]"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(153,153,255,0.45) 0%, rgba(255,255,255,0.05) 50%, rgba(124,58,237,0.35) 100%)',
+                      boxShadow: '0 14px 32px -16px rgba(124,58,237,0.45)',
+                    }}
+                  >
+                    <div
+                      className="relative rounded-[14px] flex items-center gap-3.5 p-3.5 overflow-hidden"
+                      style={{ background: 'linear-gradient(160deg, hsl(0 0% 11%) 0%, hsl(0 0% 7%) 100%)' }}
+                    >
+                      <div className="absolute -top-10 -left-6 w-32 h-32 rounded-full opacity-30 blur-3xl" style={{ background: 'radial-gradient(circle, rgba(153,153,255,0.6), transparent 70%)' }} />
+                      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+                      <div
+                        className="relative w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border border-white/10"
+                        style={{ background: 'linear-gradient(135deg, rgba(153,153,255,0.22), rgba(124,58,237,0.15))', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12)' }}
+                      >
+                        <Clapperboard className="w-5 h-5 text-[#b4b4ff]" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[14px] font-black text-foreground tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Open Editor</p>
-                        <p className="text-[11px] text-muted-foreground">Studio — create, edit & export</p>
+                      <div className="relative flex-1 min-w-0">
+                        <p className="text-[14px] font-black text-foreground tracking-tight">Open Studio</p>
+                        <p className="text-[11px] text-muted-foreground">Create, edit & export</p>
                       </div>
-                      <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-[#9999FF] transition-colors shrink-0" />
+                      <div className="relative shrink-0 w-7 h-7 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center group-hover:bg-white/[0.1] transition-colors">
+                        <ArrowRight className="w-3.5 h-3.5 text-foreground/80" />
+                      </div>
                     </div>
                   </div>
                 </Link>
               </motion.div>
 
               {!activeSolo && profile && (
-                <div className="bg-surface-1 border border-border p-4 text-center">
-                  <Sparkles className="w-5 h-5 text-muted-foreground/30 mx-auto mb-2" />
+                <div
+                  className="relative overflow-hidden rounded-2xl p-5 text-center border border-white/[0.06]"
+                  style={{ background: 'linear-gradient(160deg, hsl(0 0% 10%) 0%, hsl(0 0% 6%) 100%)' }}
+                >
+                  <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/30 to-transparent" />
+                  <div className="w-10 h-10 mx-auto mb-2 rounded-2xl flex items-center justify-center border border-amber-400/20" style={{ background: 'linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.05))' }}>
+                    <Sparkles className="w-4.5 h-4.5 text-amber-300" />
+                  </div>
                   <p className="text-[12px] text-muted-foreground mb-3">No active solo — start one from the Arena tab</p>
-                  <button onClick={() => { setArenaView('arena'); setShowSoloMode(true); }}
-                    className="text-[12px] text-gold font-bold hover:underline">Start Solo Edit →</button>
+                  <button
+                    onClick={() => { setArenaView('arena'); setShowSoloMode(true); }}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[12px] text-amber-200 font-black tracking-wide border border-amber-400/30 active:scale-95 transition-transform"
+                    style={{ background: 'linear-gradient(135deg, rgba(245,158,11,0.18), rgba(239,68,68,0.12))' }}
+                  >
+                    Start Solo Edit <ArrowRight className="w-3 h-3" />
+                  </button>
                 </div>
               )}
 
               {/* Active Quick Fights */}
               {myActiveQuickFights.length > 0 && (
                 <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Zap className="w-4 h-4 text-red-400" />
-                    <span className="text-[13px] font-bold text-foreground">Active Quick Fights</span>
-                    <span className="text-[11px] text-red-400 font-semibold">{myActiveQuickFights.length}</span>
+                  <div className="flex items-center gap-2 mb-2 px-1">
+                    <Zap className="w-3.5 h-3.5 text-red-400" />
+                    <span className="text-[11px] font-black text-foreground/90 uppercase tracking-[0.15em]">Active Quick Fights</span>
+                    <span className="ml-auto text-[10px] text-red-300 font-black px-1.5 py-0.5 rounded-full bg-red-500/15 border border-red-500/25">{myActiveQuickFights.length}</span>
                   </div>
                   <div className="space-y-1.5">
                     {myActiveQuickFights.map(fight => (
                       <button key={fight.id} onClick={() => navigate(`/fight/${fight.id}`)}
-                        className="w-full flex items-center gap-3 p-3 bg-surface-1 border border-red-500/30 hover:border-red-500/50 transition-all text-left">
+                        className="w-full flex items-center gap-3 p-3 rounded-2xl border border-red-500/25 hover:border-red-500/50 transition-all text-left active:scale-[0.99]"
+                        style={{ background: 'linear-gradient(160deg, hsl(0 0% 11%) 0%, hsl(0 0% 7%) 100%)' }}
+                      >
                         <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0" />
+                          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0 shadow-[0_0_8px_rgba(239,68,68,0.7)]" />
                           <span className="text-[12px] font-bold text-foreground truncate">
                             {fight.player_1_username} vs {fight.player_2_username || '???'}
                           </span>
                         </div>
-                        <span className="text-[11px] font-bold text-red-400 uppercase">{fight.status}</span>
+                        <span className="text-[10px] font-black text-red-300 uppercase px-2 py-0.5 rounded-full bg-red-500/15 border border-red-500/25">{fight.status}</span>
                         <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
                       </button>
                     ))}
@@ -1014,22 +1066,26 @@ export default function ArenaPage() {
               {/* Active 1v1 Battles */}
               {myBattles.filter(b => b.status !== 'completed').length > 0 && (
                 <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Swords className="w-4 h-4 text-red-400" />
-                    <span className="text-[13px] font-bold text-foreground">Active 1v1 Battles</span>
+                  <div className="flex items-center gap-2 mb-2 px-1">
+                    <Swords className="w-3.5 h-3.5 text-red-400" />
+                    <span className="text-[11px] font-black text-foreground/90 uppercase tracking-[0.15em]">Active 1v1 Battles</span>
                   </div>
                   <div className="space-y-1.5">
                     {myBattles.filter(b => b.status !== 'completed').map(battle => (
                       <button key={battle.id} onClick={() => navigate(`/battle/${battle.id}`)}
-                        className="w-full flex items-center gap-3 p-3 bg-surface-1 border border-border hover:border-red-500/40 transition-all text-left">
+                        className="w-full flex items-center gap-3 p-3 rounded-2xl border border-white/[0.06] hover:border-red-500/40 transition-all text-left active:scale-[0.99]"
+                        style={{ background: 'linear-gradient(160deg, hsl(0 0% 11%) 0%, hsl(0 0% 7%) 100%)' }}
+                      >
                         <div className="flex-1 min-w-0">
                           <span className="text-[12px] font-bold text-foreground truncate block">
                             {battle.challenger_username} vs {battle.opponent_username || '???'}
                           </span>
                           <span className="text-[10px] text-muted-foreground">{(battle as any).theme_song_name || 'No song'}</span>
                         </div>
-                        <span className={`text-[10px] font-bold uppercase ${
-                          battle.status === 'active' ? 'text-red-400' : battle.status === 'judging' ? 'text-purple-400' : 'text-amber-400'
+                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full border ${
+                          battle.status === 'active' ? 'text-red-300 bg-red-500/15 border-red-500/25'
+                          : battle.status === 'judging' ? 'text-purple-300 bg-purple-500/15 border-purple-500/25'
+                          : 'text-amber-300 bg-amber-500/15 border-amber-500/25'
                         }`}>{battle.status}</span>
                         <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
                       </button>
@@ -1040,32 +1096,35 @@ export default function ArenaPage() {
 
               {/* Battle History */}
               <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <History className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-[13px] font-bold text-foreground">Battle History</span>
+                <div className="flex items-center gap-2 mb-2 px-1">
+                  <History className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span className="text-[11px] font-black text-foreground/90 uppercase tracking-[0.15em]">Battle History</span>
                 </div>
                 {(myCompletedQuickFights.length + myBattles.filter(b => b.status === 'completed').length) > 0 ? (
-                  <div className="space-y-1">
+                  <div
+                    className="rounded-2xl border border-white/[0.06] overflow-hidden divide-y divide-white/[0.05]"
+                    style={{ background: 'linear-gradient(160deg, hsl(0 0% 10%) 0%, hsl(0 0% 6%) 100%)' }}
+                  >
                     {myBattles.filter(b => b.status === 'completed').slice(0, 10).map(battle => (
                       <button key={battle.id} onClick={() => navigate(`/battle/${battle.id}`)}
-                        className="w-full flex items-center gap-3 p-2.5 bg-surface-1 border border-border hover:border-border/80 transition-all text-left">
+                        className="w-full flex items-center gap-3 px-3.5 py-2.5 hover:bg-white/[0.02] transition-all text-left">
                         <div className="flex-1 min-w-0">
                           <span className="text-[12px] text-foreground truncate block">
                             {battle.challenger_username} vs {battle.opponent_username}
                           </span>
                         </div>
                         {battle.winner_id === user?.id ? (
-                          <span className="text-[10px] font-bold text-emerald-400">WON</span>
+                          <span className="text-[10px] font-black text-emerald-300 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/25">WON</span>
                         ) : battle.winner_id ? (
-                          <span className="text-[10px] font-bold text-red-400">LOST</span>
+                          <span className="text-[10px] font-black text-red-300 px-2 py-0.5 rounded-full bg-red-500/15 border border-red-500/25">LOST</span>
                         ) : (
-                          <span className="text-[10px] font-bold text-muted-foreground">DRAW</span>
+                          <span className="text-[10px] font-black text-muted-foreground px-2 py-0.5 rounded-full bg-white/5 border border-white/10">DRAW</span>
                         )}
                       </button>
                     ))}
                     {myCompletedQuickFights.slice(0, 10).map(fight => (
                       <button key={fight.id} onClick={() => navigate(`/fight/${fight.id}`)}
-                        className="w-full flex items-center gap-3 p-2.5 bg-surface-1 border border-border hover:border-border/80 transition-all text-left">
+                        className="w-full flex items-center gap-3 px-3.5 py-2.5 hover:bg-white/[0.02] transition-all text-left">
                         <div className="flex-1 min-w-0">
                           <span className="text-[12px] text-foreground truncate block">
                             {fight.player_1_username} vs {fight.player_2_username}
@@ -1073,17 +1132,20 @@ export default function ArenaPage() {
                           <span className="text-[10px] text-muted-foreground">Quick 1v1</span>
                         </div>
                         {fight.winner_id === user?.id ? (
-                          <span className="text-[10px] font-bold text-emerald-400">WON</span>
+                          <span className="text-[10px] font-black text-emerald-300 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/25">WON</span>
                         ) : fight.winner_id ? (
-                          <span className="text-[10px] font-bold text-red-400">LOST</span>
+                          <span className="text-[10px] font-black text-red-300 px-2 py-0.5 rounded-full bg-red-500/15 border border-red-500/25">LOST</span>
                         ) : (
-                          <span className="text-[10px] font-bold text-muted-foreground">—</span>
+                          <span className="text-[10px] font-black text-muted-foreground px-2 py-0.5 rounded-full bg-white/5 border border-white/10">—</span>
                         )}
                       </button>
                     ))}
                   </div>
                 ) : (
-                  <div className="bg-surface-1 border border-border p-6 text-center">
+                  <div
+                    className="rounded-2xl border border-white/[0.06] p-6 text-center"
+                    style={{ background: 'linear-gradient(160deg, hsl(0 0% 10%) 0%, hsl(0 0% 6%) 100%)' }}
+                  >
                     <p className="text-[12px] text-muted-foreground">No completed battles yet</p>
                   </div>
                 )}
