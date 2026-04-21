@@ -114,17 +114,21 @@ export default function JudgePanelPage() {
     }
   }, [activeFormat]);
 
-  // Auto-collapse stats on scroll
+  // Auto-collapse stats on scroll (listen to the actual scroll container = <main>)
   useEffect(() => {
+    const scroller =
+      (document.querySelector('main') as HTMLElement | null) ?? null;
+    const target: HTMLElement | Window = scroller ?? window;
     const handleScroll = () => {
-      setStatsCollapsed(window.scrollY > 80);
+      const y = scroller ? scroller.scrollTop : window.scrollY;
+      setStatsCollapsed(y > 80);
     };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    target.addEventListener('scroll', handleScroll as EventListener, { passive: true } as AddEventListenerOptions);
+    return () => target.removeEventListener('scroll', handleScroll as EventListener);
   }, []);
 
   return (
-    <div className="min-h-screen bg-black" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+    <div className="min-h-full bg-black">
       {/* Header — ultra compact */}
       <div className="sticky top-0 z-50 bg-black/95 backdrop-blur-sm border-b border-zinc-800">
         <div className="flex items-center justify-between px-3 py-1.5">
