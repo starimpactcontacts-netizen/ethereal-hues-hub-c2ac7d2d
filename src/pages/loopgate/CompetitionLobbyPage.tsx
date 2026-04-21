@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Trophy, Users, Clock, Play, Loader2, Send,
-  Share2, Check, MessageCircle, Layers, Pencil, X, ThumbsUp, Sparkles
+  Share2, Check, MessageCircle, Layers, Pencil, X, ThumbsUp, Sparkles, Upload
 } from "lucide-react";
 import { useCompetition } from "@/hooks/useCompetitions";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { formatDistanceToNow, isPast, differenceInSeconds } from "date-fns";
 import { validatePlatformUrl, getPlatformUrlPlaceholder, detectPlatform, type PlatformType } from "@/lib/urlValidation";
 import { useAutoplayVideo } from "@/hooks/useAutoplayVideo";
+import { supabase } from "@/integrations/supabase/client";
 import CompetitionChat from "@/components/loopgate/CompetitionChat";
 import CompetitionLeaderboard from "@/components/loopgate/CompetitionLeaderboard";
 
@@ -70,8 +71,8 @@ export default function CompetitionLobbyPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showInspoForm, setShowInspoForm] = useState(false);
-  const [inspoUrl, setInspoUrl] = useState("");
   const [savingInspo, setSavingInspo] = useState(false);
+  const inspoFileInputRef = useRef<HTMLInputElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
   const inspoVideoRef = useAutoplayVideo(true);
 
@@ -158,19 +159,80 @@ export default function CompetitionLobbyPage() {
     await toggleUpvote();
   };
 
-  const handleSaveInspo = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = inspoUrl.trim();
-    if (!trimmed) return;
-    const detected = detectPlatform(trimmed);
-    if (!detected) { toast.error("Use a TikTok, Instagram, or YouTube link"); return; }
-    const validation = validatePlatformUrl(detected, trimmed);
-    if (!validation.valid) { toast.error(validation.error || "Invalid URL"); return; }
+  // Generate a thumbnail from a video file's first frame
+  const generateVideoThumb = (file: File): Promise<Blob | null> =>
+    new Promise((resolve) => {
+      try {
+        const video = document.createElement("video");
+        video.preload = "metadata";
+        video.muted = true;
+        video.playsInline = true;
+        video.src = URL.createObjectURL(file);
+        video.onloadeddata = () => {
+          try {
+            video.currentTime = Math.min(0.1, (video.duration || 1) / 2);
+          } catch { resolve(null); }
+        };
+        video.onseeked = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = video.videoWidth || 720;
+          canvas.height = video.videoHeight || 1280;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return resolve(null);
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob((b) => resolve(b), "image/jpeg", 0.85);
+        };
+        video.onerror = () => resolve(null);
+      } catch { resolve(null); }
+    });
+
+  const handleInspoFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user || !competition) return;
+    if (file.size > 100 * 1024 * 1024) { toast.error("Keep it under 100MB"); return; }
+    const isVideo = file.type.startsWith("video/");
+    const isImage = file.type.startsWith("image/");
+    if (!isVideo && !isImage) { toast.error("Upload a video or image"); return; }
+
     setSavingInspo(true);
-    const ok = await updateInspo({ url: trimmed, platform: detected });
-    if (ok) { toast.success("Inspo edit added!"); setShowInspoForm(false); setInspoUrl(""); }
-    else toast.error("Failed to save");
-    setSavingInspo(false);
+    try {
+      const ext = file.name.split(".").pop() || (isVideo ? "mp4" : "jpg");
+      const path = `${user.id}/inspo-${competition.id}-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("loop-media")
+        .upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type });
+      if (upErr) throw upErr;
+      const { data: urlData } = supabase.storage.from("loop-media").getPublicUrl(path);
+
+      // Auto-thumbnail for videos
+      let thumbUrl: string | null = null;
+      if (isVideo) {
+        const thumb = await generateVideoThumb(file);
+        if (thumb) {
+          const thumbPath = `${user.id}/inspo-${competition.id}-${Date.now()}.jpg`;
+          const { error: thumbErr } = await supabase.storage
+            .from("loop-media")
+            .upload(thumbPath, thumb, { contentType: "image/jpeg", upsert: false });
+          if (!thumbErr) {
+            thumbUrl = supabase.storage.from("loop-media").getPublicUrl(thumbPath).data.publicUrl;
+          }
+        }
+      }
+
+      const ok = await updateInspo({
+        url: urlData.publicUrl,
+        platform: isVideo ? "upload" : "image",
+        thumbnail_url: thumbUrl,
+      });
+      if (ok) { toast.success("Inspo edit added!"); setShowInspoForm(false); }
+      else toast.error("Failed to save");
+    } catch (err: any) {
+      console.error("Inspo upload error:", err);
+      toast.error(err?.message || "Upload failed");
+    } finally {
+      setSavingInspo(false);
+      if (inspoFileInputRef.current) inspoFileInputRef.current.value = "";
+    }
   };
 
   return (
@@ -330,35 +392,45 @@ export default function CompetitionLobbyPage() {
         )}
 
         {isCreator && showInspoForm && (
-          <motion.form
+          <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
-            onSubmit={handleSaveInspo}
             className="space-y-2"
           >
             <p className="text-[10px] text-muted-foreground/60 px-1">
-              Drop a TikTok / Instagram / YouTube link to inspire editors. It'll autoplay in your lobby.
+              Upload a video or image from your device — it'll autoplay in your lobby with an auto-generated thumbnail.
             </p>
             <input
-              value={inspoUrl}
-              onChange={e => setInspoUrl(e.target.value)}
-              placeholder="https://tiktok.com/..."
-              className="w-full bg-surface-2 border border-white/[0.06] rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:border-amber-400/40"
+              ref={inspoFileInputRef}
+              type="file"
+              accept="video/mp4,video/webm,video/quicktime,image/jpeg,image/png,image/webp"
+              onChange={handleInspoFile}
+              className="hidden"
             />
             <div className="flex gap-2">
-              <button type="button" onClick={() => { setShowInspoForm(false); setInspoUrl(""); }} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-muted-foreground bg-surface-2 border border-white/[0.06]">
+              <button
+                type="button"
+                onClick={() => setShowInspoForm(false)}
+                disabled={savingInspo}
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold text-muted-foreground bg-surface-2 border border-white/[0.06] disabled:opacity-30"
+              >
                 Cancel
               </button>
               <button
-                type="submit"
-                disabled={savingInspo || !inspoUrl.trim()}
-                className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-30 transition-all"
+                type="button"
+                onClick={() => inspoFileInputRef.current?.click()}
+                disabled={savingInspo}
+                className="flex-[2] py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-50 transition-all flex items-center justify-center gap-2"
                 style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)" }}
               >
-                {savingInspo ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : "Save Inspo"}
+                {savingInspo ? (
+                  <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Uploading…</>
+                ) : (
+                  <><Upload className="w-3.5 h-3.5" /> Choose Video / Photo</>
+                )}
               </button>
             </div>
-          </motion.form>
+          </motion.div>
         )}
 
         {/* ═══ GO EDIT — visible when live + joined + hasn't submitted ═══ */}
