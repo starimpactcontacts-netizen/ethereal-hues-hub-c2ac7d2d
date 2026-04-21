@@ -71,8 +71,8 @@ export default function CompetitionLobbyPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showInspoForm, setShowInspoForm] = useState(false);
-  const [inspoUrl, setInspoUrl] = useState("");
   const [savingInspo, setSavingInspo] = useState(false);
+  const inspoFileInputRef = useRef<HTMLInputElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
   const inspoVideoRef = useAutoplayVideo(true);
 
