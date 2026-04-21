@@ -150,7 +150,7 @@ export default function ArenaCompetitionsSection({ onCreateClick, hideHeader = f
           {comps.map(comp => <CompetitionCard key={comp.id} comp={comp} onJoin={handleJoin} />)}
 
           {/* Create Your Own — square poster */}
-          <div className="shrink-0 snap-start" style={{ width: SQUARE_SIZE, height: SQUARE_SIZE }}>
+          <div className="shrink-0 snap-start" style={{ width: CARD_W, height: CARD_H }}>
             <motion.div
               whileTap={{ scale: 0.97 }}
               onClick={onCreateClick}
