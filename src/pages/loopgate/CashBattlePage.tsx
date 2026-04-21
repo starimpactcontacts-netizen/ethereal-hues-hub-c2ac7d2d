@@ -257,11 +257,13 @@ export default function CashBattlePage() {
 
   const isLive = battle.status === "live";
   const isCompleted = battle.status === "completed";
+  const isCancelled = battle.status === "cancelled";
+  const isDead = isCancelled || (isLive && countdown.expired && !(battle.challenger_submission_url && battle.opponent_submission_url));
   const challengerThumb = battle.challenger_thumbnail_url;
   const opponentThumb = battle.opponent_thumbnail_url;
 
   return (
-    <div className="min-h-screen" style={{ background: "#0a0a0c" }}>
+    <div className={`min-h-screen ${isDead ? "grayscale-[70%] opacity-80" : ""}`} style={{ background: "#0a0a0c" }}>
       {/* Header */}
       <div className="sticky top-0 z-30 flex items-center gap-3 px-4 py-3" style={{ background: "rgba(10,10,12,0.95)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
         <button onClick={() => navigate(-1)} className="w-8 h-8 flex items-center justify-center rounded-full" style={{ background: "rgba(255,255,255,0.06)" }}>
