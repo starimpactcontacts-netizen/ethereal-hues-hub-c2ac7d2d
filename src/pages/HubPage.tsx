@@ -1164,7 +1164,7 @@ export default function HubPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-1 h-5 bg-gold rounded-full" />
-              <h2 className="font-display text-lg text-foreground">FEATURED</h2>
+              <h2 className="font-display text-lg text-foreground">COMPETITIONS</h2>
             </div>
             <Link to="/arena" className="text-[9px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
               VIEW ALL <ArrowRight size={10} />
