@@ -38,9 +38,10 @@ function CashBattleCard({ battle, currentUserId }: { battle: any; currentUserId?
       whileTap={{ scale: 0.97 }}
       whileHover={{ y: -2 }}
       onClick={() => navigate(`/cash-battle/${battle.id}`)}
-      className="w-full h-full rounded-2xl overflow-hidden cursor-pointer group relative flex flex-col border border-white/[0.06]"
+      className="w-full h-full rounded-2xl overflow-hidden cursor-pointer group relative flex flex-col border border-white/[0.08]"
       style={{
-        background: "transparent",
+        background: "linear-gradient(180deg, rgba(38,38,42,0.95) 0%, rgba(28,28,32,0.95) 100%)",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 24px -12px rgba(0,0,0,0.5)",
         filter: isCompleted ? "grayscale(60%)" : "none",
         opacity: isCompleted ? 0.55 : 1,
       }}
@@ -184,8 +185,11 @@ function OpenMatchupCard({ app, onJoin, currentUserId }: { app: CashBattleApplic
       whileTap={{ scale: 0.97 }}
       whileHover={{ y: -2 }}
       onClick={isOwnApp ? undefined : onJoin}
-      className="w-full h-full rounded-2xl overflow-hidden cursor-pointer relative flex flex-col border border-white/[0.06]"
-      style={{ background: "transparent" }}
+      className="w-full h-full rounded-2xl overflow-hidden cursor-pointer relative flex flex-col border border-white/[0.08]"
+      style={{
+        background: "linear-gradient(180deg, rgba(38,38,42,0.95) 0%, rgba(28,28,32,0.95) 100%)",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 24px -12px rgba(0,0,0,0.5)",
+      }}
     >
       <div className="absolute top-0 left-0 right-0 h-[2px]" style={{
         background: "linear-gradient(90deg, #3b82f6, transparent 40%, transparent 60%, #ef4444)",
