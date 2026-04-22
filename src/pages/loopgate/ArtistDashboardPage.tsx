@@ -435,7 +435,22 @@ export default function ArtistDashboardPage() {
                               {campaignEdits.map((edit, ei) => {
                                 const pColor = getPlatformColor(edit.platform);
                                 return (
-                                  <div key={edit.id} className="flex items-center gap-3 p-2.5 rounded-lg" style={{ background: 'rgba(148,163,184,0.04)', border: `1px solid ${BORDER}` }}>
+                                  <div
+                                    key={edit.id}
+                                    role={edit.video_url ? 'button' : undefined}
+                                    tabIndex={edit.video_url ? 0 : -1}
+                                    onClick={() => {
+                                      if (edit.video_url) window.open(edit.video_url, '_blank', 'noopener,noreferrer');
+                                    }}
+                                    onKeyDown={e => {
+                                      if (edit.video_url && (e.key === 'Enter' || e.key === ' ')) {
+                                        e.preventDefault();
+                                        window.open(edit.video_url, '_blank', 'noopener,noreferrer');
+                                      }
+                                    }}
+                                    className={`flex items-center gap-3 p-2.5 rounded-lg ${edit.video_url ? 'cursor-pointer' : ''}`}
+                                    style={{ background: 'rgba(148,163,184,0.04)', border: `1px solid ${BORDER}` }}
+                                  >
                                     {edit.thumbnail_url ? (
                                       <img src={edit.thumbnail_url} alt="" className="w-14 h-9 object-cover rounded flex-shrink-0" />
                                     ) : (
@@ -453,6 +468,7 @@ export default function ArtistDashboardPage() {
                                     </div>
                                     {edit.video_url && (
                                       <a href={edit.video_url} target="_blank" rel="noopener noreferrer"
+                                        onClick={e => e.stopPropagation()}
                                         className="p-1.5 rounded-md transition-colors" style={{ background: 'rgba(59,130,246,0.08)' }}
                                       >
                                         <ExternalLink className="w-3 h-3" style={{ color: ACCENT }} />
