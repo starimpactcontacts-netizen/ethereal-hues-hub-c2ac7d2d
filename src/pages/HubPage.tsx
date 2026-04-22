@@ -876,13 +876,13 @@ export default function HubPage() {
               {quickAction === 'edit_battle' ? (
                 <>
                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-white/30 to-white/10 flex items-center justify-center relative z-10 border border-white/40 shadow-lg shadow-black/20">
-                     <DollarSign className="w-4.5 h-4.5 text-white drop-shadow-lg" />
+                     <Swords className="w-4.5 h-4.5 text-white drop-shadow-lg" />
                   </div>
                   <div className="flex flex-col relative z-10">
                     <span className="text-[28px] font-bold text-white uppercase tracking-wider leading-none drop-shadow-lg" style={{ fontFamily: 'Teko, sans-serif' }}>
-                       Join Battle
+                       Edit Battle
                     </span>
-                     <span className="text-[9px] text-white/70 font-bold tracking-wider">LIVE NOW · MATCH INSTANTLY</span>
+                     <span className="text-[9px] text-white/70 font-bold tracking-wider">1V1 · MATCH INSTANTLY</span>
                   </div>
                 </>
               ) : quickAction === 'mission' ? (
