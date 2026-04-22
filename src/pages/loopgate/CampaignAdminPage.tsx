@@ -1109,11 +1109,17 @@ export default function CampaignAdminPage() {
                                       </div>
                                       <div className="flex items-center gap-1">
                                         <Input
-                                          type="number"
-                                          defaultValue={edit.view_count}
-                                          className="w-20 h-6 text-[10px] bg-background/60 border-border/20 rounded"
+                                          type="text"
+                                          inputMode="numeric"
+                                          defaultValue={formatNumberInput(edit.view_count)}
+                                          className="w-24 h-6 text-[10px] bg-background/60 border-border/20 rounded font-mono tabular-nums text-right"
+                                          onChange={e => {
+                                            // Re-format as user types
+                                            const raw = parseNumberInput(e.target.value);
+                                            e.currentTarget.value = raw ? formatNumberInput(raw) : '';
+                                          }}
                                           onBlur={e => {
-                                            const val = Number(e.target.value);
+                                            const val = parseNumberInput(e.target.value);
                                             if (val !== edit.view_count) handleUpdateEditViews(edit.id, val);
                                           }}
                                         />
