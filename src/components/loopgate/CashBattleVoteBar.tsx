@@ -120,66 +120,86 @@ export default function CashBattleVoteBar({ battleId, challengerUsername, oppone
 
   // Full-size for the detail page
   return (
-    <div className="mx-4 mb-4 rounded-2xl p-4" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
-      <p className="text-[11px] font-black text-center uppercase tracking-[0.2em] text-zinc-500 mb-3" style={{ fontFamily: "Teko, sans-serif" }}>
-        Who will win?
-      </p>
+    <div
+      className="mx-4 mb-4 rounded-xl px-3 py-2.5"
+      style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}
+    >
+      {/* Header row: label + vote count */}
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-[9px] font-black uppercase tracking-[0.22em] text-zinc-500" style={{ fontFamily: "Teko, sans-serif" }}>
+          Who Wins?
+        </p>
+        {total > 0 && (
+          <p className="text-[9px] font-bold text-zinc-600 tabular-nums">
+            {total} vote{total !== 1 ? "s" : ""}
+          </p>
+        )}
+      </div>
 
-      <div className="flex items-center gap-2 mb-2">
-        {/* Blue vote button */}
+      {/* Compact vote chips */}
+      <div className="flex items-center gap-1.5 mb-2">
         <button
           onClick={(e) => vote("challenger", e)}
-          className={`flex-1 py-2.5 rounded-xl text-[13px] font-black uppercase tracking-wider transition-all ${
-            myVote === "challenger"
-              ? "ring-2 ring-blue-400 bg-blue-500/20 text-blue-300"
-              : "bg-blue-500/8 text-blue-400/70 hover:bg-blue-500/15"
+          className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 ${
+            myVote === "challenger" ? "text-white" : "text-blue-300/80 hover:text-blue-200"
           }`}
-          style={{ fontFamily: "Teko, sans-serif", border: myVote === "challenger" ? "none" : "1px solid rgba(59,130,246,0.15)" }}
+          style={{
+            fontFamily: "Teko, sans-serif",
+            background: myVote === "challenger"
+              ? "linear-gradient(135deg, rgba(37,99,235,0.35), rgba(59,130,246,0.25))"
+              : "rgba(59,130,246,0.08)",
+            border: myVote === "challenger" ? "1px solid rgba(96,165,250,0.6)" : "1px solid rgba(59,130,246,0.18)",
+            boxShadow: myVote === "challenger" ? "0 0 10px rgba(59,130,246,0.35), inset 0 1px 0 rgba(255,255,255,0.15)" : "inset 0 1px 0 rgba(255,255,255,0.04)",
+          }}
         >
-          🔵 {challengerUsername} ({blueVotes})
+          <span className="w-1.5 h-1.5 rounded-full bg-blue-400" style={{ boxShadow: "0 0 6px rgba(59,130,246,0.8)" }} />
+          <span className="truncate max-w-[80px]">{challengerUsername}</span>
+          <span className="tabular-nums opacity-80">{blueVotes}</span>
         </button>
 
-        {/* Red vote button */}
+        <span className="text-[8px] font-black text-zinc-600 px-0.5" style={{ fontFamily: "Teko, sans-serif" }}>VS</span>
+
         <button
           onClick={(e) => vote("opponent", e)}
-          className={`flex-1 py-2.5 rounded-xl text-[13px] font-black uppercase tracking-wider transition-all ${
-            myVote === "opponent"
-              ? "ring-2 ring-red-400 bg-red-500/20 text-red-300"
-              : "bg-red-500/8 text-red-400/70 hover:bg-red-500/15"
+          className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 ${
+            myVote === "opponent" ? "text-white" : "text-red-300/80 hover:text-red-200"
           }`}
-          style={{ fontFamily: "Teko, sans-serif", border: myVote === "opponent" ? "none" : "1px solid rgba(239,68,68,0.15)" }}
+          style={{
+            fontFamily: "Teko, sans-serif",
+            background: myVote === "opponent"
+              ? "linear-gradient(135deg, rgba(220,38,38,0.35), rgba(239,68,68,0.25))"
+              : "rgba(239,68,68,0.08)",
+            border: myVote === "opponent" ? "1px solid rgba(248,113,113,0.6)" : "1px solid rgba(239,68,68,0.18)",
+            boxShadow: myVote === "opponent" ? "0 0 10px rgba(239,68,68,0.35), inset 0 1px 0 rgba(255,255,255,0.15)" : "inset 0 1px 0 rgba(255,255,255,0.04)",
+          }}
         >
-          🔴 {opponentUsername || "TBA"} ({redVotes})
+          <span className="w-1.5 h-1.5 rounded-full bg-red-400" style={{ boxShadow: "0 0 6px rgba(239,68,68,0.8)" }} />
+          <span className="truncate max-w-[80px]">{opponentUsername || "TBA"}</span>
+          <span className="tabular-nums opacity-80">{redVotes}</span>
         </button>
       </div>
 
-      {/* Progress bar */}
-      <div className="w-full h-2.5 rounded-full overflow-hidden flex" style={{ background: "rgba(255,255,255,0.04)" }}>
+      {/* Slim progress bar */}
+      <div className="w-full h-1.5 rounded-full overflow-hidden flex" style={{ background: "rgba(255,255,255,0.05)" }}>
         <div
-          className="h-full transition-all duration-700 ease-out rounded-l-full"
+          className="h-full transition-all duration-700 ease-out"
           style={{
             width: `${bluePercent}%`,
-            background: "linear-gradient(90deg, #3b82f6, #60a5fa)",
-            boxShadow: blueVotes > 0 ? "0 0 12px rgba(59,130,246,0.4)" : "none",
-            minWidth: total > 0 && blueVotes > 0 ? 6 : 0,
+            background: "linear-gradient(90deg, #2563eb, #60a5fa)",
+            boxShadow: blueVotes > 0 ? "0 0 8px rgba(59,130,246,0.5)" : "none",
+            minWidth: total > 0 && blueVotes > 0 ? 4 : 0,
           }}
         />
         <div
-          className="h-full transition-all duration-700 ease-out rounded-r-full"
+          className="h-full transition-all duration-700 ease-out"
           style={{
             width: `${redPercent}%`,
-            background: "linear-gradient(90deg, #f87171, #ef4444)",
-            boxShadow: redVotes > 0 ? "0 0 12px rgba(239,68,68,0.4)" : "none",
-            minWidth: total > 0 && redVotes > 0 ? 6 : 0,
+            background: "linear-gradient(90deg, #f87171, #dc2626)",
+            boxShadow: redVotes > 0 ? "0 0 8px rgba(239,68,68,0.5)" : "none",
+            minWidth: total > 0 && redVotes > 0 ? 4 : 0,
           }}
         />
       </div>
-
-      {total > 0 && (
-        <p className="text-[9px] text-zinc-600 text-center mt-2">
-          {total} vote{total !== 1 ? "s" : ""}
-        </p>
-      )}
     </div>
   );
 }
