@@ -9,6 +9,7 @@ import viralCartelCrest from '@/assets/viral-cartel-crest.png';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 import { useUnifiedThumbnail } from '@/lib/thumbnail';
 import CampaignSupportChat from '@/components/loopgate/CampaignSupportChat';
+import { Switch } from '@/components/ui/switch';
 
 // ── Auto-pulling thumbnail tile ──────────────────────────────────
 function ContentTile({ edit, index, pColor, getPlatformIcon, formatNumber }: any) {
