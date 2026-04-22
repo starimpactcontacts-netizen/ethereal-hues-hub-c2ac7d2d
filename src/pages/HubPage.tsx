@@ -971,13 +971,13 @@ export default function HubPage() {
               <DropdownMenuContent align="end" className="w-52 bg-surface-1 border-border">
                 <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">Quick Action</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setQuickAction('cash_battle')} className="flex items-center gap-2 cursor-pointer">
-                  <DollarSign className="w-4 h-4 text-blue-400" />
+                <DropdownMenuItem onClick={() => setQuickAction('edit_battle')} className="flex items-center gap-2 cursor-pointer">
+                  <Swords className="w-4 h-4 text-red-400" />
                   <div className="flex-1">
-                    <span className="text-sm font-semibold">Cash Battle</span>
-                    <span className="text-[10px] text-blue-400 ml-1.5">1v1 CASH</span>
+                    <span className="text-sm font-semibold">Edit Battle</span>
+                    <span className="text-[10px] text-red-400 ml-1.5">1v1 · MATCH NOW</span>
                   </div>
-                  {quickAction === 'edit_battle' && <Check className="w-3.5 h-3.5 text-blue-400" />}
+                  {quickAction === 'edit_battle' && <Check className="w-3.5 h-3.5 text-red-400" />}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setQuickAction('mission')} className="flex items-center gap-2 cursor-pointer">
                   <Crosshair className="w-4 h-4 text-emerald-400" />
@@ -994,14 +994,6 @@ export default function HubPage() {
                     <span className="text-[10px] text-gold ml-1.5">100+ IDX</span>
                   </div>
                   {quickAction === 'solo' && <Check className="w-3.5 h-3.5 text-gold" />}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setQuickAction('quick')} className="flex items-center gap-2 cursor-pointer">
-                  <Zap className="w-4 h-4 text-red-400" />
-                  <div className="flex-1">
-                    <span className="text-sm font-semibold">Quick Edit Battle</span>
-                    <span className="text-[10px] text-red-400 ml-1.5">+20 IDX</span>
-                  </div>
-                  {quickAction === 'quick' && <Check className="w-3.5 h-3.5 text-red-400" />}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
