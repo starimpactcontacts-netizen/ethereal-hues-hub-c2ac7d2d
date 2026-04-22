@@ -21,6 +21,42 @@ function shortcodeToMediaId(shortcode: string): string {
   return id.toString();
 }
 
+// Rotating user agents to avoid rate-limit fingerprinting
+const USER_AGENTS = [
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
+  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+];
+const pickUA = () => USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
+
+// Fetch with timeout + 1 retry on transient failure (rate-limit / network blip)
+async function fetchWithRetry(url: string, init: RequestInit, timeoutMs = 8000): Promise<Response> {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { ...init, signal: ctrl.signal });
+      clearTimeout(t);
+      // Retry on rate-limit or server errors
+      if ((res.status === 429 || res.status >= 500) && attempt === 0) {
+        await new Promise(r => setTimeout(r, 400 + Math.random() * 400));
+        continue;
+      }
+      return res;
+    } catch (e) {
+      clearTimeout(t);
+      if (attempt === 0) {
+        await new Promise(r => setTimeout(r, 300));
+        continue;
+      }
+      throw e;
+    }
+  }
+  // unreachable
+  return new Response(null, { status: 599 });
+}
+
 // Method 1: Instagram GraphQL API (real-time accurate data)
 async function fetchViaGraphQL(shortcode: string): Promise<{
   views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null;
