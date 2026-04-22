@@ -734,6 +734,47 @@ export type Database = {
           },
         ]
       }
+      campaign_portal_messages: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          id: string
+          message_text: string
+          read_by_admin: boolean
+          read_by_client: boolean
+          sender_name: string | null
+          sender_type: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          id?: string
+          message_text: string
+          read_by_admin?: boolean
+          read_by_client?: boolean
+          sender_name?: string | null
+          sender_type: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          id?: string
+          message_text?: string
+          read_by_admin?: boolean
+          read_by_client?: boolean
+          sender_name?: string | null
+          sender_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_portal_messages_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "artist_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cash_battle_applications: {
         Row: {
           admin_notes: string | null
