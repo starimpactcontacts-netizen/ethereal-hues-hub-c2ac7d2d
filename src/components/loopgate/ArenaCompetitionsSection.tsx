@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Trophy, Plus, Share2, User, ThumbsUp } from "lucide-react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Trophy, Plus, Share2, User, ThumbsUp, Info, X, Sparkles, Gavel, Crown } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCompetitionsList, type Competition } from "@/hooks/useCompetitions";
 import { toast } from "sonner";
