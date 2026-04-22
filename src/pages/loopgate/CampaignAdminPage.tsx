@@ -740,13 +740,12 @@ export default function CampaignAdminPage() {
 
                               {editingStats === campaign.id ? (
                                 <div className="space-y-3">
-                                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                                     {[
                                       { key: 'total_views', label: 'Views' },
                                       { key: 'total_impressions', label: 'Impressions' },
                                       { key: 'total_engagements', label: 'Engagements' },
                                       { key: 'total_clicks', label: 'Clicks' },
-                                      { key: 'roi_percentage', label: 'ROI %' },
                                     ].map(f => (
                                       <div key={f.key}>
                                         <label className="text-[7px] text-muted-foreground uppercase tracking-wider block mb-1">{f.label}</label>
@@ -758,6 +757,27 @@ export default function CampaignAdminPage() {
                                         />
                                       </div>
                                     ))}
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/20">
+                                    <div>
+                                      <label className="text-[7px] text-emerald-400 uppercase tracking-wider block mb-1">Campaign Budget ($)</label>
+                                      <Input
+                                        type="number"
+                                        step="0.01"
+                                        value={statsForm.budget_cents ? (statsForm.budget_cents / 100) : 0}
+                                        onChange={e => setStatsForm(p => ({ ...p, budget_cents: Math.round(Number(e.target.value) * 100) }))}
+                                        placeholder="e.g. 5000"
+                                        className="bg-background/60 h-8 text-xs border-emerald-500/20 focus:border-emerald-500/40"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="text-[7px] text-gold uppercase tracking-wider block mb-1">CPM (auto)</label>
+                                      <div className="bg-background/60 h-8 rounded-md border border-gold/20 px-3 flex items-center text-xs font-bold text-gold">
+                                        {statsForm.budget_cents > 0 && statsForm.total_views > 0
+                                          ? `$${(((statsForm.budget_cents / 100) / (statsForm.total_views / 1000))).toFixed(2)} / 1K`
+                                          : '—'}
+                                      </div>
+                                    </div>
                                   </div>
                                   <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border/20">
                                     <div>
