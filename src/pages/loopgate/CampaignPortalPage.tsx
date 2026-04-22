@@ -6,6 +6,71 @@ import { ComposedChart, Area, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } 
 import { SiTiktok, SiYoutube, SiInstagram } from '@icons-pack/react-simple-icons';
 import { supabase } from '@/integrations/supabase/client';
 import viralCartelCrest from '@/assets/viral-cartel-crest.png';
+import { useUnifiedThumbnail } from '@/lib/thumbnail';
+
+// ── Auto-pulling thumbnail tile ──────────────────────────────────
+function ContentTile({ edit, index, pColor, getPlatformIcon, formatNumber }: any) {
+  const thumbResult = useUnifiedThumbnail(
+    edit.video_url || '',
+    edit.platform || '',
+    null,
+    edit.thumbnail_url,
+  );
+  const thumb = thumbResult.url && thumbResult.status !== 'error' ? thumbResult.url : null;
+
+  return (
+    <motion.a
+      href={edit.video_url || '#'}
+      target={edit.video_url ? '_blank' : undefined}
+      rel="noopener noreferrer"
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: 0.55 + index * 0.03 }}
+      className="group rounded-xl overflow-hidden border border-neutral-800 bg-neutral-950 hover:shadow-lg hover:border-neutral-700 transition-all cursor-pointer"
+    >
+      <div className="aspect-[4/3] bg-neutral-900 relative overflow-hidden">
+        {thumb ? (
+          <img
+            src={thumb}
+            alt=""
+            loading="lazy"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-neutral-900 to-neutral-950">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-neutral-800/80 backdrop-blur-sm">
+              {getPlatformIcon(edit.platform)}
+            </div>
+          </div>
+        )}
+        <div
+          className="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[9px] font-black backdrop-blur-md flex items-center gap-1 bg-neutral-950/80 shadow-sm"
+          style={{ color: pColor }}
+        >
+          {getPlatformIcon(edit.platform)}
+        </div>
+        {edit.video_url && (
+          <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-neutral-950/90 shadow-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <ExternalLink size={10} className="text-neutral-300" />
+          </div>
+        )}
+      </div>
+      <div className="p-3">
+        {edit.editor_username && (
+          <p className="text-[10px] text-neutral-500 font-bold truncate">@{edit.editor_username}</p>
+        )}
+        <div className="flex items-center gap-3 mt-1">
+          <span className="text-xs font-black text-neutral-50">{formatNumber(edit.view_count)} <span className="text-neutral-500 font-bold text-[9px]">views</span></span>
+          <span className="text-xs font-black text-neutral-50">{formatNumber(edit.like_count)} <span className="text-neutral-500 font-bold text-[9px]">likes</span></span>
+          {edit.comment_count > 0 && (
+            <span className="text-xs font-black text-neutral-50">{formatNumber(edit.comment_count)} <span className="text-neutral-500 font-bold text-[9px]">comments</span></span>
+          )}
+        </div>
+      </div>
+    </motion.a>
+  );
+}
 
 interface CampaignData {
   id: string; name: string; description: string | null; status: string;
@@ -342,10 +407,26 @@ export default function CampaignPortalPage() {
           >
             <div className="flex items-center gap-5">
               {(campaign as any).logo_url ? (
-                <img src={(campaign as any).logo_url} alt={campaign.client_name || ''} className="w-16 h-16 sm:w-20 sm:h-20 object-contain flex-shrink-0" />
+                <div className="relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24">
+                  {/* Ambient glow */}
+                  <div className="absolute -inset-2 rounded-full bg-gradient-to-br from-white/20 via-white/5 to-transparent blur-xl opacity-70" />
+                  {/* Glass ring */}
+                  <div className="relative w-full h-full rounded-full p-[2px] bg-gradient-to-br from-white/40 via-white/10 to-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+                    <div className="w-full h-full rounded-full bg-white overflow-hidden flex items-center justify-center relative">
+                      <img
+                        src={(campaign as any).logo_url}
+                        alt={campaign.client_name || ''}
+                        className="w-[78%] h-[78%] object-contain relative z-10"
+                      />
+                      {/* Specular highlight */}
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/60 via-transparent to-transparent opacity-40 pointer-events-none" />
+                      <div className="absolute -top-1 left-1/4 w-1/2 h-1/3 bg-white/50 blur-md rounded-full pointer-events-none" />
+                    </div>
+                  </div>
+                </div>
               ) : (
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-neutral-700 flex items-center justify-center flex-shrink-0">
-                  <Globe size={24} className="text-neutral-500" />
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-neutral-800 border border-white/10 flex items-center justify-center flex-shrink-0 shadow-lg">
+                  <Globe size={26} className="text-neutral-500" />
                 </div>
               )}
               <div>
@@ -638,61 +719,16 @@ export default function CampaignPortalPage() {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {edits.map((edit, i) => {
-                const thumb = edit.thumbnail_url || getYouTubeThumbnail(edit.video_url) || null;
-                const pColor = getPlatformColor(edit.platform);
-
-                return (
-                  <motion.a
-                    key={edit.id}
-                    href={edit.video_url || '#'}
-                    target={edit.video_url ? '_blank' : undefined}
-                    rel="noopener noreferrer"
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.55 + i * 0.03 }}
-                    className="group rounded-xl overflow-hidden border border-neutral-800 bg-neutral-950 hover:shadow-lg hover:border-neutral-700 transition-all cursor-pointer"
-                  >
-                    {/* Thumbnail */}
-                    <div className="aspect-[4/3] bg-neutral-800 relative overflow-hidden">
-                      {thumb ? (
-                        <img src={thumb} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                      ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center gap-1">
-                          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-neutral-700">
-                            {getPlatformIcon(edit.platform)}
-                          </div>
-                        </div>
-                      )}
-                      {/* Platform badge */}
-                      <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[9px] font-black backdrop-blur-sm flex items-center gap-1 bg-neutral-950/90 shadow-sm"
-                        style={{ color: pColor }}
-                      >
-                        {getPlatformIcon(edit.platform)}
-                      </div>
-                      {/* External link indicator */}
-                      {edit.video_url && (
-                        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-neutral-950/90 shadow-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <ExternalLink size={10} className="text-neutral-300" />
-                        </div>
-                      )}
-                    </div>
-                    {/* Stats */}
-                    <div className="p-3">
-                      {edit.editor_username && (
-                        <p className="text-[10px] text-neutral-500 font-bold truncate">@{edit.editor_username}</p>
-                      )}
-                      <div className="flex items-center gap-3 mt-1">
-                        <span className="text-xs font-black text-neutral-50">{formatNumber(edit.view_count)} <span className="text-neutral-500 font-bold text-[9px]">views</span></span>
-                        <span className="text-xs font-black text-neutral-50">{formatNumber(edit.like_count)} <span className="text-neutral-500 font-bold text-[9px]">likes</span></span>
-                        {edit.comment_count > 0 && (
-                          <span className="text-xs font-black text-neutral-50">{formatNumber(edit.comment_count)} <span className="text-neutral-500 font-bold text-[9px]">comments</span></span>
-                        )}
-                      </div>
-                    </div>
-                  </motion.a>
-                );
-              })}
+              {edits.map((edit, i) => (
+                <ContentTile
+                  key={edit.id}
+                  edit={edit}
+                  index={i}
+                  pColor={getPlatformColor(edit.platform)}
+                  getPlatformIcon={getPlatformIcon}
+                  formatNumber={formatNumber}
+                />
+              ))}
             </div>
 
             {/* Aggregate footer */}
