@@ -185,6 +185,7 @@ export default function CampaignPortalPage() {
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [refreshing, setRefreshing] = useState(false);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
+  const [goalMode, setGoalMode] = useState<'views' | 'cpm'>('views');
 
   const fetchData = useCallback(async () => {
     if (!slug) return;
