@@ -349,11 +349,22 @@ serve(async (req) => {
       const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
       const supabase = createClient(supabaseUrl, supabaseKey);
 
-      const { data: edits, error } = await supabase
+      // Optional: scope to a single campaign so the portal "Refresh Stats"
+      // returns FAST with up-to-date numbers for THAT campaign only.
+      const campaignIdFilter: string | undefined = body?.campaign_id;
+
+      let query = supabase
         .from('artist_campaign_edits')
         .select('id, campaign_id, video_url, view_count, like_count, comment_count, share_count, thumbnail_url')
-        .or('platform.eq.instagram,video_url.ilike.%instagram.com%')
-        .limit(100);
+        .or('platform.eq.instagram,video_url.ilike.%instagram.com%');
+
+      if (campaignIdFilter) {
+        query = query.eq('campaign_id', campaignIdFilter);
+      } else {
+        query = query.limit(100);
+      }
+
+      const { data: edits, error } = await query;
 
       if (error) throw error;
 
@@ -375,7 +386,8 @@ serve(async (req) => {
             await supabase.from('artist_campaign_edits').update(payload).eq('id', edit.id);
             updated++;
           }
-          await new Promise(r => setTimeout(r, 1000));
+          // Smaller delay so per-campaign refresh feels instant
+          await new Promise(r => setTimeout(r, 200));
         } catch (e) {
           console.error(`Error updating edit ${edit.id}:`, e);
         }
