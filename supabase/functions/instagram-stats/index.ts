@@ -59,7 +59,7 @@ async function fetchWithRetry(url: string, init: RequestInit, timeoutMs = 8000):
 
 // Method 1: Instagram GraphQL API (real-time accurate data)
 async function fetchViaGraphQL(shortcode: string): Promise<{
-  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null;
+  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null; takenAt: number | null;
 }> {
   try {
     // Use Instagram's web GraphQL endpoint
@@ -68,9 +68,9 @@ async function fetchViaGraphQL(shortcode: string): Promise<{
     const apiUrl = `https://www.instagram.com/graphql/query/?doc_id=${docId}&variables=${encodeURIComponent(variables)}`;
     console.log('Trying GraphQL API for shortcode:', shortcode);
     
-    const res = await fetch(apiUrl, {
+    const res = await fetchWithRetry(apiUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'User-Agent': pickUA(),
         'X-IG-App-ID': '936619743392459',
         'X-Requested-With': 'XMLHttpRequest',
         'Accept': '*/*',
@@ -83,15 +83,15 @@ async function fetchViaGraphQL(shortcode: string): Promise<{
       // Try alternative doc IDs
       const altDocId = '17991233890457762';
       const altUrl = `https://www.instagram.com/graphql/query/?query_hash=${altDocId}&variables=${encodeURIComponent(JSON.stringify({ shortcode }))}`;
-      const altRes = await fetch(altUrl, {
+      const altRes = await fetchWithRetry(altUrl, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'User-Agent': pickUA(),
           'X-IG-App-ID': '936619743392459',
         },
       });
       if (!altRes.ok) {
         console.log('GraphQL alt HTTP:', altRes.status);
-        return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
+        return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
       }
       const altJson = await altRes.json();
       const altMedia = altJson?.data?.shortcode_media;
@@ -100,10 +100,11 @@ async function fetchViaGraphQL(shortcode: string): Promise<{
         const likes = altMedia.edge_media_preview_like?.count ?? null;
         const comments = altMedia.edge_media_to_parent_comment?.count ?? null;
         const shares = altMedia.share_count ?? altMedia.reshare_count ?? null;
+        const takenAt = altMedia.taken_at_timestamp ?? null;
         console.log('✅ GraphQL alt stats:', { views, likes, comments, shares });
-        return { views, likes, comments, shares, thumbnailUrl: altMedia.display_url ?? null };
+        return { views, likes, comments, shares, thumbnailUrl: altMedia.display_url ?? null, takenAt };
       }
-      return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
+      return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
     }
     
     const json = await res.json();
@@ -114,15 +115,16 @@ async function fetchViaGraphQL(shortcode: string): Promise<{
       const comments = media.edge_media_to_parent_comment?.count ?? media.comment_count ?? null;
       const shares = media.share_count ?? media.reshare_count ?? null;
       const thumbnailUrl = media.display_url ?? null;
+      const takenAt = media.taken_at_timestamp ?? null;
       console.log('✅ GraphQL stats:', { views, likes, comments, shares });
-      return { views, likes, comments, shares, thumbnailUrl };
+      return { views, likes, comments, shares, thumbnailUrl, takenAt };
     }
     
     console.log('GraphQL: no media in response, keys:', Object.keys(json?.data || {}));
-    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
   } catch (e) {
     console.error('GraphQL error:', e);
-    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
   }
 }
 
