@@ -314,7 +314,7 @@ function CashBattleInfoModal({ open, onClose }: { open: boolean; onClose: () => 
                 <Swords className="w-4 h-4 text-white" />
               </div>
               <h3 className="text-lg font-black text-white uppercase tracking-wider" style={{ fontFamily: "Teko, sans-serif" }}>
-                What are Cash Battles?
+                What are Edit Battles?
               </h3>
             </div>
             <button onClick={onClose} className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
@@ -322,10 +322,11 @@ function CashBattleInfoModal({ open, onClose }: { open: boolean; onClose: () => 
             </button>
           </div>
           <div className="space-y-3 text-[13px] text-zinc-300 leading-relaxed">
-            <p><span className="text-white font-bold">Cash Battles</span> are sponsored 1v1 edit competitions where the winner takes the entire cash prize.</p>
-            <p>🎬 Two editors go head-to-head using a provided scenepack from a sponsor campaign. You submit your TikTok edit before the timer runs out.</p>
-            <p>💰 The best edit wins the full prize pool — judged by the sponsor or community vote.</p>
-            <p>⚡ Hit <span className="text-blue-400 font-semibold">Accept Fight</span> on any open matchup to jump in instantly.</p>
+            <p><span className="text-white font-bold">Edit Battles</span> are 1v1 head-to-head edit competitions. Two editors go in, one walks out the winner — judged by community vote or our official judges.</p>
+            <p>⚔️ Tap <span className="text-white font-semibold">Challenge</span> to call out a specific editor for a ranked 1v1, or jump into any open matchup instantly.</p>
+            <p className="pt-2 border-t border-white/10"><span className="text-white font-bold">💰 Cash Battles</span> are the sponsored tier of Edit Battles — winner takes the entire cash prize.</p>
+            <p>🎬 Both editors use the same provided scenepack from a sponsor campaign and submit before the timer runs out.</p>
+            <p>⚡ Hit <span className="text-blue-400 font-semibold">Cash</span> above to enter the cash queue, or tap any open <span className="text-amber-400 font-semibold">$$$</span> matchup to accept the fight instantly.</p>
           </div>
         </div>
       </motion.div>
