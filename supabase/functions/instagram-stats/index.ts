@@ -380,31 +380,42 @@ function buildValidatedStats(gqlResult: InstagramStats, mobileResult: InstagramS
 
   const trustedViewSources = countMetricSources(trustedResults, 'views');
   const totalViewSources = countMetricSources(allResults, 'views');
-  // Pick MEDIAN-ish (avoid wild outliers): use the 2nd-highest if 2+ trusted sources agree,
-  // else highest from a trusted source, else require 2+ ANY-source agreement.
+  // SMARTER consensus: collect ALL view readings, find clusters of agreement.
+  // The "true" view count is the HIGHEST value that has corroboration (within 25% of another source).
+  // This prevents both stale (low) embed values AND wildly inflated outliers from winning.
+  const allViewVals = allResults
+    .map(r => r.views)
+    .filter((v): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0)
+    .sort((a, b) => b - a); // desc
   const trustedViewVals = trustedResults
     .map(r => r.views)
     .filter((v): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0)
     .sort((a, b) => b - a);
 
   let candidateViews: number | null = null;
-  if (trustedViewVals.length >= 2) {
-    // Use 2nd highest for resilience against one-source spikes
-    candidateViews = trustedViewVals[1];
-    // But if top two are within 20%, take the higher (they corroborate)
-    if (trustedViewVals[0] / trustedViewVals[1] <= 1.2) candidateViews = trustedViewVals[0];
-  } else if (trustedViewVals.length === 1) {
-    candidateViews = trustedViewVals[0];
-  } else if (totalViewSources >= 2) {
-    candidateViews = pickHighestMetric(allResults, 'views');
+  // Pass 1: find the HIGHEST trusted value that another source (any) corroborates within 25%.
+  for (const v of trustedViewVals) {
+    const corroborated = allViewVals.some(o => o !== v && Math.max(v, o) / Math.min(v, o) <= 1.25);
+    if (corroborated) { candidateViews = v; break; }
   }
+  // Pass 2: no corroboration but >=2 trusted sources → take median (2nd highest)
+  if (candidateViews === null && trustedViewVals.length >= 2) candidateViews = trustedViewVals[1];
+  // Pass 3: single trusted source → trust it
+  if (candidateViews === null && trustedViewVals.length === 1) candidateViews = trustedViewVals[0];
+  // Pass 4: only embed had a value, and >=2 ANY sources agree → use the highest of those
+  if (candidateViews === null && totalViewSources >= 2) candidateViews = allViewVals[0] ?? null;
 
   const likes = pickHighestMetric(allResults, 'likes');
   const comments = pickHighestMetric(allResults, 'comments', true);
   const shares = pickHighestMetric(allResults, 'shares', true);
   const thumbnailUrl = gqlResult.thumbnailUrl || mobileResult.thumbnailUrl || mainResult.thumbnailUrl || embedResult.thumbnailUrl || null;
+  // Pick the EXACT taken_at timestamp - prefer trusted sources, take the one most agree on
+  const takenAtCandidates = allResults
+    .map(r => r.takenAt)
+    .filter((t): t is number => typeof t === 'number' && Number.isFinite(t) && t > 0);
+  const takenAt = takenAtCandidates.length > 0 ? takenAtCandidates[0] : null;
 
-  // Plausibility: views must be >= max(likes, comments) AND likes-to-views ratio sane (< 60%)
+  // Plausibility: views >= max(likes, comments) AND likes/views ratio sane (< ~66%)
   const maxEngagement = Math.max(likes || 0, comments || 0);
   const plausibleViews = candidateViews !== null
     && candidateViews >= maxEngagement
@@ -416,11 +427,13 @@ function buildValidatedStats(gqlResult: InstagramStats, mobileResult: InstagramS
     comments,
     shares,
     thumbnailUrl,
+    takenAt,
     diagnostics: {
       trustedViewSources,
       totalViewSources,
       plausibleViews,
       trustedViewVals,
+      allViewVals,
     },
   };
 }
