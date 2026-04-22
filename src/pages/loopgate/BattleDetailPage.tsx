@@ -138,8 +138,24 @@ export default function BattleDetailPage() {
     setSubmitting(true);
     const success = await submitToBattle(battle.id, user!.id, isChallenger, submissionUrl, platform);
     setSubmitting(false);
-    if (success) { toast.success("Submission recorded!"); setSubmissionUrl(""); }
-    else toast.error("Failed to submit");
+    if (success) {
+      setSubmissionUrl("");
+      if (hasSongPicked && user?.id) {
+        try {
+          await supabase.rpc('award_xp', {
+            p_user_id: user.id,
+            p_amount: 50,
+            p_action: 'song_pick_bonus',
+            p_description: `Picked a library song for 1v1 Battle`,
+          });
+          toast.success("Submission recorded! +50 XP song bonus 🎵");
+        } catch {
+          toast.success("Submission recorded!");
+        }
+      } else {
+        toast.success("Submission recorded!");
+      }
+    } else toast.error("Failed to submit");
   };
 
   const handleVote = async (votedForId: string) => {
@@ -533,8 +549,8 @@ export default function BattleDetailPage() {
           </div>
         )}
 
-        {/* Submission Form */}
-        {canSubmit && hasSongPicked && (
+        {/* Submission Form — song pick optional (+50 XP bonus) */}
+        {canSubmit && (
           <div className="bg-zinc-900/60 border border-amber-500/15 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <Send className="w-3.5 h-3.5 text-amber-400" />

@@ -123,8 +123,23 @@ export default function QuickFightPage() {
     const success = await submitQuickFight(fight.id, user.id, submissionUrl.trim());
     setSubmitting(false);
     if (success) {
-      toast.success('🔥 Edit submitted!');
       setSubmissionUrl('');
+      // +50 XP bonus if a song from the library was picked
+      if (hasSongPicked) {
+        try {
+          await supabase.rpc('award_xp', {
+            p_user_id: user.id,
+            p_amount: 50,
+            p_action: 'song_pick_bonus',
+            p_description: `Picked a library song for Quick 1v1`,
+          });
+          toast.success('🔥 Edit submitted! +50 XP song bonus');
+        } catch {
+          toast.success('🔥 Edit submitted!');
+        }
+      } else {
+        toast.success('🔥 Edit submitted!');
+      }
     } else {
       toast.error('Failed to submit');
     }
@@ -392,8 +407,8 @@ export default function QuickFightPage() {
           </div>
         )}
 
-        {/* Submission Form — only visible after song is picked */}
-        {canSubmit && hasSongPicked && (
+        {/* Submission Form — song pick is optional (bonus XP) */}
+        {canSubmit && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
