@@ -781,8 +781,7 @@ export default function CampaignPortalPage() {
               <span className="text-[9px] font-black uppercase tracking-wider text-neutral-500">Aggregate Performance</span>
               <div className="flex items-center gap-5 text-[10px]">
                 <span className="text-neutral-400"><strong className="text-neutral-50 font-black">{formatNumber(totalEditViews)}</strong> reach</span>
-                <span className="text-neutral-400"><strong className="text-neutral-50 font-black">{formatNumber(totalLikes)}</strong> likes</span>
-                <span className="text-neutral-400"><strong className="text-neutral-50 font-black">{formatNumber(totalShares)}</strong> shares</span>
+                <span className="text-neutral-400"><strong className="text-neutral-50 font-black">{formatNumber(totalLikes + totalShares + totalComments)}</strong> engagement</span>
               </div>
             </div>
           </motion.div>
