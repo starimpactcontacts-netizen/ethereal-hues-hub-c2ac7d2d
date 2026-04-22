@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import RichMessageContent from "./RichMessageContent";
 import LoopReactions from "./LoopReactions";
 import { useState, memo } from "react";
+import { createPortal } from "react-dom";
 import { ReactionGroup } from "@/hooks/useLoopReactions";
 import { createBattle } from "@/hooks/useBattles";
 import { supabase } from "@/integrations/supabase/client";
@@ -287,21 +288,22 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
               )}
 
               {/* 1v1 Challenge Confirmation Modal */}
-              <AnimatePresence>
-                {showChallengeConfirm && (
-                  <>
+              {createPortal(
+                <AnimatePresence>
+                  {showChallengeConfirm && (
+                    <>
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
+                      className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm"
                       onClick={() => setShowChallengeConfirm(false)}
                     />
                     <motion.div
                       initial={{ opacity: 0, scale: 0.9, y: 20 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                      className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 max-w-sm mx-auto"
+                      className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-[101] max-w-sm mx-auto"
                     >
                       <div className="bg-background border border-border/50 rounded-xl overflow-hidden shadow-2xl shadow-black/50">
                         {/* Header — red-to-blue gradient */}
@@ -404,9 +406,11 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
                         </div>
                       </div>
                     </motion.div>
-                  </>
-                )}
-              </AnimatePresence>
+                    </>
+                  )}
+                </AnimatePresence>,
+                document.body
+              )}
 
               {/* Add reaction */}
               {onToggleReaction && (
