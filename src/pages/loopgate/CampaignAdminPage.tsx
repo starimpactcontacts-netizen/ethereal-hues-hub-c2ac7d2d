@@ -26,6 +26,19 @@ function formatNumber(n: number): string {
   return n.toLocaleString();
 }
 
+// Format raw number with thin spaces every 3 digits for readability in inputs.
+// e.g. 49928828 -> "49 928 828"
+function formatNumberInput(n: number | string): string {
+  if (n === '' || n === null || n === undefined) return '';
+  const num = typeof n === 'number' ? n : Number(String(n).replace(/\D/g, ''));
+  if (!isFinite(num) || num === 0) return n === 0 || n === '0' ? '0' : '';
+  return num.toLocaleString('en-US').replace(/,/g, ' ');
+}
+function parseNumberInput(s: string): number {
+  const digits = (s || '').replace(/\D/g, '');
+  return digits ? Number(digits) : 0;
+}
+
 /* ─── Custom SVG Icons ─── */
 function CampaignIcon({ className = '', size = 20 }: { className?: string; size?: number }) {
   return (
@@ -107,6 +120,8 @@ export default function CampaignAdminPage() {
 
   const [newCampaign, setNewCampaign] = useState({ client_name: '', name: '', description: '', goal_views: 0, goal_posts: 0, goal_label: '', featured_artist_id: '', campaign_type: 'artist' as 'artist' | 'brand' | 'film', logo_url: '' });
   const [newEdit, setNewEdit] = useState({ title: '', video_url: '', thumbnail_url: '', platform: 'tiktok', editor_username: '', view_count: 0 });
+  const [urlStatus, setUrlStatus] = useState<{ kind: 'idle' | 'checking' | 'duplicate' | 'fetching' | 'ready' | 'error'; message?: string }>({ kind: 'idle' });
+  const [showEditorPicker, setShowEditorPicker] = useState(false);
   const [statsForm, setStatsForm] = useState({ total_views: 0, total_impressions: 0, total_engagements: 0, total_clicks: 0, roi_percentage: 0, budget_cents: 0, goal_views: 0, goal_posts: 0, goal_label: '', incoming_note: '', campaign_type: 'artist', logo_url: '' });
   const [artistSongs, setArtistSongs] = useState<ArtistSong[]>([]);
 
@@ -166,6 +181,45 @@ export default function CampaignAdminPage() {
         : p.title;
       return { ...p, video_url: url, platform, title: p.title && !p.title.startsWith((campaign?.name || 'Campaign').split(/\s+/)[0]) ? p.title : autoTitle };
     });
+
+    // Live duplicate detection + auto-fetch metrics
+    if (!url.trim()) { setUrlStatus({ kind: 'idle' }); return; }
+
+    const normalize = (u: string) => u.trim().toLowerCase().replace(/\?.*$/, '').replace(/\/$/, '');
+    const target = normalize(url);
+    const existing = getEditsForCampaign(campaignId).find(
+      e => e.video_url && normalize(e.video_url) === target
+    );
+    if (existing) {
+      setUrlStatus({ kind: 'duplicate', message: existing.title || 'Already added' });
+      return;
+    }
+
+    setUrlStatus({ kind: 'checking' });
+
+    // Auto-fetch live metrics + thumbnail for Instagram
+    if (detected === 'instagram') {
+      setUrlStatus({ kind: 'fetching' });
+      supabase.functions.invoke('instagram-stats', { body: { action: 'get-stats', url } })
+        .then(({ data, error }) => {
+          if (error || !data?.success) { setUrlStatus({ kind: 'ready' }); return; }
+          setNewEdit(p => ({
+            ...p,
+            view_count: data.views ?? p.view_count,
+            thumbnail_url: p.thumbnail_url || data.thumbnailUrl || '',
+          }));
+          setUrlStatus({ kind: 'ready', message: data.views ? `Pulled ${formatNumber(data.views)} views` : 'Ready to add' });
+        })
+        .catch(() => setUrlStatus({ kind: 'ready' }));
+    } else if (detected === 'youtube') {
+      const m = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+      if (m) {
+        setNewEdit(p => ({ ...p, thumbnail_url: p.thumbnail_url || `https://img.youtube.com/vi/${m[1]}/mqdefault.jpg` }));
+      }
+      setUrlStatus({ kind: 'ready' });
+    } else {
+      setUrlStatus({ kind: 'ready' });
+    }
   };
 
   const handleAddEdit = async (campaignId: string) => {
@@ -188,6 +242,7 @@ export default function CampaignAdminPage() {
       await addEdit({ campaign_id: campaignId, ...newEdit });
       toast.success('Edit added');
       setNewEdit({ title: '', video_url: '', thumbnail_url: '', platform: 'tiktok', editor_username: '', view_count: 0 });
+      setUrlStatus({ kind: 'idle' });
       setShowAddEditForm(null);
     } catch (err: any) { toast.error(err.message); }
   };
@@ -943,7 +998,33 @@ export default function CampaignAdminPage() {
                                     exit={{ opacity: 0, height: 0 }}
                                     className="rounded-lg bg-background/40 border border-border/20 p-3 space-y-2 mb-3 overflow-hidden"
                                   >
-                                    <Input placeholder="Paste video URL first — title auto-fills" value={newEdit.video_url} onChange={e => handleVideoUrlChange(e.target.value, campaign.id)} className="bg-background/60 h-8 text-xs border-border/30" />
+                                    <Input
+                                      placeholder="Paste video URL first — title auto-fills"
+                                      value={newEdit.video_url}
+                                      onChange={e => handleVideoUrlChange(e.target.value, campaign.id)}
+                                      className={`bg-background/60 h-8 text-xs ${
+                                        urlStatus.kind === 'duplicate' ? 'border-destructive/60' :
+                                        urlStatus.kind === 'ready' ? 'border-emerald-500/40' :
+                                        'border-border/30'
+                                      }`}
+                                    />
+                                    {urlStatus.kind !== 'idle' && (
+                                      <div className={`text-[9px] flex items-center gap-1.5 px-1 ${
+                                        urlStatus.kind === 'duplicate' ? 'text-destructive' :
+                                        urlStatus.kind === 'ready' ? 'text-emerald-400' :
+                                        'text-muted-foreground'
+                                      }`}>
+                                        {urlStatus.kind === 'duplicate' && <X className="w-3 h-3" />}
+                                        {urlStatus.kind === 'ready' && <Check className="w-3 h-3" />}
+                                        {(urlStatus.kind === 'fetching' || urlStatus.kind === 'checking') && <RefreshCw className="w-3 h-3 animate-spin" />}
+                                        <span className="uppercase tracking-wider font-bold">
+                                          {urlStatus.kind === 'duplicate' && `Already added — ${urlStatus.message}`}
+                                          {urlStatus.kind === 'fetching' && 'Pulling latest views & thumbnail…'}
+                                          {urlStatus.kind === 'checking' && 'Checking…'}
+                                          {urlStatus.kind === 'ready' && (urlStatus.message || 'Ready to add')}
+                                        </span>
+                                      </div>
+                                    )}
                                     <Input placeholder="Title (auto-generated, editable)" value={newEdit.title} onChange={e => setNewEdit(p => ({ ...p, title: e.target.value }))} className="bg-background/60 h-8 text-xs border-border/30" />
                                     <Input placeholder="Thumbnail URL (optional)" value={newEdit.thumbnail_url} onChange={e => setNewEdit(p => ({ ...p, thumbnail_url: e.target.value }))} className="bg-background/60 h-8 text-xs border-border/30" />
                                     <div className="grid grid-cols-3 gap-2">
@@ -953,12 +1034,56 @@ export default function CampaignAdminPage() {
                                         <option value="instagram">Instagram</option>
                                         <option value="twitter">Twitter/X</option>
                                       </select>
-                                      <Input placeholder="Editor @username" value={newEdit.editor_username} onChange={e => setNewEdit(p => ({ ...p, editor_username: e.target.value }))} className="bg-background/60 h-8 text-xs border-border/30" />
-                                      <Input type="number" placeholder="Views" value={newEdit.view_count || ''} onChange={e => setNewEdit(p => ({ ...p, view_count: Number(e.target.value) }))} className="bg-background/60 h-8 text-xs border-border/30" />
+                                      <div className="relative">
+                                        <Input
+                                          placeholder="Editor @username"
+                                          value={newEdit.editor_username}
+                                          onFocus={() => setShowEditorPicker(true)}
+                                          onBlur={() => setTimeout(() => setShowEditorPicker(false), 150)}
+                                          onChange={e => setNewEdit(p => ({ ...p, editor_username: e.target.value.replace(/^@/, '') }))}
+                                          className="bg-background/60 h-8 text-xs border-border/30"
+                                        />
+                                        {showEditorPicker && (() => {
+                                          const existingEditors = Array.from(new Set(
+                                            getEditsForCampaign(campaign.id)
+                                              .map(e => e.editor_username)
+                                              .filter((u): u is string => !!u && u.toLowerCase().includes(newEdit.editor_username.toLowerCase()))
+                                          )).slice(0, 6);
+                                          if (existingEditors.length === 0) return null;
+                                          return (
+                                            <div className="absolute top-full left-0 right-0 mt-1 z-30 rounded-md border border-border/40 bg-card shadow-lg max-h-40 overflow-y-auto">
+                                              {existingEditors.map(u => (
+                                                <button
+                                                  key={u}
+                                                  type="button"
+                                                  onMouseDown={(e) => { e.preventDefault(); setNewEdit(p => ({ ...p, editor_username: u })); setShowEditorPicker(false); }}
+                                                  className="w-full text-left px-2 py-1.5 text-[10px] hover:bg-accent/30 transition-colors flex items-center gap-1.5"
+                                                >
+                                                  <span className="text-gold">@</span>{u}
+                                                </button>
+                                              ))}
+                                            </div>
+                                          );
+                                        })()}
+                                      </div>
+                                      <Input
+                                        type="text"
+                                        inputMode="numeric"
+                                        placeholder="Views"
+                                        value={newEdit.view_count ? formatNumberInput(newEdit.view_count) : ''}
+                                        onChange={e => setNewEdit(p => ({ ...p, view_count: parseNumberInput(e.target.value) }))}
+                                        className="bg-background/60 h-8 text-xs border-border/30 font-mono tabular-nums"
+                                      />
                                     </div>
                                     <div className="flex gap-2 pt-1">
-                                      <button onClick={() => handleAddEdit(campaign.id)} className="h-7 px-3 rounded bg-gold text-background text-[9px] font-bold uppercase tracking-wider hover:bg-gold/90 transition-colors">Add Clip</button>
-                                      <button onClick={() => setShowAddEditForm(null)} className="h-7 px-3 rounded text-[9px] text-muted-foreground hover:text-foreground transition-colors">Cancel</button>
+                                      <button
+                                        onClick={() => handleAddEdit(campaign.id)}
+                                        disabled={urlStatus.kind === 'duplicate'}
+                                        className="h-7 px-3 rounded bg-gold text-background text-[9px] font-bold uppercase tracking-wider hover:bg-gold/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                      >
+                                        Add Clip
+                                      </button>
+                                      <button onClick={() => { setShowAddEditForm(null); setUrlStatus({ kind: 'idle' }); }} className="h-7 px-3 rounded text-[9px] text-muted-foreground hover:text-foreground transition-colors">Cancel</button>
                                     </div>
                                   </motion.div>
                                 )}
@@ -984,11 +1109,17 @@ export default function CampaignAdminPage() {
                                       </div>
                                       <div className="flex items-center gap-1">
                                         <Input
-                                          type="number"
-                                          defaultValue={edit.view_count}
-                                          className="w-20 h-6 text-[10px] bg-background/60 border-border/20 rounded"
+                                          type="text"
+                                          inputMode="numeric"
+                                          defaultValue={formatNumberInput(edit.view_count)}
+                                          className="w-24 h-6 text-[10px] bg-background/60 border-border/20 rounded font-mono tabular-nums text-right"
+                                          onChange={e => {
+                                            // Re-format as user types
+                                            const raw = parseNumberInput(e.target.value);
+                                            e.currentTarget.value = raw ? formatNumberInput(raw) : '';
+                                          }}
                                           onBlur={e => {
-                                            const val = Number(e.target.value);
+                                            const val = parseNumberInput(e.target.value);
                                             if (val !== edit.view_count) handleUpdateEditViews(edit.id, val);
                                           }}
                                         />
