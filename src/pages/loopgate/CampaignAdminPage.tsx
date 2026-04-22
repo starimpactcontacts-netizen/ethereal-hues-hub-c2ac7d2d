@@ -1001,7 +1001,8 @@ export default function CampaignAdminPage() {
                                 </div>
                               )}
                             </div>
-                          </motion.div>
+                              <CampaignAdminChatThread campaignId={campaign.id} />
+                            </motion.div>
                         )}
                       </AnimatePresence>
                     </motion.div>
