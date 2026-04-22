@@ -9,6 +9,7 @@ import viralCartelCrest from '@/assets/viral-cartel-crest.png';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 import { useUnifiedThumbnail } from '@/lib/thumbnail';
 import CampaignSupportChat from '@/components/loopgate/CampaignSupportChat';
+import { Switch } from '@/components/ui/switch';
 
 // ── Auto-pulling thumbnail tile ──────────────────────────────────
 function ContentTile({ edit, index, pColor, getPlatformIcon, formatNumber }: any) {
@@ -184,6 +185,7 @@ export default function CampaignPortalPage() {
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [refreshing, setRefreshing] = useState(false);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
+  const [goalMode, setGoalMode] = useState<'views' | 'cpm'>('views');
 
   const fetchData = useCallback(async () => {
     if (!slug) return;
@@ -660,8 +662,21 @@ export default function CampaignPortalPage() {
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
             className="rounded-xl p-5 sm:p-6 space-y-5 border border-neutral-800 bg-neutral-950"
           >
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">Campaign Objectives</p>
-            {campaign.goal_views > 0 && (
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">Campaign Objectives</p>
+              {campaign.goal_views > 0 && campaign.budget_cents && campaign.budget_cents > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className={`text-[9px] font-black uppercase tracking-wider ${goalMode === 'views' ? 'text-neutral-50' : 'text-neutral-500'}`}>Views</span>
+                  <Switch
+                    checked={goalMode === 'cpm'}
+                    onCheckedChange={(v) => setGoalMode(v ? 'cpm' : 'views')}
+                    className="data-[state=checked]:bg-neutral-200 data-[state=unchecked]:bg-neutral-800"
+                  />
+                  <span className={`text-[9px] font-black uppercase tracking-wider ${goalMode === 'cpm' ? 'text-neutral-50' : 'text-neutral-500'}`}>CPM</span>
+                </div>
+              )}
+            </div>
+            {campaign.goal_views > 0 && goalMode === 'views' && (
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs text-neutral-200 font-bold">{campaign.goal_label || 'Views Target'}</span>
@@ -678,6 +693,37 @@ export default function CampaignPortalPage() {
                 </div>
               </div>
             )}
+            {campaign.goal_views > 0 && goalMode === 'cpm' && campaign.budget_cents && campaign.budget_cents > 0 && (() => {
+              const budgetDollars = (campaign.spent_cents || campaign.budget_cents) / 100;
+              const targetCpm = budgetDollars / (campaign.goal_views / 1000);
+              const currentCpm = displayViews > 0 ? budgetDollars / (displayViews / 1000) : null;
+              // Lower CPM is better. Progress = how close we are to (or beat) target.
+              // If currentCpm <= targetCpm → 100%. Else scale inversely.
+              const cpmProgress = currentCpm === null
+                ? 0
+                : currentCpm <= targetCpm
+                  ? 100
+                  : Math.max(0, Math.min(100, (targetCpm / currentCpm) * 100));
+              return (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-neutral-200 font-bold">CPM Efficiency Target</span>
+                    <span className="text-sm font-black text-neutral-50">{Math.round(cpmProgress)}%</span>
+                  </div>
+                  <div className="h-3 rounded-full overflow-hidden bg-neutral-800">
+                    <motion.div initial={{ width: 0 }} animate={{ width: `${cpmProgress}%` }} transition={{ duration: 1.5, ease: 'easeOut', delay: 0.5 }}
+                      className="h-full rounded-full bg-neutral-200"
+                    />
+                  </div>
+                  <div className="flex justify-between mt-1.5">
+                    <span className="text-[10px] text-neutral-500 font-bold">
+                      {currentCpm !== null ? `$${currentCpm.toFixed(2)} achieved` : 'Awaiting data'}
+                    </span>
+                    <span className="text-[10px] text-neutral-500 font-bold">Target: ${targetCpm.toFixed(2)} / 1K</span>
+                  </div>
+                </div>
+              );
+            })()}
             {campaign.goal_posts > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-2">
