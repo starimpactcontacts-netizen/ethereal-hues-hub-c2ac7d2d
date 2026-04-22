@@ -801,9 +801,9 @@ export default function HubPage() {
           <div 
             className="flex overflow-hidden rounded-xl border"
             style={{ 
-              borderColor: quickAction === 'edit_battle' ? 'rgba(139,92,246,0.35)' : quickAction === 'mission' ? 'rgba(16,185,129,0.35)' : quickAction === 'solo' ? 'rgba(255,255,255,0.20)' : 'rgba(239,68,68,0.35)',
+              borderColor: quickAction === 'edit_battle' ? 'rgba(239,68,68,0.45)' : quickAction === 'mission' ? 'rgba(16,185,129,0.35)' : quickAction === 'solo' ? 'rgba(255,255,255,0.20)' : 'rgba(239,68,68,0.35)',
               boxShadow: quickAction === 'edit_battle'
-                ? '0 4px 30px rgba(139,92,246,0.25), 0 0 60px rgba(59,130,246,0.08)'
+                ? '0 4px 30px rgba(220,38,38,0.30), 0 0 60px rgba(37,99,235,0.18)'
                 : quickAction === 'mission'
                 ? '0 4px 30px rgba(16,185,129,0.25), 0 0 60px rgba(16,185,129,0.08)'
                 : quickAction === 'solo' 
@@ -818,15 +818,7 @@ export default function HubPage() {
               onClick={async () => {
                 if (!profile) { navigate('/start'); return; }
                 if (quickAction === 'edit_battle') {
-                  if (myCashBattles.length > 0) {
-                    navigate(`/cash-battle/${myCashBattles[0].id}`);
-                    return;
-                  }
-                  const result = await hubJoinPool();
-                  if (result && result.state === 'live' && result.battleId) {
-                    navigate(`/cash-battle/${result.battleId}`);
-                    return;
-                  }
+                  // Pure instant matchmaking — joins existing open quick fight or opens one for the next user
                   if (qfActiveFight) {
                     navigate(`/fight/${qfActiveFight.id}`);
                   } else {
@@ -850,7 +842,7 @@ export default function HubPage() {
                       : "bg-gradient-to-r from-red-600 via-red-500 to-red-600"
               )}
               style={quickAction === 'edit_battle' ? {
-                background: 'linear-gradient(135deg, #3b82f6 0%, #7c3aed 50%, #ef4444 100%)',
+                background: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 30%, #dc2626 70%, #b91c1c 100%)',
               } : quickAction === 'mission' ? {
                 background: 'linear-gradient(135deg, hsl(160 84% 39%) 0%, hsl(152 76% 36%) 40%, hsl(145 72% 30%) 100%)',
               } : quickAction === 'solo' ? {
@@ -956,7 +948,7 @@ export default function HubPage() {
                           ? "hover:brightness-110 border-white/10"
                           : "bg-red-700/80 hover:bg-red-600/80 border-red-900/40"
                   )}
-                  style={quickAction === 'edit_battle' ? { background: 'linear-gradient(135deg, #6d28d9, #dc2626)' } : quickAction === 'mission' ? { background: 'hsl(152 72% 28%)' } : quickAction === 'solo' ? { background: 'hsl(33 100% 38%)' } : undefined}
+                  style={quickAction === 'edit_battle' ? { background: 'linear-gradient(135deg, #1e40af 0%, #b91c1c 100%)' } : quickAction === 'mission' ? { background: 'hsl(152 72% 28%)' } : quickAction === 'solo' ? { background: 'hsl(33 100% 38%)' } : undefined}
                 >
                    {(quickAction === 'solo' || quickAction === 'mission' || quickAction === 'edit_battle') && (
                      <div className="absolute inset-0 pointer-events-none opacity-[0.06]" style={{
