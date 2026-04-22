@@ -435,10 +435,23 @@ export default function CampaignPortalPage() {
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.18 }}
           className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6 sm:p-8 text-center"
         >
-          <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-500 font-black mb-2">Views Generated</p>
-          <p className="text-6xl sm:text-7xl font-black text-neutral-50 tracking-tight tabular-nums leading-none">
-            {displayViews > 0 ? formatNumber(displayViews) : '—'}
-          </p>
+          <div className="flex items-start justify-center gap-6 sm:gap-10 flex-wrap">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-500 font-black mb-2">Views Generated</p>
+              <p className="text-6xl sm:text-7xl font-black text-neutral-50 tracking-tight tabular-nums leading-none">
+                {displayViews > 0 ? formatNumber(displayViews) : '—'}
+              </p>
+            </div>
+            {(campaign.budget_cents && campaign.budget_cents > 0 && displayViews > 0) ? (
+              <div className="border-l border-neutral-800 pl-6 sm:pl-10">
+                <p className="text-[10px] uppercase tracking-[0.3em] text-emerald-500/80 font-black mb-2">CPM</p>
+                <p className="text-6xl sm:text-7xl font-black text-emerald-400 tracking-tight tabular-nums leading-none">
+                  ${(((campaign.spent_cents || campaign.budget_cents) / 100) / (displayViews / 1000)).toFixed(2)}
+                </p>
+                <p className="text-[9px] text-neutral-500 font-bold mt-2 uppercase tracking-wider">per 1K views</p>
+              </div>
+            ) : null}
+          </div>
           <div className="flex items-center justify-center gap-3 mt-4">
             <button
               onClick={handleManualRefresh}
