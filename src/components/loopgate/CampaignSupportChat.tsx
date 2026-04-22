@@ -6,7 +6,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X, Send, Clock } from 'lucide-react';
+import { MessageCircle, X, Send, Clock, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 
@@ -26,6 +26,17 @@ interface Props {
 }
 
 const NAME_KEY = (id: string) => `loopgate_portal_chat_name_${id}`;
+const MINE_KEY = (id: string) => `loopgate_portal_chat_mine_${id}`;
+
+const loadMine = (id: string): Set<string> => {
+  try {
+    const raw = localStorage.getItem(MINE_KEY(id));
+    return new Set(raw ? (JSON.parse(raw) as string[]) : []);
+  } catch { return new Set(); }
+};
+const saveMine = (id: string, set: Set<string>) => {
+  try { localStorage.setItem(MINE_KEY(id), JSON.stringify(Array.from(set))); } catch {}
+};
 
 export default function CampaignSupportChat({ campaignId, campaignName, clientName }: Props) {
   const [open, setOpen] = useState(false);
@@ -36,6 +47,7 @@ export default function CampaignSupportChat({ campaignId, campaignName, clientNa
     try { return localStorage.getItem(NAME_KEY(campaignId)) || clientName || ''; } catch { return clientName || ''; }
   });
   const [unread, setUnread] = useState(0);
+  const [mineIds, setMineIds] = useState<Set<string>>(() => loadMine(campaignId));
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
