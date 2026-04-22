@@ -199,7 +199,7 @@ export default function HubPage() {
   const [walletOpen, setWalletOpen] = useState(false);
   const [judgeReviewCount, setJudgeReviewCount] = useState(0);
   const [userCrew, setUserCrew] = useState<UserCrew | null>(null);
-  const [quickAction, setQuickAction] = useState<'cash_battle' | 'mission' | 'solo' | 'quick'>('cash_battle');
+  const [quickAction, setQuickAction] = useState<'edit_battle' | 'mission' | 'solo'>('edit_battle');
   const [qfSearching, setQfSearching] = useState(false);
   const [qfElapsed, setQfElapsed] = useState(0);
   const [qfTipIdx, setQfTipIdx] = useState(0);
