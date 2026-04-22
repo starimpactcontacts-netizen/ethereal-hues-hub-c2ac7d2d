@@ -334,7 +334,8 @@ serve(async (req) => {
   }
 
   try {
-    const { url, action } = await req.json();
+    const body = await req.json();
+    const { url, action } = body;
 
     if (action === 'get-stats' && url) {
       const stats = await fetchInstagramPostStats(url);
