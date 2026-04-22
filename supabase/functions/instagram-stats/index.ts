@@ -130,14 +130,14 @@ async function fetchViaGraphQL(shortcode: string): Promise<{
 
 // Method 2: Instagram Private Mobile API
 async function fetchViaMobileApi(shortcode: string): Promise<{
-  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null;
+  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null; takenAt: number | null;
 }> {
   try {
     const mediaId = shortcodeToMediaId(shortcode);
     const apiUrl = `https://i.instagram.com/api/v1/media/${mediaId}/info/`;
     console.log('Trying mobile API, mediaId:', mediaId);
     
-    const res = await fetch(apiUrl, {
+    const res = await fetchWithRetry(apiUrl, {
       headers: {
         'User-Agent': 'Instagram 275.0.0.27.98 Android (33/13; 420dpi; 1080x2400; samsung; SM-G991B; o1s; exynos2100; en_US; 458229258)',
         'X-IG-App-ID': '567067343352427',
@@ -146,7 +146,7 @@ async function fetchViaMobileApi(shortcode: string): Promise<{
     
     if (!res.ok) {
       console.log('Mobile API HTTP:', res.status);
-      return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
+      return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
     }
     
     const json = await res.json();
@@ -157,15 +157,16 @@ async function fetchViaMobileApi(shortcode: string): Promise<{
       const comments = item.comment_count ?? null;
       const shares = item.share_count ?? item.reshare_count ?? null;
       const thumbnailUrl = item.image_versions2?.candidates?.[0]?.url ?? null;
+      const takenAt = item.taken_at ?? null;
       console.log('✅ Mobile API stats:', { views, likes, comments, shares });
-      return { views, likes, comments, shares, thumbnailUrl };
+      return { views, likes, comments, shares, thumbnailUrl, takenAt };
     }
     
     console.log('Mobile API: no items');
-    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
   } catch (e) {
     console.error('Mobile API error:', e);
-    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
   }
 }
 
