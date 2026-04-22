@@ -533,6 +533,7 @@ export default function EditBattlesHubPage() {
       const { data } = await (supabase as any)
         .from("quick_fight_queue")
         .select("id, user_id, username, avatar_url, queued_at")
+        .gt("expires_at", new Date().toISOString())
         .order("queued_at", { ascending: true });
       setQueueEditors((data as QueueEditor[] | null) || []);
     }
