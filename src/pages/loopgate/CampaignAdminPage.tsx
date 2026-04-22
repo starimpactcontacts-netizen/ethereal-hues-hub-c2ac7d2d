@@ -134,8 +134,41 @@ export default function CampaignAdminPage() {
     } catch (err: any) { toast.error(err.message); }
   };
 
+  const generateProTitle = (url: string, campaignName: string, platform: string, handle: string, index: number) => {
+    const base = (campaignName || 'Campaign').trim().split(/\s+/)[0];
+    const platformLabel = platform === 'youtube' ? 'YouTube' : platform === 'instagram' ? 'Instagram' : platform === 'twitter' ? 'Twitter/X' : 'TikTok';
+    // Detect if URL is a "clip" style (shorts/reels/short clip) vs longer edit
+    const lower = (url || '').toLowerCase();
+    const isClip = /shorts|reel|clip|status|\/p\//.test(lower) || platform === 'tiktok' || platform === 'instagram';
+    const kind = isClip ? 'Clip' : 'Edit';
+    const handlePart = handle ? ` · @${handle.replace(/^@/, '')}` : '';
+    return `${base} ${kind} #${index + 1} · ${platformLabel}${handlePart}`;
+  };
+
+  const detectPlatformFromUrl = (url: string): string | null => {
+    const u = url.toLowerCase();
+    if (u.includes('tiktok.com')) return 'tiktok';
+    if (u.includes('youtube.com') || u.includes('youtu.be')) return 'youtube';
+    if (u.includes('instagram.com')) return 'instagram';
+    if (u.includes('twitter.com') || u.includes('x.com')) return 'twitter';
+    return null;
+  };
+
+  const handleVideoUrlChange = (url: string, campaignId: string) => {
+    const detected = detectPlatformFromUrl(url);
+    const campaign = campaigns.find(c => c.id === campaignId);
+    const count = getEditsForCampaign(campaignId).length;
+    setNewEdit(p => {
+      const platform = detected || p.platform;
+      const autoTitle = url.trim()
+        ? generateProTitle(url, campaign?.name || '', platform, p.editor_username, count)
+        : p.title;
+      return { ...p, video_url: url, platform, title: p.title && !p.title.startsWith((campaign?.name || 'Campaign').split(/\s+/)[0]) ? p.title : autoTitle };
+    });
+  };
+
   const handleAddEdit = async (campaignId: string) => {
-    if (!newEdit.title) { toast.error('Enter edit title'); return; }
+    if (!newEdit.title) { toast.error('Enter a title'); return; }
     try {
       // Duplicate detection — same video URL already linked to this campaign
       if (newEdit.video_url && newEdit.video_url.trim()) {
@@ -891,12 +924,12 @@ export default function CampaignAdminPage() {
                             {/* Edits */}
                             <div className="p-4">
                               <div className="flex items-center justify-between mb-3">
-                                <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-bold">Linked Edits ({campaignEdits.length})</p>
+                                <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-bold">Clips & Edits ({campaignEdits.length})</p>
                                 <button
                                   onClick={() => setShowAddEditForm(showAddEditForm === campaign.id ? null : campaign.id)}
                                   className="h-6 px-2.5 rounded border border-border/30 text-[9px] text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
                                 >
-                                  <Plus className="w-3 h-3" /> Add Edit
+                                  <Plus className="w-3 h-3" /> Add Clip
                                 </button>
                               </div>
 
@@ -909,11 +942,9 @@ export default function CampaignAdminPage() {
                                     exit={{ opacity: 0, height: 0 }}
                                     className="rounded-lg bg-background/40 border border-border/20 p-3 space-y-2 mb-3 overflow-hidden"
                                   >
-                                    <Input placeholder="Edit Title *" value={newEdit.title} onChange={e => setNewEdit(p => ({ ...p, title: e.target.value }))} className="bg-background/60 h-8 text-xs border-border/30" />
-                                    <div className="grid grid-cols-2 gap-2">
-                                      <Input placeholder="Video URL" value={newEdit.video_url} onChange={e => setNewEdit(p => ({ ...p, video_url: e.target.value }))} className="bg-background/60 h-8 text-xs border-border/30" />
-                                      <Input placeholder="Thumbnail URL" value={newEdit.thumbnail_url} onChange={e => setNewEdit(p => ({ ...p, thumbnail_url: e.target.value }))} className="bg-background/60 h-8 text-xs border-border/30" />
-                                    </div>
+                                    <Input placeholder="Paste video URL first — title auto-fills" value={newEdit.video_url} onChange={e => handleVideoUrlChange(e.target.value, campaign.id)} className="bg-background/60 h-8 text-xs border-border/30" />
+                                    <Input placeholder="Title (auto-generated, editable)" value={newEdit.title} onChange={e => setNewEdit(p => ({ ...p, title: e.target.value }))} className="bg-background/60 h-8 text-xs border-border/30" />
+                                    <Input placeholder="Thumbnail URL (optional)" value={newEdit.thumbnail_url} onChange={e => setNewEdit(p => ({ ...p, thumbnail_url: e.target.value }))} className="bg-background/60 h-8 text-xs border-border/30" />
                                     <div className="grid grid-cols-3 gap-2">
                                       <select value={newEdit.platform} onChange={e => setNewEdit(p => ({ ...p, platform: e.target.value }))} className="bg-background/60 border border-border/30 rounded-md text-xs h-8 px-2 text-foreground">
                                         <option value="tiktok">TikTok</option>
@@ -925,7 +956,7 @@ export default function CampaignAdminPage() {
                                       <Input type="number" placeholder="Views" value={newEdit.view_count || ''} onChange={e => setNewEdit(p => ({ ...p, view_count: Number(e.target.value) }))} className="bg-background/60 h-8 text-xs border-border/30" />
                                     </div>
                                     <div className="flex gap-2 pt-1">
-                                      <button onClick={() => handleAddEdit(campaign.id)} className="h-7 px-3 rounded bg-gold text-background text-[9px] font-bold uppercase tracking-wider hover:bg-gold/90 transition-colors">Add Edit</button>
+                                      <button onClick={() => handleAddEdit(campaign.id)} className="h-7 px-3 rounded bg-gold text-background text-[9px] font-bold uppercase tracking-wider hover:bg-gold/90 transition-colors">Add Clip</button>
                                       <button onClick={() => setShowAddEditForm(null)} className="h-7 px-3 rounded text-[9px] text-muted-foreground hover:text-foreground transition-colors">Cancel</button>
                                     </div>
                                   </motion.div>
@@ -934,7 +965,7 @@ export default function CampaignAdminPage() {
 
                               {/* Edits List */}
                               {campaignEdits.length === 0 ? (
-                                <p className="text-[10px] text-muted-foreground/40 text-center py-6">No edits linked yet</p>
+                                <p className="text-[10px] text-muted-foreground/40 text-center py-6">No clips or edits linked yet</p>
                               ) : (
                                 <div className="space-y-1.5">
                                   {campaignEdits.map(edit => (
