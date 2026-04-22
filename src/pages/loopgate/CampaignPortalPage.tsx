@@ -6,6 +6,71 @@ import { ComposedChart, Area, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } 
 import { SiTiktok, SiYoutube, SiInstagram } from '@icons-pack/react-simple-icons';
 import { supabase } from '@/integrations/supabase/client';
 import viralCartelCrest from '@/assets/viral-cartel-crest.png';
+import { useUnifiedThumbnail } from '@/lib/thumbnail';
+
+// ── Auto-pulling thumbnail tile ──────────────────────────────────
+function ContentTile({ edit, index, pColor, getPlatformIcon, formatNumber }: any) {
+  const thumbResult = useUnifiedThumbnail(
+    edit.video_url || '',
+    edit.platform || '',
+    null,
+    edit.thumbnail_url,
+  );
+  const thumb = thumbResult.url && thumbResult.status !== 'error' ? thumbResult.url : null;
+
+  return (
+    <motion.a
+      href={edit.video_url || '#'}
+      target={edit.video_url ? '_blank' : undefined}
+      rel="noopener noreferrer"
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: 0.55 + index * 0.03 }}
+      className="group rounded-xl overflow-hidden border border-neutral-800 bg-neutral-950 hover:shadow-lg hover:border-neutral-700 transition-all cursor-pointer"
+    >
+      <div className="aspect-[4/3] bg-neutral-900 relative overflow-hidden">
+        {thumb ? (
+          <img
+            src={thumb}
+            alt=""
+            loading="lazy"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-neutral-900 to-neutral-950">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-neutral-800/80 backdrop-blur-sm">
+              {getPlatformIcon(edit.platform)}
+            </div>
+          </div>
+        )}
+        <div
+          className="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[9px] font-black backdrop-blur-md flex items-center gap-1 bg-neutral-950/80 shadow-sm"
+          style={{ color: pColor }}
+        >
+          {getPlatformIcon(edit.platform)}
+        </div>
+        {edit.video_url && (
+          <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-neutral-950/90 shadow-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <ExternalLink size={10} className="text-neutral-300" />
+          </div>
+        )}
+      </div>
+      <div className="p-3">
+        {edit.editor_username && (
+          <p className="text-[10px] text-neutral-500 font-bold truncate">@{edit.editor_username}</p>
+        )}
+        <div className="flex items-center gap-3 mt-1">
+          <span className="text-xs font-black text-neutral-50">{formatNumber(edit.view_count)} <span className="text-neutral-500 font-bold text-[9px]">views</span></span>
+          <span className="text-xs font-black text-neutral-50">{formatNumber(edit.like_count)} <span className="text-neutral-500 font-bold text-[9px]">likes</span></span>
+          {edit.comment_count > 0 && (
+            <span className="text-xs font-black text-neutral-50">{formatNumber(edit.comment_count)} <span className="text-neutral-500 font-bold text-[9px]">comments</span></span>
+          )}
+        </div>
+      </div>
+    </motion.a>
+  );
+}
 
 interface CampaignData {
   id: string; name: string; description: string | null; status: string;
