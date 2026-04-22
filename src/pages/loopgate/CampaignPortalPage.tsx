@@ -530,7 +530,13 @@ export default function CampaignPortalPage() {
           {[
             { label: 'Content Pieces', value: String(edits.length), sub: 'Published Edits' },
             { label: 'Engagement Rate', value: `${engagementRate}%`, sub: 'Interactions / Reach' },
-            { label: 'ROI', value: campaign.roi_percentage ? `${campaign.roi_percentage}%` : '—', sub: 'Return on Investment' },
+            {
+              label: 'CPM',
+              value: (campaign.budget_cents && campaign.total_views > 0)
+                ? `$${(((campaign.spent_cents || campaign.budget_cents) / 100) / (campaign.total_views / 1000)).toFixed(2)}`
+                : '—',
+              sub: 'Cost Per 1K Views',
+            },
             { label: 'Budget Used', value: campaign.budget_cents ? `$${((campaign.spent_cents || 0) / 100).toLocaleString()}` : '—', sub: campaign.budget_cents ? `of $${(campaign.budget_cents / 100).toLocaleString()}` : 'Not Set' },
           ].map((m) => (
             <div key={m.label} className="rounded-xl p-4 text-center border border-neutral-200 bg-white">
