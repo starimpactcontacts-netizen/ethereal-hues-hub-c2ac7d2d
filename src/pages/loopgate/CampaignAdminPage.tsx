@@ -242,6 +242,7 @@ export default function CampaignAdminPage() {
       await addEdit({ campaign_id: campaignId, ...newEdit });
       toast.success('Edit added');
       setNewEdit({ title: '', video_url: '', thumbnail_url: '', platform: 'tiktok', editor_username: '', view_count: 0 });
+      setUrlStatus({ kind: 'idle' });
       setShowAddEditForm(null);
     } catch (err: any) { toast.error(err.message); }
   };
