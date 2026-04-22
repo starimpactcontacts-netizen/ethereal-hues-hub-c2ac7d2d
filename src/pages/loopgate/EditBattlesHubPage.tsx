@@ -1085,6 +1085,98 @@ export default function EditBattlesHubPage() {
       </div>
 
       <div className="h-24" />
+
+      <AnimatePresence>
+        {showInviteModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowInviteModal(false)}
+            className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ y: 40, opacity: 0, scale: 0.96 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 40, opacity: 0, scale: 0.96 }}
+              transition={{ type: "spring", damping: 24, stiffness: 280 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-md rounded-3xl overflow-hidden border border-blue-500/30"
+              style={{
+                background: "linear-gradient(165deg, #0a1020 0%, #0a0a0d 60%, #100a1a 100%)",
+                boxShadow: "0 30px 80px -20px rgba(59,130,246,0.4), inset 0 1px 0 rgba(255,255,255,0.06)",
+              }}
+            >
+              <div className="relative px-5 pt-5 pb-4 border-b border-white/[0.06]">
+                <div className="absolute inset-0 opacity-50" style={{
+                  background: "radial-gradient(circle at 30% 0%, rgba(59,130,246,0.3), transparent 60%)",
+                }} />
+                <button
+                  onClick={() => setShowInviteModal(false)}
+                  className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] flex items-center justify-center transition-colors"
+                >
+                  <X className="w-4 h-4 text-white/70" />
+                </button>
+                <div className="relative flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-2xl flex items-center justify-center" style={{
+                    background: "linear-gradient(135deg, #2563eb, #8b5cf6)",
+                    boxShadow: "0 8px 20px -8px rgba(139,92,246,0.6), inset 0 1px 0 rgba(255,255,255,0.3)",
+                  }}>
+                    <Loader2 className="w-5 h-5 text-white animate-spin" strokeWidth={2.8} />
+                  </div>
+                  <div className="min-w-0">
+                    <h2 className="text-[22px] font-black text-white leading-none uppercase" style={{ fontFamily: "Teko, sans-serif" }}>
+                      You're in queue
+                    </h2>
+                    <p className="text-[11px] font-bold text-blue-300/80 uppercase tracking-[0.15em] mt-0.5">Invite a friend to auto-match</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="px-5 py-4 space-y-3">
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.025] border border-white/[0.05]">
+                  {profile && (
+                    <Avatar className="w-10 h-10 ring-2 ring-blue-500/40">
+                      <AvatarImage src={profile.avatar_url || ""} />
+                      <AvatarFallback className="text-xs font-bold bg-zinc-800 text-zinc-300">
+                        {profile.username?.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[13px] font-extrabold text-white leading-tight">@{profile?.username}</div>
+                    <div className="text-[11px] text-white/50">Waiting for an opponent — share to pull one in</div>
+                  </div>
+                </div>
+                <p className="text-[11.5px] text-white/55 leading-snug px-1">
+                  Anyone who taps your link and joins the queue will instantly auto-pair with you ⚡
+                </p>
+              </div>
+
+              <div className="px-5 pb-5 grid grid-cols-2 gap-2">
+                <button
+                  onClick={handleCopyInvite}
+                  className="flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-white/[0.06] border border-white/[0.08] hover:bg-white/[0.1] active:scale-[0.97] transition-all"
+                >
+                  <Copy className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
+                  <span className="text-[13px] font-black text-white uppercase" style={{ fontFamily: "Teko, sans-serif" }}>Copy Link</span>
+                </button>
+                <button
+                  onClick={handleNativeShare}
+                  className="flex items-center justify-center gap-1.5 py-3 rounded-2xl text-white active:scale-[0.97] transition-all"
+                  style={{
+                    background: "linear-gradient(135deg, #2563eb, #8b5cf6)",
+                    boxShadow: "0 8px 20px -8px rgba(139,92,246,0.6), inset 0 1px 0 rgba(255,255,255,0.25)",
+                  }}
+                >
+                  <Share2 className="w-3.5 h-3.5" strokeWidth={2.5} />
+                  <span className="text-[13px] font-black uppercase" style={{ fontFamily: "Teko, sans-serif" }}>Share</span>
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
