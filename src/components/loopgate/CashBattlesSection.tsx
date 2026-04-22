@@ -441,7 +441,7 @@ export default function CashBattlesSection({
             <Info className="w-3 h-3" />
           </button>
           <button
-            onClick={() => navigate('/cash-battles')}
+            onClick={() => navigate('/arena')}
             className="ml-1 flex items-center gap-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
           >
             View all
