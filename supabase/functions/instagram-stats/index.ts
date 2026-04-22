@@ -299,23 +299,63 @@ async function fetchViaEmbed(shortcode: string): Promise<{
   }
 }
 
-// Combine results from multiple methods, taking the highest values (real counts only go up)
-function mergeStats(...results: Array<{ views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null }>) {
-  let views: number | null = null;
-  let likes: number | null = null;
-  let comments: number | null = null;
-  let shares: number | null = null;
-  let thumbnailUrl: string | null = null;
+type InstagramStats = {
+  views: number | null;
+  likes: number | null;
+  comments: number | null;
+  shares: number | null;
+  thumbnailUrl: string | null;
+};
 
-  for (const r of results) {
-    if (r.views !== null && (views === null || r.views > views)) views = r.views;
-    if (r.likes !== null && (likes === null || r.likes > likes)) likes = r.likes;
-    if (r.comments !== null && (comments === null || r.comments > comments)) comments = r.comments;
-    if (r.shares !== null && (shares === null || r.shares > shares)) shares = r.shares;
-    if (r.thumbnailUrl && !thumbnailUrl) thumbnailUrl = r.thumbnailUrl;
+function pickHighestMetric(results: InstagramStats[], key: keyof Pick<InstagramStats, 'views' | 'likes' | 'comments' | 'shares'>, allowZero = false): number | null {
+  let best: number | null = null;
+  for (const result of results) {
+    const value = result[key];
+    if (typeof value !== 'number' || !Number.isFinite(value)) continue;
+    if (allowZero ? value < 0 : value <= 0) continue;
+    if (best === null || value > best) best = value;
   }
+  return best;
+}
 
-  return { views, likes, comments, shares, thumbnailUrl };
+function countMetricSources(results: InstagramStats[], key: keyof Pick<InstagramStats, 'views' | 'likes' | 'comments' | 'shares'>, allowZero = false): number {
+  return results.filter(result => {
+    const value = result[key];
+    return typeof value === 'number' && Number.isFinite(value) && (allowZero ? value >= 0 : value > 0);
+  }).length;
+}
+
+function buildValidatedStats(gqlResult: InstagramStats, mobileResult: InstagramStats, mainResult: InstagramStats, embedResult: InstagramStats) {
+  const trustedResults = [gqlResult, mobileResult, mainResult];
+  const allResults = [gqlResult, mobileResult, mainResult, embedResult];
+
+  const trustedViewSources = countMetricSources(trustedResults, 'views');
+  const totalViewSources = countMetricSources(allResults, 'views');
+  const candidateViews = trustedViewSources > 0
+    ? pickHighestMetric(trustedResults, 'views')
+    : totalViewSources >= 2
+      ? pickHighestMetric(allResults, 'views')
+      : null;
+
+  const likes = pickHighestMetric(allResults, 'likes');
+  const comments = pickHighestMetric(allResults, 'comments', true);
+  const shares = pickHighestMetric(allResults, 'shares', true);
+  const thumbnailUrl = gqlResult.thumbnailUrl || mobileResult.thumbnailUrl || mainResult.thumbnailUrl || embedResult.thumbnailUrl || null;
+
+  const plausibleViews = candidateViews !== null && candidateViews >= Math.max(likes || 0, comments || 0);
+
+  return {
+    views: plausibleViews ? candidateViews : null,
+    likes,
+    comments,
+    shares,
+    thumbnailUrl,
+    diagnostics: {
+      trustedViewSources,
+      totalViewSources,
+      plausibleViews,
+    },
+  };
 }
 
 async function fetchInstagramPostStats(url: string) {
@@ -333,7 +373,7 @@ async function fetchInstagramPostStats(url: string) {
     fetchViaEmbed(shortcode),
   ]);
 
-  const merged = mergeStats(gqlResult, mobileResult, mainResult, embedResult);
+  const merged = buildValidatedStats(gqlResult, mobileResult, mainResult, embedResult);
   console.log('🔥 Final merged stats:', merged);
   return merged;
 }
@@ -389,7 +429,9 @@ serve(async (req) => {
           // SAFETY: real view counts only go UP. Never overwrite a stored value with
           // a lower scrape (Instagram embed/oEmbed often returns stale/lower numbers,
           // and a failed scrape can return 0). This prevents "refresh" from deleting views.
-          if (stats.views !== null && stats.views > (edit.view_count || 0)) payload.view_count = stats.views;
+          const hasConfidentViews = stats.views !== null && stats.diagnostics.plausibleViews && (stats.diagnostics.trustedViewSources > 0 || stats.diagnostics.totalViewSources > 1);
+
+          if (hasConfidentViews && stats.views! > (edit.view_count || 0)) payload.view_count = stats.views;
           if (stats.likes !== null && stats.likes > (edit.like_count || 0)) payload.like_count = stats.likes;
           if (stats.comments !== null && stats.comments > (edit.comment_count || 0)) payload.comment_count = stats.comments;
           if (stats.shares !== null && stats.shares > (edit.share_count || 0)) payload.share_count = stats.shares;
@@ -428,9 +470,9 @@ serve(async (req) => {
               .single();
 
             const updatePayload: Record<string, any> = { updated_at: new Date().toISOString() };
-            // Always reflect the latest aggregate so the dashboard mirrors live scraped numbers.
-            updatePayload.total_views = totalViews;
-            updatePayload.total_engagements = totalEngagements;
+            // Campaign totals should also only move upward; never let a partial/bad refresh drag them down.
+            if (totalViews > (campaign?.total_views || 0)) updatePayload.total_views = totalViews;
+            if (totalEngagements > (campaign?.total_engagements || 0)) updatePayload.total_engagements = totalEngagements;
 
             if (Object.keys(updatePayload).length > 1) {
               await supabase.from('artist_campaigns').update(updatePayload).eq('id', cid);
