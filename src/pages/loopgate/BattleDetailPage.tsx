@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Swords, Clock, Eye, Trophy, ArrowLeft, 
-  CheckCircle, XCircle, Send, Share2, Users, Gavel, Zap, Play, Music
+  CheckCircle, XCircle, Send, Share2, Users, Gavel, Zap, Play, Music, Flag
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
