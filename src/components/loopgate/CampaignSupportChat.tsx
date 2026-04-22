@@ -92,18 +92,42 @@ export default function CampaignSupportChat({ campaignId, campaignName, clientNa
     setSending(true);
     try {
       try { localStorage.setItem(NAME_KEY(campaignId), name || ''); } catch {}
-      const { error } = await supabase.from('campaign_portal_messages').insert({
-        campaign_id: campaignId,
-        sender_type: 'client',
-        sender_name: name?.trim() || clientName || 'Client',
-        message_text: text,
-      });
+      const { data, error } = await supabase
+        .from('campaign_portal_messages')
+        .insert({
+          campaign_id: campaignId,
+          sender_type: 'client',
+          sender_name: name?.trim() || clientName || 'Client',
+          message_text: text,
+        })
+        .select('id')
+        .single();
       if (error) throw error;
+      if (data?.id) {
+        setMineIds((prev) => {
+          const next = new Set(prev); next.add(data.id); saveMine(campaignId, next); return next;
+        });
+      }
       setInput('');
     } catch (err) {
       console.error('Failed to send portal message:', err);
     } finally {
       setSending(false);
+    }
+  };
+
+  const deleteMessage = async (msg: PortalMessage) => {
+    // Clients can only delete their own (tracked via localStorage). Admin messages are not deletable here.
+    if (msg.sender_type !== 'client' || !mineIds.has(msg.id)) return;
+    if (!confirm('Delete this message?')) return;
+    const prev = messages;
+    setMessages((m) => m.filter((x) => x.id !== msg.id));
+    const { error } = await supabase.from('campaign_portal_messages').delete().eq('id', msg.id);
+    if (error) {
+      console.error('Delete failed:', error);
+      setMessages(prev);
+    } else {
+      setMineIds((s) => { const n = new Set(s); n.delete(msg.id); saveMine(campaignId, n); return n; });
     }
   };
 
