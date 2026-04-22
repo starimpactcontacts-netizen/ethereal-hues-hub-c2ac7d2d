@@ -1166,13 +1166,13 @@ export default function ArenaPage() {
             whileTap={{ scale: 0.98 }}
             onClick={isQfSearching ? handleCancelQueue : handleQuickFight}
             className="relative w-full overflow-hidden touch-manipulation group mb-3 rounded-2xl"
-            style={{ boxShadow: '0 8px 32px rgba(59,130,246,0.25), 0 4px 16px rgba(239,68,68,0.18)' }}
+            style={{ boxShadow: '0 8px 32px rgba(37,99,235,0.30), 0 4px 16px rgba(220,38,38,0.25)' }}
           >
             {/* Animated gradient background */}
             <div
               className="absolute inset-0"
               style={{
-                background: 'linear-gradient(120deg, #1e3a8a 0%, #3b82f6 35%, #7c3aed 55%, #ef4444 100%)',
+                background: 'linear-gradient(120deg, #1e3a8a 0%, #2563eb 30%, #1f2937 50%, #dc2626 70%, #991b1b 100%)',
               }}
             />
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.18),transparent_60%)]" />
