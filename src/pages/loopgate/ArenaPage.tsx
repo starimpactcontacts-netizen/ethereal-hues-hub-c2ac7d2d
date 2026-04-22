@@ -299,7 +299,21 @@ function ArenaMissionsSection() {
               {/* Footer CTA */}
               <div className="px-5 pb-5 pt-1">
                 <button
-                  onClick={() => { setShowInfo(false); navigate('/missions'); }}
+                  onClick={async () => {
+                    setShowInfo(false);
+                    const { data } = await supabase
+                      .from('commissions')
+                      .select('id')
+                      .eq('status', 'open')
+                      .order('created_at', { ascending: false })
+                      .limit(1)
+                      .maybeSingle();
+                    if (data?.id) {
+                      navigate(`/commissions/${data.id}`);
+                    } else {
+                      navigate('/arena');
+                    }
+                  }}
                   className="w-full py-3 rounded-2xl font-black text-white text-[15px] uppercase tracking-wider active:scale-[0.98] transition-transform"
                   style={{
                     background: 'linear-gradient(90deg, #10b981 0%, #059669 100%)',
@@ -308,7 +322,7 @@ function ArenaMissionsSection() {
                     letterSpacing: '0.06em',
                   }}
                 >
-                  Browse Missions
+                  Jump Into A Mission
                 </button>
               </div>
             </motion.div>
