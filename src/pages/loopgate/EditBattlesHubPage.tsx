@@ -365,7 +365,11 @@ export default function EditBattlesHubPage() {
   const { battles, loading } = useCashBattles();
   const { battles: myBattles } = useMyCashBattles();
   const { joinPool } = useMyCashBattleApplication();
+  const { fights: recentFights, loading: fightsLoading } = useRecentQuickFights(40);
+  const { fights: myFights, inQueue: inQuickQueue } = useMyQuickFights();
+  const { profile } = useAuth() as any;
 
+  const [mode, setMode] = useState<ModeKey>("instant");
   const [tab, setTab] = useState<TabKey>("live");
   const [pendingApps, setPendingApps] = useState<CashBattleApplication[]>([]);
   const [joining, setJoining] = useState(false);
