@@ -386,13 +386,13 @@ serve(async (req) => {
           const stats = await fetchInstagramPostStats(edit.video_url);
           const payload: Record<string, any> = { updated_at: new Date().toISOString() };
           
-          // Always write the latest scraped value when we have one — refresh = pull latest live numbers.
-          // (We already merge max across multiple sources inside fetchInstagramPostStats, so this is the
-          // most accurate snapshot we can produce per refresh.)
-          if (stats.views !== null && stats.views > 0) payload.view_count = stats.views;
-          if (stats.likes !== null && stats.likes > 0) payload.like_count = stats.likes;
-          if (stats.comments !== null && stats.comments >= 0) payload.comment_count = stats.comments;
-          if (stats.shares !== null && stats.shares >= 0) payload.share_count = stats.shares;
+          // SAFETY: real view counts only go UP. Never overwrite a stored value with
+          // a lower scrape (Instagram embed/oEmbed often returns stale/lower numbers,
+          // and a failed scrape can return 0). This prevents "refresh" from deleting views.
+          if (stats.views !== null && stats.views > (edit.view_count || 0)) payload.view_count = stats.views;
+          if (stats.likes !== null && stats.likes > (edit.like_count || 0)) payload.like_count = stats.likes;
+          if (stats.comments !== null && stats.comments > (edit.comment_count || 0)) payload.comment_count = stats.comments;
+          if (stats.shares !== null && stats.shares > (edit.share_count || 0)) payload.share_count = stats.shares;
           if (stats.thumbnailUrl && !edit.thumbnail_url) payload.thumbnail_url = stats.thumbnailUrl;
 
           if (Object.keys(payload).length > 1) {
