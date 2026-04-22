@@ -422,41 +422,34 @@ export default function CashBattlesSection({
   return (
     <div className="mb-2">
       {/* Header */}
-      <div className="flex items-end justify-between px-4 mb-3">
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-md flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}>
-            <Swords className="w-3 h-3 text-white" strokeWidth={2.5} />
+      <div className="flex items-center justify-between px-4 mb-3 gap-2">
+        <div className="flex items-center gap-1.5 min-w-0 flex-shrink">
+          <div className="w-4 h-4 rounded-[5px] flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}>
+            <Swords className="w-2.5 h-2.5 text-white" strokeWidth={2.5} />
           </div>
           <h2
-            className="text-[15px] font-extrabold tracking-tight text-foreground"
+            className="text-[15px] font-extrabold tracking-tight text-foreground whitespace-nowrap"
             style={{ fontFamily: "Inter, system-ui, sans-serif" }}
           >
             Edit Battles
           </h2>
           <button
             onClick={() => setInfoOpen(true)}
-            className="w-4 h-4 rounded-full flex items-center justify-center text-muted-foreground/70 hover:text-foreground transition-colors"
+            className="w-4 h-4 rounded-full flex items-center justify-center text-muted-foreground/70 hover:text-foreground transition-colors shrink-0"
             aria-label="About edit battles"
           >
             <Info className="w-3 h-3" />
           </button>
-          <button
-            onClick={() => navigate('/arena')}
-            className="ml-1 flex items-center gap-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
-          >
-            View all
-            <ChevronRight className="w-3 h-3" />
-          </button>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 shrink-0">
           <button
             onClick={handleEnter}
-            className="relative flex items-center gap-1 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-300 rounded-md border border-emerald-500/30 bg-emerald-500/[0.08] hover:bg-emerald-500/[0.15] transition-colors"
+            className="relative flex items-center gap-0.5 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-300 rounded-md border border-emerald-500/30 bg-emerald-500/[0.08] hover:bg-emerald-500/[0.15] transition-colors whitespace-nowrap"
           >
             <DollarSign className="w-3 h-3" />
             Cash
             {pendingApps.length > 0 && (
-              <span className="ml-1 min-w-[14px] h-[14px] px-1 rounded-full bg-amber-400 text-black text-[9px] font-black flex items-center justify-center">
+              <span className="ml-0.5 min-w-[14px] h-[14px] px-1 rounded-full bg-amber-400 text-black text-[9px] font-black flex items-center justify-center">
                 {pendingApps.length}
               </span>
             )}
@@ -464,12 +457,20 @@ export default function CashBattlesSection({
           {onChallenge && (
             <button
               onClick={onChallenge}
-              className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-red-300 rounded-md border border-red-500/30 bg-red-500/[0.08] hover:bg-red-500/[0.15] transition-colors"
+              className="flex items-center gap-0.5 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-red-300 rounded-md border border-red-500/30 bg-red-500/[0.08] hover:bg-red-500/[0.15] transition-colors whitespace-nowrap"
             >
               <Swords className="w-3 h-3" />
-              Challenge
+              Fight
             </button>
           )}
+          <button
+            onClick={() => navigate('/arena')}
+            className="flex items-center text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors px-1 whitespace-nowrap"
+            aria-label="View all edit battles"
+          >
+            All
+            <ChevronRight className="w-3 h-3" />
+          </button>
         </div>
       </div>
 
