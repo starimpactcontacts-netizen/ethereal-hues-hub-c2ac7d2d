@@ -588,19 +588,76 @@ export default function EditBattlesHubPage() {
             <span className="text-zinc-500">Pick a side. Drop a fire edit. Take the crown. 👑</span>
           </p>
 
-          {/* Quick Match CTA */}
+          {/* Mode toggle — Instant vs Cash */}
+          <div className="mt-4 grid grid-cols-2 gap-1.5 p-1 rounded-2xl border border-white/[0.08] bg-black/40 backdrop-blur-sm">
+            <button
+              onClick={() => setMode("instant")}
+              className="relative flex flex-col items-center justify-center py-2 rounded-xl transition-all active:scale-[0.97]"
+              style={{
+                background: mode === "instant"
+                  ? "linear-gradient(135deg, #2563eb 0%, #8b5cf6 100%)"
+                  : "transparent",
+                boxShadow: mode === "instant"
+                  ? "0 6px 20px -6px rgba(139,92,246,0.6), inset 0 1px 0 rgba(255,255,255,0.25)"
+                  : "none",
+              }}
+            >
+              <div className="flex items-center gap-1.5">
+                <Zap className={`w-3.5 h-3.5 ${mode === "instant" ? "text-white fill-white" : "text-zinc-500"}`} strokeWidth={2.8} />
+                <span
+                  className={`text-[14px] font-black uppercase tracking-wider ${mode === "instant" ? "text-white" : "text-zinc-400"}`}
+                  style={{ fontFamily: "Teko, sans-serif" }}
+                >
+                  Instant
+                </span>
+              </div>
+              <span className={`text-[8px] font-bold uppercase tracking-[0.15em] mt-0.5 ${mode === "instant" ? "text-white/70" : "text-zinc-600"}`}>
+                Free · IDX + XP
+              </span>
+            </button>
+            <button
+              onClick={() => setMode("cash")}
+              className="relative flex flex-col items-center justify-center py-2 rounded-xl transition-all active:scale-[0.97]"
+              style={{
+                background: mode === "cash"
+                  ? "linear-gradient(135deg, #10b981 0%, #059669 100%)"
+                  : "transparent",
+                boxShadow: mode === "cash"
+                  ? "0 6px 20px -6px rgba(16,185,129,0.6), inset 0 1px 0 rgba(255,255,255,0.25)"
+                  : "none",
+              }}
+            >
+              <div className="flex items-center gap-1.5">
+                <DollarSign className={`w-3.5 h-3.5 ${mode === "cash" ? "text-white" : "text-zinc-500"}`} strokeWidth={2.8} />
+                <span
+                  className={`text-[14px] font-black uppercase tracking-wider ${mode === "cash" ? "text-white" : "text-zinc-400"}`}
+                  style={{ fontFamily: "Teko, sans-serif" }}
+                >
+                  Cash
+                </span>
+              </div>
+              <span className={`text-[8px] font-bold uppercase tracking-[0.15em] mt-0.5 ${mode === "cash" ? "text-white/70" : "text-zinc-600"}`}>
+                Win real $$
+              </span>
+            </button>
+          </div>
+
+          {/* Primary CTA */}
           <button
-            onClick={handleQuickJoin}
+            onClick={handlePrimaryCTA}
             disabled={joining}
-            className="mt-4 w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black uppercase text-white text-base relative overflow-hidden disabled:opacity-60 group active:scale-[0.98] transition-transform"
+            className="mt-2.5 w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black uppercase text-white text-base relative overflow-hidden disabled:opacity-60 group active:scale-[0.98] transition-transform"
             style={{
-              background: "linear-gradient(90deg, #2563eb 0%, #8b5cf6 50%, #ef4444 100%)",
-              boxShadow: "0 12px 32px -8px rgba(139,92,246,0.6), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -2px 0 rgba(0,0,0,0.2)",
+              background: mode === "instant"
+                ? "linear-gradient(90deg, #2563eb 0%, #8b5cf6 50%, #ef4444 100%)"
+                : "linear-gradient(90deg, #10b981 0%, #059669 50%, #047857 100%)",
+              boxShadow: mode === "instant"
+                ? "0 12px 32px -8px rgba(139,92,246,0.6), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -2px 0 rgba(0,0,0,0.2)"
+                : "0 12px 32px -8px rgba(16,185,129,0.6), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -2px 0 rgba(0,0,0,0.2)",
               fontFamily: "Teko, sans-serif",
               letterSpacing: "0.05em",
             }}
           >
-            {/* Shimmer */}
             <span
               className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
               style={{
@@ -613,7 +670,9 @@ export default function EditBattlesHubPage() {
             ) : (
               <Zap className="w-5 h-5 fill-white" strokeWidth={2.8} />
             )}
-            {myBattles.length > 0 ? "🔥 Resume Your Battle" : "⚡ Smash Queue — Find Opponent"}
+            {mode === "instant"
+              ? (myActiveQuickFight ? "🔥 Resume Your Battle" : inQuickQueue ? "🔍 In Queue — Tap to Cancel" : "⚡ Quick Match — Find Opponent")
+              : (myBattles.length > 0 ? "🔥 Resume Cash Battle" : "💰 Smash Queue — Win Cash")}
           </button>
 
           {/* Stats strip */}
