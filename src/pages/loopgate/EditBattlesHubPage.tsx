@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Helmet } from "react-helmet-async";
-import { ArrowLeft, Swords, DollarSign, Flame, Trophy, Clock, Users, Loader2, Zap } from "lucide-react";
+import { ArrowLeft, Swords, DollarSign, Flame, Trophy, Clock, Users, Loader2, Zap, Share2, X, Copy, UserPlus } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useCashBattles, useMyCashBattles, useMyCashBattleApplication, type CashBattleApplication } from "@/hooks/useCashBattles";
@@ -14,6 +14,14 @@ import { toast } from "sonner";
 
 type TabKey = "live" | "open" | "cash" | "completed";
 type ModeKey = "instant" | "cash";
+
+interface QueueEditor {
+  id: string;
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+  queued_at: string;
+}
 
 function formatPrize(cents: number): string {
   if (cents === 0) return "FREE";
