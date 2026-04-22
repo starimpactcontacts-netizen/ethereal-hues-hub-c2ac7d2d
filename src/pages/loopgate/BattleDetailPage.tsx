@@ -13,6 +13,8 @@ import { useBattle, recordBattleView, acceptBattle, submitToBattle, voteOnBattle
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
+import ArcadeCountdown from "@/components/loopgate/ArcadeCountdown";
+import BattleShareCard from "@/components/loopgate/BattleShareCard";
 import BattleInviteModal from "@/components/loopgate/BattleInviteModal";
 import BattleJudgingPanel from "@/components/loopgate/BattleJudgingPanel";
 import BattleChat from "@/components/loopgate/BattleChat";
@@ -36,6 +38,7 @@ export default function BattleDetailPage() {
   const [myVote, setMyVote] = useState<string | null>(null);
   const [voting, setVoting] = useState(false);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [shareCardOpen, setShareCardOpen] = useState(false);
 
   useEffect(() => {
     if (battleId) recordBattleView(battleId, user?.id || null);
@@ -168,8 +171,7 @@ export default function BattleDetailPage() {
   };
 
   const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
-    toast.success("Battle link copied!");
+    setShareCardOpen(true);
   };
 
   const getMyRole = () => {
@@ -353,10 +355,8 @@ export default function BattleDetailPage() {
 
           {/* Timer */}
           {isLive && battle.ends_at && (
-            <div className="flex justify-center mt-4">
-              <div className="bg-black/40 backdrop-blur-sm border border-red-500/15 rounded-xl px-6 py-2.5">
-                <CountdownTimer endDate={battle.ends_at} label="ENDS" />
-              </div>
+            <div className="flex justify-center mt-5">
+              <ArcadeCountdown endDate={battle.ends_at} label="ENDS IN" variant="battle" />
             </div>
           )}
 
