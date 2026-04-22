@@ -464,7 +464,7 @@ export default function CashBattlesSection({
             </button>
           )}
           <button
-            onClick={() => navigate('/arena')}
+            onClick={() => navigate('/edit-battles')}
             className="flex items-center text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors px-1 whitespace-nowrap"
             aria-label="View all edit battles"
           >
