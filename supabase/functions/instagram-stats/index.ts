@@ -347,6 +347,115 @@ async function fetchViaEmbed(shortcode: string): Promise<{
   }
 }
 
+// Method 5: Secondary GraphQL with PolarisPostRootQuery doc_id (different cache layer than method 1)
+async function fetchViaGraphQLAlt(shortcode: string): Promise<{
+  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null; takenAt: number | null;
+}> {
+  try {
+    // PolarisPostRootQuery - hits a different IG cache cluster, often fresher
+    const docIds = ['8845758582119845', '7950326061742207', '25531498899829322'];
+    for (const docId of docIds) {
+      const variables = JSON.stringify({
+        shortcode,
+        fetch_tagged_user_count: null,
+        hoisted_comment_id: null,
+        hoisted_reply_id: null,
+      });
+      const apiUrl = `https://www.instagram.com/api/graphql`;
+      const body = `av=0&__d=www&__user=0&__a=1&__req=1&__hs=20000&dpr=2&__ccg=EXCELLENT&doc_id=${docId}&variables=${encodeURIComponent(variables)}`;
+      const res = await fetchWithRetry(apiUrl, {
+        method: 'POST',
+        headers: {
+          'User-Agent': pickUA(),
+          'X-IG-App-ID': '936619743392459',
+          'X-FB-Friendly-Name': 'PolarisPostRootQuery',
+          'X-Requested-With': 'XMLHttpRequest',
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Sec-Fetch-Site': 'same-origin',
+          'Origin': 'https://www.instagram.com',
+          'Referer': `https://www.instagram.com/p/${shortcode}/`,
+        },
+        body,
+      });
+      if (!res.ok) continue;
+      const json = await res.json().catch(() => null);
+      const media = json?.data?.xdt_shortcode_media || json?.data?.shortcode_media;
+      if (media) {
+        const views = media.video_play_count ?? media.video_view_count ?? media.play_count ?? null;
+        const likes = media.edge_media_preview_like?.count ?? media.like_count ?? null;
+        const comments = media.edge_media_to_parent_comment?.count ?? media.comment_count ?? null;
+        const shares = media.share_count ?? media.reshare_count ?? null;
+        const thumbnailUrl = media.display_url ?? null;
+        const takenAt = media.taken_at_timestamp ?? null;
+        console.log(`✅ GraphQL alt (${docId}) stats:`, { views, likes, comments });
+        return { views, likes, comments, shares, thumbnailUrl, takenAt };
+      }
+    }
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
+  } catch (e) {
+    console.error('GraphQL alt error:', e);
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
+  }
+}
+
+// Method 6: Mobile web (m.instagram.com) - separate render pipeline, uncached
+async function fetchViaMobileWeb(shortcode: string): Promise<{
+  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null; takenAt: number | null;
+}> {
+  try {
+    for (const prefix of ['p', 'reel']) {
+      const pageUrl = `https://www.instagram.com/${prefix}/${shortcode}/?__a=1&__d=dis`;
+      const res = await fetchWithRetry(pageUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+          'X-IG-App-ID': '936619743392459',
+          'Accept': 'application/json, text/plain, */*',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Referer': 'https://www.instagram.com/',
+        },
+      });
+      if (!res.ok) continue;
+      const text = await res.text();
+      // Response can be JSON or HTML depending on IG's mood
+      let views: number | null = null, likes: number | null = null, comments: number | null = null;
+      let shares: number | null = null, thumbnailUrl: string | null = null, takenAt: number | null = null;
+      try {
+        const json = JSON.parse(text);
+        const media = json?.graphql?.shortcode_media || json?.items?.[0];
+        if (media) {
+          views = media.video_play_count ?? media.video_view_count ?? media.play_count ?? null;
+          likes = media.edge_media_preview_like?.count ?? media.like_count ?? null;
+          comments = media.edge_media_to_parent_comment?.count ?? media.comment_count ?? null;
+          shares = media.share_count ?? media.reshare_count ?? null;
+          thumbnailUrl = media.display_url ?? media.image_versions2?.candidates?.[0]?.url ?? null;
+          takenAt = media.taken_at_timestamp ?? media.taken_at ?? null;
+        }
+      } catch {
+        // Fallback: regex scrape on the HTML body
+        const viewMatches = [...text.matchAll(/"(?:video_play_count|video_view_count|play_count)"\s*:\s*(\d+)/g)];
+        for (const m of viewMatches) {
+          const n = parseInt(m[1], 10);
+          if (!isNaN(n) && (views === null || n > views)) views = n;
+        }
+        const likeM = text.match(/"(?:like_count|edge_media_preview_like)"[^\d]+(\d+)/);
+        if (likeM) likes = parseInt(likeM[1], 10);
+        const commM = text.match(/"comment_count"\s*:\s*(\d+)/);
+        if (commM) comments = parseInt(commM[1], 10);
+        const tk = text.match(/"taken_at(?:_timestamp)?"\s*:\s*(\d+)/);
+        if (tk) takenAt = parseInt(tk[1], 10);
+      }
+      if (views !== null || likes !== null) {
+        console.log('✅ Mobile web stats:', { views, likes, comments });
+        return { views, likes, comments, shares, thumbnailUrl, takenAt };
+      }
+    }
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
+  } catch (e) {
+    console.error('Mobile web error:', e);
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
+  }
+}
+
 type InstagramStats = {
   views: number | null;
   likes: number | null;
