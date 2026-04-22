@@ -433,26 +433,41 @@ export default function CampaignPortalPage() {
 
         {/* ★ BIG Views Generated Counter */}
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.18 }}
-          className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6 sm:p-8 text-center"
+          className="relative overflow-hidden rounded-2xl border border-neutral-800/80 bg-gradient-to-b from-neutral-900 to-neutral-950 p-6 sm:p-8"
         >
-          <div className="flex items-start justify-center gap-6 sm:gap-10 flex-wrap">
-            <div>
-              <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-500 font-black mb-2">Views Generated</p>
-              <p className="text-6xl sm:text-7xl font-black text-neutral-50 tracking-tight tabular-nums leading-none">
-                {displayViews > 0 ? formatNumber(displayViews) : '—'}
-              </p>
-            </div>
-            {(campaign.budget_cents && campaign.budget_cents > 0 && displayViews > 0) ? (
-              <div className="border-l border-neutral-800 pl-6 sm:pl-10">
-                <p className="text-[10px] uppercase tracking-[0.3em] text-emerald-500/80 font-black mb-2">CPM</p>
-                <p className="text-6xl sm:text-7xl font-black text-emerald-400 tracking-tight tabular-nums leading-none">
-                  ${(((campaign.spent_cents || campaign.budget_cents) / 100) / (displayViews / 1000)).toFixed(2)}
-                </p>
-                <p className="text-[9px] text-neutral-500 font-bold mt-2 uppercase tracking-wider">per 1K views</p>
-              </div>
-            ) : null}
+          {/* Subtle ambient glow */}
+          <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[420px] h-[220px] bg-emerald-500/[0.06] blur-3xl rounded-full" />
+
+          <div className="relative text-center">
+            <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-500 font-black mb-3">Views Generated</p>
+            <p className="text-[64px] sm:text-[88px] font-black text-neutral-50 tracking-tight tabular-nums leading-[0.95]">
+              {displayViews > 0 ? formatNumber(displayViews) : '—'}
+            </p>
+
+            {(campaign.budget_cents && campaign.budget_cents > 0 && displayViews > 0) ? (() => {
+              const cpm = ((campaign.spent_cents || campaign.budget_cents) / 100) / (displayViews / 1000);
+              // Industry CPM benchmarks (paid social / influencer): <$2 elite, <$5 great, <$10 solid, <$20 avg, else weak
+              const tier =
+                cpm < 2 ? { label: 'Elite Efficiency', color: 'text-emerald-300', bg: 'bg-emerald-500/10', ring: 'ring-emerald-500/30', dot: 'bg-emerald-400' } :
+                cpm < 5 ? { label: 'Great', color: 'text-emerald-300', bg: 'bg-emerald-500/10', ring: 'ring-emerald-500/25', dot: 'bg-emerald-400' } :
+                cpm < 10 ? { label: 'Solid', color: 'text-sky-300', bg: 'bg-sky-500/10', ring: 'ring-sky-500/25', dot: 'bg-sky-400' } :
+                cpm < 20 ? { label: 'Industry Avg', color: 'text-amber-300', bg: 'bg-amber-500/10', ring: 'ring-amber-500/25', dot: 'bg-amber-400' } :
+                { label: 'Above Avg Cost', color: 'text-rose-300', bg: 'bg-rose-500/10', ring: 'ring-rose-500/25', dot: 'bg-rose-400' };
+              return (
+                <div className="mt-5 inline-flex items-center gap-2.5 px-3.5 py-2 rounded-full bg-neutral-900/80 ring-1 ring-inset ring-neutral-800 backdrop-blur-sm">
+                  <span className="text-[9px] uppercase tracking-[0.25em] text-neutral-500 font-black">CPM</span>
+                  <span className="text-base sm:text-lg font-black text-neutral-50 tabular-nums tracking-tight">${cpm.toFixed(2)}</span>
+                  <span className="text-[9px] text-neutral-600 font-bold">/ 1K</span>
+                  <span className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider font-black ${tier.bg} ${tier.color} ring-1 ring-inset ${tier.ring}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${tier.dot}`} />
+                    {tier.label}
+                  </span>
+                </div>
+              );
+            })() : null}
           </div>
-          <div className="flex items-center justify-center gap-3 mt-4">
+
+          <div className="relative flex items-center justify-center gap-3 mt-6">
             <button
               onClick={handleManualRefresh}
               disabled={refreshing || cooldownRemaining > 0}
