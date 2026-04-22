@@ -247,6 +247,116 @@ function OpenQueueRow({ app, onAccept, isOwn }: { app: CashBattleApplication; on
   );
 }
 
+function QuickFightRow({ fight, onClick }: { fight: QuickFight; onClick: () => void }) {
+  const isLive = fight.status === "active" || fight.status === "judging";
+  const isCompleted = fight.status === "completed" || fight.status === "cancelled" || fight.status === "forfeited";
+  return (
+    <motion.div
+      whileTap={{ scale: 0.98 }}
+      onClick={onClick}
+      className="relative rounded-2xl overflow-hidden cursor-pointer border border-white/[0.06]"
+      style={{
+        background: "linear-gradient(180deg, rgba(38,38,42,0.95) 0%, rgba(22,22,26,0.95) 100%)",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 24px -16px rgba(0,0,0,0.6)",
+        opacity: isCompleted ? 0.65 : 1,
+      }}
+    >
+      <div
+        className="absolute top-0 left-0 right-0 h-[2px]"
+        style={{
+          background: isCompleted
+            ? "linear-gradient(90deg, #444, #444)"
+            : "linear-gradient(90deg, #3b82f6, transparent 45%, transparent 55%, #ef4444)",
+        }}
+      />
+      <div className="px-4 py-3 flex items-center gap-3">
+        <div className="flex flex-col items-center gap-0.5 shrink-0 w-16">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center"
+            style={{ background: "linear-gradient(135deg, #3b82f6, #8b5cf6)" }}
+          >
+            <Zap className="w-5 h-5 text-white fill-white" strokeWidth={2.5} />
+          </div>
+          <span
+            className="text-[10px] font-black text-white leading-none uppercase tracking-wider"
+            style={{ fontFamily: "Teko, sans-serif" }}
+          >
+            INSTANT
+          </span>
+        </div>
+
+        <div className="flex-1 min-w-0 flex items-center justify-center gap-2">
+          <div className="flex flex-col items-center min-w-0 flex-1">
+            <Avatar className="w-9 h-9 ring-2 ring-blue-500/40">
+              <AvatarImage src={fight.player_1_avatar_url || ""} />
+              <AvatarFallback className="text-xs font-bold bg-zinc-800 text-zinc-300">
+                {fight.player_1_username?.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+            <span
+              className="text-[10px] font-bold text-blue-300 truncate max-w-full mt-1 uppercase"
+              style={{ fontFamily: "Teko, sans-serif" }}
+            >
+              {fight.player_1_username}
+            </span>
+          </div>
+          <span className="text-sm font-black text-white/30" style={{ fontFamily: "Teko, sans-serif" }}>
+            VS
+          </span>
+          <div className="flex flex-col items-center min-w-0 flex-1">
+            {fight.player_2_username ? (
+              <Avatar className="w-9 h-9 ring-2 ring-red-500/40">
+                <AvatarImage src={fight.player_2_avatar_url || ""} />
+                <AvatarFallback className="text-xs font-bold bg-zinc-800 text-zinc-300">
+                  {fight.player_2_username?.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+            ) : (
+              <div className="w-9 h-9 rounded-full border-2 border-dashed border-amber-500/40 flex items-center justify-center">
+                <span className="text-amber-400/60 text-sm">?</span>
+              </div>
+            )}
+            <span
+              className="text-[10px] font-bold text-red-300 truncate max-w-full mt-1 uppercase"
+              style={{ fontFamily: "Teko, sans-serif" }}
+            >
+              {fight.player_2_username || "TBA"}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-end gap-1 shrink-0 w-16">
+          {isLive && (
+            <div className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+              <span
+                className="text-[10px] font-black uppercase tracking-wider text-red-400"
+                style={{ fontFamily: "Teko, sans-serif" }}
+              >
+                LIVE
+              </span>
+            </div>
+          )}
+          {isCompleted && (
+            <span
+              className="text-[10px] font-black uppercase tracking-wider text-zinc-500"
+              style={{ fontFamily: "Teko, sans-serif" }}
+            >
+              {fight.status === "completed" ? "ENDED" : "CXLD"}
+            </span>
+          )}
+          {fight.ends_at && isLive && (
+            <span className="text-[9px] text-zinc-500 flex items-center gap-0.5">
+              <Clock className="w-2.5 h-2.5" />
+              {formatTimeLeft(fight.ends_at)}
+            </span>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function EditBattlesHubPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
