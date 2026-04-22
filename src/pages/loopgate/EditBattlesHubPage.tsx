@@ -334,10 +334,10 @@ export default function EditBattlesHubPage() {
   };
 
   const tabs: { key: TabKey; label: string; count: number; icon: any; color: string }[] = [
-    { key: "live", label: "Live", count: liveBattles.length, icon: Flame, color: "#ef4444" },
-    { key: "open", label: "Open Queue", count: pendingApps.length, icon: Zap, color: "#f59e0b" },
-    { key: "cash", label: "Cash", count: cashBattles.length, icon: DollarSign, color: "#10b981" },
-    { key: "completed", label: "Past", count: completedBattles.length, icon: Trophy, color: "#a1a1aa" },
+    { key: "live", label: "Live Now", count: liveBattles.length, icon: Flame, color: "#ef4444" },
+    { key: "open", label: "Queue", count: pendingApps.length, icon: Zap, color: "#f59e0b" },
+    { key: "cash", label: "$ Battles", count: cashBattles.length, icon: DollarSign, color: "#10b981" },
+    { key: "completed", label: "Hall of Fame", count: completedBattles.length, icon: Trophy, color: "#fbbf24" },
   ];
 
   return (
@@ -519,8 +519,8 @@ export default function EditBattlesHubPage() {
                   {liveBattles.length === 0 ? (
                     <EmptyState
                       icon={Flame}
-                      title="No live battles right now"
-                      hint="Tap Quick Queue above to start one"
+                      title="Arena's quiet... for now 👀"
+                      hint="Smash that queue button and light it up"
                     />
                   ) : (
                     liveBattles.map((b) => (
@@ -529,8 +529,10 @@ export default function EditBattlesHubPage() {
                   )}
                   {upcomingBattles.length > 0 && (
                     <>
-                      <div className="pt-3 pb-1">
-                        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-wider">Starting Soon</span>
+                      <div className="pt-4 pb-1 flex items-center gap-2">
+                        <span className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-500/40 to-transparent" />
+                        <span className="text-[10px] font-black text-amber-400 uppercase tracking-[0.2em]">⏳ Dropping Soon</span>
+                        <span className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-500/40 to-transparent" />
                       </div>
                       {upcomingBattles.map((b) => (
                         <BattleRow key={b.id} battle={b} onClick={() => navigate(`/cash-battle/${b.id}`)} />
@@ -545,8 +547,8 @@ export default function EditBattlesHubPage() {
                   {pendingApps.length === 0 ? (
                     <EmptyState
                       icon={Zap}
-                      title="Queue is empty"
-                      hint="Be the first — Tap Instantly Queue above"
+                      title="No challengers in line ⚡"
+                      hint="Be the spark — drop into queue and let 'em come"
                     />
                   ) : (
                     pendingApps.map((app) => (
@@ -566,8 +568,8 @@ export default function EditBattlesHubPage() {
                   {cashBattles.length === 0 ? (
                     <EmptyState
                       icon={DollarSign}
-                      title="No cash battles active"
-                      hint="Sponsored battles drop with prize pools"
+                      title="No bag up for grabs rn 💰"
+                      hint="Sponsored cash drops hit when you least expect"
                     />
                   ) : (
                     cashBattles.map((b) => (
@@ -580,7 +582,7 @@ export default function EditBattlesHubPage() {
               {tab === "completed" && (
                 <>
                   {completedBattles.length === 0 ? (
-                    <EmptyState icon={Trophy} title="No past battles yet" hint="Be the first to make history" />
+                    <EmptyState icon={Trophy} title="History's unwritten 🏆" hint="First win etches your name forever" />
                   ) : (
                     completedBattles.map((b) => (
                       <BattleRow key={b.id} battle={b} onClick={() => navigate(`/cash-battle/${b.id}`)} />
