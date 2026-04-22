@@ -213,7 +213,6 @@ export default function CampaignSupportChat({ campaignId, campaignName, clientNa
                 </div>
               </div>
 
-              {messages.map((m) => (
               {messages.map((m) => {
                 const isMine = m.sender_type === 'client' && mineIds.has(m.id);
                 const alignRight = m.sender_type === 'client';
