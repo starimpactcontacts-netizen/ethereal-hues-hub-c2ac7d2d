@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useRecoverBodyScroll } from '@/hooks/useRecoverBodyScroll';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
+import CampaignAdminChatThread from '@/components/loopgate/CampaignAdminChatThread';
 
 async function uploadLogoFile(file: File): Promise<string> {
   const ext = file.name.split('.').pop() || 'png';
@@ -1000,7 +1001,8 @@ export default function CampaignAdminPage() {
                                 </div>
                               )}
                             </div>
-                          </motion.div>
+                              <CampaignAdminChatThread campaignId={campaign.id} />
+                            </motion.div>
                         )}
                       </AnimatePresence>
                     </motion.div>
