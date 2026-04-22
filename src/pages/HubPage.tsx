@@ -825,21 +825,18 @@ export default function HubPage() {
                   const result = await hubJoinPool();
                   if (result && result.state === 'live' && result.battleId) {
                     navigate(`/cash-battle/${result.battleId}`);
+                    return;
+                  }
+                  if (qfActiveFight) {
+                    navigate(`/fight/${qfActiveFight.id}`);
                   } else {
-                    navigate('/arena?tab=main');
-                    toast.success("You're in the queue — visible on the carousel now");
+                    handleQuickFight();
                   }
                   return;
                 } else if (quickAction === 'mission') {
                   navigate('/commissions/414605a8-ac2f-4ab5-9955-15339ba4633c');
                 } else if (quickAction === 'solo') {
                   navigate('/arena?mode=solo&auto=1');
-                } else {
-                  if (qfActiveFight) {
-                    navigate(`/fight/${qfActiveFight.id}`);
-                  } else {
-                    handleQuickFight();
-                  }
                 }
               }}
               className={cn(
