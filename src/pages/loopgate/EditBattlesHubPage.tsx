@@ -624,6 +624,50 @@ export default function EditBattlesHubPage() {
 
   const handlePrimaryCTA = mode === "instant" ? handleInstantJoin : handleCashJoin;
 
+  // Accept another editor's queued match — same as joining (RPC will pair us)
+  const handleAcceptQueueEditor = async (editor: QueueEditor) => {
+    if (isGuest || !user || !profile) {
+      accountPrompt.open("enter_battle" as any);
+      return;
+    }
+    if (editor.user_id === user.id) {
+      setShowInviteModal(true);
+      return;
+    }
+    setJoining(true);
+    const fightId = await findQuickFight(user.id, profile.username, profile.avatar_url);
+    setJoining(false);
+    if (fightId) {
+      toast.success(`⚔️ Matched with @${editor.username}!`);
+      navigate(`/fight/${fightId}`);
+    } else {
+      toast("🔍 Joined the queue — pairing now");
+    }
+  };
+
+  const inviteUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/edit-battles`;
+  const handleCopyInvite = async () => {
+    try {
+      await navigator.clipboard.writeText(`⚔️ I'm in the Loopgate edit battle queue — jump in and we'll auto-match: ${inviteUrl}`);
+      toast.success("Invite link copied!");
+    } catch {
+      toast.error("Couldn't copy — try sharing instead");
+    }
+  };
+  const handleNativeShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: "Loopgate Edit Battle",
+          text: "I'm in the queue — jump in and let's 1v1 ⚔️",
+          url: inviteUrl,
+        });
+      } else {
+        handleCopyInvite();
+      }
+    } catch {}
+  };
+
   const handleAcceptOpen = async (app: CashBattleApplication) => {
     if (isGuest) {
       accountPrompt.open("enter_battle" as any);
