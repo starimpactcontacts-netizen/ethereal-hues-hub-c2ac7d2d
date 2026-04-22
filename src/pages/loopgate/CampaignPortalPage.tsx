@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import viralCartelCrest from '@/assets/viral-cartel-crest.png';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 import { useUnifiedThumbnail } from '@/lib/thumbnail';
+import CampaignSupportChat from '@/components/loopgate/CampaignSupportChat';
 
 // ── Auto-pulling thumbnail tile ──────────────────────────────────
 function ContentTile({ edit, index, pColor, getPlatformIcon, formatNumber }: any) {
@@ -762,6 +763,20 @@ export default function CampaignPortalPage() {
           <p className="text-[7px] text-neutral-600 mt-1">Confidential — For authorized stakeholders only</p>
         </div>
       </div>
+
+      {/* Floating concierge chat */}
+      <CampaignSupportChat
+        campaignContext={{
+          name: campaign.name,
+          client: campaign.client_name,
+          type: campaign.campaign_type,
+          status: campaign.status,
+          totalViews: totalEditViews,
+          publishedPieces: edits.length,
+          budgetCents: campaign.budget_cents,
+          spentCents: campaign.spent_cents,
+        }}
+      />
     </div>
   );
 }
