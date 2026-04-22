@@ -722,6 +722,7 @@ export default function CampaignAdminPage() {
                                         total_engagements: campaign.total_engagements,
                                         total_clicks: campaign.total_clicks,
                                         roi_percentage: campaign.roi_percentage,
+                                        budget_cents: campaign.budget_cents || 0,
                                         goal_views: campaign.goal_views,
                                         goal_posts: (campaign as any).goal_posts || 0,
                                         goal_label: campaign.goal_label || '',
