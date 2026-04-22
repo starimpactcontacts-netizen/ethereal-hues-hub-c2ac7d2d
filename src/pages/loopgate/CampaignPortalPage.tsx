@@ -79,7 +79,9 @@ function exportCSV(campaign: CampaignData, edits: EditData[]) {
     [], ['Campaign Summary'], ['Total Views', String(campaign.total_views)],
     ['Total Impressions', String(campaign.total_impressions)],
     ['Total Engagements', String(campaign.total_engagements)],
-    ['ROI', campaign.roi_percentage ? `${campaign.roi_percentage}%` : '—'],
+    ['CPM', (campaign.budget_cents && campaign.total_views > 0)
+      ? `$${(((campaign.spent_cents || campaign.budget_cents) / 100) / (campaign.total_views / 1000)).toFixed(2)}`
+      : '—'],
   ];
   const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });
