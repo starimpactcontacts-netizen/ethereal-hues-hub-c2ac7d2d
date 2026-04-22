@@ -701,6 +701,13 @@ export default function BattleDetailPage() {
         battleId={battle.id}
         challengerUsername={battle.challenger_username}
       />
+
+      {/* Shareable Battle Card */}
+      <BattleShareCard
+        isOpen={shareCardOpen}
+        onClose={() => setShareCardOpen(false)}
+        battle={battle as any}
+      />
     </div>
   );
 }
