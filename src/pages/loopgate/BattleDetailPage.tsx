@@ -12,7 +12,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBattle, recordBattleView, acceptBattle, submitToBattle, voteOnBattle, getMyVote } from "@/hooks/useBattles";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import CountdownTimer from "@/components/loopgate/CountdownTimer";
 import ArcadeCountdown from "@/components/loopgate/ArcadeCountdown";
 import BattleShareCard from "@/components/loopgate/BattleShareCard";
 import BattleInviteModal from "@/components/loopgate/BattleInviteModal";
