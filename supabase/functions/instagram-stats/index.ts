@@ -599,6 +599,7 @@ function countMetricSources(results: InstagramStats[], key: keyof Pick<Instagram
 }
 
 function buildValidatedStats(
+  authResult: InstagramStats,
   gqlResult: InstagramStats,
   mobileResult: InstagramStats,
   mainResult: InstagramStats,
@@ -607,7 +608,7 @@ function buildValidatedStats(
   mobileWebResult: InstagramStats,
 ) {
   // Trusted = direct API/JSON sources. Embed is fallback only (often stale).
-  const trustedResults = [gqlResult, mobileResult, mainResult, gqlAltResult, mobileWebResult];
+  const trustedResults = [authResult, gqlResult, mobileResult, mainResult, gqlAltResult, mobileWebResult];
   const allResults = [...trustedResults, embedResult];
 
   const trustedViewSources = countMetricSources(trustedResults, 'views');
@@ -660,13 +661,13 @@ function buildValidatedStats(
   const likes = pickHighestMetric(allResults, 'likes');
   const comments = pickHighestMetric(allResults, 'comments', true);
   const shares = pickHighestMetric(allResults, 'shares', true);
-  const thumbnailUrl = gqlResult.thumbnailUrl || mobileResult.thumbnailUrl || gqlAltResult.thumbnailUrl
+  const thumbnailUrl = authResult.thumbnailUrl || gqlResult.thumbnailUrl || mobileResult.thumbnailUrl || gqlAltResult.thumbnailUrl
     || mobileWebResult.thumbnailUrl || mainResult.thumbnailUrl || embedResult.thumbnailUrl || null;
   // Pick the EXACT taken_at timestamp - prefer trusted sources, take the one most agree on
   const takenAtCandidates = allResults
     .map(r => r.takenAt)
     .filter((t): t is number => typeof t === 'number' && Number.isFinite(t) && t > 0);
-  const takenAt = takenAtCandidates.length > 0 ? takenAtCandidates[0] : null;
+  const takenAt = authResult.takenAt || (takenAtCandidates.length > 0 ? takenAtCandidates[0] : null);
 
   // IMPORTANT: likes/comments can be wrong on fallback HTML sources and should NOT zero out
   // otherwise corroborated view counts. So we only use engagement plausibility when the
@@ -714,8 +715,9 @@ async function fetchInstagramPostStats(url: string) {
     return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
   }
 
-  // Try ALL 6 methods in parallel for speed AND accuracy through corroboration
-  const [gqlResult, mobileResult, mainResult, embedResult, gqlAltResult, mobileWebResult] = await Promise.all([
+  // Try ALL methods in parallel. Authenticated token source is highest quality when available.
+  const [authResult, gqlResult, mobileResult, mainResult, embedResult, gqlAltResult, mobileWebResult] = await Promise.all([
+    fetchViaAuthenticatedToken(url, shortcode),
     fetchViaGraphQL(shortcode),
     fetchViaMobileApi(shortcode),
     fetchViaMainPage(shortcode),
@@ -724,7 +726,7 @@ async function fetchInstagramPostStats(url: string) {
     fetchViaMobileWeb(shortcode),
   ]);
 
-  const merged = buildValidatedStats(gqlResult, mobileResult, mainResult, embedResult, gqlAltResult, mobileWebResult);
+  const merged = buildValidatedStats(authResult, gqlResult, mobileResult, mainResult, embedResult, gqlAltResult, mobileWebResult);
   console.log('🔥 Final merged stats:', merged);
   return merged;
 }
