@@ -553,11 +553,24 @@ function buildValidatedStats(
     .filter((t): t is number => typeof t === 'number' && Number.isFinite(t) && t > 0);
   const takenAt = takenAtCandidates.length > 0 ? takenAtCandidates[0] : null;
 
-  // Plausibility: views >= max(likes, comments) AND likes/views ratio sane (< ~66%)
-  const maxEngagement = Math.max(likes || 0, comments || 0);
+  // IMPORTANT: likes/comments can be wrong on fallback HTML sources and should NOT zero out
+  // otherwise corroborated view counts. So we only use engagement plausibility when the
+  // engagement number is in a sane band relative to views.
+  const saneLikesForViews = likes !== null && candidateViews !== null
+    ? likes <= candidateViews * 0.7
+    : false;
+  const saneCommentsForViews = comments !== null && candidateViews !== null
+    ? comments <= candidateViews
+    : false;
+
+  const maxComparableEngagement = Math.max(
+    saneLikesForViews ? (likes || 0) : 0,
+    saneCommentsForViews ? (comments || 0) : 0,
+  );
+
   const plausibleViews = candidateViews !== null
-    && candidateViews >= maxEngagement
-    && (likes === null || likes === 0 || candidateViews >= likes * 1.5);
+    && candidateViews >= maxComparableEngagement
+    && (likes === null || !saneLikesForViews || candidateViews >= likes * 1.2);
 
   return {
     views: plausibleViews ? candidateViews : null,
@@ -570,6 +583,8 @@ function buildValidatedStats(
       trustedViewSources,
       totalViewSources,
       plausibleViews,
+      saneLikesForViews,
+      saneCommentsForViews,
       trustedViewVals,
       allViewVals,
       confidenceTier,
