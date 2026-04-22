@@ -65,6 +65,7 @@ function ArenaMissionsSection() {
   const { isDev, isAdmin } = useUserRoles(user?.id);
   const isStaff = isDev || isAdmin;
   const [bounties, setBounties] = useState<any[]>([]);
+  const [showInfo, setShowInfo] = useState(false);
 
   useEffect(() => {
     const fetch = async () => {
@@ -105,7 +106,14 @@ function ArenaMissionsSection() {
           <span className="text-[9px] text-emerald-400/60 font-bold ml-0.5">GET PAID</span>
         </div>
         <button onClick={() => navigate('/missions')} className="text-[10px] font-bold text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5">
-          View All <ArrowRight className="w-3 h-3" />
+          {''}
+        </button>
+        <button
+          onClick={() => setShowInfo(true)}
+          aria-label="How missions work"
+          className="w-7 h-7 rounded-full border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 flex items-center justify-center text-emerald-400 transition-colors"
+        >
+          <Info className="w-3.5 h-3.5" />
         </button>
       </div>
 
