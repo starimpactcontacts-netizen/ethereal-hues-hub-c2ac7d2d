@@ -660,9 +660,15 @@ serve(async (req) => {
             stats.diagnostics.trustedViewSources > 0;
 
           let acceptViews = hasConfidentViews && stats.views! > currentViews;
-          // Extra guard: if a big jump (>50%) on an established post, require 2+ trusted sources
-          if (acceptViews && currentViews > 10000 && stats.views! > currentViews * 1.5) {
-            acceptViews = stats.diagnostics.trustedViewSources >= 2;
+          // Tiered acceptance based on multi-source corroboration:
+          //  - 'strong' (≥2 trusted sources within 15%): accept any jump
+          //  - 'medium': cap jumps to 3x current value
+          //  - 'weak'  (single source): cap jumps to 1.5x current value
+          if (acceptViews && currentViews > 1000) {
+            const tier = stats.diagnostics.confidenceTier;
+            const ratio = stats.views! / Math.max(currentViews, 1);
+            if (tier === 'weak' && ratio > 1.5) acceptViews = false;
+            else if (tier === 'medium' && ratio > 3) acceptViews = false;
           }
 
           if (acceptViews) payload.view_count = stats.views;
