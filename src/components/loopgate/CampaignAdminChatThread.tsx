@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { Send, MessageCircle } from 'lucide-react';
+import { Send, MessageCircle, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface PortalMessage {
@@ -96,6 +96,17 @@ export default function CampaignAdminChatThread({ campaignId }: { campaignId: st
     try { return new Date(iso).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch { return ''; }
   };
 
+  const deleteMessage = async (id: string) => {
+    if (!confirm('Delete this message? This cannot be undone.')) return;
+    const prev = messages;
+    setMessages((m) => m.filter((x) => x.id !== id));
+    const { error } = await supabase.from('campaign_portal_messages').delete().eq('id', id);
+    if (error) {
+      console.error('Admin delete failed:', error);
+      setMessages(prev);
+    }
+  };
+
   const unreadFromClient = messages.filter((m) => m.sender_type === 'client').length;
 
   return (
@@ -114,7 +125,16 @@ export default function CampaignAdminChatThread({ campaignId }: { campaignId: st
           <p className="text-[10px] text-muted-foreground/60 italic text-center py-4">No messages yet — when the client sends one, it will show up here.</p>
         ) : (
           messages.map((m) => (
-            <div key={m.id} className={`flex ${m.sender_type === 'admin' ? 'justify-end' : 'justify-start'}`}>
+            <div key={m.id} className={`group flex items-end gap-1.5 ${m.sender_type === 'admin' ? 'justify-end' : 'justify-start'}`}>
+              {m.sender_type === 'admin' && (
+                <button
+                  onClick={() => deleteMessage(m.id)}
+                  aria-label="Delete message"
+                  className="opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 flex items-center justify-center rounded bg-card border border-border/40 text-muted-foreground hover:text-red-400 hover:border-red-400/40"
+                >
+                  <Trash2 className="w-2.5 h-2.5" />
+                </button>
+              )}
               <div className={`max-w-[85%] rounded-lg px-2.5 py-1.5 text-[11px] leading-snug border ${
                 m.sender_type === 'admin'
                   ? 'bg-emerald-500/10 border-emerald-500/20 text-foreground'
@@ -126,6 +146,15 @@ export default function CampaignAdminChatThread({ campaignId }: { campaignId: st
                 <p className="whitespace-pre-wrap">{m.message_text}</p>
                 <p className="text-[8px] text-muted-foreground/60 mt-1 font-mono">{formatTime(m.created_at)}</p>
               </div>
+              {m.sender_type === 'client' && (
+                <button
+                  onClick={() => deleteMessage(m.id)}
+                  aria-label="Delete client message"
+                  className="opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 flex items-center justify-center rounded bg-card border border-border/40 text-muted-foreground hover:text-red-400 hover:border-red-400/40"
+                >
+                  <Trash2 className="w-2.5 h-2.5" />
+                </button>
+              )}
             </div>
           ))
         )}

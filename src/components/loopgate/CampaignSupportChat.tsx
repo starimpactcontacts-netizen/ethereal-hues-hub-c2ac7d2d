@@ -6,7 +6,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X, Send, Clock } from 'lucide-react';
+import { MessageCircle, X, Send, Clock, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 
@@ -26,6 +26,17 @@ interface Props {
 }
 
 const NAME_KEY = (id: string) => `loopgate_portal_chat_name_${id}`;
+const MINE_KEY = (id: string) => `loopgate_portal_chat_mine_${id}`;
+
+const loadMine = (id: string): Set<string> => {
+  try {
+    const raw = localStorage.getItem(MINE_KEY(id));
+    return new Set(raw ? (JSON.parse(raw) as string[]) : []);
+  } catch { return new Set(); }
+};
+const saveMine = (id: string, set: Set<string>) => {
+  try { localStorage.setItem(MINE_KEY(id), JSON.stringify(Array.from(set))); } catch {}
+};
 
 export default function CampaignSupportChat({ campaignId, campaignName, clientName }: Props) {
   const [open, setOpen] = useState(false);
@@ -36,6 +47,7 @@ export default function CampaignSupportChat({ campaignId, campaignName, clientNa
     try { return localStorage.getItem(NAME_KEY(campaignId)) || clientName || ''; } catch { return clientName || ''; }
   });
   const [unread, setUnread] = useState(0);
+  const [mineIds, setMineIds] = useState<Set<string>>(() => loadMine(campaignId));
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -80,18 +92,42 @@ export default function CampaignSupportChat({ campaignId, campaignName, clientNa
     setSending(true);
     try {
       try { localStorage.setItem(NAME_KEY(campaignId), name || ''); } catch {}
-      const { error } = await supabase.from('campaign_portal_messages').insert({
-        campaign_id: campaignId,
-        sender_type: 'client',
-        sender_name: name?.trim() || clientName || 'Client',
-        message_text: text,
-      });
+      const { data, error } = await supabase
+        .from('campaign_portal_messages')
+        .insert({
+          campaign_id: campaignId,
+          sender_type: 'client',
+          sender_name: name?.trim() || clientName || 'Client',
+          message_text: text,
+        })
+        .select('id')
+        .single();
       if (error) throw error;
+      if (data?.id) {
+        setMineIds((prev) => {
+          const next = new Set(prev); next.add(data.id); saveMine(campaignId, next); return next;
+        });
+      }
       setInput('');
     } catch (err) {
       console.error('Failed to send portal message:', err);
     } finally {
       setSending(false);
+    }
+  };
+
+  const deleteMessage = async (msg: PortalMessage) => {
+    // Clients can only delete their own (tracked via localStorage). Admin messages are not deletable here.
+    if (msg.sender_type !== 'client' || !mineIds.has(msg.id)) return;
+    if (!confirm('Delete this message?')) return;
+    const prev = messages;
+    setMessages((m) => m.filter((x) => x.id !== msg.id));
+    const { error } = await supabase.from('campaign_portal_messages').delete().eq('id', msg.id);
+    if (error) {
+      console.error('Delete failed:', error);
+      setMessages(prev);
+    } else {
+      setMineIds((s) => { const n = new Set(s); n.delete(msg.id); saveMine(campaignId, n); return n; });
     }
   };
 
@@ -177,41 +213,52 @@ export default function CampaignSupportChat({ campaignId, campaignName, clientNa
                 </div>
               </div>
 
-              {messages.map((m) => (
-                <div key={m.id} className={`flex ${m.sender_type === 'client' ? 'justify-end' : 'justify-start'}`}>
-                  <div
-                    className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed ${
-                      m.sender_type === 'client'
-                        ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-br-md shadow-md'
-                        : 'bg-neutral-900 text-neutral-100 border border-white/5 rounded-bl-md'
-                    }`}
-                  >
-                    {m.sender_type === 'admin' && (
-                      <p className="text-[10px] font-black uppercase tracking-wider text-emerald-400 mb-0.5">
-                        {m.sender_name || 'Loopgate'}
-                      </p>
+              {messages.map((m) => {
+                const isMine = m.sender_type === 'client' && mineIds.has(m.id);
+                const alignRight = m.sender_type === 'client';
+                return (
+                  <div key={m.id} className={`group flex items-end gap-1.5 ${alignRight ? 'justify-end' : 'justify-start'}`}>
+                    {isMine && (
+                      <button
+                        onClick={() => deleteMessage(m)}
+                        aria-label="Delete message"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6 flex items-center justify-center rounded-full bg-neutral-900 border border-white/10 text-neutral-400 hover:text-red-400 hover:border-red-400/40"
+                      >
+                        <Trash2 size={11} />
+                      </button>
                     )}
-                    <p className="whitespace-pre-wrap">{m.message_text}</p>
-                    <p className={`text-[9px] mt-1 ${m.sender_type === 'client' ? 'text-emerald-100/70' : 'text-neutral-500'}`}>
-                      {formatTime(m.created_at)}
-                    </p>
+                    <div
+                      className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed ${
+                        alignRight
+                          ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-br-md shadow-md'
+                          : 'bg-white text-neutral-900 border border-white/10 rounded-bl-md shadow-md'
+                      }`}
+                    >
+                      {(m.sender_type === 'admin' || (m.sender_type === 'client' && m.sender_name && !isMine)) && (
+                        <p className={`text-[10px] font-black uppercase tracking-wider mb-0.5 ${m.sender_type === 'admin' ? 'text-emerald-600' : 'text-neutral-500'}`}>
+                          {m.sender_name || (m.sender_type === 'admin' ? 'Loopgate' : 'Client')}
+                        </p>
+                      )}
+                      <p className="whitespace-pre-wrap">{m.message_text}</p>
+                      <p className={`text-[9px] mt-1 ${alignRight ? 'text-emerald-100/80' : 'text-neutral-500'}`}>
+                        {formatTime(m.created_at)}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <form
               onSubmit={(e) => { e.preventDefault(); send(); }}
               className="px-3 py-3 border-t border-white/5 bg-neutral-950 space-y-2"
             >
-              {!clientName && (
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Your name (optional)"
-                  className="w-full bg-neutral-900 border border-white/10 rounded-full px-4 py-1.5 text-[11px] text-neutral-50 placeholder:text-neutral-600 focus:outline-none focus:border-emerald-500/40 transition-all"
-                />
-              )}
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your name (optional) — appears in chat as you"
+                className="w-full bg-neutral-900 border border-white/10 rounded-full px-4 py-1.5 text-[11px] text-neutral-50 placeholder:text-neutral-600 focus:outline-none focus:border-emerald-500/40 transition-all"
+              />
               <div className="flex items-center gap-2">
                 <input
                   value={input}
