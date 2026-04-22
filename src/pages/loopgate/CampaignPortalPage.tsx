@@ -703,61 +703,16 @@ export default function CampaignPortalPage() {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {edits.map((edit, i) => {
-                const thumb = edit.thumbnail_url || getYouTubeThumbnail(edit.video_url) || null;
-                const pColor = getPlatformColor(edit.platform);
-
-                return (
-                  <motion.a
-                    key={edit.id}
-                    href={edit.video_url || '#'}
-                    target={edit.video_url ? '_blank' : undefined}
-                    rel="noopener noreferrer"
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.55 + i * 0.03 }}
-                    className="group rounded-xl overflow-hidden border border-neutral-800 bg-neutral-950 hover:shadow-lg hover:border-neutral-700 transition-all cursor-pointer"
-                  >
-                    {/* Thumbnail */}
-                    <div className="aspect-[4/3] bg-neutral-800 relative overflow-hidden">
-                      {thumb ? (
-                        <img src={thumb} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                      ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center gap-1">
-                          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-neutral-700">
-                            {getPlatformIcon(edit.platform)}
-                          </div>
-                        </div>
-                      )}
-                      {/* Platform badge */}
-                      <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[9px] font-black backdrop-blur-sm flex items-center gap-1 bg-neutral-950/90 shadow-sm"
-                        style={{ color: pColor }}
-                      >
-                        {getPlatformIcon(edit.platform)}
-                      </div>
-                      {/* External link indicator */}
-                      {edit.video_url && (
-                        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-neutral-950/90 shadow-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <ExternalLink size={10} className="text-neutral-300" />
-                        </div>
-                      )}
-                    </div>
-                    {/* Stats */}
-                    <div className="p-3">
-                      {edit.editor_username && (
-                        <p className="text-[10px] text-neutral-500 font-bold truncate">@{edit.editor_username}</p>
-                      )}
-                      <div className="flex items-center gap-3 mt-1">
-                        <span className="text-xs font-black text-neutral-50">{formatNumber(edit.view_count)} <span className="text-neutral-500 font-bold text-[9px]">views</span></span>
-                        <span className="text-xs font-black text-neutral-50">{formatNumber(edit.like_count)} <span className="text-neutral-500 font-bold text-[9px]">likes</span></span>
-                        {edit.comment_count > 0 && (
-                          <span className="text-xs font-black text-neutral-50">{formatNumber(edit.comment_count)} <span className="text-neutral-500 font-bold text-[9px]">comments</span></span>
-                        )}
-                      </div>
-                    </div>
-                  </motion.a>
-                );
-              })}
+              {edits.map((edit, i) => (
+                <ContentTile
+                  key={edit.id}
+                  edit={edit}
+                  index={i}
+                  pColor={getPlatformColor(edit.platform)}
+                  getPlatformIcon={getPlatformIcon}
+                  formatNumber={formatNumber}
+                />
+              ))}
             </div>
 
             {/* Aggregate footer */}
