@@ -347,6 +347,115 @@ async function fetchViaEmbed(shortcode: string): Promise<{
   }
 }
 
+// Method 5: Secondary GraphQL with PolarisPostRootQuery doc_id (different cache layer than method 1)
+async function fetchViaGraphQLAlt(shortcode: string): Promise<{
+  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null; takenAt: number | null;
+}> {
+  try {
+    // PolarisPostRootQuery - hits a different IG cache cluster, often fresher
+    const docIds = ['8845758582119845', '7950326061742207', '25531498899829322'];
+    for (const docId of docIds) {
+      const variables = JSON.stringify({
+        shortcode,
+        fetch_tagged_user_count: null,
+        hoisted_comment_id: null,
+        hoisted_reply_id: null,
+      });
+      const apiUrl = `https://www.instagram.com/api/graphql`;
+      const body = `av=0&__d=www&__user=0&__a=1&__req=1&__hs=20000&dpr=2&__ccg=EXCELLENT&doc_id=${docId}&variables=${encodeURIComponent(variables)}`;
+      const res = await fetchWithRetry(apiUrl, {
+        method: 'POST',
+        headers: {
+          'User-Agent': pickUA(),
+          'X-IG-App-ID': '936619743392459',
+          'X-FB-Friendly-Name': 'PolarisPostRootQuery',
+          'X-Requested-With': 'XMLHttpRequest',
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Sec-Fetch-Site': 'same-origin',
+          'Origin': 'https://www.instagram.com',
+          'Referer': `https://www.instagram.com/p/${shortcode}/`,
+        },
+        body,
+      });
+      if (!res.ok) continue;
+      const json = await res.json().catch(() => null);
+      const media = json?.data?.xdt_shortcode_media || json?.data?.shortcode_media;
+      if (media) {
+        const views = media.video_play_count ?? media.video_view_count ?? media.play_count ?? null;
+        const likes = media.edge_media_preview_like?.count ?? media.like_count ?? null;
+        const comments = media.edge_media_to_parent_comment?.count ?? media.comment_count ?? null;
+        const shares = media.share_count ?? media.reshare_count ?? null;
+        const thumbnailUrl = media.display_url ?? null;
+        const takenAt = media.taken_at_timestamp ?? null;
+        console.log(`✅ GraphQL alt (${docId}) stats:`, { views, likes, comments });
+        return { views, likes, comments, shares, thumbnailUrl, takenAt };
+      }
+    }
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
+  } catch (e) {
+    console.error('GraphQL alt error:', e);
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
+  }
+}
+
+// Method 6: Mobile web (m.instagram.com) - separate render pipeline, uncached
+async function fetchViaMobileWeb(shortcode: string): Promise<{
+  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null; takenAt: number | null;
+}> {
+  try {
+    for (const prefix of ['p', 'reel']) {
+      const pageUrl = `https://www.instagram.com/${prefix}/${shortcode}/?__a=1&__d=dis`;
+      const res = await fetchWithRetry(pageUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+          'X-IG-App-ID': '936619743392459',
+          'Accept': 'application/json, text/plain, */*',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Referer': 'https://www.instagram.com/',
+        },
+      });
+      if (!res.ok) continue;
+      const text = await res.text();
+      // Response can be JSON or HTML depending on IG's mood
+      let views: number | null = null, likes: number | null = null, comments: number | null = null;
+      let shares: number | null = null, thumbnailUrl: string | null = null, takenAt: number | null = null;
+      try {
+        const json = JSON.parse(text);
+        const media = json?.graphql?.shortcode_media || json?.items?.[0];
+        if (media) {
+          views = media.video_play_count ?? media.video_view_count ?? media.play_count ?? null;
+          likes = media.edge_media_preview_like?.count ?? media.like_count ?? null;
+          comments = media.edge_media_to_parent_comment?.count ?? media.comment_count ?? null;
+          shares = media.share_count ?? media.reshare_count ?? null;
+          thumbnailUrl = media.display_url ?? media.image_versions2?.candidates?.[0]?.url ?? null;
+          takenAt = media.taken_at_timestamp ?? media.taken_at ?? null;
+        }
+      } catch {
+        // Fallback: regex scrape on the HTML body
+        const viewMatches = [...text.matchAll(/"(?:video_play_count|video_view_count|play_count)"\s*:\s*(\d+)/g)];
+        for (const m of viewMatches) {
+          const n = parseInt(m[1], 10);
+          if (!isNaN(n) && (views === null || n > views)) views = n;
+        }
+        const likeM = text.match(/"(?:like_count|edge_media_preview_like)"[^\d]+(\d+)/);
+        if (likeM) likes = parseInt(likeM[1], 10);
+        const commM = text.match(/"comment_count"\s*:\s*(\d+)/);
+        if (commM) comments = parseInt(commM[1], 10);
+        const tk = text.match(/"taken_at(?:_timestamp)?"\s*:\s*(\d+)/);
+        if (tk) takenAt = parseInt(tk[1], 10);
+      }
+      if (views !== null || likes !== null) {
+        console.log('✅ Mobile web stats:', { views, likes, comments });
+        return { views, likes, comments, shares, thumbnailUrl, takenAt };
+      }
+    }
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
+  } catch (e) {
+    console.error('Mobile web error:', e);
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
+  }
+}
+
 type InstagramStats = {
   views: number | null;
   likes: number | null;
@@ -374,15 +483,26 @@ function countMetricSources(results: InstagramStats[], key: keyof Pick<Instagram
   }).length;
 }
 
-function buildValidatedStats(gqlResult: InstagramStats, mobileResult: InstagramStats, mainResult: InstagramStats, embedResult: InstagramStats) {
-  const trustedResults = [gqlResult, mobileResult, mainResult];
-  const allResults = [gqlResult, mobileResult, mainResult, embedResult];
+function buildValidatedStats(
+  gqlResult: InstagramStats,
+  mobileResult: InstagramStats,
+  mainResult: InstagramStats,
+  embedResult: InstagramStats,
+  gqlAltResult: InstagramStats,
+  mobileWebResult: InstagramStats,
+) {
+  // Trusted = direct API/JSON sources. Embed is fallback only (often stale).
+  const trustedResults = [gqlResult, mobileResult, mainResult, gqlAltResult, mobileWebResult];
+  const allResults = [...trustedResults, embedResult];
 
   const trustedViewSources = countMetricSources(trustedResults, 'views');
   const totalViewSources = countMetricSources(allResults, 'views');
-  // SMARTER consensus: collect ALL view readings, find clusters of agreement.
-  // The "true" view count is the HIGHEST value that has corroboration (within 25% of another source).
-  // This prevents both stale (low) embed values AND wildly inflated outliers from winning.
+  // ULTRA-STRICT consensus for views (the most-gamed metric):
+  // 1. Take the HIGHEST trusted value that ANOTHER trusted source corroborates within 15%
+  // 2. Falling back: highest trusted value with ANY-source corroboration within 25%
+  // 3. Falling back: median of trusted values
+  // 4. Falling back: single trusted source
+  // Views go UP, never down — caller still enforces monotonic-increasing on top of this.
   const allViewVals = allResults
     .map(r => r.views)
     .filter((v): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0)
@@ -393,22 +513,40 @@ function buildValidatedStats(gqlResult: InstagramStats, mobileResult: InstagramS
     .sort((a, b) => b - a);
 
   let candidateViews: number | null = null;
-  // Pass 1: find the HIGHEST trusted value that another source (any) corroborates within 25%.
+  let confidenceTier: 'strong' | 'medium' | 'weak' | 'none' = 'none';
+  // Pass 1: HIGHEST trusted value with TRUSTED corroboration within 15% — strongest signal
   for (const v of trustedViewVals) {
-    const corroborated = allViewVals.some(o => o !== v && Math.max(v, o) / Math.min(v, o) <= 1.25);
-    if (corroborated) { candidateViews = v; break; }
+    const corroborated = trustedViewVals.some(o => o !== v && Math.max(v, o) / Math.min(v, o) <= 1.15);
+    if (corroborated) { candidateViews = v; confidenceTier = 'strong'; break; }
   }
-  // Pass 2: no corroboration but >=2 trusted sources → take median (2nd highest)
-  if (candidateViews === null && trustedViewVals.length >= 2) candidateViews = trustedViewVals[1];
-  // Pass 3: single trusted source → trust it
-  if (candidateViews === null && trustedViewVals.length === 1) candidateViews = trustedViewVals[0];
-  // Pass 4: only embed had a value, and >=2 ANY sources agree → use the highest of those
-  if (candidateViews === null && totalViewSources >= 2) candidateViews = allViewVals[0] ?? null;
+  // Pass 2: HIGHEST trusted value with ANY-source corroboration within 25%
+  if (candidateViews === null) {
+    for (const v of trustedViewVals) {
+      const corroborated = allViewVals.some(o => o !== v && Math.max(v, o) / Math.min(v, o) <= 1.25);
+      if (corroborated) { candidateViews = v; confidenceTier = 'medium'; break; }
+    }
+  }
+  // Pass 3: ≥2 trusted sources → median (2nd highest = resilient to single outlier)
+  if (candidateViews === null && trustedViewVals.length >= 2) {
+    candidateViews = trustedViewVals[1];
+    confidenceTier = 'medium';
+  }
+  // Pass 4: single trusted source → trust it but flag weak
+  if (candidateViews === null && trustedViewVals.length === 1) {
+    candidateViews = trustedViewVals[0];
+    confidenceTier = 'weak';
+  }
+  // Pass 5: only embed → highest of any source, weak
+  if (candidateViews === null && totalViewSources >= 2) {
+    candidateViews = allViewVals[0] ?? null;
+    confidenceTier = 'weak';
+  }
 
   const likes = pickHighestMetric(allResults, 'likes');
   const comments = pickHighestMetric(allResults, 'comments', true);
   const shares = pickHighestMetric(allResults, 'shares', true);
-  const thumbnailUrl = gqlResult.thumbnailUrl || mobileResult.thumbnailUrl || mainResult.thumbnailUrl || embedResult.thumbnailUrl || null;
+  const thumbnailUrl = gqlResult.thumbnailUrl || mobileResult.thumbnailUrl || gqlAltResult.thumbnailUrl
+    || mobileWebResult.thumbnailUrl || mainResult.thumbnailUrl || embedResult.thumbnailUrl || null;
   // Pick the EXACT taken_at timestamp - prefer trusted sources, take the one most agree on
   const takenAtCandidates = allResults
     .map(r => r.takenAt)
@@ -434,6 +572,7 @@ function buildValidatedStats(gqlResult: InstagramStats, mobileResult: InstagramS
       plausibleViews,
       trustedViewVals,
       allViewVals,
+      confidenceTier,
     },
   };
 }
@@ -445,15 +584,17 @@ async function fetchInstagramPostStats(url: string) {
     return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
   }
 
-  // Try all methods in parallel for speed and accuracy
-  const [gqlResult, mobileResult, mainResult, embedResult] = await Promise.all([
+  // Try ALL 6 methods in parallel for speed AND accuracy through corroboration
+  const [gqlResult, mobileResult, mainResult, embedResult, gqlAltResult, mobileWebResult] = await Promise.all([
     fetchViaGraphQL(shortcode),
     fetchViaMobileApi(shortcode),
     fetchViaMainPage(shortcode),
     fetchViaEmbed(shortcode),
+    fetchViaGraphQLAlt(shortcode),
+    fetchViaMobileWeb(shortcode),
   ]);
 
-  const merged = buildValidatedStats(gqlResult, mobileResult, mainResult, embedResult);
+  const merged = buildValidatedStats(gqlResult, mobileResult, mainResult, embedResult, gqlAltResult, mobileWebResult);
   console.log('🔥 Final merged stats:', merged);
   return merged;
 }
@@ -519,9 +660,15 @@ serve(async (req) => {
             stats.diagnostics.trustedViewSources > 0;
 
           let acceptViews = hasConfidentViews && stats.views! > currentViews;
-          // Extra guard: if a big jump (>50%) on an established post, require 2+ trusted sources
-          if (acceptViews && currentViews > 10000 && stats.views! > currentViews * 1.5) {
-            acceptViews = stats.diagnostics.trustedViewSources >= 2;
+          // Tiered acceptance based on multi-source corroboration:
+          //  - 'strong' (≥2 trusted sources within 15%): accept any jump
+          //  - 'medium': cap jumps to 3x current value
+          //  - 'weak'  (single source): cap jumps to 1.5x current value
+          if (acceptViews && currentViews > 1000) {
+            const tier = stats.diagnostics.confidenceTier;
+            const ratio = stats.views! / Math.max(currentViews, 1);
+            if (tier === 'weak' && ratio > 1.5) acceptViews = false;
+            else if (tier === 'medium' && ratio > 3) acceptViews = false;
           }
 
           if (acceptViews) payload.view_count = stats.views;
