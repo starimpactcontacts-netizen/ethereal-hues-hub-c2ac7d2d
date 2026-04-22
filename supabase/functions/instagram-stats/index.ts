@@ -444,12 +444,25 @@ serve(async (req) => {
           const stats = await fetchInstagramPostStats(edit.video_url);
           const payload: Record<string, any> = { updated_at: new Date().toISOString() };
           
-          // SAFETY: real view counts only go UP. Never overwrite a stored value with
-          // a lower scrape (Instagram embed/oEmbed often returns stale/lower numbers,
-          // and a failed scrape can return 0). This prevents "refresh" from deleting views.
-          const hasConfidentViews = stats.views !== null && stats.diagnostics.plausibleViews && (stats.diagnostics.trustedViewSources > 0 || stats.diagnostics.totalViewSources > 1);
+          // SAFETY: real view counts only go UP. Multi-layer validation prevents bad scrapes
+          // from overwriting good data:
+          //   1. Must have plausible views (passed buildValidatedStats guards)
+          //   2. Must come from at least 1 trusted source (GQL/mobile/main page, not just embed)
+          //   3. New value must be GREATER than stored value (monotonic)
+          //   4. If existing value is large (>10k), require corroboration from 2+ sources for jumps >50%
+          const currentViews = edit.view_count || 0;
+          const hasConfidentViews =
+            stats.views !== null &&
+            stats.diagnostics.plausibleViews &&
+            stats.diagnostics.trustedViewSources > 0;
 
-          if (hasConfidentViews && stats.views! > (edit.view_count || 0)) payload.view_count = stats.views;
+          let acceptViews = hasConfidentViews && stats.views! > currentViews;
+          // Extra guard: if a big jump (>50%) on an established post, require 2+ trusted sources
+          if (acceptViews && currentViews > 10000 && stats.views! > currentViews * 1.5) {
+            acceptViews = stats.diagnostics.trustedViewSources >= 2;
+          }
+
+          if (acceptViews) payload.view_count = stats.views;
           if (stats.likes !== null && stats.likes > (edit.like_count || 0)) payload.like_count = stats.likes;
           if (stats.comments !== null && stats.comments > (edit.comment_count || 0)) payload.comment_count = stats.comments;
           if (stats.shares !== null && stats.shares > (edit.share_count || 0)) payload.share_count = stats.shares;
