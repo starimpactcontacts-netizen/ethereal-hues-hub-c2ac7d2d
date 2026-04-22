@@ -1,7 +1,7 @@
 import { useState, useEffect, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { DollarSign, Swords, Clock, Info, X, Loader2, Building2 } from "lucide-react";
+import { DollarSign, Swords, Clock, Info, X, Loader2, Building2, ChevronRight } from "lucide-react";
 import CashBattleVoteBar from "@/components/loopgate/CashBattleVoteBar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCashBattles, useMyCashBattles, useMyCashBattleApplication, CashBattleApplication } from "@/hooks/useCashBattles";
@@ -314,7 +314,7 @@ function CashBattleInfoModal({ open, onClose }: { open: boolean; onClose: () => 
                 <Swords className="w-4 h-4 text-white" />
               </div>
               <h3 className="text-lg font-black text-white uppercase tracking-wider" style={{ fontFamily: "Teko, sans-serif" }}>
-                What are Cash Battles?
+                What are Edit Battles?
               </h3>
             </div>
             <button onClick={onClose} className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
@@ -322,10 +322,11 @@ function CashBattleInfoModal({ open, onClose }: { open: boolean; onClose: () => 
             </button>
           </div>
           <div className="space-y-3 text-[13px] text-zinc-300 leading-relaxed">
-            <p><span className="text-white font-bold">Cash Battles</span> are sponsored 1v1 edit competitions where the winner takes the entire cash prize.</p>
-            <p>🎬 Two editors go head-to-head using a provided scenepack from a sponsor campaign. You submit your TikTok edit before the timer runs out.</p>
-            <p>💰 The best edit wins the full prize pool — judged by the sponsor or community vote.</p>
-            <p>⚡ Hit <span className="text-blue-400 font-semibold">Accept Fight</span> on any open matchup to jump in instantly.</p>
+            <p><span className="text-white font-bold">Edit Battles</span> are 1v1 head-to-head edit competitions. Two editors go in, one walks out the winner — judged by community vote or our official judges.</p>
+            <p>⚔️ Tap <span className="text-white font-semibold">Challenge</span> to call out a specific editor for a ranked 1v1, or jump into any open matchup instantly.</p>
+            <p className="pt-2 border-t border-white/10"><span className="text-white font-bold">💰 Cash Battles</span> are the sponsored tier of Edit Battles — winner takes the entire cash prize.</p>
+            <p>🎬 Both editors use the same provided scenepack from a sponsor campaign and submit before the timer runs out.</p>
+            <p>⚡ Hit <span className="text-blue-400 font-semibold">Cash</span> above to enter the cash queue, or tap any open <span className="text-amber-400 font-semibold">$$$</span> matchup to accept the fight instantly.</p>
           </div>
         </div>
       </motion.div>
@@ -423,6 +424,9 @@ export default function CashBattlesSection({
       {/* Header */}
       <div className="flex items-end justify-between px-4 mb-3">
         <div className="flex items-center gap-2">
+          <div className="w-5 h-5 rounded-md flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}>
+            <Swords className="w-3 h-3 text-white" strokeWidth={2.5} />
+          </div>
           <h2
             className="text-[15px] font-extrabold tracking-tight text-foreground"
             style={{ fontFamily: "Inter, system-ui, sans-serif" }}
@@ -436,11 +440,18 @@ export default function CashBattlesSection({
           >
             <Info className="w-3 h-3" />
           </button>
+          <button
+            onClick={() => navigate('/arena')}
+            className="ml-1 flex items-center gap-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+          >
+            View all
+            <ChevronRight className="w-3 h-3" />
+          </button>
         </div>
         <div className="flex items-center gap-1">
           <button
             onClick={handleEnter}
-            className="relative flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-foreground/80 hover:text-foreground hover:bg-white/[0.04] rounded-md transition-colors"
+            className="relative flex items-center gap-1 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-300 rounded-md border border-emerald-500/30 bg-emerald-500/[0.08] hover:bg-emerald-500/[0.15] transition-colors"
           >
             <DollarSign className="w-3 h-3" />
             Cash
@@ -453,7 +464,7 @@ export default function CashBattlesSection({
           {onChallenge && (
             <button
               onClick={onChallenge}
-              className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-foreground/80 hover:text-foreground hover:bg-white/[0.04] rounded-md transition-colors"
+              className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-red-300 rounded-md border border-red-500/30 bg-red-500/[0.08] hover:bg-red-500/[0.15] transition-colors"
             >
               <Swords className="w-3 h-3" />
               Challenge
