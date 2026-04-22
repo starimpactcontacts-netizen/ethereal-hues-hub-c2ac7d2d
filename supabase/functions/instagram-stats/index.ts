@@ -172,15 +172,15 @@ async function fetchViaMobileApi(shortcode: string): Promise<{
 
 // Method 2: Scrape the main HTML page (often has more current data than embed)
 async function fetchViaMainPage(shortcode: string): Promise<{
-  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null;
+  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null; takenAt: number | null;
 }> {
   try {
     for (const prefix of ['p', 'reel']) {
       const pageUrl = `https://www.instagram.com/${prefix}/${shortcode}/`;
       console.log('Trying main page:', pageUrl);
-      const res = await fetch(pageUrl, {
+      const res = await fetchWithRetry(pageUrl, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'User-Agent': pickUA(),
           'Accept': 'text/html,application/xhtml+xml',
           'Accept-Language': 'en-US,en;q=0.9',
         },
@@ -195,6 +195,11 @@ async function fetchViaMainPage(shortcode: string): Promise<{
       let comments: number | null = null;
       let shares: number | null = null;
       let thumbnailUrl: string | null = null;
+      let takenAt: number | null = null;
+
+      // taken_at_timestamp from embedded JSON
+      const takenMatch = html.match(/"taken_at_timestamp"\s*:\s*(\d+)/) || html.match(/"taken_at"\s*:\s*(\d+)/);
+      if (takenMatch) takenAt = parseInt(takenMatch[1], 10);
 
       // Try to find structured data
       const jsonLdMatch = html.match(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/);
@@ -266,13 +271,13 @@ async function fetchViaMainPage(shortcode: string): Promise<{
 
       if (views !== null || likes !== null) {
         console.log('✅ Main page stats:', { views, likes, comments, shares, prefix });
-        return { views, likes, comments, shares, thumbnailUrl };
+        return { views, likes, comments, shares, thumbnailUrl, takenAt };
       }
     }
-    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
   } catch (e) {
     console.error('Main page error:', e);
-    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
   }
 }
 
