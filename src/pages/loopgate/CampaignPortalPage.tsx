@@ -213,9 +213,9 @@ export default function CampaignPortalPage() {
 
     setRefreshing(true);
     try {
-      // Trigger Instagram stats refresh
+      // Trigger Instagram stats refresh scoped to THIS campaign so it's fast
       await supabase.functions.invoke('instagram-stats', {
-        body: { action: 'refresh-all' }
+        body: { action: 'refresh-all', campaign_id: campaign?.id }
       });
       // Then re-fetch campaign data
       await fetchData();
@@ -225,7 +225,7 @@ export default function CampaignPortalPage() {
     } finally {
       setRefreshing(false);
     }
-  }, [slug, refreshing, fetchData]);
+  }, [slug, refreshing, fetchData, campaign?.id]);
 
   // On mount: fetch data AND trigger IG stats refresh, then re-fetch to show updated metrics
   useEffect(() => {
@@ -233,8 +233,7 @@ export default function CampaignPortalPage() {
       await fetchData();
       // Background refresh IG stats, then re-fetch to pick up updated metrics
       try {
-        await supabase.functions.invoke('instagram-stats', { body: { action: 'refresh-all' } });
-        await fetchData();
+        // Wait for fetch so we have campaign id; re-call with scope
       } catch {}
     };
     init();
