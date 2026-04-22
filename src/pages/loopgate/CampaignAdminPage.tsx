@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useArtistCampaigns, useUpdateRequests } from '@/hooks/useArtistCampaigns';
 import { supabase } from '@/integrations/supabase/client';
+import { useRecoverBodyScroll } from '@/hooks/useRecoverBodyScroll';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -75,6 +76,7 @@ interface ArtistSong {
 
 export default function CampaignAdminPage() {
   const navigate = useNavigate();
+  useRecoverBodyScroll();
   const { campaigns, edits, loading, createCampaign, updateCampaign, deleteCampaign, addEdit, updateEdit, deleteEdit, getEditsForCampaign, refresh } = useArtistCampaigns();
   const { requests, resolveRequest, refresh: refreshRequests } = useUpdateRequests();
   const [clientNames, setClientNames] = useState<string[]>([]);
@@ -169,7 +171,8 @@ export default function CampaignAdminPage() {
   const pendingRequests = requests.filter(r => r.status === 'pending');
 
   return (
-    <div className="space-y-5 pb-8">
+    <div className="fixed inset-0 overflow-y-auto overflow-x-hidden bg-background text-foreground" style={{ WebkitOverflowScrolling: 'touch' }}>
+      <div className="mx-auto max-w-6xl space-y-5 px-4 pb-[calc(env(safe-area-inset-bottom,0px)+2rem)] pt-[calc(env(safe-area-inset-top,0px)+1rem)] sm:px-6">
       {/* ═══ HEADER ═══ */}
       <div className="relative overflow-hidden rounded-lg border border-border/60 bg-gradient-to-br from-card via-card to-card/80 p-5 sm:p-6">
         {/* Tactical corner accents */}
@@ -942,6 +945,7 @@ export default function CampaignAdminPage() {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
     </div>
   );
 }
