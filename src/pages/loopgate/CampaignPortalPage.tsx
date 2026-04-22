@@ -197,18 +197,18 @@ export default function CampaignPortalPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="w-6 h-6 border-2 border-neutral-300 border-t-neutral-800 rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-neutral-950">
+        <div className="w-6 h-6 border-2 border-neutral-700 border-t-neutral-800 rounded-full animate-spin" />
       </div>
     );
   }
 
   if (error || !campaign) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-white">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-neutral-950">
         <div className="text-center">
-          <BarChart3 className="w-10 h-10 text-neutral-300 mx-auto mb-4" />
-          <h1 className="text-xl font-black text-neutral-900">{error || 'Not found'}</h1>
+          <BarChart3 className="w-10 h-10 text-neutral-600 mx-auto mb-4" />
+          <h1 className="text-xl font-black text-neutral-50">{error || 'Not found'}</h1>
           <p className="text-xs text-neutral-400 mt-2">This campaign link may be invalid or expired.</p>
         </div>
       </div>
@@ -302,7 +302,7 @@ export default function CampaignPortalPage() {
 
   return (
     <div
-      className="h-full overflow-y-auto bg-white text-neutral-900"
+      className="h-full overflow-y-auto bg-neutral-950 text-neutral-50"
       style={{ WebkitOverflowScrolling: 'touch' }}
     >
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-8">
@@ -327,7 +327,7 @@ export default function CampaignPortalPage() {
               <Link2 size={11} /> {copied ? 'Copied!' : 'Share'}
             </button>
             <button onClick={() => exportCSV(campaign, edits)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-[9px] uppercase tracking-wider font-black rounded-md border border-neutral-900 bg-neutral-900 text-white hover:bg-neutral-800 transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[9px] uppercase tracking-wider font-black rounded-md border border-neutral-100 bg-neutral-100 text-white hover:bg-neutral-200 transition-all"
             >
               <Download size={11} /> Export CSV
             </button>
@@ -338,13 +338,13 @@ export default function CampaignPortalPage() {
         {isBrandCampaign ? (
           /* Brand/Film hero - shows logo prominently */
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-            className="rounded-xl border border-neutral-200 bg-neutral-50 p-6 sm:p-8"
+            className="rounded-xl border border-neutral-800 bg-neutral-100 p-6 sm:p-8"
           >
             <div className="flex items-center gap-5">
               {(campaign as any).logo_url ? (
                 <img src={(campaign as any).logo_url} alt={campaign.client_name || ''} className="w-16 h-16 sm:w-20 sm:h-20 object-contain flex-shrink-0" />
               ) : (
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-neutral-200 flex items-center justify-center flex-shrink-0">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-neutral-700 flex items-center justify-center flex-shrink-0">
                   <Globe size={24} className="text-neutral-400" />
                 </div>
               )}
@@ -352,15 +352,15 @@ export default function CampaignPortalPage() {
                 <p className="text-[9px] uppercase tracking-[0.3em] text-neutral-400 font-black mb-1">
                   {campaign.campaign_type === 'film' ? 'Film Campaign' : 'Brand Campaign'}
                 </p>
-                <h2 className="text-2xl sm:text-3xl font-black text-neutral-900">{campaign.client_name || campaign.name}</h2>
-                {campaign.description && <p className="text-sm text-neutral-500 mt-1">{campaign.description}</p>}
+                <h2 className="text-2xl sm:text-3xl font-black text-neutral-50">{campaign.client_name || campaign.name}</h2>
+                {campaign.description && <p className="text-sm text-neutral-400 mt-1">{campaign.description}</p>}
               </div>
             </div>
           </motion.div>
         ) : artist ? (
           /* Artist hero */
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-            className="rounded-xl overflow-hidden border border-neutral-200"
+            className="rounded-xl overflow-hidden border border-neutral-800"
           >
             {artist.banner_url && (
               <div className="h-32 sm:h-40 overflow-hidden relative">
@@ -368,33 +368,33 @@ export default function CampaignPortalPage() {
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white" />
               </div>
             )}
-            <div className={`p-5 sm:p-6 bg-white ${artist.banner_url ? '-mt-10 relative z-10' : ''}`}>
+            <div className={`p-5 sm:p-6 bg-neutral-950 ${artist.banner_url ? '-mt-10 relative z-10' : ''}`}>
               <div className="flex items-start gap-4">
                 {artist.avatar_url ? (
                   <img src={artist.avatar_url} alt={artist.name}
-                    className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-md flex-shrink-0"
+                    className="w-14 h-14 rounded-full object-cover border-2 border-neutral-800 shadow-md flex-shrink-0"
                   />
                 ) : (
-                  <div className="w-14 h-14 rounded-full bg-neutral-100 border-2 border-white shadow-md flex items-center justify-center flex-shrink-0">
+                  <div className="w-14 h-14 rounded-full bg-neutral-200 border-2 border-neutral-800 shadow-md flex items-center justify-center flex-shrink-0">
                     <Music size={18} className="text-neutral-400" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-black text-neutral-900 truncate">{artist.name}</h2>
-                    {artist.verified && <CheckCircle size={14} className="text-neutral-900 flex-shrink-0" />}
+                    <h2 className="text-xl font-black text-neutral-50 truncate">{artist.name}</h2>
+                    {artist.verified && <CheckCircle size={14} className="text-neutral-50 flex-shrink-0" />}
                   </div>
                   {artist.genre && <span className="text-[10px] uppercase tracking-widest text-neutral-400 font-black">{artist.genre}</span>}
-                  {artist.bio && <p className="text-xs text-neutral-500 mt-1.5 line-clamp-2">{artist.bio}</p>}
+                  {artist.bio && <p className="text-xs text-neutral-400 mt-1.5 line-clamp-2">{artist.bio}</p>}
                   <div className="flex items-center gap-4 mt-3">
                     {artist.monthly_streams && artist.monthly_streams > 0 && (
                       <div>
-                        <p className="text-sm font-black text-neutral-900">{formatNumber(artist.monthly_streams)}</p>
+                        <p className="text-sm font-black text-neutral-50">{formatNumber(artist.monthly_streams)}</p>
                         <p className="text-[7px] uppercase tracking-widest text-neutral-400 font-bold">Monthly Streams</p>
                       </div>
                     )}
                     <a href={`/artist/${artist.slug}`} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-[10px] text-neutral-400 hover:text-neutral-700 transition-colors font-bold"
+                      className="flex items-center gap-1 text-[10px] text-neutral-400 hover:text-neutral-200 transition-colors font-bold"
                     >
                       <Globe size={10} /> Artist Profile
                     </a>
@@ -409,12 +409,12 @@ export default function CampaignPortalPage() {
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-3xl sm:text-4xl font-black text-neutral-900 tracking-tight">{campaign.name}</h1>
-              {campaign.description && !isBrandCampaign && <p className="text-sm text-neutral-500 mt-1">{campaign.description}</p>}
+              <h1 className="text-3xl sm:text-4xl font-black text-neutral-50 tracking-tight">{campaign.name}</h1>
+              {campaign.description && !isBrandCampaign && <p className="text-sm text-neutral-400 mt-1">{campaign.description}</p>}
             </div>
             <span className={`text-[9px] px-3 py-1 uppercase tracking-wider font-black rounded-full flex-shrink-0 ${
               campaign.status === 'active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
-              campaign.status === 'completed' ? 'bg-neutral-100 text-neutral-500 border border-neutral-200' :
+              campaign.status === 'completed' ? 'bg-neutral-200 text-neutral-400 border border-neutral-800' :
               'bg-amber-50 text-amber-700 border border-amber-200'
             }`}>
               <span className="inline-block w-1.5 h-1.5 rounded-full mr-1.5 animate-pulse" style={{
@@ -433,10 +433,10 @@ export default function CampaignPortalPage() {
 
         {/* ★ BIG Views Generated Counter */}
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.18 }}
-          className="rounded-2xl border border-neutral-200 bg-neutral-50 p-6 sm:p-8 text-center"
+          className="rounded-2xl border border-neutral-800 bg-neutral-100 p-6 sm:p-8 text-center"
         >
           <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-400 font-black mb-2">Views Generated</p>
-          <p className="text-6xl sm:text-7xl font-black text-neutral-900 tracking-tight tabular-nums leading-none">
+          <p className="text-6xl sm:text-7xl font-black text-neutral-50 tracking-tight tabular-nums leading-none">
             {displayViews > 0 ? formatNumber(displayViews) : '—'}
           </p>
           <div className="flex items-center justify-center gap-3 mt-4">
@@ -445,8 +445,8 @@ export default function CampaignPortalPage() {
               disabled={refreshing || cooldownRemaining > 0}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-[10px] uppercase tracking-wider font-black transition-all ${
                 refreshing || cooldownRemaining > 0
-                  ? 'bg-neutral-100 text-neutral-300 cursor-not-allowed'
-                  : 'bg-neutral-900 text-white hover:bg-neutral-800 active:scale-95'
+                  ? 'bg-neutral-200 text-neutral-600 cursor-not-allowed'
+                  : 'bg-neutral-100 text-white hover:bg-neutral-200 active:scale-95'
               }`}
             >
               <RefreshCw size={11} className={refreshing ? 'animate-spin' : ''} />
@@ -463,14 +463,14 @@ export default function CampaignPortalPage() {
         {/* ★ Views Growth Chart */}
         {growthData.length > 1 && (
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}
-            className="rounded-2xl border border-neutral-200 bg-white p-5 sm:p-6"
+            className="rounded-2xl border border-neutral-800 bg-neutral-950 p-5 sm:p-6"
           >
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-400 font-black">Growth Over Time</p>
                 <p className="text-[9px] text-neutral-400 mt-0.5">Cumulative views by content publish date</p>
               </div>
-              <div className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-neutral-200 flex items-center justify-center">
                 <TrendingUp size={14} className="text-neutral-600" />
               </div>
             </div>
@@ -509,15 +509,15 @@ export default function CampaignPortalPage() {
             { label: 'Click-Through', raw: campaign.total_clicks, icon: MousePointerClick, sub: 'Profile & Link Clicks' },
           ].map((stat, i) => (
             <motion.div key={stat.label} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.25 + i * 0.05 }}
-              className="rounded-xl p-4 sm:p-5 border border-neutral-200 bg-white"
+              className="rounded-xl p-4 sm:p-5 border border-neutral-800 bg-neutral-950"
             >
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-neutral-100">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-neutral-200">
                   <stat.icon size={14} className="text-neutral-600" />
                 </div>
               </div>
-              <p className="text-2xl sm:text-3xl font-black text-neutral-900">{stat.raw > 0 ? formatNumber(stat.raw) : '—'}</p>
-              <p className="text-[9px] font-black uppercase tracking-wider text-neutral-500 mt-1">{stat.label}</p>
+              <p className="text-2xl sm:text-3xl font-black text-neutral-50">{stat.raw > 0 ? formatNumber(stat.raw) : '—'}</p>
+              <p className="text-[9px] font-black uppercase tracking-wider text-neutral-400 mt-1">{stat.label}</p>
               <p className="text-[8px] text-neutral-400 mt-0.5">{stat.sub}</p>
             </motion.div>
           ))}
@@ -539,10 +539,10 @@ export default function CampaignPortalPage() {
             },
             { label: 'Campaign Budget', value: campaign.budget_cents ? `$${(campaign.budget_cents / 100).toLocaleString()}` : '—', sub: campaign.budget_cents ? 'Total Allocated' : 'Not Set' },
           ].map((m) => (
-            <div key={m.label} className="rounded-xl p-4 text-center border border-neutral-800 bg-neutral-900">
+            <div key={m.label} className="rounded-xl p-4 text-center border border-neutral-800 bg-neutral-100">
               <p className="text-xl font-black text-white">{m.value}</p>
               <p className="text-[8px] font-black uppercase tracking-wider text-neutral-400 mt-1">{m.label}</p>
-              <p className="text-[8px] text-neutral-500">{m.sub}</p>
+              <p className="text-[8px] text-neutral-400">{m.sub}</p>
             </div>
           ))}
         </motion.div>
@@ -550,18 +550,18 @@ export default function CampaignPortalPage() {
         {/* Goal Progress */}
         {(campaign.goal_views > 0 || campaign.goal_posts > 0) && (
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-            className="rounded-xl p-5 sm:p-6 space-y-5 border border-neutral-200 bg-white"
+            className="rounded-xl p-5 sm:p-6 space-y-5 border border-neutral-800 bg-neutral-950"
           >
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">Campaign Objectives</p>
             {campaign.goal_views > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-neutral-700 font-bold">{campaign.goal_label || 'Views Target'}</span>
-                  <span className="text-sm font-black text-neutral-900">{Math.round(goalProgress)}%</span>
+                  <span className="text-xs text-neutral-200 font-bold">{campaign.goal_label || 'Views Target'}</span>
+                  <span className="text-sm font-black text-neutral-50">{Math.round(goalProgress)}%</span>
                 </div>
-                <div className="h-3 rounded-full overflow-hidden bg-neutral-100">
+                <div className="h-3 rounded-full overflow-hidden bg-neutral-200">
                   <motion.div initial={{ width: 0 }} animate={{ width: `${goalProgress}%` }} transition={{ duration: 1.5, ease: 'easeOut', delay: 0.5 }}
-                    className="h-full rounded-full bg-neutral-900"
+                    className="h-full rounded-full bg-neutral-100"
                   />
                 </div>
                 <div className="flex justify-between mt-1.5">
@@ -573,10 +573,10 @@ export default function CampaignPortalPage() {
             {campaign.goal_posts > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-neutral-700 font-bold">Content Delivery</span>
-                  <span className="text-sm font-black text-neutral-900">{edits.length}/{campaign.goal_posts}</span>
+                  <span className="text-xs text-neutral-200 font-bold">Content Delivery</span>
+                  <span className="text-sm font-black text-neutral-50">{edits.length}/{campaign.goal_posts}</span>
                 </div>
-                <div className="h-3 rounded-full overflow-hidden bg-neutral-100 relative">
+                <div className="h-3 rounded-full overflow-hidden bg-neutral-200 relative">
                   <motion.div initial={{ width: 0 }} animate={{ width: `${postsProgress}%` }} transition={{ duration: 1.5, ease: 'easeOut', delay: 0.7 }}
                     className="h-full rounded-full bg-neutral-700 absolute inset-y-0 left-0"
                   />
@@ -597,13 +597,13 @@ export default function CampaignPortalPage() {
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="text-xl font-black text-neutral-900">Content Performance</h3>
+                <h3 className="text-xl font-black text-neutral-50">Content Performance</h3>
                 <p className="text-[10px] text-neutral-400 font-bold mt-0.5">
                   {edits.length} published pieces{totalEditViews > 0 ? ` • ${formatNumber(totalEditViews)} combined reach` : ''}
                 </p>
               </div>
               <button onClick={() => exportCSV(campaign, edits)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[9px] uppercase tracking-wider font-black rounded-md border border-neutral-200 text-neutral-500 hover:bg-neutral-50 transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[9px] uppercase tracking-wider font-black rounded-md border border-neutral-800 text-neutral-400 hover:bg-neutral-100 transition-all"
               >
                 <Download size={11} /> CSV
               </button>
@@ -623,28 +623,28 @@ export default function CampaignPortalPage() {
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.55 + i * 0.03 }}
-                    className="group rounded-xl overflow-hidden border border-neutral-200 bg-white hover:shadow-lg hover:border-neutral-300 transition-all cursor-pointer"
+                    className="group rounded-xl overflow-hidden border border-neutral-800 bg-neutral-950 hover:shadow-lg hover:border-neutral-700 transition-all cursor-pointer"
                   >
                     {/* Thumbnail */}
-                    <div className="aspect-[4/3] bg-neutral-100 relative overflow-hidden">
+                    <div className="aspect-[4/3] bg-neutral-200 relative overflow-hidden">
                       {thumb ? (
                         <img src={thumb} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center gap-1">
-                          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-neutral-200">
+                          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-neutral-700">
                             {getPlatformIcon(edit.platform)}
                           </div>
                         </div>
                       )}
                       {/* Platform badge */}
-                      <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[9px] font-black backdrop-blur-sm flex items-center gap-1 bg-white/90 shadow-sm"
+                      <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[9px] font-black backdrop-blur-sm flex items-center gap-1 bg-neutral-950/90 shadow-sm"
                         style={{ color: pColor }}
                       >
                         {getPlatformIcon(edit.platform)}
                       </div>
                       {/* External link indicator */}
                       {edit.video_url && (
-                        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-white/90 shadow-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-neutral-950/90 shadow-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                           <ExternalLink size={10} className="text-neutral-600" />
                         </div>
                       )}
@@ -655,10 +655,10 @@ export default function CampaignPortalPage() {
                         <p className="text-[10px] text-neutral-400 font-bold truncate">@{edit.editor_username}</p>
                       )}
                       <div className="flex items-center gap-3 mt-1">
-                        <span className="text-xs font-black text-neutral-900">{formatNumber(edit.view_count)} <span className="text-neutral-400 font-bold text-[9px]">views</span></span>
-                        <span className="text-xs font-black text-neutral-900">{formatNumber(edit.like_count)} <span className="text-neutral-400 font-bold text-[9px]">likes</span></span>
+                        <span className="text-xs font-black text-neutral-50">{formatNumber(edit.view_count)} <span className="text-neutral-400 font-bold text-[9px]">views</span></span>
+                        <span className="text-xs font-black text-neutral-50">{formatNumber(edit.like_count)} <span className="text-neutral-400 font-bold text-[9px]">likes</span></span>
                         {edit.comment_count > 0 && (
-                          <span className="text-xs font-black text-neutral-900">{formatNumber(edit.comment_count)} <span className="text-neutral-400 font-bold text-[9px]">comments</span></span>
+                          <span className="text-xs font-black text-neutral-50">{formatNumber(edit.comment_count)} <span className="text-neutral-400 font-bold text-[9px]">comments</span></span>
                         )}
                       </div>
                     </div>
@@ -668,12 +668,12 @@ export default function CampaignPortalPage() {
             </div>
 
             {/* Aggregate footer */}
-            <div className="mt-4 rounded-xl border border-neutral-200 bg-neutral-50 px-5 py-4 flex items-center justify-between">
+            <div className="mt-4 rounded-xl border border-neutral-800 bg-neutral-100 px-5 py-4 flex items-center justify-between">
               <span className="text-[9px] font-black uppercase tracking-wider text-neutral-400">Aggregate Performance</span>
               <div className="flex items-center gap-5 text-[10px]">
-                <span className="text-neutral-500"><strong className="text-neutral-900 font-black">{formatNumber(totalEditViews)}</strong> reach</span>
-                <span className="text-neutral-500"><strong className="text-neutral-900 font-black">{formatNumber(totalLikes)}</strong> likes</span>
-                <span className="text-neutral-500"><strong className="text-neutral-900 font-black">{formatNumber(totalShares)}</strong> shares</span>
+                <span className="text-neutral-400"><strong className="text-neutral-50 font-black">{formatNumber(totalEditViews)}</strong> reach</span>
+                <span className="text-neutral-400"><strong className="text-neutral-50 font-black">{formatNumber(totalLikes)}</strong> likes</span>
+                <span className="text-neutral-400"><strong className="text-neutral-50 font-black">{formatNumber(totalShares)}</strong> shares</span>
               </div>
             </div>
           </motion.div>
@@ -682,12 +682,12 @@ export default function CampaignPortalPage() {
         {/* Empty state */}
         {edits.length === 0 && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
-            className="rounded-xl p-10 text-center border border-neutral-200 bg-white"
+            className="rounded-xl p-10 text-center border border-neutral-800 bg-neutral-950"
           >
-            <div className="w-12 h-12 rounded-xl mx-auto mb-4 flex items-center justify-center bg-neutral-100">
+            <div className="w-12 h-12 rounded-xl mx-auto mb-4 flex items-center justify-center bg-neutral-200">
               <BarChart3 size={20} className="text-neutral-400" />
             </div>
-            <p className="text-lg font-black text-neutral-900 mb-1">Content Pipeline Initializing</p>
+            <p className="text-lg font-black text-neutral-50 mb-1">Content Pipeline Initializing</p>
             <p className="text-xs text-neutral-400 max-w-sm mx-auto">
               Your campaign content is being produced and distributed. Performance metrics will populate in real-time as content goes live.
             </p>
@@ -697,8 +697,8 @@ export default function CampaignPortalPage() {
         {/* Footer */}
         <div className="text-center pt-6 pb-10">
           <img src={viralCartelCrest} alt="" className="w-5 h-5 mx-auto opacity-15 mb-2" />
-          <p className="text-[8px] uppercase tracking-[0.3em] text-neutral-300 font-bold">Powered by Viral Cartel Studios</p>
-          <p className="text-[7px] text-neutral-300 mt-1">Confidential — For authorized stakeholders only</p>
+          <p className="text-[8px] uppercase tracking-[0.3em] text-neutral-600 font-bold">Powered by Viral Cartel Studios</p>
+          <p className="text-[7px] text-neutral-600 mt-1">Confidential — For authorized stakeholders only</p>
         </div>
       </div>
     </div>
