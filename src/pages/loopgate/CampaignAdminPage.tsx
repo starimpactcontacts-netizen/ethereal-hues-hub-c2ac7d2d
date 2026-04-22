@@ -106,7 +106,7 @@ export default function CampaignAdminPage() {
 
   const [newCampaign, setNewCampaign] = useState({ client_name: '', name: '', description: '', goal_views: 0, goal_posts: 0, goal_label: '', featured_artist_id: '', campaign_type: 'artist' as 'artist' | 'brand' | 'film', logo_url: '' });
   const [newEdit, setNewEdit] = useState({ title: '', video_url: '', thumbnail_url: '', platform: 'tiktok', editor_username: '', view_count: 0 });
-  const [statsForm, setStatsForm] = useState({ total_views: 0, total_impressions: 0, total_engagements: 0, total_clicks: 0, roi_percentage: 0, goal_views: 0, goal_posts: 0, goal_label: '', incoming_note: '', campaign_type: 'artist', logo_url: '' });
+  const [statsForm, setStatsForm] = useState({ total_views: 0, total_impressions: 0, total_engagements: 0, total_clicks: 0, roi_percentage: 0, budget_cents: 0, goal_views: 0, goal_posts: 0, goal_label: '', incoming_note: '', campaign_type: 'artist', logo_url: '' });
   const [artistSongs, setArtistSongs] = useState<ArtistSong[]>([]);
 
   useEffect(() => {
@@ -722,6 +722,7 @@ export default function CampaignAdminPage() {
                                         total_engagements: campaign.total_engagements,
                                         total_clicks: campaign.total_clicks,
                                         roi_percentage: campaign.roi_percentage,
+                                        budget_cents: campaign.budget_cents || 0,
                                         goal_views: campaign.goal_views,
                                         goal_posts: (campaign as any).goal_posts || 0,
                                         goal_label: campaign.goal_label || '',
@@ -739,13 +740,12 @@ export default function CampaignAdminPage() {
 
                               {editingStats === campaign.id ? (
                                 <div className="space-y-3">
-                                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                                     {[
                                       { key: 'total_views', label: 'Views' },
                                       { key: 'total_impressions', label: 'Impressions' },
                                       { key: 'total_engagements', label: 'Engagements' },
                                       { key: 'total_clicks', label: 'Clicks' },
-                                      { key: 'roi_percentage', label: 'ROI %' },
                                     ].map(f => (
                                       <div key={f.key}>
                                         <label className="text-[7px] text-muted-foreground uppercase tracking-wider block mb-1">{f.label}</label>
@@ -757,6 +757,27 @@ export default function CampaignAdminPage() {
                                         />
                                       </div>
                                     ))}
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/20">
+                                    <div>
+                                      <label className="text-[7px] text-emerald-400 uppercase tracking-wider block mb-1">Campaign Budget ($)</label>
+                                      <Input
+                                        type="number"
+                                        step="0.01"
+                                        value={statsForm.budget_cents ? (statsForm.budget_cents / 100) : 0}
+                                        onChange={e => setStatsForm(p => ({ ...p, budget_cents: Math.round(Number(e.target.value) * 100) }))}
+                                        placeholder="e.g. 5000"
+                                        className="bg-background/60 h-8 text-xs border-emerald-500/20 focus:border-emerald-500/40"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="text-[7px] text-gold uppercase tracking-wider block mb-1">CPM (auto)</label>
+                                      <div className="bg-background/60 h-8 rounded-md border border-gold/20 px-3 flex items-center text-xs font-bold text-gold">
+                                        {statsForm.budget_cents > 0 && statsForm.total_views > 0
+                                          ? `$${(((statsForm.budget_cents / 100) / (statsForm.total_views / 1000))).toFixed(2)} / 1K`
+                                          : '—'}
+                                      </div>
+                                    </div>
                                   </div>
                                   <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border/20">
                                     <div>
