@@ -105,9 +105,6 @@ function ArenaMissionsSection() {
           <span className="text-[15px] font-extrabold text-foreground tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Missions</span>
           <span className="text-[9px] text-emerald-400/60 font-bold ml-0.5">GET PAID</span>
         </div>
-        <button onClick={() => navigate('/missions')} className="text-[10px] font-bold text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5">
-          {''}
-        </button>
         <button
           onClick={() => setShowInfo(true)}
           aria-label="How missions work"
