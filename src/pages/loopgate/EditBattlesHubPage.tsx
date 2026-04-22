@@ -6,12 +6,14 @@ import { ArrowLeft, Swords, DollarSign, Flame, Trophy, Clock, Users, Loader2, Za
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useCashBattles, useMyCashBattles, useMyCashBattleApplication, type CashBattleApplication } from "@/hooks/useCashBattles";
+import { useMyQuickFights, useRecentQuickFights, findQuickFight, leaveQueue, type QuickFight } from "@/hooks/useQuickFight";
 import { useAuth } from "@/hooks/useAuth";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useAccountPrompt } from "@/hooks/useAccountPrompt";
 import { toast } from "sonner";
 
 type TabKey = "live" | "open" | "cash" | "completed";
+type ModeKey = "instant" | "cash";
 
 function formatPrize(cents: number): string {
   if (cents === 0) return "FREE";
@@ -245,6 +247,116 @@ function OpenQueueRow({ app, onAccept, isOwn }: { app: CashBattleApplication; on
   );
 }
 
+function QuickFightRow({ fight, onClick }: { fight: QuickFight; onClick: () => void }) {
+  const isLive = fight.status === "active" || fight.status === "judging";
+  const isCompleted = fight.status === "completed" || fight.status === "cancelled" || fight.status === "forfeited";
+  return (
+    <motion.div
+      whileTap={{ scale: 0.98 }}
+      onClick={onClick}
+      className="relative rounded-2xl overflow-hidden cursor-pointer border border-white/[0.06]"
+      style={{
+        background: "linear-gradient(180deg, rgba(38,38,42,0.95) 0%, rgba(22,22,26,0.95) 100%)",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 24px -16px rgba(0,0,0,0.6)",
+        opacity: isCompleted ? 0.65 : 1,
+      }}
+    >
+      <div
+        className="absolute top-0 left-0 right-0 h-[2px]"
+        style={{
+          background: isCompleted
+            ? "linear-gradient(90deg, #444, #444)"
+            : "linear-gradient(90deg, #3b82f6, transparent 45%, transparent 55%, #ef4444)",
+        }}
+      />
+      <div className="px-4 py-3 flex items-center gap-3">
+        <div className="flex flex-col items-center gap-0.5 shrink-0 w-16">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center"
+            style={{ background: "linear-gradient(135deg, #3b82f6, #8b5cf6)" }}
+          >
+            <Zap className="w-5 h-5 text-white fill-white" strokeWidth={2.5} />
+          </div>
+          <span
+            className="text-[10px] font-black text-white leading-none uppercase tracking-wider"
+            style={{ fontFamily: "Teko, sans-serif" }}
+          >
+            INSTANT
+          </span>
+        </div>
+
+        <div className="flex-1 min-w-0 flex items-center justify-center gap-2">
+          <div className="flex flex-col items-center min-w-0 flex-1">
+            <Avatar className="w-9 h-9 ring-2 ring-blue-500/40">
+              <AvatarImage src={fight.player_1_avatar_url || ""} />
+              <AvatarFallback className="text-xs font-bold bg-zinc-800 text-zinc-300">
+                {fight.player_1_username?.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+            <span
+              className="text-[10px] font-bold text-blue-300 truncate max-w-full mt-1 uppercase"
+              style={{ fontFamily: "Teko, sans-serif" }}
+            >
+              {fight.player_1_username}
+            </span>
+          </div>
+          <span className="text-sm font-black text-white/30" style={{ fontFamily: "Teko, sans-serif" }}>
+            VS
+          </span>
+          <div className="flex flex-col items-center min-w-0 flex-1">
+            {fight.player_2_username ? (
+              <Avatar className="w-9 h-9 ring-2 ring-red-500/40">
+                <AvatarImage src={fight.player_2_avatar_url || ""} />
+                <AvatarFallback className="text-xs font-bold bg-zinc-800 text-zinc-300">
+                  {fight.player_2_username?.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+            ) : (
+              <div className="w-9 h-9 rounded-full border-2 border-dashed border-amber-500/40 flex items-center justify-center">
+                <span className="text-amber-400/60 text-sm">?</span>
+              </div>
+            )}
+            <span
+              className="text-[10px] font-bold text-red-300 truncate max-w-full mt-1 uppercase"
+              style={{ fontFamily: "Teko, sans-serif" }}
+            >
+              {fight.player_2_username || "TBA"}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-end gap-1 shrink-0 w-16">
+          {isLive && (
+            <div className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+              <span
+                className="text-[10px] font-black uppercase tracking-wider text-red-400"
+                style={{ fontFamily: "Teko, sans-serif" }}
+              >
+                LIVE
+              </span>
+            </div>
+          )}
+          {isCompleted && (
+            <span
+              className="text-[10px] font-black uppercase tracking-wider text-zinc-500"
+              style={{ fontFamily: "Teko, sans-serif" }}
+            >
+              {fight.status === "completed" ? "ENDED" : "CXLD"}
+            </span>
+          )}
+          {fight.ends_at && isLive && (
+            <span className="text-[9px] text-zinc-500 flex items-center gap-0.5">
+              <Clock className="w-2.5 h-2.5" />
+              {formatTimeLeft(fight.ends_at)}
+            </span>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function EditBattlesHubPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -253,7 +365,11 @@ export default function EditBattlesHubPage() {
   const { battles, loading } = useCashBattles();
   const { battles: myBattles } = useMyCashBattles();
   const { joinPool } = useMyCashBattleApplication();
+  const { fights: recentFights, loading: fightsLoading } = useRecentQuickFights(40);
+  const { fights: myFights, inQueue: inQuickQueue } = useMyQuickFights();
+  const { profile } = useAuth() as any;
 
+  const [mode, setMode] = useState<ModeKey>("instant");
   const [tab, setTab] = useState<TabKey>("live");
   const [pendingApps, setPendingApps] = useState<CashBattleApplication[]>([]);
   const [joining, setJoining] = useState(false);
@@ -299,7 +415,43 @@ export default function EditBattlesHubPage() {
     [battles]
   );
 
-  const handleQuickJoin = async () => {
+  // Quick fight derived sets
+  const liveQuickFights = useMemo(
+    () => recentFights.filter((f) => f.status === "active" || f.status === "judging"),
+    [recentFights]
+  );
+  const completedQuickFights = useMemo(
+    () => recentFights.filter((f) => f.status === "completed"),
+    [recentFights]
+  );
+  const myActiveQuickFight = myFights.find((f) => f.status === "active" || f.status === "judging" || f.status === "waiting");
+
+  const handleInstantJoin = async () => {
+    if (isGuest || !user || !profile) {
+      accountPrompt.open("enter_battle" as any);
+      return;
+    }
+    if (myActiveQuickFight) {
+      navigate(`/fight/${myActiveQuickFight.id}`);
+      return;
+    }
+    if (inQuickQueue) {
+      await leaveQueue(user.id);
+      toast("Left the queue");
+      return;
+    }
+    setJoining(true);
+    const fightId = await findQuickFight(user.id, profile.username, profile.avatar_url);
+    setJoining(false);
+    if (fightId) {
+      toast.success("⚔️ Match found!");
+      navigate(`/fight/${fightId}`);
+    } else {
+      toast.success("🔍 In queue — we'll match you in seconds");
+    }
+  };
+
+  const handleCashJoin = async () => {
     if (isGuest) {
       accountPrompt.open("enter_battle" as any);
       return;
@@ -318,6 +470,8 @@ export default function EditBattlesHubPage() {
     }
   };
 
+  const handlePrimaryCTA = mode === "instant" ? handleInstantJoin : handleCashJoin;
+
   const handleAcceptOpen = async (app: CashBattleApplication) => {
     if (isGuest) {
       accountPrompt.open("enter_battle" as any);
@@ -333,12 +487,28 @@ export default function EditBattlesHubPage() {
     }
   };
 
-  const tabs: { key: TabKey; label: string; count: number; icon: any; color: string }[] = [
-    { key: "live", label: "Live Now", count: liveBattles.length, icon: Flame, color: "#ef4444" },
-    { key: "open", label: "Queue", count: pendingApps.length, icon: Zap, color: "#f59e0b" },
-    { key: "cash", label: "$ Battles", count: cashBattles.length, icon: DollarSign, color: "#10b981" },
-    { key: "completed", label: "Hall of Fame", count: completedBattles.length, icon: Trophy, color: "#fbbf24" },
-  ];
+  // Mode-aware tab counts — Instant uses quick_fights; Cash uses cash_battles
+  const liveCount = mode === "instant" ? liveQuickFights.length : liveBattles.length;
+  const queueCount = mode === "instant" ? (inQuickQueue ? 1 : 0) : pendingApps.length;
+  const completedCount = mode === "instant" ? completedQuickFights.length : completedBattles.length;
+
+  const tabs: { key: TabKey; label: string; count: number; icon: any; color: string }[] = mode === "instant"
+    ? [
+        { key: "live", label: "Live Now", count: liveCount, icon: Flame, color: "#ef4444" },
+        { key: "open", label: "Queue", count: queueCount, icon: Zap, color: "#3b82f6" },
+        { key: "completed", label: "Hall of Fame", count: completedCount, icon: Trophy, color: "#fbbf24" },
+      ]
+    : [
+        { key: "live", label: "Live Now", count: liveCount, icon: Flame, color: "#ef4444" },
+        { key: "open", label: "Queue", count: queueCount, icon: Zap, color: "#f59e0b" },
+        { key: "cash", label: "$ Battles", count: cashBattles.length, icon: DollarSign, color: "#10b981" },
+        { key: "completed", label: "Hall of Fame", count: completedCount, icon: Trophy, color: "#fbbf24" },
+      ];
+
+  // If user switches mode and current tab is "cash" but mode is instant, snap to live
+  useEffect(() => {
+    if (mode === "instant" && tab === "cash") setTab("live");
+  }, [mode, tab]);
 
   return (
     <div className="min-h-screen bg-black text-foreground">
@@ -418,19 +588,76 @@ export default function EditBattlesHubPage() {
             <span className="text-zinc-500">Pick a side. Drop a fire edit. Take the crown. 👑</span>
           </p>
 
-          {/* Quick Match CTA */}
+          {/* Mode toggle — Instant vs Cash */}
+          <div className="mt-4 grid grid-cols-2 gap-1.5 p-1 rounded-2xl border border-white/[0.08] bg-black/40 backdrop-blur-sm">
+            <button
+              onClick={() => setMode("instant")}
+              className="relative flex flex-col items-center justify-center py-2 rounded-xl transition-all active:scale-[0.97]"
+              style={{
+                background: mode === "instant"
+                  ? "linear-gradient(135deg, #2563eb 0%, #8b5cf6 100%)"
+                  : "transparent",
+                boxShadow: mode === "instant"
+                  ? "0 6px 20px -6px rgba(139,92,246,0.6), inset 0 1px 0 rgba(255,255,255,0.25)"
+                  : "none",
+              }}
+            >
+              <div className="flex items-center gap-1.5">
+                <Zap className={`w-3.5 h-3.5 ${mode === "instant" ? "text-white fill-white" : "text-zinc-500"}`} strokeWidth={2.8} />
+                <span
+                  className={`text-[14px] font-black uppercase tracking-wider ${mode === "instant" ? "text-white" : "text-zinc-400"}`}
+                  style={{ fontFamily: "Teko, sans-serif" }}
+                >
+                  Instant
+                </span>
+              </div>
+              <span className={`text-[8px] font-bold uppercase tracking-[0.15em] mt-0.5 ${mode === "instant" ? "text-white/70" : "text-zinc-600"}`}>
+                Free · IDX + XP
+              </span>
+            </button>
+            <button
+              onClick={() => setMode("cash")}
+              className="relative flex flex-col items-center justify-center py-2 rounded-xl transition-all active:scale-[0.97]"
+              style={{
+                background: mode === "cash"
+                  ? "linear-gradient(135deg, #10b981 0%, #059669 100%)"
+                  : "transparent",
+                boxShadow: mode === "cash"
+                  ? "0 6px 20px -6px rgba(16,185,129,0.6), inset 0 1px 0 rgba(255,255,255,0.25)"
+                  : "none",
+              }}
+            >
+              <div className="flex items-center gap-1.5">
+                <DollarSign className={`w-3.5 h-3.5 ${mode === "cash" ? "text-white" : "text-zinc-500"}`} strokeWidth={2.8} />
+                <span
+                  className={`text-[14px] font-black uppercase tracking-wider ${mode === "cash" ? "text-white" : "text-zinc-400"}`}
+                  style={{ fontFamily: "Teko, sans-serif" }}
+                >
+                  Cash
+                </span>
+              </div>
+              <span className={`text-[8px] font-bold uppercase tracking-[0.15em] mt-0.5 ${mode === "cash" ? "text-white/70" : "text-zinc-600"}`}>
+                Win real $$
+              </span>
+            </button>
+          </div>
+
+          {/* Primary CTA */}
           <button
-            onClick={handleQuickJoin}
+            onClick={handlePrimaryCTA}
             disabled={joining}
-            className="mt-4 w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black uppercase text-white text-base relative overflow-hidden disabled:opacity-60 group active:scale-[0.98] transition-transform"
+            className="mt-2.5 w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black uppercase text-white text-base relative overflow-hidden disabled:opacity-60 group active:scale-[0.98] transition-transform"
             style={{
-              background: "linear-gradient(90deg, #2563eb 0%, #8b5cf6 50%, #ef4444 100%)",
-              boxShadow: "0 12px 32px -8px rgba(139,92,246,0.6), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -2px 0 rgba(0,0,0,0.2)",
+              background: mode === "instant"
+                ? "linear-gradient(90deg, #2563eb 0%, #8b5cf6 50%, #ef4444 100%)"
+                : "linear-gradient(90deg, #10b981 0%, #059669 50%, #047857 100%)",
+              boxShadow: mode === "instant"
+                ? "0 12px 32px -8px rgba(139,92,246,0.6), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -2px 0 rgba(0,0,0,0.2)"
+                : "0 12px 32px -8px rgba(16,185,129,0.6), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -2px 0 rgba(0,0,0,0.2)",
               fontFamily: "Teko, sans-serif",
               letterSpacing: "0.05em",
             }}
           >
-            {/* Shimmer */}
             <span
               className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
               style={{
@@ -443,7 +670,9 @@ export default function EditBattlesHubPage() {
             ) : (
               <Zap className="w-5 h-5 fill-white" strokeWidth={2.8} />
             )}
-            {myBattles.length > 0 ? "🔥 Resume Your Battle" : "⚡ Smash Queue — Find Opponent"}
+            {mode === "instant"
+              ? (myActiveQuickFight ? "🔥 Resume Your Battle" : inQuickQueue ? "🔍 In Queue — Tap to Cancel" : "⚡ Quick Match — Find Opponent")
+              : (myBattles.length > 0 ? "🔥 Resume Cash Battle" : "💰 Smash Queue — Win Cash")}
           </button>
 
           {/* Stats strip */}
@@ -514,13 +743,28 @@ export default function EditBattlesHubPage() {
               transition={{ duration: 0.18 }}
               className="space-y-2.5"
             >
-              {tab === "live" && (
+              {tab === "live" && mode === "instant" && (
+                <>
+                  {liveQuickFights.length === 0 ? (
+                    <EmptyState
+                      icon={Flame}
+                      title="No live battles right now ⚡"
+                      hint="Hit Quick Match — you'll be paired in seconds"
+                    />
+                  ) : (
+                    liveQuickFights.map((f) => (
+                      <QuickFightRow key={f.id} fight={f} onClick={() => navigate(`/fight/${f.id}`)} />
+                    ))
+                  )}
+                </>
+              )}
+              {tab === "live" && mode === "cash" && (
                 <>
                   {liveBattles.length === 0 ? (
                     <EmptyState
                       icon={Flame}
-                      title="Arena's quiet... for now 👀"
-                      hint="Smash that queue button and light it up"
+                      title="No live cash battles 💰"
+                      hint="Sponsored drops hit when you least expect"
                     />
                   ) : (
                     liveBattles.map((b) => (
@@ -542,7 +786,33 @@ export default function EditBattlesHubPage() {
                 </>
               )}
 
-              {tab === "open" && (
+              {tab === "open" && mode === "instant" && (
+                <>
+                  {!inQuickQueue ? (
+                    <EmptyState
+                      icon={Zap}
+                      title="Queue is empty ⚡"
+                      hint="Smash Quick Match — you'll auto-pair the second another editor joins"
+                    />
+                  ) : (
+                    <div
+                      className="rounded-2xl px-4 py-4 border border-blue-500/30 flex items-center gap-3"
+                      style={{ background: "linear-gradient(180deg, rgba(37,99,235,0.12) 0%, rgba(22,22,26,0.95) 100%)" }}
+                    >
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-500/15 border border-blue-500/30">
+                        <Loader2 className="w-5 h-5 text-blue-300 animate-spin" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[13px] font-black text-white uppercase tracking-wider" style={{ fontFamily: "Teko, sans-serif" }}>
+                          You're in queue
+                        </div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">Hold tight — pairing the next editor that drops in</div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+              {tab === "open" && mode === "cash" && (
                 <>
                   {pendingApps.length === 0 ? (
                     <EmptyState
@@ -579,7 +849,18 @@ export default function EditBattlesHubPage() {
                 </>
               )}
 
-              {tab === "completed" && (
+              {tab === "completed" && mode === "instant" && (
+                <>
+                  {completedQuickFights.length === 0 ? (
+                    <EmptyState icon={Trophy} title="History's unwritten 🏆" hint="First win etches your name forever" />
+                  ) : (
+                    completedQuickFights.map((f) => (
+                      <QuickFightRow key={f.id} fight={f} onClick={() => navigate(`/fight/${f.id}`)} />
+                    ))
+                  )}
+                </>
+              )}
+              {tab === "completed" && mode === "cash" && (
                 <>
                   {completedBattles.length === 0 ? (
                     <EmptyState icon={Trophy} title="History's unwritten 🏆" hint="First win etches your name forever" />
