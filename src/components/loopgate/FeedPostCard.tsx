@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import RichMessageContent from "./RichMessageContent";
 import LoopReactions from "./LoopReactions";
 import { useState, memo } from "react";
+import { createPortal } from "react-dom";
 import { ReactionGroup } from "@/hooks/useLoopReactions";
 import { createBattle } from "@/hooks/useBattles";
 import { supabase } from "@/integrations/supabase/client";
