@@ -322,7 +322,7 @@ export default function CampaignPortalPage() {
           <div className="flex items-center gap-2">
             <button onClick={handleCopyLink}
               className="flex items-center gap-1.5 px-3 py-1.5 text-[9px] uppercase tracking-wider font-black rounded-md border transition-all"
-              style={{ borderColor: copied ? '#10B981' : '#E5E7EB', color: copied ? '#10B981' : '#6B7280', background: copied ? '#F0FDF4' : '#FAFAFA' }}
+              style={{ borderColor: copied ? '#10B981' : '#262626', color: copied ? '#10B981' : '#a3a3a3', background: copied ? '#052e1a' : '#171717' }}
             >
               <Link2 size={11} /> {copied ? 'Copied!' : 'Share'}
             </button>
@@ -365,7 +365,7 @@ export default function CampaignPortalPage() {
             {artist.banner_url && (
               <div className="h-32 sm:h-40 overflow-hidden relative">
                 <img src={artist.banner_url} alt="" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white" />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-neutral-950" />
               </div>
             )}
             <div className={`p-5 sm:p-6 bg-neutral-950 ${artist.banner_url ? '-mt-10 relative z-10' : ''}`}>
@@ -413,9 +413,9 @@ export default function CampaignPortalPage() {
               {campaign.description && !isBrandCampaign && <p className="text-sm text-neutral-400 mt-1">{campaign.description}</p>}
             </div>
             <span className={`text-[9px] px-3 py-1 uppercase tracking-wider font-black rounded-full flex-shrink-0 ${
-              campaign.status === 'active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+              campaign.status === 'active' ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-900' :
               campaign.status === 'completed' ? 'bg-neutral-800 text-neutral-400 border border-neutral-800' :
-              'bg-amber-50 text-amber-700 border border-amber-200'
+              'bg-amber-950/40 text-amber-400 border border-amber-900'
             }`}>
               <span className="inline-block w-1.5 h-1.5 rounded-full mr-1.5 animate-pulse" style={{
                 background: campaign.status === 'active' ? '#10B981' : campaign.status === 'completed' ? '#9CA3AF' : '#F59E0B'
@@ -479,19 +479,19 @@ export default function CampaignPortalPage() {
                 <ComposedChart data={growthData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
                   <defs>
                     <linearGradient id="viewsGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#171717" stopOpacity={0.12} />
-                      <stop offset="100%" stopColor="#171717" stopOpacity={0} />
+                      <stop offset="0%" stopColor="#fafafa" stopOpacity={0.18} />
+                      <stop offset="100%" stopColor="#fafafa" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <XAxis dataKey="label" tick={{ fontSize: 9, fill: '#a3a3a3', fontWeight: 700 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
                   <YAxis tick={{ fontSize: 9, fill: '#a3a3a3', fontWeight: 700 }} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatNumber(v)} />
                   <Tooltip
-                    contentStyle={{ background: '#171717', border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 700, color: '#fff' }}
-                    labelStyle={{ color: '#a3a3a3', fontSize: 9 }}
+                    contentStyle={{ background: '#fafafa', border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 700, color: '#171717' }}
+                    labelStyle={{ color: '#525252', fontSize: 9 }}
                     formatter={(value: number, name: string) => [formatNumber(value), name === 'daily' ? 'Daily' : 'Total']}
                   />
-                  <Bar dataKey="daily" fill="#e5e5e5" radius={[2, 2, 0, 0]} barSize={6} />
-                  <Area type="monotone" dataKey="views" stroke="#171717" strokeWidth={2.5} fill="url(#viewsGradient)" dot={false} activeDot={{ r: 4, fill: '#171717', strokeWidth: 0 }} />
+                  <Bar dataKey="daily" fill="#404040" radius={[2, 2, 0, 0]} barSize={6} />
+                  <Area type="monotone" dataKey="views" stroke="#fafafa" strokeWidth={2.5} fill="url(#viewsGradient)" dot={false} activeDot={{ r: 4, fill: '#fafafa', strokeWidth: 0 }} />
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
