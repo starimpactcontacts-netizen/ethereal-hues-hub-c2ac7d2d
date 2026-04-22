@@ -766,16 +766,9 @@ export default function CampaignPortalPage() {
 
       {/* Floating concierge chat */}
       <CampaignSupportChat
-        campaignContext={{
-          name: campaign.name,
-          client: campaign.client_name,
-          type: campaign.campaign_type,
-          status: campaign.status,
-          totalViews: totalEditViews,
-          publishedPieces: edits.length,
-          budgetCents: campaign.budget_cents,
-          spentCents: campaign.spent_cents,
-        }}
+        campaignId={campaign.id}
+        campaignName={campaign.name}
+        clientName={campaign.client_name}
       />
     </div>
   );
