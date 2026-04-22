@@ -942,11 +942,9 @@ export default function CampaignAdminPage() {
                                     exit={{ opacity: 0, height: 0 }}
                                     className="rounded-lg bg-background/40 border border-border/20 p-3 space-y-2 mb-3 overflow-hidden"
                                   >
-                                    <Input placeholder="Edit Title *" value={newEdit.title} onChange={e => setNewEdit(p => ({ ...p, title: e.target.value }))} className="bg-background/60 h-8 text-xs border-border/30" />
-                                    <div className="grid grid-cols-2 gap-2">
-                                      <Input placeholder="Video URL" value={newEdit.video_url} onChange={e => setNewEdit(p => ({ ...p, video_url: e.target.value }))} className="bg-background/60 h-8 text-xs border-border/30" />
-                                      <Input placeholder="Thumbnail URL" value={newEdit.thumbnail_url} onChange={e => setNewEdit(p => ({ ...p, thumbnail_url: e.target.value }))} className="bg-background/60 h-8 text-xs border-border/30" />
-                                    </div>
+                                    <Input placeholder="Paste video URL first — title auto-fills" value={newEdit.video_url} onChange={e => handleVideoUrlChange(e.target.value, campaign.id)} className="bg-background/60 h-8 text-xs border-border/30" />
+                                    <Input placeholder="Title (auto-generated, editable)" value={newEdit.title} onChange={e => setNewEdit(p => ({ ...p, title: e.target.value }))} className="bg-background/60 h-8 text-xs border-border/30" />
+                                    <Input placeholder="Thumbnail URL (optional)" value={newEdit.thumbnail_url} onChange={e => setNewEdit(p => ({ ...p, thumbnail_url: e.target.value }))} className="bg-background/60 h-8 text-xs border-border/30" />
                                     <div className="grid grid-cols-3 gap-2">
                                       <select value={newEdit.platform} onChange={e => setNewEdit(p => ({ ...p, platform: e.target.value }))} className="bg-background/60 border border-border/30 rounded-md text-xs h-8 px-2 text-foreground">
                                         <option value="tiktok">TikTok</option>
