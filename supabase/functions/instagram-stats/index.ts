@@ -283,15 +283,15 @@ async function fetchViaMainPage(shortcode: string): Promise<{
 
 // Method 3: Embed page (fallback - can have stale view counts)
 async function fetchViaEmbed(shortcode: string): Promise<{
-  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null;
+  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null; takenAt: number | null;
 }> {
   try {
     for (const prefix of ['p', 'reel']) {
       const embedUrl = `https://www.instagram.com/${prefix}/${shortcode}/embed/captioned/`;
       console.log('Trying embed:', embedUrl);
-      const res = await fetch(embedUrl, {
+      const res = await fetchWithRetry(embedUrl, {
         headers: {
-          'User-Agent': 'Googlebot/2.1 (+http://www.google.com/bot.html)',
+          'User-Agent': pickUA(),
           'Accept': 'text/html',
         },
       });
@@ -331,15 +331,19 @@ async function fetchViaEmbed(shortcode: string): Promise<{
         if (m) { shares = parseInt(m[1].replace(/,/g, ''), 10); break; }
       }
 
+      let takenAt: number | null = null;
+      const tk = html.match(/"taken_at_timestamp"\s*:\s*(\d+)/) || html.match(/"taken_at"\s*:\s*(\d+)/);
+      if (tk) takenAt = parseInt(tk[1], 10);
+
       if (likes !== null || views !== null) {
         console.log('✅ Embed stats:', { views, likes, comments, shares });
-        return { views, likes, comments, shares, thumbnailUrl };
+        return { views, likes, comments, shares, thumbnailUrl, takenAt };
       }
     }
-    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
   } catch (e) {
     console.error('Embed error:', e);
-    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
   }
 }
 
