@@ -833,7 +833,13 @@ export default function CampaignAdminPage() {
                                     { label: 'Impressions', value: formatNumber(campaign.total_impressions), color: 'text-cyan-400' },
                                     { label: 'Engagements', value: formatNumber(campaign.total_engagements), color: 'text-emerald-400' },
                                     { label: 'Clicks', value: formatNumber(campaign.total_clicks), color: 'text-amber-400' },
-                                    { label: 'ROI', value: campaign.roi_percentage ? `${campaign.roi_percentage}%` : '—', color: 'text-foreground' },
+                                    {
+                                      label: 'CPM',
+                                      value: (campaign.budget_cents && campaign.total_views > 0)
+                                        ? `$${(((campaign.spent_cents || campaign.budget_cents) / 100) / (campaign.total_views / 1000)).toFixed(2)}`
+                                        : '—',
+                                      color: 'text-foreground',
+                                    },
                                   ].map(s => (
                                     <div key={s.label} className="rounded-lg bg-background/40 border border-border/20 p-2.5 text-center">
                                       <p className={`font-display text-base sm:text-lg ${s.color}`}>{s.value}</p>
