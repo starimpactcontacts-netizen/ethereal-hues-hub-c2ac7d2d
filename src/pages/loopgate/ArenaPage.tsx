@@ -1164,7 +1164,7 @@ export default function ArenaPage() {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             whileTap={{ scale: 0.98 }}
-            onClick={isQfSearching ? handleCancelQueue : handleQuickFight}
+            onClick={isQfSearching ? handleCancelQueue : () => navigate('/edit-battles')}
             className="relative w-full overflow-hidden touch-manipulation group mb-3 rounded-2xl"
             style={{ boxShadow: '0 8px 32px rgba(37,99,235,0.30), 0 4px 16px rgba(220,38,38,0.25)' }}
           >
