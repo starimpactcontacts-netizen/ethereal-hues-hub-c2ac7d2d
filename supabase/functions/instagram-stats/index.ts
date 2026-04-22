@@ -21,9 +21,45 @@ function shortcodeToMediaId(shortcode: string): string {
   return id.toString();
 }
 
+// Rotating user agents to avoid rate-limit fingerprinting
+const USER_AGENTS = [
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
+  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+];
+const pickUA = () => USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
+
+// Fetch with timeout + 1 retry on transient failure (rate-limit / network blip)
+async function fetchWithRetry(url: string, init: RequestInit, timeoutMs = 8000): Promise<Response> {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { ...init, signal: ctrl.signal });
+      clearTimeout(t);
+      // Retry on rate-limit or server errors
+      if ((res.status === 429 || res.status >= 500) && attempt === 0) {
+        await new Promise(r => setTimeout(r, 400 + Math.random() * 400));
+        continue;
+      }
+      return res;
+    } catch (e) {
+      clearTimeout(t);
+      if (attempt === 0) {
+        await new Promise(r => setTimeout(r, 300));
+        continue;
+      }
+      throw e;
+    }
+  }
+  // unreachable
+  return new Response(null, { status: 599 });
+}
+
 // Method 1: Instagram GraphQL API (real-time accurate data)
 async function fetchViaGraphQL(shortcode: string): Promise<{
-  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null;
+  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null; takenAt: number | null;
 }> {
   try {
     // Use Instagram's web GraphQL endpoint
@@ -32,9 +68,9 @@ async function fetchViaGraphQL(shortcode: string): Promise<{
     const apiUrl = `https://www.instagram.com/graphql/query/?doc_id=${docId}&variables=${encodeURIComponent(variables)}`;
     console.log('Trying GraphQL API for shortcode:', shortcode);
     
-    const res = await fetch(apiUrl, {
+    const res = await fetchWithRetry(apiUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'User-Agent': pickUA(),
         'X-IG-App-ID': '936619743392459',
         'X-Requested-With': 'XMLHttpRequest',
         'Accept': '*/*',
@@ -47,15 +83,15 @@ async function fetchViaGraphQL(shortcode: string): Promise<{
       // Try alternative doc IDs
       const altDocId = '17991233890457762';
       const altUrl = `https://www.instagram.com/graphql/query/?query_hash=${altDocId}&variables=${encodeURIComponent(JSON.stringify({ shortcode }))}`;
-      const altRes = await fetch(altUrl, {
+      const altRes = await fetchWithRetry(altUrl, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'User-Agent': pickUA(),
           'X-IG-App-ID': '936619743392459',
         },
       });
       if (!altRes.ok) {
         console.log('GraphQL alt HTTP:', altRes.status);
-        return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
+        return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
       }
       const altJson = await altRes.json();
       const altMedia = altJson?.data?.shortcode_media;
@@ -64,10 +100,11 @@ async function fetchViaGraphQL(shortcode: string): Promise<{
         const likes = altMedia.edge_media_preview_like?.count ?? null;
         const comments = altMedia.edge_media_to_parent_comment?.count ?? null;
         const shares = altMedia.share_count ?? altMedia.reshare_count ?? null;
+        const takenAt = altMedia.taken_at_timestamp ?? null;
         console.log('✅ GraphQL alt stats:', { views, likes, comments, shares });
-        return { views, likes, comments, shares, thumbnailUrl: altMedia.display_url ?? null };
+        return { views, likes, comments, shares, thumbnailUrl: altMedia.display_url ?? null, takenAt };
       }
-      return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
+      return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
     }
     
     const json = await res.json();
@@ -78,28 +115,29 @@ async function fetchViaGraphQL(shortcode: string): Promise<{
       const comments = media.edge_media_to_parent_comment?.count ?? media.comment_count ?? null;
       const shares = media.share_count ?? media.reshare_count ?? null;
       const thumbnailUrl = media.display_url ?? null;
+      const takenAt = media.taken_at_timestamp ?? null;
       console.log('✅ GraphQL stats:', { views, likes, comments, shares });
-      return { views, likes, comments, shares, thumbnailUrl };
+      return { views, likes, comments, shares, thumbnailUrl, takenAt };
     }
     
     console.log('GraphQL: no media in response, keys:', Object.keys(json?.data || {}));
-    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
   } catch (e) {
     console.error('GraphQL error:', e);
-    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
   }
 }
 
 // Method 2: Instagram Private Mobile API
 async function fetchViaMobileApi(shortcode: string): Promise<{
-  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null;
+  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null; takenAt: number | null;
 }> {
   try {
     const mediaId = shortcodeToMediaId(shortcode);
     const apiUrl = `https://i.instagram.com/api/v1/media/${mediaId}/info/`;
     console.log('Trying mobile API, mediaId:', mediaId);
     
-    const res = await fetch(apiUrl, {
+    const res = await fetchWithRetry(apiUrl, {
       headers: {
         'User-Agent': 'Instagram 275.0.0.27.98 Android (33/13; 420dpi; 1080x2400; samsung; SM-G991B; o1s; exynos2100; en_US; 458229258)',
         'X-IG-App-ID': '567067343352427',
@@ -108,7 +146,7 @@ async function fetchViaMobileApi(shortcode: string): Promise<{
     
     if (!res.ok) {
       console.log('Mobile API HTTP:', res.status);
-      return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
+      return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
     }
     
     const json = await res.json();
@@ -119,29 +157,30 @@ async function fetchViaMobileApi(shortcode: string): Promise<{
       const comments = item.comment_count ?? null;
       const shares = item.share_count ?? item.reshare_count ?? null;
       const thumbnailUrl = item.image_versions2?.candidates?.[0]?.url ?? null;
+      const takenAt = item.taken_at ?? null;
       console.log('✅ Mobile API stats:', { views, likes, comments, shares });
-      return { views, likes, comments, shares, thumbnailUrl };
+      return { views, likes, comments, shares, thumbnailUrl, takenAt };
     }
     
     console.log('Mobile API: no items');
-    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
   } catch (e) {
     console.error('Mobile API error:', e);
-    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
   }
 }
 
 // Method 2: Scrape the main HTML page (often has more current data than embed)
 async function fetchViaMainPage(shortcode: string): Promise<{
-  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null;
+  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null; takenAt: number | null;
 }> {
   try {
     for (const prefix of ['p', 'reel']) {
       const pageUrl = `https://www.instagram.com/${prefix}/${shortcode}/`;
       console.log('Trying main page:', pageUrl);
-      const res = await fetch(pageUrl, {
+      const res = await fetchWithRetry(pageUrl, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'User-Agent': pickUA(),
           'Accept': 'text/html,application/xhtml+xml',
           'Accept-Language': 'en-US,en;q=0.9',
         },
@@ -156,6 +195,11 @@ async function fetchViaMainPage(shortcode: string): Promise<{
       let comments: number | null = null;
       let shares: number | null = null;
       let thumbnailUrl: string | null = null;
+      let takenAt: number | null = null;
+
+      // taken_at_timestamp from embedded JSON
+      const takenMatch = html.match(/"taken_at_timestamp"\s*:\s*(\d+)/) || html.match(/"taken_at"\s*:\s*(\d+)/);
+      if (takenMatch) takenAt = parseInt(takenMatch[1], 10);
 
       // Try to find structured data
       const jsonLdMatch = html.match(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/);
@@ -227,27 +271,27 @@ async function fetchViaMainPage(shortcode: string): Promise<{
 
       if (views !== null || likes !== null) {
         console.log('✅ Main page stats:', { views, likes, comments, shares, prefix });
-        return { views, likes, comments, shares, thumbnailUrl };
+        return { views, likes, comments, shares, thumbnailUrl, takenAt };
       }
     }
-    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
   } catch (e) {
     console.error('Main page error:', e);
-    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
   }
 }
 
 // Method 3: Embed page (fallback - can have stale view counts)
 async function fetchViaEmbed(shortcode: string): Promise<{
-  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null;
+  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null; takenAt: number | null;
 }> {
   try {
     for (const prefix of ['p', 'reel']) {
       const embedUrl = `https://www.instagram.com/${prefix}/${shortcode}/embed/captioned/`;
       console.log('Trying embed:', embedUrl);
-      const res = await fetch(embedUrl, {
+      const res = await fetchWithRetry(embedUrl, {
         headers: {
-          'User-Agent': 'Googlebot/2.1 (+http://www.google.com/bot.html)',
+          'User-Agent': pickUA(),
           'Accept': 'text/html',
         },
       });
@@ -287,15 +331,19 @@ async function fetchViaEmbed(shortcode: string): Promise<{
         if (m) { shares = parseInt(m[1].replace(/,/g, ''), 10); break; }
       }
 
+      let takenAt: number | null = null;
+      const tk = html.match(/"taken_at_timestamp"\s*:\s*(\d+)/) || html.match(/"taken_at"\s*:\s*(\d+)/);
+      if (tk) takenAt = parseInt(tk[1], 10);
+
       if (likes !== null || views !== null) {
         console.log('✅ Embed stats:', { views, likes, comments, shares });
-        return { views, likes, comments, shares, thumbnailUrl };
+        return { views, likes, comments, shares, thumbnailUrl, takenAt };
       }
     }
-    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
   } catch (e) {
     console.error('Embed error:', e);
-    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
   }
 }
 
@@ -305,6 +353,7 @@ type InstagramStats = {
   comments: number | null;
   shares: number | null;
   thumbnailUrl: string | null;
+  takenAt?: number | null;
 };
 
 function pickHighestMetric(results: InstagramStats[], key: keyof Pick<InstagramStats, 'views' | 'likes' | 'comments' | 'shares'>, allowZero = false): number | null {
@@ -331,31 +380,42 @@ function buildValidatedStats(gqlResult: InstagramStats, mobileResult: InstagramS
 
   const trustedViewSources = countMetricSources(trustedResults, 'views');
   const totalViewSources = countMetricSources(allResults, 'views');
-  // Pick MEDIAN-ish (avoid wild outliers): use the 2nd-highest if 2+ trusted sources agree,
-  // else highest from a trusted source, else require 2+ ANY-source agreement.
+  // SMARTER consensus: collect ALL view readings, find clusters of agreement.
+  // The "true" view count is the HIGHEST value that has corroboration (within 25% of another source).
+  // This prevents both stale (low) embed values AND wildly inflated outliers from winning.
+  const allViewVals = allResults
+    .map(r => r.views)
+    .filter((v): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0)
+    .sort((a, b) => b - a); // desc
   const trustedViewVals = trustedResults
     .map(r => r.views)
     .filter((v): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0)
     .sort((a, b) => b - a);
 
   let candidateViews: number | null = null;
-  if (trustedViewVals.length >= 2) {
-    // Use 2nd highest for resilience against one-source spikes
-    candidateViews = trustedViewVals[1];
-    // But if top two are within 20%, take the higher (they corroborate)
-    if (trustedViewVals[0] / trustedViewVals[1] <= 1.2) candidateViews = trustedViewVals[0];
-  } else if (trustedViewVals.length === 1) {
-    candidateViews = trustedViewVals[0];
-  } else if (totalViewSources >= 2) {
-    candidateViews = pickHighestMetric(allResults, 'views');
+  // Pass 1: find the HIGHEST trusted value that another source (any) corroborates within 25%.
+  for (const v of trustedViewVals) {
+    const corroborated = allViewVals.some(o => o !== v && Math.max(v, o) / Math.min(v, o) <= 1.25);
+    if (corroborated) { candidateViews = v; break; }
   }
+  // Pass 2: no corroboration but >=2 trusted sources → take median (2nd highest)
+  if (candidateViews === null && trustedViewVals.length >= 2) candidateViews = trustedViewVals[1];
+  // Pass 3: single trusted source → trust it
+  if (candidateViews === null && trustedViewVals.length === 1) candidateViews = trustedViewVals[0];
+  // Pass 4: only embed had a value, and >=2 ANY sources agree → use the highest of those
+  if (candidateViews === null && totalViewSources >= 2) candidateViews = allViewVals[0] ?? null;
 
   const likes = pickHighestMetric(allResults, 'likes');
   const comments = pickHighestMetric(allResults, 'comments', true);
   const shares = pickHighestMetric(allResults, 'shares', true);
   const thumbnailUrl = gqlResult.thumbnailUrl || mobileResult.thumbnailUrl || mainResult.thumbnailUrl || embedResult.thumbnailUrl || null;
+  // Pick the EXACT taken_at timestamp - prefer trusted sources, take the one most agree on
+  const takenAtCandidates = allResults
+    .map(r => r.takenAt)
+    .filter((t): t is number => typeof t === 'number' && Number.isFinite(t) && t > 0);
+  const takenAt = takenAtCandidates.length > 0 ? takenAtCandidates[0] : null;
 
-  // Plausibility: views must be >= max(likes, comments) AND likes-to-views ratio sane (< 60%)
+  // Plausibility: views >= max(likes, comments) AND likes/views ratio sane (< ~66%)
   const maxEngagement = Math.max(likes || 0, comments || 0);
   const plausibleViews = candidateViews !== null
     && candidateViews >= maxEngagement
@@ -367,11 +427,13 @@ function buildValidatedStats(gqlResult: InstagramStats, mobileResult: InstagramS
     comments,
     shares,
     thumbnailUrl,
+    takenAt,
     diagnostics: {
       trustedViewSources,
       totalViewSources,
       plausibleViews,
       trustedViewVals,
+      allViewVals,
     },
   };
 }
@@ -424,7 +486,7 @@ serve(async (req) => {
 
       let query = supabase
         .from('artist_campaign_edits')
-        .select('id, campaign_id, video_url, view_count, like_count, comment_count, share_count, thumbnail_url')
+        .select('id, campaign_id, video_url, view_count, like_count, comment_count, share_count, thumbnail_url, published_at')
         .or('platform.eq.instagram,video_url.ilike.%instagram.com%');
 
       if (campaignIdFilter) {
@@ -467,6 +529,14 @@ serve(async (req) => {
           if (stats.comments !== null && stats.comments > (edit.comment_count || 0)) payload.comment_count = stats.comments;
           if (stats.shares !== null && stats.shares > (edit.share_count || 0)) payload.share_count = stats.shares;
           if (stats.thumbnailUrl && !edit.thumbnail_url) payload.thumbnail_url = stats.thumbnailUrl;
+          // EXACT publish date from Instagram's own taken_at_timestamp - always sync if missing
+          // or if scraped value differs (Instagram is authoritative on this)
+          if (stats.takenAt && stats.takenAt > 0) {
+            const exactDate = new Date(stats.takenAt * 1000).toISOString();
+            if (!edit.published_at || new Date(edit.published_at).getTime() !== stats.takenAt * 1000) {
+              payload.published_at = exactDate;
+            }
+          }
 
           if (Object.keys(payload).length > 1) {
             await supabase.from('artist_campaign_edits').update(payload).eq('id', edit.id);
