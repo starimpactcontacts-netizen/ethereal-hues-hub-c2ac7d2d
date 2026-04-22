@@ -209,7 +209,7 @@ export default function CampaignPortalPage() {
         <div className="text-center">
           <BarChart3 className="w-10 h-10 text-neutral-600 mx-auto mb-4" />
           <h1 className="text-xl font-black text-neutral-50">{error || 'Not found'}</h1>
-          <p className="text-xs text-neutral-400 mt-2">This campaign link may be invalid or expired.</p>
+          <p className="text-xs text-neutral-500 mt-2">This campaign link may be invalid or expired.</p>
         </div>
       </div>
     );
@@ -315,8 +315,8 @@ export default function CampaignPortalPage() {
               <img src={viralCartelCrest} alt="" className="w-7 h-7 opacity-40" />
             )}
             <div>
-              <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-400 font-black">Campaign Performance Report</p>
-              <p className="text-[9px] text-neutral-400">Generated {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+              <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-500 font-black">Campaign Performance Report</p>
+              <p className="text-[9px] text-neutral-500">Generated {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -338,18 +338,18 @@ export default function CampaignPortalPage() {
         {isBrandCampaign ? (
           /* Brand/Film hero - shows logo prominently */
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-            className="rounded-xl border border-neutral-800 bg-neutral-100 p-6 sm:p-8"
+            className="rounded-xl border border-neutral-800 bg-neutral-900 p-6 sm:p-8"
           >
             <div className="flex items-center gap-5">
               {(campaign as any).logo_url ? (
                 <img src={(campaign as any).logo_url} alt={campaign.client_name || ''} className="w-16 h-16 sm:w-20 sm:h-20 object-contain flex-shrink-0" />
               ) : (
                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-neutral-700 flex items-center justify-center flex-shrink-0">
-                  <Globe size={24} className="text-neutral-400" />
+                  <Globe size={24} className="text-neutral-500" />
                 </div>
               )}
               <div>
-                <p className="text-[9px] uppercase tracking-[0.3em] text-neutral-400 font-black mb-1">
+                <p className="text-[9px] uppercase tracking-[0.3em] text-neutral-500 font-black mb-1">
                   {campaign.campaign_type === 'film' ? 'Film Campaign' : 'Brand Campaign'}
                 </p>
                 <h2 className="text-2xl sm:text-3xl font-black text-neutral-50">{campaign.client_name || campaign.name}</h2>
@@ -372,11 +372,11 @@ export default function CampaignPortalPage() {
               <div className="flex items-start gap-4">
                 {artist.avatar_url ? (
                   <img src={artist.avatar_url} alt={artist.name}
-                    className="w-14 h-14 rounded-full object-cover border-2 border-neutral-800 shadow-md flex-shrink-0"
+                    className="w-14 h-14 rounded-full object-cover border-2 border-neutral-700 shadow-md flex-shrink-0"
                   />
                 ) : (
-                  <div className="w-14 h-14 rounded-full bg-neutral-200 border-2 border-neutral-800 shadow-md flex items-center justify-center flex-shrink-0">
-                    <Music size={18} className="text-neutral-400" />
+                  <div className="w-14 h-14 rounded-full bg-neutral-800 border-2 border-neutral-700 shadow-md flex items-center justify-center flex-shrink-0">
+                    <Music size={18} className="text-neutral-500" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
@@ -384,17 +384,17 @@ export default function CampaignPortalPage() {
                     <h2 className="text-xl font-black text-neutral-50 truncate">{artist.name}</h2>
                     {artist.verified && <CheckCircle size={14} className="text-neutral-50 flex-shrink-0" />}
                   </div>
-                  {artist.genre && <span className="text-[10px] uppercase tracking-widest text-neutral-400 font-black">{artist.genre}</span>}
+                  {artist.genre && <span className="text-[10px] uppercase tracking-widest text-neutral-500 font-black">{artist.genre}</span>}
                   {artist.bio && <p className="text-xs text-neutral-400 mt-1.5 line-clamp-2">{artist.bio}</p>}
                   <div className="flex items-center gap-4 mt-3">
                     {artist.monthly_streams && artist.monthly_streams > 0 && (
                       <div>
                         <p className="text-sm font-black text-neutral-50">{formatNumber(artist.monthly_streams)}</p>
-                        <p className="text-[7px] uppercase tracking-widest text-neutral-400 font-bold">Monthly Streams</p>
+                        <p className="text-[7px] uppercase tracking-widest text-neutral-500 font-bold">Monthly Streams</p>
                       </div>
                     )}
                     <a href={`/artist/${artist.slug}`} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-[10px] text-neutral-400 hover:text-neutral-200 transition-colors font-bold"
+                      className="flex items-center gap-1 text-[10px] text-neutral-500 hover:text-neutral-200 transition-colors font-bold"
                     >
                       <Globe size={10} /> Artist Profile
                     </a>
@@ -414,7 +414,7 @@ export default function CampaignPortalPage() {
             </div>
             <span className={`text-[9px] px-3 py-1 uppercase tracking-wider font-black rounded-full flex-shrink-0 ${
               campaign.status === 'active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
-              campaign.status === 'completed' ? 'bg-neutral-200 text-neutral-400 border border-neutral-800' :
+              campaign.status === 'completed' ? 'bg-neutral-800 text-neutral-400 border border-neutral-800' :
               'bg-amber-50 text-amber-700 border border-amber-200'
             }`}>
               <span className="inline-block w-1.5 h-1.5 rounded-full mr-1.5 animate-pulse" style={{
@@ -423,7 +423,7 @@ export default function CampaignPortalPage() {
               {campaign.status === 'active' ? 'Live Campaign' : campaign.status}
             </span>
           </div>
-          <div className="flex items-center gap-4 mt-2 text-[10px] text-neutral-400 font-bold">
+          <div className="flex items-center gap-4 mt-2 text-[10px] text-neutral-500 font-bold">
             {campaign.start_date && (
               <span>{new Date(campaign.start_date).toLocaleDateString()}{campaign.end_date ? ` — ${new Date(campaign.end_date).toLocaleDateString()}` : ' — Ongoing'}</span>
             )}
@@ -433,9 +433,9 @@ export default function CampaignPortalPage() {
 
         {/* ★ BIG Views Generated Counter */}
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.18 }}
-          className="rounded-2xl border border-neutral-800 bg-neutral-100 p-6 sm:p-8 text-center"
+          className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6 sm:p-8 text-center"
         >
-          <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-400 font-black mb-2">Views Generated</p>
+          <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-500 font-black mb-2">Views Generated</p>
           <p className="text-6xl sm:text-7xl font-black text-neutral-50 tracking-tight tabular-nums leading-none">
             {displayViews > 0 ? formatNumber(displayViews) : '—'}
           </p>
@@ -445,7 +445,7 @@ export default function CampaignPortalPage() {
               disabled={refreshing || cooldownRemaining > 0}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-[10px] uppercase tracking-wider font-black transition-all ${
                 refreshing || cooldownRemaining > 0
-                  ? 'bg-neutral-200 text-neutral-600 cursor-not-allowed'
+                  ? 'bg-neutral-800 text-neutral-600 cursor-not-allowed'
                   : 'bg-neutral-100 text-white hover:bg-neutral-200 active:scale-95'
               }`}
             >
@@ -455,7 +455,7 @@ export default function CampaignPortalPage() {
                 : 'Refresh Stats'}
             </button>
           </div>
-          <div className="flex items-center justify-center gap-2 mt-2 text-[9px] text-neutral-400">
+          <div className="flex items-center justify-center gap-2 mt-2 text-[9px] text-neutral-500">
             <span className="font-bold">Updated {lastRefresh.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • Auto-refreshes every 30 min</span>
           </div>
         </motion.div>
@@ -467,11 +467,11 @@ export default function CampaignPortalPage() {
           >
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-400 font-black">Growth Over Time</p>
-                <p className="text-[9px] text-neutral-400 mt-0.5">Cumulative views by content publish date</p>
+                <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-500 font-black">Growth Over Time</p>
+                <p className="text-[9px] text-neutral-500 mt-0.5">Cumulative views by content publish date</p>
               </div>
-              <div className="w-8 h-8 rounded-lg bg-neutral-200 flex items-center justify-center">
-                <TrendingUp size={14} className="text-neutral-600" />
+              <div className="w-8 h-8 rounded-lg bg-neutral-800 flex items-center justify-center">
+                <TrendingUp size={14} className="text-neutral-300" />
               </div>
             </div>
             <div className="h-48 sm:h-56">
@@ -512,13 +512,13 @@ export default function CampaignPortalPage() {
               className="rounded-xl p-4 sm:p-5 border border-neutral-800 bg-neutral-950"
             >
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-neutral-200">
-                  <stat.icon size={14} className="text-neutral-600" />
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-neutral-800">
+                  <stat.icon size={14} className="text-neutral-300" />
                 </div>
               </div>
               <p className="text-2xl sm:text-3xl font-black text-neutral-50">{stat.raw > 0 ? formatNumber(stat.raw) : '—'}</p>
               <p className="text-[9px] font-black uppercase tracking-wider text-neutral-400 mt-1">{stat.label}</p>
-              <p className="text-[8px] text-neutral-400 mt-0.5">{stat.sub}</p>
+              <p className="text-[8px] text-neutral-500 mt-0.5">{stat.sub}</p>
             </motion.div>
           ))}
         </motion.div>
@@ -541,7 +541,7 @@ export default function CampaignPortalPage() {
           ].map((m) => (
             <div key={m.label} className="rounded-xl p-4 text-center border border-neutral-800 bg-neutral-100">
               <p className="text-xl font-black text-white">{m.value}</p>
-              <p className="text-[8px] font-black uppercase tracking-wider text-neutral-400 mt-1">{m.label}</p>
+              <p className="text-[8px] font-black uppercase tracking-wider text-neutral-500 mt-1">{m.label}</p>
               <p className="text-[8px] text-neutral-400">{m.sub}</p>
             </div>
           ))}
@@ -552,21 +552,21 @@ export default function CampaignPortalPage() {
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
             className="rounded-xl p-5 sm:p-6 space-y-5 border border-neutral-800 bg-neutral-950"
           >
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">Campaign Objectives</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">Campaign Objectives</p>
             {campaign.goal_views > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs text-neutral-200 font-bold">{campaign.goal_label || 'Views Target'}</span>
                   <span className="text-sm font-black text-neutral-50">{Math.round(goalProgress)}%</span>
                 </div>
-                <div className="h-3 rounded-full overflow-hidden bg-neutral-200">
+                <div className="h-3 rounded-full overflow-hidden bg-neutral-800">
                   <motion.div initial={{ width: 0 }} animate={{ width: `${goalProgress}%` }} transition={{ duration: 1.5, ease: 'easeOut', delay: 0.5 }}
                     className="h-full rounded-full bg-neutral-100"
                   />
                 </div>
                 <div className="flex justify-between mt-1.5">
-                  <span className="text-[10px] text-neutral-400 font-bold">{campaign.total_views > 0 ? `${formatNumber(campaign.total_views)} achieved` : 'Awaiting data'}</span>
-                  <span className="text-[10px] text-neutral-400 font-bold">Target: {formatNumber(campaign.goal_views)}</span>
+                  <span className="text-[10px] text-neutral-500 font-bold">{campaign.total_views > 0 ? `${formatNumber(campaign.total_views)} achieved` : 'Awaiting data'}</span>
+                  <span className="text-[10px] text-neutral-500 font-bold">Target: {formatNumber(campaign.goal_views)}</span>
                 </div>
               </div>
             )}
@@ -576,7 +576,7 @@ export default function CampaignPortalPage() {
                   <span className="text-xs text-neutral-200 font-bold">Content Delivery</span>
                   <span className="text-sm font-black text-neutral-50">{edits.length}/{campaign.goal_posts}</span>
                 </div>
-                <div className="h-3 rounded-full overflow-hidden bg-neutral-200 relative">
+                <div className="h-3 rounded-full overflow-hidden bg-neutral-800 relative">
                   <motion.div initial={{ width: 0 }} animate={{ width: `${postsProgress}%` }} transition={{ duration: 1.5, ease: 'easeOut', delay: 0.7 }}
                     className="h-full rounded-full bg-neutral-700 absolute inset-y-0 left-0"
                   />
@@ -598,12 +598,12 @@ export default function CampaignPortalPage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-xl font-black text-neutral-50">Content Performance</h3>
-                <p className="text-[10px] text-neutral-400 font-bold mt-0.5">
+                <p className="text-[10px] text-neutral-500 font-bold mt-0.5">
                   {edits.length} published pieces{totalEditViews > 0 ? ` • ${formatNumber(totalEditViews)} combined reach` : ''}
                 </p>
               </div>
               <button onClick={() => exportCSV(campaign, edits)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[9px] uppercase tracking-wider font-black rounded-md border border-neutral-800 text-neutral-400 hover:bg-neutral-100 transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[9px] uppercase tracking-wider font-black rounded-md border border-neutral-800 text-neutral-400 hover:bg-neutral-900 transition-all"
               >
                 <Download size={11} /> CSV
               </button>
@@ -626,7 +626,7 @@ export default function CampaignPortalPage() {
                     className="group rounded-xl overflow-hidden border border-neutral-800 bg-neutral-950 hover:shadow-lg hover:border-neutral-700 transition-all cursor-pointer"
                   >
                     {/* Thumbnail */}
-                    <div className="aspect-[4/3] bg-neutral-200 relative overflow-hidden">
+                    <div className="aspect-[4/3] bg-neutral-800 relative overflow-hidden">
                       {thumb ? (
                         <img src={thumb} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                       ) : (
@@ -645,20 +645,20 @@ export default function CampaignPortalPage() {
                       {/* External link indicator */}
                       {edit.video_url && (
                         <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-neutral-950/90 shadow-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <ExternalLink size={10} className="text-neutral-600" />
+                          <ExternalLink size={10} className="text-neutral-300" />
                         </div>
                       )}
                     </div>
                     {/* Stats */}
                     <div className="p-3">
                       {edit.editor_username && (
-                        <p className="text-[10px] text-neutral-400 font-bold truncate">@{edit.editor_username}</p>
+                        <p className="text-[10px] text-neutral-500 font-bold truncate">@{edit.editor_username}</p>
                       )}
                       <div className="flex items-center gap-3 mt-1">
-                        <span className="text-xs font-black text-neutral-50">{formatNumber(edit.view_count)} <span className="text-neutral-400 font-bold text-[9px]">views</span></span>
-                        <span className="text-xs font-black text-neutral-50">{formatNumber(edit.like_count)} <span className="text-neutral-400 font-bold text-[9px]">likes</span></span>
+                        <span className="text-xs font-black text-neutral-50">{formatNumber(edit.view_count)} <span className="text-neutral-500 font-bold text-[9px]">views</span></span>
+                        <span className="text-xs font-black text-neutral-50">{formatNumber(edit.like_count)} <span className="text-neutral-500 font-bold text-[9px]">likes</span></span>
                         {edit.comment_count > 0 && (
-                          <span className="text-xs font-black text-neutral-50">{formatNumber(edit.comment_count)} <span className="text-neutral-400 font-bold text-[9px]">comments</span></span>
+                          <span className="text-xs font-black text-neutral-50">{formatNumber(edit.comment_count)} <span className="text-neutral-500 font-bold text-[9px]">comments</span></span>
                         )}
                       </div>
                     </div>
@@ -668,8 +668,8 @@ export default function CampaignPortalPage() {
             </div>
 
             {/* Aggregate footer */}
-            <div className="mt-4 rounded-xl border border-neutral-800 bg-neutral-100 px-5 py-4 flex items-center justify-between">
-              <span className="text-[9px] font-black uppercase tracking-wider text-neutral-400">Aggregate Performance</span>
+            <div className="mt-4 rounded-xl border border-neutral-800 bg-neutral-900 px-5 py-4 flex items-center justify-between">
+              <span className="text-[9px] font-black uppercase tracking-wider text-neutral-500">Aggregate Performance</span>
               <div className="flex items-center gap-5 text-[10px]">
                 <span className="text-neutral-400"><strong className="text-neutral-50 font-black">{formatNumber(totalEditViews)}</strong> reach</span>
                 <span className="text-neutral-400"><strong className="text-neutral-50 font-black">{formatNumber(totalLikes)}</strong> likes</span>
@@ -684,11 +684,11 @@ export default function CampaignPortalPage() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
             className="rounded-xl p-10 text-center border border-neutral-800 bg-neutral-950"
           >
-            <div className="w-12 h-12 rounded-xl mx-auto mb-4 flex items-center justify-center bg-neutral-200">
-              <BarChart3 size={20} className="text-neutral-400" />
+            <div className="w-12 h-12 rounded-xl mx-auto mb-4 flex items-center justify-center bg-neutral-800">
+              <BarChart3 size={20} className="text-neutral-500" />
             </div>
             <p className="text-lg font-black text-neutral-50 mb-1">Content Pipeline Initializing</p>
-            <p className="text-xs text-neutral-400 max-w-sm mx-auto">
+            <p className="text-xs text-neutral-500 max-w-sm mx-auto">
               Your campaign content is being produced and distributed. Performance metrics will populate in real-time as content goes live.
             </p>
           </motion.div>
