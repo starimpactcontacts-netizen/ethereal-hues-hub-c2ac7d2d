@@ -327,7 +327,7 @@ export default function CampaignPortalPage() {
               <Link2 size={11} /> {copied ? 'Copied!' : 'Share'}
             </button>
             <button onClick={() => exportCSV(campaign, edits)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-[9px] uppercase tracking-wider font-black rounded-md border border-neutral-100 bg-neutral-100 text-white hover:bg-neutral-200 transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[9px] uppercase tracking-wider font-black rounded-md border border-neutral-800 bg-neutral-900 text-neutral-100 hover:bg-neutral-800 transition-all"
             >
               <Download size={11} /> Export CSV
             </button>
@@ -446,7 +446,7 @@ export default function CampaignPortalPage() {
               className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-[10px] uppercase tracking-wider font-black transition-all ${
                 refreshing || cooldownRemaining > 0
                   ? 'bg-neutral-800 text-neutral-600 cursor-not-allowed'
-                  : 'bg-neutral-100 text-white hover:bg-neutral-200 active:scale-95'
+                  : 'bg-neutral-100 text-neutral-950 hover:bg-white active:scale-95'
               }`}
             >
               <RefreshCw size={11} className={refreshing ? 'animate-spin' : ''} />
@@ -539,10 +539,10 @@ export default function CampaignPortalPage() {
             },
             { label: 'Campaign Budget', value: campaign.budget_cents ? `$${(campaign.budget_cents / 100).toLocaleString()}` : '—', sub: campaign.budget_cents ? 'Total Allocated' : 'Not Set' },
           ].map((m) => (
-            <div key={m.label} className="rounded-xl p-4 text-center border border-neutral-800 bg-neutral-100">
-              <p className="text-xl font-black text-white">{m.value}</p>
-              <p className="text-[8px] font-black uppercase tracking-wider text-neutral-500 mt-1">{m.label}</p>
-              <p className="text-[8px] text-neutral-400">{m.sub}</p>
+            <div key={m.label} className="rounded-xl p-4 text-center border border-neutral-800 bg-neutral-900">
+              <p className="text-xl font-black text-neutral-50">{m.value}</p>
+              <p className="text-[8px] font-black uppercase tracking-wider text-neutral-400 mt-1">{m.label}</p>
+              <p className="text-[8px] text-neutral-500">{m.sub}</p>
             </div>
           ))}
         </motion.div>
@@ -561,7 +561,7 @@ export default function CampaignPortalPage() {
                 </div>
                 <div className="h-3 rounded-full overflow-hidden bg-neutral-800">
                   <motion.div initial={{ width: 0 }} animate={{ width: `${goalProgress}%` }} transition={{ duration: 1.5, ease: 'easeOut', delay: 0.5 }}
-                    className="h-full rounded-full bg-neutral-100"
+                    className="h-full rounded-full bg-neutral-200"
                   />
                 </div>
                 <div className="flex justify-between mt-1.5">
