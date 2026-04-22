@@ -1,7 +1,8 @@
 import { useNavigate, Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
 import { 
-  UserRound, Zap, Music, ChevronRight, ThumbsUp, MessageCircle, Play
+  UserRound, Zap, Music, ChevronRight, ThumbsUp, MessageCircle, Play, Info, X, Sparkles, Trophy, Gavel
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRecentSoloSubmissions, type RecentSolo } from "@/hooks/useRecentSoloSubmissions";
