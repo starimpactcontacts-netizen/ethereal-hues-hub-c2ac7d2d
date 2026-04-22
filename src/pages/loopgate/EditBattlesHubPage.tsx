@@ -487,12 +487,28 @@ export default function EditBattlesHubPage() {
     }
   };
 
-  const tabs: { key: TabKey; label: string; count: number; icon: any; color: string }[] = [
-    { key: "live", label: "Live Now", count: liveBattles.length, icon: Flame, color: "#ef4444" },
-    { key: "open", label: "Queue", count: pendingApps.length, icon: Zap, color: "#f59e0b" },
-    { key: "cash", label: "$ Battles", count: cashBattles.length, icon: DollarSign, color: "#10b981" },
-    { key: "completed", label: "Hall of Fame", count: completedBattles.length, icon: Trophy, color: "#fbbf24" },
-  ];
+  // Mode-aware tab counts — Instant uses quick_fights; Cash uses cash_battles
+  const liveCount = mode === "instant" ? liveQuickFights.length : liveBattles.length;
+  const queueCount = mode === "instant" ? (inQuickQueue ? 1 : 0) : pendingApps.length;
+  const completedCount = mode === "instant" ? completedQuickFights.length : completedBattles.length;
+
+  const tabs: { key: TabKey; label: string; count: number; icon: any; color: string }[] = mode === "instant"
+    ? [
+        { key: "live", label: "Live Now", count: liveCount, icon: Flame, color: "#ef4444" },
+        { key: "open", label: "Queue", count: queueCount, icon: Zap, color: "#3b82f6" },
+        { key: "completed", label: "Hall of Fame", count: completedCount, icon: Trophy, color: "#fbbf24" },
+      ]
+    : [
+        { key: "live", label: "Live Now", count: liveCount, icon: Flame, color: "#ef4444" },
+        { key: "open", label: "Queue", count: queueCount, icon: Zap, color: "#f59e0b" },
+        { key: "cash", label: "$ Battles", count: cashBattles.length, icon: DollarSign, color: "#10b981" },
+        { key: "completed", label: "Hall of Fame", count: completedCount, icon: Trophy, color: "#fbbf24" },
+      ];
+
+  // If user switches mode and current tab is "cash" but mode is instant, snap to live
+  useEffect(() => {
+    if (mode === "instant" && tab === "cash") setTab("live");
+  }, [mode, tab]);
 
   return (
     <div className="min-h-screen bg-black text-foreground">
