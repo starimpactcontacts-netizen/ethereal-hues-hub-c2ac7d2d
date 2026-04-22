@@ -6,7 +6,7 @@ import {
   Target, ArrowRight, Crown, Shield, Users, Trophy, 
   Users2, TrendingUp, Coins, ShoppingBag, Gavel, Gift,
   ChevronRight, Plus, Infinity as InfinityIcon, Star, Swords, Loader2,
-  Zap, UserRound, ChevronDown, Check, Clock, X, Info, Clapperboard, DollarSign, Crosshair
+  Zap, UserRound, ChevronDown, Check, Clock, X, Info, Clapperboard, DollarSign, Crosshair, BarChart3
 } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
@@ -181,7 +181,7 @@ interface UserCrew {
 }
 
 export default function HubPage() {
-  const { profile, user, refreshProfile } = useAuth();
+  const { profile, user, refreshProfile, isAdmin } = useAuth();
   const { isJudge } = useUserRoles(user?.id);
   const { profile: tempProfile } = useTempProfile();
   const { isGuest } = useGuestMode();
@@ -715,7 +715,25 @@ export default function HubPage() {
               </Link>
             )}
 
-            {/* My Arena */}
+            {/* My Arena — replaced by Campaign Manager for admins */}
+            {isAdmin ? (
+            <Link to="/ops-panel/a7c92ff31b/campaigns" className="group flex flex-col items-center gap-3">
+              <div className="relative w-[68px] h-[68px] rounded-[22px] overflow-hidden"
+                style={{
+                  background: 'linear-gradient(145deg, hsl(45 100% 8%) 0%, hsl(45 90% 12%) 50%, hsl(45 100% 6%) 100%)',
+                  border: '1px solid hsl(45 100% 50% / 0.25)',
+                  boxShadow: '0 8px 32px hsl(0 0% 0% / 0.8), inset 0 1px 0 hsl(45 100% 50% / 0.12), 0 0 16px hsl(45 100% 50% / 0.1)',
+                }}>
+                <div className="absolute w-[1px] h-[1px] rounded-full bg-amber-300/40 top-3 left-5" style={{ boxShadow: '0 0 2px hsl(45 100% 60% / 0.4)' }} />
+                <div className="absolute w-[1px] h-[1px] rounded-full bg-amber-300/50 bottom-5 right-4" style={{ boxShadow: '0 0 2px hsl(45 100% 60% / 0.4)' }} />
+                <div className="absolute inset-[6px] rounded-[16px]" style={{ border: '1px solid hsl(45 100% 50% / 0.08)' }} />
+                <div className="relative z-10 flex h-full w-full items-center justify-center">
+                  <BarChart3 className="w-7 h-7" style={{ color: 'hsl(45 100% 65%)' }} />
+                </div>
+              </div>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'hsl(45 100% 65%)' }}>Campaigns</span>
+            </Link>
+            ) : (
             <Link to="/arena?tab=my" className="group flex flex-col items-center gap-3">
               <div className="relative w-[68px] h-[68px] rounded-[22px] overflow-hidden"
                 style={{
@@ -732,6 +750,7 @@ export default function HubPage() {
               </div>
               <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'hsl(0 0% 100% / 0.35)' }}>My Arena</span>
             </Link>
+            )}
             </div>
           </div>
         </div>
