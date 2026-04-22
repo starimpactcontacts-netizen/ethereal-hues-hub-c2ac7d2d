@@ -1095,7 +1095,21 @@ export default function CampaignAdminPage() {
                               ) : (
                                 <div className="space-y-1.5">
                                   {campaignEdits.map(edit => (
-                                    <div key={edit.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-background/30 border border-border/15 hover:border-border/30 transition-colors">
+                                    <div
+                                      key={edit.id}
+                                      role={edit.video_url ? 'button' : undefined}
+                                      tabIndex={edit.video_url ? 0 : -1}
+                                      onClick={() => {
+                                        if (edit.video_url) window.open(edit.video_url, '_blank', 'noopener,noreferrer');
+                                      }}
+                                      onKeyDown={e => {
+                                        if (edit.video_url && (e.key === 'Enter' || e.key === ' ')) {
+                                          e.preventDefault();
+                                          window.open(edit.video_url, '_blank', 'noopener,noreferrer');
+                                        }
+                                      }}
+                                      className={`flex items-center gap-3 p-2.5 rounded-lg bg-background/30 border border-border/15 transition-colors ${edit.video_url ? 'hover:border-border/30 cursor-pointer' : ''}`}
+                                    >
                                       <div className="w-12 h-8 rounded bg-background/60 flex items-center justify-center flex-shrink-0 overflow-hidden">
                                         {edit.thumbnail_url ? (
                                           <img src={edit.thumbnail_url} alt="" className="w-full h-full object-cover rounded" />
@@ -1113,6 +1127,7 @@ export default function CampaignAdminPage() {
                                           inputMode="numeric"
                                           defaultValue={formatNumberInput(edit.view_count)}
                                           className="w-24 h-6 text-[10px] bg-background/60 border-border/20 rounded font-mono tabular-nums text-right"
+                                          onClick={e => e.stopPropagation()}
                                           onChange={e => {
                                             // Re-format as user types
                                             const raw = parseNumberInput(e.target.value);
@@ -1123,7 +1138,7 @@ export default function CampaignAdminPage() {
                                             if (val !== edit.view_count) handleUpdateEditViews(edit.id, val);
                                           }}
                                         />
-                                        <button onClick={() => handleDeleteEdit(edit.id)} className="h-6 w-6 rounded flex items-center justify-center text-destructive/40 hover:text-destructive hover:bg-destructive/10 transition-colors">
+                                        <button onClick={e => { e.stopPropagation(); handleDeleteEdit(edit.id); }} className="h-6 w-6 rounded flex items-center justify-center text-destructive/40 hover:text-destructive hover:bg-destructive/10 transition-colors">
                                           <Trash2 className="w-3 h-3" />
                                         </button>
                                       </div>
