@@ -141,8 +141,9 @@ async function fetchViaMainPage(shortcode: string): Promise<{
       console.log('Trying main page:', pageUrl);
       const res = await fetch(pageUrl, {
         headers: {
-          'User-Agent': 'Googlebot/2.1 (+http://www.google.com/bot.html)',
-          'Accept': 'text/html',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml',
+          'Accept-Language': 'en-US,en;q=0.9',
         },
       });
       if (!res.ok) continue;
@@ -181,15 +182,24 @@ async function fetchViaMainPage(shortcode: string): Promise<{
       // Fallback: regex patterns on raw HTML/embedded JSON
       if (views === null) {
         const viewPatterns = [
+          /"play_count"\s*:\s*(\d+)/,
+          /"video_play_count"\s*:\s*(\d+)/,
+          /"video_view_count"\s*:\s*(\d+)/,
           /video_view_count["\s:]+(\d+)/,
           /video_play_count["\s:]+(\d+)/,
           /play_count["\s:]+(\d+)/,
           /"view_count"\s*:\s*(\d+)/,
         ];
+        // Take the MAX across all matching patterns (Instagram embeds multiple counters; latest is usually highest)
+        let best = 0;
         for (const p of viewPatterns) {
-          const m = html.match(p);
-          if (m) { views = parseInt(m[1], 10); break; }
+          const matches = html.matchAll(new RegExp(p.source, 'g'));
+          for (const m of matches) {
+            const n = parseInt(m[1], 10);
+            if (!isNaN(n) && n > best) best = n;
+          }
         }
+        if (best > 0) views = best;
       }
       if (likes === null) {
         const likePatterns = [/likes_count["\s:]+(\d+)/, /like_count["\s:]+(\d+)/, /edge_liked_by[^}]*count["\s:]+(\d+)/];
