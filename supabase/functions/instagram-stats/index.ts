@@ -486,7 +486,7 @@ serve(async (req) => {
 
       let query = supabase
         .from('artist_campaign_edits')
-        .select('id, campaign_id, video_url, view_count, like_count, comment_count, share_count, thumbnail_url')
+        .select('id, campaign_id, video_url, view_count, like_count, comment_count, share_count, thumbnail_url, published_at')
         .or('platform.eq.instagram,video_url.ilike.%instagram.com%');
 
       if (campaignIdFilter) {
@@ -529,6 +529,14 @@ serve(async (req) => {
           if (stats.comments !== null && stats.comments > (edit.comment_count || 0)) payload.comment_count = stats.comments;
           if (stats.shares !== null && stats.shares > (edit.share_count || 0)) payload.share_count = stats.shares;
           if (stats.thumbnailUrl && !edit.thumbnail_url) payload.thumbnail_url = stats.thumbnailUrl;
+          // EXACT publish date from Instagram's own taken_at_timestamp - always sync if missing
+          // or if scraped value differs (Instagram is authoritative on this)
+          if (stats.takenAt && stats.takenAt > 0) {
+            const exactDate = new Date(stats.takenAt * 1000).toISOString();
+            if (!edit.published_at || new Date(edit.published_at).getTime() !== stats.takenAt * 1000) {
+              payload.published_at = exactDate;
+            }
+          }
 
           if (Object.keys(payload).length > 1) {
             await supabase.from('artist_campaign_edits').update(payload).eq('id', edit.id);
