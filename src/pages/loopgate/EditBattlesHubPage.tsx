@@ -598,21 +598,26 @@ export default function EditBattlesHubPage() {
   );
 }
 
-function StatChip({ label, value, color }: { label: string; value: string | number; color: string }) {
+function StatChip({ label, value, color, icon }: { label: string; value: string | number; color: string; icon?: string }) {
   return (
     <div
-      className="rounded-xl px-2 py-2 border border-white/[0.06]"
+      className="rounded-xl px-2.5 py-2 border relative overflow-hidden"
       style={{
-        background: `linear-gradient(180deg, ${color}10 0%, rgba(20,20,22,0.8) 100%)`,
+        background: `linear-gradient(180deg, ${color}25 0%, rgba(15,15,18,0.9) 100%)`,
+        borderColor: `${color}30`,
+        boxShadow: `inset 0 1px 0 ${color}30, 0 4px 12px -4px ${color}20`,
       }}
     >
-      <div
-        className="text-lg font-black leading-none"
-        style={{ color, fontFamily: "Teko, sans-serif" }}
-      >
-        {value}
+      <div className="flex items-baseline gap-1">
+        {icon && <span className="text-[11px] leading-none">{icon}</span>}
+        <div
+          className="text-2xl font-black leading-none"
+          style={{ color, fontFamily: "Teko, sans-serif", textShadow: `0 0 12px ${color}80` }}
+        >
+          {value}
+        </div>
       </div>
-      <div className="text-[9px] text-zinc-500 uppercase tracking-wider font-bold mt-0.5">
+      <div className="text-[9px] uppercase tracking-[0.15em] font-black mt-0.5" style={{ color: `${color}aa` }}>
         {label}
       </div>
     </div>
