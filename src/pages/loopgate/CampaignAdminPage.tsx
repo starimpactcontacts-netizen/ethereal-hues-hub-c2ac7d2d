@@ -120,6 +120,8 @@ export default function CampaignAdminPage() {
 
   const [newCampaign, setNewCampaign] = useState({ client_name: '', name: '', description: '', goal_views: 0, goal_posts: 0, goal_label: '', featured_artist_id: '', campaign_type: 'artist' as 'artist' | 'brand' | 'film', logo_url: '' });
   const [newEdit, setNewEdit] = useState({ title: '', video_url: '', thumbnail_url: '', platform: 'tiktok', editor_username: '', view_count: 0 });
+  const [urlStatus, setUrlStatus] = useState<{ kind: 'idle' | 'checking' | 'duplicate' | 'fetching' | 'ready' | 'error'; message?: string }>({ kind: 'idle' });
+  const [showEditorPicker, setShowEditorPicker] = useState(false);
   const [statsForm, setStatsForm] = useState({ total_views: 0, total_impressions: 0, total_engagements: 0, total_clicks: 0, roi_percentage: 0, budget_cents: 0, goal_views: 0, goal_posts: 0, goal_label: '', incoming_note: '', campaign_type: 'artist', logo_url: '' });
   const [artistSongs, setArtistSongs] = useState<ArtistSong[]>([]);
 
@@ -179,6 +181,45 @@ export default function CampaignAdminPage() {
         : p.title;
       return { ...p, video_url: url, platform, title: p.title && !p.title.startsWith((campaign?.name || 'Campaign').split(/\s+/)[0]) ? p.title : autoTitle };
     });
+
+    // Live duplicate detection + auto-fetch metrics
+    if (!url.trim()) { setUrlStatus({ kind: 'idle' }); return; }
+
+    const normalize = (u: string) => u.trim().toLowerCase().replace(/\?.*$/, '').replace(/\/$/, '');
+    const target = normalize(url);
+    const existing = getEditsForCampaign(campaignId).find(
+      e => e.video_url && normalize(e.video_url) === target
+    );
+    if (existing) {
+      setUrlStatus({ kind: 'duplicate', message: existing.title || 'Already added' });
+      return;
+    }
+
+    setUrlStatus({ kind: 'checking' });
+
+    // Auto-fetch live metrics + thumbnail for Instagram
+    if (detected === 'instagram') {
+      setUrlStatus({ kind: 'fetching' });
+      supabase.functions.invoke('instagram-stats', { body: { action: 'get-stats', url } })
+        .then(({ data, error }) => {
+          if (error || !data?.success) { setUrlStatus({ kind: 'ready' }); return; }
+          setNewEdit(p => ({
+            ...p,
+            view_count: data.views ?? p.view_count,
+            thumbnail_url: p.thumbnail_url || data.thumbnailUrl || '',
+          }));
+          setUrlStatus({ kind: 'ready', message: data.views ? `Pulled ${formatNumber(data.views)} views` : 'Ready to add' });
+        })
+        .catch(() => setUrlStatus({ kind: 'ready' }));
+    } else if (detected === 'youtube') {
+      const m = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+      if (m) {
+        setNewEdit(p => ({ ...p, thumbnail_url: p.thumbnail_url || `https://img.youtube.com/vi/${m[1]}/mqdefault.jpg` }));
+      }
+      setUrlStatus({ kind: 'ready' });
+    } else {
+      setUrlStatus({ kind: 'ready' });
+    }
   };
 
   const handleAddEdit = async (campaignId: string) => {
