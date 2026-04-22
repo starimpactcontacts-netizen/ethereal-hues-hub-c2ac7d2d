@@ -232,6 +232,89 @@ function ArenaMissionsSection() {
           </ArenaRailCard>
         )}
       </ArenaRail>
+
+      <AnimatePresence>
+        {showInfo && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowInfo(false)}
+            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ y: 40, opacity: 0, scale: 0.96 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 40, opacity: 0, scale: 0.96 }}
+              transition={{ type: 'spring', damping: 24, stiffness: 280 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-md rounded-3xl overflow-hidden border border-emerald-500/20"
+              style={{
+                background: 'linear-gradient(180deg, #0d1117 0%, #050709 100%)',
+                boxShadow: '0 24px 60px -20px rgba(16,185,129,0.25), inset 0 1px 0 rgba(255,255,255,0.05)',
+              }}
+            >
+              {/* Header */}
+              <div className="relative px-5 pt-5 pb-4 border-b border-white/[0.06]">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-lg shadow-emerald-900/40">
+                    <DollarSign className="w-5 h-5 text-white" strokeWidth={2.8} />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-[20px] font-black text-white leading-none tracking-tight" style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.02em' }}>
+                      HOW MISSIONS WORK
+                    </h3>
+                    <p className="text-[10px] font-bold text-emerald-400/80 uppercase tracking-[0.18em] mt-1">Get paid to edit</p>
+                  </div>
+                  <button
+                    onClick={() => setShowInfo(false)}
+                    className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-colors"
+                    aria-label="Close"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Steps */}
+              <div className="px-5 py-5 space-y-3">
+                {[
+                  { n: '01', title: 'Pick a mission', body: 'Browse paid drops from artists, brands & films. Each card shows the payout & slots left.' },
+                  { n: '02', title: 'Drop your edit', body: 'Submit your TikTok / IG / YT link before the deadline. Use the scenepacks provided.' },
+                  { n: '03', title: 'Get rated', body: 'Your edit is graded S, A, or B. Higher grade = bigger payout. Top edits get featured.' },
+                  { n: '04', title: 'Cash out', body: 'Approved payouts hit your earnings instantly. Withdraw anytime once you hit the minimum.' },
+                ].map((s) => (
+                  <div key={s.n} className="flex gap-3">
+                    <div className="shrink-0 w-9 h-9 rounded-xl border border-emerald-500/25 bg-emerald-500/10 flex items-center justify-center">
+                      <span className="text-[11px] font-black text-emerald-400" style={{ fontFamily: 'Teko, sans-serif' }}>{s.n}</span>
+                    </div>
+                    <div className="flex-1 pt-0.5">
+                      <h4 className="text-[14px] font-bold text-white leading-tight">{s.title}</h4>
+                      <p className="text-[12px] text-white/55 leading-snug mt-0.5">{s.body}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Footer CTA */}
+              <div className="px-5 pb-5 pt-1">
+                <button
+                  onClick={() => { setShowInfo(false); navigate('/missions'); }}
+                  className="w-full py-3 rounded-2xl font-black text-white text-[15px] uppercase tracking-wider active:scale-[0.98] transition-transform"
+                  style={{
+                    background: 'linear-gradient(90deg, #10b981 0%, #059669 100%)',
+                    boxShadow: '0 10px 28px -8px rgba(16,185,129,0.5), inset 0 1px 0 rgba(255,255,255,0.2)',
+                    fontFamily: 'Teko, sans-serif',
+                    letterSpacing: '0.06em',
+                  }}
+                >
+                  Browse Missions
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
