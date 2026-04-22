@@ -19,6 +19,7 @@ import JudgeApplicationsSection from "@/components/loopgate/JudgeApplicationsSec
 import SanctionedTournamentManagement from "@/components/loopgate/SanctionedTournamentManagement";
 import LeagueApplicationsAdmin from "@/components/loopgate/LeagueApplicationsAdmin";
 import CashBattleAdminPanel from "@/components/loopgate/CashBattleAdminPanel";
+import { useRecoverBodyScroll } from "@/hooks/useRecoverBodyScroll";
 
 import { awardReviewXP } from "@/hooks/useJudgeXP";
 import BattleAdminPanel from "@/components/loopgate/BattleAdminPanel";
@@ -444,36 +445,7 @@ export default function OpsPanel() {
   });
   const [broadcasting, setBroadcasting] = useState(false);
 
-  // Fix iOS scroll lock — dialogs can leave the page stuck after closing on mobile Safari
-  useEffect(() => {
-    const unlockScroll = () => {
-      const hasOpenDialog = document.querySelector('[data-state="open"][role="dialog"]');
-      if (hasOpenDialog) return;
-
-      document.body.style.overflow = '';
-      document.body.style.overflowY = '';
-      document.body.style.pointerEvents = '';
-      document.body.style.touchAction = 'auto';
-      document.body.removeAttribute('data-scroll-locked');
-
-      document.documentElement.style.overflow = '';
-      document.documentElement.style.overflowY = '';
-      document.documentElement.style.pointerEvents = '';
-      document.documentElement.style.touchAction = 'auto';
-      document.documentElement.removeAttribute('data-scroll-locked');
-    };
-
-    unlockScroll();
-    const observer = new MutationObserver(unlockScroll);
-    observer.observe(document.body, { attributes: true, attributeFilter: ['style', 'data-scroll-locked'] });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style', 'data-scroll-locked'] });
-    const interval = window.setInterval(unlockScroll, 500);
-
-    return () => {
-      observer.disconnect();
-      window.clearInterval(interval);
-    };
-  }, []);
+  useRecoverBodyScroll();
 
   // Role check - redirect if no ops access (handled by ProtectedRoute, but double-check)
   useEffect(() => {
