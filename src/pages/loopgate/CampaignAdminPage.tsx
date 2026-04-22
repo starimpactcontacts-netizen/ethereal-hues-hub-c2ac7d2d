@@ -137,6 +137,20 @@ export default function CampaignAdminPage() {
   const handleAddEdit = async (campaignId: string) => {
     if (!newEdit.title) { toast.error('Enter edit title'); return; }
     try {
+      // Duplicate detection — same video URL already linked to this campaign
+      if (newEdit.video_url && newEdit.video_url.trim()) {
+        const normalize = (u: string) => u.trim().toLowerCase().replace(/\?.*$/, '').replace(/\/$/, '');
+        const target = normalize(newEdit.video_url);
+        const existing = getEditsForCampaign(campaignId).find(
+          e => e.video_url && normalize(e.video_url) === target
+        );
+        if (existing) {
+          toast.error('This post has already been added', {
+            description: existing.title || 'Duplicate video URL detected.',
+          });
+          return;
+        }
+      }
       await addEdit({ campaign_id: campaignId, ...newEdit });
       toast.success('Edit added');
       setNewEdit({ title: '', video_url: '', thumbnail_url: '', platform: 'tiktok', editor_username: '', view_count: 0 });
