@@ -1000,9 +1000,9 @@ export default function HubPage() {
           </div>
 
 
-          {/* Queue status bar — when searching for Quick Edit Battle */}
+          {/* Queue status bar — when searching for an Edit Battle opponent */}
           <AnimatePresence>
-            {quickAction === 'quick' && qfIsSearching && (
+            {quickAction === 'edit_battle' && qfIsSearching && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
