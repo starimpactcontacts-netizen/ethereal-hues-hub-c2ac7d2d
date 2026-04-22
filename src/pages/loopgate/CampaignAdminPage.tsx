@@ -134,8 +134,41 @@ export default function CampaignAdminPage() {
     } catch (err: any) { toast.error(err.message); }
   };
 
+  const generateProTitle = (url: string, campaignName: string, platform: string, handle: string, index: number) => {
+    const base = (campaignName || 'Campaign').trim().split(/\s+/)[0];
+    const platformLabel = platform === 'youtube' ? 'YouTube' : platform === 'instagram' ? 'Instagram' : platform === 'twitter' ? 'Twitter/X' : 'TikTok';
+    // Detect if URL is a "clip" style (shorts/reels/short clip) vs longer edit
+    const lower = (url || '').toLowerCase();
+    const isClip = /shorts|reel|clip|status|\/p\//.test(lower) || platform === 'tiktok' || platform === 'instagram';
+    const kind = isClip ? 'Clip' : 'Edit';
+    const handlePart = handle ? ` · @${handle.replace(/^@/, '')}` : '';
+    return `${base} ${kind} #${index + 1} · ${platformLabel}${handlePart}`;
+  };
+
+  const detectPlatformFromUrl = (url: string): string | null => {
+    const u = url.toLowerCase();
+    if (u.includes('tiktok.com')) return 'tiktok';
+    if (u.includes('youtube.com') || u.includes('youtu.be')) return 'youtube';
+    if (u.includes('instagram.com')) return 'instagram';
+    if (u.includes('twitter.com') || u.includes('x.com')) return 'twitter';
+    return null;
+  };
+
+  const handleVideoUrlChange = (url: string, campaignId: string) => {
+    const detected = detectPlatformFromUrl(url);
+    const campaign = campaigns.find(c => c.id === campaignId);
+    const count = getEditsForCampaign(campaignId).length;
+    setNewEdit(p => {
+      const platform = detected || p.platform;
+      const autoTitle = url.trim()
+        ? generateProTitle(url, campaign?.name || '', platform, p.editor_username, count)
+        : p.title;
+      return { ...p, video_url: url, platform, title: p.title && !p.title.startsWith((campaign?.name || 'Campaign').split(/\s+/)[0]) ? p.title : autoTitle };
+    });
+  };
+
   const handleAddEdit = async (campaignId: string) => {
-    if (!newEdit.title) { toast.error('Enter edit title'); return; }
+    if (!newEdit.title) { toast.error('Enter a title'); return; }
     try {
       // Duplicate detection — same video URL already linked to this campaign
       if (newEdit.video_url && newEdit.video_url.trim()) {
