@@ -500,6 +500,8 @@ export default function EditBattlesHubPage() {
   const [tab, setTab] = useState<TabKey>("live");
   const [pendingApps, setPendingApps] = useState<CashBattleApplication[]>([]);
   const [joining, setJoining] = useState(false);
+  const [queueEditors, setQueueEditors] = useState<QueueEditor[]>([]);
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   // Subscribe to pending apps in real time
   useEffect(() => {
@@ -518,6 +520,29 @@ export default function EditBattlesHubPage() {
         "postgres_changes",
         { event: "*", schema: "public", table: "cash_battle_applications" },
         () => fetchPending()
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // Realtime: who's currently waiting in the Quick Match queue
+  useEffect(() => {
+    async function fetchQueue() {
+      const { data } = await (supabase as any)
+        .from("quick_fight_queue")
+        .select("id, user_id, username, avatar_url, queued_at")
+        .order("queued_at", { ascending: true });
+      setQueueEditors((data as QueueEditor[] | null) || []);
+    }
+    fetchQueue();
+    const channel = supabase
+      .channel("edit-battles-hub-queue")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "quick_fight_queue" },
+        () => fetchQueue()
       )
       .subscribe();
     return () => {
