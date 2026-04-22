@@ -478,6 +478,58 @@ export default function BattleDetailPage() {
           />
         )}
 
+        {/* Forfeit Battle — escape hatch for active participants */}
+        {isParticipant && battle.status === 'active' && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+            <button
+              onClick={async () => {
+                const confirmed = window.confirm(
+                  "Forfeit this battle?\n\n• Your opponent will be declared the winner\n• You will lose 5 IDX\n• This cannot be undone"
+                );
+                if (!confirmed) return;
+                const opponentId = isChallenger ? battle.opponent_id : battle.challenger_id;
+                try {
+                  await supabase.from('battles').update({
+                    status: 'completed',
+                    winner_id: opponentId,
+                    judged_at: new Date().toISOString(),
+                    winner_index_awarded: 20,
+                    loser_index_penalty: 5,
+                  }).eq('id', battle.id);
+                  if (user?.id) {
+                    await supabase.rpc('increment_user_index' as any, {
+                      p_user_id: user.id,
+                      p_amount: -5,
+                    }).catch(() => {});
+                  }
+                  if (opponentId) {
+                    await supabase.from('notifications').insert({
+                      user_id: opponentId,
+                      type: 'battle_won',
+                      title: 'Opponent forfeited',
+                      message: `Your opponent walked away — you win this battle!`,
+                      data: { battle_id: battle.id },
+                    } as any).catch(() => {});
+                  }
+                  toast.info("You forfeited the battle. -5 IDX");
+                  navigate('/arena');
+                } catch (err) {
+                  console.error('Forfeit failed:', err);
+                  toast.error("Couldn't forfeit. Try again.");
+                }
+              }}
+              className="w-full py-3 rounded-xl border border-zinc-800 bg-zinc-950/60 text-zinc-500 hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/5 transition-colors text-xs font-bold uppercase tracking-[0.2em] flex items-center justify-center gap-2"
+              style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.18em' }}
+            >
+              <Flag className="w-3.5 h-3.5" />
+              Forfeit Battle · −5 IDX
+            </button>
+            <p className="text-[10px] text-zinc-600 text-center mt-1.5">
+              Walk away if you can't submit. Opponent wins.
+            </p>
+          </motion.div>
+        )}
+
         {/* Song Display for spectators */}
         {!isParticipant && (battle as any).theme_song_name && (
           <div className="bg-emerald-500/5 border border-emerald-500/15 rounded-xl p-3 flex items-center gap-3">
