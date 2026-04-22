@@ -304,7 +304,23 @@ export default function CashBattlePage() {
             Cash Battle
           </span>
         </div>
-        <div className="text-right">
+        <button
+          onClick={scrollToChat}
+          className="relative w-9 h-9 flex items-center justify-center rounded-full transition-all active:scale-95"
+          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
+          aria-label="Jump to chat"
+        >
+          <MessageCircle className="w-4 h-4 text-white" />
+          {unreadChat > 0 && (
+            <span
+              className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-[4px] rounded-full text-[9px] font-black text-white flex items-center justify-center"
+              style={{ background: "linear-gradient(135deg, #ef4444, #dc2626)", boxShadow: "0 0 8px rgba(239,68,68,0.6)" }}
+            >
+              {unreadChat > 9 ? "9+" : unreadChat}
+            </span>
+          )}
+        </button>
+        <div className="text-right ml-1">
           <span className="text-2xl font-black text-white" style={{ fontFamily: "Teko, sans-serif" }}>
             {formatPrize(battle.prize_cents)}
           </span>
@@ -346,7 +362,7 @@ export default function CashBattlePage() {
           {/* Tagline strip */}
           <div className="px-3 py-2" style={{ background: "rgba(255,255,255,0.02)", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
             <p className="text-[10px] text-zinc-500 text-center">
-              Use the <strong className="text-white">official scenepack</strong> to create your edit — best edit wins <strong className="text-white">{formatPrize(battle.prize_cents)}</strong>
+              Use the <strong className="text-white">scenepacks provided</strong> to create your edit — best edit wins <strong className="text-white">{formatPrize(battle.prize_cents)}</strong>
             </p>
           </div>
         </div>
@@ -745,7 +761,7 @@ export default function CashBattlePage() {
 
       {/* Chat */}
       {battleId && (
-        <div className="mx-4 mb-4 rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.06)" }}>
+        <div ref={chatRef} className="mx-4 mb-4 rounded-2xl overflow-hidden scroll-mt-20" style={{ border: "1px solid rgba(255,255,255,0.06)" }}>
           <CashBattleChat
             battleId={battleId}
             challengerId={battle.challenger_id}
