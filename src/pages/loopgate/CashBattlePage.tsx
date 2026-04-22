@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, DollarSign, Clock, Send, Trophy, ExternalLink, Zap, Film, ChevronDown, CheckCircle, Loader2, Camera, Image as ImageIcon, XCircle } from "lucide-react";
+import { ArrowLeft, DollarSign, Clock, Send, Trophy, ExternalLink, Zap, Film, ChevronDown, CheckCircle, Loader2, Camera, Image as ImageIcon, XCircle, MessageCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,6 +50,33 @@ export default function CashBattlePage() {
   const [cancellingBattle, setCancellingBattle] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const autoAcceptRef = useRef(false);
+  const chatRef = useRef<HTMLDivElement>(null);
+  const [unreadChat, setUnreadChat] = useState(0);
+
+  // Track chat messages for unread badge — clears when user scrolls chat into view
+  useEffect(() => {
+    if (!battleId) return;
+    const ch = supabase
+      .channel(`cash-battle-chat-unread-${battleId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "cash_battle_messages", filter: `battle_id=eq.${battleId}` },
+        (payload: any) => {
+          if (payload.new?.user_id === user?.id) return;
+          // Only increment if chat not in viewport
+          const rect = chatRef.current?.getBoundingClientRect();
+          const visible = rect && rect.top < window.innerHeight && rect.bottom > 0;
+          if (!visible) setUnreadChat((n) => n + 1);
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [battleId, user?.id]);
+
+  function scrollToChat() {
+    chatRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setUnreadChat(0);
+  }
 
   useEffect(() => {
     if (!battleId) return;
