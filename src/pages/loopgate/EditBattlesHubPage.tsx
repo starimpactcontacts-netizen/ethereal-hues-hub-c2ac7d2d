@@ -365,6 +365,125 @@ function QuickFightRow({ fight, onClick }: { fight: QuickFight; onClick: () => v
   );
 }
 
+// Roblox-sexy queue card — other waiting editors you can manually accept
+function QueueEditorRow({ editor, isOwn, onAccept }: { editor: QueueEditor; isOwn: boolean; onAccept: () => void }) {
+  const waitedSec = Math.max(0, Math.floor((Date.now() - new Date(editor.queued_at).getTime()) / 1000));
+  const waited = waitedSec < 60 ? `${waitedSec}s` : `${Math.floor(waitedSec / 60)}m`;
+  return (
+    <motion.div
+      whileTap={{ scale: 0.98 }}
+      onClick={isOwn ? undefined : onAccept}
+      className="relative rounded-2xl overflow-hidden cursor-pointer"
+      style={{
+        background: isOwn
+          ? "linear-gradient(180deg, rgba(37,99,235,0.18) 0%, rgba(22,22,26,0.95) 100%)"
+          : "linear-gradient(180deg, rgba(139,92,246,0.12) 0%, rgba(22,22,26,0.95) 100%)",
+        border: isOwn ? "1px solid rgba(59,130,246,0.4)" : "1px solid rgba(139,92,246,0.3)",
+        boxShadow: isOwn
+          ? "inset 0 1px 0 rgba(59,130,246,0.2), 0 8px 24px -16px rgba(59,130,246,0.4)"
+          : "inset 0 1px 0 rgba(139,92,246,0.15), 0 8px 24px -16px rgba(139,92,246,0.3)",
+      }}
+    >
+      <div
+        className="absolute top-0 left-0 right-0 h-[2px]"
+        style={{
+          background: isOwn
+            ? "linear-gradient(90deg, #3b82f6, transparent, #3b82f6)"
+            : "linear-gradient(90deg, #8b5cf6, transparent, #ef4444)",
+        }}
+      />
+      <div className="px-4 py-3 flex items-center gap-3">
+        {/* Status badge */}
+        <div className="flex flex-col items-center gap-0.5 shrink-0 w-16">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center relative"
+            style={{
+              background: isOwn
+                ? "linear-gradient(135deg, #2563eb, #1d4ed8)"
+                : "linear-gradient(135deg, #8b5cf6, #6366f1)",
+            }}
+          >
+            <Loader2 className="w-5 h-5 text-white animate-spin" strokeWidth={2.5} />
+          </div>
+          <span
+            className="text-[10px] font-black leading-none uppercase tracking-wider"
+            style={{ fontFamily: "Teko, sans-serif", color: isOwn ? "#60a5fa" : "#c4b5fd" }}
+          >
+            QUEUE
+          </span>
+        </div>
+
+        {/* VS layout */}
+        <div className="flex-1 min-w-0 flex items-center justify-center gap-2">
+          <div className="flex flex-col items-center min-w-0 flex-1">
+            <Avatar className="w-9 h-9 ring-2" style={{ boxShadow: isOwn ? "0 0 0 2px rgba(59,130,246,0.5)" : "0 0 0 2px rgba(139,92,246,0.5)" }}>
+              <AvatarImage src={editor.avatar_url || ""} />
+              <AvatarFallback className="text-xs font-bold bg-zinc-800 text-zinc-300">
+                {editor.username?.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+            <span
+              className="text-[10px] font-bold truncate max-w-full mt-1 uppercase"
+              style={{ fontFamily: "Teko, sans-serif", color: isOwn ? "#93c5fd" : "#c4b5fd" }}
+            >
+              {isOwn ? "YOU" : editor.username}
+            </span>
+          </div>
+          <span className="text-sm font-black text-white/30" style={{ fontFamily: "Teko, sans-serif" }}>
+            VS
+          </span>
+          <div className="flex flex-col items-center min-w-0 flex-1">
+            <div className="w-9 h-9 rounded-full border-2 border-dashed flex items-center justify-center" style={{ borderColor: "rgba(245,158,11,0.4)" }}>
+              <span className="text-amber-400/70 text-sm">?</span>
+            </div>
+            <span
+              className="text-[10px] font-black truncate max-w-full mt-1 uppercase text-amber-400"
+              style={{ fontFamily: "Teko, sans-serif" }}
+            >
+              {isOwn ? "WAITING" : "YOU?"}
+            </span>
+          </div>
+        </div>
+
+        {/* Action / status */}
+        <div className="shrink-0 w-16 flex flex-col items-end gap-1">
+          {isOwn ? (
+            <>
+              <span
+                className="text-[9px] font-black uppercase tracking-wider text-blue-300"
+                style={{ fontFamily: "Teko, sans-serif" }}
+              >
+                TAP →
+              </span>
+              <span className="text-[9px] text-zinc-500 flex items-center gap-0.5">
+                <Clock className="w-2.5 h-2.5" />
+                {waited}
+              </span>
+            </>
+          ) : (
+            <>
+              <span
+                className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider text-white"
+                style={{
+                  fontFamily: "Teko, sans-serif",
+                  background: "linear-gradient(135deg, #8b5cf6, #6366f1)",
+                  boxShadow: "0 4px 12px -4px rgba(139,92,246,0.5), inset 0 1px 0 rgba(255,255,255,0.25)",
+                }}
+              >
+                ACCEPT
+              </span>
+              <span className="text-[9px] text-zinc-500 flex items-center gap-0.5">
+                <Clock className="w-2.5 h-2.5" />
+                {waited}
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function EditBattlesHubPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
