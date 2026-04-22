@@ -331,18 +331,35 @@ function buildValidatedStats(gqlResult: InstagramStats, mobileResult: InstagramS
 
   const trustedViewSources = countMetricSources(trustedResults, 'views');
   const totalViewSources = countMetricSources(allResults, 'views');
-  const candidateViews = trustedViewSources > 0
-    ? pickHighestMetric(trustedResults, 'views')
-    : totalViewSources >= 2
-      ? pickHighestMetric(allResults, 'views')
-      : null;
+  // Pick MEDIAN-ish (avoid wild outliers): use the 2nd-highest if 2+ trusted sources agree,
+  // else highest from a trusted source, else require 2+ ANY-source agreement.
+  const trustedViewVals = trustedResults
+    .map(r => r.views)
+    .filter((v): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0)
+    .sort((a, b) => b - a);
+
+  let candidateViews: number | null = null;
+  if (trustedViewVals.length >= 2) {
+    // Use 2nd highest for resilience against one-source spikes
+    candidateViews = trustedViewVals[1];
+    // But if top two are within 20%, take the higher (they corroborate)
+    if (trustedViewVals[0] / trustedViewVals[1] <= 1.2) candidateViews = trustedViewVals[0];
+  } else if (trustedViewVals.length === 1) {
+    candidateViews = trustedViewVals[0];
+  } else if (totalViewSources >= 2) {
+    candidateViews = pickHighestMetric(allResults, 'views');
+  }
 
   const likes = pickHighestMetric(allResults, 'likes');
   const comments = pickHighestMetric(allResults, 'comments', true);
   const shares = pickHighestMetric(allResults, 'shares', true);
   const thumbnailUrl = gqlResult.thumbnailUrl || mobileResult.thumbnailUrl || mainResult.thumbnailUrl || embedResult.thumbnailUrl || null;
 
-  const plausibleViews = candidateViews !== null && candidateViews >= Math.max(likes || 0, comments || 0);
+  // Plausibility: views must be >= max(likes, comments) AND likes-to-views ratio sane (< 60%)
+  const maxEngagement = Math.max(likes || 0, comments || 0);
+  const plausibleViews = candidateViews !== null
+    && candidateViews >= maxEngagement
+    && (likes === null || likes === 0 || candidateViews >= likes * 1.5);
 
   return {
     views: plausibleViews ? candidateViews : null,
@@ -354,6 +371,7 @@ function buildValidatedStats(gqlResult: InstagramStats, mobileResult: InstagramS
       trustedViewSources,
       totalViewSources,
       plausibleViews,
+      trustedViewVals,
     },
   };
 }
