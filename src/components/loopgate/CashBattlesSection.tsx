@@ -424,6 +424,9 @@ export default function CashBattlesSection({
       {/* Header */}
       <div className="flex items-end justify-between px-4 mb-3">
         <div className="flex items-center gap-2">
+          <div className="w-5 h-5 rounded-md flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}>
+            <Swords className="w-3 h-3 text-white" strokeWidth={2.5} />
+          </div>
           <h2
             className="text-[15px] font-extrabold tracking-tight text-foreground"
             style={{ fontFamily: "Inter, system-ui, sans-serif" }}
@@ -437,11 +440,18 @@ export default function CashBattlesSection({
           >
             <Info className="w-3 h-3" />
           </button>
+          <button
+            onClick={() => navigate('/cash-battles')}
+            className="ml-1 flex items-center gap-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+          >
+            View all
+            <ChevronRight className="w-3 h-3" />
+          </button>
         </div>
         <div className="flex items-center gap-1">
           <button
             onClick={handleEnter}
-            className="relative flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-foreground/80 hover:text-foreground hover:bg-white/[0.04] rounded-md transition-colors"
+            className="relative flex items-center gap-1 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-300 rounded-md border border-emerald-500/30 bg-emerald-500/[0.08] hover:bg-emerald-500/[0.15] transition-colors"
           >
             <DollarSign className="w-3 h-3" />
             Cash
@@ -454,7 +464,7 @@ export default function CashBattlesSection({
           {onChallenge && (
             <button
               onClick={onChallenge}
-              className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-foreground/80 hover:text-foreground hover:bg-white/[0.04] rounded-md transition-colors"
+              className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-red-300 rounded-md border border-red-500/30 bg-red-500/[0.08] hover:bg-red-500/[0.15] transition-colors"
             >
               <Swords className="w-3 h-3" />
               Challenge
