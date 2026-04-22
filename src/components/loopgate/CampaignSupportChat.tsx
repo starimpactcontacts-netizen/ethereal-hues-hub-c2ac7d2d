@@ -214,40 +214,52 @@ export default function CampaignSupportChat({ campaignId, campaignName, clientNa
               </div>
 
               {messages.map((m) => (
-                <div key={m.id} className={`flex ${m.sender_type === 'client' ? 'justify-end' : 'justify-start'}`}>
-                  <div
-                    className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed ${
-                      m.sender_type === 'client'
-                        ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-br-md shadow-md'
-                        : 'bg-neutral-900 text-neutral-100 border border-white/5 rounded-bl-md'
-                    }`}
-                  >
-                    {m.sender_type === 'admin' && (
-                      <p className="text-[10px] font-black uppercase tracking-wider text-emerald-400 mb-0.5">
-                        {m.sender_name || 'Loopgate'}
-                      </p>
+              {messages.map((m) => {
+                const isMine = m.sender_type === 'client' && mineIds.has(m.id);
+                const alignRight = m.sender_type === 'client';
+                return (
+                  <div key={m.id} className={`group flex items-end gap-1.5 ${alignRight ? 'justify-end' : 'justify-start'}`}>
+                    {isMine && (
+                      <button
+                        onClick={() => deleteMessage(m)}
+                        aria-label="Delete message"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6 flex items-center justify-center rounded-full bg-neutral-900 border border-white/10 text-neutral-400 hover:text-red-400 hover:border-red-400/40"
+                      >
+                        <Trash2 size={11} />
+                      </button>
                     )}
-                    <p className="whitespace-pre-wrap">{m.message_text}</p>
-                    <p className={`text-[9px] mt-1 ${m.sender_type === 'client' ? 'text-emerald-100/70' : 'text-neutral-500'}`}>
-                      {formatTime(m.created_at)}
-                    </p>
+                    <div
+                      className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed ${
+                        alignRight
+                          ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-br-md shadow-md'
+                          : 'bg-white text-neutral-900 border border-white/10 rounded-bl-md shadow-md'
+                      }`}
+                    >
+                      {(m.sender_type === 'admin' || (m.sender_type === 'client' && m.sender_name && !isMine)) && (
+                        <p className={`text-[10px] font-black uppercase tracking-wider mb-0.5 ${m.sender_type === 'admin' ? 'text-emerald-600' : 'text-neutral-500'}`}>
+                          {m.sender_name || (m.sender_type === 'admin' ? 'Loopgate' : 'Client')}
+                        </p>
+                      )}
+                      <p className="whitespace-pre-wrap">{m.message_text}</p>
+                      <p className={`text-[9px] mt-1 ${alignRight ? 'text-emerald-100/80' : 'text-neutral-500'}`}>
+                        {formatTime(m.created_at)}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <form
               onSubmit={(e) => { e.preventDefault(); send(); }}
               className="px-3 py-3 border-t border-white/5 bg-neutral-950 space-y-2"
             >
-              {!clientName && (
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Your name (optional)"
-                  className="w-full bg-neutral-900 border border-white/10 rounded-full px-4 py-1.5 text-[11px] text-neutral-50 placeholder:text-neutral-600 focus:outline-none focus:border-emerald-500/40 transition-all"
-                />
-              )}
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your name (optional) — appears in chat as you"
+                className="w-full bg-neutral-900 border border-white/10 rounded-full px-4 py-1.5 text-[11px] text-neutral-50 placeholder:text-neutral-600 focus:outline-none focus:border-emerald-500/40 transition-all"
+              />
               <div className="flex items-center gap-2">
                 <input
                   value={input}
