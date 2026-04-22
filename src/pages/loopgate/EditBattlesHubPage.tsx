@@ -415,7 +415,43 @@ export default function EditBattlesHubPage() {
     [battles]
   );
 
-  const handleQuickJoin = async () => {
+  // Quick fight derived sets
+  const liveQuickFights = useMemo(
+    () => recentFights.filter((f) => f.status === "active" || f.status === "judging"),
+    [recentFights]
+  );
+  const completedQuickFights = useMemo(
+    () => recentFights.filter((f) => f.status === "completed"),
+    [recentFights]
+  );
+  const myActiveQuickFight = myFights.find((f) => f.status === "active" || f.status === "judging" || f.status === "waiting");
+
+  const handleInstantJoin = async () => {
+    if (isGuest || !user || !profile) {
+      accountPrompt.open("enter_battle" as any);
+      return;
+    }
+    if (myActiveQuickFight) {
+      navigate(`/fight/${myActiveQuickFight.id}`);
+      return;
+    }
+    if (inQuickQueue) {
+      await leaveQueue(user.id);
+      toast("Left the queue");
+      return;
+    }
+    setJoining(true);
+    const fightId = await findQuickFight(user.id, profile.username, profile.avatar_url);
+    setJoining(false);
+    if (fightId) {
+      toast.success("⚔️ Match found!");
+      navigate(`/fight/${fightId}`);
+    } else {
+      toast.success("🔍 In queue — we'll match you in seconds");
+    }
+  };
+
+  const handleCashJoin = async () => {
     if (isGuest) {
       accountPrompt.open("enter_battle" as any);
       return;
@@ -433,6 +469,8 @@ export default function EditBattlesHubPage() {
       toast.success("You're in the queue — waiting for an opponent");
     }
   };
+
+  const handlePrimaryCTA = mode === "instant" ? handleInstantJoin : handleCashJoin;
 
   const handleAcceptOpen = async (app: CashBattleApplication) => {
     if (isGuest) {
