@@ -334,10 +334,10 @@ export default function EditBattlesHubPage() {
   };
 
   const tabs: { key: TabKey; label: string; count: number; icon: any; color: string }[] = [
-    { key: "live", label: "Live", count: liveBattles.length, icon: Flame, color: "#ef4444" },
-    { key: "open", label: "Open Queue", count: pendingApps.length, icon: Zap, color: "#f59e0b" },
-    { key: "cash", label: "Cash", count: cashBattles.length, icon: DollarSign, color: "#10b981" },
-    { key: "completed", label: "Past", count: completedBattles.length, icon: Trophy, color: "#a1a1aa" },
+    { key: "live", label: "Live Now", count: liveBattles.length, icon: Flame, color: "#ef4444" },
+    { key: "open", label: "Queue", count: pendingApps.length, icon: Zap, color: "#f59e0b" },
+    { key: "cash", label: "$ Battles", count: cashBattles.length, icon: DollarSign, color: "#10b981" },
+    { key: "completed", label: "Hall of Fame", count: completedBattles.length, icon: Trophy, color: "#fbbf24" },
   ];
 
   return (
@@ -353,10 +353,20 @@ export default function EditBattlesHubPage() {
       {/* Cinematic header */}
       <div className="relative overflow-hidden border-b border-white/[0.06]">
         <div
-          className="absolute inset-0 opacity-40"
+          className="absolute inset-0 opacity-60"
           style={{
             background:
-              "radial-gradient(circle at 25% 50%, rgba(59,130,246,0.35), transparent 55%), radial-gradient(circle at 75% 50%, rgba(239,68,68,0.35), transparent 55%)",
+              "radial-gradient(circle at 20% 30%, rgba(37,99,235,0.55), transparent 50%), radial-gradient(circle at 80% 70%, rgba(239,68,68,0.55), transparent 50%), radial-gradient(circle at 50% 50%, rgba(139,92,246,0.25), transparent 60%)",
+          }}
+        />
+        {/* Animated scanline grid */}
+        <div
+          className="absolute inset-0 opacity-[0.07] pointer-events-none"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
+            backgroundSize: "32px 32px",
+            maskImage: "radial-gradient(circle at 50% 0%, #000 30%, transparent 70%)",
           }}
         />
         <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent 60%, #000 100%)" }} />
@@ -365,56 +375,87 @@ export default function EditBattlesHubPage() {
           {/* Back button */}
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-1 text-xs font-bold text-zinc-300 hover:text-white transition-colors mb-3"
+            className="flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-zinc-400 hover:text-white transition-colors mb-3"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
+            <ArrowLeft className="w-3 h-3" strokeWidth={3} />
             Back
           </button>
 
+          {/* LIVE pill */}
+          <div className="flex items-center gap-1.5 mb-2">
+            <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-red-500/15 border border-red-500/40">
+              <span className="w-1 h-1 rounded-full bg-red-500 animate-pulse" />
+              <span className="text-[8px] font-black uppercase tracking-[0.15em] text-red-400">LIVE ARENA</span>
+            </span>
+            <span className="text-[8px] font-black uppercase tracking-[0.15em] text-zinc-500">SEASON 01</span>
+          </div>
+
           {/* Title */}
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2.5 mb-1.5">
             <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg, #3b82f6, #ef4444)" }}
+              className="w-9 h-9 rounded-xl flex items-center justify-center relative"
+              style={{
+                background: "linear-gradient(135deg, #2563eb 0%, #8b5cf6 50%, #ef4444 100%)",
+                boxShadow: "0 0 20px rgba(139,92,246,0.5), inset 0 1px 0 rgba(255,255,255,0.3)",
+              }}
             >
-              <Swords className="w-4 h-4 text-white" strokeWidth={2.5} />
+              <Swords className="w-5 h-5 text-white" strokeWidth={2.8} />
             </div>
             <h1
-              className="text-3xl font-black uppercase tracking-tight text-white"
-              style={{ fontFamily: "Teko, sans-serif", letterSpacing: "0.02em" }}
+              className="text-[44px] font-black uppercase text-white leading-[0.85]"
+              style={{
+                fontFamily: "Teko, sans-serif",
+                letterSpacing: "-0.01em",
+                textShadow: "0 0 30px rgba(139,92,246,0.4)",
+              }}
             >
               Edit Battles
             </h1>
           </div>
-          <p className="text-[12px] text-zinc-400 max-w-md leading-relaxed">
-            Two editors enter. One walks out the winner. Live 1v1 edit duels —
-            judged by community vote.
+          <p className="text-[13px] font-bold text-zinc-300 leading-tight">
+            <span className="text-blue-400">Two enter.</span>{" "}
+            <span className="text-red-400">One leaves.</span>{" "}
+            <span className="text-zinc-500">Pick a side. Drop a fire edit. Take the crown. 👑</span>
           </p>
 
           {/* Quick Match CTA */}
           <button
             onClick={handleQuickJoin}
             disabled={joining}
-            className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl font-black uppercase tracking-wider text-white text-sm relative overflow-hidden disabled:opacity-60"
+            className="mt-4 w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black uppercase text-white text-base relative overflow-hidden disabled:opacity-60 group active:scale-[0.98] transition-transform"
             style={{
-              background: "linear-gradient(90deg, #3b82f6, #8b5cf6, #ef4444)",
-              boxShadow: "0 8px 24px -8px rgba(139,92,246,0.5)",
+              background: "linear-gradient(90deg, #2563eb 0%, #8b5cf6 50%, #ef4444 100%)",
+              boxShadow: "0 12px 32px -8px rgba(139,92,246,0.6), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -2px 0 rgba(0,0,0,0.2)",
               fontFamily: "Teko, sans-serif",
+              letterSpacing: "0.05em",
             }}
           >
+            {/* Shimmer */}
+            <span
+              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              style={{
+                background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
+                animation: "shimmer 2s infinite",
+              }}
+            />
             {joining ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
-              <Zap className="w-4 h-4" strokeWidth={2.5} />
+              <Zap className="w-5 h-5 fill-white" strokeWidth={2.8} />
             )}
-            {myBattles.length > 0 ? "Resume Your Battle" : "Tap to Instantly Queue"}
+            {myBattles.length > 0 ? "🔥 Resume Your Battle" : "⚡ Smash Queue — Find Opponent"}
           </button>
 
           {/* Stats strip */}
-          <div className="mt-4 grid grid-cols-3 gap-2">
-            <StatChip label="Live Now" value={liveBattles.length} color="#ef4444" />
-            <StatChip label="In Queue" value={pendingApps.length} color="#f59e0b" />
-            <StatChip label="Cash Pool" value={`$${(cashBattles.reduce((s, b) => s + (b.prize_cents ?? 0), 0) / 100).toFixed(0)}`} color="#10b981" />
+          <div className="mt-3 grid grid-cols-3 gap-1.5">
+            <StatChip label="LIVE" value={liveBattles.length} color="#ef4444" icon="🔥" />
+            <StatChip label="QUEUED" value={pendingApps.length} color="#f59e0b" icon="⚡" />
+            <StatChip
+              label="POT"
+              value={`$${(cashBattles.reduce((s, b) => s + (b.prize_cents ?? 0), 0) / 100).toFixed(0)}`}
+              color="#10b981"
+              icon="💰"
+            />
           </div>
         </div>
       </div>
@@ -478,8 +519,8 @@ export default function EditBattlesHubPage() {
                   {liveBattles.length === 0 ? (
                     <EmptyState
                       icon={Flame}
-                      title="No live battles right now"
-                      hint="Tap Quick Queue above to start one"
+                      title="Arena's quiet... for now 👀"
+                      hint="Smash that queue button and light it up"
                     />
                   ) : (
                     liveBattles.map((b) => (
@@ -488,8 +529,10 @@ export default function EditBattlesHubPage() {
                   )}
                   {upcomingBattles.length > 0 && (
                     <>
-                      <div className="pt-3 pb-1">
-                        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-wider">Starting Soon</span>
+                      <div className="pt-4 pb-1 flex items-center gap-2">
+                        <span className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-500/40 to-transparent" />
+                        <span className="text-[10px] font-black text-amber-400 uppercase tracking-[0.2em]">⏳ Dropping Soon</span>
+                        <span className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-500/40 to-transparent" />
                       </div>
                       {upcomingBattles.map((b) => (
                         <BattleRow key={b.id} battle={b} onClick={() => navigate(`/cash-battle/${b.id}`)} />
@@ -504,8 +547,8 @@ export default function EditBattlesHubPage() {
                   {pendingApps.length === 0 ? (
                     <EmptyState
                       icon={Zap}
-                      title="Queue is empty"
-                      hint="Be the first — Tap Instantly Queue above"
+                      title="No challengers in line ⚡"
+                      hint="Be the spark — drop into queue and let 'em come"
                     />
                   ) : (
                     pendingApps.map((app) => (
@@ -525,8 +568,8 @@ export default function EditBattlesHubPage() {
                   {cashBattles.length === 0 ? (
                     <EmptyState
                       icon={DollarSign}
-                      title="No cash battles active"
-                      hint="Sponsored battles drop with prize pools"
+                      title="No bag up for grabs rn 💰"
+                      hint="Sponsored cash drops hit when you least expect"
                     />
                   ) : (
                     cashBattles.map((b) => (
@@ -539,7 +582,7 @@ export default function EditBattlesHubPage() {
               {tab === "completed" && (
                 <>
                   {completedBattles.length === 0 ? (
-                    <EmptyState icon={Trophy} title="No past battles yet" hint="Be the first to make history" />
+                    <EmptyState icon={Trophy} title="History's unwritten 🏆" hint="First win etches your name forever" />
                   ) : (
                     completedBattles.map((b) => (
                       <BattleRow key={b.id} battle={b} onClick={() => navigate(`/cash-battle/${b.id}`)} />
@@ -557,21 +600,26 @@ export default function EditBattlesHubPage() {
   );
 }
 
-function StatChip({ label, value, color }: { label: string; value: string | number; color: string }) {
+function StatChip({ label, value, color, icon }: { label: string; value: string | number; color: string; icon?: string }) {
   return (
     <div
-      className="rounded-xl px-2 py-2 border border-white/[0.06]"
+      className="rounded-xl px-2.5 py-2 border relative overflow-hidden"
       style={{
-        background: `linear-gradient(180deg, ${color}10 0%, rgba(20,20,22,0.8) 100%)`,
+        background: `linear-gradient(180deg, ${color}25 0%, rgba(15,15,18,0.9) 100%)`,
+        borderColor: `${color}30`,
+        boxShadow: `inset 0 1px 0 ${color}30, 0 4px 12px -4px ${color}20`,
       }}
     >
-      <div
-        className="text-lg font-black leading-none"
-        style={{ color, fontFamily: "Teko, sans-serif" }}
-      >
-        {value}
+      <div className="flex items-baseline gap-1">
+        {icon && <span className="text-[11px] leading-none">{icon}</span>}
+        <div
+          className="text-2xl font-black leading-none"
+          style={{ color, fontFamily: "Teko, sans-serif", textShadow: `0 0 12px ${color}80` }}
+        >
+          {value}
+        </div>
       </div>
-      <div className="text-[9px] text-zinc-500 uppercase tracking-wider font-bold mt-0.5">
+      <div className="text-[9px] uppercase tracking-[0.15em] font-black mt-0.5" style={{ color: `${color}aa` }}>
         {label}
       </div>
     </div>
