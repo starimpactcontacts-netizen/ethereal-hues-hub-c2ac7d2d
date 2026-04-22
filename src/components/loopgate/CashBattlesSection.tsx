@@ -505,8 +505,24 @@ export default function CashBattlesSection({
         {battles
           .filter((b) => b.status !== 'cancelled')
           .sort((a, b) => {
-            const order: Record<string, number> = { live: 0, upcoming: 1, completed: 2 };
-            return (order[a.status] ?? 3) - (order[b.status] ?? 3);
+            // Prioritize battles with an active countdown (live + ends_at in the future).
+            // Newest live battles surface first; dead/expired/completed get pushed to the far right.
+            const now = Date.now();
+            const isActive = (x: any) =>
+              x.status === 'live' && x.ends_at && new Date(x.ends_at).getTime() > now;
+            const bucket = (x: any) => {
+              if (isActive(x)) return 0;            // live + timer still running
+              if (x.status === 'upcoming') return 1; // about to start
+              if (x.status === 'live') return 2;     // live but timer expired (stale)
+              return 3;                              // completed / ended graveyard
+            };
+            const ba = bucket(a);
+            const bb = bucket(b);
+            if (ba !== bb) return ba - bb;
+            // Within the same bucket, newest first (most recently created/started)
+            const ta = new Date(a.starts_at || a.created_at || 0).getTime();
+            const tb = new Date(b.starts_at || b.created_at || 0).getTime();
+            return tb - ta;
           })
           .map((battle) => (
             <ArenaRailCard key={battle.id}>
