@@ -7750,6 +7750,7 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: number
       }
+      delete_user_account: { Args: never; Returns: undefined }
       end_event_round: {
         Args: { p_event_id: string; p_round_number: number }
         Returns: number
