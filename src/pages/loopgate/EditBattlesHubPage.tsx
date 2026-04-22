@@ -743,13 +743,28 @@ export default function EditBattlesHubPage() {
               transition={{ duration: 0.18 }}
               className="space-y-2.5"
             >
-              {tab === "live" && (
+              {tab === "live" && mode === "instant" && (
+                <>
+                  {liveQuickFights.length === 0 ? (
+                    <EmptyState
+                      icon={Flame}
+                      title="No live battles right now ⚡"
+                      hint="Hit Quick Match — you'll be paired in seconds"
+                    />
+                  ) : (
+                    liveQuickFights.map((f) => (
+                      <QuickFightRow key={f.id} fight={f} onClick={() => navigate(`/fight/${f.id}`)} />
+                    ))
+                  )}
+                </>
+              )}
+              {tab === "live" && mode === "cash" && (
                 <>
                   {liveBattles.length === 0 ? (
                     <EmptyState
                       icon={Flame}
-                      title="Arena's quiet... for now 👀"
-                      hint="Smash that queue button and light it up"
+                      title="No live cash battles 💰"
+                      hint="Sponsored drops hit when you least expect"
                     />
                   ) : (
                     liveBattles.map((b) => (
@@ -771,7 +786,33 @@ export default function EditBattlesHubPage() {
                 </>
               )}
 
-              {tab === "open" && (
+              {tab === "open" && mode === "instant" && (
+                <>
+                  {!inQuickQueue ? (
+                    <EmptyState
+                      icon={Zap}
+                      title="Queue is empty ⚡"
+                      hint="Smash Quick Match — you'll auto-pair the second another editor joins"
+                    />
+                  ) : (
+                    <div
+                      className="rounded-2xl px-4 py-4 border border-blue-500/30 flex items-center gap-3"
+                      style={{ background: "linear-gradient(180deg, rgba(37,99,235,0.12) 0%, rgba(22,22,26,0.95) 100%)" }}
+                    >
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-500/15 border border-blue-500/30">
+                        <Loader2 className="w-5 h-5 text-blue-300 animate-spin" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[13px] font-black text-white uppercase tracking-wider" style={{ fontFamily: "Teko, sans-serif" }}>
+                          You're in queue
+                        </div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">Hold tight — pairing the next editor that drops in</div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+              {tab === "open" && mode === "cash" && (
                 <>
                   {pendingApps.length === 0 ? (
                     <EmptyState
@@ -808,7 +849,18 @@ export default function EditBattlesHubPage() {
                 </>
               )}
 
-              {tab === "completed" && (
+              {tab === "completed" && mode === "instant" && (
+                <>
+                  {completedQuickFights.length === 0 ? (
+                    <EmptyState icon={Trophy} title="History's unwritten 🏆" hint="First win etches your name forever" />
+                  ) : (
+                    completedQuickFights.map((f) => (
+                      <QuickFightRow key={f.id} fight={f} onClick={() => navigate(`/fight/${f.id}`)} />
+                    ))
+                  )}
+                </>
+              )}
+              {tab === "completed" && mode === "cash" && (
                 <>
                   {completedBattles.length === 0 ? (
                     <EmptyState icon={Trophy} title="History's unwritten 🏆" hint="First win etches your name forever" />
