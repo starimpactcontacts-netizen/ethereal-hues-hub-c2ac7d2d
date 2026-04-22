@@ -984,27 +984,39 @@ export default function EditBattlesHubPage() {
 
               {tab === "open" && mode === "instant" && (
                 <>
-                  {!inQuickQueue ? (
+                  {queueEditors.length === 0 ? (
                     <EmptyState
                       icon={Zap}
                       title="Queue is empty ⚡"
                       hint="Smash Quick Match — you'll auto-pair the second another editor joins"
                     />
                   ) : (
-                    <div
-                      className="rounded-2xl px-4 py-4 border border-blue-500/30 flex items-center gap-3"
-                      style={{ background: "linear-gradient(180deg, rgba(37,99,235,0.12) 0%, rgba(22,22,26,0.95) 100%)" }}
-                    >
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-500/15 border border-blue-500/30">
-                        <Loader2 className="w-5 h-5 text-blue-300 animate-spin" />
+                    <>
+                      <div className="flex items-center gap-2 pb-1">
+                        <span className="h-px flex-1 bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
+                        <span className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em]">⚡ {queueEditors.length} Waiting</span>
+                        <span className="h-px flex-1 bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-[13px] font-black text-white uppercase tracking-wider" style={{ fontFamily: "Teko, sans-serif" }}>
-                          You're in queue
-                        </div>
-                        <div className="text-[10px] text-zinc-400 mt-0.5">Hold tight — pairing the next editor that drops in</div>
-                      </div>
-                    </div>
+                      {queueEditors.map((ed) => (
+                        <QueueEditorRow
+                          key={ed.id}
+                          editor={ed}
+                          isOwn={user?.id === ed.user_id}
+                          onAccept={() => handleAcceptQueueEditor(ed)}
+                        />
+                      ))}
+                      {inQuickQueue && (
+                        <button
+                          onClick={() => setShowInviteModal(true)}
+                          className="w-full mt-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/15 active:scale-[0.98] transition-all"
+                        >
+                          <UserPlus className="w-3.5 h-3.5 text-blue-300" strokeWidth={2.5} />
+                          <span className="text-[12px] font-black uppercase tracking-wider text-blue-300" style={{ fontFamily: "Teko, sans-serif" }}>
+                            Invite a friend to accept
+                          </span>
+                        </button>
+                      )}
+                    </>
                   )}
                 </>
               )}
