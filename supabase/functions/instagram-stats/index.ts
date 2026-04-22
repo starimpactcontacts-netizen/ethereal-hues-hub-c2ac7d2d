@@ -341,6 +341,7 @@ type InstagramStats = {
   comments: number | null;
   shares: number | null;
   thumbnailUrl: string | null;
+  takenAt?: number | null;
 };
 
 function pickHighestMetric(results: InstagramStats[], key: keyof Pick<InstagramStats, 'views' | 'likes' | 'comments' | 'shares'>, allowZero = false): number | null {
