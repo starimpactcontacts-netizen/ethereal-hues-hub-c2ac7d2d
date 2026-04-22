@@ -254,7 +254,7 @@ export default function FeedPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background pb-16 overflow-y-auto overscroll-y-contain" onScroll={handleScroll}>
+    <div className="h-[100dvh] bg-background pb-16 overflow-y-auto overscroll-y-contain" onScroll={handleScroll}>
       <div className="mx-auto flex w-full lg:max-w-[920px]">
         {/* Feed Column */}
         <div className="w-full lg:max-w-[600px] lg:border-r lg:border-border/10">
