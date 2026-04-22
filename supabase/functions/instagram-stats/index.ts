@@ -57,6 +57,121 @@ async function fetchWithRetry(url: string, init: RequestInit, timeoutMs = 8000):
   return new Response(null, { status: 599 });
 }
 
+// Method 0: Authenticated Instagram source using the project's INSTAGRAM_ACCESS_TOKEN.
+// This is the proper workaround when guest endpoints are flaky/blocked.
+async function fetchViaAuthenticatedToken(url: string, shortcode: string): Promise<{
+  views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null; takenAt: number | null;
+}> {
+  const token = Deno.env.get('INSTAGRAM_ACCESS_TOKEN');
+  if (!token) {
+    return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
+  }
+
+  const nullResult = { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null, takenAt: null };
+
+  try {
+    const mediaId = shortcodeToMediaId(shortcode);
+
+    // Strategy A: authenticated mobile API (works when token is effectively a session/bearer token)
+    try {
+      const res = await fetchWithRetry(`https://i.instagram.com/api/v1/media/${mediaId}/info/`, {
+        headers: {
+          'User-Agent': 'Instagram 275.0.0.27.98 Android (33/13; 420dpi; 1080x2400; samsung; SM-G991B; o1s; exynos2100; en_US; 458229258)',
+          'X-IG-App-ID': '567067343352427',
+          'Authorization': `Bearer ${token}`,
+          'Cookie': `sessionid=${token}`,
+        },
+      });
+
+      if (res.ok) {
+        const json = await res.json().catch(() => null);
+        const item = json?.items?.[0];
+        if (item) {
+          const result = {
+            views: item.play_count ?? item.video_view_count ?? item.view_count ?? null,
+            likes: item.like_count ?? null,
+            comments: item.comment_count ?? null,
+            shares: item.share_count ?? item.reshare_count ?? null,
+            thumbnailUrl: item.image_versions2?.candidates?.[0]?.url ?? null,
+            takenAt: item.taken_at ?? null,
+          };
+          if (result.views !== null || result.likes !== null) {
+            console.log('✅ Auth token mobile API stats:', { views: result.views, likes: result.likes, comments: result.comments });
+            return result;
+          }
+        }
+      }
+    } catch (e) {
+      console.log('Auth mobile API failed');
+    }
+
+    // Strategy B: Meta/Instagram oEmbed + Graph follow-up (works when token is a real Graph access token)
+    try {
+      const encodedUrl = encodeURIComponent(url);
+      const oembedRes = await fetchWithRetry(
+        `https://graph.facebook.com/v23.0/instagram_oembed?url=${encodedUrl}&omitscript=true&access_token=${token}`,
+        { headers: { 'User-Agent': pickUA(), 'Accept': 'application/json' } },
+      );
+
+      if (oembedRes.ok) {
+        const oembed = await oembedRes.json().catch(() => null);
+        const graphMediaId = oembed?.media_id ?? null;
+        const thumbnailUrl = oembed?.thumbnail_url ?? null;
+
+        if (graphMediaId) {
+          const detailRes = await fetchWithRetry(
+            `https://graph.facebook.com/v23.0/${graphMediaId}?fields=timestamp,thumbnail_url,like_count,comments_count&access_token=${token}`,
+            { headers: { 'User-Agent': pickUA(), 'Accept': 'application/json' } },
+          );
+
+          let likes: number | null = null;
+          let comments: number | null = null;
+          let takenAt: number | null = null;
+          let graphThumb: string | null = thumbnailUrl;
+
+          if (detailRes.ok) {
+            const detail = await detailRes.json().catch(() => null);
+            likes = detail?.like_count ?? null;
+            comments = detail?.comments_count ?? null;
+            graphThumb = detail?.thumbnail_url ?? graphThumb;
+            const timestamp = detail?.timestamp ? Date.parse(detail.timestamp) : NaN;
+            if (Number.isFinite(timestamp)) takenAt = Math.floor(timestamp / 1000);
+          }
+
+          // Try insights for view-like metrics if permitted
+          let views: number | null = null;
+          const metrics = ['plays', 'views', 'ig_reels_aggregated_all_plays_count', 'ig_reels_video_view_total_time'];
+          for (const metric of metrics) {
+            const insightsRes = await fetchWithRetry(
+              `https://graph.facebook.com/v23.0/${graphMediaId}/insights?metric=${metric}&access_token=${token}`,
+              { headers: { 'User-Agent': pickUA(), 'Accept': 'application/json' } },
+            );
+            if (!insightsRes.ok) continue;
+            const insights = await insightsRes.json().catch(() => null);
+            const value = insights?.data?.[0]?.values?.[0]?.value ?? insights?.data?.[0]?.value ?? null;
+            if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+              views = value;
+              break;
+            }
+          }
+
+          if (views !== null || likes !== null || comments !== null || graphThumb !== null || takenAt !== null) {
+            console.log('✅ Auth token Graph stats:', { views, likes, comments });
+            return { views, likes, comments, shares: null, thumbnailUrl: graphThumb, takenAt };
+          }
+        }
+      }
+    } catch (e) {
+      console.log('Auth Graph API failed');
+    }
+
+    return nullResult;
+  } catch (e) {
+    console.error('Authenticated token source error:', e);
+    return nullResult;
+  }
+}
+
 // Method 1: Instagram GraphQL API (real-time accurate data)
 async function fetchViaGraphQL(shortcode: string): Promise<{
   views: number | null; likes: number | null; comments: number | null; shares: number | null; thumbnailUrl: string | null; takenAt: number | null;
