@@ -814,7 +814,7 @@ export default function HubPage() {
             <motion.button
               whileTap={{ scale: 0.96 }}
               whileHover={{ scale: 1.01 }}
-              disabled={(quickAction === 'quick' && qfIsSearching) || (quickAction === 'edit_battle' && myCashBattlesLoading)}
+              disabled={(quickAction === 'edit_battle' && (qfIsSearching || myCashBattlesLoading))}
               onClick={async () => {
                 if (!profile) { navigate('/start'); return; }
                 if (quickAction === 'edit_battle') {
