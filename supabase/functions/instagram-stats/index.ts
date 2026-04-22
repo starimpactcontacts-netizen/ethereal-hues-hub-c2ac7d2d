@@ -141,8 +141,9 @@ async function fetchViaMainPage(shortcode: string): Promise<{
       console.log('Trying main page:', pageUrl);
       const res = await fetch(pageUrl, {
         headers: {
-          'User-Agent': 'Googlebot/2.1 (+http://www.google.com/bot.html)',
-          'Accept': 'text/html',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml',
+          'Accept-Language': 'en-US,en;q=0.9',
         },
       });
       if (!res.ok) continue;
@@ -181,15 +182,24 @@ async function fetchViaMainPage(shortcode: string): Promise<{
       // Fallback: regex patterns on raw HTML/embedded JSON
       if (views === null) {
         const viewPatterns = [
+          /"play_count"\s*:\s*(\d+)/,
+          /"video_play_count"\s*:\s*(\d+)/,
+          /"video_view_count"\s*:\s*(\d+)/,
           /video_view_count["\s:]+(\d+)/,
           /video_play_count["\s:]+(\d+)/,
           /play_count["\s:]+(\d+)/,
           /"view_count"\s*:\s*(\d+)/,
         ];
+        // Take the MAX across all matching patterns (Instagram embeds multiple counters; latest is usually highest)
+        let best = 0;
         for (const p of viewPatterns) {
-          const m = html.match(p);
-          if (m) { views = parseInt(m[1], 10); break; }
+          const matches = html.matchAll(new RegExp(p.source, 'g'));
+          for (const m of matches) {
+            const n = parseInt(m[1], 10);
+            if (!isNaN(n) && n > best) best = n;
+          }
         }
+        if (best > 0) views = best;
       }
       if (likes === null) {
         const likePatterns = [/likes_count["\s:]+(\d+)/, /like_count["\s:]+(\d+)/, /edge_liked_by[^}]*count["\s:]+(\d+)/];
@@ -376,11 +386,13 @@ serve(async (req) => {
           const stats = await fetchInstagramPostStats(edit.video_url);
           const payload: Record<string, any> = { updated_at: new Date().toISOString() };
           
-          // Only update if scraped value is HIGHER than current (views only go up)
-          if (stats.views !== null && stats.views > (edit.view_count || 0)) payload.view_count = stats.views;
-          if (stats.likes !== null && stats.likes > (edit.like_count || 0)) payload.like_count = stats.likes;
-          if (stats.comments !== null && stats.comments > (edit.comment_count || 0)) payload.comment_count = stats.comments;
-          if (stats.shares !== null && stats.shares > (edit.share_count || 0)) payload.share_count = stats.shares;
+          // Always write the latest scraped value when we have one — refresh = pull latest live numbers.
+          // (We already merge max across multiple sources inside fetchInstagramPostStats, so this is the
+          // most accurate snapshot we can produce per refresh.)
+          if (stats.views !== null && stats.views > 0) payload.view_count = stats.views;
+          if (stats.likes !== null && stats.likes > 0) payload.like_count = stats.likes;
+          if (stats.comments !== null && stats.comments >= 0) payload.comment_count = stats.comments;
+          if (stats.shares !== null && stats.shares >= 0) payload.share_count = stats.shares;
           if (stats.thumbnailUrl && !edit.thumbnail_url) payload.thumbnail_url = stats.thumbnailUrl;
 
           if (Object.keys(payload).length > 1) {
@@ -416,8 +428,9 @@ serve(async (req) => {
               .single();
 
             const updatePayload: Record<string, any> = { updated_at: new Date().toISOString() };
-            if (totalViews > (campaign?.total_views || 0)) updatePayload.total_views = totalViews;
-            if (totalEngagements > (campaign?.total_engagements || 0)) updatePayload.total_engagements = totalEngagements;
+            // Always reflect the latest aggregate so the dashboard mirrors live scraped numbers.
+            updatePayload.total_views = totalViews;
+            updatePayload.total_engagements = totalEngagements;
 
             if (Object.keys(updatePayload).length > 1) {
               await supabase.from('artist_campaigns').update(updatePayload).eq('id', cid);
