@@ -6,12 +6,14 @@ import { ArrowLeft, Swords, DollarSign, Flame, Trophy, Clock, Users, Loader2, Za
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useCashBattles, useMyCashBattles, useMyCashBattleApplication, type CashBattleApplication } from "@/hooks/useCashBattles";
+import { useMyQuickFights, useRecentQuickFights, findQuickFight, leaveQueue, type QuickFight } from "@/hooks/useQuickFight";
 import { useAuth } from "@/hooks/useAuth";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useAccountPrompt } from "@/hooks/useAccountPrompt";
 import { toast } from "sonner";
 
 type TabKey = "live" | "open" | "cash" | "completed";
+type ModeKey = "instant" | "cash";
 
 function formatPrize(cents: number): string {
   if (cents === 0) return "FREE";
