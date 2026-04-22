@@ -57,11 +57,18 @@ export default function BattleShareCard({ isOpen, onClose, battle }: BattleShare
 
   const captureBlob = async (): Promise<Blob | null> => {
     if (!cardRef.current) return null;
+    // Wait for fonts so Teko renders in the export
+    if ((document as any).fonts?.ready) {
+      try { await (document as any).fonts.ready; } catch {}
+    }
     const canvas = await html2canvas(cardRef.current, {
-      backgroundColor: "#000",
-      scale: 2,
+      backgroundColor: "#000000",
+      scale: 3,
       useCORS: true,
+      allowTaint: false,
       logging: false,
+      width: cardRef.current.offsetWidth,
+      height: cardRef.current.offsetHeight,
     });
     return new Promise((resolve) => canvas.toBlob((b) => resolve(b), "image/png"));
   };
@@ -108,21 +115,45 @@ export default function BattleShareCard({ isOpen, onClose, battle }: BattleShare
   };
 
   const Avatar = ({ url, name, side }: { url?: string | null; name?: string | null; side: "red" | "blue" | "gold" }) => {
-    const ringColor =
+    const ringBg =
       side === "gold"
-        ? "from-amber-300 via-yellow-400 to-amber-600"
+        ? "linear-gradient(135deg, #fcd34d 0%, #facc15 50%, #d97706 100%)"
         : side === "red"
-        ? "from-red-500 via-rose-500 to-red-700"
-        : "from-blue-500 via-sky-500 to-blue-700";
+        ? "linear-gradient(135deg, #ef4444 0%, #f43f5e 50%, #b91c1c 100%)"
+        : "linear-gradient(135deg, #3b82f6 0%, #0ea5e9 50%, #1d4ed8 100%)";
     return (
-      <div className={`relative p-[3px] rounded-full bg-gradient-to-br ${ringColor} shadow-2xl`}>
-        <div className="w-[88px] h-[88px] rounded-full overflow-hidden bg-zinc-900 border-2 border-black">
+      <div
+        style={{
+          padding: "3px",
+          borderRadius: "9999px",
+          background: ringBg,
+          display: "inline-block",
+        }}
+      >
+        <div
+          style={{
+            width: "92px",
+            height: "92px",
+            borderRadius: "9999px",
+            overflow: "hidden",
+            background: "#18181b",
+            border: "2px solid #000",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           {url ? (
-            <img src={url} alt={name || ""} crossOrigin="anonymous" className="w-full h-full object-cover" />
+            <img
+              src={url}
+              alt={name || ""}
+              crossOrigin="anonymous"
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-3xl font-black text-white/60" style={{ fontFamily: "Teko, sans-serif" }}>
+            <span style={{ fontFamily: "Teko, sans-serif", fontSize: "32px", fontWeight: 900, color: "rgba(255,255,255,0.6)" }}>
               {name?.charAt(0).toUpperCase() || "?"}
-            </div>
+            </span>
           )}
         </div>
       </div>
@@ -140,76 +171,188 @@ export default function BattleShareCard({ isOpen, onClose, battle }: BattleShare
           <X className="w-4 h-4" />
         </button>
 
-        {/* === EXPORTABLE CARD (1:1 SQUARE) === */}
+        {/* === EXPORTABLE CARD (1:1 SQUARE) — inline styles for html2canvas fidelity === */}
         <div
           ref={cardRef}
-          className="relative overflow-hidden bg-black mx-auto rounded-xl"
-          style={{ width: "340px", height: "340px" }}
+          style={{
+            position: "relative",
+            width: "360px",
+            height: "360px",
+            margin: "0 auto",
+            overflow: "hidden",
+            borderRadius: "16px",
+            background:
+              "linear-gradient(180deg, #4c0519 0%, #000000 50%, #172554 100%)",
+            fontFamily: "Teko, system-ui, sans-serif",
+          }}
         >
-          {/* layered atmosphere */}
-          <div className="absolute inset-0 bg-gradient-to-b from-red-950/70 via-black to-blue-950/70" />
-          <div className="absolute inset-0 opacity-30" style={{
-            backgroundImage: `radial-gradient(circle at 20% 20%, rgba(239,68,68,0.4), transparent 45%),
-                              radial-gradient(circle at 80% 80%, rgba(59,130,246,0.4), transparent 45%)`
-          }} />
-          {/* diagonal lines */}
-          <div className="absolute inset-0 opacity-[0.06]" style={{
-            backgroundImage: "repeating-linear-gradient(45deg, white 0 1px, transparent 1px 14px)"
-          }} />
-          {/* Center glow */}
-          {isCompleted && (
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-amber-500/10 blur-3xl" />
-          )}
+          {/* Soft red/blue glows */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage:
+                "radial-gradient(circle at 18% 18%, rgba(239,68,68,0.55), transparent 45%), radial-gradient(circle at 82% 82%, rgba(59,130,246,0.45), transparent 45%)",
+            }}
+          />
+          {/* Diagonal lines */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              opacity: 0.07,
+              backgroundImage:
+                "repeating-linear-gradient(45deg, #ffffff 0 1px, transparent 1px 14px)",
+            }}
+          />
 
-          <div className="relative z-10 h-full flex flex-col p-4">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-              <img src={loopgateLogo} alt="LOOPGATE" className="h-4 opacity-80" crossOrigin="anonymous" />
+          {/* Inner content */}
+          <div
+            style={{
+              position: "relative",
+              zIndex: 10,
+              height: "100%",
+              padding: "18px",
+              display: "flex",
+              flexDirection: "column",
+              boxSizing: "border-box",
+            }}
+          >
+            {/* Header — bigger logo */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <img
+                src={loopgateLogo}
+                alt="LOOPGATE"
+                crossOrigin="anonymous"
+                style={{ height: "22px", width: "auto", display: "block", opacity: 0.95 }}
+              />
               {battle.is_rapid && (
-                <span className="text-[8px] font-bold text-amber-300 uppercase tracking-[0.3em] px-2 py-0.5 rounded-full bg-amber-500/15 ring-1 ring-amber-500/30">
+                <span
+                  style={{
+                    fontSize: "9px",
+                    fontWeight: 700,
+                    color: "#fcd34d",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.3em",
+                    padding: "2px 8px",
+                    borderRadius: "9999px",
+                    background: "rgba(245,158,11,0.15)",
+                    border: "1px solid rgba(245,158,11,0.3)",
+                  }}
+                >
                   ⚡ Rapid
                 </span>
               )}
             </div>
 
-            {/* Headline */}
-            <div className="text-center mt-2">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 ring-1 ring-white/10">
-                {isLive && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
-                <span className="text-[9px] tracking-[0.35em] uppercase text-white/70 font-bold" style={{ fontFamily: "Teko, sans-serif" }}>
+            {/* Headline pill */}
+            <div style={{ textAlign: "center", marginTop: "8px" }}>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "3px 10px",
+                  borderRadius: "9999px",
+                  background: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                }}
+              >
+                {isLive && (
+                  <span
+                    style={{
+                      width: "6px",
+                      height: "6px",
+                      borderRadius: "9999px",
+                      background: "#ef4444",
+                      boxShadow: "0 0 8px rgba(239,68,68,0.8)",
+                      display: "inline-block",
+                    }}
+                  />
+                )}
+                <span
+                  style={{
+                    fontSize: "10px",
+                    letterSpacing: "0.35em",
+                    textTransform: "uppercase",
+                    color: "rgba(255,255,255,0.75)",
+                    fontWeight: 700,
+                  }}
+                >
                   {headline}
                 </span>
               </div>
-              <h2 className="font-display text-2xl text-white mt-1.5 leading-none" style={{ fontFamily: "Teko, sans-serif", letterSpacing: "0.06em" }}>
+              <h2
+                style={{
+                  fontSize: "28px",
+                  color: "#ffffff",
+                  marginTop: "6px",
+                  lineHeight: 1,
+                  letterSpacing: "0.06em",
+                  fontWeight: 700,
+                  margin: "6px 0 0 0",
+                }}
+              >
                 1V1 EDIT BATTLE
               </h2>
             </div>
 
             {/* VS row */}
-            <div className="flex items-center justify-center gap-2 mt-3">
-              <div className="flex flex-col items-center flex-1">
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                marginTop: "16px",
+              }}
+            >
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
                 <Avatar
                   url={battle.challenger_avatar_url}
                   name={battle.challenger_username}
                   side={challengerWon ? "gold" : "red"}
                 />
-                <span className="font-display text-sm text-white mt-2 uppercase tracking-wide truncate max-w-[100px]" style={{ fontFamily: "Teko, sans-serif" }}>
+                <span
+                  style={{
+                    fontSize: "16px",
+                    color: "#ffffff",
+                    marginTop: "10px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    fontWeight: 700,
+                    maxWidth: "108px",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
                   {battle.challenger_username}
                 </span>
                 {battle.challenger_score != null && (
-                  <span className="text-xl font-black text-amber-300 tabular-nums leading-none" style={{ fontFamily: "Teko, sans-serif" }}>
+                  <span style={{ fontSize: "22px", color: "#fcd34d", fontWeight: 900, lineHeight: 1 }}>
                     {battle.challenger_score}
                   </span>
                 )}
               </div>
 
-              <div className="relative shrink-0">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 via-rose-500 to-red-700 flex items-center justify-center shadow-[0_0_24px_rgba(239,68,68,0.5)]">
-                  <Swords className="w-4 h-4 text-white" />
-                </div>
+              <div
+                style={{
+                  width: "44px",
+                  height: "44px",
+                  borderRadius: "9999px",
+                  background: "linear-gradient(135deg, #ef4444 0%, #f43f5e 50%, #b91c1c 100%)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 0 26px rgba(239,68,68,0.55)",
+                  flexShrink: 0,
+                }}
+              >
+                <Swords style={{ width: "18px", height: "18px", color: "#fff" }} />
               </div>
 
-              <div className="flex flex-col items-center flex-1">
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
                 {battle.opponent_id ? (
                   <Avatar
                     url={battle.opponent_avatar_url}
@@ -217,27 +360,93 @@ export default function BattleShareCard({ isOpen, onClose, battle }: BattleShare
                     side={opponentWon ? "gold" : "blue"}
                   />
                 ) : (
-                  <div className="w-[78px] h-[78px] rounded-full border-2 border-dashed border-white/30 flex items-center justify-center text-2xl text-white/30" style={{ fontFamily: "Teko, sans-serif" }}>
+                  <div
+                    style={{
+                      width: "98px",
+                      height: "98px",
+                      borderRadius: "9999px",
+                      border: "2px dashed rgba(255,255,255,0.3)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "26px",
+                      color: "rgba(255,255,255,0.3)",
+                    }}
+                  >
                     ?
                   </div>
                 )}
-                <span className="font-display text-sm text-white mt-2 uppercase tracking-wide truncate max-w-[100px]" style={{ fontFamily: "Teko, sans-serif" }}>
+                <span
+                  style={{
+                    fontSize: "16px",
+                    color: "#ffffff",
+                    marginTop: "10px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    fontWeight: 700,
+                    maxWidth: "108px",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
                   {battle.opponent_username || "OPEN"}
                 </span>
                 {battle.opponent_score != null && (
-                  <span className="text-xl font-black text-amber-300 tabular-nums leading-none" style={{ fontFamily: "Teko, sans-serif" }}>
+                  <span style={{ fontSize: "22px", color: "#fcd34d", fontWeight: 900, lineHeight: 1 }}>
                     {battle.opponent_score}
                   </span>
                 )}
               </div>
             </div>
 
-            {/* CTA strip */}
-            <div className="mt-auto">
-              <p className="text-center text-[10px] text-white/60 mb-2 px-2 truncate">{subline}</p>
-              <div className="rounded-lg bg-white/5 ring-1 ring-white/10 backdrop-blur-md px-3 py-1.5 text-center">
-                <p className="text-[8px] uppercase tracking-[0.3em] text-white/50">Watch & Vote</p>
-                <p className="text-xs font-bold text-white" style={{ fontFamily: "Teko, sans-serif", letterSpacing: "0.08em" }}>
+            {/* CTA strip — pinned bottom */}
+            <div style={{ marginTop: "auto" }}>
+              <p
+                style={{
+                  textAlign: "center",
+                  fontSize: "11px",
+                  color: "rgba(255,255,255,0.65)",
+                  margin: "0 0 8px 0",
+                  padding: "0 8px",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  fontFamily: "system-ui, sans-serif",
+                }}
+              >
+                {subline}
+              </p>
+              <div
+                style={{
+                  borderRadius: "10px",
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  padding: "8px 12px",
+                  textAlign: "center",
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: "9px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.3em",
+                    color: "rgba(255,255,255,0.55)",
+                    margin: 0,
+                    fontFamily: "system-ui, sans-serif",
+                  }}
+                >
+                  Watch &amp; Vote
+                </p>
+                <p
+                  style={{
+                    fontSize: "16px",
+                    fontWeight: 700,
+                    color: "#ffffff",
+                    letterSpacing: "0.08em",
+                    margin: "2px 0 0 0",
+                  }}
+                >
                   LOOPGATE.IO
                 </p>
               </div>
