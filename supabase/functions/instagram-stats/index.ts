@@ -483,15 +483,26 @@ function countMetricSources(results: InstagramStats[], key: keyof Pick<Instagram
   }).length;
 }
 
-function buildValidatedStats(gqlResult: InstagramStats, mobileResult: InstagramStats, mainResult: InstagramStats, embedResult: InstagramStats) {
-  const trustedResults = [gqlResult, mobileResult, mainResult];
-  const allResults = [gqlResult, mobileResult, mainResult, embedResult];
+function buildValidatedStats(
+  gqlResult: InstagramStats,
+  mobileResult: InstagramStats,
+  mainResult: InstagramStats,
+  embedResult: InstagramStats,
+  gqlAltResult: InstagramStats,
+  mobileWebResult: InstagramStats,
+) {
+  // Trusted = direct API/JSON sources. Embed is fallback only (often stale).
+  const trustedResults = [gqlResult, mobileResult, mainResult, gqlAltResult, mobileWebResult];
+  const allResults = [...trustedResults, embedResult];
 
   const trustedViewSources = countMetricSources(trustedResults, 'views');
   const totalViewSources = countMetricSources(allResults, 'views');
-  // SMARTER consensus: collect ALL view readings, find clusters of agreement.
-  // The "true" view count is the HIGHEST value that has corroboration (within 25% of another source).
-  // This prevents both stale (low) embed values AND wildly inflated outliers from winning.
+  // ULTRA-STRICT consensus for views (the most-gamed metric):
+  // 1. Take the HIGHEST trusted value that ANOTHER trusted source corroborates within 15%
+  // 2. Falling back: highest trusted value with ANY-source corroboration within 25%
+  // 3. Falling back: median of trusted values
+  // 4. Falling back: single trusted source
+  // Views go UP, never down — caller still enforces monotonic-increasing on top of this.
   const allViewVals = allResults
     .map(r => r.views)
     .filter((v): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0)
@@ -502,22 +513,40 @@ function buildValidatedStats(gqlResult: InstagramStats, mobileResult: InstagramS
     .sort((a, b) => b - a);
 
   let candidateViews: number | null = null;
-  // Pass 1: find the HIGHEST trusted value that another source (any) corroborates within 25%.
+  let confidenceTier: 'strong' | 'medium' | 'weak' | 'none' = 'none';
+  // Pass 1: HIGHEST trusted value with TRUSTED corroboration within 15% — strongest signal
   for (const v of trustedViewVals) {
-    const corroborated = allViewVals.some(o => o !== v && Math.max(v, o) / Math.min(v, o) <= 1.25);
-    if (corroborated) { candidateViews = v; break; }
+    const corroborated = trustedViewVals.some(o => o !== v && Math.max(v, o) / Math.min(v, o) <= 1.15);
+    if (corroborated) { candidateViews = v; confidenceTier = 'strong'; break; }
   }
-  // Pass 2: no corroboration but >=2 trusted sources → take median (2nd highest)
-  if (candidateViews === null && trustedViewVals.length >= 2) candidateViews = trustedViewVals[1];
-  // Pass 3: single trusted source → trust it
-  if (candidateViews === null && trustedViewVals.length === 1) candidateViews = trustedViewVals[0];
-  // Pass 4: only embed had a value, and >=2 ANY sources agree → use the highest of those
-  if (candidateViews === null && totalViewSources >= 2) candidateViews = allViewVals[0] ?? null;
+  // Pass 2: HIGHEST trusted value with ANY-source corroboration within 25%
+  if (candidateViews === null) {
+    for (const v of trustedViewVals) {
+      const corroborated = allViewVals.some(o => o !== v && Math.max(v, o) / Math.min(v, o) <= 1.25);
+      if (corroborated) { candidateViews = v; confidenceTier = 'medium'; break; }
+    }
+  }
+  // Pass 3: ≥2 trusted sources → median (2nd highest = resilient to single outlier)
+  if (candidateViews === null && trustedViewVals.length >= 2) {
+    candidateViews = trustedViewVals[1];
+    confidenceTier = 'medium';
+  }
+  // Pass 4: single trusted source → trust it but flag weak
+  if (candidateViews === null && trustedViewVals.length === 1) {
+    candidateViews = trustedViewVals[0];
+    confidenceTier = 'weak';
+  }
+  // Pass 5: only embed → highest of any source, weak
+  if (candidateViews === null && totalViewSources >= 2) {
+    candidateViews = allViewVals[0] ?? null;
+    confidenceTier = 'weak';
+  }
 
   const likes = pickHighestMetric(allResults, 'likes');
   const comments = pickHighestMetric(allResults, 'comments', true);
   const shares = pickHighestMetric(allResults, 'shares', true);
-  const thumbnailUrl = gqlResult.thumbnailUrl || mobileResult.thumbnailUrl || mainResult.thumbnailUrl || embedResult.thumbnailUrl || null;
+  const thumbnailUrl = gqlResult.thumbnailUrl || mobileResult.thumbnailUrl || gqlAltResult.thumbnailUrl
+    || mobileWebResult.thumbnailUrl || mainResult.thumbnailUrl || embedResult.thumbnailUrl || null;
   // Pick the EXACT taken_at timestamp - prefer trusted sources, take the one most agree on
   const takenAtCandidates = allResults
     .map(r => r.takenAt)
@@ -543,6 +572,7 @@ function buildValidatedStats(gqlResult: InstagramStats, mobileResult: InstagramS
       plausibleViews,
       trustedViewVals,
       allViewVals,
+      confidenceTier,
     },
   };
 }
@@ -554,15 +584,17 @@ async function fetchInstagramPostStats(url: string) {
     return { views: null, likes: null, comments: null, shares: null, thumbnailUrl: null };
   }
 
-  // Try all methods in parallel for speed and accuracy
-  const [gqlResult, mobileResult, mainResult, embedResult] = await Promise.all([
+  // Try ALL 6 methods in parallel for speed AND accuracy through corroboration
+  const [gqlResult, mobileResult, mainResult, embedResult, gqlAltResult, mobileWebResult] = await Promise.all([
     fetchViaGraphQL(shortcode),
     fetchViaMobileApi(shortcode),
     fetchViaMainPage(shortcode),
     fetchViaEmbed(shortcode),
+    fetchViaGraphQLAlt(shortcode),
+    fetchViaMobileWeb(shortcode),
   ]);
 
-  const merged = buildValidatedStats(gqlResult, mobileResult, mainResult, embedResult);
+  const merged = buildValidatedStats(gqlResult, mobileResult, mainResult, embedResult, gqlAltResult, mobileWebResult);
   console.log('🔥 Final merged stats:', merged);
   return merged;
 }
