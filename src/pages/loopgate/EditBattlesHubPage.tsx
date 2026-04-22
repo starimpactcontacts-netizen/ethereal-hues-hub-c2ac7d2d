@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Helmet } from "react-helmet-async";
-import { ArrowLeft, Swords, DollarSign, Flame, Trophy, Clock, Users, Loader2, Zap } from "lucide-react";
+import { ArrowLeft, Swords, DollarSign, Flame, Trophy, Clock, Users, Loader2, Zap, Share2, X, Copy, UserPlus } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useCashBattles, useMyCashBattles, useMyCashBattleApplication, type CashBattleApplication } from "@/hooks/useCashBattles";
@@ -14,6 +14,14 @@ import { toast } from "sonner";
 
 type TabKey = "live" | "open" | "cash" | "completed";
 type ModeKey = "instant" | "cash";
+
+interface QueueEditor {
+  id: string;
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+  queued_at: string;
+}
 
 function formatPrize(cents: number): string {
   if (cents === 0) return "FREE";
@@ -357,6 +365,125 @@ function QuickFightRow({ fight, onClick }: { fight: QuickFight; onClick: () => v
   );
 }
 
+// Roblox-sexy queue card — other waiting editors you can manually accept
+function QueueEditorRow({ editor, isOwn, onAccept }: { editor: QueueEditor; isOwn: boolean; onAccept: () => void }) {
+  const waitedSec = Math.max(0, Math.floor((Date.now() - new Date(editor.queued_at).getTime()) / 1000));
+  const waited = waitedSec < 60 ? `${waitedSec}s` : `${Math.floor(waitedSec / 60)}m`;
+  return (
+    <motion.div
+      whileTap={{ scale: 0.98 }}
+      onClick={isOwn ? undefined : onAccept}
+      className="relative rounded-2xl overflow-hidden cursor-pointer"
+      style={{
+        background: isOwn
+          ? "linear-gradient(180deg, rgba(37,99,235,0.18) 0%, rgba(22,22,26,0.95) 100%)"
+          : "linear-gradient(180deg, rgba(139,92,246,0.12) 0%, rgba(22,22,26,0.95) 100%)",
+        border: isOwn ? "1px solid rgba(59,130,246,0.4)" : "1px solid rgba(139,92,246,0.3)",
+        boxShadow: isOwn
+          ? "inset 0 1px 0 rgba(59,130,246,0.2), 0 8px 24px -16px rgba(59,130,246,0.4)"
+          : "inset 0 1px 0 rgba(139,92,246,0.15), 0 8px 24px -16px rgba(139,92,246,0.3)",
+      }}
+    >
+      <div
+        className="absolute top-0 left-0 right-0 h-[2px]"
+        style={{
+          background: isOwn
+            ? "linear-gradient(90deg, #3b82f6, transparent, #3b82f6)"
+            : "linear-gradient(90deg, #8b5cf6, transparent, #ef4444)",
+        }}
+      />
+      <div className="px-4 py-3 flex items-center gap-3">
+        {/* Status badge */}
+        <div className="flex flex-col items-center gap-0.5 shrink-0 w-16">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center relative"
+            style={{
+              background: isOwn
+                ? "linear-gradient(135deg, #2563eb, #1d4ed8)"
+                : "linear-gradient(135deg, #8b5cf6, #6366f1)",
+            }}
+          >
+            <Loader2 className="w-5 h-5 text-white animate-spin" strokeWidth={2.5} />
+          </div>
+          <span
+            className="text-[10px] font-black leading-none uppercase tracking-wider"
+            style={{ fontFamily: "Teko, sans-serif", color: isOwn ? "#60a5fa" : "#c4b5fd" }}
+          >
+            QUEUE
+          </span>
+        </div>
+
+        {/* VS layout */}
+        <div className="flex-1 min-w-0 flex items-center justify-center gap-2">
+          <div className="flex flex-col items-center min-w-0 flex-1">
+            <Avatar className="w-9 h-9 ring-2" style={{ boxShadow: isOwn ? "0 0 0 2px rgba(59,130,246,0.5)" : "0 0 0 2px rgba(139,92,246,0.5)" }}>
+              <AvatarImage src={editor.avatar_url || ""} />
+              <AvatarFallback className="text-xs font-bold bg-zinc-800 text-zinc-300">
+                {editor.username?.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+            <span
+              className="text-[10px] font-bold truncate max-w-full mt-1 uppercase"
+              style={{ fontFamily: "Teko, sans-serif", color: isOwn ? "#93c5fd" : "#c4b5fd" }}
+            >
+              {isOwn ? "YOU" : editor.username}
+            </span>
+          </div>
+          <span className="text-sm font-black text-white/30" style={{ fontFamily: "Teko, sans-serif" }}>
+            VS
+          </span>
+          <div className="flex flex-col items-center min-w-0 flex-1">
+            <div className="w-9 h-9 rounded-full border-2 border-dashed flex items-center justify-center" style={{ borderColor: "rgba(245,158,11,0.4)" }}>
+              <span className="text-amber-400/70 text-sm">?</span>
+            </div>
+            <span
+              className="text-[10px] font-black truncate max-w-full mt-1 uppercase text-amber-400"
+              style={{ fontFamily: "Teko, sans-serif" }}
+            >
+              {isOwn ? "WAITING" : "YOU?"}
+            </span>
+          </div>
+        </div>
+
+        {/* Action / status */}
+        <div className="shrink-0 w-16 flex flex-col items-end gap-1">
+          {isOwn ? (
+            <>
+              <span
+                className="text-[9px] font-black uppercase tracking-wider text-blue-300"
+                style={{ fontFamily: "Teko, sans-serif" }}
+              >
+                TAP →
+              </span>
+              <span className="text-[9px] text-zinc-500 flex items-center gap-0.5">
+                <Clock className="w-2.5 h-2.5" />
+                {waited}
+              </span>
+            </>
+          ) : (
+            <>
+              <span
+                className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider text-white"
+                style={{
+                  fontFamily: "Teko, sans-serif",
+                  background: "linear-gradient(135deg, #8b5cf6, #6366f1)",
+                  boxShadow: "0 4px 12px -4px rgba(139,92,246,0.5), inset 0 1px 0 rgba(255,255,255,0.25)",
+                }}
+              >
+                ACCEPT
+              </span>
+              <span className="text-[9px] text-zinc-500 flex items-center gap-0.5">
+                <Clock className="w-2.5 h-2.5" />
+                {waited}
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function EditBattlesHubPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -373,6 +500,8 @@ export default function EditBattlesHubPage() {
   const [tab, setTab] = useState<TabKey>("live");
   const [pendingApps, setPendingApps] = useState<CashBattleApplication[]>([]);
   const [joining, setJoining] = useState(false);
+  const [queueEditors, setQueueEditors] = useState<QueueEditor[]>([]);
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   // Subscribe to pending apps in real time
   useEffect(() => {
@@ -391,6 +520,29 @@ export default function EditBattlesHubPage() {
         "postgres_changes",
         { event: "*", schema: "public", table: "cash_battle_applications" },
         () => fetchPending()
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // Realtime: who's currently waiting in the Quick Match queue
+  useEffect(() => {
+    async function fetchQueue() {
+      const { data } = await (supabase as any)
+        .from("quick_fight_queue")
+        .select("id, user_id, username, avatar_url, queued_at")
+        .order("queued_at", { ascending: true });
+      setQueueEditors((data as QueueEditor[] | null) || []);
+    }
+    fetchQueue();
+    const channel = supabase
+      .channel("edit-battles-hub-queue")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "quick_fight_queue" },
+        () => fetchQueue()
       )
       .subscribe();
     return () => {
@@ -471,6 +623,50 @@ export default function EditBattlesHubPage() {
   };
 
   const handlePrimaryCTA = mode === "instant" ? handleInstantJoin : handleCashJoin;
+
+  // Accept another editor's queued match — same as joining (RPC will pair us)
+  const handleAcceptQueueEditor = async (editor: QueueEditor) => {
+    if (isGuest || !user || !profile) {
+      accountPrompt.open("enter_battle" as any);
+      return;
+    }
+    if (editor.user_id === user.id) {
+      setShowInviteModal(true);
+      return;
+    }
+    setJoining(true);
+    const fightId = await findQuickFight(user.id, profile.username, profile.avatar_url);
+    setJoining(false);
+    if (fightId) {
+      toast.success(`⚔️ Matched with @${editor.username}!`);
+      navigate(`/fight/${fightId}`);
+    } else {
+      toast("🔍 Joined the queue — pairing now");
+    }
+  };
+
+  const inviteUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/edit-battles`;
+  const handleCopyInvite = async () => {
+    try {
+      await navigator.clipboard.writeText(`⚔️ I'm in the Loopgate edit battle queue — jump in and we'll auto-match: ${inviteUrl}`);
+      toast.success("Invite link copied!");
+    } catch {
+      toast.error("Couldn't copy — try sharing instead");
+    }
+  };
+  const handleNativeShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: "Loopgate Edit Battle",
+          text: "I'm in the queue — jump in and let's 1v1 ⚔️",
+          url: inviteUrl,
+        });
+      } else {
+        handleCopyInvite();
+      }
+    } catch {}
+  };
 
   const handleAcceptOpen = async (app: CashBattleApplication) => {
     if (isGuest) {
@@ -788,27 +984,39 @@ export default function EditBattlesHubPage() {
 
               {tab === "open" && mode === "instant" && (
                 <>
-                  {!inQuickQueue ? (
+                  {queueEditors.length === 0 ? (
                     <EmptyState
                       icon={Zap}
                       title="Queue is empty ⚡"
                       hint="Smash Quick Match — you'll auto-pair the second another editor joins"
                     />
                   ) : (
-                    <div
-                      className="rounded-2xl px-4 py-4 border border-blue-500/30 flex items-center gap-3"
-                      style={{ background: "linear-gradient(180deg, rgba(37,99,235,0.12) 0%, rgba(22,22,26,0.95) 100%)" }}
-                    >
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-500/15 border border-blue-500/30">
-                        <Loader2 className="w-5 h-5 text-blue-300 animate-spin" />
+                    <>
+                      <div className="flex items-center gap-2 pb-1">
+                        <span className="h-px flex-1 bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
+                        <span className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em]">⚡ {queueEditors.length} Waiting</span>
+                        <span className="h-px flex-1 bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-[13px] font-black text-white uppercase tracking-wider" style={{ fontFamily: "Teko, sans-serif" }}>
-                          You're in queue
-                        </div>
-                        <div className="text-[10px] text-zinc-400 mt-0.5">Hold tight — pairing the next editor that drops in</div>
-                      </div>
-                    </div>
+                      {queueEditors.map((ed) => (
+                        <QueueEditorRow
+                          key={ed.id}
+                          editor={ed}
+                          isOwn={user?.id === ed.user_id}
+                          onAccept={() => handleAcceptQueueEditor(ed)}
+                        />
+                      ))}
+                      {inQuickQueue && (
+                        <button
+                          onClick={() => setShowInviteModal(true)}
+                          className="w-full mt-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/15 active:scale-[0.98] transition-all"
+                        >
+                          <UserPlus className="w-3.5 h-3.5 text-blue-300" strokeWidth={2.5} />
+                          <span className="text-[12px] font-black uppercase tracking-wider text-blue-300" style={{ fontFamily: "Teko, sans-serif" }}>
+                            Invite a friend to accept
+                          </span>
+                        </button>
+                      )}
+                    </>
                   )}
                 </>
               )}
@@ -877,6 +1085,98 @@ export default function EditBattlesHubPage() {
       </div>
 
       <div className="h-24" />
+
+      <AnimatePresence>
+        {showInviteModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowInviteModal(false)}
+            className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ y: 40, opacity: 0, scale: 0.96 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 40, opacity: 0, scale: 0.96 }}
+              transition={{ type: "spring", damping: 24, stiffness: 280 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-md rounded-3xl overflow-hidden border border-blue-500/30"
+              style={{
+                background: "linear-gradient(165deg, #0a1020 0%, #0a0a0d 60%, #100a1a 100%)",
+                boxShadow: "0 30px 80px -20px rgba(59,130,246,0.4), inset 0 1px 0 rgba(255,255,255,0.06)",
+              }}
+            >
+              <div className="relative px-5 pt-5 pb-4 border-b border-white/[0.06]">
+                <div className="absolute inset-0 opacity-50" style={{
+                  background: "radial-gradient(circle at 30% 0%, rgba(59,130,246,0.3), transparent 60%)",
+                }} />
+                <button
+                  onClick={() => setShowInviteModal(false)}
+                  className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] flex items-center justify-center transition-colors"
+                >
+                  <X className="w-4 h-4 text-white/70" />
+                </button>
+                <div className="relative flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-2xl flex items-center justify-center" style={{
+                    background: "linear-gradient(135deg, #2563eb, #8b5cf6)",
+                    boxShadow: "0 8px 20px -8px rgba(139,92,246,0.6), inset 0 1px 0 rgba(255,255,255,0.3)",
+                  }}>
+                    <Loader2 className="w-5 h-5 text-white animate-spin" strokeWidth={2.8} />
+                  </div>
+                  <div className="min-w-0">
+                    <h2 className="text-[22px] font-black text-white leading-none uppercase" style={{ fontFamily: "Teko, sans-serif" }}>
+                      You're in queue
+                    </h2>
+                    <p className="text-[11px] font-bold text-blue-300/80 uppercase tracking-[0.15em] mt-0.5">Invite a friend to auto-match</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="px-5 py-4 space-y-3">
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.025] border border-white/[0.05]">
+                  {profile && (
+                    <Avatar className="w-10 h-10 ring-2 ring-blue-500/40">
+                      <AvatarImage src={profile.avatar_url || ""} />
+                      <AvatarFallback className="text-xs font-bold bg-zinc-800 text-zinc-300">
+                        {profile.username?.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[13px] font-extrabold text-white leading-tight">@{profile?.username}</div>
+                    <div className="text-[11px] text-white/50">Waiting for an opponent — share to pull one in</div>
+                  </div>
+                </div>
+                <p className="text-[11.5px] text-white/55 leading-snug px-1">
+                  Anyone who taps your link and joins the queue will instantly auto-pair with you ⚡
+                </p>
+              </div>
+
+              <div className="px-5 pb-5 grid grid-cols-2 gap-2">
+                <button
+                  onClick={handleCopyInvite}
+                  className="flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-white/[0.06] border border-white/[0.08] hover:bg-white/[0.1] active:scale-[0.97] transition-all"
+                >
+                  <Copy className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
+                  <span className="text-[13px] font-black text-white uppercase" style={{ fontFamily: "Teko, sans-serif" }}>Copy Link</span>
+                </button>
+                <button
+                  onClick={handleNativeShare}
+                  className="flex items-center justify-center gap-1.5 py-3 rounded-2xl text-white active:scale-[0.97] transition-all"
+                  style={{
+                    background: "linear-gradient(135deg, #2563eb, #8b5cf6)",
+                    boxShadow: "0 8px 20px -8px rgba(139,92,246,0.6), inset 0 1px 0 rgba(255,255,255,0.25)",
+                  }}
+                >
+                  <Share2 className="w-3.5 h-3.5" strokeWidth={2.5} />
+                  <span className="text-[13px] font-black uppercase" style={{ fontFamily: "Teko, sans-serif" }}>Share</span>
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
