@@ -407,10 +407,26 @@ export default function CampaignPortalPage() {
           >
             <div className="flex items-center gap-5">
               {(campaign as any).logo_url ? (
-                <img src={(campaign as any).logo_url} alt={campaign.client_name || ''} className="w-16 h-16 sm:w-20 sm:h-20 object-contain flex-shrink-0" />
+                <div className="relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24">
+                  {/* Ambient glow */}
+                  <div className="absolute -inset-2 rounded-full bg-gradient-to-br from-white/20 via-white/5 to-transparent blur-xl opacity-70" />
+                  {/* Glass ring */}
+                  <div className="relative w-full h-full rounded-full p-[2px] bg-gradient-to-br from-white/40 via-white/10 to-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+                    <div className="w-full h-full rounded-full bg-white overflow-hidden flex items-center justify-center relative">
+                      <img
+                        src={(campaign as any).logo_url}
+                        alt={campaign.client_name || ''}
+                        className="w-[78%] h-[78%] object-contain relative z-10"
+                      />
+                      {/* Specular highlight */}
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/60 via-transparent to-transparent opacity-40 pointer-events-none" />
+                      <div className="absolute -top-1 left-1/4 w-1/2 h-1/3 bg-white/50 blur-md rounded-full pointer-events-none" />
+                    </div>
+                  </div>
+                </div>
               ) : (
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-neutral-700 flex items-center justify-center flex-shrink-0">
-                  <Globe size={24} className="text-neutral-500" />
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-neutral-800 border border-white/10 flex items-center justify-center flex-shrink-0 shadow-lg">
+                  <Globe size={26} className="text-neutral-500" />
                 </div>
               )}
               <div>
