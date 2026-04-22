@@ -106,6 +106,7 @@ export default function SoloShowcase({ onStartSolo }: { onStartSolo: () => void 
   const navigate = useNavigate();
   const { profile } = useAuth();
   const { submissions, loading, stats } = useRecentSoloSubmissions(20);
+  const [showInfo, setShowInfo] = useState(false);
 
   return (
     <motion.section 
@@ -118,6 +119,13 @@ export default function SoloShowcase({ onStartSolo }: { onStartSolo: () => void 
         <div className="flex items-center gap-2">
           <UserRound className="w-4 h-4 text-gold" />
           <span className="text-[14px] font-extrabold text-foreground tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Solo</span>
+          <button
+            onClick={() => setShowInfo(true)}
+            className="flex items-center justify-center w-5 h-5 rounded-full bg-gold/10 border border-gold/30 hover:bg-gold/20 active:scale-90 transition-all touch-manipulation"
+            aria-label="How Solo Mode works"
+          >
+            <Info className="w-3 h-3 text-gold" strokeWidth={2.5} />
+          </button>
           {stats.editing > 0 && (
             <span className="flex items-center gap-1 text-[9px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-full">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
