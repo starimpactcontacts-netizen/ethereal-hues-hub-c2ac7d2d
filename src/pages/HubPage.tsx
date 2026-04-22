@@ -199,7 +199,7 @@ export default function HubPage() {
   const [walletOpen, setWalletOpen] = useState(false);
   const [judgeReviewCount, setJudgeReviewCount] = useState(0);
   const [userCrew, setUserCrew] = useState<UserCrew | null>(null);
-  const [quickAction, setQuickAction] = useState<'cash_battle' | 'mission' | 'solo' | 'quick'>('cash_battle');
+  const [quickAction, setQuickAction] = useState<'edit_battle' | 'mission' | 'solo'>('edit_battle');
   const [qfSearching, setQfSearching] = useState(false);
   const [qfElapsed, setQfElapsed] = useState(0);
   const [qfTipIdx, setQfTipIdx] = useState(0);
@@ -801,8 +801,8 @@ export default function HubPage() {
           <div 
             className="flex overflow-hidden rounded-xl border"
             style={{ 
-              borderColor: quickAction === 'cash_battle' ? 'rgba(139,92,246,0.35)' : quickAction === 'mission' ? 'rgba(16,185,129,0.35)' : quickAction === 'solo' ? 'rgba(255,255,255,0.20)' : 'rgba(239,68,68,0.35)',
-              boxShadow: quickAction === 'cash_battle'
+              borderColor: quickAction === 'edit_battle' ? 'rgba(139,92,246,0.35)' : quickAction === 'mission' ? 'rgba(16,185,129,0.35)' : quickAction === 'solo' ? 'rgba(255,255,255,0.20)' : 'rgba(239,68,68,0.35)',
+              boxShadow: quickAction === 'edit_battle'
                 ? '0 4px 30px rgba(139,92,246,0.25), 0 0 60px rgba(59,130,246,0.08)'
                 : quickAction === 'mission'
                 ? '0 4px 30px rgba(16,185,129,0.25), 0 0 60px rgba(16,185,129,0.08)'
@@ -814,10 +814,10 @@ export default function HubPage() {
             <motion.button
               whileTap={{ scale: 0.96 }}
               whileHover={{ scale: 1.01 }}
-              disabled={(quickAction === 'quick' && qfIsSearching) || (quickAction === 'cash_battle' && myCashBattlesLoading)}
+              disabled={(quickAction === 'edit_battle' && (qfIsSearching || myCashBattlesLoading))}
               onClick={async () => {
                 if (!profile) { navigate('/start'); return; }
-                if (quickAction === 'cash_battle') {
+                if (quickAction === 'edit_battle') {
                   if (myCashBattles.length > 0) {
                     navigate(`/cash-battle/${myCashBattles[0].id}`);
                     return;
@@ -825,26 +825,23 @@ export default function HubPage() {
                   const result = await hubJoinPool();
                   if (result && result.state === 'live' && result.battleId) {
                     navigate(`/cash-battle/${result.battleId}`);
+                    return;
+                  }
+                  if (qfActiveFight) {
+                    navigate(`/fight/${qfActiveFight.id}`);
                   } else {
-                    navigate('/arena?tab=main');
-                    toast.success("You're in the queue — visible on the carousel now");
+                    handleQuickFight();
                   }
                   return;
                 } else if (quickAction === 'mission') {
                   navigate('/commissions/414605a8-ac2f-4ab5-9955-15339ba4633c');
                 } else if (quickAction === 'solo') {
                   navigate('/arena?mode=solo&auto=1');
-                } else {
-                  if (qfActiveFight) {
-                    navigate(`/fight/${qfActiveFight.id}`);
-                  } else {
-                    handleQuickFight();
-                  }
                 }
               }}
               className={cn(
                 "flex-1 relative overflow-hidden flex items-center justify-center gap-3 px-6 py-5 transition-all duration-300 touch-manipulation select-none",
-                quickAction === 'cash_battle'
+                quickAction === 'edit_battle'
                   ? ""
                   : quickAction === 'mission'
                     ? ""
@@ -852,7 +849,7 @@ export default function HubPage() {
                       ? ""
                       : "bg-gradient-to-r from-red-600 via-red-500 to-red-600"
               )}
-              style={quickAction === 'cash_battle' ? {
+              style={quickAction === 'edit_battle' ? {
                 background: 'linear-gradient(135deg, #3b82f6 0%, #7c3aed 50%, #ef4444 100%)',
               } : quickAction === 'mission' ? {
                 background: 'linear-gradient(135deg, hsl(160 84% 39%) 0%, hsl(152 76% 36%) 40%, hsl(145 72% 30%) 100%)',
@@ -861,7 +858,7 @@ export default function HubPage() {
               } : undefined}
             >
                {/* Luxury geometric pattern overlay */}
-               {(quickAction === 'solo' || quickAction === 'mission' || quickAction === 'cash_battle') && (
+               {(quickAction === 'solo' || quickAction === 'mission' || quickAction === 'edit_battle') && (
                  <div className="absolute inset-0 pointer-events-none opacity-[0.07]" style={{
                    backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(255,255,255,0.5) 8px, rgba(255,255,255,0.5) 9px),
                      repeating-linear-gradient(-45deg, transparent, transparent 8px, rgba(255,255,255,0.5) 8px, rgba(255,255,255,0.5) 9px)`,
@@ -876,16 +873,16 @@ export default function HubPage() {
                {/* Top gloss */}
                <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/[0.22] to-transparent pointer-events-none" />
               
-              {quickAction === 'cash_battle' ? (
+              {quickAction === 'edit_battle' ? (
                 <>
                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-white/30 to-white/10 flex items-center justify-center relative z-10 border border-white/40 shadow-lg shadow-black/20">
-                     <DollarSign className="w-4.5 h-4.5 text-white drop-shadow-lg" />
+                     <Swords className="w-4.5 h-4.5 text-white drop-shadow-lg" />
                   </div>
                   <div className="flex flex-col relative z-10">
                     <span className="text-[28px] font-bold text-white uppercase tracking-wider leading-none drop-shadow-lg" style={{ fontFamily: 'Teko, sans-serif' }}>
-                       Join Battle
+                       Edit Battle
                     </span>
-                     <span className="text-[9px] text-white/70 font-bold tracking-wider">LIVE NOW · MATCH INSTANTLY</span>
+                     <span className="text-[9px] text-white/70 font-bold tracking-wider">1V1 · MATCH INSTANTLY</span>
                   </div>
                 </>
               ) : quickAction === 'mission' ? (
@@ -951,7 +948,7 @@ export default function HubPage() {
                 <button 
                   className={cn(
                     "relative overflow-hidden flex items-center justify-center px-5 py-5 transition-colors touch-manipulation select-none border-l",
-                    quickAction === 'cash_battle'
+                    quickAction === 'edit_battle'
                       ? "hover:brightness-110 border-white/10"
                       : quickAction === 'mission'
                         ? "hover:brightness-110 border-white/10"
@@ -959,9 +956,9 @@ export default function HubPage() {
                           ? "hover:brightness-110 border-white/10"
                           : "bg-red-700/80 hover:bg-red-600/80 border-red-900/40"
                   )}
-                  style={quickAction === 'cash_battle' ? { background: 'linear-gradient(135deg, #6d28d9, #dc2626)' } : quickAction === 'mission' ? { background: 'hsl(152 72% 28%)' } : quickAction === 'solo' ? { background: 'hsl(33 100% 38%)' } : undefined}
+                  style={quickAction === 'edit_battle' ? { background: 'linear-gradient(135deg, #6d28d9, #dc2626)' } : quickAction === 'mission' ? { background: 'hsl(152 72% 28%)' } : quickAction === 'solo' ? { background: 'hsl(33 100% 38%)' } : undefined}
                 >
-                   {(quickAction === 'solo' || quickAction === 'mission' || quickAction === 'cash_battle') && (
+                   {(quickAction === 'solo' || quickAction === 'mission' || quickAction === 'edit_battle') && (
                      <div className="absolute inset-0 pointer-events-none opacity-[0.06]" style={{
                        backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(255,255,255,0.5) 6px, rgba(255,255,255,0.5) 7px),
                          repeating-linear-gradient(-45deg, transparent, transparent 6px, rgba(255,255,255,0.5) 6px, rgba(255,255,255,0.5) 7px)`,
@@ -974,13 +971,13 @@ export default function HubPage() {
               <DropdownMenuContent align="end" className="w-52 bg-surface-1 border-border">
                 <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">Quick Action</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setQuickAction('cash_battle')} className="flex items-center gap-2 cursor-pointer">
-                  <DollarSign className="w-4 h-4 text-blue-400" />
+                <DropdownMenuItem onClick={() => setQuickAction('edit_battle')} className="flex items-center gap-2 cursor-pointer">
+                  <Swords className="w-4 h-4 text-red-400" />
                   <div className="flex-1">
-                    <span className="text-sm font-semibold">Cash Battle</span>
-                    <span className="text-[10px] text-blue-400 ml-1.5">1v1 CASH</span>
+                    <span className="text-sm font-semibold">Edit Battle</span>
+                    <span className="text-[10px] text-red-400 ml-1.5">1v1 · MATCH NOW</span>
                   </div>
-                  {quickAction === 'cash_battle' && <Check className="w-3.5 h-3.5 text-blue-400" />}
+                  {quickAction === 'edit_battle' && <Check className="w-3.5 h-3.5 text-red-400" />}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setQuickAction('mission')} className="flex items-center gap-2 cursor-pointer">
                   <Crosshair className="w-4 h-4 text-emerald-400" />
@@ -998,22 +995,14 @@ export default function HubPage() {
                   </div>
                   {quickAction === 'solo' && <Check className="w-3.5 h-3.5 text-gold" />}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setQuickAction('quick')} className="flex items-center gap-2 cursor-pointer">
-                  <Zap className="w-4 h-4 text-red-400" />
-                  <div className="flex-1">
-                    <span className="text-sm font-semibold">Quick Edit Battle</span>
-                    <span className="text-[10px] text-red-400 ml-1.5">+20 IDX</span>
-                  </div>
-                  {quickAction === 'quick' && <Check className="w-3.5 h-3.5 text-red-400" />}
-                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
 
 
-          {/* Queue status bar — when searching for Quick Edit Battle */}
+          {/* Queue status bar — when searching for an Edit Battle opponent */}
           <AnimatePresence>
-            {quickAction === 'quick' && qfIsSearching && (
+            {quickAction === 'edit_battle' && qfIsSearching && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
