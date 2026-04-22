@@ -497,19 +497,23 @@ export default function BattleDetailPage() {
                     loser_index_penalty: 5,
                   }).eq('id', battle.id);
                   if (user?.id) {
-                    await supabase.rpc('increment_user_index' as any, {
-                      p_user_id: user.id,
-                      p_amount: -5,
-                    }).catch(() => {});
+                    try {
+                      await supabase.rpc('increment_user_index' as any, {
+                        p_user_id: user.id,
+                        p_amount: -5,
+                      });
+                    } catch {}
                   }
                   if (opponentId) {
-                    await supabase.from('notifications').insert({
-                      user_id: opponentId,
-                      type: 'battle_won',
-                      title: 'Opponent forfeited',
-                      message: `Your opponent walked away — you win this battle!`,
-                      data: { battle_id: battle.id },
-                    } as any).catch(() => {});
+                    try {
+                      await supabase.from('notifications').insert({
+                        user_id: opponentId,
+                        type: 'battle_won',
+                        title: 'Opponent forfeited',
+                        message: `Your opponent walked away — you win this battle!`,
+                        data: { battle_id: battle.id },
+                      } as any);
+                    } catch {}
                   }
                   toast.info("You forfeited the battle. -5 IDX");
                   navigate('/arena');
