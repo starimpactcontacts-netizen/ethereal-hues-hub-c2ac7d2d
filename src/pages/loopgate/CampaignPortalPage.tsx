@@ -537,12 +537,12 @@ export default function CampaignPortalPage() {
                 : '—',
               sub: 'Cost Per 1K Views',
             },
-            { label: 'Budget Used', value: campaign.budget_cents ? `$${((campaign.spent_cents || 0) / 100).toLocaleString()}` : '—', sub: campaign.budget_cents ? `of $${(campaign.budget_cents / 100).toLocaleString()}` : 'Not Set' },
+            { label: 'Campaign Budget', value: campaign.budget_cents ? `$${(campaign.budget_cents / 100).toLocaleString()}` : '—', sub: campaign.budget_cents ? 'Total Allocated' : 'Not Set' },
           ].map((m) => (
-            <div key={m.label} className="rounded-xl p-4 text-center border border-neutral-200 bg-white">
-              <p className="text-xl font-black text-neutral-900">{m.value}</p>
-              <p className="text-[8px] font-black uppercase tracking-wider text-neutral-500 mt-1">{m.label}</p>
-              <p className="text-[8px] text-neutral-400">{m.sub}</p>
+            <div key={m.label} className="rounded-xl p-4 text-center border border-neutral-800 bg-neutral-900">
+              <p className="text-xl font-black text-white">{m.value}</p>
+              <p className="text-[8px] font-black uppercase tracking-wider text-neutral-400 mt-1">{m.label}</p>
+              <p className="text-[8px] text-neutral-500">{m.sub}</p>
             </div>
           ))}
         </motion.div>
