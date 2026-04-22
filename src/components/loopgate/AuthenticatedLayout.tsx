@@ -8,6 +8,7 @@ import LoopyChat from './LoopyChat';
 import TicketFAB from './TicketFAB';
 import { useGlobalNotifications } from '@/hooks/useGlobalNotifications';
 import { useGlobalTapSound } from '@/hooks/useGlobalTapSound';
+import { useRecoverBodyScroll } from '@/hooks/useRecoverBodyScroll';
 import { getPageSafeFill } from '@/lib/pageSafeFill';
 
 export default function AuthenticatedLayout() {
@@ -30,6 +31,7 @@ export default function AuthenticatedLayout() {
   // Enable global notifications with sounds (unit chat, DMs, tournaments, system alerts)
   useGlobalNotifications();
   useGlobalTapSound();
+  useRecoverBodyScroll();
 
   return (
     <div className="fixed inset-0 text-foreground flex flex-col overflow-hidden" style={shellStyle}>

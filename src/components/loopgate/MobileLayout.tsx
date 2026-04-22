@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from "react-router-dom";
 import type { CSSProperties } from "react";
 import BottomNav from "./BottomNav";
+import { useRecoverBodyScroll } from "@/hooks/useRecoverBodyScroll";
 import { getPageSafeFill } from "@/lib/pageSafeFill";
 
 export default function MobileLayout() {
@@ -8,6 +9,7 @@ export default function MobileLayout() {
   const hideNavPaths = ["/admin", "/studio", "/editorium"];
   const showNav = !hideNavPaths.includes(location.pathname);
   const safeFill = getPageSafeFill(location.pathname);
+  useRecoverBodyScroll();
   const shellStyle = {
     '--app-safe-fill': safeFill,
     '--app-header-bar-height': '44px',
