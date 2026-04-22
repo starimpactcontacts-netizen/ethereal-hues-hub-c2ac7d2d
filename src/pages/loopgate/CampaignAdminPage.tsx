@@ -924,12 +924,12 @@ export default function CampaignAdminPage() {
                             {/* Edits */}
                             <div className="p-4">
                               <div className="flex items-center justify-between mb-3">
-                                <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-bold">Linked Edits ({campaignEdits.length})</p>
+                                <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-bold">Clips & Edits ({campaignEdits.length})</p>
                                 <button
                                   onClick={() => setShowAddEditForm(showAddEditForm === campaign.id ? null : campaign.id)}
                                   className="h-6 px-2.5 rounded border border-border/30 text-[9px] text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
                                 >
-                                  <Plus className="w-3 h-3" /> Add Edit
+                                  <Plus className="w-3 h-3" /> Add Clip
                                 </button>
                               </div>
 
@@ -956,7 +956,7 @@ export default function CampaignAdminPage() {
                                       <Input type="number" placeholder="Views" value={newEdit.view_count || ''} onChange={e => setNewEdit(p => ({ ...p, view_count: Number(e.target.value) }))} className="bg-background/60 h-8 text-xs border-border/30" />
                                     </div>
                                     <div className="flex gap-2 pt-1">
-                                      <button onClick={() => handleAddEdit(campaign.id)} className="h-7 px-3 rounded bg-gold text-background text-[9px] font-bold uppercase tracking-wider hover:bg-gold/90 transition-colors">Add Edit</button>
+                                      <button onClick={() => handleAddEdit(campaign.id)} className="h-7 px-3 rounded bg-gold text-background text-[9px] font-bold uppercase tracking-wider hover:bg-gold/90 transition-colors">Add Clip</button>
                                       <button onClick={() => setShowAddEditForm(null)} className="h-7 px-3 rounded text-[9px] text-muted-foreground hover:text-foreground transition-colors">Cancel</button>
                                     </div>
                                   </motion.div>
@@ -965,7 +965,7 @@ export default function CampaignAdminPage() {
 
                               {/* Edits List */}
                               {campaignEdits.length === 0 ? (
-                                <p className="text-[10px] text-muted-foreground/40 text-center py-6">No edits linked yet</p>
+                                <p className="text-[10px] text-muted-foreground/40 text-center py-6">No clips or edits linked yet</p>
                               ) : (
                                 <div className="space-y-1.5">
                                   {campaignEdits.map(edit => (
