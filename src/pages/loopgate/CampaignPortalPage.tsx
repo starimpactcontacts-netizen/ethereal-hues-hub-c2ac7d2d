@@ -6,6 +6,7 @@ import { ComposedChart, Area, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } 
 import { SiTiktok, SiYoutube, SiInstagram } from '@icons-pack/react-simple-icons';
 import { supabase } from '@/integrations/supabase/client';
 import viralCartelCrest from '@/assets/viral-cartel-crest.png';
+import loopgateLogo from '@/assets/loopgate-logo.png';
 import { useUnifiedThumbnail } from '@/lib/thumbnail';
 
 // ── Auto-pulling thumbnail tile ──────────────────────────────────
@@ -374,11 +375,7 @@ export default function CampaignPortalPage() {
         {/* Top bar */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {(isBrandCampaign && (campaign as any).logo_url) ? (
-              <img src={(campaign as any).logo_url} alt="" className="w-8 h-8 object-contain" />
-            ) : (
-              <img src={viralCartelCrest} alt="" className="w-7 h-7 opacity-40" />
-            )}
+            <img src={loopgateLogo} alt="Loopgate" className="w-8 h-8 object-contain" />
             <div>
               <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-500 font-black">Campaign Performance Report</p>
               <p className="text-[9px] text-neutral-500">Generated {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
