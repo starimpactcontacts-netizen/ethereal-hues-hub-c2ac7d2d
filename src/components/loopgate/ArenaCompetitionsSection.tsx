@@ -176,6 +176,105 @@ export default function ArenaCompetitionsSection({ onCreateClick, hideHeader = f
           </div>
         </ArenaRail>
       )}
+
+      <AnimatePresence>
+        {showInfo && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowInfo(false)}
+            className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ y: 40, opacity: 0, scale: 0.96 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 40, opacity: 0, scale: 0.96 }}
+              transition={{ type: 'spring', damping: 24, stiffness: 280 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-md rounded-3xl overflow-hidden border border-gold/20"
+              style={{
+                background: 'linear-gradient(165deg, #1a1410 0%, #0a0a0d 60%, #100a14 100%)',
+                boxShadow: '0 30px 80px -20px rgba(234,179,8,0.35), inset 0 1px 0 rgba(255,255,255,0.06)',
+              }}
+            >
+              <div className="relative px-5 pt-5 pb-4 border-b border-white/[0.06]">
+                <div className="absolute inset-0 opacity-50" style={{
+                  background: 'radial-gradient(circle at 30% 0%, rgba(234,179,8,0.25), transparent 60%)',
+                }} />
+                <button
+                  onClick={() => setShowInfo(false)}
+                  className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] flex items-center justify-center transition-colors"
+                  aria-label="Close"
+                >
+                  <X className="w-4 h-4 text-white/70" />
+                </button>
+                <div className="relative flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-2xl flex items-center justify-center" style={{
+                    background: 'linear-gradient(135deg, hsl(43, 96%, 55%), hsl(38, 92%, 45%))',
+                    boxShadow: '0 8px 20px -8px rgba(234,179,8,0.6), inset 0 1px 0 rgba(255,255,255,0.3)',
+                  }}>
+                    <Trophy className="w-5 h-5 text-black" strokeWidth={2.8} />
+                  </div>
+                  <div className="min-w-0">
+                    <h2 className="text-[22px] font-black text-white leading-none uppercase" style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.01em' }}>
+                      Competitions
+                    </h2>
+                    <p className="text-[11px] font-bold text-gold/80 uppercase tracking-[0.15em] mt-0.5">Group battles · One winner</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="px-5 py-4 space-y-3">
+                {[
+                  { icon: Plus, color: '#3b82f6', title: 'Pick or create', desc: 'Join an open lobby — or spin up your own theme and invite editors.' },
+                  { icon: Sparkles, color: '#a855f7', title: 'Submit your edit', desc: 'Drop your TikTok / IG / YT link before the deadline.' },
+                  { icon: Gavel, color: '#10b981', title: 'Get judged', desc: 'Real judges score every entry on Quality, Originality & Impact.' },
+                  { icon: Crown, color: '#fbbf24', title: 'Top edit takes the crown', desc: 'Winner pockets the IDX reward pool + climbs the leaderboard.' },
+                ].map((step, i) => {
+                  const Icon = step.icon;
+                  return (
+                    <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.025] border border-white/[0.05]">
+                      <div className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center" style={{
+                        background: `${step.color}1a`,
+                        border: `1px solid ${step.color}40`,
+                      }}>
+                        <Icon className="w-4 h-4" style={{ color: step.color }} strokeWidth={2.5} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-black text-white/40">0{i + 1}</span>
+                          <h3 className="text-[13px] font-extrabold text-white leading-tight">{step.title}</h3>
+                        </div>
+                        <p className="text-[11.5px] text-white/55 leading-snug mt-0.5">{step.desc}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+                <p className="text-[10.5px] text-white/40 leading-snug px-1 pt-1">
+                  💡 The more editors who join, the bigger the IDX reward pool grows.
+                </p>
+              </div>
+
+              <div className="px-5 pb-5">
+                <button
+                  onClick={() => { setShowInfo(false); onCreateClick(); }}
+                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black text-black uppercase active:scale-[0.98] transition-transform"
+                  style={{
+                    background: 'linear-gradient(135deg, hsl(43, 96%, 55%), hsl(38, 92%, 45%))',
+                    boxShadow: '0 12px 28px -10px rgba(234,179,8,0.55), inset 0 1px 0 rgba(255,255,255,0.3)',
+                    fontFamily: 'Teko, sans-serif',
+                    letterSpacing: '0.05em',
+                    fontSize: 16,
+                  }}
+                >
+                  <Plus className="w-4 h-4" strokeWidth={3} /> Create Competition
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.section>
   );
 }
