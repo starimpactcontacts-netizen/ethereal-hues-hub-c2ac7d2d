@@ -640,8 +640,8 @@ export default function CampaignPortalPage() {
             { label: 'Engagement Rate', value: `${engagementRate}%`, sub: 'Interactions / Reach' },
             {
               label: 'CPM',
-              value: (campaign.budget_cents && campaign.total_views > 0)
-                ? `$${(((campaign.spent_cents || campaign.budget_cents) / 100) / (campaign.total_views / 1000)).toFixed(2)}`
+              value: (campaign.budget_cents && displayViews > 0)
+                ? `$${(((campaign.spent_cents || campaign.budget_cents) / 100) / (displayViews / 1000)).toFixed(2)}`
                 : '—',
               sub: 'Cost Per 1K Views',
             },
