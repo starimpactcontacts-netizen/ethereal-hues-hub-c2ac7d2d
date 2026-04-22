@@ -1179,31 +1179,31 @@ export default function ArenaPage() {
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
             {/* Content */}
-            <div className="relative px-4 py-4 flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center shrink-0">
+            <div className="relative px-3 py-3.5 flex items-center gap-2.5">
+              <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center shrink-0">
                 {isQfSearching ? (
-                  <Loader2 className="w-6 h-6 text-white animate-spin" />
+                  <Loader2 className="w-5 h-5 text-white animate-spin" />
                 ) : (
-                  <Swords className="w-6 h-6 text-white" />
+                  <Swords className="w-5 h-5 text-white" />
                 )}
               </div>
               <div className="flex-1 min-w-0 text-left">
                 <div className="flex items-center gap-1.5 mb-0.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-[9px] font-black text-white/90 uppercase tracking-[0.18em]">
-                    {isQfSearching ? 'Finding opponent…' : 'Edit Battle · 1v1'}
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                  <span className="text-[9px] font-black text-white/90 uppercase tracking-[0.16em] truncate">
+                    {isQfSearching ? 'Finding opponent…' : '1v1 · Live'}
                   </span>
                 </div>
-                <h3 className="text-[22px] font-black text-white leading-none tracking-tight" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
-                  {isQfSearching ? 'IN QUEUE' : 'JOIN EDIT BATTLE'}
+                <h3 className="text-[20px] font-black text-white leading-none tracking-tight truncate" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                  {isQfSearching ? 'IN QUEUE' : 'EDIT BATTLE'}
                 </h3>
-                <p className="text-[10px] text-white/70 font-semibold mt-1 truncate">
-                  Tap to instantly queue — earn IDX, cash & rank
+                <p className="text-[10px] text-white/75 font-semibold mt-0.5 truncate">
+                  Instant queue · IDX + cash
                 </p>
               </div>
-              <div className="shrink-0 bg-white text-black px-4 py-2.5 rounded-xl flex items-center gap-1.5 group-hover:scale-105 transition-transform">
-                <span className="text-[13px] font-black uppercase tracking-wider" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
-                  {isQfSearching ? 'Cancel' : 'Enter'}
+              <div className="shrink-0 bg-white text-black px-3 py-2 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
+                <span className="text-[12px] font-black uppercase tracking-wider" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                  {isQfSearching ? 'Stop' : 'Enter'}
                 </span>
               </div>
             </div>
