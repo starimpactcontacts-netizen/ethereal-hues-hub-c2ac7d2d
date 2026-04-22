@@ -331,18 +331,35 @@ function buildValidatedStats(gqlResult: InstagramStats, mobileResult: InstagramS
 
   const trustedViewSources = countMetricSources(trustedResults, 'views');
   const totalViewSources = countMetricSources(allResults, 'views');
-  const candidateViews = trustedViewSources > 0
-    ? pickHighestMetric(trustedResults, 'views')
-    : totalViewSources >= 2
-      ? pickHighestMetric(allResults, 'views')
-      : null;
+  // Pick MEDIAN-ish (avoid wild outliers): use the 2nd-highest if 2+ trusted sources agree,
+  // else highest from a trusted source, else require 2+ ANY-source agreement.
+  const trustedViewVals = trustedResults
+    .map(r => r.views)
+    .filter((v): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0)
+    .sort((a, b) => b - a);
+
+  let candidateViews: number | null = null;
+  if (trustedViewVals.length >= 2) {
+    // Use 2nd highest for resilience against one-source spikes
+    candidateViews = trustedViewVals[1];
+    // But if top two are within 20%, take the higher (they corroborate)
+    if (trustedViewVals[0] / trustedViewVals[1] <= 1.2) candidateViews = trustedViewVals[0];
+  } else if (trustedViewVals.length === 1) {
+    candidateViews = trustedViewVals[0];
+  } else if (totalViewSources >= 2) {
+    candidateViews = pickHighestMetric(allResults, 'views');
+  }
 
   const likes = pickHighestMetric(allResults, 'likes');
   const comments = pickHighestMetric(allResults, 'comments', true);
   const shares = pickHighestMetric(allResults, 'shares', true);
   const thumbnailUrl = gqlResult.thumbnailUrl || mobileResult.thumbnailUrl || mainResult.thumbnailUrl || embedResult.thumbnailUrl || null;
 
-  const plausibleViews = candidateViews !== null && candidateViews >= Math.max(likes || 0, comments || 0);
+  // Plausibility: views must be >= max(likes, comments) AND likes-to-views ratio sane (< 60%)
+  const maxEngagement = Math.max(likes || 0, comments || 0);
+  const plausibleViews = candidateViews !== null
+    && candidateViews >= maxEngagement
+    && (likes === null || likes === 0 || candidateViews >= likes * 1.5);
 
   return {
     views: plausibleViews ? candidateViews : null,
@@ -354,6 +371,7 @@ function buildValidatedStats(gqlResult: InstagramStats, mobileResult: InstagramS
       trustedViewSources,
       totalViewSources,
       plausibleViews,
+      trustedViewVals,
     },
   };
 }
@@ -426,12 +444,25 @@ serve(async (req) => {
           const stats = await fetchInstagramPostStats(edit.video_url);
           const payload: Record<string, any> = { updated_at: new Date().toISOString() };
           
-          // SAFETY: real view counts only go UP. Never overwrite a stored value with
-          // a lower scrape (Instagram embed/oEmbed often returns stale/lower numbers,
-          // and a failed scrape can return 0). This prevents "refresh" from deleting views.
-          const hasConfidentViews = stats.views !== null && stats.diagnostics.plausibleViews && (stats.diagnostics.trustedViewSources > 0 || stats.diagnostics.totalViewSources > 1);
+          // SAFETY: real view counts only go UP. Multi-layer validation prevents bad scrapes
+          // from overwriting good data:
+          //   1. Must have plausible views (passed buildValidatedStats guards)
+          //   2. Must come from at least 1 trusted source (GQL/mobile/main page, not just embed)
+          //   3. New value must be GREATER than stored value (monotonic)
+          //   4. If existing value is large (>10k), require corroboration from 2+ sources for jumps >50%
+          const currentViews = edit.view_count || 0;
+          const hasConfidentViews =
+            stats.views !== null &&
+            stats.diagnostics.plausibleViews &&
+            stats.diagnostics.trustedViewSources > 0;
 
-          if (hasConfidentViews && stats.views! > (edit.view_count || 0)) payload.view_count = stats.views;
+          let acceptViews = hasConfidentViews && stats.views! > currentViews;
+          // Extra guard: if a big jump (>50%) on an established post, require 2+ trusted sources
+          if (acceptViews && currentViews > 10000 && stats.views! > currentViews * 1.5) {
+            acceptViews = stats.diagnostics.trustedViewSources >= 2;
+          }
+
+          if (acceptViews) payload.view_count = stats.views;
           if (stats.likes !== null && stats.likes > (edit.like_count || 0)) payload.like_count = stats.likes;
           if (stats.comments !== null && stats.comments > (edit.comment_count || 0)) payload.comment_count = stats.comments;
           if (stats.shares !== null && stats.shares > (edit.share_count || 0)) payload.share_count = stats.shares;
