@@ -158,7 +158,9 @@ function exportCSV(campaign: CampaignData, edits: EditData[]) {
   a.click(); URL.revokeObjectURL(url);
 }
 
-const REFRESH_COOLDOWN_MS = 30 * 60 * 1000; // 30 minutes
+// Short cooldown so clients see metrics climb in real time on every click,
+// but still prevents hammering the scraper.
+const REFRESH_COOLDOWN_MS = 10 * 1000; // 10 seconds
 
 function getStoredLastRefresh(slug: string): number {
   try {
