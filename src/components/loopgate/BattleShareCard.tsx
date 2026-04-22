@@ -131,20 +131,20 @@ export default function BattleShareCard({ isOpen, onClose, battle }: BattleShare
 
   return (
     <Dialog open={isOpen} onOpenChange={() => onClose()}>
-      <DialogContent className="max-w-[420px] p-0 bg-transparent border-0 shadow-none overflow-y-auto max-h-[92vh]">
+      <DialogContent className="max-w-[400px] w-[calc(100vw-2rem)] p-3 bg-zinc-950 border border-white/10 rounded-2xl overflow-y-auto max-h-[90vh]">
         {/* Close */}
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 z-50 p-1.5 rounded-full bg-black/60 ring-1 ring-white/10 text-white/70 hover:text-white"
+          className="absolute top-2 right-2 z-50 p-1.5 rounded-full bg-black/70 ring-1 ring-white/10 text-white/70 hover:text-white"
         >
           <X className="w-4 h-4" />
         </button>
 
-        {/* === EXPORTABLE CARD (9:16) === */}
+        {/* === EXPORTABLE CARD (1:1 SQUARE) === */}
         <div
           ref={cardRef}
-          className="relative overflow-hidden bg-black mx-auto"
-          style={{ width: "360px", aspectRatio: "9/16" }}
+          className="relative overflow-hidden bg-black mx-auto rounded-xl"
+          style={{ width: "340px", height: "340px" }}
         >
           {/* layered atmosphere */}
           <div className="absolute inset-0 bg-gradient-to-b from-red-950/70 via-black to-blue-950/70" />
@@ -161,51 +161,51 @@ export default function BattleShareCard({ isOpen, onClose, battle }: BattleShare
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-amber-500/10 blur-3xl" />
           )}
 
-          <div className="relative z-10 h-full flex flex-col p-6">
+          <div className="relative z-10 h-full flex flex-col p-4">
             {/* Header */}
             <div className="flex items-center justify-between">
-              <img src={loopgateLogo} alt="LOOPGATE" className="h-5 opacity-80" crossOrigin="anonymous" />
+              <img src={loopgateLogo} alt="LOOPGATE" className="h-4 opacity-80" crossOrigin="anonymous" />
               {battle.is_rapid && (
-                <span className="text-[9px] font-bold text-amber-300 uppercase tracking-[0.3em] px-2 py-0.5 rounded-full bg-amber-500/15 ring-1 ring-amber-500/30">
+                <span className="text-[8px] font-bold text-amber-300 uppercase tracking-[0.3em] px-2 py-0.5 rounded-full bg-amber-500/15 ring-1 ring-amber-500/30">
                   ⚡ Rapid
                 </span>
               )}
             </div>
 
             {/* Headline */}
-            <div className="text-center mt-6">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 ring-1 ring-white/10">
+            <div className="text-center mt-2">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 ring-1 ring-white/10">
                 {isLive && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
-                <span className="text-[10px] tracking-[0.4em] uppercase text-white/70 font-bold" style={{ fontFamily: "Teko, sans-serif" }}>
+                <span className="text-[9px] tracking-[0.35em] uppercase text-white/70 font-bold" style={{ fontFamily: "Teko, sans-serif" }}>
                   {headline}
                 </span>
               </div>
-              <h2 className="font-display text-3xl text-white mt-3 leading-none" style={{ fontFamily: "Teko, sans-serif", letterSpacing: "0.06em" }}>
+              <h2 className="font-display text-2xl text-white mt-1.5 leading-none" style={{ fontFamily: "Teko, sans-serif", letterSpacing: "0.06em" }}>
                 1V1 EDIT BATTLE
               </h2>
             </div>
 
             {/* VS row */}
-            <div className="flex items-center justify-center gap-3 mt-8">
+            <div className="flex items-center justify-center gap-2 mt-3">
               <div className="flex flex-col items-center flex-1">
                 <Avatar
                   url={battle.challenger_avatar_url}
                   name={battle.challenger_username}
                   side={challengerWon ? "gold" : "red"}
                 />
-                <span className="font-display text-base text-white mt-3 uppercase tracking-wide truncate max-w-[110px]" style={{ fontFamily: "Teko, sans-serif" }}>
+                <span className="font-display text-sm text-white mt-2 uppercase tracking-wide truncate max-w-[100px]" style={{ fontFamily: "Teko, sans-serif" }}>
                   {battle.challenger_username}
                 </span>
                 {battle.challenger_score != null && (
-                  <span className="text-2xl font-black text-amber-300 tabular-nums leading-none" style={{ fontFamily: "Teko, sans-serif" }}>
+                  <span className="text-xl font-black text-amber-300 tabular-nums leading-none" style={{ fontFamily: "Teko, sans-serif" }}>
                     {battle.challenger_score}
                   </span>
                 )}
               </div>
 
               <div className="relative shrink-0">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-red-500 via-rose-500 to-red-700 flex items-center justify-center shadow-[0_0_28px_rgba(239,68,68,0.5)]">
-                  <Swords className="w-5 h-5 text-white" />
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 via-rose-500 to-red-700 flex items-center justify-center shadow-[0_0_24px_rgba(239,68,68,0.5)]">
+                  <Swords className="w-4 h-4 text-white" />
                 </div>
               </div>
 
@@ -217,58 +217,55 @@ export default function BattleShareCard({ isOpen, onClose, battle }: BattleShare
                     side={opponentWon ? "gold" : "blue"}
                   />
                 ) : (
-                  <div className="w-[94px] h-[94px] rounded-full border-2 border-dashed border-white/30 flex items-center justify-center text-3xl text-white/30" style={{ fontFamily: "Teko, sans-serif" }}>
+                  <div className="w-[78px] h-[78px] rounded-full border-2 border-dashed border-white/30 flex items-center justify-center text-2xl text-white/30" style={{ fontFamily: "Teko, sans-serif" }}>
                     ?
                   </div>
                 )}
-                <span className="font-display text-base text-white mt-3 uppercase tracking-wide truncate max-w-[110px]" style={{ fontFamily: "Teko, sans-serif" }}>
+                <span className="font-display text-sm text-white mt-2 uppercase tracking-wide truncate max-w-[100px]" style={{ fontFamily: "Teko, sans-serif" }}>
                   {battle.opponent_username || "OPEN"}
                 </span>
                 {battle.opponent_score != null && (
-                  <span className="text-2xl font-black text-amber-300 tabular-nums leading-none" style={{ fontFamily: "Teko, sans-serif" }}>
+                  <span className="text-xl font-black text-amber-300 tabular-nums leading-none" style={{ fontFamily: "Teko, sans-serif" }}>
                     {battle.opponent_score}
                   </span>
                 )}
               </div>
             </div>
 
-            {/* Subline */}
-            <p className="text-center text-[12px] text-white/60 mt-6 px-2">{subline}</p>
-
             {/* CTA strip */}
             <div className="mt-auto">
-              <div className="rounded-xl bg-white/5 ring-1 ring-white/10 backdrop-blur-md px-4 py-3 text-center">
-                <p className="text-[9px] uppercase tracking-[0.3em] text-white/50">Watch & Vote</p>
-                <p className="text-sm font-bold text-white mt-0.5" style={{ fontFamily: "Teko, sans-serif", letterSpacing: "0.08em" }}>
-                  LOOPGATE.IO/BATTLE
+              <p className="text-center text-[10px] text-white/60 mb-2 px-2 truncate">{subline}</p>
+              <div className="rounded-lg bg-white/5 ring-1 ring-white/10 backdrop-blur-md px-3 py-1.5 text-center">
+                <p className="text-[8px] uppercase tracking-[0.3em] text-white/50">Watch & Vote</p>
+                <p className="text-xs font-bold text-white" style={{ fontFamily: "Teko, sans-serif", letterSpacing: "0.08em" }}>
+                  LOOPGATE.IO
                 </p>
               </div>
-              <p className="text-center text-[9px] text-white/30 uppercase tracking-[0.4em] mt-3">Enter · Compete · Win</p>
             </div>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 mt-3 px-2 pb-2">
+        <div className="flex gap-2 mt-3">
           <Button
             onClick={handleDownload}
             disabled={busy}
-            className="flex-1 bg-white text-black hover:bg-white/90 font-bold uppercase tracking-wider text-xs"
+            className="flex-1 bg-white text-black hover:bg-white/90 font-bold uppercase tracking-wider text-[11px] h-10"
           >
-            {busy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
-            Download PNG
+            {busy ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Download className="w-3.5 h-3.5 mr-1.5" />}
+            Download
           </Button>
           <Button
             onClick={handleShare}
             disabled={busy}
-            className="flex-1 bg-gradient-to-r from-red-500 to-rose-600 text-white hover:opacity-90 font-bold uppercase tracking-wider text-xs"
+            className="flex-1 bg-gradient-to-r from-red-500 to-rose-600 text-white hover:opacity-90 font-bold uppercase tracking-wider text-[11px] h-10"
           >
-            <Share2 className="w-4 h-4 mr-2" />
+            <Share2 className="w-3.5 h-3.5 mr-1.5" />
             Share
           </Button>
         </div>
-        <p className="text-center text-[10px] text-white/40 px-4 pb-2">
-          Post it on TikTok / IG to bring viewers into the battle 🔥
+        <p className="text-center text-[10px] text-white/40 mt-2">
+          Post on TikTok / IG to pull viewers in 🔥
         </p>
       </DialogContent>
     </Dialog>
