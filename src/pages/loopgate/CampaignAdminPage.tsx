@@ -998,7 +998,33 @@ export default function CampaignAdminPage() {
                                     exit={{ opacity: 0, height: 0 }}
                                     className="rounded-lg bg-background/40 border border-border/20 p-3 space-y-2 mb-3 overflow-hidden"
                                   >
-                                    <Input placeholder="Paste video URL first — title auto-fills" value={newEdit.video_url} onChange={e => handleVideoUrlChange(e.target.value, campaign.id)} className="bg-background/60 h-8 text-xs border-border/30" />
+                                    <Input
+                                      placeholder="Paste video URL first — title auto-fills"
+                                      value={newEdit.video_url}
+                                      onChange={e => handleVideoUrlChange(e.target.value, campaign.id)}
+                                      className={`bg-background/60 h-8 text-xs ${
+                                        urlStatus.kind === 'duplicate' ? 'border-destructive/60' :
+                                        urlStatus.kind === 'ready' ? 'border-emerald-500/40' :
+                                        'border-border/30'
+                                      }`}
+                                    />
+                                    {urlStatus.kind !== 'idle' && (
+                                      <div className={`text-[9px] flex items-center gap-1.5 px-1 ${
+                                        urlStatus.kind === 'duplicate' ? 'text-destructive' :
+                                        urlStatus.kind === 'ready' ? 'text-emerald-400' :
+                                        'text-muted-foreground'
+                                      }`}>
+                                        {urlStatus.kind === 'duplicate' && <X className="w-3 h-3" />}
+                                        {urlStatus.kind === 'ready' && <Check className="w-3 h-3" />}
+                                        {(urlStatus.kind === 'fetching' || urlStatus.kind === 'checking') && <RefreshCw className="w-3 h-3 animate-spin" />}
+                                        <span className="uppercase tracking-wider font-bold">
+                                          {urlStatus.kind === 'duplicate' && `Already added — ${urlStatus.message}`}
+                                          {urlStatus.kind === 'fetching' && 'Pulling latest views & thumbnail…'}
+                                          {urlStatus.kind === 'checking' && 'Checking…'}
+                                          {urlStatus.kind === 'ready' && (urlStatus.message || 'Ready to add')}
+                                        </span>
+                                      </div>
+                                    )}
                                     <Input placeholder="Title (auto-generated, editable)" value={newEdit.title} onChange={e => setNewEdit(p => ({ ...p, title: e.target.value }))} className="bg-background/60 h-8 text-xs border-border/30" />
                                     <Input placeholder="Thumbnail URL (optional)" value={newEdit.thumbnail_url} onChange={e => setNewEdit(p => ({ ...p, thumbnail_url: e.target.value }))} className="bg-background/60 h-8 text-xs border-border/30" />
                                     <div className="grid grid-cols-3 gap-2">
@@ -1008,12 +1034,56 @@ export default function CampaignAdminPage() {
                                         <option value="instagram">Instagram</option>
                                         <option value="twitter">Twitter/X</option>
                                       </select>
-                                      <Input placeholder="Editor @username" value={newEdit.editor_username} onChange={e => setNewEdit(p => ({ ...p, editor_username: e.target.value }))} className="bg-background/60 h-8 text-xs border-border/30" />
-                                      <Input type="number" placeholder="Views" value={newEdit.view_count || ''} onChange={e => setNewEdit(p => ({ ...p, view_count: Number(e.target.value) }))} className="bg-background/60 h-8 text-xs border-border/30" />
+                                      <div className="relative">
+                                        <Input
+                                          placeholder="Editor @username"
+                                          value={newEdit.editor_username}
+                                          onFocus={() => setShowEditorPicker(true)}
+                                          onBlur={() => setTimeout(() => setShowEditorPicker(false), 150)}
+                                          onChange={e => setNewEdit(p => ({ ...p, editor_username: e.target.value.replace(/^@/, '') }))}
+                                          className="bg-background/60 h-8 text-xs border-border/30"
+                                        />
+                                        {showEditorPicker && (() => {
+                                          const existingEditors = Array.from(new Set(
+                                            getEditsForCampaign(campaign.id)
+                                              .map(e => e.editor_username)
+                                              .filter((u): u is string => !!u && u.toLowerCase().includes(newEdit.editor_username.toLowerCase()))
+                                          )).slice(0, 6);
+                                          if (existingEditors.length === 0) return null;
+                                          return (
+                                            <div className="absolute top-full left-0 right-0 mt-1 z-30 rounded-md border border-border/40 bg-card shadow-lg max-h-40 overflow-y-auto">
+                                              {existingEditors.map(u => (
+                                                <button
+                                                  key={u}
+                                                  type="button"
+                                                  onMouseDown={(e) => { e.preventDefault(); setNewEdit(p => ({ ...p, editor_username: u })); setShowEditorPicker(false); }}
+                                                  className="w-full text-left px-2 py-1.5 text-[10px] hover:bg-accent/30 transition-colors flex items-center gap-1.5"
+                                                >
+                                                  <span className="text-gold">@</span>{u}
+                                                </button>
+                                              ))}
+                                            </div>
+                                          );
+                                        })()}
+                                      </div>
+                                      <Input
+                                        type="text"
+                                        inputMode="numeric"
+                                        placeholder="Views"
+                                        value={newEdit.view_count ? formatNumberInput(newEdit.view_count) : ''}
+                                        onChange={e => setNewEdit(p => ({ ...p, view_count: parseNumberInput(e.target.value) }))}
+                                        className="bg-background/60 h-8 text-xs border-border/30 font-mono tabular-nums"
+                                      />
                                     </div>
                                     <div className="flex gap-2 pt-1">
-                                      <button onClick={() => handleAddEdit(campaign.id)} className="h-7 px-3 rounded bg-gold text-background text-[9px] font-bold uppercase tracking-wider hover:bg-gold/90 transition-colors">Add Clip</button>
-                                      <button onClick={() => setShowAddEditForm(null)} className="h-7 px-3 rounded text-[9px] text-muted-foreground hover:text-foreground transition-colors">Cancel</button>
+                                      <button
+                                        onClick={() => handleAddEdit(campaign.id)}
+                                        disabled={urlStatus.kind === 'duplicate'}
+                                        className="h-7 px-3 rounded bg-gold text-background text-[9px] font-bold uppercase tracking-wider hover:bg-gold/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                      >
+                                        Add Clip
+                                      </button>
+                                      <button onClick={() => { setShowAddEditForm(null); setUrlStatus({ kind: 'idle' }); }} className="h-7 px-3 rounded text-[9px] text-muted-foreground hover:text-foreground transition-colors">Cancel</button>
                                     </div>
                                   </motion.div>
                                 )}
