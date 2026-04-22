@@ -26,6 +26,19 @@ function formatNumber(n: number): string {
   return n.toLocaleString();
 }
 
+// Format raw number with thin spaces every 3 digits for readability in inputs.
+// e.g. 49928828 -> "49 928 828"
+function formatNumberInput(n: number | string): string {
+  if (n === '' || n === null || n === undefined) return '';
+  const num = typeof n === 'number' ? n : Number(String(n).replace(/\D/g, ''));
+  if (!isFinite(num) || num === 0) return n === 0 || n === '0' ? '0' : '';
+  return num.toLocaleString('en-US').replace(/,/g, ' ');
+}
+function parseNumberInput(s: string): number {
+  const digits = (s || '').replace(/\D/g, '');
+  return digits ? Number(digits) : 0;
+}
+
 /* ─── Custom SVG Icons ─── */
 function CampaignIcon({ className = '', size = 20 }: { className?: string; size?: number }) {
   return (
