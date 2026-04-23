@@ -18,7 +18,7 @@ export default function ClippersLayout({ children, title }: Props) {
   const navigate = useNavigate();
 
   return (
-    <div className="relative min-h-screen text-foreground pb-28 overflow-hidden" style={{ background: 'hsl(var(--surface-0))' }}>
+    <div className="relative min-h-screen text-foreground pb-28" style={{ background: 'hsl(var(--surface-0))' }}>
       {/* Ambient gold glow */}
       <div
         aria-hidden
