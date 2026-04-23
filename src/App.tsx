@@ -104,6 +104,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const ClippersOnboardingPage = lazy(() => import("./pages/loopgate/ClippersOnboardingPage"));
 const ClippersPortalPage = lazy(() => import("./pages/loopgate/ClippersPortalPage"));
 const ClippersCampaignsPage = lazy(() => import("./pages/loopgate/clippers/ClippersCampaignsPage"));
+const MissionSubmitPage = lazy(() => import("./pages/loopgate/clippers/MissionSubmitPage"));
 const ClippersSubmissionsPage = lazy(() => import("./pages/loopgate/clippers/ClippersSubmissionsPage"));
 const ClippersAccountsPage = lazy(() => import("./pages/loopgate/clippers/ClippersAccountsPage"));
 const ClippersWithdrawalsPage = lazy(() => import("./pages/loopgate/clippers/ClippersWithdrawalsPage"));
