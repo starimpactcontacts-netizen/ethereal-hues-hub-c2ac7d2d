@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { Plus, Link2, ExternalLink, Trash2, Loader2, Youtube, Instagram, Music2, Twitter, Facebook, BadgeCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import ClippersLayout from '@/components/clippers/ClippersLayout';
 import ClipperLockGate from '@/components/clippers/ClipperLockGate';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -73,7 +72,7 @@ export default function ClippersAccountsPage() {
   const verifiedCount = accounts.filter((a) => a.is_verified).length;
 
   return (
-    <ClippersLayout title="Linked">
+    <>
       <section className="max-w-6xl mx-auto px-4 pt-3 pb-4 flex items-end justify-between">
         <h1 className="font-apple-tight text-[34px] font-bold text-white leading-[1.05]">Linked</h1>
         <button
@@ -187,7 +186,7 @@ export default function ClippersAccountsPage() {
       )}
 
       <ClipperLockGate open={showGate} onClose={() => setShowGate(false)} onSuccess={load} reason="Lock in to link your social accounts." />
-    </ClippersLayout>
+    </>
   );
 }
 
