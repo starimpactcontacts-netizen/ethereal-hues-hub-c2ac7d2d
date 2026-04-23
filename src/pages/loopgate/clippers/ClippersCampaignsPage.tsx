@@ -1,69 +1,79 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search, Sparkles, ChevronRight } from 'lucide-react';
+import { Search, Sparkles, ChevronRight, DollarSign, TrendingUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import ClippersLayout from '@/components/clippers/ClippersLayout';
 
-interface Campaign {
+interface Milestone { views: number; bonus_cents: number; }
+
+interface Mission {
   id: string;
-  name: string;
+  title: string;
   description: string | null;
   cover_image_url: string | null;
-  client_name: string | null;
+  sponsor_name: string | null;
+  sponsor_logo_url: string | null;
+  base_payout_cents: number;
+  view_milestones: Milestone[];
   budget_cents: number | null;
   spent_cents: number | null;
-  goal_label: string | null;
-  slug: string | null;
+  status: string;
+  deadline: string | null;
 }
 
-interface ClipperStats {
-  total_earnings_cents: number;
-  total_clips: number;
+interface UserStats {
+  earned: number;
+  paid: number;
+  clips: number;
 }
 
 export default function ClippersCampaignsPage() {
   const { user } = useAuth();
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [stats, setStats] = useState<ClipperStats>({
-    total_earnings_cents: 0,
-    total_clips: 0,
-  });
+  const [missions, setMissions] = useState<Mission[]>([]);
+  const [stats, setStats] = useState<UserStats>({ earned: 0, paid: 0, clips: 0 });
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
-      const [cRes, sRes] = await Promise.all([
+      const [mRes, subsRes, paysRes] = await Promise.all([
         supabase
-          .from('artist_campaigns')
-          .select('id, name, description, cover_image_url, client_name, budget_cents, spent_cents, goal_label, slug')
-          .eq('status', 'active')
+          .from('missions')
+          .select('id, title, description, cover_image_url, sponsor_name, sponsor_logo_url, base_payout_cents, view_milestones, budget_cents, spent_cents, status, deadline')
+          .in('status', ['live', 'paused'])
           .order('created_at', { ascending: false })
           .limit(40),
         user
-          ? supabase.from('clipper_profiles').select('total_earnings_cents, total_clips').eq('user_id', user.id).maybeSingle()
-          : Promise.resolve({ data: null }),
+          ? supabase.from('mission_submissions').select('total_earned_cents, status').eq('user_id', user.id)
+          : Promise.resolve({ data: [] as any[] }),
+        user
+          ? supabase.from('mission_payouts').select('amount_cents, status').eq('user_id', user.id).neq('status', 'rejected')
+          : Promise.resolve({ data: [] as any[] }),
       ]);
-      setCampaigns((cRes.data || []) as Campaign[]);
-      if (sRes.data) setStats(sRes.data as ClipperStats);
+      setMissions(((mRes.data as any) || []) as Mission[]);
+      const subs = (subsRes.data || []) as Array<{ total_earned_cents: number; status: string }>;
+      const pays = (paysRes.data || []) as Array<{ amount_cents: number }>;
+      const earned = subs.reduce((s, x) => s + (x.total_earned_cents || 0), 0);
+      const paid = pays.reduce((s, x) => s + (x.amount_cents || 0), 0);
+      setStats({ earned, paid, clips: subs.length });
       setLoading(false);
     };
     load();
   }, [user]);
 
   const formatMoney = (cents: number) => `$${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  const filtered = campaigns.filter((c) =>
-    !search || c.name.toLowerCase().includes(search.toLowerCase()) || c.client_name?.toLowerCase().includes(search.toLowerCase()),
+  const filtered = missions.filter((m) =>
+    !search || m.title.toLowerCase().includes(search.toLowerCase()) || m.sponsor_name?.toLowerCase().includes(search.toLowerCase()),
   );
-  const featured = filtered[0];
-  const rest = filtered.slice(1);
+  const balance = Math.max(0, stats.earned - stats.paid);
 
   return (
     <ClippersLayout title="Missions">
-      <section className="max-w-6xl mx-auto px-4 pt-3 pb-5">
+      <section className="max-w-6xl mx-auto px-4 pt-3 pb-4">
         <h1 className="font-apple-tight text-[34px] font-bold text-white leading-[1.05]">Missions</h1>
+        <p className="text-[13px] text-[#8E8E93] mt-1">Get paid per clip + bonuses for views.</p>
 
         {/* iOS search */}
         <div className="relative mt-4">
@@ -90,48 +100,39 @@ export default function ClippersCampaignsPage() {
           <div
             aria-hidden
             className="absolute -top-12 -right-10 w-48 h-48 rounded-full pointer-events-none"
-            style={{ background: 'radial-gradient(circle, rgba(255,204,0,0.18) 0%, transparent 70%)' }}
+            style={{ background: 'radial-gradient(circle, rgba(48,209,88,0.20) 0%, transparent 70%)' }}
           />
           <p className="text-[13px] text-[#8E8E93] font-medium">Available balance</p>
-          <p className="font-apple-tight text-[44px] font-bold text-white leading-none mt-1.5 tabular-nums">
-            {formatMoney(stats.total_earnings_cents)}
+          <p className="font-apple-tight text-[44px] font-bold leading-none mt-1.5 tabular-nums" style={{ color: '#30D158' }}>
+            {formatMoney(balance)}
           </p>
+          <p className="text-[11px] text-[#8E8E93] mt-1">Withdraw anytime · paid within 24h</p>
           <div className="flex items-center gap-5 mt-4 pt-4 border-t border-white/[0.06]">
-            <MiniStat label="Clips" value={stats.total_clips.toString()} />
+            <MiniStat label="Clips" value={stats.clips.toString()} />
             <div className="w-px h-7 bg-white/[0.08]" />
-            <MiniStat label="Active" value={filtered.length.toString()} />
+            <MiniStat label="Live" value={filtered.length.toString()} />
           </div>
         </motion.div>
       </section>
 
-      <div className="max-w-6xl mx-auto px-4 space-y-6">
+      <div className="max-w-6xl mx-auto px-4 space-y-4 pb-8">
+        <h2 className="text-[22px] font-bold text-white tracking-[-0.022em] px-0.5">Live missions</h2>
         {loading ? (
-          <div className="space-y-3">
-            <div className="h-56 rounded-[20px] bg-[#1c1c1e] animate-pulse" />
-            <div className="h-20 rounded-[16px] bg-[#1c1c1e] animate-pulse" />
-            <div className="h-20 rounded-[16px] bg-[#1c1c1e] animate-pulse" />
+          <div className="space-y-2">
+            {[1, 2, 3].map((i) => <div key={i} className="h-24 rounded-[16px] bg-[#1c1c1e] animate-pulse" />)}
           </div>
         ) : filtered.length === 0 ? (
           <div className="rounded-[20px] p-10 text-center" style={{ background: '#1c1c1e' }}>
             <Sparkles className="w-7 h-7 text-[#8E8E93] mx-auto mb-3" />
-            <p className="text-[17px] font-semibold text-white">No missions live</p>
+            <p className="text-[17px] font-semibold text-white">No live missions</p>
             <p className="text-[13px] text-[#8E8E93] mt-1">New paid drops every week</p>
           </div>
         ) : (
-          <>
-            {featured && <FeaturedCard c={featured} formatMoney={formatMoney} />}
-
-            {rest.length > 0 && (
-              <section>
-                <h2 className="text-[22px] font-bold text-white tracking-[-0.022em] mb-3 px-0.5">Browse all</h2>
-                <div className="rounded-[16px] overflow-hidden" style={{ background: '#1c1c1e' }}>
-                  {rest.map((c, idx) => (
-                    <CampaignRow key={c.id} c={c} formatMoney={formatMoney} isLast={idx === rest.length - 1} />
-                  ))}
-                </div>
-              </section>
-            )}
-          </>
+          <div className="space-y-3">
+            {filtered.map((m) => (
+              <MissionCard key={m.id} m={m} formatMoney={formatMoney} />
+            ))}
+          </div>
         )}
       </div>
     </ClippersLayout>
@@ -147,104 +148,75 @@ function MiniStat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function FeaturedCard({ c, formatMoney }: { c: Campaign; formatMoney: (n: number) => string }) {
-  const budget = c.budget_cents || 0;
-  const spent = c.spent_cents || 0;
+function MissionCard({ m, formatMoney }: { m: Mission; formatMoney: (n: number) => string }) {
+  const budget = m.budget_cents || 0;
+  const spent = m.spent_cents || 0;
   const pct = budget > 0 ? Math.min(100, (spent / budget) * 100) : 0;
-  return (
-    <section>
-      <div className="flex items-baseline justify-between mb-3 px-0.5">
-        <h2 className="text-[22px] font-bold text-white tracking-[-0.022em]">Featured</h2>
-        <span className="text-[13px] text-[#8E8E93] font-medium">Top mission</span>
-      </div>
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <Link
-          to={c.slug ? `/campaign/${c.slug}` : '/missions/portal'}
-          className="group relative block overflow-hidden rounded-[20px] aspect-[4/5] sm:aspect-[16/10] active:scale-[0.99] transition-transform"
-          style={{ background: '#1c1c1e' }}
-        >
-          {c.cover_image_url ? (
-            <img
-              src={c.cover_image_url}
-              alt={c.name}
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-[#2c2c2e] to-[#1c1c1e]" />
-          )}
-          <div
-            className="absolute inset-0"
-            style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.05) 40%, rgba(0,0,0,0.92) 100%)' }}
-          />
-          <div className="absolute top-4 left-4">
-            <span
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold text-white"
-              style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
-            >
-              ★ Featured
-            </span>
-          </div>
-          <div className="absolute bottom-0 left-0 right-0 p-5">
-            <p className="text-[13px] text-white/70 font-medium mb-1">{c.client_name || 'Loopgate'}</p>
-            <h3 className="font-apple-tight text-[32px] font-bold text-white leading-[1.05] mb-3 line-clamp-2">{c.name}</h3>
-            {budget > 0 && (
-              <>
-                <div className="h-1 rounded-full bg-white/20 overflow-hidden mb-2">
-                  <div
-                    className="h-full rounded-full transition-all duration-700"
-                    style={{ width: `${pct}%`, background: 'linear-gradient(90deg, #FFCC00 0%, #FFD60A 100%)' }}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <p className="text-[13px] text-white/80 font-medium">
-                    <span className="text-white tabular-nums">{formatMoney(spent)}</span>
-                    <span className="text-white/50"> of {formatMoney(budget)}</span>
-                  </p>
-                  <span className="inline-flex items-center gap-0.5 text-[15px] font-semibold text-white">
-                    Open <ChevronRight className="w-4 h-4" strokeWidth={2.5} />
-                  </span>
-                </div>
-              </>
-            )}
-          </div>
-        </Link>
-      </motion.div>
-    </section>
-  );
-}
+  const milestones = (m.view_milestones || []).slice(0, 3);
+  const isPaused = m.status === 'paused';
 
-function CampaignRow({ c, formatMoney, isLast }: { c: Campaign; formatMoney: (n: number) => string; isLast: boolean }) {
-  const budget = c.budget_cents || 0;
   return (
     <Link
-      to={c.slug ? `/campaign/${c.slug}` : '/missions/portal'}
-      className="group flex items-center gap-3 px-4 py-3 active:bg-white/[0.04] transition-colors"
-      style={isLast ? {} : { borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}
+      to={`/missions/submit?id=${m.id}`}
+      className="block rounded-[18px] overflow-hidden active:scale-[0.99] transition-transform"
+      style={{ background: '#1c1c1e' }}
     >
-      <div className="w-12 h-12 flex-shrink-0 rounded-[10px] overflow-hidden bg-[#2c2c2e]">
-        {c.cover_image_url ? (
-          <img src={c.cover_image_url} alt={c.name} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-[#8E8E93]" />
-          </div>
-        )}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-[16px] font-semibold text-white tracking-[-0.02em] truncate leading-tight">{c.name}</p>
-        <p className="text-[13px] text-[#8E8E93] truncate mt-0.5">{c.client_name || 'Loopgate'}</p>
-      </div>
-      {budget > 0 && (
-        <div className="text-right">
-          <p className="text-[15px] font-semibold text-white tabular-nums">{formatMoney(budget)}</p>
-          <p className="text-[11px] text-[#8E8E93]">pool</p>
+      <div className="flex">
+        {/* Cover */}
+        <div className="w-28 h-28 flex-shrink-0 bg-[#2c2c2e] relative">
+          {m.cover_image_url ? (
+            <img src={m.cover_image_url} alt={m.title} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <DollarSign className="w-7 h-7 text-[#48484A]" />
+            </div>
+          )}
+          {isPaused && (
+            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+              <span className="text-[10px] font-bold uppercase text-amber-400">Paused</span>
+            </div>
+          )}
         </div>
-      )}
-      <ChevronRight className="w-[18px] h-[18px] text-[#48484A] -mr-1" strokeWidth={2.5} />
+
+        {/* Body */}
+        <div className="flex-1 min-w-0 p-3 pr-2">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="text-[12px] text-[#8E8E93] font-medium truncate">{m.sponsor_name || 'Loopgate'}</p>
+              <h3 className="text-[16px] font-bold text-white tracking-[-0.02em] line-clamp-2 leading-tight mt-0.5">
+                {m.title}
+              </h3>
+            </div>
+            <ChevronRight className="w-[18px] h-[18px] text-[#48484A] flex-shrink-0 mt-1" strokeWidth={2.5} />
+          </div>
+
+          {/* Payout strip */}
+          <div className="flex items-center gap-2 mt-2 flex-wrap">
+            <span className="inline-flex items-center gap-1 text-[12px] font-bold tabular-nums" style={{ color: '#30D158' }}>
+              <DollarSign className="w-3 h-3" strokeWidth={3} />
+              {(m.base_payout_cents / 100).toFixed(2)} base
+            </span>
+            {milestones.length > 0 && (
+              <span className="inline-flex items-center gap-1 text-[11px] text-[#8E8E93]">
+                <TrendingUp className="w-3 h-3" />
+                up to +{formatMoney(milestones.reduce((s, x) => s + x.bonus_cents, 0))}
+              </span>
+            )}
+          </div>
+
+          {/* Budget bar */}
+          {budget > 0 && (
+            <div className="mt-2">
+              <div className="h-[3px] rounded-full bg-white/10 overflow-hidden">
+                <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: '#30D158' }} />
+              </div>
+              <p className="text-[10px] text-[#8E8E93] mt-1 tabular-nums">
+                {formatMoney(spent)} / {formatMoney(budget)} pool
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
     </Link>
   );
 }

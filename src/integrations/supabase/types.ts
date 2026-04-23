@@ -5712,6 +5712,197 @@ export type Database = {
         }
         Relationships: []
       }
+      mission_payouts: {
+        Row: {
+          admin_notes: string | null
+          amount_cents: number
+          created_at: string
+          destination: string
+          id: string
+          method: string
+          processed_at: string | null
+          processed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount_cents: number
+          created_at?: string
+          destination: string
+          id?: string
+          method: string
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          amount_cents?: number
+          created_at?: string
+          destination?: string
+          id?: string
+          method?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mission_submissions: {
+        Row: {
+          avatar_url: string | null
+          base_earned_cents: number
+          bonus_earned_cents: number
+          created_at: string
+          feedback: string | null
+          id: string
+          like_count: number
+          mission_id: string
+          platform: string | null
+          posted_handle: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          thumbnail_url: string | null
+          title: string | null
+          total_earned_cents: number
+          updated_at: string
+          user_id: string
+          username: string | null
+          video_url: string
+          view_count: number
+        }
+        Insert: {
+          avatar_url?: string | null
+          base_earned_cents?: number
+          bonus_earned_cents?: number
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          like_count?: number
+          mission_id: string
+          platform?: string | null
+          posted_handle?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          thumbnail_url?: string | null
+          title?: string | null
+          total_earned_cents?: number
+          updated_at?: string
+          user_id: string
+          username?: string | null
+          video_url: string
+          view_count?: number
+        }
+        Update: {
+          avatar_url?: string | null
+          base_earned_cents?: number
+          bonus_earned_cents?: number
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          like_count?: number
+          mission_id?: string
+          platform?: string | null
+          posted_handle?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          thumbnail_url?: string | null
+          title?: string | null
+          total_earned_cents?: number
+          updated_at?: string
+          user_id?: string
+          username?: string | null
+          video_url?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_submissions_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      missions: {
+        Row: {
+          approved_count: number
+          base_payout_cents: number
+          budget_cents: number
+          cover_image_url: string | null
+          created_at: string
+          created_by: string | null
+          deadline: string | null
+          description: string | null
+          id: string
+          reference_video_url: string | null
+          scenepack_url: string | null
+          spent_cents: number
+          sponsor_logo_url: string | null
+          sponsor_name: string | null
+          status: string
+          submission_count: number
+          title: string
+          total_views: number
+          updated_at: string
+          view_milestones: Json
+        }
+        Insert: {
+          approved_count?: number
+          base_payout_cents?: number
+          budget_cents?: number
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          reference_video_url?: string | null
+          scenepack_url?: string | null
+          spent_cents?: number
+          sponsor_logo_url?: string | null
+          sponsor_name?: string | null
+          status?: string
+          submission_count?: number
+          title: string
+          total_views?: number
+          updated_at?: string
+          view_milestones?: Json
+        }
+        Update: {
+          approved_count?: number
+          base_payout_cents?: number
+          budget_cents?: number
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          reference_video_url?: string | null
+          scenepack_url?: string | null
+          spent_cents?: number
+          sponsor_logo_url?: string | null
+          sponsor_name?: string | null
+          status?: string
+          submission_count?: number
+          title?: string
+          total_views?: number
+          updated_at?: string
+          view_milestones?: Json
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           email: string

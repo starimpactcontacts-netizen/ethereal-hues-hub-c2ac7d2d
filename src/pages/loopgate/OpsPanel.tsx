@@ -27,6 +27,7 @@ import FeaturedArtistAdmin from "@/components/loopgate/FeaturedArtistAdmin";
 import EditoriumAdmin from "@/components/loopgate/EditoriumAdmin";
 import RadioAdmin from "@/components/loopgate/RadioAdmin";
 import MissionAdmin from "@/components/loopgate/MissionAdmin";
+import MissionsAdmin from "@/components/loopgate/missions/MissionsAdmin";
 import OpsAdminDashboard from "@/components/loopgate/OpsAdminDashboard";
 import TournamentProposalsAdmin from "@/components/loopgate/TournamentProposalsAdmin";
 import TournamentLifecycleAdmin from "@/components/loopgate/TournamentLifecycleAdmin";
@@ -2439,6 +2440,11 @@ export default function OpsPanel() {
         {/* ═══ MISSION ADMIN ═══ */}
         <div id="mission-admin" className="mb-6 p-4 bg-surface-0 border border-emerald-500/20 rounded-lg scroll-mt-20">
           <MissionAdmin />
+        </div>
+
+        {/* ═══ MISSIONS (PAID CLIPPER MISSIONS) ═══ */}
+        <div id="missions-admin" className="mb-6 p-4 bg-surface-0 border border-emerald-500/30 rounded-lg scroll-mt-20">
+          <MissionsAdmin />
         </div>
 
         {/* Featured Artists & Drops Admin */}
