@@ -60,28 +60,9 @@ export default function ClippersLayout({ children, title }: Props) {
             <span className="text-[15px] font-normal">Hub</span>
           </button>
 
-          {/* Profile chip — center identity */}
-          <div className="flex items-center gap-2 min-w-0">
-            <div
-              className="w-7 h-7 rounded-full flex items-center justify-center overflow-hidden shrink-0"
-              style={{
-                background: isGuest ? 'rgba(255,255,255,0.08)' : 'linear-gradient(135deg,#3a3a3c,#1c1c1e)',
-                border: isGuest ? '0.5px dashed rgba(255,255,255,0.25)' : '0.5px solid rgba(255,255,255,0.12)',
-              }}
-            >
-              {avatarUrl ? (
-                <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-[11px] font-semibold text-white/80">{initial}</span>
-              )}
-            </div>
-            <div className="min-w-0 leading-tight">
-              <p className="text-[13px] font-semibold text-white truncate max-w-[120px]">{displayName}</p>
-              {isGuest && (
-                <p className="text-[9px] uppercase tracking-[0.1em] text-[#8E8E93] -mt-0.5">Guest · not signed in</p>
-              )}
-            </div>
-          </div>
+          <h1 className="text-[15px] font-semibold tracking-[-0.02em] text-white truncate">
+            {title || 'Missions'}
+          </h1>
 
           {/* Menu */}
           <div className="relative shrink-0">
