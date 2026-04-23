@@ -27,6 +27,10 @@ interface Mission {
   sponsor_name: string | null;
   sponsor_logo_url: string | null;
   reference_video_url: string | null;
+  inspirations: string[] | null;
+  scenepack_url: string | null;
+  scenepack_gdrive_url: string | null;
+  scenepack_youtube_url: string | null;
   base_payout_cents: number;
   view_milestones: Milestone[];
   budget_cents: number;
