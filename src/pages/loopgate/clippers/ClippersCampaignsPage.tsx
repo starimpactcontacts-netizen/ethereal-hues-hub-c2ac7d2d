@@ -5,6 +5,7 @@ import { Search, Sparkles, ChevronRight, DollarSign, TrendingUp } from 'lucide-r
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useTempProfile } from '@/hooks/useTempProfile';
+import AccountPromptModal from '@/components/loopgate/AccountPromptModal';
 
 interface Milestone { views: number; bonus_cents: number; }
 
@@ -36,6 +37,7 @@ export default function ClippersCampaignsPage() {
   const [stats, setStats] = useState<UserStats>({ earned: 0, paid: 0, clips: 0 });
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [authOpen, setAuthOpen] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -81,7 +83,12 @@ export default function ClippersCampaignsPage() {
     <>
       {/* Personalized greeting */}
       <section className="max-w-6xl mx-auto px-4 pt-4 pb-3">
-        <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => { if (isGuest) setAuthOpen(true); }}
+          disabled={!isGuest}
+          className={`flex items-center gap-3 w-full text-left ${isGuest ? 'active:opacity-60 transition-opacity' : ''}`}
+        >
           <div
             className="w-11 h-11 rounded-full flex items-center justify-center overflow-hidden shrink-0"
             style={{
@@ -97,13 +104,13 @@ export default function ClippersCampaignsPage() {
           </div>
           <div className="min-w-0">
             <p className="text-[12px] text-[#8E8E93] font-medium leading-none">
-              {isGuest ? 'Browsing as guest' : greeting}
+              {isGuest ? 'Tap to sign in' : greeting}
             </p>
             <p className="text-[18px] font-semibold text-white tracking-[-0.02em] mt-1 leading-none truncate">
               {isGuest ? 'Not signed in' : `@${displayName}`}
             </p>
           </div>
-        </div>
+        </button>
 
         <h1 className="font-apple-tight text-[32px] font-bold text-white leading-[1.05] mt-5">Missions</h1>
         <p className="text-[13px] text-[#8E8E93] mt-1">Get paid per clip + bonuses for views.</p>
@@ -168,6 +175,12 @@ export default function ClippersCampaignsPage() {
           </div>
         )}
       </div>
+
+      <AccountPromptModal
+        isOpen={authOpen}
+        onClose={() => setAuthOpen(false)}
+        reason="Create your account to start earning from missions."
+      />
     </>
   );
 }
