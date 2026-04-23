@@ -220,20 +220,3 @@ function MissionCard({ m, formatMoney }: { m: Mission; formatMoney: (n: number) 
     </Link>
   );
 }
-          </div>
-        )}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-[16px] font-semibold text-white tracking-[-0.02em] truncate leading-tight">{c.name}</p>
-        <p className="text-[13px] text-[#8E8E93] truncate mt-0.5">{c.client_name || 'Loopgate'}</p>
-      </div>
-      {budget > 0 && (
-        <div className="text-right">
-          <p className="text-[15px] font-semibold text-white tabular-nums">{formatMoney(budget)}</p>
-          <p className="text-[11px] text-[#8E8E93]">pool</p>
-        </div>
-      )}
-      <ChevronRight className="w-[18px] h-[18px] text-[#48484A] -mr-1" strokeWidth={2.5} />
-    </Link>
-  );
-}
