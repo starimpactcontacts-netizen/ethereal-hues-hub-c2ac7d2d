@@ -476,16 +476,32 @@ export default function EditoriumAdmin() {
         const content = headline
           ? `${headline} — Editor's Pick ✦`
           : `New Editor's Pick ✦ @${edit.username}`;
-        await supabase.from('feed_posts').insert({
-          user_id: edit.user_id,
+        // RLS requires user_id = auth.uid(). Post under the admin's identity but
+        // attribute the editor visually via data.editor_username/editor_avatar_url.
+        const { data: { user: adminUser } } = await supabase.auth.getUser();
+        const posterId = (edit.user_id && edit.user_id !== '00000000-0000-0000-0000-000000000000')
+          ? edit.user_id
+          : adminUser?.id;
+        // If the edit's user_id is real but isn't the admin, RLS will block the insert
+        // under that id — so always post under the admin and attribute via data.
+        const { error: feedErr } = await supabase.from('feed_posts').insert({
+          user_id: adminUser?.id || posterId,
           content: content.slice(0, 280),
           post_type: 'edit_share',
           media_url: isUploadedVideo ? null : edit.submission_url,
           media_platform: isUploadedVideo ? null : (edit.platform || 'tiktok'),
           uploaded_media_url: isUploadedVideo ? edit.video_url : null,
           uploaded_media_type: isUploadedVideo ? 'video/mp4' : null,
-          data: { editors_pick: true, source_label: edit.source_label || 'Featured', thumbnail_url: edit.thumbnail_url || null },
+          data: {
+            editors_pick: true,
+            source_label: edit.source_label || 'Featured',
+            thumbnail_url: edit.thumbnail_url || null,
+            editor_username: edit.username,
+            editor_avatar_url: edit.avatar_url || null,
+            editor_user_id: edit.user_id || null,
+          },
         });
+        if (feedErr) console.warn('Loop cross-post failed', feedErr);
       } catch (e) {
         console.warn('Loop cross-post failed', e);
       }

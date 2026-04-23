@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { SmilePlus } from "lucide-react";
+import { useState } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Emoji } from "./EmojiPicker";
 import EmojiPicker from "./EmojiPicker";
@@ -10,33 +10,86 @@ interface LoopReactionsProps {
   onToggle: (emoji: string) => void;
   /** Hide numeric counts (Discord-style) */
   hideCounts?: boolean;
-  /** Show quick-tap emoji shortcuts inline */
-  quickEmojis?: string[];
+  /** Render the reactions row only (no picker trigger). Picker is controlled externally. */
+  rowOnly?: boolean;
 }
 
-const DEFAULT_QUICK = ["🔥", "💀", "⚔️", "🎯", "👑"];
+const QUICK_EMOJIS = ["🔥", "💀", "⚔️", "🎯", "👑", "❤️", "😭", "🐐"];
 
-export default function LoopReactions({ reactions, onToggle, hideCounts = false, quickEmojis }: LoopReactionsProps) {
-  const [showPicker, setShowPicker] = useState(false);
-  const pickerRef = useRef<HTMLDivElement>(null);
-  const quickRow = quickEmojis ?? DEFAULT_QUICK;
-  const reactedSet = new Set(reactions.filter(r => r.hasReacted).map(r => r.emoji));
-  const existingSet = new Set(reactions.map(r => r.emoji));
+/**
+ * Centered modal reaction picker — works seamlessly on mobile + desktop.
+ * Glassy iPhone 17 aesthetic.
+ */
+export function ReactionPickerModal({
+  open,
+  onClose,
+  onSelect,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSelect: (emoji: string) => void;
+}) {
+  if (typeof document === 'undefined') return null;
+  return createPortal(
+    <AnimatePresence>
+      {open && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            onClick={onClose}
+            className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-md"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.94, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.94, y: 12 }}
+            transition={{ type: "spring", stiffness: 380, damping: 30 }}
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[121] w-[min(92vw,360px)]"
+          >
+            <div className="rounded-3xl overflow-hidden border border-white/10 bg-background/85 backdrop-blur-2xl shadow-2xl shadow-black/60">
+              {/* Quick row */}
+              <div className="px-4 pt-4 pb-3">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground/70 mb-2 font-semibold">Quick React</p>
+                <div className="grid grid-cols-8 gap-1">
+                  {QUICK_EMOJIS.map((e) => (
+                    <motion.button
+                      key={e}
+                      whileTap={{ scale: 0.85 }}
+                      onClick={() => { onSelect(e); onClose(); }}
+                      className="aspect-square rounded-xl flex items-center justify-center text-lg hover:bg-white/5 active:bg-white/10 transition-colors"
+                    >
+                      <Emoji emoji={e} size={22} />
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+              <div className="border-t border-white/5">
+                <EmojiPicker
+                  onSelect={(emoji) => { onSelect(emoji); onClose(); }}
+                  showQuickBar={false}
+                />
+              </div>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>,
+    document.body,
+  );
+}
 
-  useEffect(() => {
-    if (!showPicker) return;
-    const handler = (e: MouseEvent) => {
-      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
-        setShowPicker(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [showPicker]);
-
+/**
+ * Compact row showing existing reactions only.
+ * Tap an existing reaction to toggle it. New reactions come from the modal trigger
+ * rendered by the parent action bar.
+ */
+export default function LoopReactions({ reactions, onToggle, hideCounts = false }: LoopReactionsProps) {
+  if (!reactions || reactions.length === 0) return null;
   return (
     <div className="flex items-center gap-1 flex-wrap mt-1.5">
-      {/* Existing reactions */}
       {reactions.map(r => (
         <motion.button
           key={r.emoji}
@@ -45,57 +98,16 @@ export default function LoopReactions({ reactions, onToggle, hideCounts = false,
           className={`flex items-center gap-1 ${hideCounts ? 'px-1.5' : 'px-2'} py-0.5 rounded-full text-[11px] font-semibold transition-colors border ${
             r.hasReacted
               ? "bg-primary/15 border-primary/30 text-primary"
-              : "bg-muted/30 border-border/30 text-muted-foreground hover:bg-muted/50"
+              : "bg-white/[0.04] border-white/10 text-muted-foreground hover:bg-white/[0.08]"
           }`}
         >
           <Emoji emoji={r.emoji} size={14} />
           {!hideCounts && <span>{r.count}</span>}
         </motion.button>
       ))}
-
-      {/* Quick-tap emoji shortcuts (only show emojis not yet reacted) */}
-      {quickRow
-        .filter(e => !existingSet.has(e))
-        .map(emoji => (
-          <motion.button
-            key={`quick-${emoji}`}
-            whileTap={{ scale: 0.85 }}
-            onClick={() => onToggle(emoji)}
-            className="w-7 h-7 rounded-full flex items-center justify-center opacity-40 hover:opacity-100 hover:bg-muted/30 transition-all"
-            title={`React with ${emoji}`}
-          >
-            <Emoji emoji={emoji} size={14} />
-          </motion.button>
-        ))}
-
-      {/* Add reaction button */}
-      <div className="relative" ref={pickerRef}>
-        <button
-          onClick={() => setShowPicker(!showPicker)}
-          className="w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/30 transition-colors"
-        >
-          <SmilePlus className="w-3.5 h-3.5" />
-        </button>
-
-        <AnimatePresence>
-          {showPicker && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 4 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 4 }}
-              transition={{ duration: 0.12 }}
-              className="absolute bottom-full left-0 mb-2 z-50"
-            >
-              <EmojiPicker
-                onSelect={(emoji) => {
-                  onToggle(emoji);
-                  setShowPicker(false);
-                }}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
     </div>
   );
 }
+
+// Re-export quick emojis for use elsewhere
+export { QUICK_EMOJIS };

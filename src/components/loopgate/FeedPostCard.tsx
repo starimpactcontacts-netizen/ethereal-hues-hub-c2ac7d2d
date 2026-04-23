@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { MessageCircle, Trash2, Trophy, ArrowUp, Link2, MoreHorizontal, Swords, X, Play } from "lucide-react";
+import { MessageCircle, Trash2, Trophy, ArrowUp, Link2, MoreHorizontal, Swords, X, Play, SmilePlus, Sparkles } from "lucide-react";
 import FeedInlineComments from "./FeedInlineComments";
 import GateIcon from '@/components/loopgate/GateIcon';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -9,7 +9,7 @@ import { FeedPostItem } from "@/hooks/useFeedPosts";
 import VerifiedBadge from "./VerifiedBadge";
 import { useAuth } from "@/hooks/useAuth";
 import RichMessageContent from "./RichMessageContent";
-import LoopReactions from "./LoopReactions";
+import LoopReactions, { ReactionPickerModal } from "./LoopReactions";
 import { useState, memo } from "react";
 import { createPortal } from "react-dom";
 import { ReactionGroup } from "@/hooks/useLoopReactions";
@@ -50,6 +50,7 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
   const [showMenu, setShowMenu] = useState(false);
   const [showChallengeConfirm, setShowChallengeConfirm] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  const [showReactionPicker, setShowReactionPicker] = useState(false);
   const [commentCount, setCommentCount] = useState(post.comment_count || 0);
   const [challengeLoading, setChallengeLoading] = useState(false);
   const isOwn = user?.id === post.user_id;
@@ -224,24 +225,54 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
               />
             )}
 
-            {/* Action bar */}
-            <div className="flex items-center justify-between mt-2 -ml-2 max-w-[320px]">
-              <button 
+            {/* Action cluster — iPhone 17 glassy pill */}
+            <div className="mt-2.5 inline-flex items-center gap-0.5 rounded-full border border-white/10 bg-white/[0.03] backdrop-blur-xl px-1 py-1 shadow-sm shadow-black/20">
+              {/* Comment */}
+              <button
                 onClick={() => setShowComments(!showComments)}
-                className={`flex items-center gap-1.5 px-2 py-1.5 rounded-full transition-colors group ${showComments ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-primary hover:bg-primary/10'}`}
+                className={`flex items-center gap-1 h-7 px-2.5 rounded-full transition-all active:scale-95 ${showComments ? 'text-primary bg-primary/15' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'}`}
+                aria-label="Comments"
               >
-                <MessageCircle className="w-[15px] h-[15px]" />
-                {commentCount > 0 && <span className="text-[11px]">{commentCount}</span>}
+                <MessageCircle className="w-[14px] h-[14px]" />
+                {commentCount > 0 && <span className="text-[11px] font-semibold">{commentCount}</span>}
               </button>
 
-              {/* Challenge from post — Red/Blue gradient swords */}
+              {/* React (opens modal) */}
+              {onToggleReaction && (
+                <button
+                  onClick={() => setShowReactionPicker(true)}
+                  className="flex items-center justify-center h-7 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all active:scale-95"
+                  aria-label="React"
+                >
+                  <SmilePlus className="w-[14px] h-[14px]" />
+                </button>
+              )}
+
+              {/* Rate Edit — opens Loopy with media prefilled */}
+              {(post.media_url || post.uploaded_media_url) && (
+                <button
+                  onClick={() => {
+                    const url = post.uploaded_media_url || post.media_url || '';
+                    navigate(`/loopy?url=${encodeURIComponent(url)}`);
+                  }}
+                  className="flex items-center gap-1 h-7 px-2.5 rounded-full text-muted-foreground hover:text-purple-300 hover:bg-purple-500/10 transition-all active:scale-95"
+                  aria-label="Rate this edit"
+                  title="Rate this edit"
+                >
+                  <Sparkles className="w-[13px] h-[13px]" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Rate</span>
+                </button>
+              )}
+
+              {/* Challenge */}
               {!isOwn && !post.is_system && user && (
                 <button
                   onClick={() => setShowChallengeConfirm(true)}
-                  className="flex items-center gap-1 px-2 py-1.5 rounded-full hover:bg-gradient-to-r hover:from-red-500/15 hover:to-blue-500/15 transition-colors group"
+                  className="flex items-center justify-center h-7 w-8 rounded-full hover:bg-gradient-to-r hover:from-red-500/15 hover:to-blue-500/15 transition-all active:scale-95"
                   title="Challenge this editor to a 1v1"
+                  aria-label="1v1 challenge"
                 >
-                  <svg viewBox="0 0 24 24" className="w-[15px] h-[15px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg viewBox="0 0 24 24" className="w-[14px] h-[14px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <defs>
                       <linearGradient id={`swords-grad-${post.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stopColor="#ef4444" />
@@ -257,6 +288,16 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
                   </svg>
                 </button>
               )}
+            </div>
+
+            {/* Reaction picker modal (centered, mobile + desktop friendly) */}
+            {onToggleReaction && (
+              <ReactionPickerModal
+                open={showReactionPicker}
+                onClose={() => setShowReactionPicker(false)}
+                onSelect={(emoji) => onToggleReaction(post.id, emoji)}
+              />
+            )}
 
               {/* 1v1 Challenge Confirmation Modal */}
               {createPortal(
@@ -383,7 +424,6 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
                 document.body
               )}
 
-            </div>
           </div>
         </div>
       </div>
