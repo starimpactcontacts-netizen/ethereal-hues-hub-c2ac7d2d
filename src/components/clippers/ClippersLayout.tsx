@@ -20,7 +20,7 @@ export default function ClippersLayout({ children, title }: Props) {
 
   return (
     <div
-      className="relative min-h-screen text-white font-apple pb-[88px]"
+      className="relative h-full min-h-full text-white font-apple flex flex-col overflow-hidden"
       style={{ background: 'hsl(var(--surface-0))' }}
     >
       {/* Top bar — solid translucent (NO backdrop-blur, kills scroll perf) */}
@@ -53,7 +53,12 @@ export default function ClippersLayout({ children, title }: Props) {
         </div>
       </header>
 
-      <main className="relative z-10">{children}</main>
+      <main
+        className="relative z-10 flex-1 min-h-0 overflow-y-auto overscroll-y-contain"
+        style={{ WebkitOverflowScrolling: 'touch', paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}
+      >
+        {children}
+      </main>
 
       {/* Bottom tab bar — solid (NO backdrop-blur over scrolling content) */}
       <nav

@@ -20,7 +20,6 @@ interface Campaign {
 
 interface ClipperStats {
   total_earnings_cents: number;
-  total_index_earned: number;
   total_clips: number;
 }
 
@@ -29,7 +28,6 @@ export default function ClippersCampaignsPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [stats, setStats] = useState<ClipperStats>({
     total_earnings_cents: 0,
-    total_index_earned: 0,
     total_clips: 0,
   });
   const [search, setSearch] = useState('');
@@ -45,7 +43,7 @@ export default function ClippersCampaignsPage() {
           .order('created_at', { ascending: false })
           .limit(40),
         user
-          ? supabase.from('clipper_profiles').select('total_earnings_cents, total_index_earned, total_clips').eq('user_id', user.id).maybeSingle()
+          ? supabase.from('clipper_profiles').select('total_earnings_cents, total_clips').eq('user_id', user.id).maybeSingle()
           : Promise.resolve({ data: null }),
       ]);
       setCampaigns((cRes.data || []) as Campaign[]);
@@ -99,8 +97,6 @@ export default function ClippersCampaignsPage() {
             {formatMoney(stats.total_earnings_cents)}
           </p>
           <div className="flex items-center gap-5 mt-4 pt-4 border-t border-white/[0.06]">
-            <MiniStat label="Index" value={stats.total_index_earned.toLocaleString()} />
-            <div className="w-px h-7 bg-white/[0.08]" />
             <MiniStat label="Clips" value={stats.total_clips.toString()} />
             <div className="w-px h-7 bg-white/[0.08]" />
             <MiniStat label="Active" value={filtered.length.toString()} />
