@@ -15,6 +15,7 @@ import DevModeBadge from "./components/loopgate/DevModeBadge";
 import LoadingScreen from "./components/loopgate/LoadingScreen";
 import GlobalAccountPrompt from "./components/loopgate/GlobalAccountPrompt";
 import { isNativeApp } from "./lib/native";
+import ClippersLayoutRoute from "./components/clippers/ClippersLayoutRoute";
 
 // Lazy-loaded pages — code-split per route
 const LoginPage = lazy(() => import("./pages/LoginPage"));
@@ -402,12 +403,14 @@ export default function App() {
             <Route path="/campaign/:slug" element={<CampaignPortalPage />} />
 
             {/* Missions Portal - public mission feed + separate onboarding */}
-            <Route path="/missions" element={<ClippersCampaignsPage />} />
-            <Route path="/missions/portal" element={<Navigate to="/missions" replace />} />
             <Route path="/missions/join" element={<ClippersOnboardingPage />} />
-            <Route path="/missions/submissions" element={<ClippersSubmissionsPage />} />
-            <Route path="/missions/accounts" element={<ClippersAccountsPage />} />
-            <Route path="/missions/withdrawals" element={<ClippersWithdrawalsPage />} />
+            <Route path="/missions/portal" element={<Navigate to="/missions" replace />} />
+            <Route element={<ClippersLayoutRoute />}>
+              <Route path="/missions" element={<ClippersCampaignsPage />} />
+              <Route path="/missions/submissions" element={<ClippersSubmissionsPage />} />
+              <Route path="/missions/accounts" element={<ClippersAccountsPage />} />
+              <Route path="/missions/withdrawals" element={<ClippersWithdrawalsPage />} />
+            </Route>
             <Route path="/missions/legacy" element={<ClippersPortalPage />} />
             {/* Legacy /clippers redirects → /missions */}
             <Route path="/clippers" element={<Navigate to="/missions" replace />} />
