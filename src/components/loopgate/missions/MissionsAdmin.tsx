@@ -562,9 +562,9 @@ function MissionLauncher({
     };
     let error;
     if (mission) {
-      ({ error } = await supabase.from('missions').update(payload).eq('id', mission.id));
+      ({ error } = await supabase.from('missions').update(payload as any).eq('id', mission.id));
     } else {
-      ({ error } = await supabase.from('missions').insert({ ...payload, status: 'draft', created_by: userId ?? null }));
+      ({ error } = await supabase.from('missions').insert({ ...payload, status: 'draft', created_by: userId ?? null } as any));
     }
     setSaving(false);
     if (error) return toast.error(error.message);
