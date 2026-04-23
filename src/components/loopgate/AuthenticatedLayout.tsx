@@ -14,7 +14,7 @@ import { getPageSafeFill } from '@/lib/pageSafeFill';
 export default function AuthenticatedLayout() {
   const location = useLocation();
   const hideNavPaths = ['/admin', '/onboarding', '/studio', '/editorium', '/clippers'];
-  const hideHeaderPaths = ['/messages', '/studio', '/editorium', '/judge-panel'];
+  const hideHeaderPaths = ['/messages', '/studio', '/editorium', '/judge-panel', '/clippers'];
   const hideNav = hideNavPaths.some(path => location.pathname.startsWith(path));
   const hideHeader = hideHeaderPaths.some(path => location.pathname.startsWith(path));
   const showNav = !hideNav;
