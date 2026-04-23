@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Link2, ExternalLink, Trash2, Loader2, Youtube, Instagram, Music2, Twitter, Facebook, ShieldCheck } from 'lucide-react';
+import { Plus, Link2, ExternalLink, Trash2, Loader2, Youtube, Instagram, Music2, Twitter, Facebook, BadgeCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import ClippersLayout from '@/components/clippers/ClippersLayout';
 import ClipperLockGate from '@/components/clippers/ClipperLockGate';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
@@ -20,11 +19,11 @@ interface LinkedAcc {
 }
 
 const PLATFORMS = [
-  { id: 'youtube', label: 'YouTube', icon: Youtube, color: 'text-red-500' },
-  { id: 'tiktok', label: 'TikTok', icon: Music2, color: 'text-foreground' },
-  { id: 'instagram', label: 'Instagram', icon: Instagram, color: 'text-pink-400' },
-  { id: 'x', label: 'X', icon: Twitter, color: 'text-foreground' },
-  { id: 'facebook', label: 'Facebook', icon: Facebook, color: 'text-blue-400' },
+  { id: 'tiktok', label: 'TikTok', icon: Music2, color: '#FFFFFF' },
+  { id: 'instagram', label: 'Instagram', icon: Instagram, color: '#E1306C' },
+  { id: 'youtube', label: 'YouTube', icon: Youtube, color: '#FF453A' },
+  { id: 'x', label: 'X', icon: Twitter, color: '#FFFFFF' },
+  { id: 'facebook', label: 'Facebook', icon: Facebook, color: '#0A84FF' },
 ];
 
 export default function ClippersAccountsPage() {
@@ -33,17 +32,13 @@ export default function ClippersAccountsPage() {
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [showGate, setShowGate] = useState(false);
-
   const [platform, setPlatform] = useState('tiktok');
   const [handle, setHandle] = useState('');
   const [profileUrl, setProfileUrl] = useState('');
   const [adding, setAdding] = useState(false);
 
   const load = async () => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
+    if (!user) { setLoading(false); return; }
     const { data } = await supabase
       .from('clipper_linked_accounts')
       .select('id, platform, handle, profile_url, is_verified, verified_at, created_at')
@@ -53,37 +48,20 @@ export default function ClippersAccountsPage() {
     setLoading(false);
   };
 
-  useEffect(() => {
-    load();
-  }, [user]);
+  useEffect(() => { load(); }, [user]);
 
   const addAccount = async () => {
-    if (!user) {
-      setShowGate(true);
-      return;
-    }
-    if (!handle.trim()) {
-      toast.error('Enter a handle');
-      return;
-    }
+    if (!user) { setShowGate(true); return; }
+    if (!handle.trim()) { toast.error('Enter a handle'); return; }
     setAdding(true);
     const cleanHandle = handle.replace(/^@/, '').trim();
     const { error } = await supabase.from('clipper_linked_accounts').insert({
-      user_id: user.id,
-      platform,
-      handle: cleanHandle,
-      profile_url: profileUrl || null,
+      user_id: user.id, platform, handle: cleanHandle, profile_url: profileUrl || null,
     });
     setAdding(false);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
+    if (error) { toast.error(error.message); return; }
     toast.success('Account linked');
-    setHandle('');
-    setProfileUrl('');
-    setShowAdd(false);
-    load();
+    setHandle(''); setProfileUrl(''); setShowAdd(false); load();
   };
 
   const unlink = async (id: string) => {
@@ -95,208 +73,161 @@ export default function ClippersAccountsPage() {
   const verifiedCount = accounts.filter((a) => a.is_verified).length;
 
   return (
-    <ClippersLayout title="LINKED">
-      <section className="max-w-6xl mx-auto px-5 pt-8 pb-6">
-        <div className="flex items-center gap-2 mb-4">
-          <span className="font-mono text-[10px] tracking-[0.3em] text-gold/80">M·03</span>
-          <span className="h-px flex-1 bg-white/[0.08]" />
-          <button
-            onClick={() => (user ? setShowAdd(true) : setShowGate(true))}
-            className="flex items-center gap-1.5 px-3 py-1.5 border border-gold/40 text-gold font-mono text-[10px] tracking-[0.25em] uppercase hover:bg-gold/10 transition-colors active:opacity-70"
-          >
-            <Plus className="w-3 h-3" /> Link
-          </button>
-        </div>
-        <h1 className="font-display text-[56px] sm:text-[72px] leading-[0.85] tracking-tight">
-          Linked <span className="italic text-gold">Socials</span>
-        </h1>
-        <p className="text-[12px] text-muted-foreground mt-2 tracking-wider uppercase">
-          Verify accounts to track payouts
-        </p>
+    <ClippersLayout title="Linked">
+      <section className="max-w-6xl mx-auto px-4 pt-3 pb-4 flex items-end justify-between">
+        <h1 className="font-apple-tight text-[34px] font-bold text-white leading-[1.05]">Linked</h1>
+        <button
+          onClick={() => (user ? setShowAdd(true) : setShowGate(true))}
+          className="flex items-center gap-1 h-8 px-3 rounded-full bg-[#0A84FF] text-white text-[14px] font-semibold active:opacity-60"
+        >
+          <Plus className="w-[15px] h-[15px]" strokeWidth={2.8} /> Link
+        </button>
       </section>
 
-      <section className="border-y border-white/[0.06]" style={{ background: 'hsl(0 0% 2%)' }}>
-        <div className="max-w-6xl mx-auto grid grid-cols-2 divide-x divide-white/[0.06]">
-          <Cell index="01" label="Linked" value={accounts.length} />
-          <Cell index="02" label="Verified" value={verifiedCount} accent />
+      <section className="max-w-6xl mx-auto px-4 mb-5">
+        <div className="grid grid-cols-2 gap-2">
+          <StatCard label="Linked" value={accounts.length.toString()} />
+          <StatCard label="Verified" value={verifiedCount.toString()} accent="#0A84FF" />
         </div>
       </section>
 
-      <div className="max-w-6xl mx-auto px-5 py-7 space-y-7">
+      <div className="max-w-6xl mx-auto px-4">
         {loading ? (
           <div className="space-y-2">
-            {[1, 2].map((i) => (
-              <div key={i} className="h-20 border border-white/[0.06] animate-pulse" />
-            ))}
+            {[1, 2].map((i) => <div key={i} className="h-16 rounded-[16px] bg-[#1c1c1e] animate-pulse" />)}
           </div>
         ) : !user || accounts.length === 0 ? (
-          <div className="border border-white/[0.06] p-12 text-center">
-            <Link2 className="w-7 h-7 text-muted-foreground/40 mx-auto mb-4" />
-            <p className="font-display text-[28px] tracking-tight mb-1">No accounts linked</p>
-            <p className="text-[11px] text-muted-foreground tracking-[0.2em] uppercase">
-              {user ? 'Add TikTok, IG or YouTube to start' : 'Lock in to link socials'}
-            </p>
+          <div className="rounded-[20px] p-10 text-center" style={{ background: '#1c1c1e' }}>
+            <Link2 className="w-7 h-7 text-[#8E8E93] mx-auto mb-3" />
+            <p className="text-[17px] font-semibold text-white mb-1">No accounts linked</p>
+            <p className="text-[13px] text-[#8E8E93]">{user ? 'Add TikTok, IG or YouTube' : 'Lock in to link socials'}</p>
           </div>
         ) : (
-          <>
-            <div className="flex items-center gap-3">
-              <span className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground">ALL · ACCOUNTS</span>
-              <span className="h-px flex-1 bg-white/[0.06]" />
-            </div>
-
-            <div className="divide-y divide-white/[0.06] border-y border-white/[0.06]">
-              {accounts.map((a, idx) => {
-                const meta = PLATFORMS.find((p) => p.id === a.platform);
-                const Icon = meta?.icon || Link2;
-                return (
-                  <motion.div
-                    key={a.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.35, delay: idx * 0.03 }}
-                    className="flex items-center gap-4 py-4"
-                  >
-                    <span className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 w-7 tabular-nums">
-                      {String(idx + 1).padStart(2, '0')}
-                    </span>
-                    <div className="w-10 h-10 flex-shrink-0 border border-white/[0.06] flex items-center justify-center bg-surface-1">
-                      <Icon className={`w-4 h-4 ${meta?.color || 'text-foreground'}`} />
+          <div className="rounded-[16px] overflow-hidden" style={{ background: '#1c1c1e' }}>
+            {accounts.map((a, idx) => {
+              const meta = PLATFORMS.find((p) => p.id === a.platform);
+              const Icon = meta?.icon || Link2;
+              return (
+                <div
+                  key={a.id}
+                  className="flex items-center gap-3 px-4 py-3"
+                  style={idx === accounts.length - 1 ? {} : { borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}
+                >
+                  <div className="w-10 h-10 flex-shrink-0 rounded-[10px] flex items-center justify-center" style={{ background: '#2c2c2e' }}>
+                    <Icon className="w-5 h-5" style={{ color: meta?.color }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1">
+                      <p className="text-[16px] font-semibold text-white tracking-[-0.02em] truncate leading-tight">@{a.handle}</p>
+                      {a.is_verified && <BadgeCheck className="w-4 h-4 text-[#0A84FF] flex-shrink-0" fill="#0A84FF" stroke="#000" strokeWidth={2} />}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground/80">
-                          {meta?.label || a.platform}
-                        </span>
-                        {a.is_verified ? (
-                          <span className="inline-flex items-center gap-0.5 text-[9px] text-emerald-400 font-mono tracking-widest uppercase">
-                            <ShieldCheck className="w-2.5 h-2.5" /> VERIFIED
-                          </span>
-                        ) : (
-                          <span className="text-[9px] text-gold font-mono tracking-widest uppercase">PENDING</span>
-                        )}
-                      </div>
-                      <p className="font-display text-[20px] leading-none tracking-tight truncate">@{a.handle}</p>
-                    </div>
-                    {a.profile_url && (
-                      <a
-                        href={a.profile_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-muted-foreground/60 hover:text-gold transition-colors p-1"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </a>
-                    )}
-                    <button
-                      onClick={() => unlink(a.id)}
-                      className="text-muted-foreground/50 hover:text-destructive transition-colors p-1"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </>
+                    <p className="text-[13px] text-[#8E8E93] mt-0.5">{meta?.label || a.platform}</p>
+                  </div>
+                  {a.profile_url && (
+                    <a href={a.profile_url} target="_blank" rel="noopener noreferrer" className="text-[#8E8E93] active:opacity-50 p-1.5">
+                      <ExternalLink className="w-[15px] h-[15px]" />
+                    </a>
+                  )}
+                  <button onClick={() => unlink(a.id)} className="text-[#8E8E93] active:text-[#FF453A] p-1.5 transition-colors">
+                    <Trash2 className="w-[15px] h-[15px]" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
 
       {showAdd && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="fixed inset-0 z-[90] backdrop-blur-md flex items-end sm:items-center justify-center"
-          style={{ background: 'hsl(0 0% 0% / 0.85)' }}
-          onClick={() => setShowAdd(false)}
-        >
-          <motion.div
-            initial={{ y: 60, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 38 }}
-            onClick={(e) => e.stopPropagation()}
-            className="w-full sm:max-w-md bg-surface-0 sm:border border-white/[0.08] p-7 space-y-5 pb-[max(1.75rem,env(safe-area-inset-bottom))]"
-            style={{ boxShadow: '0 -20px 60px hsl(0 0% 0% / 0.7)' }}
-          >
-            <div className="w-10 h-1 bg-white/15 rounded-full mx-auto sm:hidden" />
-            <div>
-              <span className="font-mono text-[10px] tracking-[0.3em] text-gold/80">M·03 / LINK</span>
-              <h2 className="font-display text-[32px] leading-none tracking-tight mt-1">Add Account</h2>
-            </div>
-
+        <Sheet onClose={() => setShowAdd(false)} title="Link account">
+          <div>
+            <p className="text-[13px] text-[#8E8E93] font-medium mb-2 px-1">Platform</p>
             <div className="grid grid-cols-5 gap-1.5">
               {PLATFORMS.map((p) => (
                 <button
                   key={p.id}
                   onClick={() => setPlatform(p.id)}
-                  className={`flex flex-col items-center gap-1 p-3 border transition-all active:opacity-70 ${
-                    platform === p.id ? 'border-gold bg-gold/10' : 'border-white/[0.06] hover:border-gold/40'
-                  }`}
+                  className="flex flex-col items-center gap-1 py-2.5 rounded-[10px] active:opacity-60 transition-all"
+                  style={{
+                    background: platform === p.id ? '#0A84FF' : 'rgba(118,118,128,0.24)',
+                  }}
                 >
-                  <p.icon className={`w-4 h-4 ${p.color}`} />
-                  <span className="text-[9px] tracking-widest uppercase font-mono">{p.label}</span>
+                  <p.icon className="w-5 h-5" style={{ color: platform === p.id ? '#fff' : p.color }} />
+                  <span className="text-[10px] font-semibold text-white">{p.label}</span>
                 </button>
               ))}
             </div>
-
-            <div className="space-y-2">
-              <label className="font-mono text-[10px] tracking-[0.25em] uppercase text-muted-foreground">Handle</label>
-              <Input
-                value={handle}
-                onChange={(e) => setHandle(e.target.value)}
-                placeholder="@yourhandle"
-                className="h-12 bg-transparent border-0 border-b border-white/10 rounded-none px-0 focus-visible:ring-0 focus-visible:border-gold"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="font-mono text-[10px] tracking-[0.25em] uppercase text-muted-foreground">Profile URL (optional)</label>
-              <Input
-                value={profileUrl}
-                onChange={(e) => setProfileUrl(e.target.value)}
-                placeholder="https://..."
-                className="h-12 bg-transparent border-0 border-b border-white/10 rounded-none px-0 focus-visible:ring-0 focus-visible:border-gold"
-              />
-            </div>
-
-            <div className="flex gap-2 pt-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowAdd(false)}
-                className="flex-1 h-12 rounded-none border-white/10 bg-transparent text-foreground hover:bg-white/[0.04]"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={addAccount}
-                disabled={adding}
-                className="flex-1 h-12 rounded-none bg-gold hover:bg-gold/90 text-gold-foreground font-display tracking-[0.2em] uppercase"
-              >
-                {adding ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Link'}
-              </Button>
-            </div>
-          </motion.div>
-        </motion.div>
+          </div>
+          <Field label="Handle">
+            <Input
+              value={handle}
+              onChange={(e) => setHandle(e.target.value)}
+              placeholder="@yourhandle"
+              className="h-11 rounded-[10px] border-0 text-[16px] text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#0A84FF]"
+              style={{ background: 'rgba(118, 118, 128, 0.24)' }}
+            />
+          </Field>
+          <Field label="Profile URL (optional)">
+            <Input
+              value={profileUrl}
+              onChange={(e) => setProfileUrl(e.target.value)}
+              placeholder="https://..."
+              className="h-11 rounded-[10px] border-0 text-[16px] text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#0A84FF]"
+              style={{ background: 'rgba(118, 118, 128, 0.24)' }}
+            />
+          </Field>
+          <button
+            onClick={addAccount}
+            disabled={adding}
+            className="w-full h-12 rounded-[14px] bg-[#0A84FF] text-white text-[17px] font-semibold active:opacity-60 disabled:opacity-50 flex items-center justify-center"
+          >
+            {adding ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Link account'}
+          </button>
+        </Sheet>
       )}
 
-      <ClipperLockGate
-        open={showGate}
-        onClose={() => setShowGate(false)}
-        onSuccess={load}
-        reason="Lock in to link your social accounts."
-      />
+      <ClipperLockGate open={showGate} onClose={() => setShowGate(false)} onSuccess={load} reason="Lock in to link your social accounts." />
     </ClippersLayout>
   );
 }
 
-function Cell({ index, label, value, accent }: { index: string; label: string; value: number; accent?: boolean }) {
+function StatCard({ label, value, accent }: { label: string; value: string; accent?: string }) {
   return (
-    <div className="px-5 py-5">
-      <div className="flex items-center gap-1.5 mb-1.5">
-        <span className="font-mono text-[9px] tracking-[0.25em] text-gold/70">{index}</span>
-        <span className="text-[9px] text-muted-foreground tracking-[0.2em] uppercase font-semibold">{label}</span>
-      </div>
-      <div className={`font-display text-[30px] leading-none tabular-nums tracking-tight ${accent ? 'text-gold' : 'text-foreground'}`}>
-        {value}
-      </div>
+    <div className="rounded-[14px] p-3" style={{ background: '#1c1c1e' }}>
+      <p className="text-[11px] text-[#8E8E93] font-medium">{label}</p>
+      <p className="font-apple-tight text-[24px] font-bold tabular-nums leading-tight mt-0.5" style={{ color: accent || '#fff' }}>{value}</p>
+    </div>
+  );
+}
+
+function Sheet({ children, onClose, title }: { children: React.ReactNode; onClose: () => void; title: string }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+      className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center font-apple"
+      style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 380, damping: 36 }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full sm:max-w-md rounded-t-[20px] sm:rounded-[20px] p-5 space-y-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]"
+        style={{ background: '#1c1c1e' }}
+      >
+        <div className="w-9 h-1 rounded-full bg-white/25 mx-auto sm:hidden" />
+        <h2 className="text-[22px] font-bold text-white tracking-[-0.022em]">{title}</h2>
+        {children}
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <label className="text-[13px] text-[#8E8E93] font-medium px-1">{label}</label>
+      {children}
     </div>
   );
 }
