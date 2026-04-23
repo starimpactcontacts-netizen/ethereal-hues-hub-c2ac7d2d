@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Heart, MessageCircle, Share2, Bookmark, Trash2, Trophy, ArrowUp, Link2, MoreHorizontal, Swords, X, Play } from "lucide-react";
+import { MessageCircle, Trash2, Trophy, ArrowUp, Link2, MoreHorizontal, Swords, X, Play } from "lucide-react";
 import FeedInlineComments from "./FeedInlineComments";
 import GateIcon from '@/components/loopgate/GateIcon';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -61,10 +61,6 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
 
   const leagueBadge = getLeagueBadge(post.league);
   const typeIndicator = getPostTypeIndicator(post.post_type);
-
-  const handleShare = () => {
-    navigator.share?.({ text: post.content, url: window.location.href });
-  };
 
   const urlMatch = post.media_url || post.content.match(/https?:\/\/[^\s]+/)?.[0];
   const hasUploadedMedia = !!post.uploaded_media_url;
@@ -219,11 +215,12 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
               </a>
             )}
 
-            {/* Emoji Reactions */}
-            {reactions && reactions.length > 0 && onToggleReaction && (
+            {/* Emoji Reactions — Discord-style, no counters */}
+            {onToggleReaction && (
               <LoopReactions
-                reactions={reactions}
+                reactions={reactions || []}
                 onToggle={(emoji) => onToggleReaction(post.id, emoji)}
+                hideCounts
               />
             )}
 
@@ -235,32 +232,6 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
               >
                 <MessageCircle className="w-[15px] h-[15px]" />
                 {commentCount > 0 && <span className="text-[11px]">{commentCount}</span>}
-              </button>
-
-              <button
-                onClick={() => onLike(post.id)}
-                className={`flex items-center gap-1.5 px-2 py-1.5 rounded-full transition-colors group ${
-                  isLiked ? 'text-red-400' : 'text-muted-foreground hover:text-red-400 hover:bg-red-500/10'
-                }`}
-              >
-                <Heart className="w-[15px] h-[15px]" fill={isLiked ? 'currentColor' : 'none'} />
-                {post.like_count > 0 && <span className="text-[11px]">{post.like_count}</span>}
-              </button>
-
-              <button
-                onClick={() => onBookmark(post.id)}
-                className={`flex items-center gap-1.5 px-2 py-1.5 rounded-full transition-colors group ${
-                  isBookmarked ? 'text-primary' : 'text-muted-foreground hover:text-primary hover:bg-primary/10'
-                }`}
-              >
-                <Bookmark className="w-[15px] h-[15px]" fill={isBookmarked ? 'currentColor' : 'none'} />
-              </button>
-
-              <button
-                onClick={handleShare}
-                className="flex items-center gap-1.5 px-2 py-1.5 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-              >
-                <Share2 className="w-[15px] h-[15px]" />
               </button>
 
               {/* Challenge from post — Red/Blue gradient swords */}
@@ -412,15 +383,6 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
                 document.body
               )}
 
-              {/* Add reaction */}
-              {onToggleReaction && (
-                <div className="relative">
-                  <LoopReactions
-                    reactions={[]}
-                    onToggle={(emoji) => onToggleReaction(post.id, emoji)}
-                  />
-                </div>
-              )}
             </div>
           </div>
         </div>
