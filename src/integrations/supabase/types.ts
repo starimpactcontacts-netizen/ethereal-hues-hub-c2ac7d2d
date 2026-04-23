@@ -1058,6 +1058,48 @@ export type Database = {
           },
         ]
       }
+      clipper_profiles: {
+        Row: {
+          age_confirmed_18_plus: boolean
+          agreed_30_day_post: boolean
+          agreed_to_terms: boolean
+          created_at: string
+          display_name: string | null
+          id: string
+          total_clips: number
+          total_earnings_cents: number
+          total_index_earned: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          age_confirmed_18_plus?: boolean
+          agreed_30_day_post?: boolean
+          agreed_to_terms?: boolean
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          total_clips?: number
+          total_earnings_cents?: number
+          total_index_earned?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          age_confirmed_18_plus?: boolean
+          agreed_30_day_post?: boolean
+          agreed_to_terms?: boolean
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          total_clips?: number
+          total_earnings_cents?: number
+          total_index_earned?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       commission_messages: {
         Row: {
           avatar_url: string | null
@@ -7890,6 +7932,7 @@ export type Database = {
         | "dev"
         | "enterprise"
         | "trial_judge"
+        | "clipper"
       crew_extended_role:
         | "ace_editor"
         | "veteran"
@@ -8044,6 +8087,7 @@ export const Constants = {
         "dev",
         "enterprise",
         "trial_judge",
+        "clipper",
       ],
       crew_extended_role: [
         "ace_editor",
