@@ -281,7 +281,11 @@ export default function MissionsAdmin() {
                       <span>${(m.base_payout_cents / 100).toFixed(2)} base</span>
                       <span>+ {(m.view_milestones || []).length} milestones</span>
                       <span>{m.submission_count} clips</span>
-                      <span>${(m.spent_cents / 100).toFixed(2)} / ${(m.budget_cents / 100).toFixed(2)} budget</span>
+                      {m.cap_type === 'posts' ? (
+                        <span>{m.approved_count || 0} / {m.max_posts || 0} posts</span>
+                      ) : (
+                        <span>${(m.spent_cents / 100).toFixed(2)} / ${(m.budget_cents / 100).toFixed(2)} budget</span>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
