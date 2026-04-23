@@ -334,8 +334,9 @@ export default function EditoriumAdmin() {
   const [searchingEdits, setSearchingEdits] = useState(false);
   const [showEditIndexer, setShowEditIndexer] = useState(false);
   const [manualMode, setManualMode] = useState(false);
-  const [manualForm, setManualForm] = useState({ username: '', submission_url: '', platform: 'tiktok', thumbnail_url: '', qoi_score: '', headline: '' });
+  const [manualForm, setManualForm] = useState({ username: '', submission_url: '', platform: 'tiktok', thumbnail_url: '', qoi_score: '', headline: '', video_url: '', video_storage_path: '' });
   const [savingManual, setSavingManual] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
 
   useEffect(() => {
     if (showEditIndexer) fetchIndexedEdits();
