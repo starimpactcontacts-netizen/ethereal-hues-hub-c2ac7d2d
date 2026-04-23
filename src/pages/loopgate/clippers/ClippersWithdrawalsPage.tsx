@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { Wallet, Loader2, Clock, Check, X as XIcon, ArrowUpRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import ClippersLayout from '@/components/clippers/ClippersLayout';
 import ClipperLockGate from '@/components/clippers/ClipperLockGate';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -74,7 +73,7 @@ export default function ClippersWithdrawalsPage() {
   const canCashOut = !!user && balance >= MIN_PAYOUT_CENTS;
 
   return (
-    <ClippersLayout title="Cashout">
+    <>
       <section className="max-w-6xl mx-auto px-4 pt-3 pb-4">
         <h1 className="font-apple-tight text-[34px] font-bold text-white leading-[1.05]">Cashout</h1>
       </section>
@@ -213,7 +212,7 @@ export default function ClippersWithdrawalsPage() {
       )}
 
       <ClipperLockGate open={showGate} onClose={() => setShowGate(false)} onSuccess={load} reason="Lock in to request withdrawals." />
-    </ClippersLayout>
+    </>
   );
 }
 
