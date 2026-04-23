@@ -2875,6 +2875,7 @@ export type Database = {
       }
       editorium_indexed_edits: {
         Row: {
+          autoplay_with_sound: boolean
           avatar_url: string | null
           created_at: string
           featured_date: string
@@ -2891,8 +2892,11 @@ export type Database = {
           updated_at: string
           user_id: string
           username: string
+          video_storage_path: string | null
+          video_url: string | null
         }
         Insert: {
+          autoplay_with_sound?: boolean
           avatar_url?: string | null
           created_at?: string
           featured_date?: string
@@ -2909,8 +2913,11 @@ export type Database = {
           updated_at?: string
           user_id: string
           username: string
+          video_storage_path?: string | null
+          video_url?: string | null
         }
         Update: {
+          autoplay_with_sound?: boolean
           avatar_url?: string | null
           created_at?: string
           featured_date?: string
@@ -2927,6 +2934,8 @@ export type Database = {
           updated_at?: string
           user_id?: string
           username?: string
+          video_storage_path?: string | null
+          video_url?: string | null
         }
         Relationships: []
       }
