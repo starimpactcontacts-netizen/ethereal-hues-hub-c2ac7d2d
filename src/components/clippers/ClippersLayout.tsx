@@ -21,7 +21,7 @@ export default function ClippersLayout({ children, title }: Props) {
   return (
     <div
       className="relative min-h-screen text-white font-apple pb-[88px]"
-      style={{ background: '#000' }}
+      style={{ background: 'hsl(var(--surface-0))' }}
     >
       {/* Top bar — solid translucent (NO backdrop-blur, kills scroll perf) */}
       <header
