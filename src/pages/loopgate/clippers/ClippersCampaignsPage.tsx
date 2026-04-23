@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search, Sparkles, DollarSign, TrendingUp, Film, Flame } from 'lucide-react';
+import { Search, Sparkles, ArrowUpRight, Flame } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import ClippersLayout from '@/components/clippers/ClippersLayout';
@@ -61,171 +61,232 @@ export default function ClippersCampaignsPage() {
 
   const formatMoney = (cents: number) => `$${(cents / 100).toFixed(2)}`;
   const filtered = campaigns.filter((c) =>
-    !search || c.name.toLowerCase().includes(search.toLowerCase()) || c.client_name?.toLowerCase().includes(search.toLowerCase())
+    !search ||
+    c.name.toLowerCase().includes(search.toLowerCase()) ||
+    c.client_name?.toLowerCase().includes(search.toLowerCase())
   );
+  const featured = filtered[0];
+  const rest = filtered.slice(1);
 
   return (
-    <ClippersLayout title="CAMPAIGNS">
-      <div className="max-w-6xl mx-auto px-4 pt-5 pb-6 space-y-6">
-        {/* Hero header */}
+    <ClippersLayout title="MISSIONS">
+      {/* Editorial hero */}
+      <section className="max-w-6xl mx-auto px-5 pt-8 pb-6">
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
-          <h1 className="font-display text-[40px] leading-none mb-1.5 tracking-tight">Missions</h1>
-          <p className="text-[13px] text-muted-foreground">Drop clips. Hit views. Get paid.</p>
+          <div className="flex items-center gap-2 mb-4">
+            <span className="font-mono text-[10px] tracking-[0.3em] text-gold/80">VOL.01</span>
+            <span className="h-px flex-1 bg-white/[0.08]" />
+            <span className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground">
+              {filtered.length.toString().padStart(2, '0')} ACTIVE
+            </span>
+          </div>
+          <h1 className="font-display text-[56px] sm:text-[72px] leading-[0.85] tracking-tight">
+            Drop clips.<br />
+            <span className="text-gold italic">Get paid.</span>
+          </h1>
         </motion.div>
+      </section>
 
-        {/* Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
-          className="grid grid-cols-3 gap-2.5"
-        >
-          <StatTile icon={DollarSign} label="Earnings" value={formatMoney(stats.total_earnings_cents)} tint="text-emerald-400" />
-          <StatTile icon={TrendingUp} label="Index" value={`${stats.total_index_earned}`} tint="text-gold" />
-          <StatTile icon={Film} label="Clips" value={`${stats.total_clips}`} tint="text-foreground" />
-        </motion.div>
+      {/* Stats strip */}
+      <section className="border-y border-white/[0.06]" style={{ background: 'hsl(0 0% 2%)' }}>
+        <div className="max-w-6xl mx-auto grid grid-cols-3 divide-x divide-white/[0.06]">
+          <StatCell index="01" label="Earnings" value={formatMoney(stats.total_earnings_cents)} accent />
+          <StatCell index="02" label="Index" value={`${stats.total_index_earned}`} />
+          <StatCell index="03" label="Clips" value={`${stats.total_clips}`} />
+        </div>
+      </section>
 
+      <div className="max-w-6xl mx-auto px-5 py-7 space-y-7">
         {/* Search */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.1 }}
-          className="relative"
-        >
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <div className="relative">
+          <Search className="absolute left-1 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search missions..."
-            className="w-full h-12 pl-10 pr-4 rounded-2xl text-sm outline-none transition-all focus:bg-surface-2"
+            placeholder="Search missions"
+            className="w-full h-11 pl-7 pr-2 text-[13px] outline-none transition-all bg-transparent placeholder:text-muted-foreground/60 placeholder:tracking-wider"
             style={{
-              background: 'hsl(var(--surface-1))',
-              border: '1px solid hsl(var(--border) / 0.6)',
+              borderTop: '1px solid hsl(0 0% 100% / 0.06)',
+              borderBottom: '1px solid hsl(0 0% 100% / 0.06)',
             }}
           />
-        </motion.div>
+        </div>
 
-        {/* Campaign list */}
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-44 bg-surface-1 border border-border/60 rounded-3xl animate-pulse" />
+              <div key={i} className="h-32 border border-white/[0.06] animate-pulse" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="bg-surface-1 border border-border/60 rounded-3xl p-10 text-center">
-            <Sparkles className="w-8 h-8 text-muted-foreground/40 mx-auto mb-3" />
-            <p className="font-display text-lg">No missions yet</p>
-            <p className="text-sm text-muted-foreground">New paid drops weekly.</p>
+          <div className="border border-white/[0.06] p-12 text-center">
+            <Sparkles className="w-6 h-6 text-muted-foreground/40 mx-auto mb-4" />
+            <p className="font-display text-3xl tracking-tight">No missions live</p>
+            <p className="text-[12px] text-muted-foreground mt-1 tracking-wider uppercase">New paid drops weekly</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {filtered.map((c, idx) => {
-              const budget = c.budget_cents || 0;
-              const spent = c.spent_cents || 0;
-              const pct = budget > 0 ? Math.min(100, (spent / budget) * 100) : 0;
-              const hot = pct > 60;
-              return (
-                <motion.div
-                  key={c.id}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.45, delay: 0.05 + idx * 0.04, ease: [0.22, 1, 0.36, 1] }}
-                >
-                  <Link
-                    to={c.slug ? `/campaign/${c.slug}` : '/missions/portal'}
-                    className="block group rounded-3xl p-4 transition-all duration-300 active:scale-[0.985] hover:-translate-y-0.5"
-                    style={{
-                      background:
-                        'linear-gradient(180deg, hsl(var(--surface-1)) 0%, hsl(var(--surface-0)) 100%)',
-                      border: '1px solid hsl(var(--border) / 0.55)',
-                      boxShadow:
-                        '0 1px 0 hsl(0 0% 100% / 0.04) inset, 0 8px 24px hsl(0 0% 0% / 0.35)',
-                    }}
+          <>
+            {featured && <FeaturedCard c={featured} formatMoney={formatMoney} />}
+
+            <div className="flex items-center gap-3 pt-2">
+              <span className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground">ALL · MISSIONS</span>
+              <span className="h-px flex-1 bg-white/[0.06]" />
+            </div>
+
+            <div className="divide-y divide-white/[0.06] border-y border-white/[0.06]">
+              {rest.map((c, idx) => {
+                const budget = c.budget_cents || 0;
+                const spent = c.spent_cents || 0;
+                const pct = budget > 0 ? Math.min(100, (spent / budget) * 100) : 0;
+                const hot = pct > 60;
+                return (
+                  <motion.div
+                    key={c.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.35, delay: idx * 0.03 }}
                   >
-                    <div className="flex gap-3 mb-3.5">
-                      <div className="w-[68px] h-[68px] flex-shrink-0 rounded-2xl overflow-hidden bg-surface-0 ring-1 ring-white/5">
+                    <Link
+                      to={c.slug ? `/campaign/${c.slug}` : '/missions/portal'}
+                      className="group flex items-center gap-4 py-4 transition-colors hover:bg-white/[0.02] active:bg-white/[0.04]"
+                    >
+                      <span className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 w-7 tabular-nums">
+                        {String(idx + 2).padStart(2, '0')}
+                      </span>
+                      <div className="w-14 h-14 flex-shrink-0 overflow-hidden bg-surface-1 border border-white/[0.06]">
                         {c.cover_image_url ? (
-                          <img src={c.cover_image_url} alt={c.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                          <img
+                            src={c.cover_image_url}
+                            alt={c.name}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <Sparkles className="w-6 h-6 text-muted-foreground/30" />
+                            <Sparkles className="w-4 h-4 text-muted-foreground/30" />
                           </div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-1.5 mb-1">
-                          <span className="px-2 py-0.5 bg-gold/15 text-gold rounded-full text-[10px] font-display tracking-wider uppercase">
-                            Clipping
-                          </span>
-                          <span className="text-[10px] tracking-wider uppercase text-muted-foreground">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground/80">
                             {c.client_name || 'Loopgate'}
                           </span>
                           {hot && (
-                            <span className="ml-auto inline-flex items-center gap-0.5 text-[10px] text-orange-400 font-display tracking-wider uppercase">
-                              <Flame className="w-3 h-3" /> Hot
+                            <span className="inline-flex items-center gap-0.5 text-[9px] text-gold font-mono tracking-widest uppercase">
+                              <Flame className="w-2.5 h-2.5" /> HOT
                             </span>
                           )}
                         </div>
-                        <h3 className="font-display text-[18px] leading-tight line-clamp-1">{c.name}</h3>
-                        {c.goal_label && (
-                          <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{c.goal_label}</p>
-                        )}
+                        <h3 className="font-display text-[22px] leading-none tracking-tight truncate">{c.name}</h3>
                       </div>
-                    </div>
-                    <div className="flex items-end justify-between mb-2">
-                      <div>
-                        <p className="text-[10px] text-muted-foreground tracking-wider uppercase">Paid Out</p>
-                        <p className="font-display text-[20px] leading-none mt-0.5">
-                          {formatMoney(spent)} <span className="text-muted-foreground text-[13px]">/ {formatMoney(budget)}</span>
-                        </p>
+                      <div className="hidden sm:flex flex-col items-end">
+                        <span className="font-mono text-[10px] tracking-widest text-muted-foreground/70 uppercase">Pool</span>
+                        <span className="font-display text-[22px] leading-none text-foreground tabular-nums">
+                          {formatMoney(budget)}
+                        </span>
                       </div>
-                      <div className="text-right">
-                        <p className="text-[10px] text-muted-foreground tracking-wider uppercase">CPM</p>
-                        <p className="font-display text-[20px] leading-none mt-0.5 text-emerald-400">$0.75<span className="text-muted-foreground text-[11px]">/1k</span></p>
+                      <div className="flex items-baseline gap-2 ml-2">
+                        <span className="font-mono text-[11px] text-gold tabular-nums hidden sm:inline">
+                          {Math.round(pct)}%
+                        </span>
+                        <ArrowUpRight className="w-4 h-4 text-muted-foreground/50 group-hover:text-gold group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-all" />
                       </div>
-                    </div>
-                    <div className="h-1.5 bg-surface-0 rounded-full overflow-hidden ring-1 ring-white/5">
-                      <div
-                        className="h-full rounded-full transition-all duration-500"
-                        style={{
-                          width: `${pct}%`,
-                          background: 'linear-gradient(90deg, hsl(var(--gold) / 0.7), hsl(var(--gold)))',
-                          boxShadow: '0 0 10px hsl(var(--gold) / 0.5)',
-                        }}
-                      />
-                    </div>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </div>
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
     </ClippersLayout>
   );
 }
 
-function StatTile({ icon: Icon, label, value, tint }: { icon: typeof DollarSign; label: string; value: string; tint: string }) {
+function StatCell({ index, label, value, accent }: { index: string; label: string; value: string; accent?: boolean }) {
   return (
-    <div
-      className="rounded-2xl p-3.5 transition-all hover:-translate-y-0.5"
-      style={{
-        background:
-          'linear-gradient(180deg, hsl(var(--surface-1)) 0%, hsl(var(--surface-0)) 100%)',
-        border: '1px solid hsl(var(--border) / 0.55)',
-        boxShadow: '0 1px 0 hsl(0 0% 100% / 0.04) inset, 0 4px 16px hsl(0 0% 0% / 0.25)',
-      }}
-    >
+    <div className="px-5 py-5">
       <div className="flex items-center gap-1.5 mb-1.5">
-        <Icon className={`w-3 h-3 ${tint}`} />
-        <span className="text-[9px] text-muted-foreground tracking-[0.15em] uppercase font-semibold">{label}</span>
+        <span className="font-mono text-[9px] tracking-[0.25em] text-gold/70">{index}</span>
+        <span className="text-[9px] text-muted-foreground tracking-[0.2em] uppercase font-semibold">{label}</span>
       </div>
-      <div className={`font-display text-[26px] leading-none ${tint}`}>{value}</div>
+      <div className={`font-display text-[30px] leading-none tabular-nums tracking-tight ${accent ? 'text-gold' : 'text-foreground'}`}>
+        {value}
+      </div>
     </div>
+  );
+}
+
+function FeaturedCard({ c, formatMoney }: { c: Campaign; formatMoney: (n: number) => string }) {
+  const budget = c.budget_cents || 0;
+  const spent = c.spent_cents || 0;
+  const pct = budget > 0 ? Math.min(100, (spent / budget) * 100) : 0;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <Link
+        to={c.slug ? `/campaign/${c.slug}` : '/missions/portal'}
+        className="group relative block overflow-hidden border border-white/[0.08] aspect-[16/10] sm:aspect-[21/9]"
+      >
+        {c.cover_image_url ? (
+          <img
+            src={c.cover_image_url}
+            alt={c.name}
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-surface-1" />
+        )}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(180deg, hsl(0 0% 0% / 0.35) 0%, hsl(0 0% 0% / 0.05) 35%, hsl(0 0% 0% / 0.95) 100%)',
+          }}
+        />
+
+        <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
+          <span
+            className="font-mono text-[10px] tracking-[0.3em] text-gold uppercase backdrop-blur px-2.5 py-1"
+            style={{ background: 'hsl(0 0% 0% / 0.5)', borderTop: '1px solid hsl(var(--gold) / 0.5)' }}
+          >
+            ★ FEATURED
+          </span>
+          <span className="font-mono text-[10px] tracking-[0.25em] text-white/70 uppercase">M·01</span>
+        </div>
+
+        <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-7">
+          <p className="text-[10px] tracking-[0.3em] uppercase text-white/60 mb-2">{c.client_name || 'Loopgate'}</p>
+          <h2 className="font-display text-[40px] sm:text-[56px] leading-[0.88] text-white tracking-tight mb-4 max-w-[85%]">
+            {c.name}
+          </h2>
+          <div className="flex items-end justify-between gap-4">
+            <div className="flex-1 max-w-md">
+              <div className="h-px bg-white/20 mb-1.5">
+                <div
+                  className="h-px bg-gold transition-all duration-500"
+                  style={{ width: `${pct}%`, boxShadow: '0 0 6px hsl(var(--gold))' }}
+                />
+              </div>
+              <div className="flex items-center gap-2 text-[10px] tracking-widest font-mono uppercase text-white/70">
+                <span className="text-gold tabular-nums">{formatMoney(spent)}</span>
+                <span>/ {formatMoney(budget)}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-white">
+              <span className="font-display text-[14px] tracking-[0.3em] uppercase">Enter</span>
+              <ArrowUpRight className="w-4 h-4 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform" />
+            </div>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
   );
 }
