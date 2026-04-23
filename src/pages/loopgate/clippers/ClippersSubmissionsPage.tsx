@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { Film, Plus, ExternalLink, Clock, Check, X as XIcon, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import ClippersLayout from '@/components/clippers/ClippersLayout';
 import ClipperLockGate from '@/components/clippers/ClipperLockGate';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -82,7 +81,7 @@ export default function ClippersSubmissionsPage() {
   const totalEarned = subs.reduce((s, x) => s + (x.earned_cents || 0), 0);
 
   return (
-    <ClippersLayout title="Clips">
+    <>
       <section className="max-w-6xl mx-auto px-4 pt-3 pb-4 flex items-end justify-between">
         <h1 className="font-apple-tight text-[34px] font-bold text-white leading-[1.05]">Clips</h1>
         <button
@@ -170,7 +169,7 @@ export default function ClippersSubmissionsPage() {
       )}
 
       <ClipperLockGate open={showGate} onClose={() => setShowGate(false)} onSuccess={load} reason="Lock in to submit clips and earn payouts." />
-    </ClippersLayout>
+    </>
   );
 }
 
