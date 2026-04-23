@@ -424,7 +424,6 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
                 document.body
               )}
 
-            </div>
           </div>
         </div>
       </div>
