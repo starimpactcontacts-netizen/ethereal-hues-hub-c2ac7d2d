@@ -20,6 +20,9 @@ interface Mission {
   view_milestones: Milestone[];
   budget_cents: number | null;
   spent_cents: number | null;
+  cap_type?: string | null;
+  max_posts?: number | null;
+  approved_count?: number | null;
   status: string;
   deadline: string | null;
 }
@@ -44,7 +47,7 @@ export default function ClippersCampaignsPage() {
       const [mRes, subsRes, paysRes] = await Promise.all([
         supabase
           .from('missions')
-          .select('id, title, description, cover_image_url, sponsor_name, sponsor_logo_url, base_payout_cents, view_milestones, budget_cents, spent_cents, status, deadline')
+          .select('id, title, description, cover_image_url, sponsor_name, sponsor_logo_url, base_payout_cents, view_milestones, budget_cents, spent_cents, cap_type, max_posts, approved_count, status, deadline')
           .in('status', ['live', 'paused'])
           .order('created_at', { ascending: false })
           .limit(40),
@@ -195,9 +198,15 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 }
 
 function MissionCard({ m, formatMoney }: { m: Mission; formatMoney: (n: number) => string }) {
+  const isPostsCap = m.cap_type === 'posts';
   const budget = m.budget_cents || 0;
   const spent = m.spent_cents || 0;
-  const pct = budget > 0 ? Math.min(100, (spent / budget) * 100) : 0;
+  const maxPosts = m.max_posts || 0;
+  const approved = m.approved_count || 0;
+  const pct = isPostsCap
+    ? (maxPosts > 0 ? Math.min(100, (approved / maxPosts) * 100) : 0)
+    : (budget > 0 ? Math.min(100, (spent / budget) * 100) : 0);
+  const showProgress = isPostsCap ? maxPosts > 0 : budget > 0;
   const milestones = (m.view_milestones || []).slice(0, 3);
   const isPaused = m.status === 'paused';
 
@@ -250,14 +259,16 @@ function MissionCard({ m, formatMoney }: { m: Mission; formatMoney: (n: number) 
             )}
           </div>
 
-          {/* Budget bar */}
-          {budget > 0 && (
+          {/* Progress bar — posts or budget */}
+          {showProgress && (
             <div className="mt-2">
               <div className="h-[3px] rounded-full bg-white/10 overflow-hidden">
                 <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: '#30D158' }} />
               </div>
               <p className="text-[10px] text-[#8E8E93] mt-1 tabular-nums">
-                {formatMoney(spent)} / {formatMoney(budget)} pool
+                {isPostsCap
+                  ? `${approved} / ${maxPosts} posts filled`
+                  : `${formatMoney(spent)} / ${formatMoney(budget)} pool`}
               </p>
             </div>
           )}
