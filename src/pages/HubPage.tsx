@@ -822,7 +822,7 @@ export default function HubPage() {
             style={{ 
               borderColor: quickAction === 'edit_battle' ? 'rgba(239,68,68,0.45)' : quickAction === 'mission' ? 'rgba(16,185,129,0.35)' : quickAction === 'solo' ? 'rgba(255,255,255,0.20)' : 'rgba(239,68,68,0.35)',
               boxShadow: quickAction === 'edit_battle'
-                ? '0 4px 30px rgba(220,38,38,0.30), 0 0 60px rgba(37,99,235,0.18)'
+                ? '0 4px 24px rgba(0,0,0,0.45), 0 0 1px rgba(255,255,255,0.06)'
                 : quickAction === 'mission'
                 ? '0 4px 30px rgba(16,185,129,0.25), 0 0 60px rgba(16,185,129,0.08)'
                 : quickAction === 'solo' 
@@ -861,7 +861,7 @@ export default function HubPage() {
                       : "bg-gradient-to-r from-red-600 via-red-500 to-red-600"
               )}
               style={quickAction === 'edit_battle' ? {
-                background: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 30%, #dc2626 70%, #b91c1c 100%)',
+                background: 'linear-gradient(135deg, #1e293b 0%, #1e3a8a 50%, #1e293b 100%)',
               } : quickAction === 'mission' ? {
                 background: 'linear-gradient(135deg, hsl(160 84% 39%) 0%, hsl(152 76% 36%) 40%, hsl(145 72% 30%) 100%)',
               } : quickAction === 'solo' ? {
