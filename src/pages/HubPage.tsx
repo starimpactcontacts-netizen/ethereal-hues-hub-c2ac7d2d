@@ -646,13 +646,13 @@ export default function HubPage() {
             <Link to="/missions/portal" className="group flex flex-col items-center gap-3">
               <div className="relative w-[68px] h-[68px] rounded-[22px] overflow-hidden"
                 style={{
-                  background: 'linear-gradient(145deg, hsl(150 35% 6%) 0%, hsl(150 40% 9%) 50%, hsl(150 35% 5%) 100%)',
-                  border: '1px solid hsl(145 70% 55% / 0.18)',
-                  boxShadow: '0 8px 32px hsl(0 0% 0% / 0.8), inset 0 1px 0 hsl(145 70% 60% / 0.08), 0 0 18px hsl(145 80% 45% / 0.1)',
+                  background: 'linear-gradient(145deg, hsl(0 0% 4%) 0%, hsl(0 0% 6%) 50%, hsl(0 0% 3%) 100%)',
+                  border: '1px solid hsl(0 0% 100% / 0.05)',
+                  boxShadow: '0 8px 32px hsl(0 0% 0% / 0.8), inset 0 1px 0 hsl(0 0% 100% / 0.03)',
                 }}>
-                <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-emerald-300/60 top-4 right-5" style={{ boxShadow: '0 0 3px hsl(145 80% 60% / 0.6)' }} />
-                <div className="absolute w-[1px] h-[1px] rounded-full bg-emerald-200/40 bottom-4 left-5" style={{ boxShadow: '0 0 2px hsl(145 80% 60% / 0.4)' }} />
-                <div className="absolute inset-[6px] rounded-[16px]" style={{ border: '1px solid hsl(145 60% 50% / 0.06)' }} />
+                <div className="absolute w-[1px] h-[1px] rounded-full bg-white/20 top-3 left-5" style={{ boxShadow: '0 0 2px hsl(0 0% 100% / 0.15)' }} />
+                <div className="absolute w-[1px] h-[1px] rounded-full bg-white/25 bottom-5 right-4" style={{ boxShadow: '0 0 2px hsl(0 0% 100% / 0.2)' }} />
+                <div className="absolute inset-[6px] rounded-[16px]" style={{ border: '1px solid hsl(0 0% 100% / 0.03)' }} />
                 <div className="relative z-10 flex h-full w-full items-center justify-center">
                   <DollarSign className="w-7 h-7" strokeWidth={2.6} style={{ color: 'hsl(145 75% 62%)' }} />
                 </div>
@@ -664,7 +664,7 @@ export default function HubPage() {
                   </span>
                 </div>
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: 'hsl(145 70% 65%)' }}>Missions</span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'hsl(0 0% 100% / 0.5)' }}>Missions</span>
             </Link>
 
             {/* CENTER — Studio or Judge Panel */}
