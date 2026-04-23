@@ -8,10 +8,10 @@ interface Props {
 }
 
 const tabs = [
-  { to: '/clippers/portal', icon: LayoutGrid, label: 'Campaigns' },
-  { to: '/clippers/submissions', icon: Film, label: 'Clips' },
-  { to: '/clippers/accounts', icon: Link2, label: 'Linked' },
-  { to: '/clippers/withdrawals', icon: Wallet, label: 'Cashout' },
+  { to: '/missions/portal', icon: LayoutGrid, label: 'Campaigns' },
+  { to: '/missions/submissions', icon: Film, label: 'Clips' },
+  { to: '/missions/accounts', icon: Link2, label: 'Linked' },
+  { to: '/missions/withdrawals', icon: Wallet, label: 'Cashout' },
 ];
 
 export default function ClippersLayout({ children, title }: Props) {

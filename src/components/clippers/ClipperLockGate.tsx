@@ -41,7 +41,7 @@ export default function ClipperLockGate({ open, onClose, onSuccess, reason }: Pr
         email: fakeEmail,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/clippers/portal`,
+          emailRedirectTo: `${window.location.origin}/missions/portal`,
           data: { username: handle },
         },
       });

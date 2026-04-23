@@ -60,7 +60,7 @@ export default function ClippersOnboardingPage() {
           email: signupEmail,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/clippers/portal`,
+            emailRedirectTo: `${window.location.origin}/missions/portal`,
             data: { username: username.toUpperCase() },
           },
         });
@@ -119,7 +119,7 @@ export default function ClippersOnboardingPage() {
 
       await refreshProfile();
       toast.success("You're a Clipper now. Let's get this bag.");
-      navigate('/clippers/portal');
+      navigate('/missions/portal');
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Something went wrong';
       setError(msg);

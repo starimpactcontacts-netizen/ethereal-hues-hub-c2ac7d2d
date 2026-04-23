@@ -137,7 +137,7 @@ export default function ClippersCampaignsPage() {
                   transition={{ duration: 0.45, delay: 0.05 + idx * 0.04, ease: [0.22, 1, 0.36, 1] }}
                 >
                   <Link
-                    to={c.slug ? `/campaign/${c.slug}` : '/clippers/portal'}
+                    to={c.slug ? `/campaign/${c.slug}` : '/missions/portal'}
                     className="block group rounded-3xl p-4 transition-all duration-300 active:scale-[0.985] hover:-translate-y-0.5"
                     style={{
                       background:
