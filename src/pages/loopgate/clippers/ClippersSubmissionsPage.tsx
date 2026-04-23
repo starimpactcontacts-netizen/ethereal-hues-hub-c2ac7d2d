@@ -105,32 +105,38 @@ export default function ClippersSubmissionsPage() {
 
   return (
     <ClippersLayout title="MY CLIPS">
-      <div className="max-w-6xl mx-auto px-4 py-6 space-y-5">
-        <div className="flex items-end justify-between">
+      <div className="max-w-6xl mx-auto px-4 pt-5 pb-6 space-y-5">
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="flex items-end justify-between gap-3"
+        >
           <div>
-            <h1 className="font-display text-3xl mb-1">My Submissions</h1>
-            <p className="text-sm text-muted-foreground">Track every clip you've dropped.</p>
+            <h1 className="font-display text-[40px] leading-none mb-1.5 tracking-tight">My Clips</h1>
+            <p className="text-[13px] text-muted-foreground">Track every drop.</p>
           </div>
           <Button
             onClick={() => (user ? setShowSubmit(true) : setShowGate(true))}
-            className="bg-gold hover:bg-gold/90 text-gold-foreground font-display tracking-wide h-10"
+            className="bg-gold hover:bg-gold/90 text-gold-foreground font-display tracking-wide h-11 rounded-2xl px-5 active:scale-95 transition-transform"
+            style={{ boxShadow: '0 6px 20px hsl(var(--gold) / 0.35)' }}
           >
             <Plus className="w-4 h-4 mr-1" /> Submit
           </Button>
-        </div>
+        </motion.div>
 
         {/* Tabs */}
-        <div className="flex gap-4 border-b border-border overflow-x-auto no-scrollbar">
+        <div className="flex gap-1 p-1 rounded-2xl overflow-x-auto no-scrollbar" style={{ background: 'hsl(var(--surface-1))', border: '1px solid hsl(var(--border) / 0.5)' }}>
           {TABS.map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`pb-2 px-1 flex items-center gap-2 text-sm whitespace-nowrap transition-colors border-b-2 ${
-                tab === t.id ? 'border-gold text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'
+              className={`flex-1 px-3 py-2 flex items-center justify-center gap-1.5 text-[12px] font-semibold whitespace-nowrap rounded-xl transition-all duration-300 ${
+                tab === t.id ? 'bg-gold/15 text-gold' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               {t.label}
-              <span className={`px-1.5 py-0.5 rounded text-[10px] font-display ${tab === t.id ? 'bg-gold/20 text-gold' : 'bg-surface-1 text-muted-foreground'}`}>
+              <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-display ${tab === t.id ? 'bg-gold/25 text-gold' : 'bg-surface-0 text-muted-foreground'}`}>
                 {counts[t.id as keyof typeof counts]}
               </span>
             </button>
@@ -141,7 +147,7 @@ export default function ClippersSubmissionsPage() {
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-32 bg-surface-1 border border-border rounded-2xl animate-pulse" />
+              <div key={i} className="h-32 bg-surface-1 border border-border/50 rounded-3xl animate-pulse" />
             ))}
           </div>
         ) : !user ? (
@@ -150,8 +156,15 @@ export default function ClippersSubmissionsPage() {
           <EmptyCTA onClick={() => setShowSubmit(true)} text="No clips yet. Drop your first one." />
         ) : (
           <div className="space-y-3">
-            {filtered.map((s) => (
-              <SubmissionCard key={s.id} sub={s} />
+            {filtered.map((s, idx) => (
+              <motion.div
+                key={s.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: idx * 0.04, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <SubmissionCard sub={s} />
+              </motion.div>
             ))}
           </div>
         )}
@@ -162,36 +175,40 @@ export default function ClippersSubmissionsPage() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="fixed inset-0 z-[90] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center"
+          className="fixed inset-0 z-[90] backdrop-blur-md flex items-end sm:items-center justify-center"
+          style={{ background: 'hsl(var(--surface-0) / 0.85)' }}
           onClick={() => setShowSubmit(false)}
         >
           <motion.div
-            initial={{ y: 40 }}
-            animate={{ y: 0 }}
+            initial={{ y: 60, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 38 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full sm:max-w-md bg-surface-1 border border-border sm:rounded-2xl rounded-t-3xl p-6 space-y-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+            className="w-full sm:max-w-md bg-surface-1 border border-white/5 sm:rounded-3xl rounded-t-[28px] p-6 space-y-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+            style={{ boxShadow: '0 -20px 60px hsl(0 0% 0% / 0.6)' }}
           >
-            <h2 className="font-display text-2xl">Submit Clip</h2>
+            <div className="w-10 h-1 bg-white/15 rounded-full mx-auto sm:hidden" />
+            <h2 className="font-display text-[28px] leading-none">Submit Clip</h2>
             <Input
               value={videoUrl}
               onChange={(e) => setVideoUrl(e.target.value)}
               placeholder="Paste TikTok / IG / YouTube URL"
-              className="h-12 bg-surface-0"
+              className="h-12 bg-surface-0 rounded-xl"
             />
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Title (optional)"
-              className="h-12 bg-surface-0"
+              className="h-12 bg-surface-0 rounded-xl"
             />
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setShowSubmit(false)} className="flex-1 h-11">
+              <Button variant="outline" onClick={() => setShowSubmit(false)} className="flex-1 h-12 rounded-xl">
                 Cancel
               </Button>
               <Button
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="flex-1 h-11 bg-gold hover:bg-gold/90 text-gold-foreground"
+                className="flex-1 h-12 rounded-xl bg-gold hover:bg-gold/90 text-gold-foreground font-display tracking-wide"
               >
                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Submit'}
               </Button>
@@ -221,8 +238,15 @@ function SubmissionCard({ sub }: { sub: Submission }) {
   const StatusIcon = sub.status === 'approved' || sub.status === 'paid' ? Check : sub.status === 'rejected' ? XIcon : Clock;
 
   return (
-    <div className="bg-surface-1 border border-border rounded-2xl p-3 flex gap-3">
-      <div className="w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden bg-surface-0 relative">
+    <div
+      className="rounded-3xl p-3 flex gap-3 transition-all duration-300 hover:-translate-y-0.5"
+      style={{
+        background: 'linear-gradient(180deg, hsl(var(--surface-1)) 0%, hsl(var(--surface-0)) 100%)',
+        border: '1px solid hsl(var(--border) / 0.55)',
+        boxShadow: '0 1px 0 hsl(0 0% 100% / 0.04) inset, 0 6px 18px hsl(0 0% 0% / 0.3)',
+      }}
+    >
+      <div className="w-24 h-24 flex-shrink-0 rounded-2xl overflow-hidden bg-surface-0 relative ring-1 ring-white/5">
         {sub.thumbnail_url ? (
           <img src={sub.thumbnail_url} alt={sub.title || ''} className="w-full h-full object-cover" />
         ) : (
@@ -256,11 +280,11 @@ function SubmissionCard({ sub }: { sub: Submission }) {
 
 function EmptyCTA({ text, onClick }: { text: string; onClick: () => void }) {
   return (
-    <div className="bg-surface-1 border border-border rounded-2xl p-10 text-center">
+    <div className="bg-surface-1 border border-border/55 rounded-3xl p-10 text-center">
       <Film className="w-8 h-8 text-muted-foreground/40 mx-auto mb-3" />
       <p className="font-display mb-1">No clips yet</p>
       <p className="text-sm text-muted-foreground mb-4">{text}</p>
-      <Button onClick={onClick} className="bg-gold hover:bg-gold/90 text-gold-foreground">
+      <Button onClick={onClick} className="bg-gold hover:bg-gold/90 text-gold-foreground rounded-xl h-11 px-5">
         <Plus className="w-4 h-4 mr-1" /> Submit clip
       </Button>
     </div>

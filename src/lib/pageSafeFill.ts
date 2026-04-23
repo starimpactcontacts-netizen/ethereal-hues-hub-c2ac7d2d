@@ -11,5 +11,9 @@ export function getPageSafeFill(pathname: string) {
     return '0 0% 4%'; // #0A0A0A
   }
 
+  if (pathname.startsWith('/clippers')) {
+    return '0 0% 4%'; // Loopgate soft black — matches surface-0
+  }
+
   return '0 0% 4%'; // #0A0A0A
 }
