@@ -5845,8 +5845,11 @@ export type Database = {
           deadline: string | null
           description: string | null
           id: string
+          inspirations: Json
           reference_video_url: string | null
+          scenepack_gdrive_url: string | null
           scenepack_url: string | null
+          scenepack_youtube_url: string | null
           spent_cents: number
           sponsor_logo_url: string | null
           sponsor_name: string | null
@@ -5867,8 +5870,11 @@ export type Database = {
           deadline?: string | null
           description?: string | null
           id?: string
+          inspirations?: Json
           reference_video_url?: string | null
+          scenepack_gdrive_url?: string | null
           scenepack_url?: string | null
+          scenepack_youtube_url?: string | null
           spent_cents?: number
           sponsor_logo_url?: string | null
           sponsor_name?: string | null
@@ -5889,8 +5895,11 @@ export type Database = {
           deadline?: string | null
           description?: string | null
           id?: string
+          inspirations?: Json
           reference_video_url?: string | null
+          scenepack_gdrive_url?: string | null
           scenepack_url?: string | null
+          scenepack_youtube_url?: string | null
           spent_cents?: number
           sponsor_logo_url?: string | null
           sponsor_name?: string | null
