@@ -480,8 +480,8 @@ export default function EditoriumAdmin() {
   }
 
   async function saveManualEdit() {
-    if (!manualForm.username.trim() || !manualForm.submission_url.trim()) {
-      toast.error('Username and URL are required');
+    if (!manualForm.username.trim() || (!manualForm.submission_url.trim() && !manualForm.video_url.trim())) {
+      toast.error('Username + (video upload or URL) required');
       return;
     }
     setSavingManual(true);
