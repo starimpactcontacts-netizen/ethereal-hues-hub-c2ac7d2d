@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Search, Sparkles, ChevronRight, DollarSign, TrendingUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useTempProfile } from '@/hooks/useTempProfile';
 import ClippersLayout from '@/components/clippers/ClippersLayout';
 
 interface Milestone { views: number; bonus_cents: number; }
@@ -31,6 +32,7 @@ interface UserStats {
 
 export default function ClippersCampaignsPage() {
   const { user } = useAuth();
+  const { profile: tempProfile } = useTempProfile();
   const [missions, setMissions] = useState<Mission[]>([]);
   const [stats, setStats] = useState<UserStats>({ earned: 0, paid: 0, clips: 0 });
   const [search, setSearch] = useState('');
@@ -69,10 +71,42 @@ export default function ClippersCampaignsPage() {
   );
   const balance = Math.max(0, stats.earned - stats.paid);
 
+  const isGuest = !user;
+  const displayName = (user?.user_metadata?.username as string | undefined) || user?.email?.split('@')[0] || tempProfile?.username || 'Guest';
+  const avatarUrl = (user?.user_metadata?.avatar_url as string | undefined) || tempProfile?.avatarUrl;
+  const initial = displayName.charAt(0).toUpperCase();
+  const hour = new Date().getHours();
+  const greeting = hour < 5 ? 'Up late' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+
   return (
     <ClippersLayout title="Missions">
-      <section className="max-w-6xl mx-auto px-4 pt-3 pb-4">
-        <h1 className="font-apple-tight text-[34px] font-bold text-white leading-[1.05]">Missions</h1>
+      {/* Personalized greeting */}
+      <section className="max-w-6xl mx-auto px-4 pt-4 pb-3">
+        <div className="flex items-center gap-3">
+          <div
+            className="w-11 h-11 rounded-full flex items-center justify-center overflow-hidden shrink-0"
+            style={{
+              background: isGuest ? 'rgba(255,255,255,0.06)' : 'linear-gradient(135deg,#3a3a3c,#1c1c1e)',
+              border: isGuest ? '1px dashed rgba(255,255,255,0.22)' : '0.5px solid rgba(255,255,255,0.1)',
+            }}
+          >
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-[16px] font-semibold text-white/85">{initial}</span>
+            )}
+          </div>
+          <div className="min-w-0">
+            <p className="text-[12px] text-[#8E8E93] font-medium leading-none">
+              {isGuest ? 'Browsing as guest' : greeting}
+            </p>
+            <p className="text-[18px] font-semibold text-white tracking-[-0.02em] mt-1 leading-none truncate">
+              {isGuest ? 'Not signed in' : `@${displayName}`}
+            </p>
+          </div>
+        </div>
+
+        <h1 className="font-apple-tight text-[32px] font-bold text-white leading-[1.05] mt-5">Missions</h1>
         <p className="text-[13px] text-[#8E8E93] mt-1">Get paid per clip + bonuses for views.</p>
 
         {/* iOS search */}
