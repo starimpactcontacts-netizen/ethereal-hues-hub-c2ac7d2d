@@ -383,15 +383,6 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
                 document.body
               )}
 
-              {/* Add reaction */}
-              {onToggleReaction && (
-                <div className="relative">
-                  <LoopReactions
-                    reactions={[]}
-                    onToggle={(emoji) => onToggleReaction(post.id, emoji)}
-                  />
-                </div>
-              )}
             </div>
           </div>
         </div>
