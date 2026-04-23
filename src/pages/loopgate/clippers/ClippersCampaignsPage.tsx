@@ -198,9 +198,15 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 }
 
 function MissionCard({ m, formatMoney }: { m: Mission; formatMoney: (n: number) => string }) {
+  const isPostsCap = m.cap_type === 'posts';
   const budget = m.budget_cents || 0;
   const spent = m.spent_cents || 0;
-  const pct = budget > 0 ? Math.min(100, (spent / budget) * 100) : 0;
+  const maxPosts = m.max_posts || 0;
+  const approved = m.approved_count || 0;
+  const pct = isPostsCap
+    ? (maxPosts > 0 ? Math.min(100, (approved / maxPosts) * 100) : 0)
+    : (budget > 0 ? Math.min(100, (spent / budget) * 100) : 0);
+  const showProgress = isPostsCap ? maxPosts > 0 : budget > 0;
   const milestones = (m.view_milestones || []).slice(0, 3);
   const isPaused = m.status === 'paused';
 
@@ -253,14 +259,16 @@ function MissionCard({ m, formatMoney }: { m: Mission; formatMoney: (n: number) 
             )}
           </div>
 
-          {/* Budget bar */}
-          {budget > 0 && (
+          {/* Progress bar — posts or budget */}
+          {showProgress && (
             <div className="mt-2">
               <div className="h-[3px] rounded-full bg-white/10 overflow-hidden">
                 <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: '#30D158' }} />
               </div>
               <p className="text-[10px] text-[#8E8E93] mt-1 tabular-nums">
-                {formatMoney(spent)} / {formatMoney(budget)} pool
+                {isPostsCap
+                  ? `${approved} / ${maxPosts} posts filled`
+                  : `${formatMoney(spent)} / ${formatMoney(budget)} pool`}
               </p>
             </div>
           )}
