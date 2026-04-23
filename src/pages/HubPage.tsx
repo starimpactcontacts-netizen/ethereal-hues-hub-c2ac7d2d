@@ -960,15 +960,8 @@ export default function HubPage() {
                           ? "hover:brightness-110 border-white/10"
                           : "bg-red-700/80 hover:bg-red-600/80 border-red-900/40"
                   )}
-                  style={quickAction === 'edit_battle' ? { background: 'linear-gradient(135deg, #1e40af 0%, #b91c1c 100%)' } : quickAction === 'mission' ? { background: 'hsl(152 72% 28%)' } : quickAction === 'solo' ? { background: 'hsl(33 100% 38%)' } : undefined}
+                  style={quickAction === 'edit_battle' ? { background: '#0a1024' } : quickAction === 'mission' ? { background: 'hsl(152 50% 10%)' } : quickAction === 'solo' ? { background: 'hsl(36 55% 10%)' } : undefined}
                 >
-                   {(quickAction === 'solo' || quickAction === 'mission' || quickAction === 'edit_battle') && (
-                     <div className="absolute inset-0 pointer-events-none opacity-[0.06]" style={{
-                       backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(255,255,255,0.5) 6px, rgba(255,255,255,0.5) 7px),
-                         repeating-linear-gradient(-45deg, transparent, transparent 6px, rgba(255,255,255,0.5) 6px, rgba(255,255,255,0.5) 7px)`,
-                     }} />
-                   )}
-                   <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
                    <ChevronDown className="w-5 h-5 text-white/90 relative z-10" />
                  </button>
               </DropdownMenuTrigger>
