@@ -469,6 +469,26 @@ export default function EditoriumAdmin() {
       toast.error('Failed to index: ' + error.message);
     } else {
       toast.success(`@${edit.username}'s edit indexed on Editorium 🔥`);
+      // Cross-post to Loop feed so it lands at the top as a fresh post
+      try {
+        const isUploadedVideo = !!edit.video_url;
+        const headline = edit.headline?.trim();
+        const content = headline
+          ? `${headline} — Editor's Pick ✦`
+          : `New Editor's Pick ✦ @${edit.username}`;
+        await supabase.from('feed_posts').insert({
+          user_id: edit.user_id,
+          content: content.slice(0, 280),
+          post_type: 'edit_share',
+          media_url: isUploadedVideo ? null : edit.submission_url,
+          media_platform: isUploadedVideo ? null : (edit.platform || 'tiktok'),
+          uploaded_media_url: isUploadedVideo ? edit.video_url : null,
+          uploaded_media_type: isUploadedVideo ? 'video/mp4' : null,
+          data: { editors_pick: true, source_label: edit.source_label || 'Featured', thumbnail_url: edit.thumbnail_url || null },
+        });
+      } catch (e) {
+        console.warn('Loop cross-post failed', e);
+      }
       fetchIndexedEdits();
     }
   }
