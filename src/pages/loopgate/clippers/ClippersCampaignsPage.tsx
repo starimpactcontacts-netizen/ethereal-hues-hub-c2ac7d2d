@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search, Sparkles, DollarSign, TrendingUp, Film } from 'lucide-react';
+import { Search, Sparkles, DollarSign, TrendingUp, Film, Flame } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import ClippersLayout from '@/components/clippers/ClippersLayout';
@@ -66,103 +66,141 @@ export default function ClippersCampaignsPage() {
 
   return (
     <ClippersLayout title="CAMPAIGNS">
-      <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-6xl mx-auto px-4 pt-5 pb-6 space-y-6">
+        {/* Hero header */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <h1 className="font-display text-[40px] leading-none mb-1.5 tracking-tight">Missions</h1>
+          <p className="text-[13px] text-muted-foreground">Drop clips. Hit views. Get paid.</p>
+        </motion.div>
+
         {/* Stats */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-3 gap-3"
+          transition={{ duration: 0.5, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
+          className="grid grid-cols-3 gap-2.5"
         >
           <StatTile icon={DollarSign} label="Earnings" value={formatMoney(stats.total_earnings_cents)} tint="text-emerald-400" />
           <StatTile icon={TrendingUp} label="Index" value={`${stats.total_index_earned}`} tint="text-gold" />
           <StatTile icon={Film} label="Clips" value={`${stats.total_clips}`} tint="text-foreground" />
         </motion.div>
 
-        {/* Header */}
-        <div>
-          <h1 className="font-display text-3xl mb-1">Campaigns</h1>
-          <p className="text-sm text-muted-foreground">
-            Discover active paid campaigns. Drop clips, get paid.
-          </p>
-        </div>
-
         {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          className="relative"
+        >
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search campaigns..."
-            className="w-full h-11 pl-10 pr-4 bg-surface-1 border border-gold/20 rounded-xl text-sm focus:border-gold/50 outline-none"
+            placeholder="Search missions..."
+            className="w-full h-12 pl-10 pr-4 rounded-2xl text-sm outline-none transition-all focus:bg-surface-2"
+            style={{
+              background: 'hsl(var(--surface-1))',
+              border: '1px solid hsl(var(--border) / 0.6)',
+            }}
           />
-        </div>
+        </motion.div>
 
         {/* Campaign list */}
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-44 bg-surface-1 border border-border rounded-2xl animate-pulse" />
+              <div key={i} className="h-44 bg-surface-1 border border-border/60 rounded-3xl animate-pulse" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="bg-surface-1 border border-border rounded-2xl p-10 text-center">
+          <div className="bg-surface-1 border border-border/60 rounded-3xl p-10 text-center">
             <Sparkles className="w-8 h-8 text-muted-foreground/40 mx-auto mb-3" />
-            <p className="font-display">No campaigns yet</p>
+            <p className="font-display text-lg">No missions yet</p>
             <p className="text-sm text-muted-foreground">New paid drops weekly.</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {filtered.map((c) => {
+            {filtered.map((c, idx) => {
               const budget = c.budget_cents || 0;
               const spent = c.spent_cents || 0;
               const pct = budget > 0 ? Math.min(100, (spent / budget) * 100) : 0;
+              const hot = pct > 60;
               return (
-                <Link
+                <motion.div
                   key={c.id}
-                  to={c.slug ? `/campaign/${c.slug}` : '/clippers/portal'}
-                  className="block bg-surface-1 border border-border rounded-2xl p-4 hover:border-gold/40 transition-colors"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.45, delay: 0.05 + idx * 0.04, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <div className="flex gap-3 mb-3">
-                    <div className="w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden bg-surface-0">
-                      {c.cover_image_url ? (
-                        <img src={c.cover_image_url} alt={c.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Sparkles className="w-6 h-6 text-muted-foreground/30" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap gap-1 mb-1">
-                        <span className="px-2 py-0.5 bg-gold/15 text-gold rounded-full text-[10px] font-display tracking-wider uppercase">
-                          Clipping
-                        </span>
-                        <span className="px-2 py-0.5 bg-surface-0 border border-border rounded-full text-[10px] tracking-wider uppercase text-muted-foreground">
-                          {c.client_name || 'Loopgate'}
-                        </span>
+                  <Link
+                    to={c.slug ? `/campaign/${c.slug}` : '/clippers/portal'}
+                    className="block group rounded-3xl p-4 transition-all duration-300 active:scale-[0.985] hover:-translate-y-0.5"
+                    style={{
+                      background:
+                        'linear-gradient(180deg, hsl(var(--surface-1)) 0%, hsl(var(--surface-0)) 100%)',
+                      border: '1px solid hsl(var(--border) / 0.55)',
+                      boxShadow:
+                        '0 1px 0 hsl(0 0% 100% / 0.04) inset, 0 8px 24px hsl(0 0% 0% / 0.35)',
+                    }}
+                  >
+                    <div className="flex gap-3 mb-3.5">
+                      <div className="w-[68px] h-[68px] flex-shrink-0 rounded-2xl overflow-hidden bg-surface-0 ring-1 ring-white/5">
+                        {c.cover_image_url ? (
+                          <img src={c.cover_image_url} alt={c.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Sparkles className="w-6 h-6 text-muted-foreground/30" />
+                          </div>
+                        )}
                       </div>
-                      <h3 className="font-display text-base line-clamp-1">{c.name}</h3>
-                      {c.goal_label && (
-                        <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{c.goal_label}</p>
-                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                          <span className="px-2 py-0.5 bg-gold/15 text-gold rounded-full text-[10px] font-display tracking-wider uppercase">
+                            Clipping
+                          </span>
+                          <span className="text-[10px] tracking-wider uppercase text-muted-foreground">
+                            {c.client_name || 'Loopgate'}
+                          </span>
+                          {hot && (
+                            <span className="ml-auto inline-flex items-center gap-0.5 text-[10px] text-orange-400 font-display tracking-wider uppercase">
+                              <Flame className="w-3 h-3" /> Hot
+                            </span>
+                          )}
+                        </div>
+                        <h3 className="font-display text-[18px] leading-tight line-clamp-1">{c.name}</h3>
+                        {c.goal_label && (
+                          <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{c.goal_label}</p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-end justify-between mb-2">
-                    <div>
-                      <p className="text-[10px] text-muted-foreground tracking-wider uppercase">Paid Out</p>
-                      <p className="font-display text-base">
-                        {formatMoney(spent)} <span className="text-muted-foreground text-sm">/ {formatMoney(budget)}</span>
-                      </p>
+                    <div className="flex items-end justify-between mb-2">
+                      <div>
+                        <p className="text-[10px] text-muted-foreground tracking-wider uppercase">Paid Out</p>
+                        <p className="font-display text-[20px] leading-none mt-0.5">
+                          {formatMoney(spent)} <span className="text-muted-foreground text-[13px]">/ {formatMoney(budget)}</span>
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[10px] text-muted-foreground tracking-wider uppercase">CPM</p>
+                        <p className="font-display text-[20px] leading-none mt-0.5 text-emerald-400">$0.75<span className="text-muted-foreground text-[11px]">/1k</span></p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-[10px] text-muted-foreground tracking-wider uppercase">CPM</p>
-                      <p className="font-display text-base">$0.75 <span className="text-muted-foreground text-xs">/1k</span></p>
+                    <div className="h-1.5 bg-surface-0 rounded-full overflow-hidden ring-1 ring-white/5">
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${pct}%`,
+                          background: 'linear-gradient(90deg, hsl(var(--gold) / 0.7), hsl(var(--gold)))',
+                          boxShadow: '0 0 10px hsl(var(--gold) / 0.5)',
+                        }}
+                      />
                     </div>
-                  </div>
-                  <div className="h-1 bg-surface-0 rounded-full overflow-hidden">
-                    <div className="h-full bg-gold" style={{ width: `${pct}%` }} />
-                  </div>
-                </Link>
+                  </Link>
+                </motion.div>
               );
             })}
           </div>
@@ -174,12 +212,20 @@ export default function ClippersCampaignsPage() {
 
 function StatTile({ icon: Icon, label, value, tint }: { icon: typeof DollarSign; label: string; value: string; tint: string }) {
   return (
-    <div className="bg-surface-1 border border-border rounded-xl p-3">
+    <div
+      className="rounded-2xl p-3.5 transition-all hover:-translate-y-0.5"
+      style={{
+        background:
+          'linear-gradient(180deg, hsl(var(--surface-1)) 0%, hsl(var(--surface-0)) 100%)',
+        border: '1px solid hsl(var(--border) / 0.55)',
+        boxShadow: '0 1px 0 hsl(0 0% 100% / 0.04) inset, 0 4px 16px hsl(0 0% 0% / 0.25)',
+      }}
+    >
       <div className="flex items-center gap-1.5 mb-1.5">
         <Icon className={`w-3 h-3 ${tint}`} />
-        <span className="text-[9px] text-muted-foreground tracking-wider uppercase">{label}</span>
+        <span className="text-[9px] text-muted-foreground tracking-[0.15em] uppercase font-semibold">{label}</span>
       </div>
-      <div className={`font-display text-xl ${tint}`}>{value}</div>
+      <div className={`font-display text-[26px] leading-none ${tint}`}>{value}</div>
     </div>
   );
 }
