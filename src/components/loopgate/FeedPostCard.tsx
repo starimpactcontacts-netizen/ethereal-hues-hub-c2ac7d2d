@@ -66,7 +66,11 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
 
   const urlMatch = post.media_url || post.content.match(/https?:\/\/[^\s]+/)?.[0];
   const hasUploadedMedia = !!post.uploaded_media_url;
-  const isUploadedVideo = hasUploadedMedia && post.uploaded_media_type === 'video';
+  const isUploadedVideo = hasUploadedMedia && (
+    post.uploaded_media_type === 'video' ||
+    (post.uploaded_media_type?.startsWith('video') ?? false) ||
+    /\.(mp4|mov|webm|m4v)(\?|$)/i.test(post.uploaded_media_url || '')
+  );
   const videoRef = useAutoplayVideo(isUploadedVideo);
 
   // Extract YouTube video ID for thumbnail
