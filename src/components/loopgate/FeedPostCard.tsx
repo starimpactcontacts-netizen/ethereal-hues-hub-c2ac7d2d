@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { MessageCircle, Trash2, Trophy, ArrowUp, Link2, MoreHorizontal, Swords, X, Play, SmilePlus, Sparkles } from "lucide-react";
+import { MessageCircle, Trash2, Trophy, ArrowUp, Link2, MoreHorizontal, Swords, X, Play, SmilePlus, Sparkles, Volume2, VolumeX } from "lucide-react";
 import FeedInlineComments from "./FeedInlineComments";
 import GateIcon from '@/components/loopgate/GateIcon';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -53,6 +53,7 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
   const [showReactionPicker, setShowReactionPicker] = useState(false);
   const [commentCount, setCommentCount] = useState(post.comment_count || 0);
   const [challengeLoading, setChallengeLoading] = useState(false);
+  const [muted, setMuted] = useState(true);
   const isOwn = user?.id === post.user_id;
 
   const timeAgo = formatDistanceToNow(new Date(post.created_at), { addSuffix: true })
@@ -162,16 +163,35 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
             {hasUploadedMedia && (
               <div className="mt-2 rounded-xl overflow-hidden border border-border/20 max-w-full">
                 {isUploadedVideo ? (
-                  <video
-                    ref={videoRef}
-                    src={post.uploaded_media_url!}
-                    className="w-full max-h-[360px] object-cover"
-                    controls
-                    muted
-                    playsInline
-                    loop
-                    preload="metadata"
-                  />
+                  <div className="relative">
+                    <video
+                      ref={videoRef}
+                      src={post.uploaded_media_url!}
+                      className="w-full max-h-[360px] object-cover"
+                      controls
+                      muted={muted}
+                      playsInline
+                      loop
+                      preload="metadata"
+                    />
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const v = videoRef.current;
+                        const next = !muted;
+                        setMuted(next);
+                        if (v) {
+                          v.muted = next;
+                          if (!next) v.play().catch(() => {});
+                        }
+                      }}
+                      className="absolute top-2 right-2 z-10 w-9 h-9 rounded-full bg-black/60 backdrop-blur-xl border border-white/15 flex items-center justify-center text-white shadow-lg shadow-black/40 active:scale-95 transition-all hover:bg-black/80"
+                      aria-label={muted ? 'Unmute' : 'Mute'}
+                    >
+                      {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                    </button>
+                  </div>
                 ) : (
                   <img
                     src={post.uploaded_media_url!}
