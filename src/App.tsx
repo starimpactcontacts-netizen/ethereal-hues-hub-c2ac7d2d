@@ -100,6 +100,8 @@ const CreateCompetitionPage = lazy(() => import("./pages/loopgate/CreateCompetit
 const LoopyRatePage = lazy(() => import("./pages/loopgate/LoopyRatePage"));
 const StandaloneLinkPage = lazy(() => import("./pages/loopgate/StandaloneLinkPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const ClippersOnboardingPage = lazy(() => import("./pages/loopgate/ClippersOnboardingPage"));
+const ClippersPortalPage = lazy(() => import("./pages/loopgate/ClippersPortalPage"));
 
 // GLOBAL DEV MODE DETECTION - runs BEFORE React
 const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
