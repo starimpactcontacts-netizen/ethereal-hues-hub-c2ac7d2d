@@ -83,9 +83,9 @@ export default function ClippersPortalPage() {
     n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `${(n / 1000).toFixed(1)}K` : `${n}`;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen text-foreground" style={{ background: 'hsl(var(--surface-0))' }}>
       {/* Top bar */}
-      <div className="sticky top-0 z-30 backdrop-blur-xl bg-background/80 border-b border-border">
+      <div className="sticky top-0 z-30 backdrop-blur-2xl border-b border-white/5" style={{ background: 'hsl(var(--surface-0) / 0.72)' }}>
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <button
             onClick={() => navigate('/hub')}
