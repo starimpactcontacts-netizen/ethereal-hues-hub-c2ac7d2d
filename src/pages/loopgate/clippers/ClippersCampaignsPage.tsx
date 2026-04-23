@@ -20,6 +20,9 @@ interface Mission {
   view_milestones: Milestone[];
   budget_cents: number | null;
   spent_cents: number | null;
+  cap_type?: string | null;
+  max_posts?: number | null;
+  approved_count?: number | null;
   status: string;
   deadline: string | null;
 }
@@ -44,7 +47,7 @@ export default function ClippersCampaignsPage() {
       const [mRes, subsRes, paysRes] = await Promise.all([
         supabase
           .from('missions')
-          .select('id, title, description, cover_image_url, sponsor_name, sponsor_logo_url, base_payout_cents, view_milestones, budget_cents, spent_cents, status, deadline')
+          .select('id, title, description, cover_image_url, sponsor_name, sponsor_logo_url, base_payout_cents, view_milestones, budget_cents, spent_cents, cap_type, max_posts, approved_count, status, deadline')
           .in('status', ['live', 'paused'])
           .order('created_at', { ascending: false })
           .limit(40),
