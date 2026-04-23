@@ -2442,6 +2442,11 @@ export default function OpsPanel() {
           <MissionAdmin />
         </div>
 
+        {/* ═══ MISSIONS (PAID CLIPPER MISSIONS) ═══ */}
+        <div id="missions-admin" className="mb-6 p-4 bg-surface-0 border border-emerald-500/30 rounded-lg scroll-mt-20">
+          <MissionsAdmin />
+        </div>
+
         {/* Featured Artists & Drops Admin */}
         <FeaturedArtistAdmin />
 
