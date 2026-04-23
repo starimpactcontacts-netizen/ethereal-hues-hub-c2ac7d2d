@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 
 // ─── Types ────────────────────────────────────────────────────────────
@@ -35,6 +36,8 @@ interface Mission {
   view_milestones: Milestone[];
   budget_cents: number;
   spent_cents: number;
+  cap_type: 'budget' | 'posts' | string;
+  max_posts: number | null;
   status: 'draft' | 'live' | 'paused' | 'closed';
   deadline: string | null;
   submission_count: number;
