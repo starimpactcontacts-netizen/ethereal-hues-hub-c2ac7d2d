@@ -23,7 +23,7 @@ const PLATFORMS = [
   { id: 'instagram', label: 'Instagram', icon: Instagram, color: '#E1306C' },
   { id: 'youtube', label: 'YouTube', icon: Youtube, color: '#FF453A' },
   { id: 'x', label: 'X', icon: Twitter, color: '#FFFFFF' },
-  { id: 'facebook', label: 'Facebook', icon: Facebook, color: '#0A84FF' },
+  { id: 'facebook', label: 'Facebook', icon: Facebook, color: '#0866FF' },
 ];
 
 export default function ClippersAccountsPage() {
@@ -78,7 +78,7 @@ export default function ClippersAccountsPage() {
         <h1 className="font-apple-tight text-[34px] font-bold text-white leading-[1.05]">Linked</h1>
         <button
           onClick={() => (user ? setShowAdd(true) : setShowGate(true))}
-          className="flex items-center gap-1 h-8 px-3 rounded-full bg-[#0A84FF] text-white text-[14px] font-semibold active:opacity-60"
+          className="flex items-center gap-1 h-8 px-3 rounded-full bg-[#D4A857] text-white text-[14px] font-semibold active:opacity-60"
         >
           <Plus className="w-[15px] h-[15px]" strokeWidth={2.8} /> Link
         </button>
@@ -87,7 +87,7 @@ export default function ClippersAccountsPage() {
       <section className="max-w-6xl mx-auto px-4 mb-5">
         <div className="grid grid-cols-2 gap-2">
           <StatCard label="Linked" value={accounts.length.toString()} />
-          <StatCard label="Verified" value={verifiedCount.toString()} accent="#0A84FF" />
+          <StatCard label="Verified" value={verifiedCount.toString()} accent="#D4A857" />
         </div>
       </section>
 
@@ -119,7 +119,7 @@ export default function ClippersAccountsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1">
                       <p className="text-[16px] font-semibold text-white tracking-[-0.02em] truncate leading-tight">@{a.handle}</p>
-                      {a.is_verified && <BadgeCheck className="w-4 h-4 text-[#0A84FF] flex-shrink-0" fill="#0A84FF" stroke="#000" strokeWidth={2} />}
+                      {a.is_verified && <BadgeCheck className="w-4 h-4 text-[#D4A857] flex-shrink-0" fill="#D4A857" stroke="#000" strokeWidth={2} />}
                     </div>
                     <p className="text-[13px] text-[#8E8E93] mt-0.5">{meta?.label || a.platform}</p>
                   </div>
@@ -149,7 +149,7 @@ export default function ClippersAccountsPage() {
                   onClick={() => setPlatform(p.id)}
                   className="flex flex-col items-center gap-1 py-2.5 rounded-[10px] active:opacity-60 transition-all"
                   style={{
-                    background: platform === p.id ? '#0A84FF' : 'rgba(118,118,128,0.24)',
+                    background: platform === p.id ? '#D4A857' : 'rgba(118,118,128,0.24)',
                   }}
                 >
                   <p.icon className="w-5 h-5" style={{ color: platform === p.id ? '#fff' : p.color }} />
@@ -163,7 +163,7 @@ export default function ClippersAccountsPage() {
               value={handle}
               onChange={(e) => setHandle(e.target.value)}
               placeholder="@yourhandle"
-              className="h-11 rounded-[10px] border-0 text-[16px] text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#0A84FF]"
+              className="h-11 rounded-[10px] border-0 text-[16px] text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#D4A857]"
               style={{ background: 'rgba(118, 118, 128, 0.24)' }}
             />
           </Field>
@@ -172,14 +172,14 @@ export default function ClippersAccountsPage() {
               value={profileUrl}
               onChange={(e) => setProfileUrl(e.target.value)}
               placeholder="https://..."
-              className="h-11 rounded-[10px] border-0 text-[16px] text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#0A84FF]"
+              className="h-11 rounded-[10px] border-0 text-[16px] text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#D4A857]"
               style={{ background: 'rgba(118, 118, 128, 0.24)' }}
             />
           </Field>
           <button
             onClick={addAccount}
             disabled={adding}
-            className="w-full h-12 rounded-[14px] bg-[#0A84FF] text-white text-[17px] font-semibold active:opacity-60 disabled:opacity-50 flex items-center justify-center"
+            className="w-full h-12 rounded-[14px] bg-[#D4A857] text-white text-[17px] font-semibold active:opacity-60 disabled:opacity-50 flex items-center justify-center"
           >
             {adding ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Link account'}
           </button>
