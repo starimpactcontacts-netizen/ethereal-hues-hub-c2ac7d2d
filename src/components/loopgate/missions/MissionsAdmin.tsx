@@ -750,15 +750,53 @@ function MissionLauncher({
             <p className="text-[10px] text-zinc-600 mt-1">Drop several reference edits — variety keeps clippers unstuck.</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label className="text-xs text-zinc-400">Base payout per approved clip ($)</Label>
-              <Input type="number" step="0.01" value={basePayout} onChange={e => setBasePayout(e.target.value)} placeholder="5.00" />
+          <div>
+            <Label className="text-xs text-zinc-400">Base payout per approved clip ($)</Label>
+            <Input type="number" step="0.01" value={basePayout} onChange={e => setBasePayout(e.target.value)} placeholder="5.00" />
+          </div>
+
+          {/* Cap mode: budget vs total posts */}
+          <div className="space-y-2 p-3 rounded-lg bg-zinc-900/40 border border-zinc-800">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <Label className="text-xs text-zinc-300 font-semibold block">
+                  Cap by {capType === 'posts' ? 'total posts' : 'total budget'}
+                </Label>
+                <p className="text-[10px] text-zinc-500 mt-0.5">
+                  {capType === 'posts'
+                    ? 'Clippers race to fill a fixed number of approved posts.'
+                    : 'Mission ends when the money budget is spent.'}
+                </p>
+              </div>
+              <Switch
+                checked={capType === 'posts'}
+                onCheckedChange={(v) => setCapType(v ? 'posts' : 'budget')}
+              />
             </div>
-            <div>
-              <Label className="text-xs text-zinc-400">Total budget cap ($)</Label>
-              <Input type="number" step="0.01" value={budget} onChange={e => setBudget(e.target.value)} placeholder="500.00" />
-            </div>
+            {capType === 'budget' ? (
+              <div>
+                <Label className="text-[10px] text-zinc-500">Total budget cap ($)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={budget}
+                  onChange={e => setBudget(e.target.value)}
+                  placeholder="500.00"
+                />
+              </div>
+            ) : (
+              <div>
+                <Label className="text-[10px] text-zinc-500">Total approved posts needed</Label>
+                <Input
+                  type="number"
+                  step="1"
+                  min="1"
+                  value={maxPosts}
+                  onChange={e => setMaxPosts(e.target.value)}
+                  placeholder="100"
+                />
+              </div>
+            )}
           </div>
 
           <div>
