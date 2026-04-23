@@ -408,6 +408,7 @@ export default function App() {
             <Route path="/missions/portal" element={<Navigate to="/missions" replace />} />
             <Route element={<ClippersLayoutRoute />}>
               <Route path="/missions" element={<ClippersCampaignsPage />} />
+              <Route path="/missions/submit" element={<MissionSubmitPage />} />
               <Route path="/missions/submissions" element={<ClippersSubmissionsPage />} />
               <Route path="/missions/accounts" element={<ClippersAccountsPage />} />
               <Route path="/missions/withdrawals" element={<ClippersWithdrawalsPage />} />
