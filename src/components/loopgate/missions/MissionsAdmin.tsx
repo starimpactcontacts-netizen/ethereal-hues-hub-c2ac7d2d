@@ -611,6 +611,8 @@ function MissionLauncher({
       scenepack_youtube_url: scenepackYoutube.trim() || null,
       base_payout_cents: Math.round((parseFloat(basePayout) || 0) * 100),
       budget_cents: Math.round((parseFloat(budget) || 0) * 100),
+      cap_type: capType,
+      max_posts: capType === 'posts' ? Math.max(0, parseInt(maxPosts) || 0) : null,
       view_milestones: milestones.filter(m => m.views > 0).sort((a, b) => a.views - b.views),
       deadline: deadline ? new Date(deadline).toISOString() : null,
     };
