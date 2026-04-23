@@ -2426,6 +2426,11 @@ export default function OpsPanel() {
           </div>
         </section>
 
+        {/* ═══ MISSIONS (PAID CLIPPER MISSIONS) — top priority ═══ */}
+        <div id="missions-admin" className="mb-6 p-4 bg-surface-0 border border-emerald-500/30 rounded-lg scroll-mt-20">
+          <MissionsAdmin />
+        </div>
+
         {/* LOOPGATE Radio Admin */}
         <RadioAdmin />
 
