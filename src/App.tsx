@@ -401,9 +401,10 @@ export default function App() {
             {/* Public campaign portal - password protected */}
             <Route path="/campaign/:slug" element={<CampaignPortalPage />} />
 
-            {/* Missions Portal - public onboarding + portal */}
-            <Route path="/missions" element={<ClippersOnboardingPage />} />
-            <Route path="/missions/portal" element={<ClippersCampaignsPage />} />
+            {/* Missions Portal - public mission feed + separate onboarding */}
+            <Route path="/missions" element={<ClippersCampaignsPage />} />
+            <Route path="/missions/portal" element={<Navigate to="/missions" replace />} />
+            <Route path="/missions/join" element={<ClippersOnboardingPage />} />
             <Route path="/missions/submissions" element={<ClippersSubmissionsPage />} />
             <Route path="/missions/accounts" element={<ClippersAccountsPage />} />
             <Route path="/missions/withdrawals" element={<ClippersWithdrawalsPage />} />
