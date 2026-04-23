@@ -173,7 +173,7 @@ export default function ClippersWithdrawalsPage() {
                   onClick={() => setMethod(m.id)}
                   className="h-11 text-[14px] font-semibold rounded-[10px] transition-all active:opacity-60"
                   style={{
-                    background: method === m.id ? '#0A84FF' : 'rgba(118,118,128,0.24)',
+                    background: method === m.id ? '#D4A857' : 'rgba(118,118,128,0.24)',
                     color: '#fff',
                   }}
                 >
@@ -189,7 +189,7 @@ export default function ClippersWithdrawalsPage() {
               type="number"
               step="0.01"
               placeholder="10.00"
-              className="h-12 rounded-[10px] border-0 text-[20px] font-semibold text-white tabular-nums placeholder:text-[#48484A] focus-visible:ring-1 focus-visible:ring-[#0A84FF]"
+              className="h-12 rounded-[10px] border-0 text-[20px] font-semibold text-white tabular-nums placeholder:text-[#48484A] focus-visible:ring-1 focus-visible:ring-[#D4A857]"
               style={{ background: 'rgba(118, 118, 128, 0.24)' }}
             />
           </Field>
@@ -198,14 +198,14 @@ export default function ClippersWithdrawalsPage() {
               value={destination}
               onChange={(e) => setDestination(e.target.value)}
               placeholder={METHODS.find((m) => m.id === method)?.placeholder}
-              className="h-11 rounded-[10px] border-0 text-[16px] text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#0A84FF]"
+              className="h-11 rounded-[10px] border-0 text-[16px] text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#D4A857]"
               style={{ background: 'rgba(118, 118, 128, 0.24)' }}
             />
           </Field>
           <button
             onClick={submitRequest}
             disabled={requesting}
-            className="w-full h-12 rounded-[14px] bg-[#0A84FF] text-white text-[17px] font-semibold active:opacity-60 disabled:opacity-50 flex items-center justify-center"
+            className="w-full h-12 rounded-[14px] bg-[#D4A857] text-white text-[17px] font-semibold active:opacity-60 disabled:opacity-50 flex items-center justify-center"
           >
             {requesting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Request payout'}
           </button>

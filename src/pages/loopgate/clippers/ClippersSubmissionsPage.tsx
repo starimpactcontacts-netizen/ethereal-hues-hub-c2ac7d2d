@@ -87,7 +87,7 @@ export default function ClippersSubmissionsPage() {
         <h1 className="font-apple-tight text-[34px] font-bold text-white leading-[1.05]">Clips</h1>
         <button
           onClick={() => (user ? setShowSubmit(true) : setShowGate(true))}
-          className="flex items-center gap-1 h-8 px-3 rounded-full bg-[#0A84FF] text-white text-[14px] font-semibold active:opacity-60 transition-opacity"
+          className="flex items-center gap-1 h-8 px-3 rounded-full bg-[#D4A857] text-white text-[14px] font-semibold active:opacity-60 transition-opacity"
         >
           <Plus className="w-[15px] h-[15px]" strokeWidth={2.8} /> New
         </button>
@@ -146,7 +146,7 @@ export default function ClippersSubmissionsPage() {
               value={videoUrl}
               onChange={(e) => setVideoUrl(e.target.value)}
               placeholder="https://tiktok.com/..."
-              className="h-11 rounded-[10px] border-0 text-[16px] text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#0A84FF]"
+              className="h-11 rounded-[10px] border-0 text-[16px] text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#D4A857]"
               style={{ background: 'rgba(118, 118, 128, 0.24)' }}
             />
           </Field>
@@ -155,14 +155,14 @@ export default function ClippersSubmissionsPage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Untitled"
-              className="h-11 rounded-[10px] border-0 text-[16px] text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#0A84FF]"
+              className="h-11 rounded-[10px] border-0 text-[16px] text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#D4A857]"
               style={{ background: 'rgba(118, 118, 128, 0.24)' }}
             />
           </Field>
           <button
             onClick={handleSubmit}
             disabled={submitting}
-            className="w-full h-12 rounded-[14px] bg-[#0A84FF] text-white text-[17px] font-semibold active:opacity-60 transition-opacity flex items-center justify-center disabled:opacity-50"
+            className="w-full h-12 rounded-[14px] bg-[#D4A857] text-white text-[17px] font-semibold active:opacity-60 transition-opacity flex items-center justify-center disabled:opacity-50"
           >
             {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Submit'}
           </button>
@@ -236,7 +236,7 @@ function EmptyCTA({ text, onClick }: { text: string; onClick: () => void }) {
       <p className="text-[13px] text-[#8E8E93] mb-5">{text}</p>
       <button
         onClick={onClick}
-        className="inline-flex items-center gap-1 h-10 px-5 rounded-full bg-[#0A84FF] text-white text-[15px] font-semibold active:opacity-60"
+        className="inline-flex items-center gap-1 h-10 px-5 rounded-full bg-[#D4A857] text-white text-[15px] font-semibold active:opacity-60"
       >
         <Plus className="w-4 h-4" strokeWidth={2.8} /> Submit clip
       </button>

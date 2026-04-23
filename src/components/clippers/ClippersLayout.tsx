@@ -34,7 +34,7 @@ export default function ClippersLayout({ children, title }: Props) {
         <div className="max-w-6xl mx-auto px-4 h-11 flex items-center justify-between">
           <button
             onClick={() => navigate('/hub')}
-            className="flex items-center gap-0.5 -ml-1.5 text-[#0A84FF] active:opacity-50 transition-opacity"
+            className="flex items-center gap-0.5 -ml-1.5 text-[#D4A857] active:opacity-50 transition-opacity"
           >
             <ChevronLeft className="w-[22px] h-[22px]" strokeWidth={2.5} />
             <span className="text-[17px] font-normal">Hub</span>
@@ -76,7 +76,7 @@ export default function ClippersLayout({ children, title }: Props) {
               end
               className={({ isActive }) =>
                 `flex flex-col items-center justify-center gap-[3px] py-1.5 active:opacity-50 transition-opacity ${
-                  isActive ? 'text-[#0A84FF]' : 'text-[#8E8E93]'
+                  isActive ? 'text-[#D4A857]' : 'text-[#8E8E93]'
                 }`
               }
             >
