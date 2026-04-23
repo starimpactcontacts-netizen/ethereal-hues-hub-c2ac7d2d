@@ -1058,6 +1058,113 @@ export type Database = {
           },
         ]
       }
+      clip_submissions: {
+        Row: {
+          campaign_id: string | null
+          campaign_name: string | null
+          created_at: string
+          earned_cents: number
+          feedback: string | null
+          id: string
+          index_earned: number
+          like_count: number
+          platform: string | null
+          posted_account_handle: string | null
+          reviewed_at: string | null
+          status: string
+          thumbnail_url: string | null
+          title: string | null
+          updated_at: string
+          user_id: string
+          video_url: string
+          view_count: number
+        }
+        Insert: {
+          campaign_id?: string | null
+          campaign_name?: string | null
+          created_at?: string
+          earned_cents?: number
+          feedback?: string | null
+          id?: string
+          index_earned?: number
+          like_count?: number
+          platform?: string | null
+          posted_account_handle?: string | null
+          reviewed_at?: string | null
+          status?: string
+          thumbnail_url?: string | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+          video_url: string
+          view_count?: number
+        }
+        Update: {
+          campaign_id?: string | null
+          campaign_name?: string | null
+          created_at?: string
+          earned_cents?: number
+          feedback?: string | null
+          id?: string
+          index_earned?: number
+          like_count?: number
+          platform?: string | null
+          posted_account_handle?: string | null
+          reviewed_at?: string | null
+          status?: string
+          thumbnail_url?: string | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+          video_url?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clip_submissions_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "artist_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clipper_linked_accounts: {
+        Row: {
+          created_at: string
+          follower_count: number | null
+          handle: string
+          id: string
+          is_verified: boolean
+          platform: string
+          profile_url: string | null
+          user_id: string
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          follower_count?: number | null
+          handle: string
+          id?: string
+          is_verified?: boolean
+          platform: string
+          profile_url?: string | null
+          user_id: string
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          follower_count?: number | null
+          handle?: string
+          id?: string
+          is_verified?: boolean
+          platform?: string
+          profile_url?: string | null
+          user_id?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       clipper_profiles: {
         Row: {
           age_confirmed_18_plus: boolean
@@ -1095,6 +1202,45 @@ export type Database = {
           total_clips?: number
           total_earnings_cents?: number
           total_index_earned?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      clipper_withdrawals: {
+        Row: {
+          admin_notes: string | null
+          amount_cents: number
+          created_at: string
+          destination: string
+          id: string
+          method: string
+          processed_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount_cents: number
+          created_at?: string
+          destination: string
+          id?: string
+          method: string
+          processed_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          amount_cents?: number
+          created_at?: string
+          destination?: string
+          id?: string
+          method?: string
+          processed_at?: string | null
+          status?: string
           updated_at?: string
           user_id?: string
         }

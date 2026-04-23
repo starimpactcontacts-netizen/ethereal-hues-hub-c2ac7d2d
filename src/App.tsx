@@ -102,6 +102,10 @@ const StandaloneLinkPage = lazy(() => import("./pages/loopgate/StandaloneLinkPag
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ClippersOnboardingPage = lazy(() => import("./pages/loopgate/ClippersOnboardingPage"));
 const ClippersPortalPage = lazy(() => import("./pages/loopgate/ClippersPortalPage"));
+const ClippersCampaignsPage = lazy(() => import("./pages/loopgate/clippers/ClippersCampaignsPage"));
+const ClippersSubmissionsPage = lazy(() => import("./pages/loopgate/clippers/ClippersSubmissionsPage"));
+const ClippersAccountsPage = lazy(() => import("./pages/loopgate/clippers/ClippersAccountsPage"));
+const ClippersWithdrawalsPage = lazy(() => import("./pages/loopgate/clippers/ClippersWithdrawalsPage"));
 
 // GLOBAL DEV MODE DETECTION - runs BEFORE React
 const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
@@ -400,7 +404,11 @@ export default function App() {
 
             {/* Clippers Portal - public onboarding + portal */}
             <Route path="/clippers" element={<ClippersOnboardingPage />} />
-            <Route path="/clippers/portal" element={<ClippersPortalPage />} />
+            <Route path="/clippers/portal" element={<ClippersCampaignsPage />} />
+            <Route path="/clippers/submissions" element={<ClippersSubmissionsPage />} />
+            <Route path="/clippers/accounts" element={<ClippersAccountsPage />} />
+            <Route path="/clippers/withdrawals" element={<ClippersWithdrawalsPage />} />
+            <Route path="/clippers/legacy" element={<ClippersPortalPage />} />
             
             {/* Legacy /crews redirects → /units */}
             <Route path="/crews" element={<Navigate to="/units" replace />} />
