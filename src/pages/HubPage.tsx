@@ -642,7 +642,7 @@ export default function HubPage() {
             </div>
 
             <div className="relative z-10 flex items-center justify-center gap-6">
-            {/* CASHLAB — Clippers Portal */}
+            {/* MISSIONS — Clippers Portal */}
             <Link to="/clippers/portal" className="group flex flex-col items-center gap-3">
               <div className="relative w-[68px] h-[68px] rounded-[22px] overflow-hidden"
                 style={{
@@ -664,7 +664,7 @@ export default function HubPage() {
                   </span>
                 </div>
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: 'hsl(145 70% 65%)' }}>Cashlab</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: 'hsl(145 70% 65%)' }}>Missions</span>
             </Link>
 
             {/* CENTER — Studio or Judge Panel */}
