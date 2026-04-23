@@ -62,10 +62,6 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
   const leagueBadge = getLeagueBadge(post.league);
   const typeIndicator = getPostTypeIndicator(post.post_type);
 
-  const handleShare = () => {
-    navigator.share?.({ text: post.content, url: window.location.href });
-  };
-
   const urlMatch = post.media_url || post.content.match(/https?:\/\/[^\s]+/)?.[0];
   const hasUploadedMedia = !!post.uploaded_media_url;
   const isUploadedVideo = hasUploadedMedia && post.uploaded_media_type === 'video';
