@@ -639,7 +639,7 @@ export default function EditoriumAdmin() {
             ) : (
               /* Manual add form */
               <div className="space-y-2 p-3 bg-surface-0 border border-border/40">
-                <p className="text-[10px] text-purple-300 font-bold">Add any edit — paste any URL from any editor</p>
+                <p className="text-[10px] text-purple-300 font-bold">Add any edit — upload a video or paste a URL</p>
                 <div className="grid grid-cols-2 gap-2">
                   <input value={manualForm.username} onChange={e => setManualForm(f => ({...f, username: e.target.value}))} placeholder="Username *" className="h-7 px-2 text-[11px] bg-surface-1 border border-border text-foreground" />
                   <select value={manualForm.platform} onChange={e => setManualForm(f => ({...f, platform: e.target.value}))} className="h-7 px-2 text-[11px] bg-surface-1 border border-border text-foreground">
@@ -648,7 +648,30 @@ export default function EditoriumAdmin() {
                     <option value="instagram">Instagram</option>
                   </select>
                 </div>
-                <input value={manualForm.submission_url} onChange={e => setManualForm(f => ({...f, submission_url: e.target.value}))} placeholder="Video URL * (TikTok, YouTube, IG)" className="w-full h-7 px-2 text-[11px] bg-surface-1 border border-border text-foreground" />
+
+                {/* Direct video upload (camera roll / files) — autoplays on Hub */}
+                <div className="p-2 bg-purple-500/5 border border-purple-500/20 space-y-1.5">
+                  <p className="text-[10px] font-bold text-purple-300 flex items-center gap-1">
+                    <Video className="w-3 h-3" /> Upload video (camera roll / files)
+                  </p>
+                  <input
+                    type="file"
+                    accept="video/*"
+                    onChange={handleVideoUpload}
+                    disabled={uploadingVideo}
+                    className="w-full text-[10px] text-muted-foreground file:mr-2 file:py-1 file:px-2 file:border-0 file:text-[10px] file:font-bold file:bg-purple-500/20 file:text-purple-300 hover:file:bg-purple-500/30 file:cursor-pointer"
+                  />
+                  {uploadingVideo && <p className="text-[9px] text-purple-300 flex items-center gap-1"><Loader2 className="w-2.5 h-2.5 animate-spin" /> Uploading…</p>}
+                  {manualForm.video_url && !uploadingVideo && (
+                    <div className="flex items-center gap-2">
+                      <video src={manualForm.video_url} className="w-12 h-12 object-cover rounded" muted />
+                      <span className="text-[9px] text-emerald-400 flex-1 truncate">✓ Video ready — will autoplay on Hub</span>
+                      <button onClick={() => setManualForm(f => ({...f, video_url: '', video_storage_path: ''}))} className="text-[9px] text-red-400 hover:underline">Clear</button>
+                    </div>
+                  )}
+                </div>
+
+                <input value={manualForm.submission_url} onChange={e => setManualForm(f => ({...f, submission_url: e.target.value}))} placeholder={manualForm.video_url ? 'Source URL (optional — for credit link)' : 'Video URL * (TikTok, YouTube, IG)'} className="w-full h-7 px-2 text-[11px] bg-surface-1 border border-border text-foreground" />
                 <input value={manualForm.thumbnail_url} onChange={e => setManualForm(f => ({...f, thumbnail_url: e.target.value}))} placeholder="Thumbnail URL (optional)" className="w-full h-7 px-2 text-[11px] bg-surface-1 border border-border text-foreground" />
                 <div className="grid grid-cols-2 gap-2">
                   <input value={manualForm.qoi_score} onChange={e => setManualForm(f => ({...f, qoi_score: e.target.value}))} placeholder="QOI Score (optional)" type="number" className="h-7 px-2 text-[11px] bg-surface-1 border border-border text-foreground" />
