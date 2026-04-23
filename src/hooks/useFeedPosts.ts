@@ -44,12 +44,24 @@ export function useFeedPosts(limit = 30) {
     if (error) { console.error('Error fetching feed posts:', error); setLoading(false); return; }
 
     const userIds = [...new Set((data || []).map(p => p.user_id))];
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('id, username, avatar_url, league, level, verification_status, global_index_score')
-      .in('id', userIds.length > 0 ? userIds : ['']);
+    const postIds = (data || []).map(p => p.id);
+    const [{ data: profiles }, { data: commentRows }] = await Promise.all([
+      supabase
+        .from('profiles')
+        .select('id, username, avatar_url, league, level, verification_status, global_index_score')
+        .in('id', userIds.length > 0 ? userIds : ['']),
+      supabase
+        .from('feed_comments')
+        .select('submission_id')
+        .eq('submission_type', 'feed_post')
+        .in('submission_id', postIds.length > 0 ? postIds : ['']),
+    ]);
 
     const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+    const commentCountMap = new Map<string, number>();
+    (commentRows || []).forEach((c: any) => {
+      commentCountMap.set(c.submission_id, (commentCountMap.get(c.submission_id) || 0) + 1);
+    });
 
     const enriched: FeedPostItem[] = (data || []).map(p => {
       const profile = profileMap.get(p.user_id);
@@ -59,6 +71,7 @@ export function useFeedPosts(limit = 30) {
         post_type: p.post_type as FeedPostItem['post_type'],
         uploaded_media_url: (p as any).uploaded_media_url || null,
         uploaded_media_type: (p as any).uploaded_media_type || null,
+        comment_count: commentCountMap.get(p.id) || 0,
         username: profile?.username || 'editor',
         avatar_url: profile?.avatar_url || null,
         league: profile?.league || 'open',
