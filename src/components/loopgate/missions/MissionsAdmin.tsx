@@ -540,6 +540,10 @@ function MissionLauncher({
   const [scenepackYoutube, setScenepackYoutube] = useState(mission?.scenepack_youtube_url || '');
   const [basePayout, setBasePayout] = useState(((mission?.base_payout_cents || 0) / 100).toString());
   const [budget, setBudget] = useState(((mission?.budget_cents || 0) / 100).toString());
+  const [capType, setCapType] = useState<'budget' | 'posts'>(
+    (mission?.cap_type === 'posts' ? 'posts' : 'budget')
+  );
+  const [maxPosts, setMaxPosts] = useState((mission?.max_posts ?? '').toString());
   const [milestones, setMilestones] = useState<Milestone[]>(
     mission?.view_milestones || [
       { views: 10000, bonus_cents: 1000 },
