@@ -5839,6 +5839,7 @@ export type Database = {
           approved_count: number
           base_payout_cents: number
           budget_cents: number
+          cap_type: string
           cover_image_url: string | null
           created_at: string
           created_by: string | null
@@ -5846,6 +5847,7 @@ export type Database = {
           description: string | null
           id: string
           inspirations: Json
+          max_posts: number | null
           reference_video_url: string | null
           scenepack_gdrive_url: string | null
           scenepack_url: string | null
@@ -5864,6 +5866,7 @@ export type Database = {
           approved_count?: number
           base_payout_cents?: number
           budget_cents?: number
+          cap_type?: string
           cover_image_url?: string | null
           created_at?: string
           created_by?: string | null
@@ -5871,6 +5874,7 @@ export type Database = {
           description?: string | null
           id?: string
           inspirations?: Json
+          max_posts?: number | null
           reference_video_url?: string | null
           scenepack_gdrive_url?: string | null
           scenepack_url?: string | null
@@ -5889,6 +5893,7 @@ export type Database = {
           approved_count?: number
           base_payout_cents?: number
           budget_cents?: number
+          cap_type?: string
           cover_image_url?: string | null
           created_at?: string
           created_by?: string | null
@@ -5896,6 +5901,7 @@ export type Database = {
           description?: string | null
           id?: string
           inspirations?: Json
+          max_posts?: number | null
           reference_video_url?: string | null
           scenepack_gdrive_url?: string | null
           scenepack_url?: string | null
