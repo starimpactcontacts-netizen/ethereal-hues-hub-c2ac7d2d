@@ -642,26 +642,29 @@ export default function HubPage() {
             </div>
 
             <div className="relative z-10 flex items-center justify-center gap-6">
-            {/* UNITS */}
-            <Link to={userCrew ? `/units/${userCrew.id}` : '/units'} className="group flex flex-col items-center gap-3">
+            {/* CASHLAB — Clippers Portal */}
+            <Link to="/clippers/portal" className="group flex flex-col items-center gap-3">
               <div className="relative w-[68px] h-[68px] rounded-[22px] overflow-hidden"
                 style={{
-                  background: 'linear-gradient(145deg, hsl(0 0% 4%) 0%, hsl(0 0% 6%) 50%, hsl(0 0% 3%) 100%)',
-                  border: '1px solid hsl(0 0% 100% / 0.05)',
-                  boxShadow: '0 8px 32px hsl(0 0% 0% / 0.8), inset 0 1px 0 hsl(0 0% 100% / 0.03)',
+                  background: 'linear-gradient(145deg, hsl(150 35% 6%) 0%, hsl(150 40% 9%) 50%, hsl(150 35% 5%) 100%)',
+                  border: '1px solid hsl(145 70% 55% / 0.18)',
+                  boxShadow: '0 8px 32px hsl(0 0% 0% / 0.8), inset 0 1px 0 hsl(145 70% 60% / 0.08), 0 0 18px hsl(145 80% 45% / 0.1)',
                 }}>
-                <div className="absolute w-[1px] h-[1px] rounded-full bg-white/25 top-4 right-5" style={{ boxShadow: '0 0 2px hsl(0 0% 100% / 0.2)' }} />
-                <div className="absolute w-[1px] h-[1px] rounded-full bg-white/20 bottom-4 left-5" style={{ boxShadow: '0 0 2px hsl(0 0% 100% / 0.15)' }} />
-                <div className="absolute inset-[6px] rounded-[16px]" style={{ border: '1px solid hsl(0 0% 100% / 0.03)' }} />
+                <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-emerald-300/60 top-4 right-5" style={{ boxShadow: '0 0 3px hsl(145 80% 60% / 0.6)' }} />
+                <div className="absolute w-[1px] h-[1px] rounded-full bg-emerald-200/40 bottom-4 left-5" style={{ boxShadow: '0 0 2px hsl(145 80% 60% / 0.4)' }} />
+                <div className="absolute inset-[6px] rounded-[16px]" style={{ border: '1px solid hsl(145 60% 50% / 0.06)' }} />
                 <div className="relative z-10 flex h-full w-full items-center justify-center">
-                  {userCrew?.avatar_url ? (
-                    <img src={userCrew.avatar_url} alt="" className="w-9 h-9 rounded-xl object-cover" />
-                  ) : (
-                    <Users2 className="w-7 h-7" style={{ color: 'hsl(0 0% 100% / 0.45)' }} />
-                  )}
+                  <DollarSign className="w-7 h-7" strokeWidth={2.6} style={{ color: 'hsl(145 75% 62%)' }} />
+                </div>
+                {/* LIVE pulse dot */}
+                <div className="absolute top-2 left-2 flex items-center gap-1">
+                  <span className="relative flex w-1.5 h-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
+                  </span>
                 </div>
               </div>
-              <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'hsl(0 0% 100% / 0.35)' }}>{userCrew ? 'Unit' : 'Units'}</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: 'hsl(145 70% 65%)' }}>Cashlab</span>
             </Link>
 
             {/* CENTER — Studio or Judge Panel */}
