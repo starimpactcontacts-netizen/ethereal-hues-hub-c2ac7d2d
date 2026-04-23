@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   DollarSign, Plus, Pencil, Trash2, Play, Pause, Loader2, X,
   Check, ExternalLink, ChevronDown, ChevronUp, Eye, Wallet, Send,
+  Upload, Image as ImageIcon, BadgeCheck, Download,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
