@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { ChevronLeft, LayoutGrid, Film, Link2, Wallet } from 'lucide-react';
+import loopgateLogo from '@/assets/loopgate-logo.png';
 
 interface Props {
   children: ReactNode;
@@ -22,12 +23,11 @@ export default function ClippersLayout({ children, title }: Props) {
       className="relative min-h-screen text-white font-apple pb-[88px]"
       style={{ background: '#000' }}
     >
+      {/* Top bar — solid translucent (NO backdrop-blur, kills scroll perf) */}
       <header
         className="sticky top-0 z-30"
         style={{
-          background: 'rgba(0, 0, 0, 0.72)',
-          backdropFilter: 'saturate(180%) blur(24px)',
-          WebkitBackdropFilter: 'saturate(180%) blur(24px)',
+          background: 'rgba(0, 0, 0, 0.94)',
           borderBottom: '0.5px solid rgba(255, 255, 255, 0.08)',
         }}
       >
@@ -42,18 +42,24 @@ export default function ClippersLayout({ children, title }: Props) {
           <h1 className="text-[17px] font-semibold tracking-[-0.02em] text-white">
             {title || 'Missions'}
           </h1>
-          <div className="w-[60px]" />
+          <div className="w-[60px] flex items-center justify-end">
+            <img
+              src={loopgateLogo}
+              alt="Loopgate"
+              className="h-5 w-5 object-contain opacity-90"
+              draggable={false}
+            />
+          </div>
         </div>
       </header>
 
       <main className="relative z-10">{children}</main>
 
+      {/* Bottom tab bar — solid (NO backdrop-blur over scrolling content) */}
       <nav
         className="fixed bottom-0 left-0 right-0 z-40 pb-[env(safe-area-inset-bottom)]"
         style={{
-          background: 'rgba(22, 22, 24, 0.78)',
-          backdropFilter: 'saturate(180%) blur(28px)',
-          WebkitBackdropFilter: 'saturate(180%) blur(28px)',
+          background: 'rgba(22, 22, 24, 0.98)',
           borderTop: '0.5px solid rgba(255, 255, 255, 0.1)',
         }}
       >
