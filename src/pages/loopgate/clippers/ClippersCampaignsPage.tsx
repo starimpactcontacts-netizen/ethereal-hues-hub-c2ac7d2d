@@ -5,7 +5,6 @@ import { Search, Sparkles, ChevronRight, DollarSign, TrendingUp } from 'lucide-r
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useTempProfile } from '@/hooks/useTempProfile';
-import ClippersLayout from '@/components/clippers/ClippersLayout';
 
 interface Milestone { views: number; bonus_cents: number; }
 
@@ -79,7 +78,7 @@ export default function ClippersCampaignsPage() {
   const greeting = hour < 5 ? 'Up late' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 
   return (
-    <ClippersLayout title="Missions">
+    <>
       {/* Personalized greeting */}
       <section className="max-w-6xl mx-auto px-4 pt-4 pb-3">
         <div className="flex items-center gap-3">
@@ -169,7 +168,7 @@ export default function ClippersCampaignsPage() {
           </div>
         )}
       </div>
-    </ClippersLayout>
+    </>
   );
 }
 
