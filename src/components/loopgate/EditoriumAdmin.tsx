@@ -462,6 +462,8 @@ export default function EditoriumAdmin() {
       source: edit.source || 'manual',
       source_label: edit.source_label || null,
       headline: edit.headline || null,
+      video_url: edit.video_url || null,
+      video_storage_path: edit.video_storage_path || null,
     });
     if (error) {
       toast.error('Failed to index: ' + error.message);
@@ -490,17 +492,50 @@ export default function EditoriumAdmin() {
       user_id: profile?.id || '00000000-0000-0000-0000-000000000000',
       username: profile?.username || manualForm.username.trim(),
       avatar_url: profile?.avatar_url || null,
-      submission_url: manualForm.submission_url.trim(),
+      submission_url: manualForm.submission_url.trim() || manualForm.video_url.trim(),
       platform: manualForm.platform,
       thumbnail_url: manualForm.thumbnail_url.trim() || null,
       qoi_score: manualForm.qoi_score ? parseFloat(manualForm.qoi_score) : null,
       source: 'manual',
       source_label: 'Featured',
       headline: manualForm.headline.trim() || null,
+      video_url: manualForm.video_url.trim() || null,
+      video_storage_path: manualForm.video_storage_path.trim() || null,
     });
-    setManualForm({ username: '', submission_url: '', platform: 'tiktok', thumbnail_url: '', qoi_score: '', headline: '' });
+    setManualForm({ username: '', submission_url: '', platform: 'tiktok', thumbnail_url: '', qoi_score: '', headline: '', video_url: '', video_storage_path: '' });
     setManualMode(false);
     setSavingManual(false);
+  }
+
+  async function handleVideoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('video/')) {
+      toast.error('Please select a video file');
+      return;
+    }
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error('Video must be under 100MB');
+      return;
+    }
+    setUploadingVideo(true);
+    try {
+      const ext = file.name.split('.').pop() || 'mp4';
+      const path = `editorium-picks/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error: upErr } = await supabase.storage.from('loop-media').upload(path, file, {
+        contentType: file.type,
+        upsert: false,
+      });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from('loop-media').getPublicUrl(path);
+      setManualForm(f => ({ ...f, video_url: pub.publicUrl, video_storage_path: path }));
+      toast.success('Video uploaded ✓');
+    } catch (err: any) {
+      toast.error('Upload failed: ' + (err.message || 'Unknown error'));
+    } finally {
+      setUploadingVideo(false);
+      e.target.value = '';
+    }
   }
 
   return (
