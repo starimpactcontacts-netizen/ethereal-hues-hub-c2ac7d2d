@@ -397,6 +397,10 @@ export default function App() {
             
             {/* Public campaign portal - password protected */}
             <Route path="/campaign/:slug" element={<CampaignPortalPage />} />
+
+            {/* Clippers Portal - public onboarding + portal */}
+            <Route path="/clippers" element={<ClippersOnboardingPage />} />
+            <Route path="/clippers/portal" element={<ClippersPortalPage />} />
             
             {/* Legacy /crews redirects → /units */}
             <Route path="/crews" element={<Navigate to="/units" replace />} />
