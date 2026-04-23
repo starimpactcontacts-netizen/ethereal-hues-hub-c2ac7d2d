@@ -1,4 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+/* Apple-grade system stack used for the Missions portal */
+.font-apple {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Inter, system-ui, sans-serif;
+  font-feature-settings: 'ss01', 'cv11';
+  letter-spacing: -0.022em;
+}
+.font-apple-tight {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Inter, system-ui, sans-serif;
+  letter-spacing: -0.04em;
+  font-feature-settings: 'ss01';
+}
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
