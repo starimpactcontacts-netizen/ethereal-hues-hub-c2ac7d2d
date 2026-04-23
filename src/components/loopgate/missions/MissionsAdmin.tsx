@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   DollarSign, Plus, Pencil, Trash2, Play, Pause, Loader2, X,
   Check, ExternalLink, ChevronDown, ChevronUp, Eye, Wallet, Send,
+  Upload, Image as ImageIcon, BadgeCheck, Download,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -26,6 +27,10 @@ interface Mission {
   sponsor_name: string | null;
   sponsor_logo_url: string | null;
   reference_video_url: string | null;
+  inspirations: string[] | null;
+  scenepack_url: string | null;
+  scenepack_gdrive_url: string | null;
+  scenepack_youtube_url: string | null;
   base_payout_cents: number;
   view_milestones: Milestone[];
   budget_cents: number;
@@ -519,9 +524,13 @@ function MissionLauncher({
   const [title, setTitle] = useState(mission?.title || '');
   const [description, setDescription] = useState(mission?.description || '');
   const [coverUrl, setCoverUrl] = useState(mission?.cover_image_url || '');
-  const [sponsorName, setSponsorName] = useState(mission?.sponsor_name || '');
-  const [sponsorLogo, setSponsorLogo] = useState(mission?.sponsor_logo_url || '');
-  const [refUrl, setRefUrl] = useState(mission?.reference_video_url || '');
+  const [inspirations, setInspirations] = useState<string[]>(
+    (mission?.inspirations && mission.inspirations.length > 0)
+      ? mission.inspirations
+      : ['']
+  );
+  const [scenepackGdrive, setScenepackGdrive] = useState(mission?.scenepack_gdrive_url || '');
+  const [scenepackYoutube, setScenepackYoutube] = useState(mission?.scenepack_youtube_url || '');
   const [basePayout, setBasePayout] = useState(((mission?.base_payout_cents || 0) / 100).toString());
   const [budget, setBudget] = useState(((mission?.budget_cents || 0) / 100).toString());
   const [milestones, setMilestones] = useState<Milestone[]>(
@@ -533,6 +542,35 @@ function MissionLauncher({
   );
   const [deadline, setDeadline] = useState(mission?.deadline ? mission.deadline.slice(0, 16) : '');
   const [saving, setSaving] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadCover = async (file: File) => {
+    if (!userId) return toast.error('Not signed in');
+    if (file.size > 20 * 1024 * 1024) return toast.error('Cover must be under 20MB');
+    setUploadingCover(true);
+    try {
+      const ext = file.name.split('.').pop() || 'jpg';
+      const path = `${userId}/missions/${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from('loop-media').upload(path, file, {
+        cacheControl: '3600', upsert: false,
+      });
+      if (error) throw error;
+      const { data: pub } = supabase.storage.from('loop-media').getPublicUrl(path);
+      setCoverUrl(pub.publicUrl);
+      toast.success('Cover uploaded');
+    } catch (e: any) {
+      toast.error(e?.message || 'Upload failed');
+    } finally {
+      setUploadingCover(false);
+      if (coverInputRef.current) coverInputRef.current.value = '';
+    }
+  };
+
+  const updateInspo = (i: number, value: string) =>
+    setInspirations(prev => prev.map((u, idx) => (idx === i ? value : u)));
+  const addInspo = () => setInspirations(prev => [...prev, '']);
+  const removeInspo = (i: number) => setInspirations(prev => prev.filter((_, idx) => idx !== i));
 
   const updateMs = (i: number, key: keyof Milestone, value: string) => {
     const v = parseFloat(value) || 0;
@@ -548,13 +586,18 @@ function MissionLauncher({
   const save = async () => {
     if (!title.trim()) return toast.error('Title required');
     setSaving(true);
+    const cleanInspo = inspirations.map(s => s.trim()).filter(Boolean);
     const payload = {
       title: title.trim(),
       description: description.trim() || null,
       cover_image_url: coverUrl.trim() || null,
-      sponsor_name: sponsorName.trim() || null,
-      sponsor_logo_url: sponsorLogo.trim() || null,
-      reference_video_url: refUrl.trim() || null,
+      // Closed market — every mission is officially Loopgate
+      sponsor_name: 'Loopgate Official',
+      sponsor_logo_url: null,
+      reference_video_url: cleanInspo[0] || null, // back-compat
+      inspirations: cleanInspo,
+      scenepack_gdrive_url: scenepackGdrive.trim() || null,
+      scenepack_youtube_url: scenepackYoutube.trim() || null,
       base_payout_cents: Math.round((parseFloat(basePayout) || 0) * 100),
       budget_cents: Math.round((parseFloat(budget) || 0) * 100),
       view_milestones: milestones.filter(m => m.views > 0).sort((a, b) => a.views - b.views),
@@ -582,6 +625,15 @@ function MissionLauncher({
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Verified Loopgate Official banner */}
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-950/40 border border-emerald-500/30">
+            <BadgeCheck className="w-4 h-4 text-emerald-400" />
+            <span className="text-[11px] text-emerald-300 font-semibold uppercase tracking-wider">
+              Loopgate Official
+            </span>
+            <span className="text-[10px] text-zinc-500">· closed market — every mission is platform-verified</span>
+          </div>
+
           <div>
             <Label className="text-xs text-zinc-400">Title *</Label>
             <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Promote Single 'Midnight Run'" />
@@ -590,23 +642,99 @@ function MissionLauncher({
             <Label className="text-xs text-zinc-400">Description</Label>
             <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="What clippers should make…" rows={3} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label className="text-xs text-zinc-400">Cover image URL</Label>
-              <Input value={coverUrl} onChange={e => setCoverUrl(e.target.value)} placeholder="https://…" />
+
+          {/* Cover image — file picker (camera roll / files) */}
+          <div>
+            <Label className="text-xs text-zinc-400">Cover image</Label>
+            <div className="mt-1 flex items-center gap-3">
+              <div className="w-20 h-20 rounded-md bg-zinc-900 border border-zinc-800 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                {coverUrl
+                  ? <img src={coverUrl} alt="cover" className="w-full h-full object-cover" />
+                  : <ImageIcon className="w-6 h-6 text-zinc-700" />}
+              </div>
+              <div className="flex-1 flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => coverInputRef.current?.click()}
+                  disabled={uploadingCover}
+                  className="gap-1"
+                >
+                  {uploadingCover ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                  {coverUrl ? 'Replace' : 'Upload from device'}
+                </Button>
+                {coverUrl && (
+                  <Button type="button" size="sm" variant="ghost" onClick={() => setCoverUrl('')}>
+                    <X className="w-3.5 h-3.5 text-red-400" />
+                  </Button>
+                )}
+                <input
+                  ref={coverInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) uploadCover(f); }}
+                />
+              </div>
+            </div>
+            <p className="text-[10px] text-zinc-600 mt-1">Camera roll or files · JPG / PNG / WEBP, up to 20MB</p>
+          </div>
+
+          {/* Scenepacks — ready-made clips clippers can download */}
+          <div className="space-y-2 p-3 rounded-lg bg-zinc-900/40 border border-zinc-800">
+            <div className="flex items-center gap-2">
+              <Download className="w-4 h-4 text-emerald-400" />
+              <Label className="text-xs text-zinc-300 font-semibold">Scenepacks (ready-made clips for download)</Label>
             </div>
             <div>
-              <Label className="text-xs text-zinc-400">Reference video URL</Label>
-              <Input value={refUrl} onChange={e => setRefUrl(e.target.value)} placeholder="https://youtube.com/…" />
+              <Label className="text-[10px] text-zinc-500">Google Drive link</Label>
+              <Input
+                value={scenepackGdrive}
+                onChange={e => setScenepackGdrive(e.target.value)}
+                placeholder="https://drive.google.com/…"
+              />
             </div>
             <div>
-              <Label className="text-xs text-zinc-400">Sponsor name</Label>
-              <Input value={sponsorName} onChange={e => setSponsorName(e.target.value)} placeholder="Loopgate" />
+              <Label className="text-[10px] text-zinc-500">YouTube link (for ripping)</Label>
+              <Input
+                value={scenepackYoutube}
+                onChange={e => setScenepackYoutube(e.target.value)}
+                placeholder="https://youtube.com/…"
+              />
             </div>
-            <div>
-              <Label className="text-xs text-zinc-400">Sponsor logo URL</Label>
-              <Input value={sponsorLogo} onChange={e => setSponsorLogo(e.target.value)} placeholder="https://…" />
+          </div>
+
+          {/* Inspirations — multiple rows so clippers don't get stuck on one ref */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <Label className="text-xs text-zinc-400">Inspirations (optional, multiple)</Label>
+              <Button size="sm" variant="ghost" onClick={addInspo} className="h-6 px-2 text-[10px]">
+                <Plus className="w-3 h-3 mr-1" /> Add inspo
+              </Button>
             </div>
+            <div className="space-y-1.5">
+              {inspirations.map((url, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <Input
+                    value={url}
+                    onChange={e => updateInspo(i, e.target.value)}
+                    placeholder="https://youtube.com / tiktok / instagram link"
+                    className="flex-1"
+                  />
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => removeInspo(i)}
+                    className="h-8 px-2"
+                    disabled={inspirations.length === 1}
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+            <p className="text-[10px] text-zinc-600 mt-1">Drop several reference edits — variety keeps clippers unstuck.</p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
