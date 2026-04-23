@@ -104,6 +104,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const ClippersOnboardingPage = lazy(() => import("./pages/loopgate/ClippersOnboardingPage"));
 const ClippersPortalPage = lazy(() => import("./pages/loopgate/ClippersPortalPage"));
 const ClippersCampaignsPage = lazy(() => import("./pages/loopgate/clippers/ClippersCampaignsPage"));
+const MissionSubmitPage = lazy(() => import("./pages/loopgate/clippers/MissionSubmitPage"));
 const ClippersSubmissionsPage = lazy(() => import("./pages/loopgate/clippers/ClippersSubmissionsPage"));
 const ClippersAccountsPage = lazy(() => import("./pages/loopgate/clippers/ClippersAccountsPage"));
 const ClippersWithdrawalsPage = lazy(() => import("./pages/loopgate/clippers/ClippersWithdrawalsPage"));
@@ -407,6 +408,7 @@ export default function App() {
             <Route path="/missions/portal" element={<Navigate to="/missions" replace />} />
             <Route element={<ClippersLayoutRoute />}>
               <Route path="/missions" element={<ClippersCampaignsPage />} />
+              <Route path="/missions/submit" element={<MissionSubmitPage />} />
               <Route path="/missions/submissions" element={<ClippersSubmissionsPage />} />
               <Route path="/missions/accounts" element={<ClippersAccountsPage />} />
               <Route path="/missions/withdrawals" element={<ClippersWithdrawalsPage />} />
