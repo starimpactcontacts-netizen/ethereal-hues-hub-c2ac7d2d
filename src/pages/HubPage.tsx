@@ -642,8 +642,8 @@ export default function HubPage() {
             </div>
 
             <div className="relative z-10 flex items-center justify-center gap-6">
-            {/* MISSIONS — Clippers Portal */}
-            <Link to="/clippers/portal" className="group flex flex-col items-center gap-3">
+            {/* MISSIONS — Portal */}
+            <Link to="/missions/portal" className="group flex flex-col items-center gap-3">
               <div className="relative w-[68px] h-[68px] rounded-[22px] overflow-hidden"
                 style={{
                   background: 'linear-gradient(145deg, hsl(150 35% 6%) 0%, hsl(150 40% 9%) 50%, hsl(150 35% 5%) 100%)',
