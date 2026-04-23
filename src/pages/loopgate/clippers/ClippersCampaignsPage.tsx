@@ -100,10 +100,10 @@ export default function ClippersCampaignsPage() {
           <div
             aria-hidden
             className="absolute -top-12 -right-10 w-48 h-48 rounded-full pointer-events-none"
-            style={{ background: 'radial-gradient(circle, rgba(48,209,88,0.20) 0%, transparent 70%)' }}
+            style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%)' }}
           />
           <p className="text-[13px] text-[#8E8E93] font-medium">Available balance</p>
-          <p className="font-apple-tight text-[44px] font-bold leading-none mt-1.5 tabular-nums" style={{ color: '#30D158' }}>
+          <p className="font-apple-tight text-[44px] font-bold leading-none mt-1.5 tabular-nums text-white">
             {formatMoney(balance)}
           </p>
           <p className="text-[11px] text-[#8E8E93] mt-1">Withdraw anytime · paid within 24h</p>
