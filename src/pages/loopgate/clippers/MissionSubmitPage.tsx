@@ -196,17 +196,28 @@ export default function MissionSubmitPage() {
 
         {/* Payout strip */}
         <section className="mt-4 rounded-[18px] p-4" style={{ background: '#1c1c1e' }}>
-          <div className="flex items-baseline gap-2">
-            <span className="text-[11px] text-[#8E8E93] font-medium uppercase tracking-wide">Base payout</span>
-          </div>
-          <p className="font-apple-tight text-[34px] font-bold text-[#30D158] leading-none mt-1 tabular-nums">
-            ${(mission.base_payout_cents / 100).toFixed(2)}
-            <span className="text-[14px] text-[#8E8E93] font-medium ml-1">/ approved clip</span>
-          </p>
+          <button
+            onClick={checkEligibility}
+            className="w-full text-left active:opacity-70 transition-opacity"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] text-[#8E8E93] font-medium uppercase tracking-wide">Base payout · tap to check eligibility</span>
+              <CheckCircle2 className="w-4 h-4 text-[#0A84FF]" strokeWidth={2.5} />
+            </div>
+            <p className="font-apple-tight text-[34px] font-bold text-[#30D158] leading-none mt-1 tabular-nums">
+              ${(mission.base_payout_cents / 100).toFixed(2)}
+              <span className="text-[14px] text-[#8E8E93] font-medium ml-1">/ approved clip</span>
+            </p>
+          </button>
 
           {milestones.length > 0 && (
             <div className="mt-3 pt-3 border-t border-white/[0.06]">
-              <p className="text-[11px] text-[#8E8E93] font-medium uppercase tracking-wide mb-2">View bonuses</p>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[11px] text-[#8E8E93] font-medium uppercase tracking-wide inline-flex items-center gap-1">
+                  <Eye className="w-3 h-3" /> The Views Game
+                </p>
+                <span className="text-[10px] text-[#8E8E93]">stack payouts</span>
+              </div>
               <div className="space-y-1.5">
                 {milestones.map((m, i) => (
                   <div key={i} className="flex items-center justify-between text-[13px]">
