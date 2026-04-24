@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Eye, Lock, Zap, Trophy, Flame, TrendingUp } from 'lucide-react';
+import { Lock, Zap, Flame, TrendingUp, DollarSign } from 'lucide-react';
 
 interface Milestone { views: number; bonus_cents: number; }
 
@@ -14,26 +14,39 @@ const formatViews = (n: number) => {
 };
 
 export default function ViewsGamePanel({ milestones }: { milestones: Milestone[] }) {
-  // Demo "live ticker" — purely visual hype, simulates a clip climbing
   const sorted = [...milestones].sort((a, b) => a.views - b.views);
   const maxViews = sorted[sorted.length - 1]?.views || 1;
   const totalPool = sorted.reduce((s, m) => s + m.bonus_cents, 0);
 
   const [demoViews, setDemoViews] = useState(0);
+  const [tick, setTick] = useState(0);
+  const [flash, setFlash] = useState(false);
+
+  // Continuous "market" loop — climbs, micro-jitters, occasionally pops a milestone, resets
   useEffect(() => {
-    // Animate from 0 → first milestone over ~1.6s on mount, then idle
-    const target = Math.min(maxViews, Math.floor(sorted[0]?.views * 0.35) || 0);
-    let start: number | null = null;
+    if (!maxViews) return;
     let raf = 0;
-    const tick = (t: number) => {
-      if (start === null) start = t;
-      const p = Math.min(1, (t - start) / 1600);
-      setDemoViews(Math.floor(target * (1 - Math.pow(1 - p, 3))));
-      if (p < 1) raf = requestAnimationFrame(tick);
+    let last = performance.now();
+    let v = 0;
+    let velocity = maxViews / 8000; // base views per ms — full climb ~8s
+    const loop = (t: number) => {
+      const dt = t - last;
+      last = t;
+      // micro jitter for "live trading" feel
+      const jitter = (Math.random() - 0.3) * velocity * dt * 0.4;
+      v += velocity * dt + jitter;
+      if (v >= maxViews * 1.05) {
+        v = 0;
+        setFlash(true);
+        setTimeout(() => setFlash(false), 600);
+      }
+      setDemoViews(Math.max(0, Math.floor(v)));
+      setTick((x) => (x + 1) % 1_000_000);
+      raf = requestAnimationFrame(loop);
     };
-    raf = requestAnimationFrame(tick);
+    raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [maxViews, sorted]);
+  }, [maxViews]);
 
   const pct = Math.min(100, (demoViews / maxViews) * 100);
   const nextIdx = sorted.findIndex((m) => demoViews < m.views);
@@ -41,133 +54,212 @@ export default function ViewsGamePanel({ milestones }: { milestones: Milestone[]
   const cleared = nextIdx === -1 ? sorted.length : nextIdx;
   const earned = sorted.slice(0, cleared).reduce((s, m) => s + m.bonus_cents, 0);
 
+  // Sparkline — fake last 24 ticks of "velocity" for that polymarket vibe
+  const spark = Array.from({ length: 24 }, (_, i) => {
+    const seed = (tick + i * 7) % 100;
+    return 30 + Math.sin((tick + i) * 0.3) * 18 + (seed % 13);
+  });
+  const sparkMax = Math.max(...spark);
+  const sparkMin = Math.min(...spark);
+  const sparkPath = spark
+    .map((y, i) => {
+      const x = (i / (spark.length - 1)) * 100;
+      const ny = 100 - ((y - sparkMin) / (sparkMax - sparkMin || 1)) * 100;
+      return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${ny.toFixed(1)}`;
+    })
+    .join(' ');
+
   return (
     <div className="mt-4 pt-4 border-t border-white/[0.06]">
-      {/* Header — Trading-view style */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="inline-flex items-center gap-1.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-[#FF453A] animate-pulse" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#FF453A]">Live</span>
-          <span className="text-[11px] text-[#8E8E93] font-medium uppercase tracking-wide ml-1">Views</span>
+      {/* Header — Polymarket / trading desk */}
+      <div className="flex items-center justify-between mb-2.5">
+        <div className="inline-flex items-center gap-2">
+          <div className="relative">
+            <div className="w-2 h-2 rounded-full bg-[#FF453A]" />
+            <div className="absolute inset-0 w-2 h-2 rounded-full bg-[#FF453A] animate-ping" />
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-[0.12em] text-[#FF453A]">LIVE MARKET</span>
         </div>
-        <div className="inline-flex items-center gap-1 text-[10px] text-[#8E8E93] font-medium uppercase tracking-wide">
-          <Trophy className="w-3 h-3 text-[#FFD60A]" />
-          Pool {formatMoney(totalPool)}
+        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#FFD60A]/10 border border-[#FFD60A]/30">
+          <DollarSign className="w-2.5 h-2.5 text-[#FFD60A]" strokeWidth={3} />
+          <span className="text-[10px] font-black tabular-nums text-[#FFD60A] tracking-wide">
+            {formatMoney(totalPool)} POOL
+          </span>
         </div>
       </div>
 
-      {/* Big counter — Roblox tycoon vibe */}
-      <div className="rounded-[14px] p-3.5 mb-3 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(48,209,88,0.12) 0%, rgba(10,132,255,0.08) 100%)', border: '1px solid rgba(48,209,88,0.18)' }}>
-        <div className="flex items-end justify-between">
-          <div>
-            <div className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.08em] text-[#30D158]/80">
-              <Eye className="w-3 h-3" /> Sample clip
+      {/* MAIN TICKER — black trading terminal */}
+      <div
+        className="rounded-[14px] p-3.5 mb-3 relative overflow-hidden"
+        style={{
+          background: '#0a0a0a',
+          border: `1px solid ${flash ? 'rgba(48,209,88,0.6)' : 'rgba(255,255,255,0.08)'}`,
+          boxShadow: flash ? '0 0 30px rgba(48,209,88,0.4), inset 0 0 20px rgba(48,209,88,0.1)' : 'inset 0 0 20px rgba(0,0,0,0.5)',
+          transition: 'all 0.3s',
+        }}
+      >
+        {/* Grid bg — subtle terminal feel */}
+        <div
+          className="absolute inset-0 opacity-[0.04] pointer-events-none"
+          style={{
+            backgroundImage:
+              'linear-gradient(rgba(48,209,88,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(48,209,88,0.5) 1px, transparent 1px)',
+            backgroundSize: '20px 20px',
+          }}
+        />
+
+        <div className="relative flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="inline-flex items-center gap-1.5 mb-1">
+              <span className="text-[9px] font-black uppercase tracking-[0.15em] text-[#8E8E93]">VIEWS</span>
+              <span className="text-[9px] font-black uppercase tracking-[0.1em] text-[#30D158] tabular-nums">▲ +{((demoViews / maxViews) * 100).toFixed(2)}%</span>
             </div>
-            <p className="font-apple-tight text-[28px] font-bold text-white leading-none mt-0.5 tabular-nums">
+            <p className="font-mono text-[34px] font-black text-white leading-none tabular-nums tracking-tight" style={{ textShadow: '0 0 20px rgba(48,209,88,0.4)' }}>
               {formatViews(demoViews)}
             </p>
           </div>
-          <div className="text-right">
-            <div className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.08em] text-[#FFD60A]">
-              <Zap className="w-3 h-3" /> Earned
-            </div>
-            <p className="font-apple-tight text-[22px] font-bold text-[#30D158] leading-none mt-0.5 tabular-nums">
-              {formatMoney(earned)}
-            </p>
+
+          {/* Live sparkline */}
+          <div className="w-[88px] h-[44px] shrink-0">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full overflow-visible">
+              <defs>
+                <linearGradient id="sparkFill" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stopColor="#30D158" stopOpacity="0.4" />
+                  <stop offset="100%" stopColor="#30D158" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              <path d={`${sparkPath} L100,100 L0,100 Z`} fill="url(#sparkFill)" />
+              <path d={sparkPath} fill="none" stroke="#30D158" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </div>
         </div>
 
-        {/* Progress bar with milestone notches */}
-        <div className="relative mt-3">
-          <div className="h-2 rounded-full bg-white/[0.08] overflow-hidden">
+        {/* Earned + progress row */}
+        <div className="relative mt-3 flex items-center justify-between gap-3">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-[9px] font-black uppercase tracking-[0.12em] text-[#8E8E93]">CASHED</span>
+            <span className="font-mono text-[18px] font-black text-[#30D158] tabular-nums leading-none">
+              {formatMoney(earned)}
+            </span>
+          </div>
+          {next && (
+            <div className="text-right">
+              <div className="text-[9px] font-black uppercase tracking-[0.12em] text-[#FF9F0A] inline-flex items-center gap-1">
+                <Flame className="w-2.5 h-2.5" /> NEXT TIER
+              </div>
+              <div className="font-mono text-[12px] font-bold text-white tabular-nums">
+                {formatViews(next.views - demoViews)} → <span className="text-[#30D158]">+{formatMoney(next.bonus_cents)}</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Progress bar — segmented like a tycoon meter */}
+        <div className="relative mt-2.5">
+          <div className="h-[6px] rounded-full bg-white/[0.06] overflow-hidden relative">
             <motion.div
-              className="h-full rounded-full"
-              style={{ background: 'linear-gradient(90deg, #30D158 0%, #FFD60A 100%)' }}
-              initial={{ width: 0 }}
+              className="h-full"
+              style={{
+                background: 'linear-gradient(90deg, #30D158 0%, #FFD60A 60%, #FF9F0A 100%)',
+                boxShadow: '0 0 10px rgba(48,209,88,0.6)',
+              }}
               animate={{ width: `${pct}%` }}
-              transition={{ duration: 0.4, ease: 'easeOut' }}
+              transition={{ duration: 0.15, ease: 'linear' }}
+            />
+            {/* shine sweep */}
+            <motion.div
+              className="absolute top-0 h-full w-8 pointer-events-none"
+              style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)' }}
+              animate={{ left: ['-10%', '110%'] }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
             />
           </div>
           {sorted.map((m, i) => {
             const left = (m.views / maxViews) * 100;
-            const cleared = demoViews >= m.views;
+            const isCleared = demoViews >= m.views;
             return (
               <div
                 key={i}
-                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 transition-all"
+                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-[10px] h-[10px] rotate-45 transition-all"
                 style={{
                   left: `${left}%`,
-                  background: cleared ? '#FFD60A' : '#1c1c1e',
-                  borderColor: cleared ? '#FFD60A' : 'rgba(255,255,255,0.2)',
-                  boxShadow: cleared ? '0 0 12px rgba(255,214,10,0.6)' : 'none',
+                  background: isCleared ? '#FFD60A' : '#0a0a0a',
+                  border: `1.5px solid ${isCleared ? '#FFD60A' : 'rgba(255,255,255,0.25)'}`,
+                  boxShadow: isCleared ? '0 0 10px rgba(255,214,10,0.8)' : 'none',
                 }}
               />
             );
           })}
         </div>
-
-        {next && (
-          <p className="text-[11px] text-white/70 mt-2 tabular-nums inline-flex items-center gap-1">
-            <Flame className="w-3 h-3 text-[#FF9F0A]" />
-            <span className="font-semibold text-white">{formatViews(next.views - demoViews)}</span>
-            <span className="text-[#8E8E93]">to unlock</span>
-            <span className="font-bold text-[#30D158]">+{formatMoney(next.bonus_cents)}</span>
-          </p>
-        )}
       </div>
 
-      {/* Milestone ladder */}
-      <div className="space-y-1.5">
+      {/* TIER ROWS — polymarket-style odds rows */}
+      <div className="space-y-1">
         {sorted.map((m, i) => {
-          const cleared = demoViews >= m.views;
-          const isNext = !cleared && i === nextIdx;
+          const isCleared = demoViews >= m.views;
+          const isNext = !isCleared && i === nextIdx;
+          const tierPct = Math.min(100, (demoViews / m.views) * 100);
           return (
             <motion.div
               key={i}
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-[12px] transition-all"
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.04 }}
+              className="relative overflow-hidden rounded-[10px] px-3 py-2 transition-all"
               style={{
-                background: cleared
-                  ? 'rgba(48,209,88,0.10)'
-                  : isNext
-                    ? 'rgba(255,159,10,0.08)'
-                    : 'rgba(255,255,255,0.03)',
-                border: cleared
-                  ? '1px solid rgba(48,209,88,0.25)'
-                  : isNext
-                    ? '1px solid rgba(255,159,10,0.30)'
-                    : '1px solid rgba(255,255,255,0.04)',
+                background: '#101012',
+                border: `1px solid ${
+                  isCleared ? 'rgba(48,209,88,0.35)' : isNext ? 'rgba(255,159,10,0.4)' : 'rgba(255,255,255,0.05)'
+                }`,
               }}
             >
+              {/* fill bar behind row — polymarket style */}
               <div
-                className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                className="absolute inset-y-0 left-0 transition-all"
                 style={{
-                  background: cleared ? '#30D158' : isNext ? 'rgba(255,159,10,0.18)' : 'rgba(255,255,255,0.06)',
+                  width: `${tierPct}%`,
+                  background: isCleared
+                    ? 'linear-gradient(90deg, rgba(48,209,88,0.18), rgba(48,209,88,0.06))'
+                    : isNext
+                      ? 'linear-gradient(90deg, rgba(255,159,10,0.22), rgba(255,159,10,0.04))'
+                      : 'rgba(255,255,255,0.02)',
                 }}
-              >
-                {cleared ? (
-                  <Zap className="w-4 h-4 text-black" strokeWidth={2.8} fill="black" />
-                ) : isNext ? (
-                  <Flame className="w-4 h-4 text-[#FF9F0A]" strokeWidth={2.5} />
-                ) : (
-                  <Lock className="w-3.5 h-3.5 text-[#48484A]" strokeWidth={2.5} />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className={`text-[14px] font-semibold tabular-nums ${cleared ? 'text-white' : isNext ? 'text-white' : 'text-[#8E8E93]'}`}>
-                  {formatViews(m.views)} views
-                </p>
-                {isNext && (
-                  <p className="text-[10px] text-[#FF9F0A] font-bold uppercase tracking-wide">Next unlock</p>
-                )}
-                {cleared && (
-                  <p className="text-[10px] text-[#30D158] font-bold uppercase tracking-wide">Cleared</p>
-                )}
-              </div>
-              <div className="text-right">
-                <p className="font-apple-tight text-[16px] font-bold tabular-nums" style={{ color: cleared ? '#30D158' : isNext ? '#FF9F0A' : '#48484A' }}>
+              />
+              <div className="relative flex items-center gap-2.5">
+                <div
+                  className="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
+                  style={{
+                    background: isCleared ? '#30D158' : isNext ? 'rgba(255,159,10,0.2)' : 'rgba(255,255,255,0.05)',
+                  }}
+                >
+                  {isCleared ? (
+                    <Zap className="w-3.5 h-3.5 text-black" strokeWidth={3} fill="black" />
+                  ) : isNext ? (
+                    <Flame className="w-3.5 h-3.5 text-[#FF9F0A]" strokeWidth={2.8} />
+                  ) : (
+                    <Lock className="w-3 h-3 text-[#48484A]" strokeWidth={2.8} />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0 flex items-center gap-2">
+                  <p
+                    className={`font-mono text-[13px] font-black tabular-nums ${
+                      isCleared ? 'text-white' : isNext ? 'text-white' : 'text-[#6B6B70]'
+                    }`}
+                  >
+                    {formatViews(m.views)}
+                  </p>
+                  <span
+                    className={`text-[9px] font-black uppercase tracking-[0.1em] tabular-nums ${
+                      isCleared ? 'text-[#30D158]' : isNext ? 'text-[#FF9F0A]' : 'text-[#48484A]'
+                    }`}
+                  >
+                    {isCleared ? 'HIT' : `${tierPct.toFixed(0)}%`}
+                  </span>
+                </div>
+                <p
+                  className="font-mono text-[15px] font-black tabular-nums leading-none"
+                  style={{ color: isCleared ? '#30D158' : isNext ? '#FF9F0A' : '#48484A' }}
+                >
                   +{formatMoney(m.bonus_cents)}
                 </p>
               </div>
@@ -176,10 +268,12 @@ export default function ViewsGamePanel({ milestones }: { milestones: Milestone[]
         })}
       </div>
 
-      <p className="text-[11px] text-[#8E8E93] text-center mt-3 inline-flex items-center justify-center gap-1 w-full">
-        <TrendingUp className="w-3 h-3" />
-        Hit a tier → cash out instantly
-      </p>
+      <div className="mt-3 flex items-center justify-center gap-1.5 px-3 py-2 rounded-[10px] bg-[#30D158]/8 border border-[#30D158]/20">
+        <TrendingUp className="w-3 h-3 text-[#30D158]" strokeWidth={2.8} />
+        <span className="text-[10px] font-black uppercase tracking-[0.1em] text-[#30D158]">
+          Hit a tier → instant cashout
+        </span>
+      </div>
     </div>
   );
 }
