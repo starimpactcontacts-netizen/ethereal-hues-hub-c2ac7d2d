@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -15,7 +14,6 @@ interface AccountPromptModalProps {
 }
 
 export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess }: AccountPromptModalProps) {
-  const navigate = useNavigate();
   const { profile: tempProfile, clearProfile } = useTempProfile();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
