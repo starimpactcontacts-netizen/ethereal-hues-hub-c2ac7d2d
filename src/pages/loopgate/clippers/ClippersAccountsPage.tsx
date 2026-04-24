@@ -130,52 +130,61 @@ export default function ClippersAccountsPage() {
               return (
                 <div
                   key={a.id}
-                  className="flex items-center gap-3 px-4 py-3"
+                  className="px-4 py-3"
                   style={idx === accounts.length - 1 ? {} : { borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}
                 >
-                  <div className="w-10 h-10 flex-shrink-0 rounded-[10px] flex items-center justify-center" style={{ background: '#2c2c2e' }}>
-                    <Icon className="w-5 h-5" style={{ color: meta?.color }} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1">
-                      <p className="text-[16px] font-semibold text-white tracking-[-0.02em] truncate leading-tight">@{a.handle}</p>
-                      {a.is_verified && <BadgeCheck className="w-4 h-4 text-[#D4A857] flex-shrink-0" fill="#D4A857" stroke="#000" strokeWidth={2} />}
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 flex-shrink-0 rounded-[10px] flex items-center justify-center" style={{ background: '#2c2c2e' }}>
+                      <Icon className="w-5 h-5" style={{ color: meta?.color }} />
                     </div>
-                    <p className="text-[12px] text-[#8E8E93] mt-0.5 flex items-center gap-1.5">
-                      <span>{meta?.label || a.platform}</span>
-                      {a.follower_count != null && a.follower_count > 0 && (
-                        <>
-                          <span className="text-[#48484a]">·</span>
-                          <span className="text-white/80 font-semibold tabular-nums">{formatFollowers(a.follower_count)}</span>
-                          <span className="text-[#8E8E93]">followers</span>
-                        </>
-                      )}
-                    </p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1">
+                        <p className="text-[16px] font-semibold text-white tracking-[-0.02em] truncate leading-tight">@{a.handle}</p>
+                        {a.is_verified && <BadgeCheck className="w-4 h-4 text-[#D4A857] flex-shrink-0" fill="#D4A857" stroke="#000" strokeWidth={2} />}
+                      </div>
+                      <p className="text-[12px] text-[#8E8E93] mt-0.5 flex items-center gap-1.5">
+                        <span>{meta?.label || a.platform}</span>
+                        {a.follower_count != null && a.follower_count > 0 && (
+                          <>
+                            <span className="text-[#48484a]">·</span>
+                            <span className="text-white/80 font-semibold tabular-nums">{formatFollowers(a.follower_count)}</span>
+                            <span className="text-[#8E8E93]">followers</span>
+                          </>
+                        )}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => refreshStats(a)}
+                      disabled={refreshingId === a.id}
+                      aria-label="Refresh stats"
+                      className="text-[#8E8E93] active:text-white p-1.5 disabled:opacity-50"
+                    >
+                      {refreshingId === a.id ? <Loader2 className="w-[15px] h-[15px] animate-spin" /> : <RefreshCw className="w-[15px] h-[15px]" />}
+                    </button>
+                    <button onClick={() => unlink(a.id)} className="text-[#8E8E93] active:text-[#FF453A] p-1.5 transition-colors">
+                      <Trash2 className="w-[15px] h-[15px]" />
+                    </button>
                   </div>
                   {!a.is_verified && (
-                    <button
-                      onClick={() => setVerifying(a)}
-                      className="h-7 px-2.5 rounded-full bg-[#D4A857] text-white text-[12px] font-semibold active:opacity-60 flex items-center gap-1"
-                    >
-                      <ShieldCheck className="w-[13px] h-[13px]" strokeWidth={2.6} /> Verify
-                    </button>
+                    <div className="flex items-center gap-2 mt-2 pl-[52px]">
+                      <button
+                        onClick={() => setVerifying(a)}
+                        className="h-7 px-3 rounded-full bg-[#D4A857] text-white text-[12px] font-semibold active:opacity-60 flex items-center gap-1"
+                      >
+                        <ShieldCheck className="w-[13px] h-[13px]" strokeWidth={2.6} /> Verify
+                      </button>
+                      {a.profile_url && (
+                        <a
+                          href={a.profile_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="h-7 px-3 rounded-full bg-white/[0.08] text-[#8E8E93] text-[12px] font-semibold active:opacity-60 flex items-center gap-1"
+                        >
+                          <ExternalLink className="w-[12px] h-[12px]" /> Open
+                        </a>
+                      )}
+                    </div>
                   )}
-                  <button
-                    onClick={() => refreshStats(a)}
-                    disabled={refreshingId === a.id}
-                    aria-label="Refresh stats"
-                    className="text-[#8E8E93] active:text-white p-1.5 disabled:opacity-50"
-                  >
-                    {refreshingId === a.id ? <Loader2 className="w-[15px] h-[15px] animate-spin" /> : <RefreshCw className="w-[15px] h-[15px]" />}
-                  </button>
-                  {a.profile_url && (
-                    <a href={a.profile_url} target="_blank" rel="noopener noreferrer" className="text-[#8E8E93] active:opacity-50 p-1.5">
-                      <ExternalLink className="w-[15px] h-[15px]" />
-                    </a>
-                  )}
-                  <button onClick={() => unlink(a.id)} className="text-[#8E8E93] active:text-[#FF453A] p-1.5 transition-colors">
-                    <Trash2 className="w-[15px] h-[15px]" />
-                  </button>
                 </div>
               );
             })}
