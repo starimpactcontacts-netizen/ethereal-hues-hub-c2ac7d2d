@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, X, ArrowRight, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,21 @@ export default function ClipperLockGate({ open, onClose, onSuccess, reason }: Pr
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState('');
+
+  // Hide clipper top bar + bottom nav while gate is open
+  useEffect(() => {
+    if (!open) return;
+    const header = document.querySelector('[data-clippers-header]') as HTMLElement | null;
+    const nav = document.querySelector('[data-clippers-bottom-nav]') as HTMLElement | null;
+    const prevHeader = header?.style.display;
+    const prevNav = nav?.style.display;
+    if (header) header.style.display = 'none';
+    if (nav) nav.style.display = 'none';
+    return () => {
+      if (header) header.style.display = prevHeader || '';
+      if (nav) nav.style.display = prevNav || '';
+    };
+  }, [open]);
 
   const submit = async () => {
     setErr('');
