@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 
 interface Props {
   open: boolean;
@@ -22,6 +23,8 @@ export default function ClipperLockGate({ open, onClose, onSuccess, reason }: Pr
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState('');
+  const [agreed, setAgreed] = useState(false);
+  const [agreeError, setAgreeError] = useState(false);
 
   // Hide clipper top bar + bottom nav while gate is open
   useEffect(() => {
@@ -40,12 +43,18 @@ export default function ClipperLockGate({ open, onClose, onSuccess, reason }: Pr
 
   const submit = async () => {
     setErr('');
+    setAgreeError(false);
     if (!username || username.length < 3) {
       setErr('Username must be at least 3 characters');
       return;
     }
     if (!password || password.length < 6) {
       setErr('Password must be at least 6 characters');
+      return;
+    }
+    if (!agreed) {
+      setAgreeError(true);
+      setErr('Please confirm you’re 18+ and have read the mission policy');
       return;
     }
     setLoading(true);
@@ -175,6 +184,39 @@ export default function ClipperLockGate({ open, onClose, onSuccess, reason }: Pr
                 {err && (
                   <p className="text-[12px] text-red-400/90 px-1 pt-1">{err}</p>
                 )}
+
+                <button
+                  type="button"
+                  onClick={() => { setAgreed((v) => !v); setAgreeError(false); }}
+                  className="w-full flex items-start gap-2.5 px-1 pt-2 text-left"
+                >
+                  <span
+                    className={`mt-0.5 w-[18px] h-[18px] rounded-[5px] flex items-center justify-center shrink-0 transition-colors ${
+                      agreed
+                        ? 'bg-[#0A84FF] border border-[#0A84FF]'
+                        : agreeError
+                          ? 'bg-transparent border border-red-500/80'
+                          : 'bg-white/[0.04] border border-white/15'
+                    }`}
+                  >
+                    {agreed && (
+                      <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                        <path d="M1.5 5.5L4.5 8.5L9.5 2.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </span>
+                  <span className={`text-[12px] leading-snug ${agreeError ? 'text-red-400/90' : 'text-white/55'}`}>
+                    I’m 18+ and have read the{' '}
+                    <Link
+                      to="/missions/policy"
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-[#0A84FF] hover:underline"
+                    >
+                      mission policy
+                    </Link>
+                    .
+                  </span>
+                </button>
 
                 <Button
                   onClick={submit}
