@@ -341,7 +341,7 @@ export default function MissionSubmitPage() {
             className="relative w-full h-[58px] rounded-[18px] font-semibold text-[17px] text-black inline-flex items-center justify-center gap-2 transition-all active:scale-[0.985] disabled:cursor-not-allowed overflow-hidden tracking-[-0.01em]"
             style={{
               background: 'linear-gradient(180deg, #6EF2A0 0%, #3BE36A 45%, #1FB84A 100%)',
-              color: '#001405',
+              color: '#0B3B1E',
               boxShadow:
                 '0 12px 32px -8px rgba(48,209,88,0.6), 0 2px 0 rgba(255,255,255,0.35) inset, 0 -2px 0 rgba(0,0,0,0.18) inset, 0 0 0 0.5px rgba(255,255,255,0.2) inset',
               backdropFilter: 'blur(24px) saturate(160%)',
