@@ -335,7 +335,23 @@ export default function MissionSubmitPage() {
                       const scrollToClips = (e: React.MouseEvent) => {
                         e.preventDefault();
                         const el = document.getElementById('ready-made-clips');
-                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        if (!el) return;
+                        // Find nearest scrollable ancestor (the page uses a fixed shell with a scrolling <main>)
+                        let scroller: HTMLElement | null = el.parentElement;
+                        while (scroller && scroller !== document.body) {
+                          const style = window.getComputedStyle(scroller);
+                          const canScroll = /(auto|scroll|overlay)/.test(style.overflowY) && scroller.scrollHeight > scroller.clientHeight;
+                          if (canScroll) break;
+                          scroller = scroller.parentElement;
+                        }
+                        const offset = 96; // breathing room so the brief above stays visible
+                        if (scroller && scroller !== document.body) {
+                          const top = el.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop - offset;
+                          scroller.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+                        } else {
+                          const top = el.getBoundingClientRect().top + window.scrollY - offset;
+                          window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+                        }
                       };
                       const renderWithKeyword = (text: string) => {
                         if (!hasClips) return text;
