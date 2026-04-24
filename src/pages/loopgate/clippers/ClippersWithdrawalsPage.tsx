@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Wallet, Loader2, Clock, Check, X as XIcon, ArrowUpRight } from 'lucide-react';
+import { Wallet, Loader2, Clock, Check, X as XIcon, ArrowUpRight, ShieldCheck, AlertTriangle, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import ClipperLockGate from '@/components/clippers/ClipperLockGate';
@@ -17,13 +17,22 @@ interface Withdrawal {
   processed_at: string | null;
 }
 
-const METHODS = [
-  { id: 'paypal', label: 'PayPal', placeholder: 'PayPal email' },
-  { id: 'bank', label: 'Bank', placeholder: 'Account / IBAN' },
-  { id: 'crypto', label: 'Crypto', placeholder: 'USDT wallet' },
-];
+type MethodId = 'paypal' | 'crypto';
 
-const MIN_PAYOUT_CENTS = 0;
+const CRYPTO_NETWORKS = [
+  { id: 'usdt_trc20', label: 'USDT (TRC-20)', placeholder: 'T-address' },
+  { id: 'usdt_erc20', label: 'USDT (ERC-20)', placeholder: '0x address' },
+  { id: 'btc',        label: 'Bitcoin (BTC)', placeholder: 'BTC address' },
+] as const;
+type CryptoNet = typeof CRYPTO_NETWORKS[number]['id'];
+
+const isValidEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim());
+const isPlausibleCryptoAddress = (s: string) => {
+  const v = s.trim();
+  // Permissive sanity check — block obvious garbage, real validation happens server-side at payout.
+  if (v.length < 20 || v.length > 120) return false;
+  return /^[A-Za-z0-9]+$/.test(v);
+};
 
 export default function ClippersWithdrawalsPage() {
   const { user } = useAuth();
@@ -32,9 +41,12 @@ export default function ClippersWithdrawalsPage() {
   const [loading, setLoading] = useState(true);
   const [showRequest, setShowRequest] = useState(false);
   const [showGate, setShowGate] = useState(false);
-  const [method, setMethod] = useState('paypal');
+  const [method, setMethod] = useState<MethodId>('paypal');
+  const [cryptoNet, setCryptoNet] = useState<CryptoNet>('usdt_trc20');
   const [amount, setAmount] = useState('');
   const [destination, setDestination] = useState('');
+  const [confirmDest, setConfirmDest] = useState('');
+  const [acceptCrypto, setAcceptCrypto] = useState(false);
   const [requesting, setRequesting] = useState(false);
 
   const load = async () => {
@@ -52,20 +64,41 @@ export default function ClippersWithdrawalsPage() {
 
   useEffect(() => { load(); }, [user]);
 
+  const resetForm = () => {
+    setAmount(''); setDestination(''); setConfirmDest(''); setAcceptCrypto(false); setMethod('paypal'); setCryptoNet('usdt_trc20');
+  };
+
   const submitRequest = async () => {
     if (!user) { setShowGate(true); return; }
     const amtCents = Math.round(parseFloat(amount) * 100);
     if (!amtCents || amtCents <= 0) { toast.error('Enter an amount'); return; }
     if (amtCents > balance) { toast.error('Amount exceeds balance'); return; }
-    if (!destination.trim()) { toast.error('Enter a destination'); return; }
+    const dest = destination.trim();
+    if (!dest) { toast.error('Enter your payout destination'); return; }
+    const cdest = confirmDest.trim();
+
+    let storedDestination = dest;
+    if (method === 'paypal') {
+      if (!isValidEmail(dest)) { toast.error('Enter a valid PayPal email'); return; }
+      if (dest.toLowerCase() !== cdest.toLowerCase()) { toast.error('Emails do not match'); return; }
+      storedDestination = `paypal:${dest}`;
+    } else {
+      if (!isPlausibleCryptoAddress(dest)) { toast.error('That doesn’t look like a valid wallet address'); return; }
+      if (dest !== cdest) { toast.error('Wallet addresses do not match'); return; }
+      if (!acceptCrypto) { toast.error('Confirm you understand crypto payouts are irreversible'); return; }
+      storedDestination = `${cryptoNet}:${dest}`;
+    }
+
     setRequesting(true);
     const { error } = await supabase.from('clipper_withdrawals').insert({
-      user_id: user.id, amount_cents: amtCents, method, destination: destination.trim(),
+      user_id: user.id, amount_cents: amtCents, method, destination: storedDestination,
     });
     setRequesting(false);
     if (error) { toast.error(error.message); return; }
     toast.success('Withdrawal requested');
-    setAmount(''); setDestination(''); setShowRequest(false); load();
+    resetForm();
+    setShowRequest(false);
+    load();
   };
 
   const formatMoney = (c: number) => `$${(c / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -112,7 +145,7 @@ export default function ClippersWithdrawalsPage() {
             </button>
           </div>
           {!canCashOut && user && (
-            <p className="text-[12px] text-[#8E8E93] mt-3">Minimum {formatMoney(MIN_PAYOUT_CENTS)} required to withdraw</p>
+            <p className="text-[12px] text-[#8E8E93] mt-3">No minimum — earn views to unlock cashout</p>
           )}
         </motion.div>
       </section>
@@ -163,24 +196,55 @@ export default function ClippersWithdrawalsPage() {
 
       {showRequest && (
         <Sheet onClose={() => setShowRequest(false)} title="Request payout" subtitle={`Available ${formatMoney(balance)}`}>
-          <div>
-            <p className="text-[13px] text-[#8E8E93] font-medium mb-2 px-1">Method</p>
-            <div className="grid grid-cols-3 gap-1.5">
-              {METHODS.map((m) => (
-                <button
-                  key={m.id}
-                  onClick={() => setMethod(m.id)}
-                  className="h-11 text-[14px] font-semibold rounded-[10px] transition-all active:opacity-60"
-                  style={{
-                    background: method === m.id ? '#D4A857' : 'rgba(118,118,128,0.24)',
-                    color: '#fff',
-                  }}
-                >
-                  {m.label}
-                </button>
-              ))}
-            </div>
+          {/* Method picker — PayPal championed, Crypto secondary */}
+          <div className="space-y-2">
+            <p className="text-[13px] text-[#8E8E93] font-medium px-1">Payout method</p>
+            <button
+              onClick={() => setMethod('paypal')}
+              className="w-full text-left rounded-[14px] p-3.5 transition-all active:opacity-70 flex items-start gap-3"
+              style={{
+                background: method === 'paypal' ? 'rgba(0,112,243,0.16)' : 'rgba(118,118,128,0.18)',
+                boxShadow: method === 'paypal' ? 'inset 0 0 0 1px #0070F3' : 'inset 0 0 0 0.5px rgba(255,255,255,0.08)',
+              }}
+            >
+              <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: '#0070F3' }}>
+                <span className="text-[15px] font-bold text-white tracking-tight">P</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <p className="text-[15px] font-semibold text-white">PayPal</p>
+                  <span className="inline-flex items-center gap-0.5 h-[18px] px-1.5 rounded-full text-[10px] font-bold" style={{ background: '#30D158', color: '#000' }}>
+                    <Sparkles className="w-2.5 h-2.5" strokeWidth={3} /> RECOMMENDED
+                  </span>
+                </div>
+                <p className="text-[12px] text-[#8E8E93] mt-0.5 leading-snug">Fast, traceable, fully reversible if anything goes wrong.</p>
+              </div>
+              <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: method === 'paypal' ? '#0070F3' : 'rgba(255,255,255,0.10)' }}>
+                {method === 'paypal' && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3.5} />}
+              </div>
+            </button>
+
+            <button
+              onClick={() => setMethod('crypto')}
+              className="w-full text-left rounded-[14px] p-3.5 transition-all active:opacity-70 flex items-start gap-3"
+              style={{
+                background: method === 'crypto' ? 'rgba(255,159,10,0.12)' : 'rgba(118,118,128,0.12)',
+                boxShadow: method === 'crypto' ? 'inset 0 0 0 1px #FF9F0A' : 'inset 0 0 0 0.5px rgba(255,255,255,0.06)',
+              }}
+            >
+              <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: '#1c1c1e' }}>
+                <span className="text-[14px] font-bold text-[#FF9F0A]">₮</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[15px] font-semibold text-white">Crypto</p>
+                <p className="text-[12px] text-[#8E8E93] mt-0.5 leading-snug">Use only if PayPal isn’t available in your country. Sends are <span className="text-white">irreversible</span>.</p>
+              </div>
+              <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: method === 'crypto' ? '#FF9F0A' : 'rgba(255,255,255,0.10)' }}>
+                {method === 'crypto' && <Check className="w-3.5 h-3.5 text-black" strokeWidth={3.5} />}
+              </div>
+            </button>
           </div>
+
           <Field label="Amount">
             <Input
               value={amount}
@@ -192,19 +256,108 @@ export default function ClippersWithdrawalsPage() {
               style={{ background: 'rgba(118, 118, 128, 0.24)' }}
             />
           </Field>
-          <Field label="Destination">
-            <Input
-              value={destination}
-              onChange={(e) => setDestination(e.target.value)}
-              placeholder={METHODS.find((m) => m.id === method)?.placeholder}
-              className="h-11 rounded-[10px] border-0 text-[16px] text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#D4A857]"
-              style={{ background: 'rgba(118, 118, 128, 0.24)' }}
-            />
-          </Field>
+
+          {method === 'paypal' ? (
+            <>
+              <Field label="PayPal email">
+                <Input
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
+                  type="email"
+                  autoComplete="email"
+                  inputMode="email"
+                  placeholder="you@email.com"
+                  className="h-11 rounded-[10px] border-0 text-[16px] text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#0070F3]"
+                  style={{ background: 'rgba(118, 118, 128, 0.24)' }}
+                />
+              </Field>
+              <Field label="Confirm email">
+                <Input
+                  value={confirmDest}
+                  onChange={(e) => setConfirmDest(e.target.value)}
+                  type="email"
+                  autoComplete="off"
+                  inputMode="email"
+                  placeholder="you@email.com"
+                  className="h-11 rounded-[10px] border-0 text-[16px] text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#0070F3]"
+                  style={{ background: 'rgba(118, 118, 128, 0.24)' }}
+                />
+              </Field>
+              <div className="flex items-start gap-2 px-1">
+                <ShieldCheck className="w-4 h-4 text-[#30D158] mt-0.5 shrink-0" strokeWidth={2.5} />
+                <p className="text-[12px] text-[#8E8E93] leading-snug">
+                  Use the email tied to your PayPal account. Wrong emails delay payouts up to 7 days.
+                </p>
+              </div>
+            </>
+          ) : (
+            <>
+              <Field label="Network">
+                <div className="grid grid-cols-3 gap-1.5">
+                  {CRYPTO_NETWORKS.map((n) => (
+                    <button
+                      key={n.id}
+                      onClick={() => setCryptoNet(n.id)}
+                      className="h-11 text-[12px] font-semibold rounded-[10px] transition-all active:opacity-60 px-1"
+                      style={{
+                        background: cryptoNet === n.id ? '#FF9F0A' : 'rgba(118,118,128,0.24)',
+                        color: cryptoNet === n.id ? '#000' : '#fff',
+                      }}
+                    >
+                      {n.label}
+                    </button>
+                  ))}
+                </div>
+              </Field>
+              <Field label="Wallet address">
+                <Input
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
+                  autoComplete="off"
+                  spellCheck={false}
+                  placeholder={CRYPTO_NETWORKS.find((n) => n.id === cryptoNet)?.placeholder}
+                  className="h-11 rounded-[10px] border-0 text-[14px] font-mono text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#FF9F0A]"
+                  style={{ background: 'rgba(118, 118, 128, 0.24)' }}
+                />
+              </Field>
+              <Field label="Confirm wallet address">
+                <Input
+                  value={confirmDest}
+                  onChange={(e) => setConfirmDest(e.target.value)}
+                  autoComplete="off"
+                  spellCheck={false}
+                  placeholder="Paste again"
+                  className="h-11 rounded-[10px] border-0 text-[14px] font-mono text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#FF9F0A]"
+                  style={{ background: 'rgba(118, 118, 128, 0.24)' }}
+                />
+              </Field>
+              <button
+                type="button"
+                onClick={() => setAcceptCrypto((v) => !v)}
+                className="w-full text-left flex items-start gap-2.5 rounded-[12px] p-3"
+                style={{ background: 'rgba(255,159,10,0.10)', boxShadow: 'inset 0 0 0 0.5px rgba(255,159,10,0.35)' }}
+              >
+                <div className="w-5 h-5 rounded-[6px] flex items-center justify-center shrink-0 mt-0.5" style={{ background: acceptCrypto ? '#FF9F0A' : 'rgba(255,255,255,0.10)' }}>
+                  {acceptCrypto && <Check className="w-3.5 h-3.5 text-black" strokeWidth={3.5} />}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <AlertTriangle className="w-3.5 h-3.5 text-[#FF9F0A]" strokeWidth={2.5} />
+                    <p className="text-[12px] font-semibold text-white">I understand crypto sends are final</p>
+                  </div>
+                  <p className="text-[11px] text-[#8E8E93] leading-snug mt-0.5">
+                    Wrong network or address = lost funds. Loopgate cannot recover or refund crypto payouts.
+                  </p>
+                </div>
+              </button>
+            </>
+          )}
+
           <button
             onClick={submitRequest}
             disabled={requesting}
-            className="w-full h-12 rounded-[14px] bg-[#D4A857] text-white text-[17px] font-semibold active:opacity-60 disabled:opacity-50 flex items-center justify-center"
+            className="w-full h-12 rounded-[14px] text-[17px] font-semibold active:opacity-60 disabled:opacity-50 flex items-center justify-center"
+            style={{ background: method === 'paypal' ? '#0070F3' : '#FF9F0A', color: method === 'paypal' ? '#fff' : '#000' }}
           >
             {requesting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Request payout'}
           </button>
