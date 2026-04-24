@@ -234,9 +234,9 @@ export default function ViewsGamePanel({ milestones }: { milestones: Milestone[]
                   }}
                 >
                   {isCleared ? (
-                    <Zap className="w-3.5 h-3.5 text-black" strokeWidth={3} fill="black" />
+                    <Check className="w-3.5 h-3.5 text-black" strokeWidth={3.5} />
                   ) : isNext ? (
-                    <Flame className="w-3.5 h-3.5 text-[#FF9F0A]" strokeWidth={2.8} />
+                    <ArrowUpRight className="w-3.5 h-3.5 text-[#FF9F0A]" strokeWidth={3} />
                   ) : (
                     <Lock className="w-3 h-3 text-[#48484A]" strokeWidth={2.8} />
                   )}
@@ -254,7 +254,7 @@ export default function ViewsGamePanel({ milestones }: { milestones: Milestone[]
                       isCleared ? 'text-[#30D158]' : isNext ? 'text-[#FF9F0A]' : 'text-[#48484A]'
                     }`}
                   >
-                    {isCleared ? 'HIT' : `${tierPct.toFixed(0)}%`}
+                    {isCleared ? 'FILLED' : `${tierPct.toFixed(0)}%`}
                   </span>
                 </div>
                 <p
@@ -269,10 +269,10 @@ export default function ViewsGamePanel({ milestones }: { milestones: Milestone[]
         })}
       </div>
 
-      <div className="mt-3 flex items-center justify-center gap-1.5 px-3 py-2 rounded-[10px] bg-[#30D158]/8 border border-[#30D158]/20">
-        <TrendingUp className="w-3 h-3 text-[#30D158]" strokeWidth={2.8} />
-        <span className="text-[10px] font-black uppercase tracking-[0.1em] text-[#30D158]">
-          Hit a tier → instant cashout
+      <div className="mt-3 flex items-center justify-center gap-1.5 px-3 py-2 rounded-[10px] bg-white/[0.03] border border-white/[0.06]">
+        <DollarSign className="w-3 h-3 text-[#30D158]" strokeWidth={3} />
+        <span className="text-[10px] font-black uppercase tracking-[0.1em] text-white">
+          Fill a tier · withdraw instantly
         </span>
       </div>
     </div>
