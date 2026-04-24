@@ -136,7 +136,7 @@ export default function ClippersCampaignsPage() {
         </button>
 
         <h1 className="font-apple-tight text-[32px] font-bold text-white leading-[1.05] mt-5">Missions</h1>
-        <p className="text-[13px] text-[#8E8E93] mt-1">Get paid per post + bonuses for views.</p>
+        <p className="text-[13px] text-[#8E8E93] mt-1">Get paid per post and per view.</p>
 
         {/* iOS search */}
         <div className="relative mt-4">
