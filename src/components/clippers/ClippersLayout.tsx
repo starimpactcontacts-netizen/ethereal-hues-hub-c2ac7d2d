@@ -46,6 +46,7 @@ export default function ClippersLayout({ children, title, hideBottomNav = false 
     >
       {/* Top bar — solid translucent (NO backdrop-blur, kills scroll perf) */}
       <header
+        data-clippers-header
         className="sticky top-0 z-30"
         style={{
           background: 'rgba(0, 0, 0, 0.94)',
@@ -129,6 +130,7 @@ export default function ClippersLayout({ children, title, hideBottomNav = false 
       {/* Bottom tab bar — solid (NO backdrop-blur over scrolling content) */}
       {!hideBottomNav && (
       <nav
+        data-clippers-bottom-nav
         className="fixed bottom-0 left-0 right-0 z-40 pb-[env(safe-area-inset-bottom)]"
         style={{
           background: 'rgba(22, 22, 24, 0.98)',
