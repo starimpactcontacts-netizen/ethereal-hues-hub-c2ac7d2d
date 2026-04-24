@@ -223,9 +223,9 @@ async function writeToTable(
     return;
   }
 
-  const { error } = await supabase
+  const { error } = await (supabase as any)
     .from(table)
-    .update(cleanPayload as any)
+    .update(cleanPayload)
     .eq("id", rowId);
 
   if (error) {
