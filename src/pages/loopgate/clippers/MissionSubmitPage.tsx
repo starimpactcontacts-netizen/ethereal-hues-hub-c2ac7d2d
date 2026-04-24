@@ -54,6 +54,7 @@ export default function MissionSubmitPage() {
   const [handle, setHandle] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
+  const [submitOpen, setSubmitOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [eligibilityOpen, setEligibilityOpen] = useState(false);
   const [eligibility, setEligibility] = useState<'idle' | 'checking' | 'eligible' | 'ineligible'>('idle');
@@ -130,12 +131,18 @@ export default function MissionSubmitPage() {
       } as any);
       if (error) throw error;
       toast.success('Submitted! We review within 24h.');
+      setSubmitOpen(false);
       navigate('/missions/submissions');
     } catch (e: any) {
       toast.error(e.message || 'Failed to submit');
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const openSubmit = () => {
+    if (!user) { setAuthOpen(true); return; }
+    setSubmitOpen(true);
   };
 
   if (loading) {
