@@ -450,3 +450,9 @@ html, body {
   0% { transform: translateX(0) skewX(-12deg); }
   100% { transform: translateX(500%) skewX(-12deg); }
 }
+
+/* Hide Missions chrome (top bar + bottom nav) when payout sheet is open */
+body.hide-app-chrome [data-clippers-header],
+body.hide-app-chrome [data-clippers-bottom-nav] {
+  display: none !important;
+}
