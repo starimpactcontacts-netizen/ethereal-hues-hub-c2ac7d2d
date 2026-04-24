@@ -823,7 +823,7 @@ export default function MissionSubmitPage() {
                 </div>
                 <h3 className="font-apple-tight text-[22px] font-bold text-white tracking-[-0.01em]">You're approved</h3>
                 <p className="text-[14px] text-[#8E8E93] mt-1">
-                  You'll earn the ${(mission.base_payout_cents / 100).toFixed(2)} base on every approved clip — plus view milestone bonuses on top.
+                  You'll earn the ${(mission.base_payout_cents / 100).toFixed(2)} base on every approved post — plus view milestone payouts on top.
                 </p>
                 <button
                   onClick={() => { setEligibilityOpen(false); inputRef.current?.focus(); }}
