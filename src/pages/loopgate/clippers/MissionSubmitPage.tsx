@@ -688,6 +688,66 @@ export default function MissionSubmitPage() {
         reason="Sign up to submit your clip and get paid."
       />
 
+      {rulesOpen && (
+        <div
+          className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center bg-black/75 backdrop-blur-sm"
+          onClick={() => setRulesOpen(false)}
+        >
+          <motion.div
+            initial={{ y: 40, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full sm:max-w-md sm:rounded-[24px] rounded-t-[24px] overflow-hidden"
+            style={{ background: '#1C1C1E', border: '0.5px solid rgba(255,255,255,0.08)' }}
+          >
+            <div className="px-5 pt-5 pb-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-[#0A84FF]/15 flex items-center justify-center">
+                  <Info className="w-4 h-4 text-[#0A84FF]" strokeWidth={2.4} />
+                </div>
+                <h3 className="font-apple-tight text-[18px] font-bold text-white tracking-[-0.01em]">Mission rules</h3>
+              </div>
+              <button
+                onClick={() => setRulesOpen(false)}
+                className="w-8 h-8 rounded-full flex items-center justify-center active:opacity-60"
+                style={{ background: 'rgba(255,255,255,0.08)' }}
+                aria-label="Close"
+              >
+                <X className="w-4 h-4 text-white" strokeWidth={2.4} />
+              </button>
+            </div>
+            <div className="px-5 pb-5 space-y-3">
+              <RuleRow title="Keep your post up for 30 days">
+                Don't delete, archive, or set it private. Deleted posts forfeit base + view payouts.
+              </RuleRow>
+              <RuleRow title="Tag the official account">
+                Use the exact handle from the brief. Misspelled or missing tags = rejected.
+              </RuleRow>
+              <RuleRow title="Post from your linked account">
+                Submit from the same handle you verified in Linked. Different account = no payout.
+              </RuleRow>
+              <RuleRow title="Use the ready-made clips">
+                Don't reupload other clippers' edits or random unrelated footage. Original framing only.
+              </RuleRow>
+              <RuleRow title="One submission per post">
+                Don't submit the same link twice or spam reposts. Repeated abuse = ban.
+              </RuleRow>
+              <RuleRow title="Public post link only">
+                Send the live post URL — not a story, draft, or screenshot. Reviewed within 24h.
+              </RuleRow>
+              <button
+                onClick={() => setRulesOpen(false)}
+                className="w-full h-12 rounded-[14px] font-semibold text-[15px] text-white mt-2"
+                style={{ background: 'rgba(255,255,255,0.08)' }}
+              >
+                Got it
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
       {submitOpen && (
         <div
           className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm"
