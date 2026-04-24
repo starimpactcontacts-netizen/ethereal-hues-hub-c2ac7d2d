@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronLeft, DollarSign, TrendingUp, Download, Play, Upload, BadgeCheck, Loader2, ExternalLink, Clock, Sparkles } from 'lucide-react';
+import { ChevronLeft, DollarSign, TrendingUp, Download, Play, Upload, BadgeCheck, Loader2, ExternalLink, Clock, Sparkles, Eye, CheckCircle2, XCircle, Link2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -54,6 +54,22 @@ export default function MissionSubmitPage() {
   const [submitting, setSubmitting] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [eligibilityOpen, setEligibilityOpen] = useState(false);
+  const [eligibility, setEligibility] = useState<'idle' | 'checking' | 'eligible' | 'ineligible'>('idle');
+  const [linkedCount, setLinkedCount] = useState(0);
+
+  const checkEligibility = async () => {
+    if (!user) { setAuthOpen(true); return; }
+    setEligibilityOpen(true);
+    setEligibility('checking');
+    const { count } = await supabase
+      .from('clipper_linked_accounts')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id);
+    const c = count || 0;
+    setLinkedCount(c);
+    setEligibility(c > 0 ? 'eligible' : 'ineligible');
+  };
 
   useEffect(() => {
     if (!id) { setLoading(false); return; }
