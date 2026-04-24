@@ -697,52 +697,98 @@ export default function MissionSubmitPage() {
             className="w-full sm:max-w-sm rounded-t-[24px] sm:rounded-[24px] p-5 pb-8 sm:pb-5"
             style={{ background: '#1c1c1e' }}
           >
-            {eligibility === 'checking' && (
+            {eligibility === 'loading' && (
               <div className="py-8 flex flex-col items-center gap-3">
                 <Loader2 className="w-6 h-6 text-[#0A84FF] animate-spin" />
-                <p className="text-[14px] text-[#8E8E93]">Checking your accounts…</p>
+                <p className="text-[14px] text-[#8E8E93]">Loading…</p>
               </div>
             )}
-            {eligibility === 'eligible' && (
+
+            {(eligibility === 'none' || eligibility === 'rejected') && (
+              <>
+                <div className="w-12 h-12 rounded-full bg-[#0A84FF]/15 flex items-center justify-center mb-3">
+                  <BadgeCheck className="w-7 h-7 text-[#0A84FF]" strokeWidth={2.5} />
+                </div>
+                <h3 className="font-apple-tight text-[22px] font-bold text-white tracking-[-0.01em]">
+                  {eligibility === 'rejected' ? 'Not approved yet' : 'Base payout requirements'}
+                </h3>
+                <p className="text-[14px] text-[#8E8E93] mt-1">
+                  Meet what's listed below, then tap <span className="text-white font-semibold">Check</span>. We'll review and let you know if you're approved for the ${(mission.base_payout_cents / 100).toFixed(2)} base on this mission.
+                </p>
+
+                <div className="mt-4 rounded-[14px] p-3.5" style={{ background: 'rgba(118,118,128,0.18)' }}>
+                  <p className="text-[11px] uppercase tracking-wide text-[#8E8E93] font-semibold mb-1.5">What we check for</p>
+                  {mission.base_payout_requirements ? (
+                    <p className="text-[14px] text-white whitespace-pre-line leading-snug">
+                      {mission.base_payout_requirements}
+                    </p>
+                  ) : (
+                    <p className="text-[13px] text-[#8E8E93] leading-snug">
+                      No specific requirements set — submit and we'll review your account.
+                    </p>
+                  )}
+                </div>
+
+                {eligibility === 'rejected' && eligibilityNotes && (
+                  <div className="mt-3 rounded-[14px] p-3 border border-[#FF9F0A]/30" style={{ background: 'rgba(255,159,10,0.08)' }}>
+                    <p className="text-[11px] uppercase tracking-wide text-[#FF9F0A] font-semibold mb-1">Reviewer note</p>
+                    <p className="text-[13px] text-white">{eligibilityNotes}</p>
+                  </div>
+                )}
+
+                <button
+                  onClick={requestApproval}
+                  disabled={submittingRequest}
+                  className="w-full h-12 rounded-[14px] font-semibold text-[16px] text-white inline-flex items-center justify-center gap-2 mt-4 disabled:opacity-60"
+                  style={{ background: '#0A84FF' }}
+                >
+                  {submittingRequest
+                    ? <Loader2 className="w-5 h-5 animate-spin" />
+                    : <>Check — send for review</>}
+                </button>
+                <button
+                  onClick={() => setEligibilityOpen(false)}
+                  className="w-full h-11 rounded-[14px] font-medium text-[15px] text-[#0A84FF] mt-1"
+                >
+                  Aim for view targets instead
+                </button>
+              </>
+            )}
+
+            {eligibility === 'pending' && (
+              <>
+                <div className="w-12 h-12 rounded-full bg-[#FF9F0A]/15 flex items-center justify-center mb-3">
+                  <Clock className="w-7 h-7 text-[#FF9F0A]" strokeWidth={2.5} />
+                </div>
+                <h3 className="font-apple-tight text-[22px] font-bold text-white tracking-[-0.01em]">Under review</h3>
+                <p className="text-[14px] text-[#8E8E93] mt-1">
+                  Your request is in our queue. You'll get notified once we approve or reject you for the ${(mission.base_payout_cents / 100).toFixed(2)} base on this mission.
+                </p>
+                <button
+                  onClick={() => setEligibilityOpen(false)}
+                  className="w-full h-12 rounded-[14px] font-semibold text-[16px] text-white mt-4"
+                  style={{ background: '#FF9F0A' }}
+                >
+                  Got it
+                </button>
+              </>
+            )}
+
+            {eligibility === 'approved' && (
               <>
                 <div className="w-12 h-12 rounded-full bg-[#30D158]/15 flex items-center justify-center mb-3">
                   <CheckCircle2 className="w-7 h-7 text-[#30D158]" strokeWidth={2.5} />
                 </div>
-                <h3 className="font-apple-tight text-[22px] font-bold text-white tracking-[-0.01em]">You're eligible</h3>
+                <h3 className="font-apple-tight text-[22px] font-bold text-white tracking-[-0.01em]">You're approved</h3>
                 <p className="text-[14px] text-[#8E8E93] mt-1">
-                  {linkedCount} linked {linkedCount === 1 ? 'account' : 'accounts'}. You'll earn the ${(mission.base_payout_cents / 100).toFixed(2)} base on every approved clip — plus view milestone bonuses on top.
+                  You'll earn the ${(mission.base_payout_cents / 100).toFixed(2)} base on every approved clip — plus view milestone bonuses on top.
                 </p>
                 <button
                   onClick={() => { setEligibilityOpen(false); inputRef.current?.focus(); }}
-                  className="w-full h-12 rounded-[14px] font-semibold text-[16px] text-white inline-flex items-center justify-center gap-2 mt-4"
+                  className="w-full h-12 rounded-[14px] font-semibold text-[16px] text-white mt-4"
                   style={{ background: '#30D158' }}
                 >
                   Start submitting
-                </button>
-              </>
-            )}
-            {eligibility === 'ineligible' && (
-              <>
-                <div className="w-12 h-12 rounded-full bg-[#FF9F0A]/15 flex items-center justify-center mb-3">
-                  <XCircle className="w-7 h-7 text-[#FF9F0A]" strokeWidth={2.5} />
-                </div>
-                <h3 className="font-apple-tight text-[22px] font-bold text-white tracking-[-0.01em]">Not eligible for base payout</h3>
-                <p className="text-[14px] text-[#8E8E93] mt-1">
-                  Link a TikTok, Instagram, or YouTube account to unlock the ${(mission.base_payout_cents / 100).toFixed(2)} base. You can still submit and <span className="text-white font-semibold">aim for the view targets</span> to earn milestone bonuses.
-                </p>
-                <Link
-                  to="/clippers/accounts"
-                  className="w-full h-12 rounded-[14px] font-semibold text-[16px] text-white inline-flex items-center justify-center gap-2 mt-4"
-                  style={{ background: '#0A84FF' }}
-                >
-                  <Link2 className="w-[18px] h-[18px]" strokeWidth={2.5} />
-                  Link account
-                </Link>
-                <button
-                  onClick={() => setEligibilityOpen(false)}
-                  className="w-full h-11 rounded-[14px] font-medium text-[15px] text-[#0A84FF] mt-2"
-                >
-                  Aim for view targets instead
                 </button>
               </>
             )}
