@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 interface Props {
   children: ReactNode;
   title?: string;
+  hideBottomNav?: boolean;
 }
 
 const tabs = [
@@ -19,7 +20,7 @@ const tabs = [
   { to: '/missions/withdrawals', icon: Wallet, label: 'Cashout' },
 ];
 
-export default function ClippersLayout({ children, title }: Props) {
+export default function ClippersLayout({ children, title, hideBottomNav = false }: Props) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { profile: tempProfile } = useTempProfile();
@@ -114,7 +115,7 @@ export default function ClippersLayout({ children, title }: Props) {
 
       <main
         className="relative z-10 flex-1 min-h-0 overflow-y-auto overscroll-y-contain"
-        style={{ WebkitOverflowScrolling: 'touch', paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}
+        style={{ WebkitOverflowScrolling: 'touch', paddingBottom: hideBottomNav ? 'env(safe-area-inset-bottom)' : 'calc(88px + env(safe-area-inset-bottom))' }}
       >
         {children}
       </main>
@@ -126,6 +127,7 @@ export default function ClippersLayout({ children, title }: Props) {
       />
 
       {/* Bottom tab bar — solid (NO backdrop-blur over scrolling content) */}
+      {!hideBottomNav && (
       <nav
         className="fixed bottom-0 left-0 right-0 z-40 pb-[env(safe-area-inset-bottom)]"
         style={{
@@ -160,6 +162,7 @@ export default function ClippersLayout({ children, title }: Props) {
           ))}
         </div>
       </nav>
+      )}
     </div>
   );
 }
