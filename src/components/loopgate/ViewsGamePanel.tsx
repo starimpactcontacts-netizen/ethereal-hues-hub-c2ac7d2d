@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Check, ArrowUpRight, ArrowDownToLine } from 'lucide-react';
+import { Check, ArrowUpRight, ArrowDownToLine, Eye } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface Milestone { views: number; bonus_cents: number; }
 
@@ -12,62 +12,45 @@ const formatViews = (n: number) => {
   return n.toLocaleString();
 };
 
-export default function ViewsGamePanel({ milestones }: { milestones: Milestone[] }) {
+interface Props {
+  milestones: Milestone[];
+  /** Real views on the user's clip for this mission. undefined → no submission yet. */
+  currentViews?: number | null;
+  /** Real cents earned by this user on this mission. */
+  earnedCents?: number | null;
+  submissionStatus?: string | null;
+  hasSubmission?: boolean;
+}
+
+export default function ViewsGamePanel({
+  milestones,
+  currentViews,
+  earnedCents,
+  submissionStatus,
+  hasSubmission = false,
+}: Props) {
   const sorted = [...milestones].sort((a, b) => a.views - b.views);
   const maxViews = sorted[sorted.length - 1]?.views || 1;
   const totalPool = sorted.reduce((s, m) => s + m.bonus_cents, 0);
 
-  const [demoViews, setDemoViews] = useState(0);
-  const [tick, setTick] = useState(0);
-
-  useEffect(() => {
-    if (!maxViews) return;
-    let raf = 0;
-    let last = performance.now();
-    let v = 0;
-    let velocity = maxViews / 14000; // calmer climb ~14s
-    const loop = (t: number) => {
-      const dt = t - last;
-      last = t;
-      const jitter = (Math.random() - 0.4) * velocity * dt * 0.25;
-      v += velocity * dt + jitter;
-      if (v >= maxViews * 1.05) v = 0;
-      setDemoViews(Math.max(0, Math.floor(v)));
-      setTick((x) => (x + 1) % 1_000_000);
-      raf = requestAnimationFrame(loop);
-    };
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
-  }, [maxViews]);
-
-  const pct = Math.min(100, (demoViews / maxViews) * 100);
-  const nextIdx = sorted.findIndex((m) => demoViews < m.views);
+  // Real values only — no fake animation
+  const views = Math.max(0, currentViews ?? 0);
+  const earned = Math.max(0, earnedCents ?? 0);
+  const pct = Math.min(100, (views / maxViews) * 100);
+  const nextIdx = sorted.findIndex((m) => views < m.views);
   const next = nextIdx >= 0 ? sorted[nextIdx] : null;
-  const cleared = nextIdx === -1 ? sorted.length : nextIdx;
-  const earned = sorted.slice(0, cleared).reduce((s, m) => s + m.bonus_cents, 0);
-
-  // Sparkline — calm Stocks-app curve
-  const spark = Array.from({ length: 32 }, (_, i) => {
-    const seed = (tick + i * 7) % 100;
-    return 40 + Math.sin((tick * 0.3 + i) * 0.25) * 12 + (seed % 8);
-  });
-  const sparkMax = Math.max(...spark);
-  const sparkMin = Math.min(...spark);
-  const sparkPath = spark
-    .map((y, i) => {
-      const x = (i / (spark.length - 1)) * 100;
-      const ny = 100 - ((y - sparkMin) / (sparkMax - sparkMin || 1)) * 100;
-      return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${ny.toFixed(1)}`;
-    })
-    .join(' ');
+  const showEmpty = !hasSubmission;
+  const isPending = hasSubmission && submissionStatus === 'pending';
 
   return (
     <div className="mt-4 pt-4 border-t border-white/[0.06]">
       {/* Header — Live earnings (trading-style) */}
       <div className="flex items-center justify-between mb-3">
         <div>
-          <p className="text-[13px] font-semibold text-white tracking-[-0.01em]">Live earnings</p>
-          <p className="text-[11px] text-[#8E8E93] tracking-[-0.01em]">Updated as your clip grows</p>
+          <p className="text-[13px] font-semibold text-white tracking-[-0.01em]">Your earnings</p>
+          <p className="text-[11px] text-[#8E8E93] tracking-[-0.01em]">
+            {showEmpty ? 'Submit a clip to start earning' : isPending ? 'Live once your clip is approved' : 'Updates as your clip grows'}
+          </p>
         </div>
         <div className="text-right">
           <p className="text-[11px] text-[#8E8E93] tracking-[-0.01em]">Max payout</p>
@@ -81,20 +64,22 @@ export default function ViewsGamePanel({ milestones }: { milestones: Milestone[]
           <div className="flex-1 min-w-0">
             <p className="text-[11px] text-[#8E8E93] tracking-[-0.01em] mb-1">Current views</p>
             <p className="font-apple-tight text-[34px] font-semibold text-white leading-none tabular-nums tracking-[-0.025em]">
-              {formatViews(demoViews)}
+              {showEmpty ? '—' : formatViews(views)}
             </p>
-            <div className="inline-flex items-center gap-1 mt-1.5">
-              <ArrowUpRight className="w-3 h-3 text-[#30D158]" strokeWidth={2.5} />
-              <span className="text-[12px] font-medium text-[#30D158] tabular-nums tracking-[-0.01em]">
-                +{((demoViews / maxViews) * 100).toFixed(2)}%
-              </span>
-            </div>
+            {showEmpty ? (
+              <p className="text-[11px] text-[#8E8E93] mt-1.5 tracking-[-0.01em]">No clip submitted yet</p>
+            ) : (
+              <div className="inline-flex items-center gap-1 mt-1.5">
+                <ArrowUpRight className="w-3 h-3 text-[#30D158]" strokeWidth={2.5} />
+                <span className="text-[12px] font-medium text-[#30D158] tabular-nums tracking-[-0.01em]">
+                  {((views / maxViews) * 100).toFixed(2)}% of max tier
+                </span>
+              </div>
+            )}
           </div>
 
-          <div className="w-[96px] h-[52px] shrink-0">
-            <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full">
-              <path d={sparkPath} fill="none" stroke="#30D158" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+          <div className="w-[52px] h-[52px] shrink-0 rounded-full flex items-center justify-center" style={{ background: 'rgba(48,209,88,0.10)' }}>
+            <Eye className="w-5 h-5 text-[#30D158]" strokeWidth={2.25} />
           </div>
         </div>
 
@@ -108,7 +93,7 @@ export default function ViewsGamePanel({ milestones }: { milestones: Milestone[]
           </div>
           <div className="mt-2 flex items-center justify-between">
             <div>
-              <p className="text-[11px] text-[#8E8E93] tracking-[-0.01em]">Total earned this campaign</p>
+              <p className="text-[11px] text-[#8E8E93] tracking-[-0.01em]">Earned on this mission</p>
               <p className="text-[18px] font-semibold text-[#30D158] tabular-nums tracking-[-0.015em] leading-tight">{formatMoney(earned)}</p>
             </div>
             {next && (
@@ -119,19 +104,23 @@ export default function ViewsGamePanel({ milestones }: { milestones: Milestone[]
             )}
           </div>
 
-          {/* Cash out CTA — always green, always inviting */}
-          <button
-            type="button"
-            className="group relative mt-3 w-full h-11 rounded-[12px] flex items-center justify-center gap-2 font-semibold text-[15px] tracking-[-0.01em] transition-all active:scale-[0.98] text-black overflow-hidden"
-            style={{ background: '#30D158' }}
-          >
-            <span
-              className="pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 -skew-x-12 opacity-0 group-hover:opacity-100 transition-opacity duration-300 group-hover:animate-[sheen_1.1s_ease-in-out]"
-              style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent)' }}
-            />
-            <ArrowDownToLine className="w-4 h-4 relative" strokeWidth={2.6} />
-            <span className="relative">Cash out {formatMoney(earned)}</span>
-          </button>
+          {earned > 0 ? (
+            <Link
+              to="/missions/withdrawals"
+              className="mt-3 w-full h-11 rounded-[12px] flex items-center justify-center gap-2 font-semibold text-[15px] tracking-[-0.01em] transition-all active:scale-[0.98] text-black"
+              style={{ background: '#30D158' }}
+            >
+              <ArrowDownToLine className="w-4 h-4" strokeWidth={2.6} />
+              <span>Cash out {formatMoney(earned)}</span>
+            </Link>
+          ) : (
+            <div
+              className="mt-3 w-full h-11 rounded-[12px] flex items-center justify-center text-[13px] tracking-[-0.01em]"
+              style={{ background: 'rgba(255,255,255,0.04)', color: '#8E8E93' }}
+            >
+              {showEmpty ? 'Submit your clip below to unlock' : isPending ? 'Awaiting review' : 'Earn views to unlock cashout'}
+            </div>
+          )}
           <p className="text-[10.5px] text-[#8E8E93] text-center mt-2 tracking-[-0.01em]">
             Instant transfer · no minimum · no fees
           </p>
@@ -141,10 +130,10 @@ export default function ViewsGamePanel({ milestones }: { milestones: Milestone[]
       {/* TIER ROWS — iOS settings-list aesthetic */}
       <div className="rounded-[16px] overflow-hidden" style={{ background: '#161618' }}>
         {sorted.map((m, i) => {
-          const isCleared = demoViews >= m.views;
+          const isCleared = views >= m.views;
           const isNext = !isCleared && i === nextIdx;
-          const remaining = Math.max(0, m.views - demoViews);
-          const tierPct = Math.min(100, (demoViews / m.views) * 100);
+          const remaining = Math.max(0, m.views - views);
+          const tierPct = Math.min(100, (views / m.views) * 100);
           return (
             <div
               key={i}
