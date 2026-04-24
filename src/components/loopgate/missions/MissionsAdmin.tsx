@@ -93,10 +93,11 @@ const STATUS_COLORS: Record<string, string> = {
 // ─── Component ────────────────────────────────────────────────────────
 export default function MissionsAdmin() {
   const { user } = useAuth();
-  const [tab, setTab] = useState<'missions' | 'submissions' | 'payouts'>('missions');
+  const [tab, setTab] = useState<'missions' | 'submissions' | 'payouts' | 'eligibility'>('missions');
   const [missions, setMissions] = useState<Mission[]>([]);
   const [subs, setSubs] = useState<MissionSub[]>([]);
   const [payouts, setPayouts] = useState<Payout[]>([]);
+  const [eligibilityReqs, setEligibilityReqs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showLauncher, setShowLauncher] = useState(false);
   const [editing, setEditing] = useState<Mission | null>(null);
@@ -104,13 +105,15 @@ export default function MissionsAdmin() {
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
-    const [mRes, sRes, pRes] = await Promise.all([
+    const [mRes, sRes, pRes, eRes] = await Promise.all([
       supabase.from('missions').select('*').order('created_at', { ascending: false }),
       supabase.from('mission_submissions').select('*').order('created_at', { ascending: false }).limit(500),
       supabase.from('mission_payouts').select('*').order('created_at', { ascending: false }).limit(200),
+      supabase.from('mission_base_eligibility' as any).select('*').order('created_at', { ascending: false }).limit(500),
     ]);
     setMissions((mRes.data as any) || []);
     setSubs((sRes.data as any) || []);
+    setEligibilityReqs((eRes.data as any) || []);
 
     // Hydrate payout usernames
     const userIds = [...new Set((pRes.data || []).map((p: any) => p.user_id))];
@@ -219,6 +222,26 @@ export default function MissionsAdmin() {
   // ─── Render ─────────────────────────────────────────────────────────
   const pendingSubs = subs.filter(s => s.status === 'pending').length;
   const pendingPayouts = payouts.filter(p => p.status === 'pending').length;
+  const pendingEligibility = eligibilityReqs.filter((e: any) => e.status === 'pending').length;
+
+  const reviewEligibility = async (
+    req: any,
+    next: 'approved' | 'rejected',
+    notes?: string,
+  ) => {
+    const { error } = await supabase
+      .from('mission_base_eligibility' as any)
+      .update({
+        status: next,
+        admin_notes: notes ?? req.admin_notes,
+        reviewed_at: new Date().toISOString(),
+        reviewed_by: user?.id ?? null,
+      } as any)
+      .eq('id', req.id);
+    if (error) return toast.error(error.message);
+    toast.success(`Request ${next}`);
+    fetchAll();
+  };
 
   return (
     <div className="space-y-4">
@@ -240,6 +263,7 @@ export default function MissionsAdmin() {
           { id: 'missions' as const, label: `Missions (${missions.length})` },
           { id: 'submissions' as const, label: `Submissions${pendingSubs ? ` · ${pendingSubs}` : ''}` },
           { id: 'payouts' as const, label: `Payouts${pendingPayouts ? ` · ${pendingPayouts}` : ''}` },
+          { id: 'eligibility' as const, label: `Eligibility${pendingEligibility ? ` · ${pendingEligibility}` : ''}` },
         ].map(t => (
           <button
             key={t.id}
