@@ -275,64 +275,106 @@ export default function MissionSubmitPage() {
           )}
         </section>
 
-        {/* Description */}
+        {/* Description — cinematic brief card */}
         {mission.description && (
-          <section className="mt-4">
-            <h2 className="text-[13px] text-[#8E8E93] font-medium uppercase tracking-wide px-1 mb-2">The brief</h2>
-            <div className="rounded-[18px] p-4" style={{ background: '#1c1c1e' }}>
-              <p className="text-[15px] text-white/90 leading-[1.45] whitespace-pre-wrap">{mission.description}</p>
+          <section className="mt-5">
+            <div className="flex items-center gap-1.5 px-1 mb-2">
+              <Sparkles className="w-3 h-3 text-[#0A84FF]" />
+              <h2 className="text-[11px] text-[#8E8E93] font-semibold uppercase tracking-[0.12em]">The Brief</h2>
+            </div>
+            <div
+              className="relative rounded-[20px] p-[1px] overflow-hidden"
+              style={{
+                background:
+                  'linear-gradient(135deg, rgba(10,132,255,0.35) 0%, rgba(255,255,255,0.06) 35%, rgba(255,255,255,0.02) 100%)',
+              }}
+            >
+              <div
+                className="relative rounded-[19px] p-4 overflow-hidden"
+                style={{
+                  background:
+                    'linear-gradient(180deg, #1a1a1c 0%, #131315 100%)',
+                }}
+              >
+                {/* subtle sheen */}
+                <div
+                  className="pointer-events-none absolute -top-16 -left-12 w-48 h-48 rounded-full opacity-40 blur-3xl"
+                  style={{ background: 'radial-gradient(circle, rgba(10,132,255,0.35) 0%, transparent 70%)' }}
+                />
+                <p className="relative text-[15px] text-white/95 leading-[1.5] whitespace-pre-wrap tracking-[-0.005em]">
+                  {mission.description}
+                </p>
+              </div>
             </div>
           </section>
         )}
 
-        {/* Scenepacks */}
+        {/* Scenepacks — minimal, trust-badge style */}
         {scenepacks.length > 0 && (
-          <section className="mt-4">
-            <h2 className="text-[13px] text-[#8E8E93] font-medium uppercase tracking-wide px-1 mb-2">Ready-made clips</h2>
-            <div className="rounded-[18px] overflow-hidden" style={{ background: '#1c1c1e' }}>
+          <section className="mt-5">
+            <div className="flex items-center gap-1.5 px-1 mb-2">
+              <h2 className="text-[11px] text-[#8E8E93] font-semibold uppercase tracking-[0.12em]">Ready-Made Clips</h2>
+              <div className="flex items-center gap-1 px-1.5 py-[1px] rounded-full" style={{ background: 'rgba(48,209,88,0.12)' }}>
+                <BadgeCheck className="w-2.5 h-2.5 text-[#30D158]" strokeWidth={2.5} />
+                <span className="text-[9px] font-semibold text-[#30D158] uppercase tracking-wide">Verified</span>
+              </div>
+            </div>
+            <div className="rounded-[18px] overflow-hidden border border-white/[0.05]" style={{ background: 'rgba(255,255,255,0.015)' }}>
               {scenepacks.map((s, i) => (
                 <a
                   key={i}
                   href={s.url!}
                   target="_blank"
                   rel="noreferrer"
-                  className={`flex items-center gap-3 p-3.5 active:bg-white/[0.04] transition-colors ${i > 0 ? 'border-t border-white/[0.06]' : ''}`}
+                  className={`group flex items-center gap-3 px-3.5 py-3 active:bg-white/[0.03] transition-colors ${i > 0 ? 'border-t border-white/[0.04]' : ''}`}
                 >
-                  <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(10,132,255,0.15)' }}>
-                    <Download className="w-4 h-4 text-[#0A84FF]" strokeWidth={2.5} />
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border border-white/[0.06]" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                    <Download className="w-3.5 h-3.5 text-[#8E8E93] group-active:text-[#0A84FF] transition-colors" strokeWidth={2.25} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[15px] font-semibold text-white">{s.label}</p>
-                    <p className="text-[12px] text-[#8E8E93] truncate">{s.url}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-[14px] font-medium text-white/90">{s.label}</p>
+                      <BadgeCheck className="w-3 h-3 text-[#0A84FF]" strokeWidth={2.5} />
+                    </div>
+                    <p className="text-[11px] text-[#636366] truncate mt-0.5">{s.url}</p>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-[#48484A]" />
+                  <ExternalLink className="w-3.5 h-3.5 text-[#3A3A3C]" />
                 </a>
               ))}
             </div>
           </section>
         )}
 
-        {/* Inspirations */}
+        {/* Inspirations — minimal style matching scenepacks */}
         {inspos.length > 0 && (
-          <section className="mt-4">
-            <h2 className="text-[13px] text-[#8E8E93] font-medium uppercase tracking-wide px-1 mb-2">Inspirations</h2>
-            <div className="rounded-[18px] overflow-hidden" style={{ background: '#1c1c1e' }}>
+          <section className="mt-5">
+            <div className="flex items-center gap-1.5 px-1 mb-2">
+              <h2 className="text-[11px] text-[#8E8E93] font-semibold uppercase tracking-[0.12em]">Inspirations</h2>
+              <div className="flex items-center gap-1 px-1.5 py-[1px] rounded-full" style={{ background: 'rgba(48,209,88,0.12)' }}>
+                <BadgeCheck className="w-2.5 h-2.5 text-[#30D158]" strokeWidth={2.5} />
+                <span className="text-[9px] font-semibold text-[#30D158] uppercase tracking-wide">Verified</span>
+              </div>
+            </div>
+            <div className="rounded-[18px] overflow-hidden border border-white/[0.05]" style={{ background: 'rgba(255,255,255,0.015)' }}>
               {inspos.map((url, i) => (
                 <a
                   key={i}
                   href={url}
                   target="_blank"
                   rel="noreferrer"
-                  className={`flex items-center gap-3 p-3.5 active:bg-white/[0.04] transition-colors ${i > 0 ? 'border-t border-white/[0.06]' : ''}`}
+                  className={`group flex items-center gap-3 px-3.5 py-3 active:bg-white/[0.03] transition-colors ${i > 0 ? 'border-t border-white/[0.04]' : ''}`}
                 >
-                  <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(255,69,58,0.15)' }}>
-                    <Play className="w-4 h-4 text-[#FF453A] fill-[#FF453A]" />
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border border-white/[0.06]" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                    <Play className="w-3 h-3 text-[#8E8E93] group-active:text-[#FF453A] transition-colors fill-current" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[15px] font-semibold text-white">Reference {i + 1}</p>
-                    <p className="text-[12px] text-[#8E8E93] truncate">{url}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-[14px] font-medium text-white/90">Reference {i + 1}</p>
+                      <BadgeCheck className="w-3 h-3 text-[#0A84FF]" strokeWidth={2.5} />
+                    </div>
+                    <p className="text-[11px] text-[#636366] truncate mt-0.5">{url}</p>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-[#48484A]" />
+                  <ExternalLink className="w-3.5 h-3.5 text-[#3A3A3C]" />
                 </a>
               ))}
             </div>
