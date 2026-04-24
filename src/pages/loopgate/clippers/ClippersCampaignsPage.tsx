@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search, Sparkles, ChevronRight, DollarSign, TrendingUp } from 'lucide-react';
+import { Search, Sparkles, ChevronRight, DollarSign, TrendingUp, BadgeCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useTempProfile } from '@/hooks/useTempProfile';
@@ -250,8 +250,13 @@ function MissionCard({ m, formatMoney }: { m: Mission; formatMoney: (n: number) 
         <div className="flex-1 min-w-0 py-0.5 pr-1 flex flex-col">
           <div className="flex items-start justify-between gap-1.5">
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] text-[#8E8E93] font-medium truncate leading-none">
-                {m.sponsor_name || 'Loopgate Official'}
+              <p className="text-[11px] text-[#8E8E93] font-medium truncate leading-none flex items-center gap-1">
+                <span className="truncate">{m.sponsor_name || 'Loopgate Official'}</span>
+                <BadgeCheck
+                  className="w-[12px] h-[12px] flex-shrink-0 fill-[#F5C451] text-black"
+                  strokeWidth={2.5}
+                  aria-label="Verified"
+                />
               </p>
               <h3 className="font-apple-tight text-[17px] font-bold text-white tracking-[-0.022em] line-clamp-2 leading-[1.15] mt-1">
                 {m.title}
