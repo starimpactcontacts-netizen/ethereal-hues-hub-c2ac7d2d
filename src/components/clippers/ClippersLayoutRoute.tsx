@@ -13,9 +13,11 @@ const TITLE_MAP: Record<string, string> = {
 export default function ClippersLayoutRoute() {
   const { pathname } = useLocation();
   const title = TITLE_MAP[pathname] || 'Missions';
+  // Hide bottom tab bar inside an active mission so the floating Submit CTA isn't clipped
+  const hideBottomNav = pathname.startsWith('/missions/submit');
 
   return (
-    <ClippersLayout title={title}>
+    <ClippersLayout title={title} hideBottomNav={hideBottomNav}>
       <Suspense
         fallback={
           <div className="max-w-6xl mx-auto px-4 pt-6 space-y-3">
