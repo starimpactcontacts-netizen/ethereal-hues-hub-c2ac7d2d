@@ -162,31 +162,6 @@ export default function ViewsGamePanel({
                 </p>
               </div>
 
-              {/* Motivating "almost there" panel — only on the next active tier */}
-              {isNext && (
-                <div className="mt-2.5 ml-8 rounded-[10px] px-3 py-2.5" style={{ background: 'rgba(48,209,88,0.08)', border: '0.5px solid rgba(48,209,88,0.25)' }}>
-                  <div className="flex items-baseline justify-between gap-2 mb-1.5">
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="font-apple-tight text-[22px] font-semibold text-white tabular-nums leading-none tracking-[-0.02em]">
-                        {formatViews(remaining)}
-                      </span>
-                      <span className="text-[11px] text-[#8E8E93] tracking-[-0.01em]">views away</span>
-                    </div>
-                    <span className="text-[11px] font-medium text-[#30D158] tabular-nums tracking-[-0.01em]">
-                      unlocks {formatMoney(m.bonus_cents)}
-                    </span>
-                  </div>
-                  <div className="relative h-[3px] rounded-full bg-white/[0.08] overflow-hidden">
-                    <div
-                      className="absolute inset-y-0 left-0 rounded-full bg-[#30D158] transition-all duration-200"
-                      style={{ width: `${tierPct}%` }}
-                    />
-                  </div>
-                  <p className="text-[10.5px] text-[#8E8E93] tracking-[-0.01em] mt-1.5">
-                    Hits {formatViews(m.views)} views → {formatMoney(m.bonus_cents)} added to your balance instantly.
-                  </p>
-                </div>
-              )}
             </div>
           );
         })}
