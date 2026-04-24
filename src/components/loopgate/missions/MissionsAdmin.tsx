@@ -929,6 +929,31 @@ function MissionLauncher({
                           </p>
                         )}
                         <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => inspoAvatarRefs.current[i]?.click()}
+                            disabled={uploadingInspoAvatarIdx === i}
+                            className="relative w-7 h-7 rounded-full overflow-hidden bg-zinc-900 border border-zinc-700 shrink-0 flex items-center justify-center hover:border-zinc-500 active:scale-95 transition-all"
+                            title={it.avatar_url ? 'Change profile pic' : 'Upload profile pic'}
+                          >
+                            {uploadingInspoAvatarIdx === i ? (
+                              <Loader2 className="w-3 h-3 animate-spin text-zinc-400" />
+                            ) : it.avatar_url ? (
+                              <img src={it.avatar_url} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <Upload className="w-3 h-3 text-zinc-500" />
+                            )}
+                          </button>
+                          <input
+                            ref={el => (inspoAvatarRefs.current[i] = el)}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={e => {
+                              const f = e.target.files?.[0];
+                              if (f) uploadInspoAvatar(i, f);
+                            }}
+                          />
                           <span className="text-[12px] text-zinc-500 shrink-0">@</span>
                           <Input
                             value={it.username || ''}
@@ -936,6 +961,16 @@ function MissionLauncher({
                             placeholder="username"
                             className="flex-1 h-8 text-[12px]"
                           />
+                          {it.avatar_url && (
+                            <button
+                              type="button"
+                              onClick={() => patchInspo(i, { avatar_url: null })}
+                              className="text-zinc-600 hover:text-red-400 shrink-0"
+                              title="Remove pic"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
                         <div className="mt-auto flex justify-end">
                           <Button
