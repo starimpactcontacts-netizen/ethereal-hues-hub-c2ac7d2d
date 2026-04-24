@@ -211,8 +211,7 @@ export default function MissionSubmitPage() {
           </button>
 
           {milestones.length > 0 && (
-          {milestones.length > 0 && (
-            <ViewsGamePanel milestones={milestones} basePayoutCents={mission.base_payout_cents} />
+            <ViewsGamePanel milestones={milestones} />
           )}
 
           {showProgress && (
