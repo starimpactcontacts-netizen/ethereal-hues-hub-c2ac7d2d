@@ -108,7 +108,7 @@ export default function ViewsGamePanel({ milestones }: { milestones: Milestone[]
           </div>
           <div className="mt-2 flex items-center justify-between">
             <div>
-              <p className="text-[11px] text-[#8E8E93] tracking-[-0.01em]">Available to cash out</p>
+              <p className="text-[11px] text-[#8E8E93] tracking-[-0.01em]">Total earned this campaign</p>
               <p className="text-[18px] font-semibold text-[#30D158] tabular-nums tracking-[-0.015em] leading-tight">{formatMoney(earned)}</p>
             </div>
             {next && (
@@ -122,11 +122,15 @@ export default function ViewsGamePanel({ milestones }: { milestones: Milestone[]
           {/* Cash out CTA — always green, always inviting */}
           <button
             type="button"
-            className="mt-3 w-full h-11 rounded-[12px] flex items-center justify-center gap-2 font-semibold text-[15px] tracking-[-0.01em] transition-all active:scale-[0.98] text-black"
+            className="group relative mt-3 w-full h-11 rounded-[12px] flex items-center justify-center gap-2 font-semibold text-[15px] tracking-[-0.01em] transition-all active:scale-[0.98] text-black overflow-hidden"
             style={{ background: '#30D158' }}
           >
-            <ArrowDownToLine className="w-4 h-4" strokeWidth={2.6} />
-            Cash out {formatMoney(earned)}
+            <span
+              className="pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 -skew-x-12 opacity-0 group-hover:opacity-100 transition-opacity duration-300 group-hover:animate-[sheen_1.1s_ease-in-out]"
+              style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent)' }}
+            />
+            <ArrowDownToLine className="w-4 h-4 relative" strokeWidth={2.6} />
+            <span className="relative">Cash out {formatMoney(earned)}</span>
           </button>
           <p className="text-[10.5px] text-[#8E8E93] text-center mt-2 tracking-[-0.01em]">
             Instant transfer · no minimum · no fees
