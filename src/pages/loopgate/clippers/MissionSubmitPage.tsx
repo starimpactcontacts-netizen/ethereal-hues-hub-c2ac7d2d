@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronLeft, DollarSign, TrendingUp, Download, Play, Upload, BadgeCheck, Loader2, ExternalLink, Clock, Sparkles, Eye, CheckCircle2, XCircle, Link2, Lock, Zap, Trophy, Flame, ChevronRight, Globe } from 'lucide-react';
+import { ChevronLeft, DollarSign, TrendingUp, Download, Play, Upload, BadgeCheck, Loader2, ExternalLink, Clock, Sparkles, Eye, CheckCircle2, XCircle, Link2, Lock, Zap, Trophy, Flame, ChevronRight, Globe, Info, X } from 'lucide-react';
 import { SiYoutube, SiGoogledrive, SiInstagram, SiTiktok } from '@icons-pack/react-simple-icons';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -60,6 +60,7 @@ export default function MissionSubmitPage() {
   const [submitting, setSubmitting] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [submitOpen, setSubmitOpen] = useState(false);
+  const [rulesOpen, setRulesOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [eligibilityOpen, setEligibilityOpen] = useState(false);
   const [eligibility, setEligibility] = useState<
@@ -433,8 +434,17 @@ export default function MissionSubmitPage() {
                 {/* Brief */}
                 {mission.description && (
                   <div className="relative px-5 pt-5 pb-5">
-                    <div className="mb-3">
+                    <div className="mb-3 flex items-center justify-between">
                       <span className="text-[10.5px] text-[#8E8E93] font-semibold uppercase tracking-[0.14em]">The Brief</span>
+                      <button
+                        type="button"
+                        onClick={() => setRulesOpen(true)}
+                        className="flex items-center gap-1 text-[10.5px] text-[#0A84FF] font-semibold uppercase tracking-[0.14em] active:opacity-60 transition-opacity"
+                        aria-label="Show rules"
+                      >
+                        <Info className="w-3.5 h-3.5" strokeWidth={2.4} />
+                        <span>Rules</span>
+                      </button>
                     </div>
                     {(() => {
                       const hasClips = scenepacks.length > 0 || inspoLinksOnly.length > 0;
@@ -678,6 +688,66 @@ export default function MissionSubmitPage() {
         reason="Sign up to submit your clip and get paid."
       />
 
+      {rulesOpen && (
+        <div
+          className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center bg-black/75 backdrop-blur-sm"
+          onClick={() => setRulesOpen(false)}
+        >
+          <motion.div
+            initial={{ y: 40, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full sm:max-w-md sm:rounded-[24px] rounded-t-[24px] overflow-hidden"
+            style={{ background: '#1C1C1E', border: '0.5px solid rgba(255,255,255,0.08)' }}
+          >
+            <div className="px-5 pt-5 pb-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-[#0A84FF]/15 flex items-center justify-center">
+                  <Info className="w-4 h-4 text-[#0A84FF]" strokeWidth={2.4} />
+                </div>
+                <h3 className="font-apple-tight text-[18px] font-bold text-white tracking-[-0.01em]">Mission rules</h3>
+              </div>
+              <button
+                onClick={() => setRulesOpen(false)}
+                className="w-8 h-8 rounded-full flex items-center justify-center active:opacity-60"
+                style={{ background: 'rgba(255,255,255,0.08)' }}
+                aria-label="Close"
+              >
+                <X className="w-4 h-4 text-white" strokeWidth={2.4} />
+              </button>
+            </div>
+            <div className="px-5 pb-5 space-y-3">
+              <RuleRow title="Keep your post up for 30 days">
+                Don't delete, archive, or set it private. Deleted posts forfeit base + view payouts.
+              </RuleRow>
+              <RuleRow title="Tag the official account">
+                Use the exact handle from the brief. Misspelled or missing tags = rejected.
+              </RuleRow>
+              <RuleRow title="Post from your linked account">
+                Submit from the same handle you verified in Linked. Different account = no payout.
+              </RuleRow>
+              <RuleRow title="Use the ready-made clips">
+                Don't reupload other clippers' edits or random unrelated footage. Original framing only.
+              </RuleRow>
+              <RuleRow title="One submission per post">
+                Don't submit the same link twice or spam reposts. Repeated abuse = ban.
+              </RuleRow>
+              <RuleRow title="Public post link only">
+                Send the live post URL — not a story, draft, or screenshot. Reviewed within 24h.
+              </RuleRow>
+              <button
+                onClick={() => setRulesOpen(false)}
+                className="w-full h-12 rounded-[14px] font-semibold text-[15px] text-white mt-2"
+                style={{ background: 'rgba(255,255,255,0.08)' }}
+              >
+                Got it
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
       {submitOpen && (
         <div
           className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm"
@@ -838,5 +908,19 @@ export default function MissionSubmitPage() {
         </div>
       )}
     </>
+  );
+}
+
+function RuleRow({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-start gap-3 rounded-[14px] p-3" style={{ background: 'rgba(255,255,255,0.04)' }}>
+      <div className="w-5 h-5 rounded-full bg-[#30D158]/15 flex items-center justify-center shrink-0 mt-0.5">
+        <CheckCircle2 className="w-3.5 h-3.5 text-[#30D158]" strokeWidth={2.5} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[14px] font-semibold text-white tracking-[-0.01em] leading-tight">{title}</p>
+        <p className="text-[12.5px] text-[#8E8E93] tracking-[-0.005em] leading-snug mt-0.5">{children}</p>
+      </div>
+    </div>
   );
 }
