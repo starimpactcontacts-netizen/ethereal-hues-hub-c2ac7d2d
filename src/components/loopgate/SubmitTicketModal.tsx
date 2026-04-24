@@ -1,35 +1,118 @@
-import { useState, useRef } from "react";
-import { Bug, Lightbulb, MessageSquare, ImagePlus, X, Loader2, Send } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ImagePlus, X, Loader2, Send, MessageCircle, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 interface SubmitTicketModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-const CATEGORIES = [
-  { value: "bug", label: "Bug", icon: Bug, color: "text-red-400" },
-  { value: "suggestion", label: "Idea", icon: Lightbulb, color: "text-gold" },
-  { value: "other", label: "Other", icon: MessageSquare, color: "text-primary" },
-] as const;
+interface ThreadMessage {
+  id: string;
+  ticket_id: string;
+  user_id: string;
+  sender_role: "user" | "admin";
+  message: string;
+  image_url: string | null;
+  created_at: string;
+}
+
+interface TicketRow {
+  id: string;
+  subject: string;
+  status: string;
+  created_at: string;
+}
+
+function formatTime(iso: string) {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  } catch {
+    return "";
+  }
+}
 
 export default function SubmitTicketModal({ open, onOpenChange }: SubmitTicketModalProps) {
   const { user, profile } = useAuth();
-  const [category, setCategory] = useState<string>("bug");
-  const [subject, setSubject] = useState("");
-  const [message, setMessage] = useState("");
+  const [ticket, setTicket] = useState<TicketRow | null>(null);
+  const [messages, setMessages] = useState<ThreadMessage[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [sending, setSending] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+
+  // Load latest open ticket + messages when modal opens
+  useEffect(() => {
+    if (!open || !user) return;
+    let active = true;
+    setLoading(true);
+    (async () => {
+      // Find latest ticket for this user (open first, then any)
+      const { data: tickets } = await supabase
+        .from("support_tickets")
+        .select("id, subject, status, created_at")
+        .eq("user_id", user.id)
+        .order("updated_at", { ascending: false })
+        .limit(1);
+
+      if (!active) return;
+      const latest = tickets?.[0] as TicketRow | undefined;
+      if (latest) {
+        setTicket(latest);
+        const { data: msgs } = await supabase
+          .from("support_ticket_messages")
+          .select("*")
+          .eq("ticket_id", latest.id)
+          .order("created_at", { ascending: true });
+        if (!active) return;
+        setMessages((msgs || []) as ThreadMessage[]);
+      } else {
+        setTicket(null);
+        setMessages([]);
+      }
+      setLoading(false);
+    })();
+    return () => {
+      active = false;
+    };
+  }, [open, user]);
+
+  // Realtime subscription for the active ticket
+  useEffect(() => {
+    if (!ticket?.id) return;
+    const channel = supabase
+      .channel(`support_thread_${ticket.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "support_ticket_messages",
+          filter: `ticket_id=eq.${ticket.id}`,
+        },
+        (payload) => {
+          const m = payload.new as ThreadMessage;
+          setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [ticket?.id]);
+
+  // Auto-scroll to bottom on new messages
+  useEffect(() => {
+    if (!scrollerRef.current) return;
+    scrollerRef.current.scrollTop = scrollerRef.current.scrollHeight;
+  }, [messages.length, loading]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -52,126 +135,219 @@ export default function SubmitTicketModal({ open, onOpenChange }: SubmitTicketMo
       toast.error("Upload failed");
     } finally {
       setUploading(false);
-      if (inputRef.current) inputRef.current.value = "";
+      if (fileRef.current) fileRef.current.value = "";
     }
   };
 
-  const handleSubmit = async () => {
-    if (!user || !subject.trim() || !message.trim()) {
-      toast.error("Fill in the subject and message");
+  const sendMessage = async () => {
+    if (!user) {
+      toast.error("Sign in to send a message");
       return;
     }
-    setSubmitting(true);
+    const text = draft.trim();
+    if (!text && !imageUrl) return;
+    setSending(true);
     try {
-      const { error } = await supabase.from("support_tickets").insert({
+      let activeTicket = ticket;
+      // No ticket yet → create one using this first message
+      if (!activeTicket) {
+        const subject = text ? text.slice(0, 80) : "New conversation";
+        const { data: created, error: tErr } = await supabase
+          .from("support_tickets")
+          .insert({
+            user_id: user.id,
+            username: (profile as any)?.username || "unknown",
+            avatar_url: (profile as any)?.avatar_url || null,
+            category: "other",
+            subject,
+            message: text || "(image)",
+            image_url: imageUrl,
+          })
+          .select("id, subject, status, created_at")
+          .single();
+        if (tErr) throw tErr;
+        activeTicket = created as TicketRow;
+        setTicket(activeTicket);
+      }
+
+      const { error: mErr } = await supabase.from("support_ticket_messages").insert({
+        ticket_id: activeTicket.id,
         user_id: user.id,
-        username: (profile as any)?.username || "unknown",
-        avatar_url: (profile as any)?.avatar_url || null,
-        category,
-        subject: subject.trim(),
-        message: message.trim(),
+        sender_role: "user",
+        message: text || "(image)",
         image_url: imageUrl,
       });
-      if (error) throw error;
-      toast.success("Ticket submitted! We'll look into it 🙏");
-      setSubject("");
-      setMessage("");
+      if (mErr) throw mErr;
+
+      setDraft("");
       setImageUrl(null);
-      setCategory("bug");
-      onOpenChange(false);
-    } catch {
-      toast.error("Failed to submit ticket");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to send");
     } finally {
-      setSubmitting(false);
+      setSending(false);
+    }
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[360px] bg-card border-border/50 p-0 gap-0 rounded-2xl">
-        <DialogHeader className="p-4 pb-2">
-          <DialogTitle className="text-sm font-bold">Report or Suggest</DialogTitle>
-          <p className="text-[10px] text-muted-foreground">found a bug? got an idea? lmk 🤝</p>
-        </DialogHeader>
-
-        <div className="px-4 pb-4 space-y-3">
-          {/* Category chips */}
-          <div className="flex gap-2">
-            {CATEGORIES.map((cat) => {
-              const Icon = cat.icon;
-              const active = category === cat.value;
-              return (
-                <button
-                  key={cat.value}
-                  onClick={() => setCategory(cat.value)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all ${
-                    active
-                      ? "bg-white/10 border border-white/20 text-foreground"
-                      : "bg-muted/30 border border-transparent text-muted-foreground hover:bg-muted/50"
-                  }`}
-                >
-                  <Icon size={12} className={active ? cat.color : ""} />
-                  {cat.label}
-                </button>
-              );
-            })}
+      <DialogContent
+        className="max-w-[420px] p-0 gap-0 rounded-3xl border-white/10 overflow-hidden"
+        style={{
+          background: "linear-gradient(180deg, rgba(36,36,38,0.96) 0%, rgba(20,20,22,0.98) 100%)",
+          backdropFilter: "blur(40px) saturate(180%)",
+          WebkitBackdropFilter: "blur(40px) saturate(180%)",
+        }}
+      >
+        {/* Header */}
+        <div className="px-4 pt-4 pb-3 flex items-center gap-3 border-b border-white/[0.06]">
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+            style={{
+              background: "linear-gradient(180deg, #34C759 0%, #1FB84A 100%)",
+              boxShadow: "0 6px 16px -4px rgba(48,209,88,0.5), 0 1px 0 rgba(255,255,255,0.3) inset",
+            }}
+          >
+            <Sparkles className="w-[18px] h-[18px] text-white" strokeWidth={2.5} />
           </div>
+          <div className="flex-1 min-w-0">
+            <DialogTitle className="text-[15px] font-semibold text-white tracking-[-0.01em] leading-tight">
+              Loopgate Support
+            </DialogTitle>
+            <p className="text-[11px] text-[#8E8E93] mt-0.5">
+              {ticket ? `Ticket · ${ticket.status}` : "Replies in ~20 min in most cases"}
+            </p>
+          </div>
+        </div>
 
-          {/* Subject */}
-          <input
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            placeholder="what's going on?"
-            maxLength={100}
-            className="w-full bg-muted/30 border border-border/40 rounded-xl px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50"
-          />
+        {/* Thread */}
+        <div
+          ref={scrollerRef}
+          className="px-4 py-4 space-y-3 overflow-y-auto"
+          style={{ height: 380 }}
+        >
+          {loading ? (
+            <div className="h-full flex items-center justify-center text-[#8E8E93]">
+              <Loader2 className="w-5 h-5 animate-spin" />
+            </div>
+          ) : messages.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center text-center px-6">
+              <div
+                className="w-14 h-14 rounded-full flex items-center justify-center mb-3"
+                style={{ background: "rgba(118,118,128,0.18)" }}
+              >
+                <MessageCircle className="w-6 h-6 text-[#8E8E93]" strokeWidth={2} />
+              </div>
+              <p className="text-[14px] font-medium text-white">Say hi 👋</p>
+              <p className="text-[12px] text-[#8E8E93] mt-1 leading-snug">
+                Drop your question, bug, or feedback. We'll reply right here.
+              </p>
+            </div>
+          ) : (
+            messages.map((m) => {
+              const mine = m.sender_role === "user";
+              return (
+                <div
+                  key={m.id}
+                  className={`flex flex-col ${mine ? "items-end" : "items-start"}`}
+                >
+                  <div
+                    className={`max-w-[78%] px-3.5 py-2 rounded-2xl text-[14px] leading-snug whitespace-pre-wrap break-words ${
+                      mine
+                        ? "text-white rounded-br-md"
+                        : "text-white rounded-bl-md"
+                    }`}
+                    style={
+                      mine
+                        ? {
+                            background: "linear-gradient(180deg, #0A84FF 0%, #0066D6 100%)",
+                            boxShadow: "0 4px 12px -4px rgba(10,132,255,0.4)",
+                          }
+                        : {
+                            background: "rgba(118,118,128,0.24)",
+                            border: "0.5px solid rgba(255,255,255,0.06)",
+                          }
+                    }
+                  >
+                    {m.image_url && (
+                      <img
+                        src={m.image_url}
+                        alt="attachment"
+                        className="rounded-xl mb-1.5 max-h-[180px]"
+                      />
+                    )}
+                    {m.message && m.message !== "(image)" ? m.message : null}
+                  </div>
+                  <span className="text-[10px] text-[#8E8E93] mt-1 px-1">
+                    {mine ? "You" : "Support"} · {formatTime(m.created_at)}
+                  </span>
+                </div>
+              );
+            })
+          )}
+        </div>
 
-          {/* Message */}
-          <textarea
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="describe it... the more detail the faster we fix it"
-            maxLength={2000}
-            rows={4}
-            className="w-full bg-muted/30 border border-border/40 rounded-xl px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 resize-none"
-          />
-
-          {/* Image preview */}
+        {/* Composer */}
+        <div className="border-t border-white/[0.06] p-3 pb-[max(env(safe-area-inset-bottom),12px)]">
           {imageUrl && (
-            <div className="relative inline-block">
-              <img src={imageUrl} alt="attachment" className="max-h-[120px] rounded-xl border border-border/30" />
+            <div className="relative inline-block mb-2">
+              <img src={imageUrl} alt="attachment" className="max-h-[80px] rounded-lg border border-white/10" />
               <button
                 onClick={() => setImageUrl(null)}
-                className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-background border border-border rounded-full flex items-center justify-center"
+                className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-black border border-white/20 rounded-full flex items-center justify-center text-white"
               >
                 <X size={10} />
               </button>
             </div>
           )}
 
-          {/* Bottom row */}
-          <div className="flex items-center justify-between pt-1">
+          <div
+            className="flex items-end gap-2 rounded-2xl px-2 py-1.5"
+            style={{
+              background: "rgba(118,118,128,0.18)",
+              border: "0.5px solid rgba(255,255,255,0.08)",
+            }}
+          >
             <button
-              onClick={() => inputRef.current?.click()}
-              disabled={uploading}
-              className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+              onClick={() => fileRef.current?.click()}
+              disabled={uploading || sending}
+              className="w-8 h-8 inline-flex items-center justify-center rounded-full text-[#8E8E93] hover:text-white shrink-0"
+              aria-label="Attach image"
             >
-              {uploading ? <Loader2 size={14} className="animate-spin" /> : <ImagePlus size={14} />}
-              {uploading ? "uploading..." : "attach screenshot"}
+              {uploading ? <Loader2 size={16} className="animate-spin" /> : <ImagePlus size={16} />}
             </button>
-
+            <textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={onKeyDown}
+              placeholder="Message support…"
+              rows={1}
+              maxLength={2000}
+              className="flex-1 bg-transparent resize-none text-[14px] text-white placeholder:text-[#8E8E93] focus:outline-none py-1.5 max-h-[120px]"
+              style={{ minHeight: 28 }}
+            />
             <button
-              onClick={handleSubmit}
-              disabled={submitting || !subject.trim() || !message.trim()}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold disabled:opacity-40 hover:bg-primary/90 transition-colors"
+              onClick={sendMessage}
+              disabled={sending || (!draft.trim() && !imageUrl)}
+              className="w-8 h-8 inline-flex items-center justify-center rounded-full text-white shrink-0 disabled:opacity-30 transition-opacity"
+              style={{
+                background: "linear-gradient(180deg, #0A84FF 0%, #0066D6 100%)",
+                boxShadow: "0 4px 10px -3px rgba(10,132,255,0.5)",
+              }}
+              aria-label="Send"
             >
-              {submitting ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
-              Send
+              {sending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
             </button>
           </div>
 
           <input
-            ref={inputRef}
+            ref={fileRef}
             type="file"
             accept="image/jpeg,image/png,image/webp,image/gif"
             onChange={handleImageUpload}
