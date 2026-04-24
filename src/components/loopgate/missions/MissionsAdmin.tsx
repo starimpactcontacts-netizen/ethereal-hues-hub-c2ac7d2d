@@ -243,11 +243,15 @@ export default function MissionsAdmin() {
 
   // ─── Payout actions ─────────────────────────────────────────────────
   const updatePayout = async (p: Payout, status: Payout['status']) => {
-    const { error } = await supabase.from('mission_payouts').update({
+    const table = p.source === 'clipper' ? 'clipper_withdrawals' : 'mission_payouts';
+    const updates: Record<string, any> = {
       status,
-      processed_by: user?.id ?? null,
       processed_at: status === 'paid' || status === 'rejected' ? new Date().toISOString() : null,
-    }).eq('id', p.id);
+    };
+    if (p.source !== 'clipper') {
+      updates.processed_by = user?.id ?? null;
+    }
+    const { error } = await supabase.from(table as any).update(updates).eq('id', p.id);
     if (error) return toast.error(error.message);
     toast.success(`Payout → ${status}`);
     fetchAll();
