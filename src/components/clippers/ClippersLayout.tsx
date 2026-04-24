@@ -15,7 +15,7 @@ interface Props {
 
 const tabs = [
   { to: '/missions/portal', icon: LayoutGrid, label: 'Missions' },
-  { to: '/missions/submissions', icon: Film, label: 'Clips' },
+  { to: '/missions/submissions', icon: Film, label: 'Posts' },
   { to: '/missions/accounts', icon: Link2, label: 'Linked' },
   { to: '/missions/withdrawals', icon: Wallet, label: 'Cashout' },
 ];
