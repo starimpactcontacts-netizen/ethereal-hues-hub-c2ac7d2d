@@ -18,7 +18,6 @@ const tabs = [
   { to: '/missions/submissions', icon: Film, label: 'Clips' },
   { to: '/missions/accounts', icon: Link2, label: 'Linked' },
   { to: '/missions/withdrawals', icon: Wallet, label: 'Cashout' },
-  { to: '/missions/policy', icon: ScrollText, label: 'Policy' },
 ];
 
 export default function ClippersLayout({ children, title, hideBottomNav = false }: Props) {
@@ -104,6 +103,12 @@ export default function ClippersLayout({ children, title, hideBottomNav = false 
                     />
                   )}
                   <div className="h-px bg-white/[0.08] my-1" />
+                  <MenuItem
+                    icon={ScrollText}
+                    label="Mission Policy"
+                    onClick={() => { setMenuOpen(false); navigate('/missions/policy'); }}
+                  />
+                  <div className="h-px bg-white/[0.08] my-1" />
                   <div className="px-3 py-2 flex items-center gap-2 opacity-60">
                     <img src={loopgateLogo} alt="" className="h-3.5 w-3.5" />
                     <span className="text-[10px] uppercase tracking-[0.15em] text-[#8E8E93]">{title || 'Missions'}</span>
@@ -138,7 +143,7 @@ export default function ClippersLayout({ children, title, hideBottomNav = false 
           borderTop: '0.5px solid rgba(255, 255, 255, 0.1)',
         }}
       >
-        <div className="max-w-6xl mx-auto grid grid-cols-5 px-1 pt-1.5">
+        <div className="max-w-6xl mx-auto grid grid-cols-4 px-1 pt-1.5">
           {tabs.map((t) => (
             <NavLink
               key={t.to}
