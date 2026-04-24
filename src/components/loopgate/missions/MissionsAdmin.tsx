@@ -531,14 +531,39 @@ function MissionLauncher({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const { profile } = useAuth();
   const [title, setTitle] = useState(mission?.title || '');
   const [description, setDescription] = useState(mission?.description || '');
   const [coverUrl, setCoverUrl] = useState(mission?.cover_image_url || '');
-  const [inspirations, setInspirations] = useState<string[]>(
+  // Inspirations are now objects: { video_url, link_url, username, avatar_url }.
+  // Legacy entries (plain strings = a link only) are normalized on load.
+  type InspoItem = {
+    video_url: string | null;
+    link_url: string | null;
+    username: string | null;
+    avatar_url: string | null;
+  };
+  const normalizeInspo = (raw: any): InspoItem => {
+    if (typeof raw === 'string') {
+      return { video_url: null, link_url: raw || null, username: null, avatar_url: null };
+    }
+    if (raw && typeof raw === 'object') {
+      return {
+        video_url: raw.video_url || null,
+        link_url: raw.link_url || null,
+        username: raw.username || null,
+        avatar_url: raw.avatar_url || null,
+      };
+    }
+    return { video_url: null, link_url: null, username: null, avatar_url: null };
+  };
+  const [inspirations, setInspirations] = useState<InspoItem[]>(
     (mission?.inspirations && mission.inspirations.length > 0)
-      ? mission.inspirations
-      : ['']
+      ? mission.inspirations.map(normalizeInspo)
+      : [{ video_url: null, link_url: null, username: null, avatar_url: null }]
   );
+  const [uploadingInspoIdx, setUploadingInspoIdx] = useState<number | null>(null);
+  const inspoFileRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [scenepackGdrive, setScenepackGdrive] = useState(mission?.scenepack_gdrive_url || '');
   const [scenepackYoutube, setScenepackYoutube] = useState(mission?.scenepack_youtube_url || '');
   const [basePayout, setBasePayout] = useState(((mission?.base_payout_cents || 0) / 100).toString());
@@ -586,10 +611,41 @@ function MissionLauncher({
     }
   };
 
-  const updateInspo = (i: number, value: string) =>
-    setInspirations(prev => prev.map((u, idx) => (idx === i ? value : u)));
-  const addInspo = () => setInspirations(prev => [...prev, '']);
+  const patchInspo = (i: number, patch: Partial<InspoItem>) =>
+    setInspirations(prev => prev.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
+  const addInspo = () =>
+    setInspirations(prev => [...prev, { video_url: null, link_url: null, username: null, avatar_url: null }]);
   const removeInspo = (i: number) => setInspirations(prev => prev.filter((_, idx) => idx !== i));
+
+  const uploadInspoVideo = async (i: number, file: File) => {
+    if (!userId) return toast.error('Not signed in');
+    if (file.size > 50 * 1024 * 1024) return toast.error('Video must be under 50MB');
+    if (!file.type.startsWith('video/') && !file.type.startsWith('image/')) {
+      return toast.error('Pick a video or image');
+    }
+    setUploadingInspoIdx(i);
+    try {
+      const ext = file.name.split('.').pop() || 'mp4';
+      const path = `${userId}/missions/inspo-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from('loop-media').upload(path, file, {
+        cacheControl: '3600', upsert: false,
+      });
+      if (error) throw error;
+      const { data: pub } = supabase.storage.from('loop-media').getPublicUrl(path);
+      patchInspo(i, {
+        video_url: pub.publicUrl,
+        username: profile?.username || null,
+        avatar_url: profile?.avatar_url || null,
+      });
+      toast.success('Inspo uploaded');
+    } catch (e: any) {
+      toast.error(e?.message || 'Upload failed');
+    } finally {
+      setUploadingInspoIdx(null);
+      const el = inspoFileRefs.current[i];
+      if (el) el.value = '';
+    }
+  };
 
   const updateMs = (i: number, key: keyof Milestone, value: string) => {
     const v = parseFloat(value) || 0;
@@ -605,7 +661,18 @@ function MissionLauncher({
   const save = async () => {
     if (!title.trim()) return toast.error('Title required');
     setSaving(true);
-    const cleanInspo = inspirations.map(s => s.trim()).filter(Boolean);
+    // Keep only inspo entries that have at least a video or a link.
+    const cleanInspo = inspirations
+      .map(it => ({
+        video_url: it.video_url?.trim() || null,
+        link_url: it.link_url?.trim() || null,
+        username: it.username || null,
+        avatar_url: it.avatar_url || null,
+      }))
+      .filter(it => it.video_url || it.link_url);
+    const firstLegacyUrl = cleanInspo.find(it => it.link_url)?.link_url
+      || cleanInspo.find(it => it.video_url)?.video_url
+      || null;
     const payload = {
       title: title.trim(),
       description: description.trim() || null,
@@ -613,8 +680,8 @@ function MissionLauncher({
       // Closed market — every mission is officially Loopgate
       sponsor_name: 'Loopgate Official',
       sponsor_logo_url: null,
-      reference_video_url: cleanInspo[0] || null, // back-compat
-      inspirations: cleanInspo,
+      reference_video_url: firstLegacyUrl, // back-compat
+      inspirations: cleanInspo as any,
       scenepack_gdrive_url: scenepackGdrive.trim() || null,
       scenepack_youtube_url: scenepackYoutube.trim() || null,
       base_payout_cents: Math.round((parseFloat(basePayout) || 0) * 100),
