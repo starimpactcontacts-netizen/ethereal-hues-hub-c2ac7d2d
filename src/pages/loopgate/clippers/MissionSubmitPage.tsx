@@ -366,6 +366,72 @@ export default function MissionSubmitPage() {
         onClose={() => setAuthOpen(false)}
         reason="Sign up to submit your clip and get paid."
       />
+
+      {eligibilityOpen && (
+        <div
+          className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm"
+          onClick={() => setEligibilityOpen(false)}
+        >
+          <motion.div
+            initial={{ y: 40, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full sm:max-w-sm rounded-t-[24px] sm:rounded-[24px] p-5 pb-8 sm:pb-5"
+            style={{ background: '#1c1c1e' }}
+          >
+            {eligibility === 'checking' && (
+              <div className="py-8 flex flex-col items-center gap-3">
+                <Loader2 className="w-6 h-6 text-[#0A84FF] animate-spin" />
+                <p className="text-[14px] text-[#8E8E93]">Checking your accounts…</p>
+              </div>
+            )}
+            {eligibility === 'eligible' && (
+              <>
+                <div className="w-12 h-12 rounded-full bg-[#30D158]/15 flex items-center justify-center mb-3">
+                  <CheckCircle2 className="w-7 h-7 text-[#30D158]" strokeWidth={2.5} />
+                </div>
+                <h3 className="font-apple-tight text-[22px] font-bold text-white tracking-[-0.01em]">You're eligible</h3>
+                <p className="text-[14px] text-[#8E8E93] mt-1">
+                  {linkedCount} linked {linkedCount === 1 ? 'account' : 'accounts'}. You'll earn the ${(mission.base_payout_cents / 100).toFixed(2)} base on every approved clip — plus the views game on top.
+                </p>
+                <button
+                  onClick={() => { setEligibilityOpen(false); inputRef.current?.focus(); }}
+                  className="w-full h-12 rounded-[14px] font-semibold text-[16px] text-white inline-flex items-center justify-center gap-2 mt-4"
+                  style={{ background: '#30D158' }}
+                >
+                  Start submitting
+                </button>
+              </>
+            )}
+            {eligibility === 'ineligible' && (
+              <>
+                <div className="w-12 h-12 rounded-full bg-[#FF9F0A]/15 flex items-center justify-center mb-3">
+                  <XCircle className="w-7 h-7 text-[#FF9F0A]" strokeWidth={2.5} />
+                </div>
+                <h3 className="font-apple-tight text-[22px] font-bold text-white tracking-[-0.01em]">Not eligible for base payout</h3>
+                <p className="text-[14px] text-[#8E8E93] mt-1">
+                  Link a TikTok, Instagram, or YouTube account to unlock the ${(mission.base_payout_cents / 100).toFixed(2)} base. Until then, you can still play <span className="text-white font-semibold">the views game</span> and earn from milestone bonuses.
+                </p>
+                <Link
+                  to="/clippers/accounts"
+                  className="w-full h-12 rounded-[14px] font-semibold text-[16px] text-white inline-flex items-center justify-center gap-2 mt-4"
+                  style={{ background: '#0A84FF' }}
+                >
+                  <Link2 className="w-[18px] h-[18px]" strokeWidth={2.5} />
+                  Link account
+                </Link>
+                <button
+                  onClick={() => setEligibilityOpen(false)}
+                  className="w-full h-11 rounded-[14px] font-medium text-[15px] text-[#0A84FF] mt-2"
+                >
+                  Play the views game instead
+                </button>
+              </>
+            )}
+          </motion.div>
+        </div>
+      )}
     </>
   );
 }
