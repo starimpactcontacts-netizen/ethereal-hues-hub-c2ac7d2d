@@ -119,24 +119,18 @@ export default function ViewsGamePanel({ milestones }: { milestones: Milestone[]
             )}
           </div>
 
-          {/* Cash out CTA — Robinhood-style */}
+          {/* Cash out CTA — always green, always inviting */}
           <button
             type="button"
-            disabled={earned <= 0}
-            className="mt-3 w-full h-11 rounded-[12px] flex items-center justify-center gap-2 font-semibold text-[15px] tracking-[-0.01em] transition-all active:scale-[0.98] disabled:cursor-not-allowed"
-            style={{
-              background: earned > 0 ? '#30D158' : 'rgba(255,255,255,0.06)',
-              color: earned > 0 ? '#000' : '#48484A',
-            }}
+            className="mt-3 w-full h-11 rounded-[12px] flex items-center justify-center gap-2 font-semibold text-[15px] tracking-[-0.01em] transition-all active:scale-[0.98] text-black"
+            style={{ background: '#30D158' }}
           >
             <ArrowDownToLine className="w-4 h-4" strokeWidth={2.6} />
-            {earned > 0 ? `Cash out ${formatMoney(earned)}` : 'Cash out unlocks at first tier'}
+            Cash out {formatMoney(earned)}
           </button>
-          {earned > 0 && (
-            <p className="text-[10.5px] text-[#8E8E93] text-center mt-2 tracking-[-0.01em]">
-              Instant transfer · no minimum · no fees
-            </p>
-          )}
+          <p className="text-[10.5px] text-[#8E8E93] text-center mt-2 tracking-[-0.01em]">
+            Instant transfer · no minimum · no fees
+          </p>
         </div>
       </div>
 
