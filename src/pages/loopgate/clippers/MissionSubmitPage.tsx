@@ -202,12 +202,12 @@ export default function MissionSubmitPage() {
             className="w-full text-left active:opacity-70 transition-opacity"
           >
             <div className="flex items-center justify-between">
-              <span className="text-[11px] text-[#8E8E93] font-medium uppercase tracking-wide">Base payout · tap to check eligibility</span>
-              <CheckCircle2 className="w-4 h-4 text-[#0A84FF]" strokeWidth={2.5} />
+              <span className="text-[11px] text-[#8E8E93] font-medium tracking-[-0.01em]">Base · tap to check eligibility</span>
+              <span className="text-[11px] text-[#0A84FF] font-medium">Check</span>
             </div>
-            <p className="font-apple-tight text-[34px] font-bold text-[#30D158] leading-none mt-1 tabular-nums">
+            <p className="font-apple-tight text-[32px] font-semibold text-white leading-none mt-1 tabular-nums tracking-[-0.02em]">
               ${(mission.base_payout_cents / 100).toFixed(2)}
-              <span className="text-[14px] text-[#8E8E93] font-medium ml-1">/ approved clip</span>
+              <span className="text-[13px] text-[#8E8E93] font-normal ml-1.5 tracking-normal">per approved clip</span>
             </p>
           </button>
 
