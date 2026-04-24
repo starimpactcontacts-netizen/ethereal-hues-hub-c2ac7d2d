@@ -113,7 +113,7 @@ export default function ClippersSubmissionsPage() {
   return (
     <>
       <section className="max-w-6xl mx-auto px-4 pt-3 pb-4 flex items-end justify-between">
-        <h1 className="font-apple-tight text-[34px] font-bold text-white leading-[1.05]">Clips</h1>
+        <h1 className="font-apple-tight text-[34px] font-bold text-white leading-[1.05]">Posts</h1>
         <button
           onClick={openPicker}
           className="flex items-center gap-1 h-8 px-3 rounded-full bg-[#D4A857] text-white text-[14px] font-semibold active:opacity-60 transition-opacity"
@@ -158,7 +158,7 @@ export default function ClippersSubmissionsPage() {
         ) : !user ? (
           <EmptyCTA onClick={() => setShowGate(true)} text="Lock in to start submitting" />
         ) : filtered.length === 0 ? (
-          <EmptyCTA onClick={openPicker} text="No clips yet — pick a mission to drop your first one" />
+          <EmptyCTA onClick={openPicker} text="No posts yet — pick a mission to drop your first one" />
         ) : (
           <div className="rounded-[16px] overflow-hidden" style={{ background: '#1c1c1e' }}>
             {filtered.map((s, idx) => (
@@ -203,7 +203,7 @@ export default function ClippersSubmissionsPage() {
         </Sheet>
       )}
 
-      <ClipperLockGate open={showGate} onClose={() => setShowGate(false)} onSuccess={load} reason="Lock in to submit clips and earn payouts." />
+      <ClipperLockGate open={showGate} onClose={() => setShowGate(false)} onSuccess={load} reason="Lock in to submit posts and earn payouts." />
     </>
   );
 }
@@ -241,7 +241,7 @@ function SubmissionRow({ sub, isLast }: { sub: Submission; isLast: boolean }) {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-[16px] font-semibold text-white tracking-[-0.02em] truncate leading-tight">
-          {sub.title || sub.campaign_name || 'Untitled clip'}
+          {sub.title || sub.campaign_name || 'Untitled post'}
         </p>
         <div className="flex items-center gap-1.5 mt-0.5">
           <StatusIcon className="w-3 h-3" style={{ color: statusColor }} strokeWidth={2.8} />
@@ -266,7 +266,7 @@ function EmptyCTA({ text, onClick }: { text: string; onClick: () => void }) {
   return (
     <div className="rounded-[20px] p-10 text-center" style={{ background: '#1c1c1e' }}>
       <Film className="w-7 h-7 text-[#8E8E93] mx-auto mb-3" />
-      <p className="text-[17px] font-semibold text-white mb-1">No clips yet</p>
+      <p className="text-[17px] font-semibold text-white mb-1">No posts yet</p>
       <p className="text-[13px] text-[#8E8E93] mb-5">{text}</p>
       <button
         onClick={onClick}
