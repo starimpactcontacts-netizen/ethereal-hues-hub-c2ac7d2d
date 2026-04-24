@@ -1,11 +1,12 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronLeft, DollarSign, TrendingUp, Download, Play, Upload, BadgeCheck, Loader2, ExternalLink, Clock, Sparkles, Eye, CheckCircle2, XCircle, Link2 } from 'lucide-react';
+import { ChevronLeft, DollarSign, TrendingUp, Download, Play, Upload, BadgeCheck, Loader2, ExternalLink, Clock, Sparkles, Eye, CheckCircle2, XCircle, Link2, Lock, Zap, Trophy, Flame } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import AccountPromptModal from '@/components/loopgate/AccountPromptModal';
+import ViewsGamePanel from '@/components/loopgate/ViewsGamePanel';
 
 interface Milestone { views: number; bonus_cents: number; }
 
@@ -211,25 +212,7 @@ export default function MissionSubmitPage() {
           </button>
 
           {milestones.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-white/[0.06]">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-[11px] text-[#8E8E93] font-medium uppercase tracking-wide inline-flex items-center gap-1">
-                  <Eye className="w-3 h-3" /> The Views Game
-                </p>
-                <span className="text-[10px] text-[#8E8E93]">stack payouts</span>
-              </div>
-              <div className="space-y-1.5">
-                {milestones.map((m, i) => (
-                  <div key={i} className="flex items-center justify-between text-[13px]">
-                    <span className="text-white/80 inline-flex items-center gap-1.5">
-                      <TrendingUp className="w-3 h-3 text-[#8E8E93]" />
-                      {m.views.toLocaleString()}+ views
-                    </span>
-                    <span className="font-bold tabular-nums" style={{ color: '#30D158' }}>+{formatMoney(m.bonus_cents)}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <ViewsGamePanel milestones={milestones} />
           )}
 
           {showProgress && (
