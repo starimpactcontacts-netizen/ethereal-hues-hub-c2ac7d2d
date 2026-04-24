@@ -592,6 +592,12 @@ function MissionLauncher({
   const [saving, setSaving] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const [approvalRate, setApprovalRate] = useState(
+    mission?.approval_rate_pct != null ? String(mission.approval_rate_pct) : ''
+  );
+  const [baseRequirements, setBaseRequirements] = useState(
+    mission?.base_payout_requirements || ''
+  );
 
   const uploadCover = async (file: File) => {
     if (!userId) return toast.error('Not signed in');
