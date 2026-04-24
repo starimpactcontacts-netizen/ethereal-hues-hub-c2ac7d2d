@@ -634,8 +634,6 @@ function MissionLauncher({
       const { data: pub } = supabase.storage.from('loop-media').getPublicUrl(path);
       patchInspo(i, {
         video_url: pub.publicUrl,
-        username: profile?.username || null,
-        avatar_url: profile?.avatar_url || null,
       });
       toast.success('Inspo uploaded');
     } catch (e: any) {
@@ -905,20 +903,15 @@ function MissionLauncher({
                             Add a link so tapping the video opens the original.
                           </p>
                         )}
-                        {(it.username || profile?.username) && (
-                          <div className="flex items-center gap-1.5 text-[10.5px] text-zinc-400">
-                            <div className="w-4 h-4 rounded-full bg-zinc-800 overflow-hidden shrink-0">
-                              {(it.avatar_url || profile?.avatar_url) && (
-                                <img
-                                  src={it.avatar_url || profile?.avatar_url || ''}
-                                  alt=""
-                                  className="w-full h-full object-cover"
-                                />
-                              )}
-                            </div>
-                            <span>added by @{it.username || profile?.username}</span>
-                          </div>
-                        )}
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[12px] text-zinc-500 shrink-0">@</span>
+                          <Input
+                            value={it.username || ''}
+                            onChange={e => patchInspo(i, { username: e.target.value.replace(/^@+/, '').trim() || null })}
+                            placeholder="username"
+                            className="flex-1 h-8 text-[12px]"
+                          />
+                        </div>
                         <div className="mt-auto flex justify-end">
                           <Button
                             size="sm"
