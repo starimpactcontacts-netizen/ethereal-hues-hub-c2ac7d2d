@@ -274,8 +274,10 @@ Deno.serve(async (req) => {
     if (!screenshotBase64) return json({ verified: false, message: "Missing screenshot" }, 400);
     if (!lovableKey) return json({ verified: false, message: "Verifier unavailable" }, 500);
 
-    const code = acc.verification_code;
-    const prompt = `You are verifying a social media profile screenshot. Find the exact code "${code}" anywhere in the visible text (especially the bio/description). Reply ONLY with strict JSON: {"found": true} or {"found": false}.`;
+    const code = acc.verification_code as string;
+    // Build tolerant variants — OCR sometimes misreads similar chars / drops the dash
+    const codeNoDash = code.replace(/-/g, "");
+    const prompt = `Look at this social media profile screenshot. Does the visible text (especially the bio / description / name fields) contain the verification code "${code}" (also acceptable without the dash: "${codeNoDash}")? Be lenient with spacing and case. Reply with ONLY one word: YES or NO.`;
 
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -284,7 +286,7 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
+        model: "google/gemini-2.5-flash",
         messages: [
           {
             role: "user",
@@ -301,7 +303,7 @@ Deno.serve(async (req) => {
             ],
           },
         ],
-        max_tokens: 30,
+        max_tokens: 10,
       }),
     });
 
@@ -310,11 +312,14 @@ Deno.serve(async (req) => {
       return json({ verified: false, message: "Verifier unavailable" }, 500);
     }
     const aiData = await aiRes.json().catch(() => null);
-    const content = (aiData?.choices?.[0]?.message?.content || "").toLowerCase();
+    const raw = (aiData?.choices?.[0]?.message?.content || "").trim();
+    const content = raw.toLowerCase();
+    console.log("[verify-clipper] AI reply:", raw);
     const verified =
+      /^\s*yes\b/.test(content) ||
       content.includes('"found":true') ||
       content.includes('"found": true') ||
-      (content.includes("true") && !content.includes("false"));
+      (content.includes("yes") && !content.includes("no"));
 
     if (!verified) {
       return json({
