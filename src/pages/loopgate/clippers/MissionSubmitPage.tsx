@@ -434,8 +434,17 @@ export default function MissionSubmitPage() {
                 {/* Brief */}
                 {mission.description && (
                   <div className="relative px-5 pt-5 pb-5">
-                    <div className="mb-3">
+                    <div className="mb-3 flex items-center justify-between">
                       <span className="text-[10.5px] text-[#8E8E93] font-semibold uppercase tracking-[0.14em]">The Brief</span>
+                      <button
+                        type="button"
+                        onClick={() => setRulesOpen(true)}
+                        className="flex items-center gap-1 text-[10.5px] text-[#0A84FF] font-semibold uppercase tracking-[0.14em] active:opacity-60 transition-opacity"
+                        aria-label="Show rules"
+                      >
+                        <Info className="w-3.5 h-3.5" strokeWidth={2.4} />
+                        <span>Rules</span>
+                      </button>
                     </div>
                     {(() => {
                       const hasClips = scenepacks.length > 0 || inspoLinksOnly.length > 0;
