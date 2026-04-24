@@ -223,7 +223,7 @@ async function writeToTable(
     return;
   }
 
-  const { error } = await supabase
+  const { error } = await (supabase as any)
     .from(table)
     .update(cleanPayload)
     .eq("id", rowId);
@@ -275,7 +275,7 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    await writeToTable(supabase, table, row_id, result, side);
+    await writeToTable(supabase as any, table, row_id, result, side);
 
     return new Response(
       JSON.stringify({

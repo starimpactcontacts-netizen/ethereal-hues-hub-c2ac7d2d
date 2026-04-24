@@ -785,11 +785,12 @@ serve(async (req) => {
           //   2. Must come from at least 1 trusted source (GQL/mobile/main page, not just embed)
           //   3. New value must be GREATER than stored value (monotonic)
           //   4. If existing value is large (>10k), require corroboration from 2+ sources for jumps >50%
+          const s = stats as any;
           const currentViews = edit.view_count || 0;
           const hasConfidentViews =
-            stats.views !== null &&
-            stats.diagnostics.plausibleViews &&
-            stats.diagnostics.trustedViewSources > 0;
+            s.views !== null &&
+            s.diagnostics?.plausibleViews &&
+            s.diagnostics?.trustedViewSources > 0;
 
           let acceptViews = hasConfidentViews && stats.views! > currentViews;
           // Tiered acceptance based on multi-source corroboration:
@@ -797,8 +798,8 @@ serve(async (req) => {
           //  - 'medium': cap jumps to 3x current value
           //  - 'weak'  (single source): cap jumps to 1.5x current value
           if (acceptViews && currentViews > 1000) {
-            const tier = stats.diagnostics.confidenceTier;
-            const ratio = stats.views! / Math.max(currentViews, 1);
+            const tier = s.diagnostics?.confidenceTier;
+            const ratio = s.views! / Math.max(currentViews, 1);
             if (tier === 'weak' && ratio > 1.5) acceptViews = false;
             else if (tier === 'medium' && ratio > 3) acceptViews = false;
           }
@@ -810,9 +811,9 @@ serve(async (req) => {
           if (stats.thumbnailUrl && !edit.thumbnail_url) payload.thumbnail_url = stats.thumbnailUrl;
           // EXACT publish date from Instagram's own taken_at_timestamp - always sync if missing
           // or if scraped value differs (Instagram is authoritative on this)
-          if (stats.takenAt && stats.takenAt > 0) {
-            const exactDate = new Date(stats.takenAt * 1000).toISOString();
-            if (!edit.published_at || new Date(edit.published_at).getTime() !== stats.takenAt * 1000) {
+          if (s.takenAt && s.takenAt > 0) {
+            const exactDate = new Date(s.takenAt * 1000).toISOString();
+            if (!edit.published_at || new Date(edit.published_at).getTime() !== s.takenAt * 1000) {
               payload.published_at = exactDate;
             }
           }
