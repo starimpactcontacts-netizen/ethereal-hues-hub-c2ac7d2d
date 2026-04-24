@@ -827,33 +827,118 @@ function MissionLauncher({
           {/* Inspirations — multiple rows so clippers don't get stuck on one ref */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <Label className="text-xs text-zinc-400">Inspirations (optional, multiple)</Label>
+              <Label className="text-xs text-zinc-400">Inspirations · upload video + optional source link</Label>
               <Button size="sm" variant="ghost" onClick={addInspo} className="h-6 px-2 text-[10px]">
                 <Plus className="w-3 h-3 mr-1" /> Add inspo
               </Button>
             </div>
-            <div className="space-y-1.5">
-              {inspirations.map((url, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <Input
-                    value={url}
-                    onChange={e => updateInspo(i, e.target.value)}
-                    placeholder="https://youtube.com / tiktok / instagram link"
-                    className="flex-1"
-                  />
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => removeInspo(i)}
-                    className="h-8 px-2"
-                    disabled={inspirations.length === 1}
-                  >
-                    <Trash2 className="w-3.5 h-3.5 text-red-400" />
-                  </Button>
-                </div>
-              ))}
+            <div className="space-y-2.5">
+              {inspirations.map((it, i) => {
+                const isUploading = uploadingInspoIdx === i;
+                return (
+                  <div key={i} className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-2.5 space-y-2">
+                    <div className="flex items-stretch gap-2">
+                      {/* Video preview / uploader */}
+                      <div className="relative w-24 h-32 rounded-lg overflow-hidden bg-zinc-950 border border-zinc-800 shrink-0">
+                        {it.video_url ? (
+                          <video
+                            src={it.video_url}
+                            className="w-full h-full object-cover"
+                            muted
+                            playsInline
+                            loop
+                            autoPlay
+                          />
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => inspoFileRefs.current[i]?.click()}
+                            className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-zinc-500 hover:text-zinc-300 active:scale-[0.97] transition-all"
+                          >
+                            {isUploading ? (
+                              <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                              <>
+                                <Film className="w-5 h-5" />
+                                <span className="text-[9.5px] font-medium leading-tight text-center px-1">
+                                  Upload<br />video
+                                </span>
+                              </>
+                            )}
+                          </button>
+                        )}
+                        {it.video_url && (
+                          <button
+                            type="button"
+                            onClick={() => patchInspo(i, { video_url: null })}
+                            className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 flex items-center justify-center"
+                            title="Remove video"
+                          >
+                            <X className="w-3 h-3 text-white" />
+                          </button>
+                        )}
+                        <input
+                          ref={el => (inspoFileRefs.current[i] = el)}
+                          type="file"
+                          accept="video/*,image/*"
+                          className="hidden"
+                          onChange={e => {
+                            const f = e.target.files?.[0];
+                            if (f) uploadInspoVideo(i, f);
+                          }}
+                        />
+                      </div>
+
+                      {/* Right side: link + meta */}
+                      <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <LinkIcon className="w-3 h-3 text-zinc-500 shrink-0" />
+                          <Input
+                            value={it.link_url || ''}
+                            onChange={e => patchInspo(i, { link_url: e.target.value })}
+                            placeholder="Source link (YT / TT / IG) — optional"
+                            className="flex-1 h-8 text-[12px]"
+                          />
+                        </div>
+                        {it.video_url && !it.link_url && (
+                          <p className="text-[10px] text-zinc-500 leading-snug">
+                            Add a link so tapping the video opens the original.
+                          </p>
+                        )}
+                        {(it.username || profile?.username) && (
+                          <div className="flex items-center gap-1.5 text-[10.5px] text-zinc-400">
+                            <div className="w-4 h-4 rounded-full bg-zinc-800 overflow-hidden shrink-0">
+                              {(it.avatar_url || profile?.avatar_url) && (
+                                <img
+                                  src={it.avatar_url || profile?.avatar_url || ''}
+                                  alt=""
+                                  className="w-full h-full object-cover"
+                                />
+                              )}
+                            </div>
+                            <span>added by @{it.username || profile?.username}</span>
+                          </div>
+                        )}
+                        <div className="mt-auto flex justify-end">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => removeInspo(i)}
+                            className="h-7 px-2 text-[10px] text-red-400 hover:text-red-300"
+                            disabled={inspirations.length === 1}
+                          >
+                            <Trash2 className="w-3 h-3 mr-1" /> Remove
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            <p className="text-[10px] text-zinc-600 mt-1">Drop several reference edits — variety keeps clippers unstuck.</p>
+            <p className="text-[10px] text-zinc-600 mt-2">
+              Upload short reference videos straight from photos / files. Variety keeps clippers unstuck.
+            </p>
           </div>
 
           <div>
