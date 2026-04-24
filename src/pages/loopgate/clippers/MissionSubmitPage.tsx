@@ -178,9 +178,33 @@ export default function MissionSubmitPage() {
     : (budget > 0 ? Math.min(100, (spent / budget) * 100) : 0);
   const showProgress = isPostsCap ? maxPosts > 0 : budget > 0;
 
-  const inspos: string[] = Array.isArray(mission.inspirations)
-    ? mission.inspirations.filter((x: any) => typeof x === 'string' && x.trim())
+  // Inspirations support two shapes:
+  //   • legacy: plain string URL
+  //   • new:    { video_url, link_url, username, avatar_url }
+  type InspoNorm = { video_url: string | null; link_url: string | null; username: string | null; avatar_url: string | null };
+  const inspoItems: InspoNorm[] = Array.isArray(mission.inspirations)
+    ? mission.inspirations
+        .map((x: any): InspoNorm | null => {
+          if (typeof x === 'string' && x.trim()) {
+            return { video_url: null, link_url: x.trim(), username: null, avatar_url: null };
+          }
+          if (x && typeof x === 'object') {
+            const v = (x.video_url || '').trim();
+            const l = (x.link_url || '').trim();
+            if (!v && !l) return null;
+            return {
+              video_url: v || null,
+              link_url: l || null,
+              username: x.username || null,
+              avatar_url: x.avatar_url || null,
+            };
+          }
+          return null;
+        })
+        .filter(Boolean) as InspoNorm[]
     : [];
+  const inspoVideos = inspoItems.filter(i => i.video_url);
+  const inspoLinksOnly = inspoItems.filter(i => !i.video_url && i.link_url);
 
   const scenepacks = [
     { url: mission.scenepack_url, label: 'Scenepack' },
