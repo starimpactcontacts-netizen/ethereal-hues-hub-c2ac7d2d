@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronLeft, DollarSign, TrendingUp, Download, Play, Upload, BadgeCheck, Loader2, ExternalLink, Clock, Sparkles, Eye, CheckCircle2, XCircle, Link2, Lock, Zap, Trophy, Flame, ChevronRight, Globe } from 'lucide-react';
+import { ChevronLeft, DollarSign, TrendingUp, Download, Play, Upload, BadgeCheck, Loader2, ExternalLink, Clock, Sparkles, Eye, CheckCircle2, XCircle, Link2, Lock, Zap, Trophy, Flame, ChevronRight, Globe, Info, X } from 'lucide-react';
 import { SiYoutube, SiGoogledrive, SiInstagram, SiTiktok } from '@icons-pack/react-simple-icons';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
