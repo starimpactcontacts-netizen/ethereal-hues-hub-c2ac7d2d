@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Check, ArrowUpRight } from 'lucide-react';
+import { Check, ArrowUpRight, ArrowDownToLine } from 'lucide-react';
 
 interface Milestone { views: number; bonus_cents: number; }
 
@@ -63,11 +63,11 @@ export default function ViewsGamePanel({ milestones }: { milestones: Milestone[]
 
   return (
     <div className="mt-4 pt-4 border-t border-white/[0.06]">
-      {/* Header — Stocks-style */}
+      {/* Header — Live earnings (trading-style) */}
       <div className="flex items-center justify-between mb-3">
         <div>
-          <p className="text-[13px] font-semibold text-white tracking-[-0.01em]">Your position</p>
-          <p className="text-[11px] text-[#8E8E93] tracking-[-0.01em]">Views · live</p>
+          <p className="text-[13px] font-semibold text-white tracking-[-0.01em]">Live earnings</p>
+          <p className="text-[11px] text-[#8E8E93] tracking-[-0.01em]">Updated as your clip grows</p>
         </div>
         <div className="text-right">
           <p className="text-[11px] text-[#8E8E93] tracking-[-0.01em]">Max payout</p>
@@ -108,8 +108,8 @@ export default function ViewsGamePanel({ milestones }: { milestones: Milestone[]
           </div>
           <div className="mt-2 flex items-center justify-between">
             <div>
-              <p className="text-[11px] text-[#8E8E93] tracking-[-0.01em]">Earned</p>
-              <p className="text-[15px] font-semibold text-white tabular-nums tracking-[-0.01em]">{formatMoney(earned)}</p>
+              <p className="text-[11px] text-[#8E8E93] tracking-[-0.01em]">Available to cash out</p>
+              <p className="text-[18px] font-semibold text-[#30D158] tabular-nums tracking-[-0.015em] leading-tight">{formatMoney(earned)}</p>
             </div>
             {next && (
               <div className="text-right">
@@ -118,6 +118,25 @@ export default function ViewsGamePanel({ milestones }: { milestones: Milestone[]
               </div>
             )}
           </div>
+
+          {/* Cash out CTA — Robinhood-style */}
+          <button
+            type="button"
+            disabled={earned <= 0}
+            className="mt-3 w-full h-11 rounded-[12px] flex items-center justify-center gap-2 font-semibold text-[15px] tracking-[-0.01em] transition-all active:scale-[0.98] disabled:cursor-not-allowed"
+            style={{
+              background: earned > 0 ? '#30D158' : 'rgba(255,255,255,0.06)',
+              color: earned > 0 ? '#000' : '#48484A',
+            }}
+          >
+            <ArrowDownToLine className="w-4 h-4" strokeWidth={2.6} />
+            {earned > 0 ? `Cash out ${formatMoney(earned)}` : 'Cash out unlocks at first tier'}
+          </button>
+          {earned > 0 && (
+            <p className="text-[10.5px] text-[#8E8E93] text-center mt-2 tracking-[-0.01em]">
+              Instant transfer · no minimum · no fees
+            </p>
+          )}
         </div>
       </div>
 
