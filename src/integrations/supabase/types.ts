@@ -5845,6 +5845,7 @@ export type Database = {
           created_by: string | null
           deadline: string | null
           description: string | null
+          eligible_platforms: string[]
           id: string
           inspirations: Json
           max_posts: number | null
@@ -5872,6 +5873,7 @@ export type Database = {
           created_by?: string | null
           deadline?: string | null
           description?: string | null
+          eligible_platforms?: string[]
           id?: string
           inspirations?: Json
           max_posts?: number | null
@@ -5899,6 +5901,7 @@ export type Database = {
           created_by?: string | null
           deadline?: string | null
           description?: string | null
+          eligible_platforms?: string[]
           id?: string
           inspirations?: Json
           max_posts?: number | null

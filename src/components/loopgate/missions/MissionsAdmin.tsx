@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
+import PlatformBadges, { ALL_MISSION_PLATFORMS, type MissionPlatform } from './PlatformBadges';
 
 // ─── Types ────────────────────────────────────────────────────────────
 interface Milestone {
@@ -38,6 +39,7 @@ interface Mission {
   spent_cents: number;
   cap_type: 'budget' | 'posts' | string;
   max_posts: number | null;
+  eligible_platforms: string[] | null;
   status: 'draft' | 'live' | 'paused' | 'closed';
   deadline: string | null;
   submission_count: number;
@@ -286,6 +288,7 @@ export default function MissionsAdmin() {
                       ) : (
                         <span>${(m.spent_cents / 100).toFixed(2)} / ${(m.budget_cents / 100).toFixed(2)} budget</span>
                       )}
+                      <PlatformBadges platforms={m.eligible_platforms} />
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
@@ -544,6 +547,11 @@ function MissionLauncher({
     (mission?.cap_type === 'posts' ? 'posts' : 'budget')
   );
   const [maxPosts, setMaxPosts] = useState((mission?.max_posts ?? '').toString());
+  const [eligiblePlatforms, setEligiblePlatforms] = useState<MissionPlatform[]>(
+    (mission?.eligible_platforms && mission.eligible_platforms.length > 0
+      ? (mission.eligible_platforms as MissionPlatform[])
+      : [...ALL_MISSION_PLATFORMS])
+  );
   const [milestones, setMilestones] = useState<Milestone[]>(
     mission?.view_milestones || [
       { views: 10000, bonus_cents: 1000 },
@@ -613,6 +621,7 @@ function MissionLauncher({
       budget_cents: Math.round((parseFloat(budget) || 0) * 100),
       cap_type: capType,
       max_posts: capType === 'posts' ? Math.max(0, parseInt(maxPosts) || 0) : null,
+      eligible_platforms: eligiblePlatforms.length > 0 ? eligiblePlatforms : ['tiktok', 'instagram', 'youtube'],
       view_milestones: milestones.filter(m => m.views > 0).sort((a, b) => a.views - b.views),
       deadline: deadline ? new Date(deadline).toISOString() : null,
     };
@@ -716,6 +725,36 @@ function MissionLauncher({
                 placeholder="https://youtube.com/…"
               />
             </div>
+          </div>
+
+          {/* Eligible platforms */}
+          <div className="space-y-2 p-3 rounded-lg bg-zinc-900/40 border border-zinc-800">
+            <div>
+              <Label className="text-xs text-zinc-300 font-semibold">Eligible platforms</Label>
+              <p className="text-[10px] text-zinc-500 mt-0.5">Where clippers must post. Shown on the mission card and detail page so users know up front.</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {ALL_MISSION_PLATFORMS.map((p) => {
+                const active = eligiblePlatforms.includes(p);
+                return (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setEligiblePlatforms(prev => active ? prev.filter(x => x !== p) : [...prev, p])}
+                    className={`px-3 h-8 rounded-md text-[12px] font-semibold capitalize border transition-colors ${
+                      active
+                        ? 'bg-emerald-600 text-white border-emerald-500'
+                        : 'bg-zinc-900 text-zinc-400 border-zinc-700 hover:text-white'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                );
+              })}
+            </div>
+            {eligiblePlatforms.length === 0 && (
+              <p className="text-[10px] text-amber-400">Pick at least one platform — defaulting to all if left empty.</p>
+            )}
           </div>
 
           {/* Inspirations — multiple rows so clippers don't get stuck on one ref */}

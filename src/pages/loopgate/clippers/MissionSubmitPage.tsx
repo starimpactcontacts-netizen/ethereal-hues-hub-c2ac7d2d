@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import AccountPromptModal from '@/components/loopgate/AccountPromptModal';
 import ViewsGamePanel from '@/components/loopgate/ViewsGamePanel';
+import PlatformBadges from '@/components/loopgate/missions/PlatformBadges';
 
 interface Milestone { views: number; bonus_cents: number; }
 
@@ -26,6 +27,7 @@ interface Mission {
   scenepack_url: string | null;
   scenepack_gdrive_url: string | null;
   scenepack_youtube_url: string | null;
+  eligible_platforms: string[] | null;
   status: string;
   deadline: string | null;
 }
@@ -83,7 +85,7 @@ export default function MissionSubmitPage() {
     (async () => {
       const { data } = await supabase
         .from('missions')
-        .select('id, title, description, cover_image_url, base_payout_cents, view_milestones, budget_cents, spent_cents, cap_type, max_posts, approved_count, inspirations, scenepack_url, scenepack_gdrive_url, scenepack_youtube_url, status, deadline')
+        .select('id, title, description, cover_image_url, base_payout_cents, view_milestones, budget_cents, spent_cents, cap_type, max_posts, approved_count, inspirations, scenepack_url, scenepack_gdrive_url, scenepack_youtube_url, eligible_platforms, status, deadline')
         .eq('id', id)
         .maybeSingle();
       setMission((data as any) || null);
@@ -222,6 +224,9 @@ export default function MissionSubmitPage() {
           </div>
           <div className="absolute bottom-3 left-3 right-3">
             <h1 className="font-apple-tight text-[24px] font-bold text-white leading-tight tracking-[-0.02em]">{mission.title}</h1>
+            <div className="mt-2">
+              <PlatformBadges platforms={mission.eligible_platforms} size="sm" showLabel />
+            </div>
           </div>
         </motion.div>
 
