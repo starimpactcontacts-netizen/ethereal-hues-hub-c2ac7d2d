@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { Outlet, useLocation, useMatches } from 'react-router-dom';
 import ClippersLayout from './ClippersLayout';
+import MissionsSupportBubble from './MissionsSupportBubble';
 
 // Map routes to titles so the persistent header updates without remount
 const TITLE_MAP: Record<string, string> = {
@@ -30,6 +31,7 @@ export default function ClippersLayoutRoute() {
       >
         <Outlet />
       </Suspense>
+      <MissionsSupportBubble />
     </ClippersLayout>
   );
 }
