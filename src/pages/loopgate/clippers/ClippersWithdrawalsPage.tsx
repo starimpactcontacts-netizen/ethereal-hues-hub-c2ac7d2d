@@ -71,6 +71,14 @@ export default function ClippersWithdrawalsPage() {
     return () => document.body.classList.remove('hide-app-chrome');
   }, [showRequest]);
 
+  // Close payout sheet on Escape key
+  useEffect(() => {
+    if (!showRequest) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setShowRequest(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [showRequest]);
+
   const resetForm = () => {
     setAmount(''); setDestination(''); setConfirmDest(''); setAcceptCrypto(false); setMethod('paypal'); setCryptoNet('usdt_trc20');
   };
