@@ -51,13 +51,17 @@ export default function ClippersWithdrawalsPage() {
 
   const load = async () => {
     if (!user) { setLoading(false); return; }
-    const [pRes, wRes] = await Promise.all([
-      supabase.from('clipper_profiles').select('total_earnings_cents').eq('user_id', user.id).maybeSingle(),
+    // Mission earnings = sum of approved/scored submission totals
+    // Less any non-rejected payouts (mission_payouts) and legacy clipper_withdrawals
+    const [subsRes, paysRes, wRes] = await Promise.all([
+      supabase.from('mission_submissions').select('total_earned_cents, status').eq('user_id', user.id),
+      supabase.from('mission_payouts').select('amount_cents, status').eq('user_id', user.id).neq('status', 'rejected'),
       supabase.from('clipper_withdrawals').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
     ]);
-    const earnings = pRes.data?.total_earnings_cents || 0;
-    const paidOut = (wRes.data || []).filter((w) => w.status !== 'rejected').reduce((sum, w) => sum + w.amount_cents, 0);
-    setBalance(Math.max(0, earnings - paidOut));
+    const earnings = (subsRes.data || []).reduce((s, x: any) => s + (x.total_earned_cents || 0), 0);
+    const missionPaid = (paysRes.data || []).reduce((s, x: any) => s + (x.amount_cents || 0), 0);
+    const withdrawalsPaid = (wRes.data || []).filter((w) => w.status !== 'rejected').reduce((sum, w) => sum + w.amount_cents, 0);
+    setBalance(Math.max(0, earnings - missionPaid - withdrawalsPaid));
     setWithdrawals((wRes.data || []) as Withdrawal[]);
     setLoading(false);
   };

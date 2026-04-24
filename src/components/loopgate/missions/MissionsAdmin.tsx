@@ -157,7 +157,21 @@ export default function MissionsAdmin() {
 
     let base = 0, bonus = 0;
     if (action === 'approved') {
-      base = mission.base_payout_cents;
+      // Base is only paid if the user has an approved eligibility request for this mission
+      // (or if the mission has no requirements set — backwards compat).
+      const requiresEligibility = !!(mission as any).base_payout_requirements;
+      let baseEligible = !requiresEligibility;
+      if (requiresEligibility) {
+        const { data: elig } = await supabase
+          .from('mission_base_eligibility' as any)
+          .select('status')
+          .eq('mission_id', mission.id)
+          .eq('user_id', sub.user_id)
+          .eq('status', 'approved')
+          .maybeSingle();
+        baseEligible = !!elig;
+      }
+      base = baseEligible ? mission.base_payout_cents : 0;
       bonus = computeBonus(sub.view_count || 0, mission.view_milestones || []);
     }
 
