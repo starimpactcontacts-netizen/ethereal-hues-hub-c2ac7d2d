@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   DollarSign, Plus, Pencil, Trash2, Play, Pause, Loader2, X,
   Check, ExternalLink, ChevronDown, ChevronUp, Eye, Wallet, Send,
-  Upload, Image as ImageIcon, BadgeCheck, Download,
+  Upload, Image as ImageIcon, BadgeCheck, Download, Film, Link as LinkIcon,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -29,7 +29,7 @@ interface Mission {
   sponsor_name: string | null;
   sponsor_logo_url: string | null;
   reference_video_url: string | null;
-  inspirations: string[] | null;
+  inspirations: any[] | null;
   scenepack_url: string | null;
   scenepack_gdrive_url: string | null;
   scenepack_youtube_url: string | null;
