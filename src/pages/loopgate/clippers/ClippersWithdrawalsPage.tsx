@@ -23,7 +23,7 @@ const METHODS = [
   { id: 'crypto', label: 'Crypto', placeholder: 'USDT wallet' },
 ];
 
-const MIN_PAYOUT_CENTS = 1000;
+const MIN_PAYOUT_CENTS = 0;
 
 export default function ClippersWithdrawalsPage() {
   const { user } = useAuth();
@@ -55,7 +55,7 @@ export default function ClippersWithdrawalsPage() {
   const submitRequest = async () => {
     if (!user) { setShowGate(true); return; }
     const amtCents = Math.round(parseFloat(amount) * 100);
-    if (!amtCents || amtCents < MIN_PAYOUT_CENTS) { toast.error(`Minimum payout is $${(MIN_PAYOUT_CENTS / 100).toFixed(2)}`); return; }
+    if (!amtCents || amtCents <= 0) { toast.error('Enter an amount'); return; }
     if (amtCents > balance) { toast.error('Amount exceeds balance'); return; }
     if (!destination.trim()) { toast.error('Enter a destination'); return; }
     setRequesting(true);
@@ -70,7 +70,7 @@ export default function ClippersWithdrawalsPage() {
 
   const formatMoney = (c: number) => `$${(c / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   const totalPaid = withdrawals.filter((w) => w.status === 'paid').reduce((s, w) => s + w.amount_cents, 0);
-  const canCashOut = !!user && balance >= MIN_PAYOUT_CENTS;
+  const canCashOut = !!user && balance > 0;
 
   return (
     <>
@@ -127,7 +127,7 @@ export default function ClippersWithdrawalsPage() {
           <div className="rounded-[20px] p-10 text-center" style={{ background: '#1c1c1e' }}>
             <Wallet className="w-7 h-7 text-[#8E8E93] mx-auto mb-3" />
             <p className="text-[17px] font-semibold text-white mb-1">No withdrawals yet</p>
-            <p className="text-[13px] text-[#8E8E93]">{user ? 'Hit the minimum to cash out' : 'Lock in to request payouts'}</p>
+            <p className="text-[13px] text-[#8E8E93]">{user ? 'Cash out anytime — no minimum' : 'Lock in to request payouts'}</p>
           </div>
         ) : (
           <div className="rounded-[16px] overflow-hidden" style={{ background: '#1c1c1e' }}>
