@@ -678,11 +678,11 @@ export default function MissionSubmitPage() {
             style={{ background: '#1c1c1e' }}
           >
             <div>
-              <h3 className="font-apple-tight text-[22px] font-bold text-white tracking-[-0.01em]">Submit your clip</h3>
-              <p className="text-[13px] text-[#8E8E93] mt-1">Paste the link to your posted clip. Reviewed within 24h.</p>
+              <h3 className="font-apple-tight text-[22px] font-bold text-white tracking-[-0.01em]">Submit your post</h3>
+              <p className="text-[13px] text-[#8E8E93] mt-1">Paste the link to your post. Reviewed within 24h.</p>
             </div>
             <div>
-              <label className="text-[11px] text-[#8E8E93] font-medium px-0.5">Clip link</label>
+              <label className="text-[11px] text-[#8E8E93] font-medium px-0.5">Post link</label>
               <input
                 ref={inputRef}
                 autoFocus
