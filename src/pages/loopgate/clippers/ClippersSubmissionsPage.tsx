@@ -55,11 +55,23 @@ export default function ClippersSubmissionsPage() {
   const load = async () => {
     if (!user) { setLoading(false); return; }
     const { data } = await supabase
-      .from('clip_submissions')
-      .select('id, campaign_name, title, video_url, thumbnail_url, platform, view_count, status, earned_cents, created_at')
+      .from('mission_submissions')
+      .select('id, title, video_url, thumbnail_url, platform, view_count, status, total_earned_cents, created_at, mission:missions(title)')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
-    setSubs((data || []) as Submission[]);
+    const mapped: Submission[] = (data || []).map((r: any) => ({
+      id: r.id,
+      campaign_name: r.mission?.title ?? null,
+      title: r.title,
+      video_url: r.video_url,
+      thumbnail_url: r.thumbnail_url,
+      platform: r.platform,
+      view_count: r.view_count || 0,
+      status: r.status,
+      earned_cents: r.total_earned_cents || 0,
+      created_at: r.created_at,
+    }));
+    setSubs(mapped);
     setLoading(false);
   };
 
