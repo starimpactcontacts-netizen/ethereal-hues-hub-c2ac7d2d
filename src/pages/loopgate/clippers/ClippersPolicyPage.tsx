@@ -10,20 +10,20 @@ const RULES = [
   {
     icon: CalendarClock,
     color: '#FFCC00',
-    title: 'Keep submitted clips up for 30 days',
-    body: 'Once a clip is approved and earning, it must remain publicly posted for at least 30 days from approval. Early deletes void earnings on that clip and reduce your trust score.',
+    title: 'Keep submitted posts up for 30 days',
+    body: 'Once a post is approved and earning, it must remain publicly live for at least 30 days from approval. Early deletes void earnings on that post and reduce your trust score.',
   },
   {
     icon: ShieldCheck,
     color: '#0A84FF',
-    title: 'Only post your own clips',
-    body: 'No re-uploads of other clippers’ work, no stolen edits, and no AI farms. Verified original work only — duplicates are auto-rejected and may suspend your account.',
+    title: 'Only submit your own posts',
+    body: 'No re-uploads of other creators’ work, no stolen edits, and no AI farms. Verified original work only — duplicates are auto-rejected and may suspend your account.',
   },
   {
     icon: AlertTriangle,
     color: '#FF9F0A',
     title: 'No fake views or engagement',
-    body: 'Bots, view-bought traffic, and engagement pods will be detected. Suspicious traffic invalidates the clip’s payout and impacts your trust score across all future missions.',
+    body: 'Bots, view-bought traffic, and engagement pods will be detected. Suspicious traffic invalidates the post’s payout and impacts your trust score across all future missions.',
   },
   {
     icon: Scale,
@@ -35,7 +35,7 @@ const RULES = [
     icon: FileText,
     color: '#8E8E93',
     title: 'Trust score affects your missions',
-    body: 'Violations (early deletes, fake metrics, stolen clips) lower your trust score. Low trust = lower priority on missions and reduced payout caps. Keep it clean to keep earning.',
+    body: 'Violations (early deletes, fake metrics, stolen posts) lower your trust score. Low trust = lower priority on missions and reduced payout caps. Keep it clean to keep earning.',
   },
 ];
 
@@ -75,7 +75,7 @@ export default function ClippersPolicyPage() {
 
       <section className="max-w-6xl mx-auto px-4 mt-5">
         <p className="text-[12px] text-[#8E8E93] leading-relaxed text-center mt-2 mb-8">
-          By participating in Loopgate Missions you confirm you are <span className="text-white font-medium">18 or older</span>, agree to keep approved clips posted for at least <span className="text-white font-medium">30 days</span>, and accept Loopgate’s mission rules. Violations affect your trust score and future earnings.
+          By participating in Loopgate Missions you confirm you are <span className="text-white font-medium">18 or older</span>, agree to keep approved posts live for at least <span className="text-white font-medium">30 days</span>, and accept Loopgate’s mission rules. Violations affect your trust score and future earnings.
           <br /><br />
           Loopgate may update these rules. Material changes will be notified before they take effect.
         </p>
