@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   DollarSign, Plus, Pencil, Trash2, Play, Pause, Loader2, X,
   Check, ExternalLink, ChevronDown, ChevronUp, Eye, Wallet, Send,
-  Upload, Image as ImageIcon, BadgeCheck, Download,
+  Upload, Image as ImageIcon, BadgeCheck, Download, Film, Link as LinkIcon,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -29,7 +29,7 @@ interface Mission {
   sponsor_name: string | null;
   sponsor_logo_url: string | null;
   reference_video_url: string | null;
-  inspirations: string[] | null;
+  inspirations: any[] | null;
   scenepack_url: string | null;
   scenepack_gdrive_url: string | null;
   scenepack_youtube_url: string | null;
@@ -531,14 +531,39 @@ function MissionLauncher({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const { profile } = useAuth();
   const [title, setTitle] = useState(mission?.title || '');
   const [description, setDescription] = useState(mission?.description || '');
   const [coverUrl, setCoverUrl] = useState(mission?.cover_image_url || '');
-  const [inspirations, setInspirations] = useState<string[]>(
+  // Inspirations are now objects: { video_url, link_url, username, avatar_url }.
+  // Legacy entries (plain strings = a link only) are normalized on load.
+  type InspoItem = {
+    video_url: string | null;
+    link_url: string | null;
+    username: string | null;
+    avatar_url: string | null;
+  };
+  const normalizeInspo = (raw: any): InspoItem => {
+    if (typeof raw === 'string') {
+      return { video_url: null, link_url: raw || null, username: null, avatar_url: null };
+    }
+    if (raw && typeof raw === 'object') {
+      return {
+        video_url: raw.video_url || null,
+        link_url: raw.link_url || null,
+        username: raw.username || null,
+        avatar_url: raw.avatar_url || null,
+      };
+    }
+    return { video_url: null, link_url: null, username: null, avatar_url: null };
+  };
+  const [inspirations, setInspirations] = useState<InspoItem[]>(
     (mission?.inspirations && mission.inspirations.length > 0)
-      ? mission.inspirations
-      : ['']
+      ? mission.inspirations.map(normalizeInspo)
+      : [{ video_url: null, link_url: null, username: null, avatar_url: null }]
   );
+  const [uploadingInspoIdx, setUploadingInspoIdx] = useState<number | null>(null);
+  const inspoFileRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [scenepackGdrive, setScenepackGdrive] = useState(mission?.scenepack_gdrive_url || '');
   const [scenepackYoutube, setScenepackYoutube] = useState(mission?.scenepack_youtube_url || '');
   const [basePayout, setBasePayout] = useState(((mission?.base_payout_cents || 0) / 100).toString());
@@ -586,10 +611,41 @@ function MissionLauncher({
     }
   };
 
-  const updateInspo = (i: number, value: string) =>
-    setInspirations(prev => prev.map((u, idx) => (idx === i ? value : u)));
-  const addInspo = () => setInspirations(prev => [...prev, '']);
+  const patchInspo = (i: number, patch: Partial<InspoItem>) =>
+    setInspirations(prev => prev.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
+  const addInspo = () =>
+    setInspirations(prev => [...prev, { video_url: null, link_url: null, username: null, avatar_url: null }]);
   const removeInspo = (i: number) => setInspirations(prev => prev.filter((_, idx) => idx !== i));
+
+  const uploadInspoVideo = async (i: number, file: File) => {
+    if (!userId) return toast.error('Not signed in');
+    if (file.size > 50 * 1024 * 1024) return toast.error('Video must be under 50MB');
+    if (!file.type.startsWith('video/') && !file.type.startsWith('image/')) {
+      return toast.error('Pick a video or image');
+    }
+    setUploadingInspoIdx(i);
+    try {
+      const ext = file.name.split('.').pop() || 'mp4';
+      const path = `${userId}/missions/inspo-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from('loop-media').upload(path, file, {
+        cacheControl: '3600', upsert: false,
+      });
+      if (error) throw error;
+      const { data: pub } = supabase.storage.from('loop-media').getPublicUrl(path);
+      patchInspo(i, {
+        video_url: pub.publicUrl,
+        username: profile?.username || null,
+        avatar_url: profile?.avatar_url || null,
+      });
+      toast.success('Inspo uploaded');
+    } catch (e: any) {
+      toast.error(e?.message || 'Upload failed');
+    } finally {
+      setUploadingInspoIdx(null);
+      const el = inspoFileRefs.current[i];
+      if (el) el.value = '';
+    }
+  };
 
   const updateMs = (i: number, key: keyof Milestone, value: string) => {
     const v = parseFloat(value) || 0;
@@ -605,7 +661,18 @@ function MissionLauncher({
   const save = async () => {
     if (!title.trim()) return toast.error('Title required');
     setSaving(true);
-    const cleanInspo = inspirations.map(s => s.trim()).filter(Boolean);
+    // Keep only inspo entries that have at least a video or a link.
+    const cleanInspo = inspirations
+      .map(it => ({
+        video_url: it.video_url?.trim() || null,
+        link_url: it.link_url?.trim() || null,
+        username: it.username || null,
+        avatar_url: it.avatar_url || null,
+      }))
+      .filter(it => it.video_url || it.link_url);
+    const firstLegacyUrl = cleanInspo.find(it => it.link_url)?.link_url
+      || cleanInspo.find(it => it.video_url)?.video_url
+      || null;
     const payload = {
       title: title.trim(),
       description: description.trim() || null,
@@ -613,8 +680,8 @@ function MissionLauncher({
       // Closed market — every mission is officially Loopgate
       sponsor_name: 'Loopgate Official',
       sponsor_logo_url: null,
-      reference_video_url: cleanInspo[0] || null, // back-compat
-      inspirations: cleanInspo,
+      reference_video_url: firstLegacyUrl, // back-compat
+      inspirations: cleanInspo as any,
       scenepack_gdrive_url: scenepackGdrive.trim() || null,
       scenepack_youtube_url: scenepackYoutube.trim() || null,
       base_payout_cents: Math.round((parseFloat(basePayout) || 0) * 100),
@@ -760,33 +827,118 @@ function MissionLauncher({
           {/* Inspirations — multiple rows so clippers don't get stuck on one ref */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <Label className="text-xs text-zinc-400">Inspirations (optional, multiple)</Label>
+              <Label className="text-xs text-zinc-400">Inspirations · upload video + optional source link</Label>
               <Button size="sm" variant="ghost" onClick={addInspo} className="h-6 px-2 text-[10px]">
                 <Plus className="w-3 h-3 mr-1" /> Add inspo
               </Button>
             </div>
-            <div className="space-y-1.5">
-              {inspirations.map((url, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <Input
-                    value={url}
-                    onChange={e => updateInspo(i, e.target.value)}
-                    placeholder="https://youtube.com / tiktok / instagram link"
-                    className="flex-1"
-                  />
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => removeInspo(i)}
-                    className="h-8 px-2"
-                    disabled={inspirations.length === 1}
-                  >
-                    <Trash2 className="w-3.5 h-3.5 text-red-400" />
-                  </Button>
-                </div>
-              ))}
+            <div className="space-y-2.5">
+              {inspirations.map((it, i) => {
+                const isUploading = uploadingInspoIdx === i;
+                return (
+                  <div key={i} className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-2.5 space-y-2">
+                    <div className="flex items-stretch gap-2">
+                      {/* Video preview / uploader */}
+                      <div className="relative w-24 h-32 rounded-lg overflow-hidden bg-zinc-950 border border-zinc-800 shrink-0">
+                        {it.video_url ? (
+                          <video
+                            src={it.video_url}
+                            className="w-full h-full object-cover"
+                            muted
+                            playsInline
+                            loop
+                            autoPlay
+                          />
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => inspoFileRefs.current[i]?.click()}
+                            className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-zinc-500 hover:text-zinc-300 active:scale-[0.97] transition-all"
+                          >
+                            {isUploading ? (
+                              <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                              <>
+                                <Film className="w-5 h-5" />
+                                <span className="text-[9.5px] font-medium leading-tight text-center px-1">
+                                  Upload<br />video
+                                </span>
+                              </>
+                            )}
+                          </button>
+                        )}
+                        {it.video_url && (
+                          <button
+                            type="button"
+                            onClick={() => patchInspo(i, { video_url: null })}
+                            className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 flex items-center justify-center"
+                            title="Remove video"
+                          >
+                            <X className="w-3 h-3 text-white" />
+                          </button>
+                        )}
+                        <input
+                          ref={el => (inspoFileRefs.current[i] = el)}
+                          type="file"
+                          accept="video/*,image/*"
+                          className="hidden"
+                          onChange={e => {
+                            const f = e.target.files?.[0];
+                            if (f) uploadInspoVideo(i, f);
+                          }}
+                        />
+                      </div>
+
+                      {/* Right side: link + meta */}
+                      <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <LinkIcon className="w-3 h-3 text-zinc-500 shrink-0" />
+                          <Input
+                            value={it.link_url || ''}
+                            onChange={e => patchInspo(i, { link_url: e.target.value })}
+                            placeholder="Source link (YT / TT / IG) — optional"
+                            className="flex-1 h-8 text-[12px]"
+                          />
+                        </div>
+                        {it.video_url && !it.link_url && (
+                          <p className="text-[10px] text-zinc-500 leading-snug">
+                            Add a link so tapping the video opens the original.
+                          </p>
+                        )}
+                        {(it.username || profile?.username) && (
+                          <div className="flex items-center gap-1.5 text-[10.5px] text-zinc-400">
+                            <div className="w-4 h-4 rounded-full bg-zinc-800 overflow-hidden shrink-0">
+                              {(it.avatar_url || profile?.avatar_url) && (
+                                <img
+                                  src={it.avatar_url || profile?.avatar_url || ''}
+                                  alt=""
+                                  className="w-full h-full object-cover"
+                                />
+                              )}
+                            </div>
+                            <span>added by @{it.username || profile?.username}</span>
+                          </div>
+                        )}
+                        <div className="mt-auto flex justify-end">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => removeInspo(i)}
+                            className="h-7 px-2 text-[10px] text-red-400 hover:text-red-300"
+                            disabled={inspirations.length === 1}
+                          >
+                            <Trash2 className="w-3 h-3 mr-1" /> Remove
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            <p className="text-[10px] text-zinc-600 mt-1">Drop several reference edits — variety keeps clippers unstuck.</p>
+            <p className="text-[10px] text-zinc-600 mt-2">
+              Upload short reference videos straight from photos / files. Variety keeps clippers unstuck.
+            </p>
           </div>
 
           <div>

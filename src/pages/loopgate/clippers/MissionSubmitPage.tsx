@@ -178,9 +178,33 @@ export default function MissionSubmitPage() {
     : (budget > 0 ? Math.min(100, (spent / budget) * 100) : 0);
   const showProgress = isPostsCap ? maxPosts > 0 : budget > 0;
 
-  const inspos: string[] = Array.isArray(mission.inspirations)
-    ? mission.inspirations.filter((x: any) => typeof x === 'string' && x.trim())
+  // Inspirations support two shapes:
+  //   • legacy: plain string URL
+  //   • new:    { video_url, link_url, username, avatar_url }
+  type InspoNorm = { video_url: string | null; link_url: string | null; username: string | null; avatar_url: string | null };
+  const inspoItems: InspoNorm[] = Array.isArray(mission.inspirations)
+    ? mission.inspirations
+        .map((x: any): InspoNorm | null => {
+          if (typeof x === 'string' && x.trim()) {
+            return { video_url: null, link_url: x.trim(), username: null, avatar_url: null };
+          }
+          if (x && typeof x === 'object') {
+            const v = (x.video_url || '').trim();
+            const l = (x.link_url || '').trim();
+            if (!v && !l) return null;
+            return {
+              video_url: v || null,
+              link_url: l || null,
+              username: x.username || null,
+              avatar_url: x.avatar_url || null,
+            };
+          }
+          return null;
+        })
+        .filter(Boolean) as InspoNorm[]
     : [];
+  const inspoVideos = inspoItems.filter(i => i.video_url);
+  const inspoLinksOnly = inspoItems.filter(i => !i.video_url && i.link_url);
 
   const scenepacks = [
     { url: mission.scenepack_url, label: 'Scenepack' },
@@ -277,7 +301,7 @@ export default function MissionSubmitPage() {
         </section>
 
         {/* Unified Brief + Resources — one cinematic card */}
-        {(mission.description || scenepacks.length > 0 || inspos.length > 0) && (
+        {(mission.description || scenepacks.length > 0 || inspoItems.length > 0) && (
           <section className="mt-5">
             <div
               className="relative rounded-[24px] p-[1px] overflow-hidden"
@@ -335,12 +359,75 @@ export default function MissionSubmitPage() {
                 )}
 
                 {/* Divider when both exist */}
-                {mission.description && (scenepacks.length > 0 || inspos.length > 0) && (
+                {mission.description && (scenepacks.length > 0 || inspoItems.length > 0) && (
                   <div className="relative h-px mx-5" style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%)' }} />
                 )}
 
-                {/* Resources — clips + inspirations unified */}
-                {(scenepacks.length > 0 || inspos.length > 0) && (
+                {/* Inspiration video tiles — autoplaying, tap → opens source */}
+                {inspoVideos.length > 0 && (
+                  <div className="relative px-5 pt-5 pb-1">
+                    <div className="flex items-center gap-1.5 mb-2.5">
+                      <span className="text-[10.5px] text-[#8E8E93] font-semibold uppercase tracking-[0.14em]">
+                        Inspirations · Tap to open
+                      </span>
+                    </div>
+                    <div className="-mx-5 px-5 overflow-x-auto no-scrollbar">
+                      <div className="flex gap-2.5 pb-1">
+                        {inspoVideos.map((v, i) => {
+                          const tapHref = v.link_url || v.video_url || '#';
+                          return (
+                            <a
+                              key={`inspo-vid-${i}`}
+                              href={tapHref}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="relative shrink-0 w-[124px] h-[176px] rounded-[16px] overflow-hidden bg-[#0a0a0b] border border-white/[0.06] active:scale-[0.98] transition-transform"
+                            >
+                              <video
+                                src={v.video_url!}
+                                className="w-full h-full object-cover"
+                                muted
+                                playsInline
+                                loop
+                                autoPlay
+                                preload="metadata"
+                              />
+                              {/* gradient for legibility */}
+                              <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/75 via-transparent to-black/30" />
+                              {/* username chip */}
+                              {v.username && (
+                                <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center gap-1.5">
+                                  <div className="w-4 h-4 rounded-full overflow-hidden bg-white/10 shrink-0">
+                                    {v.avatar_url && (
+                                      <img src={v.avatar_url} alt="" className="w-full h-full object-cover" />
+                                    )}
+                                  </div>
+                                  <span className="text-[10.5px] font-semibold text-white truncate tracking-[-0.01em]">
+                                    @{v.username}
+                                  </span>
+                                </div>
+                              )}
+                              {/* link badge */}
+                              {v.link_url && (
+                                <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center">
+                                  <ExternalLink className="w-2.5 h-2.5 text-white" strokeWidth={2.5} />
+                                </div>
+                              )}
+                            </a>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Divider between video tiles and resource list */}
+                {inspoVideos.length > 0 && (scenepacks.length > 0 || inspoLinksOnly.length > 0) && (
+                  <div className="relative h-px mx-5 mt-3" style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%)' }} />
+                )}
+
+                {/* Resources — clips + link-only inspirations unified */}
+                {(scenepacks.length > 0 || inspoLinksOnly.length > 0) && (
                   <div className="relative px-5 pt-5 pb-4">
                     <div className="flex items-center gap-1.5 mb-2">
                       <span className="text-[10.5px] text-[#8E8E93] font-semibold uppercase tracking-[0.14em]">Resources · Tap to open</span>
@@ -349,7 +436,7 @@ export default function MissionSubmitPage() {
                       {(() => {
                         const items: { url: string; label: string; key: string }[] = [
                           ...scenepacks.map((s, i) => ({ url: s.url!, label: s.label, key: `sp-${i}` })),
-                          ...inspos.map((url, i) => ({ url, label: `Reference ${i + 1}`, key: `ins-${i}` })),
+                          ...inspoLinksOnly.map((it, i) => ({ url: it.link_url!, label: `Reference ${i + 1}`, key: `ins-${i}` })),
                         ];
                         const iconFor = (url: string, label: string) => {
                           const u = (url || '').toLowerCase();
