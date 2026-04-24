@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import AccountPromptModal from '@/components/loopgate/AccountPromptModal';
+import ViewsGamePanel from '@/components/loopgate/ViewsGamePanel';
 
 interface Milestone { views: number; bonus_cents: number; }
 
