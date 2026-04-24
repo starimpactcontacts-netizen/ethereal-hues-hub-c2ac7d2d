@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Link2, ExternalLink, Trash2, Loader2, Youtube, Instagram, Music2, BadgeCheck, ShieldCheck, Copy, Camera, RefreshCw } from 'lucide-react';
+import { Plus, Link2, ExternalLink, Trash2, Loader2, Youtube, Instagram, Music2, BadgeCheck, ShieldCheck, Copy, Camera, RefreshCw, Upload } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import ClipperLockGate from '@/components/clippers/ClipperLockGate';
@@ -458,12 +458,11 @@ function VerifySheet({
             }`}
             style={{ background: '#D4A857' }}
           >
-            {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Camera className="w-[17px] h-[17px]" />}
+            {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload className="w-[17px] h-[17px]" />}
             {submitting ? 'Verifying…' : 'Upload screenshot'}
             <input
               type="file"
               accept="image/*"
-              capture="environment"
               className="hidden"
               disabled={expired || submitting}
               onChange={(e) => {
