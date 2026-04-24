@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Search, Sparkles, ChevronRight, DollarSign, TrendingUp, BadgeCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -37,6 +37,7 @@ interface UserStats {
 
 export default function ClippersCampaignsPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { profile: tempProfile } = useTempProfile();
   const [missions, setMissions] = useState<Mission[]>([]);
   const [stats, setStats] = useState<UserStats>({ earned: 0, paid: 0, clips: 0 });
@@ -90,9 +91,8 @@ export default function ClippersCampaignsPage() {
       <section className="max-w-6xl mx-auto px-4 pt-4 pb-3">
         <button
           type="button"
-          onClick={() => { if (isGuest) setAuthOpen(true); }}
-          disabled={!isGuest}
-          className={`flex items-center gap-3 w-full text-left ${isGuest ? 'active:opacity-60 transition-opacity' : ''}`}
+          onClick={() => { if (isGuest) setAuthOpen(true); else navigate('/missions/settings'); }}
+          className="flex items-center gap-3 w-full text-left active:opacity-60 transition-opacity"
         >
           <div
             className="w-11 h-11 rounded-full flex items-center justify-center overflow-hidden shrink-0"
@@ -109,7 +109,7 @@ export default function ClippersCampaignsPage() {
           </div>
           <div className="min-w-0">
             <p className="text-[12px] text-[#8E8E93] font-medium leading-none">
-              {isGuest ? 'Tap to sign in' : greeting}
+              {isGuest ? 'Tap to sign in' : `${greeting} · tap for settings`}
             </p>
             <p className="text-[18px] font-semibold text-white tracking-[-0.02em] mt-1 leading-none truncate">
               {isGuest ? 'Not signed in' : `@${displayName}`}
