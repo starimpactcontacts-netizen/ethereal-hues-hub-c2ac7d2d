@@ -75,17 +75,21 @@ async function fetchTikTokProfile(handle: string) {
 }
 
 async function fetchInstagramProfile(handle: string) {
-  // Try public web profile JSON endpoint
   let followers: number | null = null;
   let bio = "";
+
+  // Strategy 1: public web_profile_info JSON endpoint with full IG headers
   try {
     const res = await fetch(
-      `https://www.instagram.com/api/v1/users/web_profile_info/?username=${encodeURIComponent(handle)}`,
+      `https://i.instagram.com/api/v1/users/web_profile_info/?username=${encodeURIComponent(handle)}`,
       {
         headers: {
-          "User-Agent": UA,
+          "User-Agent": "Instagram 219.0.0.12.117 Android",
           "X-IG-App-ID": "936619743392459",
-          Accept: "*/*",
+          "X-ASBD-ID": "198387",
+          "X-IG-WWW-Claim": "0",
+          "Accept": "*/*",
+          "Accept-Language": "en-US,en;q=0.9",
         },
       },
     );
@@ -98,13 +102,42 @@ async function fetchInstagramProfile(handle: string) {
       }
     }
   } catch {}
+
+  // Strategy 2: same endpoint via www host with desktop UA
+  if (followers === null) {
+    try {
+      const res = await fetch(
+        `https://www.instagram.com/api/v1/users/web_profile_info/?username=${encodeURIComponent(handle)}`,
+        {
+          headers: {
+            "User-Agent": UA,
+            "X-IG-App-ID": "936619743392459",
+            "X-ASBD-ID": "198387",
+            "Accept": "*/*",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Referer": `https://www.instagram.com/${handle}/`,
+          },
+        },
+      );
+      if (res.ok) {
+        const j = await res.json().catch(() => null);
+        const u = j?.data?.user;
+        if (u) {
+          followers = u.edge_followed_by?.count ?? null;
+          bio = u.biography || bio;
+        }
+      }
+    } catch {}
+  }
+
+  // Strategy 3: profile HTML — parse embedded JSON
   if (followers === null) {
     const html = await fetchHtml(`https://www.instagram.com/${handle}/`);
     if (html) {
       const fm = html.match(/"edge_followed_by":\{"count":(\d+)\}/);
       if (fm) followers = parseInt(fm[1], 10);
       const bm = html.match(/"biography":"([^"]*)"/);
-      if (bm) bio = bm[1].replace(/\\n/g, "\n");
+      if (bm && !bio) bio = bm[1].replace(/\\n/g, "\n");
       if (followers === null) {
         const og = html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i);
         if (og) {
@@ -114,6 +147,35 @@ async function fetchInstagramProfile(handle: string) {
       }
     }
   }
+
+  // Strategy 4: Google search snippet (very reliable, even for private accounts)
+  if (followers === null) {
+    try {
+      const q = encodeURIComponent(`site:instagram.com ${handle} followers`);
+      const html = await fetchHtml(`https://www.google.com/search?q=${q}`);
+      if (html) {
+        const fm =
+          html.match(/([\d.,]+[KMB]?)\s*Followers/i) ||
+          html.match(/Followers[^\d]{0,8}([\d.,]+[KMB]?)/i);
+        if (fm) followers = parseHumanNumber(fm[1]);
+      }
+    } catch {}
+  }
+
+  // Strategy 5: Bing snippet fallback
+  if (followers === null) {
+    try {
+      const q = encodeURIComponent(`instagram.com/${handle} followers`);
+      const html = await fetchHtml(`https://www.bing.com/search?q=${q}`);
+      if (html) {
+        const fm =
+          html.match(/([\d.,]+[KMB]?)\s*Followers/i) ||
+          html.match(/Followers[^\d]{0,8}([\d.,]+[KMB]?)/i);
+        if (fm) followers = parseHumanNumber(fm[1]);
+      }
+    } catch {}
+  }
+
   return { followers, bio };
 }
 
