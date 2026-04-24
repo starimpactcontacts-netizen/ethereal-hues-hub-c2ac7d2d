@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import ClipperLockGate from '@/components/clippers/ClipperLockGate';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import loopgateLogo from '@/assets/loopgate-logo.png';
 
 interface Withdrawal {
   id: string;
@@ -130,46 +131,48 @@ export default function ClippersWithdrawalsPage() {
         <h1 className="font-apple-tight text-[34px] font-bold text-white leading-[1.05]">Cashout</h1>
       </section>
 
-      {/* Balance hero — Apple Wallet inspired */}
+      {/* Balance hero — Apple Pay style card */}
       <section className="max-w-6xl mx-auto px-4 mb-5">
         <motion.div
           initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="relative overflow-hidden rounded-[20px] p-6"
-          style={{ background: 'linear-gradient(140deg, #1c1c1e 0%, #2c2c2e 60%, #1c1c1e 100%)' }}
+          className="relative overflow-hidden rounded-[24px] p-6 aspect-[1.586/1] max-h-[260px] flex flex-col justify-between"
+          style={{
+            background: 'linear-gradient(135deg, #1f1f22 0%, #131316 50%, #1a1a1d 100%)',
+            boxShadow: '0 1px 0 0 rgba(255,255,255,0.06) inset, 0 20px 40px -20px rgba(0,0,0,0.6)',
+          }}
         >
-          <div
-            aria-hidden
-            className="absolute -top-16 -right-12 w-56 h-56 rounded-full pointer-events-none"
-            style={{ background: 'radial-gradient(circle, rgba(255,204,0,0.20) 0%, transparent 70%)' }}
-          />
-          <div className="flex items-center gap-2 mb-2">
-            <Wallet className="w-4 h-4 text-[#FFCC00]" strokeWidth={2.4} />
-            <p className="text-[13px] text-[#8E8E93] font-medium">Available balance</p>
-          </div>
-          <p className="font-apple-tight text-[56px] sm:text-[72px] font-bold text-white leading-[0.95] tabular-nums">
-            {formatMoney(balance)}
-          </p>
-          <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: 'rgba(48,209,88,0.12)' }}>
-            <span className="w-1.5 h-1.5 rounded-full bg-[#30D158]" />
-            <p className="text-[11px] font-semibold text-[#30D158] tracking-[-0.01em]">$0 minimum withdrawal · no fees · paid within 24h</p>
-          </div>
-          <div className="flex items-center justify-between mt-5 pt-4 border-t border-white/[0.06]">
+          {/* Subtle sheen */}
+          <div aria-hidden className="absolute inset-0 pointer-events-none opacity-[0.5]" style={{ background: 'radial-gradient(120% 80% at 0% 0%, rgba(255,255,255,0.06) 0%, transparent 50%)' }} />
+          {/* Watermark logo */}
+          <img src={loopgateLogo} alt="" aria-hidden className="absolute -bottom-6 -right-6 w-44 h-44 object-contain pointer-events-none select-none opacity-[0.06]" />
+
+          {/* Top row */}
+          <div className="relative flex items-start justify-between">
             <div>
-              <p className="text-[11px] text-[#8E8E93] font-medium">Lifetime paid</p>
-              <p className="text-[15px] font-semibold text-white tabular-nums mt-0.5">{formatMoney(totalPaid)}</p>
+              <p className="text-[10.5px] text-[#8E8E93] font-medium uppercase tracking-[0.12em]">Balance</p>
+              <p className="font-apple-tight text-[44px] sm:text-[52px] font-semibold text-white leading-[1] tabular-nums tracking-[-0.025em] mt-1.5">
+                {formatMoney(balance)}
+              </p>
+            </div>
+            <img src={loopgateLogo} alt="Loopgate" className="w-7 h-7 object-contain opacity-90" />
+          </div>
+
+          {/* Bottom row */}
+          <div className="relative flex items-end justify-between gap-3 mt-4">
+            <div className="min-w-0">
+              <p className="text-[10.5px] text-[#8E8E93] font-medium uppercase tracking-[0.12em]">Lifetime paid</p>
+              <p className="text-[14px] font-semibold text-white tabular-nums mt-0.5">{formatMoney(totalPaid)}</p>
+              <p className="text-[10.5px] text-[#8E8E93] mt-1.5 tracking-[-0.005em]">No minimum · no fees · paid within 24h</p>
             </div>
             <button
               onClick={() => (user ? setShowRequest(true) : setShowGate(true))}
               disabled={!user}
-              className="inline-flex items-center gap-1 h-11 px-5 rounded-full bg-white text-black text-[15px] font-semibold active:opacity-60 disabled:opacity-40 disabled:bg-[#48484A] disabled:text-[#8E8E93] transition-opacity"
+              className="shrink-0 inline-flex items-center gap-1 h-10 px-4 rounded-full bg-white text-black text-[14px] font-semibold active:opacity-60 disabled:opacity-40 disabled:bg-white/10 disabled:text-[#8E8E93] transition-opacity"
             >
-              {canCashOut ? 'Cash out' : 'Set up payout'} <ArrowUpRight className="w-4 h-4" strokeWidth={2.8} />
+              {canCashOut ? 'Cash out' : 'Set up payout'} <ArrowUpRight className="w-3.5 h-3.5" strokeWidth={2.8} />
             </button>
           </div>
-          {!canCashOut && user && (
-            <p className="text-[12px] text-[#8E8E93] mt-3">No minimum — earn views to unlock cashout</p>
-          )}
         </motion.div>
       </section>
 
