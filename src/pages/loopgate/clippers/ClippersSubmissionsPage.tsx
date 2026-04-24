@@ -253,7 +253,9 @@ function SubmissionRow({ sub, isLast }: { sub: Submission; isLast: boolean }) {
         <p className="text-[15px] font-semibold tabular-nums" style={{ color: '#30D158' }}>
           ${(sub.earned_cents / 100).toFixed(2)}
         </p>
-        <p className="text-[11px] text-[#8E8E93] tabular-nums">{(sub.view_count || 0).toLocaleString()} views</p>
+        {(sub.view_count || 0) > 0 && (
+          <p className="text-[11px] text-[#8E8E93] tabular-nums">{sub.view_count.toLocaleString()} views</p>
+        )}
       </div>
       <a href={sub.video_url} target="_blank" rel="noopener noreferrer" className="text-[#8E8E93] active:opacity-50 p-1">
         <ExternalLink className="w-[15px] h-[15px]" />
