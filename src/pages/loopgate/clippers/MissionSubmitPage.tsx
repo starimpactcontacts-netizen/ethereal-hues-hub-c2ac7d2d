@@ -910,3 +910,17 @@ export default function MissionSubmitPage() {
     </>
   );
 }
+
+function RuleRow({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-start gap-3 rounded-[14px] p-3" style={{ background: 'rgba(255,255,255,0.04)' }}>
+      <div className="w-5 h-5 rounded-full bg-[#30D158]/15 flex items-center justify-center shrink-0 mt-0.5">
+        <CheckCircle2 className="w-3.5 h-3.5 text-[#30D158]" strokeWidth={2.5} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[14px] font-semibold text-white tracking-[-0.01em] leading-tight">{title}</p>
+        <p className="text-[12.5px] text-[#8E8E93] tracking-[-0.005em] leading-snug mt-0.5">{children}</p>
+      </div>
+    </div>
+  );
+}
