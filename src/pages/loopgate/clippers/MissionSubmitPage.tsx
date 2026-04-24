@@ -365,7 +365,7 @@ export default function MissionSubmitPage() {
             ) : (
               <span className="relative inline-flex items-center gap-2">
                 <Upload className="w-[19px] h-[19px]" strokeWidth={2.75} />
-                {videoUrl.trim() ? 'Submit clip' : 'Paste your clip link to submit'}
+                Submit
               </span>
             )}
           </button>
