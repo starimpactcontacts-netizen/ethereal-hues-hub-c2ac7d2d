@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Wallet, Loader2, Clock, Check, X as XIcon, ArrowUpRight } from 'lucide-react';
+import { Wallet, Loader2, Clock, Check, X as XIcon, ArrowUpRight, ShieldCheck, AlertTriangle, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import ClipperLockGate from '@/components/clippers/ClipperLockGate';
@@ -17,13 +17,22 @@ interface Withdrawal {
   processed_at: string | null;
 }
 
-const METHODS = [
-  { id: 'paypal', label: 'PayPal', placeholder: 'PayPal email' },
-  { id: 'bank', label: 'Bank', placeholder: 'Account / IBAN' },
-  { id: 'crypto', label: 'Crypto', placeholder: 'USDT wallet' },
-];
+type MethodId = 'paypal' | 'crypto';
 
-const MIN_PAYOUT_CENTS = 0;
+const CRYPTO_NETWORKS = [
+  { id: 'usdt_trc20', label: 'USDT (TRC-20)', placeholder: 'T-address' },
+  { id: 'usdt_erc20', label: 'USDT (ERC-20)', placeholder: '0x address' },
+  { id: 'btc',        label: 'Bitcoin (BTC)', placeholder: 'BTC address' },
+] as const;
+type CryptoNet = typeof CRYPTO_NETWORKS[number]['id'];
+
+const isValidEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim());
+const isPlausibleCryptoAddress = (s: string) => {
+  const v = s.trim();
+  // Permissive sanity check — block obvious garbage, real validation happens server-side at payout.
+  if (v.length < 20 || v.length > 120) return false;
+  return /^[A-Za-z0-9]+$/.test(v);
+};
 
 export default function ClippersWithdrawalsPage() {
   const { user } = useAuth();
@@ -32,9 +41,12 @@ export default function ClippersWithdrawalsPage() {
   const [loading, setLoading] = useState(true);
   const [showRequest, setShowRequest] = useState(false);
   const [showGate, setShowGate] = useState(false);
-  const [method, setMethod] = useState('paypal');
+  const [method, setMethod] = useState<MethodId>('paypal');
+  const [cryptoNet, setCryptoNet] = useState<CryptoNet>('usdt_trc20');
   const [amount, setAmount] = useState('');
   const [destination, setDestination] = useState('');
+  const [confirmDest, setConfirmDest] = useState('');
+  const [acceptCrypto, setAcceptCrypto] = useState(false);
   const [requesting, setRequesting] = useState(false);
 
   const load = async () => {
@@ -52,20 +64,41 @@ export default function ClippersWithdrawalsPage() {
 
   useEffect(() => { load(); }, [user]);
 
+  const resetForm = () => {
+    setAmount(''); setDestination(''); setConfirmDest(''); setAcceptCrypto(false); setMethod('paypal'); setCryptoNet('usdt_trc20');
+  };
+
   const submitRequest = async () => {
     if (!user) { setShowGate(true); return; }
     const amtCents = Math.round(parseFloat(amount) * 100);
     if (!amtCents || amtCents <= 0) { toast.error('Enter an amount'); return; }
     if (amtCents > balance) { toast.error('Amount exceeds balance'); return; }
-    if (!destination.trim()) { toast.error('Enter a destination'); return; }
+    const dest = destination.trim();
+    if (!dest) { toast.error('Enter your payout destination'); return; }
+    const cdest = confirmDest.trim();
+
+    let storedDestination = dest;
+    if (method === 'paypal') {
+      if (!isValidEmail(dest)) { toast.error('Enter a valid PayPal email'); return; }
+      if (dest.toLowerCase() !== cdest.toLowerCase()) { toast.error('Emails do not match'); return; }
+      storedDestination = `paypal:${dest}`;
+    } else {
+      if (!isPlausibleCryptoAddress(dest)) { toast.error('That doesn’t look like a valid wallet address'); return; }
+      if (dest !== cdest) { toast.error('Wallet addresses do not match'); return; }
+      if (!acceptCrypto) { toast.error('Confirm you understand crypto payouts are irreversible'); return; }
+      storedDestination = `${cryptoNet}:${dest}`;
+    }
+
     setRequesting(true);
     const { error } = await supabase.from('clipper_withdrawals').insert({
-      user_id: user.id, amount_cents: amtCents, method, destination: destination.trim(),
+      user_id: user.id, amount_cents: amtCents, method, destination: storedDestination,
     });
     setRequesting(false);
     if (error) { toast.error(error.message); return; }
     toast.success('Withdrawal requested');
-    setAmount(''); setDestination(''); setShowRequest(false); load();
+    resetForm();
+    setShowRequest(false);
+    load();
   };
 
   const formatMoney = (c: number) => `$${(c / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -112,7 +145,7 @@ export default function ClippersWithdrawalsPage() {
             </button>
           </div>
           {!canCashOut && user && (
-            <p className="text-[12px] text-[#8E8E93] mt-3">Minimum {formatMoney(MIN_PAYOUT_CENTS)} required to withdraw</p>
+            <p className="text-[12px] text-[#8E8E93] mt-3">No minimum — earn views to unlock cashout</p>
           )}
         </motion.div>
       </section>
