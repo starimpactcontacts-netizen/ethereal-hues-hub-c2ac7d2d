@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Mail, Lock, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useTempProfile } from '@/hooks/useTempProfile';
 import { supabase } from '@/integrations/supabase/client';
@@ -92,93 +91,94 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center font-apple"
+          style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
           onClick={onClose}
         >
           <motion.div
-            className="w-full max-w-md bg-surface-0 border border-border rounded-lg overflow-hidden"
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.95, opacity: 0 }}
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 380, damping: 36 }}
             onClick={(e) => e.stopPropagation()}
+            className="w-full sm:max-w-md rounded-t-[20px] sm:rounded-[20px] flex flex-col"
+            style={{ background: '#1c1c1e', maxHeight: 'calc(100dvh - env(safe-area-inset-top, 0px) - 16px)' }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-border">
-              <h2 className="font-display text-xl">
-                {mode === 'signup' ? 'Save Your Progress' : 'Welcome Back'}
-              </h2>
-              <button onClick={onClose} className="p-2 hover:bg-surface-1 rounded-lg">
-                <X size={20} />
+            <div className="px-5 pt-3 pb-3 shrink-0 relative">
+              <div className="w-9 h-1 rounded-full bg-white/25 mx-auto sm:hidden mb-4" />
+              <button
+                onClick={onClose}
+                aria-label="Close"
+                className="absolute top-3 right-3 sm:top-4 sm:right-4 w-8 h-8 rounded-full bg-white/[0.08] hover:bg-white/[0.14] active:bg-white/[0.2] flex items-center justify-center transition-colors"
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1L13 13M13 1L1 13" stroke="white" strokeWidth="1.8" strokeLinecap="round"/></svg>
               </button>
+              <h2 className="text-[22px] font-bold text-white tracking-[-0.022em] pr-10 pt-1">
+                {mode === 'signup' ? 'Save your progress' : 'Welcome back'}
+              </h2>
+              <p className="text-[14px] text-[#8E8E93] mt-1 leading-snug">{reason}</p>
             </div>
 
             {/* Content */}
-            <div className="p-6 space-y-6">
-              <p className="text-muted-foreground text-center">
-                {reason}
-              </p>
-
+            <div
+              className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] space-y-4"
+              style={{ WebkitOverflowScrolling: 'touch' }}
+            >
               {tempProfile && mode === 'signup' && (
-                <div className="bg-surface-1 border border-border rounded-lg p-4 text-center">
-                  <p className="text-sm text-muted-foreground mb-1">Creating account for</p>
-                  <p className="font-display text-xl text-gold">@{tempProfile.username}</p>
+                <div className="rounded-[14px] px-4 py-3 flex items-center justify-between" style={{ background: 'rgba(118,118,128,0.16)' }}>
+                  <span className="text-[13px] text-[#8E8E93] font-medium">Creating account for</span>
+                  <span className="text-[15px] font-semibold text-[#D4A857] tracking-[-0.01em]">@{tempProfile.username}</span>
                 </div>
               )}
 
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm text-muted-foreground">Email</label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@example.com"
-                      className="pl-10 h-12 bg-surface-1"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm text-muted-foreground">Password</label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="pl-10 h-12 bg-surface-1"
-                    />
-                  </div>
-                </div>
-
-                <Button
-                  onClick={handleSubmit}
-                  disabled={loading}
-                  className="w-full h-12 bg-gold hover:bg-gold/90 text-gold-foreground font-display"
-                >
-                  {loading ? 'Processing...' : mode === 'signup' ? 'Create Account' : 'Sign In'}
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
+              <div className="space-y-1.5">
+                <label className="text-[13px] text-[#8E8E93] font-medium px-1">Email</label>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  className="h-11 rounded-[10px] border-0 text-[16px] text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#D4A857]"
+                  style={{ background: 'rgba(118, 118, 128, 0.24)' }}
+                />
               </div>
 
-              <div className="text-center">
-                <button
-                  onClick={() => setMode(mode === 'signup' ? 'login' : 'signup')}
-                  className="text-sm text-muted-foreground hover:text-foreground"
-                >
-                  {mode === 'signup' ? (
-                    <>Already have an account? <span className="text-gold">Sign in</span></>
-                  ) : (
-                    <>Need an account? <span className="text-gold">Sign up</span></>
-                  )}
-                </button>
+              <div className="space-y-1.5">
+                <label className="text-[13px] text-[#8E8E93] font-medium px-1">Password</label>
+                <Input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+                  className="h-11 rounded-[10px] border-0 text-[16px] text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#D4A857]"
+                  style={{ background: 'rgba(118, 118, 128, 0.24)' }}
+                />
               </div>
+
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="w-full h-12 rounded-[14px] bg-[#D4A857] text-white text-[17px] font-semibold active:opacity-60 disabled:opacity-50 flex items-center justify-center"
+              >
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : mode === 'signup' ? 'Create account' : 'Sign in'}
+              </button>
+
+              <button
+                onClick={() => setMode(mode === 'signup' ? 'login' : 'signup')}
+                className="w-full h-11 text-[14px] text-[#8E8E93] active:opacity-60"
+              >
+                {mode === 'signup' ? (
+                  <>Already have an account? <span className="text-[#0A84FF] font-medium">Sign in</span></>
+                ) : (
+                  <>Need an account? <span className="text-[#0A84FF] font-medium">Sign up</span></>
+                )}
+              </button>
             </div>
           </motion.div>
         </motion.div>
