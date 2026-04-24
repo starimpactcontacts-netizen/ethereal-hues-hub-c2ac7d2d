@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Link2, ExternalLink, Trash2, Loader2, Youtube, Instagram, Music2, BadgeCheck, ShieldCheck, Copy, Camera, RefreshCw } from 'lucide-react';
+import { Plus, Link2, ExternalLink, Trash2, Loader2, Youtube, Instagram, Music2, BadgeCheck, ShieldCheck, Copy, Camera, RefreshCw, Upload } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import ClipperLockGate from '@/components/clippers/ClipperLockGate';
