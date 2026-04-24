@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Clock3, Sparkles, ArrowUpRight, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useTicketStore } from '@/components/loopgate/TicketFAB';
 
 const STORAGE_KEY = 'missions_support_bubble_pos_v1';
 const BUBBLE_SIZE = 42;
@@ -36,7 +36,7 @@ const FAQS: { q: string; a: string }[] = [
 ];
 
 export default function MissionsSupportBubble() {
-  const navigate = useNavigate();
+  const openTicketModal = useTicketStore((s) => s.setOpen);
   const [pos, setPos] = useState<Pos>(defaultPos);
   const [open, setOpen] = useState(false);
   const [showHint, setShowHint] = useState(true);
@@ -94,9 +94,9 @@ export default function MissionsSupportBubble() {
     }
   };
 
-  const openLoopyChat = () => {
+  const openSupportThread = () => {
     setOpen(false);
-    navigate('/loopy?new=1');
+    openTicketModal(true);
   };
 
   const bubble = (
@@ -182,15 +182,6 @@ export default function MissionsSupportBubble() {
             style={{ background: 'rgba(255,255,255,0.95)', filter: 'blur(1.2px)' }}
           />
           <MessageCircle className="w-[17px] h-[17px] relative drop-shadow-[0_1px_3px_rgba(0,0,0,0.55)]" strokeWidth={2.4} />
-          {/* Live green dot */}
-          <span
-            aria-hidden
-            className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full"
-            style={{
-              background: '#30D158',
-              boxShadow: '0 0 0 1.5px rgba(0,0,0,0.4), 0 0 8px rgba(48,209,88,0.85)',
-            }}
-          />
         </button>
       </motion.div>
 
@@ -300,7 +291,7 @@ export default function MissionsSupportBubble() {
               {/* CTA — open new chat */}
               <div className="p-4 pt-4 pb-[max(env(safe-area-inset-bottom),16px)]">
                 <button
-                  onClick={openLoopyChat}
+                  onClick={openSupportThread}
                   className="relative w-full h-[54px] rounded-[16px] inline-flex items-center justify-center gap-2 text-[16px] font-semibold text-white overflow-hidden active:scale-[0.985] transition-transform"
                   style={{
                     background: 'linear-gradient(180deg, #0A84FF 0%, #0066D6 100%)',
