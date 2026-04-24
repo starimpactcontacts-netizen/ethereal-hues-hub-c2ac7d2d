@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Wallet, Loader2, Clock, Check, X as XIcon, ArrowUpRight, ShieldCheck, AlertTriangle, Sparkles } from 'lucide-react';
+import { Wallet, Loader2, Clock, Check, X as XIcon, ArrowUpRight, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import ClipperLockGate from '@/components/clippers/ClipperLockGate';
@@ -20,9 +20,9 @@ interface Withdrawal {
 type MethodId = 'paypal' | 'crypto';
 
 const CRYPTO_NETWORKS = [
-  { id: 'usdt_trc20', label: 'USDT (TRC-20)', placeholder: 'T-address' },
-  { id: 'usdt_erc20', label: 'USDT (ERC-20)', placeholder: '0x address' },
-  { id: 'btc',        label: 'Bitcoin (BTC)', placeholder: 'BTC address' },
+  { id: 'usdc_solana', label: 'USDC (Solana)',  placeholder: 'Solana address' },
+  { id: 'usdt_trc20',  label: 'USDT (TRC-20)',  placeholder: 'T-address' },
+  { id: 'btc',         label: 'Bitcoin (BTC)',  placeholder: 'BTC address' },
 ] as const;
 type CryptoNet = typeof CRYPTO_NETWORKS[number]['id'];
 
@@ -42,7 +42,7 @@ export default function ClippersWithdrawalsPage() {
   const [showRequest, setShowRequest] = useState(false);
   const [showGate, setShowGate] = useState(false);
   const [method, setMethod] = useState<MethodId>('paypal');
-  const [cryptoNet, setCryptoNet] = useState<CryptoNet>('usdt_trc20');
+  const [cryptoNet, setCryptoNet] = useState<CryptoNet>('usdc_solana');
   const [amount, setAmount] = useState('');
   const [destination, setDestination] = useState('');
   const [confirmDest, setConfirmDest] = useState('');
@@ -228,8 +228,8 @@ export default function ClippersWithdrawalsPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
                   <p className="text-[15px] font-semibold text-white">PayPal</p>
-                  <span className="inline-flex items-center gap-0.5 h-[18px] px-1.5 rounded-full text-[10px] font-bold" style={{ background: '#30D158', color: '#000' }}>
-                    <Sparkles className="w-2.5 h-2.5" strokeWidth={3} /> RECOMMENDED
+                  <span className="inline-flex items-center h-[18px] px-1.5 rounded-full text-[10px] font-bold" style={{ background: '#30D158', color: '#000' }}>
+                    RECOMMENDED
                   </span>
                 </div>
                 <p className="text-[12px] text-[#8E8E93] mt-0.5 leading-snug">Fast, traceable, fully reversible if anything goes wrong.</p>
