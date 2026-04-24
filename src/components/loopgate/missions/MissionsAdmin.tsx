@@ -722,6 +722,10 @@ function MissionLauncher({
       eligible_platforms: eligiblePlatforms.length > 0 ? eligiblePlatforms : ['tiktok', 'instagram', 'youtube'],
       view_milestones: milestones.filter(m => m.views > 0).sort((a, b) => a.views - b.views),
       deadline: deadline ? new Date(deadline).toISOString() : null,
+      approval_rate_pct: approvalRate.trim() === ''
+        ? null
+        : Math.max(0, Math.min(100, Math.round(parseFloat(approvalRate) || 0))),
+      base_payout_requirements: baseRequirements.trim() || null,
     };
     let error;
     if (mission) {
