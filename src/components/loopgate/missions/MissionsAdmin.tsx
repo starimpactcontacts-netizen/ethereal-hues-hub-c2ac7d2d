@@ -726,6 +726,36 @@ function MissionLauncher({
             </div>
           </div>
 
+          {/* Eligible platforms */}
+          <div className="space-y-2 p-3 rounded-lg bg-zinc-900/40 border border-zinc-800">
+            <div>
+              <Label className="text-xs text-zinc-300 font-semibold">Eligible platforms</Label>
+              <p className="text-[10px] text-zinc-500 mt-0.5">Where clippers must post. Shown on the mission card and detail page so users know up front.</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {ALL_MISSION_PLATFORMS.map((p) => {
+                const active = eligiblePlatforms.includes(p);
+                return (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setEligiblePlatforms(prev => active ? prev.filter(x => x !== p) : [...prev, p])}
+                    className={`px-3 h-8 rounded-md text-[12px] font-semibold capitalize border transition-colors ${
+                      active
+                        ? 'bg-emerald-600 text-white border-emerald-500'
+                        : 'bg-zinc-900 text-zinc-400 border-zinc-700 hover:text-white'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                );
+              })}
+            </div>
+            {eligiblePlatforms.length === 0 && (
+              <p className="text-[10px] text-amber-400">Pick at least one platform — defaulting to all if left empty.</p>
+            )}
+          </div>
+
           {/* Inspirations — multiple rows so clippers don't get stuck on one ref */}
           <div>
             <div className="flex items-center justify-between mb-2">
