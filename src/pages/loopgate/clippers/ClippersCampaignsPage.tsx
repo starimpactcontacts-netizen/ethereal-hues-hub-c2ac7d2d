@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTempProfile } from '@/hooks/useTempProfile';
 import AccountPromptModal from '@/components/loopgate/AccountPromptModal';
 import PlatformBadges from '@/components/loopgate/missions/PlatformBadges';
+import loopgateLogo from '@/assets/loopgate-logo.png';
 
 interface Milestone { views: number; bonus_cents: number; }
 
@@ -157,23 +158,27 @@ export default function ClippersCampaignsPage() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="relative overflow-hidden rounded-[20px] p-5"
-          style={{ background: 'linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%)' }}
+          className="relative overflow-hidden rounded-[22px] p-5"
+          style={{
+            background: 'linear-gradient(135deg, #1f1f22 0%, #131316 50%, #1a1a1d 100%)',
+            boxShadow: '0 1px 0 0 rgba(255,255,255,0.06) inset, 0 16px 32px -16px rgba(0,0,0,0.6)',
+          }}
         >
-          <div
-            aria-hidden
-            className="absolute -top-12 -right-10 w-48 h-48 rounded-full pointer-events-none"
-            style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%)' }}
-          />
-          <p className="text-[13px] text-[#8E8E93] font-medium">Available balance</p>
-          <p className="font-apple-tight text-[44px] font-bold leading-none mt-1.5 tabular-nums text-white">
-            {formatMoney(balance)}
-          </p>
-          <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: 'rgba(48,209,88,0.12)' }}>
-            <span className="w-1.5 h-1.5 rounded-full bg-[#30D158]" />
-            <p className="text-[11px] font-semibold text-[#30D158] tracking-[-0.01em]">$0 minimum · withdraw anytime · paid within 24h</p>
+          <div aria-hidden className="absolute inset-0 pointer-events-none opacity-50" style={{ background: 'radial-gradient(120% 80% at 0% 0%, rgba(255,255,255,0.06) 0%, transparent 50%)' }} />
+          <img src={loopgateLogo} alt="" aria-hidden className="absolute -bottom-5 -right-5 w-36 h-36 object-contain pointer-events-none select-none opacity-[0.06]" />
+
+          <div className="relative flex items-start justify-between">
+            <div>
+              <p className="text-[10.5px] text-[#8E8E93] font-medium uppercase tracking-[0.12em]">Balance</p>
+              <p className="font-apple-tight text-[40px] font-semibold leading-none mt-1.5 tabular-nums text-white tracking-[-0.025em]">
+                {formatMoney(balance)}
+              </p>
+              <p className="text-[10.5px] text-[#8E8E93] mt-1.5 tracking-[-0.005em]">No minimum · no fees · paid within 24h</p>
+            </div>
+            <img src={loopgateLogo} alt="Loopgate" className="w-6 h-6 object-contain opacity-90" />
           </div>
-          <div className="flex items-center gap-5 mt-4 pt-4 border-t border-white/[0.06]">
+
+          <div className="relative flex items-center gap-5 mt-4 pt-4 border-t border-white/[0.06]">
             <MiniStat label="Posts" value={stats.clips.toString()} />
             <div className="w-px h-7 bg-white/[0.08]" />
             <MiniStat label="Live" value={filtered.length.toString()} />
