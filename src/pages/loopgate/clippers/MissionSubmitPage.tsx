@@ -60,6 +60,7 @@ export default function MissionSubmitPage() {
   const [submitting, setSubmitting] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [submitOpen, setSubmitOpen] = useState(false);
+  const [rulesOpen, setRulesOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [eligibilityOpen, setEligibilityOpen] = useState(false);
   const [eligibility, setEligibility] = useState<
