@@ -500,7 +500,12 @@ function SubmissionsList({
             <div className="flex items-start gap-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-1">
-                  <span className="text-xs font-semibold text-white">@{s.username || s.user_id.slice(0, 8)}</span>
+                  <span className="text-xs font-semibold text-white">
+                    @{(s.posted_handle || s.username || s.user_id.slice(0, 8)).replace(/^@/, '')}
+                  </span>
+                  {s.posted_handle && s.username && s.posted_handle.replace(/^@/, '').toLowerCase() !== s.username.toLowerCase() && (
+                    <span className="text-[9px] text-zinc-500">(by @{s.username})</span>
+                  )}
                   <span className="text-[10px] text-zinc-500">→ {m?.title || 'Unknown mission'}</span>
                   <span className={`text-[9px] uppercase px-1.5 py-0.5 rounded font-bold ${
                     s.status === 'approved' ? 'bg-emerald-950 text-emerald-400'
