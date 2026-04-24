@@ -200,7 +200,7 @@ function StatCard({ label, value, accent }: { label: string; value: string; acce
 }
 
 function Sheet({ children, onClose, title }: { children: React.ReactNode; onClose: () => void; title: string }) {
-  React.useEffect(() => {
+  useEffect(() => {
     const nav = document.querySelector('[data-clippers-bottom-nav]') as HTMLElement | null;
     const prev = nav?.style.display;
     if (nav) nav.style.display = 'none';
