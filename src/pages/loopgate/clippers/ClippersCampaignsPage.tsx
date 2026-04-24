@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useTempProfile } from '@/hooks/useTempProfile';
 import AccountPromptModal from '@/components/loopgate/AccountPromptModal';
+import PlatformBadges from '@/components/loopgate/missions/PlatformBadges';
 
 interface Milestone { views: number; bonus_cents: number; }
 
@@ -23,6 +24,7 @@ interface Mission {
   cap_type?: string | null;
   max_posts?: number | null;
   approved_count?: number | null;
+  eligible_platforms?: string[] | null;
   status: string;
   deadline: string | null;
 }
@@ -47,7 +49,7 @@ export default function ClippersCampaignsPage() {
       const [mRes, subsRes, paysRes] = await Promise.all([
         supabase
           .from('missions')
-          .select('id, title, description, cover_image_url, sponsor_name, sponsor_logo_url, base_payout_cents, view_milestones, budget_cents, spent_cents, cap_type, max_posts, approved_count, status, deadline')
+          .select('id, title, description, cover_image_url, sponsor_name, sponsor_logo_url, base_payout_cents, view_milestones, budget_cents, spent_cents, cap_type, max_posts, approved_count, eligible_platforms, status, deadline')
           .in('status', ['live', 'paused'])
           .order('created_at', { ascending: false })
           .limit(40),
