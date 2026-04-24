@@ -459,7 +459,7 @@ export default function MissionSubmitPage() {
                 </div>
                 <h3 className="font-apple-tight text-[22px] font-bold text-white tracking-[-0.01em]">You're eligible</h3>
                 <p className="text-[14px] text-[#8E8E93] mt-1">
-                  {linkedCount} linked {linkedCount === 1 ? 'account' : 'accounts'}. You'll earn the ${(mission.base_payout_cents / 100).toFixed(2)} base on every approved clip — plus the views game on top.
+                  {linkedCount} linked {linkedCount === 1 ? 'account' : 'accounts'}. You'll earn the ${(mission.base_payout_cents / 100).toFixed(2)} base on every approved clip — plus view milestone bonuses on top.
                 </p>
                 <button
                   onClick={() => { setEligibilityOpen(false); inputRef.current?.focus(); }}
@@ -477,7 +477,7 @@ export default function MissionSubmitPage() {
                 </div>
                 <h3 className="font-apple-tight text-[22px] font-bold text-white tracking-[-0.01em]">Not eligible for base payout</h3>
                 <p className="text-[14px] text-[#8E8E93] mt-1">
-                  Link a TikTok, Instagram, or YouTube account to unlock the ${(mission.base_payout_cents / 100).toFixed(2)} base. Until then, you can still play <span className="text-white font-semibold">the views game</span> and earn from milestone bonuses.
+                  Link a TikTok, Instagram, or YouTube account to unlock the ${(mission.base_payout_cents / 100).toFixed(2)} base. You can still submit and <span className="text-white font-semibold">aim for the view targets</span> to earn milestone bonuses.
                 </p>
                 <Link
                   to="/clippers/accounts"
@@ -491,7 +491,7 @@ export default function MissionSubmitPage() {
                   onClick={() => setEligibilityOpen(false)}
                   className="w-full h-11 rounded-[14px] font-medium text-[15px] text-[#0A84FF] mt-2"
                 >
-                  Play the views game instead
+                  Aim for view targets instead
                 </button>
               </>
             )}
