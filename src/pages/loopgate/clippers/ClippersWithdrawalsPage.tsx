@@ -402,9 +402,18 @@ function Sheet({ children, onClose, title, subtitle }: { children: React.ReactNo
           maxHeight: 'calc(100dvh - env(safe-area-inset-top, 0px) - 16px)',
         }}
       >
-        <div className="px-5 pt-3 pb-3 shrink-0">
+        <div className="px-5 pt-3 pb-3 shrink-0 relative">
           <div className="w-9 h-1 rounded-full bg-white/25 mx-auto sm:hidden mb-3" />
-          <h2 className="text-[22px] font-bold text-white tracking-[-0.022em]">{title}</h2>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 w-8 h-8 rounded-full bg-white/[0.08] hover:bg-white/[0.14] active:bg-white/[0.2] flex items-center justify-center transition-colors"
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 1L13 13M13 1L1 13" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+            </svg>
+          </button>
+          <h2 className="text-[22px] font-bold text-white tracking-[-0.022em] pr-10">{title}</h2>
           {subtitle && <p className="text-[13px] text-[#8E8E93] mt-0.5">{subtitle}</p>}
         </div>
         <div
