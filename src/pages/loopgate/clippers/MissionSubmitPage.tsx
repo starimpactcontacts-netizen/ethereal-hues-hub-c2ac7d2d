@@ -275,108 +275,102 @@ export default function MissionSubmitPage() {
           )}
         </section>
 
-        {/* Description — cinematic brief card */}
-        {mission.description && (
+        {/* Unified Brief + Resources — one cinematic card */}
+        {(mission.description || scenepacks.length > 0 || inspos.length > 0) && (
           <section className="mt-5">
-            <div className="flex items-center gap-1.5 px-1 mb-2">
-              <Sparkles className="w-3 h-3 text-[#0A84FF]" />
-              <h2 className="text-[11px] text-[#8E8E93] font-semibold uppercase tracking-[0.12em]">The Brief</h2>
-            </div>
             <div
-              className="relative rounded-[20px] p-[1px] overflow-hidden"
+              className="relative rounded-[24px] p-[1px] overflow-hidden"
               style={{
                 background:
-                  'linear-gradient(135deg, rgba(10,132,255,0.35) 0%, rgba(255,255,255,0.06) 35%, rgba(255,255,255,0.02) 100%)',
+                  'linear-gradient(135deg, rgba(10,132,255,0.35) 0%, rgba(255,255,255,0.08) 30%, rgba(255,255,255,0.02) 70%, rgba(10,132,255,0.18) 100%)',
               }}
             >
               <div
-                className="relative rounded-[19px] p-4 overflow-hidden"
-                style={{
-                  background:
-                    'linear-gradient(180deg, #1a1a1c 0%, #131315 100%)',
-                }}
+                className="relative rounded-[23px] overflow-hidden"
+                style={{ background: 'linear-gradient(180deg, #1a1a1c 0%, #109 0.1%, #131315 100%)' }}
               >
-                {/* subtle sheen */}
+                {/* ambient sheens */}
                 <div
-                  className="pointer-events-none absolute -top-16 -left-12 w-48 h-48 rounded-full opacity-40 blur-3xl"
+                  className="pointer-events-none absolute -top-20 -left-16 w-64 h-64 rounded-full opacity-50 blur-3xl"
                   style={{ background: 'radial-gradient(circle, rgba(10,132,255,0.35) 0%, transparent 70%)' }}
                 />
-                <p className="relative text-[15px] text-white/95 leading-[1.5] whitespace-pre-wrap tracking-[-0.005em]">
-                  {mission.description}
-                </p>
-              </div>
-            </div>
-          </section>
-        )}
+                <div
+                  className="pointer-events-none absolute -bottom-24 -right-16 w-64 h-64 rounded-full opacity-30 blur-3xl"
+                  style={{ background: 'radial-gradient(circle, rgba(10,132,255,0.25) 0%, transparent 70%)' }}
+                />
 
-        {/* Scenepacks — minimal, trust-badge style */}
-        {scenepacks.length > 0 && (
-          <section className="mt-5">
-            <div className="flex items-center gap-1.5 px-1 mb-2">
-              <h2 className="text-[11px] text-[#8E8E93] font-semibold uppercase tracking-[0.12em]">Ready-Made Clips</h2>
-              <div className="flex items-center gap-1 px-1.5 py-[1px] rounded-full" style={{ background: 'rgba(48,209,88,0.12)' }}>
-                <BadgeCheck className="w-2.5 h-2.5 text-[#30D158]" strokeWidth={2.5} />
-                <span className="text-[9px] font-semibold text-[#30D158] uppercase tracking-wide">Verified</span>
-              </div>
-            </div>
-            <div className="rounded-[18px] overflow-hidden border border-white/[0.05]" style={{ background: 'rgba(255,255,255,0.015)' }}>
-              {scenepacks.map((s, i) => (
-                <a
-                  key={i}
-                  href={s.url!}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={`group flex items-center gap-3 px-3.5 py-3 active:bg-white/[0.03] transition-colors ${i > 0 ? 'border-t border-white/[0.04]' : ''}`}
-                >
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border border-white/[0.06]" style={{ background: 'rgba(255,255,255,0.02)' }}>
-                    <Download className="w-3.5 h-3.5 text-[#8E8E93] group-active:text-[#0A84FF] transition-colors" strokeWidth={2.25} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <p className="text-[14px] font-medium text-white/90">{s.label}</p>
-                      <BadgeCheck className="w-3 h-3 text-[#0A84FF]" strokeWidth={2.5} />
+                {/* Brief */}
+                {mission.description && (
+                  <div className="relative px-5 pt-5 pb-5">
+                    <div className="flex items-center gap-1.5 mb-3">
+                      <Sparkles className="w-[13px] h-[13px] text-[#0A84FF]" strokeWidth={2.5} />
+                      <span className="text-[10.5px] text-[#8E8E93] font-semibold uppercase tracking-[0.14em]">The Brief</span>
+                      <div className="flex items-center gap-0.5 ml-auto">
+                        <BadgeCheck className="w-3 h-3 text-[#0A84FF]" strokeWidth={2.5} />
+                        <span className="text-[10px] font-medium text-[#0A84FF]/80">Trusted</span>
+                      </div>
                     </div>
-                    <p className="text-[11px] text-[#636366] truncate mt-0.5">{s.url}</p>
+                    <p className="font-apple-tight text-[20px] text-white leading-[1.3] whitespace-pre-wrap tracking-[-0.022em] font-medium">
+                      {mission.description}
+                    </p>
                   </div>
-                  <ExternalLink className="w-3.5 h-3.5 text-[#3A3A3C]" />
-                </a>
-              ))}
-            </div>
-          </section>
-        )}
+                )}
 
-        {/* Inspirations — minimal style matching scenepacks */}
-        {inspos.length > 0 && (
-          <section className="mt-5">
-            <div className="flex items-center gap-1.5 px-1 mb-2">
-              <h2 className="text-[11px] text-[#8E8E93] font-semibold uppercase tracking-[0.12em]">Inspirations</h2>
-              <div className="flex items-center gap-1 px-1.5 py-[1px] rounded-full" style={{ background: 'rgba(48,209,88,0.12)' }}>
-                <BadgeCheck className="w-2.5 h-2.5 text-[#30D158]" strokeWidth={2.5} />
-                <span className="text-[9px] font-semibold text-[#30D158] uppercase tracking-wide">Verified</span>
-              </div>
-            </div>
-            <div className="rounded-[18px] overflow-hidden border border-white/[0.05]" style={{ background: 'rgba(255,255,255,0.015)' }}>
-              {inspos.map((url, i) => (
-                <a
-                  key={i}
-                  href={url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={`group flex items-center gap-3 px-3.5 py-3 active:bg-white/[0.03] transition-colors ${i > 0 ? 'border-t border-white/[0.04]' : ''}`}
-                >
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border border-white/[0.06]" style={{ background: 'rgba(255,255,255,0.02)' }}>
-                    <Play className="w-3 h-3 text-[#8E8E93] group-active:text-[#FF453A] transition-colors fill-current" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <p className="text-[14px] font-medium text-white/90">Reference {i + 1}</p>
-                      <BadgeCheck className="w-3 h-3 text-[#0A84FF]" strokeWidth={2.5} />
+                {/* Divider when both exist */}
+                {mission.description && (scenepacks.length > 0 || inspos.length > 0) && (
+                  <div className="relative h-px mx-5" style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%)' }} />
+                )}
+
+                {/* Resources — clips + inspirations unified */}
+                {(scenepacks.length > 0 || inspos.length > 0) && (
+                  <div className="relative px-5 pt-5 pb-4">
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <span className="text-[10.5px] text-[#8E8E93] font-semibold uppercase tracking-[0.14em]">Resources</span>
                     </div>
-                    <p className="text-[11px] text-[#636366] truncate mt-0.5">{url}</p>
+                    <div className="-mx-1">
+                      {scenepacks.map((s, i) => (
+                        <a
+                          key={`sp-${i}`}
+                          href={s.url!}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="group flex items-center gap-3 px-1 py-3 active:opacity-60 transition-opacity"
+                          style={i > 0 || (i === 0 && false) ? { borderTop: '0.5px solid rgba(255,255,255,0.05)' } : {}}
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="font-apple-tight text-[18px] font-semibold text-white tracking-[-0.018em] leading-tight">
+                              {s.label}
+                            </p>
+                            <p className="text-[12px] text-[#636366] truncate mt-1">{s.url}</p>
+                          </div>
+                          <ExternalLink className="w-4 h-4 text-[#48484A] shrink-0 group-active:text-[#0A84FF] transition-colors" strokeWidth={2.25} />
+                        </a>
+                      ))}
+                      {inspos.map((url, i) => {
+                        const showBorder = scenepacks.length > 0 || i > 0;
+                        return (
+                          <a
+                            key={`ins-${i}`}
+                            href={url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="group flex items-center gap-3 px-1 py-3 active:opacity-60 transition-opacity"
+                            style={showBorder ? { borderTop: '0.5px solid rgba(255,255,255,0.05)' } : {}}
+                          >
+                            <div className="flex-1 min-w-0">
+                              <p className="font-apple-tight text-[18px] font-semibold text-white tracking-[-0.018em] leading-tight">
+                                Reference {i + 1}
+                              </p>
+                              <p className="text-[12px] text-[#636366] truncate mt-1">{url}</p>
+                            </div>
+                            <ExternalLink className="w-4 h-4 text-[#48484A] shrink-0 group-active:text-[#0A84FF] transition-colors" strokeWidth={2.25} />
+                          </a>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <ExternalLink className="w-3.5 h-3.5 text-[#3A3A3C]" />
-                </a>
-              ))}
+                )}
+              </div>
             </div>
           </section>
         )}
