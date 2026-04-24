@@ -200,10 +200,21 @@ function StatCard({ label, value, accent }: { label: string; value: string; acce
 }
 
 function Sheet({ children, onClose, title }: { children: React.ReactNode; onClose: () => void; title: string }) {
+  useEffect(() => {
+    const nav = document.querySelector('[data-clippers-bottom-nav]') as HTMLElement | null;
+    const prev = nav?.style.display;
+    if (nav) nav.style.display = 'none';
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      if (nav) nav.style.display = prev || '';
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [onClose]);
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-      className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center font-apple"
+      className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center font-apple"
       style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
       onClick={onClose}
     >
@@ -211,12 +222,23 @@ function Sheet({ children, onClose, title }: { children: React.ReactNode; onClos
         initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 380, damping: 36 }}
         onClick={(e) => e.stopPropagation()}
-        className="w-full sm:max-w-md rounded-t-[20px] sm:rounded-[20px] p-5 space-y-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]"
-        style={{ background: '#1c1c1e' }}
+        className="w-full sm:max-w-md rounded-t-[20px] sm:rounded-[20px] flex flex-col"
+        style={{ background: '#1c1c1e', maxHeight: 'calc(100dvh - env(safe-area-inset-top, 0px) - 16px)' }}
       >
-        <div className="w-9 h-1 rounded-full bg-white/25 mx-auto sm:hidden" />
-        <h2 className="text-[22px] font-bold text-white tracking-[-0.022em]">{title}</h2>
-        {children}
+        <div className="px-5 pt-3 pb-3 shrink-0 relative">
+          <div className="w-9 h-1 rounded-full bg-white/25 mx-auto sm:hidden mb-4" />
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 w-8 h-8 rounded-full bg-white/[0.08] hover:bg-white/[0.14] active:bg-white/[0.2] flex items-center justify-center transition-colors"
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1L13 13M13 1L1 13" stroke="white" strokeWidth="1.8" strokeLinecap="round"/></svg>
+          </button>
+          <h2 className="text-[22px] font-bold text-white tracking-[-0.022em] pr-10 pt-1">{title}</h2>
+        </div>
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] space-y-4" style={{ WebkitOverflowScrolling: 'touch' }}>
+          {children}
+        </div>
       </motion.div>
     </motion.div>
   );
