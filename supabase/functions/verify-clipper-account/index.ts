@@ -154,10 +154,15 @@ async function fetchInstagramProfile(handle: string) {
       const q = encodeURIComponent(`site:instagram.com ${handle} followers`);
       const html = await fetchHtml(`https://www.google.com/search?q=${q}`);
       if (html) {
-        const fm =
-          html.match(/([\d.,]+[KMB]?)\s*Followers/i) ||
-          html.match(/Followers[^\d]{0,8}([\d.,]+[KMB]?)/i);
-        if (fm) followers = parseHumanNumber(fm[1]);
+        // Only trust the snippet if the handle appears near the follower count
+        const handleLc = handle.toLowerCase();
+        const lower = html.toLowerCase();
+        const idx = lower.indexOf(handleLc);
+        if (idx !== -1) {
+          const window = html.slice(Math.max(0, idx - 200), Math.min(html.length, idx + 400));
+          const fm = window.match(/([\d.,]+\s*[KMB]?)\s*Followers/i);
+          if (fm) followers = parseHumanNumber(fm[1]);
+        }
       }
     } catch {}
   }
@@ -168,10 +173,14 @@ async function fetchInstagramProfile(handle: string) {
       const q = encodeURIComponent(`instagram.com/${handle} followers`);
       const html = await fetchHtml(`https://www.bing.com/search?q=${q}`);
       if (html) {
-        const fm =
-          html.match(/([\d.,]+[KMB]?)\s*Followers/i) ||
-          html.match(/Followers[^\d]{0,8}([\d.,]+[KMB]?)/i);
-        if (fm) followers = parseHumanNumber(fm[1]);
+        const handleLc = handle.toLowerCase();
+        const lower = html.toLowerCase();
+        const idx = lower.indexOf(handleLc);
+        if (idx !== -1) {
+          const window = html.slice(Math.max(0, idx - 200), Math.min(html.length, idx + 400));
+          const fm = window.match(/([\d.,]+\s*[KMB]?)\s*Followers/i);
+          if (fm) followers = parseHumanNumber(fm[1]);
+        }
       }
     } catch {}
   }
