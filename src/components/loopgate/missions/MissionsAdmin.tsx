@@ -288,6 +288,7 @@ export default function MissionsAdmin() {
                       ) : (
                         <span>${(m.spent_cents / 100).toFixed(2)} / ${(m.budget_cents / 100).toFixed(2)} budget</span>
                       )}
+                      <PlatformBadges platforms={m.eligible_platforms} />
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
