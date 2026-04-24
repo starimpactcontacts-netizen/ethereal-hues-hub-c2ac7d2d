@@ -70,7 +70,7 @@ export default function ClippersWithdrawalsPage() {
 
   const formatMoney = (c: number) => `$${(c / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   const totalPaid = withdrawals.filter((w) => w.status === 'paid').reduce((s, w) => s + w.amount_cents, 0);
-  const canCashOut = !!user && balance >= MIN_PAYOUT_CENTS;
+  const canCashOut = !!user && balance > 0;
 
   return (
     <>
