@@ -634,8 +634,6 @@ function MissionLauncher({
       const { data: pub } = supabase.storage.from('loop-media').getPublicUrl(path);
       patchInspo(i, {
         video_url: pub.publicUrl,
-        username: profile?.username || null,
-        avatar_url: profile?.avatar_url || null,
       });
       toast.success('Inspo uploaded');
     } catch (e: any) {
