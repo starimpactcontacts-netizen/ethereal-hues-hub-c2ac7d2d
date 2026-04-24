@@ -337,29 +337,24 @@ export default function MissionSubmitPage() {
         <div className="max-w-md mx-auto px-4 pointer-events-auto">
           <button
             onClick={handleSubmit}
-            disabled={submitting || !videoUrl.trim()}
+            disabled={submitting}
             className="relative w-full h-[58px] rounded-[18px] font-semibold text-[17px] text-black inline-flex items-center justify-center gap-2 transition-all active:scale-[0.985] disabled:cursor-not-allowed overflow-hidden tracking-[-0.01em]"
             style={{
-              background: videoUrl.trim()
-                ? 'linear-gradient(180deg, #3BE36A 0%, #1FB84A 100%)'
-                : 'rgba(60,60,67,0.55)',
-              color: videoUrl.trim() ? '#001405' : '#8E8E93',
-              boxShadow: videoUrl.trim()
-                ? '0 10px 30px -8px rgba(48,209,88,0.55), 0 2px 0 rgba(255,255,255,0.18) inset, 0 -2px 0 rgba(0,0,0,0.18) inset'
-                : '0 10px 24px -10px rgba(0,0,0,0.5)',
+              background: 'linear-gradient(180deg, #6EF2A0 0%, #3BE36A 45%, #1FB84A 100%)',
+              color: '#001405',
+              boxShadow:
+                '0 12px 32px -8px rgba(48,209,88,0.6), 0 2px 0 rgba(255,255,255,0.35) inset, 0 -2px 0 rgba(0,0,0,0.18) inset, 0 0 0 0.5px rgba(255,255,255,0.2) inset',
               backdropFilter: 'blur(24px) saturate(160%)',
               WebkitBackdropFilter: 'blur(24px) saturate(160%)',
-              border: videoUrl.trim() ? '0.5px solid rgba(255,255,255,0.25)' : '0.5px solid rgba(255,255,255,0.06)',
+              border: '0.5px solid rgba(255,255,255,0.3)',
             }}
           >
             {/* iOS glass highlight */}
-            {videoUrl.trim() && (
-              <span
-                aria-hidden
-                className="absolute inset-x-3 top-1 h-[18px] rounded-full pointer-events-none"
-                style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.45), rgba(255,255,255,0))' }}
-              />
-            )}
+            <span
+              aria-hidden
+              className="absolute inset-x-3 top-1 h-[20px] rounded-full pointer-events-none"
+              style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0))' }}
+            />
             {submitting ? (
               <Loader2 className="w-5 h-5 animate-spin relative" />
             ) : (
