@@ -7,7 +7,7 @@ import TicketFAB from '@/components/loopgate/TicketFAB';
 // Map routes to titles so the persistent header updates without remount
 const TITLE_MAP: Record<string, string> = {
   '/missions': 'Missions',
-  '/missions/submissions': 'Clips',
+  '/missions/submissions': 'Posts',
   '/missions/accounts': 'Linked',
   '/missions/withdrawals': 'Cashout',
   '/missions/settings': 'Settings',
