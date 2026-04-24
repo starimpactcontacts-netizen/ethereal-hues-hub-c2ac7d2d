@@ -859,6 +859,36 @@ function MissionLauncher({
             )}
           </div>
 
+          {/* Base payout: approval rate + requirements */}
+          <div className="space-y-3 p-3 rounded-lg bg-zinc-900/40 border border-zinc-800">
+            <div>
+              <Label className="text-xs text-zinc-300 font-semibold">Base payout settings</Label>
+              <p className="text-[10px] text-zinc-500 mt-0.5">
+                Shown to clippers on the mission page. Approval % sets expectations; requirements are what we check before approving them for base payout.
+              </p>
+            </div>
+            <div>
+              <Label className="text-[10px] text-zinc-500">Approval rate (%) — leave blank to hide</Label>
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                value={approvalRate}
+                onChange={e => setApprovalRate(e.target.value)}
+                placeholder="e.g. 78"
+              />
+            </div>
+            <div>
+              <Label className="text-[10px] text-zinc-500">Base payout requirements (what clippers must meet)</Label>
+              <Textarea
+                value={baseRequirements}
+                onChange={e => setBaseRequirements(e.target.value)}
+                placeholder={'e.g.\n• Linked TikTok or IG account\n• 1k+ followers\n• Clean posting history (no bot views)'}
+                rows={4}
+              />
+            </div>
+          </div>
+
           {/* Inspirations — multiple rows so clippers don't get stuck on one ref */}
           <div>
             <div className="flex items-center justify-between mb-2">
