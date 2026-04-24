@@ -186,14 +186,28 @@ export default function MissionSubmitPage() {
     try {
       const username = (user.user_metadata?.username as string) || user.email?.split('@')[0] || 'user';
       const avatar = (user.user_metadata?.avatar_url as string) || null;
+      const detectedPlatform = detectPlatform(videoUrl);
+      // Resolve the handle to credit: prefer the user's linked account for the detected platform
+      let resolvedHandle: string | null = handle.trim() || null;
+      if (!resolvedHandle && detectedPlatform) {
+        const { data: linked } = await supabase
+          .from('clipper_linked_accounts')
+          .select('handle')
+          .eq('user_id', user.id)
+          .eq('platform', detectedPlatform)
+          .order('is_verified', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (linked?.handle) resolvedHandle = linked.handle;
+      }
       const { error } = await supabase.from('mission_submissions').insert({
         mission_id: mission.id,
         user_id: user.id,
         username,
         avatar_url: avatar,
         video_url: videoUrl.trim(),
-        platform: detectPlatform(videoUrl),
-        posted_handle: handle.trim() || null,
+        platform: detectedPlatform,
+        posted_handle: resolvedHandle,
         status: 'pending',
       } as any);
       if (error) throw error;
