@@ -46,6 +46,8 @@ interface Mission {
   approved_count: number;
   total_views: number;
   created_at: string;
+  approval_rate_pct?: number | null;
+  base_payout_requirements?: string | null;
 }
 
 interface MissionSub {
