@@ -263,6 +263,9 @@ function MissionCard({ m, formatMoney }: { m: Mission; formatMoney: (n: number) 
               <h3 className="font-apple-tight text-[17px] font-bold text-white tracking-[-0.022em] line-clamp-2 leading-[1.15] mt-1">
                 {m.title}
               </h3>
+              <div className="mt-1.5">
+                <PlatformBadges platforms={m.eligible_platforms} />
+              </div>
             </div>
             <ChevronRight
               className="w-[16px] h-[16px] text-[#48484A] flex-shrink-0 mt-0.5 group-active:translate-x-0.5 transition-transform"
