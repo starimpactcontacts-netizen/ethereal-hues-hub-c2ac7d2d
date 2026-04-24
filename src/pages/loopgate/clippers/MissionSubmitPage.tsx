@@ -31,6 +31,8 @@ interface Mission {
   eligible_platforms: string[] | null;
   status: string;
   deadline: string | null;
+  approval_rate_pct: number | null;
+  base_payout_requirements: string | null;
 }
 
 function detectPlatform(url: string): string {
@@ -60,33 +62,95 @@ export default function MissionSubmitPage() {
   const [submitOpen, setSubmitOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [eligibilityOpen, setEligibilityOpen] = useState(false);
-  const [eligibility, setEligibility] = useState<'idle' | 'checking' | 'eligible' | 'ineligible'>('idle');
-  const [linkedCount, setLinkedCount] = useState(0);
+  const [eligibility, setEligibility] = useState<
+    'idle' | 'loading' | 'none' | 'pending' | 'approved' | 'rejected'
+  >('idle');
+  const [eligibilityNotes, setEligibilityNotes] = useState<string | null>(null);
+  const [submittingRequest, setSubmittingRequest] = useState(false);
   const [mySubmission, setMySubmission] = useState<{
     view_count: number | null;
     total_earned_cents: number | null;
     status: string | null;
   } | null>(null);
 
+  const loadEligibility = async () => {
+    if (!user || !id) return;
+    setEligibility('loading');
+    setEligibilityNotes(null);
+    const { data } = await supabase
+      .from('mission_base_eligibility' as any)
+      .select('status, admin_notes')
+      .eq('mission_id', id)
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (!data) {
+      setEligibility('none');
+    } else {
+      const row = data as any;
+      setEligibility((row.status as 'pending' | 'approved' | 'rejected') || 'none');
+      setEligibilityNotes(row.admin_notes || null);
+    }
+  };
+
   const checkEligibility = async () => {
     if (!user) { setAuthOpen(true); return; }
     setEligibilityOpen(true);
-    setEligibility('checking');
-    const { count } = await supabase
-      .from('clipper_linked_accounts')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id);
-    const c = count || 0;
-    setLinkedCount(c);
-    setEligibility(c > 0 ? 'eligible' : 'ineligible');
+    await loadEligibility();
   };
+
+  const requestApproval = async () => {
+    if (!user || !id) { setAuthOpen(true); return; }
+    setSubmittingRequest(true);
+    // Get profile for username/avatar snapshot
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('username, avatar_url')
+      .eq('id', user.id)
+      .maybeSingle();
+    const { error } = await supabase
+      .from('mission_base_eligibility' as any)
+      .insert({
+        mission_id: id,
+        user_id: user.id,
+        username: (profile as any)?.username || null,
+        avatar_url: (profile as any)?.avatar_url || null,
+        status: 'pending',
+      } as any);
+    setSubmittingRequest(false);
+    if (error) {
+      toast.error(error.message || 'Could not submit — try again');
+      return;
+    }
+    toast.success('Request sent — we\'ll review shortly');
+    await loadEligibility();
+  };
+
+  // Pre-load current eligibility quietly so the badge can reflect status
+  useEffect(() => {
+    if (!user || !id) return;
+    (async () => {
+      const { data } = await supabase
+        .from('mission_base_eligibility' as any)
+        .select('status, admin_notes')
+        .eq('mission_id', id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (data) {
+        const row = data as any;
+        setEligibility((row.status as any) || 'none');
+        setEligibilityNotes(row.admin_notes || null);
+      } else {
+        setEligibility('none');
+      }
+    })();
+  }, [user?.id, id]);
 
   useEffect(() => {
     if (!id) { setLoading(false); return; }
     (async () => {
       const { data } = await supabase
         .from('missions')
-        .select('id, title, description, cover_image_url, base_payout_cents, view_milestones, budget_cents, spent_cents, cap_type, max_posts, approved_count, inspirations, scenepack_url, scenepack_gdrive_url, scenepack_youtube_url, eligible_platforms, status, deadline')
+        .select('id, title, description, cover_image_url, base_payout_cents, view_milestones, budget_cents, spent_cents, cap_type, max_posts, approved_count, inspirations, scenepack_url, scenepack_gdrive_url, scenepack_youtube_url, eligible_platforms, status, deadline, approval_rate_pct, base_payout_requirements')
         .eq('id', id)
         .maybeSingle();
       setMission((data as any) || null);
