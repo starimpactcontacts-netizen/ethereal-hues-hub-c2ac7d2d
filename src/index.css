@@ -445,3 +445,8 @@ html, body {
 .animate-scroll-left {
   animation: scroll-left 20s linear infinite;
 }
+
+@keyframes sheen {
+  0% { transform: translateX(0) skewX(-12deg); }
+  100% { transform: translateX(500%) skewX(-12deg); }
+}
