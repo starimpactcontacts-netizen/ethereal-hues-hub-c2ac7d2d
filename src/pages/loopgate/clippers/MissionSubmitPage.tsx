@@ -54,6 +54,7 @@ export default function MissionSubmitPage() {
   const [handle, setHandle] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
+  const [submitOpen, setSubmitOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [eligibilityOpen, setEligibilityOpen] = useState(false);
   const [eligibility, setEligibility] = useState<'idle' | 'checking' | 'eligible' | 'ineligible'>('idle');
@@ -130,12 +131,18 @@ export default function MissionSubmitPage() {
       } as any);
       if (error) throw error;
       toast.success('Submitted! We review within 24h.');
+      setSubmitOpen(false);
       navigate('/missions/submissions');
     } catch (e: any) {
       toast.error(e.message || 'Failed to submit');
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const openSubmit = () => {
+    if (!user) { setAuthOpen(true); return; }
+    setSubmitOpen(true);
   };
 
   if (loading) {
@@ -327,35 +334,6 @@ export default function MissionSubmitPage() {
           </section>
         )}
 
-        {/* Submit */}
-        <section className="mt-5">
-          <h2 className="text-[13px] text-[#8E8E93] font-medium uppercase tracking-wide px-1 mb-2">Submit your clip</h2>
-          <div className="rounded-[18px] p-4 space-y-3" style={{ background: '#1c1c1e' }}>
-            <div>
-              <label className="text-[11px] text-[#8E8E93] font-medium px-0.5">Clip link</label>
-              <input
-                ref={inputRef}
-                value={videoUrl}
-                onChange={(e) => setVideoUrl(e.target.value)}
-                placeholder="https://tiktok.com/..."
-                className="w-full h-11 px-3 mt-1 rounded-[12px] text-[15px] text-white placeholder:text-[#48484A] outline-none"
-                style={{ background: 'rgba(118, 118, 128, 0.24)' }}
-              />
-            </div>
-            <div>
-              <label className="text-[11px] text-[#8E8E93] font-medium px-0.5">Account handle <span className="text-[#48484A]">(optional)</span></label>
-              <input
-                value={handle}
-                onChange={(e) => setHandle(e.target.value)}
-                placeholder="@yourhandle"
-                className="w-full h-11 px-3 mt-1 rounded-[12px] text-[15px] text-white placeholder:text-[#48484A] outline-none"
-                style={{ background: 'rgba(118, 118, 128, 0.24)' }}
-              />
-            </div>
-
-            <p className="text-[11px] text-[#8E8E93] text-center pt-1">Reviewed within 24h · Paid on approval</p>
-          </div>
-        </section>
       </div>
 
       {/* Floating pump.fun-style submit CTA — replaces bottom nav on mission view */}
@@ -365,7 +343,7 @@ export default function MissionSubmitPage() {
       >
         <div className="max-w-md mx-auto px-4 pointer-events-auto">
           <button
-            onClick={handleSubmit}
+            onClick={openSubmit}
             disabled={submitting}
             className="relative w-full h-[58px] rounded-[18px] font-semibold text-[17px] text-black inline-flex items-center justify-center gap-2 transition-all active:scale-[0.985] disabled:cursor-not-allowed overflow-hidden tracking-[-0.01em]"
             style={{
@@ -401,6 +379,54 @@ export default function MissionSubmitPage() {
         onClose={() => setAuthOpen(false)}
         reason="Sign up to submit your clip and get paid."
       />
+
+      {submitOpen && (
+        <div
+          className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm"
+          onClick={() => !submitting && setSubmitOpen(false)}
+        >
+          <motion.div
+            initial={{ y: 40, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full sm:max-w-sm rounded-t-[24px] sm:rounded-[24px] p-5 pb-8 sm:pb-5 space-y-4"
+            style={{ background: '#1c1c1e' }}
+          >
+            <div>
+              <h3 className="font-apple-tight text-[22px] font-bold text-white tracking-[-0.01em]">Submit your clip</h3>
+              <p className="text-[13px] text-[#8E8E93] mt-1">Paste the link to your posted clip. Reviewed within 24h.</p>
+            </div>
+            <div>
+              <label className="text-[11px] text-[#8E8E93] font-medium px-0.5">Clip link</label>
+              <input
+                ref={inputRef}
+                autoFocus
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+                placeholder="https://tiktok.com/..."
+                className="w-full h-11 px-3 mt-1 rounded-[12px] text-[15px] text-white placeholder:text-[#48484A] outline-none"
+                style={{ background: 'rgba(118, 118, 128, 0.24)' }}
+              />
+            </div>
+            <button
+              onClick={handleSubmit}
+              disabled={submitting || !videoUrl.trim()}
+              className="w-full h-12 rounded-[14px] font-semibold text-[16px] inline-flex items-center justify-center gap-2 disabled:opacity-50"
+              style={{ background: '#30D158', color: '#0B3B1E' }}
+            >
+              {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Upload className="w-[18px] h-[18px]" strokeWidth={2.75} />Submit</>}
+            </button>
+            <button
+              onClick={() => setSubmitOpen(false)}
+              disabled={submitting}
+              className="w-full h-11 rounded-[14px] font-medium text-[15px] text-[#0A84FF]"
+            >
+              Cancel
+            </button>
+          </motion.div>
+        </div>
+      )}
 
       {eligibilityOpen && (
         <div
