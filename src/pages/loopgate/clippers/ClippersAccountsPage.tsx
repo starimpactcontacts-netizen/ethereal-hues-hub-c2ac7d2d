@@ -21,8 +21,6 @@ const PLATFORMS = [
   { id: 'tiktok', label: 'TikTok', icon: Music2, color: '#FFFFFF' },
   { id: 'instagram', label: 'Instagram', icon: Instagram, color: '#E1306C' },
   { id: 'youtube', label: 'YouTube', icon: Youtube, color: '#FF453A' },
-  { id: 'x', label: 'X', icon: Twitter, color: '#FFFFFF' },
-  { id: 'facebook', label: 'Facebook', icon: Facebook, color: '#0866FF' },
 ];
 
 export default function ClippersAccountsPage() {
