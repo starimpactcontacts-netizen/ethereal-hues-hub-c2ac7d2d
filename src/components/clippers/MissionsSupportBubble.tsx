@@ -83,7 +83,6 @@ export default function MissionsSupportBubble() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(snapped)); } catch { /* noop */ }
     if (!movedRef.current) {
       setOpen(true);
-      setShowHint(false);
     }
   };
 
