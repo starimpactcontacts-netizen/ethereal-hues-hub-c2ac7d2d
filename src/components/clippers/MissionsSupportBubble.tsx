@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X, Clock3, Sparkles, ArrowUpRight, ChevronRight } from 'lucide-react';
+import { MessageCircle, X, Sparkles, ArrowUpRight, ChevronRight } from 'lucide-react';
 import { useTicketStore } from '@/components/loopgate/TicketFAB';
 
 const STORAGE_KEY = 'missions_support_bubble_pos_v1';
@@ -39,7 +39,6 @@ export default function MissionsSupportBubble() {
   const openTicketModal = useTicketStore((s) => s.setOpen);
   const [pos, setPos] = useState<Pos>(defaultPos);
   const [open, setOpen] = useState(false);
-  const [showHint, setShowHint] = useState(true);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   const draggingRef = useRef(false);
   const movedRef = useRef(false);
@@ -51,12 +50,6 @@ export default function MissionsSupportBubble() {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) setPos(clampToViewport(JSON.parse(raw)));
     } catch { /* noop */ }
-  }, []);
-
-  // Auto-dismiss hint after a few seconds
-  useEffect(() => {
-    const t = setTimeout(() => setShowHint(false), 6000);
-    return () => clearTimeout(t);
   }, []);
 
   // Re-clamp on resize
@@ -90,7 +83,6 @@ export default function MissionsSupportBubble() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(snapped)); } catch { /* noop */ }
     if (!movedRef.current) {
       setOpen(true);
-      setShowHint(false);
     }
   };
 
@@ -109,29 +101,6 @@ export default function MissionsSupportBubble() {
         style={{ left: pos.x, top: pos.y, width: BUBBLE_SIZE, height: BUBBLE_SIZE }}
         className="fixed z-[80] touch-none select-none"
       >
-        {/* Hint pill */}
-        <AnimatePresence>
-          {showHint && !open && (
-            <motion.div
-              initial={{ opacity: 0, y: 6, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 6, scale: 0.96 }}
-              transition={{ duration: 0.25 }}
-              className="absolute -top-9 right-0 whitespace-nowrap px-3 h-7 inline-flex items-center gap-1.5 rounded-full text-[12px] font-medium text-white pointer-events-none"
-              style={{
-                background: 'rgba(28,28,30,0.85)',
-                backdropFilter: 'blur(20px) saturate(180%)',
-                WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                border: '0.5px solid rgba(255,255,255,0.12)',
-                boxShadow: '0 8px 24px -8px rgba(0,0,0,0.5)',
-              }}
-            >
-              <Clock3 className="w-3 h-3 text-[#30D158]" strokeWidth={2.5} />
-              Replies in ~20 min
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         <button
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
@@ -139,12 +108,12 @@ export default function MissionsSupportBubble() {
           aria-label="Mission support"
           className="relative w-full h-full rounded-full inline-flex items-center justify-center text-white active:scale-[0.92] transition-transform overflow-hidden"
           style={{
-            background: 'rgba(255,255,255,0.06)',
-            border: '0.5px solid rgba(255,255,255,0.35)',
+            background: 'rgba(255,255,255,0.03)',
+            border: '0.5px solid rgba(255,255,255,0.28)',
             boxShadow:
-              '0 18px 44px -12px rgba(0,0,0,0.55), 0 4px 18px -4px rgba(48,209,88,0.22), 0 1.5px 0 rgba(255,255,255,0.55) inset, 0 -2px 0 rgba(0,0,0,0.25) inset, 0 0 0 0.5px rgba(255,255,255,0.18) inset',
-            backdropFilter: 'blur(18px) saturate(190%)',
-            WebkitBackdropFilter: 'blur(18px) saturate(190%)',
+              '0 14px 36px -12px rgba(0,0,0,0.45), 0 1.5px 0 rgba(255,255,255,0.45) inset, 0 -2px 0 rgba(0,0,0,0.18) inset, 0 0 0 0.5px rgba(255,255,255,0.14) inset',
+            backdropFilter: 'blur(10px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(10px) saturate(180%)',
           }}
         >
           {/* Subtle liquid tint — kept very low alpha so background still shows through */}
