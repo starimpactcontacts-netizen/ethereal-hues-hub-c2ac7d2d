@@ -308,7 +308,7 @@ export default function MissionsAdmin() {
                     <div className="text-[11px] text-zinc-500 mt-0.5 flex items-center gap-3 flex-wrap">
                       <span>${(m.base_payout_cents / 100).toFixed(2)} base</span>
                       <span>+ {(m.view_milestones || []).length} milestones</span>
-                      <span>{m.submission_count} clips</span>
+                      <span>{m.submission_count} posts</span>
                       {m.cap_type === 'posts' ? (
                         <span>{m.approved_count || 0} / {m.max_posts || 0} posts</span>
                       ) : (
@@ -1126,7 +1126,7 @@ function MissionLauncher({
           </div>
 
           <div>
-            <Label className="text-xs text-zinc-400">Base payout per approved clip ($)</Label>
+            <Label className="text-xs text-zinc-400">Base payout per approved post ($)</Label>
             <Input type="number" step="0.01" value={basePayout} onChange={e => setBasePayout(e.target.value)} placeholder="5.00" />
           </div>
 
