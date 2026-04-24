@@ -291,7 +291,7 @@ export default function MissionsSupportBubble() {
               {/* CTA — open new chat */}
               <div className="p-4 pt-4 pb-[max(env(safe-area-inset-bottom),16px)]">
                 <button
-                  onClick={openLoopyChat}
+                  onClick={openSupportThread}
                   className="relative w-full h-[54px] rounded-[16px] inline-flex items-center justify-center gap-2 text-[16px] font-semibold text-white overflow-hidden active:scale-[0.985] transition-transform"
                   style={{
                     background: 'linear-gradient(180deg, #0A84FF 0%, #0066D6 100%)',
