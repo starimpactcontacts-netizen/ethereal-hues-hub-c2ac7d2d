@@ -126,36 +126,61 @@ export default function ViewsGamePanel({ milestones }: { milestones: Milestone[]
         {sorted.map((m, i) => {
           const isCleared = demoViews >= m.views;
           const isNext = !isCleared && i === nextIdx;
+          const remaining = Math.max(0, m.views - demoViews);
+          const tierPct = Math.min(100, (demoViews / m.views) * 100);
           return (
             <div
               key={i}
-              className="flex items-center gap-3 px-4 py-3"
+              className="px-4 py-3"
               style={{
                 borderTop: i === 0 ? 'none' : '0.5px solid rgba(255,255,255,0.06)',
               }}
             >
-              <div
-                className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
-                style={{
-                  background: isCleared ? '#30D158' : 'transparent',
-                  border: isCleared ? 'none' : '1.25px solid rgba(255,255,255,0.18)',
-                }}
-              >
-                {isCleared && <Check className="w-3 h-3 text-black" strokeWidth={3.5} />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className={`text-[15px] font-medium tabular-nums tracking-[-0.01em] ${isCleared || isNext ? 'text-white' : 'text-[#8E8E93]'}`}>
-                  {formatViews(m.views)} views
-                </p>
-                {isNext && (
-                  <p className="text-[11px] text-[#8E8E93] tracking-[-0.01em] mt-0.5">
-                    {formatViews(m.views - demoViews)} to go
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
+                  style={{
+                    background: isCleared ? '#30D158' : 'transparent',
+                    border: isCleared ? 'none' : '1.25px solid rgba(255,255,255,0.18)',
+                  }}
+                >
+                  {isCleared && <Check className="w-3 h-3 text-black" strokeWidth={3.5} />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-[15px] font-medium tabular-nums tracking-[-0.01em] ${isCleared || isNext ? 'text-white' : 'text-[#8E8E93]'}`}>
+                    {formatViews(m.views)} views
                   </p>
-                )}
+                </div>
+                <p className={`text-[15px] font-semibold tabular-nums tracking-[-0.01em] ${isCleared ? 'text-[#30D158]' : 'text-white'}`}>
+                  +{formatMoney(m.bonus_cents)}
+                </p>
               </div>
-              <p className={`text-[15px] font-semibold tabular-nums tracking-[-0.01em] ${isCleared ? 'text-[#30D158]' : 'text-white'}`}>
-                +{formatMoney(m.bonus_cents)}
-              </p>
+
+              {/* Motivating "almost there" panel — only on the next active tier */}
+              {isNext && (
+                <div className="mt-2.5 ml-8 rounded-[10px] px-3 py-2.5" style={{ background: 'rgba(48,209,88,0.08)', border: '0.5px solid rgba(48,209,88,0.25)' }}>
+                  <div className="flex items-baseline justify-between gap-2 mb-1.5">
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="font-apple-tight text-[22px] font-semibold text-white tabular-nums leading-none tracking-[-0.02em]">
+                        {formatViews(remaining)}
+                      </span>
+                      <span className="text-[11px] text-[#8E8E93] tracking-[-0.01em]">views away</span>
+                    </div>
+                    <span className="text-[11px] font-medium text-[#30D158] tabular-nums tracking-[-0.01em]">
+                      unlocks {formatMoney(m.bonus_cents)}
+                    </span>
+                  </div>
+                  <div className="relative h-[3px] rounded-full bg-white/[0.08] overflow-hidden">
+                    <div
+                      className="absolute inset-y-0 left-0 rounded-full bg-[#30D158] transition-all duration-200"
+                      style={{ width: `${tierPct}%` }}
+                    />
+                  </div>
+                  <p className="text-[10.5px] text-[#8E8E93] tracking-[-0.01em] mt-1.5">
+                    Hits {formatViews(m.views)} views → {formatMoney(m.bonus_cents)} added to your balance instantly.
+                  </p>
+                </div>
+              )}
             </div>
           );
         })}
