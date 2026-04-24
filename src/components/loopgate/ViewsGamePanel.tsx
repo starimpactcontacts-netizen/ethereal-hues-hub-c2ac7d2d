@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Lock, Zap, Flame, TrendingUp, DollarSign } from 'lucide-react';
+import { Lock, Check, ArrowUpRight, DollarSign, Activity } from 'lucide-react';
 
 interface Milestone { views: number; bonus_cents: number; }
 
@@ -71,19 +71,17 @@ export default function ViewsGamePanel({ milestones }: { milestones: Milestone[]
 
   return (
     <div className="mt-4 pt-4 border-t border-white/[0.06]">
-      {/* Header — Polymarket / trading desk */}
+      {/* Header — your position */}
       <div className="flex items-center justify-between mb-2.5">
         <div className="inline-flex items-center gap-2">
-          <div className="relative">
-            <div className="w-2 h-2 rounded-full bg-[#FF453A]" />
-            <div className="absolute inset-0 w-2 h-2 rounded-full bg-[#FF453A] animate-ping" />
-          </div>
-          <span className="text-[10px] font-black uppercase tracking-[0.12em] text-[#FF453A]">LIVE MARKET</span>
+          <Activity className="w-3 h-3 text-[#30D158]" strokeWidth={3} />
+          <span className="text-[10px] font-black uppercase tracking-[0.14em] text-white">YOUR POSITION</span>
+          <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#8E8E93]">· VIEWS</span>
         </div>
-        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#FFD60A]/10 border border-[#FFD60A]/30">
-          <DollarSign className="w-2.5 h-2.5 text-[#FFD60A]" strokeWidth={3} />
-          <span className="text-[10px] font-black tabular-nums text-[#FFD60A] tracking-wide">
-            {formatMoney(totalPool)} POOL
+        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white/[0.04] border border-white/[0.08]">
+          <DollarSign className="w-2.5 h-2.5 text-[#30D158]" strokeWidth={3} />
+          <span className="text-[10px] font-black tabular-nums text-white tracking-wide">
+            {formatMoney(totalPool)} <span className="text-[#8E8E93]">MAX</span>
           </span>
         </div>
       </div>
@@ -111,8 +109,11 @@ export default function ViewsGamePanel({ milestones }: { milestones: Milestone[]
         <div className="relative flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="inline-flex items-center gap-1.5 mb-1">
-              <span className="text-[9px] font-black uppercase tracking-[0.15em] text-[#8E8E93]">VIEWS</span>
-              <span className="text-[9px] font-black uppercase tracking-[0.1em] text-[#30D158] tabular-nums">▲ +{((demoViews / maxViews) * 100).toFixed(2)}%</span>
+              <span className="text-[9px] font-black uppercase tracking-[0.15em] text-[#8E8E93]">CURRENT VIEWS</span>
+              <span className="text-[9px] font-black uppercase tracking-[0.1em] text-[#30D158] tabular-nums inline-flex items-center gap-0.5">
+                <ArrowUpRight className="w-2.5 h-2.5" strokeWidth={3} />
+                +{((demoViews / maxViews) * 100).toFixed(2)}%
+              </span>
             </div>
             <p className="font-mono text-[34px] font-black text-white leading-none tabular-nums tracking-tight" style={{ textShadow: '0 0 20px rgba(48,209,88,0.4)' }}>
               {formatViews(demoViews)}
@@ -137,15 +138,15 @@ export default function ViewsGamePanel({ milestones }: { milestones: Milestone[]
         {/* Earned + progress row */}
         <div className="relative mt-3 flex items-center justify-between gap-3">
           <div className="flex items-baseline gap-1.5">
-            <span className="text-[9px] font-black uppercase tracking-[0.12em] text-[#8E8E93]">CASHED</span>
+            <span className="text-[9px] font-black uppercase tracking-[0.12em] text-[#8E8E93]">UNREALIZED</span>
             <span className="font-mono text-[18px] font-black text-[#30D158] tabular-nums leading-none">
               {formatMoney(earned)}
             </span>
           </div>
           {next && (
             <div className="text-right">
-              <div className="text-[9px] font-black uppercase tracking-[0.12em] text-[#FF9F0A] inline-flex items-center gap-1">
-                <Flame className="w-2.5 h-2.5" /> NEXT TIER
+              <div className="text-[9px] font-black uppercase tracking-[0.12em] text-[#8E8E93] inline-flex items-center gap-1">
+                NEXT FILL
               </div>
               <div className="font-mono text-[12px] font-bold text-white tabular-nums">
                 {formatViews(next.views - demoViews)} → <span className="text-[#30D158]">+{formatMoney(next.bonus_cents)}</span>
@@ -233,9 +234,9 @@ export default function ViewsGamePanel({ milestones }: { milestones: Milestone[]
                   }}
                 >
                   {isCleared ? (
-                    <Zap className="w-3.5 h-3.5 text-black" strokeWidth={3} fill="black" />
+                    <Check className="w-3.5 h-3.5 text-black" strokeWidth={3.5} />
                   ) : isNext ? (
-                    <Flame className="w-3.5 h-3.5 text-[#FF9F0A]" strokeWidth={2.8} />
+                    <ArrowUpRight className="w-3.5 h-3.5 text-[#FF9F0A]" strokeWidth={3} />
                   ) : (
                     <Lock className="w-3 h-3 text-[#48484A]" strokeWidth={2.8} />
                   )}
@@ -253,7 +254,7 @@ export default function ViewsGamePanel({ milestones }: { milestones: Milestone[]
                       isCleared ? 'text-[#30D158]' : isNext ? 'text-[#FF9F0A]' : 'text-[#48484A]'
                     }`}
                   >
-                    {isCleared ? 'HIT' : `${tierPct.toFixed(0)}%`}
+                    {isCleared ? 'FILLED' : `${tierPct.toFixed(0)}%`}
                   </span>
                 </div>
                 <p
@@ -268,10 +269,10 @@ export default function ViewsGamePanel({ milestones }: { milestones: Milestone[]
         })}
       </div>
 
-      <div className="mt-3 flex items-center justify-center gap-1.5 px-3 py-2 rounded-[10px] bg-[#30D158]/8 border border-[#30D158]/20">
-        <TrendingUp className="w-3 h-3 text-[#30D158]" strokeWidth={2.8} />
-        <span className="text-[10px] font-black uppercase tracking-[0.1em] text-[#30D158]">
-          Hit a tier → instant cashout
+      <div className="mt-3 flex items-center justify-center gap-1.5 px-3 py-2 rounded-[10px] bg-white/[0.03] border border-white/[0.06]">
+        <DollarSign className="w-3 h-3 text-[#30D158]" strokeWidth={3} />
+        <span className="text-[10px] font-black uppercase tracking-[0.1em] text-white">
+          Fill a tier · withdraw instantly
         </span>
       </div>
     </div>
