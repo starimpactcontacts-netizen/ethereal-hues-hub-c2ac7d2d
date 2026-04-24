@@ -235,7 +235,13 @@ export default function MissionSubmitPage() {
           </button>
 
           {milestones.length > 0 && (
-            <ViewsGamePanel milestones={milestones} />
+            <ViewsGamePanel
+              milestones={milestones}
+              hasSubmission={!!mySubmission}
+              currentViews={mySubmission?.view_count ?? 0}
+              earnedCents={mySubmission?.total_earned_cents ?? 0}
+              submissionStatus={mySubmission?.status ?? null}
+            />
           )}
 
           {showProgress && (
