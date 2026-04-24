@@ -103,6 +103,12 @@ export default function ClippersLayout({ children, title, hideBottomNav = false 
                     />
                   )}
                   <div className="h-px bg-white/[0.08] my-1" />
+                  <MenuItem
+                    icon={ScrollText}
+                    label="Mission Policy"
+                    onClick={() => { setMenuOpen(false); navigate('/missions/policy'); }}
+                  />
+                  <div className="h-px bg-white/[0.08] my-1" />
                   <div className="px-3 py-2 flex items-center gap-2 opacity-60">
                     <img src={loopgateLogo} alt="" className="h-3.5 w-3.5" />
                     <span className="text-[10px] uppercase tracking-[0.15em] text-[#8E8E93]">{title || 'Missions'}</span>
