@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X, Clock3, Sparkles, ArrowUpRight, ChevronRight } from 'lucide-react';
+import { MessageCircle, X, Sparkles, ArrowUpRight, ChevronRight } from 'lucide-react';
 import { useTicketStore } from '@/components/loopgate/TicketFAB';
 
 const STORAGE_KEY = 'missions_support_bubble_pos_v1';
@@ -39,7 +39,6 @@ export default function MissionsSupportBubble() {
   const openTicketModal = useTicketStore((s) => s.setOpen);
   const [pos, setPos] = useState<Pos>(defaultPos);
   const [open, setOpen] = useState(false);
-  const [showHint, setShowHint] = useState(true);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   const draggingRef = useRef(false);
   const movedRef = useRef(false);
@@ -51,12 +50,6 @@ export default function MissionsSupportBubble() {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) setPos(clampToViewport(JSON.parse(raw)));
     } catch { /* noop */ }
-  }, []);
-
-  // Auto-dismiss hint after a few seconds
-  useEffect(() => {
-    const t = setTimeout(() => setShowHint(false), 6000);
-    return () => clearTimeout(t);
   }, []);
 
   // Re-clamp on resize
