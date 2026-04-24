@@ -109,8 +109,11 @@ export default function ViewsGamePanel({ milestones }: { milestones: Milestone[]
         <div className="relative flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="inline-flex items-center gap-1.5 mb-1">
-              <span className="text-[9px] font-black uppercase tracking-[0.15em] text-[#8E8E93]">VIEWS</span>
-              <span className="text-[9px] font-black uppercase tracking-[0.1em] text-[#30D158] tabular-nums">▲ +{((demoViews / maxViews) * 100).toFixed(2)}%</span>
+              <span className="text-[9px] font-black uppercase tracking-[0.15em] text-[#8E8E93]">CURRENT VIEWS</span>
+              <span className="text-[9px] font-black uppercase tracking-[0.1em] text-[#30D158] tabular-nums inline-flex items-center gap-0.5">
+                <ArrowUpRight className="w-2.5 h-2.5" strokeWidth={3} />
+                +{((demoViews / maxViews) * 100).toFixed(2)}%
+              </span>
             </div>
             <p className="font-mono text-[34px] font-black text-white leading-none tabular-nums tracking-tight" style={{ textShadow: '0 0 20px rgba(48,209,88,0.4)' }}>
               {formatViews(demoViews)}
@@ -135,15 +138,15 @@ export default function ViewsGamePanel({ milestones }: { milestones: Milestone[]
         {/* Earned + progress row */}
         <div className="relative mt-3 flex items-center justify-between gap-3">
           <div className="flex items-baseline gap-1.5">
-            <span className="text-[9px] font-black uppercase tracking-[0.12em] text-[#8E8E93]">CASHED</span>
+            <span className="text-[9px] font-black uppercase tracking-[0.12em] text-[#8E8E93]">UNREALIZED</span>
             <span className="font-mono text-[18px] font-black text-[#30D158] tabular-nums leading-none">
               {formatMoney(earned)}
             </span>
           </div>
           {next && (
             <div className="text-right">
-              <div className="text-[9px] font-black uppercase tracking-[0.12em] text-[#FF9F0A] inline-flex items-center gap-1">
-                <Flame className="w-2.5 h-2.5" /> NEXT TIER
+              <div className="text-[9px] font-black uppercase tracking-[0.12em] text-[#8E8E93] inline-flex items-center gap-1">
+                NEXT FILL
               </div>
               <div className="font-mono text-[12px] font-bold text-white tabular-nums">
                 {formatViews(next.views - demoViews)} → <span className="text-[#30D158]">+{formatMoney(next.bonus_cents)}</span>
