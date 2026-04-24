@@ -564,6 +564,8 @@ function MissionLauncher({
   );
   const [uploadingInspoIdx, setUploadingInspoIdx] = useState<number | null>(null);
   const inspoFileRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const [uploadingInspoAvatarIdx, setUploadingInspoAvatarIdx] = useState<number | null>(null);
+  const inspoAvatarRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [scenepackGdrive, setScenepackGdrive] = useState(mission?.scenepack_gdrive_url || '');
   const [scenepackYoutube, setScenepackYoutube] = useState(mission?.scenepack_youtube_url || '');
   const [basePayout, setBasePayout] = useState(((mission?.base_payout_cents || 0) / 100).toString());
@@ -641,6 +643,29 @@ function MissionLauncher({
     } finally {
       setUploadingInspoIdx(null);
       const el = inspoFileRefs.current[i];
+      if (el) el.value = '';
+    }
+  };
+
+  const uploadInspoAvatar = async (i: number, file: File) => {
+    if (!userId) return toast.error('Not signed in');
+    if (!file.type.startsWith('image/')) return toast.error('Pick an image');
+    if (file.size > 5 * 1024 * 1024) return toast.error('Avatar must be under 5MB');
+    setUploadingInspoAvatarIdx(i);
+    try {
+      const ext = file.name.split('.').pop() || 'jpg';
+      const path = `${userId}/missions/inspo-avatar-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from('loop-media').upload(path, file, {
+        cacheControl: '3600', upsert: false,
+      });
+      if (error) throw error;
+      const { data: pub } = supabase.storage.from('loop-media').getPublicUrl(path);
+      patchInspo(i, { avatar_url: pub.publicUrl });
+    } catch (e: any) {
+      toast.error(e?.message || 'Upload failed');
+    } finally {
+      setUploadingInspoAvatarIdx(null);
+      const el = inspoAvatarRefs.current[i];
       if (el) el.value = '';
     }
   };
