@@ -546,6 +546,11 @@ function MissionLauncher({
     (mission?.cap_type === 'posts' ? 'posts' : 'budget')
   );
   const [maxPosts, setMaxPosts] = useState((mission?.max_posts ?? '').toString());
+  const [eligiblePlatforms, setEligiblePlatforms] = useState<MissionPlatform[]>(
+    (mission?.eligible_platforms && mission.eligible_platforms.length > 0
+      ? (mission.eligible_platforms as MissionPlatform[])
+      : [...ALL_MISSION_PLATFORMS])
+  );
   const [milestones, setMilestones] = useState<Milestone[]>(
     mission?.view_milestones || [
       { views: 10000, bonus_cents: 1000 },
@@ -615,6 +620,7 @@ function MissionLauncher({
       budget_cents: Math.round((parseFloat(budget) || 0) * 100),
       cap_type: capType,
       max_posts: capType === 'posts' ? Math.max(0, parseInt(maxPosts) || 0) : null,
+      eligible_platforms: eligiblePlatforms.length > 0 ? eligiblePlatforms : ['tiktok', 'instagram', 'youtube'],
       view_milestones: milestones.filter(m => m.views > 0).sort((a, b) => a.views - b.views),
       deadline: deadline ? new Date(deadline).toISOString() : null,
     };
