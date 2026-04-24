@@ -46,6 +46,8 @@ interface Mission {
   approved_count: number;
   total_views: number;
   created_at: string;
+  approval_rate_pct?: number | null;
+  base_payout_requirements?: string | null;
 }
 
 interface MissionSub {
@@ -91,10 +93,11 @@ const STATUS_COLORS: Record<string, string> = {
 // ─── Component ────────────────────────────────────────────────────────
 export default function MissionsAdmin() {
   const { user } = useAuth();
-  const [tab, setTab] = useState<'missions' | 'submissions' | 'payouts'>('missions');
+  const [tab, setTab] = useState<'missions' | 'submissions' | 'payouts' | 'eligibility'>('missions');
   const [missions, setMissions] = useState<Mission[]>([]);
   const [subs, setSubs] = useState<MissionSub[]>([]);
   const [payouts, setPayouts] = useState<Payout[]>([]);
+  const [eligibilityReqs, setEligibilityReqs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showLauncher, setShowLauncher] = useState(false);
   const [editing, setEditing] = useState<Mission | null>(null);
@@ -102,13 +105,15 @@ export default function MissionsAdmin() {
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
-    const [mRes, sRes, pRes] = await Promise.all([
+    const [mRes, sRes, pRes, eRes] = await Promise.all([
       supabase.from('missions').select('*').order('created_at', { ascending: false }),
       supabase.from('mission_submissions').select('*').order('created_at', { ascending: false }).limit(500),
       supabase.from('mission_payouts').select('*').order('created_at', { ascending: false }).limit(200),
+      supabase.from('mission_base_eligibility' as any).select('*').order('created_at', { ascending: false }).limit(500),
     ]);
     setMissions((mRes.data as any) || []);
     setSubs((sRes.data as any) || []);
+    setEligibilityReqs((eRes.data as any) || []);
 
     // Hydrate payout usernames
     const userIds = [...new Set((pRes.data || []).map((p: any) => p.user_id))];
@@ -217,6 +222,26 @@ export default function MissionsAdmin() {
   // ─── Render ─────────────────────────────────────────────────────────
   const pendingSubs = subs.filter(s => s.status === 'pending').length;
   const pendingPayouts = payouts.filter(p => p.status === 'pending').length;
+  const pendingEligibility = eligibilityReqs.filter((e: any) => e.status === 'pending').length;
+
+  const reviewEligibility = async (
+    req: any,
+    next: 'approved' | 'rejected',
+    notes?: string,
+  ) => {
+    const { error } = await supabase
+      .from('mission_base_eligibility' as any)
+      .update({
+        status: next,
+        admin_notes: notes ?? req.admin_notes,
+        reviewed_at: new Date().toISOString(),
+        reviewed_by: user?.id ?? null,
+      } as any)
+      .eq('id', req.id);
+    if (error) return toast.error(error.message);
+    toast.success(`Request ${next}`);
+    fetchAll();
+  };
 
   return (
     <div className="space-y-4">
@@ -238,6 +263,7 @@ export default function MissionsAdmin() {
           { id: 'missions' as const, label: `Missions (${missions.length})` },
           { id: 'submissions' as const, label: `Submissions${pendingSubs ? ` · ${pendingSubs}` : ''}` },
           { id: 'payouts' as const, label: `Payouts${pendingPayouts ? ` · ${pendingPayouts}` : ''}` },
+          { id: 'eligibility' as const, label: `Eligibility${pendingEligibility ? ` · ${pendingEligibility}` : ''}` },
         ].map(t => (
           <button
             key={t.id}
@@ -359,6 +385,71 @@ export default function MissionsAdmin() {
       {/* PAYOUTS TAB */}
       {!loading && tab === 'payouts' && (
         <PayoutsList payouts={payouts} onUpdate={updatePayout} />
+      )}
+
+      {/* ELIGIBILITY TAB */}
+      {!loading && tab === 'eligibility' && (
+        <div className="space-y-2">
+          {eligibilityReqs.length === 0 && (
+            <div className="text-xs text-zinc-500 py-8 text-center border border-dashed border-zinc-800 rounded-lg">
+              No base-payout requests yet.
+            </div>
+          )}
+          {eligibilityReqs.map((req: any) => {
+            const m = missions.find(x => x.id === req.mission_id);
+            return (
+              <div key={req.id} className="rounded-lg border border-zinc-800 bg-zinc-950 p-3 space-y-2">
+                <div className="flex items-start justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-2 min-w-0">
+                    {req.avatar_url ? (
+                      <img src={req.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-zinc-800" />
+                    )}
+                    <div className="min-w-0">
+                      <p className="text-sm text-white font-semibold truncate">@{req.username || req.user_id.slice(0, 8)}</p>
+                      <p className="text-[11px] text-zinc-500 truncate">{m?.title || 'Mission'} · {new Date(req.created_at).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <span
+                    className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider ${
+                      req.status === 'approved' ? 'bg-emerald-950 text-emerald-400' :
+                      req.status === 'rejected' ? 'bg-red-950 text-red-400' :
+                      'bg-amber-950 text-amber-400'
+                    }`}
+                  >
+                    {req.status}
+                  </span>
+                </div>
+                {req.admin_notes && (
+                  <p className="text-[11px] text-zinc-400 italic">Notes: {req.admin_notes}</p>
+                )}
+                {req.status === 'pending' && (
+                  <div className="flex gap-2 pt-1">
+                    <Button
+                      size="sm"
+                      onClick={() => reviewEligibility(req, 'approved')}
+                      className="bg-emerald-600 hover:bg-emerald-500 text-white h-8 text-xs"
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        const note = prompt('Reason (optional, shown to user):') || undefined;
+                        reviewEligibility(req, 'rejected', note);
+                      }}
+                      className="h-8 text-xs"
+                    >
+                      Reject
+                    </Button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       )}
 
       {/* LAUNCHER MODAL */}
@@ -590,6 +681,12 @@ function MissionLauncher({
   const [saving, setSaving] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const [approvalRate, setApprovalRate] = useState(
+    mission?.approval_rate_pct != null ? String(mission.approval_rate_pct) : ''
+  );
+  const [baseRequirements, setBaseRequirements] = useState(
+    mission?.base_payout_requirements || ''
+  );
 
   const uploadCover = async (file: File) => {
     if (!userId) return toast.error('Not signed in');
@@ -714,6 +811,10 @@ function MissionLauncher({
       eligible_platforms: eligiblePlatforms.length > 0 ? eligiblePlatforms : ['tiktok', 'instagram', 'youtube'],
       view_milestones: milestones.filter(m => m.views > 0).sort((a, b) => a.views - b.views),
       deadline: deadline ? new Date(deadline).toISOString() : null,
+      approval_rate_pct: approvalRate.trim() === ''
+        ? null
+        : Math.max(0, Math.min(100, Math.round(parseFloat(approvalRate) || 0))),
+      base_payout_requirements: baseRequirements.trim() || null,
     };
     let error;
     if (mission) {
@@ -845,6 +946,36 @@ function MissionLauncher({
             {eligiblePlatforms.length === 0 && (
               <p className="text-[10px] text-amber-400">Pick at least one platform — defaulting to all if left empty.</p>
             )}
+          </div>
+
+          {/* Base payout: approval rate + requirements */}
+          <div className="space-y-3 p-3 rounded-lg bg-zinc-900/40 border border-zinc-800">
+            <div>
+              <Label className="text-xs text-zinc-300 font-semibold">Base payout settings</Label>
+              <p className="text-[10px] text-zinc-500 mt-0.5">
+                Shown to clippers on the mission page. Approval % sets expectations; requirements are what we check before approving them for base payout.
+              </p>
+            </div>
+            <div>
+              <Label className="text-[10px] text-zinc-500">Approval rate (%) — leave blank to hide</Label>
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                value={approvalRate}
+                onChange={e => setApprovalRate(e.target.value)}
+                placeholder="e.g. 78"
+              />
+            </div>
+            <div>
+              <Label className="text-[10px] text-zinc-500">Base payout requirements (what clippers must meet)</Label>
+              <Textarea
+                value={baseRequirements}
+                onChange={e => setBaseRequirements(e.target.value)}
+                placeholder={'e.g.\n• Linked TikTok or IG account\n• 1k+ followers\n• Clean posting history (no bot views)'}
+                rows={4}
+              />
+            </div>
           </div>
 
           {/* Inspirations — multiple rows so clippers don't get stuck on one ref */}

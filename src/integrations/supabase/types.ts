@@ -5688,6 +5688,56 @@ export type Database = {
           },
         ]
       }
+      mission_base_eligibility: {
+        Row: {
+          admin_notes: string | null
+          avatar_url: string | null
+          created_at: string
+          id: string
+          mission_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          username: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          mission_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          username?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          mission_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_base_eligibility_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mission_lobby_presence: {
         Row: {
           avatar_url: string | null
@@ -5845,8 +5895,10 @@ export type Database = {
       }
       missions: {
         Row: {
+          approval_rate_pct: number | null
           approved_count: number
           base_payout_cents: number
+          base_payout_requirements: string | null
           budget_cents: number
           cap_type: string
           cover_image_url: string | null
@@ -5873,8 +5925,10 @@ export type Database = {
           view_milestones: Json
         }
         Insert: {
+          approval_rate_pct?: number | null
           approved_count?: number
           base_payout_cents?: number
+          base_payout_requirements?: string | null
           budget_cents?: number
           cap_type?: string
           cover_image_url?: string | null
@@ -5901,8 +5955,10 @@ export type Database = {
           view_milestones?: Json
         }
         Update: {
+          approval_rate_pct?: number | null
           approved_count?: number
           base_payout_cents?: number
+          base_payout_requirements?: string | null
           budget_cents?: number
           cap_type?: string
           cover_image_url?: string | null
