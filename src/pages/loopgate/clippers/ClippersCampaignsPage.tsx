@@ -44,6 +44,19 @@ export default function ClippersCampaignsPage() {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [authOpen, setAuthOpen] = useState(false);
+  const [dbProfile, setDbProfile] = useState<{ username: string | null; avatar_url: string | null } | null>(null);
+
+  useEffect(() => {
+    if (!user) { setDbProfile(null); return; }
+    let cancelled = false;
+    supabase
+      .from('profiles')
+      .select('username, avatar_url')
+      .eq('id', user.id)
+      .maybeSingle()
+      .then(({ data }) => { if (!cancelled && data) setDbProfile(data as any); });
+    return () => { cancelled = true; };
+  }, [user]);
 
   useEffect(() => {
     const load = async () => {
@@ -79,8 +92,13 @@ export default function ClippersCampaignsPage() {
   const balance = Math.max(0, stats.earned - stats.paid);
 
   const isGuest = !user;
-  const displayName = (user?.user_metadata?.username as string | undefined) || user?.email?.split('@')[0] || tempProfile?.username || 'Guest';
-  const avatarUrl = (user?.user_metadata?.avatar_url as string | undefined) || tempProfile?.avatarUrl;
+  const displayName =
+    dbProfile?.username ||
+    (user?.user_metadata?.username as string | undefined) ||
+    user?.email?.split('@')[0] ||
+    tempProfile?.username ||
+    'Guest';
+  const avatarUrl = dbProfile?.avatar_url || (user?.user_metadata?.avatar_url as string | undefined) || tempProfile?.avatarUrl;
   const initial = displayName.charAt(0).toUpperCase();
   const hour = new Date().getHours();
   const greeting = hour < 5 ? 'Up late' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';

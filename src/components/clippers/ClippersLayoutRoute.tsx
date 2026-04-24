@@ -10,6 +10,8 @@ const TITLE_MAP: Record<string, string> = {
   '/missions/submissions': 'Clips',
   '/missions/accounts': 'Linked',
   '/missions/withdrawals': 'Cashout',
+  '/missions/settings': 'Settings',
+  '/missions/policy': 'Policy',
 };
 
 export default function ClippersLayoutRoute() {
