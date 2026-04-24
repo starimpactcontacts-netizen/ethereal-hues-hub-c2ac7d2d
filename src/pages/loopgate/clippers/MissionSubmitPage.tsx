@@ -222,8 +222,14 @@ export default function MissionSubmitPage() {
             <BadgeCheck className="w-3 h-3 text-emerald-300" strokeWidth={2.5} />
             <span className="text-[10px] font-bold uppercase tracking-wide text-emerald-200">Loopgate Official</span>
           </div>
+          <div className="absolute top-3 right-3">
+            <PlatformBadges platforms={mission.eligible_platforms} size="md" showLabel />
+          </div>
           <div className="absolute bottom-3 left-3 right-3">
             <h1 className="font-apple-tight text-[24px] font-bold text-white leading-tight tracking-[-0.02em]">{mission.title}</h1>
+            <div className="mt-2">
+              <PlatformBadges platforms={mission.eligible_platforms} size="sm" showLabel />
+            </div>
           </div>
         </motion.div>
 
