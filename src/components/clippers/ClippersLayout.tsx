@@ -1,6 +1,6 @@
 import { ReactNode, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { ChevronLeft, LayoutGrid, Film, Link2, Wallet, ScrollText, MoreHorizontal, LogIn, UserPlus, LogOut } from 'lucide-react';
+import { ChevronLeft, LayoutGrid, Film, Link2, Wallet, ScrollText, MoreHorizontal, LogIn, UserPlus, LogOut, Settings } from 'lucide-react';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 import { useAuth } from '@/hooks/useAuth';
 import { useTempProfile } from '@/hooks/useTempProfile';
@@ -93,14 +93,21 @@ export default function ClippersLayout({ children, title, hideBottomNav = false 
                       <MenuItem icon={LogIn} label="Sign in" onClick={() => openAuth('login')} />
                     </>
                   ) : (
-                    <MenuItem
-                      icon={LogOut}
-                      label="Sign out"
-                      onClick={async () => {
-                        await supabase.auth.signOut();
-                        setMenuOpen(false);
-                      }}
-                    />
+                    <>
+                      <MenuItem
+                        icon={Settings}
+                        label="Settings"
+                        onClick={() => { setMenuOpen(false); navigate('/missions/settings'); }}
+                      />
+                      <MenuItem
+                        icon={LogOut}
+                        label="Sign out"
+                        onClick={async () => {
+                          await supabase.auth.signOut();
+                          setMenuOpen(false);
+                        }}
+                      />
+                    </>
                   )}
                   <div className="h-px bg-white/[0.08] my-1" />
                   <MenuItem
