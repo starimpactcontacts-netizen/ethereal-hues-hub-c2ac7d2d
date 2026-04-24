@@ -1131,6 +1131,7 @@ export type Database = {
       }
       clipper_linked_accounts: {
         Row: {
+          code_expires_at: string | null
           created_at: string
           follower_count: number | null
           handle: string
@@ -1138,10 +1139,13 @@ export type Database = {
           is_verified: boolean
           platform: string
           profile_url: string | null
+          stats_fetched_at: string | null
           user_id: string
+          verification_code: string | null
           verified_at: string | null
         }
         Insert: {
+          code_expires_at?: string | null
           created_at?: string
           follower_count?: number | null
           handle: string
@@ -1149,10 +1153,13 @@ export type Database = {
           is_verified?: boolean
           platform: string
           profile_url?: string | null
+          stats_fetched_at?: string | null
           user_id: string
+          verification_code?: string | null
           verified_at?: string | null
         }
         Update: {
+          code_expires_at?: string | null
           created_at?: string
           follower_count?: number | null
           handle?: string
@@ -1160,7 +1167,9 @@ export type Database = {
           is_verified?: boolean
           platform?: string
           profile_url?: string | null
+          stats_fetched_at?: string | null
           user_id?: string
+          verification_code?: string | null
           verified_at?: string | null
         }
         Relationships: []
