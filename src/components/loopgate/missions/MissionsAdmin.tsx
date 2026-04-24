@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
+import PlatformBadges, { ALL_MISSION_PLATFORMS, type MissionPlatform } from './PlatformBadges';
 
 // ─── Types ────────────────────────────────────────────────────────────
 interface Milestone {
@@ -38,6 +39,7 @@ interface Mission {
   spent_cents: number;
   cap_type: 'budget' | 'posts' | string;
   max_posts: number | null;
+  eligible_platforms: string[] | null;
   status: 'draft' | 'live' | 'paused' | 'closed';
   deadline: string | null;
   submission_count: number;
