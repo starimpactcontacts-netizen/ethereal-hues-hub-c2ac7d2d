@@ -170,7 +170,7 @@ export default function MissionSubmitPage() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 pb-32">
+      <div className="max-w-6xl mx-auto px-4 pb-32 md:pb-12">
         {/* Hero cover */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
@@ -324,6 +324,34 @@ export default function MissionSubmitPage() {
               />
             </div>
 
+            {/* Inline submit — desktop/laptop only (mobile uses floating CTA) */}
+            <button
+              onClick={handleSubmit}
+              disabled={submitting || !videoUrl.trim()}
+              className="hidden md:inline-flex relative w-full h-[52px] rounded-[14px] font-semibold text-[16px] items-center justify-center gap-2 transition-all active:scale-[0.985] disabled:cursor-not-allowed overflow-hidden tracking-[-0.01em]"
+              style={{
+                background: videoUrl.trim()
+                  ? 'linear-gradient(180deg, #3BE36A 0%, #1FB84A 100%)'
+                  : 'rgba(60,60,67,0.55)',
+                color: videoUrl.trim() ? '#001405' : '#8E8E93',
+                boxShadow: videoUrl.trim()
+                  ? '0 8px 24px -8px rgba(48,209,88,0.5), 0 2px 0 rgba(255,255,255,0.18) inset, 0 -2px 0 rgba(0,0,0,0.18) inset'
+                  : 'none',
+                border: videoUrl.trim() ? '0.5px solid rgba(255,255,255,0.25)' : '0.5px solid rgba(255,255,255,0.06)',
+              }}
+            >
+              {videoUrl.trim() && (
+                <span aria-hidden className="absolute inset-x-3 top-1 h-[16px] rounded-full pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.45), rgba(255,255,255,0))' }} />
+              )}
+              {submitting ? (
+                <Loader2 className="w-5 h-5 animate-spin relative" />
+              ) : (
+                <span className="relative inline-flex items-center gap-2">
+                  <Upload className="w-[18px] h-[18px]" strokeWidth={2.75} />
+                  {videoUrl.trim() ? 'Submit clip' : 'Paste your clip link to submit'}
+                </span>
+              )}
+            </button>
             <p className="text-[11px] text-[#8E8E93] text-center pt-1">Reviewed within 24h · Paid on approval</p>
           </div>
         </section>
@@ -331,7 +359,7 @@ export default function MissionSubmitPage() {
 
       {/* Floating pump.fun-style submit CTA — replaces bottom nav on mission view */}
       <div
-        className="fixed left-0 right-0 z-40 pointer-events-none"
+        className="md:hidden fixed left-0 right-0 z-40 pointer-events-none"
         style={{ bottom: 'max(env(safe-area-inset-bottom), 12px)' }}
       >
         <div className="max-w-6xl mx-auto px-4 pointer-events-auto">
