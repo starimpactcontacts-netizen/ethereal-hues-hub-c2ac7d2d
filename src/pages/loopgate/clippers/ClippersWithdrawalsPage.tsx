@@ -138,10 +138,10 @@ export default function ClippersWithdrawalsPage() {
             </div>
             <button
               onClick={() => (user ? setShowRequest(true) : setShowGate(true))}
-              disabled={!canCashOut}
+              disabled={!user}
               className="inline-flex items-center gap-1 h-11 px-5 rounded-full bg-white text-black text-[15px] font-semibold active:opacity-60 disabled:opacity-40 disabled:bg-[#48484A] disabled:text-[#8E8E93] transition-opacity"
             >
-              Cash out <ArrowUpRight className="w-4 h-4" strokeWidth={2.8} />
+              {canCashOut ? 'Cash out' : 'Set up payout'} <ArrowUpRight className="w-4 h-4" strokeWidth={2.8} />
             </button>
           </div>
           {!canCashOut && user && (
