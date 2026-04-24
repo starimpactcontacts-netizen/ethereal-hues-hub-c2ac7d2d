@@ -108,6 +108,7 @@ const MissionSubmitPage = lazy(() => import("./pages/loopgate/clippers/MissionSu
 const ClippersSubmissionsPage = lazy(() => import("./pages/loopgate/clippers/ClippersSubmissionsPage"));
 const ClippersAccountsPage = lazy(() => import("./pages/loopgate/clippers/ClippersAccountsPage"));
 const ClippersWithdrawalsPage = lazy(() => import("./pages/loopgate/clippers/ClippersWithdrawalsPage"));
+const ClippersPolicyPage = lazy(() => import("./pages/loopgate/clippers/ClippersPolicyPage"));
 
 // GLOBAL DEV MODE DETECTION - runs BEFORE React
 const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
@@ -412,6 +413,7 @@ export default function App() {
               <Route path="/missions/submissions" element={<ClippersSubmissionsPage />} />
               <Route path="/missions/accounts" element={<ClippersAccountsPage />} />
               <Route path="/missions/withdrawals" element={<ClippersWithdrawalsPage />} />
+              <Route path="/missions/policy" element={<ClippersPolicyPage />} />
             </Route>
             <Route path="/missions/legacy" element={<ClippersPortalPage />} />
             {/* Legacy /clippers redirects → /missions */}
