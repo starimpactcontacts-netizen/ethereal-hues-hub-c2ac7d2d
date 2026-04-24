@@ -283,37 +283,54 @@ export default function MissionSubmitPage() {
               className="relative rounded-[24px] p-[1px] overflow-hidden"
               style={{
                 background:
-                  'linear-gradient(135deg, rgba(10,132,255,0.35) 0%, rgba(255,255,255,0.08) 30%, rgba(255,255,255,0.02) 70%, rgba(10,132,255,0.18) 100%)',
+                  'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 35%, rgba(255,255,255,0.02) 70%, rgba(255,255,255,0.12) 100%)',
               }}
             >
               <div
                 className="relative rounded-[23px] overflow-hidden"
-                style={{ background: 'linear-gradient(180deg, #1a1a1c 0%, #109 0.1%, #131315 100%)' }}
+                style={{ background: 'linear-gradient(180deg, #1c1c1e 0%, #161618 100%)' }}
               >
                 {/* ambient sheens */}
                 <div
-                  className="pointer-events-none absolute -top-20 -left-16 w-64 h-64 rounded-full opacity-50 blur-3xl"
-                  style={{ background: 'radial-gradient(circle, rgba(10,132,255,0.35) 0%, transparent 70%)' }}
+                  className="pointer-events-none absolute -top-20 -left-16 w-64 h-64 rounded-full opacity-40 blur-3xl"
+                  style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.10) 0%, transparent 70%)' }}
                 />
                 <div
-                  className="pointer-events-none absolute -bottom-24 -right-16 w-64 h-64 rounded-full opacity-30 blur-3xl"
-                  style={{ background: 'radial-gradient(circle, rgba(10,132,255,0.25) 0%, transparent 70%)' }}
+                  className="pointer-events-none absolute -bottom-24 -right-16 w-64 h-64 rounded-full opacity-25 blur-3xl"
+                  style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)' }}
                 />
 
                 {/* Brief */}
                 {mission.description && (
                   <div className="relative px-5 pt-5 pb-5">
-                    <div className="flex items-center gap-1.5 mb-3">
-                      <Sparkles className="w-[13px] h-[13px] text-[#0A84FF]" strokeWidth={2.5} />
+                    <div className="mb-3">
                       <span className="text-[10.5px] text-[#8E8E93] font-semibold uppercase tracking-[0.14em]">The Brief</span>
-                      <div className="flex items-center gap-0.5 ml-auto">
-                        <BadgeCheck className="w-3 h-3 text-[#0A84FF]" strokeWidth={2.5} />
-                        <span className="text-[10px] font-medium text-[#0A84FF]/80">Trusted</span>
-                      </div>
                     </div>
-                    <p className="font-apple-tight text-[20px] text-white leading-[1.3] whitespace-pre-wrap tracking-[-0.022em] font-medium">
-                      {mission.description}
-                    </p>
+                    {(() => {
+                      const lines = mission.description
+                        .split(/\n+/)
+                        .map((l: string) => l.replace(/^[\-\*\u2022]\s*/, '').trim())
+                        .filter((l: string) => l.length > 0);
+                      if (lines.length <= 1) {
+                        return (
+                          <p className="font-apple-tight text-[21px] text-white leading-[1.3] whitespace-pre-wrap tracking-[-0.022em] font-medium">
+                            {mission.description}
+                          </p>
+                        );
+                      }
+                      return (
+                        <ul className="space-y-2.5">
+                          {lines.map((line: string, i: number) => (
+                            <li key={i} className="flex items-start gap-2.5">
+                              <CheckCircle2 className="w-[18px] h-[18px] text-[#30D158] shrink-0 mt-[3px]" strokeWidth={2.25} />
+                              <span className="font-apple-tight text-[18px] text-white leading-[1.35] tracking-[-0.02em] font-medium">
+                                {line}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      );
+                    })()}
                   </div>
                 )}
 
@@ -326,48 +343,54 @@ export default function MissionSubmitPage() {
                 {(scenepacks.length > 0 || inspos.length > 0) && (
                   <div className="relative px-5 pt-5 pb-4">
                     <div className="flex items-center gap-1.5 mb-2">
-                      <span className="text-[10.5px] text-[#8E8E93] font-semibold uppercase tracking-[0.14em]">Resources</span>
+                      <span className="text-[10.5px] text-[#8E8E93] font-semibold uppercase tracking-[0.14em]">Resources · Tap to open</span>
                     </div>
                     <div className="-mx-1">
-                      {scenepacks.map((s, i) => (
-                        <a
-                          key={`sp-${i}`}
-                          href={s.url!}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="group flex items-center gap-3 px-1 py-3 active:opacity-60 transition-opacity"
-                          style={i > 0 || (i === 0 && false) ? { borderTop: '0.5px solid rgba(255,255,255,0.05)' } : {}}
-                        >
-                          <div className="flex-1 min-w-0">
-                            <p className="font-apple-tight text-[18px] font-semibold text-white tracking-[-0.018em] leading-tight">
-                              {s.label}
-                            </p>
-                            <p className="text-[12px] text-[#636366] truncate mt-1">{s.url}</p>
-                          </div>
-                          <ExternalLink className="w-4 h-4 text-[#48484A] shrink-0 group-active:text-[#0A84FF] transition-colors" strokeWidth={2.25} />
-                        </a>
-                      ))}
-                      {inspos.map((url, i) => {
-                        const showBorder = scenepacks.length > 0 || i > 0;
-                        return (
-                          <a
-                            key={`ins-${i}`}
-                            href={url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="group flex items-center gap-3 px-1 py-3 active:opacity-60 transition-opacity"
-                            style={showBorder ? { borderTop: '0.5px solid rgba(255,255,255,0.05)' } : {}}
-                          >
-                            <div className="flex-1 min-w-0">
-                              <p className="font-apple-tight text-[18px] font-semibold text-white tracking-[-0.018em] leading-tight">
-                                Reference {i + 1}
-                              </p>
-                              <p className="text-[12px] text-[#636366] truncate mt-1">{url}</p>
-                            </div>
-                            <ExternalLink className="w-4 h-4 text-[#48484A] shrink-0 group-active:text-[#0A84FF] transition-colors" strokeWidth={2.25} />
-                          </a>
-                        );
-                      })}
+                      {(() => {
+                        const items: { url: string; label: string; key: string }[] = [
+                          ...scenepacks.map((s, i) => ({ url: s.url!, label: s.label, key: `sp-${i}` })),
+                          ...inspos.map((url, i) => ({ url, label: `Reference ${i + 1}`, key: `ins-${i}` })),
+                        ];
+                        const iconFor = (url: string, label: string) => {
+                          const u = (url || '').toLowerCase();
+                          if (u.includes('youtube.com') || u.includes('youtu.be'))
+                            return { Icon: SiYoutube, color: '#FF3B30', bg: 'rgba(255,59,48,0.12)' };
+                          if (u.includes('drive.google.com') || u.includes('docs.google.com'))
+                            return { Icon: SiGoogledrive, color: '#FFD60A', bg: 'rgba(255,214,10,0.12)' };
+                          if (u.includes('instagram.com'))
+                            return { Icon: SiInstagram, color: '#FF2D55', bg: 'rgba(255,45,85,0.12)' };
+                          if (u.includes('tiktok.com'))
+                            return { Icon: SiTiktok, color: '#FFFFFF', bg: 'rgba(255,255,255,0.08)' };
+                          return { Icon: Globe, color: '#8E8E93', bg: 'rgba(142,142,147,0.12)' };
+                        };
+                        return items.map((it, idx) => {
+                          const { Icon, color, bg } = iconFor(it.url, it.label);
+                          return (
+                            <a
+                              key={it.key}
+                              href={it.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="group flex items-center gap-3 px-2 py-3 rounded-[14px] active:bg-white/[0.04] active:scale-[0.99] transition-all"
+                              style={idx > 0 ? { borderTop: '0.5px solid rgba(255,255,255,0.05)' } : {}}
+                            >
+                              <div
+                                className="w-10 h-10 rounded-[12px] shrink-0 flex items-center justify-center"
+                                style={{ background: bg, boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.06)' }}
+                              >
+                                <Icon size={20} color={color} />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-apple-tight text-[17px] font-semibold text-white tracking-[-0.018em] leading-tight">
+                                  {it.label}
+                                </p>
+                                <p className="text-[12px] text-[#636366] truncate mt-0.5">{it.url}</p>
+                              </div>
+                              <ChevronRight className="w-[18px] h-[18px] text-[#48484A] shrink-0" strokeWidth={2.25} />
+                            </a>
+                          );
+                        });
+                      })()}
                     </div>
                   </div>
                 )}
