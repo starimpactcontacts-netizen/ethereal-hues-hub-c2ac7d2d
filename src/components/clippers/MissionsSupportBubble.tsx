@@ -137,29 +137,59 @@ export default function MissionsSupportBubble() {
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           aria-label="Mission support"
-          className="relative w-full h-full rounded-full inline-flex items-center justify-center text-white active:scale-[0.94] transition-transform"
+          className="relative w-full h-full rounded-full inline-flex items-center justify-center text-white active:scale-[0.92] transition-transform overflow-hidden"
           style={{
-            background: 'linear-gradient(180deg, #2C2C2E 0%, #1C1C1E 100%)',
-            border: '0.5px solid rgba(255,255,255,0.14)',
+            background:
+              'radial-gradient(120% 120% at 30% 20%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.08) 35%, rgba(255,255,255,0.02) 60%, rgba(0,0,0,0.05) 100%)',
+            border: '0.5px solid rgba(255,255,255,0.28)',
             boxShadow:
-              '0 14px 36px -10px rgba(0,0,0,0.7), 0 2px 0 rgba(255,255,255,0.18) inset, 0 -2px 0 rgba(0,0,0,0.4) inset',
-            backdropFilter: 'blur(24px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+              '0 18px 44px -12px rgba(0,0,0,0.6), 0 4px 14px -2px rgba(48,209,88,0.18), 0 1.5px 0 rgba(255,255,255,0.45) inset, 0 -2px 0 rgba(0,0,0,0.35) inset, 0 0 0 0.5px rgba(255,255,255,0.18) inset',
+            backdropFilter: 'blur(28px) saturate(200%)',
+            WebkitBackdropFilter: 'blur(28px) saturate(200%)',
           }}
         >
+          {/* Inner liquid tint */}
           <span
             aria-hidden
-            className="pointer-events-none absolute inset-x-2 top-1.5 h-3 rounded-full"
-            style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0))' }}
+            className="pointer-events-none absolute inset-0 rounded-full"
+            style={{
+              background:
+                'radial-gradient(80% 80% at 70% 80%, rgba(48,209,88,0.22) 0%, rgba(10,132,255,0.12) 40%, transparent 75%)',
+            }}
           />
-          <MessageCircle className="w-[22px] h-[22px] relative" strokeWidth={2.4} />
+          {/* Top sheen */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-x-1.5 top-1 h-3.5 rounded-full"
+            style={{
+              background:
+                'linear-gradient(180deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.18) 60%, rgba(255,255,255,0))',
+              filter: 'blur(0.4px)',
+            }}
+          />
+          {/* Bottom rim glow */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-x-2 bottom-1 h-2 rounded-full"
+            style={{
+              background: 'linear-gradient(0deg, rgba(255,255,255,0.18), rgba(255,255,255,0))',
+              filter: 'blur(1px)',
+            }}
+          />
+          {/* Specular pinpoint */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute top-[18%] left-[26%] w-2.5 h-2.5 rounded-full"
+            style={{ background: 'rgba(255,255,255,0.85)', filter: 'blur(1.5px)' }}
+          />
+          <MessageCircle className="w-[22px] h-[22px] relative drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]" strokeWidth={2.4} />
           {/* Live green dot */}
           <span
             aria-hidden
             className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full"
             style={{
               background: '#30D158',
-              boxShadow: '0 0 0 2px #1C1C1E, 0 0 8px rgba(48,209,88,0.7)',
+              boxShadow: '0 0 0 2px rgba(0,0,0,0.45), 0 0 10px rgba(48,209,88,0.85)',
             }}
           />
         </button>
