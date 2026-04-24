@@ -331,6 +331,30 @@ export default function MissionSubmitPage() {
                       <span className="text-[10.5px] text-[#8E8E93] font-semibold uppercase tracking-[0.14em]">The Brief</span>
                     </div>
                     {(() => {
+                      const hasClips = scenepacks.length > 0 || inspoLinksOnly.length > 0;
+                      const scrollToClips = (e: React.MouseEvent) => {
+                        e.preventDefault();
+                        const el = document.getElementById('ready-made-clips');
+                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      };
+                      const renderWithKeyword = (text: string) => {
+                        if (!hasClips) return text;
+                        const parts = text.split(/(ready[\s-]?made clips)/gi);
+                        return parts.map((part, idx) =>
+                          /^ready[\s-]?made clips$/i.test(part) ? (
+                            <a
+                              key={idx}
+                              href="#ready-made-clips"
+                              onClick={scrollToClips}
+                              className="text-[#0A84FF] underline underline-offset-2 decoration-[#0A84FF]/40 hover:decoration-[#0A84FF] transition-colors"
+                            >
+                              {part}
+                            </a>
+                          ) : (
+                            <span key={idx}>{part}</span>
+                          )
+                        );
+                      };
                       const lines = mission.description
                         .split(/\n+/)
                         .map((l: string) => l.replace(/^[\-\*\u2022]\s*/, '').trim())
@@ -338,7 +362,7 @@ export default function MissionSubmitPage() {
                       if (lines.length <= 1) {
                         return (
                           <p className="font-apple-tight text-[21px] text-white leading-[1.3] whitespace-pre-wrap tracking-[-0.022em] font-medium">
-                            {mission.description}
+                            {renderWithKeyword(mission.description)}
                           </p>
                         );
                       }
@@ -348,7 +372,7 @@ export default function MissionSubmitPage() {
                             <li key={i} className="flex items-start gap-2.5">
                               <CheckCircle2 className="w-[18px] h-[18px] text-[#30D158] shrink-0 mt-[3px]" strokeWidth={2.25} />
                               <span className="font-apple-tight text-[18px] text-white leading-[1.35] tracking-[-0.02em] font-medium">
-                                {line}
+                                {renderWithKeyword(line)}
                               </span>
                             </li>
                           ))}
@@ -428,9 +452,9 @@ export default function MissionSubmitPage() {
 
                 {/* Resources — clips + link-only inspirations unified */}
                 {(scenepacks.length > 0 || inspoLinksOnly.length > 0) && (
-                  <div className="relative px-5 pt-5 pb-4">
+                  <div id="ready-made-clips" className="relative px-5 pt-5 pb-4 scroll-mt-24">
                     <div className="flex items-center gap-1.5 mb-2">
-                      <span className="text-[10.5px] text-[#8E8E93] font-semibold uppercase tracking-[0.14em]">Resources · Tap to open</span>
+                      <span className="text-[10.5px] text-[#8E8E93] font-semibold uppercase tracking-[0.14em]">Get Ready-Made Clips · Tap to download</span>
                     </div>
                     <div className="-mx-1">
                       {(() => {
