@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Scissors, Loader2, X, Sparkles } from 'lucide-react';
+import { Loader2, X, ArrowRight, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
@@ -88,81 +88,97 @@ export default function ClipperLockGate({ open, onClose, onSuccess, reason }: Pr
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-0 sm:p-4"
+          className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-xl p-0 sm:p-4"
           onClick={onClose}
         >
           <motion.div
-            initial={{ y: 40, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 40, opacity: 0 }}
-            transition={{ type: 'spring', damping: 24, stiffness: 280 }}
+            initial={{ y: 24, opacity: 0, scale: 0.98 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: 24, opacity: 0, scale: 0.98 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 320 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full sm:max-w-sm bg-surface-1 border border-border sm:rounded-2xl rounded-t-3xl p-6 relative pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+            className="w-full sm:max-w-[380px] relative overflow-hidden sm:rounded-[28px] rounded-t-[28px] pb-[max(1.75rem,env(safe-area-inset-bottom))]"
+            style={{
+              background: 'linear-gradient(180deg, hsl(0 0% 9%) 0%, hsl(0 0% 6%) 100%)',
+              boxShadow: '0 30px 80px -20px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.06) inset',
+            }}
           >
+            {/* Subtle top highlight */}
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+
             <button
               onClick={onClose}
-              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-surface-0 flex items-center justify-center text-muted-foreground hover:text-foreground"
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] flex items-center justify-center text-white/60 hover:text-white transition-colors z-10"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" strokeWidth={2.5} />
             </button>
 
-            <div className="flex justify-center mb-4">
-              <div className="w-12 h-12 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center">
-                <Scissors className="w-5 h-5 text-gold" />
-              </div>
-            </div>
-
-            <h2 className="font-display text-2xl text-center mb-1">Lock in your handle</h2>
-            <p className="text-sm text-muted-foreground text-center mb-5">
-              {reason || 'Pick a username to save your work and get paid.'}
-            </p>
-
-            <div className="space-y-3">
-              <div>
-                <label className="text-[10px] text-muted-foreground tracking-wider uppercase">
-                  Username
-                </label>
-                <Input
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value.toUpperCase())}
-                  placeholder="YOUR_HANDLE"
-                  maxLength={20}
-                  className="h-12 bg-surface-0 font-display tracking-wider uppercase mt-1"
-                  autoFocus
-                />
-              </div>
-              <div>
-                <label className="text-[10px] text-muted-foreground tracking-wider uppercase">
-                  Password
-                </label>
-                <Input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="h-12 bg-surface-0 mt-1"
-                />
+            <div className="px-7 pt-9">
+              {/* Icon */}
+              <div className="flex justify-center mb-5">
+                <div
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                  style={{
+                    background: 'linear-gradient(135deg, hsl(0 0% 18%) 0%, hsl(0 0% 10%) 100%)',
+                    boxShadow: '0 8px 24px -8px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08)',
+                  }}
+                >
+                  <Lock className="w-5 h-5 text-white" strokeWidth={2.2} />
+                </div>
               </div>
 
-              {err && <p className="text-xs text-destructive">{err}</p>}
-
-              <Button
-                onClick={submit}
-                disabled={loading}
-                className="w-full h-12 bg-gold hover:bg-gold/90 text-gold-foreground font-display tracking-wide"
-              >
-                {loading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 mr-2" /> Lock in
-                  </>
-                )}
-              </Button>
-
-              <p className="text-[11px] text-muted-foreground text-center">
-                Add your email & socials anytime in Settings.
+              <h2 className="text-[22px] font-semibold text-white text-center tracking-[-0.02em] mb-1.5">
+                Create your account
+              </h2>
+              <p className="text-[13px] text-white/50 text-center mb-7 leading-relaxed px-2">
+                {reason || 'Pick a handle to save your progress and receive payouts.'}
               </p>
+
+              <div className="space-y-2.5">
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[15px] text-white/30 pointer-events-none">@</span>
+                  <Input
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value.toUpperCase())}
+                    placeholder="handle"
+                    maxLength={20}
+                    className="h-12 pl-9 bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.06] focus:bg-white/[0.06] focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:ring-offset-0 rounded-xl text-[15px] uppercase tracking-wide text-white placeholder:text-white/25 placeholder:normal-case placeholder:tracking-normal transition-colors"
+                    autoFocus
+                  />
+                </div>
+                <div>
+                  <Input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Password"
+                    className="h-12 bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.06] focus:bg-white/[0.06] focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:ring-offset-0 rounded-xl text-[15px] text-white placeholder:text-white/25 transition-colors"
+                    onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
+                  />
+                </div>
+
+                {err && (
+                  <p className="text-[12px] text-red-400/90 px-1 pt-1">{err}</p>
+                )}
+
+                <Button
+                  onClick={submit}
+                  disabled={loading}
+                  className="w-full h-12 mt-3 bg-white hover:bg-white/95 text-black font-medium text-[15px] rounded-xl transition-all active:scale-[0.98] disabled:opacity-60"
+                >
+                  {loading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <span className="flex items-center gap-1.5">
+                      Continue <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
+                    </span>
+                  )}
+                </Button>
+
+                <p className="text-[11px] text-white/30 text-center pt-3 leading-relaxed">
+                  Add email & socials anytime in Settings.
+                </p>
+              </div>
             </div>
           </motion.div>
         </motion.div>
