@@ -136,7 +136,7 @@ export default function ClippersCampaignsPage() {
         </button>
 
         <h1 className="font-apple-tight text-[32px] font-bold text-white leading-[1.05] mt-5">Missions</h1>
-        <p className="text-[13px] text-[#8E8E93] mt-1">Get paid per clip + bonuses for views.</p>
+        <p className="text-[13px] text-[#8E8E93] mt-1">Get paid per post + bonuses for views.</p>
 
         {/* iOS search */}
         <div className="relative mt-4">
@@ -171,7 +171,7 @@ export default function ClippersCampaignsPage() {
           </p>
           <p className="text-[11px] text-[#8E8E93] mt-1">Withdraw anytime · paid within 24h</p>
           <div className="flex items-center gap-5 mt-4 pt-4 border-t border-white/[0.06]">
-            <MiniStat label="Clips" value={stats.clips.toString()} />
+            <MiniStat label="Posts" value={stats.clips.toString()} />
             <div className="w-px h-7 bg-white/[0.08]" />
             <MiniStat label="Live" value={filtered.length.toString()} />
           </div>
