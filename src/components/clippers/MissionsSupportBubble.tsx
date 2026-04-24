@@ -5,8 +5,8 @@ import { MessageCircle, X, Clock3, Sparkles, ArrowUpRight, ChevronRight } from '
 import { useNavigate } from 'react-router-dom';
 
 const STORAGE_KEY = 'missions_support_bubble_pos_v1';
-const BUBBLE_SIZE = 56;
-const EDGE_PAD = 14;
+const BUBBLE_SIZE = 42;
+const EDGE_PAD = 10;
 
 interface Pos { x: number; y: number; }
 
@@ -16,15 +16,15 @@ function clampToViewport(p: Pos): Pos {
   const h = window.innerHeight;
   return {
     x: Math.min(Math.max(EDGE_PAD, p.x), w - BUBBLE_SIZE - EDGE_PAD),
-    y: Math.min(Math.max(EDGE_PAD + 60, p.y), h - BUBBLE_SIZE - EDGE_PAD - 80),
+    y: Math.min(Math.max(EDGE_PAD + 8, p.y), h - BUBBLE_SIZE - EDGE_PAD - 8),
   };
 }
 
 function defaultPos(): Pos {
   if (typeof window === 'undefined') return { x: 20, y: 400 };
   return clampToViewport({
-    x: window.innerWidth - BUBBLE_SIZE - 18,
-    y: window.innerHeight - BUBBLE_SIZE - 110,
+    x: window.innerWidth - BUBBLE_SIZE - 12,
+    y: window.innerHeight - BUBBLE_SIZE - 130,
   });
 }
 
@@ -181,14 +181,14 @@ export default function MissionsSupportBubble() {
             className="pointer-events-none absolute top-[16%] left-[24%] w-3 h-3 rounded-full"
             style={{ background: 'rgba(255,255,255,0.95)', filter: 'blur(1.2px)' }}
           />
-          <MessageCircle className="w-[22px] h-[22px] relative drop-shadow-[0_1px_3px_rgba(0,0,0,0.55)]" strokeWidth={2.4} />
+          <MessageCircle className="w-[17px] h-[17px] relative drop-shadow-[0_1px_3px_rgba(0,0,0,0.55)]" strokeWidth={2.4} />
           {/* Live green dot */}
           <span
             aria-hidden
-            className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full"
+            className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full"
             style={{
               background: '#30D158',
-              boxShadow: '0 0 0 2px rgba(0,0,0,0.45), 0 0 10px rgba(48,209,88,0.85)',
+              boxShadow: '0 0 0 1.5px rgba(0,0,0,0.4), 0 0 8px rgba(48,209,88,0.85)',
             }}
           />
         </button>
