@@ -73,9 +73,24 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
           onSuccess?.();
         }
       } else {
-        // Login
+        // Login — accept email OR username
+        let loginEmail = email.trim();
+        const isEmail = loginEmail.includes('@') && loginEmail.includes('.');
+        if (!isEmail) {
+          // Treat as username (strip leading @ if present)
+          const uname = loginEmail.replace(/^@/, '');
+          const { data: profileRow } = await supabase
+            .from('profiles')
+            .select('email')
+            .ilike('username', uname)
+            .maybeSingle();
+          if (!profileRow?.email) {
+            throw new Error('No account found with that username');
+          }
+          loginEmail = profileRow.email;
+        }
         const { error } = await supabase.auth.signInWithPassword({
-          email,
+          email: loginEmail,
           password,
         });
 
@@ -143,13 +158,17 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
               )}
 
               <div className="space-y-1.5">
-                <label className="text-[13px] text-[#8E8E93] font-medium px-1">Email</label>
+                <label className="text-[13px] text-[#8E8E93] font-medium px-1">
+                  {mode === 'signup' ? 'Email' : 'Email or username'}
+                </label>
                 <Input
-                  type="email"
+                  type={mode === 'signup' ? 'email' : 'text'}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  autoComplete="email"
+                  placeholder={mode === 'signup' ? 'you@example.com' : 'you@example.com or @username'}
+                  autoComplete={mode === 'signup' ? 'email' : 'username'}
+                  autoCapitalize="none"
+                  spellCheck={false}
                   className="h-11 rounded-[10px] border-0 text-[16px] text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#D4A857]"
                   style={{ background: 'rgba(118, 118, 128, 0.24)' }}
                 />
