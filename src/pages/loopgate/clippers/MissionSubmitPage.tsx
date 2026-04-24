@@ -380,6 +380,54 @@ export default function MissionSubmitPage() {
         reason="Sign up to submit your clip and get paid."
       />
 
+      {submitOpen && (
+        <div
+          className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm"
+          onClick={() => !submitting && setSubmitOpen(false)}
+        >
+          <motion.div
+            initial={{ y: 40, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full sm:max-w-sm rounded-t-[24px] sm:rounded-[24px] p-5 pb-8 sm:pb-5 space-y-4"
+            style={{ background: '#1c1c1e' }}
+          >
+            <div>
+              <h3 className="font-apple-tight text-[22px] font-bold text-white tracking-[-0.01em]">Submit your clip</h3>
+              <p className="text-[13px] text-[#8E8E93] mt-1">Paste the link to your posted clip. Reviewed within 24h.</p>
+            </div>
+            <div>
+              <label className="text-[11px] text-[#8E8E93] font-medium px-0.5">Clip link</label>
+              <input
+                ref={inputRef}
+                autoFocus
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+                placeholder="https://tiktok.com/..."
+                className="w-full h-11 px-3 mt-1 rounded-[12px] text-[15px] text-white placeholder:text-[#48484A] outline-none"
+                style={{ background: 'rgba(118, 118, 128, 0.24)' }}
+              />
+            </div>
+            <button
+              onClick={handleSubmit}
+              disabled={submitting || !videoUrl.trim()}
+              className="w-full h-12 rounded-[14px] font-semibold text-[16px] inline-flex items-center justify-center gap-2 disabled:opacity-50"
+              style={{ background: '#30D158', color: '#0B3B1E' }}
+            >
+              {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Upload className="w-[18px] h-[18px]" strokeWidth={2.75} />Submit</>}
+            </button>
+            <button
+              onClick={() => setSubmitOpen(false)}
+              disabled={submitting}
+              className="w-full h-11 rounded-[14px] font-medium text-[15px] text-[#0A84FF]"
+            >
+              Cancel
+            </button>
+          </motion.div>
+        </div>
+      )}
+
       {eligibilityOpen && (
         <div
           className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm"
