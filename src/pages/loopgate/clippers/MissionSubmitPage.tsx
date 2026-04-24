@@ -334,35 +334,6 @@ export default function MissionSubmitPage() {
           </section>
         )}
 
-        {/* Submit */}
-        <section className="mt-5">
-          <h2 className="text-[13px] text-[#8E8E93] font-medium uppercase tracking-wide px-1 mb-2">Submit your clip</h2>
-          <div className="rounded-[18px] p-4 space-y-3" style={{ background: '#1c1c1e' }}>
-            <div>
-              <label className="text-[11px] text-[#8E8E93] font-medium px-0.5">Clip link</label>
-              <input
-                ref={inputRef}
-                value={videoUrl}
-                onChange={(e) => setVideoUrl(e.target.value)}
-                placeholder="https://tiktok.com/..."
-                className="w-full h-11 px-3 mt-1 rounded-[12px] text-[15px] text-white placeholder:text-[#48484A] outline-none"
-                style={{ background: 'rgba(118, 118, 128, 0.24)' }}
-              />
-            </div>
-            <div>
-              <label className="text-[11px] text-[#8E8E93] font-medium px-0.5">Account handle <span className="text-[#48484A]">(optional)</span></label>
-              <input
-                value={handle}
-                onChange={(e) => setHandle(e.target.value)}
-                placeholder="@yourhandle"
-                className="w-full h-11 px-3 mt-1 rounded-[12px] text-[15px] text-white placeholder:text-[#48484A] outline-none"
-                style={{ background: 'rgba(118, 118, 128, 0.24)' }}
-              />
-            </div>
-
-            <p className="text-[11px] text-[#8E8E93] text-center pt-1">Reviewed within 24h · Paid on approval</p>
-          </div>
-        </section>
       </div>
 
       {/* Floating pump.fun-style submit CTA — replaces bottom nav on mission view */}
@@ -372,7 +343,7 @@ export default function MissionSubmitPage() {
       >
         <div className="max-w-md mx-auto px-4 pointer-events-auto">
           <button
-            onClick={handleSubmit}
+            onClick={openSubmit}
             disabled={submitting}
             className="relative w-full h-[58px] rounded-[18px] font-semibold text-[17px] text-black inline-flex items-center justify-center gap-2 transition-all active:scale-[0.985] disabled:cursor-not-allowed overflow-hidden tracking-[-0.01em]"
             style={{
