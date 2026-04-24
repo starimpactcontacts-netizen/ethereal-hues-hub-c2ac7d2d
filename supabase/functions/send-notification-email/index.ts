@@ -214,7 +214,7 @@ Deno.serve(async (req) => {
 
     // Check notification preference
     const prefKey = PREFERENCE_MAP[email_type];
-    if (prefKey && profile[prefKey] === false) {
+    if (prefKey && (profile as any)[prefKey] === false) {
       return new Response(JSON.stringify({ skipped: true, reason: "User disabled this notification type" }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -270,7 +270,7 @@ Deno.serve(async (req) => {
     });
   } catch (err) {
     console.error("Email notification error:", err);
-    return new Response(JSON.stringify({ error: err.message }), {
+    return new Response(JSON.stringify({ error: (err as Error).message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
