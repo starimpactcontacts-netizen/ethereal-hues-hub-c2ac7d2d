@@ -326,13 +326,41 @@ export default function MissionSubmitPage() {
             className="w-full text-left active:opacity-70 transition-opacity"
           >
             <div className="flex items-center justify-between">
-              <span className="text-[11px] text-[#8E8E93] font-medium tracking-[-0.01em]">Base · tap to check eligibility</span>
-              <span className="text-[11px] text-[#0A84FF] font-medium">Check</span>
+              <span className="text-[11px] text-[#8E8E93] font-medium tracking-[-0.01em]">
+                {eligibility === 'approved' ? 'Base · approved for payout'
+                  : eligibility === 'pending' ? 'Base · review in progress'
+                  : eligibility === 'rejected' ? 'Base · not approved · tap to retry'
+                  : 'Base · tap to check eligibility'}
+              </span>
+              <span
+                className="text-[11px] font-medium"
+                style={{
+                  color:
+                    eligibility === 'approved' ? '#30D158' :
+                    eligibility === 'pending' ? '#FF9F0A' :
+                    eligibility === 'rejected' ? '#FF453A' :
+                    '#0A84FF',
+                }}
+              >
+                {eligibility === 'approved' ? 'Approved'
+                  : eligibility === 'pending' ? 'Pending'
+                  : eligibility === 'rejected' ? 'Rejected'
+                  : 'Check'}
+              </span>
             </div>
             <p className="font-apple-tight text-[32px] font-semibold text-white leading-none mt-1 tabular-nums tracking-[-0.02em]">
               ${(mission.base_payout_cents / 100).toFixed(2)}
               <span className="text-[13px] text-[#8E8E93] font-normal ml-1.5 tracking-normal">per approved clip</span>
             </p>
+            {mission.approval_rate_pct != null && (
+              <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 rounded-full" style={{ background: 'rgba(48,209,88,0.10)' }}>
+                <CheckCircle2 className="w-3 h-3 text-[#30D158]" strokeWidth={2.75} />
+                <span className="text-[11px] font-semibold text-[#30D158] tabular-nums tracking-[-0.01em]">
+                  {mission.approval_rate_pct}% approval rate
+                </span>
+                <span className="text-[10px] text-[#8E8E93] tracking-[-0.01em]">· chance of getting paid</span>
+              </div>
+            )}
           </button>
 
           {milestones.length > 0 && (
