@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Film, Plus, ExternalLink, Clock, Check, X as XIcon, Loader2 } from 'lucide-react';
+import { Film, Plus, ExternalLink, Clock, Check, X as XIcon, Loader2, DollarSign, TrendingUp, ChevronRight, BadgeCheck, Search, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import ClipperLockGate from '@/components/clippers/ClipperLockGate';
-import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
+import PlatformBadges from '@/components/loopgate/missions/PlatformBadges';
 
 interface Submission {
   id: string;
@@ -20,6 +20,19 @@ interface Submission {
   created_at: string;
 }
 
+interface Milestone { views: number; bonus_cents: number; }
+interface PickableMission {
+  id: string;
+  title: string;
+  cover_image_url: string | null;
+  sponsor_name: string | null;
+  sponsor_logo_url: string | null;
+  base_payout_cents: number;
+  view_milestones: Milestone[];
+  eligible_platforms: string[] | null;
+  status: string;
+}
+
 const TABS = [
   { id: 'all', label: 'All' },
   { id: 'pending', label: 'Pending' },
@@ -29,15 +42,15 @@ const TABS = [
 
 export default function ClippersSubmissionsPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [subs, setSubs] = useState<Submission[]>([]);
   const [tab, setTab] = useState('all');
   const [loading, setLoading] = useState(true);
-  const [showSubmit, setShowSubmit] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
   const [showGate, setShowGate] = useState(false);
-
-  const [videoUrl, setVideoUrl] = useState('');
-  const [title, setTitle] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [missions, setMissions] = useState<PickableMission[]>([]);
+  const [missionsLoading, setMissionsLoading] = useState(false);
+  const [pickSearch, setPickSearch] = useState('');
 
   const load = async () => {
     if (!user) { setLoading(false); return; }
@@ -52,20 +65,25 @@ export default function ClippersSubmissionsPage() {
 
   useEffect(() => { load(); }, [user]);
 
-  const handleSubmit = async () => {
+  const openPicker = async () => {
     if (!user) { setShowGate(true); return; }
-    if (!videoUrl.includes('http')) { toast.error('Paste a valid video URL'); return; }
-    setSubmitting(true);
-    const platform = videoUrl.includes('tiktok') ? 'tiktok' :
-      videoUrl.includes('instagram') ? 'instagram' :
-      videoUrl.includes('youtube') || videoUrl.includes('youtu.be') ? 'youtube' : 'other';
-    const { error } = await supabase.from('clip_submissions').insert({
-      user_id: user.id, video_url: videoUrl, title: title || null, platform, status: 'pending',
-    });
-    setSubmitting(false);
-    if (error) { toast.error(error.message); return; }
-    toast.success('Clip submitted for review');
-    setVideoUrl(''); setTitle(''); setShowSubmit(false); load();
+    setShowPicker(true);
+    if (missions.length === 0) {
+      setMissionsLoading(true);
+      const { data } = await supabase
+        .from('missions')
+        .select('id, title, cover_image_url, sponsor_name, sponsor_logo_url, base_payout_cents, view_milestones, eligible_platforms, status')
+        .eq('status', 'live')
+        .order('created_at', { ascending: false })
+        .limit(40);
+      setMissions(((data as any) || []) as PickableMission[]);
+      setMissionsLoading(false);
+    }
+  };
+
+  const pickMission = (m: PickableMission) => {
+    setShowPicker(false);
+    navigate(`/missions/submit?id=${m.id}`);
   };
 
   const counts = {
@@ -85,7 +103,7 @@ export default function ClippersSubmissionsPage() {
       <section className="max-w-6xl mx-auto px-4 pt-3 pb-4 flex items-end justify-between">
         <h1 className="font-apple-tight text-[34px] font-bold text-white leading-[1.05]">Clips</h1>
         <button
-          onClick={() => (user ? setShowSubmit(true) : setShowGate(true))}
+          onClick={openPicker}
           className="flex items-center gap-1 h-8 px-3 rounded-full bg-[#D4A857] text-white text-[14px] font-semibold active:opacity-60 transition-opacity"
         >
           <Plus className="w-[15px] h-[15px]" strokeWidth={2.8} /> New
@@ -128,7 +146,7 @@ export default function ClippersSubmissionsPage() {
         ) : !user ? (
           <EmptyCTA onClick={() => setShowGate(true)} text="Lock in to start submitting" />
         ) : filtered.length === 0 ? (
-          <EmptyCTA onClick={() => setShowSubmit(true)} text="No clips yet — drop your first one" />
+          <EmptyCTA onClick={openPicker} text="No clips yet — pick a mission to drop your first one" />
         ) : (
           <div className="rounded-[16px] overflow-hidden" style={{ background: '#1c1c1e' }}>
             {filtered.map((s, idx) => (
@@ -138,33 +156,38 @@ export default function ClippersSubmissionsPage() {
         )}
       </div>
 
-      {showSubmit && (
-        <Sheet onClose={() => setShowSubmit(false)} title="New Clip">
-          <Field label="Video URL">
-            <Input
-              value={videoUrl}
-              onChange={(e) => setVideoUrl(e.target.value)}
-              placeholder="https://tiktok.com/..."
-              className="h-11 rounded-[10px] border-0 text-[16px] text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#D4A857]"
+      {showPicker && (
+        <Sheet onClose={() => setShowPicker(false)} title="Pick a mission">
+          <div className="relative -mt-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-[15px] h-[15px] text-[#8E8E93]" strokeWidth={2.5} />
+            <input
+              value={pickSearch}
+              onChange={(e) => setPickSearch(e.target.value)}
+              placeholder="Search live missions"
+              className="w-full h-10 pl-9 pr-3 text-[15px] outline-none rounded-[10px] text-white placeholder:text-[#8E8E93]"
               style={{ background: 'rgba(118, 118, 128, 0.24)' }}
             />
-          </Field>
-          <Field label="Title (optional)">
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Untitled"
-              className="h-11 rounded-[10px] border-0 text-[16px] text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#D4A857]"
-              style={{ background: 'rgba(118, 118, 128, 0.24)' }}
-            />
-          </Field>
-          <button
-            onClick={handleSubmit}
-            disabled={submitting}
-            className="w-full h-12 rounded-[14px] bg-[#D4A857] text-white text-[17px] font-semibold active:opacity-60 transition-opacity flex items-center justify-center disabled:opacity-50"
-          >
-            {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Submit'}
-          </button>
+          </div>
+
+          {missionsLoading ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => <div key={i} className="h-[104px] rounded-[16px] bg-white/[0.04] animate-pulse" />)}
+            </div>
+          ) : missions.filter(m => !pickSearch || m.title.toLowerCase().includes(pickSearch.toLowerCase()) || m.sponsor_name?.toLowerCase().includes(pickSearch.toLowerCase())).length === 0 ? (
+            <div className="rounded-[16px] p-8 text-center" style={{ background: 'rgba(255,255,255,0.04)' }}>
+              <Sparkles className="w-6 h-6 text-[#8E8E93] mx-auto mb-2" />
+              <p className="text-[15px] font-semibold text-white">No live missions</p>
+              <p className="text-[12px] text-[#8E8E93] mt-1">Check back soon for new paid drops</p>
+            </div>
+          ) : (
+            <div className="space-y-2.5 pb-2">
+              {missions
+                .filter(m => !pickSearch || m.title.toLowerCase().includes(pickSearch.toLowerCase()) || m.sponsor_name?.toLowerCase().includes(pickSearch.toLowerCase()))
+                .map((m) => (
+                  <MissionPickCard key={m.id} m={m} onPick={() => pickMission(m)} />
+                ))}
+            </div>
+          )}
         </Sheet>
       )}
 
@@ -237,9 +260,75 @@ function EmptyCTA({ text, onClick }: { text: string; onClick: () => void }) {
         onClick={onClick}
         className="inline-flex items-center gap-1 h-10 px-5 rounded-full bg-[#D4A857] text-white text-[15px] font-semibold active:opacity-60"
       >
-        <Plus className="w-4 h-4" strokeWidth={2.8} /> Submit clip
+        <Plus className="w-4 h-4" strokeWidth={2.8} /> Pick mission
       </button>
     </div>
+  );
+}
+
+function MissionPickCard({ m, onPick }: { m: PickableMission; onPick: () => void }) {
+  const milestones = (m.view_milestones || []).slice(0, 3);
+  const bonusTotal = milestones.reduce((s, x) => s + (x.bonus_cents || 0), 0);
+  return (
+    <button
+      onClick={onPick}
+      className="w-full text-left rounded-[18px] overflow-hidden active:scale-[0.985] transition-all duration-150 group"
+      style={{
+        background: 'linear-gradient(180deg, #1f1f21 0%, #161618 100%)',
+        boxShadow: '0 1px 0 rgba(255,255,255,0.04) inset, 0 6px 18px -10px rgba(0,0,0,0.6)',
+        border: '0.5px solid rgba(255,255,255,0.06)',
+      }}
+    >
+      <div className="flex p-2.5 gap-3">
+        <div
+          className="w-[88px] h-[88px] flex-shrink-0 rounded-[12px] overflow-hidden relative bg-[#2c2c2e]"
+          style={{ boxShadow: '0 0 0 0.5px rgba(255,255,255,0.08) inset' }}
+        >
+          {m.cover_image_url ? (
+            <img src={m.cover_image_url} alt={m.title} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#2c2c2e] to-[#1c1c1e]">
+              <DollarSign className="w-6 h-6 text-[#48484A]" />
+            </div>
+          )}
+          <div
+            aria-hidden
+            className="absolute inset-x-0 top-0 h-1/3 pointer-events-none"
+            style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 100%)' }}
+          />
+        </div>
+        <div className="flex-1 min-w-0 py-0.5 pr-1 flex flex-col">
+          <div className="flex items-start justify-between gap-1.5">
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] text-[#8E8E93] font-medium truncate leading-none flex items-center gap-1">
+                <span className="truncate">{m.sponsor_name || 'Loopgate Official'}</span>
+                <BadgeCheck className="w-[11px] h-[11px] flex-shrink-0 fill-[hsl(214,89%,52%)] text-black" strokeWidth={2.5} />
+              </p>
+              <h3 className="font-apple-tight text-[15.5px] font-bold text-white tracking-[-0.02em] line-clamp-2 leading-[1.15] mt-1">
+                {m.title}
+              </h3>
+              <div className="mt-1.5">
+                <PlatformBadges platforms={m.eligible_platforms} />
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[#48484A] flex-shrink-0 mt-0.5 group-active:translate-x-0.5 transition-transform" strokeWidth={2.75} />
+          </div>
+          <div className="flex items-center gap-2 mt-auto pt-2 flex-wrap">
+            <span className="inline-flex items-center gap-0.5 text-[12px] font-bold tabular-nums leading-none" style={{ color: '#30D158' }}>
+              <DollarSign className="w-[11px] h-[11px]" strokeWidth={3} />
+              {(m.base_payout_cents / 100).toFixed(2)}
+              <span className="text-[#8E8E93] font-medium ml-0.5">base</span>
+            </span>
+            {bonusTotal > 0 && (
+              <span className="inline-flex items-center gap-1 text-[10.5px] text-[#8E8E93] leading-none">
+                <TrendingUp className="w-3 h-3" strokeWidth={2.5} />
+                up to +${(bonusTotal / 100).toFixed(2)}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    </button>
   );
 }
 
