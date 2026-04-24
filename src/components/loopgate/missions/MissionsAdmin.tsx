@@ -387,6 +387,71 @@ export default function MissionsAdmin() {
         <PayoutsList payouts={payouts} onUpdate={updatePayout} />
       )}
 
+      {/* ELIGIBILITY TAB */}
+      {!loading && tab === 'eligibility' && (
+        <div className="space-y-2">
+          {eligibilityReqs.length === 0 && (
+            <div className="text-xs text-zinc-500 py-8 text-center border border-dashed border-zinc-800 rounded-lg">
+              No base-payout requests yet.
+            </div>
+          )}
+          {eligibilityReqs.map((req: any) => {
+            const m = missions.find(x => x.id === req.mission_id);
+            return (
+              <div key={req.id} className="rounded-lg border border-zinc-800 bg-zinc-950 p-3 space-y-2">
+                <div className="flex items-start justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-2 min-w-0">
+                    {req.avatar_url ? (
+                      <img src={req.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-zinc-800" />
+                    )}
+                    <div className="min-w-0">
+                      <p className="text-sm text-white font-semibold truncate">@{req.username || req.user_id.slice(0, 8)}</p>
+                      <p className="text-[11px] text-zinc-500 truncate">{m?.title || 'Mission'} · {new Date(req.created_at).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <span
+                    className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider ${
+                      req.status === 'approved' ? 'bg-emerald-950 text-emerald-400' :
+                      req.status === 'rejected' ? 'bg-red-950 text-red-400' :
+                      'bg-amber-950 text-amber-400'
+                    }`}
+                  >
+                    {req.status}
+                  </span>
+                </div>
+                {req.admin_notes && (
+                  <p className="text-[11px] text-zinc-400 italic">Notes: {req.admin_notes}</p>
+                )}
+                {req.status === 'pending' && (
+                  <div className="flex gap-2 pt-1">
+                    <Button
+                      size="sm"
+                      onClick={() => reviewEligibility(req, 'approved')}
+                      className="bg-emerald-600 hover:bg-emerald-500 text-white h-8 text-xs"
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        const note = prompt('Reason (optional, shown to user):') || undefined;
+                        reviewEligibility(req, 'rejected', note);
+                      }}
+                      className="h-8 text-xs"
+                    >
+                      Reject
+                    </Button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* LAUNCHER MODAL */}
       {showLauncher && (
         <MissionLauncher
