@@ -373,7 +373,7 @@ function Sheet({ children, onClose, title, subtitle }: { children: React.ReactNo
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-      className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center font-apple"
+      className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center font-apple"
       style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
       onClick={onClose}
     >
@@ -381,15 +381,23 @@ function Sheet({ children, onClose, title, subtitle }: { children: React.ReactNo
         initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 380, damping: 36 }}
         onClick={(e) => e.stopPropagation()}
-        className="w-full sm:max-w-md rounded-t-[20px] sm:rounded-[20px] p-5 space-y-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]"
-        style={{ background: '#1c1c1e' }}
+        className="w-full sm:max-w-md rounded-t-[20px] sm:rounded-[20px] flex flex-col"
+        style={{
+          background: '#1c1c1e',
+          maxHeight: 'calc(100dvh - env(safe-area-inset-top, 0px) - 16px)',
+        }}
       >
-        <div className="w-9 h-1 rounded-full bg-white/25 mx-auto sm:hidden" />
-        <div>
+        <div className="px-5 pt-3 pb-3 shrink-0">
+          <div className="w-9 h-1 rounded-full bg-white/25 mx-auto sm:hidden mb-3" />
           <h2 className="text-[22px] font-bold text-white tracking-[-0.022em]">{title}</h2>
           {subtitle && <p className="text-[13px] text-[#8E8E93] mt-0.5">{subtitle}</p>}
         </div>
-        {children}
+        <div
+          className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] space-y-4"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
+          {children}
+        </div>
       </motion.div>
     </motion.div>
   );
