@@ -1,5 +1,5 @@
-import { ReactNode, useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { ReactNode, useEffect, useState } from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronLeft, LayoutGrid, Film, Link2, Wallet, ScrollText, MoreHorizontal, LogIn, UserPlus, LogOut, Settings } from 'lucide-react';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 import { useAuth } from '@/hooks/useAuth';
@@ -22,16 +22,40 @@ const tabs = [
 
 export default function ClippersLayout({ children, title, hideBottomNav = false }: Props) {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { user } = useAuth();
   const { profile: tempProfile } = useTempProfile();
   const [menuOpen, setMenuOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'signup' | 'login'>('signup');
+  const [dbProfile, setDbProfile] = useState<{ username: string | null; avatar_url: string | null } | null>(null);
+
+  useEffect(() => {
+    if (!user) { setDbProfile(null); return; }
+    let cancelled = false;
+    supabase
+      .from('profiles')
+      .select('username, avatar_url')
+      .eq('id', user.id)
+      .maybeSingle()
+      .then(({ data }) => { if (!cancelled && data) setDbProfile(data as any); });
+    return () => { cancelled = true; };
+  }, [user, pathname]);
 
   const isGuest = !user;
-  const displayName = user?.user_metadata?.username || user?.email?.split('@')[0] || tempProfile?.username || 'Guest';
-  const avatarUrl = (user?.user_metadata?.avatar_url as string | undefined) || tempProfile?.avatarUrl;
+  const displayName =
+    dbProfile?.username ||
+    (user?.user_metadata?.username as string | undefined) ||
+    user?.email?.split('@')[0] ||
+    tempProfile?.username ||
+    'Guest';
+  const avatarUrl = dbProfile?.avatar_url || (user?.user_metadata?.avatar_url as string | undefined) || tempProfile?.avatarUrl;
   const initial = displayName.charAt(0).toUpperCase();
+
+  // Subroutes go back to /missions, /missions itself goes to /hub
+  const isMissionsRoot = pathname === '/missions';
+  const backLabel = isMissionsRoot ? 'Hub' : 'Missions';
+  const backTo = isMissionsRoot ? '/hub' : '/missions';
 
   const openAuth = (mode: 'signup' | 'login') => {
     setAuthMode(mode);
@@ -55,11 +79,11 @@ export default function ClippersLayout({ children, title, hideBottomNav = false 
       >
         <div className="max-w-6xl mx-auto px-4 h-12 flex items-center justify-between gap-3">
           <button
-            onClick={() => navigate('/hub')}
+            onClick={() => navigate(backTo)}
             className="flex items-center gap-0.5 -ml-1.5 text-[#D4A857] active:opacity-50 transition-opacity shrink-0"
           >
             <ChevronLeft className="w-[22px] h-[22px]" strokeWidth={2.5} />
-            <span className="text-[15px] font-normal">Hub</span>
+            <span className="text-[15px] font-normal">{backLabel}</span>
           </button>
 
           <h1 className="text-[15px] font-semibold tracking-[-0.02em] text-white truncate">
