@@ -58,6 +58,11 @@ export default function MissionSubmitPage() {
   const [eligibilityOpen, setEligibilityOpen] = useState(false);
   const [eligibility, setEligibility] = useState<'idle' | 'checking' | 'eligible' | 'ineligible'>('idle');
   const [linkedCount, setLinkedCount] = useState(0);
+  const [mySubmission, setMySubmission] = useState<{
+    view_count: number | null;
+    total_earned_cents: number | null;
+    status: string | null;
+  } | null>(null);
 
   const checkEligibility = async () => {
     if (!user) { setAuthOpen(true); return; }
@@ -84,6 +89,24 @@ export default function MissionSubmitPage() {
       setLoading(false);
     })();
   }, [id]);
+
+  // Pull this user's actual submission for this mission so the earnings panel reflects reality
+  useEffect(() => {
+    if (!id || !user) { setMySubmission(null); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('mission_submissions')
+        .select('view_count, total_earned_cents, status')
+        .eq('mission_id', id)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!cancelled) setMySubmission((data as any) || null);
+    })();
+    return () => { cancelled = true; };
+  }, [id, user?.id]);
 
   const handleSubmit = async () => {
     if (!user) { setAuthOpen(true); return; }
@@ -212,7 +235,13 @@ export default function MissionSubmitPage() {
           </button>
 
           {milestones.length > 0 && (
-            <ViewsGamePanel milestones={milestones} />
+            <ViewsGamePanel
+              milestones={milestones}
+              hasSubmission={!!mySubmission}
+              currentViews={mySubmission?.view_count ?? 0}
+              earnedCents={mySubmission?.total_earned_cents ?? 0}
+              submissionStatus={mySubmission?.status ?? null}
+            />
           )}
 
           {showProgress && (
