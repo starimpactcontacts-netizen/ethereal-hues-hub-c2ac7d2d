@@ -150,6 +150,10 @@ export default function ClippersWithdrawalsPage() {
           <p className="font-apple-tight text-[56px] sm:text-[72px] font-bold text-white leading-[0.95] tabular-nums">
             {formatMoney(balance)}
           </p>
+          <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: 'rgba(48,209,88,0.12)' }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#30D158]" />
+            <p className="text-[11px] font-semibold text-[#30D158] tracking-[-0.01em]">$0 minimum withdrawal · no fees · paid within 24h</p>
+          </div>
           <div className="flex items-center justify-between mt-5 pt-4 border-t border-white/[0.06]">
             <div>
               <p className="text-[11px] text-[#8E8E93] font-medium">Lifetime paid</p>
@@ -179,7 +183,7 @@ export default function ClippersWithdrawalsPage() {
           <div className="rounded-[20px] p-10 text-center" style={{ background: '#1c1c1e' }}>
             <Wallet className="w-7 h-7 text-[#8E8E93] mx-auto mb-3" />
             <p className="text-[17px] font-semibold text-white mb-1">No withdrawals yet</p>
-            <p className="text-[13px] text-[#8E8E93]">{user ? 'Cash out anytime — no minimum' : 'Lock in to request payouts'}</p>
+            <p className="text-[13px] text-[#8E8E93]">{user ? 'Cash out anytime — $0 minimum' : 'Lock in to cash out — $0 minimum, no fees'}</p>
           </div>
         ) : (
           <div className="rounded-[16px] overflow-hidden" style={{ background: '#1c1c1e' }}>

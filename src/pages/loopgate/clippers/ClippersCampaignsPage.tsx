@@ -169,7 +169,10 @@ export default function ClippersCampaignsPage() {
           <p className="font-apple-tight text-[44px] font-bold leading-none mt-1.5 tabular-nums text-white">
             {formatMoney(balance)}
           </p>
-          <p className="text-[11px] text-[#8E8E93] mt-1">Withdraw anytime · paid within 24h</p>
+          <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: 'rgba(48,209,88,0.12)' }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#30D158]" />
+            <p className="text-[11px] font-semibold text-[#30D158] tracking-[-0.01em]">$0 minimum · withdraw anytime · paid within 24h</p>
+          </div>
           <div className="flex items-center gap-5 mt-4 pt-4 border-t border-white/[0.06]">
             <MiniStat label="Posts" value={stats.clips.toString()} />
             <div className="w-px h-7 bg-white/[0.08]" />
