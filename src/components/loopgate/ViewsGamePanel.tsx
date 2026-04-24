@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Lock, Zap, Flame, TrendingUp, DollarSign } from 'lucide-react';
+import { Lock, Check, ArrowUpRight, DollarSign, Activity } from 'lucide-react';
 
 interface Milestone { views: number; bonus_cents: number; }
 
@@ -71,19 +71,17 @@ export default function ViewsGamePanel({ milestones }: { milestones: Milestone[]
 
   return (
     <div className="mt-4 pt-4 border-t border-white/[0.06]">
-      {/* Header — Polymarket / trading desk */}
+      {/* Header — your position */}
       <div className="flex items-center justify-between mb-2.5">
         <div className="inline-flex items-center gap-2">
-          <div className="relative">
-            <div className="w-2 h-2 rounded-full bg-[#FF453A]" />
-            <div className="absolute inset-0 w-2 h-2 rounded-full bg-[#FF453A] animate-ping" />
-          </div>
-          <span className="text-[10px] font-black uppercase tracking-[0.12em] text-[#FF453A]">LIVE MARKET</span>
+          <Activity className="w-3 h-3 text-[#30D158]" strokeWidth={3} />
+          <span className="text-[10px] font-black uppercase tracking-[0.14em] text-white">YOUR POSITION</span>
+          <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#8E8E93]">· VIEWS</span>
         </div>
-        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#FFD60A]/10 border border-[#FFD60A]/30">
-          <DollarSign className="w-2.5 h-2.5 text-[#FFD60A]" strokeWidth={3} />
-          <span className="text-[10px] font-black tabular-nums text-[#FFD60A] tracking-wide">
-            {formatMoney(totalPool)} POOL
+        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white/[0.04] border border-white/[0.08]">
+          <DollarSign className="w-2.5 h-2.5 text-[#30D158]" strokeWidth={3} />
+          <span className="text-[10px] font-black tabular-nums text-white tracking-wide">
+            {formatMoney(totalPool)} <span className="text-[#8E8E93]">MAX</span>
           </span>
         </div>
       </div>
