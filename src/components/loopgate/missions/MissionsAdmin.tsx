@@ -81,6 +81,7 @@ interface Payout {
   created_at: string;
   processed_at: string | null;
   username?: string | null;
+  source?: 'mission' | 'clipper';
 }
 
 const STATUS_COLORS: Record<string, string> = {
