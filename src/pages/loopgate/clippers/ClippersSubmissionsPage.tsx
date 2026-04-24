@@ -377,11 +377,3 @@ function Sheet({ children, onClose, title }: { children: React.ReactNode; onClos
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="space-y-1.5">
-      <label className="text-[13px] text-[#8E8E93] font-medium px-1">{label}</label>
-      {children}
-    </div>
-  );
-}
