@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { useTempProfile } from '@/hooks/useTempProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 
 interface AccountPromptModalProps {
   isOpen: boolean;
@@ -19,12 +20,20 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<'signup' | 'login'>('signup');
+  const [agreed, setAgreed] = useState(false);
+  const [agreeError, setAgreeError] = useState(false);
 
   const handleSubmit = async () => {
     if (!email || !password) {
       toast.error('Please fill in all fields');
       return;
     }
+    if (mode === 'signup' && !agreed) {
+      setAgreeError(true);
+      toast.error('Please confirm you’re 18+ and have read the mission policy');
+      return;
+    }
+    setAgreeError(false);
 
     setLoading(true);
 
@@ -166,6 +175,41 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : mode === 'signup' ? 'Create account' : 'Sign in'}
               </button>
+
+              {mode === 'signup' && (
+                <button
+                  type="button"
+                  onClick={() => { setAgreed((v) => !v); setAgreeError(false); }}
+                  className="w-full flex items-start gap-2.5 px-1 text-left"
+                >
+                  <span
+                    className={`mt-0.5 w-[18px] h-[18px] rounded-[5px] flex items-center justify-center shrink-0 transition-colors ${
+                      agreed
+                        ? 'bg-[#0A84FF] border border-[#0A84FF]'
+                        : agreeError
+                          ? 'bg-transparent border border-red-500/80'
+                          : 'bg-white/[0.04] border border-white/15'
+                    }`}
+                  >
+                    {agreed && (
+                      <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                        <path d="M1.5 5.5L4.5 8.5L9.5 2.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </span>
+                  <span className={`text-[12px] leading-snug ${agreeError ? 'text-red-400/90' : 'text-[#8E8E93]'}`}>
+                    I’m 18+ and have read the{' '}
+                    <Link
+                      to="/missions/policy"
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-[#0A84FF] hover:underline"
+                    >
+                      mission policy
+                    </Link>
+                    .
+                  </span>
+                </button>
+              )}
 
               <button
                 onClick={() => setMode(mode === 'signup' ? 'login' : 'signup')}
