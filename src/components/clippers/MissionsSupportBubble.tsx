@@ -139,31 +139,30 @@ export default function MissionsSupportBubble() {
           aria-label="Mission support"
           className="relative w-full h-full rounded-full inline-flex items-center justify-center text-white active:scale-[0.92] transition-transform overflow-hidden"
           style={{
-            background:
-              'radial-gradient(120% 120% at 30% 20%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.08) 35%, rgba(255,255,255,0.02) 60%, rgba(0,0,0,0.05) 100%)',
-            border: '0.5px solid rgba(255,255,255,0.28)',
+            background: 'rgba(255,255,255,0.06)',
+            border: '0.5px solid rgba(255,255,255,0.35)',
             boxShadow:
-              '0 18px 44px -12px rgba(0,0,0,0.6), 0 4px 14px -2px rgba(48,209,88,0.18), 0 1.5px 0 rgba(255,255,255,0.45) inset, 0 -2px 0 rgba(0,0,0,0.35) inset, 0 0 0 0.5px rgba(255,255,255,0.18) inset',
-            backdropFilter: 'blur(28px) saturate(200%)',
-            WebkitBackdropFilter: 'blur(28px) saturate(200%)',
+              '0 18px 44px -12px rgba(0,0,0,0.55), 0 4px 18px -4px rgba(48,209,88,0.22), 0 1.5px 0 rgba(255,255,255,0.55) inset, 0 -2px 0 rgba(0,0,0,0.25) inset, 0 0 0 0.5px rgba(255,255,255,0.18) inset',
+            backdropFilter: 'blur(18px) saturate(190%)',
+            WebkitBackdropFilter: 'blur(18px) saturate(190%)',
           }}
         >
-          {/* Inner liquid tint */}
+          {/* Subtle liquid tint — kept very low alpha so background still shows through */}
           <span
             aria-hidden
             className="pointer-events-none absolute inset-0 rounded-full"
             style={{
               background:
-                'radial-gradient(80% 80% at 70% 80%, rgba(48,209,88,0.22) 0%, rgba(10,132,255,0.12) 40%, transparent 75%)',
+                'radial-gradient(80% 80% at 70% 80%, rgba(48,209,88,0.14) 0%, rgba(10,132,255,0.08) 45%, transparent 78%)',
             }}
           />
           {/* Top sheen */}
           <span
             aria-hidden
-            className="pointer-events-none absolute inset-x-1.5 top-1 h-3.5 rounded-full"
+            className="pointer-events-none absolute inset-x-1.5 top-[3px] h-4 rounded-full"
             style={{
               background:
-                'linear-gradient(180deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.18) 60%, rgba(255,255,255,0))',
+                'linear-gradient(180deg, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.2) 55%, rgba(255,255,255,0))',
               filter: 'blur(0.4px)',
             }}
           />
@@ -172,17 +171,17 @@ export default function MissionsSupportBubble() {
             aria-hidden
             className="pointer-events-none absolute inset-x-2 bottom-1 h-2 rounded-full"
             style={{
-              background: 'linear-gradient(0deg, rgba(255,255,255,0.18), rgba(255,255,255,0))',
+              background: 'linear-gradient(0deg, rgba(255,255,255,0.25), rgba(255,255,255,0))',
               filter: 'blur(1px)',
             }}
           />
           {/* Specular pinpoint */}
           <span
             aria-hidden
-            className="pointer-events-none absolute top-[18%] left-[26%] w-2.5 h-2.5 rounded-full"
-            style={{ background: 'rgba(255,255,255,0.85)', filter: 'blur(1.5px)' }}
+            className="pointer-events-none absolute top-[16%] left-[24%] w-3 h-3 rounded-full"
+            style={{ background: 'rgba(255,255,255,0.95)', filter: 'blur(1.2px)' }}
           />
-          <MessageCircle className="w-[22px] h-[22px] relative drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]" strokeWidth={2.4} />
+          <MessageCircle className="w-[22px] h-[22px] relative drop-shadow-[0_1px_3px_rgba(0,0,0,0.55)]" strokeWidth={2.4} />
           {/* Live green dot */}
           <span
             aria-hidden
