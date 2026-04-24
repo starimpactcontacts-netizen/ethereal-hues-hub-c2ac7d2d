@@ -213,47 +213,69 @@ function MissionCard({ m, formatMoney }: { m: Mission; formatMoney: (n: number) 
   return (
     <Link
       to={`/missions/submit?id=${m.id}`}
-      className="block rounded-[18px] overflow-hidden active:scale-[0.99] transition-transform"
-      style={{ background: '#1c1c1e' }}
+      className="block rounded-[22px] overflow-hidden active:scale-[0.985] transition-all duration-200 relative group"
+      style={{
+        background: 'linear-gradient(180deg, #1f1f21 0%, #161618 100%)',
+        boxShadow: '0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px -12px rgba(0,0,0,0.6)',
+        border: '0.5px solid rgba(255,255,255,0.06)',
+      }}
     >
-      <div className="flex">
-        {/* Cover */}
-        <div className="w-28 h-28 flex-shrink-0 bg-[#2c2c2e] relative">
+      <div className="flex p-2.5 gap-3">
+        {/* Cover — squared, inset, with gloss */}
+        <div
+          className="w-[104px] h-[104px] flex-shrink-0 rounded-[14px] overflow-hidden relative bg-[#2c2c2e]"
+          style={{ boxShadow: '0 0 0 0.5px rgba(255,255,255,0.08) inset' }}
+        >
           {m.cover_image_url ? (
             <img src={m.cover_image_url} alt={m.title} className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#2c2c2e] to-[#1c1c1e]">
               <DollarSign className="w-7 h-7 text-[#48484A]" />
             </div>
           )}
+          {/* subtle top gloss */}
+          <div
+            aria-hidden
+            className="absolute inset-x-0 top-0 h-1/3 pointer-events-none"
+            style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 100%)' }}
+          />
           {isPaused && (
-            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-              <span className="text-[10px] font-bold uppercase text-amber-400">Paused</span>
+            <div className="absolute inset-0 bg-black/65 backdrop-blur-[2px] flex items-center justify-center">
+              <span className="text-[10px] font-bold uppercase tracking-wide text-amber-400">Paused</span>
             </div>
           )}
         </div>
 
         {/* Body */}
-        <div className="flex-1 min-w-0 p-3 pr-2">
-          <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0 py-0.5 pr-1 flex flex-col">
+          <div className="flex items-start justify-between gap-1.5">
             <div className="min-w-0 flex-1">
-              <p className="text-[12px] text-[#8E8E93] font-medium truncate">{m.sponsor_name || 'Loopgate'}</p>
-              <h3 className="text-[16px] font-bold text-white tracking-[-0.02em] line-clamp-2 leading-tight mt-0.5">
+              <p className="text-[11px] text-[#8E8E93] font-medium truncate leading-none">
+                {m.sponsor_name || 'Loopgate Official'}
+              </p>
+              <h3 className="font-apple-tight text-[17px] font-bold text-white tracking-[-0.022em] line-clamp-2 leading-[1.15] mt-1">
                 {m.title}
               </h3>
             </div>
-            <ChevronRight className="w-[18px] h-[18px] text-[#48484A] flex-shrink-0 mt-1" strokeWidth={2.5} />
+            <ChevronRight
+              className="w-[16px] h-[16px] text-[#48484A] flex-shrink-0 mt-0.5 group-active:translate-x-0.5 transition-transform"
+              strokeWidth={2.75}
+            />
           </div>
 
           {/* Payout strip */}
-          <div className="flex items-center gap-2 mt-2 flex-wrap">
-            <span className="inline-flex items-center gap-1 text-[12px] font-bold tabular-nums" style={{ color: '#30D158' }}>
-              <DollarSign className="w-3 h-3" strokeWidth={3} />
-              {(m.base_payout_cents / 100).toFixed(2)} base
+          <div className="flex items-center gap-2 mt-auto pt-2 flex-wrap">
+            <span
+              className="inline-flex items-center gap-0.5 text-[12.5px] font-bold tabular-nums leading-none"
+              style={{ color: '#30D158' }}
+            >
+              <DollarSign className="w-[12px] h-[12px]" strokeWidth={3} />
+              {(m.base_payout_cents / 100).toFixed(2)}
+              <span className="text-[#8E8E93] font-medium ml-0.5">base</span>
             </span>
             {milestones.length > 0 && (
-              <span className="inline-flex items-center gap-1 text-[11px] text-[#8E8E93]">
-                <TrendingUp className="w-3 h-3" />
+              <span className="inline-flex items-center gap-1 text-[11px] text-[#8E8E93] leading-none">
+                <TrendingUp className="w-3 h-3" strokeWidth={2.5} />
                 up to +{formatMoney(milestones.reduce((s, x) => s + x.bonus_cents, 0))}
               </span>
             )}
@@ -262,10 +284,17 @@ function MissionCard({ m, formatMoney }: { m: Mission; formatMoney: (n: number) 
           {/* Progress bar — posts or budget */}
           {showProgress && (
             <div className="mt-2">
-              <div className="h-[3px] rounded-full bg-white/10 overflow-hidden">
-                <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: '#30D158' }} />
+              <div className="h-[3px] rounded-full bg-white/[0.07] overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all"
+                  style={{
+                    width: `${pct}%`,
+                    background: 'linear-gradient(90deg, #30D158 0%, #34d869 100%)',
+                    boxShadow: '0 0 8px rgba(48,209,88,0.4)',
+                  }}
+                />
               </div>
-              <p className="text-[10px] text-[#8E8E93] mt-1 tabular-nums">
+              <p className="text-[10.5px] text-[#8E8E93] mt-1 tabular-nums font-medium">
                 {isPostsCap
                   ? `${approved} / ${maxPosts} posts filled`
                   : `${formatMoney(spent)} / ${formatMoney(budget)} pool`}
