@@ -253,7 +253,7 @@ function MissionCard({ m, formatMoney }: { m: Mission; formatMoney: (n: number) 
               <p className="text-[11px] text-[#8E8E93] font-medium truncate leading-none flex items-center gap-1">
                 <span className="truncate">{m.sponsor_name || 'Loopgate Official'}</span>
                 <BadgeCheck
-                  className="w-[12px] h-[12px] flex-shrink-0 fill-[#F5C451] text-white"
+                  className="w-[12px] h-[12px] flex-shrink-0 fill-[hsl(214,89%,52%)] text-black"
                   strokeWidth={2.5}
                   aria-label="Verified"
                 />
