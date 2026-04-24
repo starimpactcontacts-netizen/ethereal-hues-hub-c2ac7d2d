@@ -106,24 +106,43 @@ export default function MissionsAdmin() {
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
-    const [mRes, sRes, pRes, eRes] = await Promise.all([
+    const [mRes, sRes, pRes, wRes, eRes] = await Promise.all([
       supabase.from('missions').select('*').order('created_at', { ascending: false }),
       supabase.from('mission_submissions').select('*').order('created_at', { ascending: false }).limit(500),
       supabase.from('mission_payouts').select('*').order('created_at', { ascending: false }).limit(200),
+      supabase.from('clipper_withdrawals').select('*').order('created_at', { ascending: false }).limit(200),
       supabase.from('mission_base_eligibility' as any).select('*').order('created_at', { ascending: false }).limit(500),
     ]);
     setMissions((mRes.data as any) || []);
     setSubs((sRes.data as any) || []);
     setEligibilityReqs((eRes.data as any) || []);
 
+    // Merge mission_payouts + clipper_withdrawals into a unified payout list
+    const missionPayouts: any[] = ((pRes.data as any) || []).map((p: any) => ({ ...p, source: 'mission' }));
+    const clipperPayouts: any[] = ((wRes.data as any) || []).map((w: any) => ({
+      id: w.id,
+      user_id: w.user_id,
+      amount_cents: w.amount_cents,
+      method: w.method,
+      destination: w.destination,
+      status: w.status,
+      admin_notes: w.admin_notes,
+      created_at: w.created_at,
+      processed_at: w.processed_at,
+      source: 'clipper',
+    }));
+    const merged = [...missionPayouts, ...clipperPayouts].sort((a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+
     // Hydrate payout usernames
-    const userIds = [...new Set((pRes.data || []).map((p: any) => p.user_id))];
+    const userIds = [...new Set(merged.map((p: any) => p.user_id))];
     let usernameMap: Record<string, string> = {};
     if (userIds.length) {
       const { data: profs } = await supabase.from('profiles').select('id, username').in('id', userIds);
       (profs || []).forEach((p: any) => { usernameMap[p.id] = p.username; });
     }
-    setPayouts(((pRes.data as any) || []).map((p: any) => ({ ...p, username: usernameMap[p.user_id] || null })));
+    setPayouts(merged.map((p: any) => ({ ...p, username: usernameMap[p.user_id] || null })));
     setLoading(false);
   }, []);
 
