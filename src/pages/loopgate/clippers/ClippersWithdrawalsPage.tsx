@@ -64,6 +64,13 @@ export default function ClippersWithdrawalsPage() {
 
   useEffect(() => { load(); }, [user]);
 
+  // Hide mission top bar + bottom nav while the payout sheet is open
+  useEffect(() => {
+    if (!showRequest) return;
+    document.body.classList.add('hide-app-chrome');
+    return () => document.body.classList.remove('hide-app-chrome');
+  }, [showRequest]);
+
   const resetForm = () => {
     setAmount(''); setDestination(''); setConfirmDest(''); setAcceptCrypto(false); setMethod('paypal'); setCryptoNet('usdt_trc20');
   };
