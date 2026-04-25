@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search, Sparkles, ChevronRight, DollarSign, TrendingUp, BadgeCheck } from 'lucide-react';
+import { Search, Sparkles, ChevronRight, DollarSign, TrendingUp, BadgeCheck, Bell } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useTempProfile } from '@/hooks/useTempProfile';
 import AccountPromptModal from '@/components/loopgate/AccountPromptModal';
 import PlatformBadges from '@/components/loopgate/missions/PlatformBadges';
+import NotificationsInlineCard from '@/components/loopgate/NotificationsInlineCard';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 
 interface Milestone { views: number; bonus_cents: number; }
@@ -185,6 +186,13 @@ export default function ClippersCampaignsPage() {
           </div>
         </motion.div>
       </section>
+
+      {/* iOS-style inline notifications card */}
+      {user && (
+        <section className="max-w-6xl mx-auto px-4 mb-5">
+          <NotificationsInlineCard />
+        </section>
+      )}
 
       <div className="max-w-6xl mx-auto px-4 space-y-4 pb-8">
         <h2 className="text-[22px] font-bold text-white tracking-[-0.022em] px-0.5">Live missions</h2>
