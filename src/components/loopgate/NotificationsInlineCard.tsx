@@ -14,10 +14,7 @@ interface Prefs {
 }
 
 const TOGGLES: { key: keyof Prefs; label: string }[] = [
-  { key: 'notify_scores', label: 'Score ratings' },
-  { key: 'notify_battles', label: 'Battles' },
-  { key: 'notify_drops', label: 'New drops' },
-  { key: 'notify_connections', label: 'Connections' },
+  { key: 'notify_drops', label: 'New campaigns' },
 ];
 
 export default function NotificationsInlineCard() {
@@ -191,6 +188,15 @@ export default function NotificationsInlineCard() {
                     )}
                   </div>
                 ))}
+                {/* Payout notifications — coming soon */}
+                <div className="h-px ml-3.5 bg-white/[0.05]" />
+                <div className="w-full flex items-center justify-between px-3.5 py-2.5 opacity-60">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[14px] text-white tracking-[-0.01em]">Payouts</span>
+                    <span className="text-[10px] font-semibold text-[#8E8E93] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-white/[0.06]">Soon</span>
+                  </div>
+                  <IOSSwitch on={false} />
+                </div>
               </div>
 
               {/* Save button */}
