@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, X, ArrowRight, Lock } from 'lucide-react';
+import { Loader2, X, ArrowRight, Lock, Zap, Copy, Check, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,6 +25,31 @@ export default function ClipperLockGate({ open, onClose, onSuccess, reason }: Pr
   const [err, setErr] = useState('');
   const [agreed, setAgreed] = useState(false);
   const [agreeError, setAgreeError] = useState(false);
+  const [isFastPassword, setIsFastPassword] = useState(false);
+  const [savedAck, setSavedAck] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const generateFastPassword = () => {
+    const words = ['loop','edit','wave','beat','flame','tiger','neon','rapid','pulse','storm','blaze','swift','cobra','vortex','echo','bolt','shadow','rogue'];
+    const w1 = words[Math.floor(Math.random() * words.length)];
+    const w2 = words[Math.floor(Math.random() * words.length)];
+    const num = Math.floor(1000 + Math.random() * 9000);
+    setPassword(`${w1}-${w2}-${num}`);
+    setIsFastPassword(true);
+    setSavedAck(false);
+    setCopied(false);
+  };
+
+  const copyPassword = async () => {
+    try {
+      await navigator.clipboard.writeText(password);
+      setCopied(true);
+      toast.success('Password copied');
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('Could not copy');
+    }
+  };
 
   // Hide clipper top bar + bottom nav while gate is open
   useEffect(() => {
@@ -55,6 +80,10 @@ export default function ClipperLockGate({ open, onClose, onSuccess, reason }: Pr
     if (!agreed) {
       setAgreeError(true);
       setErr('Please confirm you’re 18+ and have read the mission policy');
+      return;
+    }
+    if (isFastPassword && !savedAck) {
+      setErr('Please confirm you saved your password');
       return;
     }
     setLoading(true);
