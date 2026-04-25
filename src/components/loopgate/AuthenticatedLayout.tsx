@@ -43,6 +43,7 @@ export default function AuthenticatedLayout() {
           backgroundColor: 'hsl(var(--app-safe-fill))',
           paddingBottom: showNav ? 'var(--app-bottom-nav-height)' : 'env(safe-area-inset-bottom, 0px)',
           WebkitOverflowScrolling: 'touch',
+          touchAction: 'pan-y',
         }}
       >
         <Suspense fallback={<LoadingScreen minimal />}>

@@ -77,7 +77,6 @@ export default function JudgePanelPage() {
   const [showFlywheel, setShowFlywheel] = useState(false);
   const [flywheelEditors, setFlywheelEditors] = useState<any[]>([]);
   const [scoringFromFlywheel, setScoringFromFlywheel] = useState<any>(null);
-  const [statsCollapsed, setStatsCollapsed] = useState(false);
   const onboarding = useJudgeOnboarding();
 
   // Fetch inbox editors for flywheel
@@ -113,19 +112,6 @@ export default function JudgePanelPage() {
       setShowFlywheel(true);
     }
   }, [activeFormat]);
-
-  // Auto-collapse stats on scroll (listen to the actual scroll container = <main>)
-  useEffect(() => {
-    const scroller =
-      (document.querySelector('main') as HTMLElement | null) ?? null;
-    const target: HTMLElement | Window = scroller ?? window;
-    const handleScroll = () => {
-      const y = scroller ? scroller.scrollTop : window.scrollY;
-      setStatsCollapsed(y > 80);
-    };
-    target.addEventListener('scroll', handleScroll as EventListener, { passive: true } as AddEventListenerOptions);
-    return () => target.removeEventListener('scroll', handleScroll as EventListener);
-  }, []);
 
   return (
     <div className="min-h-full bg-black">
@@ -178,10 +164,8 @@ export default function JudgePanelPage() {
         <JudgeDivisionBadge jxp={profile?.judge_xp || 0} size="sm" showProgress />
       </div>
 
-      {/* Stats — collapsible on scroll */}
-      <div className={`px-3 border-b border-zinc-800 transition-all duration-300 overflow-hidden ${
-        statsCollapsed ? 'max-h-0 py-0 border-b-0' : 'max-h-[300px] py-2'
-      }`}>
+      {/* Stats */}
+      <div className="px-3 py-2 border-b border-zinc-800">
         <JudgePanelStats />
       </div>
 
