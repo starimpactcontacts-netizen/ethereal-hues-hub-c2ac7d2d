@@ -510,9 +510,11 @@ export default function MissionSubmitPage() {
                 {inspoVideos.length > 0 && (
                   <div className="relative px-5 pt-5 pb-1">
                     <div className="flex items-center gap-1.5 mb-2.5">
-                      <span className="text-[10.5px] text-[#8E8E93] font-semibold uppercase tracking-[0.14em]">
-                        Inspirations · Tap to open
+                      <Sparkles className="w-3 h-3 text-amber-300" fill="currentColor" strokeWidth={0} />
+                      <span className="text-[10.5px] font-semibold uppercase tracking-[0.14em] bg-gradient-to-r from-amber-200 via-amber-100 to-amber-300 bg-clip-text text-transparent">
+                        Hall of Inspirations · Tap to open
                       </span>
+                      <Sparkles className="w-3 h-3 text-amber-300" fill="currentColor" strokeWidth={0} />
                     </div>
                     <div className="-mx-5 px-5 overflow-x-auto no-scrollbar">
                       <div className="flex gap-2.5 pb-1">
@@ -524,7 +526,7 @@ export default function MissionSubmitPage() {
                               href={tapHref}
                               target="_blank"
                               rel="noreferrer"
-                              className="relative shrink-0 w-[124px] h-[176px] rounded-[16px] overflow-hidden bg-[#0a0a0b] border border-white/[0.06] active:scale-[0.98] transition-transform"
+                              className="relative shrink-0 w-[124px] h-[176px] rounded-[16px] overflow-hidden bg-[#0a0a0b] border border-amber-200/20 shadow-[0_0_24px_-8px_rgba(251,191,36,0.35)] active:scale-[0.98] transition-transform"
                             >
                               <video
                                 src={v.video_url!}
@@ -537,6 +539,13 @@ export default function MissionSubmitPage() {
                               />
                               {/* gradient for legibility */}
                               <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/75 via-transparent to-black/30" />
+                              {/* Top-rated star badge */}
+                              <div className="absolute top-1.5 left-1.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-amber-200/30">
+                                <svg viewBox="0 0 24 24" className="w-2.5 h-2.5 fill-amber-300" aria-hidden>
+                                  <path d="M12 2l2.9 6.9L22 10l-5.5 4.8L18.2 22 12 18.3 5.8 22l1.7-7.2L2 10l7.1-1.1L12 2z" />
+                                </svg>
+                                <span className="text-[8.5px] font-bold text-amber-100 tracking-wide leading-none">TOP</span>
+                              </div>
                               {/* username chip */}
                               {v.username && (
                                 <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center gap-1.5">
