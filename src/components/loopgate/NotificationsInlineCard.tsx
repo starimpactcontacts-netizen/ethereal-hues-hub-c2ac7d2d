@@ -14,10 +14,7 @@ interface Prefs {
 }
 
 const TOGGLES: { key: keyof Prefs; label: string }[] = [
-  { key: 'notify_scores', label: 'Score ratings' },
-  { key: 'notify_battles', label: 'Battles' },
-  { key: 'notify_drops', label: 'New drops' },
-  { key: 'notify_connections', label: 'Connections' },
+  { key: 'notify_drops', label: 'New campaigns' },
 ];
 
 export default function NotificationsInlineCard() {
