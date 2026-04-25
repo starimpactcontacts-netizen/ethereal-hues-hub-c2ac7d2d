@@ -293,19 +293,6 @@ export default function MissionSubmitPage() {
 
   return (
     <>
-      {/* iOS-style nav */}
-      <div className="sticky top-0 z-30 backdrop-blur-xl bg-black/70 border-b border-white/[0.06]">
-        <div className="max-w-6xl mx-auto px-2 h-11 flex items-center">
-          <button
-            onClick={() => navigate('/missions')}
-            className="flex items-center gap-0.5 text-[#0A84FF] active:opacity-60 transition-opacity px-2 h-11"
-          >
-            <ChevronLeft className="w-[22px] h-[22px]" strokeWidth={2.5} />
-            <span className="text-[17px] font-normal">Missions</span>
-          </button>
-        </div>
-      </div>
-
       <div className="max-w-6xl mx-auto px-4 pb-32 md:pb-12">
         {/* Hero cover */}
         <motion.div
