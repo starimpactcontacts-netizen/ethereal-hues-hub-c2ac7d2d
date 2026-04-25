@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Zap, Copy, Check, AlertTriangle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useTempProfile } from '@/hooks/useTempProfile';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,15 +16,43 @@ interface AccountPromptModalProps {
 
 export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess }: AccountPromptModalProps) {
   const { profile: tempProfile, clearProfile } = useTempProfile();
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState(''); // username for signup, email/username for login
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<'signup' | 'login'>('signup');
   const [agreed, setAgreed] = useState(false);
   const [agreeError, setAgreeError] = useState(false);
+  const [isFastPassword, setIsFastPassword] = useState(false);
+  const [savedAck, setSavedAck] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const generateFastPassword = () => {
+    // Memorable & strong: word-word-#### (e.g. tiger-loop-4829)
+    const words = ['loop','edit','wave','beat','flame','tiger','neon','rapid','pulse','storm','blaze','swift','cobra','vortex','echo','bolt','shadow','rogue'];
+    const w1 = words[Math.floor(Math.random() * words.length)];
+    const w2 = words[Math.floor(Math.random() * words.length)];
+    const num = Math.floor(1000 + Math.random() * 9000);
+    const pw = `${w1}-${w2}-${num}`;
+    setPassword(pw);
+    setIsFastPassword(true);
+    setSavedAck(false);
+    setCopied(false);
+  };
+
+  const copyPassword = async () => {
+    try {
+      await navigator.clipboard.writeText(password);
+      setCopied(true);
+      toast.success('Password copied');
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('Could not copy');
+    }
+  };
 
   const handleSubmit = async () => {
-    if (!email || !password) {
+    const idVal = identifier.trim();
+    if (!idVal || !password) {
       toast.error('Please fill in all fields');
       return;
     }
@@ -33,20 +61,38 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
       toast.error('Please confirm you’re 18+ and have read the mission policy');
       return;
     }
+    if (mode === 'signup' && isFastPassword && !savedAck) {
+      toast.error('Please confirm you saved your password');
+      return;
+    }
     setAgreeError(false);
 
     setLoading(true);
 
     try {
       if (mode === 'signup') {
-        // Sign up with email/password
+        // Username-based signup. We synthesize an internal email so Supabase Auth still works.
+        const cleanUsername = idVal.replace(/^@/, '').toLowerCase().replace(/[^a-z0-9_]/g, '');
+        if (cleanUsername.length < 3) {
+          throw new Error('Username must be at least 3 characters (a-z, 0-9, _)');
+        }
+        // Check availability
+        const { data: existing } = await supabase
+          .from('profiles')
+          .select('id')
+          .ilike('username', cleanUsername)
+          .maybeSingle();
+        if (existing?.id) {
+          throw new Error('That username is taken');
+        }
+        const synthEmail = `${cleanUsername}@user.loopgate.io`;
         const { data, error } = await supabase.auth.signUp({
-          email,
+          email: synthEmail,
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/`,
             data: {
-              username: tempProfile?.username,
+              username: cleanUsername,
               region: tempProfile?.region,
             },
           },
@@ -55,17 +101,14 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
         if (error) throw error;
 
         if (data.user) {
-          // Update profile with temp data
-          if (tempProfile) {
-            await supabase
-              .from('profiles')
-              .update({
-                username: tempProfile.username,
-                region: tempProfile.region,
-                onboarding_completed: true,
-              })
-              .eq('id', data.user.id);
-          }
+          await supabase
+            .from('profiles')
+            .update({
+              username: cleanUsername,
+              region: tempProfile?.region,
+              onboarding_completed: true,
+            })
+            .eq('id', data.user.id);
 
           clearProfile();
           toast.success('Account created! Welcome to Loopgate.');
@@ -74,20 +117,22 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
         }
       } else {
         // Login — accept email OR username
-        let loginEmail = email.trim();
+        let loginEmail = idVal;
         const isEmail = loginEmail.includes('@') && loginEmail.includes('.');
         if (!isEmail) {
           // Treat as username (strip leading @ if present)
-          const uname = loginEmail.replace(/^@/, '');
+          const uname = loginEmail.replace(/^@/, '').toLowerCase();
+          // Try profile email first; fall back to synthesized internal email
           const { data: profileRow } = await supabase
             .from('profiles')
             .select('email')
             .ilike('username', uname)
             .maybeSingle();
-          if (!profileRow?.email) {
-            throw new Error('No account found with that username');
+          if (profileRow?.email) {
+            loginEmail = profileRow.email;
+          } else {
+            loginEmail = `${uname}@user.loopgate.io`;
           }
-          loginEmail = profileRow.email;
         }
         const { error } = await supabase.auth.signInWithPassword({
           email: loginEmail,
@@ -142,7 +187,9 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
               <h2 className="text-[22px] font-bold text-white tracking-[-0.022em] pr-10 pt-1">
                 {mode === 'signup' ? 'Save your progress' : 'Welcome back'}
               </h2>
-              <p className="text-[14px] text-[#8E8E93] mt-1 leading-snug">{reason}</p>
+              <p className="text-[14px] text-[#8E8E93] mt-1 leading-snug">
+                {mode === 'signup' ? 'Pick a username & password — done in 5 seconds.' : reason}
+              </p>
             </div>
 
             {/* Content */}
@@ -150,23 +197,16 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
               className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] space-y-4"
               style={{ WebkitOverflowScrolling: 'touch' }}
             >
-              {tempProfile && mode === 'signup' && (
-                <div className="rounded-[14px] px-4 py-3 flex items-center justify-between" style={{ background: 'rgba(118,118,128,0.16)' }}>
-                  <span className="text-[13px] text-[#8E8E93] font-medium">Creating account for</span>
-                  <span className="text-[15px] font-semibold text-[#D4A857] tracking-[-0.01em]">@{tempProfile.username}</span>
-                </div>
-              )}
-
               <div className="space-y-1.5">
                 <label className="text-[13px] text-[#8E8E93] font-medium px-1">
-                  {mode === 'signup' ? 'Email' : 'Email or username'}
+                  {mode === 'signup' ? 'Username' : 'Username or email'}
                 </label>
                 <Input
-                  type={mode === 'signup' ? 'email' : 'text'}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={mode === 'signup' ? 'you@example.com' : 'you@example.com or @username'}
-                  autoComplete={mode === 'signup' ? 'email' : 'username'}
+                  type="text"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  placeholder={mode === 'signup' ? '@yourname' : '@username or email'}
+                  autoComplete="username"
                   autoCapitalize="none"
                   spellCheck={false}
                   className="h-11 rounded-[10px] border-0 text-[16px] text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#D4A857]"
@@ -175,16 +215,70 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[13px] text-[#8E8E93] font-medium px-1">Password</label>
-                <Input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
-                  className="h-11 rounded-[10px] border-0 text-[16px] text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#D4A857]"
-                  style={{ background: 'rgba(118, 118, 128, 0.24)' }}
-                />
+                <div className="flex items-center justify-between px-1">
+                  <label className="text-[13px] text-[#8E8E93] font-medium">Password</label>
+                  {mode === 'signup' && !isFastPassword && (
+                    <button
+                      type="button"
+                      onClick={generateFastPassword}
+                      className="flex items-center gap-1 text-[12px] font-semibold text-[#D4A857] active:opacity-60"
+                    >
+                      <Zap className="w-3 h-3 fill-[#D4A857]" />
+                      Use fast password
+                    </button>
+                  )}
+                </div>
+                <div className="relative">
+                  <Input
+                    type={isFastPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => { setPassword(e.target.value); if (isFastPassword) setIsFastPassword(false); }}
+                    placeholder="••••••••"
+                    autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    className="h-11 rounded-[10px] border-0 text-[16px] text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#D4A857] pr-12"
+                    style={{ background: 'rgba(118, 118, 128, 0.24)', fontFamily: isFastPassword ? 'ui-monospace, SFMono-Regular, monospace' : undefined, letterSpacing: isFastPassword ? '0.02em' : undefined }}
+                  />
+                  {isFastPassword && (
+                    <button
+                      type="button"
+                      onClick={copyPassword}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-[8px] bg-white/[0.08] active:bg-white/[0.16] flex items-center justify-center"
+                    >
+                      {copied ? <Check className="w-4 h-4 text-[#30D158]" /> : <Copy className="w-4 h-4 text-white/80" />}
+                    </button>
+                  )}
+                </div>
+
+                {mode === 'signup' && isFastPassword && (
+                  <div className="mt-2 rounded-[12px] p-3 space-y-2.5" style={{ background: 'rgba(212, 168, 87, 0.10)', border: '0.5px solid rgba(212, 168, 87, 0.35)' }}>
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="w-4 h-4 text-[#D4A857] shrink-0 mt-0.5" />
+                      <p className="text-[12px] leading-snug text-white/90">
+                        <span className="font-semibold">Save this password now.</span> Screenshot it or copy it — you'll need it to log back in.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSavedAck(v => !v)}
+                      className="w-full flex items-center gap-2 active:opacity-60"
+                    >
+                      <span className={`w-[18px] h-[18px] rounded-[5px] flex items-center justify-center shrink-0 transition-colors ${
+                        savedAck ? 'bg-[#D4A857] border border-[#D4A857]' : 'bg-white/[0.04] border border-white/20'
+                      }`}>
+                        {savedAck && (
+                          <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                            <path d="M1.5 5.5L4.5 8.5L9.5 2.5" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        )}
+                      </span>
+                      <span className="text-[12px] text-white/85 text-left">
+                        I saved my password (screenshot or copy)
+                      </span>
+                    </button>
+                  </div>
+                )}
               </div>
 
               <button
