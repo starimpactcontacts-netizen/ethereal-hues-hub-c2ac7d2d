@@ -494,6 +494,29 @@ export default function CashBattlesSection({
 
       {/* Horizontal scroll — open matchups first, then existing battles */}
       {(loading || idxBattlesLoading) ? <ArenaRailSkeleton count={3} /> : <ArenaRail>
+        {/* Ranked IDX 1v1 battles — surfaced FIRST to drive non-cash activity */}
+        {renderIdxBattleCard && [...idxBattles]
+          .sort((a: any, b: any) => {
+            const rank = (x: any) => {
+              if (x.status === 'active') return 0;
+              if (x.status === 'pending') return 1;
+              if (x.status === 'judging') return 2;
+              return 3; // completed / other
+            };
+            const ra = rank(a);
+            const rb = rank(b);
+            if (ra !== rb) return ra - rb;
+            const ta = new Date(a.starts_at || a.created_at || 0).getTime();
+            const tb = new Date(b.starts_at || b.created_at || 0).getTime();
+            return tb - ta;
+          })
+          .slice(0, 10)
+          .map((battle: any) => (
+            <ArenaRailCard key={`idx-${battle.id}`}>
+              {renderIdxBattleCard(battle)}
+            </ArenaRailCard>
+          ))}
+
         {/* Open matchup cards from pending applications */}
         {pendingApps.map((app) => (
           <ArenaRailCard key={app.id}>
@@ -529,13 +552,6 @@ export default function CashBattlesSection({
               <CashBattleCard battle={battle} currentUserId={user?.id} />
             </ArenaRailCard>
           ))}
-
-        {/* Ranked IDX 1v1 battles — merged in */}
-        {renderIdxBattleCard && idxBattles.slice(0, 10).map((battle) => (
-          <ArenaRailCard key={`idx-${battle.id}`}>
-            {renderIdxBattleCard(battle)}
-          </ArenaRailCard>
-        ))}
 
         {/* Join teaser — only show if no pending apps */}
         {pendingApps.length === 0 && battles.length === 0 && idxBattles.length === 0 && (
