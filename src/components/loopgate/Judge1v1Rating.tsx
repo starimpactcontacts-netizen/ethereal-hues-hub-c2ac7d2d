@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Swords, Trophy, RotateCcw,
-  Download, Sparkles, ChevronDown, Palette, X, Image, Crown
+  Download, Sparkles, ChevronDown, Palette, X, Image, Crown, Globe
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -84,31 +84,52 @@ export default function Judge1v1Rating() {
     const edit = side === 'A' ? editA : editB;
     const isWinner = !isFaceoff && winner === side;
     const fallbackBg = side === 'A' ? 'rgba(220,38,38,0.1)' : 'rgba(59,130,246,0.1)';
+    const isLight = bg.id === 'white';
+    const subtle = isLight ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.55)';
 
     return (
       <div style={{ flex: 1, textAlign: 'center' }}>
         <div style={{
-          width: '100%', aspectRatio: '1', borderRadius: 12, overflow: 'hidden',
-          border: isWinner ? `3px solid ${bg.accent}` : '2px solid rgba(128,128,128,0.3)',
-          boxShadow: isWinner ? `0 0 20px ${bg.accent}40` : 'none',
+          width: '100%', aspectRatio: '1', borderRadius: 18, overflow: 'hidden',
+          border: isWinner
+            ? `2px solid ${bg.accent}`
+            : isLight ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,255,255,0.08)',
+          boxShadow: isWinner
+            ? `0 8px 28px ${bg.accent}55, 0 0 0 4px ${bg.accent}1a`
+            : isLight ? '0 1px 2px rgba(0,0,0,0.04)' : '0 1px 2px rgba(0,0,0,0.4)',
           position: 'relative'
         }}>
           {edit.thumbnail ? (
             <img src={edit.thumbnail} alt={side} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
             <div style={{ width: '100%', height: '100%', background: fallbackBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: 28, fontWeight: 900, opacity: 0.2 }}>{side}</span>
+              <span style={{ fontSize: 32, fontWeight: 700, opacity: 0.2, letterSpacing: '-0.02em' }}>{side}</span>
             </div>
           )}
           {isWinner && (
-            <div style={{ position: 'absolute', top: -1, left: '50%', transform: 'translateX(-50%)', background: bg.accent, padding: '2px 8px', borderRadius: '0 0 6px 6px' }}>
-              <span style={{ fontSize: 8, fontWeight: 900, color: 'white', letterSpacing: '0.1em' }}>WINNER</span>
+            <div style={{
+              position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)',
+              background: bg.accent, padding: '3px 10px', borderRadius: 999,
+              boxShadow: `0 4px 12px ${bg.accent}66`,
+              display: 'flex', alignItems: 'center', gap: 4,
+            }}>
+              <Trophy style={{ width: 9, height: 9, color: 'white' }} />
+              <span style={{ fontSize: 8, fontWeight: 700, color: 'white', letterSpacing: '0.08em' }}>WINNER</span>
             </div>
           )}
         </div>
-        <p style={{ fontSize: 12, fontWeight: 800, marginTop: 8 }}>@{edit.username}</p>
+        <p style={{
+          fontSize: 13, fontWeight: 600, marginTop: 10,
+          letterSpacing: '-0.01em',
+          color: isWinner ? (isLight ? '#000' : '#fff') : subtle,
+        }}>@{edit.username}</p>
         {!isFaceoff && (
-          <p style={{ fontSize: 32, fontWeight: 900, fontFamily: "'Bebas Neue', sans-serif", lineHeight: 1, color: isWinner ? bg.accent : 'inherit' }}>
+          <p style={{
+            fontSize: 36, fontWeight: 700, lineHeight: 1, marginTop: 4,
+            letterSpacing: '-0.04em',
+            fontVariantNumeric: 'tabular-nums',
+            color: isWinner ? bg.accent : subtle,
+          }}>
             {side === 'A' ? scoreA : scoreB}
           </p>
         )}
@@ -333,103 +354,126 @@ export default function Judge1v1Rating() {
           <div className="flex justify-center px-1">
             <div
               ref={resultRef}
-              className="w-full max-w-[400px] aspect-square rounded-2xl overflow-hidden relative flex flex-col"
-              style={{ background: bg.cardBg, color: bg.text, fontFamily: "'Inter', sans-serif" }}
+              className="w-full max-w-[400px] aspect-square overflow-hidden relative flex flex-col"
+              style={{
+                background: bg.cardBg,
+                color: bg.text,
+                fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif",
+                borderRadius: 28,
+                boxShadow: '0 30px 60px -20px rgba(0,0,0,0.5)',
+              }}
             >
-              {/* Scanline overlay */}
-              <div className="absolute inset-0 pointer-events-none opacity-[0.04]"
-                style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 1px, currentColor 1px, currentColor 2px)' }} />
+              {/* Soft ambient glow */}
+              <div className="absolute inset-0 pointer-events-none" style={{
+                background: `radial-gradient(120% 80% at 50% 0%, ${bg.accent}1a, transparent 60%)`,
+              }} />
 
-              {/* Corner accents */}
-              <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 rounded-tl-2xl" style={{ borderColor: bg.accent }} />
-              <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 rounded-tr-2xl" style={{ borderColor: bg.accent }} />
-              <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 rounded-bl-2xl" style={{ borderColor: bg.accent }} />
-              <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 rounded-br-2xl" style={{ borderColor: bg.accent }} />
-
-              {/* Top Bar */}
-              <div className="relative z-10 flex items-center justify-between px-5 pt-4">
-                <div>
-                  <p style={{ fontSize: 8, letterSpacing: '0.25em', opacity: 0.4, fontFamily: 'monospace', textTransform: 'uppercase' }}>
-                    {isFaceoff ? 'Coming soon on' : 'Judged on'}
-                  </p>
-                  <p style={{ fontSize: 16, fontWeight: 900, letterSpacing: '0.15em', fontFamily: "'Bebas Neue', sans-serif" }}>LOOPGATE</p>
+              {/* Top Bar — clean iOS style */}
+              <div className="relative z-10 flex items-center justify-between px-6 pt-5">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{
+                    width: 22, height: 22, borderRadius: 7,
+                    background: bg.accent,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: `0 2px 8px ${bg.accent}66`,
+                  }}>
+                    <span style={{ fontSize: 12, fontWeight: 800, color: 'white', letterSpacing: '-0.05em' }}>L</span>
+                  </div>
+                  <p style={{ fontSize: 14, fontWeight: 600, letterSpacing: '-0.02em' }}>Loopgate</p>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <p style={{ fontSize: 8, letterSpacing: '0.2em', opacity: 0.4, fontFamily: 'monospace', textTransform: 'uppercase' }}>
-                    {isFaceoff ? 'Matchup' : 'Judge'}
-                  </p>
-                  <p style={{ fontSize: 11, fontWeight: 700, opacity: 0.7 }}>
-                    {isFaceoff ? '1v1 Battle' : `@${profile?.username || 'judge'}`}
-                  </p>
+                <div style={{
+                  fontSize: 10, fontWeight: 600,
+                  padding: '4px 10px', borderRadius: 999,
+                  background: bg.id === 'white' ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)',
+                  letterSpacing: '0.02em',
+                  opacity: 0.85,
+                }}>
+                  {isFaceoff ? '1v1 · Coming Up' : `Judge · @${profile?.username || 'judge'}`}
                 </div>
               </div>
 
-              {/* VS Title */}
-              <div className="relative z-10 text-center" style={{ marginTop: 8 }}>
-                <p style={{ fontSize: 10, letterSpacing: '0.3em', opacity: 0.5, fontFamily: 'monospace', textTransform: 'uppercase' }}>
-                  {isFaceoff ? 'Who will win?' : '1v1 Edit Battle'}
+              {/* Title */}
+              <div className="relative z-10 text-center" style={{ marginTop: 14 }}>
+                <p style={{
+                  fontSize: 22, fontWeight: 700,
+                  letterSpacing: '-0.03em', lineHeight: 1.1,
+                }}>
+                  {isFaceoff ? 'Face Off' : '1v1 Result'}
+                </p>
+                <p style={{
+                  fontSize: 11, fontWeight: 500, marginTop: 2,
+                  opacity: 0.5, letterSpacing: '-0.01em',
+                }}>
+                  {isFaceoff ? 'Who takes the W?' : 'Edit battle · final score'}
                 </p>
               </div>
 
               {/* Main VS Content */}
-              <div className="relative z-10 flex-1 flex items-center px-5" style={{ gap: 12 }}>
+              <div className="relative z-10 flex-1 flex items-center px-5" style={{ gap: 10, marginTop: 8 }}>
                 {renderEditorThumb('A')}
 
                 {/* VS Divider */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                  <div style={{ width: 1, height: 30, background: 'currentColor', opacity: 0.15 }} />
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
                   <div style={{
-                    width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    border: `2px solid ${bg.accent}`, background: `${bg.accent}15`
+                    width: 38, height: 38, borderRadius: '50%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: bg.id === 'white' ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.06)',
+                    backdropFilter: 'blur(20px)',
+                    border: bg.id === 'white' ? '1px solid rgba(0,0,0,0.06)' : '1px solid rgba(255,255,255,0.1)',
                   }}>
-                    <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: '0.05em', color: bg.accent }}>VS</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '-0.02em', opacity: 0.7 }}>vs</span>
                   </div>
-                  <div style={{ width: 1, height: 30, background: 'currentColor', opacity: 0.15 }} />
                 </div>
 
                 {renderEditorThumb('B')}
               </div>
 
-              {/* CTA Banner */}
-              <div className="relative z-10" style={{ padding: '0 16px', marginBottom: 4 }}>
+              {/* CTA — iOS pill with web search icon */}
+              <div className="relative z-10" style={{ padding: '14px 16px 16px' }}>
                 <div style={{
-                  background: `linear-gradient(90deg, ${bg.accent}, ${bg.accent}cc)`,
-                  padding: '8px 12px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  gap: 8,
+                  gap: 10,
+                  padding: '10px 12px 10px 14px',
+                  borderRadius: 16,
+                  background: bg.id === 'white' ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.06)',
+                  backdropFilter: 'blur(20px)',
+                  border: bg.id === 'white' ? '1px solid rgba(0,0,0,0.06)' : '1px solid rgba(255,255,255,0.08)',
                 }}>
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontSize: 9, fontWeight: 900, color: 'white', letterSpacing: '0.15em', textTransform: 'uppercase', lineHeight: 1.2 }}>
-                      {isFaceoff ? 'WANT TO JUDGE THIS?' : 'GET YOUR EDIT RATED'}
-                    </span>
-                    <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.7)', letterSpacing: '0.05em', lineHeight: 1.4 }}>
-                      {isFaceoff ? 'Become a certified judge on Loopgate' : '1v1 battles • certified judges • real scores'}
-                    </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+                    <div style={{
+                      width: 30, height: 30, borderRadius: 9,
+                      background: bg.accent,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0,
+                      boxShadow: `0 4px 12px ${bg.accent}55`,
+                    }}>
+                      <Globe style={{ width: 16, height: 16, color: 'white' }} strokeWidth={2.5} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                      <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                        Edit battle on Loopgate
+                      </span>
+                      <span style={{ fontSize: 10, fontWeight: 500, opacity: 0.55, letterSpacing: '-0.01em', lineHeight: 1.3, marginTop: 1 }}>
+                        Get your edit rated instantly
+                      </span>
+                    </div>
                   </div>
                   <div style={{
-                    background: 'white',
-                    color: '#000',
-                    padding: '4px 10px',
-                    fontSize: 8,
-                    fontWeight: 900,
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
+                    background: bg.id === 'white' ? '#000' : '#fff',
+                    color: bg.id === 'white' ? '#fff' : '#000',
+                    padding: '6px 12px',
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: '-0.01em',
                     whiteSpace: 'nowrap',
                     flexShrink: 0,
+                    borderRadius: 999,
                   }}>
-                    LOOPGATE.IO
+                    loopgate.io
                   </div>
                 </div>
-              </div>
-
-              {/* Bottom */}
-              <div className="relative z-10 px-5 pb-3 flex items-end justify-between">
-                <p style={{ fontSize: 7, letterSpacing: '0.2em', opacity: 0.25, fontFamily: 'monospace', textTransform: 'uppercase' }}>where editors compete</p>
-                <p style={{ fontSize: 7, letterSpacing: '0.2em', opacity: 0.25, fontFamily: 'monospace', textTransform: 'uppercase' }}>
-                  {isFaceoff ? 'FACE OFF' : `${scoreA} – ${scoreB}`}
-                </p>
               </div>
             </div>
           </div>
