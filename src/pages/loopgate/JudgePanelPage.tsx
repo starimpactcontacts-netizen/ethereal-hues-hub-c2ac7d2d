@@ -114,7 +114,10 @@ export default function JudgePanelPage() {
   }, [activeFormat]);
 
   return (
-    <div className="min-h-full bg-black">
+    <div
+      className="h-dvh min-h-0 overflow-y-auto bg-black"
+      style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y', overscrollBehavior: 'contain' }}
+    >
       {/* Header — ultra compact */}
       <div className="sticky top-0 z-50 bg-black/95 backdrop-blur-sm border-b border-zinc-800">
         <div className="flex items-center justify-between px-3 py-1.5">
