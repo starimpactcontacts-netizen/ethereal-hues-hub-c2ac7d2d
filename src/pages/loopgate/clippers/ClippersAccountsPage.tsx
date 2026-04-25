@@ -154,12 +154,11 @@ export default function ClippersAccountsPage() {
                       </p>
                     </div>
                     <button
-                      onClick={() => refreshStats(a)}
-                      disabled={refreshingId === a.id}
-                      aria-label="Refresh stats"
-                      className="text-[#8E8E93] active:text-white p-1.5 disabled:opacity-50"
+                      onClick={() => toast.info('Refresh followers — coming soon')}
+                      aria-label="Refresh stats (coming soon)"
+                      className="text-[#48484a] p-1.5"
                     >
-                      {refreshingId === a.id ? <Loader2 className="w-[15px] h-[15px] animate-spin" /> : <RefreshCw className="w-[15px] h-[15px]" />}
+                      <RefreshCw className="w-[15px] h-[15px]" />
                     </button>
                     <button onClick={() => unlink(a.id)} className="text-[#8E8E93] active:text-[#FF453A] p-1.5 transition-colors">
                       <Trash2 className="w-[15px] h-[15px]" />
@@ -168,10 +167,11 @@ export default function ClippersAccountsPage() {
                   {!a.is_verified && (
                     <div className="flex items-center gap-2 mt-2 pl-[52px]">
                       <button
-                        onClick={() => setVerifying(a)}
-                        className="h-7 px-3 rounded-full bg-[#D4A857] text-white text-[12px] font-semibold active:opacity-60 flex items-center gap-1"
+                        onClick={() => toast.info('Verification — coming soon')}
+                        className="h-7 px-3 rounded-full bg-white/[0.06] text-[#8E8E93] text-[12px] font-semibold flex items-center gap-1.5 cursor-default"
                       >
-                        <ShieldCheck className="w-[13px] h-[13px]" strokeWidth={2.6} /> Verify
+                        <ShieldCheck className="w-[13px] h-[13px]" strokeWidth={2.4} /> Verify
+                        <span className="text-[10px] text-[#48484a] font-medium">· Soon</span>
                       </button>
                       {a.profile_url && (
                         <a
