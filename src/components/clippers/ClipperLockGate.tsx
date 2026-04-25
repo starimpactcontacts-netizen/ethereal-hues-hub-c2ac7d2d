@@ -199,15 +199,67 @@ export default function ClipperLockGate({ open, onClose, onSuccess, reason }: Pr
                     autoFocus
                   />
                 </div>
-                <div>
-                  <Input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Password"
-                    className="h-12 bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.06] focus:bg-white/[0.06] focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:ring-offset-0 rounded-xl text-[15px] text-white placeholder:text-white/25 transition-colors"
-                    onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
-                  />
+                <div className="space-y-2">
+                  <div className="relative">
+                    <Input
+                      type={isFastPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => { setPassword(e.target.value); if (isFastPassword) setIsFastPassword(false); }}
+                      placeholder="Password"
+                      className="h-12 bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.06] focus:bg-white/[0.06] focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:ring-offset-0 rounded-xl text-[15px] text-white placeholder:text-white/25 transition-colors pr-12"
+                      style={{ fontFamily: isFastPassword ? 'ui-monospace, SFMono-Regular, monospace' : undefined, letterSpacing: isFastPassword ? '0.02em' : undefined }}
+                      onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
+                    />
+                    {isFastPassword && (
+                      <button
+                        type="button"
+                        onClick={copyPassword}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-[8px] bg-white/[0.08] active:bg-white/[0.16] flex items-center justify-center"
+                      >
+                        {copied ? <Check className="w-4 h-4 text-[#30D158]" /> : <Copy className="w-4 h-4 text-white/80" />}
+                      </button>
+                    )}
+                  </div>
+
+                  {!isFastPassword && (
+                    <button
+                      type="button"
+                      onClick={generateFastPassword}
+                      className="flex items-center gap-1.5 text-[12px] font-semibold text-[#D4A857] active:opacity-60 px-1"
+                    >
+                      <Zap className="w-3 h-3 fill-[#D4A857]" />
+                      Use fast password
+                    </button>
+                  )}
+
+                  {isFastPassword && (
+                    <div className="rounded-[12px] p-3 space-y-2.5" style={{ background: 'rgba(212, 168, 87, 0.10)', border: '0.5px solid rgba(212, 168, 87, 0.35)' }}>
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="w-4 h-4 text-[#D4A857] shrink-0 mt-0.5" />
+                        <p className="text-[12px] leading-snug text-white/90">
+                          <span className="font-semibold">Save this password now.</span> Screenshot it or copy it — you'll need it to log back in.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setSavedAck(v => !v)}
+                        className="w-full flex items-center gap-2 active:opacity-60"
+                      >
+                        <span className={`w-[18px] h-[18px] rounded-[5px] flex items-center justify-center shrink-0 transition-colors ${
+                          savedAck ? 'bg-[#D4A857] border border-[#D4A857]' : 'bg-white/[0.04] border border-white/20'
+                        }`}>
+                          {savedAck && (
+                            <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                              <path d="M1.5 5.5L4.5 8.5L9.5 2.5" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          )}
+                        </span>
+                        <span className="text-[12px] text-white/85 text-left">
+                          I saved my password (screenshot or copy)
+                        </span>
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {err && (
