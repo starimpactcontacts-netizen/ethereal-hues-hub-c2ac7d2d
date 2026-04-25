@@ -498,10 +498,13 @@ export default function CashBattlesSection({
         {renderIdxBattleCard && [...idxBattles]
           .sort((a: any, b: any) => {
             const rank = (x: any) => {
-              if (x.status === 'active') return 0;
-              if (x.status === 'pending') return 1;
-              if (x.status === 'judging') return 2;
-              return 3; // completed / other
+              // OPEN matchups (waiting for opponent) come first — drives users to pick fights
+              const isOpen = x.status === 'pending' && !x.opponent_id;
+              if (isOpen) return 0;
+              if (x.status === 'active') return 1;
+              if (x.status === 'pending') return 2; // pending but already has opponent
+              if (x.status === 'judging') return 3;
+              return 4; // completed / other
             };
             const ra = rank(a);
             const rb = rank(b);
