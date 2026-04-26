@@ -26,7 +26,6 @@ import { useLiveActivity, type LiveActivityItem } from '@/hooks/useLiveActivity'
 import { useFeaturedDrops } from '@/hooks/useFeaturedDrops';
 import FeaturedDropCard from '@/components/loopgate/FeaturedDropCard';
 import FeaturedCarousel from '@/components/loopgate/FeaturedCarousel';
-import LoopMonster from '@/components/loopgate/LoopMonster';
 import QuickFightButton from '@/components/loopgate/QuickFightButton';
 import { useMyQuickFights, leaveQueue } from '@/hooks/useQuickFight';
 import { useSoloMode } from '@/hooks/useSoloMode';
@@ -52,7 +51,6 @@ import FoundingBadge from '@/components/loopgate/FoundingBadge';
 import { useEquippedBadges } from '@/hooks/useEquippedBadges';
 import CommissionsSection from '@/components/loopgate/CommissionsSection';
 import WalletDrawer from '@/components/loopgate/WalletDrawer';
-import LoopyWelcomeModal from '@/components/loopgate/LoopyWelcomeModal';
 import { startQuickMatch } from '@/lib/startQuickMatch';
 import { useMyCashBattles, useMyCashBattleApplication } from '@/hooks/useCashBattles';
 
@@ -424,8 +422,6 @@ export default function HubPage() {
     <div className="min-h-screen bg-background pb-16 overflow-x-hidden relative">
       {/* Gate lattice — subtle geometric texture */}
       <GatePattern opacity={1.5} tileSize={48} className="z-0" />
-      
-      <LoopyWelcomeModal />
       
       {/* Concentric Rings Pattern - Portal effect */}
       <div className="absolute inset-x-0 -top-20 h-[550px] pointer-events-none overflow-hidden z-0 flex items-center justify-center">

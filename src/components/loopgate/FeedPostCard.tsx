@@ -272,22 +272,6 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
                 </button>
               )}
 
-              {/* Rate Edit — opens Loopy with media prefilled */}
-              {(post.media_url || post.uploaded_media_url) && (
-                <button
-                  onClick={() => {
-                    const url = post.uploaded_media_url || post.media_url || '';
-                    navigate(`/loopy?url=${encodeURIComponent(url)}`);
-                  }}
-                  className="flex items-center gap-1 h-7 px-2.5 rounded-full text-muted-foreground hover:text-purple-300 hover:bg-purple-500/10 transition-all active:scale-95"
-                  aria-label="Rate this edit"
-                  title="Rate this edit"
-                >
-                  <Sparkles className="w-[13px] h-[13px]" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider">Rate</span>
-                </button>
-              )}
-
               {/* Challenge */}
               {!isOwn && !post.is_system && user && (
                 <button

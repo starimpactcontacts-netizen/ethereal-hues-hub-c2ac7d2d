@@ -96,9 +96,7 @@ const CommissionDetailPage = lazy(() => import("./pages/loopgate/CommissionDetai
 const PayoutsPage = lazy(() => import("./pages/loopgate/PayoutsPage"));
 const SoloArenaPage = lazy(() => import("./pages/loopgate/SoloArenaPage"));
 const MissionLobbyPage = lazy(() => import("./pages/loopgate/MissionLobbyPage"));
-const LoopyPage = lazy(() => import("./pages/loopgate/LoopyPage"));
 const CreateCompetitionPage = lazy(() => import("./pages/loopgate/CreateCompetitionPage"));
-const LoopyRatePage = lazy(() => import("./pages/loopgate/LoopyRatePage"));
 const StandaloneLinkPage = lazy(() => import("./pages/loopgate/StandaloneLinkPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ClippersOnboardingPage = lazy(() => import("./pages/loopgate/ClippersOnboardingPage"));
@@ -345,8 +343,6 @@ export default function App() {
               <Route path="/payouts" element={<PayoutsPage />} />
               <Route path="/solo-arena" element={<SoloArenaPage />} />
               <Route path="/mission/:id" element={<MissionLobbyPage />} />
-              <Route path="/loopy" element={<LoopyPage />} />
-              <Route path="/loopy/rate" element={<LoopyRatePage />} />
               <Route path="/studio" element={<StudioPage />} />
             </Route>
 

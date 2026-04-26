@@ -219,7 +219,7 @@ export default function AutoEditWizard({ onClose, onTimelineReady }: AutoEditWiz
           </div>
           <div>
             <h1 className="text-sm font-black text-white tracking-tight" style={{ fontFamily: "'Teko', sans-serif", fontSize: "22px", letterSpacing: "0.04em" }}>
-              LOOPY AUTO-EDIT
+              SMART AUTO-EDIT
             </h1>
             <p className="text-[9px] text-white/30 uppercase tracking-[0.15em] -mt-0.5">Smart • One-Click Professional Edits</p>
           </div>
@@ -264,7 +264,7 @@ export default function AutoEditWizard({ onClose, onTimelineReady }: AutoEditWiz
                 <h2 className="text-xl font-black text-white/90" style={{ fontFamily: "'Teko', sans-serif", fontSize: "28px" }}>
                   DROP YOUR CLIPS
                 </h2>
-                <p className="text-xs text-white/30 mt-1">Upload 2-10 raw clips. Loopy will find the best moments.</p>
+                <p className="text-xs text-white/30 mt-1">Upload 2-10 raw clips. Smart engine will find the best moments.</p>
               </div>
 
               {/* Upload area */}
@@ -346,7 +346,7 @@ export default function AutoEditWizard({ onClose, onTimelineReady }: AutoEditWiz
                 <h2 className="text-xl font-black text-white/90" style={{ fontFamily: "'Teko', sans-serif", fontSize: "28px" }}>
                   PICK YOUR VIBE
                 </h2>
-                <p className="text-xs text-white/30 mt-1">Choose a style preset. Loopy matches cuts, transitions & color to it.</p>
+                <p className="text-xs text-white/30 mt-1">Choose a style preset. Smart engine matches cuts, transitions & color to it.</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -404,7 +404,7 @@ export default function AutoEditWizard({ onClose, onTimelineReady }: AutoEditWiz
                   className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white transition-all hover:brightness-110 active:scale-[0.98]"
                   style={{ background: "linear-gradient(135deg, #9999FF, #FF6B6B)", boxShadow: "0 4px 30px rgba(153,153,255,0.3), 0 4px 30px rgba(255,107,107,0.15)" }}>
                   <Wand2 className="w-4 h-4" />
-                  Loopy Auto-Edit
+                  Smart Auto-Edit
                   <Sparkles className="w-3 h-3 opacity-60" />
                 </button>
               </div>
@@ -462,7 +462,7 @@ export default function AutoEditWizard({ onClose, onTimelineReady }: AutoEditWiz
                 </AnimatePresence>
               </div>
 
-              <p className="text-[10px] text-white/15 text-center">Loopy is crafting your edit — this takes 15-45 seconds</p>
+              <p className="text-[10px] text-white/15 text-center">Smart engine is crafting your edit — this takes 15-45 seconds</p>
             </motion.div>
           )}
 
