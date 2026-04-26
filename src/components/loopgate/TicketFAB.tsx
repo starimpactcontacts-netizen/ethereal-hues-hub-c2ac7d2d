@@ -5,7 +5,7 @@ import { useAccountPrompt } from "@/hooks/useAccountPrompt";
 import SubmitTicketModal from "./SubmitTicketModal";
 import { create } from "zustand";
 
-// Shared state so LoopyChat can trigger the ticket modal
+// Shared state so other components can trigger the ticket modal
 interface TicketStore {
   open: boolean;
   setOpen: (v: boolean) => void;
@@ -16,7 +16,7 @@ export const useTicketStore = create<TicketStore>((set) => ({
 }));
 
 /**
- * Just renders the modal — the button is on the Loopy cat now.
+ * Just renders the support ticket modal triggered via useTicketStore.
  */
 export default function TicketFAB() {
   const { open, setOpen } = useTicketStore();
