@@ -1,574 +1,360 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, User, Mail, Lock, Loader2, ArrowRight, Eye, EyeOff } from 'lucide-react';
-import GateIcon from '@/components/loopgate/GateIcon';
-import { Button } from '@/components/ui/button';
+import { ArrowLeft, Lock, Loader2, Eye, EyeOff, X, User } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import loopgateLogo from '@/assets/loopgate-wordmark.png';
-
-type LoginMethod = 'username' | 'email' | 'magic';
-type MagicSubMethod = 'choose' | 'one-tap' | 'code';
+import {
+  getRememberedAccounts,
+  rememberAccount,
+  forgetAccount,
+  type RememberedAccount,
+} from '@/lib/rememberedAccounts';
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { signInWithPassword, signInWithMagicLink, signInWithOtp } = useAuth();
+  const { signInWithPassword } = useAuth();
   const returnTo = searchParams.get('returnTo') || '/hub';
-  
-  const [method, setMethod] = useState<LoginMethod>('username');
+
+  const [accounts, setAccounts] = useState<RememberedAccount[]>([]);
+  const [selected, setSelected] = useState<RememberedAccount | null>(null);
   const [identifier, setIdentifier] = useState(''); // username or email
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  
-  // Magic link state
-  const [magicSubMethod, setMagicSubMethod] = useState<MagicSubMethod>('choose');
-  const [magicLinkSent, setMagicLinkSent] = useState(false);
-  const [otpCode, setOtpCode] = useState('');
-  const [tokenHash, setTokenHash] = useState<string | undefined>();
+  const [loading, setLoading] = useState(false);
 
-  const handleUsernameLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!identifier.trim() || !password.trim()) {
-      toast.error('Please enter username and password');
-      return;
-    }
+  useEffect(() => {
+    setAccounts(getRememberedAccounts());
+  }, []);
 
-    setLoading(true);
-    
-    // First, look up the email by username
-    const { data: profile, error: lookupError } = await supabase
+  const resolveEmail = async (idVal: string): Promise<string | null> => {
+    const isEmail = idVal.includes('@') && idVal.includes('.');
+    if (isEmail) return idVal.toLowerCase();
+    const uname = idVal.replace(/^@/, '').trim();
+    const { data: profile } = await supabase
       .from('profiles')
       .select('email')
-      .ilike('username', identifier.trim())
+      .ilike('username', uname)
       .maybeSingle();
-    
-    if (lookupError) {
-      toast.error('Something went wrong');
-      setLoading(false);
-      return;
-    }
+    if (profile?.email) return profile.email;
+    // Fallback to placeholder email used by username-only signups
+    return `${uname.toLowerCase()}@loopgate.local`;
+  };
 
-    if (!profile) {
-      toast.error('Username not found');
-      setLoading(false);
-      return;
-    }
-
-    if (!profile.email) {
-      // This is a temp profile that was never verified
-      toast.error('This profile needs to be secured first. Create an account at /start');
-      setLoading(false);
-      return;
-    }
-
-    // Now sign in with the email
-    const { error } = await signInWithPassword(profile.email, password);
-    
+  const doLogin = async (emailToUse: string, pw: string, displayUsername?: string) => {
+    setLoading(true);
+    const { error } = await signInWithPassword(emailToUse, pw);
     if (error) {
-      if (error.message.includes('Invalid login credentials')) {
+      setLoading(false);
+      if (error.message.toLowerCase().includes('invalid login')) {
         toast.error('Wrong password');
       } else {
         toast.error(error.message);
       }
-      setLoading(false);
       return;
     }
-
+    // Remember (or refresh ordering)
+    const username =
+      displayUsername ||
+      (emailToUse.endsWith('@loopgate.local')
+        ? emailToUse.split('@')[0]
+        : emailToUse.split('@')[0]);
+    rememberAccount({ username, email: emailToUse });
     toast.success('Welcome back!');
     navigate(returnTo);
   };
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!identifier.trim() || !password.trim()) {
-      toast.error('Please enter email and password');
+    const idVal = identifier.trim();
+    if (!idVal || !password) {
+      toast.error('Enter username and password');
       return;
     }
-
-    setLoading(true);
-    const { error } = await signInWithPassword(identifier.trim(), password);
-    
-    if (error) {
-      if (error.message.includes('Invalid login credentials')) {
-        toast.error('Wrong email or password');
-      } else {
-        toast.error(error.message);
-      }
-      setLoading(false);
+    const emailToUse = selected?.email || (await resolveEmail(idVal));
+    if (!emailToUse) {
+      toast.error('Account not found');
       return;
     }
-
-    toast.success('Welcome back!');
-    navigate(returnTo);
+    await doLogin(emailToUse, password, selected?.username || idVal.replace(/^@/, ''));
   };
 
-  const handleMagicLinkRequest = async (e: React.FormEvent) => {
+  const handleQuickContinue = async (acc: RememberedAccount, e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!identifier.trim()) {
-      toast.error('Please enter your email');
+    if (!password) {
+      toast.error('Enter your password');
       return;
     }
-
-    setLoading(true);
-    const { error, tokenHash: hash } = await signInWithMagicLink(identifier.trim());
-    
-    if (error) {
-      toast.error(error.message);
-      setLoading(false);
-      return;
-    }
-
-    setTokenHash(hash);
-    setMagicLinkSent(true);
-    toast.success('Magic link sent! Check your email.');
-    setLoading(false);
+    await doLogin(acc.email, password, acc.username);
   };
 
-  const handleOtpVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!otpCode.trim()) {
-      toast.error('Please enter the code');
-      return;
-    }
-
-    setLoading(true);
-    const { error } = await signInWithOtp(identifier.trim(), otpCode.trim(), tokenHash);
-    
-    if (error) {
-      toast.error('Invalid or expired code');
-      setLoading(false);
-      return;
-    }
-
-    toast.success('Welcome back!');
-    navigate(returnTo);
+  const handleForget = (e: React.MouseEvent, acc: RememberedAccount) => {
+    e.stopPropagation();
+    forgetAccount(acc.email);
+    const next = getRememberedAccounts();
+    setAccounts(next);
+    if (selected?.email === acc.email) setSelected(null);
   };
 
-  const resetMethod = (newMethod: LoginMethod) => {
-    setMethod(newMethod);
-    setIdentifier('');
-    setPassword('');
-    setMagicSubMethod('choose');
-    setMagicLinkSent(false);
-    setOtpCode('');
-    setTokenHash(undefined);
-  };
+  const initial = (s: string) => (s?.[0] || '?').toUpperCase();
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <div className="p-6 flex items-center justify-between">
-        <img src={loopgateLogo} alt="Loopgate" className="h-6 opacity-80" />
-        <button
-          onClick={() => navigate(returnTo !== '/hub' ? `/start?returnTo=${encodeURIComponent(returnTo)}` : '/start')}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </button>
+    <div className="fixed inset-0 overflow-hidden font-apple">
+      {/* Translucent backdrop matching StartPage */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-0 bg-[#0A0A0A]" />
+        <div
+          className="absolute -top-32 -left-32 w-[520px] h-[520px] rounded-full opacity-60"
+          style={{ background: 'radial-gradient(circle, rgba(212,168,87,0.22), transparent 60%)' }}
+        />
+        <div
+          className="absolute -bottom-40 -right-24 w-[600px] h-[600px] rounded-full opacity-50"
+          style={{ background: 'radial-gradient(circle, rgba(10,132,255,0.18), transparent 60%)' }}
+        />
+        <div
+          className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full opacity-40"
+          style={{ background: 'radial-gradient(circle, rgba(255,45,85,0.14), transparent 65%)' }}
+        />
+        <div
+          className="absolute inset-0 opacity-[0.06]"
+          style={{
+            backgroundImage:
+              'linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px)',
+            backgroundSize: '40px 40px',
+          }}
+        />
+        <div className="absolute inset-0 backdrop-blur-2xl" style={{ background: 'rgba(8,8,10,0.35)' }} />
       </div>
 
-      {/* Main content */}
-      <div className="flex-1 flex items-center justify-center px-4 pb-20">
-        <motion.div
-          className="w-full max-w-md"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
+      {/* Top bar */}
+      <div
+        className="absolute top-0 inset-x-0 z-20 flex items-center justify-between px-5"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 14px)' }}
+      >
+        <button
+          onClick={() => navigate('/')}
+          className="h-9 w-9 rounded-full flex items-center justify-center bg-white/[0.08] backdrop-blur-xl border border-white/10 active:scale-95 transition"
+          aria-label="Back"
         >
-          <div className="text-center mb-8">
-            <h1 className="font-display text-4xl sm:text-5xl mb-3">
-              Log In
-            </h1>
-            <p className="text-muted-foreground">
-              Welcome back, editor
-            </p>
-          </div>
+          <ArrowLeft className="h-4 w-4 text-white" />
+        </button>
+        <img src={loopgateLogo} alt="Loopgate" className="h-4 opacity-80" />
+        <div className="h-9 w-9" />
+      </div>
 
-          {/* Method Tabs */}
-          <div className="flex gap-1 p-1 bg-surface-1 rounded-lg mb-6">
-            <button
-              onClick={() => resetMethod('username')}
-              className={`flex-1 py-2.5 px-3 text-sm font-medium rounded-md transition-all ${
-                method === 'username' 
-                  ? 'bg-background text-foreground shadow-sm' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <User className="h-4 w-4 inline mr-1.5 -mt-0.5" />
-              Username
-            </button>
-            <button
-              onClick={() => resetMethod('email')}
-              className={`flex-1 py-2.5 px-3 text-sm font-medium rounded-md transition-all ${
-                method === 'email' 
-                  ? 'bg-background text-foreground shadow-sm' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <Mail className="h-4 w-4 inline mr-1.5 -mt-0.5" />
-              Email
-            </button>
-            <button
-              onClick={() => resetMethod('magic')}
-              className={`flex-1 py-2.5 px-3 text-sm font-medium rounded-md transition-all ${
-                method === 'magic' 
-                  ? 'bg-background text-foreground shadow-sm' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <GateIcon className="h-4 w-4 inline mr-1.5 -mt-0.5" />
-              Magic
-            </button>
-          </div>
-
-          <AnimatePresence mode="wait">
-            {/* Username + Password */}
-            {method === 'username' && (
-              <motion.form
-                key="username"
-                onSubmit={handleUsernameLogin}
-                className="space-y-5"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.2 }}
-              >
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
-                    Username
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      value={identifier}
-                      onChange={(e) => setIdentifier(e.target.value)}
-                      placeholder="your_username"
-                      className="pl-12 h-14 bg-surface-1 border-border text-lg"
-                      autoComplete="username"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="pl-12 pr-12 h-14 bg-surface-1 border-border text-lg"
-                      autoComplete="current-password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                    </button>
-                  </div>
-                </div>
-
-                <Button
-                  type="submit"
-                  disabled={loading || !identifier.trim() || !password.trim()}
-                  className="w-full h-14 bg-gold hover:bg-gold/90 text-gold-foreground font-display text-xl"
-                >
-                  {loading ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <>
-                      Log In
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </>
-                  )}
-                </Button>
-              </motion.form>
-            )}
-
-            {/* Email + Password */}
-            {method === 'email' && (
-              <motion.form
-                key="email"
-                onSubmit={handleEmailLogin}
-                className="space-y-5"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.2 }}
-              >
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
-                    Email
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      type="email"
-                      value={identifier}
-                      onChange={(e) => setIdentifier(e.target.value)}
-                      placeholder="you@example.com"
-                      className="pl-12 h-14 bg-surface-1 border-border text-lg"
-                      autoComplete="email"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="pl-12 pr-12 h-14 bg-surface-1 border-border text-lg"
-                      autoComplete="current-password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                    </button>
-                  </div>
-                </div>
-
-                <Button
-                  type="submit"
-                  disabled={loading || !identifier.trim() || !password.trim()}
-                  className="w-full h-14 bg-gold hover:bg-gold/90 text-gold-foreground font-display text-xl"
-                >
-                  {loading ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <>
-                      Log In
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </>
-                  )}
-                </Button>
-              </motion.form>
-            )}
-
-            {/* Magic - Choose Method */}
-            {method === 'magic' && magicSubMethod === 'choose' && (
-              <motion.div
-                key="magic-choose"
-                className="space-y-5"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.2 }}
-              >
-                <p className="text-center text-muted-foreground text-sm mb-2">
-                  Choose your login method
+      {/* Scrollable content */}
+      <main
+        className="absolute inset-0 overflow-y-auto overscroll-contain"
+        style={{
+          WebkitOverflowScrolling: 'touch',
+          paddingTop: 'calc(env(safe-area-inset-top, 0px) + 72px)',
+          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)',
+        }}
+      >
+        <div className="px-5 mx-auto w-full max-w-[420px]">
+          <motion.div
+            initial={{ opacity: 0, y: 16, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            className="relative rounded-[28px] overflow-hidden"
+            style={{
+              background: 'linear-gradient(180deg, rgba(28,28,30,0.72) 0%, rgba(20,20,22,0.62) 100%)',
+              backdropFilter: 'blur(40px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              boxShadow: '0 30px 80px -20px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)',
+            }}
+          >
+            <div className="px-6 pt-7 pb-6">
+              {/* Hero */}
+              <div className="mb-6">
+                <p className="text-[11px] font-semibold tracking-[0.22em] text-[#D4A857] uppercase mb-2">
+                  {accounts.length > 0 ? 'Continue As' : 'Welcome Back'}
                 </p>
-                
-                <div className="flex flex-col gap-3">
-                  <button
-                    onClick={() => setMagicSubMethod('one-tap')}
-                    className="w-full p-4 rounded-lg bg-surface-1 border border-border hover:border-gold/50 transition-all text-left flex items-center gap-4"
+                <h1 className="text-white text-[34px] leading-[1.05] font-bold tracking-[-0.03em]">
+                  {selected ? `Hi, ${selected.username}.` : accounts.length > 0 ? 'Pick your\nhandle.' : 'Log in.'}
+                </h1>
+                <p className="text-white/55 text-[14px] mt-2 leading-snug tracking-[-0.01em]">
+                  {selected
+                    ? 'Enter your password to jump back in.'
+                    : accounts.length > 0
+                    ? 'Tap an account to continue — or sign in with another.'
+                    : 'One tap. You are back inside.'}
+                </p>
+              </div>
+
+              {/* Remembered accounts grid */}
+              <AnimatePresence initial={false}>
+                {!selected && accounts.length > 0 && (
+                  <motion.div
+                    key="accounts"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    className="mb-5"
                   >
-                    <div className="w-12 h-12 rounded-full bg-gold/10 flex items-center justify-center">
-                      <GateIcon className="h-6 w-6 text-gold" />
+                    <div className="grid grid-cols-2 gap-2.5">
+                      {accounts.map((acc) => (
+                        <button
+                          key={acc.email}
+                          type="button"
+                          onClick={() => {
+                            setSelected(acc);
+                            setIdentifier(acc.username);
+                          }}
+                          className="group relative rounded-[16px] p-3 text-left active:scale-[0.98] transition"
+                          style={{
+                            background: 'rgba(255,255,255,0.05)',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                          }}
+                        >
+                          <span
+                            onClick={(e) => handleForget(e, acc)}
+                            className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full flex items-center justify-center bg-white/[0.06] hover:bg-white/[0.14] active:bg-white/[0.2] transition opacity-0 group-hover:opacity-100"
+                            aria-label="Forget account"
+                          >
+                            <X className="h-3 w-3 text-white/80" />
+                          </span>
+                          <div className="flex items-center gap-2.5">
+                            <div
+                              className="h-10 w-10 rounded-full flex items-center justify-center text-white text-[15px] font-bold tracking-tight overflow-hidden"
+                              style={{
+                                background:
+                                  'linear-gradient(135deg, rgba(212,168,87,0.6), rgba(10,132,255,0.5))',
+                                border: '1px solid rgba(255,255,255,0.12)',
+                              }}
+                            >
+                              {acc.avatarUrl ? (
+                                <img src={acc.avatarUrl} alt={acc.username} className="h-full w-full object-cover" />
+                              ) : (
+                                initial(acc.username)
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-white text-[14px] font-semibold tracking-[-0.01em] truncate">
+                                @{acc.username}
+                              </p>
+                              <p className="text-white/40 text-[11px] truncate">Tap to continue</p>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
                     </div>
-                    <div>
-                      <p className="font-medium">One-Tap Magic Link</p>
-                      <p className="text-sm text-muted-foreground">Click the link in your email</p>
-                    </div>
-                  </button>
-                  
-                  <button
-                    onClick={() => setMagicSubMethod('code')}
-                    className="w-full p-4 rounded-lg bg-gold/10 border border-gold hover:bg-gold/20 transition-all text-left flex items-center gap-4"
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Form */}
+              <form
+                onSubmit={(e) => (selected ? handleQuickContinue(selected, e) : handleSubmit(e))}
+                className="space-y-3"
+              >
+                {/* Selected chip */}
+                {selected && (
+                  <div
+                    className="flex items-center gap-2.5 px-2.5 py-2 rounded-[12px]"
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
                   >
-                    <div className="w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center">
-                      <Lock className="h-6 w-6 text-gold" />
+                    <div
+                      className="h-8 w-8 rounded-full flex items-center justify-center text-white text-[13px] font-bold"
+                      style={{
+                        background:
+                          'linear-gradient(135deg, rgba(212,168,87,0.6), rgba(10,132,255,0.5))',
+                      }}
+                    >
+                      {initial(selected.username)}
                     </div>
-                    <div>
-                      <p className="font-medium">6-Digit Code</p>
-                      <p className="text-sm text-muted-foreground">Enter code from your email</p>
-                    </div>
-                  </button>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Magic Link - Email Entry */}
-            {method === 'magic' && (magicSubMethod === 'one-tap' || magicSubMethod === 'code') && !magicLinkSent && (
-              <motion.form
-                key="magic-request"
-                onSubmit={handleMagicLinkRequest}
-                className="space-y-5"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.2 }}
-              >
-                <button
-                  type="button"
-                  onClick={() => setMagicSubMethod('choose')}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 mb-2"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Back
-                </button>
-
-                <div className="text-center mb-4">
-                  <div className="w-12 h-12 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-3">
-                    {magicSubMethod === 'one-tap' ? (
-                      <GateIcon className="h-6 w-6 text-gold" />
-                    ) : (
-                      <Lock className="h-6 w-6 text-gold" />
-                    )}
+                    <p className="text-white text-[14px] font-medium flex-1 truncate">
+                      @{selected.username}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelected(null);
+                        setIdentifier('');
+                        setPassword('');
+                      }}
+                      className="text-[12px] text-[#0A84FF] font-medium px-2 py-1 active:opacity-60"
+                    >
+                      Switch
+                    </button>
                   </div>
-                  <p className="text-sm font-medium">
-                    {magicSubMethod === 'one-tap' ? 'One-Tap Magic Link' : '6-Digit Code Login'}
-                  </p>
-                </div>
+                )}
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
-                    Email
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      type="email"
-                      value={identifier}
-                      onChange={(e) => setIdentifier(e.target.value)}
-                      placeholder="you@example.com"
-                      className="pl-12 h-14 bg-surface-1 border-border text-lg"
-                      autoComplete="email"
-                    />
-                  </div>
-                </div>
-
-                <Button
-                  type="submit"
-                  disabled={loading || !identifier.trim()}
-                  className="w-full h-14 bg-gold hover:bg-gold/90 text-gold-foreground font-display text-xl"
-                >
-                  {loading ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <>
-                      {magicSubMethod === 'one-tap' ? <GateIcon className="mr-2 h-5 w-5" /> : <Lock className="mr-2 h-5 w-5" />}
-                      Send {magicSubMethod === 'one-tap' ? 'Magic Link' : 'Code'}
-                    </>
-                  )}
-                </Button>
-              </motion.form>
-            )}
-
-            {/* OTP Verification */}
-            {method === 'magic' && magicLinkSent && (
-              <motion.form
-                key="magic-verify"
-                onSubmit={handleOtpVerify}
-                className="space-y-5"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.2 }}
-              >
-                <div className="text-center mb-6">
-                  <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-4">
-                    {magicSubMethod === 'one-tap' ? (
-                      <GateIcon className="h-8 w-8 text-gold" />
-                    ) : (
-                      <Lock className="h-8 w-8 text-gold" />
-                    )}
-                  </div>
-                  <p className="text-sm font-medium mb-1">
-                    {magicSubMethod === 'one-tap' ? 'Check your email for the magic link!' : 'Enter your 6-digit code'}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Sent to {identifier}
-                  </p>
-                </div>
-
-                {magicSubMethod === 'code' && (
-                  <>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest text-center block">
-                        Enter 6-Digit Code
-                      </label>
+                {/* Identifier (only when no selected) */}
+                {!selected && (
+                  <div className="space-y-1.5">
+                    <label className="text-[13px] text-[#8E8E93] font-medium px-1">Username or email</label>
+                    <div className="relative">
+                      <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
                       <Input
-                        value={otpCode}
-                        onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                        placeholder="000000"
-                        className="h-14 bg-surface-1 border-border text-2xl text-center tracking-[0.5em] font-mono"
-                        maxLength={6}
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        autoComplete="one-time-code"
+                        value={identifier}
+                        onChange={(e) => setIdentifier(e.target.value)}
+                        placeholder="@yourname"
+                        autoComplete="username"
+                        autoCapitalize="none"
+                        spellCheck={false}
+                        className="pl-10 h-12 rounded-[12px] border-0 text-[16px] text-white placeholder:text-white/35 focus-visible:ring-1 focus-visible:ring-[#D4A857]"
+                        style={{ background: 'rgba(118, 118, 128, 0.24)' }}
                       />
                     </div>
-
-                    <Button
-                      type="submit"
-                      disabled={loading || !otpCode.trim()}
-                      className="w-full h-14 bg-gold hover:bg-gold/90 text-gold-foreground font-display text-xl"
-                    >
-                      {loading ? (
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                      ) : (
-                        'Verify Code'
-                      )}
-                    </Button>
-                  </>
-                )}
-
-                {magicSubMethod === 'one-tap' && (
-                  <div className="text-center p-4 bg-surface-1 rounded-lg border border-border">
-                    <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2 text-gold" />
-                    <p className="text-sm text-muted-foreground">Waiting for you to click the link...</p>
                   </div>
                 )}
 
+                {/* Password */}
+                <div className="space-y-1.5">
+                  <label className="text-[13px] text-[#8E8E93] font-medium px-1">Password</label>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+                    <Input
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      autoComplete="current-password"
+                      autoCapitalize="none"
+                      spellCheck={false}
+                      autoFocus={!!selected}
+                      className="pl-10 pr-11 h-12 rounded-[12px] border-0 text-[16px] text-white placeholder:text-white/35 focus-visible:ring-1 focus-visible:ring-[#D4A857]"
+                      style={{ background: 'rgba(118, 118, 128, 0.24)' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-[8px] bg-white/[0.06] active:bg-white/[0.16] flex items-center justify-center"
+                      aria-label="Toggle password visibility"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4 text-white/80" /> : <Eye className="h-4 w-4 text-white/80" />}
+                    </button>
+                  </div>
+                </div>
+
                 <button
-                  type="button"
-                  onClick={() => setMagicLinkSent(false)}
-                  className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  type="submit"
+                  disabled={loading || !password || (!selected && !identifier.trim())}
+                  className="w-full h-12 rounded-[14px] bg-[#D4A857] text-white text-[17px] font-semibold active:opacity-60 disabled:opacity-50 flex items-center justify-center mt-1"
                 >
-                  Didn't receive it? Try again
+                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : selected ? `Continue as @${selected.username}` : 'Log in'}
                 </button>
-              </motion.form>
-            )}
+              </form>
 
-          </AnimatePresence>
-
-          {/* New user */}
-          <div className="text-center pt-8">
-            <button
-              onClick={() => navigate('/start')}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              New here? <span className="text-gold">Create a profile</span>
-            </button>
-          </div>
-        </motion.div>
-      </div>
+              {/* New here */}
+              <div className="text-center pt-5">
+                <button
+                  onClick={() => navigate('/start')}
+                  className="text-[13px] text-white/50 active:opacity-60"
+                >
+                  New here? <span className="text-[#0A84FF] font-medium">Create a profile</span>
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </main>
     </div>
   );
 }
