@@ -11,6 +11,7 @@ import { useTempProfile } from '@/hooks/useTempProfile';
 import authCollageBg from '@/assets/auth-collage-bg.jpg';
 import loopgateIcon from '@/assets/loopgate-logo.png';
 import { rememberAccount } from '@/lib/rememberedAccounts';
+import AppleSignInButton from '@/components/auth/AppleSignInButton';
 
 type UserRole = 'editor' | 'judge';
 
@@ -675,6 +676,14 @@ export default function StartPage() {
                   </>
                 )}
               </button>
+
+              {/* Divider + Apple sign up */}
+              <div className="flex items-center gap-3 my-4">
+                <div className="flex-1 h-px bg-white/10" />
+                <span className="text-[11px] text-white/40 tracking-[0.18em] uppercase">or</span>
+                <div className="flex-1 h-px bg-white/10" />
+              </div>
+              <AppleSignInButton returnTo={returnTo || '/hub'} label="Sign up with Apple" />
 
               {/* Optional reveal */}
               <button
