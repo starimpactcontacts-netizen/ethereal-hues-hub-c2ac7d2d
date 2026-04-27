@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import loopgateLogo from '@/assets/loopgate-wordmark.png';
+import authCollageBg from '@/assets/auth-collage-bg.jpg';
 import {
   getRememberedAccounts,
   rememberAccount,
