@@ -1,0 +1,1 @@
+UPDATE public.artist_campaigns SET status = 'completed' WHERE name ILIKE '%weirdcity%';
