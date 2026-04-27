@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ArrowLeft, User, Ticket, Users, Mail, Lock, Swords, Scale, Check, Eye, EyeOff, Zap, ChevronDown } from 'lucide-react';
+import { ArrowRight, ArrowLeft, User, Ticket, Users, Mail, Lock, Swords, Scale, Check, Eye, EyeOff, Zap, ChevronDown, Copy, AlertTriangle } from 'lucide-react';
 import GateIcon from '@/components/loopgate/GateIcon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,6 +34,9 @@ export default function StartPage() {
   const [showInviteCode, setShowInviteCode] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [codeInfo, setCodeInfo] = useState<{ type: 'personal' | 'crew'; crewName?: string; inviterName?: string } | null>(null);
+  const [isFastPassword, setIsFastPassword] = useState(false);
+  const [savedAck, setSavedAck] = useState(false);
+  const [copied, setCopied] = useState(false);
   
   const [formData, setFormData] = useState<FormData>({
     role: 'editor',
@@ -158,6 +161,11 @@ export default function StartPage() {
         setLoading(false);
         return;
       }
+      if (isFastPassword && !savedAck) {
+        toast.error('Please confirm you saved your password');
+        setLoading(false);
+        return;
+      }
       if (formData.email) {
         const emailValid = validateEmail(formData.email.trim());
         if (!emailValid) {
@@ -168,6 +176,31 @@ export default function StartPage() {
       await createAccount();
     } finally {
       setLoading(false);
+    }
+  };
+
+  const generateFastPassword = () => {
+    const words = ['loop','edit','wave','beat','flame','tiger','neon','rapid','pulse','storm','blaze','swift','cobra','vortex','echo','bolt','shadow','rogue'];
+    const w1 = words[Math.floor(Math.random() * words.length)];
+    const w2 = words[Math.floor(Math.random() * words.length)];
+    const num = Math.floor(1000 + Math.random() * 9000);
+    const pw = `${w1}-${w2}-${num}`;
+    setFormData(prev => ({ ...prev, password: pw }));
+    setIsFastPassword(true);
+    setSavedAck(false);
+    setCopied(false);
+    setShowPassword(true);
+    setErrors(prev => ({ ...prev, password: '' }));
+  };
+
+  const copyPassword = async () => {
+    try {
+      await navigator.clipboard.writeText(formData.password);
+      setCopied(true);
+      toast.success('Password copied');
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('Could not copy');
     }
   };
 
@@ -528,6 +561,18 @@ export default function StartPage() {
 
               {/* Password */}
               <div className="space-y-2">
+                <div className="flex items-center justify-end px-1 -mb-1">
+                  {!isFastPassword && (
+                    <button
+                      type="button"
+                      onClick={generateFastPassword}
+                      className="flex items-center gap-1 text-[12px] font-semibold text-[#D4A857] active:opacity-60"
+                    >
+                      <Zap className="w-3 h-3 fill-[#D4A857]" />
+                      Use fast password
+                    </button>
+                  )}
+                </div>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/35" />
                   <Input
@@ -536,14 +581,25 @@ export default function StartPage() {
                     onChange={(e) => {
                       setFormData(prev => ({ ...prev, password: e.target.value }));
                       setErrors(prev => ({ ...prev, password: '' }));
+                      if (isFastPassword) { setIsFastPassword(false); setSavedAck(false); }
                     }}
                     placeholder="password"
                     autoCapitalize="none"
                     autoCorrect="off"
                     spellCheck={false}
-                    className="h-14 pl-11 pr-12 rounded-2xl border-0 text-[17px] text-white placeholder:text-white/30 focus-visible:ring-1 focus-visible:ring-[#D4A857] tracking-[-0.01em]"
-                    style={{ background: 'rgba(255,255,255,0.06)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)' }}
+                    className="h-14 pl-11 pr-20 rounded-2xl border-0 text-[17px] text-white placeholder:text-white/30 focus-visible:ring-1 focus-visible:ring-[#D4A857] tracking-[-0.01em]"
+                    style={{ background: 'rgba(255,255,255,0.06)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)', fontFamily: isFastPassword ? 'ui-monospace, SFMono-Regular, monospace' : undefined, letterSpacing: isFastPassword ? '0.02em' : undefined }}
                   />
+                  {isFastPassword && (
+                    <button
+                      type="button"
+                      onClick={copyPassword}
+                      className="absolute right-12 top-1/2 -translate-y-1/2 h-9 w-9 rounded-xl flex items-center justify-center text-white/70 active:bg-white/10"
+                      aria-label="Copy password"
+                    >
+                      {copied ? <Check className="h-4 w-4 text-[#30D158]" /> : <Copy className="h-4 w-4" />}
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
@@ -555,6 +611,32 @@ export default function StartPage() {
                 </div>
                 {errors.password && (
                   <p className="text-[12px] text-[#FF453A] pl-1">{errors.password}</p>
+                )}
+                {isFastPassword && (
+                  <div className="mt-2 rounded-2xl p-3 space-y-2.5" style={{ background: 'rgba(212, 168, 87, 0.10)', border: '1px solid rgba(212, 168, 87, 0.35)' }}>
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="w-4 h-4 text-[#D4A857] shrink-0 mt-0.5" />
+                      <p className="text-[12px] leading-snug text-white/90">
+                        <span className="font-semibold">Save this password now.</span> Screenshot it or copy it — you'll need it to log back in.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSavedAck(v => !v)}
+                      className="w-full flex items-center gap-2 active:opacity-60"
+                    >
+                      <span className={`w-[18px] h-[18px] rounded-[5px] flex items-center justify-center shrink-0 transition-colors ${
+                        savedAck ? 'bg-[#D4A857] border border-[#D4A857]' : 'bg-white/[0.04] border border-white/20'
+                      }`}>
+                        {savedAck && (
+                          <Check className="w-3 h-3 text-black" strokeWidth={3} />
+                        )}
+                      </span>
+                      <span className="text-[12px] text-white/85 text-left">
+                        I saved my password (screenshot or copy)
+                      </span>
+                    </button>
+                  </div>
                 )}
               </div>
 
