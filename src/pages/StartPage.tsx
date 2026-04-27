@@ -204,6 +204,7 @@ export default function StartPage() {
         }
 
         await updateProfileAndRedeem(authData.user.id);
+        rememberAccount({ username: formData.username.trim(), email: formData.email.trim().toLowerCase() });
       } else {
         const placeholderEmail = `${formData.username.trim().toLowerCase()}@loopgate.local`;
         
@@ -245,6 +246,7 @@ export default function StartPage() {
             }
             
             await updateProfileAndRedeem(retryData.user.id);
+            rememberAccount({ username: formData.username.trim(), email: altEmail });
             return;
           }
           
@@ -258,6 +260,7 @@ export default function StartPage() {
         }
 
         await updateProfileAndRedeem(authData.user.id);
+        rememberAccount({ username: formData.username.trim(), email: placeholderEmail });
       }
     } catch (err) {
       console.error('Account creation error:', err);
