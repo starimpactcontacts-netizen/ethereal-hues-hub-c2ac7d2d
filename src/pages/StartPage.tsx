@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { useTempProfile } from '@/hooks/useTempProfile';
 import loopgateLogo from '@/assets/loopgate-wordmark.png';
 import authCollageBg from '@/assets/auth-collage-bg.jpg';
+import loopgateIcon from '@/assets/loopgate-logo.png';
 import { rememberAccount } from '@/lib/rememberedAccounts';
 
 type UserRole = 'editor' | 'judge';
@@ -532,6 +533,12 @@ export default function StartPage() {
             <div className="px-6 pt-7 pb-6">
               {/* Hero */}
               <div className="mb-6">
+                <img
+                  src={loopgateIcon}
+                  alt="Loopgate"
+                  className="h-12 w-12 mb-4 rounded-[12px] object-contain"
+                  style={{ filter: 'drop-shadow(0 8px 20px rgba(212,168,87,0.35))' }}
+                />
                 <p className="text-[11px] font-semibold tracking-[0.22em] text-[#D4A857] uppercase mb-2">Step Inside</p>
                 <h1 className="text-white text-[34px] leading-[1.05] font-bold tracking-[-0.03em]">
                   Create your<br/>handle.
