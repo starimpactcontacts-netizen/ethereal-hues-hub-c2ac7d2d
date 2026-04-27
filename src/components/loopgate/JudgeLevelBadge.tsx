@@ -8,19 +8,15 @@ interface JudgeLevelBadgeProps {
   className?: string;
 }
 
-// Color scheme based on judge level tier
-const judgeLevelColors: Record<number, { bg: string; text: string; border: string; glow?: string }> = {
-  1: { bg: 'bg-muted/50', text: 'text-muted-foreground', border: 'border-muted-foreground/30' },
-  2: { bg: 'bg-muted/50', text: 'text-muted-foreground', border: 'border-muted-foreground/30' },
-  3: { bg: 'bg-cyan-500/10', text: 'text-cyan-400', border: 'border-cyan-500/30' },
-  4: { bg: 'bg-cyan-500/10', text: 'text-cyan-400', border: 'border-cyan-500/30' },
-  5: { bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/30' },
-  6: { bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/30' },
-  7: { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/30' },
-  8: { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/30' },
-  9: { bg: 'bg-gold/10', text: 'text-gold', border: 'border-gold/30', glow: 'shadow-[0_0_8px_rgba(212,175,55,0.4)]' },
-  10: { bg: 'bg-gold/20', text: 'text-gold', border: 'border-gold/50', glow: 'shadow-[0_0_12px_rgba(212,175,55,0.6)]' },
-};
+// Color tier scaled for 1-100 judge level system
+function getJudgeLevelColors(level: number) {
+  if (level >= 100) return { bg: 'bg-gold/20', text: 'text-gold', border: 'border-gold/50', glow: 'shadow-[0_0_12px_rgba(212,175,55,0.6)]' };
+  if (level >= 75)  return { bg: 'bg-gold/10', text: 'text-gold', border: 'border-gold/30', glow: 'shadow-[0_0_8px_rgba(212,175,55,0.4)]' };
+  if (level >= 50)  return { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/30' } as const;
+  if (level >= 30)  return { bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/30' } as const;
+  if (level >= 15)  return { bg: 'bg-cyan-500/10', text: 'text-cyan-400', border: 'border-cyan-500/30' } as const;
+  return { bg: 'bg-muted/50', text: 'text-muted-foreground', border: 'border-muted-foreground/30' } as const;
+}
 
 const sizeClasses = {
   xs: 'text-[8px] px-1 py-0.5 gap-0.5',
@@ -42,8 +38,8 @@ export default function JudgeLevelBadge({
   showIcon = true,
   className 
 }: JudgeLevelBadgeProps) {
-  const colors = judgeLevelColors[level] || judgeLevelColors[1];
-  const hasGlow = level >= 9;
+  const colors = getJudgeLevelColors(level) as { bg: string; text: string; border: string; glow?: string };
+  const hasGlow = level >= 75;
   
   return (
     <span
