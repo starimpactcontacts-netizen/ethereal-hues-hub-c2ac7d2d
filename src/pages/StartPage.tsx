@@ -507,7 +507,7 @@ export default function StartPage() {
         >
           <ArrowLeft className="h-4 w-4 text-white" />
         </button>
-        <img src={loopgateLogo} alt="Loopgate" className="h-4 opacity-80" />
+        <div />
         <div className="h-9 w-9" />
       </div>
 
