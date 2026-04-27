@@ -30,7 +30,35 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    setAccounts(getRememberedAccounts());
+    const initial = getRememberedAccounts();
+    setAccounts(initial);
+    // Backfill any account whose stored "username" is actually an email or
+    // is missing an avatar — query profiles by email and rewrite.
+    (async () => {
+      const needsFix = initial.filter(
+        (a) => a.username.includes('@') || !a.avatarUrl,
+      );
+      if (needsFix.length === 0) return;
+      let changed = false;
+      for (const acc of needsFix) {
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('username, avatar_url')
+            .eq('email', acc.email)
+            .maybeSingle();
+          if (profile?.username) {
+            rememberAccount({
+              username: profile.username,
+              email: acc.email,
+              avatarUrl: profile.avatar_url ?? acc.avatarUrl ?? null,
+            });
+            changed = true;
+          }
+        } catch { /* ignore */ }
+      }
+      if (changed) setAccounts(getRememberedAccounts());
+    })();
   }, []);
 
   const resolveEmail = async (idVal: string): Promise<string | null> => {
