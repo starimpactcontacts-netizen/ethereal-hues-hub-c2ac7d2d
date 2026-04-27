@@ -22,7 +22,10 @@ function useActivitySignal(drop: FeaturedDrop) {
       if (hoursLeft > 0 && hoursLeft <= 24) return { text: `Closing soon — ${Math.ceil(hoursLeft)}h left`, icon: Clock, color: 'text-orange-400' };
       if (hoursLeft > 0 && hoursLeft <= 72) return { text: `${Math.ceil(hoursLeft / 24)}d left to enter`, icon: Clock, color: 'text-muted-foreground' };
     }
-    if (drop.xp_reward >= 100) return { text: `+${drop.xp_reward} XP up for grabs`, icon: Zap, color: 'text-brand' };
+    if (drop.xp_reward >= 1000) {
+      const formatted = drop.xp_reward >= 1000 ? `${(drop.xp_reward / 1000).toFixed(drop.xp_reward % 1000 === 0 ? 0 : 1)}K` : `${drop.xp_reward}`;
+      return { text: `+${formatted} XP up for grabs`, icon: Zap, color: 'text-brand' };
+    }
     if (drop.mystery_reward_label) return { text: `Mystery reward: ${drop.mystery_reward_label}`, icon: Gift, color: 'text-gold' };
     return { text: 'Open for submissions', icon: Flame, color: 'text-brand' };
   }, [drop]);
