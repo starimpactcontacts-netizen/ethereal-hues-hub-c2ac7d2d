@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Lock, Loader2, Eye, EyeOff, X, User } from 'lucide-react';
+import { ArrowLeft, Lock, Loader2, Eye, EyeOff, X, User, Zap } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import loopgateLogo from '@/assets/loopgate-wordmark.png';
 import authCollageBg from '@/assets/auth-collage-bg.jpg';
 import loopgateIcon from '@/assets/loopgate-logo.png';
 import {
   getRememberedAccounts,
   rememberAccount,
   forgetAccount,
+  decodePassword,
   type RememberedAccount,
 } from '@/lib/rememberedAccounts';
 
@@ -65,7 +65,7 @@ export default function LoginPage() {
       (emailToUse.endsWith('@loopgate.local')
         ? emailToUse.split('@')[0]
         : emailToUse.split('@')[0]);
-    rememberAccount({ username, email: emailToUse });
+    rememberAccount({ username, email: emailToUse, password: pw });
     toast.success('Welcome back!');
     navigate(returnTo);
   };
@@ -92,6 +92,18 @@ export default function LoginPage() {
       return;
     }
     await doLogin(acc.email, password, acc.username);
+  };
+
+  // One-tap login when we have the saved password
+  const handleAccountTap = async (acc: RememberedAccount) => {
+    const savedPw = decodePassword(acc.pw);
+    if (savedPw) {
+      await doLogin(acc.email, savedPw, acc.username);
+      return;
+    }
+    // Fall back: ask for password
+    setSelected(acc);
+    setIdentifier(acc.username);
   };
 
   const handleForget = (e: React.MouseEvent, acc: RememberedAccount) => {
@@ -150,7 +162,7 @@ export default function LoginPage() {
         >
           <ArrowLeft className="h-4 w-4 text-white" />
         </button>
-        <img src={loopgateLogo} alt="Loopgate" className="h-4 opacity-80" />
+        <div />
         <div className="h-9 w-9" />
       </div>
 
@@ -212,14 +224,12 @@ export default function LoginPage() {
                     className="mb-5"
                   >
                     <div className="grid grid-cols-2 gap-2.5">
-                      {accounts.map((acc) => (
+                       {accounts.map((acc) => (
                         <button
                           key={acc.email}
                           type="button"
-                          onClick={() => {
-                            setSelected(acc);
-                            setIdentifier(acc.username);
-                          }}
+                          onClick={() => handleAccountTap(acc)}
+                          disabled={loading}
                           className="group relative rounded-[16px] p-3 text-left active:scale-[0.98] transition"
                           style={{
                             background: 'rgba(255,255,255,0.05)',
@@ -252,7 +262,13 @@ export default function LoginPage() {
                               <p className="text-white text-[14px] font-semibold tracking-[-0.01em] truncate">
                                 @{acc.username}
                               </p>
-                              <p className="text-white/40 text-[11px] truncate">Tap to continue</p>
+                              <p className="text-white/40 text-[11px] truncate flex items-center gap-1">
+                                {acc.pw ? (
+                                  <><Zap className="h-2.5 w-2.5 text-[#D4A857]" /> One‑tap login</>
+                                ) : (
+                                  'Tap to continue'
+                                )}
+                              </p>
                             </div>
                           </div>
                         </button>

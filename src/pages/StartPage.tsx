@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useTempProfile } from '@/hooks/useTempProfile';
-import loopgateLogo from '@/assets/loopgate-wordmark.png';
 import authCollageBg from '@/assets/auth-collage-bg.jpg';
 import loopgateIcon from '@/assets/loopgate-logo.png';
 import { rememberAccount } from '@/lib/rememberedAccounts';
@@ -239,7 +238,7 @@ export default function StartPage() {
         }
 
         await updateProfileAndRedeem(authData.user.id);
-        rememberAccount({ username: formData.username.trim(), email: formData.email.trim().toLowerCase() });
+        rememberAccount({ username: formData.username.trim(), email: formData.email.trim().toLowerCase(), password: formData.password });
       } else {
         const placeholderEmail = `${formData.username.trim().toLowerCase()}@loopgate.local`;
         
@@ -281,7 +280,7 @@ export default function StartPage() {
             }
             
             await updateProfileAndRedeem(retryData.user.id);
-            rememberAccount({ username: formData.username.trim(), email: altEmail });
+            rememberAccount({ username: formData.username.trim(), email: altEmail, password: formData.password });
             return;
           }
           
@@ -295,7 +294,7 @@ export default function StartPage() {
         }
 
         await updateProfileAndRedeem(authData.user.id);
-        rememberAccount({ username: formData.username.trim(), email: placeholderEmail });
+        rememberAccount({ username: formData.username.trim(), email: placeholderEmail, password: formData.password });
       }
     } catch (err) {
       console.error('Account creation error:', err);
@@ -508,7 +507,7 @@ export default function StartPage() {
         >
           <ArrowLeft className="h-4 w-4 text-white" />
         </button>
-        <img src={loopgateLogo} alt="Loopgate" className="h-4 opacity-80" />
+        <div />
         <div className="h-9 w-9" />
       </div>
 

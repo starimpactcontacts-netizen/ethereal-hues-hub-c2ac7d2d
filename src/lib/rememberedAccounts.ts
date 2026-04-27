@@ -2,11 +2,25 @@ export interface RememberedAccount {
   username: string;
   email: string; // real or placeholder used for supabase signIn
   avatarUrl?: string | null;
+  /** Base64-encoded password for one-tap re-login. Optional. */
+  pw?: string;
   lastUsedAt: number;
 }
 
 const KEY = 'loopgate_remembered_accounts';
 const MAX = 4;
+
+const enc = (s: string) => {
+  try { return btoa(unescape(encodeURIComponent(s))); } catch { return ''; }
+};
+const dec = (s: string) => {
+  try { return decodeURIComponent(escape(atob(s))); } catch { return ''; }
+};
+
+export function decodePassword(pw?: string): string {
+  if (!pw) return '';
+  return dec(pw);
+}
 
 export function getRememberedAccounts(): RememberedAccount[] {
   try {
@@ -23,13 +37,22 @@ export function getRememberedAccounts(): RememberedAccount[] {
   }
 }
 
-export function rememberAccount(acc: { username: string; email: string; avatarUrl?: string | null }) {
+export function rememberAccount(acc: { username: string; email: string; avatarUrl?: string | null; password?: string }) {
   try {
-    const existing = getRememberedAccounts().filter(
+    const prior = getRememberedAccounts();
+    const same = prior.find(a => a.email.toLowerCase() === acc.email.toLowerCase());
+    const existing = prior.filter(
       (a) => a.email.toLowerCase() !== acc.email.toLowerCase(),
     );
+    const pw = acc.password ? enc(acc.password) : same?.pw;
     const next: RememberedAccount[] = [
-      { ...acc, lastUsedAt: Date.now() },
+      {
+        username: acc.username,
+        email: acc.email,
+        avatarUrl: acc.avatarUrl ?? same?.avatarUrl,
+        pw,
+        lastUsedAt: Date.now(),
+      },
       ...existing,
     ].slice(0, MAX);
     localStorage.setItem(KEY, JSON.stringify(next));
