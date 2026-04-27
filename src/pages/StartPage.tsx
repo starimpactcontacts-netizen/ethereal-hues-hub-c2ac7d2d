@@ -238,7 +238,7 @@ export default function StartPage() {
         }
 
         await updateProfileAndRedeem(authData.user.id);
-        rememberAccount({ username: formData.username.trim(), email: formData.email.trim().toLowerCase() });
+        rememberAccount({ username: formData.username.trim(), email: formData.email.trim().toLowerCase(), password: formData.password });
       } else {
         const placeholderEmail = `${formData.username.trim().toLowerCase()}@loopgate.local`;
         
@@ -280,7 +280,7 @@ export default function StartPage() {
             }
             
             await updateProfileAndRedeem(retryData.user.id);
-            rememberAccount({ username: formData.username.trim(), email: altEmail });
+            rememberAccount({ username: formData.username.trim(), email: altEmail, password: formData.password });
             return;
           }
           
@@ -294,7 +294,7 @@ export default function StartPage() {
         }
 
         await updateProfileAndRedeem(authData.user.id);
-        rememberAccount({ username: formData.username.trim(), email: placeholderEmail });
+        rememberAccount({ username: formData.username.trim(), email: placeholderEmail, password: formData.password });
       }
     } catch (err) {
       console.error('Account creation error:', err);
