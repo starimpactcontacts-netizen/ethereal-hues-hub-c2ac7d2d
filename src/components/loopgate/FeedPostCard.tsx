@@ -322,6 +322,15 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
               />
             )}
 
+            {/* 1-10 Rate modal — posts as a comment */}
+            <FeedRateModal
+              isOpen={showRateModal}
+              onClose={() => setShowRateModal(false)}
+              postId={post.id}
+              username={post.username}
+              onRated={() => setCommentCount((c) => c + 1)}
+            />
+
               {/* 1v1 Challenge Confirmation Modal */}
               {createPortal(
                 <AnimatePresence>
