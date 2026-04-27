@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import loopgateLogo from '@/assets/loopgate-wordmark.png';
+import authCollageBg from '@/assets/auth-collage-bg.jpg';
 import {
   getRememberedAccounts,
   rememberAccount,
@@ -107,6 +108,12 @@ export default function LoginPage() {
       {/* Translucent backdrop matching StartPage */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-[#0A0A0A]" />
+        {/* Poster collage peek */}
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-55"
+          style={{ backgroundImage: `url(${authCollageBg})` }}
+        />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.7) 100%)' }} />
         <div
           className="absolute -top-32 -left-32 w-[520px] h-[520px] rounded-full opacity-60"
           style={{ background: 'radial-gradient(circle, rgba(212,168,87,0.22), transparent 60%)' }}
