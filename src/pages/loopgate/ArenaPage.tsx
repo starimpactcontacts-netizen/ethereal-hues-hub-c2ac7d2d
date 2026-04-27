@@ -1346,11 +1346,6 @@ export default function ArenaPage() {
             />
           </div>
 
-          {/* ═══ MISSIONS ═══ */}
-          <div className="mb-5">
-            <ArenaMissionsSection />
-          </div>
-
           {/* ═══ COMPETITIONS ═══ */}
           {(activeFilter === "all" || activeFilter === "competitions") && (
             <div className="mb-5">
