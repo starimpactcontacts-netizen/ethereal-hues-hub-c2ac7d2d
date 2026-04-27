@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useTempProfile } from '@/hooks/useTempProfile';
 import loopgateLogo from '@/assets/loopgate-wordmark.png';
+import { rememberAccount } from '@/lib/rememberedAccounts';
 
 type UserRole = 'editor' | 'judge';
 
