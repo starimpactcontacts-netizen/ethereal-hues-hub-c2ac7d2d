@@ -435,222 +435,225 @@ export default function StartPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Subtle animated background */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gold/5 via-background to-background" />
-        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-gold/3 to-transparent" />
-      </div>
-      
-      {/* Header */}
-      <div className="relative z-10 p-5 flex items-center justify-between">
-        <button 
-          onClick={() => navigate('/')} 
-          className="flex items-center gap-2 opacity-80 hover:opacity-100 transition-opacity"
-        >
-          <ArrowLeft className="h-4 w-4 text-muted-foreground" />
-          <img src={loopgateLogo} alt="Loopgate" className="h-5" />
-        </button>
-        
-        {/* Step indicator */}
-        <div className="flex items-center gap-1.5">
-          {STEPS.map((_, i) => (
-            <div
-              key={i}
-              className={`h-1.5 transition-all duration-300 ${
-                i === step 
-                  ? 'w-6 bg-gold' 
-                  : i < step 
-                    ? 'w-1.5 bg-gold/50' 
-                    : 'w-1.5 bg-muted'
-              }`}
-            />
-          ))}
-        </div>
+    <div className="fixed inset-0 overflow-hidden font-apple">
+      {/* Translucent backdrop — Hub preview vibe (no opaque black trap) */}
+      <div className="absolute inset-0 -z-10">
+        {/* Iframe-free Hub vibe: layered cinematic gradients + grain */}
+        <div className="absolute inset-0 bg-[#0A0A0A]" />
+        <div className="absolute -top-32 -left-32 w-[520px] h-[520px] rounded-full opacity-60"
+             style={{ background: 'radial-gradient(circle, rgba(212,168,87,0.22), transparent 60%)' }} />
+        <div className="absolute -bottom-40 -right-24 w-[600px] h-[600px] rounded-full opacity-50"
+             style={{ background: 'radial-gradient(circle, rgba(10,132,255,0.18), transparent 60%)' }} />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full opacity-40"
+             style={{ background: 'radial-gradient(circle, rgba(255,45,85,0.14), transparent 65%)' }} />
+        {/* Subtle grid */}
+        <div className="absolute inset-0 opacity-[0.06]"
+             style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+        {/* Heavy blur veil */}
+        <div className="absolute inset-0 backdrop-blur-2xl" style={{ background: 'rgba(8,8,10,0.35)' }} />
       </div>
 
-      {/* Main content - vertically centered with proper spacing */}
-      <div className="relative z-10 flex-1 flex flex-col justify-start pt-8 px-5 pb-4">
-        <div className="w-full max-w-md mx-auto">
-              <div className="text-center mb-8">
-                <h1 className="font-display text-4xl sm:text-5xl tracking-tight mb-2">
-                  ENTER THE ARENA
+      {/* Top bar */}
+      <div className="absolute top-0 inset-x-0 z-20 flex items-center justify-between px-5"
+           style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 14px)' }}>
+        <button
+          onClick={() => navigate('/')}
+          className="h-9 w-9 rounded-full flex items-center justify-center bg-white/[0.08] backdrop-blur-xl border border-white/10 active:scale-95 transition"
+          aria-label="Back"
+        >
+          <ArrowLeft className="h-4 w-4 text-white" />
+        </button>
+        <img src={loopgateLogo} alt="Loopgate" className="h-4 opacity-80" />
+        <div className="h-9 w-9" />
+      </div>
+
+      {/* Scrollable content */}
+      <main className="absolute inset-0 overflow-y-auto overscroll-contain"
+            style={{ WebkitOverflowScrolling: 'touch', paddingTop: 'calc(env(safe-area-inset-top, 0px) + 72px)', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)' }}>
+        <div className="px-5 mx-auto w-full max-w-[420px]">
+          {/* Glass card */}
+          <motion.div
+            initial={{ opacity: 0, y: 16, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            className="relative rounded-[28px] overflow-hidden"
+            style={{
+              background: 'linear-gradient(180deg, rgba(28,28,30,0.72) 0%, rgba(20,20,22,0.62) 100%)',
+              backdropFilter: 'blur(40px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              boxShadow: '0 30px 80px -20px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)',
+            }}
+          >
+            <div className="px-6 pt-7 pb-6">
+              {/* Hero */}
+              <div className="mb-6">
+                <p className="text-[11px] font-semibold tracking-[0.22em] text-[#D4A857] uppercase mb-2">Step Inside</p>
+                <h1 className="text-white text-[34px] leading-[1.05] font-bold tracking-[-0.03em]">
+                  Create your<br/>handle.
                 </h1>
-                <p className="text-muted-foreground text-sm">
-                  Pick a name, set a password. That's it.
+                <p className="text-white/55 text-[14px] mt-2 leading-snug tracking-[-0.01em]">
+                  Two fields. You're in the Hub in seconds.
                 </p>
               </div>
 
-              <div className="space-y-4">
-                {/* Username */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-widest pl-1">
-                    Username <span className="text-gold">*</span>
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      value={formData.username}
-                      onChange={(e) => {
-                        setFormData(prev => ({ ...prev, username: e.target.value }));
-                        setErrors(prev => ({ ...prev, username: '' }));
-                      }}
-                      placeholder="your_name"
-                      className="pl-12 h-14 bg-surface-1 border-border text-lg"
-                      maxLength={20}
-                      autoFocus
-                    />
-                  </div>
-                  {errors.username && (
-                    <motion.p
-                      initial={{ opacity: 0, y: -4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="text-sm text-destructive pl-1"
-                    >
-                      {errors.username}
-                    </motion.p>
-                  )}
+              {/* Username */}
+              <div className="space-y-2 mb-3">
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/35 text-[15px] font-medium select-none">@</span>
+                  <Input
+                    value={formData.username}
+                    onChange={(e) => {
+                      setFormData(prev => ({ ...prev, username: e.target.value.replace(/^@/, '') }));
+                      setErrors(prev => ({ ...prev, username: '' }));
+                    }}
+                    placeholder="username"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    autoFocus
+                    maxLength={20}
+                    className="h-14 pl-9 pr-4 rounded-2xl border-0 text-[17px] text-white placeholder:text-white/30 focus-visible:ring-1 focus-visible:ring-[#D4A857] tracking-[-0.01em]"
+                    style={{ background: 'rgba(255,255,255,0.06)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)' }}
+                  />
                 </div>
+                {errors.username && (
+                  <p className="text-[12px] text-[#FF453A] pl-1">{errors.username}</p>
+                )}
+              </div>
 
-                {/* Password */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-widest pl-1">
-                    Password <span className="text-gold">*</span>
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      type={showPassword ? 'text' : 'password'}
-                      value={formData.password}
-                      onChange={(e) => {
-                        setFormData(prev => ({ ...prev, password: e.target.value }));
-                        setErrors(prev => ({ ...prev, password: '' }));
-                      }}
-                      placeholder="6+ characters"
-                      className="pl-12 pr-12 h-14 bg-surface-1 border-border text-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                    </button>
-                  </div>
-                  {errors.password && (
-                    <motion.p
-                      initial={{ opacity: 0, y: -4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="text-sm text-destructive pl-1"
-                    >
-                      {errors.password}
-                    </motion.p>
-                  )}
-                </div>
-
-                {/* Optional: email + invite code (collapsed by default) */}
-                <div className="pt-1 space-y-2">
+              {/* Password */}
+              <div className="space-y-2">
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/35" />
+                  <Input
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData.password}
+                    onChange={(e) => {
+                      setFormData(prev => ({ ...prev, password: e.target.value }));
+                      setErrors(prev => ({ ...prev, password: '' }));
+                    }}
+                    placeholder="password"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    className="h-14 pl-11 pr-12 rounded-2xl border-0 text-[17px] text-white placeholder:text-white/30 focus-visible:ring-1 focus-visible:ring-[#D4A857] tracking-[-0.01em]"
+                    style={{ background: 'rgba(255,255,255,0.06)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)' }}
+                  />
                   <button
                     type="button"
-                    onClick={() => setShowInviteCode(!showInviteCode)}
-                    className="flex items-center gap-2 text-xs text-muted-foreground hover:text-gold transition-colors group"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 h-9 w-9 rounded-xl flex items-center justify-center text-white/55 active:bg-white/10"
+                    aria-label="Toggle password"
                   >
-                    <Mail className="h-3.5 w-3.5" />
-                    <span>Add email or invite code <span className="text-muted-foreground/60">(optional)</span></span>
-                    <ChevronDown className={`h-3 w-3 transition-transform ${showInviteCode ? 'rotate-180' : ''}`} />
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
+                </div>
+                {errors.password && (
+                  <p className="text-[12px] text-[#FF453A] pl-1">{errors.password}</p>
+                )}
+              </div>
 
-                  <AnimatePresence>
-                    {showInviteCode && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="pt-2 space-y-2">
-                          <div className="relative">
-                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                              type="email"
-                              value={formData.email}
-                              onChange={(e) => {
-                                setFormData(prev => ({ ...prev, email: e.target.value }));
-                                setErrors(prev => ({ ...prev, email: '' }));
-                              }}
-                              placeholder="email for recovery"
-                              className="pl-11 h-11 bg-surface-1 border-border text-sm"
-                            />
-                          </div>
-                          {errors.email && (
-                            <p className="text-xs text-destructive pl-1">{errors.email}</p>
-                          )}
-                          <div className="relative">
-                            <Ticket className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                              value={formData.inviteCode}
-                              onChange={(e) => {
-                                const code = e.target.value.toUpperCase();
-                                setFormData(prev => ({ ...prev, inviteCode: code }));
-                                validateInviteCode(code);
-                              }}
-                              placeholder="INVITE CODE"
-                              className="pl-11 h-11 bg-surface-1 border-border uppercase tracking-widest text-sm"
-                              maxLength={20}
-                            />
-                          </div>
-                          {codeInfo && (
-                            <div className="flex items-center gap-2 text-xs text-gold pl-1">
-                              {codeInfo.type === 'personal' ? (
-                                <>
-                                  <Zap className="h-3 w-3" />
-                                  <span>Invited by {codeInfo.inviterName} — bonus XP!</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Users className="h-3 w-3" />
-                                  <span>Joining {codeInfo.crewName} — bonus XP!</span>
-                                </>
-                              )}
-                            </div>
+              {/* Primary CTA */}
+              <button
+                onClick={handleNext}
+                disabled={loading || !canProceed()}
+                className="mt-5 w-full h-14 rounded-2xl text-[17px] font-bold tracking-[-0.01em] flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-40 disabled:active:scale-100"
+                style={{
+                  background: canProceed()
+                    ? 'linear-gradient(180deg, #E8C271 0%, #C99A45 100%)'
+                    : 'rgba(255,255,255,0.08)',
+                  color: canProceed() ? '#1a1306' : 'rgba(255,255,255,0.5)',
+                  boxShadow: canProceed() ? '0 10px 30px -8px rgba(212,168,87,0.55), inset 0 1px 0 rgba(255,255,255,0.4)' : 'none',
+                }}
+              >
+                {loading ? (
+                  <div className="h-5 w-5 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+                ) : (
+                  <>
+                    Enter the Hub
+                    <ArrowRight className="h-5 w-5" />
+                  </>
+                )}
+              </button>
+
+              {/* Optional reveal */}
+              <button
+                type="button"
+                onClick={() => setShowInviteCode(!showInviteCode)}
+                className="mt-4 mx-auto flex items-center gap-1.5 text-[12px] text-white/45 hover:text-white/70 transition-colors"
+              >
+                <span>Add email or invite code</span>
+                <ChevronDown className={`h-3 w-3 transition-transform ${showInviteCode ? 'rotate-180' : ''}`} />
+              </button>
+
+              <AnimatePresence>
+                {showInviteCode && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.22 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pt-3 space-y-2">
+                      <div className="relative">
+                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/35" />
+                        <Input
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) => {
+                            setFormData(prev => ({ ...prev, email: e.target.value }));
+                            setErrors(prev => ({ ...prev, email: '' }));
+                          }}
+                          placeholder="email (recovery)"
+                          className="h-12 pl-11 pr-4 rounded-2xl border-0 text-[15px] text-white placeholder:text-white/30 focus-visible:ring-1 focus-visible:ring-[#D4A857]"
+                          style={{ background: 'rgba(255,255,255,0.06)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)' }}
+                        />
+                      </div>
+                      {errors.email && <p className="text-[12px] text-[#FF453A] pl-1">{errors.email}</p>}
+                      <div className="relative">
+                        <Ticket className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/35" />
+                        <Input
+                          value={formData.inviteCode}
+                          onChange={(e) => {
+                            const code = e.target.value.toUpperCase();
+                            setFormData(prev => ({ ...prev, inviteCode: code }));
+                            validateInviteCode(code);
+                          }}
+                          placeholder="INVITE CODE"
+                          className="h-12 pl-11 pr-4 rounded-2xl border-0 text-[15px] text-white placeholder:text-white/30 uppercase tracking-[0.18em] focus-visible:ring-1 focus-visible:ring-[#D4A857]"
+                          style={{ background: 'rgba(255,255,255,0.06)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)' }}
+                          maxLength={20}
+                        />
+                      </div>
+                      {codeInfo && (
+                        <div className="flex items-center gap-2 text-[12px] text-[#D4A857] pl-1">
+                          {codeInfo.type === 'personal' ? (
+                            <><Zap className="h-3 w-3" /><span>Invited by {codeInfo.inviterName} — bonus XP</span></>
+                          ) : (
+                            <><Users className="h-3 w-3" /><span>Joining {codeInfo.crewName} — bonus XP</span></>
                           )}
                         </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </div>
-        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </motion.div>
 
-        {/* Bottom actions */}
-        <div className="mt-8 max-w-md mx-auto w-full space-y-3">
-          <Button
-            onClick={handleNext}
-            disabled={loading || !canProceed()}
-            className="w-full h-14 bg-gold hover:bg-gold/90 text-gold-foreground font-display text-lg"
-          >
-            {loading ? (
-              <div className="h-5 w-5 border-2 border-gold-foreground/30 border-t-gold-foreground rounded-full animate-spin" />
-            ) : (
-              <>
-                <GateIcon className="mr-2 h-5 w-5" />
-                CREATE ACCOUNT
-              </>
-            )}
-          </Button>
-
-          {/* Login link */}
-          <div className="text-center">
+          {/* Sign in link */}
+          <div className="text-center mt-6">
             <button
               onClick={() => navigate('/login')}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-[13px] text-white/50 active:text-white/80 transition-colors"
             >
-              Already have an account? <span className="text-gold">Sign in</span>
+              Already have an account? <span className="text-[#D4A857] font-semibold">Sign in</span>
             </button>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
