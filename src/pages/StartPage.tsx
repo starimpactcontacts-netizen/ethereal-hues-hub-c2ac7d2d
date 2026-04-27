@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useTempProfile } from '@/hooks/useTempProfile';
-import loopgateLogo from '@/assets/loopgate-wordmark.png';
 import authCollageBg from '@/assets/auth-collage-bg.jpg';
 import loopgateIcon from '@/assets/loopgate-logo.png';
 import { rememberAccount } from '@/lib/rememberedAccounts';
