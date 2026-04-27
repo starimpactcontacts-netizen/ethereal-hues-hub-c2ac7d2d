@@ -17,6 +17,7 @@ import { createBattle } from "@/hooks/useBattles";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAutoplayVideo } from "@/hooks/useAutoplayVideo";
+import FeedRateModal from "./FeedRateModal";
 
 interface FeedPostCardProps {
   post: FeedPostItem;
@@ -51,6 +52,7 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
   const [showChallengeConfirm, setShowChallengeConfirm] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [showReactionPicker, setShowReactionPicker] = useState(false);
+  const [showRateModal, setShowRateModal] = useState(false);
   const [commentCount, setCommentCount] = useState(post.comment_count || 0);
   const [challengeLoading, setChallengeLoading] = useState(false);
   const [muted, setMuted] = useState(true);
@@ -275,10 +277,7 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
               {/* Rate Edit — opens Loopy with media prefilled */}
               {(post.media_url || post.uploaded_media_url) && (
                 <button
-                  onClick={() => {
-                    const url = post.uploaded_media_url || post.media_url || '';
-                    navigate(`/loopy?url=${encodeURIComponent(url)}`);
-                  }}
+                  onClick={() => setShowRateModal(true)}
                   className="flex items-center gap-1 h-7 px-2.5 rounded-full text-muted-foreground hover:text-purple-300 hover:bg-purple-500/10 transition-all active:scale-95"
                   aria-label="Rate this edit"
                   title="Rate this edit"
