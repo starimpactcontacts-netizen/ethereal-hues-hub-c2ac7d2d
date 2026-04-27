@@ -35,7 +35,6 @@ import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import EmailNotificationSettings from "@/components/loopgate/EmailNotificationSettings";
 import LiveWinnersTicker from "@/components/loopgate/LiveWinnersTicker";
-import LivePayoutsCarousel from "@/components/loopgate/LivePayoutsCarousel";
 import ArenaCompetitionsSection from "@/components/loopgate/ArenaCompetitionsSection";
 import { startQuickMatch } from "@/lib/startQuickMatch";
 import CashBattlesSection from "@/components/loopgate/CashBattlesSection";
@@ -1352,11 +1351,6 @@ export default function ArenaPage() {
               <ArenaCompetitionsSection onCreateClick={() => navigate(profile ? '/competition/create' : '/start')} />
             </div>
           )}
-
-          {/* ═══ LIVE PAYOUTS CAROUSEL ═══ */}
-          <div className="mb-5">
-            <LivePayoutsCarousel />
-          </div>
 
           {/* Marketplace removed */}
 

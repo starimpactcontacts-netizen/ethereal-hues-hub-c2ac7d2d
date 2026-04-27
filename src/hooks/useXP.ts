@@ -19,39 +19,39 @@ export const XP_LEVELS = [
   { level: 91, xpRequired: 1020613 }, { level: 92, xpRequired: 1045450 }, { level: 93, xpRequired: 1070613 }, { level: 94, xpRequired: 1096103 }, { level: 95, xpRequired: 1121920 }, { level: 96, xpRequired: 1148066 }, { level: 97, xpRequired: 1174540 }, { level: 98, xpRequired: 1201344 }, { level: 99, xpRequired: 1228478 }, { level: 100, xpRequired: 1255943 },
 ];
 
-// XP amounts for various actions — 10x scaled for fast addictive leveling
+// XP amounts for various actions — 100x scaled (another 10x bump) for max addictive leveling
 export const XP_REWARDS = {
   // Daily Actions
-  app_open: 50,
-  check_rankings: 30,
-  check_arenas: 30,
-  view_crew: 20,
-  update_profile: 100,
+  app_open: 500,
+  check_rankings: 300,
+  check_arenas: 300,
+  view_crew: 200,
+  update_profile: 1000,
 
   // Competitive Actions
-  enter_event: 200,
-  submit_edit: 500,
-  receive_review: 100,
-  dnf: 50,
+  enter_event: 2000,
+  submit_edit: 5000,
+  receive_review: 1000,
+  dnf: 500,
 
   // Skill Actions
-  top_10: 750,
-  top_3: 1500,
-  event_win: 3000,
-  enter_top_50: 1500,
-  enter_top_10: 3000,
-  rank_1: 5000,
+  top_10: 7500,
+  top_3: 15000,
+  event_win: 30000,
+  enter_top_50: 15000,
+  enter_top_10: 30000,
+  rank_1: 50000,
 
   // Social Actions
-  join_crew: 150,
-  create_crew: 300,
-  crew_chat: 100,
-  arena_chat: 10,
-  verify_platform: 250,
+  join_crew: 1500,
+  create_crew: 3000,
+  crew_chat: 1000,
+  arena_chat: 100,
+  verify_platform: 2500,
 
   // Daily caps (set high to effectively uncap)
-  crew_chat_cap: 100000,
-  arena_chat_cap: 10000,
+  crew_chat_cap: 1000000,
+  arena_chat_cap: 100000,
 };
 
 // Action descriptions for toasts
