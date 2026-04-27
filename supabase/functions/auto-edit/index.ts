@@ -5,7 +5,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM_PROMPT = `You are Smart Auto-Edit, an AI video editor assistant. You generate professional edit timelines from raw clip descriptions and style preferences.
+const SYSTEM_PROMPT = `You are Loopy Auto-Edit, an AI video editor assistant. You generate professional edit timelines from raw clip descriptions and style preferences.
 
 Given a set of video clips (with durations and descriptions) and a style preset, you MUST return a structured edit timeline using the tool provided.
 

@@ -984,14 +984,14 @@ export default function CommissionDetailPage() {
 
               {/* Scrollable content */}
               <div className="overflow-y-auto flex-1 px-5 pb-8">
-                {/* QOI scoring header */}
+                {/* Header with Loopy character */}
                 <div className="flex items-center gap-3 mb-5 mt-2">
                   <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/10 border border-amber-500/30 flex items-center justify-center shrink-0">
-                    <span className="text-2xl">⚖️</span>
+                    <span className="text-2xl">🐱</span>
                   </div>
                   <div className="flex-1">
                     <h3 className="text-sm font-black text-foreground uppercase tracking-wider">What's QOI?</h3>
-                    <p className="text-[10px] text-muted-foreground">How scoring works</p>
+                    <p className="text-[10px] text-muted-foreground">Loopy explains how scoring works</p>
                   </div>
                   <button onClick={() => setShowQoiInfo(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X className="w-4 h-4 text-muted-foreground" /></button>
                 </div>

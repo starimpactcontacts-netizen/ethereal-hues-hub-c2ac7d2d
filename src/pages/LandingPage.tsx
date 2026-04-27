@@ -13,6 +13,7 @@ import { useGuestMode } from '@/hooks/useGuestMode';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 import loopgateHeroCinematic from '@/assets/hero-collage.jpeg';
 import editoriumLogo from '@/assets/editorium-logo.png';
+import loopyAvatar from '@/assets/loopy-avatar.png';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -20,6 +21,7 @@ const quickLinks = [
   { to: '/hub', label: 'Hub', Icon: HubIcon, desc: 'Browse edits & editors', color: '#ffffff', bgGrad: 'from-white/[0.07] to-white/[0.02]', glowColor: 'rgba(255,255,255,0.08)' },
   { to: '/arena', label: 'Arena', Icon: ArenaIcon, desc: 'Compete now', color: '#ef4444', bgGrad: 'from-red-500/[0.12] to-red-500/[0.02]', glowColor: 'rgba(239,68,68,0.15)' },
   { to: '/rankings', label: 'Rankings', Icon: RankingsIcon, desc: 'Global leaderboard', color: '#E8C84A', bgGrad: 'from-amber-500/[0.12] to-amber-500/[0.02]', glowColor: 'rgba(232,200,74,0.15)' },
+  { to: '/loopy', label: 'Rate My Edit', Icon: RateIcon, desc: 'Free AI rating', color: '#a855f7', bgGrad: 'from-purple-500/[0.12] to-purple-500/[0.02]', glowColor: 'rgba(168,85,247,0.15)' },
   { to: '/units', label: 'Units', Icon: UnitsIcon, desc: 'Join a crew', color: '#06b6d4', bgGrad: 'from-cyan-500/[0.12] to-cyan-500/[0.02]', glowColor: 'rgba(6,182,212,0.15)' },
   { to: '/missions', label: 'Missions', Icon: MissionsIcon, desc: 'Earn cash', color: '#10b981', bgGrad: 'from-emerald-500/[0.12] to-emerald-500/[0.02]', glowColor: 'rgba(16,185,129,0.15)' },
 ];
@@ -376,6 +378,7 @@ export default function LandingPage() {
                 <h4 className="text-[10px] font-bold tracking-[0.25em] uppercase text-foreground mb-4">Community</h4>
                 <div className="space-y-2.5">
                   <button onClick={handleGuestExplore} className="block text-sm text-muted-foreground hover:text-foreground transition-colors text-left">Explore</button>
+                  <Link to="/loopy" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Rate My Edit</Link>
                   <Link to="/gqt" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">QOI Test</Link>
                 </div>
               </div>

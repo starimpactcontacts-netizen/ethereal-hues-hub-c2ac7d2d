@@ -13,6 +13,7 @@ import { InfinityLoop } from "@/components/loopgate/InfinityLoop";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRoles } from "@/hooks/useUserRoles";
+import LoopMonster from "@/components/loopgate/LoopMonster";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
 import SoloModeFlow from "@/components/loopgate/SoloModeFlow";
 import SoloShowcase from "@/components/loopgate/SoloShowcase";
@@ -735,6 +736,8 @@ export default function ArenaPage() {
 
   return (
     <div className="min-h-screen pb-4" style={{ background: '#0A0A0A' }}>
+      <LoopMonster />
+
       {/* ═══ HERO ═══ */}
       <div className="relative overflow-hidden border-b border-white/[0.02]">
         <div className="absolute inset-0 bg-gradient-to-b from-red-950/10 via-transparent to-transparent" />
