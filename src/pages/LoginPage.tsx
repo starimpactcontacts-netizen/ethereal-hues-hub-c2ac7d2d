@@ -199,15 +199,25 @@ export default function LoginPage() {
                   style={{ filter: 'drop-shadow(0 8px 20px rgba(212,168,87,0.35))' }}
                 />
                 <p className="text-[11px] font-semibold tracking-[0.22em] text-[#D4A857] uppercase mb-2">
-                  {accounts.length > 0 ? 'Continue As' : 'Welcome Back'}
+                  {accounts.length > 0 ? 'Welcome Back' : 'Welcome Back'}
                 </p>
                 <h1 className="text-white text-[34px] leading-[1.05] font-bold tracking-[-0.03em]">
-                  {selected ? `Hi, ${selected.username}.` : accounts.length > 0 ? 'Pick your\nhandle.' : 'Log in.'}
+                  {selected
+                    ? `Hi, ${selected.username}.`
+                    : accounts.length === 1
+                    ? `Hey, ${accounts[0].username}.`
+                    : accounts.length > 1
+                    ? 'Pick your\nhandle.'
+                    : 'Log in.'}
                 </h1>
                 <p className="text-white/55 text-[14px] mt-2 leading-snug tracking-[-0.01em]">
                   {selected
                     ? 'Enter your password to jump back in.'
-                    : accounts.length > 0
+                    : accounts.length === 1
+                    ? accounts[0].pw
+                      ? 'Tap your photo to jump right back in.'
+                      : 'Tap your handle and enter your password.'
+                    : accounts.length > 1
                     ? 'Tap an account to continue — or sign in with another.'
                     : 'One tap. You are back inside.'}
                 </p>

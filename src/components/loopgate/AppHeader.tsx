@@ -52,7 +52,7 @@ export default function AppHeader() {
     } catch (error) {
       console.error('Sign out error:', error);
     }
-    navigate('/');
+    navigate('/login');
   };
 
   return (
