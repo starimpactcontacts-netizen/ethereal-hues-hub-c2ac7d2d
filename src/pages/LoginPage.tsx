@@ -31,22 +31,46 @@ export default function LoginPage() {
 
   useEffect(() => {
     const initial = getRememberedAccounts();
-    setAccounts(initial);
-    // Backfill any account whose stored "username" is actually an email or
-    // is missing an avatar — query profiles by email and rewrite.
+    // Sanitize immediately so UI never shows an email as the handle
+    const sanitized = initial.map((a) => {
+      if (a.username.includes('@')) {
+        const cleaned = a.username.split('@')[0];
+        rememberAccount({
+          username: cleaned,
+          email: a.email,
+          avatarUrl: a.avatarUrl ?? null,
+        });
+        return { ...a, username: cleaned };
+      }
+      return a;
+    });
+    setAccounts(sanitized);
+    // Backfill: query profiles by email, then by username-prefix fallback
     (async () => {
-      const needsFix = initial.filter(
+      const needsFix = sanitized.filter(
         (a) => a.username.includes('@') || !a.avatarUrl,
       );
       if (needsFix.length === 0) return;
       let changed = false;
       for (const acc of needsFix) {
         try {
-          const { data: profile } = await supabase
+          // 1) Try direct email match
+          let { data: profile } = await supabase
             .from('profiles')
             .select('username, avatar_url')
             .eq('email', acc.email)
             .maybeSingle();
+          // 2) Fallback: usernames are auto-generated as "<emailprefix>_xxxx"
+          if (!profile) {
+            const prefix = acc.email.split('@')[0].toLowerCase();
+            const { data: byPrefix } = await supabase
+              .from('profiles')
+              .select('username, avatar_url')
+              .ilike('username', `${prefix}%`)
+              .limit(1)
+              .maybeSingle();
+            profile = byPrefix as any;
+          }
           if (profile?.username) {
             rememberAccount({
               username: profile.username,
