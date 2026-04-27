@@ -471,114 +471,22 @@ export default function StartPage() {
 
       {/* Main content - vertically centered with proper spacing */}
       <div className="relative z-10 flex-1 flex flex-col justify-start pt-8 px-5 pb-4">
-        <AnimatePresence mode="wait">
-          {/* Step 0: Role Selection */}
-          {step === 0 && (
-            <motion.div
-              key="role"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.25 }}
-              className="w-full max-w-md mx-auto"
-            >
+        <div className="w-full max-w-md mx-auto">
               <div className="text-center mb-8">
                 <h1 className="font-display text-4xl sm:text-5xl tracking-tight mb-2">
-                  CHOOSE YOUR PATH
+                  ENTER THE ARENA
                 </h1>
                 <p className="text-muted-foreground text-sm">
-                  How will you enter the arena?
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                {/* Editor — hero primary choice, pre-selected */}
-                <button
-                  onClick={() => setFormData(prev => ({ ...prev, role: 'editor' }))}
-                  className={`w-full border transition-all duration-200 text-left group relative overflow-hidden ${
-                    formData.role === 'editor'
-                      ? 'border-gold bg-gradient-to-r from-gold/15 via-gold/8 to-transparent p-6'
-                      : 'border-border bg-surface-1 hover:border-muted-foreground p-5'
-                  }`}
-                >
-                  {formData.role === 'editor' && (
-                    <div className="absolute top-0 right-0 bg-gold text-background text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5">
-                      Most Popular
-                    </div>
-                  )}
-                  <div className="flex items-center gap-4">
-                    <div className={`p-3 ${formData.role === 'editor' ? 'bg-gold/20 border border-gold/30' : 'bg-surface-2'}`}>
-                      <Swords className={`h-6 w-6 ${formData.role === 'editor' ? 'text-gold' : 'text-muted-foreground'}`} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <h3 className={`font-display ${formData.role === 'editor' ? 'text-2xl' : 'text-xl'}`}>EDITOR</h3>
-                        {formData.role === 'editor' && (
-                          <div className="h-5 w-5 rounded-full bg-gold flex items-center justify-center">
-                            <Check className="h-3 w-3 text-background" />
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-muted-foreground text-xs mt-0.5">
-                        Compete in arenas, build your rank, prove your skill
-                      </p>
-                    </div>
-                  </div>
-                </button>
-
-                {/* Judge — secondary, understated */}
-                <button
-                  onClick={() => setFormData(prev => ({ ...prev, role: 'judge' }))}
-                  className={`w-full p-4 border transition-all duration-200 text-left group ${
-                    formData.role === 'judge'
-                      ? 'border-gold bg-gold/10'
-                      : 'border-border/60 bg-surface-1/60 hover:border-muted-foreground'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`p-2 ${formData.role === 'judge' ? 'bg-gold/20' : 'bg-surface-2/60'}`}>
-                      <Scale className={`h-4 w-4 ${formData.role === 'judge' ? 'text-gold' : 'text-muted-foreground/60'}`} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-display text-base text-muted-foreground">JUDGE</h3>
-                        {formData.role === 'judge' && (
-                          <div className="h-5 w-5 rounded-full bg-gold flex items-center justify-center">
-                            <Check className="h-3 w-3 text-background" />
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-muted-foreground/60 text-[11px] mt-0.5">
-                        Score submissions, shape the meta, earn authority
-                      </p>
-                    </div>
-                  </div>
-                </button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Step 1: Username */}
-          {step === 1 && (
-            <motion.div
-              key="username"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.25 }}
-              className="w-full max-w-md mx-auto"
-            >
-              <div className="text-center mb-8">
-                <h1 className="font-display text-4xl sm:text-5xl tracking-tight mb-2">
-                  CLAIM YOUR NAME
-                </h1>
-                <p className="text-muted-foreground text-sm">
-                  This is how you'll be known in the arena
+                  Pick a name, set a password. That's it.
                 </p>
               </div>
 
               <div className="space-y-4">
-                <div className="space-y-2">
+                {/* Username */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-widest pl-1">
+                    Username <span className="text-gold">*</span>
+                  </label>
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
@@ -602,34 +510,8 @@ export default function StartPage() {
                       {errors.username}
                     </motion.p>
                   )}
-                  <p className="text-xs text-muted-foreground/60 pl-1">
-                    3-20 characters • letters, numbers, underscores
-                  </p>
                 </div>
-              </div>
-            </motion.div>
-          )}
 
-          {/* Step 2: Password + Optional Email + Invite Code toggle */}
-          {step === 2 && (
-            <motion.div
-              key="account"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.25 }}
-              className="w-full max-w-md mx-auto"
-            >
-              <div className="text-center mb-8">
-                <h1 className="font-display text-4xl sm:text-5xl tracking-tight mb-2">
-                  LOCK IT IN
-                </h1>
-                <p className="text-muted-foreground text-sm">
-                  Secure your spot as <span className="text-gold font-semibold">{formData.username}</span>
-                </p>
-              </div>
-
-              <div className="space-y-4">
                 {/* Password */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-muted-foreground uppercase tracking-widest pl-1">
@@ -646,7 +528,6 @@ export default function StartPage() {
                       }}
                       placeholder="6+ characters"
                       className="pl-12 pr-12 h-14 bg-surface-1 border-border text-lg"
-                      autoFocus
                     />
                     <button
                       type="button"
@@ -667,37 +548,117 @@ export default function StartPage() {
                   )}
                 </div>
 
-                {/* Email - Optional */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-widest pl-1">
-                    Email <span className="text-muted-foreground/50">(optional — for recovery)</span>
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => {
-                        setFormData(prev => ({ ...prev, email: e.target.value }));
-                        setErrors(prev => ({ ...prev, email: '' }));
-                      }}
-                      placeholder="sync across devices"
-                      className="pl-12 h-14 bg-surface-1 border-border text-lg"
-                    />
-                  </div>
-                  {errors.email && (
-                    <motion.p
-                      initial={{ opacity: 0, y: -4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="text-sm text-destructive pl-1"
-                    >
-                      {errors.email}
-                    </motion.p>
-                  )}
-                </div>
+                {/* Optional: email + invite code (collapsed by default) */}
+                <div className="pt-1 space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowInviteCode(!showInviteCode)}
+                    className="flex items-center gap-2 text-xs text-muted-foreground hover:text-gold transition-colors group"
+                  >
+                    <Mail className="h-3.5 w-3.5" />
+                    <span>Add email or invite code <span className="text-muted-foreground/60">(optional)</span></span>
+                    <ChevronDown className={`h-3 w-3 transition-transform ${showInviteCode ? 'rotate-180' : ''}`} />
+                  </button>
 
-                {/* Invite Code - collapsible toggle */}
-                <div className="pt-1">
+                  <AnimatePresence>
+                    {showInviteCode && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="pt-2 space-y-2">
+                          <div className="relative">
+                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                              type="email"
+                              value={formData.email}
+                              onChange={(e) => {
+                                setFormData(prev => ({ ...prev, email: e.target.value }));
+                                setErrors(prev => ({ ...prev, email: '' }));
+                              }}
+                              placeholder="email for recovery"
+                              className="pl-11 h-11 bg-surface-1 border-border text-sm"
+                            />
+                          </div>
+                          {errors.email && (
+                            <p className="text-xs text-destructive pl-1">{errors.email}</p>
+                          )}
+                          <div className="relative">
+                            <Ticket className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                              value={formData.inviteCode}
+                              onChange={(e) => {
+                                const code = e.target.value.toUpperCase();
+                                setFormData(prev => ({ ...prev, inviteCode: code }));
+                                validateInviteCode(code);
+                              }}
+                              placeholder="INVITE CODE"
+                              className="pl-11 h-11 bg-surface-1 border-border uppercase tracking-widest text-sm"
+                              maxLength={20}
+                            />
+                          </div>
+                          {codeInfo && (
+                            <div className="flex items-center gap-2 text-xs text-gold pl-1">
+                              {codeInfo.type === 'personal' ? (
+                                <>
+                                  <Zap className="h-3 w-3" />
+                                  <span>Invited by {codeInfo.inviterName} — bonus XP!</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Users className="h-3 w-3" />
+                                  <span>Joining {codeInfo.crewName} — bonus XP!</span>
+                                </>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+        </div>
+
+        {/* Bottom actions */}
+        <div className="mt-8 max-w-md mx-auto w-full space-y-3">
+          <Button
+            onClick={handleNext}
+            disabled={loading || !canProceed()}
+            className="w-full h-14 bg-gold hover:bg-gold/90 text-gold-foreground font-display text-lg"
+          >
+            {loading ? (
+              <div className="h-5 w-5 border-2 border-gold-foreground/30 border-t-gold-foreground rounded-full animate-spin" />
+            ) : (
+              <>
+                <GateIcon className="mr-2 h-5 w-5" />
+                CREATE ACCOUNT
+              </>
+            )}
+          </Button>
+
+          {/* Login link */}
+          <div className="text-center">
+            <button
+              onClick={() => navigate('/login')}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Already have an account? <span className="text-gold">Sign in</span>
+            </button>
+          </div>
+        </div>
+        {/* Old multi-step bottom actions removed below */}
+        {false && (
+          <>
+          <AnimatePresence>
+            {false && (
+              <motion.div key="legacy" />
+            )}
+          </AnimatePresence>
+          <div className="space-y-4">
                   <button
                     type="button"
                     onClick={() => setShowInviteCode(!showInviteCode)}
@@ -756,56 +717,8 @@ export default function StartPage() {
                     )}
                   </AnimatePresence>
                 </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Bottom actions - inside flex container, always visible */}
-        <div className="mt-8 max-w-md mx-auto w-full space-y-3">
-          <div className="flex gap-3">
-            {step > 0 && (
-              <Button
-                variant="outline"
-                onClick={handleBack}
-                disabled={loading}
-                className="h-14 px-5 border-border"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            )}
-            
-            <Button
-              onClick={handleNext}
-              disabled={loading || !canProceed()}
-              className="flex-1 h-14 bg-gold hover:bg-gold/90 text-gold-foreground font-display text-lg"
-            >
-              {loading ? (
-                <div className="h-5 w-5 border-2 border-gold-foreground/30 border-t-gold-foreground rounded-full animate-spin" />
-              ) : step === 2 ? (
-                <>
-                  <GateIcon className="mr-2 h-5 w-5" />
-                  CREATE ACCOUNT
-                </>
-              ) : (
-                <>
-                  CONTINUE
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </>
-              )}
-            </Button>
-          </div>
-
-          {/* Login link */}
-          <div className="text-center">
-            <button
-              onClick={() => navigate('/login')}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Already have an account? <span className="text-gold">Sign in</span>
-            </button>
-          </div>
-        </div>
+          </>
+        )}
       </div>
     </div>
   );
