@@ -180,6 +180,12 @@ export default function LoginPage() {
             <div className="px-6 pt-7 pb-6">
               {/* Hero */}
               <div className="mb-6">
+                <img
+                  src={loopgateIcon}
+                  alt="Loopgate"
+                  className="h-12 w-12 mb-4 rounded-[12px] object-contain"
+                  style={{ filter: 'drop-shadow(0 8px 20px rgba(212,168,87,0.35))' }}
+                />
                 <p className="text-[11px] font-semibold tracking-[0.22em] text-[#D4A857] uppercase mb-2">
                   {accounts.length > 0 ? 'Continue As' : 'Welcome Back'}
                 </p>
