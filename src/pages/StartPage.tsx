@@ -20,11 +20,7 @@ interface FormData {
   inviteCode: string;
 }
 
-const STEPS = [
-  { id: 'role', title: 'Choose Your Path' },
-  { id: 'username', title: 'Claim Your Name' },
-  { id: 'account', title: 'Lock It In' },
-];
+const STEPS = [{ id: 'signup', title: 'Sign Up' }];
 
 export default function StartPage() {
   const navigate = useNavigate();
@@ -151,35 +147,24 @@ export default function StartPage() {
     setLoading(true);
     
     try {
-      if (step === 0) {
-        if (!formData.role) {
-          toast.error('Choose a path to continue');
-          setLoading(false);
-          return;
-        }
-        setStep(1);
-      } else if (step === 1) {
-        const isValid = await validateUsername(formData.username.trim());
-        if (!isValid) {
-          setLoading(false);
-          return;
-        }
-        setStep(2);
-      } else if (step === 2) {
-        const passwordValid = validatePassword(formData.password);
-        if (!passwordValid) {
-          setLoading(false);
-          return;
-        }
-        if (formData.email) {
-          const emailValid = validateEmail(formData.email.trim());
-          if (!emailValid) {
-            setLoading(false);
-            return;
-          }
-        }
-        await createAccount();
+      const usernameValid = await validateUsername(formData.username.trim());
+      if (!usernameValid) {
+        setLoading(false);
+        return;
       }
+      const passwordValid = validatePassword(formData.password);
+      if (!passwordValid) {
+        setLoading(false);
+        return;
+      }
+      if (formData.email) {
+        const emailValid = validateEmail(formData.email.trim());
+        if (!emailValid) {
+          setLoading(false);
+          return;
+        }
+      }
+      await createAccount();
     } finally {
       setLoading(false);
     }
@@ -446,10 +431,7 @@ export default function StartPage() {
   };
 
   const canProceed = () => {
-    if (step === 0) return !!formData.role;
-    if (step === 1) return formData.username.trim().length >= 3;
-    if (step === 2) return formData.password.length >= 6;
-    return true;
+    return formData.username.trim().length >= 3 && formData.password.length >= 6;
   };
 
   return (
