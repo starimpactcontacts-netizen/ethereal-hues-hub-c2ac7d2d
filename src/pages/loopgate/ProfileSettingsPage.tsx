@@ -634,7 +634,10 @@ export default function ProfileSettingsPage() {
           </button>
 
           <button
-            onClick={() => signOut()}
+            onClick={async () => {
+              await signOut();
+              navigate('/login');
+            }}
             className="w-full bg-surface-1 border border-border rounded-xl p-4 flex items-center justify-between hover:border-destructive/30 transition-colors"
           >
             <span className="text-sm text-muted-foreground">Sign Out</span>
