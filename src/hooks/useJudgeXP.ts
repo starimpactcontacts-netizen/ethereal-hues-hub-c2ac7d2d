@@ -1,15 +1,15 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-// XP amounts for judge actions
+// XP amounts for judge actions — 10x scaled for fast addictive leveling
 export const JUDGE_XP_REWARDS = {
-  review_completed: 25,    // Judge completes a review
-  receive_review: 15,      // Editor receives a review
-  first_review_daily: 10,  // Bonus for first review of the day
-  high_quality_review: 10, // Bonus for detailed feedback
-  viral_bonus_10k: 50,     // Video hits 10k views
-  viral_bonus_100k: 100,   // Video hits 100k views
-  viral_bonus_1m: 500,     // Video hits 1M views
+  review_completed: 250,    // Judge completes a review
+  receive_review: 150,      // Editor receives a review
+  first_review_daily: 100,  // Bonus for first review of the day
+  high_quality_review: 100, // Bonus for detailed feedback
+  viral_bonus_10k: 500,     // Video hits 10k views
+  viral_bonus_100k: 1000,   // Video hits 100k views
+  viral_bonus_1m: 5000,     // Video hits 1M views
 };
 
 /**

@@ -15,19 +15,22 @@ export interface JudgeLeaderboardEntry {
   rank?: number;
 }
 
-// Judge XP thresholds for levels (10 levels like editor XP)
-export const JUDGE_XP_LEVELS = [
-  { level: 1, xpRequired: 0, perk: null },
-  { level: 2, xpRequired: 100, perk: null },
-  { level: 3, xpRequired: 300, perk: 'Faster queue priority' },
-  { level: 4, xpRequired: 600, perk: null },
-  { level: 5, xpRequired: 1000, perk: 'Featured spot on Judge Hub' },
-  { level: 6, xpRequired: 1500, perk: 'Custom badge color' },
-  { level: 7, xpRequired: 2200, perk: null },
-  { level: 8, xpRequired: 3200, perk: 'Early access to special requests' },
-  { level: 9, xpRequired: 4500, perk: null },
-  { level: 10, xpRequired: 7000, perk: 'Elite Judge role + Tournament invites' },
-];
+// Judge XP thresholds — 1-100 long-grind curve to mirror editor XP
+export const MAX_JUDGE_LEVEL = 100;
+const JUDGE_PERKS: Record<number, string> = {
+  3: 'Faster queue priority',
+  10: 'Featured spot on Judge Hub',
+  20: 'Custom badge color',
+  35: 'Early access to special requests',
+  50: 'Elite Judge role + Tournament invites',
+  75: 'Bureau Council seat consideration',
+  100: 'Legendary Bureau status',
+};
+export const JUDGE_XP_LEVELS = Array.from({ length: 100 }, (_, i) => {
+  const level = i + 1;
+  const xpRequired = level === 1 ? 0 : Math.round(50 * Math.pow(level, 2.2));
+  return { level, xpRequired, perk: JUDGE_PERKS[level] ?? null };
+});
 
 export function calculateJudgeLevel(judgeXp: number): number {
   for (let i = JUDGE_XP_LEVELS.length - 1; i >= 0; i--) {
@@ -39,7 +42,7 @@ export function calculateJudgeLevel(judgeXp: number): number {
 }
 
 export function getJudgeXPForNextLevel(currentLevel: number): number {
-  if (currentLevel >= 10) return JUDGE_XP_LEVELS[9].xpRequired;
+  if (currentLevel >= MAX_JUDGE_LEVEL) return JUDGE_XP_LEVELS[MAX_JUDGE_LEVEL - 1].xpRequired;
   return JUDGE_XP_LEVELS[currentLevel].xpRequired;
 }
 

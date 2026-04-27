@@ -76,12 +76,13 @@ const BADGE_TIERS = {
   },
 };
 
+// Tier cutoffs scaled to the 1-100 level system
 function getTierForLevel(level: number) {
-  if (level >= 10) return BADGE_TIERS.legendary;
-  if (level >= 9) return BADGE_TIERS.diamond;
-  if (level >= 7) return BADGE_TIERS.gold;
-  if (level >= 5) return BADGE_TIERS.silver;
-  if (level >= 3) return BADGE_TIERS.bronze;
+  if (level >= 100) return BADGE_TIERS.legendary;
+  if (level >= 75) return BADGE_TIERS.diamond;
+  if (level >= 50) return BADGE_TIERS.gold;
+  if (level >= 30) return BADGE_TIERS.silver;
+  if (level >= 15) return BADGE_TIERS.bronze;
   return BADGE_TIERS.stone;
 }
 
@@ -129,9 +130,9 @@ export default function CrewLevelBadge({
   const tier = getTierForLevel(level);
   const sizeClass = SIZE_CLASSES[size];
   const IconComponent = tier.icon;
-  const isLegendary = level >= 10;
-  const isDiamond = level >= 9;
-  const isGold = level >= 7;
+  const isLegendary = level >= 100;
+  const isDiamond = level >= 75;
+  const isGold = level >= 50;
 
   const content = (
     <div

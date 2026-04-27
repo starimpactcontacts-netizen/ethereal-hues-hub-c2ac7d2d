@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { getXPForNextLevel, getXPForCurrentLevel, XP_LEVELS } from "@/hooks/useXP";
+import { getXPForNextLevel, getXPForCurrentLevel, XP_LEVELS, MAX_LEVEL } from "@/hooks/useXP";
 
 interface XPProgressBarProps {
   xp: number;
@@ -18,7 +18,7 @@ export default function XPProgressBar({
 }: XPProgressBarProps) {
   const currentLevelXP = getXPForCurrentLevel(level);
   const nextLevelXP = getXPForNextLevel(level);
-  const isMaxLevel = level >= 10;
+  const isMaxLevel = level >= MAX_LEVEL;
   
   // Calculate progress percentage
   const xpIntoCurrentLevel = xp - currentLevelXP;
