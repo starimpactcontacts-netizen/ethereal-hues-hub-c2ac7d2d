@@ -8,7 +8,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import authCollageBg from '@/assets/auth-collage-bg.jpg';
 import loopgateIcon from '@/assets/loopgate-logo.png';
-import AppleSignInButton from '@/components/auth/AppleSignInButton';
 import {
   getRememberedAccounts,
   rememberAccount,
@@ -452,14 +451,6 @@ export default function LoginPage() {
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : selected ? `Continue as @${selected.username}` : 'Log in'}
                 </button>
               </form>
-
-              {/* Divider + Apple */}
-              <div className="flex items-center gap-3 my-4">
-                <div className="flex-1 h-px bg-white/10" />
-                <span className="text-[11px] text-white/40 tracking-[0.18em] uppercase">or</span>
-                <div className="flex-1 h-px bg-white/10" />
-              </div>
-              <AppleSignInButton returnTo={returnTo} label="Sign in with Apple" />
 
               {/* New here */}
               <div className="text-center pt-5">
