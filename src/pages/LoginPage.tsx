@@ -59,13 +59,31 @@ export default function LoginPage() {
       }
       return;
     }
-    // Remember (or refresh ordering)
-    const username =
-      displayUsername ||
-      (emailToUse.endsWith('@loopgate.local')
+    // Pull the real username + avatar from the profile so the remembered
+    // chip shows the handle (not the email).
+    let username = displayUsername || '';
+    let avatarUrl: string | null | undefined = undefined;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('username, avatar_url')
+          .eq('id', user.id)
+          .maybeSingle();
+        if (profile?.username) username = profile.username;
+        if (profile?.avatar_url) avatarUrl = profile.avatar_url;
+        // Last-resort fallback to the auth metadata username
+        const metaName = (user.user_metadata as any)?.username;
+        if (!username && metaName) username = metaName;
+      }
+    } catch { /* ignore */ }
+    if (!username) {
+      username = emailToUse.endsWith('@loopgate.local')
         ? emailToUse.split('@')[0]
-        : emailToUse.split('@')[0]);
-    rememberAccount({ username, email: emailToUse, password: pw });
+        : emailToUse.split('@')[0];
+    }
+    rememberAccount({ username, email: emailToUse, avatarUrl, password: pw });
     toast.success('Welcome back!');
     navigate(returnTo);
   };
