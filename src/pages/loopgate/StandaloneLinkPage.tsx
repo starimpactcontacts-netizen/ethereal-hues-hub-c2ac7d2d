@@ -5,7 +5,7 @@ import { Music2, Video, Globe, Instagram, Mail, Trophy, Swords, TrendingUp } fro
 import { SiTiktok, SiYoutube, SiX, SiTwitch, SiSpotify, SiSoundcloud } from "@icons-pack/react-simple-icons";
 import { supabase } from "@/integrations/supabase/client";
 import type { LinkPageSettings, EditorLink } from "@/hooks/useEditorLinkPage";
-import { getRankFromScore } from "@/data/gqtConfig";
+import { getRankFromScore, getEffectiveRank } from "@/data/gqtConfig";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 import LoadingScreen from "@/components/loopgate/LoadingScreen";
 
@@ -60,12 +60,8 @@ function getClassInfo(profile: ProfileData): { letter: string; hex: string } {
     "A": "#34d399", "B": "#60a5fa", "C": "#cbd5e1",
     "D": "#fb923c", "F": "#ef4444",
   };
-  if (profile.best_gatekeeper_qoi && profile.best_gatekeeper_qoi > 0) {
-    const r = getRankFromScore(profile.best_gatekeeper_qoi);
-    return { letter: r.rank, hex: CLASS_HEX[r.rank] || "#ef4444" };
-  }
-  if ((profile.level || 1) >= 2) return { letter: "D", hex: "#fb923c" };
-  return { letter: "F", hex: "#ef4444" };
+  const rank = getEffectiveRank(profile.best_gatekeeper_qoi, profile.level);
+  return { letter: rank, hex: CLASS_HEX[rank] || "#ef4444" };
 }
 
 const SOCIAL_ICONS: Record<string, React.FC<{ size?: number; className?: string }>> = {

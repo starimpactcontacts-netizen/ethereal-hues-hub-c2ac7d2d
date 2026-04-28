@@ -107,6 +107,44 @@ export function getRankFromScore(score: number): RankConfig {
   return rankConfigs.find(r => score >= r.minScore && score <= r.maxScore) || rankConfigs[rankConfigs.length - 1];
 }
 
+// ====================
+// LEVEL → RANK MAPPING
+// ====================
+// Editors automatically earn a rank by leveling up via XP (no QOI test required).
+// Taking the QOI test can grant a higher rank if the score warrants it.
+// The displayed rank = the BETTER of (level-derived rank, QOI-derived rank).
+
+const rankOrder: GQTRank[] = ['F', 'D', 'C', 'B', 'A', 'S', 'S+', 'S++'];
+
+export function getRankFromLevel(level: number | null | undefined): GQTRank {
+  const lvl = level || 1;
+  if (lvl >= 90) return 'S++';
+  if (lvl >= 70) return 'S+';
+  if (lvl >= 40) return 'S';
+  if (lvl >= 20) return 'A';
+  if (lvl >= 10) return 'B';
+  if (lvl >= 5) return 'C';
+  if (lvl >= 2) return 'D';
+  return 'F';
+}
+
+export function getRankIndex(rank: GQTRank): number {
+  return rankOrder.indexOf(rank);
+}
+
+export function getHigherRank(a: GQTRank, b: GQTRank): GQTRank {
+  return getRankIndex(a) >= getRankIndex(b) ? a : b;
+}
+
+/** Combined rank: max of QOI-test rank and level-progression rank. */
+export function getEffectiveRank(qoiScore: number | null | undefined, level: number | null | undefined): GQTRank {
+  const levelRank = getRankFromLevel(level);
+  if (qoiScore && qoiScore > 0) {
+    return getHigherRank(getRankFromScore(qoiScore).rank, levelRank);
+  }
+  return levelRank;
+}
+
 export function getPercentile(score: number): number {
   if (score >= 96) return 0.1;
   if (score >= 90) return 1;
