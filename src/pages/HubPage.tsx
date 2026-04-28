@@ -819,30 +819,62 @@ export default function HubPage() {
       <div className="px-4 mt-1.5">
         <div className="flex flex-col gap-0">
           {/* Cinematic action container — Premium animated gradient outline */}
-          <div className="relative rounded-2xl p-[1.5px] overflow-hidden">
-            {/* Animated gradient border layer */}
+          {(() => {
+            const accent = quickAction === 'edit_battle'
+              ? { a: '96,165,250', b: '59,130,246', c: '37,99,235' }
+              : quickAction === 'mission'
+                ? { a: '52,211,153', b: '16,185,129', c: '5,150,105' }
+                : quickAction === 'solo'
+                  ? { a: '251,191,36', b: '245,158,11', c: '217,119,6' }
+                  : { a: '248,113,113', b: '239,68,68', c: '185,28,28' };
+            const conic = `conic-gradient(from 0deg,
+              rgba(${accent.a},1) 0deg,
+              rgba(255,255,255,0.95) 25deg,
+              rgba(${accent.b},1) 60deg,
+              rgba(${accent.c},0.4) 110deg,
+              rgba(${accent.a},1) 170deg,
+              rgba(255,255,255,0.95) 210deg,
+              rgba(${accent.b},1) 260deg,
+              rgba(${accent.c},0.4) 310deg,
+              rgba(${accent.a},1) 360deg)`;
+            return (
+          <div className="relative rounded-2xl">
+            {/* Outer halo glow — pulses with accent */}
             <motion.div
-              className="absolute inset-0 rounded-2xl pointer-events-none"
+              aria-hidden
+              className="absolute -inset-1.5 rounded-3xl pointer-events-none blur-xl"
               style={{
-                background: quickAction === 'edit_battle'
-                  ? 'conic-gradient(from 0deg, rgba(96,165,250,0.9), rgba(255,255,255,0.15), rgba(59,130,246,0.9), rgba(255,255,255,0.15), rgba(96,165,250,0.9))'
-                  : quickAction === 'mission'
-                    ? 'conic-gradient(from 0deg, rgba(52,211,153,0.9), rgba(255,255,255,0.15), rgba(16,185,129,0.9), rgba(255,255,255,0.15), rgba(52,211,153,0.9))'
-                    : quickAction === 'solo'
-                      ? 'conic-gradient(from 0deg, rgba(251,191,36,0.9), rgba(255,255,255,0.15), rgba(245,158,11,0.9), rgba(255,255,255,0.15), rgba(251,191,36,0.9))'
-                      : 'conic-gradient(from 0deg, rgba(248,113,113,0.9), rgba(255,255,255,0.15), rgba(220,38,38,0.9), rgba(255,255,255,0.15), rgba(248,113,113,0.9))',
+                background: `radial-gradient(60% 80% at 50% 50%, rgba(${accent.b},0.55), rgba(${accent.b},0) 70%)`,
               }}
-              animate={{ rotate: 360 }}
-              transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
+              animate={{ opacity: [0.55, 0.95, 0.55] }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
             />
-            {/* Inner content row sits above gradient */}
-            <div
-              className="relative flex overflow-hidden rounded-[14px] bg-background"
-              style={{
-                boxShadow:
-                  '0 1px 0 rgba(255,255,255,0.08) inset, 0 0 0 1px rgba(0,0,0,0.4) inset, 0 10px 40px rgba(0,0,0,0.65), 0 0 24px rgba(255,255,255,0.04)',
-              }}
-            >
+            {/* Border container — 3px animated conic */}
+            <div className="relative rounded-2xl p-[3px] overflow-hidden">
+              <motion.div
+                aria-hidden
+                className="absolute inset-[-50%] pointer-events-none"
+                style={{ background: conic }}
+                animate={{ rotate: 360 }}
+                transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+              />
+              {/* Soft inner light bevel */}
+              <div
+                aria-hidden
+                className="absolute inset-[3px] rounded-[13px] pointer-events-none"
+                style={{
+                  background:
+                    'linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0) 40%)',
+                }}
+              />
+              {/* Inner content row */}
+              <div
+                className="relative flex overflow-hidden rounded-[13px] bg-background"
+                style={{
+                  boxShadow:
+                    `0 1px 0 rgba(255,255,255,0.10) inset, 0 0 0 1px rgba(0,0,0,0.55) inset, 0 14px 50px rgba(0,0,0,0.75), 0 0 32px rgba(${accent.b},0.25)`,
+                }}
+              >
             <motion.button
               whileTap={{ scale: 0.96 }}
               whileHover={{ scale: 1.01 }}
@@ -1015,7 +1047,10 @@ export default function HubPage() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          </div>
+              </div>
+            </div>
+            );
+          })()}
 
 
           {/* Queue status bar — when searching for an Edit Battle opponent */}
