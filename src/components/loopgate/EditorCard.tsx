@@ -8,17 +8,7 @@ import CrewBadge from "./CrewBadge";
 import LevelBadge from "./LevelBadge";
 import ConnectButton from "./ConnectButton";
 import { useAuth } from "@/hooks/useAuth";
-import { getRankFromScore, GQTRank } from "@/data/gqtConfig";
-
-// Get class letter from GQT score or level
-function getClassLetter(bestGQT: number | null | undefined, level: number | undefined): GQTRank {
-  if (bestGQT && bestGQT > 0) {
-    return getRankFromScore(bestGQT).rank;
-  }
-  // Level 2+ without GQT = D class
-  if ((level || 1) >= 2) return 'D';
-  return 'F';
-}
+import { getEffectiveRank, GQTRank } from "@/data/gqtConfig";
 
 // Get class colors - red F for tested, grey for untested
 function getClassColors(classLetter: GQTRank, hasTakenGQT: boolean): string {
@@ -57,7 +47,7 @@ export default function EditorCard({ editor }: EditorCardProps) {
   const { user } = useAuth();
   const isTop10 = (editor.rank || 999) <= 10;
   const authorityRole = getAuthorityRole(editor.roles);
-  const classLetter = getClassLetter(editor.best_gatekeeper_qoi, editor.level);
+  const classLetter = getEffectiveRank(editor.best_gatekeeper_qoi, editor.level);
   const hasTakenGQT = !!(editor.best_gatekeeper_qoi && editor.best_gatekeeper_qoi > 0);
   const classColorStyle = getClassColors(classLetter, hasTakenGQT);
   const isOwnProfile = user?.id === editor.id;
