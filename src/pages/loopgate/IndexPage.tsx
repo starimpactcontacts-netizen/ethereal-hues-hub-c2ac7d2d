@@ -18,7 +18,7 @@ import StatusBadge from "@/components/loopgate/StatusBadge";
 import ConnectButton from "@/components/loopgate/ConnectButton";
 import ThumbnailImage from "@/components/loopgate/ThumbnailImage";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { getRankFromScore, GQTRank } from "@/data/gqtConfig";
+import { getRankFromScore, getEffectiveRank, GQTRank } from "@/data/gqtConfig";
 import { supabase } from "@/integrations/supabase/client";
 import GatePattern from "@/components/loopgate/GatePattern";
 import IndexHeroPattern from "@/components/loopgate/IndexHeroPattern";
@@ -49,9 +49,7 @@ interface JudgeEntry {
 const leagueOrder = { elite: 0, pro: 1, open: 2 };
 
 function getClassLetter(bestGQT: number | null | undefined, level: number | undefined): GQTRank {
-  if (bestGQT && bestGQT > 0) return getRankFromScore(bestGQT).rank;
-  if ((level || 1) >= 2) return 'D';
-  return 'F';
+  return getEffectiveRank(bestGQT, level);
 }
 
 function getAuthorityRole(roles?: string[]): 'dev' | 'judge' | 'enterprise' | null {
