@@ -818,61 +818,41 @@ export default function HubPage() {
       {/* ⚔️ QUICK ACTION CTA — Premium cinematic button */}
       <div className="px-4 mt-1.5">
         <div className="flex flex-col gap-0">
-          {/* Cinematic action container — Premium animated gradient outline */}
+          {/* Seamless action container — iPhone-grade glass with subtle accent */}
           {(() => {
+            // Single accent color per action — no rainbow, no chaos
             const accent = quickAction === 'edit_battle'
-              ? { a: '96,165,250', b: '59,130,246', c: '37,99,235' }
+              ? '59,130,246'   // blue
               : quickAction === 'mission'
-                ? { a: '52,211,153', b: '16,185,129', c: '5,150,105' }
+                ? '16,185,129' // emerald
                 : quickAction === 'solo'
-                  ? { a: '251,191,36', b: '245,158,11', c: '217,119,6' }
-                  : { a: '248,113,113', b: '239,68,68', c: '185,28,28' };
-            const conic = `conic-gradient(from 0deg,
-              rgba(${accent.a},1) 0deg,
-              rgba(255,255,255,0.95) 25deg,
-              rgba(${accent.b},1) 60deg,
-              rgba(${accent.c},0.4) 110deg,
-              rgba(${accent.a},1) 170deg,
-              rgba(255,255,255,0.95) 210deg,
-              rgba(${accent.b},1) 260deg,
-              rgba(${accent.c},0.4) 310deg,
-              rgba(${accent.a},1) 360deg)`;
+                  ? '245,158,11' // amber/gold
+                  : '239,68,68'; // red
             return (
-          <div className="relative rounded-2xl">
-            {/* Outer halo glow — pulses with accent */}
+          <div className="relative rounded-[20px]">
+            {/* Subtle ambient glow — soft, not aggressive */}
             <motion.div
               aria-hidden
-              className="absolute -inset-1.5 rounded-3xl pointer-events-none blur-xl"
+              className="absolute -inset-2 rounded-[28px] pointer-events-none blur-2xl"
               style={{
-                background: `radial-gradient(60% 80% at 50% 50%, rgba(${accent.b},0.55), rgba(${accent.b},0) 70%)`,
+                background: `radial-gradient(70% 90% at 50% 60%, rgba(${accent},0.35), rgba(${accent},0) 75%)`,
               }}
-              animate={{ opacity: [0.55, 0.95, 0.55] }}
-              transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+              animate={{ opacity: [0.45, 0.7, 0.45] }}
+              transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
             />
-            {/* Border container — 3px animated conic */}
-            <div className="relative rounded-2xl p-[3px] overflow-hidden">
-              <motion.div
-                aria-hidden
-                className="absolute inset-[-50%] pointer-events-none"
-                style={{ background: conic }}
-                animate={{ rotate: 360 }}
-                transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
-              />
-              {/* Soft inner light bevel */}
-              <div
-                aria-hidden
-                className="absolute inset-[3px] rounded-[13px] pointer-events-none"
-                style={{
-                  background:
-                    'linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0) 40%)',
-                }}
-              />
+            {/* Hairline gradient border (1.5px) — clean, seamless */}
+            <div
+              className="relative rounded-[20px] p-[1.5px] overflow-hidden"
+              style={{
+                background: `linear-gradient(135deg, rgba(${accent},0.95) 0%, rgba(255,255,255,0.18) 45%, rgba(${accent},0.55) 100%)`,
+              }}
+            >
               {/* Inner content row */}
               <div
-                className="relative flex overflow-hidden rounded-[13px] bg-background"
+                className="relative flex overflow-hidden rounded-[18.5px] bg-black"
                 style={{
                   boxShadow:
-                    `0 1px 0 rgba(255,255,255,0.10) inset, 0 0 0 1px rgba(0,0,0,0.55) inset, 0 14px 50px rgba(0,0,0,0.75), 0 0 32px rgba(${accent.b},0.25)`,
+                    `0 1px 0 rgba(255,255,255,0.08) inset, 0 0 0 1px rgba(0,0,0,0.6) inset, 0 20px 60px -10px rgba(0,0,0,0.85), 0 0 40px -8px rgba(${accent},0.35)`,
                 }}
               >
             <motion.button
@@ -906,28 +886,21 @@ export default function HubPage() {
                       : "bg-gradient-to-r from-red-600 via-red-500 to-red-600"
               )}
               style={quickAction === 'edit_battle' ? {
-                background: 'linear-gradient(135deg, #0f172a 0%, #15234a 50%, #0f172a 100%)',
+                background: 'radial-gradient(120% 140% at 0% 0%, rgba(59,130,246,0.18) 0%, rgba(0,0,0,0) 55%), linear-gradient(180deg, #0a0a0c 0%, #050507 100%)',
               } : quickAction === 'mission' ? {
-                background: 'linear-gradient(135deg, hsl(160 50% 18%) 0%, hsl(152 45% 16%) 50%, hsl(145 40% 14%) 100%)',
+                background: 'radial-gradient(120% 140% at 0% 0%, rgba(16,185,129,0.18) 0%, rgba(0,0,0,0) 55%), linear-gradient(180deg, #0a0a0c 0%, #050507 100%)',
               } : quickAction === 'solo' ? {
-                background: 'linear-gradient(135deg, hsl(38 50% 22%) 0%, hsl(36 55% 18%) 50%, hsl(32 60% 15%) 100%)',
+                background: 'radial-gradient(120% 140% at 0% 0%, rgba(245,158,11,0.18) 0%, rgba(0,0,0,0) 55%), linear-gradient(180deg, #0a0a0c 0%, #050507 100%)',
               } : undefined}
             >
-               {/* Luxury geometric pattern overlay */}
-               {(quickAction === 'solo' || quickAction === 'mission' || quickAction === 'edit_battle') && (
-                 <div className="absolute inset-0 pointer-events-none opacity-[0.07]" style={{
-                   backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(255,255,255,0.5) 8px, rgba(255,255,255,0.5) 9px),
-                     repeating-linear-gradient(-45deg, transparent, transparent 8px, rgba(255,255,255,0.5) 8px, rgba(255,255,255,0.5) 9px)`,
-                 }} />
-               )}
-               {/* Shine sweep animation */}
+               {/* Subtle shine sweep — seamless, slow */}
                <motion.div
-                 className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.20] to-transparent -skew-x-12 pointer-events-none"
-                 animate={{ x: ['-200%', '200%'] }}
-                 transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut', repeatDelay: 2 }}
+                 className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.08] to-transparent -skew-x-12 pointer-events-none"
+                 animate={{ x: ['-150%', '250%'] }}
+                 transition={{ repeat: Infinity, duration: 4.5, ease: 'easeInOut', repeatDelay: 3 }}
                />
-               {/* Top gloss */}
-               <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/[0.22] to-transparent pointer-events-none" />
+               {/* Soft top gloss */}
+               <div className="absolute top-0 left-0 right-0 h-[50%] bg-gradient-to-b from-white/[0.06] to-transparent pointer-events-none" />
               
               {quickAction === 'edit_battle' ? (
                 <>
@@ -962,7 +935,7 @@ export default function HubPage() {
                     <span className="text-[28px] font-bold text-white uppercase tracking-wider leading-none drop-shadow-lg" style={{ fontFamily: 'Teko, sans-serif' }}>
                       Solo Edit
                     </span>
-                    <span className="text-[9px] text-white/60 font-bold tracking-wider">EARN 100+ INDEX</span>
+                      <span className="text-[9px] text-white/60 font-bold tracking-wider">EARN UP TO 10K INDEX</span>
                   </div>
                 </>
               ) : qfIsSearching ? (
@@ -1012,7 +985,7 @@ export default function HubPage() {
                           ? "hover:brightness-110 border-white/10"
                           : "bg-red-700/80 hover:bg-red-600/80 border-red-900/40"
                   )}
-                  style={quickAction === 'edit_battle' ? { background: '#0a1024' } : quickAction === 'mission' ? { background: 'hsl(152 50% 10%)' } : quickAction === 'solo' ? { background: 'hsl(36 55% 10%)' } : undefined}
+                  style={quickAction === 'edit_battle' ? { background: '#050507' } : quickAction === 'mission' ? { background: '#050507' } : quickAction === 'solo' ? { background: '#050507' } : undefined}
                 >
                    <ChevronDown className="w-5 h-5 text-white/90 relative z-10" />
                  </button>
@@ -1040,7 +1013,7 @@ export default function HubPage() {
                   <UserRound className="w-4 h-4 text-gold" />
                   <div className="flex-1">
                     <span className="text-sm font-semibold">Solo Edit</span>
-                    <span className="text-[10px] text-gold ml-1.5">100+ IDX</span>
+                     <span className="text-[10px] text-gold ml-1.5">UP TO 10K IDX</span>
                   </div>
                   {quickAction === 'solo' && <Check className="w-3.5 h-3.5 text-gold" />}
                 </DropdownMenuItem>
