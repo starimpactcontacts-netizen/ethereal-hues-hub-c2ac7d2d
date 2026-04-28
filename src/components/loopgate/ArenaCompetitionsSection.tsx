@@ -82,14 +82,6 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
               {approval}%
             </span>
           </div>
-          <button
-            onClick={(e) => { e.stopPropagation(); onJoin(comp.id); }}
-            disabled={spotsLeft <= 0}
-            className="px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-500 text-white disabled:opacity-30 disabled:cursor-not-allowed"
-            style={{ fontFamily: "'Teko', sans-serif" }}
-          >
-            {spotsLeft <= 0 ? "FULL" : "JOIN"}
-          </button>
         </div>
       </motion.div>
     </div>

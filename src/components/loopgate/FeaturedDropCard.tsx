@@ -163,13 +163,6 @@ export default function FeaturedDropCard({ drop }: Props) {
               <Trophy className="w-2.5 h-2.5" />+{drop.index_reward}
             </span>
           </div>
-          <button
-            onClick={() => navigate(profile ? `/drop/${drop.id}` : '/start')}
-            className="w-full text-center py-1.5 rounded-lg bg-emerald-500 text-black text-[11px] font-black uppercase tracking-wider hover:bg-emerald-400 transition-colors"
-            style={{ fontFamily: 'Teko, sans-serif' }}
-          >
-            ENTER
-          </button>
         </div>
       </motion.div>
     );
@@ -264,13 +257,6 @@ export default function FeaturedDropCard({ drop }: Props) {
             <Trophy className="w-2.5 h-2.5" />+{drop.index_reward}
           </span>
         </div>
-        <button
-          onClick={() => navigate(`/drop/${drop.id}`)}
-          className="w-full text-center py-1.5 rounded-lg bg-emerald-500 text-black text-[11px] font-black uppercase tracking-wider hover:bg-emerald-400 transition-colors"
-          style={{ fontFamily: 'Teko, sans-serif' }}
-        >
-          {isLive ? "ENTER" : "VIEW"}
-        </button>
       </div>
 
     </motion.div>
