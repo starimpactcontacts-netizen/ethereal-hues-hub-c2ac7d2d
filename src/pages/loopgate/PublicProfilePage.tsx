@@ -14,7 +14,7 @@ import SubmissionGrid from "@/components/loopgate/SubmissionGrid";
 import MessageButton from "@/components/loopgate/MessageButton";
 import PublicJudgeVideos from "@/components/loopgate/PublicJudgeVideos";
 import loopgateLogo from "@/assets/loopgate-logo.png";
-import { getRankFromScore } from "@/data/gqtConfig";
+import { getRankFromScore, getEffectiveRank, rankConfigs } from "@/data/gqtConfig";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SiTiktok, SiInstagram, SiYoutube, SiX } from "@icons-pack/react-simple-icons";
 import ConnectButton from "@/components/loopgate/ConnectButton";
@@ -285,14 +285,10 @@ export default function PublicProfilePage() {
 
   // Calculate GQT Class letter
   const getEditorClass = (): { letter: string; color: string } => {
-    if (profile?.best_gatekeeper_qoi && profile.best_gatekeeper_qoi > 0) {
-      const rankConfig = getRankFromScore(profile.best_gatekeeper_qoi);
-      return { letter: rankConfig.rank, color: rankConfig.color };
-    }
-    if (profile && profile.level >= 2) {
-      return { letter: 'D', color: 'text-orange-400' };
-    }
-    return { letter: 'F', color: 'text-muted-foreground' };
+    if (!profile) return { letter: 'F', color: 'text-muted-foreground' };
+    const rank = getEffectiveRank(profile.best_gatekeeper_qoi, profile.level);
+    const cfg = rankConfigs.find(r => r.rank === rank);
+    return { letter: rank, color: cfg?.color || 'text-muted-foreground' };
   };
 
   const editorClass = profile ? getEditorClass() : { letter: 'F', color: 'text-muted-foreground' };
