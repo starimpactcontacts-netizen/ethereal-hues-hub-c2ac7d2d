@@ -1015,6 +1015,7 @@ export default function HubPage() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+          </div>
 
 
           {/* Queue status bar — when searching for an Edit Battle opponent */}
