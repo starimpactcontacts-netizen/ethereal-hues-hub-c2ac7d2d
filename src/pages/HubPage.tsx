@@ -818,61 +818,41 @@ export default function HubPage() {
       {/* ⚔️ QUICK ACTION CTA — Premium cinematic button */}
       <div className="px-4 mt-1.5">
         <div className="flex flex-col gap-0">
-          {/* Cinematic action container — Premium animated gradient outline */}
+          {/* Seamless action container — iPhone-grade glass with subtle accent */}
           {(() => {
+            // Single accent color per action — no rainbow, no chaos
             const accent = quickAction === 'edit_battle'
-              ? { a: '96,165,250', b: '59,130,246', c: '37,99,235' }
+              ? '59,130,246'   // blue
               : quickAction === 'mission'
-                ? { a: '52,211,153', b: '16,185,129', c: '5,150,105' }
+                ? '16,185,129' // emerald
                 : quickAction === 'solo'
-                  ? { a: '251,191,36', b: '245,158,11', c: '217,119,6' }
-                  : { a: '248,113,113', b: '239,68,68', c: '185,28,28' };
-            const conic = `conic-gradient(from 0deg,
-              rgba(${accent.a},1) 0deg,
-              rgba(255,255,255,0.95) 25deg,
-              rgba(${accent.b},1) 60deg,
-              rgba(${accent.c},0.4) 110deg,
-              rgba(${accent.a},1) 170deg,
-              rgba(255,255,255,0.95) 210deg,
-              rgba(${accent.b},1) 260deg,
-              rgba(${accent.c},0.4) 310deg,
-              rgba(${accent.a},1) 360deg)`;
+                  ? '245,158,11' // amber/gold
+                  : '239,68,68'; // red
             return (
-          <div className="relative rounded-2xl">
-            {/* Outer halo glow — pulses with accent */}
+          <div className="relative rounded-[20px]">
+            {/* Subtle ambient glow — soft, not aggressive */}
             <motion.div
               aria-hidden
-              className="absolute -inset-1.5 rounded-3xl pointer-events-none blur-xl"
+              className="absolute -inset-2 rounded-[28px] pointer-events-none blur-2xl"
               style={{
-                background: `radial-gradient(60% 80% at 50% 50%, rgba(${accent.b},0.55), rgba(${accent.b},0) 70%)`,
+                background: `radial-gradient(70% 90% at 50% 60%, rgba(${accent},0.35), rgba(${accent},0) 75%)`,
               }}
-              animate={{ opacity: [0.55, 0.95, 0.55] }}
-              transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+              animate={{ opacity: [0.45, 0.7, 0.45] }}
+              transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
             />
-            {/* Border container — 3px animated conic */}
-            <div className="relative rounded-2xl p-[3px] overflow-hidden">
-              <motion.div
-                aria-hidden
-                className="absolute inset-[-50%] pointer-events-none"
-                style={{ background: conic }}
-                animate={{ rotate: 360 }}
-                transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
-              />
-              {/* Soft inner light bevel */}
-              <div
-                aria-hidden
-                className="absolute inset-[3px] rounded-[13px] pointer-events-none"
-                style={{
-                  background:
-                    'linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0) 40%)',
-                }}
-              />
+            {/* Hairline gradient border (1.5px) — clean, seamless */}
+            <div
+              className="relative rounded-[20px] p-[1.5px] overflow-hidden"
+              style={{
+                background: `linear-gradient(135deg, rgba(${accent},0.95) 0%, rgba(255,255,255,0.18) 45%, rgba(${accent},0.55) 100%)`,
+              }}
+            >
               {/* Inner content row */}
               <div
-                className="relative flex overflow-hidden rounded-[13px] bg-background"
+                className="relative flex overflow-hidden rounded-[18.5px] bg-black"
                 style={{
                   boxShadow:
-                    `0 1px 0 rgba(255,255,255,0.10) inset, 0 0 0 1px rgba(0,0,0,0.55) inset, 0 14px 50px rgba(0,0,0,0.75), 0 0 32px rgba(${accent.b},0.25)`,
+                    `0 1px 0 rgba(255,255,255,0.08) inset, 0 0 0 1px rgba(0,0,0,0.6) inset, 0 20px 60px -10px rgba(0,0,0,0.85), 0 0 40px -8px rgba(${accent},0.35)`,
                 }}
               >
             <motion.button
