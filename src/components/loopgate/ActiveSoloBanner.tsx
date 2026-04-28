@@ -234,7 +234,7 @@ export default function ActiveSoloBanner() {
       {/* Footer */}
       <div className="flex items-center gap-1.5 justify-center pb-3">
         <Trophy className="w-3 h-3 text-yellow-400" />
-        <span className="text-[10px] text-yellow-400/70 font-semibold">Earn up to 100+ Index when a judge scores your edit</span>
+        <span className="text-[10px] text-yellow-400/70 font-semibold">Earn up to 10,000 Index + 10,000 XP when a judge scores your edit</span>
       </div>
     </motion.div>
   );
