@@ -131,13 +131,6 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
           <Trophy className={`w-2.5 h-2.5 ${isDone ? 'text-zinc-600' : 'text-gold'}`} />
           <span className={`text-[9px] font-bold tabular-nums ${isDone ? 'text-zinc-600' : 'text-gold'}`}>+{battle.winner_index_awarded}</span>
         </div>
-        {!isDone && (
-          <div className={`w-full text-center py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider ${
-            isOpen ? 'bg-amber-500 text-black' : isLive ? 'bg-red-500 text-white' : 'bg-white/[0.08] text-zinc-300'
-          }`} style={{ fontFamily: 'Teko, sans-serif' }}>
-            {isOpen ? "FIGHT" : isLive ? "WATCH" : "VIEW"}
-          </div>
-        )}
       </div>
     </motion.div>
   );
