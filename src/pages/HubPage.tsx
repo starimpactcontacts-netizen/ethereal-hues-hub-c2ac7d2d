@@ -886,28 +886,21 @@ export default function HubPage() {
                       : "bg-gradient-to-r from-red-600 via-red-500 to-red-600"
               )}
               style={quickAction === 'edit_battle' ? {
-                background: 'linear-gradient(135deg, #0f172a 0%, #15234a 50%, #0f172a 100%)',
+                background: 'radial-gradient(120% 140% at 0% 0%, rgba(59,130,246,0.18) 0%, rgba(0,0,0,0) 55%), linear-gradient(180deg, #0a0a0c 0%, #050507 100%)',
               } : quickAction === 'mission' ? {
-                background: 'linear-gradient(135deg, hsl(160 50% 18%) 0%, hsl(152 45% 16%) 50%, hsl(145 40% 14%) 100%)',
+                background: 'radial-gradient(120% 140% at 0% 0%, rgba(16,185,129,0.18) 0%, rgba(0,0,0,0) 55%), linear-gradient(180deg, #0a0a0c 0%, #050507 100%)',
               } : quickAction === 'solo' ? {
-                background: 'linear-gradient(135deg, hsl(38 50% 22%) 0%, hsl(36 55% 18%) 50%, hsl(32 60% 15%) 100%)',
+                background: 'radial-gradient(120% 140% at 0% 0%, rgba(245,158,11,0.18) 0%, rgba(0,0,0,0) 55%), linear-gradient(180deg, #0a0a0c 0%, #050507 100%)',
               } : undefined}
             >
-               {/* Luxury geometric pattern overlay */}
-               {(quickAction === 'solo' || quickAction === 'mission' || quickAction === 'edit_battle') && (
-                 <div className="absolute inset-0 pointer-events-none opacity-[0.07]" style={{
-                   backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(255,255,255,0.5) 8px, rgba(255,255,255,0.5) 9px),
-                     repeating-linear-gradient(-45deg, transparent, transparent 8px, rgba(255,255,255,0.5) 8px, rgba(255,255,255,0.5) 9px)`,
-                 }} />
-               )}
-               {/* Shine sweep animation */}
+               {/* Subtle shine sweep — seamless, slow */}
                <motion.div
-                 className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.20] to-transparent -skew-x-12 pointer-events-none"
-                 animate={{ x: ['-200%', '200%'] }}
-                 transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut', repeatDelay: 2 }}
+                 className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.08] to-transparent -skew-x-12 pointer-events-none"
+                 animate={{ x: ['-150%', '250%'] }}
+                 transition={{ repeat: Infinity, duration: 4.5, ease: 'easeInOut', repeatDelay: 3 }}
                />
-               {/* Top gloss */}
-               <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/[0.22] to-transparent pointer-events-none" />
+               {/* Soft top gloss */}
+               <div className="absolute top-0 left-0 right-0 h-[50%] bg-gradient-to-b from-white/[0.06] to-transparent pointer-events-none" />
               
               {quickAction === 'edit_battle' ? (
                 <>
@@ -942,7 +935,7 @@ export default function HubPage() {
                     <span className="text-[28px] font-bold text-white uppercase tracking-wider leading-none drop-shadow-lg" style={{ fontFamily: 'Teko, sans-serif' }}>
                       Solo Edit
                     </span>
-                    <span className="text-[9px] text-white/60 font-bold tracking-wider">EARN 100+ INDEX</span>
+                      <span className="text-[9px] text-white/60 font-bold tracking-wider">EARN UP TO 10K INDEX</span>
                   </div>
                 </>
               ) : qfIsSearching ? (
@@ -992,7 +985,7 @@ export default function HubPage() {
                           ? "hover:brightness-110 border-white/10"
                           : "bg-red-700/80 hover:bg-red-600/80 border-red-900/40"
                   )}
-                  style={quickAction === 'edit_battle' ? { background: '#0a1024' } : quickAction === 'mission' ? { background: 'hsl(152 50% 10%)' } : quickAction === 'solo' ? { background: 'hsl(36 55% 10%)' } : undefined}
+                  style={quickAction === 'edit_battle' ? { background: '#050507' } : quickAction === 'mission' ? { background: '#050507' } : quickAction === 'solo' ? { background: '#050507' } : undefined}
                 >
                    <ChevronDown className="w-5 h-5 text-white/90 relative z-10" />
                  </button>
@@ -1020,7 +1013,7 @@ export default function HubPage() {
                   <UserRound className="w-4 h-4 text-gold" />
                   <div className="flex-1">
                     <span className="text-sm font-semibold">Solo Edit</span>
-                    <span className="text-[10px] text-gold ml-1.5">100+ IDX</span>
+                     <span className="text-[10px] text-gold ml-1.5">UP TO 10K IDX</span>
                   </div>
                   {quickAction === 'solo' && <Check className="w-3.5 h-3.5 text-gold" />}
                 </DropdownMenuItem>
