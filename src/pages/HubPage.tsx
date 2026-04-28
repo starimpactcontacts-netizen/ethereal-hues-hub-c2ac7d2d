@@ -818,14 +818,31 @@ export default function HubPage() {
       {/* ⚔️ QUICK ACTION CTA — Premium cinematic button */}
       <div className="px-4 mt-1.5">
         <div className="flex flex-col gap-0">
-          {/* Cinematic action container — Premium rounded */}
-          <div 
-            className="flex overflow-hidden rounded-xl border"
-            style={{ 
-              borderColor: 'rgba(255,255,255,0.10)',
-              boxShadow: '0 1px 0 rgba(255,255,255,0.06) inset, 0 4px 24px rgba(0,0,0,0.55)'
-            }}
-          >
+          {/* Cinematic action container — Premium animated gradient outline */}
+          <div className="relative rounded-2xl p-[1.5px] overflow-hidden">
+            {/* Animated gradient border layer */}
+            <motion.div
+              className="absolute inset-0 rounded-2xl pointer-events-none"
+              style={{
+                background: quickAction === 'edit_battle'
+                  ? 'conic-gradient(from 0deg, rgba(96,165,250,0.9), rgba(255,255,255,0.15), rgba(59,130,246,0.9), rgba(255,255,255,0.15), rgba(96,165,250,0.9))'
+                  : quickAction === 'mission'
+                    ? 'conic-gradient(from 0deg, rgba(52,211,153,0.9), rgba(255,255,255,0.15), rgba(16,185,129,0.9), rgba(255,255,255,0.15), rgba(52,211,153,0.9))'
+                    : quickAction === 'solo'
+                      ? 'conic-gradient(from 0deg, rgba(251,191,36,0.9), rgba(255,255,255,0.15), rgba(245,158,11,0.9), rgba(255,255,255,0.15), rgba(251,191,36,0.9))'
+                      : 'conic-gradient(from 0deg, rgba(248,113,113,0.9), rgba(255,255,255,0.15), rgba(220,38,38,0.9), rgba(255,255,255,0.15), rgba(248,113,113,0.9))',
+              }}
+              animate={{ rotate: 360 }}
+              transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
+            />
+            {/* Inner content row sits above gradient */}
+            <div
+              className="relative flex overflow-hidden rounded-[14px] bg-background"
+              style={{
+                boxShadow:
+                  '0 1px 0 rgba(255,255,255,0.08) inset, 0 0 0 1px rgba(0,0,0,0.4) inset, 0 10px 40px rgba(0,0,0,0.65), 0 0 24px rgba(255,255,255,0.04)',
+              }}
+            >
             <motion.button
               whileTap={{ scale: 0.96 }}
               whileHover={{ scale: 1.01 }}
