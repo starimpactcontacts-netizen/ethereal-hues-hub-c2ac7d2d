@@ -580,7 +580,7 @@ export default function HubPage() {
                     >
                       <RingsCoin size={20} />
                       <span className="font-display text-sm tabular-nums font-bold text-foreground/90 leading-none">
-                        {((profile as any)?.spendable_index || 0).toLocaleString()}
+                        {((profile as any)?.rings || 0).toLocaleString()}
                       </span>
                     </button>
                   </div>
@@ -1300,7 +1300,7 @@ export default function HubPage() {
       <RingsModal
         open={ringsOpen}
         onClose={() => setRingsOpen(false)}
-        amount={(profile as any)?.spendable_index || 0}
+        amount={(profile as any)?.rings || 0}
       />
     </div>
   );
