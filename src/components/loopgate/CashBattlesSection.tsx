@@ -5,6 +5,7 @@ import { DollarSign, Swords, Clock, Info, X, Loader2, Building2, ChevronRight } 
 import CashBattleVoteBar from "@/components/loopgate/CashBattleVoteBar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCashBattles, useMyCashBattles, useMyCashBattleApplication, CashBattleApplication } from "@/hooks/useCashBattles";
+import { useOpenQuickFightQueue, leaveQueue, type OpenQueueEntry } from "@/hooks/useQuickFight";
 import { toast } from "sonner";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useAccountPrompt } from "@/hooks/useAccountPrompt";
