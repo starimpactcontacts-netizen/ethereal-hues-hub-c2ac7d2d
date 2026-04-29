@@ -45,7 +45,7 @@ import { formatDistanceToNow } from 'date-fns';
 import loopRingsPattern from '@/assets/loop-rings-pattern.jpg';
 import lvMonogram from '@/assets/lv-monogram.png';
 import GatePattern from '@/components/loopgate/GatePattern';
-import { getRankFromScore } from '@/data/gqtConfig';
+import { getRankFromScore, getRankFromLevel, getEffectiveRank } from '@/data/gqtConfig';
 import IndexEarnBadge from '@/components/loopgate/IndexEarnBadge';
 import FoundingBadge from '@/components/loopgate/FoundingBadge';
 import RingsCoin from '@/components/loopgate/RingsCoin';
@@ -396,8 +396,12 @@ export default function HubPage() {
   const league = leagueConfig[userLeague] || leagueConfig.open;
   const LeagueIcon = league.icon;
   const bestScore = profile?.best_gatekeeper_qoi;
-  const classRankConfig = bestScore && bestScore > 0 ? getRankFromScore(bestScore) : null;
-  const classLetter = classRankConfig?.rank || ((profile?.level || 1) >= 2 ? 'D' : 'F');
+  const classLetter = getEffectiveRank(bestScore, profile?.level);
+  const classRankConfig = getRankFromScore(
+    bestScore && bestScore > 0
+      ? bestScore
+      : ({ 'S++': 100, 'S+': 95, 'S': 90, 'A': 75, 'B': 60, 'C': 50, 'D': 40, 'F': 0 } as Record<string, number>)[classLetter] ?? 0
+  );
 
   const liveEvents = events.filter(e => e.status === 'live');
   
