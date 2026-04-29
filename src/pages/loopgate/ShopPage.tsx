@@ -121,14 +121,14 @@ function HeroBanner({
         {/* Floating badge with parallax */}
         <motion.div
           style={{ y }}
-          className="absolute top-1/2 right-6 sm:right-12 -translate-y-1/2 flex items-center justify-center"
+          className="absolute top-1/2 right-2 sm:right-8 -translate-y-1/2 flex items-center justify-center"
         >
           <motion.div
-            animate={{ rotate: [0, 3, 0, -3, 0], y: [0, -4, 0, 4, 0] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            animate={{ y: [0, -6, 0, 6, 0] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
             className="relative"
           >
-            <div className="absolute inset-0 blur-3xl bg-amber-400/30 scale-150" />
+            <div className="absolute inset-0 blur-3xl bg-amber-400/40 scale-[1.6]" />
             <div className="relative">
               <FoundingBadge size="lg" animate />
             </div>
