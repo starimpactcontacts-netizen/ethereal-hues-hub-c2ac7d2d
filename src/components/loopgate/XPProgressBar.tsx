@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { getXPForNextLevel, getXPForCurrentLevel, XP_LEVELS, MAX_LEVEL } from "@/hooks/useXP";
+import { getXPForNextLevel, getXPForCurrentLevel, XP_LEVELS, MAX_LEVEL, calculateLevelFromXP } from "@/hooks/useXP";
 
 interface XPProgressBarProps {
   xp: number;
@@ -16,14 +16,20 @@ export default function XPProgressBar({
   size = "md",
   className 
 }: XPProgressBarProps) {
-  const currentLevelXP = getXPForCurrentLevel(level);
-  const nextLevelXP = getXPForNextLevel(level);
-  const isMaxLevel = level >= MAX_LEVEL;
+  // Defensive: derive the true level from XP in case the stored level is stale/out of sync
+  const safeXp = Math.max(0, xp || 0);
+  const derivedLevel = calculateLevelFromXP(safeXp);
+  const effectiveLevel = Math.min(derivedLevel, level || derivedLevel) || derivedLevel;
+  const currentLevelXP = getXPForCurrentLevel(effectiveLevel);
+  const nextLevelXP = getXPForNextLevel(effectiveLevel);
+  const isMaxLevel = effectiveLevel >= MAX_LEVEL;
   
-  // Calculate progress percentage
-  const xpIntoCurrentLevel = xp - currentLevelXP;
-  const xpNeededForNextLevel = nextLevelXP - currentLevelXP;
-  const progress = isMaxLevel ? 100 : Math.min(100, (xpIntoCurrentLevel / xpNeededForNextLevel) * 100);
+  // Calculate progress percentage (clamped 0-100)
+  const xpIntoCurrentLevel = safeXp - currentLevelXP;
+  const xpNeededForNextLevel = Math.max(1, nextLevelXP - currentLevelXP);
+  const progress = isMaxLevel
+    ? 100
+    : Math.max(0, Math.min(100, (xpIntoCurrentLevel / xpNeededForNextLevel) * 100));
 
   const heightClasses = {
     sm: "h-1",
@@ -36,10 +42,10 @@ export default function XPProgressBar({
       {showNumbers && (
         <div className="flex items-center justify-between mb-1">
           <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
-            {isMaxLevel ? "Max Level" : `XP: ${xp.toLocaleString()} / ${nextLevelXP.toLocaleString()}`}
+            {isMaxLevel ? "Max Level" : `XP: ${safeXp.toLocaleString()} / ${nextLevelXP.toLocaleString()}`}
           </span>
           <span className="text-[10px] text-muted-foreground">
-            {isMaxLevel ? "" : `→ Level ${level + 1}`}
+            {isMaxLevel ? "" : `→ Level ${effectiveLevel + 1}`}
           </span>
         </div>
       )}
