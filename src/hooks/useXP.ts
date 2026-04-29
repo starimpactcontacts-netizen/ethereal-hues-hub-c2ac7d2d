@@ -49,6 +49,9 @@ export const XP_REWARDS = {
   arena_chat: 100,
   verify_platform: 2500,
 
+  // Feed posting (Loop)
+  feed_post: 500,
+
   // Daily caps (set high to effectively uncap)
   crew_chat_cap: 1000000,
   arena_chat_cap: 100000,
@@ -79,6 +82,7 @@ const ACTION_DESCRIPTIONS: Record<string, string> = {
   login_streak: 'daily login streak',
   sanctioned_tournament: 'competing in a sanctioned tournament',
   judge_review: 'completing a judge review',
+  feed_post: 'posting in the Loop',
 };
 
 export interface XPHistoryEntry {
