@@ -119,19 +119,35 @@ function HeroBanner({
                style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' /%3E%3C/svg%3E\")" }} />
         </motion.div>
 
-        {/* Floating badge with parallax */}
+        {/* Profile preview — shows EXACTLY what you get */}
         <motion.div
           style={{ y }}
-          className="absolute top-1/2 right-2 sm:right-8 -translate-y-1/2 flex items-center justify-center"
+          className="absolute top-1/2 right-3 sm:right-8 -translate-y-1/2 flex items-center justify-center"
         >
           <motion.div
-            animate={{ y: [0, -6, 0, 6, 0] }}
+            animate={{ y: [0, -4, 0, 4, 0] }}
             transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
             className="relative"
           >
-            <div className="absolute inset-0 blur-3xl bg-amber-400/40 scale-[1.6]" />
-            <div className="relative">
-              <FoundingBadge size="lg" animate />
+            <div className="absolute -inset-4 blur-3xl bg-amber-400/25 rounded-full" />
+            {/* Mock profile card */}
+            <div className="relative w-[150px] sm:w-[180px] rounded-2xl bg-zinc-950/80 backdrop-blur-md border border-amber-400/20 p-3 shadow-[0_20px_60px_-10px_rgba(0,0,0,0.8)]">
+              <div className="text-[8px] font-bold uppercase tracking-[0.2em] text-foreground/40 mb-2">Your Profile</div>
+              <div className="flex items-center gap-2 mb-2.5">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-900 border border-white/10 flex items-center justify-center font-display text-sm text-foreground/70">U</div>
+                <div className="flex-1 min-w-0">
+                  <div className="h-2 w-16 bg-foreground/20 rounded-sm mb-1" />
+                  <div className="h-1.5 w-10 bg-foreground/10 rounded-sm" />
+                </div>
+              </div>
+              {/* The actual badge they get, pinned */}
+              <div className="flex justify-start">
+                <FoundingBadge size="md" animate />
+              </div>
+              {/* Pin arrow */}
+              <div className="absolute -top-2 right-4 px-1.5 py-0.5 rounded-full bg-amber-400 text-black text-[7px] font-black uppercase tracking-wider">
+                Equipped
+              </div>
             </div>
           </motion.div>
         </motion.div>
@@ -139,10 +155,14 @@ function HeroBanner({
         {/* Content */}
         <div className="relative h-full flex flex-col justify-between p-5 sm:p-8">
           {/* Top row */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-md border border-white/10 rounded-full px-2.5 py-1">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <div className="flex items-center gap-1.5 bg-amber-400/15 backdrop-blur-md border border-amber-400/30 rounded-full px-2.5 py-1">
+              <Crown className="w-3 h-3 text-amber-300" strokeWidth={2.5} />
+              <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-amber-200">Prestige · Profile Badge</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-md border border-white/10 rounded-full px-2 py-1">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-amber-200">Limited Drop</span>
+              <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-amber-200">Limited</span>
             </div>
             {ogOwned && (
               <div className="flex items-center gap-1 bg-emerald-500/15 border border-emerald-400/30 rounded-full px-2 py-1">
@@ -153,12 +173,12 @@ function HeroBanner({
           </div>
 
           {/* Bottom content */}
-          <div className="max-w-[60%]">
+          <div className="max-w-[55%]">
             <h1 className="font-display text-3xl sm:text-5xl tracking-tight text-foreground leading-[0.95]">
               First<br />Circle
             </h1>
-            <p className="text-[11px] sm:text-sm text-foreground/60 mt-2 leading-snug line-clamp-2">
-              {ogItem.description || "The OG badge. Earliest Loopgate members only."}
+            <p className="text-[11px] sm:text-sm text-foreground/70 mt-2 leading-snug line-clamp-3">
+              A permanent prestige badge stamped on your profile. Worn forever as proof you were here first. <span className="text-amber-300/90 font-semibold">Cosmetic only.</span>
             </p>
 
             <div className="flex items-center gap-3 mt-3 text-[11px]">
