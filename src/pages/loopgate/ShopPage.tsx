@@ -64,7 +64,7 @@ function FloatingNav({ spendableIndex, navigate, scrolled }: { spendableIndex: n
           className="flex items-center gap-1.5 bg-white/[0.06] border border-white/[0.08] rounded-full px-2.5 py-1"
         >
           <span className="text-[12px] font-bold tabular-nums text-foreground leading-none">{spendableIndex.toLocaleString()}</span>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300 leading-none">XP</span>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300 leading-none">Rings</span>
         </motion.div>
       </motion.div>
     </div>
@@ -266,7 +266,7 @@ function ComingSoonTile({ index }: { index: number }) {
       </div>
       <p className="text-[12px] font-semibold text-foreground/50 truncate px-0.5">Coming soon</p>
       <p className="text-[10px] text-foreground/30 mt-0.5 flex items-center gap-1 px-0.5 font-semibold">
-        ??? <span className="tracking-wider">XP</span>
+        ??? <span className="tracking-wider">Rings</span>
       </p>
     </motion.div>
   );
