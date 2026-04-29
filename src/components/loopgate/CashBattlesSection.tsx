@@ -296,7 +296,6 @@ function OpenMatchupCard({ app, onJoin, currentUserId }: { app: CashBattleApplic
 }
 
 function CashBattleInfoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  // (declaration unchanged)
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
