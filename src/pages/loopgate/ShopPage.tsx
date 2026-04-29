@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, ChevronLeft, Lock, ShoppingBag, Sparkles, Crown, Palette, Layers } from "lucide-react";
+import RingsCoin from "@/components/loopgate/RingsCoin";
 import FoundingBadge from "@/components/loopgate/FoundingBadge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -34,7 +35,7 @@ function getTimeRemaining(until: string) {
 }
 
 /* ---------- Floating Nav (iOS 18 dynamic island vibe) ---------- */
-function FloatingNav({ spendableIndex, navigate, scrolled }: { spendableIndex: number; navigate: (p: string) => void; scrolled: boolean }) {
+function FloatingNav({ rings, navigate, scrolled }: { rings: number; navigate: (p: string) => void; scrolled: boolean }) {
   return (
     <div className="sticky top-0 z-40 px-3 pt-3 pb-2 pointer-events-none">
       <motion.div
@@ -61,10 +62,10 @@ function FloatingNav({ spendableIndex, navigate, scrolled }: { spendableIndex: n
 
         <motion.div
           whileTap={{ scale: 0.94 }}
-          className="flex items-center gap-1.5 bg-white/[0.06] border border-white/[0.08] rounded-full px-2.5 py-1"
+          className="flex items-center gap-1.5 bg-white/[0.06] border border-white/[0.08] rounded-full pl-1 pr-2.5 py-1"
         >
-          <span className="text-[12px] font-bold tabular-nums text-foreground leading-none">{spendableIndex.toLocaleString()}</span>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300 leading-none">Rings</span>
+          <RingsCoin size={18} />
+          <span className="text-[12px] font-bold tabular-nums text-foreground leading-none">{rings.toLocaleString()}</span>
         </motion.div>
       </motion.div>
     </div>
@@ -302,7 +303,7 @@ export default function ShopPage() {
   const { user } = useAuth();
   const [items, setItems] = useState<ShopItem[]>([]);
   const [purchases, setPurchases] = useState<Set<string>>(new Set());
-  const [spendableIndex, setSpendableIndex] = useState(0);
+  const [rings, setRings] = useState(0);
   const [loading, setLoading] = useState(true);
   const [claiming, setClaiming] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState("all");
@@ -322,12 +323,12 @@ export default function ShopPage() {
         ? supabase.from("shop_purchases").select("item_id").eq("user_id", user.id)
         : Promise.resolve({ data: [] }),
       user
-        ? supabase.from("profiles").select("spendable_index").eq("id", user.id).single()
+        ? supabase.from("profiles").select("rings").eq("id", user.id).single()
         : Promise.resolve({ data: null }),
     ]);
     if (itemsRes.data) setItems(itemsRes.data as unknown as ShopItem[]);
     if (purchasesRes.data) setPurchases(new Set((purchasesRes.data as any[]).map((p) => p.item_id)));
-    if (profileRes.data) setSpendableIndex((profileRes.data as any)?.spendable_index || 0);
+    if (profileRes.data) setRings((profileRes.data as any)?.rings || 0);
     setLoading(false);
   }, [user]);
 
@@ -339,13 +340,16 @@ export default function ShopPage() {
     if (item.available_until && new Date(item.available_until) < new Date()) {
       toast.error("This item is no longer available"); return;
     }
-    if (item.price > 0 && spendableIndex < item.price) {
-      toast.error("Not enough Index Points"); return;
+    if (item.price > 0 && rings < item.price) {
+      toast.error("Not enough Rings"); return;
     }
     setClaiming(item.id);
     if (item.price > 0) {
-      const { data: success } = await supabase.rpc("spend_index", { p_user_id: user.id, p_amount: item.price });
-      if (!success) { toast.error("Not enough Index Points"); setClaiming(null); return; }
+      const { error: spendErr } = await supabase
+        .from("profiles")
+        .update({ rings: rings - item.price } as any)
+        .eq("id", user.id);
+      if (spendErr) { toast.error("Not enough Rings"); setClaiming(null); return; }
     }
     const { error } = await supabase.from("shop_purchases").insert({ user_id: user.id, item_id: item.id } as any);
     if (error) {
@@ -358,7 +362,7 @@ export default function ShopPage() {
     }
     toast.success(`${item.name} claimed!`);
     setPurchases((prev) => new Set([...prev, item.id]));
-    setSpendableIndex((prev) => prev - item.price);
+    setRings((prev) => prev - item.price);
     setClaiming(null);
   };
 
@@ -376,7 +380,7 @@ export default function ShopPage() {
       </div>
 
       <div ref={scrollRef} className="relative h-full overflow-y-auto overscroll-y-contain">
-        <FloatingNav spendableIndex={spendableIndex} navigate={navigate} scrolled={scrolled} />
+        <FloatingNav rings={rings} navigate={navigate} scrolled={scrolled} />
 
         {loading ? (
           <div className="px-3 space-y-4 mt-2">
