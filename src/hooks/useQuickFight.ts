@@ -145,6 +145,44 @@ export function useMyQuickFights() {
   return { fights, inQueue, loading };
 }
 
+// Public open queue — users currently waiting for an opponent.
+// Drives "Accept Edit Battle" cards in the Arena rail.
+export interface OpenQueueEntry {
+  id: string;
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+  queued_at: string;
+}
+
+export function useOpenQuickFightQueue() {
+  const [entries, setEntries] = useState<OpenQueueEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAll = async () => {
+      const { data } = await supabase
+        .from('quick_fight_queue')
+        .select('id, user_id, username, avatar_url, queued_at, expires_at')
+        .gt('expires_at', new Date().toISOString())
+        .order('queued_at', { ascending: true })
+        .limit(20);
+      setEntries((data as any) || []);
+      setLoading(false);
+    };
+    fetchAll();
+
+    const channel = supabase
+      .channel('open_quick_fight_queue')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'quick_fight_queue' }, () => fetchAll())
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
+  return { entries, loading };
+}
+
 // Quick fight messages
 export function useQuickFightMessages(fightId: string | undefined) {
   const [messages, setMessages] = useState<QuickFightMessage[]>([]);
