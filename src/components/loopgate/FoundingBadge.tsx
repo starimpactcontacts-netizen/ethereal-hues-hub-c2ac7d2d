@@ -73,9 +73,9 @@ const SIZES = {
 export default function FoundingBadge({ size = 'sm', animate = true }: FoundingBadgeProps) {
   const s = SIZES[size];
 
-  // Large standalone — just the icon
+  // Large standalone — luxury medallion
   if (size === 'lg') {
-    const coin = <BadgeIcon size={s.icon} />;
+    const coin = <MedallionEmblem size={96} />;
     if (!animate) return coin;
     return (
       <motion.div
@@ -100,7 +100,7 @@ export default function FoundingBadge({ size = 'sm', animate = true }: FoundingB
       }}
       title="First Circle — Founding Loopgate Member"
     >
-      <BadgeIcon size={s.icon} />
+      <ChipEmblem size={s.icon} />
       FIRST CIRCLE
     </span>
   );
