@@ -1298,6 +1298,11 @@ export default function HubPage() {
 
       <InviteModal open={inviteModalOpen} onOpenChange={setInviteModalOpen} />
       <WalletDrawer open={walletOpen} onClose={() => setWalletOpen(false)} />
+      <RingsModal
+        open={ringsOpen}
+        onClose={() => setRingsOpen(false)}
+        amount={(profile as any)?.spendable_index || 0}
+      />
     </div>
   );
 }
