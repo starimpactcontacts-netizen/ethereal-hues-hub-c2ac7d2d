@@ -619,6 +619,35 @@ export default function CashBattlesSection({
             </ArenaRailCard>
           ))}
 
+        {/* Open Quick-Fight queue cards — own queue first, then others */}
+        {[...openQueue]
+          .sort((a, b) => {
+            const aOwn = user?.id === a.user_id ? 0 : 1;
+            const bOwn = user?.id === b.user_id ? 0 : 1;
+            return aOwn - bOwn;
+          })
+          .map((entry) => {
+            const isOwn = user?.id === entry.user_id;
+            return (
+              <ArenaRailCard key={`q-${entry.id}`}>
+                <OpenQueueCard
+                  entry={entry}
+                  isOwn={isOwn}
+                  onAccept={() => {
+                    if (isGuest) { accountPrompt.open('enter_battle' as any); return; }
+                    onQuickFight?.();
+                  }}
+                  onCancel={async () => {
+                    if (!user?.id) return;
+                    await leaveQueue(user.id);
+                    onCancelQueue?.();
+                    toast.info('Queue cancelled');
+                  }}
+                />
+              </ArenaRailCard>
+            );
+          })}
+
         {/* Open matchup cards from pending applications */}
         {pendingApps.map((app) => (
           <ArenaRailCard key={app.id}>
