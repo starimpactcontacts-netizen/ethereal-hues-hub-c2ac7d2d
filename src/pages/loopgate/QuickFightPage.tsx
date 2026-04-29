@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Share2, Search, Play, Video, Music, ThumbsUp } from 'lucide-react';
+import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Share2, Search, Play, Video, Music, ThumbsUp, Upload, Sparkles } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -398,77 +398,100 @@ export default function QuickFightPage() {
           </div>
         )}
 
-        {/* Submission Form — song pick is optional (bonus XP) */}
-        {canSubmit && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-surface-1 border border-gold/30 p-4"
-          >
-            <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-              <Send className="w-4 h-4 text-gold" />
-              Submit Your Edit
-            </h3>
-            <p className="text-[10px] text-muted-foreground mb-3">Paste your TikTok, YouTube, or CapCut link</p>
-            <div className="flex gap-2">
-              <Input
-                placeholder="https://tiktok.com/..."
-                value={submissionUrl}
-                onChange={(e) => setSubmissionUrl(e.target.value)}
-                className="flex-1 bg-background border-border"
-              />
-              <Button
-                onClick={handleSubmit}
-                disabled={submitting || !submissionUrl.trim()}
-                className="bg-gold hover:bg-gold/90 text-background"
-              >
-                {submitting ? '...' : <Send className="w-4 h-4" />}
-              </Button>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Submissions Display — Visual Previews with Voting */}
-        {(fight.player_1_submission_url || fight.player_2_submission_url) && (
-          <div className="space-y-3">
+        {/* ALWAYS-ON Edit vs Edit Showcase — viral side-by-side, even before submissions */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
             <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
               <Play className="w-3.5 h-3.5 text-muted-foreground" />
-              Edits ({[fight.player_1_submission_url, fight.player_2_submission_url].filter(Boolean).length})
+              Edit vs Edit
             </h3>
-            <div className="grid grid-cols-2 gap-2">
-              {fight.player_1_submission_url && (
-                <BattleSubmissionCard
-                  url={fight.player_1_submission_url}
-                  username={fight.player_1_username}
-                  color="red"
-                  avatarUrl={fight.player_1_avatar_url}
-                  customThumbnailUrl={(fight as any).player_1_thumbnail_url}
-                  score={fight.status === 'completed' ? fight.winner_id === fight.player_1_id ? fight.winner_score : fight.loser_score : undefined}
-                  isWinner={fight.winner_id === fight.player_1_id}
-                  votes={(fight as any).player_1_votes || 0}
-                  canVote={!isParticipant && !!user && !myVote}
-                  hasVoted={myVote === fight.player_1_id}
-                  onVote={() => handleVote(fight.player_1_id)}
-                />
-              )}
-              {fight.player_2_submission_url && (
-                <BattleSubmissionCard
-                  url={fight.player_2_submission_url}
-                  username={fight.player_2_username || '???'}
-                  color="blue"
-                  avatarUrl={fight.player_2_avatar_url}
-                  customThumbnailUrl={(fight as any).player_2_thumbnail_url}
-                  score={fight.status === 'completed' ? fight.winner_id === fight.player_2_id ? fight.winner_score : fight.loser_score : undefined}
-                  isWinner={fight.winner_id === fight.player_2_id}
-                  votes={(fight as any).player_2_votes || 0}
-                  canVote={!isParticipant && !!user && !myVote}
-                  hasVoted={myVote === fight.player_2_id}
-                  onVote={() => fight.player_2_id && handleVote(fight.player_2_id)}
-                />
-              )}
-            </div>
+            <span className="text-[9px] text-muted-foreground uppercase tracking-wider">
+              {[fight.player_1_submission_url, fight.player_2_submission_url].filter(Boolean).length}/2 submitted
+            </span>
           </div>
-        )}
+
+          <div className="grid grid-cols-2 gap-2">
+            {/* RED slot — Player 1 */}
+            {fight.player_1_submission_url ? (
+              <BattleSubmissionCard
+                url={fight.player_1_submission_url}
+                username={fight.player_1_username}
+                color="red"
+                avatarUrl={fight.player_1_avatar_url}
+                customThumbnailUrl={(fight as any).player_1_thumbnail_url}
+                score={fight.status === 'completed' ? fight.winner_id === fight.player_1_id ? fight.winner_score : fight.loser_score : undefined}
+                isWinner={fight.winner_id === fight.player_1_id}
+                votes={(fight as any).player_1_votes || 0}
+                canVote={!isParticipant && !!user && !myVote}
+                hasVoted={myVote === fight.player_1_id}
+                onVote={() => handleVote(fight.player_1_id)}
+              />
+            ) : (
+              <EmptyEditSlot
+                color="red"
+                username={fight.player_1_username}
+                avatarUrl={fight.player_1_avatar_url}
+                isYou={isP1}
+                isLive={fight.status === 'active'}
+              />
+            )}
+
+            {/* BLUE slot — Player 2 */}
+            {fight.player_2_submission_url ? (
+              <BattleSubmissionCard
+                url={fight.player_2_submission_url}
+                username={fight.player_2_username || '???'}
+                color="blue"
+                avatarUrl={fight.player_2_avatar_url}
+                customThumbnailUrl={(fight as any).player_2_thumbnail_url}
+                score={fight.status === 'completed' ? fight.winner_id === fight.player_2_id ? fight.winner_score : fight.loser_score : undefined}
+                isWinner={fight.winner_id === fight.player_2_id}
+                votes={(fight as any).player_2_votes || 0}
+                canVote={!isParticipant && !!user && !myVote}
+                hasVoted={myVote === fight.player_2_id}
+                onVote={() => fight.player_2_id && handleVote(fight.player_2_id)}
+              />
+            ) : (
+              <EmptyEditSlot
+                color="blue"
+                username={fight.player_2_username || 'Waiting…'}
+                avatarUrl={fight.player_2_avatar_url}
+                isYou={isP2}
+                isLive={fight.status === 'active'}
+              />
+            )}
+          </div>
+
+          {/* Inline submit bar — always visible to participants while active */}
+          {canSubmit && (
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-gradient-to-r from-red-500/10 via-surface-1 to-blue-500/10 border border-gold/40 p-3"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="w-3.5 h-3.5 text-gold" />
+                <span className="text-[10px] font-bold text-foreground uppercase tracking-wider">Drop Your Edit</span>
+                <span className="text-[9px] text-muted-foreground">TikTok · YouTube · CapCut</span>
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="https://tiktok.com/@you/video/..."
+                  value={submissionUrl}
+                  onChange={(e) => setSubmissionUrl(e.target.value)}
+                  className="flex-1 bg-background border-border h-10"
+                />
+                <Button
+                  onClick={handleSubmit}
+                  disabled={submitting || !submissionUrl.trim()}
+                  className="bg-gold hover:bg-gold/90 text-background h-10 px-4 font-display uppercase tracking-wider"
+                >
+                  {submitting ? '...' : <><Send className="w-4 h-4 mr-1" /> Drop</>}
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </div>
 
         {/* Judge Video Review */}
         {fight.status === 'completed' && (fight as any).judge_video_url && (
