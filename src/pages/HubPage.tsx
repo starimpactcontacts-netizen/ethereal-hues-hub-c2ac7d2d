@@ -46,7 +46,6 @@ import loopRingsPattern from '@/assets/loop-rings-pattern.jpg';
 import lvMonogram from '@/assets/lv-monogram.png';
 import GatePattern from '@/components/loopgate/GatePattern';
 import { getRankFromScore } from '@/data/gqtConfig';
-import EditoriumCarousel from '@/components/loopgate/EditoriumCarousel';
 import IndexEarnBadge from '@/components/loopgate/IndexEarnBadge';
 import FoundingBadge from '@/components/loopgate/FoundingBadge';
 import { useEquippedBadges } from '@/hooks/useEquippedBadges';
@@ -1265,13 +1264,6 @@ export default function HubPage() {
           </div>
         </div>
       </motion.div>
-
-      {/* ═══════════════════════════════════════════════════════════════════
-          📰 EDITORIUM — Forbes-style feature carousel
-      ═══════════════════════════════════════════════════════════════════ */}
-      <EditoriumCarousel />
-
-
 
       {/* ═══════════════════════════════════════════════════════════════════
           EXPLORE GRID - IG-style visual collage
