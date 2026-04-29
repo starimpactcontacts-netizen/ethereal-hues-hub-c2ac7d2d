@@ -48,6 +48,8 @@ import GatePattern from '@/components/loopgate/GatePattern';
 import { getRankFromScore } from '@/data/gqtConfig';
 import IndexEarnBadge from '@/components/loopgate/IndexEarnBadge';
 import FoundingBadge from '@/components/loopgate/FoundingBadge';
+import RingsCoin from '@/components/loopgate/RingsCoin';
+import RingsModal from '@/components/loopgate/RingsModal';
 import { useEquippedBadges } from '@/hooks/useEquippedBadges';
 import CommissionsSection from '@/components/loopgate/CommissionsSection';
 import WalletDrawer from '@/components/loopgate/WalletDrawer';
