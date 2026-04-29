@@ -22,6 +22,45 @@ interface ShopItem {
   is_limited: boolean;
   available_until: string | null;
   total_claimed: number;
+  rarity?: string;
+}
+
+const RARITY_META: Record<string, { label: string; color: string; bg: string; border: string }> = {
+  common:    { label: "COMMON",    color: "text-zinc-300",    bg: "bg-zinc-500/10",    border: "border-zinc-400/20" },
+  uncommon:  { label: "UNCOMMON",  color: "text-emerald-300", bg: "bg-emerald-500/10", border: "border-emerald-400/25" },
+  rare:      { label: "RARE",      color: "text-sky-300",     bg: "bg-sky-500/10",     border: "border-sky-400/25" },
+  epic:      { label: "EPIC",      color: "text-violet-300",  bg: "bg-violet-500/10",  border: "border-violet-400/30" },
+  legendary: { label: "LEGENDARY", color: "text-amber-300",   bg: "bg-amber-500/10",   border: "border-amber-400/30" },
+  mythic:    { label: "MYTHIC",    color: "text-rose-300",    bg: "bg-rose-500/10",    border: "border-rose-400/35" },
+};
+
+/* Obsidian Frame thumbnail — shows the actual frame around an avatar slot */
+function ObsidianFrameThumb() {
+  return (
+    <div className="relative w-full h-full flex items-center justify-center p-3">
+      <div className="relative" style={{ width: "78%", aspectRatio: "1/1" }}>
+        {/* Outer obsidian frame */}
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: "radial-gradient(circle at 30% 25%, #2a2a2e 0%, #0a0a0c 60%, #000 100%)",
+            border: "1px solid rgba(255,255,255,0.5)",
+            boxShadow: "0 6px 20px -4px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.6)",
+          }}
+        />
+        {/* Avatar slot */}
+        <div
+          className="absolute rounded-full bg-zinc-800/70 flex items-center justify-center text-foreground/30 font-display text-sm"
+          style={{
+            top: "12%", left: "12%", right: "12%", bottom: "12%",
+            border: "0.5px solid rgba(255,255,255,0.06)",
+          }}
+        >
+          ◔
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function getTimeRemaining(until: string) {
@@ -458,6 +497,8 @@ export default function ShopPage() {
                         const owned = purchases.has(item.id);
                         const isClaiming = claiming === item.id;
                         const canAfford = rings >= item.price;
+                        const rarity = RARITY_META[item.rarity || "common"] || RARITY_META.common;
+                        const isObsidian = item.name === "Obsidian Frame";
                         return (
                           <motion.button
                             key={item.id}
@@ -466,13 +507,25 @@ export default function ShopPage() {
                             disabled={owned || isClaiming}
                             className="text-left group"
                           >
-                            <div className="aspect-square rounded-2xl border border-white/[0.08] bg-gradient-to-br from-zinc-900 to-black mb-2 relative overflow-hidden flex items-center justify-center">
+                            <div className={cn(
+                              "aspect-square rounded-2xl border mb-2 relative overflow-hidden flex items-center justify-center bg-gradient-to-br from-zinc-900 to-black",
+                              rarity.border
+                            )}>
                               <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_25%,rgba(255,255,255,0.06),transparent_60%)]" />
                               {item.image_url ? (
                                 <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                              ) : isObsidian ? (
+                                <ObsidianFrameThumb />
                               ) : (
                                 <div className="w-12 h-12 rounded-full border border-white/15" style={{ background: "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.18), rgba(255,255,255,0.02) 60%)" }} />
                               )}
+                              {/* Rarity tag */}
+                              <div className={cn(
+                                "absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md backdrop-blur-md border text-[8px] font-black tracking-[0.12em] leading-none",
+                                rarity.bg, rarity.border, rarity.color
+                              )}>
+                                {rarity.label}
+                              </div>
                               {owned && (
                                 <div className="absolute top-1.5 right-1.5 bg-emerald-500/20 border border-emerald-400/40 rounded-full p-1">
                                   <Check className="w-3 h-3 text-emerald-300" strokeWidth={3} />
@@ -480,12 +533,21 @@ export default function ShopPage() {
                               )}
                             </div>
                             <p className="text-[12px] font-semibold text-foreground truncate px-0.5">{item.name}</p>
-                            <p className={cn(
-                              "text-[10px] mt-0.5 flex items-center gap-1 px-0.5 font-semibold tabular-nums",
-                              owned ? "text-emerald-300" : canAfford ? "text-foreground/70" : "text-foreground/30"
+                            <div className={cn(
+                              "mt-0.5 flex items-center gap-1 px-0.5 font-semibold tabular-nums",
+                              owned ? "text-emerald-300" : canAfford ? "text-foreground/80" : "text-foreground/30"
                             )}>
-                              {owned ? "Owned" : isClaiming ? "Claiming…" : `${item.price.toLocaleString()} Rings`}
-                            </p>
+                              {owned ? (
+                                <span className="text-[10px]">Owned</span>
+                              ) : isClaiming ? (
+                                <span className="text-[10px]">Claiming…</span>
+                              ) : (
+                                <>
+                                  <RingsCoin size={11} />
+                                  <span className="text-[10px]">{item.price.toLocaleString()}</span>
+                                </>
+                              )}
+                            </div>
                           </motion.button>
                         );
                       })}

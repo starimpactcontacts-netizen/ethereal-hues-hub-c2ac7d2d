@@ -7396,6 +7396,7 @@ export type Database = {
           item_type: Database["public"]["Enums"]["shop_item_type"]
           name: string
           price: number
+          rarity: string
           stock: number | null
           total_claimed: number
           updated_at: string
@@ -7412,6 +7413,7 @@ export type Database = {
           item_type?: Database["public"]["Enums"]["shop_item_type"]
           name: string
           price?: number
+          rarity?: string
           stock?: number | null
           total_claimed?: number
           updated_at?: string
@@ -7428,6 +7430,7 @@ export type Database = {
           item_type?: Database["public"]["Enums"]["shop_item_type"]
           name?: string
           price?: number
+          rarity?: string
           stock?: number | null
           total_claimed?: number
           updated_at?: string
