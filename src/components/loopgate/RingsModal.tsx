@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
-import { X, ShoppingBag, Sparkles, TrendingUp } from 'lucide-react';
+import { X, ShoppingBag, CreditCard, Swords } from 'lucide-react';
 import RingsCoin from './RingsCoin';
 
 interface RingsModalProps {
@@ -88,14 +88,14 @@ export default function RingsModal({ open, onClose, amount }: RingsModalProps) {
                 {/* How to earn */}
                 <div className="mt-4 w-full grid grid-cols-2 gap-2">
                   <div className="rounded-2xl bg-white/[0.04] border border-white/[0.06] px-3 py-2.5 text-left">
-                    <TrendingUp className="w-3.5 h-3.5 text-emerald-400 mb-1.5" strokeWidth={2.5} />
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-foreground/90">Win Battles</p>
-                    <p className="text-[10px] text-foreground/50 mt-0.5">Earn Rings every match</p>
+                    <Swords className="w-3.5 h-3.5 text-emerald-400 mb-1.5" strokeWidth={2.5} />
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-foreground/90">Grind Battles</p>
+                    <p className="text-[10px] text-foreground/50 mt-0.5">Win matches to earn Rings</p>
                   </div>
                   <div className="rounded-2xl bg-white/[0.04] border border-white/[0.06] px-3 py-2.5 text-left">
-                    <Sparkles className="w-3.5 h-3.5 text-violet-300 mb-1.5" strokeWidth={2.5} />
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-foreground/90">Drops & Events</p>
-                    <p className="text-[10px] text-foreground/50 mt-0.5">Stack Rings from missions</p>
+                    <CreditCard className="w-3.5 h-3.5 text-amber-300 mb-1.5" strokeWidth={2.5} />
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-foreground/90">Buy Rings</p>
+                    <p className="text-[10px] text-foreground/50 mt-0.5">Top up with real money</p>
                   </div>
                 </div>
 
@@ -110,7 +110,7 @@ export default function RingsModal({ open, onClose, amount }: RingsModalProps) {
                 </motion.button>
 
                 <p className="mt-3 text-[9px] uppercase tracking-[0.25em] text-foreground/30 font-semibold">
-                  Loopgate Currency · Non-redeemable
+                  Loopgate Currency · Separate from Index · Non-redeemable
                 </p>
               </div>
             </motion.div>
