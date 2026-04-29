@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 import XPProgressBar from "@/components/loopgate/XPProgressBar";
 import XPHistory from "@/components/loopgate/XPHistory";
 import JackpotEditStats from "@/components/loopgate/JackpotEditStats";
-import { getRankFromScore } from "@/data/gqtConfig";
+import { getRankFromScore, getEffectiveRank } from "@/data/gqtConfig";
 
 export default function ProfileStatsPage() {
   const navigate = useNavigate();
@@ -35,8 +35,7 @@ export default function ProfileStatsPage() {
   // Get class info
   const bestGQT = (profile as any).best_gatekeeper_qoi;
   const hasTakenGQT = bestGQT && bestGQT > 0;
-  const rankConfig = hasTakenGQT ? getRankFromScore(bestGQT) : null;
-  const classLetter = rankConfig?.rank || (level >= 2 ? 'D' : 'F');
+  const classLetter = getEffectiveRank(bestGQT, level);
   
   const classColors: Record<string, string> = {
     'S++': 'text-gold bg-gold/15 border-gold',
