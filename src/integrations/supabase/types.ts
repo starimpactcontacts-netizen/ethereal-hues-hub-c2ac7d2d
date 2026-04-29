@@ -6368,6 +6368,7 @@ export type Database = {
           recovery_code: string | null
           region: string | null
           review_style: string | null
+          rings: number
           rules_accepted: boolean | null
           show_earnings: boolean
           software: string[] | null
@@ -6431,6 +6432,7 @@ export type Database = {
           recovery_code?: string | null
           region?: string | null
           review_style?: string | null
+          rings?: number
           rules_accepted?: boolean | null
           show_earnings?: boolean
           software?: string[] | null
@@ -6494,6 +6496,7 @@ export type Database = {
           recovery_code?: string | null
           region?: string | null
           review_style?: string | null
+          rings?: number
           rules_accepted?: boolean | null
           show_earnings?: boolean
           software?: string[] | null
