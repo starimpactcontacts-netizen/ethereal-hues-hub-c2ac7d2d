@@ -578,11 +578,10 @@ export default function HubPage() {
                       onClick={() => setRingsOpen(true)}
                       className="flex items-center gap-1.5 active:scale-95 transition-transform"
                     >
-                      <RingsCoin size={18} />
+                      <RingsCoin size={20} />
                       <span className="font-display text-sm tabular-nums font-bold text-foreground/90 leading-none">
                         {((profile as any)?.spendable_index || 0).toLocaleString()}
                       </span>
-                      <span className="text-[8px] text-amber-300/70 font-bold tracking-wider">RINGS</span>
                     </button>
                   </div>
                 </div>
