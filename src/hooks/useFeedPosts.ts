@@ -151,6 +151,35 @@ export function useFeedPosts(limit = 30) {
       console.error('Error creating post:', error);
       // Remove optimistic post on failure
       setPosts(prev => prev.filter(p => p.id !== optimisticId));
+      return;
+    }
+
+    // Award +500 XP for posting in the Loop (daily-capped server-side via award_xp)
+    try {
+      const { data: xpData } = await supabase.rpc('award_xp', {
+        p_user_id: user.id,
+        p_amount: 500,
+        p_action: 'feed_post',
+        p_description: 'Posted in the Loop',
+      });
+      const result = (xpData as any)?.[0];
+      if (result) {
+        const { toast } = await import('sonner');
+        toast.success('+500 XP', {
+          description: 'Earned for posting in the Loop',
+          duration: 2500,
+        });
+        if (result.leveled_up) {
+          setTimeout(() => {
+            toast.success('🎉 Level Up!', {
+              description: `You reached Level ${result.new_level}`,
+              duration: 4000,
+            });
+          }, 400);
+        }
+      }
+    } catch (xpErr) {
+      console.warn('XP award failed for feed_post:', xpErr);
     }
     // Realtime will refetch and replace the optimistic entry
   };
