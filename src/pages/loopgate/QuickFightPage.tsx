@@ -384,15 +384,6 @@ export default function QuickFightPage() {
 
       {/* Content */}
       <div className="px-4 space-y-4 mt-2">
-        {/* Song Picker — mandatory before submit */}
-        {isParticipant && fight.status === 'active' && (
-          <BattleSongPicker
-            onSongPicked={handleSongPick}
-            selectedSongName={(fight as any).theme_song_name}
-            opponentPicked={false}
-          />
-        )}
-
         {/* Show picked song for non-participants */}
         {!isParticipant && (fight as any).theme_song_name && (
           <div className="bg-surface-1 border border-border p-3 flex items-center gap-3">
