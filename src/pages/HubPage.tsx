@@ -573,14 +573,17 @@ export default function HubPage() {
                         <span className="text-emerald-400">$</span>{(((profile as any)?.earnings_cents || 0) / 100).toFixed(2)} LIFETIME
                       </span>
                     </button>
-                    {/* Rings — Loopgate's spendable currency */}
-                    <Link to="/shop" className="flex items-center gap-1.5">
-                      <Coins className="w-3.5 h-3.5 text-amber-300" />
-                      <span className="font-display text-sm tabular-nums font-bold text-foreground/80 leading-none">
-                        {(profile as any)?.spendable_index || 0}
+                    {/* Rings — Loopgate's spendable currency (V-Bucks style) */}
+                    <button
+                      onClick={() => setRingsOpen(true)}
+                      className="flex items-center gap-1.5 active:scale-95 transition-transform"
+                    >
+                      <RingsCoin size={18} />
+                      <span className="font-display text-sm tabular-nums font-bold text-foreground/90 leading-none">
+                        {((profile as any)?.spendable_index || 0).toLocaleString()}
                       </span>
-                      <span className="text-[8px] text-amber-300/60 font-bold tracking-wider">RINGS</span>
-                    </Link>
+                      <span className="text-[8px] text-amber-300/70 font-bold tracking-wider">RINGS</span>
+                    </button>
                   </div>
                 </div>
               </div>
