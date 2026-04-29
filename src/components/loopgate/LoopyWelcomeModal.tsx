@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Check, Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import loopyWelcome from '@/assets/loopy-welcome.png';
@@ -43,12 +44,6 @@ export default function LoopyWelcomeModal() {
     ]);
   };
 
-  const handleAskLoopy = () => {
-    setShow(false);
-    // Trigger Loopy chat open via custom event
-    window.dispatchEvent(new CustomEvent('open-loopy-chat'));
-  };
-
   if (!show) return null;
 
   return (
@@ -61,15 +56,20 @@ export default function LoopyWelcomeModal() {
           className="fixed inset-0 z-[200] flex items-center justify-center p-4"
         >
           {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShow(false)} />
+          <div className="absolute inset-0 bg-black/90 backdrop-blur-xl" onClick={() => setShow(false)} />
 
           {/* Modal */}
           <motion.div
-            initial={{ scale: 0.5, opacity: 0, y: 40 }}
+            initial={{ scale: 0.92, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 25, delay: 0.1 }}
-            className="relative w-full max-w-sm rounded-2xl border border-border bg-card overflow-hidden"
+            exit={{ scale: 0.95, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+            className="relative w-full max-w-[340px] rounded-[28px] overflow-hidden"
+            style={{
+              background: 'linear-gradient(180deg, #141416 0%, #0A0A0C 100%)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)',
+            }}
           >
             {/* Confetti overlay */}
             <AnimatePresence>
@@ -107,130 +107,118 @@ export default function LoopyWelcomeModal() {
               )}
             </AnimatePresence>
 
-            {/* Glow top */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
+            {/* Subtle ambient glow */}
+            <div
+              className="absolute -top-24 left-1/2 -translate-x-1/2 w-72 h-72 rounded-full pointer-events-none"
+              style={{ background: 'radial-gradient(circle, rgba(245,158,11,0.18), transparent 70%)', filter: 'blur(40px)' }}
+            />
 
-            {/* Content */}
-            <div className="relative p-6 pt-5 text-center space-y-4">
-              {/* Loopy mascot */}
+            {/* OG ribbon */}
+            <div className="relative pt-7 pb-2 flex flex-col items-center">
+              <div
+                className="px-3 py-1 rounded-full flex items-center gap-1.5"
+                style={{
+                  background: 'rgba(245,158,11,0.08)',
+                  border: '1px solid rgba(245,158,11,0.25)',
+                }}
+              >
+                <Sparkles className="w-3 h-3 text-amber-400" />
+                <span className="text-[9px] font-black tracking-[0.25em] uppercase text-amber-400">
+                  OG #{ogNumber?.toLocaleString() ?? '—'}
+                </span>
+              </div>
+            </div>
+
+            {/* Loopy mascot — clean framed */}
+            <div className="relative px-6 pt-3">
               <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                className="relative mx-auto w-36 h-36"
+                initial={{ scale: 0.85, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.15, type: 'spring', stiffness: 300, damping: 22 }}
+                className="relative mx-auto w-32 h-32 rounded-2xl flex items-center justify-center overflow-hidden"
+                style={{
+                  background: 'radial-gradient(ellipse at top, rgba(255,255,255,0.04), transparent 70%)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                }}
               >
                 <motion.img
                   src={loopyWelcome}
                   alt="Loopy"
-                  className="w-full h-full object-contain drop-shadow-2xl"
-                  animate={{ y: [0, -6, 0] }}
-                  transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
+                  className="w-28 h-28 object-contain"
+                  style={{ imageRendering: 'auto' }}
+                  animate={{ y: [0, -3, 0] }}
+                  transition={{ repeat: Infinity, duration: 3.5, ease: 'easeInOut' }}
                 />
-                {/* Sparkles */}
-                {[
-                  { top: '10%', left: '5%', delay: 0 },
-                  { top: '5%', right: '10%', delay: 0.3 },
-                  { bottom: '20%', left: '0%', delay: 0.6 },
-                  { bottom: '15%', right: '5%', delay: 0.9 },
-                ].map((pos, i) => (
-                  <motion.span
-                    key={i}
-                    className="absolute text-amber-400 text-sm"
-                    style={pos}
-                    animate={{ 
-                      opacity: [0, 1, 0], 
-                      scale: [0.5, 1.2, 0.5],
-                      rotate: [0, 180, 360],
-                    }}
-                    transition={{ repeat: Infinity, duration: 2, delay: pos.delay }}
-                  >
-                    ✦
-                  </motion.span>
-                ))}
               </motion.div>
+            </div>
 
-              {/* Text */}
+            {/* Content */}
+            <div className="relative px-6 pt-5 pb-6 text-center">
               <motion.div
-                initial={{ y: 15, opacity: 0 }}
+                initial={{ y: 8, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="space-y-2"
+                transition={{ delay: 0.25 }}
               >
-                <h2 className="font-display text-2xl text-foreground tracking-wide">
-                  YO WSG, {profile?.username?.toUpperCase() || 'EDITOR'}!
+                <h2 className="font-display text-[26px] leading-none text-white tracking-tight">
+                  Welcome, {profile?.username || 'Editor'}
                 </h2>
-                <div className="space-y-1.5">
-                  <p className="text-sm text-muted-foreground">
-                    You just became <span className="text-amber-400 font-bold">#{ogNumber?.toLocaleString()}</span> OG Editor in Loopgate! 🏆
-                  </p>
-                  <p className="text-xs text-muted-foreground/80 leading-relaxed">
-                    Make yourself comfy — grab a <span className="text-foreground font-medium">First Circle Badge</span> from your inventory. Wear it, flex it, or hide it… your choice.
-                  </p>
-                </div>
+                <p className="mt-2 text-[12px] text-white/50 leading-relaxed max-w-[260px] mx-auto">
+                  You're now part of Loopgate's first circle. Claim your founding badge below.
+                </p>
               </motion.div>
 
-              {/* Badge preview */}
+              {/* Badge card */}
               <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.7, type: 'spring' }}
-                className="flex items-center justify-center gap-3 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-primary/10 border border-amber-500/20"
+                initial={{ y: 12, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.35 }}
+                className="mt-5 flex items-center gap-3 p-3 rounded-2xl"
+                style={{
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                }}
               >
-                <motion.div
-                  animate={{ rotate: [0, 5, -5, 0] }}
-                  transition={{ repeat: Infinity, duration: 3 }}
-                  className="text-2xl"
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.05))',
+                    border: '1px solid rgba(245,158,11,0.3)',
+                  }}
                 >
-                  🏅
-                </motion.div>
-                <div className="text-left">
-                  <p className="text-xs font-bold text-foreground">First Circle Badge</p>
-                  <p className="text-[10px] text-amber-400/80">OG — Limited Edition</p>
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                </div>
+                <div className="text-left flex-1 min-w-0">
+                  <p className="text-[12px] font-semibold text-white leading-tight">First Circle</p>
+                  <p className="text-[9px] tracking-[0.15em] uppercase text-white/40 mt-0.5">Limited Edition</p>
                 </div>
                 <button
                   onClick={handleClaim}
                   disabled={claimed}
-                  className={`ml-auto px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95 ${
+                  className="px-4 h-9 rounded-xl text-[11px] font-black tracking-wider uppercase transition-all active:scale-95 flex items-center gap-1.5"
+                  style={
                     claimed
-                      ? 'bg-emerald-500/20 text-emerald-400 cursor-default'
-                      : 'bg-gradient-to-r from-amber-500 to-amber-600 text-black hover:from-amber-400 hover:to-amber-500'
-                  }`}
+                      ? { background: 'rgba(16,185,129,0.12)', color: '#34D399', border: '1px solid rgba(16,185,129,0.3)' }
+                      : { background: '#F59E0B', color: '#000', boxShadow: '0 4px 16px rgba(245,158,11,0.3)' }
+                  }
                 >
-                  {claimed ? 'Claimed ✓' : 'Claim'}
+                  {claimed ? (<><Check className="w-3 h-3" /> Claimed</>) : 'Claim'}
                 </button>
               </motion.div>
 
-              {/* Loopy CTA */}
-              <motion.div
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.9 }}
-                className="space-y-2 pt-1"
-              >
-                <p className="text-[10px] text-muted-foreground">
-                  Need a nudge to start? 👇
-                </p>
-                <button
-                  onClick={handleAskLoopy}
-                  className="w-full py-3 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all text-sm font-medium text-foreground flex items-center justify-center gap-2 active:scale-[0.98]"
-                >
-                  <motion.span
-                    animate={{ rotate: [0, 10, -10, 0] }}
-                    transition={{ repeat: Infinity, duration: 2 }}
-                  >
-                    🐱
-                  </motion.span>
-                  Ask Loopy Anything
-                </button>
-              </motion.div>
-
-              {/* Skip */}
-              <button
+              {/* Continue */}
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
                 onClick={() => setShow(false)}
-                className="text-[10px] text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+                className="mt-5 w-full h-12 rounded-2xl text-[13px] font-bold text-white transition-all active:scale-[0.98]"
+                style={{
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                }}
               >
-                skip for now
-              </button>
+                Enter Loopgate
+              </motion.button>
             </div>
           </motion.div>
         </motion.div>
