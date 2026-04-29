@@ -655,13 +655,6 @@ export default function HubPage() {
                 <div className="relative z-10 flex h-full w-full items-center justify-center">
                   <DollarSign className="w-7 h-7" strokeWidth={2.6} style={{ color: 'hsl(0 0% 92%)' }} />
                 </div>
-                {/* LIVE pulse dot */}
-                <div className="absolute top-2 left-2 flex items-center gap-1">
-                  <span className="relative flex w-1.5 h-1.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white/60 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white/80" />
-                  </span>
-                </div>
               </div>
               <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'hsl(0 0% 100% / 0.5)' }}>Missions</span>
             </Link>
@@ -746,10 +739,10 @@ export default function HubPage() {
                 <div className="absolute w-[1px] h-[1px] rounded-full bg-white/25 bottom-5 right-4" style={{ boxShadow: '0 0 2px hsl(0 0% 100% / 0.2)' }} />
                 <div className="absolute inset-[6px] rounded-[16px]" style={{ border: '1px solid hsl(0 0% 100% / 0.03)' }} />
                 <div className="relative z-10 flex h-full w-full items-center justify-center">
-                  <Swords className="w-7 h-7" style={{ color: 'hsl(0 0% 100% / 0.45)' }} />
+                  <Swords className="w-7 h-7" strokeWidth={2.4} style={{ color: 'hsl(0 0% 92%)' }} />
                 </div>
               </div>
-              <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'hsl(0 0% 100% / 0.35)' }}>My Arena</span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'hsl(0 0% 100% / 0.5)' }}>My Arena</span>
             </Link>
             )}
             </div>
