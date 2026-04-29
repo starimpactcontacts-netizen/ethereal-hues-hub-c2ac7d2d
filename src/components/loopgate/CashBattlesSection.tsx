@@ -336,7 +336,6 @@ function CashBattleInfoModal({ open, onClose }: { open: boolean; onClose: () => 
 }
 
 interface EditBattlesSectionProps {
-  // moved below — see new component above
   idxBattles?: any[];
   idxBattlesLoading?: boolean;
   renderIdxBattleCard?: (battle: any) => ReactNode;
