@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, ChevronLeft, Lock, ShoppingBag, Sparkles, Crown, Palette, Layers } from "lucide-react";
+import RingsCoin from "@/components/loopgate/RingsCoin";
 import FoundingBadge from "@/components/loopgate/FoundingBadge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -34,7 +35,7 @@ function getTimeRemaining(until: string) {
 }
 
 /* ---------- Floating Nav (iOS 18 dynamic island vibe) ---------- */
-function FloatingNav({ spendableIndex, navigate, scrolled }: { spendableIndex: number; navigate: (p: string) => void; scrolled: boolean }) {
+function FloatingNav({ rings, navigate, scrolled }: { rings: number; navigate: (p: string) => void; scrolled: boolean }) {
   return (
     <div className="sticky top-0 z-40 px-3 pt-3 pb-2 pointer-events-none">
       <motion.div
@@ -61,10 +62,10 @@ function FloatingNav({ spendableIndex, navigate, scrolled }: { spendableIndex: n
 
         <motion.div
           whileTap={{ scale: 0.94 }}
-          className="flex items-center gap-1.5 bg-white/[0.06] border border-white/[0.08] rounded-full px-2.5 py-1"
+          className="flex items-center gap-1.5 bg-white/[0.06] border border-white/[0.08] rounded-full pl-1 pr-2.5 py-1"
         >
-          <span className="text-[12px] font-bold tabular-nums text-foreground leading-none">{spendableIndex.toLocaleString()}</span>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300 leading-none">Rings</span>
+          <RingsCoin size={18} />
+          <span className="text-[12px] font-bold tabular-nums text-foreground leading-none">{rings.toLocaleString()}</span>
         </motion.div>
       </motion.div>
     </div>
