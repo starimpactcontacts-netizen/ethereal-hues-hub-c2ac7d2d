@@ -345,6 +345,106 @@ interface EditBattlesSectionProps {
   onCancelQueue?: () => void;
 }
 
+/** Open queue card — a user is waiting in matchmaking and anyone can accept to instant-pair */
+function OpenQueueCard({
+  entry,
+  isOwn,
+  onAccept,
+  onCancel,
+}: {
+  entry: OpenQueueEntry;
+  isOwn: boolean;
+  onAccept: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <motion.div
+      whileTap={{ scale: 0.97 }}
+      whileHover={{ y: -2 }}
+      onClick={isOwn ? undefined : onAccept}
+      className="w-full h-full rounded-2xl overflow-hidden cursor-pointer relative flex flex-col border border-white/[0.08]"
+      style={{
+        background: "linear-gradient(180deg, rgba(38,38,42,0.95) 0%, rgba(28,28,32,0.95) 100%)",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 24px -12px rgba(0,0,0,0.5)",
+      }}
+    >
+      {/* Top accent — emerald (ranked / free 1v1) */}
+      <div className="absolute top-0 left-0 right-0 h-[2px]" style={{
+        background: "linear-gradient(90deg, #10b981, transparent 40%, transparent 60%, #ef4444)",
+      }} />
+
+      {/* Header */}
+      <div className="px-4 pt-4 pb-1">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #10b981, #ef4444)' }}>
+              <Swords className="w-3.5 h-3.5 text-white" />
+            </div>
+            <span className="text-2xl font-black text-white leading-none" style={{ fontFamily: "Teko, sans-serif" }}>
+              1V1
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-[0.15em] text-emerald-400" style={{ fontFamily: "Teko, sans-serif" }}>
+              {isOwn ? "YOUR QUEUE" : "WAITING"}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* VS */}
+      <div className="px-3 py-2.5 flex items-center justify-between">
+        <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+          <Avatar className="w-11 h-11 ring-1 ring-white/10">
+            <AvatarImage src={entry.avatar_url || ""} />
+            <AvatarFallback className="text-sm font-bold bg-zinc-800 text-zinc-300">
+              {entry.username?.charAt(0)?.toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-[10px] font-bold truncate max-w-[75px] uppercase text-zinc-200" style={{ fontFamily: "Teko, sans-serif" }}>
+            {entry.username}
+          </span>
+        </div>
+
+        <div className="mx-2 shrink-0">
+          <span className="text-base font-black text-white/40" style={{ fontFamily: "Teko, sans-serif" }}>VS</span>
+        </div>
+
+        <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+          <div className="w-11 h-11 rounded-full border-2 border-dashed border-emerald-500/30 flex items-center justify-center bg-emerald-500/5">
+            <span className="text-base text-emerald-400/60">?</span>
+          </div>
+          <span className="text-[10px] font-black uppercase text-emerald-400" style={{ fontFamily: "Teko, sans-serif" }}>
+            {isOwn ? "OPEN" : "YOU?"}
+          </span>
+        </div>
+      </div>
+
+      {/* CTA */}
+      <div className="px-3 pb-3 mt-auto">
+        {isOwn ? (
+          <button
+            onClick={(e) => { e.stopPropagation(); onCancel(); }}
+            className="w-full py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider text-red-400/80 border border-red-500/20 bg-red-500/[0.06]"
+            style={{ fontFamily: "Teko, sans-serif" }}
+          >
+            Cancel Queue
+          </button>
+        ) : (
+          <button
+            onClick={(e) => { e.stopPropagation(); onAccept(); }}
+            className="w-full py-1.5 rounded-md text-[11px] font-black uppercase tracking-wider text-emerald-300 border border-emerald-500/30 bg-emerald-500/[0.10]"
+            style={{ fontFamily: "Teko, sans-serif" }}
+          >
+            Accept
+          </button>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
 export default function CashBattlesSection({
   idxBattles = [],
   idxBattlesLoading = false,
