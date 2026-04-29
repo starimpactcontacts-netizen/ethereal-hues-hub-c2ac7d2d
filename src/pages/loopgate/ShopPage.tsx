@@ -22,6 +22,45 @@ interface ShopItem {
   is_limited: boolean;
   available_until: string | null;
   total_claimed: number;
+  rarity?: string;
+}
+
+const RARITY_META: Record<string, { label: string; color: string; bg: string; border: string }> = {
+  common:    { label: "COMMON",    color: "text-zinc-300",    bg: "bg-zinc-500/10",    border: "border-zinc-400/20" },
+  uncommon:  { label: "UNCOMMON",  color: "text-emerald-300", bg: "bg-emerald-500/10", border: "border-emerald-400/25" },
+  rare:      { label: "RARE",      color: "text-sky-300",     bg: "bg-sky-500/10",     border: "border-sky-400/25" },
+  epic:      { label: "EPIC",      color: "text-violet-300",  bg: "bg-violet-500/10",  border: "border-violet-400/30" },
+  legendary: { label: "LEGENDARY", color: "text-amber-300",   bg: "bg-amber-500/10",   border: "border-amber-400/30" },
+  mythic:    { label: "MYTHIC",    color: "text-rose-300",    bg: "bg-rose-500/10",    border: "border-rose-400/35" },
+};
+
+/* Obsidian Frame thumbnail — shows the actual frame around an avatar slot */
+function ObsidianFrameThumb() {
+  return (
+    <div className="relative w-full h-full flex items-center justify-center p-3">
+      <div className="relative" style={{ width: "78%", aspectRatio: "1/1" }}>
+        {/* Outer obsidian frame */}
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: "radial-gradient(circle at 30% 25%, #2a2a2e 0%, #0a0a0c 60%, #000 100%)",
+            border: "1px solid rgba(255,255,255,0.5)",
+            boxShadow: "0 6px 20px -4px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.6)",
+          }}
+        />
+        {/* Avatar slot */}
+        <div
+          className="absolute rounded-full bg-zinc-800/70 flex items-center justify-center text-foreground/30 font-display text-sm"
+          style={{
+            top: "12%", left: "12%", right: "12%", bottom: "12%",
+            border: "0.5px solid rgba(255,255,255,0.06)",
+          }}
+        >
+          ◔
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function getTimeRemaining(until: string) {
