@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Coins, Check, ChevronLeft, Lock, ShoppingBag, Sparkles, Crown, Palette, Layers } from "lucide-react";
+import { Check, ChevronLeft, Lock, ShoppingBag, Sparkles, Crown, Palette, Layers } from "lucide-react";
 import FoundingBadge from "@/components/loopgate/FoundingBadge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -61,10 +61,10 @@ function FloatingNav({ spendableIndex, navigate, scrolled }: { spendableIndex: n
 
         <motion.div
           whileTap={{ scale: 0.94 }}
-          className="flex items-center gap-1.5 bg-white/[0.06] border border-white/[0.08] rounded-full pl-2 pr-2.5 py-1"
+          className="flex items-center gap-1.5 bg-white/[0.06] border border-white/[0.08] rounded-full px-2.5 py-1"
         >
-          <Coins className="w-3.5 h-3.5 text-amber-300" strokeWidth={2.4} />
           <span className="text-[12px] font-bold tabular-nums text-foreground leading-none">{spendableIndex.toLocaleString()}</span>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300 leading-none">XP</span>
         </motion.div>
       </motion.div>
     </div>
@@ -265,9 +265,8 @@ function ComingSoonTile({ index }: { index: number }) {
         <Lock className="w-5 h-5 text-foreground/20 relative z-10" strokeWidth={2} />
       </div>
       <p className="text-[12px] font-semibold text-foreground/50 truncate px-0.5">Coming soon</p>
-      <p className="text-[10px] text-foreground/30 mt-0.5 flex items-center gap-1 px-0.5">
-        <Coins className="w-2.5 h-2.5" />
-        ???
+      <p className="text-[10px] text-foreground/30 mt-0.5 flex items-center gap-1 px-0.5 font-semibold">
+        ??? <span className="tracking-wider">XP</span>
       </p>
     </motion.div>
   );
