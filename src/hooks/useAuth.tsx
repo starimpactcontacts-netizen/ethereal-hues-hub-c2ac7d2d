@@ -213,19 +213,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Check if this is a refresh token error - try to recover gracefully
         if (error.message?.includes('refresh_token') || error.message?.includes('Refresh Token')) {
           console.log('[Auth] Refresh token issue detected, attempting recovery...');
-          // Try refreshing the session one more time before giving up
-          const { data: retryData } = await supabase.auth.refreshSession();
-          if (retryData?.session) {
-            console.log('[Auth] Session recovered successfully');
-            setSession(retryData.session);
-            setUser(retryData.session.user);
-            fetchProfile(retryData.session.user.id);
-            setLoading(false);
-            return;
+          // Retry refresh up to 3 times with backoff before giving up.
+          // We NEVER auto-signOut here — a transient network failure must not log
+          // returning users out. The onAuthStateChange listener will pick the
+          // session back up once refresh eventually succeeds.
+          for (let attempt = 1; attempt <= 3; attempt++) {
+            try {
+              const { data: retryData, error: retryErr } = await supabase.auth.refreshSession();
+              if (retryData?.session) {
+                console.log(`[Auth] Session recovered on attempt ${attempt}`);
+                setSession(retryData.session);
+                setUser(retryData.session.user);
+                fetchProfile(retryData.session.user.id);
+                setLoading(false);
+                return;
+              }
+              if (retryErr) console.warn(`[Auth] Refresh attempt ${attempt} failed:`, retryErr.message);
+            } catch (e) {
+              console.warn(`[Auth] Refresh attempt ${attempt} threw:`, e);
+            }
+            await new Promise((r) => setTimeout(r, 500 * attempt));
           }
-          // Only clear if recovery truly fails
-          console.log('[Auth] Recovery failed, clearing stale session');
-          await supabase.auth.signOut({ scope: 'local' });
+          // Do NOT signOut. Keep stored tokens so the next page load / network
+          // recovery can re-establish the session. Just stop the loading state.
+          console.log('[Auth] Refresh retries exhausted, leaving stored session intact');
         }
         
         setLoading(false);
