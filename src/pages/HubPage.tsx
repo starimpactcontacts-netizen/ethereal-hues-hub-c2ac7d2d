@@ -1195,27 +1195,6 @@ export default function HubPage() {
       <CommissionsSection />
 
       {/* ═══════════════════════════════════════════════════════════════════
-          ⚖️ JUDGES — Clean minimal gateway to /judges
-      ═══════════════════════════════════════════════════════════════════ */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.15 }}
-        className="px-4 mt-2"
-      >
-        <Link to="/judges" className="block group">
-          <div className="relative py-3.5 flex items-center gap-3">
-            <Gavel className="w-5 h-5 text-foreground/50 group-hover:text-foreground transition-colors" />
-            <div className="flex-1 min-w-0">
-              <h2 className="font-display text-sm tracking-[0.08em] text-foreground leading-none">JUDGES</h2>
-              <p className="text-[10px] text-muted-foreground mt-0.5">Get your edits rated by top judges.</p>
-            </div>
-            <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-foreground/60 group-hover:translate-x-0.5 transition-all" />
-          </div>
-        </Link>
-      </motion.div>
-
-      {/* ═══════════════════════════════════════════════════════════════════
           QUICK MENU - Soft rounded white pills
       ═══════════════════════════════════════════════════════════════════ */}
       <motion.div
