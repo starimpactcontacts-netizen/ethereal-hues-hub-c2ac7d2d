@@ -678,7 +678,7 @@ export default function HubPage() {
                   </div>
                   <div className="absolute inset-[6px] rounded-[20px]" style={{ border: '1px solid hsl(0 0% 100% / 0.05)', background: 'linear-gradient(160deg, hsl(0 0% 100% / 0.03) 0%, transparent 60%)' }} />
                   <div className="relative z-10 flex h-full w-full items-center justify-center">
-                    <Gavel className="w-9 h-9" style={{ color: 'hsl(0 0% 100% / 0.78)' }} />
+                    <Gavel className="w-9 h-9" strokeWidth={2.4} style={{ color: 'hsl(0 0% 98%)' }} />
                   </div>
                 </div>
                 <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'hsl(0 0% 100% / 0.5)' }}>Panel</span>
@@ -702,7 +702,7 @@ export default function HubPage() {
                   </div>
                   <div className="absolute inset-[6px] rounded-[20px]" style={{ border: '1px solid hsl(0 0% 100% / 0.05)', background: 'linear-gradient(160deg, hsl(0 0% 100% / 0.03) 0%, transparent 60%)' }} />
                   <div className="relative z-10 flex h-full w-full items-center justify-center">
-                    <Clapperboard className="w-9 h-9" style={{ color: 'hsl(0 0% 100% / 0.82)' }} />
+                    <Clapperboard className="w-9 h-9" strokeWidth={2.4} style={{ color: 'hsl(0 0% 98%)' }} />
                   </div>
                 </div>
                 <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'hsl(0 0% 100% / 0.5)' }}>Studio</span>
