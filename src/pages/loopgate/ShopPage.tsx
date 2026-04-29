@@ -444,16 +444,57 @@ export default function ShopPage() {
               <div className="px-4 mt-5">
                 <div className="flex items-end justify-between mb-3">
                   <div>
-                    <h2 className="font-display text-[20px] tracking-tight text-foreground leading-tight">Next Drops</h2>
-                    <p className="text-[11px] text-foreground/40 mt-0.5">Mystery items dropping soon</p>
+                    <h2 className="font-display text-[20px] tracking-tight text-foreground leading-tight">Latest Drops</h2>
+                    <p className="text-[11px] text-foreground/40 mt-0.5">Live in the shop</p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2.5">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <ComingSoonTile key={i} index={i} />
-                  ))}
-                </div>
+                {(() => {
+                  const liveItems = items.filter((i) => i.name !== "OG Claim");
+                  const fillerCount = Math.max(0, 6 - liveItems.length);
+                  return (
+                    <div className="grid grid-cols-3 gap-2.5">
+                      {liveItems.map((item) => {
+                        const owned = purchases.has(item.id);
+                        const isClaiming = claiming === item.id;
+                        const canAfford = rings >= item.price;
+                        return (
+                          <motion.button
+                            key={item.id}
+                            onClick={() => !owned && !isClaiming && handleClaim(item)}
+                            whileTap={{ scale: 0.97 }}
+                            disabled={owned || isClaiming}
+                            className="text-left group"
+                          >
+                            <div className="aspect-square rounded-2xl border border-white/[0.08] bg-gradient-to-br from-zinc-900 to-black mb-2 relative overflow-hidden flex items-center justify-center">
+                              <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_25%,rgba(255,255,255,0.06),transparent_60%)]" />
+                              {item.image_url ? (
+                                <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-12 h-12 rounded-full border border-white/15" style={{ background: "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.18), rgba(255,255,255,0.02) 60%)" }} />
+                              )}
+                              {owned && (
+                                <div className="absolute top-1.5 right-1.5 bg-emerald-500/20 border border-emerald-400/40 rounded-full p-1">
+                                  <Check className="w-3 h-3 text-emerald-300" strokeWidth={3} />
+                                </div>
+                              )}
+                            </div>
+                            <p className="text-[12px] font-semibold text-foreground truncate px-0.5">{item.name}</p>
+                            <p className={cn(
+                              "text-[10px] mt-0.5 flex items-center gap-1 px-0.5 font-semibold tabular-nums",
+                              owned ? "text-emerald-300" : canAfford ? "text-foreground/70" : "text-foreground/30"
+                            )}>
+                              {owned ? "Owned" : isClaiming ? "Claiming…" : `${item.price.toLocaleString()} Rings`}
+                            </p>
+                          </motion.button>
+                        );
+                      })}
+                      {Array.from({ length: fillerCount }).map((_, i) => (
+                        <ComingSoonTile key={i} index={i} />
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Collections */}
