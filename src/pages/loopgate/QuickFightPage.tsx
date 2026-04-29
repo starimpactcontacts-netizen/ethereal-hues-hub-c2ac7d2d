@@ -616,3 +616,88 @@ export default function QuickFightPage() {
     </div>
   );
 }
+
+/** Empty edit slot — shown before a player submits. Side-by-side viral preview. */
+function EmptyEditSlot({
+  color,
+  username,
+  avatarUrl,
+  isYou,
+  isLive,
+}: {
+  color: 'red' | 'blue';
+  username: string;
+  avatarUrl?: string | null;
+  isYou: boolean;
+  isLive: boolean;
+}) {
+  const borderColor = color === 'red' ? 'border-red-500/40' : 'border-blue-500/40';
+  const gradientFrom = color === 'red' ? 'from-red-950/60' : 'from-blue-950/60';
+  const gradientTo = color === 'red' ? 'to-red-900/20' : 'to-blue-900/20';
+  const accentText = color === 'red' ? 'text-red-400' : 'text-blue-400';
+  const accentBg = color === 'red' ? 'bg-red-500/20' : 'bg-blue-500/20';
+  const ringColor = color === 'red' ? 'ring-red-500/30' : 'ring-blue-500/30';
+
+  return (
+    <div className={`bg-surface-1 border ${borderColor} overflow-hidden ${isYou ? `ring-2 ${ringColor}` : ''}`}>
+      {/* Thumbnail placeholder */}
+      <div className={`relative aspect-[16/9] bg-gradient-to-br ${gradientFrom} ${gradientTo} flex flex-col items-center justify-center overflow-hidden`}>
+        {/* Pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.08]"
+          style={{
+            backgroundImage: `radial-gradient(circle at 30% 50%, currentColor 1px, transparent 1px), radial-gradient(circle at 70% 30%, currentColor 1px, transparent 1px)`,
+            backgroundSize: '50px 50px, 40px 40px',
+          }}
+        />
+
+        {/* Live pulse */}
+        {isLive && (
+          <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/60 backdrop-blur-sm px-1.5 py-0.5">
+            <span className={`w-1.5 h-1.5 rounded-full ${color === 'red' ? 'bg-red-500' : 'bg-blue-500'} animate-pulse`} />
+            <span className="text-[8px] font-bold text-white uppercase tracking-wider">Live</span>
+          </div>
+        )}
+
+        {/* You badge */}
+        {isYou && (
+          <div className="absolute top-2 right-2 bg-gold px-1.5 py-0.5">
+            <span className="text-[8px] font-bold text-black uppercase tracking-wider">You</span>
+          </div>
+        )}
+
+        {/* Center content */}
+        <div className="flex flex-col items-center gap-2 z-10">
+          <Avatar className={`w-10 h-10 border-2 ${color === 'red' ? 'border-red-500/60' : 'border-blue-500/60'}`}>
+            <AvatarImage src={avatarUrl || ''} />
+            <AvatarFallback className={`${accentBg} ${accentText} text-sm font-bold`}>
+              {username?.charAt(0).toUpperCase() || '?'}
+            </AvatarFallback>
+          </Avatar>
+          <div className={`flex items-center gap-1 px-2 py-0.5 bg-black/40 backdrop-blur-sm border ${borderColor}`}>
+            <Upload className={`w-2.5 h-2.5 ${accentText}`} />
+            <span className={`text-[8px] font-bold ${accentText} uppercase tracking-wider`}>
+              {isYou ? 'Drop Edit' : 'Awaiting Drop'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="px-3 py-2 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Avatar className="w-6 h-6 border border-border">
+            <AvatarImage src={avatarUrl || ''} />
+            <AvatarFallback className={`${accentBg} ${accentText} text-[8px] font-bold`}>
+              {username?.charAt(0).toUpperCase() || '?'}
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-xs font-medium text-foreground truncate">@{username}</span>
+        </div>
+        <span className={`text-[8px] font-bold ${accentText} uppercase tracking-wider`}>
+          {color}
+        </span>
+      </div>
+    </div>
+  );
+}
