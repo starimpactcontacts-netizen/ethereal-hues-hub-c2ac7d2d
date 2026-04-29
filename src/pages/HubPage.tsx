@@ -570,14 +570,13 @@ export default function HubPage() {
                         <span className="text-emerald-400">$</span>{(((profile as any)?.earnings_cents || 0) / 100).toFixed(2)} LIFETIME
                       </span>
                     </button>
-                    {/* Index */}
-                    <Link to="/index" className="flex items-center gap-1.5">
-                      <IndexEarnBadge size="sm" hideDollar />
-                      <Coins className="w-3.5 h-3.5 text-gold" />
+                    {/* Rings — Loopgate's spendable currency */}
+                    <Link to="/shop" className="flex items-center gap-1.5">
+                      <Coins className="w-3.5 h-3.5 text-amber-300" />
                       <span className="font-display text-sm tabular-nums font-bold text-foreground/80 leading-none">
-                        {profile?.global_index_score || 0}
+                        {(profile as any)?.spendable_index || 0}
                       </span>
-                      <span className="text-[8px] text-gold/50 font-bold tracking-wider">IDX</span>
+                      <span className="text-[8px] text-amber-300/60 font-bold tracking-wider">RINGS</span>
                     </Link>
                   </div>
                 </div>
