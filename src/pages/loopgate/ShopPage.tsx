@@ -34,33 +34,64 @@ const RARITY_META: Record<string, { label: string; color: string; bg: string; bo
   mythic:    { label: "MYTHIC",    color: "text-rose-300",    bg: "bg-rose-500/10",    border: "border-rose-400/35" },
 };
 
-/* Obsidian thumbnail — shows the cosmetic profile frame wrapping an avatar */
+/* Obsidian thumbnail — Discord-style: faded mock profile card behind, frame floats on top */
 function ObsidianFrameThumb() {
   return (
-    <div className="relative w-full h-full flex items-center justify-center p-3">
-      {/* "PROFILE FRAME" hint label so it's obvious what this item IS */}
-      <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 text-[7px] font-black tracking-[0.18em] text-foreground/40 uppercase">
-        Profile Frame
-      </div>
-      <div className="relative" style={{ width: "72%", aspectRatio: "1/1" }}>
-        {/* Outer obsidian frame */}
+    <div className="relative w-full h-full overflow-hidden">
+      {/* Faded mock profile card in the background — clearly shows where the frame applies */}
+      <div className="absolute inset-0 flex items-start justify-start p-2.5 opacity-60">
         <div
-          className="absolute inset-0 rounded-full"
+          className="w-[78%] h-[88%] rounded-lg p-2 flex flex-col gap-1.5"
           style={{
-            background: "radial-gradient(circle at 30% 25%, #2a2a2e 0%, #0a0a0c 60%, #000 100%)",
-            border: "1.5px solid rgba(255,255,255,0.55)",
-            boxShadow: "0 6px 20px -4px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(0,0,0,0.6)",
-          }}
-        />
-        {/* Avatar slot — shows a mock face so the frame purpose reads instantly */}
-        <div
-          className="absolute rounded-full bg-gradient-to-br from-zinc-600 to-zinc-800 flex items-center justify-center text-foreground/70 font-display text-base"
-          style={{
-            top: "14%", left: "14%", right: "14%", bottom: "14%",
-            border: "0.5px solid rgba(255,255,255,0.08)",
+            background: "linear-gradient(180deg, #1a1a1d 0%, #131316 100%)",
+            border: "0.5px solid rgba(255,255,255,0.04)",
           }}
         >
-          U
+          {/* mock avatar circle */}
+          <div className="w-5 h-5 rounded-full bg-zinc-700/80 flex items-center justify-center">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/80 absolute translate-x-1.5 translate-y-1.5" />
+          </div>
+          {/* mock username + status lines */}
+          <div className="space-y-1 mt-0.5">
+            <div className="h-1 w-12 rounded-full bg-zinc-700/70" />
+            <div className="h-1 w-8 rounded-full bg-zinc-800/80" />
+          </div>
+          {/* mock content lines */}
+          <div className="space-y-1 mt-1">
+            <div className="h-0.5 w-full rounded-full bg-zinc-800/70" />
+            <div className="h-0.5 w-3/4 rounded-full bg-zinc-800/70" />
+            <div className="h-0.5 w-2/3 rounded-full bg-zinc-800/70" />
+          </div>
+        </div>
+      </div>
+
+      {/* The cosmetic itself — Obsidian frame floating on the right, oversized hero */}
+      <div className="absolute right-1 top-1/2 -translate-y-1/2" style={{ width: "62%", aspectRatio: "1/1" }}>
+        <div className="relative w-full h-full">
+          {/* glow halo behind */}
+          <div
+            className="absolute inset-0 rounded-full"
+            style={{ background: "radial-gradient(circle, rgba(0,0,0,0.9) 30%, rgba(0,0,0,0) 70%)", filter: "blur(8px)" }}
+          />
+          {/* obsidian ring */}
+          <div
+            className="absolute inset-0 rounded-full"
+            style={{
+              background: "radial-gradient(circle at 32% 24%, #34343a 0%, #0a0a0c 55%, #000 100%)",
+              border: "1.5px solid rgba(255,255,255,0.6)",
+              boxShadow: "0 10px 28px -6px rgba(0,0,0,0.95), inset 0 1px 0 rgba(255,255,255,0.32), inset 0 -1px 0 rgba(0,0,0,0.7)",
+            }}
+          />
+          {/* inner avatar slot — mock discord-style icon */}
+          <div
+            className="absolute rounded-full bg-zinc-800 flex items-center justify-center"
+            style={{
+              top: "13%", left: "13%", right: "13%", bottom: "13%",
+              border: "0.5px solid rgba(255,255,255,0.06)",
+            }}
+          >
+            <div className="w-1/2 h-1/2 rounded-full bg-zinc-700/70" />
+          </div>
         </div>
       </div>
     </div>
