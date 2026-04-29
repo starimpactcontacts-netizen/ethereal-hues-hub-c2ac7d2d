@@ -156,8 +156,8 @@ export default function FeaturedDropCard({ drop }: Props) {
         {/* Stats + CTA */}
         <div className="px-2 py-1.5 border-t border-emerald-500/20 bg-emerald-950/20 space-y-1.5">
           <div className="flex items-center gap-1.5 text-[8px] font-bold">
-            <span className="flex items-center gap-0.5 text-brand">
-              <Zap className="w-2.5 h-2.5" />+{drop.xp_reward}
+            <span className="flex items-center gap-1 text-brand">
+              +{drop.xp_reward}<span className="tracking-wider">XP</span>
             </span>
             <span className="flex items-center gap-0.5 text-gold">
               <Trophy className="w-2.5 h-2.5" />+{drop.index_reward}
@@ -250,8 +250,8 @@ export default function FeaturedDropCard({ drop }: Props) {
       {/* Stats + CTA */}
       <div className="px-3 py-2 border-t border-white/[0.04] space-y-1.5 mt-auto">
         <div className="flex items-center gap-1.5 text-[8px] font-bold">
-          <span className="flex items-center gap-0.5 text-brand">
-            <Zap className="w-2.5 h-2.5" />+{drop.xp_reward}
+          <span className="flex items-center gap-1 text-brand">
+            +{drop.xp_reward}<span className="tracking-wider">XP</span>
           </span>
           <span className="flex items-center gap-0.5 text-gold">
             <Trophy className="w-2.5 h-2.5" />+{drop.index_reward}
