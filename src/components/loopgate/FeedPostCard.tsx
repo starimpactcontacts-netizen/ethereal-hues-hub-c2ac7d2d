@@ -18,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAutoplayVideo } from "@/hooks/useAutoplayVideo";
 import FeedRateModal from "./FeedRateModal";
+import { getRankFromLevel } from "@/data/gqtConfig";
 
 interface FeedPostCardProps {
   post: FeedPostItem;
@@ -65,6 +66,7 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
 
   const leagueBadge = getLeagueBadge(post.league);
   const typeIndicator = getPostTypeIndicator(post.post_type);
+  const userRank = getRankFromLevel(post.level);
 
   const urlMatch = post.media_url || post.content.match(/https?:\/\/[^\s]+/)?.[0];
   const hasUploadedMedia = !!post.uploaded_media_url;
@@ -124,11 +126,9 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
                   {leagueBadge.label}
                 </span>
               )}
-              {post.global_index_score != null && post.global_index_score > 0 && (
-                <span className="text-[9px] font-bold text-gold">
-                  IDX {Math.round(post.global_index_score)}
-                </span>
-              )}
+              <span className="text-[9px] font-black tracking-[0.1em] px-1.5 py-0.5 rounded border border-foreground/15 bg-foreground/[0.04] text-foreground/80">
+                RANK {userRank}
+              </span>
               <span className="text-muted-foreground text-[11px]">·</span>
               <span className="text-muted-foreground text-[11px] shrink-0">{timeAgo}</span>
 
