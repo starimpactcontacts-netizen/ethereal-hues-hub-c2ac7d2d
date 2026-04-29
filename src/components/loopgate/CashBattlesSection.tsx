@@ -463,6 +463,7 @@ export default function CashBattlesSection({
   const { isGuest } = useGuestMode();
   const accountPrompt = useAccountPrompt();
   const [pendingApps, setPendingApps] = useState<CashBattleApplication[]>([]);
+  const { entries: openQueue } = useOpenQuickFightQueue();
 
   // Fetch pending applications with realtime subscription for instant updates
   useEffect(() => {
