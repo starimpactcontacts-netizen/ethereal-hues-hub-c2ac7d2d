@@ -48,6 +48,8 @@ import GatePattern from '@/components/loopgate/GatePattern';
 import { getRankFromScore } from '@/data/gqtConfig';
 import IndexEarnBadge from '@/components/loopgate/IndexEarnBadge';
 import FoundingBadge from '@/components/loopgate/FoundingBadge';
+import RingsCoin from '@/components/loopgate/RingsCoin';
+import RingsModal from '@/components/loopgate/RingsModal';
 import { useEquippedBadges } from '@/hooks/useEquippedBadges';
 import CommissionsSection from '@/components/loopgate/CommissionsSection';
 import WalletDrawer from '@/components/loopgate/WalletDrawer';
@@ -195,6 +197,7 @@ export default function HubPage() {
   const navigate = useNavigate();
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [walletOpen, setWalletOpen] = useState(false);
+  const [ringsOpen, setRingsOpen] = useState(false);
   const [judgeReviewCount, setJudgeReviewCount] = useState(0);
   const [userCrew, setUserCrew] = useState<UserCrew | null>(null);
   const [quickAction, setQuickAction] = useState<'edit_battle' | 'mission' | 'solo'>('edit_battle');
@@ -570,14 +573,17 @@ export default function HubPage() {
                         <span className="text-emerald-400">$</span>{(((profile as any)?.earnings_cents || 0) / 100).toFixed(2)} LIFETIME
                       </span>
                     </button>
-                    {/* Rings — Loopgate's spendable currency */}
-                    <Link to="/shop" className="flex items-center gap-1.5">
-                      <Coins className="w-3.5 h-3.5 text-amber-300" />
-                      <span className="font-display text-sm tabular-nums font-bold text-foreground/80 leading-none">
-                        {(profile as any)?.spendable_index || 0}
+                    {/* Rings — Loopgate's spendable currency (V-Bucks style) */}
+                    <button
+                      onClick={() => setRingsOpen(true)}
+                      className="flex items-center gap-1.5 active:scale-95 transition-transform"
+                    >
+                      <RingsCoin size={18} />
+                      <span className="font-display text-sm tabular-nums font-bold text-foreground/90 leading-none">
+                        {((profile as any)?.spendable_index || 0).toLocaleString()}
                       </span>
-                      <span className="text-[8px] text-amber-300/60 font-bold tracking-wider">RINGS</span>
-                    </Link>
+                      <span className="text-[8px] text-amber-300/70 font-bold tracking-wider">RINGS</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1292,6 +1298,11 @@ export default function HubPage() {
 
       <InviteModal open={inviteModalOpen} onOpenChange={setInviteModalOpen} />
       <WalletDrawer open={walletOpen} onClose={() => setWalletOpen(false)} />
+      <RingsModal
+        open={ringsOpen}
+        onClose={() => setRingsOpen(false)}
+        amount={(profile as any)?.spendable_index || 0}
+      />
     </div>
   );
 }
