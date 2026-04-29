@@ -34,29 +34,33 @@ const RARITY_META: Record<string, { label: string; color: string; bg: string; bo
   mythic:    { label: "MYTHIC",    color: "text-rose-300",    bg: "bg-rose-500/10",    border: "border-rose-400/35" },
 };
 
-/* Obsidian Frame thumbnail — shows the actual frame around an avatar slot */
+/* Obsidian thumbnail — shows the cosmetic profile frame wrapping an avatar */
 function ObsidianFrameThumb() {
   return (
     <div className="relative w-full h-full flex items-center justify-center p-3">
-      <div className="relative" style={{ width: "78%", aspectRatio: "1/1" }}>
+      {/* "PROFILE FRAME" hint label so it's obvious what this item IS */}
+      <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 text-[7px] font-black tracking-[0.18em] text-foreground/40 uppercase">
+        Profile Frame
+      </div>
+      <div className="relative" style={{ width: "72%", aspectRatio: "1/1" }}>
         {/* Outer obsidian frame */}
         <div
           className="absolute inset-0 rounded-full"
           style={{
             background: "radial-gradient(circle at 30% 25%, #2a2a2e 0%, #0a0a0c 60%, #000 100%)",
-            border: "1px solid rgba(255,255,255,0.5)",
-            boxShadow: "0 6px 20px -4px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.6)",
+            border: "1.5px solid rgba(255,255,255,0.55)",
+            boxShadow: "0 6px 20px -4px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(0,0,0,0.6)",
           }}
         />
-        {/* Avatar slot */}
+        {/* Avatar slot — shows a mock face so the frame purpose reads instantly */}
         <div
-          className="absolute rounded-full bg-zinc-800/70 flex items-center justify-center text-foreground/30 font-display text-sm"
+          className="absolute rounded-full bg-gradient-to-br from-zinc-600 to-zinc-800 flex items-center justify-center text-foreground/70 font-display text-base"
           style={{
-            top: "12%", left: "12%", right: "12%", bottom: "12%",
-            border: "0.5px solid rgba(255,255,255,0.06)",
+            top: "14%", left: "14%", right: "14%", bottom: "14%",
+            border: "0.5px solid rgba(255,255,255,0.08)",
           }}
         >
-          ◔
+          U
         </div>
       </div>
     </div>
@@ -498,7 +502,7 @@ export default function ShopPage() {
                         const isClaiming = claiming === item.id;
                         const canAfford = rings >= item.price;
                         const rarity = RARITY_META[item.rarity || "common"] || RARITY_META.common;
-                        const isObsidian = item.name === "Obsidian Frame";
+                          const isObsidian = item.name === "Obsidian";
                         return (
                           <motion.button
                             key={item.id}
@@ -525,6 +529,10 @@ export default function ShopPage() {
                                 rarity.bg, rarity.border, rarity.color
                               )}>
                                 {rarity.label}
+                              </div>
+                              {/* Type tag — explicit Cosmetic / Prestige label */}
+                              <div className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded-md backdrop-blur-md border border-white/10 bg-black/50 text-foreground/70 text-[8px] font-black tracking-[0.12em] leading-none uppercase">
+                                {item.item_type === "prestige" ? "Prestige" : "Cosmetic"}
                               </div>
                               {owned && (
                                 <div className="absolute top-1.5 right-1.5 bg-emerald-500/20 border border-emerald-400/40 rounded-full p-1">
