@@ -338,11 +338,12 @@ export default function SoloDetailPage() {
 
       {/* Score breakdown (if scored) */}
       {solo.status === 'scored' && solo.qoi_score != null && (
-        <div className="px-4 py-4 border-b border-border">
-          <div className="flex items-center gap-2 mb-3">
+        <div className="px-4 py-5">
+          <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
+          <div className="flex items-center gap-2 mb-4">
             <Trophy className="w-4 h-4 text-gold" />
             <span className="text-sm font-bold text-foreground">Score Breakdown</span>
-            <span className="ml-auto text-lg font-black text-gold">{Math.round(solo.qoi_score)}/100</span>
+            <span className="ml-auto text-xl font-black text-gold tabular-nums">{Math.round(solo.qoi_score)}<span className="text-xs text-gold/50 font-bold">/100</span></span>
           </div>
 
           <div className="space-y-3">
@@ -388,18 +389,19 @@ export default function SoloDetailPage() {
           )}
 
           {solo.judge_notes && (
-            <div className="mt-3 p-3 bg-surface-1 border border-border">
+            <div className="mt-3 p-3 rounded-xl bg-black/30 border border-white/[0.04]">
               <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Judge Notes</span>
-              <p className="text-xs text-foreground mt-1">{solo.judge_notes}</p>
+              <p className="text-xs text-foreground mt-1 leading-relaxed">{solo.judge_notes}</p>
             </div>
           )}
+          </div>
         </div>
       )}
 
       {/* Comments */}
-      <div className="border-b border-border">
-        <div className="px-4 pt-3 flex items-center gap-2">
-          <MessageCircle className="w-4 h-4 text-muted-foreground" />
+      <div className="pt-5">
+        <div className="px-4 pb-2 flex items-center gap-2">
+          <MessageCircle className="w-4 h-4 text-foreground/70" />
           <span className="text-sm font-bold text-foreground">Comments</span>
           {commentCount > 0 && (
             <span className="text-xs text-muted-foreground">({commentCount})</span>
