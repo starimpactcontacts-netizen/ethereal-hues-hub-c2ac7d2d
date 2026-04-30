@@ -15,6 +15,14 @@ const rankColors: Record<number, { border: string; glow: string; bg: string; tex
   3: { border: "border-amber-600/40", glow: "shadow-[0_0_12px_rgba(180,83,9,0.2)]", bg: "from-amber-700/15 to-amber-700/5", text: "text-amber-600" },
 };
 
+function isDirectVideo(url: string) {
+  return /\.(mp4|webm|mov|m4v)(\?|$)/i.test(url);
+}
+
+function isImageFile(url: string) {
+  return /\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(url);
+}
+
 function ScoreBar({ label, score, max, color }: { label: string; score: number; max: number; color: string }) {
   const pct = Math.round((score / max) * 100);
   return (
@@ -38,6 +46,8 @@ function ScoreBar({ label, score, max, color }: { label: string; score: number; 
 
 function EditDetailView({ sub, rank, onClose }: { sub: CompetitionSubmission; rank: number; onClose: () => void }) {
   const style = rankColors[rank] || { border: "border-white/[0.08]", glow: "", bg: "from-white/5 to-transparent", text: "text-muted-foreground" };
+  const directVideo = isDirectVideo(sub.submission_url);
+  const imageFile = isImageFile(sub.submission_url);
   
   // Derive QOI pillars from total score (mock breakdown for now)
   const total = sub.score ?? 0;
@@ -71,15 +81,21 @@ function EditDetailView({ sub, rank, onClose }: { sub: CompetitionSubmission; ra
         </div>
 
         {/* Video area */}
-        <div className="relative aspect-[9/16] max-h-[60vh] bg-black/50 flex items-center justify-center">
-          <a
-            href={sub.submission_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-16 h-16 rounded-full bg-amber-400/20 border border-amber-400/30 flex items-center justify-center transition-transform active:scale-95"
-          >
-            <Play className="w-7 h-7 text-amber-400 ml-1" />
-          </a>
+        <div className="relative aspect-[9/16] max-h-[60vh] bg-black/50 flex items-center justify-center overflow-hidden">
+          {directVideo ? (
+            <video src={sub.submission_url} className="h-full w-full object-contain" controls playsInline autoPlay />
+          ) : imageFile ? (
+            <img src={sub.submission_url} alt={`${sub.username} submission`} className="h-full w-full object-contain" />
+          ) : (
+            <a
+              href={sub.submission_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-16 h-16 rounded-full bg-amber-400/20 border border-amber-400/30 flex items-center justify-center transition-transform active:scale-95"
+            >
+              <Play className="w-7 h-7 text-amber-400 ml-1" />
+            </a>
+          )}
           {sub.score !== null && (
             <div className="absolute top-3 right-3 px-3 py-1.5 rounded-xl bg-black/60 backdrop-blur-sm border border-amber-400/20">
               <span className="text-2xl font-black text-amber-400 tabular-nums" style={teko}>{sub.score}</span>
@@ -88,7 +104,7 @@ function EditDetailView({ sub, rank, onClose }: { sub: CompetitionSubmission; ra
           )}
         </div>
 
-        {/* Open on platform */}
+        {/* Open file */}
         <a
           href={sub.submission_url}
           target="_blank"
@@ -96,7 +112,7 @@ function EditDetailView({ sub, rank, onClose }: { sub: CompetitionSubmission; ra
           className="flex items-center justify-center gap-2 py-3 text-muted-foreground/60 hover:text-foreground transition-colors"
         >
           <ExternalLink className="w-3.5 h-3.5" />
-          <span className="text-xs">Open on {sub.platform || "platform"}</span>
+          <span className="text-xs">Open submission</span>
         </a>
 
         <div className="px-4 space-y-4">
@@ -225,6 +241,8 @@ export default function CompetitionLeaderboard({ submissions }: { submissions: C
               {topEdits.map((sub, i) => {
                 const rank = i + 1;
                 const style = rankColors[rank] || { border: "border-white/[0.08]", glow: "", bg: "from-white/5 to-transparent", text: "text-muted-foreground" };
+                const directVideo = isDirectVideo(sub.submission_url);
+                const imageFile = isImageFile(sub.submission_url);
                 
                 return (
                   <motion.button
@@ -235,6 +253,11 @@ export default function CompetitionLeaderboard({ submissions }: { submissions: C
                     onClick={() => setSelectedEdit({ sub, rank })}
                     className={`relative shrink-0 w-[130px] h-[185px] rounded-2xl overflow-hidden border ${style.border} ${style.glow} snap-start transition-transform active:scale-[0.96]`}
                   >
+                    {directVideo ? (
+                      <video src={sub.submission_url} muted playsInline className="absolute inset-0 h-full w-full object-cover" />
+                    ) : imageFile ? (
+                      <img src={sub.submission_url} alt={`${sub.username} submission`} className="absolute inset-0 h-full w-full object-cover" />
+                    ) : null}
                     <div className={`absolute inset-0 bg-gradient-to-b ${style.bg}`} />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                     

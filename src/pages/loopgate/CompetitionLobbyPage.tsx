@@ -2,15 +2,14 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft, Trophy, Users, Clock, Play, Loader2, Send,
+  ArrowLeft, Trophy, Users, Clock, Play, Loader2,
   Share2, Check, MessageCircle, Layers, Pencil, X, ThumbsUp, Sparkles, Upload, Volume2, VolumeX, CheckCircle2, Circle, LogOut, Crown, Info, Timer, Vote, Gavel
 } from "lucide-react";
 import { useCompetition } from "@/hooks/useCompetitions";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { formatDistanceToNow, isPast, differenceInSeconds } from "date-fns";
-import { validatePlatformUrl, getPlatformUrlPlaceholder, detectPlatform, type PlatformType } from "@/lib/urlValidation";
+import { isPast, differenceInSeconds } from "date-fns";
 import { useAutoplayVideo } from "@/hooks/useAutoplayVideo";
 import { supabase } from "@/integrations/supabase/client";
 import CompetitionChat from "@/components/loopgate/CompetitionChat";
@@ -70,14 +69,12 @@ export default function CompetitionLobbyPage() {
   const [isReadying, setIsReadying] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
-  const [showSubmit, setShowSubmit] = useState(false);
-  const [subUrl, setSubUrl] = useState("");
-  const [platform, setPlatform] = useState<PlatformType>("tiktok");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showInspoForm, setShowInspoForm] = useState(false);
   const [savingInspo, setSavingInspo] = useState(false);
   const inspoFileInputRef = useRef<HTMLInputElement>(null);
+  const submitFileInputRef = useRef<HTMLInputElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
   const inspoVideoRef = useAutoplayVideo(true);
   const [inspoMuted, setInspoMuted] = useState(true);
@@ -157,7 +154,6 @@ export default function CompetitionLobbyPage() {
   const isCompleted = competition.status === "completed";
   const deadlinePassed = competition.deadline ? isPast(new Date(competition.deadline)) : false;
   const canSubmit = isLive && !deadlinePassed && hasJoined && !hasSubmitted;
-  const canStart = isCreator && isLobby && competition.current_players >= 2;
   const submittedEditorCount = submissions.length;
   const totalEditorCount = participants.length || competition.current_players || competition.max_players;
 
@@ -186,16 +182,44 @@ export default function CompetitionLobbyPage() {
     else { toast.error("Couldn't leave"); setIsLeaving(false); }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!subUrl.trim()) return;
-    const validation = validatePlatformUrl(platform, subUrl);
-    if (!validation.valid) { toast.error(validation.error || "Invalid URL"); return; }
+  const uploadSubmissionFile = async (file: File) => {
+    if (!user || !profile || !competition) { navigate("/start"); return; }
+    if (!canSubmit) return;
+    if (file.size > 500 * 1024 * 1024) { toast.error("Keep uploads under 500MB"); return; }
+    const isVideo = file.type.startsWith("video/");
+    const isImage = file.type.startsWith("image/");
+    if (!isVideo && !isImage) { toast.error("Upload a video or photo edit"); return; }
+
     setIsSubmitting(true);
-    const ok = await submit(subUrl.trim(), platform);
-    if (ok) { toast.success("Edit submitted!"); setShowSubmit(false); setSubUrl(""); }
-    else toast.error("Failed to submit");
-    setIsSubmitting(false);
+    try {
+      const rawExt = file.name.split(".").pop()?.toLowerCase();
+      const ext = rawExt || (isVideo ? "mp4" : "jpg");
+      const path = `${user.id}/competition-submissions/${competition.id}-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("loop-media")
+        .upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type });
+      if (upErr) throw upErr;
+
+      const { data: urlData } = supabase.storage.from("loop-media").getPublicUrl(path);
+      const ok = await submit(urlData.publicUrl, isVideo ? "upload" : "image");
+      if (ok) {
+        toast.success("Edit uploaded!");
+      } else {
+        toast.error("Failed to submit");
+      }
+    } catch (err: any) {
+      console.error("Submission upload error:", err);
+      toast.error(err?.message || "Upload failed");
+    } finally {
+      setIsSubmitting(false);
+      if (submitFileInputRef.current) submitFileInputRef.current.value = "";
+    }
+  };
+
+  const handleSubmissionFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    await uploadSubmissionFile(file);
   };
 
   const handleShare = async () => {
@@ -790,19 +814,44 @@ export default function CompetitionLobbyPage() {
           </motion.div>
         )}
 
-        {/* ═══ GO EDIT — visible when live + joined + hasn't submitted ═══ */}
+        {/* ═══ LIVE EDITING ACTIONS — file-first submission flow ═══ */}
         {isLive && hasJoined && !hasSubmitted && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="space-y-2"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-3"
           >
-            <div className="flex items-center justify-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-              <span className="text-[10px] text-red-400 font-bold uppercase tracking-[0.2em]" style={teko}>ROUND IS OPEN</span>
+            <div className="grid grid-cols-3 gap-2 rounded-xl border border-border bg-card p-2">
+              <div className="min-w-0">
+                <p className="text-[9px] font-extrabold uppercase tracking-[0.22em] text-muted-foreground" style={teko}>Round</p>
+                <div className="mt-1 flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-destructive animate-pulse" />
+                  <span className="text-[13px] font-black uppercase text-destructive" style={teko}>Open</span>
+                </div>
+              </div>
+              <div className="min-w-0 text-center border-x border-border">
+                <p className="text-[9px] font-extrabold uppercase tracking-[0.22em] text-muted-foreground" style={teko}>Edits In</p>
+                <p className="mt-1 text-[16px] font-black tabular-nums text-foreground leading-none" style={teko}>
+                  {submittedEditorCount}/{totalEditorCount}
+                </p>
+              </div>
+              <div className="min-w-0 text-right">
+                <p className="text-[9px] font-extrabold uppercase tracking-[0.22em] text-muted-foreground" style={teko}>Timer</p>
+                <div className="mt-1 flex justify-end">
+                  {competition.deadline ? <LiveCountdown deadline={competition.deadline} /> : <span className="text-[13px] font-black text-muted-foreground" style={teko}>LIVE</span>}
+                </div>
+              </div>
             </div>
 
-            <div className="flex gap-2">
+            <input
+              ref={submitFileInputRef}
+              type="file"
+              accept="video/mp4,video/webm,video/quicktime,video/x-m4v,image/jpeg,image/png,image/webp"
+              onChange={handleSubmissionFile}
+              className="hidden"
+            />
+
+            <div className="grid grid-cols-[1.15fr_1fr] gap-2">
               <button
                 onClick={() => {
                   const params = new URLSearchParams();
@@ -811,32 +860,22 @@ export default function CompetitionLobbyPage() {
                   if (competition.id) params.set("comp_id", competition.id);
                   navigate(`/studio?${params.toString()}`);
                 }}
-                className="flex-[2] py-3.5 rounded-xl flex items-center justify-center gap-2.5 transition-all active:scale-[0.98]"
-                style={{
-                  background: "linear-gradient(135deg, #ef4444, #dc2626)",
-                  color: "#fff",
-                  boxShadow: "0 4px 24px rgba(239,68,68,0.25)",
-                  ...teko,
-                }}
+                className="h-16 rounded-xl border border-destructive/30 bg-destructive text-destructive-foreground flex items-center justify-center gap-2.5 transition active:scale-[0.98]"
+                style={teko}
               >
-                <Pencil className="w-5 h-5" />
-                <span className="text-[18px] font-extrabold uppercase tracking-[0.15em]">GO EDIT</span>
+                <Pencil className="w-5 h-5" strokeWidth={2.5} />
+                <span className="text-[19px] font-extrabold uppercase tracking-[0.16em] leading-none">Edit</span>
               </button>
               <button
-                onClick={() => setShowSubmit(true)}
-                className="flex-1 py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
-                style={{
-                  background: "linear-gradient(135deg, hsl(142 71% 45%), hsl(142 76% 36%))",
-                  color: "#fff",
-                  boxShadow: "0 4px 24px rgba(34,197,94,0.25)",
-                  ...teko,
-                }}
+                onClick={() => submitFileInputRef.current?.click()}
+                disabled={isSubmitting}
+                className="h-16 rounded-xl border border-status-live/30 bg-status-live text-primary-foreground flex items-center justify-center gap-2.5 transition active:scale-[0.98] disabled:opacity-50"
+                style={teko}
               >
-                <Send className="w-4 h-4" />
-                <span className="text-[14px] font-extrabold uppercase tracking-[0.1em]">SUBMIT</span>
+                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload className="w-5 h-5" strokeWidth={2.5} />}
+                <span className="text-[19px] font-extrabold uppercase tracking-[0.16em] leading-none">Upload</span>
               </button>
             </div>
-            <p className="text-[10px] text-muted-foreground/30 text-center">Use any editing software you like (CapCut, Adobe, etc.) — submit your link when ready</p>
           </motion.div>
         )}
 
@@ -906,52 +945,6 @@ export default function CompetitionLobbyPage() {
               </p>
             )}
           </div>
-        )}
-
-        {/* Submit form */}
-        {showSubmit && (
-          <motion.form
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            onSubmit={handleSubmit}
-            className="space-y-3"
-          >
-            <div className="flex gap-2">
-              {(["tiktok", "instagram", "youtube"] as PlatformType[]).map(p => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => setPlatform(p)}
-                  className={`flex-1 py-2 rounded-xl text-[11px] font-bold uppercase transition-all border ${
-                    platform === p
-                      ? "bg-white/10 border-white/20 text-foreground"
-                      : "bg-surface-2 border-white/[0.06] text-muted-foreground"
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-            <input
-              value={subUrl}
-              onChange={e => setSubUrl(e.target.value)}
-              placeholder={getPlatformUrlPlaceholder(platform)}
-              className="w-full bg-surface-2 border border-white/[0.06] rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:border-red-500/40"
-            />
-            <div className="flex gap-2">
-              <button type="button" onClick={() => setShowSubmit(false)} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-muted-foreground bg-surface-2 border border-white/[0.06]">
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting || !subUrl.trim()}
-                className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-30 transition-all"
-                style={{ background: "linear-gradient(135deg, #ef4444, #dc2626)" }}
-              >
-                {isSubmitting ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : "Submit"}
-              </button>
-            </div>
-          </motion.form>
         )}
 
         {/* ═══ VOTING PHASE ═══ */}

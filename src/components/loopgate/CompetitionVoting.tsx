@@ -22,6 +22,10 @@ function isDirectVideo(url: string) {
   return /\.(mp4|webm|mov|m4v)(\?|$)/i.test(url);
 }
 
+function isImageFile(url: string) {
+  return /\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(url);
+}
+
 export default function CompetitionVoting({ submissions, myUserId, myVoteSubmissionId, onVote }: Props) {
   // Order: stable by created_at then id
   const ordered = useMemo(
@@ -98,6 +102,7 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
   // ─────────── WATCHING PHASE ───────────
   if (phase === "watching" && current) {
     const direct = isDirectVideo(current.submission_url);
+    const image = isImageFile(current.submission_url);
     const progressPct = ((PER_EDIT_SECONDS - secondsLeft) / PER_EDIT_SECONDS) * 100;
 
     return (
@@ -155,6 +160,12 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
                 playsInline
                 loop
                 muted={false}
+              />
+            ) : image ? (
+              <img
+                src={current.submission_url}
+                alt={`${current.username} submission`}
+                className="w-full h-full object-contain bg-black"
               />
             ) : (
               <a
@@ -230,6 +241,7 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
             const isMyVote = myVoteSubmissionId === sub.id;
             const isCasting = castingId === sub.id;
             const direct = isDirectVideo(sub.submission_url);
+            const image = isImageFile(sub.submission_url);
 
             return (
               <button
@@ -246,6 +258,8 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
               >
                 {direct ? (
                   <video src={sub.submission_url} muted playsInline className="w-full h-full object-cover" />
+                ) : image ? (
+                  <img src={sub.submission_url} alt={`${sub.username} submission`} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-white/[0.04] to-black flex items-center justify-center">
                     <Play className="w-8 h-8 text-white/40" />
