@@ -228,10 +228,10 @@ export default function ArenaCompetitionsSection({ onCreateClick, hideHeader = f
 
               <div className="px-5 py-4 space-y-3">
                 {[
-                  { icon: Plus, color: '#3b82f6', title: 'Pick or create', desc: 'Join an open lobby — or spin up your own theme and invite editors.' },
-                  { icon: Sparkles, color: '#a855f7', title: 'Submit your edit', desc: 'Drop your TikTok / IG / YT link before the deadline.' },
-                  { icon: Gavel, color: '#10b981', title: 'Get judged', desc: 'Real judges score every entry on Quality, Originality & Impact.' },
-                  { icon: Crown, color: '#fbbf24', title: 'Top edit takes the crown', desc: 'Winner pockets the IDX reward pool + climbs the leaderboard.' },
+                  { icon: Users, color: '#10b981', title: 'Join the lobby', desc: 'Editors gather in the room. Need at least 2 players. Host kicks it off when the squad is ready.' },
+                  { icon: Timer, color: '#fbbf24', title: '30 minute edit window', desc: 'Once it goes live, you have 30 minutes to drop your edit on the given theme. No extensions.' },
+                  { icon: Vote, color: '#3b82f6', title: 'Community vote', desc: 'After submissions close, everyone votes for the best edit. Most votes wins the bag.' },
+                  { icon: Gavel, color: '#ef4444', title: 'Judge verdict', desc: 'Some comps get a Loopgate judge to lock in the final winner — keeps it fair on high-stakes rooms.' },
                 ].map((step, i) => {
                   const Icon = step.icon;
                   return (
