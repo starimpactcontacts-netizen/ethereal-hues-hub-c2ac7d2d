@@ -25,7 +25,7 @@ function isGifUrl(text: string): boolean {
 
 const QUICK_CHIPS = ["🔥", "W", "💀", "GG", "nah", "😭", "goated"];
 
-export default function CompetitionChat({ competitionId }: { competitionId: string }) {
+export default function CompetitionChat({ competitionId, embedded = false }: { competitionId: string; embedded?: boolean }) {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -166,8 +166,9 @@ export default function CompetitionChat({ competitionId }: { competitionId: stri
   };
 
   return (
-    <div className="relative overflow-hidden flex flex-col rounded-2xl bg-card/60 backdrop-blur-xl border border-border/50 shadow-lg">
-      {/* Header */}
+    <div className={`relative overflow-hidden flex flex-col ${embedded ? 'h-full w-full bg-transparent' : 'rounded-2xl bg-card/60 backdrop-blur-xl border border-border/50 shadow-lg'}`}>
+      {/* Header (hidden when embedded — parent owns it) */}
+      {!embedded && (
       <div className="px-4 py-3 flex items-center justify-between border-b border-border/30">
         <div className="flex items-center gap-2.5">
           <div className="relative">
@@ -190,6 +191,7 @@ export default function CompetitionChat({ competitionId }: { competitionId: stri
           <Info className="w-4 h-4" />
         </button>
       </div>
+      )}
 
       {/* Info panel */}
       <AnimatePresence>
@@ -220,7 +222,7 @@ export default function CompetitionChat({ competitionId }: { competitionId: stri
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="h-[300px] sm:h-72 overflow-y-auto px-3 py-3 space-y-3 relative"
+        className={`${embedded ? 'flex-1 min-h-0' : 'h-[300px] sm:h-72'} overflow-y-auto px-3 py-3 space-y-3 relative`}
       >
         {loading ? (
           <div className="flex items-center justify-center h-full">
