@@ -34,23 +34,21 @@ export default function JudgeBattleCardGenerator() {
     if (!user?.id) return;
     setLoading(true);
 
+    const sb: any = supabase;
     const [b, c, q] = await Promise.all([
-      supabase
-        .from('battles')
+      sb.from('battles')
         .select('id, challenger_id, opponent_id, challenger_username, opponent_username, challenger_avatar_url, opponent_avatar_url, challenger_votes, opponent_votes, winner_id, judged_at, status')
         .eq('judge_id', user.id)
         .not('winner_id', 'is', null)
         .order('judged_at', { ascending: false })
         .limit(20),
-      supabase
-        .from('cash_battles')
+      sb.from('cash_battles')
         .select('id, challenger_id, opponent_id, challenger_username, opponent_username, challenger_avatar_url, opponent_avatar_url, challenger_votes, opponent_votes, winner_id, judged_at, prize_cents, status')
         .eq('judge_id', user.id)
         .not('winner_id', 'is', null)
         .order('judged_at', { ascending: false })
         .limit(20),
-      supabase
-        .from('quick_fights')
+      sb.from('quick_fights')
         .select('id, player_1_id, player_2_id, player_1_username, player_2_username, player_1_avatar_url, player_2_avatar_url, player_1_votes, player_2_votes, winner_id, judged_at, status')
         .eq('judge_id', user.id)
         .not('winner_id', 'is', null)
