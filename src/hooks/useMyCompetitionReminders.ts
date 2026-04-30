@@ -101,6 +101,7 @@ export function useMyCompetitionReminders() {
     };
 
     fetchMine();
+    const poll = window.setInterval(fetchMine, 5000);
 
     const channel = supabase
       .channel(`my-competition-reminders-${user.id}`)
@@ -110,7 +111,10 @@ export function useMyCompetitionReminders() {
       .on("postgres_changes", { event: "*", schema: "public", table: "competition_votes" }, () => fetchMine())
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      window.clearInterval(poll);
+      supabase.removeChannel(channel);
+    };
   }, [user?.id]);
 
   return { competitions, hasActiveCompetition: competitions.length > 0, loading };
