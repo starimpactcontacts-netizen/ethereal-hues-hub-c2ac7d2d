@@ -5,6 +5,7 @@ import BottomNav from './BottomNav';
 import LoadingScreen from './LoadingScreen';
 import BeginnerGuideModal from './BeginnerGuideModal';
 import TicketFAB from './TicketFAB';
+import LobbyMusicPlayer from './LobbyMusicPlayer';
 import { useGlobalNotifications } from '@/hooks/useGlobalNotifications';
 import { useGlobalTapSound } from '@/hooks/useGlobalTapSound';
 import { useRecoverBodyScroll } from '@/hooks/useRecoverBodyScroll';
@@ -53,6 +54,7 @@ export default function AuthenticatedLayout() {
 
       <TicketFAB />
       <BeginnerGuideModal autoShow />
+      <LobbyMusicPlayer />
     </div>
   );
 }

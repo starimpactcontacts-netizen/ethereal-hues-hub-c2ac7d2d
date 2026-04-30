@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from "react-router-dom";
 import type { CSSProperties } from "react";
 import BottomNav from "./BottomNav";
+import LobbyMusicPlayer from "./LobbyMusicPlayer";
 import { useRecoverBodyScroll } from "@/hooks/useRecoverBodyScroll";
 import { getPageSafeFill } from "@/lib/pageSafeFill";
 
@@ -26,6 +27,7 @@ export default function MobileLayout() {
         <Outlet />
       </main>
       {showNav && <BottomNav />}
+      <LobbyMusicPlayer />
     </div>
   );
 }
