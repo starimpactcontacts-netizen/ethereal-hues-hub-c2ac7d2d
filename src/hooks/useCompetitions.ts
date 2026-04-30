@@ -163,7 +163,7 @@ export function useCompetition(idOrSlug: string | undefined) {
     const { error } = await supabase.from("competitions").update({
       status: "live",
       started_at: new Date().toISOString(),
-      deadline: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      deadline: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
     }).eq("id", competition.id);
     if (error) return false;
     await fetchAll();
