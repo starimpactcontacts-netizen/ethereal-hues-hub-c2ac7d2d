@@ -5,8 +5,6 @@ const LOBBY_PATTERNS: RegExp[] = [
   /^\/arena\/friendly\/[^/]+/,            // FriendlyTournamentLobby
   /^\/arena\/cash-battle\/ready/,         // CashBattleReadyPage
   /^\/arena\/cash-battle\/[^/]+\/ready/,
-  /^\/mission\/[^/]+/,                    // MissionLobbyPage
-  /^\/competition\/[^/]+/,                // CompetitionLobbyPage (e.g. /competition/:id)
   /^\/quick-fight/,                       // matchmaking
   /^\/practice\/match/,
   /\/lobby$/,
