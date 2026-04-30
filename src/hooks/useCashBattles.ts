@@ -76,6 +76,7 @@ export function useCashBattles() {
     const { data } = await supabase
       .from('cash_battles')
       .select('*')
+      .neq('status', 'cancelled')
       .order('created_at', { ascending: false });
     setBattles((data as any[]) || []);
     setLoading(false);

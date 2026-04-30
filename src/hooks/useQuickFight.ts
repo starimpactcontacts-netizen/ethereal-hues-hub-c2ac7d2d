@@ -252,7 +252,7 @@ export function useRecentQuickFights(limit = 20) {
       const { data } = await supabase
         .from('quick_fights')
         .select('*')
-        .in('status', ['active', 'submitted', 'judging', 'completed', 'cancelled'])
+        .in('status', ['active', 'submitted', 'judging', 'completed'])
         .order('created_at', { ascending: false })
         .limit(limit);
       setFights((data as unknown as QuickFight[]) || []);
