@@ -62,7 +62,6 @@ export default function RankingsPage() {
     { id: "index", label: "INDEX", icon: Target },
     { id: "xp", label: "XP", icon: Zap },
     { id: "crews", label: "UNITS", icon: Users },
-    { id: "events", label: "EVENTS", icon: Trophy },
   ];
 
   useActiveSession();
