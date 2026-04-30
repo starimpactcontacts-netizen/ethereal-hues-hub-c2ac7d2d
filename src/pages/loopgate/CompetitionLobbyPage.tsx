@@ -69,8 +69,6 @@ export default function CompetitionLobbyPage() {
   const [isReadying, setIsReadying] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
-  const [showSubmit, setShowSubmit] = useState(false);
-  const [selectedSubmitFile, setSelectedSubmitFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showInspoForm, setShowInspoForm] = useState(false);
@@ -193,7 +191,6 @@ export default function CompetitionLobbyPage() {
     const isImage = file.type.startsWith("image/");
     if (!isVideo && !isImage) { toast.error("Upload a video or photo edit"); return; }
 
-    setSelectedSubmitFile(file);
     setIsSubmitting(true);
     try {
       const rawExt = file.name.split(".").pop()?.toLowerCase();
@@ -208,8 +205,6 @@ export default function CompetitionLobbyPage() {
       const ok = await submit(urlData.publicUrl, isVideo ? "upload" : "image");
       if (ok) {
         toast.success("Edit uploaded!");
-        setShowSubmit(false);
-        setSelectedSubmitFile(null);
       } else {
         toast.error("Failed to submit");
       }
