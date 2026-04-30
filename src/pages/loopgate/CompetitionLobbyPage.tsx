@@ -635,33 +635,21 @@ export default function CompetitionLobbyPage() {
           </motion.form>
         )}
 
-        {/* ═══ QUICK ACTIONS — borderless ═══ */}
-        <div className="flex gap-2">
-          <button
-            onClick={() => chatRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl hover:bg-white/[0.04] transition-all active:scale-[0.98]"
-          >
-            <MessageCircle className="w-3.5 h-3.5 text-red-400" />
-            <span className="text-[11px] font-bold text-foreground/60 uppercase tracking-wider" style={teko}>Chat</span>
-          </button>
-          <div className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl">
-            <Users className="w-3.5 h-3.5 text-muted-foreground/50" />
-            <span className="text-[11px] font-bold text-foreground/60 uppercase tracking-wider" style={teko}>
-              {participants.length} Editor{participants.length !== 1 ? "s" : ""}
-            </span>
-          </div>
-        </div>
+        {/* ═══ LEADERBOARD — only when live or judging ═══ */}
+        {!isLobby && <CompetitionLeaderboard submissions={submissions} />}
 
-        {/* ═══ LEADERBOARD ═══ */}
-        <CompetitionLeaderboard submissions={submissions} />
-
-        {/* ═══ EDITORS ═══ */}
+        {/* ═══ EDITORS — with ready badges in lobby ═══ */}
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Users className="w-3.5 h-3.5 text-muted-foreground/50" />
             <span className="text-[14px] font-extrabold uppercase tracking-[0.1em] text-foreground" style={teko}>
               Editors ({participants.length})
             </span>
+            {isLobby && participants.length > 0 && (
+              <span className="text-[10px] text-emerald-400/70 font-bold ml-1">
+                · {readyCount} ready
+              </span>
+            )}
           </div>
           {participants.length === 0 ? (
             <p className="text-xs text-muted-foreground/40 text-center py-3">No editors yet — be the first</p>
@@ -669,12 +657,19 @@ export default function CompetitionLobbyPage() {
             <div className="flex flex-wrap gap-3">
               {participants.map(p => (
                 <button key={p.id} onClick={() => navigate(`/u/${p.username}`)} className="flex flex-col items-center gap-1 group">
-                  <Avatar className="w-10 h-10 border border-white/10 group-hover:border-white/30 transition-all">
-                    <AvatarImage src={p.avatar_url || ""} />
-                    <AvatarFallback className="text-[10px] bg-surface-1 text-foreground font-bold">
-                      {p.username?.[0]?.toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="relative">
+                    <Avatar className={`w-10 h-10 border transition-all ${p.is_ready ? "border-emerald-500/70" : "border-white/10 group-hover:border-white/30"}`}>
+                      <AvatarImage src={p.avatar_url || ""} />
+                      <AvatarFallback className="text-[10px] bg-surface-1 text-foreground font-bold">
+                        {p.username?.[0]?.toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    {p.is_ready && (
+                      <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-500 border-2 border-background flex items-center justify-center">
+                        <Check className="w-2 h-2 text-white" strokeWidth={3} />
+                      </div>
+                    )}
+                  </div>
                   <span className="text-[9px] text-muted-foreground/60 group-hover:text-foreground truncate max-w-[48px] text-center transition-colors">
                     {p.username}
                   </span>
