@@ -1259,36 +1259,28 @@ export default function ArenaPage() {
 
           {/* Game lobby dropdown removed — direct actions via section buttons */}
 
-          {/* KotH live drop promo — only if no missions */}
-          {missionBillboards.length === 0 && liveDrops.length > 0 && (
-            <motion.button
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => navigate(`/drop/${liveDrops[0].id}`)}
-              className="relative w-full overflow-hidden touch-manipulation group mb-2 rounded-lg"
-            >
-              {(liveDrops[0] as any).poster_url ? (
-                <div className="absolute inset-0 bg-cover bg-center scale-[1.02] group-hover:scale-[1.06] transition-transform duration-700" style={{ backgroundImage: `url(${(liveDrops[0] as any).poster_url})` }} />
-              ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-red-950 via-background to-red-950/50" />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/40" />
-              <div className="relative px-4 py-3.5 flex items-center gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                    <span className="text-[9px] font-black text-red-400 uppercase tracking-[0.15em]">King of the Hill — Live</span>
-                  </div>
-                  <h3 className="text-[16px] font-black text-white leading-tight truncate tracking-tight" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>{liveDrops[0].title}</h3>
-                </div>
-                <div className="shrink-0 bg-red-600 px-4 py-2 rounded-sm flex items-center gap-1.5 group-hover:bg-red-500 transition-colors">
-                  <Users className="w-3.5 h-3.5 text-white" />
-                  <span className="text-[12px] font-black text-white uppercase tracking-wider" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>Submit</span>
-                </div>
-              </div>
-            </motion.button>
-          )}
+          {/* KotH submit billboard removed per user request */}
+
+          {/* ═══ FILTER PILLS — moved to top ═══ */}
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide pb-2 mb-3 px-4 -mx-4">
+            {filters.map(f => {
+              const active = activeFilter === f.key;
+              return (
+                <button
+                  key={f.key}
+                  onClick={() => setActiveFilter(f.key)}
+                  className={`px-2.5 py-1 text-[10px] font-semibold rounded-full transition-all flex items-center gap-1 shrink-0 touch-manipulation ${
+                    active
+                      ? "bg-foreground text-background"
+                      : "bg-surface-1 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {f.icon}
+                  {f.label}
+                </button>
+              );
+            })}
+          </div>
 
           {/* Featured fight promo — inline, only if no live drops */}
           {liveDrops.length === 0 && featuredFight && (
@@ -1356,26 +1348,7 @@ export default function ArenaPage() {
 
           {/* Marketplace removed */}
 
-          {/* ═══ FILTER PILLS — small rounded ═══ */}
-          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide pb-1 px-4">
-            {filters.map(f => {
-              const active = activeFilter === f.key;
-              return (
-                <button
-                  key={f.key}
-                  onClick={() => setActiveFilter(f.key)}
-                  className={`px-2.5 py-1 text-[10px] font-semibold rounded-full transition-all flex items-center gap-1 shrink-0 touch-manipulation ${
-                    active
-                      ? "bg-foreground text-background"
-                      : "bg-surface-1 text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {f.icon}
-                  {f.label}
-                </button>
-              );
-            })}
-          </div>
+          {/* Filter pills moved to top */}
           </>
           )}
         </div>
