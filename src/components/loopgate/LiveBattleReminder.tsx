@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Swords, Zap, Flag, ChevronRight, Gavel } from "lucide-react";
+import { Swords, Zap, Flag, ChevronRight, Gavel, Trophy, Vote } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export type LiveBattleReminderItem = {
-  kind: "battle" | "quick";
+  kind: "battle" | "quick" | "competition";
   id: string;
   title: string;
   status: string;
   endsAt: string | null;
   hasSubmitted: boolean;
+  hasVoted?: boolean;
   isJudge?: boolean;
   href: string;
 };
@@ -32,6 +33,23 @@ function useCountdown(endsAt: string | null) {
 }
 
 async function forfeit(item: LiveBattleReminderItem) {
+  if (item.kind === "competition") {
+    const ok = window.confirm(
+      `Forfeit "${item.title}"? You'll leave this competition. This cannot be undone.`
+    );
+    if (!ok) return;
+    const { data: auth } = await supabase.auth.getUser();
+    const userId = auth.user?.id;
+    if (!userId) { toast.error("Sign in required."); return; }
+    const { error } = await supabase
+      .from("competition_participants")
+      .delete()
+      .eq("competition_id", item.id)
+      .eq("user_id", userId);
+    if (error) toast.error("Could not forfeit. Try again.");
+    else toast.success("Competition forfeited.");
+    return;
+  }
   const ok = window.confirm(
     `Forfeit "${item.title}"? Your opponent will win automatically. This cannot be undone.`
   );
@@ -46,8 +64,9 @@ async function forfeit(item: LiveBattleReminderItem) {
 export function LiveBattleReminderCard({ item, compact = false }: { item: LiveBattleReminderItem; compact?: boolean }) {
   const { label, urgent, expired } = useCountdown(item.endsAt);
   const navigate = useNavigate();
-  const Icon = item.isJudge ? Gavel : item.kind === "quick" ? Zap : Swords;
-  const accent = item.isJudge ? "purple" : "red";
+  const isVoting = item.kind === "competition" && item.status === "voting";
+  const Icon = item.isJudge ? Gavel : isVoting ? Vote : item.kind === "competition" ? Trophy : item.kind === "quick" ? Zap : Swords;
+  const accent = item.isJudge || item.kind === "competition" ? "purple" : "red";
 
   return (
     <div
@@ -73,10 +92,10 @@ export function LiveBattleReminderCard({ item, compact = false }: { item: LiveBa
             <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${
               accent === "purple" ? "text-purple-300" : "text-red-300"
             }`}>
-              {item.isJudge ? "JUDGING" : item.status === "judging" ? "AWAITING JUDGE" : "LIVE BATTLE"}
+              {item.isJudge ? "JUDGING" : item.kind === "competition" ? (isVoting ? "VOTE NOW" : "LIVE COMPETITION") : item.status === "judging" ? "AWAITING JUDGE" : "LIVE BATTLE"}
             </span>
-            {item.hasSubmitted && !item.isJudge && (
-              <span className="text-[8px] font-bold text-emerald-300 px-1.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/25 uppercase">Submitted</span>
+            {(item.hasSubmitted || item.hasVoted) && !item.isJudge && (
+              <span className="text-[8px] font-bold text-emerald-300 px-1.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/25 uppercase">{item.hasVoted ? "Voted" : "Submitted"}</span>
             )}
           </div>
           <p className="text-[13px] font-bold text-foreground truncate mt-0.5">{item.title}</p>
@@ -84,7 +103,7 @@ export function LiveBattleReminderCard({ item, compact = false }: { item: LiveBa
             <p className={`text-[10px] mt-0.5 font-bold uppercase tracking-wider ${
               expired ? "text-red-400" : urgent ? "text-red-300 animate-pulse" : "text-muted-foreground"
             }`}>
-              {expired ? "Time expired" : `${label} left to submit`}
+              {expired ? "Time expired" : `${label} left to ${isVoting ? "vote" : "submit"}`}
             </p>
           )}
         </div>
@@ -97,7 +116,7 @@ export function LiveBattleReminderCard({ item, compact = false }: { item: LiveBa
             to={item.href}
             className="flex-1 py-2 text-center text-[10px] font-black uppercase tracking-[0.2em] text-foreground hover:bg-white/[0.04] transition-colors"
           >
-            {item.hasSubmitted ? "View" : "Submit Edit"}
+            {isVoting ? "Vote" : item.hasSubmitted ? "View" : "Submit Edit"}
           </Link>
           <button
             onClick={(e) => { e.stopPropagation(); forfeit(item); }}

@@ -41,6 +41,7 @@ import { startQuickMatch } from "@/lib/startQuickMatch";
 import CashBattlesSection from "@/components/loopgate/CashBattlesSection";
 import { useMyCashBattles } from "@/hooks/useCashBattles";
 import { ArenaRail, ArenaRailCard, ArenaRailSkeleton } from "@/components/loopgate/ArenaCarouselSystem";
+import { useMyCompetitionReminders } from "@/hooks/useMyCompetitionReminders";
 
 interface Event {
   id: string;
@@ -543,6 +544,7 @@ export default function ArenaPage() {
   const [missionBillboards, setMissionBillboards] = useState<Array<{ id: string; song_name: string; poster_url: string | null; artist_name: string | null; max_pay: number }>>([]);
   const { activeSolo, loading: soloLoading, cancelSolo } = useSoloMode();
   const { fights: myQuickFights, inQueue: qfInQueue } = useMyQuickFights();
+  const { competitions: myLiveCompetitions } = useMyCompetitionReminders();
   const { battles: myCashBattles, acceptBattle: acceptCashBattle } = useMyCashBattles();
   const [arenaView, setArenaView] = useState<'arena' | 'my'>(() => (searchParams.get('tab') === 'my' || searchParams.get('view') === 'my') ? 'my' : 'arena');
   const [emailInput, setEmailInput] = useState("");
@@ -830,7 +832,7 @@ export default function ArenaPage() {
               <div className="flex items-center justify-center gap-2">
                 <UserRound className="w-4 h-4" />
                 <span>My Arena</span>
-                {(activeSolo || myBattles.length > 0 || myActiveQuickFights.length > 0 || myJudgingBattles.length > 0 || myCashBattles.length > 0) && (
+                {(activeSolo || myBattles.length > 0 || myActiveQuickFights.length > 0 || myJudgingBattles.length > 0 || myCashBattles.length > 0 || myLiveCompetitions.length > 0) && (
                   <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                 )}
               </div>
@@ -1171,12 +1173,22 @@ export default function ArenaPage() {
                       href: `/fight/${f.id}`,
                     };
                   }),
+                  ...myLiveCompetitions.map(comp => ({
+                    kind: 'competition' as const,
+                    id: comp.id,
+                    title: comp.name,
+                    status: comp.status,
+                    endsAt: comp.status === 'voting' ? comp.voting_deadline : comp.deadline,
+                    hasSubmitted: comp.hasSubmitted,
+                    hasVoted: comp.hasVoted,
+                    href: `/competition/${comp.slug || comp.id}`,
+                  })),
                 ];
                 return reminderItems.length > 0 ? (
                   <div>
                     <div className="flex items-center gap-2 mb-2 px-1">
                       <Swords className="w-3.5 h-3.5 text-red-400" />
-                      <span className="text-[11px] font-black text-foreground/90 uppercase tracking-[0.15em]">Active Battles</span>
+                      <span className="text-[11px] font-black text-foreground/90 uppercase tracking-[0.15em]">Active Now</span>
                       <span className="ml-auto text-[10px] text-red-300 font-black px-1.5 py-0.5 rounded-full bg-red-500/15 border border-red-500/25">{reminderItems.length}</span>
                     </div>
                     <LiveBattleReminders items={reminderItems} />

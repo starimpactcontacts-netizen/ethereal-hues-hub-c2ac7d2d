@@ -56,6 +56,8 @@ import WalletDrawer from '@/components/loopgate/WalletDrawer';
 import LoopyWelcomeModal from '@/components/loopgate/LoopyWelcomeModal';
 import { startQuickMatch } from '@/lib/startQuickMatch';
 import { useMyCashBattles, useMyCashBattleApplication } from '@/hooks/useCashBattles';
+import { useMyCompetitionReminders } from '@/hooks/useMyCompetitionReminders';
+import LiveBattleReminders, { type LiveBattleReminderItem } from '@/components/loopgate/LiveBattleReminder';
 
 // ── Live Feed for Hub ──────────────────────────────────────────────────
 const actionColors: Record<string, string> = {
@@ -206,6 +208,7 @@ export default function HubPage() {
   const [qfTipIdx, setQfTipIdx] = useState(0);
   const qfTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { inQueue: qfInQueue, fights: qfFights } = useMyQuickFights();
+  const { competitions: myLiveCompetitions } = useMyCompetitionReminders();
   const featuredScrollRef = useRef<HTMLDivElement>(null);
   const [featuredActiveIdx, setFeaturedActiveIdx] = useState(0);
   const featuredAutoScrollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -759,39 +762,54 @@ export default function HubPage() {
       </div>
 
       {/* ⚔️ ACTIVE REMINDERS — clean, rounded, dismissible */}
-      {activeBattles.length > 0 && !dismissedBanners.battles && (
-        <div className="px-4 mt-2 space-y-1.5">
-          {activeBattles.slice(0, 2).map(battle => {
+      {(() => {
+        const qfItems: LiveBattleReminderItem[] = qfFights
+          .filter(f => ['active', 'submitted', 'judging'].includes(f.status))
+          .map(f => {
+            const isP1 = f.player_1_id === user?.id;
+            return {
+              kind: 'quick' as const,
+              id: f.id,
+              title: `${f.player_1_username} vs ${f.player_2_username || '???'}`,
+              status: f.status,
+              endsAt: f.ends_at,
+              hasSubmitted: isP1 ? !!f.player_1_submission_url : !!f.player_2_submission_url,
+              href: `/fight/${f.id}`,
+            };
+          });
+        const items: LiveBattleReminderItem[] = [
+          ...activeBattles.map(battle => {
             const isJudgeRole = battle.judge_id === user?.id;
             const isChallenger = battle.challenger_id === user?.id;
-            const roleLabel = isJudgeRole ? "Judge" : isChallenger ? 'Challenger' : "Defender";
-            const dotColor = isJudgeRole ? 'bg-purple-400' : 'bg-red-400';
-            return (
-              <div key={battle.id} className="flex items-center gap-2.5 bg-surface-1 border border-border rounded-lg px-3 py-2">
-                <Link to={`/battle/${battle.id}`} className="flex items-center gap-2.5 flex-1 min-w-0">
-                  <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotColor}`} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-foreground font-medium truncate">{battle.challenger_username} vs {battle.opponent_username || '???'}</p>
-                  </div>
-                  <span className="text-[9px] text-muted-foreground font-medium uppercase tracking-wider shrink-0">{roleLabel}</span>
-                  <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                </Link>
-                <button
-                  onClick={() => setDismissedBanners(prev => ({ ...prev, battles: true }))}
-                  className="text-[9px] text-muted-foreground/60 hover:text-foreground transition-colors pl-2 border-l border-border shrink-0"
-                >
-                  ✕
-                </button>
-              </div>
-            );
-          })}
-          {activeBattles.length > 2 && (
-            <Link to="/arena" className="block text-center text-[10px] text-muted-foreground hover:text-foreground">
-              +{activeBattles.length - 2} more in My Arena →
-            </Link>
-          )}
-        </div>
-      )}
+            return {
+              kind: 'battle' as const,
+              id: battle.id,
+              title: `${battle.challenger_username} vs ${battle.opponent_username || '???'}`,
+              status: battle.status,
+              endsAt: battle.ends_at,
+              hasSubmitted: isChallenger ? !!(battle as any).challenger_submission_url : !!(battle as any).opponent_submission_url,
+              isJudge: isJudgeRole,
+              href: `/battle/${battle.id}`,
+            };
+          }),
+          ...qfItems,
+          ...myLiveCompetitions.map(comp => ({
+            kind: 'competition' as const,
+            id: comp.id,
+            title: comp.name,
+            status: comp.status,
+            endsAt: comp.status === 'voting' ? comp.voting_deadline : comp.deadline,
+            hasSubmitted: comp.hasSubmitted,
+            hasVoted: comp.hasVoted,
+            href: `/competition/${comp.slug || comp.id}`,
+          })),
+        ];
+        return items.length > 0 && !dismissedBanners.battles ? (
+          <div className="px-4 mt-2">
+            <LiveBattleReminders items={items} />
+          </div>
+        ) : null;
+      })()}
 
       {activeSolo && !dismissedBanners.solo && (
         <div className="px-4 mt-2">
