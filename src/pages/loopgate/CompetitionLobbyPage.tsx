@@ -3,13 +3,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Trophy, Users, Clock, Play, Loader2,
-  Share2, Check, MessageCircle, Layers, Pencil, X, ThumbsUp, Sparkles, Upload, Volume2, VolumeX, CheckCircle2, Circle, LogOut, Crown, Info, Timer, Vote, Gavel, FileVideo, Image as ImageIcon
+  Share2, Check, MessageCircle, Layers, Pencil, X, ThumbsUp, Sparkles, Upload, Volume2, VolumeX, CheckCircle2, Circle, LogOut, Crown, Info, Timer, Vote, Gavel
 } from "lucide-react";
 import { useCompetition } from "@/hooks/useCompetitions";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { formatDistanceToNow, isPast, differenceInSeconds } from "date-fns";
+import { isPast, differenceInSeconds } from "date-fns";
 import { useAutoplayVideo } from "@/hooks/useAutoplayVideo";
 import { supabase } from "@/integrations/supabase/client";
 import CompetitionChat from "@/components/loopgate/CompetitionChat";
@@ -154,7 +154,6 @@ export default function CompetitionLobbyPage() {
   const isCompleted = competition.status === "completed";
   const deadlinePassed = competition.deadline ? isPast(new Date(competition.deadline)) : false;
   const canSubmit = isLive && !deadlinePassed && hasJoined && !hasSubmitted;
-  const canStart = isCreator && isLobby && competition.current_players >= 2;
   const submittedEditorCount = submissions.length;
   const totalEditorCount = participants.length || competition.current_players || competition.max_players;
 
