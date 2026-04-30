@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Gavel, Inbox, CheckCircle, BarChart3, ArrowLeft, Star, Palette, Video, Zap, Target, Swords, User, UserRound, Disc3, Award, Music } from 'lucide-react';
+import { Gavel, Inbox, CheckCircle, BarChart3, ArrowLeft, Star, Palette, Video, Zap, Target, Swords, User, UserRound, Disc3, Award, Music, Vote } from 'lucide-react';
 import JudgeOnboardingCard, { useJudgeOnboarding } from '@/components/loopgate/JudgeOnboardingCard';
 import JudgeFormatInfo from '@/components/loopgate/JudgeFormatInfo';
 import { Link } from 'react-router-dom';
@@ -21,10 +21,22 @@ import JudgeQuickFightsTab from '@/components/loopgate/JudgeQuickFightsTab';
 import JudgeQOIResultCard from '@/components/loopgate/JudgeQOIResultCard';
 import JudgeSoloQueue from '@/components/loopgate/JudgeSoloQueue';
 import JudgeDropQueue from '@/components/loopgate/JudgeDropQueue';
+import JudgeVotingTab from '@/components/loopgate/JudgeVotingTab';
 
-type JudgeFormat = 'solo' | '1v1' | 'qoi' | 'quick' | 'flywheel';
+type JudgeFormat = 'voting' | 'solo' | 'flywheel';
 
 const FORMAT_INFO = {
+  voting: {
+    title: 'Judge Voting',
+    description: 'Every edit battle in one queue — quick 1v1s, cash battles, competitions and open challenges.',
+    steps: [
+      'Browse the unified queue of battles waiting on a verdict',
+      'Tap a match to watch both edits side-by-side',
+      'Pick the winner — that\'s it. No QOI, no scoring forms.',
+      'Earn JXP per vote, with bonuses on cash battles and comps',
+    ],
+    contentTip: 'Screen-record your reaction + the winner reveal for an instant TikTok.',
+  },
   solo: {
     title: 'Solo Edit Rating',
     description: 'Rate individual edits submitted to your inbox.',
@@ -35,17 +47,6 @@ const FORMAT_INFO = {
       'Editors get notified and see their score',
     ],
     contentTip: 'Screen record yourself reacting + scoring for the best engagement.',
-  },
-  '1v1': {
-    title: '1v1 Edit Rating',
-    description: 'Compare two edits head-to-head and pick a winner.',
-    steps: [
-      'Upload screenshots of both edits',
-      'Enter both editor usernames',
-      'Pick the winner and set scores',
-      'Export the VS card for content',
-    ],
-    contentTip: 'Show 5 sec of each edit, then reveal the result card.',
   },
   flywheel: {
     title: 'Flywheel Spin',
@@ -61,16 +62,14 @@ const FORMAT_INFO = {
 };
 
 const FORMATS: { id: JudgeFormat; label: string; icon: typeof User; activeClass: string }[] = [
-  { id: 'solo', label: 'Solo', icon: User, activeClass: 'bg-white text-black border-white' },
-  { id: '1v1', label: '1v1', icon: Swords, activeClass: 'bg-white text-black border-white' },
-  { id: 'qoi', label: 'QOI', icon: Award, activeClass: 'bg-yellow-500 text-black border-yellow-500' },
-  { id: 'quick', label: 'Quick', icon: Zap, activeClass: 'bg-red-600 text-white border-red-600' },
+  { id: 'voting', label: 'Vote', icon: Vote, activeClass: 'bg-purple-600 text-white border-purple-600' },
+  { id: 'solo', label: 'Solo Inbox', icon: User, activeClass: 'bg-white text-black border-white' },
   { id: 'flywheel', label: 'Wheel', icon: Disc3, activeClass: 'bg-red-600 text-white border-red-600' },
 ];
 
 export default function JudgePanelPage() {
   const { profile, user } = useAuth();
-  const [activeFormat, setActiveFormat] = useState<JudgeFormat>('solo');
+  const [activeFormat, setActiveFormat] = useState<JudgeFormat>('voting');
   const [activeTab, setActiveTab] = useState('solo_queue');
   const [showTemplates, setShowTemplates] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
@@ -174,7 +173,7 @@ export default function JudgePanelPage() {
 
       {/* Format Selector — horizontal scroll, no wrapping */}
       <div className="px-3 py-2 border-b border-zinc-800">
-        <p className="text-[8px] text-zinc-600 uppercase tracking-[0.25em] font-mono mb-1.5">Rating Format</p>
+        <p className="text-[8px] text-zinc-600 uppercase tracking-[0.25em] font-mono mb-1.5">Judge Mode</p>
         <div className="flex gap-1">
           {FORMATS.map((fmt) => {
             const Icon = fmt.icon;
@@ -202,6 +201,9 @@ export default function JudgePanelPage() {
           })}
         </div>
       </div>
+
+      {/* UNIFIED VOTING */}
+      {activeFormat === 'voting' && <JudgeVotingTab />}
 
       {/* SOLO FORMAT */}
       {activeFormat === 'solo' && (
@@ -270,25 +272,6 @@ export default function JudgePanelPage() {
             <JudgeLiveFeed />
           </TabsContent>
         </Tabs>
-      )}
-
-      {/* 1v1 FORMAT */}
-      {activeFormat === '1v1' && (
-        <div className="px-3 pt-3">
-          <Judge1v1Rating />
-        </div>
-      )}
-
-      {/* QOI FORMAT */}
-      {activeFormat === 'qoi' && (
-        <div className="px-3 pt-3">
-          <JudgeQOIResultCard />
-        </div>
-      )}
-
-      {/* QUICK 1v1 FORMAT */}
-      {activeFormat === 'quick' && (
-        <JudgeQuickFightsTab />
       )}
 
       {/* FLYWHEEL FORMAT */}
