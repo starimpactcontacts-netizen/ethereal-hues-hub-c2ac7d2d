@@ -1037,6 +1037,14 @@ export default function HubPage() {
                   </div>
                   {quickAction === 'edit_battle' && <Check className="w-3.5 h-3.5 text-red-400" />}
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setQuickAction('multiplayer')} className="flex items-center gap-2 cursor-pointer">
+                  <Users className="w-4 h-4 text-purple-400" />
+                  <div className="flex-1">
+                    <span className="text-sm font-semibold">Multiplayer</span>
+                    <span className="text-[10px] text-purple-400 ml-1.5">OPEN LOBBY</span>
+                  </div>
+                  {quickAction === 'multiplayer' && <Check className="w-3.5 h-3.5 text-purple-400" />}
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setQuickAction('mission')} className="flex items-center gap-2 cursor-pointer">
                   <Crosshair className="w-4 h-4 text-emerald-400" />
                   <div className="flex-1">
@@ -1052,14 +1060,6 @@ export default function HubPage() {
                      <span className="text-[10px] text-gold ml-1.5">UP TO 10K IDX</span>
                   </div>
                   {quickAction === 'solo' && <Check className="w-3.5 h-3.5 text-gold" />}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setQuickAction('multiplayer')} className="flex items-center gap-2 cursor-pointer">
-                  <Users className="w-4 h-4 text-purple-400" />
-                  <div className="flex-1">
-                    <span className="text-sm font-semibold">Multiplayer</span>
-                    <span className="text-[10px] text-purple-400 ml-1.5">OPEN LOBBY</span>
-                  </div>
-                  {quickAction === 'multiplayer' && <Check className="w-3.5 h-3.5 text-purple-400" />}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
