@@ -11,6 +11,7 @@ export type MyCompetitionReminder = {
   slug: string | null;
   hasSubmitted: boolean;
   hasVoted: boolean;
+  submissionCount: number;
 };
 
 export function useMyCompetitionReminders() {
@@ -52,7 +53,7 @@ export function useMyCompetitionReminders() {
         return;
       }
 
-      const [{ data: subs }, { data: votes }] = await Promise.all([
+      const [{ data: mySubs }, { data: votes }, { data: allSubs }] = await Promise.all([
         supabase
           .from("competition_submissions")
           .select("competition_id")
@@ -63,22 +64,38 @@ export function useMyCompetitionReminders() {
           .select("competition_id")
           .eq("voter_id", user.id)
           .in("competition_id", liveIds),
+        supabase
+          .from("competition_submissions")
+          .select("competition_id")
+          .in("competition_id", liveIds),
       ]);
 
-      const submittedIds = new Set((subs || []).map((s) => s.competition_id));
+      const submittedIds = new Set((mySubs || []).map((s) => s.competition_id));
       const votedIds = new Set(((votes as any[]) || []).map((v) => v.competition_id));
+      const submissionCounts = ((allSubs as any[]) || []).reduce<Record<string, number>>((acc, s) => {
+        acc[s.competition_id] = (acc[s.competition_id] || 0) + 1;
+        return acc;
+      }, {});
+      const now = Date.now();
 
       setCompetitions(
-        (comps || []).map((comp) => ({
-          id: comp.id,
-          name: comp.name,
-          status: comp.status,
-          deadline: comp.deadline,
-          voting_deadline: (comp as any).voting_deadline,
-          slug: comp.slug,
-          hasSubmitted: submittedIds.has(comp.id),
-          hasVoted: votedIds.has(comp.id),
-        }))
+        (comps || [])
+          .filter((comp) => {
+            const endsAt = comp.status === "voting" ? (comp as any).voting_deadline : comp.deadline;
+            if (comp.status === "voting" && (!endsAt || new Date(endsAt).getTime() <= now || (submissionCounts[comp.id] || 0) === 0)) return false;
+            return true;
+          })
+          .map((comp) => ({
+            id: comp.id,
+            name: comp.name,
+            status: comp.status,
+            deadline: comp.deadline,
+            voting_deadline: (comp as any).voting_deadline,
+            slug: comp.slug,
+            hasSubmitted: submittedIds.has(comp.id),
+            hasVoted: votedIds.has(comp.id),
+            submissionCount: submissionCounts[comp.id] || 0,
+          }))
       );
       setLoading(false);
     };
