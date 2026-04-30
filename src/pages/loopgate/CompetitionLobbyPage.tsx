@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Trophy, Users, Clock, Play, Loader2, Send,
-  Share2, Check, MessageCircle, Layers, Pencil, X, ThumbsUp, Sparkles, Upload, Volume2, VolumeX
+  Share2, Check, MessageCircle, Layers, Pencil, X, ThumbsUp, Sparkles, Upload, Volume2, VolumeX, CheckCircle2, Circle
 } from "lucide-react";
 import { useCompetition } from "@/hooks/useCompetitions";
 import { useAuth } from "@/hooks/useAuth";
@@ -57,14 +57,14 @@ export default function CompetitionLobbyPage() {
   const { user, profile } = useAuth();
   const {
     competition, participants, submissions, loading,
-    isCreator, hasJoined, hasSubmitted, hasUpvoted,
-    join, start, submit, toggleUpvote, updateInspo,
+    isCreator, hasJoined, hasSubmitted, hasUpvoted, isReady, readyCount,
+    join, submit, toggleUpvote, updateInspo, toggleReady,
   } = useCompetition(id);
 
   
 
-  const [isStarting, setIsStarting] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
+  const [isReadying, setIsReadying] = useState(false);
   const [showSubmit, setShowSubmit] = useState(false);
   const [subUrl, setSubUrl] = useState("");
   const [platform, setPlatform] = useState<PlatformType>("tiktok");
