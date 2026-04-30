@@ -126,6 +126,33 @@ export default function CompetitionLobbyPage() {
     if (everyoneSubmitted) startVoting();
   }, [competition?.status, participants, submissions]);
 
+  // Auto-finalize: as soon as every eligible voter has cast their vote, close voting + crown winner instantly.
+  // Eligible voters = participants who submitted an edit (they can't vote for themselves, but they can vote for others).
+  // If only one submission exists, finalize immediately. Also auto-finalize when voting deadline passes.
+  useEffect(() => {
+    if (!competition || competition.status !== "voting") return;
+    if (submissions.length === 0) return;
+
+    // Single submission → instant winner
+    if (submissions.length === 1) {
+      finalizeVoting();
+      return;
+    }
+
+    const totalVotes = submissions.reduce((sum, s) => sum + (s.vote_count || 0), 0);
+    const eligibleVoterCount = submissions.length; // each submitter votes once (not for self, but for someone)
+    if (totalVotes >= eligibleVoterCount) {
+      finalizeVoting();
+      return;
+    }
+
+    // Fallback: voting deadline passed
+    const deadline = (competition as any).voting_deadline;
+    if (deadline && new Date(deadline).getTime() <= Date.now()) {
+      finalizeVoting();
+    }
+  }, [competition?.status, submissions, (competition as any)?.voting_deadline]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-background">
