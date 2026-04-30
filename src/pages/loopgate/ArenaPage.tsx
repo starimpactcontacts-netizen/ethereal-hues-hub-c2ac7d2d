@@ -23,6 +23,7 @@ import CreateBattleModal from "@/components/loopgate/CreateBattleModal";
 import { useSanctionedTournaments } from "@/hooks/useSanctionedTournaments";
 import { useBattles } from "@/hooks/useBattles";
 import { useRecentQuickFights, leaveQueue } from "@/hooks/useQuickFight";
+import LiveBattleReminders, { type LiveBattleReminderItem } from "@/components/loopgate/LiveBattleReminder";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1141,64 +1142,47 @@ export default function ArenaPage() {
                 </button>
               </motion.div>
 
-              {/* Active Quick Fights */}
-              {myActiveQuickFights.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-2 mb-2 px-1">
-                    <Zap className="w-3.5 h-3.5 text-red-400" />
-                    <span className="text-[11px] font-black text-foreground/90 uppercase tracking-[0.15em]">Active Quick Fights</span>
-                    <span className="ml-auto text-[10px] text-red-300 font-black px-1.5 py-0.5 rounded-full bg-red-500/15 border border-red-500/25">{myActiveQuickFights.length}</span>
+              {/* Active Battles — countdown + forfeit */}
+              {(() => {
+                const reminderItems: LiveBattleReminderItem[] = [
+                  ...myBattles.filter(b => b.status !== 'completed' && b.status !== 'cancelled' && b.status !== 'forfeited').map(b => {
+                    const isChallenger = b.challenger_id === user?.id;
+                    const submitted = isChallenger ? !!(b as any).challenger_submission_url : !!(b as any).opponent_submission_url;
+                    return {
+                      kind: 'battle' as const,
+                      id: b.id,
+                      title: `${b.challenger_username} vs ${b.opponent_username || '???'}`,
+                      status: b.status,
+                      endsAt: b.ends_at,
+                      hasSubmitted: submitted,
+                      href: `/battle/${b.id}`,
+                    };
+                  }),
+                  ...myActiveQuickFights.map(f => {
+                    const isP1 = f.player_1_id === user?.id;
+                    const submitted = isP1 ? !!f.player_1_submission_url : !!f.player_2_submission_url;
+                    return {
+                      kind: 'quick' as const,
+                      id: f.id,
+                      title: `${f.player_1_username} vs ${f.player_2_username || '???'}`,
+                      status: f.status,
+                      endsAt: f.ends_at,
+                      hasSubmitted: submitted,
+                      href: `/fight/${f.id}`,
+                    };
+                  }),
+                ];
+                return reminderItems.length > 0 ? (
+                  <div>
+                    <div className="flex items-center gap-2 mb-2 px-1">
+                      <Swords className="w-3.5 h-3.5 text-red-400" />
+                      <span className="text-[11px] font-black text-foreground/90 uppercase tracking-[0.15em]">Active Battles</span>
+                      <span className="ml-auto text-[10px] text-red-300 font-black px-1.5 py-0.5 rounded-full bg-red-500/15 border border-red-500/25">{reminderItems.length}</span>
+                    </div>
+                    <LiveBattleReminders items={reminderItems} />
                   </div>
-                  <div className="space-y-1.5">
-                    {myActiveQuickFights.map(fight => (
-                      <button key={fight.id} onClick={() => navigate(`/fight/${fight.id}`)}
-                        className="w-full flex items-center gap-3 p-3 rounded-2xl border border-red-500/25 hover:border-red-500/50 transition-all text-left active:scale-[0.99]"
-                        style={{ background: 'linear-gradient(160deg, hsl(0 0% 11%) 0%, hsl(0 0% 7%) 100%)' }}
-                      >
-                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0 shadow-[0_0_8px_rgba(239,68,68,0.7)]" />
-                          <span className="text-[12px] font-bold text-foreground truncate">
-                            {fight.player_1_username} vs {fight.player_2_username || '???'}
-                          </span>
-                        </div>
-                        <span className="text-[10px] font-black text-red-300 uppercase px-2 py-0.5 rounded-full bg-red-500/15 border border-red-500/25">{fight.status}</span>
-                        <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Active 1v1 Battles */}
-              {myBattles.filter(b => b.status !== 'completed').length > 0 && (
-                <div>
-                  <div className="flex items-center gap-2 mb-2 px-1">
-                    <Swords className="w-3.5 h-3.5 text-red-400" />
-                    <span className="text-[11px] font-black text-foreground/90 uppercase tracking-[0.15em]">Active 1v1 Battles</span>
-                  </div>
-                  <div className="space-y-1.5">
-                    {myBattles.filter(b => b.status !== 'completed').map(battle => (
-                      <button key={battle.id} onClick={() => navigate(`/battle/${battle.id}`)}
-                        className="w-full flex items-center gap-3 p-3 rounded-2xl border border-white/[0.06] hover:border-red-500/40 transition-all text-left active:scale-[0.99]"
-                        style={{ background: 'linear-gradient(160deg, hsl(0 0% 11%) 0%, hsl(0 0% 7%) 100%)' }}
-                      >
-                        <div className="flex-1 min-w-0">
-                          <span className="text-[12px] font-bold text-foreground truncate block">
-                            {battle.challenger_username} vs {battle.opponent_username || '???'}
-                          </span>
-                          <span className="text-[10px] text-muted-foreground">{(battle as any).theme_song_name || 'No song'}</span>
-                        </div>
-                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full border ${
-                          battle.status === 'active' ? 'text-red-300 bg-red-500/15 border-red-500/25'
-                          : battle.status === 'judging' ? 'text-purple-300 bg-purple-500/15 border-purple-500/25'
-                          : 'text-amber-300 bg-amber-500/15 border-amber-500/25'
-                        }`}>{battle.status}</span>
-                        <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
+                ) : null;
+              })()}
 
               {/* Email Notification Settings */}
               <EmailNotificationSettings />
