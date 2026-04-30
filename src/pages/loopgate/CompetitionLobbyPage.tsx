@@ -975,7 +975,7 @@ export default function CompetitionLobbyPage() {
         )}
 
         {/* ═══ VOTING PHASE ═══ */}
-        {isVoting && (
+        {isVoting && submissions.length > 0 && (competition as any).voting_deadline && new Date((competition as any).voting_deadline).getTime() > Date.now() && (
           <div className="space-y-3">
             <CompetitionVoting
               submissions={submissions}
@@ -990,7 +990,7 @@ export default function CompetitionLobbyPage() {
         )}
 
         {/* ═══ LEADERBOARD — only after editing closes / voting begins ═══ */}
-        {(isVoting || isCompleted) && <CompetitionLeaderboard submissions={submissions} />}
+        {((isVoting && submissions.length > 0) || isCompleted) && <CompetitionLeaderboard submissions={submissions} />}
 
         {/* ═══ WINNER SHARE CARD CTA — completed only ═══ */}
         {isCompleted && submissions.length > 0 && (() => {
