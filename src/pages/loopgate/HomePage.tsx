@@ -9,6 +9,8 @@ import { useRealEvents, useGlobalStats, useActiveSession, getEventSlug } from "@
 import { useAuth } from "@/hooks/useAuth";
 import { useEventRounds } from "@/hooks/useOpenArenaData";
 import { useActiveBattles } from "@/hooks/useActiveBattles";
+import { useMyQuickFights } from "@/hooks/useQuickFight";
+import LiveBattleReminders, { type LiveBattleReminderItem } from "@/components/loopgate/LiveBattleReminder";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import SEO, { pageSEO } from "@/components/SEO";
 
