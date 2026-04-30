@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Gavel, Inbox, CheckCircle, BarChart3, ArrowLeft, Star, Palette, Video, Zap, Target, Swords, User, UserRound, Disc3, Award, Music, Vote } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Gavel, Inbox, CheckCircle, BarChart3, ArrowLeft, Star, Palette, Video, Zap, Target, User, UserRound, Disc3, Music, Vote } from 'lucide-react';
 import JudgeOnboardingCard, { useJudgeOnboarding } from '@/components/loopgate/JudgeOnboardingCard';
 import JudgeFormatInfo from '@/components/loopgate/JudgeFormatInfo';
 import { Link } from 'react-router-dom';
@@ -16,9 +16,6 @@ import JudgeFlywheel from '@/components/loopgate/JudgeFlywheel';
 import JudgeScoringModal from '@/components/loopgate/JudgeScoringModal';
 import JudgeMissionsPanel from '@/components/loopgate/JudgeMissionsPanel';
 import JudgeDivisionBadge from '@/components/loopgate/JudgeDivisionBadge';
-import Judge1v1Rating from '@/components/loopgate/Judge1v1Rating';
-import JudgeQuickFightsTab from '@/components/loopgate/JudgeQuickFightsTab';
-import JudgeQOIResultCard from '@/components/loopgate/JudgeQOIResultCard';
 import JudgeSoloQueue from '@/components/loopgate/JudgeSoloQueue';
 import JudgeDropQueue from '@/components/loopgate/JudgeDropQueue';
 import JudgeVotingTab from '@/components/loopgate/JudgeVotingTab';
