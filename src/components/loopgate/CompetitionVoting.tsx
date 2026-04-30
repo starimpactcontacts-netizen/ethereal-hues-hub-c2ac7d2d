@@ -248,6 +248,22 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
             >
               {paused ? <Play className="w-4 h-4 text-white ml-0.5" /> : <Pause className="w-4 h-4 text-white" />}
             </button>
+
+            {/* Tap for sound — appears if browser blocked unmuted autoplay */}
+            {direct && needsSoundTap && (
+              <button
+                onClick={enableSound}
+                className="absolute inset-0 flex items-center justify-center bg-black/30 active:bg-black/40"
+                aria-label="Enable sound"
+              >
+                <div className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-black/80 backdrop-blur-md border border-white/20">
+                  <Volume2 className="w-4 h-4 text-amber-400" />
+                  <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-white" style={teko}>
+                    Tap for Sound
+                  </span>
+                </div>
+              </button>
+            )}
           </motion.div>
         </AnimatePresence>
 
