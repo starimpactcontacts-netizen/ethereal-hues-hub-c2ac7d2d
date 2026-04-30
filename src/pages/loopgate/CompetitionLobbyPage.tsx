@@ -263,6 +263,214 @@ export default function CompetitionLobbyPage() {
     }
   };
 
+  // ═══════════════════════════════════════════════════════════════
+  // LOBBY ROOM — dedicated interface (members + chat + ready bar)
+  // ═══════════════════════════════════════════════════════════════
+  if (isLobby) {
+    const roomCode = (competition.slug || competition.id).slice(0, 6).toUpperCase();
+    const cap = competition.max_players;
+    const memberCount = participants.length;
+
+    return (
+      <div className="fixed inset-0 bg-background flex flex-col overflow-hidden">
+        {/* ── HEADER ── */}
+        <header className="shrink-0 px-4 pt-[env(safe-area-inset-top)] border-b border-white/[0.06] bg-background/95 backdrop-blur-sm">
+          <div className="flex items-center gap-2 py-3">
+            <button onClick={() => navigate(-1)} className="p-1.5 -ml-1.5 rounded-lg hover:bg-white/[0.04] active:scale-95 transition">
+              <ArrowLeft className="w-4 h-4 text-foreground/70" />
+            </button>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-[20px] font-black text-foreground uppercase leading-none truncate" style={teko}>
+                {competition.name}
+              </h1>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                <span className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-amber-400/90" style={teko}>
+                  Awaiting Start
+                </span>
+                {competition.index_reward_pool > 0 && (
+                  <>
+                    <span className="text-foreground/20 text-[9px]">·</span>
+                    <span className="text-[9px] font-extrabold uppercase tracking-[0.15em] text-gold flex items-center gap-1" style={teko}>
+                      <Trophy className="w-2.5 h-2.5" /> {competition.index_reward_pool} IDX
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="px-2 py-1 rounded border border-white/[0.1] bg-white/[0.03]">
+                <span className="text-[10px] font-extrabold tracking-[0.15em] text-foreground/80 tabular-nums" style={teko}>
+                  {roomCode}
+                </span>
+              </div>
+              <button
+                onClick={handleShare}
+                className="px-2.5 py-1 rounded border border-red-500/40 bg-red-500/10 text-red-400 active:scale-95 transition flex items-center gap-1"
+              >
+                {copied ? <Check className="w-3 h-3" /> : <Share2 className="w-3 h-3" />}
+                <span className="text-[10px] font-extrabold tracking-[0.15em]" style={teko}>ROOM</span>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* ── BODY: Members + Chat ── */}
+        <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 gap-3 p-3 overflow-hidden">
+          {/* MEMBERS PANEL */}
+          <section className="flex flex-col min-h-0 rounded-xl border border-white/[0.08] bg-surface-1 overflow-hidden">
+            <div className="shrink-0 flex items-center justify-between px-3 py-2 border-b border-white/[0.06]">
+              <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-foreground/60" style={teko}>
+                Members
+              </span>
+              <span className="text-[11px] font-bold tabular-nums text-foreground/50" style={teko}>
+                {memberCount}/{cap}
+              </span>
+            </div>
+            <div className="flex-1 min-h-0 overflow-y-auto px-2 py-2 space-y-1">
+              {participants.length === 0 ? (
+                <p className="text-xs text-muted-foreground/40 text-center py-6">No editors yet</p>
+              ) : participants.map(p => {
+                const isHost = p.user_id === competition.creator_id;
+                const isMe = p.user_id === user?.id;
+                return (
+                  <div
+                    key={p.id}
+                    className={`flex items-center gap-2.5 px-2 py-1.5 rounded-lg border transition-all ${
+                      p.is_ready
+                        ? "border-emerald-500/40 bg-emerald-500/[0.06]"
+                        : "border-white/[0.05] bg-white/[0.015]"
+                    }`}
+                  >
+                    <button
+                      onClick={() => navigate(`/u/${p.username}`)}
+                      className="flex items-center gap-2.5 flex-1 min-w-0 group"
+                    >
+                      <div className="relative shrink-0">
+                        <Avatar className={`w-7 h-7 border ${p.is_ready ? "border-emerald-500/60" : "border-white/10"}`}>
+                          <AvatarImage src={p.avatar_url || ""} />
+                          <AvatarFallback className="text-[9px] bg-surface-2 text-foreground font-bold">
+                            {p.username?.[0]?.toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        {p.is_ready && (
+                          <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-surface-1 flex items-center justify-center">
+                            <Check className="w-1.5 h-1.5 text-white" strokeWidth={4} />
+                          </div>
+                        )}
+                      </div>
+                      <span className={`text-[12px] font-extrabold uppercase tracking-wider truncate group-hover:underline ${
+                        p.is_ready ? "text-emerald-400" : isMe ? "text-foreground" : "text-foreground/80"
+                      }`} style={teko}>
+                        {p.username}{isMe && " (you)"}
+                      </span>
+                    </button>
+                    {isHost && (
+                      <span className="shrink-0 px-1.5 py-0.5 rounded border border-gold/40 bg-gold/10 flex items-center gap-1">
+                        <Crown className="w-2.5 h-2.5 text-gold" />
+                        <span className="text-[8px] font-extrabold tracking-[0.18em] text-gold" style={teko}>HOST</span>
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+              {/* empty slots */}
+              {Array.from({ length: Math.max(0, cap - memberCount) }).map((_, i) => (
+                <div key={`empty-${i}`} className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg border border-dashed border-white/[0.05]">
+                  <div className="w-7 h-7 rounded-full bg-white/[0.02] border border-dashed border-white/[0.06]" />
+                  <span className="text-[11px] uppercase tracking-wider text-foreground/20" style={teko}>Empty slot</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* CHAT PANEL */}
+          <section className="flex flex-col min-h-0 rounded-xl border border-white/[0.08] bg-surface-1 overflow-hidden">
+            <div className="shrink-0 flex items-center justify-between px-3 py-2 border-b border-white/[0.06]">
+              <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-red-400" style={teko}>
+                Chat
+              </span>
+              <MessageCircle className="w-3 h-3 text-foreground/30" />
+            </div>
+            <div className="flex-1 min-h-0 overflow-hidden">
+              <CompetitionChat competitionId={competition.id} />
+            </div>
+          </section>
+        </div>
+
+        {/* ── ACTION BAR ── */}
+        <footer className="shrink-0 border-t border-white/[0.06] bg-background/95 backdrop-blur-sm px-3 pt-2.5 pb-[max(env(safe-area-inset-bottom),12px)]">
+          {!hasJoined ? (
+            <button
+              onClick={handleJoin}
+              disabled={isJoining || memberCount >= cap}
+              className="w-full py-3 rounded-xl flex items-center justify-center gap-2 disabled:opacity-30 transition active:scale-[0.98]"
+              style={{
+                background: "linear-gradient(135deg, #10B981, #059669)",
+                color: "#fff",
+                boxShadow: "0 4px 20px rgba(16,185,129,0.25)",
+                ...teko,
+              }}
+            >
+              {isJoining ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                <>
+                  <Play className="w-4 h-4" />
+                  <span className="text-[15px] font-extrabold uppercase tracking-[0.15em]">Join Lobby</span>
+                </>
+              )}
+            </button>
+          ) : (
+            <>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleLeave}
+                  disabled={isLeaving}
+                  className="flex-1 py-2.5 rounded-xl border border-white/[0.1] bg-white/[0.02] text-foreground/70 hover:bg-white/[0.05] flex items-center justify-center gap-1.5 transition active:scale-[0.98] disabled:opacity-50"
+                >
+                  {isLeaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LogOut className="w-3.5 h-3.5" />}
+                  <span className="text-[12px] font-extrabold uppercase tracking-[0.15em]" style={teko}>Leave Room</span>
+                </button>
+                <button
+                  onClick={handleReady}
+                  disabled={isReadying}
+                  className="flex-[2] py-2.5 rounded-xl flex items-center justify-center gap-2 transition active:scale-[0.98] disabled:opacity-50"
+                  style={{
+                    background: isReady
+                      ? "rgba(16,185,129,0.12)"
+                      : "linear-gradient(135deg, #10B981, #059669)",
+                    color: isReady ? "#10B981" : "#fff",
+                    border: isReady ? "1px solid rgba(16,185,129,0.4)" : "none",
+                    boxShadow: isReady ? "none" : "0 4px 20px rgba(16,185,129,0.3)",
+                    ...teko,
+                  }}
+                >
+                  {isReadying ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                    <>
+                      {isReady ? <CheckCircle2 className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
+                      <span className="text-[14px] font-extrabold uppercase tracking-[0.15em]">
+                        {isReady ? "Ready ✓" : "Ready Up"}
+                      </span>
+                    </>
+                  )}
+                </button>
+              </div>
+              <p className="text-[10px] text-center text-muted-foreground/50 mt-1.5" style={teko}>
+                <span className="tracking-[0.15em] uppercase">
+                  {memberCount < 2
+                    ? `Need 1 more editor — share the room`
+                    : `${readyCount}/${memberCount} ready · starts when everyone's set`}
+                </span>
+              </p>
+            </>
+          )}
+        </footer>
+      </div>
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // LIVE / SCORED — original full-detail page
+  // ═══════════════════════════════════════════════════════════════
   return (
     <div className="min-h-screen bg-background pb-32">
       {/* ═══ HERO ═══ */}
