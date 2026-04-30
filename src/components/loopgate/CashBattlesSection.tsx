@@ -755,6 +755,10 @@ export default function CashBattlesSection({
 
         {/* Ranked IDX 1v1 battles — surfaced FIRST to drive non-cash activity */}
         {renderIdxBattleCard && [...idxBattles]
+          .filter((battle: any) => {
+            const timeEnded = battle.ends_at ? new Date(battle.ends_at).getTime() < Date.now() : false;
+            return !endedBattleStatuses.has(battle.status) && !(battle.status === 'active' && timeEnded);
+          })
           .sort((a: any, b: any) => {
             const now = Date.now();
             const isTimeEnded = (x: any) =>
@@ -787,7 +791,7 @@ export default function CashBattlesSection({
 
         {/* Existing battles — hide cancelled, show live first */}
         {battles
-          .filter((b) => b.status !== 'cancelled')
+          .filter((b) => !endedBattleStatuses.has(b.status))
           .sort((a, b) => {
             // Prioritize battles with an active countdown (live + ends_at in the future).
             // Newest live battles surface first; dead/expired/completed get pushed to the far right.
