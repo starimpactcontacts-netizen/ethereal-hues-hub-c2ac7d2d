@@ -81,15 +81,21 @@ function EditDetailView({ sub, rank, onClose }: { sub: CompetitionSubmission; ra
         </div>
 
         {/* Video area */}
-        <div className="relative aspect-[9/16] max-h-[60vh] bg-black/50 flex items-center justify-center">
-          <a
-            href={sub.submission_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-16 h-16 rounded-full bg-amber-400/20 border border-amber-400/30 flex items-center justify-center transition-transform active:scale-95"
-          >
-            <Play className="w-7 h-7 text-amber-400 ml-1" />
-          </a>
+        <div className="relative aspect-[9/16] max-h-[60vh] bg-black/50 flex items-center justify-center overflow-hidden">
+          {directVideo ? (
+            <video src={sub.submission_url} className="h-full w-full object-contain" controls playsInline autoPlay />
+          ) : imageFile ? (
+            <img src={sub.submission_url} alt={`${sub.username} submission`} className="h-full w-full object-contain" />
+          ) : (
+            <a
+              href={sub.submission_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-16 h-16 rounded-full bg-amber-400/20 border border-amber-400/30 flex items-center justify-center transition-transform active:scale-95"
+            >
+              <Play className="w-7 h-7 text-amber-400 ml-1" />
+            </a>
+          )}
           {sub.score !== null && (
             <div className="absolute top-3 right-3 px-3 py-1.5 rounded-xl bg-black/60 backdrop-blur-sm border border-amber-400/20">
               <span className="text-2xl font-black text-amber-400 tabular-nums" style={teko}>{sub.score}</span>
@@ -98,7 +104,7 @@ function EditDetailView({ sub, rank, onClose }: { sub: CompetitionSubmission; ra
           )}
         </div>
 
-        {/* Open on platform */}
+        {/* Open file */}
         <a
           href={sub.submission_url}
           target="_blank"
@@ -106,7 +112,7 @@ function EditDetailView({ sub, rank, onClose }: { sub: CompetitionSubmission; ra
           className="flex items-center justify-center gap-2 py-3 text-muted-foreground/60 hover:text-foreground transition-colors"
         >
           <ExternalLink className="w-3.5 h-3.5" />
-          <span className="text-xs">Open on {sub.platform || "platform"}</span>
+          <span className="text-xs">Open submission</span>
         </a>
 
         <div className="px-4 space-y-4">
