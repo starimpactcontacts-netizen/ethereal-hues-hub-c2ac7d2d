@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Trophy, ExternalLink, Play, ChevronDown, ChevronUp,
-  Crown, X, ThumbsUp, ThumbsDown, MessageCircle
+  Crown, X, ThumbsUp, ThumbsDown, MessageCircle, Vote
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { CompetitionSubmission } from "@/hooks/useCompetitions";
@@ -176,7 +176,17 @@ export default function CompetitionLeaderboard({ submissions }: { submissions: C
   const [showAll, setShowAll] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
 
-  const sorted = [...submissions].sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
+  // Rank by community votes first (primary), then judge QOI score, then recency
+  const sorted = [...submissions].sort((a, b) => {
+    const va = a.vote_count ?? 0;
+    const vb = b.vote_count ?? 0;
+    if (vb !== va) return vb - va;
+    const sa = a.score ?? -1;
+    const sb = b.score ?? -1;
+    if (sb !== sa) return sb - sa;
+    return b.created_at.localeCompare(a.created_at);
+  });
+  const totalVotes = sorted.reduce((sum, s) => sum + (s.vote_count || 0), 0);
 
   const topEdits = sorted.slice(0, 6);
   const visibleList = showAll ? sorted : sorted.slice(0, 5);
@@ -192,7 +202,10 @@ export default function CompetitionLeaderboard({ submissions }: { submissions: C
           <span className="text-[16px] font-extrabold uppercase tracking-[0.1em] text-foreground" style={teko}>
             Leaderboard
           </span>
-          <span className="text-[11px] text-muted-foreground/40 ml-auto" style={teko}>{sorted.length} EDIT{sorted.length !== 1 ? "S" : ""}</span>
+          <span className="text-[11px] text-muted-foreground/40 ml-auto" style={teko}>
+            {sorted.length} EDIT{sorted.length !== 1 ? "S" : ""}
+            {totalVotes > 0 && <span className="text-amber-400/70 ml-2">· {totalVotes} VOTE{totalVotes !== 1 ? "S" : ""}</span>}
+          </span>
         </div>
 
         {isEmpty ? (
@@ -235,9 +248,10 @@ export default function CompetitionLeaderboard({ submissions }: { submissions: C
                       </div>
                     )}
 
-                    {sub.score !== null && rank !== 1 && (
-                      <div className="absolute top-2 right-2 z-[2]">
-                        <span className="text-[13px] font-black text-amber-400 tabular-nums" style={teko}>{sub.score}</span>
+                    {rank !== 1 && (sub.vote_count || 0) > 0 && (
+                      <div className="absolute top-2 right-2 z-[2] flex items-center gap-0.5">
+                        <span className="text-[13px] font-black text-amber-400 tabular-nums" style={teko}>{sub.vote_count}</span>
+                        <Vote className="w-3 h-3 text-amber-400/80" />
                       </div>
                     )}
 
@@ -290,13 +304,18 @@ export default function CompetitionLeaderboard({ submissions }: { submissions: C
                       </div>
                       <span className="text-[9px] text-muted-foreground/40 uppercase">{sub.platform}</span>
                     </div>
-                    {sub.score !== null ? (
+                    {(sub.vote_count || 0) > 0 ? (
+                      <div className="text-right flex items-center gap-1">
+                        <span className="text-sm font-black text-amber-400 tabular-nums" style={teko}>{sub.vote_count}</span>
+                        <span className="text-[8px] text-amber-400/50 uppercase tracking-wider" style={teko}>VOTE{(sub.vote_count || 0) !== 1 ? "S" : ""}</span>
+                      </div>
+                    ) : sub.score !== null ? (
                       <div className="text-right">
                         <span className="text-sm font-black text-amber-400 tabular-nums" style={teko}>{sub.score}</span>
                         <span className="text-[8px] text-amber-400/40 ml-0.5" style={teko}>QOI</span>
                       </div>
                     ) : (
-                      <span className="text-[9px] text-muted-foreground/30 uppercase">pending</span>
+                      <span className="text-[9px] text-muted-foreground/30 uppercase">awaiting votes</span>
                     )}
                     <Play className="w-3 h-3 text-muted-foreground/30 shrink-0" />
                   </motion.button>
