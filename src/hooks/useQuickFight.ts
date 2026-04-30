@@ -118,7 +118,7 @@ export function useMyQuickFights() {
         .from('quick_fights')
         .select('*')
         .or(`player_1_id.eq.${user.id},player_2_id.eq.${user.id}`)
-        .in('status', ['active', 'judging', 'waiting'])
+        .in('status', ['active', 'submitted', 'judging', 'waiting'])
         .order('created_at', { ascending: false });
       setFights((fightData as unknown as QuickFight[]) || []);
 
@@ -252,7 +252,7 @@ export function useRecentQuickFights(limit = 20) {
       const { data } = await supabase
         .from('quick_fights')
         .select('*')
-        .in('status', ['active', 'judging', 'completed', 'cancelled'])
+        .in('status', ['active', 'submitted', 'judging', 'completed', 'cancelled'])
         .order('created_at', { ascending: false })
         .limit(limit);
       setFights((data as unknown as QuickFight[]) || []);
