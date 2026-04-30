@@ -1,12 +1,9 @@
 import { useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Trophy, Share2, Download } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Trophy, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import html2canvas from 'html2canvas';
 import type { QuickFight } from '@/hooks/useQuickFight';
-import loopgateLogo from '@/assets/loopgate-logo.png';
 
 interface QuickFightResultCardProps {
   fight: QuickFight;
@@ -52,106 +49,85 @@ export default function QuickFightResultCard({ fight }: QuickFightResultCardProp
   };
 
   return (
-    <div className="space-y-3">
-      {/* Exportable Card */}
+    <div className="space-y-3 max-w-[360px] mx-auto">
+      {/* Compact Result Card */}
       <div
         ref={cardRef}
-        className="relative overflow-hidden bg-black p-6"
-        style={{ aspectRatio: '9/16', maxWidth: '360px', margin: '0 auto' }}
+        className="relative overflow-hidden bg-black rounded-xl border border-white/10 p-4"
       >
-        {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-red-900/40 via-black to-blue-900/40" />
-        <div className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage: 'linear-gradient(45deg, transparent 48%, white 48%, white 52%, transparent 52%)',
-            backgroundSize: '16px 16px',
-          }}
-        />
+        {/* Subtle split background */}
+        <div className="absolute inset-0 bg-gradient-to-r from-gold/10 via-black to-white/[0.02]" />
 
-        <div className="relative z-10 flex flex-col items-center justify-between h-full">
-          {/* Logo */}
-          <img src={loopgateLogo} alt="LOOPGATE" className="h-6 opacity-80" />
-
-          {/* 1v1 RESULT */}
-          <div className="text-center my-4">
-            <span className="text-[10px] text-white/50 uppercase tracking-[0.3em]">1v1 Quick Fight</span>
-            <h2 className="font-display text-3xl text-white mt-1">RESULT</h2>
+        <div className="relative z-10">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[9px] text-white/40 uppercase tracking-[0.25em]">1v1 Result</span>
+            <span className="text-[9px] text-white/40 uppercase tracking-[0.25em]">loopgate.io</span>
           </div>
 
-          {/* VS Layout */}
-          <div className="flex items-center gap-6 w-full justify-center">
-            {/* Winner (RED/left) */}
-            <div className="flex flex-col items-center">
-              <div className="relative">
-                <div className="w-20 h-20 rounded-full border-4 border-gold overflow-hidden shadow-lg shadow-gold/30">
+          {/* VS Row */}
+          <div className="flex items-center justify-between gap-3">
+            {/* Winner */}
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <div className="relative shrink-0">
+                <div className="w-12 h-12 rounded-full border-2 border-gold overflow-hidden">
                   {winnerAvatar ? (
                     <img src={winnerAvatar} alt="" className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full bg-gold/20 flex items-center justify-center">
-                      <span className="text-2xl font-bold text-gold">{winnerUsername?.charAt(0).toUpperCase()}</span>
+                      <span className="text-base font-bold text-gold">{winnerUsername?.charAt(0).toUpperCase()}</span>
                     </div>
                   )}
                 </div>
-                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-gold px-2 py-0.5 rounded-sm">
-                  <Trophy className="w-3 h-3 text-black inline mr-0.5" />
-                  <span className="text-[8px] font-bold text-black uppercase">Winner</span>
-                </div>
+                <Trophy className="w-3.5 h-3.5 text-gold absolute -top-1 -right-1 fill-gold" />
               </div>
-              <span className="font-display text-sm text-white mt-4">{winnerUsername}</span>
-              {fight.winner_score && (
-                <span className="text-lg font-bold text-gold">{fight.winner_score}</span>
-              )}
+              <div className="min-w-0">
+                <p className="font-display text-sm text-white truncate">{winnerUsername}</p>
+                <p className="text-[10px] text-gold uppercase tracking-wider">Winner{fight.winner_score ? ` · ${fight.winner_score}` : ''}</p>
+              </div>
             </div>
 
-            {/* VS */}
-            <span className="font-display text-xl text-white/30">VS</span>
+            <span className="font-display text-xs text-white/30">VS</span>
 
-            {/* Loser (BLUE/right) */}
-            <div className="flex flex-col items-center">
-              <div className="w-20 h-20 rounded-full border-4 border-white/20 overflow-hidden opacity-60">
+            {/* Loser */}
+            <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
+              <div className="min-w-0 text-right">
+                <p className="font-display text-sm text-white/60 truncate">{loserUsername}</p>
+                <p className="text-[10px] text-white/30 uppercase tracking-wider">{fight.loser_score ?? 0}</p>
+              </div>
+              <div className="w-12 h-12 rounded-full border border-white/20 overflow-hidden opacity-60 shrink-0">
                 {loserAvatar ? (
                   <img src={loserAvatar} alt="" className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full bg-white/10 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-white/50">{loserUsername?.charAt(0).toUpperCase()}</span>
+                  <div className="w-full h-full bg-white/5 flex items-center justify-center">
+                    <span className="text-base font-bold text-white/40">{loserUsername?.charAt(0).toUpperCase()}</span>
                   </div>
                 )}
               </div>
-              <span className="font-display text-sm text-white/50 mt-4">{loserUsername}</span>
-              {fight.loser_score && (
-                <span className="text-lg font-bold text-white/30">{fight.loser_score}</span>
+            </div>
+          </div>
+
+          {/* Judge / Notes */}
+          {(fight.judge_username || fight.judge_notes) && (
+            <div className="mt-3 pt-3 border-t border-white/10">
+              {fight.judge_notes && (
+                <p className="text-[11px] text-white/60 italic line-clamp-2">"{fight.judge_notes}"</p>
+              )}
+              {fight.judge_username && (
+                <p className="text-[9px] text-white/40 uppercase tracking-wider mt-1">Judged by @{fight.judge_username}</p>
               )}
             </div>
-          </div>
-
-          {/* Judge */}
-          {fight.judge_username && (
-            <div className="text-center mt-4">
-              <span className="text-[9px] text-white/40 uppercase tracking-wider">Judged by</span>
-              <p className="text-xs text-white/70 font-medium">@{fight.judge_username}</p>
-            </div>
           )}
-
-          {/* Judge Notes */}
-          {fight.judge_notes && (
-            <div className="mt-3 px-4 text-center">
-              <p className="text-[10px] text-white/50 italic">"{fight.judge_notes}"</p>
-            </div>
-          )}
-
-          {/* Footer */}
-          <div className="text-center mt-auto pt-4">
-            <p className="text-[8px] text-white/30 uppercase tracking-[0.2em]">loopgate.io</p>
-          </div>
         </div>
       </div>
 
       {/* Share Button */}
       <Button
         onClick={handleShare}
-        className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white font-display uppercase tracking-wider"
+        size="sm"
+        className="w-full bg-white text-black hover:bg-white/90 font-display uppercase tracking-wider text-xs"
       >
-        <Share2 className="w-4 h-4 mr-2" />
+        <Share2 className="w-3.5 h-3.5 mr-2" />
         Share Result
       </Button>
     </div>
