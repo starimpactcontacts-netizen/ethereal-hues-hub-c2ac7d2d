@@ -699,10 +699,36 @@ export default function CashBattlesSection({
         ))}
 
         {/* Edit Battle cards — live ones first, ended ones DEPRIORITIZED to the right (still visible). */}
-        {/* Old Quick-Fight battles and ranked IDX 1v1 battles removed per request — only completed cash battles remain */}
+        {/* Quick-Fight battles — from the "Edit Battle · Match Instantly" button */}
+        {[...myQuickFights, ...quickFights]
+          .filter((fight, index, all) =>
+            fight.status !== 'cancelled' &&
+            all.findIndex((item) => item.id === fight.id) === index
+          )
+          .sort((a, b) => {
+            const owned = (x: QuickFight) => user?.id && (x.player_1_id === user.id || x.player_2_id === user.id) ? 0 : 1;
+            const rank = (x: QuickFight) => {
+              if (endedBattleStatuses.has(x.status)) return 10;
+              if (owned(x) === 0) return 0;
+              if (x.status === 'waiting') return 1;
+              if (x.status === 'active' || x.status === 'submitted') return 2;
+              if (x.status === 'judging') return 3;
+              return 4;
+            };
+            const ra = rank(a);
+            const rb = rank(b);
+            if (ra !== rb) return ra - rb;
+            return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+          })
+          .slice(0, 12)
+          .map((fight) => (
+            <ArenaRailCard key={`quick-${fight.id}`}>
+              <QuickFightCarouselCard fight={fight} isMine={!!user?.id && (fight.player_1_id === user.id || fight.player_2_id === user.id)} />
+            </ArenaRailCard>
+          ))}
 
-        {/* Existing battles — show live first; ended deprioritized to the right */}
-        {battles
+        {/* Cash battles hidden per request (including completed/testing ones) */}
+        {false && battles
           .filter((battle) => endedBattleStatuses.has(battle.status))
           .sort((a, b) => {
             // Prioritize battles with an active countdown (live + ends_at in the future).
