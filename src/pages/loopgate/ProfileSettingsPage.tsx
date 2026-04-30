@@ -237,40 +237,7 @@ export default function ProfileSettingsPage() {
         animate={{ opacity: 1, y: 0 }}
         className="p-4 space-y-6"
       >
-        {/* ─── Identity ─── */}
-        <section className="space-y-3">
-          <h3 className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Identity</h3>
-          
-          {/* Archetype */}
-          <button
-            onClick={() => setShowArchetypeSelector(true)}
-            className="w-full bg-surface-1 border border-border rounded-xl p-4 flex items-center justify-between hover:border-gold/30 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              {(profile as any).archetype ? (
-                <ArchetypeBadge archetype={(profile as any).archetype} size="sm" animate={false} />
-              ) : (
-                <span className="text-sm text-muted-foreground">+ Set Archetype</span>
-              )}
-            </div>
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-          </button>
-
-          {/* Software */}
-          <button
-            onClick={() => setShowSoftwareSelector(true)}
-            className="w-full bg-surface-1 border border-border rounded-xl p-4 flex items-center justify-between hover:border-gold/30 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              {(profile as any).software && (profile as any).software.length > 0 ? (
-                <SoftwareBadges software={(profile as any).software} size="sm" animate={false} />
-              ) : (
-                <span className="text-sm text-muted-foreground">+ Add Software</span>
-              )}
-            </div>
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-          </button>
-        </section>
+        {/* Identity section removed per user request */}
 
         {/* ─── Judge Profile (only for judges) ─── */}
         {isAnyJudge && (
@@ -373,13 +340,7 @@ export default function ProfileSettingsPage() {
           )}
         </section>
 
-         {/* ─── Pinned Edits ─── */}
-         <section className="space-y-3">
-           <h3 className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Pinned Edits</h3>
-           <div className="bg-surface-1 border border-border rounded-xl p-4">
-             <PinnedEditsManager userId={profile.id} />
-           </div>
-         </section>
+         {/* Pinned Edits section removed per user request */}
 
          {/* ─── Profile Background ─── */}
          <section className="space-y-3">

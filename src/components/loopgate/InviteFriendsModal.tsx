@@ -56,15 +56,15 @@ export default function InviteFriendsModal({ open, onOpenChange }: InviteFriends
           <div className="space-y-1 text-xs text-muted-foreground">
             <div className="flex justify-between">
               <span>Send an invite</span>
-              <span className="text-gold font-semibold">+20 XP</span>
+              <span className="text-gold font-semibold">+250 XP</span>
             </div>
             <div className="flex justify-between">
               <span>Friend joins</span>
-              <span className="text-gold font-semibold">+50 XP</span>
+              <span className="text-gold font-semibold">+1,000 XP</span>
             </div>
             <div className="flex justify-between">
               <span>Friend submits within 24h</span>
-              <span className="text-gold font-semibold">+100 XP</span>
+              <span className="text-gold font-semibold">+5,000 XP</span>
             </div>
           </div>
         </div>
