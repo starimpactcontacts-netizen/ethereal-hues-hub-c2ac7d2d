@@ -241,6 +241,8 @@ export default function CompetitionLeaderboard({ submissions }: { submissions: C
               {topEdits.map((sub, i) => {
                 const rank = i + 1;
                 const style = rankColors[rank] || { border: "border-white/[0.08]", glow: "", bg: "from-white/5 to-transparent", text: "text-muted-foreground" };
+                const directVideo = isDirectVideo(sub.submission_url);
+                const imageFile = isImageFile(sub.submission_url);
                 
                 return (
                   <motion.button
@@ -251,6 +253,11 @@ export default function CompetitionLeaderboard({ submissions }: { submissions: C
                     onClick={() => setSelectedEdit({ sub, rank })}
                     className={`relative shrink-0 w-[130px] h-[185px] rounded-2xl overflow-hidden border ${style.border} ${style.glow} snap-start transition-transform active:scale-[0.96]`}
                   >
+                    {directVideo ? (
+                      <video src={sub.submission_url} muted playsInline className="absolute inset-0 h-full w-full object-cover" />
+                    ) : imageFile ? (
+                      <img src={sub.submission_url} alt={`${sub.username} submission`} className="absolute inset-0 h-full w-full object-cover" />
+                    ) : null}
                     <div className={`absolute inset-0 bg-gradient-to-b ${style.bg}`} />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                     
