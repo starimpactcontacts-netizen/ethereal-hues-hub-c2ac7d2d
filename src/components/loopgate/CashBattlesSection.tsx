@@ -635,11 +635,20 @@ export default function CashBattlesSection({
         {/* Ranked IDX 1v1 battles — surfaced FIRST to drive non-cash activity */}
         {renderIdxBattleCard && [...idxBattles]
           .sort((a: any, b: any) => {
+            const now = Date.now();
+            const isTimeEnded = (x: any) =>
+              x.ends_at ? new Date(x.ends_at).getTime() < now : false;
             const rank = (x: any) => {
-              if (x.status === 'active') return 0;
-              if (x.status === 'pending') return 1;
-              if (x.status === 'judging') return 2;
-              return 3; // completed / other
+              // Open challenges (no opponent yet) — leftmost so users can JOIN instantly
+              if (x.status === 'pending' && !x.opponent_id) return 0;
+              // Live & still has time on the clock
+              if (x.status === 'active' && !isTimeEnded(x)) return 1;
+              // Pending w/ opponent (about to start)
+              if (x.status === 'pending') return 2;
+              if (x.status === 'judging') return 3;
+              // Time-expired actives = ENDED — push to graveyard
+              if (x.status === 'active' && isTimeEnded(x)) return 5;
+              return 4; // completed / other
             };
             const ra = rank(a);
             const rb = rank(b);
