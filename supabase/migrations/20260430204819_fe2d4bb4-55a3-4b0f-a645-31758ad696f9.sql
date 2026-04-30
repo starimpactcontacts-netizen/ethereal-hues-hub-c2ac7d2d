@@ -1,0 +1,1 @@
+DELETE FROM public.battles WHERE id = '2dd56776-5bfa-4871-a35d-f6834296180f';
