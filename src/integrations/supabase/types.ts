@@ -8241,6 +8241,10 @@ export type Database = {
         }
         Returns: number
       }
+      award_competition_rewards: {
+        Args: { p_competition_id: string }
+        Returns: undefined
+      }
       award_daily_capped_xp: {
         Args: {
           p_action_type: string
