@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Trophy, Users, Clock, Play, Loader2, Send,
-  Share2, Check, MessageCircle, Layers, Pencil, X, ThumbsUp, Sparkles, Upload, Volume2, VolumeX, CheckCircle2, Circle
+  Share2, Check, MessageCircle, Layers, Pencil, X, ThumbsUp, Sparkles, Upload, Volume2, VolumeX, CheckCircle2, Circle, LogOut, Crown
 } from "lucide-react";
 import { useCompetition } from "@/hooks/useCompetitions";
 import { useAuth } from "@/hooks/useAuth";
@@ -58,13 +58,14 @@ export default function CompetitionLobbyPage() {
   const {
     competition, participants, submissions, loading,
     isCreator, hasJoined, hasSubmitted, hasUpvoted, isReady, readyCount,
-    join, submit, toggleUpvote, updateInspo, toggleReady,
+    join, submit, toggleUpvote, updateInspo, toggleReady, leave,
   } = useCompetition(id);
 
   
 
   const [isJoining, setIsJoining] = useState(false);
   const [isReadying, setIsReadying] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
   const [showSubmit, setShowSubmit] = useState(false);
   const [subUrl, setSubUrl] = useState("");
   const [platform, setPlatform] = useState<PlatformType>("tiktok");
@@ -141,6 +142,14 @@ export default function CompetitionLobbyPage() {
     const ok = await toggleReady();
     if (!ok) toast.error("Couldn't update ready state");
     setIsReadying(false);
+  };
+
+  const handleLeave = async () => {
+    if (!user) return;
+    setIsLeaving(true);
+    const ok = await leave();
+    if (ok) { toast.success("Left the lobby"); navigate("/arena"); }
+    else { toast.error("Couldn't leave"); setIsLeaving(false); }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
