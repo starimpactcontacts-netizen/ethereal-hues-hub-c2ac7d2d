@@ -197,7 +197,6 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
                 autoPlay
                 playsInline
                 loop
-                muted={false}
               />
             ) : image ? (
               <img
