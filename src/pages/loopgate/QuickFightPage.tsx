@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
-import { useQuickFight, submitQuickFight, useRecentQuickFights } from '@/hooks/useQuickFight';
+import { useQuickFight, submitQuickFight } from '@/hooks/useQuickFight';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -32,11 +32,8 @@ export default function QuickFightPage() {
   const { profile, user } = useAuth();
   const { fight, loading } = useQuickFight(fightId);
   const { isJudge, isAnyJudge, isAdmin, isDev } = useUserRoles(user?.id);
-  const { fights: recentFights, loading: recentLoading } = useRecentQuickFights(50);
   const [submissionUrl, setSubmissionUrl] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [showOverview, setShowOverview] = useState(false);
-  const [overviewSearch, setOverviewSearch] = useState('');
   const [judgeScore1, setJudgeScore1] = useState('');
   const [judgeScore2, setJudgeScore2] = useState('');
   const [judgeNotes, setJudgeNotes] = useState('');
@@ -175,130 +172,17 @@ export default function QuickFightPage() {
     setJudging(false);
   };
 
-  // Overview mode — browse all quick 1v1s
-  if (showOverview) {
-    const filteredFights = recentFights.filter(f => {
-      if (!overviewSearch.trim()) return true;
-      const q = overviewSearch.toLowerCase();
-      return f.player_1_username.toLowerCase().includes(q) || (f.player_2_username || '').toLowerCase().includes(q);
-    });
-
-    return (
-      <div className="min-h-screen bg-background pb-20">
-        <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
-          <div className="px-4 py-3 flex items-center justify-between">
-            <button onClick={() => navigate('/hub')} className="flex items-center gap-2 text-muted-foreground hover:text-foreground touch-manipulation">
-              <ArrowLeft className="w-4 h-4" />
-              <span className="text-sm">Hub</span>
-            </button>
-            <span className="text-[10px] font-bold text-destructive uppercase tracking-wider">QUICK 1v1s</span>
-          </div>
-        </div>
-
-        {/* Return to YOUR fight banner */}
-        <button
-          onClick={() => setShowOverview(false)}
-          className="w-full py-2.5 bg-destructive text-destructive-foreground font-display text-xs uppercase tracking-wider flex items-center justify-center gap-2 touch-manipulation active:opacity-90"
-        >
-          <Swords className="w-3.5 h-3.5" />
-          Return to Your Fight
-        </button>
-
-        {/* Search bar */}
-        <div className="px-3 pt-3">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-            <input
-              value={overviewSearch}
-              onChange={e => setOverviewSearch(e.target.value)}
-              placeholder="Search fighters..."
-              className="w-full bg-muted border border-border rounded-lg pl-8 pr-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-destructive/50"
-            />
-          </div>
-        </div>
-
-        {/* Quick 1v1 list */}
-        <div className="px-3 pt-3 space-y-1.5">
-          {recentLoading ? (
-            <div className="flex justify-center py-8">
-              <Swords className="w-6 h-6 text-muted-foreground animate-pulse" />
-            </div>
-          ) : filteredFights.length === 0 ? (
-            <p className="text-xs text-muted-foreground text-center py-8">No quick 1v1s found</p>
-          ) : (
-            filteredFights.map((f) => (
-              <motion.button
-                key={f.id}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                onClick={() => {
-                  if (f.id === fightId) {
-                    setShowOverview(false);
-                  } else {
-                    navigate(`/fight/${f.id}`);
-                  }
-                }}
-                className={`w-full flex items-center gap-3 p-2.5 transition-colors text-left border ${
-                  f.id === fightId ? 'bg-destructive/10 border-destructive/40' : 'bg-muted/50 border-border hover:bg-muted'
-                }`}
-              >
-                <Avatar className="w-7 h-7 border border-destructive/40 shrink-0">
-                  <AvatarImage src={f.player_1_avatar_url || ''} />
-                  <AvatarFallback className="bg-destructive/10 text-destructive text-[8px] font-bold">{f.player_1_username[0].toUpperCase()}</AvatarFallback>
-                </Avatar>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1">
-                    <span className="text-[11px] font-medium text-foreground truncate">{f.player_1_username}</span>
-                    <span className="text-[9px] text-muted-foreground">vs</span>
-                    <span className="text-[11px] font-medium text-foreground truncate">{f.player_2_username || '???'}</span>
-                  </div>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[9px] text-gold font-bold">+20 IDX</span>
-                    <span className="text-[9px] text-muted-foreground">{f.duration_minutes}min</span>
-                    {f.id === fightId && <span className="text-[8px] text-destructive font-bold">YOUR FIGHT</span>}
-                  </div>
-                </div>
-
-                <div className="shrink-0">
-                  {f.status === 'active' ? (
-                    <span className="text-[9px] text-destructive font-bold animate-pulse">LIVE</span>
-                  ) : f.status === 'judging' ? (
-                    <span className="text-[9px] text-purple-400 font-bold">JUDGING</span>
-                  ) : f.status === 'completed' && f.winner_score != null ? (
-                    <div className="flex items-center gap-1">
-                      <Trophy className="w-3 h-3 text-gold" />
-                      <span className="text-[9px] text-gold font-bold">{f.winner_score}-{f.loser_score}</span>
-                    </div>
-                  ) : (
-                    <span className="text-[9px] text-muted-foreground">waiting</span>
-                  )}
-                </div>
-              </motion.button>
-            ))
-          )}
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="px-4 py-3 flex items-center justify-between">
           <button
-            onClick={() => {
-              if (isParticipant && (fight.status === 'active' || fight.status === 'judging')) {
-                setShowOverview(true);
-              } else {
-                navigate('/hub');
-              }
-            }}
+            onClick={() => navigate('/hub')}
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground touch-manipulation"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm">{isParticipant && (fight.status === 'active' || fight.status === 'judging') ? 'Overview' : 'Back'}</span>
+            <span className="text-sm">Back</span>
           </button>
           <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider">
             {fight.status === 'active' ? '⚔️ LIVE FIGHT' :
