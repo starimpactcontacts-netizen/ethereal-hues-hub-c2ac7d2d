@@ -261,11 +261,11 @@ export function useCompetition(idOrSlug: string | undefined) {
     return true;
   };
 
-  // Open the community voting phase (10 min window)
+  // Open the community voting phase (2 min window)
   const startVoting = async () => {
     if (!competition) return false;
     const now = new Date();
-    const deadline = new Date(now.getTime() + 10 * 60 * 1000);
+    const deadline = new Date(now.getTime() + 2 * 60 * 1000);
     const { error } = await supabase.from("competitions").update({
       status: "voting",
       voting_started_at: now.toISOString(),
