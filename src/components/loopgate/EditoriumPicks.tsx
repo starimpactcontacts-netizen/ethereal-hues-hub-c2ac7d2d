@@ -156,14 +156,12 @@ function PickVideoCard({
           <p className="text-[11px] text-white/85 line-clamp-2 mb-1.5 leading-snug">{edit.headline}</p>
         )}
         <div className="flex items-center gap-1.5">
-          {edit.avatar_url ? (
-            <img src={edit.avatar_url} alt="" className="w-5 h-5 rounded-full object-cover ring-1 ring-white/15" />
-          ) : (
-            <div className="w-5 h-5 rounded-full bg-red-500/30 flex items-center justify-center">
-              <span className="text-[8px] font-bold text-red-300">{edit.username.charAt(0).toUpperCase()}</span>
-            </div>
-          )}
-          <span className="text-[11px] font-bold text-white truncate">@{edit.username}</span>
+          <div className="w-5 h-5 rounded-full bg-white/10 ring-1 ring-white/20 flex items-center justify-center">
+            <span className="text-[8px] font-black text-white">L</span>
+          </div>
+          <span className="text-[10px] font-black tracking-[0.15em] text-white truncate uppercase" style={{ fontFamily: 'Teko, sans-serif' }}>
+            LOOPGATE · EDITORIUM
+          </span>
           <span className="ml-auto text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/10 text-white/70">
             {edit.platform}
           </span>
