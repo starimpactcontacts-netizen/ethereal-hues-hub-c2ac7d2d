@@ -205,6 +205,8 @@ export default function FeedPage() {
 
   const filteredItems = feedItems.filter(item => {
     if (activeTab === 'connections' && !connectionIds.includes(item.user_id)) return false;
+    // Hide own activity from "For You" and "Loops" feeds — users shouldn't see themselves in discovery
+    if (activeTab !== 'connections' && user && item.user_id === user.id) return false;
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       const title = (item.custom_title || item.event_title || '').toLowerCase();
@@ -219,7 +221,8 @@ export default function FeedPage() {
     const combined: Array<{ kind: 'activity'; item: LoopFeedItem } | { kind: 'post'; item: FeedPostItem } | { kind: 'editorium'; item: EditoriumArticle }> = [];
     let ai = 0, pi = 0;
     const activityItems = filteredItems;
-    const postItems = feedPosts;
+    // Exclude own posts from "For You" so users see other editors, not themselves
+    const postItems = user ? feedPosts.filter(p => p.user_id !== user.id) : feedPosts;
     while (ai < activityItems.length || pi < postItems.length) {
       const aTime = ai < activityItems.length ? new Date(activityItems[ai].created_at).getTime() : -Infinity;
       const pTime = pi < postItems.length ? new Date(postItems[pi].created_at).getTime() : -Infinity;
@@ -377,13 +380,16 @@ export default function FeedPage() {
             )}
 
             {activeTab === 'posts' ? (
-              feedPosts.length === 0 ? (
+              (() => {
+                const visiblePosts = user ? feedPosts.filter(p => p.user_id !== user.id) : feedPosts;
+                return visiblePosts.length === 0 ? (
                 <EmptyState icon={<PenSquare className="w-6 h-6 text-muted-foreground/30" />} title="No loops yet" subtitle="Be the first — share a flex, an edit, or just say what's on your mind." />
               ) : (
-                feedPosts.map(post => (
+                visiblePosts.map(post => (
                   <FeedPostCard key={post.id} post={post} isLiked={likedPostIds.has(post.id)} isBookmarked={bookmarkedPostIds.has(post.id)} onLike={toggleLike} onBookmark={toggleBookmark} onDelete={deletePost} reactions={reactions[post.id] || []} onToggleReaction={toggleReaction} />
                 ))
-              )
+                );
+              })()
             ) : activeTab === 'foryou' && interleavedFeed ? (
               interleavedFeed.length === 0 ? (
                 <EmptyState icon={<Play className="w-6 h-6 text-muted-foreground/30" />} title="The Loop is quiet" subtitle="Drop a loop or submit an edit to get things moving" />
