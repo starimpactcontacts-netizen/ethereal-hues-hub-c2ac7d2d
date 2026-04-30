@@ -537,6 +537,9 @@ function OpenQueueCard({
 export default function CashBattlesSection({
   idxBattles = [],
   idxBattlesLoading = false,
+  quickFights = [],
+  myQuickFights = [],
+  quickFightsLoading = false,
   renderIdxBattleCard,
   onQuickFight,
   onChallenge,
@@ -684,7 +687,33 @@ export default function CashBattlesSection({
       )}
 
       {/* Horizontal scroll — open matchups first, then existing battles */}
-      {(loading || idxBattlesLoading) ? <ArenaRailSkeleton count={3} /> : <ArenaRail>
+      {(loading || idxBattlesLoading || quickFightsLoading) ? <ArenaRailSkeleton count={3} /> : <ArenaRail>
+        {/* Active Edit Battle cards — absolute left priority */}
+        {[...myQuickFights, ...quickFights]
+          .filter((fight, index, all) =>
+            fight.status !== 'cancelled' && all.findIndex((item) => item.id === fight.id) === index
+          )
+          .sort((a, b) => {
+            const owned = (x: QuickFight) => user?.id && (x.player_1_id === user.id || x.player_2_id === user.id) ? 0 : 1;
+            const rank = (x: QuickFight) => {
+              if (owned(x) === 0 && x.status !== 'completed') return 0;
+              if (x.status === 'waiting') return 1;
+              if (x.status === 'active' || x.status === 'submitted') return 2;
+              if (x.status === 'judging') return 3;
+              return 4;
+            };
+            const ra = rank(a);
+            const rb = rank(b);
+            if (ra !== rb) return ra - rb;
+            return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+          })
+          .slice(0, 8)
+          .map((fight) => (
+            <ArenaRailCard key={`quick-${fight.id}`}>
+              <QuickFightCarouselCard fight={fight} isMine={!!user?.id && (fight.player_1_id === user.id || fight.player_2_id === user.id)} />
+            </ArenaRailCard>
+          ))}
+
         {/* Open Quick-Fight queue cards — HIGHEST PRIORITY (leftmost) so new users find matchmaking instantly */}
         {[...openQueue]
           .sort((a, b) => {
@@ -783,7 +812,7 @@ export default function CashBattlesSection({
           ))}
 
         {/* Join teaser — only show if no pending apps */}
-        {pendingApps.length === 0 && battles.length === 0 && idxBattles.length === 0 && (
+        {pendingApps.length === 0 && battles.length === 0 && idxBattles.length === 0 && quickFights.length === 0 && (
           <ArenaRailCard>
             <motion.div
               whileTap={{ scale: 0.97 }}
