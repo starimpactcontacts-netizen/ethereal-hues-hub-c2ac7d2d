@@ -564,11 +564,26 @@ export default function EditBattlesHubPage() {
     [battles]
   );
   const cashBattles = useMemo(
-    () => battles.filter((b) => (b.prize_cents ?? 0) > 0 && b.status !== "completed" && b.status !== "ended"),
+    () =>
+      battles.filter(
+        (b) =>
+          (b.prize_cents ?? 0) > 0 &&
+          b.status !== "completed" &&
+          b.status !== "ended" &&
+          b.status !== "cancelled" &&
+          b.status !== "forfeited"
+      ),
     [battles]
   );
   const completedBattles = useMemo(
-    () => battles.filter((b) => b.status === "completed" || b.status === "ended"),
+    () =>
+      battles.filter(
+        (b) =>
+          b.status === "completed" ||
+          b.status === "ended" ||
+          b.status === "cancelled" ||
+          b.status === "forfeited"
+      ),
     [battles]
   );
 
