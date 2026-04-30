@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useEventRounds } from "@/hooks/useOpenArenaData";
 import { useActiveBattles } from "@/hooks/useActiveBattles";
 import { useMyQuickFights } from "@/hooks/useQuickFight";
+import { useMyCompetitionReminders } from "@/hooks/useMyCompetitionReminders";
 import LiveBattleReminders, { type LiveBattleReminderItem } from "@/components/loopgate/LiveBattleReminder";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import SEO, { pageSEO } from "@/components/SEO";
@@ -145,6 +146,7 @@ export default function HomePage() {
   const { stats } = useGlobalStats();
   const { activeBattles } = useActiveBattles();
   const { fights: myQuickFights } = useMyQuickFights();
+  const { competitions: myLiveCompetitions } = useMyCompetitionReminders();
   const { user } = useAuth();
   
   // Keep session active
@@ -232,6 +234,16 @@ export default function HomePage() {
                 href: `/fight/${f.id}`,
               };
             }),
+          ...myLiveCompetitions.map(comp => ({
+            kind: "competition" as const,
+            id: comp.id,
+            title: comp.name,
+            status: comp.status,
+            endsAt: comp.status === "voting" ? comp.voting_deadline : comp.deadline,
+            hasSubmitted: comp.hasSubmitted,
+            hasVoted: comp.hasVoted,
+            href: `/competition/${comp.slug || comp.id}`,
+          })),
         ];
         return items.length > 0 ? (
           <section className="px-4 pt-2">
