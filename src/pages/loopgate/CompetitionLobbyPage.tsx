@@ -16,6 +16,7 @@ import CompetitionChat from "@/components/loopgate/CompetitionChat";
 import CompetitionLeaderboard from "@/components/loopgate/CompetitionLeaderboard";
 import CompetitionVoting from "@/components/loopgate/CompetitionVoting";
 import CompetitionWinnerCard from "@/components/loopgate/CompetitionWinnerCard";
+import { setLobbyMusicActive } from "@/components/loopgate/LobbyMusicPlayer";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 
@@ -101,6 +102,14 @@ export default function CompetitionLobbyPage() {
     // Platform "upload" = uploaded video. Also fallback to extension sniff.
     return p === "upload" || /\.(mp4|webm|mov|m4v)(\?|$)/i.test(u);
   }, [competition?.inspo_video_url, competition?.inspo_video_platform]);
+
+  // Lobby music: only while we're actually waiting in the lobby. The moment the
+  // host starts the comp (status flips to live/voting/completed), kill the music.
+  useEffect(() => {
+    const inLobby = competition?.status === "lobby";
+    setLobbyMusicActive(inLobby);
+    return () => setLobbyMusicActive(false);
+  }, [competition?.status]);
 
   // Auto-transition: when the edit window closes, flip live → voting (creator triggers it,
   // any viewer triggers as fallback so it never gets stuck).
