@@ -1181,7 +1181,7 @@ export default function HubPage() {
               <div className="w-1 h-5 bg-gold rounded-full" />
               <h2 className="font-display text-lg text-foreground">COMPETITIONS</h2>
             </div>
-            <Link to="/arena" className="text-[9px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
+            <Link to="/competitions" className="text-[9px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
               VIEW ALL <ArrowRight size={10} />
             </Link>
           </div>
