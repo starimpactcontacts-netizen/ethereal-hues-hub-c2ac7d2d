@@ -1,0 +1,1 @@
+DELETE FROM public.competitions WHERE id = 'ca794d22-aa79-4dd0-a074-64acb9cb543c';
