@@ -467,8 +467,8 @@ export default function CompetitionLobbyPage() {
               </span>
               <MessageCircle className="w-3 h-3 text-foreground/30" />
             </div>
-            <div className="flex-1 min-h-0 overflow-hidden">
-              <CompetitionChat competitionId={competition.id} />
+            <div className="flex-1 min-h-0 overflow-hidden flex">
+              <CompetitionChat competitionId={competition.id} embedded />
             </div>
           </section>
         </div>
