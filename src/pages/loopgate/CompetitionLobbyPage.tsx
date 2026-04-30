@@ -275,23 +275,26 @@ export default function CompetitionLobbyPage() {
       <div className="fixed inset-0 bg-background flex flex-col overflow-hidden">
         {/* ── HEADER ── */}
         <header className="shrink-0 px-4 pt-[env(safe-area-inset-top)] border-b border-white/[0.06] bg-background/95 backdrop-blur-sm">
-          <div className="flex items-center gap-2 py-3">
+          <div className="flex items-center gap-2.5 py-3">
             <button onClick={() => navigate(-1)} className="p-1.5 -ml-1.5 rounded-lg hover:bg-white/[0.04] active:scale-95 transition">
-              <ArrowLeft className="w-4 h-4 text-foreground/70" />
+              <ArrowLeft className="w-[18px] h-[18px] text-foreground/70" />
             </button>
             <div className="flex-1 min-w-0">
-              <h1 className="text-[20px] font-black text-foreground uppercase leading-none truncate" style={teko}>
+              <h1 className="text-[22px] font-black text-foreground uppercase leading-none truncate tracking-tight" style={teko}>
                 {competition.name}
               </h1>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                <span className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-amber-400/90" style={teko}>
+              <div className="flex items-center gap-1.5 mt-1">
+                <span className="relative flex w-1.5 h-1.5">
+                  <span className="absolute inline-flex w-full h-full rounded-full bg-amber-400 opacity-60 animate-ping" />
+                  <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-amber-400" />
+                </span>
+                <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-amber-400/90" style={teko}>
                   Awaiting Start
                 </span>
                 {competition.index_reward_pool > 0 && (
                   <>
-                    <span className="text-foreground/20 text-[9px]">·</span>
-                    <span className="text-[9px] font-extrabold uppercase tracking-[0.15em] text-gold flex items-center gap-1" style={teko}>
+                    <span className="text-foreground/20 text-[10px]">·</span>
+                    <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-gold flex items-center gap-1" style={teko}>
                       <Trophy className="w-2.5 h-2.5" /> {competition.index_reward_pool} IDX
                     </span>
                   </>
@@ -299,17 +302,17 @@ export default function CompetitionLobbyPage() {
               </div>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="px-2 py-1 rounded border border-white/[0.1] bg-white/[0.03]">
-                <span className="text-[10px] font-extrabold tracking-[0.15em] text-foreground/80 tabular-nums" style={teko}>
+              <div className="h-8 px-2.5 inline-flex items-center rounded-md border border-white/[0.1] bg-white/[0.03]">
+                <span className="text-[11px] font-extrabold tracking-[0.2em] text-foreground/85 tabular-nums" style={teko}>
                   {roomCode}
                 </span>
               </div>
               <button
                 onClick={handleShare}
-                className="px-2.5 py-1 rounded border border-red-500/40 bg-red-500/10 text-red-400 active:scale-95 transition flex items-center gap-1"
+                className="h-8 px-2.5 inline-flex items-center gap-1.5 rounded-md border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/15 active:scale-95 transition"
               >
-                {copied ? <Check className="w-3 h-3" /> : <Share2 className="w-3 h-3" />}
-                <span className="text-[10px] font-extrabold tracking-[0.15em]" style={teko}>ROOM</span>
+                {copied ? <Check className="w-3.5 h-3.5" /> : <Share2 className="w-3.5 h-3.5" />}
+                <span className="text-[11px] font-extrabold tracking-[0.2em]" style={teko}>ROOM</span>
               </button>
             </div>
           </div>
@@ -366,9 +369,9 @@ export default function CompetitionLobbyPage() {
                       </span>
                     </button>
                     {isHost && (
-                      <span className="shrink-0 px-1.5 py-0.5 rounded border border-gold/40 bg-gold/10 flex items-center gap-1">
+                      <span className="shrink-0 h-5 px-1.5 inline-flex items-center gap-1 rounded-md border border-gold/40 bg-gold/10">
                         <Crown className="w-2.5 h-2.5 text-gold" />
-                        <span className="text-[8px] font-extrabold tracking-[0.18em] text-gold" style={teko}>HOST</span>
+                        <span className="text-[9px] font-extrabold tracking-[0.2em] text-gold leading-none" style={teko}>HOST</span>
                       </span>
                     )}
                   </div>
@@ -404,62 +407,51 @@ export default function CompetitionLobbyPage() {
             <button
               onClick={handleJoin}
               disabled={isJoining || memberCount >= cap}
-              className="w-full py-3 rounded-xl flex items-center justify-center gap-2 disabled:opacity-30 transition active:scale-[0.98]"
-              style={{
-                background: "linear-gradient(135deg, #10B981, #059669)",
-                color: "#fff",
-                boxShadow: "0 4px 20px rgba(16,185,129,0.25)",
-                ...teko,
-              }}
+              className="w-full h-12 rounded-xl flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white border border-emerald-400/30 disabled:opacity-30 disabled:hover:bg-emerald-500 transition active:scale-[0.98]"
+              style={teko}
             >
               {isJoining ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                 <>
-                  <Play className="w-4 h-4" />
-                  <span className="text-[15px] font-extrabold uppercase tracking-[0.15em]">Join Lobby</span>
+                  <Play className="w-4 h-4" strokeWidth={2.5} />
+                  <span className="text-[15px] font-extrabold uppercase tracking-[0.2em] leading-none">Join Lobby</span>
                 </>
               )}
             </button>
           ) : (
             <>
-              <div className="flex items-center gap-2">
+              <div className="flex items-stretch gap-2">
                 <button
                   onClick={handleLeave}
                   disabled={isLeaving}
-                  className="flex-1 py-2.5 rounded-xl border border-white/[0.1] bg-white/[0.02] text-foreground/70 hover:bg-white/[0.05] flex items-center justify-center gap-1.5 transition active:scale-[0.98] disabled:opacity-50"
+                  className="flex-1 h-12 rounded-xl border border-white/[0.1] bg-white/[0.02] text-foreground/70 hover:bg-white/[0.05] hover:text-foreground flex items-center justify-center gap-1.5 transition active:scale-[0.98] disabled:opacity-50"
                 >
                   {isLeaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LogOut className="w-3.5 h-3.5" />}
-                  <span className="text-[12px] font-extrabold uppercase tracking-[0.15em]" style={teko}>Leave Room</span>
+                  <span className="text-[12px] font-extrabold uppercase tracking-[0.2em] leading-none" style={teko}>Leave</span>
                 </button>
                 <button
                   onClick={handleReady}
                   disabled={isReadying}
-                  className="flex-[2] py-2.5 rounded-xl flex items-center justify-center gap-2 transition active:scale-[0.98] disabled:opacity-50"
-                  style={{
-                    background: isReady
-                      ? "rgba(16,185,129,0.12)"
-                      : "linear-gradient(135deg, #10B981, #059669)",
-                    color: isReady ? "#10B981" : "#fff",
-                    border: isReady ? "1px solid rgba(16,185,129,0.4)" : "none",
-                    boxShadow: isReady ? "none" : "0 4px 20px rgba(16,185,129,0.3)",
-                    ...teko,
-                  }}
+                  className={`flex-[2] h-12 rounded-xl flex items-center justify-center gap-2 transition active:scale-[0.98] disabled:opacity-50 border ${
+                    isReady
+                      ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-400"
+                      : "bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 border-emerald-400/30 text-white"
+                  }`}
+                  style={teko}
                 >
                   {isReadying ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                     <>
-                      {isReady ? <CheckCircle2 className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
-                      <span className="text-[14px] font-extrabold uppercase tracking-[0.15em]">
-                        {isReady ? "Ready ✓" : "Ready Up"}
+                      {isReady ? <CheckCircle2 className="w-[18px] h-[18px]" strokeWidth={2.5} /> : <Circle className="w-[18px] h-[18px]" strokeWidth={2.5} />}
+                      <span className="text-[14px] font-extrabold uppercase tracking-[0.2em] leading-none">
+                        {isReady ? "You're Ready" : "Ready Up"}
                       </span>
                     </>
                   )}
                 </button>
               </div>
-              <p className="text-[10px] text-center text-muted-foreground/50 mt-1.5" style={teko}>
-                <span className="tracking-[0.15em] uppercase">
-                  {memberCount < 2
-                    ? `Need 1 more editor — share the room`
-                    : `${readyCount}/${memberCount} ready · starts when everyone's set`}
-                </span>
+              <p className="text-[10px] text-center text-muted-foreground/55 mt-2 tracking-[0.2em] uppercase font-bold" style={teko}>
+                {memberCount < 2
+                  ? "Need 1 more editor — share the room"
+                  : `${readyCount}/${memberCount} ready · starts when everyone's set`}
               </p>
             </>
           )}
