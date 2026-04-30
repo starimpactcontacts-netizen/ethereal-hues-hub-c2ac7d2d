@@ -688,33 +688,7 @@ export default function CashBattlesSection({
 
       {/* Horizontal scroll — open matchups first, then existing battles */}
       {(loading || idxBattlesLoading || quickFightsLoading) ? <ArenaRailSkeleton count={3} /> : <ArenaRail>
-        {/* Active Edit Battle cards — absolute left priority */}
-        {[...myQuickFights, ...quickFights]
-          .filter((fight, index, all) =>
-            fight.status !== 'cancelled' && all.findIndex((item) => item.id === fight.id) === index
-          )
-          .sort((a, b) => {
-            const owned = (x: QuickFight) => user?.id && (x.player_1_id === user.id || x.player_2_id === user.id) ? 0 : 1;
-            const rank = (x: QuickFight) => {
-              if (owned(x) === 0 && x.status !== 'completed') return 0;
-              if (x.status === 'waiting') return 1;
-              if (x.status === 'active' || x.status === 'submitted') return 2;
-              if (x.status === 'judging') return 3;
-              return 4;
-            };
-            const ra = rank(a);
-            const rb = rank(b);
-            if (ra !== rb) return ra - rb;
-            return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
-          })
-          .slice(0, 8)
-          .map((fight) => (
-            <ArenaRailCard key={`quick-${fight.id}`}>
-              <QuickFightCarouselCard fight={fight} isMine={!!user?.id && (fight.player_1_id === user.id || fight.player_2_id === user.id)} />
-            </ArenaRailCard>
-          ))}
-
-        {/* Open Quick-Fight queue cards — HIGHEST PRIORITY (leftmost) so new users find matchmaking instantly */}
+        {/* Open Quick-Fight queue cards — ABSOLUTE LEFTMOST so new users find joinable matchmaking instantly */}
         {[...openQueue]
           .sort((a, b) => {
             const aOwn = user?.id === a.user_id ? 0 : 1;
@@ -743,12 +717,41 @@ export default function CashBattlesSection({
             );
           })}
 
-        {/* Open cash matchup cards — second priority */}
+        {/* Open cash matchup cards — second priority (joinable) */}
         {pendingApps.map((app) => (
           <ArenaRailCard key={app.id}>
             <OpenMatchupCard app={app} onJoin={() => handleAcceptFight(app)} currentUserId={user?.id} />
           </ArenaRailCard>
         ))}
+
+        {/* Active/live Edit Battle cards — after joinable slots. Completed/cancelled are EXCLUDED (live in Hall of Fame). */}
+        {[...myQuickFights, ...quickFights]
+          .filter((fight, index, all) =>
+            fight.status !== 'cancelled' &&
+            fight.status !== 'completed' &&
+            fight.status !== 'forfeited' &&
+            all.findIndex((item) => item.id === fight.id) === index
+          )
+          .sort((a, b) => {
+            const owned = (x: QuickFight) => user?.id && (x.player_1_id === user.id || x.player_2_id === user.id) ? 0 : 1;
+            const rank = (x: QuickFight) => {
+              if (owned(x) === 0) return 0;
+              if (x.status === 'waiting') return 1;
+              if (x.status === 'active' || x.status === 'submitted') return 2;
+              if (x.status === 'judging') return 3;
+              return 4;
+            };
+            const ra = rank(a);
+            const rb = rank(b);
+            if (ra !== rb) return ra - rb;
+            return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+          })
+          .slice(0, 8)
+          .map((fight) => (
+            <ArenaRailCard key={`quick-${fight.id}`}>
+              <QuickFightCarouselCard fight={fight} isMine={!!user?.id && (fight.player_1_id === user.id || fight.player_2_id === user.id)} />
+            </ArenaRailCard>
+          ))}
 
         {/* Ranked IDX 1v1 battles — surfaced FIRST to drive non-cash activity */}
         {renderIdxBattleCard && [...idxBattles]
