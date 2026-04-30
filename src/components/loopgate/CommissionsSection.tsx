@@ -325,16 +325,9 @@ export default function CommissionsSection() {
       className="mt-3 relative"
     >
       {/* Section Header */}
-      <div className="flex items-center justify-between px-4 mb-2">
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <div className="absolute inset-0 blur-lg bg-emerald-500/20 scale-150" />
-            <InfinityLoop size={20} className="relative" />
-          </div>
-          <h3 className="font-display text-base text-foreground tracking-wide">GET PAID</h3>
-        </div>
-        <Link to="/solo-arena" className="text-[9px] text-foreground/30 hover:text-emerald-400 transition-colors flex items-center gap-1 font-bold uppercase tracking-wider">
-          Arena <ArrowRight size={10} />
+      <div className="flex items-center justify-end px-4 mb-2">
+        <Link to="/missions" className="text-[9px] text-foreground/30 hover:text-emerald-400 transition-colors flex items-center gap-1 font-bold uppercase tracking-wider">
+          Missions <ArrowRight size={10} />
         </Link>
       </div>
 
