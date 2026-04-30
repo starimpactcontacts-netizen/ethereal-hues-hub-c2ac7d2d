@@ -20,6 +20,19 @@ function isLobbyPath(pathname: string) {
   return LOBBY_PATTERNS.some((re) => re.test(pathname));
 }
 
+// Global signal so non-route states (e.g. matchmaking on Hub) can trigger music
+declare global {
+  interface Window {
+    __lobbyMusicActive?: boolean;
+  }
+}
+
+export function setLobbyMusicActive(active: boolean) {
+  if (typeof window === 'undefined') return;
+  window.__lobbyMusicActive = active;
+  window.dispatchEvent(new CustomEvent('lobby-music-state', { detail: active }));
+}
+
 export default function LobbyMusicPlayer() {
   const location = useLocation();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -34,11 +47,10 @@ export default function LobbyMusicPlayer() {
     }
     const audio = audioRef.current;
 
-    const inLobby = isLobbyPath(location.pathname);
-    if (inLobby) {
-      const tryPlay = () => {
+    const evaluate = () => {
+      const inLobby = isLobbyPath(location.pathname) || window.__lobbyMusicActive === true;
+      if (inLobby) {
         audio.play().catch(() => {
-          // Autoplay blocked — wait for first user gesture
           const resume = () => {
             audio.play().catch(() => {});
             window.removeEventListener('pointerdown', resume);
@@ -49,16 +61,16 @@ export default function LobbyMusicPlayer() {
           window.addEventListener('keydown', resume, { once: true });
           window.addEventListener('touchstart', resume, { once: true });
         });
-      };
-      tryPlay();
-    } else {
-      audio.pause();
-      audio.currentTime = 0;
-    }
-
-    return () => {
-      // Pause on route change cleanup; effect will re-evaluate
+      } else {
+        audio.pause();
+        audio.currentTime = 0;
+      }
     };
+
+    evaluate();
+    const handler = () => evaluate();
+    window.addEventListener('lobby-music-state', handler);
+    return () => window.removeEventListener('lobby-music-state', handler);
   }, [location.pathname]);
 
   useEffect(() => {
