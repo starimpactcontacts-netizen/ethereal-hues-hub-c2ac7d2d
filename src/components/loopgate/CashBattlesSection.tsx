@@ -169,13 +169,19 @@ function OpenMatchupCard({ app, onJoin, currentUserId }: { app: CashBattleApplic
     setCancelling(true);
     const { error } = await supabase
       .from('cash_battle_applications')
-      .update({ status: 'cancelled' } as any)
+      .delete()
       .eq('id', app.id)
       .eq('user_id', app.user_id);
     if (error) {
-      toast.error('Failed to cancel');
+      const { error: fallbackError } = await supabase
+        .from('cash_battle_applications')
+        .update({ status: 'cancelled' } as any)
+        .eq('id', app.id)
+        .eq('user_id', app.user_id);
+      if (fallbackError) toast.error('Failed to cancel');
+      else toast.info('Matchup removed');
     } else {
-      toast.info('Matchup cancelled');
+      toast.info('Matchup removed');
     }
     setCancelling(false);
     setConfirmCancel(false);
