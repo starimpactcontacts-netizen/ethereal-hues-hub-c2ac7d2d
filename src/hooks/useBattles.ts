@@ -54,6 +54,7 @@ export function useBattles(statuses?: string[]) {
       let query = supabase
         .from('battles')
         .select('*')
+        .neq('status', 'cancelled')
         .order('created_at', { ascending: false });
 
       if (statuses && statuses.length > 0) {
@@ -101,7 +102,8 @@ export function useBattle(battleId: string | undefined) {
       .select('*')
       .eq('id', battleId)
       .maybeSingle();
-    if (!error && data) setBattle(data as Battle);
+    if (!error && data && data.status !== 'cancelled') setBattle(data as Battle);
+    else setBattle(null);
   };
 
   useEffect(() => {
@@ -118,7 +120,7 @@ export function useBattle(battleId: string | undefined) {
         .maybeSingle();
 
       if (!error && data) {
-        setBattle(data as Battle);
+        setBattle(data.status === 'cancelled' ? null : data as Battle);
       }
       setLoading(false);
     }
@@ -138,7 +140,8 @@ export function useBattle(battleId: string | undefined) {
         },
         (payload) => {
           if (payload.new) {
-            setBattle(payload.new as Battle);
+            const nextBattle = payload.new as Battle;
+            setBattle(nextBattle.status === 'cancelled' ? null : nextBattle);
           }
         }
       )
@@ -168,6 +171,7 @@ export function useMyBattles() {
         .from('battles')
         .select('*')
         .or(`challenger_id.eq.${user.id},opponent_id.eq.${user.id}`)
+        .neq('status', 'cancelled')
         .order('created_at', { ascending: false });
 
       if (!error && data) {

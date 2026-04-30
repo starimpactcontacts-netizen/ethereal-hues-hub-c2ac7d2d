@@ -84,7 +84,7 @@ export default function CashBattlePage() {
     const channel = supabase
       .channel(`cash-battle-${battleId}`)
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "cash_battles", filter: `id=eq.${battleId}` }, (payload) => {
-        setBattle(payload.new);
+        setBattle((payload.new as any)?.status === "cancelled" ? null : payload.new);
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
@@ -92,6 +92,11 @@ export default function CashBattlePage() {
 
   async function fetchBattle() {
     const { data } = await supabase.from("cash_battles").select("*").eq("id", battleId!).single();
+    if ((data as any)?.status === "cancelled") {
+      setBattle(null);
+      setLoading(false);
+      return;
+    }
     setBattle(data);
     setLoading(false);
     
@@ -129,35 +134,47 @@ export default function CashBattlePage() {
     if (bothSubmitted) return; // let it go to judging instead
     // Only run once per client; safe-guarded by status update
     (async () => {
-      await supabase
+      const { error } = await supabase
         .from("cash_battles")
-        .update({ status: "cancelled" } as any)
+        .delete()
         .eq("id", battleId)
         .eq("status", "live");
+      if (error) {
+        await supabase
+          .from("cash_battles")
+          .update({ status: "cancelled" } as any)
+          .eq("id", battleId)
+          .eq("status", "live");
+      }
     })();
   }, [countdown.expired, battle?.status, battleId]);
 
   async function handleCancelBattle() {
     if (!battleId || !user) return;
     setCancellingBattle(true);
-    // Update status to cancelled instead of deleting (RLS blocks delete)
     const { error } = await supabase
       .from("cash_battles")
-      .update({ status: 'cancelled' } as any)
+      .delete()
       .eq("id", battleId);
     if (error) {
-      console.error("Cancel battle error:", error);
-      toast.error("Failed to cancel");
-      setCancellingBattle(false);
-      setShowCancelConfirm(false);
-      return;
+      const { error: fallbackError } = await supabase
+        .from("cash_battles")
+        .update({ status: 'cancelled' } as any)
+        .eq("id", battleId);
+      if (fallbackError) {
+        console.error("Cancel battle error:", fallbackError);
+        toast.error("Failed to cancel");
+        setCancellingBattle(false);
+        setShowCancelConfirm(false);
+        return;
+      }
     }
     // Also reset any matched applications
     await supabase
       .from("cash_battle_applications")
       .update({ status: 'cancelled' } as any)
       .eq("matched_battle_id", battleId);
-    toast.info("Battle cancelled");
+    toast.info("Battle removed");
     setCancellingBattle(false);
     navigate("/arena");
   }

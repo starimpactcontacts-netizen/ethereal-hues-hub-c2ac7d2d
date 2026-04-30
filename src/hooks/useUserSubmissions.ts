@@ -52,7 +52,7 @@ export function useUserSubmissions(targetUserId?: string) {
       supabase.from('round_participations').select('*').eq('user_id', userId).not('submission_url', 'is', null).order('submitted_at', { ascending: false }),
       supabase.from('sanctioned_tournament_participants').select('*, sanctioned_tournaments!inner(id, name, status)').eq('user_id', userId).not('submission_url', 'is', null).order('submitted_at', { ascending: false }),
       supabase.from('featured_submissions').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
-      supabase.from('battles').select('*').or(`challenger_id.eq.${userId},opponent_id.eq.${userId}`).not('status', 'eq', 'pending').order('created_at', { ascending: false }),
+      supabase.from('battles').select('*').or(`challenger_id.eq.${userId},opponent_id.eq.${userId}`).not('status', 'eq', 'pending').neq('status', 'cancelled').order('created_at', { ascending: false }),
       supabase.from('hidden_edits').select('source, source_id').eq('user_id', userId),
       supabase.from('qoi_hidden_edits').select('source, source_id').eq('user_id', userId),
     ]);

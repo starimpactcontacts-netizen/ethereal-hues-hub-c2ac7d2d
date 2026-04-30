@@ -76,6 +76,7 @@ export function useCashBattles() {
     const { data } = await supabase
       .from('cash_battles')
       .select('*')
+      .neq('status', 'cancelled')
       .order('created_at', { ascending: false });
     setBattles((data as any[]) || []);
     setLoading(false);
@@ -324,8 +325,8 @@ export function useAdminCashBattles() {
 
   async function fetchAll() {
     const [appsRes, battlesRes] = await Promise.all([
-      supabase.from('cash_battle_applications').select('*').order('created_at', { ascending: false }),
-      supabase.from('cash_battles').select('*').order('created_at', { ascending: false }),
+      supabase.from('cash_battle_applications').select('*').neq('status', 'cancelled').order('created_at', { ascending: false }),
+      supabase.from('cash_battles').select('*').neq('status', 'cancelled').order('created_at', { ascending: false }),
     ]);
     setApplications((appsRes.data as any[]) || []);
     setBattles((battlesRes.data as any[]) || []);
