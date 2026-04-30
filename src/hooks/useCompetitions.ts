@@ -35,6 +35,7 @@ export interface CompetitionParticipant {
   username: string;
   avatar_url: string | null;
   joined_at: string;
+  is_ready?: boolean;
 }
 
 export interface CompetitionSubmission {
@@ -144,6 +145,8 @@ export function useCompetition(idOrSlug: string | undefined) {
   const isCreator = user?.id === competition?.creator_id;
   const hasJoined = participants.some(p => p.user_id === user?.id);
   const hasSubmitted = submissions.some(s => s.user_id === user?.id);
+  const isReady = participants.find(p => p.user_id === user?.id)?.is_ready === true;
+  const readyCount = participants.filter(p => p.is_ready).length;
 
   const join = async () => {
     if (!user || !profile || !competition) return false;
@@ -153,6 +156,21 @@ export function useCompetition(idOrSlug: string | undefined) {
       username: profile.username,
       avatar_url: profile.avatar_url,
     });
+    if (error) return false;
+    await fetchAll();
+    return true;
+  };
+
+  const toggleReady = async () => {
+    if (!user || !competition) return false;
+    const me = participants.find(p => p.user_id === user.id);
+    if (!me) return false;
+    const next = !me.is_ready;
+    const { error } = await supabase
+      .from("competition_participants")
+      .update({ is_ready: next } as any)
+      .eq("competition_id", competition.id)
+      .eq("user_id", user.id);
     if (error) return false;
     await fetchAll();
     return true;
@@ -220,7 +238,7 @@ export function useCompetition(idOrSlug: string | undefined) {
 
   return {
     competition, participants, submissions, loading,
-    isCreator, hasJoined, hasSubmitted, hasUpvoted,
-    join, start, submit, toggleUpvote, updateInspo, refetch: fetchAll,
+    isCreator, hasJoined, hasSubmitted, hasUpvoted, isReady, readyCount,
+    join, start, submit, toggleUpvote, updateInspo, toggleReady, refetch: fetchAll,
   };
 }
