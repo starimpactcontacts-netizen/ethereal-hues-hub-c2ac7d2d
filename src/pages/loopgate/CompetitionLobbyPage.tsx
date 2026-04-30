@@ -994,6 +994,40 @@ export default function CompetitionLobbyPage() {
         {/* ═══ LEADERBOARD — only after editing closes / voting begins ═══ */}
         {(isVoting || isCompleted) && <CompetitionLeaderboard submissions={submissions} />}
 
+        {/* ═══ WINNER SHARE CARD CTA — completed only ═══ */}
+        {isCompleted && submissions.length > 0 && (() => {
+          const sorted = [...submissions].sort((a, b) => {
+            const va = a.vote_count ?? 0;
+            const vb = b.vote_count ?? 0;
+            if (vb !== va) return vb - va;
+            return b.created_at.localeCompare(a.created_at);
+          });
+          const winner = sorted[0];
+          const runnerUp = sorted[1] ?? null;
+          return (
+            <>
+              <button
+                onClick={() => setShowWinnerCard(true)}
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-600 text-black font-black uppercase tracking-[0.14em] text-[12px] active:scale-[0.98] transition-transform shadow-[0_0_24px_rgba(252,211,77,0.25)]"
+                style={teko}
+              >
+                <Crown className="w-4 h-4" />
+                Generate Winner Card
+                <Share2 className="w-4 h-4" />
+              </button>
+              <CompetitionWinnerCard
+                isOpen={showWinnerCard}
+                onClose={() => setShowWinnerCard(false)}
+                competitionId={competition.id}
+                competitionName={competition.name}
+                winner={winner}
+                runnerUp={runnerUp}
+                totalEditors={participants.length || submissions.length}
+              />
+            </>
+          );
+        })()}
+
         {/* ═══ EDITORS — with ready badges in lobby ═══ */}
         <div>
           <div className="flex items-center gap-2 mb-2">
