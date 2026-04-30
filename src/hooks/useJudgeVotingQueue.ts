@@ -1,7 +1,14 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-export type BattleSource = 'battle' | 'cash_battle' | 'quick_fight' | 'competition';
+export type BattleSource =
+  | 'battle'
+  | 'cash_battle'
+  | 'quick_fight'
+  | 'competition'
+  | 'solo'
+  | 'gatekeeper'
+  | 'featured';
 
 export interface JudgeVoteItem {
   id: string;
@@ -20,18 +27,22 @@ export function useJudgeVotingQueue() {
   const [loading, setLoading] = useState(true);
 
   const fetchAll = useCallback(async () => {
-    const [battles, cash, quick, comps] = await Promise.all([
+    const [battles, cash, quick, comps, solos, gates, feats] = await Promise.all([
       supabase
         .from('battles')
-        .select('id, challenger_username, opponent_username, challenger_avatar_url, opponent_avatar_url, created_at, status')
-        .eq('status', 'judging')
+        .select('id, challenger_username, opponent_username, challenger_avatar_url, opponent_avatar_url, challenger_submission_url, opponent_submission_url, created_at, status, judge_id')
+        .in('status', ['judging', 'active'])
         .is('judge_id', null)
+        .not('challenger_submission_url', 'is', null)
+        .not('opponent_submission_url', 'is', null)
         .order('created_at', { ascending: true })
         .limit(50),
       supabase
         .from('cash_battles')
-        .select('id, challenger_username, opponent_username, challenger_avatar_url, opponent_avatar_url, prize_cents, created_at, status')
-        .in('status', ['judging', 'voting'])
+        .select('id, challenger_username, opponent_username, challenger_avatar_url, opponent_avatar_url, challenger_submission_url, opponent_submission_url, prize_cents, created_at, status')
+        .in('status', ['judging', 'voting', 'active'])
+        .not('challenger_submission_url', 'is', null)
+        .not('opponent_submission_url', 'is', null)
         .order('created_at', { ascending: true })
         .limit(50),
       supabase
@@ -45,6 +56,27 @@ export function useJudgeVotingQueue() {
         .from('competitions')
         .select('id, slug, name, creator_username, creator_avatar_url, created_at, status')
         .in('status', ['voting', 'judging'])
+        .order('created_at', { ascending: true })
+        .limit(50),
+      supabase
+        .from('solo_submissions')
+        .select('id, username, avatar_url, theme, song_name, created_at, status, judge_id')
+        .eq('status', 'judging')
+        .is('judge_id', null)
+        .order('created_at', { ascending: true })
+        .limit(50),
+      supabase
+        .from('gatekeeper_submissions')
+        .select('id, user_id, status, created_at, judge_id, editing_style')
+        .eq('status', 'pending')
+        .is('judge_id', null)
+        .order('created_at', { ascending: true })
+        .limit(50),
+      supabase
+        .from('featured_submissions')
+        .select('id, username, avatar_url, status, created_at, judge_id, song_name, artist_name')
+        .eq('status', 'pending')
+        .is('judge_id', null)
         .order('created_at', { ascending: true })
         .limit(50),
     ]);
@@ -95,6 +127,39 @@ export function useJudgeVotingQueue() {
       route: `/competition/${c.slug || c.id}`,
     }));
 
+    (solos.data ?? []).forEach((s: any) => merged.push({
+      id: s.id, source: 'solo',
+      player_1_username: s.username || 'editor',
+      player_1_avatar_url: s.avatar_url,
+      player_2_username: s.theme || s.song_name || null,
+      player_2_avatar_url: null,
+      prize_label: '+10 IDX',
+      created_at: s.created_at,
+      route: `/solo/${s.id}`,
+    }));
+
+    (gates.data ?? []).forEach((g: any) => merged.push({
+      id: g.id, source: 'gatekeeper',
+      player_1_username: g.editing_style ? `Style: ${g.editing_style}` : 'Gatekeeper entry',
+      player_1_avatar_url: null,
+      player_2_username: null,
+      player_2_avatar_url: null,
+      prize_label: '+25 JXP',
+      created_at: g.created_at,
+      route: `/judge/queue?focus=${g.id}`,
+    }));
+
+    (feats.data ?? []).forEach((f: any) => merged.push({
+      id: f.id, source: 'featured',
+      player_1_username: f.username || 'editor',
+      player_1_avatar_url: f.avatar_url,
+      player_2_username: f.song_name ? `${f.song_name}${f.artist_name ? ' — ' + f.artist_name : ''}` : null,
+      player_2_avatar_url: null,
+      prize_label: '+20 JXP',
+      created_at: f.created_at,
+      route: `/judge/queue?featured=${f.id}`,
+    }));
+
     merged.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
     setItems(merged);
     setLoading(false);
@@ -108,6 +173,9 @@ export function useJudgeVotingQueue() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'cash_battles' }, () => fetchAll())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'quick_fights' }, () => fetchAll())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'competitions' }, () => fetchAll())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'solo_submissions' }, () => fetchAll())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'gatekeeper_submissions' }, () => fetchAll())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'featured_submissions' }, () => fetchAll())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [fetchAll]);

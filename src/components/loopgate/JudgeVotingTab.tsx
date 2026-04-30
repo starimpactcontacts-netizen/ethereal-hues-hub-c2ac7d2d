@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Gavel, Swords, DollarSign, Zap, Trophy, Vote } from 'lucide-react';
+import { Search, Gavel, Swords, DollarSign, Zap, Trophy, Vote, User, ShieldCheck, Star } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
@@ -11,6 +11,9 @@ const SOURCE_META: Record<BattleSource, { label: string; icon: typeof Swords; to
   cash_battle:  { label: 'CASH BATTLE', icon: DollarSign, tone: 'text-emerald-400', ring: 'border-emerald-500/40' },
   quick_fight:  { label: 'QUICK 1V1',   icon: Zap,        tone: 'text-red-400',     ring: 'border-red-500/40' },
   competition:  { label: 'COMPETITION', icon: Trophy,     tone: 'text-amber-400',   ring: 'border-amber-500/40' },
+  solo:         { label: 'SOLO',        icon: User,       tone: 'text-purple-400',  ring: 'border-purple-500/40' },
+  gatekeeper:   { label: 'GATEKEEPER',  icon: ShieldCheck,tone: 'text-cyan-400',    ring: 'border-cyan-500/40' },
+  featured:     { label: 'FEATURED',    icon: Star,       tone: 'text-yellow-400',  ring: 'border-yellow-500/40' },
 };
 
 const FILTERS: { id: 'all' | BattleSource; label: string }[] = [
@@ -19,6 +22,9 @@ const FILTERS: { id: 'all' | BattleSource; label: string }[] = [
   { id: 'battle', label: '1v1' },
   { id: 'cash_battle', label: 'Cash' },
   { id: 'competition', label: 'Comp' },
+  { id: 'solo', label: 'Solo' },
+  { id: 'gatekeeper', label: 'Gate' },
+  { id: 'featured', label: 'Feat' },
 ];
 
 export default function JudgeVotingTab() {
