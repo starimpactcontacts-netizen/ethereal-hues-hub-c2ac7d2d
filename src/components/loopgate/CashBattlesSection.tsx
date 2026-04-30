@@ -755,7 +755,7 @@ export default function CashBattlesSection({
 
         {/* Ranked IDX 1v1 battles — surfaced FIRST to drive non-cash activity */}
         {renderIdxBattleCard && [...idxBattles]
-          .filter((battle: any) => {
+          .filter((battle) => {
             const timeEnded = battle.ends_at ? new Date(battle.ends_at).getTime() < Date.now() : false;
             return !endedBattleStatuses.has(battle.status) && !(battle.status === 'active' && timeEnded);
           })
