@@ -11,7 +11,6 @@ import FeedVideoPlayer from "@/components/loopgate/FeedVideoPlayer";
 import FeedComposeSheet from "@/components/loopgate/FeedComposeSheet";
 import FeedPostComposer from "@/components/loopgate/FeedPostComposer";
 import FeedPostCard from "@/components/loopgate/FeedPostCard";
-import EditoriumPickCard, { type EditoriumArticle } from "@/components/loopgate/EditoriumPickCard";
 import { useFeedPosts, type FeedPostItem } from "@/hooks/useFeedPosts";
 import { useLoopReactions } from "@/hooks/useLoopReactions";
 import loopgateLogo from "@/assets/loopgate-logo.png";
@@ -41,7 +40,6 @@ export default function FeedPage() {
   const [trendingEditors, setTrendingEditors] = useState<Array<{ id: string; username: string; avatar_url: string | null; is_verified: boolean }>>([]);
   const [trendingUnits, setTrendingUnits] = useState<Array<{ id: string; name: string; avatar_url: string | null; emblem: string }>>([]);
   const [userProfile, setUserProfile] = useState<{ username: string; avatar_url: string | null; league?: string; level?: number } | null>(null);
-  const [editoriumPicks, setEditoriumPicks] = useState<EditoriumArticle[]>([]);
 
   const { posts: feedPosts, likedPostIds, bookmarkedPostIds, createPost, toggleLike, toggleBookmark, deletePost, loading: postsLoading } = useFeedPosts();
 
@@ -103,20 +101,6 @@ export default function FeedPage() {
       setTrendingUnits(unitsRes.data || []);
     };
     fetchTrending();
-  }, []);
-
-  // Fetch Editorium weekly picks
-  useEffect(() => {
-    const fetchPicks = async () => {
-      const { data } = await supabase
-        .from('editorium_articles')
-        .select('id, title, subtitle, excerpt, cover_image_url, category, author_name, view_count, read_time_minutes, slug, published_at, created_at')
-        .eq('status', 'published')
-        .order('created_at', { ascending: false })
-        .limit(5);
-      setEditoriumPicks((data as EditoriumArticle[]) || []);
-    };
-    fetchPicks();
   }, []);
 
   // Fetch activity feed
@@ -216,9 +200,9 @@ export default function FeedPage() {
     return true;
   });
 
-  // Interleave posts + activity + editorium picks for "For You"
+  // Interleave posts + activity for "For You"
   const interleavedFeed = activeTab === 'foryou' ? (() => {
-    const combined: Array<{ kind: 'activity'; item: LoopFeedItem } | { kind: 'post'; item: FeedPostItem } | { kind: 'editorium'; item: EditoriumArticle }> = [];
+    const combined: Array<{ kind: 'activity'; item: LoopFeedItem } | { kind: 'post'; item: FeedPostItem }> = [];
     let ai = 0, pi = 0;
     const activityItems = filteredItems;
     // Exclude own posts from "For You" so users see other editors, not themselves
@@ -230,29 +214,7 @@ export default function FeedPage() {
       else if (ai < activityItems.length) { combined.push({ kind: 'activity', item: activityItems[ai] }); ai++; }
       else break;
     }
-    // Prioritize Editorium picks — first pick at the very top, rest interleaved early
-    const withPicks: typeof combined = [];
-    editoriumPicks.forEach((article, idx) => {
-      if (idx === 0) {
-        withPicks.push({ kind: 'editorium', item: article });
-      }
-    });
-    let inserted = 1;
-    combined.forEach((entry, i) => {
-      withPicks.push(entry);
-      // After items 2 and 5, drop in another pick if available
-      if ((i === 1 || i === 4 || i === 8) && inserted < editoriumPicks.length) {
-        withPicks.push({ kind: 'editorium', item: editoriumPicks[inserted] });
-        inserted++;
-      }
-    });
-    // Append any remaining picks toward the top tail
-    while (inserted < editoriumPicks.length) {
-      const insertAt = Math.min(12 + inserted * 4, withPicks.length);
-      withPicks.splice(insertAt, 0, { kind: 'editorium', item: editoriumPicks[inserted] });
-      inserted++;
-    }
-    return withPicks;
+    return combined;
   })() : null;
 
   if (loading && postsLoading) {
@@ -413,8 +375,6 @@ export default function FeedPage() {
                 interleavedFeed.map((entry, idx) => (
                   entry.kind === 'post' ? (
                     <FeedPostCard key={`post-${entry.item.id}`} post={entry.item as FeedPostItem} isLiked={likedPostIds.has(entry.item.id)} isBookmarked={bookmarkedPostIds.has(entry.item.id)} onLike={toggleLike} onBookmark={toggleBookmark} onDelete={deletePost} reactions={reactions[entry.item.id] || []} onToggleReaction={toggleReaction} />
-                  ) : entry.kind === 'editorium' ? (
-                    <EditoriumPickCard key={`ed-${entry.item.id}`} article={entry.item as EditoriumArticle} />
                   ) : (
                     <LoopFeedCard key={(entry.item as LoopFeedItem).id} item={entry.item as LoopFeedItem} isExpanded={expandedId === (entry.item as LoopFeedItem).id} onToggleExpand={() => setExpandedId(prev => prev === (entry.item as LoopFeedItem).id ? null : (entry.item as LoopFeedItem).id)} onOpenPlayer={() => setPlayerItem(entry.item as LoopFeedItem)} />
                   )
