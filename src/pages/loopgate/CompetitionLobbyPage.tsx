@@ -120,6 +120,15 @@ export default function CompetitionLobbyPage() {
     return () => clearInterval(interval);
   }, [competition?.status, competition?.deadline]);
 
+  // Auto-transition early when every editor has submitted — voting/leaderboard starts after edits are in.
+  useEffect(() => {
+    if (!competition || competition.status !== "live") return;
+    if (participants.length === 0) return;
+    const submittedUserIds = new Set(submissions.map((submission) => submission.user_id));
+    const everyoneSubmitted = participants.every((participant) => submittedUserIds.has(participant.user_id));
+    if (everyoneSubmitted) startVoting();
+  }, [competition?.status, participants, submissions]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-background">
@@ -149,6 +158,8 @@ export default function CompetitionLobbyPage() {
   const deadlinePassed = competition.deadline ? isPast(new Date(competition.deadline)) : false;
   const canSubmit = isLive && !deadlinePassed && hasJoined && !hasSubmitted;
   const canStart = isCreator && isLobby && competition.current_players >= 2;
+  const submittedEditorCount = submissions.length;
+  const totalEditorCount = participants.length || competition.current_players || competition.max_players;
 
   const handleJoin = async () => {
     if (!user) { navigate("/start"); return; }
