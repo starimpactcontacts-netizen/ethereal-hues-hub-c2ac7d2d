@@ -264,6 +264,12 @@ export function useCompetition(idOrSlug: string | undefined) {
   // Open the community voting phase (2 min window)
   const startVoting = async () => {
     if (!competition) return false;
+    if (submissions.length === 0) {
+      const { error } = await supabase.from("competitions").update({ status: "closed" } as any).eq("id", competition.id);
+      if (error) return false;
+      await fetchAll();
+      return true;
+    }
     const now = new Date();
     const deadline = new Date(now.getTime() + 2 * 60 * 1000);
     const { error } = await supabase.from("competitions").update({
@@ -308,7 +314,7 @@ export function useCompetition(idOrSlug: string | undefined) {
   // Close voting and pick the winner by votes
   const finalizeVoting = async () => {
     if (!competition) return false;
-    if (competition.status === "completed") return false;
+    if (competition.status === "completed" || competition.status === "closed") return false;
     const sorted = [...submissions].sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0));
     const winner = sorted[0];
     if (winner) {
@@ -317,7 +323,7 @@ export function useCompetition(idOrSlug: string | undefined) {
         .eq("id", winner.id);
     }
     await supabase.from("competitions")
-      .update({ status: "completed" } as any)
+      .update({ status: winner ? "completed" : "closed" } as any)
       .eq("id", competition.id);
     await fetchAll();
     return true;
