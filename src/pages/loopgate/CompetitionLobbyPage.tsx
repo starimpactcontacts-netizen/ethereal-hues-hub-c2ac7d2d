@@ -898,8 +898,13 @@ export default function CompetitionLobbyPage() {
         )}
 
         {hasSubmitted && (
-          <div className="text-center py-2">
-            <span className="text-xs font-bold text-emerald-400">✓ Edit Submitted</span>
+          <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-3 py-3 text-center">
+            <span className="text-[12px] font-extrabold uppercase tracking-[0.18em] text-emerald-400" style={teko}>Edit Submitted</span>
+            {isLive && (
+              <p className="mt-1 text-[10px] text-foreground/45">
+                Waiting for timer or all edits — {submittedEditorCount}/{totalEditorCount} submitted
+              </p>
+            )}
           </div>
         )}
 
@@ -974,8 +979,8 @@ export default function CompetitionLobbyPage() {
           </div>
         )}
 
-        {/* ═══ LEADERBOARD — once live submissions exist or after voting closes ═══ */}
-        {(isLive || isCompleted) && <CompetitionLeaderboard submissions={submissions} />}
+        {/* ═══ LEADERBOARD — only after editing closes / voting begins ═══ */}
+        {(isVoting || isCompleted) && <CompetitionLeaderboard submissions={submissions} />}
 
         {/* ═══ EDITORS — with ready badges in lobby ═══ */}
         <div>
