@@ -983,19 +983,9 @@ export default function CompetitionLobbyPage() {
               myVoteSubmissionId={myVoteSubmissionId}
               onVote={castVote}
             />
-            {isCreator && (
-              <button
-                onClick={async () => {
-                  const ok = await finalizeVoting();
-                  if (ok) toast.success("Winner crowned 👑");
-                  else toast.error("Couldn't finalize");
-                }}
-                className="w-full py-3 rounded-xl bg-gold text-gold-foreground font-extrabold uppercase tracking-[0.2em] text-[13px] active:scale-[0.98]"
-                style={teko}
-              >
-                Crown Winner & Close Voting
-              </button>
-            )}
+            <p className="text-center text-[10px] uppercase tracking-[0.2em] text-foreground/40" style={teko}>
+              Auto-closes when everyone votes
+            </p>
           </div>
         )}
 
