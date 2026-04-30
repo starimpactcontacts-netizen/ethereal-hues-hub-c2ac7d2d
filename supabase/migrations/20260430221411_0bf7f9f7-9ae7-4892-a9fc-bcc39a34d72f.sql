@@ -1,0 +1,32 @@
+-- Set REPLICA IDENTITY FULL so realtime UPDATE events broadcast the full row,
+-- including status/timer changes that drive UI updates.
+ALTER TABLE public.battles REPLICA IDENTITY FULL;
+ALTER TABLE public.quick_fights REPLICA IDENTITY FULL;
+ALTER TABLE public.sanctioned_tournaments REPLICA IDENTITY FULL;
+ALTER TABLE public.sanctioned_tournament_participants REPLICA IDENTITY FULL;
+ALTER TABLE public.friendly_tournaments REPLICA IDENTITY FULL;
+ALTER TABLE public.friendly_tournament_participants REPLICA IDENTITY FULL;
+ALTER TABLE public.competitions REPLICA IDENTITY FULL;
+ALTER TABLE public.competition_participants REPLICA IDENTITY FULL;
+ALTER TABLE public.competition_submissions REPLICA IDENTITY FULL;
+ALTER TABLE public.cash_battles REPLICA IDENTITY FULL;
+ALTER TABLE public.cash_battle_applications REPLICA IDENTITY FULL;
+ALTER TABLE public.featured_drops REPLICA IDENTITY FULL;
+ALTER TABLE public.featured_submissions REPLICA IDENTITY FULL;
+ALTER TABLE public.featured_drop_queue REPLICA IDENTITY FULL;
+ALTER TABLE public.featured_drop_rounds REPLICA IDENTITY FULL;
+ALTER TABLE public.solo_submissions REPLICA IDENTITY FULL;
+ALTER TABLE public.feed_posts REPLICA IDENTITY FULL;
+ALTER TABLE public.hosted_competitions REPLICA IDENTITY FULL;
+ALTER TABLE public.hosted_competition_participants REPLICA IDENTITY FULL;
+ALTER TABLE public.hosted_competition_submissions REPLICA IDENTITY FULL;
+ALTER TABLE public.event_participations REPLICA IDENTITY FULL;
+ALTER TABLE public.event_rounds REPLICA IDENTITY FULL;
+ALTER TABLE public.practice_matches REPLICA IDENTITY FULL;
+ALTER TABLE public.quick_fight_queue REPLICA IDENTITY FULL;
+ALTER TABLE public.gatekeeper_submissions REPLICA IDENTITY FULL;
+ALTER TABLE public.review_requests REPLICA IDENTITY FULL;
+ALTER TABLE public.judge_inbox REPLICA IDENTITY FULL;
+ALTER TABLE public.battle_invites REPLICA IDENTITY FULL;
+ALTER TABLE public.notifications REPLICA IDENTITY FULL;
+ALTER TABLE public.profiles REPLICA IDENTITY FULL;
