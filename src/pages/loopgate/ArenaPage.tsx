@@ -686,7 +686,6 @@ export default function ArenaPage() {
   const filters: { key: typeof activeFilter; label: string; icon?: React.ReactNode; accent?: string }[] = [
     { key: "all", label: "All" },
     { key: "battles", label: "1v1", icon: <Swords className="w-3.5 h-3.5" />, accent: "red" },
-    { key: "official", label: "King of the Hill", icon: <Crown className="w-3.5 h-3.5" />, accent: "gold" },
     { key: "competitions", label: "Competitions", icon: <Trophy className="w-3.5 h-3.5" /> },
   ];
 
@@ -1397,48 +1396,6 @@ export default function ArenaPage() {
       {arenaView === 'arena' && !loading && (
         <div className="mt-3 space-y-5 max-w-2xl mx-auto">
 
-          {/* King of the Hill — Featured Drops with leaderboard */}
-          {(activeFilter === "all" || activeFilter === "official") && (
-            <motion.section key="official-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <SectionHeader
-                icon={<InfinityIcon className="w-4 h-4 text-gold" />}
-                title="King of the Hill"
-                infoText="30 edits decide the king. Stay #1 on the leaderboard each week to stack XP & Index. More submissions = bigger rewards for the reigning king — until the hill is taken."
-                action={liveDrops.length > 0 ? (
-                  <button
-                    onClick={() => {
-                      const random = liveDrops[Math.floor(Math.random() * liveDrops.length)];
-                      if (random) navigate(`/drop/${random.id}`);
-                    }}
-                    className="flex items-center gap-1.5 text-[10px] font-bold text-foreground bg-surface-2 border border-border rounded-full px-3 py-1 hover:bg-surface-1 transition-all active:scale-95"
-                  >
-                    <Shuffle className="w-3 h-3" />
-                    Join Random
-                  </button>
-                ) : undefined}
-              />
-              {liveDrops.length > 0 ? (
-                <ArenaRail className="pb-1">
-                  {liveDrops.map(drop => (
-                    <ArenaRailCard key={drop.id}>
-                      <FeaturedDropCard drop={drop} />
-                    </ArenaRailCard>
-                  ))}
-                </ArenaRail>
-              ) : (
-                <div className="px-4">
-                  <div className="bg-surface-1 border border-border border-dashed p-8 text-center">
-                    <div className="w-12 h-12 bg-gold/10 border border-gold/20 flex items-center justify-center mx-auto mb-3">
-                      <InfinityIcon className="w-6 h-6 text-gold/30" />
-                    </div>
-                    <p className="text-[13px] text-muted-foreground font-medium">No active King of the Hill</p>
-                    <p className="text-[11px] text-muted-foreground/50 mt-1">New hills drop weekly — stay tuned</p>
-                  </div>
-                </div>
-              )}
-            </motion.section>
-          )}
-
           {/* Competitions */}
           {(activeFilter === "competitions") && (
             <ArenaCompetitionsSection onCreateClick={() => navigate(profile ? '/competition/create' : '/start')} />
@@ -1447,11 +1404,6 @@ export default function ArenaPage() {
           {/* Quick 1v1s section removed — merged into 1v1 Edit Battles */}
 
           {/* 1v1 Battles section removed — merged into Edit Battles above */}
-
-          {/* ═══ SOLO MODE SHOWCASE — at bottom ═══ */}
-          {(activeFilter === "all") && (
-            <SoloShowcase onStartSolo={() => setShowSoloMode(true)} />
-          )}
 
           <div className="h-2" />
         </div>
