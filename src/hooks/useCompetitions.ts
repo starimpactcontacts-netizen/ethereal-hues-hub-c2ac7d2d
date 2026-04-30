@@ -307,7 +307,8 @@ export function useCompetition(idOrSlug: string | undefined) {
 
   // Close voting and pick the winner by votes
   const finalizeVoting = async () => {
-    if (!competition || !isCreator) return false;
+    if (!competition) return false;
+    if (competition.status === "completed") return false;
     const sorted = [...submissions].sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0));
     const winner = sorted[0];
     if (winner) {
