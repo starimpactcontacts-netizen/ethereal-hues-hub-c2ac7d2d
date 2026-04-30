@@ -67,7 +67,7 @@ export function useJudgeVotingQueue() {
         .limit(50),
       supabase
         .from('gatekeeper_submissions')
-        .select('id, user_id, status, created_at, judge_id, editing_style')
+        .select('id, user_id, status, created_at, judge_id, editing_style, submission_url')
         .eq('status', 'pending')
         .is('judge_id', null)
         .order('created_at', { ascending: true })
@@ -82,6 +82,14 @@ export function useJudgeVotingQueue() {
     ]);
 
     const merged: JudgeVoteItem[] = [];
+
+    // Resolve usernames for gatekeeper entries
+    const gateUserIds = Array.from(new Set((gates.data ?? []).map((g: any) => g.user_id).filter(Boolean)));
+    const gateProfiles = gateUserIds.length
+      ? (await supabase.from('profiles').select('id, username, avatar_url').in('id', gateUserIds)).data ?? []
+      : [];
+    const gateProfileMap = new Map<string, { username: string; avatar_url: string | null }>();
+    gateProfiles.forEach((p: any) => gateProfileMap.set(p.id, { username: p.username, avatar_url: p.avatar_url }));
 
     (battles.data ?? []).forEach((b: any) => merged.push({
       id: b.id, source: 'battle',
@@ -140,13 +148,13 @@ export function useJudgeVotingQueue() {
 
     (gates.data ?? []).forEach((g: any) => merged.push({
       id: g.id, source: 'gatekeeper',
-      player_1_username: g.editing_style ? `Style: ${g.editing_style}` : 'Gatekeeper entry',
-      player_1_avatar_url: null,
+      player_1_username: gateProfileMap.get(g.user_id)?.username || 'editor',
+      player_1_avatar_url: gateProfileMap.get(g.user_id)?.avatar_url || null,
       player_2_username: null,
       player_2_avatar_url: null,
       prize_label: '+25 JXP',
       created_at: g.created_at,
-      route: `/judge/queue?focus=${g.id}`,
+      route: `/judge/gatekeeper/${g.id}`,
     }));
 
     (feats.data ?? []).forEach((f: any) => merged.push({

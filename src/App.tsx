@@ -61,6 +61,7 @@ const CashBattlePage = lazy(() => import("./pages/loopgate/CashBattlePage"));
 const EditBattlesHubPage = lazy(() => import("./pages/loopgate/EditBattlesHubPage"));
 const QuickFightPage = lazy(() => import("./pages/loopgate/QuickFightPage"));
 const JudgeQueuePage = lazy(() => import("./pages/loopgate/JudgeQueuePage"));
+const GatekeeperRankPage = lazy(() => import("./pages/loopgate/GatekeeperRankPage"));
 const EnterpriseDashboard = lazy(() => import("./pages/loopgate/EnterpriseDashboard"));
 const ArtistDashboardPage = lazy(() => import("./pages/loopgate/ArtistDashboardPage"));
 const CampaignAdminPage = lazy(() => import("./pages/loopgate/CampaignAdminPage"));
@@ -331,6 +332,7 @@ export default function App() {
               <Route path="/quick-fight" element={<QuickFightPage />} />
               <Route path="/judge-queue" element={<JudgeQueuePage />} />
               <Route path="/competition/:id" element={<CompetitionLobbyPage />} />
+              <Route path="/judge/gatekeeper/:id" element={<GatekeeperRankPage />} />
               <Route path="/judges" element={<JudgeHubPage />} />
               <Route path="/judges/leaderboard" element={<JudgeLeaderboardPage />} />
               <Route path="/judges/apply" element={<JudgeApplicationPage />} />
