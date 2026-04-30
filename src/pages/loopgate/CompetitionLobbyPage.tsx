@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import CompetitionChat from "@/components/loopgate/CompetitionChat";
 import CompetitionLeaderboard from "@/components/loopgate/CompetitionLeaderboard";
 import CompetitionVoting from "@/components/loopgate/CompetitionVoting";
+import CompetitionWinnerCard from "@/components/loopgate/CompetitionWinnerCard";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 
