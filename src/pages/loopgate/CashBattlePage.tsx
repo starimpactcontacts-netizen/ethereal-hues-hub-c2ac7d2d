@@ -84,7 +84,7 @@ export default function CashBattlePage() {
     const channel = supabase
       .channel(`cash-battle-${battleId}`)
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "cash_battles", filter: `id=eq.${battleId}` }, (payload) => {
-        setBattle(payload.new);
+        setBattle((payload.new as any)?.status === "cancelled" ? null : payload.new);
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
@@ -92,6 +92,11 @@ export default function CashBattlePage() {
 
   async function fetchBattle() {
     const { data } = await supabase.from("cash_battles").select("*").eq("id", battleId!).single();
+    if ((data as any)?.status === "cancelled") {
+      setBattle(null);
+      setLoading(false);
+      return;
+    }
     setBattle(data);
     setLoading(false);
     
