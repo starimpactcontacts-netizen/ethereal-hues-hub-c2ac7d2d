@@ -938,8 +938,33 @@ export default function CompetitionLobbyPage() {
           </motion.form>
         )}
 
-        {/* ═══ LEADERBOARD — only when live or judging ═══ */}
-        {!isLobby && <CompetitionLeaderboard submissions={submissions} />}
+        {/* ═══ VOTING PHASE ═══ */}
+        {isVoting && (
+          <div className="space-y-3">
+            <CompetitionVoting
+              submissions={submissions}
+              myUserId={user?.id}
+              myVoteSubmissionId={myVoteSubmissionId}
+              onVote={castVote}
+            />
+            {isCreator && (
+              <button
+                onClick={async () => {
+                  const ok = await finalizeVoting();
+                  if (ok) toast.success("Winner crowned 👑");
+                  else toast.error("Couldn't finalize");
+                }}
+                className="w-full py-3 rounded-xl bg-gold text-gold-foreground font-extrabold uppercase tracking-[0.2em] text-[13px] active:scale-[0.98]"
+                style={teko}
+              >
+                Crown Winner & Close Voting
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* ═══ LEADERBOARD — once live submissions exist or after voting closes ═══ */}
+        {(isLive || isCompleted) && <CompetitionLeaderboard submissions={submissions} />}
 
         {/* ═══ EDITORS — with ready badges in lobby ═══ */}
         <div>
