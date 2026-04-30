@@ -526,29 +526,37 @@ export default function CompetitionLobbyPage() {
           </motion.div>
         )}
 
-        {/* ═══ PRIMARY ACTION ═══ */}
-        {isCreator && isLobby && (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+        {/* ═══ READY UP — lobby state, both joined editors can ready ═══ */}
+        {isLobby && hasJoined && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-1.5">
             <button
-              onClick={handleStart}
-              disabled={!canStart || isStarting}
-              className="w-full py-3.5 rounded-xl flex items-center justify-center gap-2.5 transition-all disabled:opacity-20 disabled:cursor-not-allowed"
+              onClick={handleReady}
+              disabled={isReadying}
+              className="w-full py-3.5 rounded-xl flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] disabled:opacity-50"
               style={{
-                background: canStart ? "linear-gradient(135deg, #10B981, #059669)" : "rgba(255,255,255,0.04)",
-                color: canStart ? "#fff" : "rgba(255,255,255,0.3)",
-                boxShadow: canStart ? "0 4px 24px rgba(16,185,129,0.3)" : "none",
+                background: isReady
+                  ? "rgba(16,185,129,0.12)"
+                  : "linear-gradient(135deg, #10B981, #059669)",
+                color: isReady ? "#10B981" : "#fff",
+                border: isReady ? "1px solid rgba(16,185,129,0.4)" : "none",
+                boxShadow: isReady ? "none" : "0 4px 24px rgba(16,185,129,0.3)",
                 ...teko,
               }}
             >
-              {isStarting ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+              {isReadying ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                 <>
-                  <Play className="w-4 h-4" />
+                  {isReady ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
                   <span className="text-[16px] font-extrabold uppercase tracking-[0.15em]">
-                    {canStart ? "START COMPETITION" : `NEED ${2 - competition.current_players} MORE TO START`}
+                    {isReady ? "READY — TAP TO UNREADY" : "READY UP"}
                   </span>
                 </>
               )}
             </button>
+            <p className="text-[10px] text-center text-muted-foreground/50">
+              {competition.current_players < 2
+                ? `Waiting for 1 more editor — share the lobby`
+                : `${readyCount}/${competition.current_players} ready · starts when everyone's ready`}
+            </p>
           </motion.div>
         )}
 
