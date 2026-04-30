@@ -1,0 +1,1 @@
+SELECT public.finalize_expired_competitions();
