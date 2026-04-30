@@ -556,8 +556,7 @@ export default function CashBattlesSection({
   const accountPrompt = useAccountPrompt();
   const [pendingApps, setPendingApps] = useState<CashBattleApplication[]>([]);
   const { entries: openQueue, loading: openQueueLoading } = useOpenQuickFightQueue();
-  const liveQuickFightStatuses = new Set(['waiting', 'active', 'submitted', 'judging']);
-  const endedBattleStatuses = new Set(['completed', 'cancelled', 'forfeited', 'ended']);
+  const endedBattleStatuses = new Set(['completed', 'forfeited', 'ended']);
 
   // Fetch pending applications with realtime subscription for instant updates
   useEffect(() => {
@@ -729,6 +728,7 @@ export default function CashBattlesSection({
         {/* Edit Battle cards — live ones first, ended ones DEPRIORITIZED to the right (still visible). */}
         {[...myQuickFights, ...quickFights]
           .filter((fight, index, all) =>
+            fight.status !== 'cancelled' &&
             all.findIndex((item) => item.id === fight.id) === index
           )
           .sort((a, b) => {
@@ -755,6 +755,7 @@ export default function CashBattlesSection({
 
         {/* Ranked IDX 1v1 battles — surfaced FIRST to drive non-cash activity */}
         {renderIdxBattleCard && [...idxBattles]
+          .filter((battle: any) => battle.status !== 'cancelled')
           .sort((a: any, b: any) => {
             const now = Date.now();
             const isTimeEnded = (x: any) =>
@@ -789,6 +790,7 @@ export default function CashBattlesSection({
 
         {/* Existing battles — show live first; ended deprioritized to the right */}
         {battles
+          .filter((battle) => battle.status !== 'cancelled')
           .sort((a, b) => {
             // Prioritize battles with an active countdown (live + ends_at in the future).
             // Newest live battles surface first; dead/expired/completed get pushed to the far right.
