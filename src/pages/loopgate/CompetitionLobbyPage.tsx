@@ -135,12 +135,12 @@ export default function CompetitionLobbyPage() {
     setIsJoining(false);
   };
 
-  const handleStart = async () => {
-    setIsStarting(true);
-    const ok = await start();
-    if (ok) toast.success("Competition is LIVE!");
-    else toast.error("Failed to start");
-    setIsStarting(false);
+  const handleReady = async () => {
+    if (!user) { navigate("/start"); return; }
+    setIsReadying(true);
+    const ok = await toggleReady();
+    if (!ok) toast.error("Couldn't update ready state");
+    setIsReadying(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
