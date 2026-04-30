@@ -1045,22 +1045,6 @@ export default function HubPage() {
                   </div>
                   {quickAction === 'multiplayer' && <Check className="w-3.5 h-3.5 text-purple-400" />}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setQuickAction('mission')} className="flex items-center gap-2 cursor-pointer">
-                  <Crosshair className="w-4 h-4 text-emerald-400" />
-                  <div className="flex-1">
-                    <span className="text-sm font-semibold">Mission Edit</span>
-                    <span className="text-[10px] text-emerald-400 ml-1.5">GET PAID</span>
-                  </div>
-                  {quickAction === 'mission' && <Check className="w-3.5 h-3.5 text-emerald-400" />}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setQuickAction('solo')} className="flex items-center gap-2 cursor-pointer">
-                  <UserRound className="w-4 h-4 text-gold" />
-                  <div className="flex-1">
-                    <span className="text-sm font-semibold">Solo Edit</span>
-                     <span className="text-[10px] text-gold ml-1.5">UP TO 10K IDX</span>
-                  </div>
-                  {quickAction === 'solo' && <Check className="w-3.5 h-3.5 text-gold" />}
-                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
