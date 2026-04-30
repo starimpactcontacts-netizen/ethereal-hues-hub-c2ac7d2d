@@ -1348,26 +1348,7 @@ export default function ArenaPage() {
 
           {/* Marketplace removed */}
 
-          {/* ═══ FILTER PILLS — small rounded ═══ */}
-          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide pb-1 px-4">
-            {filters.map(f => {
-              const active = activeFilter === f.key;
-              return (
-                <button
-                  key={f.key}
-                  onClick={() => setActiveFilter(f.key)}
-                  className={`px-2.5 py-1 text-[10px] font-semibold rounded-full transition-all flex items-center gap-1 shrink-0 touch-manipulation ${
-                    active
-                      ? "bg-foreground text-background"
-                      : "bg-surface-1 text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {f.icon}
-                  {f.label}
-                </button>
-              );
-            })}
-          </div>
+          {/* Filter pills moved to top */}
           </>
           )}
         </div>
