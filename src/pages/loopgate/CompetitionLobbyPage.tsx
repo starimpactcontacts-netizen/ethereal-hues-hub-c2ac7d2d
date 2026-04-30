@@ -15,6 +15,7 @@ import { useAutoplayVideo } from "@/hooks/useAutoplayVideo";
 import { supabase } from "@/integrations/supabase/client";
 import CompetitionChat from "@/components/loopgate/CompetitionChat";
 import CompetitionLeaderboard from "@/components/loopgate/CompetitionLeaderboard";
+import CompetitionVoting from "@/components/loopgate/CompetitionVoting";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 
@@ -58,7 +59,9 @@ export default function CompetitionLobbyPage() {
   const {
     competition, participants, submissions, loading,
     isCreator, hasJoined, hasSubmitted, hasUpvoted, isReady, readyCount,
+    myVoteSubmissionId,
     join, submit, toggleUpvote, updateInspo, toggleReady, leave,
+    startVoting, castVote, finalizeVoting,
   } = useCompetition(id);
 
   
@@ -124,6 +127,8 @@ export default function CompetitionLobbyPage() {
 
   const isLobby = competition.status === "lobby";
   const isLive = competition.status === "live";
+  const isVoting = competition.status === "voting";
+  const isCompleted = competition.status === "completed";
   const deadlinePassed = competition.deadline ? isPast(new Date(competition.deadline)) : false;
   const canSubmit = isLive && !deadlinePassed && hasJoined && !hasSubmitted;
   const canStart = isCreator && isLobby && competition.current_players >= 2;
