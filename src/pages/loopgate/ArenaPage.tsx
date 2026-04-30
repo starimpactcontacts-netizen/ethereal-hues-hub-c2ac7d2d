@@ -1335,6 +1335,9 @@ export default function ArenaPage() {
             <CashBattlesSection
               idxBattles={battles}
               idxBattlesLoading={battlesLoading}
+              quickFights={quickFights}
+              myQuickFights={myQuickFights}
+              quickFightsLoading={quickLoading}
               renderIdxBattleCard={(battle) => (
                 <BattleCard battle={battle} onClick={() => navigate(`/battle/${battle.id}`)} />
               )}
