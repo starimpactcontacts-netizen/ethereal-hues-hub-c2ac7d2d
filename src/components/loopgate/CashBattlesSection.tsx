@@ -555,7 +555,9 @@ export default function CashBattlesSection({
   const { isGuest } = useGuestMode();
   const accountPrompt = useAccountPrompt();
   const [pendingApps, setPendingApps] = useState<CashBattleApplication[]>([]);
-  const { entries: openQueue } = useOpenQuickFightQueue();
+  const { entries: openQueue, loading: openQueueLoading } = useOpenQuickFightQueue();
+  const liveQuickFightStatuses = new Set(['waiting', 'active', 'submitted', 'judging']);
+  const endedBattleStatuses = new Set(['completed', 'cancelled', 'forfeited', 'ended']);
 
   // Fetch pending applications with realtime subscription for instant updates
   useEffect(() => {
@@ -687,12 +689,12 @@ export default function CashBattlesSection({
       )}
 
       {/* Horizontal scroll — open matchups first, then existing battles */}
-      {(loading || idxBattlesLoading || quickFightsLoading) ? <ArenaRailSkeleton count={3} /> : <ArenaRail>
+      {(loading || idxBattlesLoading || quickFightsLoading || openQueueLoading) ? <ArenaRailSkeleton count={3} /> : <ArenaRail key={`queue-first-${openQueue.map((entry) => entry.id).join('-')}`}>
         {/* Open Quick-Fight queue cards — ABSOLUTE LEFTMOST so new users find joinable matchmaking instantly */}
         {[...openQueue]
           .sort((a, b) => {
-            const aOwn = user?.id === a.user_id ? 0 : 1;
-            const bOwn = user?.id === b.user_id ? 0 : 1;
+            const aOwn = user?.id === a.user_id ? 1 : 0;
+            const bOwn = user?.id === b.user_id ? 1 : 0;
             return aOwn - bOwn;
           })
           .map((entry) => {
@@ -727,9 +729,7 @@ export default function CashBattlesSection({
         {/* Active/live Edit Battle cards — after joinable slots. Completed/cancelled are EXCLUDED (live in Hall of Fame). */}
         {[...myQuickFights, ...quickFights]
           .filter((fight, index, all) =>
-            fight.status !== 'cancelled' &&
-            fight.status !== 'completed' &&
-            fight.status !== 'forfeited' &&
+            liveQuickFightStatuses.has(fight.status) &&
             all.findIndex((item) => item.id === fight.id) === index
           )
           .sort((a, b) => {
@@ -755,6 +755,10 @@ export default function CashBattlesSection({
 
         {/* Ranked IDX 1v1 battles — surfaced FIRST to drive non-cash activity */}
         {renderIdxBattleCard && [...idxBattles]
+          .filter((battle) => {
+            const timeEnded = battle.ends_at ? new Date(battle.ends_at).getTime() < Date.now() : false;
+            return !endedBattleStatuses.has(battle.status) && !(battle.status === 'active' && timeEnded);
+          })
           .sort((a: any, b: any) => {
             const now = Date.now();
             const isTimeEnded = (x: any) =>
@@ -787,7 +791,7 @@ export default function CashBattlesSection({
 
         {/* Existing battles — hide cancelled, show live first */}
         {battles
-          .filter((b) => b.status !== 'cancelled')
+          .filter((b) => !endedBattleStatuses.has(b.status))
           .sort((a, b) => {
             // Prioritize battles with an active countdown (live + ends_at in the future).
             // Newest live battles surface first; dead/expired/completed get pushed to the far right.
