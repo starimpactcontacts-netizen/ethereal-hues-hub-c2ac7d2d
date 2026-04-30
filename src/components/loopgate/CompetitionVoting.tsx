@@ -241,6 +241,7 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
             const isMyVote = myVoteSubmissionId === sub.id;
             const isCasting = castingId === sub.id;
             const direct = isDirectVideo(sub.submission_url);
+            const image = isImageFile(sub.submission_url);
 
             return (
               <button
@@ -257,6 +258,8 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
               >
                 {direct ? (
                   <video src={sub.submission_url} muted playsInline className="w-full h-full object-cover" />
+                ) : image ? (
+                  <img src={sub.submission_url} alt={`${sub.username} submission`} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-white/[0.04] to-black flex items-center justify-center">
                     <Play className="w-8 h-8 text-white/40" />
