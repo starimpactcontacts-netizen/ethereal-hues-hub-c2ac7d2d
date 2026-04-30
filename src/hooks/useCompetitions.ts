@@ -152,7 +152,17 @@ export function useCompetition(idOrSlug: string | undefined) {
       .on("postgres_changes", { event: "*", schema: "public", table: "competition_submissions" }, () => fetchAll())
       .on("postgres_changes", { event: "*", schema: "public", table: "competition_votes" }, () => fetchAll())
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    // Fallback polling — realtime can drop on mobile/background tabs and
+    // users get stuck on the "Awaiting Start" screen when the host already kicked off.
+    const poll = window.setInterval(fetchAll, 4000);
+    // Also refetch the moment the tab becomes visible again
+    const onVisible = () => { if (document.visibilityState === "visible") fetchAll(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      supabase.removeChannel(channel);
+      window.clearInterval(poll);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [idOrSlug, user?.id]);
 
   const isCreator = user?.id === competition?.creator_id;
