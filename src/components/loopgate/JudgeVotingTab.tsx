@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import { useJudgeVotingQueue, type BattleSource } from '@/hooks/useJudgeVotingQueue';
+import JudgeBattleCardGenerator from './JudgeBattleCardGenerator';
 
 const SOURCE_META: Record<BattleSource, { label: string; icon: typeof Swords; tone: string; ring: string }> = {
   battle:       { label: '1V1 BATTLE',  icon: Swords,     tone: 'text-blue-400',    ring: 'border-blue-500/40' },
@@ -186,6 +187,9 @@ export default function JudgeVotingTab() {
           Cash battles & competitions pay <span className="text-emerald-400 font-bold">bonus</span>
         </p>
       </div>
+
+      {/* 1v1 Winner Card generator */}
+      <JudgeBattleCardGenerator />
     </div>
   );
 }
