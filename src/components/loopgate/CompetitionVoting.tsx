@@ -22,6 +22,10 @@ function isDirectVideo(url: string) {
   return /\.(mp4|webm|mov|m4v)(\?|$)/i.test(url);
 }
 
+function isImageFile(url: string) {
+  return /\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(url);
+}
+
 export default function CompetitionVoting({ submissions, myUserId, myVoteSubmissionId, onVote }: Props) {
   // Order: stable by created_at then id
   const ordered = useMemo(
@@ -98,6 +102,7 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
   // ─────────── WATCHING PHASE ───────────
   if (phase === "watching" && current) {
     const direct = isDirectVideo(current.submission_url);
+    const image = isImageFile(current.submission_url);
     const progressPct = ((PER_EDIT_SECONDS - secondsLeft) / PER_EDIT_SECONDS) * 100;
 
     return (
@@ -155,6 +160,12 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
                 playsInline
                 loop
                 muted={false}
+              />
+            ) : image ? (
+              <img
+                src={current.submission_url}
+                alt={`${current.username} submission`}
+                className="w-full h-full object-contain bg-black"
               />
             ) : (
               <a
