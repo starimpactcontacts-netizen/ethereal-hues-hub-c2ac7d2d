@@ -77,12 +77,23 @@ export function useMyCompetitionReminders() {
         return acc;
       }, {});
       const now = Date.now();
+      const shouldFinalize = (comp: any) => {
+        const count = submissionCounts[comp.id] || 0;
+        const deadline = comp.deadline ? new Date(comp.deadline).getTime() : 0;
+        const votingDeadline = comp.voting_deadline ? new Date(comp.voting_deadline).getTime() : 0;
+        return (comp.status === "live" && deadline > 0 && deadline <= now) ||
+          (comp.status === "voting" && (count <= 1 || !votingDeadline || votingDeadline <= now));
+      };
+      const staleComps = (comps || []).filter(shouldFinalize);
+      if (staleComps.length > 0) {
+        await Promise.all(staleComps.map((comp) => supabase.rpc("finalize_competition_if_expired" as any, { p_competition_id: comp.id } as any)));
+      }
 
       setCompetitions(
         (comps || [])
           .filter((comp) => {
+            if (shouldFinalize(comp)) return false;
             const endsAt = comp.status === "voting" ? (comp as any).voting_deadline : comp.deadline;
-            if (comp.status === "voting" && (!endsAt || new Date(endsAt).getTime() <= now || (submissionCounts[comp.id] || 0) === 0)) return false;
             return true;
           })
           .map((comp) => ({
