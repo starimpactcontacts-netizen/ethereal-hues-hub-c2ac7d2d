@@ -806,7 +806,7 @@ export default function HubPage() {
         ];
         return items.length > 0 && !dismissedBanners.battles ? (
           <div className="px-4 mt-2">
-            <LiveBattleReminders items={items} compact />
+            <LiveBattleReminders items={items} />
           </div>
         ) : null;
       })()}
