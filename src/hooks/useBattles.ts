@@ -54,6 +54,7 @@ export function useBattles(statuses?: string[]) {
       let query = supabase
         .from('battles')
         .select('*')
+        .neq('status', 'cancelled')
         .order('created_at', { ascending: false });
 
       if (statuses && statuses.length > 0) {
@@ -168,6 +169,7 @@ export function useMyBattles() {
         .from('battles')
         .select('*')
         .or(`challenger_id.eq.${user.id},opponent_id.eq.${user.id}`)
+        .neq('status', 'cancelled')
         .order('created_at', { ascending: false });
 
       if (!error && data) {
