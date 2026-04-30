@@ -649,32 +649,21 @@ export default function CashBattlesSection({
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <button
-            onClick={handleEnter}
-            className="relative flex items-center gap-0.5 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-300 rounded-md border border-emerald-500/30 bg-emerald-500/[0.08] hover:bg-emerald-500/[0.15] transition-colors whitespace-nowrap"
+            type="button"
+            disabled
+            onClick={() => toast.info("Ranked battles — coming soon")}
+            className="flex items-center gap-1 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-zinc-400 rounded-md border border-white/10 bg-white/[0.03] whitespace-nowrap cursor-not-allowed opacity-70"
           >
-            <DollarSign className="w-3 h-3" />
-            Cash
-            {pendingApps.length > 0 && (
-              <span className="ml-0.5 min-w-[14px] h-[14px] px-1 rounded-full bg-amber-400 text-black text-[9px] font-black flex items-center justify-center">
-                {pendingApps.length}
-              </span>
-            )}
+            <Swords className="w-3 h-3" />
+            Ranked
+            <span className="ml-1 text-[8px] font-bold text-amber-400/80 normal-case tracking-normal">Soon</span>
           </button>
-          {onChallenge && (
-            <button
-              onClick={onChallenge}
-              className="flex items-center gap-0.5 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-red-300 rounded-md border border-red-500/30 bg-red-500/[0.08] hover:bg-red-500/[0.15] transition-colors whitespace-nowrap"
-            >
-              <Swords className="w-3 h-3" />
-              Fight
-            </button>
-          )}
           <button
             onClick={() => navigate('/edit-battles')}
             className="flex items-center text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors px-1 whitespace-nowrap"
             aria-label="View all edit battles"
           >
-            All
+            View All
             <ChevronRight className="w-3 h-3" />
           </button>
         </div>
