@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause, ChevronRight, Trophy, Check, Loader2, SkipForward, Crown, Volume2 } from "lucide-react";
+import { Play, Pause, ChevronRight, Check, Loader2, SkipForward, Crown, Volume2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { CompetitionSubmission } from "@/hooks/useCompetitions";
 import { toast } from "sonner";
