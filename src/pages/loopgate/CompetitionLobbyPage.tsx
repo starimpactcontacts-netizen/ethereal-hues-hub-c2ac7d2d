@@ -79,6 +79,7 @@ export default function CompetitionLobbyPage() {
   const chatRef = useRef<HTMLDivElement>(null);
   const inspoVideoRef = useAutoplayVideo(true);
   const [inspoMuted, setInspoMuted] = useState(true);
+  const [showWinnerCard, setShowWinnerCard] = useState(false);
 
   const toggleInspoMute = () => {
     const v = inspoVideoRef.current;
