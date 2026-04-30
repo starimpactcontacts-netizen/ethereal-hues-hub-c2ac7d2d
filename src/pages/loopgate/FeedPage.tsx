@@ -380,13 +380,16 @@ export default function FeedPage() {
             )}
 
             {activeTab === 'posts' ? (
-              feedPosts.length === 0 ? (
+              (() => {
+                const visiblePosts = user ? feedPosts.filter(p => p.user_id !== user.id) : feedPosts;
+                return visiblePosts.length === 0 ? (
                 <EmptyState icon={<PenSquare className="w-6 h-6 text-muted-foreground/30" />} title="No loops yet" subtitle="Be the first — share a flex, an edit, or just say what's on your mind." />
               ) : (
-                feedPosts.map(post => (
+                visiblePosts.map(post => (
                   <FeedPostCard key={post.id} post={post} isLiked={likedPostIds.has(post.id)} isBookmarked={bookmarkedPostIds.has(post.id)} onLike={toggleLike} onBookmark={toggleBookmark} onDelete={deletePost} reactions={reactions[post.id] || []} onToggleReaction={toggleReaction} />
                 ))
-              )
+                );
+              })()
             ) : activeTab === 'foryou' && interleavedFeed ? (
               interleavedFeed.length === 0 ? (
                 <EmptyState icon={<Play className="w-6 h-6 text-muted-foreground/30" />} title="The Loop is quiet" subtitle="Drop a loop or submit an edit to get things moving" />
