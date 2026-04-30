@@ -658,14 +658,6 @@ export default function CashBattlesSection({
             Ranked
             <span className="ml-1 text-[8px] font-bold text-amber-400/80 normal-case tracking-normal">Soon</span>
           </button>
-          <button
-            onClick={() => navigate('/edit-battles')}
-            className="flex items-center text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors px-1 whitespace-nowrap"
-            aria-label="View all edit battles"
-          >
-            View All
-            <ChevronRight className="w-3 h-3" />
-          </button>
         </div>
       </div>
 
@@ -689,34 +681,7 @@ export default function CashBattlesSection({
 
       {/* Horizontal scroll — open matchups first, then existing battles */}
       {(loading || idxBattlesLoading || quickFightsLoading || openQueueLoading) ? <ArenaRailSkeleton count={3} /> : <ArenaRail key={`queue-first-${openQueue.map((entry) => entry.id).join('-')}`}>
-        {/* Open Quick-Fight queue cards — ABSOLUTE LEFTMOST so new users find joinable matchmaking instantly */}
-        {[...openQueue]
-          .sort((a, b) => {
-            const aOwn = user?.id === a.user_id ? 1 : 0;
-            const bOwn = user?.id === b.user_id ? 1 : 0;
-            return aOwn - bOwn;
-          })
-          .map((entry) => {
-            const isOwn = user?.id === entry.user_id;
-            return (
-              <ArenaRailCard key={`q-${entry.id}`}>
-                <OpenQueueCard
-                  entry={entry}
-                  isOwn={isOwn}
-                  onAccept={() => {
-                    if (isGuest) { accountPrompt.open('enter_battle' as any); return; }
-                    onQuickFight?.();
-                  }}
-                  onCancel={async () => {
-                    if (!user?.id) return;
-                    await leaveQueue(user.id);
-                    onCancelQueue?.();
-                    toast.info('Queue cancelled');
-                  }}
-                />
-              </ArenaRailCard>
-            );
-          })}
+        {/* Open Quick-Fight queue cards removed per request */}
 
         {/* Open cash matchup cards — second priority (joinable) */}
         {pendingApps.map((app) => (

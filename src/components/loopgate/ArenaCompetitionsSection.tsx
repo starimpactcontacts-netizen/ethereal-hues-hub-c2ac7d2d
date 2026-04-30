@@ -144,12 +144,21 @@ export default function ArenaCompetitionsSection({ onCreateClick, hideHeader = f
               <Info className="w-3 h-3 text-gold" strokeWidth={2.5} />
             </button>
           </div>
-          <button
-            onClick={onCreateClick}
-            className="flex items-center gap-1 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-gold border border-gold/20 hover:bg-gold/10 rounded transition-colors"
-          >
-            <Plus className="w-3 h-3" /> Create
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => navigate('/competitions')}
+              className="flex items-center text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors px-1 whitespace-nowrap"
+              aria-label="View all competitions"
+            >
+              View All
+            </button>
+            <button
+              onClick={onCreateClick}
+              className="flex items-center gap-1 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-gold border border-gold/20 hover:bg-gold/10 rounded transition-colors"
+            >
+              <Plus className="w-3 h-3" /> Create
+            </button>
+          </div>
         </div>
       )}
 
