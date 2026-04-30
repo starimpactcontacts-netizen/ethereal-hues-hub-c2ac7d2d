@@ -176,6 +176,18 @@ export function useCompetition(idOrSlug: string | undefined) {
     return true;
   };
 
+  const leave = async () => {
+    if (!user || !competition) return false;
+    const { error } = await supabase
+      .from("competition_participants")
+      .delete()
+      .eq("competition_id", competition.id)
+      .eq("user_id", user.id);
+    if (error) return false;
+    await fetchAll();
+    return true;
+  };
+
   const start = async () => {
     if (!competition || !isCreator) return false;
     const { error } = await supabase.from("competitions").update({
@@ -239,6 +251,6 @@ export function useCompetition(idOrSlug: string | undefined) {
   return {
     competition, participants, submissions, loading,
     isCreator, hasJoined, hasSubmitted, hasUpvoted, isReady, readyCount,
-    join, start, submit, toggleUpvote, updateInspo, toggleReady, refetch: fetchAll,
+    join, start, submit, toggleUpvote, updateInspo, toggleReady, leave, refetch: fetchAll,
   };
 }
