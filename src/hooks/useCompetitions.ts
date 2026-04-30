@@ -340,16 +340,18 @@ export function useCompetition(idOrSlug: string | undefined) {
       await fetchAll();
       return true;
     }
-    const sorted = [...submissions].sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0));
-    const winner = sorted[0];
-    if (winner) {
+    const topVotes = submissions.reduce((m, s) => Math.max(m, s.vote_count || 0), 0);
+    const winners = submissions.filter(s => (s.vote_count || 0) === topVotes && submissions.length > 0);
+    if (winners.length > 0) {
       await supabase.from("competition_submissions")
         .update({ is_winner: true, winner_place: 1, scored_at: new Date().toISOString() } as any)
-        .eq("id", winner.id);
+        .in("id", winners.map(w => w.id));
     }
     await supabase.from("competitions")
-      .update({ status: winner ? "completed" : "closed" } as any)
+      .update({ status: winners.length > 0 ? "completed" : "closed" } as any)
       .eq("id", competition.id);
+    // Pay out XP + Index (split equally on ties). Idempotent server-side.
+    await supabase.rpc("award_competition_rewards" as any, { p_competition_id: competition.id } as any);
     await fetchAll();
     return true;
   };
