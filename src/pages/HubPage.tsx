@@ -200,7 +200,7 @@ export default function HubPage() {
   const [ringsOpen, setRingsOpen] = useState(false);
   const [judgeReviewCount, setJudgeReviewCount] = useState(0);
   const [userCrew, setUserCrew] = useState<UserCrew | null>(null);
-  const [quickAction, setQuickAction] = useState<'edit_battle' | 'mission' | 'solo'>('edit_battle');
+  const [quickAction, setQuickAction] = useState<'edit_battle' | 'mission' | 'solo' | 'multiplayer'>('edit_battle');
   const [qfSearching, setQfSearching] = useState(false);
   const [qfElapsed, setQfElapsed] = useState(0);
   const [qfTipIdx, setQfTipIdx] = useState(0);
@@ -827,7 +827,9 @@ export default function HubPage() {
                 ? '16,185,129' // emerald
                 : quickAction === 'solo'
                   ? '245,158,11' // amber/gold
-                  : '239,68,68'; // red
+                  : quickAction === 'multiplayer'
+                    ? '168,85,247' // purple
+                    : '239,68,68'; // red
             return (
           <div className="relative rounded-[20px]">
             {/* Subtle ambient glow — soft, not aggressive */}
@@ -873,6 +875,22 @@ export default function HubPage() {
                   navigate('/commissions/414605a8-ac2f-4ab5-9955-15339ba4633c');
                 } else if (quickAction === 'solo') {
                   navigate('/arena?mode=solo&auto=1');
+                } else if (quickAction === 'multiplayer') {
+                  // Find an open lobby that isn't full and drop the user straight in.
+                  const { data: openLobbies } = await supabase
+                    .from('competitions')
+                    .select('id, slug, current_players, max_players')
+                    .eq('status', 'lobby')
+                    .order('current_players', { ascending: false })
+                    .limit(20);
+                  const joinable = (openLobbies || []).find(
+                    (c: any) => (c.current_players ?? 0) < (c.max_players ?? 0)
+                  );
+                  if (joinable) {
+                    navigate(`/competition/${joinable.slug || joinable.id}`);
+                  } else {
+                    navigate('/competitions');
+                  }
                 }
               }}
               className={cn(
@@ -883,7 +901,9 @@ export default function HubPage() {
                     ? ""
                     : quickAction === 'solo'
                       ? ""
-                      : "bg-gradient-to-r from-red-600 via-red-500 to-red-600"
+                      : quickAction === 'multiplayer'
+                        ? ""
+                        : "bg-gradient-to-r from-red-600 via-red-500 to-red-600"
               )}
               style={quickAction === 'edit_battle' ? {
                 background: 'radial-gradient(120% 140% at 0% 0%, rgba(59,130,246,0.18) 0%, rgba(0,0,0,0) 55%), linear-gradient(180deg, #0a0a0c 0%, #050507 100%)',
@@ -891,6 +911,8 @@ export default function HubPage() {
                 background: 'radial-gradient(120% 140% at 0% 0%, rgba(16,185,129,0.18) 0%, rgba(0,0,0,0) 55%), linear-gradient(180deg, #0a0a0c 0%, #050507 100%)',
               } : quickAction === 'solo' ? {
                 background: 'radial-gradient(120% 140% at 0% 0%, rgba(245,158,11,0.18) 0%, rgba(0,0,0,0) 55%), linear-gradient(180deg, #0a0a0c 0%, #050507 100%)',
+              } : quickAction === 'multiplayer' ? {
+                background: 'radial-gradient(120% 140% at 0% 0%, rgba(168,85,247,0.20) 0%, rgba(0,0,0,0) 55%), linear-gradient(180deg, #0a0a0c 0%, #050507 100%)',
               } : undefined}
             >
                {/* Subtle shine sweep — seamless, slow */}
@@ -938,6 +960,18 @@ export default function HubPage() {
                       <span className="text-[9px] text-white/60 font-bold tracking-wider">EARN UP TO 10K INDEX</span>
                   </div>
                 </>
+              ) : quickAction === 'multiplayer' ? (
+                <>
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-white/30 to-white/10 flex items-center justify-center relative z-10 border border-white/40 shadow-lg shadow-black/20">
+                    <Users className="w-4.5 h-4.5 text-white drop-shadow-lg" />
+                  </div>
+                  <div className="flex flex-col relative z-10">
+                    <span className="text-[28px] font-bold text-white uppercase tracking-wider leading-none drop-shadow-lg" style={{ fontFamily: 'Teko, sans-serif' }}>
+                      Multiplayer
+                    </span>
+                    <span className="text-[9px] text-white/70 font-bold tracking-wider">JUMP INTO OPEN LOBBY</span>
+                  </div>
+                </>
               ) : qfIsSearching ? (
                 <>
                   <Loader2 className="w-5 h-5 text-white animate-spin relative z-10" />
@@ -983,9 +1017,11 @@ export default function HubPage() {
                         ? "hover:brightness-110 border-white/10"
                         : quickAction === 'solo'
                           ? "hover:brightness-110 border-white/10"
-                          : "bg-red-700/80 hover:bg-red-600/80 border-red-900/40"
+                          : quickAction === 'multiplayer'
+                            ? "hover:brightness-110 border-white/10"
+                            : "bg-red-700/80 hover:bg-red-600/80 border-red-900/40"
                   )}
-                  style={quickAction === 'edit_battle' ? { background: '#050507' } : quickAction === 'mission' ? { background: '#050507' } : quickAction === 'solo' ? { background: '#050507' } : undefined}
+                  style={quickAction === 'edit_battle' ? { background: '#050507' } : quickAction === 'mission' ? { background: '#050507' } : quickAction === 'solo' ? { background: '#050507' } : quickAction === 'multiplayer' ? { background: '#050507' } : undefined}
                 >
                    <ChevronDown className="w-5 h-5 text-white/90 relative z-10" />
                  </button>
@@ -1016,6 +1052,14 @@ export default function HubPage() {
                      <span className="text-[10px] text-gold ml-1.5">UP TO 10K IDX</span>
                   </div>
                   {quickAction === 'solo' && <Check className="w-3.5 h-3.5 text-gold" />}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setQuickAction('multiplayer')} className="flex items-center gap-2 cursor-pointer">
+                  <Users className="w-4 h-4 text-purple-400" />
+                  <div className="flex-1">
+                    <span className="text-sm font-semibold">Multiplayer</span>
+                    <span className="text-[10px] text-purple-400 ml-1.5">OPEN LOBBY</span>
+                  </div>
+                  {quickAction === 'multiplayer' && <Check className="w-3.5 h-3.5 text-purple-400" />}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
