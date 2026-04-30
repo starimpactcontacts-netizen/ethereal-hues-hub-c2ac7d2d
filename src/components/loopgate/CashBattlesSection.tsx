@@ -562,6 +562,7 @@ export default function CashBattlesSection({
   const { isGuest } = useGuestMode();
   const accountPrompt = useAccountPrompt();
   const [pendingApps, setPendingApps] = useState<CashBattleApplication[]>([]);
+  const removedPendingAppIds = useRef(new Set<string>());
   const { entries: openQueue, loading: openQueueLoading } = useOpenQuickFightQueue();
   const endedBattleStatuses = new Set(['completed', 'forfeited', 'ended']);
 
@@ -574,7 +575,10 @@ export default function CashBattlesSection({
         .eq('status', 'pending')
         .order('created_at', { ascending: true });
 
-      setPendingApps((data as CashBattleApplication[] | null) || []);
+      const visiblePendingApps = ((data as CashBattleApplication[] | null) || []).filter(
+        (app) => !removedPendingAppIds.current.has(app.id)
+      );
+      setPendingApps(visiblePendingApps);
     }
     fetchPending();
 
@@ -728,7 +732,15 @@ export default function CashBattlesSection({
         {/* Open cash matchup cards — second priority (joinable) */}
         {pendingApps.map((app) => (
           <ArenaRailCard key={app.id}>
-            <OpenMatchupCard app={app} onJoin={() => handleAcceptFight(app)} currentUserId={user?.id} />
+            <OpenMatchupCard
+              app={app}
+              onJoin={() => handleAcceptFight(app)}
+              onRemoved={(id) => {
+                removedPendingAppIds.current.add(id);
+                setPendingApps((current) => current.filter((pendingApp) => pendingApp.id !== id));
+              }}
+              currentUserId={user?.id}
+            />
           </ArenaRailCard>
         ))}
 
