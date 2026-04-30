@@ -726,15 +726,15 @@ export default function CashBattlesSection({
           </ArenaRailCard>
         ))}
 
-        {/* Active/live Edit Battle cards — after joinable slots. Completed/cancelled are EXCLUDED (live in Hall of Fame). */}
+        {/* Edit Battle cards — live ones first, ended ones DEPRIORITIZED to the right (still visible). */}
         {[...myQuickFights, ...quickFights]
           .filter((fight, index, all) =>
-            liveQuickFightStatuses.has(fight.status) &&
             all.findIndex((item) => item.id === fight.id) === index
           )
           .sort((a, b) => {
             const owned = (x: QuickFight) => user?.id && (x.player_1_id === user.id || x.player_2_id === user.id) ? 0 : 1;
             const rank = (x: QuickFight) => {
+              if (endedBattleStatuses.has(x.status)) return 10; // ended → far right
               if (owned(x) === 0) return 0;
               if (x.status === 'waiting') return 1;
               if (x.status === 'active' || x.status === 'submitted') return 2;
@@ -746,7 +746,7 @@ export default function CashBattlesSection({
             if (ra !== rb) return ra - rb;
             return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
           })
-          .slice(0, 8)
+          .slice(0, 12)
           .map((fight) => (
             <ArenaRailCard key={`quick-${fight.id}`}>
               <QuickFightCarouselCard fight={fight} isMine={!!user?.id && (fight.player_1_id === user.id || fight.player_2_id === user.id)} />
@@ -755,15 +755,13 @@ export default function CashBattlesSection({
 
         {/* Ranked IDX 1v1 battles — surfaced FIRST to drive non-cash activity */}
         {renderIdxBattleCard && [...idxBattles]
-          .filter((battle) => {
-            const timeEnded = battle.ends_at ? new Date(battle.ends_at).getTime() < Date.now() : false;
-            return !endedBattleStatuses.has(battle.status) && !(battle.status === 'active' && timeEnded);
-          })
           .sort((a: any, b: any) => {
             const now = Date.now();
             const isTimeEnded = (x: any) =>
               x.ends_at ? new Date(x.ends_at).getTime() < now : false;
             const rank = (x: any) => {
+              // Ended battles → far right (deprioritized, not removed)
+              if (endedBattleStatuses.has(x.status)) return 10;
               // Open challenges (no opponent yet) — leftmost so users can JOIN instantly
               if (x.status === 'pending' && !x.opponent_id) return 0;
               // Live & still has time on the clock
@@ -789,9 +787,8 @@ export default function CashBattlesSection({
             </ArenaRailCard>
           ))}
 
-        {/* Existing battles — hide cancelled, show live first */}
+        {/* Existing battles — show live first; ended deprioritized to the right */}
         {battles
-          .filter((b) => !endedBattleStatuses.has(b.status))
           .sort((a, b) => {
             // Prioritize battles with an active countdown (live + ends_at in the future).
             // Newest live battles surface first; dead/expired/completed get pushed to the far right.
@@ -799,6 +796,7 @@ export default function CashBattlesSection({
             const isActive = (x: any) =>
               x.status === 'live' && x.ends_at && new Date(x.ends_at).getTime() > now;
             const bucket = (x: any) => {
+              if (endedBattleStatuses.has(x.status)) return 10; // ended → far right
               if (isActive(x)) return 0;            // live + timer still running
               if (x.status === 'upcoming') return 1; // about to start
               if (x.status === 'live') return 2;     // live but timer expired (stale)
