@@ -146,7 +146,7 @@ export function useJudgeVotingQueue() {
       player_2_avatar_url: null,
       prize_label: '+25 JXP',
       created_at: g.created_at,
-      route: `/judge/queue?focus=${g.id}`,
+      route: `/judge/gatekeeper/${g.id}`,
     }));
 
     (feats.data ?? []).forEach((f: any) => merged.push({
