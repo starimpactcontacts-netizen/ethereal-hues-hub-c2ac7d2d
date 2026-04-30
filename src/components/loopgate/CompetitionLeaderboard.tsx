@@ -15,6 +15,14 @@ const rankColors: Record<number, { border: string; glow: string; bg: string; tex
   3: { border: "border-amber-600/40", glow: "shadow-[0_0_12px_rgba(180,83,9,0.2)]", bg: "from-amber-700/15 to-amber-700/5", text: "text-amber-600" },
 };
 
+function isDirectVideo(url: string) {
+  return /\.(mp4|webm|mov|m4v)(\?|$)/i.test(url);
+}
+
+function isImageFile(url: string) {
+  return /\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(url);
+}
+
 function ScoreBar({ label, score, max, color }: { label: string; score: number; max: number; color: string }) {
   const pct = Math.round((score / max) * 100);
   return (
@@ -38,6 +46,8 @@ function ScoreBar({ label, score, max, color }: { label: string; score: number; 
 
 function EditDetailView({ sub, rank, onClose }: { sub: CompetitionSubmission; rank: number; onClose: () => void }) {
   const style = rankColors[rank] || { border: "border-white/[0.08]", glow: "", bg: "from-white/5 to-transparent", text: "text-muted-foreground" };
+  const directVideo = isDirectVideo(sub.submission_url);
+  const imageFile = isImageFile(sub.submission_url);
   
   // Derive QOI pillars from total score (mock breakdown for now)
   const total = sub.score ?? 0;
