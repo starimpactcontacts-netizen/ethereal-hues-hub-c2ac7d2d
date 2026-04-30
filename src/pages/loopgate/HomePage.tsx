@@ -9,6 +9,8 @@ import { useRealEvents, useGlobalStats, useActiveSession, getEventSlug } from "@
 import { useAuth } from "@/hooks/useAuth";
 import { useEventRounds } from "@/hooks/useOpenArenaData";
 import { useActiveBattles } from "@/hooks/useActiveBattles";
+import { useMyQuickFights } from "@/hooks/useQuickFight";
+import LiveBattleReminders, { type LiveBattleReminderItem } from "@/components/loopgate/LiveBattleReminder";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import SEO, { pageSEO } from "@/components/SEO";
 
@@ -142,6 +144,7 @@ export default function HomePage() {
   const { events, loading } = useRealEvents();
   const { stats } = useGlobalStats();
   const { activeBattles } = useActiveBattles();
+  const { fights: myQuickFights } = useMyQuickFights();
   const { user } = useAuth();
   
   // Keep session active
@@ -196,46 +199,46 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Active Battle Reminders — compact inline pills */}
-      {activeBattles.length > 0 && (
-        <section className="px-4 pt-2 space-y-1.5">
-          {activeBattles.map(battle => {
-            const isJudge = battle.judge_id === user?.id;
-            const isChallenger = battle.challenger_id === user?.id;
-            const statusIcon = isJudge 
-              ? <Gavel className="w-3.5 h-3.5 text-purple-400" /> 
-              : <Swords className="w-3.5 h-3.5 text-red-400" />;
-            const statusLabel = battle.status === 'active' ? 'LIVE' 
-              : battle.status === 'judging' ? 'JUDGING' 
-              : 'PENDING';
-            const roleTag = isJudge ? 'JUDGE' : isChallenger ? 'CHALLENGER' : 'OPPONENT';
-            
-            return (
-              <Link
-                key={battle.id}
-                to={`/battle/${battle.id}`}
-                className={`flex items-center gap-2.5 bg-surface-1 border rounded-lg px-3 py-2 active:scale-[0.98] transition-transform ${isJudge ? 'border-purple-500/30' : 'border-red-500/30'}`}
-              >
-                <div className="relative flex-shrink-0">
-                  {statusIcon}
-                  <span className={`absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full animate-pulse ${isJudge ? 'bg-purple-500' : 'bg-red-500'}`} />
-                </div>
-                <div className="flex-1 min-w-0 flex items-center gap-1.5">
-                  <span className={`text-[9px] font-bold uppercase tracking-wider ${isJudge ? 'text-purple-400' : 'text-red-400'}`}>
-                    {statusLabel}
-                  </span>
-                  <span className="text-[9px] text-muted-foreground">·</span>
-                  <span className="text-[9px] text-muted-foreground uppercase">{roleTag}</span>
-                </div>
-                <p className="text-[11px] text-foreground truncate max-w-[120px]">
-                  {battle.challenger_username} vs {battle.opponent_username || '???'}
-                </p>
-                <ChevronRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-              </Link>
-            );
-          })}
-        </section>
-      )}
+      {/* Active Battle Reminders — full card with countdown + forfeit */}
+      {(() => {
+        const items: LiveBattleReminderItem[] = [
+          ...activeBattles.map(b => {
+            const isJudge = b.judge_id === user?.id;
+            const isChallenger = b.challenger_id === user?.id;
+            const submittedField = isChallenger ? (b as any).challenger_submission_url : (b as any).opponent_submission_url;
+            return {
+              kind: "battle" as const,
+              id: b.id,
+              title: `${b.challenger_username} vs ${b.opponent_username || '???'}`,
+              status: b.status,
+              endsAt: b.ends_at,
+              hasSubmitted: !!submittedField,
+              isJudge,
+              href: `/battle/${b.id}`,
+            };
+          }),
+          ...myQuickFights
+            .filter(f => ['active','submitted','judging'].includes(f.status))
+            .map(f => {
+              const isP1 = f.player_1_id === user?.id;
+              const submitted = isP1 ? !!f.player_1_submission_url : !!f.player_2_submission_url;
+              return {
+                kind: "quick" as const,
+                id: f.id,
+                title: `${f.player_1_username} vs ${f.player_2_username || '???'}`,
+                status: f.status,
+                endsAt: f.ends_at,
+                hasSubmitted: submitted,
+                href: `/fight/${f.id}`,
+              };
+            }),
+        ];
+        return items.length > 0 ? (
+          <section className="px-4 pt-2">
+            <LiveBattleReminders items={items} />
+          </section>
+        ) : null;
+      })()}
 
       {primaryEvent ? (
         <section className="p-4">
