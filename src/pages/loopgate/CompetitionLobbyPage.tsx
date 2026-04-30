@@ -953,50 +953,47 @@ export default function CompetitionLobbyPage() {
           </div>
         )}
 
-        {/* Submit form */}
-        {showSubmit && (
-          <motion.form
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            onSubmit={handleSubmit}
-            className="space-y-3"
+        {/* Upload panel */}
+        {showSubmit && canSubmit && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-xl border border-border bg-card p-3 space-y-3"
           >
-            <div className="flex gap-2">
-              {(["tiktok", "instagram", "youtube"] as PlatformType[]).map(p => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => setPlatform(p)}
-                  className={`flex-1 py-2 rounded-xl text-[11px] font-bold uppercase transition-all border ${
-                    platform === p
-                      ? "bg-white/10 border-white/20 text-foreground"
-                      : "bg-surface-2 border-white/[0.06] text-muted-foreground"
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-            <input
-              value={subUrl}
-              onChange={e => setSubUrl(e.target.value)}
-              placeholder={getPlatformUrlPlaceholder(platform)}
-              className="w-full bg-surface-2 border border-white/[0.06] rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:border-red-500/40"
-            />
-            <div className="flex gap-2">
-              <button type="button" onClick={() => setShowSubmit(false)} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-muted-foreground bg-surface-2 border border-white/[0.06]">
+            <button
+              type="button"
+              onClick={() => submitFileInputRef.current?.click()}
+              disabled={isSubmitting}
+              className="w-full min-h-[116px] rounded-xl border border-dashed border-border bg-surface-2/70 flex flex-col items-center justify-center gap-2 transition active:scale-[0.99] disabled:opacity-50"
+            >
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <FileVideo className="w-5 h-5" />
+                <ImageIcon className="w-5 h-5" />
+              </div>
+              <span className="text-[17px] font-extrabold uppercase tracking-[0.18em] text-foreground leading-none" style={teko}>
+                {isSubmitting ? "Uploading" : "Choose Edit"}
+              </span>
+              <span className="max-w-[260px] text-center text-[11px] text-muted-foreground/70 leading-snug">
+                Video or photo from your device. This is what voters will review and rank.
+              </span>
+            </button>
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[11px] font-semibold text-muted-foreground">
+                  {selectedSubmitFile ? selectedSubmitFile.name : "MP4, MOV, WEBM, JPG, PNG"}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setShowSubmit(false); setSelectedSubmitFile(null); }}
+                disabled={isSubmitting}
+                className="h-9 px-4 rounded-lg border border-border bg-surface-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-muted-foreground disabled:opacity-40"
+                style={teko}
+              >
                 Cancel
               </button>
-              <button
-                type="submit"
-                disabled={isSubmitting || !subUrl.trim()}
-                className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-30 transition-all"
-                style={{ background: "linear-gradient(135deg, #ef4444, #dc2626)" }}
-              >
-                {isSubmitting ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : "Submit"}
-              </button>
             </div>
-          </motion.form>
+          </motion.div>
         )}
 
         {/* ═══ VOTING PHASE ═══ */}
