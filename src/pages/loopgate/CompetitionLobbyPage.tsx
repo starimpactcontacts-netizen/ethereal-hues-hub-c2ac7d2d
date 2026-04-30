@@ -788,18 +788,7 @@ export default function CompetitionLobbyPage() {
           </a>
         )}
 
-        {/* ═══ ADD INSPO EDIT — creator only, when none set ═══ */}
-        {isCreator && !competition.inspo_video_url && !showInspoForm && (
-          <button
-            onClick={() => setShowInspoForm(true)}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-white/[0.12] bg-white/[0.02] hover:bg-white/[0.04] transition-all"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-            <span className="text-[11px] font-bold uppercase tracking-wider text-foreground/70" style={teko}>
-              Add Inspo Edit
-            </span>
-          </button>
-        )}
+        {/* Add Inspo Edit removed per request */}
 
         {isCreator && showInspoForm && (
           <motion.div

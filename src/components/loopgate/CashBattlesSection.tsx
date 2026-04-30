@@ -699,71 +699,11 @@ export default function CashBattlesSection({
         ))}
 
         {/* Edit Battle cards — live ones first, ended ones DEPRIORITIZED to the right (still visible). */}
-        {[...myQuickFights, ...quickFights]
-          .filter((fight, index, all) =>
-            fight.status !== 'cancelled' &&
-            all.findIndex((item) => item.id === fight.id) === index
-          )
-          .sort((a, b) => {
-            const owned = (x: QuickFight) => user?.id && (x.player_1_id === user.id || x.player_2_id === user.id) ? 0 : 1;
-            const rank = (x: QuickFight) => {
-              if (endedBattleStatuses.has(x.status)) return 10; // ended → far right
-              if (owned(x) === 0) return 0;
-              if (x.status === 'waiting') return 1;
-              if (x.status === 'active' || x.status === 'submitted') return 2;
-              if (x.status === 'judging') return 3;
-              return 4;
-            };
-            const ra = rank(a);
-            const rb = rank(b);
-            if (ra !== rb) return ra - rb;
-            return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
-          })
-          .slice(0, 12)
-          .map((fight) => (
-            <ArenaRailCard key={`quick-${fight.id}`}>
-              <QuickFightCarouselCard fight={fight} isMine={!!user?.id && (fight.player_1_id === user.id || fight.player_2_id === user.id)} />
-            </ArenaRailCard>
-          ))}
-
-        {/* Ranked IDX 1v1 battles — surfaced FIRST to drive non-cash activity */}
-        {renderIdxBattleCard && [...idxBattles]
-          .filter((battle: any) => battle.status !== 'cancelled')
-          .sort((a: any, b: any) => {
-            const now = Date.now();
-            const isTimeEnded = (x: any) =>
-              x.ends_at ? new Date(x.ends_at).getTime() < now : false;
-            const rank = (x: any) => {
-              // Ended battles → far right (deprioritized, not removed)
-              if (endedBattleStatuses.has(x.status)) return 10;
-              // Open challenges (no opponent yet) — leftmost so users can JOIN instantly
-              if (x.status === 'pending' && !x.opponent_id) return 0;
-              // Live & still has time on the clock
-              if (x.status === 'active' && !isTimeEnded(x)) return 1;
-              // Pending w/ opponent (about to start)
-              if (x.status === 'pending') return 2;
-              if (x.status === 'judging') return 3;
-              // Time-expired actives = ENDED — push to graveyard
-              if (x.status === 'active' && isTimeEnded(x)) return 5;
-              return 4; // completed / other
-            };
-            const ra = rank(a);
-            const rb = rank(b);
-            if (ra !== rb) return ra - rb;
-            const ta = new Date(a.starts_at || a.created_at || 0).getTime();
-            const tb = new Date(b.starts_at || b.created_at || 0).getTime();
-            return tb - ta;
-          })
-          .slice(0, 10)
-          .map((battle: any) => (
-            <ArenaRailCard key={`idx-${battle.id}`}>
-              {renderIdxBattleCard(battle)}
-            </ArenaRailCard>
-          ))}
+        {/* Old Quick-Fight battles and ranked IDX 1v1 battles removed per request — only completed cash battles remain */}
 
         {/* Existing battles — show live first; ended deprioritized to the right */}
         {battles
-          .filter((battle) => battle.status !== 'cancelled')
+          .filter((battle) => endedBattleStatuses.has(battle.status))
           .sort((a, b) => {
             // Prioritize battles with an active countdown (live + ends_at in the future).
             // Newest live battles surface first; dead/expired/completed get pushed to the far right.
