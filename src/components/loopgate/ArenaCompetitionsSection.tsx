@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Plus, Share2, User, ThumbsUp, Info, X, Sparkles, Gavel, Crown } from "lucide-react";
+import { Trophy, Plus, Share2, Users, Info, X, Sparkles, Gavel, Crown, Hourglass, Radio } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCompetitionsList, type Competition } from "@/hooks/useCompetitions";
 import { toast } from "sonner";
@@ -20,9 +20,17 @@ function formatCount(n: number): string {
 function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: string) => void }) {
   const navigate = useNavigate();
   const spotsLeft = comp.max_players - comp.current_players;
-  // Roblox-style upvote % — derive a stable pseudo value from fill ratio (real votes can replace later)
-  const fillRatio = comp.current_players / Math.max(1, comp.max_players);
-  const approval = Math.min(99, Math.max(60, Math.round(70 + fillRatio * 25)));
+  const isLive = comp.status === "live";
+  const isFull = spotsLeft <= 0;
+  const statusLabel = isLive
+    ? "LIVE NOW"
+    : isFull
+      ? "LOBBY FULL"
+      : comp.current_players <= 1
+        ? "WAITING FOR EDITORS"
+        : `WAITING · ${spotsLeft} SPOT${spotsLeft === 1 ? "" : "S"} LEFT`;
+  const statusColor = isLive ? "text-red-400" : isFull ? "text-gold" : "text-emerald-400";
+  const StatusIcon = isLive ? Radio : isFull ? Trophy : Hourglass;
 
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -72,14 +80,15 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
 
         {/* Roblox-style footer: stats + join */}
         <div className="px-2.5 py-2 flex items-center justify-between gap-2 border-t border-white/[0.04]">
-          <div className="flex items-center gap-2.5 text-[10px] font-bold text-zinc-300 min-w-0">
-            <span className="flex items-center gap-1 whitespace-nowrap">
-              <User className="w-3 h-3 text-zinc-400" strokeWidth={2.5} />
-              {formatCount(comp.current_players)}
+          <div className="flex items-center gap-1.5 text-[9px] font-bold text-zinc-300 min-w-0 w-full">
+            <span className="flex items-center gap-1 whitespace-nowrap text-zinc-400">
+              <Users className="w-3 h-3" strokeWidth={2.5} />
+              {comp.current_players}/{comp.max_players}
             </span>
-            <span className="flex items-center gap-1 whitespace-nowrap text-emerald-400">
-              <ThumbsUp className="w-3 h-3" strokeWidth={2.5} />
-              {approval}%
+            <span className="text-white/15">·</span>
+            <span className={`flex items-center gap-1 whitespace-nowrap ${statusColor} truncate`}>
+              <StatusIcon className="w-2.5 h-2.5" strokeWidth={2.5} />
+              <span className="truncate tracking-wider">{statusLabel}</span>
             </span>
           </div>
         </div>
