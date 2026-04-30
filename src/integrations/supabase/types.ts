@@ -8281,6 +8281,7 @@ export type Database = {
           new_xp: number
         }[]
       }
+      battle_forfeit: { Args: { p_battle_id: string }; Returns: boolean }
       calculate_comp_index_reward: {
         Args: { participant_count: number }
         Returns: number
@@ -8406,6 +8407,7 @@ export type Database = {
           streak_xp: number
         }[]
       }
+      quick_fight_forfeit: { Args: { p_fight_id: string }; Returns: boolean }
       quick_fight_match: {
         Args: { p_avatar_url?: string; p_user_id: string; p_username: string }
         Returns: string
