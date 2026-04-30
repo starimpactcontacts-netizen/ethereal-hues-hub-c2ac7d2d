@@ -820,19 +820,44 @@ export default function CompetitionLobbyPage() {
           </motion.div>
         )}
 
-        {/* ═══ GO EDIT — visible when live + joined + hasn't submitted ═══ */}
+        {/* ═══ LIVE EDITING ACTIONS — file-first submission flow ═══ */}
         {isLive && hasJoined && !hasSubmitted && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="space-y-2"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-3"
           >
-            <div className="flex items-center justify-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-              <span className="text-[10px] text-red-400 font-bold uppercase tracking-[0.2em]" style={teko}>ROUND IS OPEN</span>
+            <div className="grid grid-cols-3 gap-2 rounded-xl border border-border bg-card p-2">
+              <div className="min-w-0">
+                <p className="text-[9px] font-extrabold uppercase tracking-[0.22em] text-muted-foreground" style={teko}>Round</p>
+                <div className="mt-1 flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-destructive animate-pulse" />
+                  <span className="text-[13px] font-black uppercase text-destructive" style={teko}>Open</span>
+                </div>
+              </div>
+              <div className="min-w-0 text-center border-x border-border">
+                <p className="text-[9px] font-extrabold uppercase tracking-[0.22em] text-muted-foreground" style={teko}>Edits In</p>
+                <p className="mt-1 text-[16px] font-black tabular-nums text-foreground leading-none" style={teko}>
+                  {submittedEditorCount}/{totalEditorCount}
+                </p>
+              </div>
+              <div className="min-w-0 text-right">
+                <p className="text-[9px] font-extrabold uppercase tracking-[0.22em] text-muted-foreground" style={teko}>Timer</p>
+                <div className="mt-1 flex justify-end">
+                  {competition.deadline ? <LiveCountdown deadline={competition.deadline} /> : <span className="text-[13px] font-black text-muted-foreground" style={teko}>LIVE</span>}
+                </div>
+              </div>
             </div>
 
-            <div className="flex gap-2">
+            <input
+              ref={submitFileInputRef}
+              type="file"
+              accept="video/mp4,video/webm,video/quicktime,video/x-m4v,image/jpeg,image/png,image/webp"
+              onChange={handleSubmissionFile}
+              className="hidden"
+            />
+
+            <div className="grid grid-cols-[1.15fr_1fr] gap-2">
               <button
                 onClick={() => {
                   const params = new URLSearchParams();
@@ -841,32 +866,22 @@ export default function CompetitionLobbyPage() {
                   if (competition.id) params.set("comp_id", competition.id);
                   navigate(`/studio?${params.toString()}`);
                 }}
-                className="flex-[2] py-3.5 rounded-xl flex items-center justify-center gap-2.5 transition-all active:scale-[0.98]"
-                style={{
-                  background: "linear-gradient(135deg, #ef4444, #dc2626)",
-                  color: "#fff",
-                  boxShadow: "0 4px 24px rgba(239,68,68,0.25)",
-                  ...teko,
-                }}
+                className="h-16 rounded-xl border border-destructive/30 bg-destructive text-destructive-foreground flex items-center justify-center gap-2.5 transition active:scale-[0.98]"
+                style={teko}
               >
-                <Pencil className="w-5 h-5" />
-                <span className="text-[18px] font-extrabold uppercase tracking-[0.15em]">GO EDIT</span>
+                <Pencil className="w-5 h-5" strokeWidth={2.5} />
+                <span className="text-[19px] font-extrabold uppercase tracking-[0.16em] leading-none">Edit</span>
               </button>
               <button
-                onClick={() => setShowSubmit(true)}
-                className="flex-1 py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
-                style={{
-                  background: "linear-gradient(135deg, hsl(142 71% 45%), hsl(142 76% 36%))",
-                  color: "#fff",
-                  boxShadow: "0 4px 24px rgba(34,197,94,0.25)",
-                  ...teko,
-                }}
+                onClick={() => setShowSubmit((v) => !v)}
+                disabled={isSubmitting}
+                className="h-16 rounded-xl border border-status-live/30 bg-status-live text-primary-foreground flex items-center justify-center gap-2.5 transition active:scale-[0.98] disabled:opacity-50"
+                style={teko}
               >
-                <Send className="w-4 h-4" />
-                <span className="text-[14px] font-extrabold uppercase tracking-[0.1em]">SUBMIT</span>
+                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload className="w-5 h-5" strokeWidth={2.5} />}
+                <span className="text-[19px] font-extrabold uppercase tracking-[0.16em] leading-none">Upload</span>
               </button>
             </div>
-            <p className="text-[10px] text-muted-foreground/30 text-center">Use any editing software you like (CapCut, Adobe, etc.) — submit your link when ready</p>
           </motion.div>
         )}
 
