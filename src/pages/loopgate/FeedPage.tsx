@@ -230,12 +230,28 @@ export default function FeedPage() {
       else if (ai < activityItems.length) { combined.push({ kind: 'activity', item: activityItems[ai] }); ai++; }
       else break;
     }
-    // Inject editorium picks at strategic positions (after every ~4 items)
-    const withPicks = [...combined];
+    // Prioritize Editorium picks — first pick at the very top, rest interleaved early
+    const withPicks: typeof combined = [];
     editoriumPicks.forEach((article, idx) => {
-      const insertAt = Math.min(3 + idx * 5, withPicks.length);
-      withPicks.splice(insertAt, 0, { kind: 'editorium', item: article });
+      if (idx === 0) {
+        withPicks.push({ kind: 'editorium', item: article });
+      }
     });
+    let inserted = 1;
+    combined.forEach((entry, i) => {
+      withPicks.push(entry);
+      // After items 2 and 5, drop in another pick if available
+      if ((i === 1 || i === 4 || i === 8) && inserted < editoriumPicks.length) {
+        withPicks.push({ kind: 'editorium', item: editoriumPicks[inserted] });
+        inserted++;
+      }
+    });
+    // Append any remaining picks toward the top tail
+    while (inserted < editoriumPicks.length) {
+      const insertAt = Math.min(12 + inserted * 4, withPicks.length);
+      withPicks.splice(insertAt, 0, { kind: 'editorium', item: editoriumPicks[inserted] });
+      inserted++;
+    }
     return withPicks;
   })() : null;
 
