@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause, ChevronRight, Trophy, Check, Loader2, SkipForward, Crown } from "lucide-react";
+import { Play, Pause, ChevronRight, Trophy, Check, Loader2, SkipForward, Crown, Volume2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { CompetitionSubmission } from "@/hooks/useCompetitions";
 import { toast } from "sonner";
@@ -39,8 +39,46 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
   const [paused, setPaused] = useState(false);
   const [castingId, setCastingId] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [needsSoundTap, setNeedsSoundTap] = useState(false);
 
   const current = ordered[currentIdx];
+
+  // When the current video changes, attempt unmuted autoplay.
+  // If the browser blocks it, fall back to muted and prompt the user to tap for sound.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = false;
+    v.volume = 1;
+    setNeedsSoundTap(false);
+    const tryPlay = async () => {
+      try {
+        await v.play();
+      } catch {
+        v.muted = true;
+        setNeedsSoundTap(true);
+        try { await v.play(); } catch {}
+      }
+    };
+    tryPlay();
+  }, [current?.id, currentIdx, phase]);
+
+  // Sync pause toggle with the actual <video> element
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (paused) v.pause();
+    else v.play().catch(() => {});
+  }, [paused]);
+
+  const enableSound = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = false;
+    v.volume = 1;
+    v.play().catch(() => {});
+    setNeedsSoundTap(false);
+  };
 
   // Skip to voting if user already voted
   useEffect(() => {
@@ -159,7 +197,6 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
                 autoPlay
                 playsInline
                 loop
-                muted={false}
               />
             ) : image ? (
               <img
@@ -211,6 +248,22 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
             >
               {paused ? <Play className="w-4 h-4 text-white ml-0.5" /> : <Pause className="w-4 h-4 text-white" />}
             </button>
+
+            {/* Tap for sound — appears if browser blocked unmuted autoplay */}
+            {direct && needsSoundTap && (
+              <button
+                onClick={enableSound}
+                className="absolute inset-0 flex items-center justify-center bg-black/30 active:bg-black/40"
+                aria-label="Enable sound"
+              >
+                <div className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-black/80 backdrop-blur-md border border-white/20">
+                  <Volume2 className="w-4 h-4 text-amber-400" />
+                  <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-white" style={teko}>
+                    Tap for Sound
+                  </span>
+                </div>
+              </button>
+            )}
           </motion.div>
         </AnimatePresence>
 
