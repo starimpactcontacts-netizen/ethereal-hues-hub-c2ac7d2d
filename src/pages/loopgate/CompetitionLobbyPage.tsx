@@ -868,7 +868,7 @@ export default function CompetitionLobbyPage() {
                 <span className="text-[19px] font-extrabold uppercase tracking-[0.16em] leading-none">Edit</span>
               </button>
               <button
-                onClick={() => setShowSubmit((v) => !v)}
+                onClick={() => submitFileInputRef.current?.click()}
                 disabled={isSubmitting}
                 className="h-16 rounded-xl border border-status-live/30 bg-status-live text-primary-foreground flex items-center justify-center gap-2.5 transition active:scale-[0.98] disabled:opacity-50"
                 style={teko}
@@ -946,49 +946,6 @@ export default function CompetitionLobbyPage() {
               </p>
             )}
           </div>
-        )}
-
-        {/* Upload panel */}
-        {showSubmit && canSubmit && (
-          <motion.div
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="rounded-xl border border-border bg-card p-3 space-y-3"
-          >
-            <button
-              type="button"
-              onClick={() => submitFileInputRef.current?.click()}
-              disabled={isSubmitting}
-              className="w-full min-h-[116px] rounded-xl border border-dashed border-border bg-surface-2/70 flex flex-col items-center justify-center gap-2 transition active:scale-[0.99] disabled:opacity-50"
-            >
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <FileVideo className="w-5 h-5" />
-                <ImageIcon className="w-5 h-5" />
-              </div>
-              <span className="text-[17px] font-extrabold uppercase tracking-[0.18em] text-foreground leading-none" style={teko}>
-                {isSubmitting ? "Uploading" : "Choose Edit"}
-              </span>
-              <span className="max-w-[260px] text-center text-[11px] text-muted-foreground/70 leading-snug">
-                Video or photo from your device. This is what voters will review and rank.
-              </span>
-            </button>
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-[11px] font-semibold text-muted-foreground">
-                  {selectedSubmitFile ? selectedSubmitFile.name : "MP4, MOV, WEBM, JPG, PNG"}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => { setShowSubmit(false); setSelectedSubmitFile(null); }}
-                disabled={isSubmitting}
-                className="h-9 px-4 rounded-lg border border-border bg-surface-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-muted-foreground disabled:opacity-40"
-                style={teko}
-              >
-                Cancel
-              </button>
-            </div>
-          </motion.div>
         )}
 
         {/* ═══ VOTING PHASE ═══ */}
