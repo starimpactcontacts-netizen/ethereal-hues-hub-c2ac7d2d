@@ -41,7 +41,11 @@ function formatTimeLeft(endDate: string | null): string {
 
 function BattleRow({ battle, onClick }: { battle: any; onClick: () => void }) {
   const isLive = battle.status === "live";
-  const isCompleted = battle.status === "completed" || battle.status === "ended";
+  const isCompleted =
+    battle.status === "completed" ||
+    battle.status === "ended" ||
+    battle.status === "cancelled" ||
+    battle.status === "forfeited";
   const hasCash = (battle.prize_cents ?? 0) > 0;
 
   return (
@@ -560,11 +564,26 @@ export default function EditBattlesHubPage() {
     [battles]
   );
   const cashBattles = useMemo(
-    () => battles.filter((b) => (b.prize_cents ?? 0) > 0 && b.status !== "completed" && b.status !== "ended"),
+    () =>
+      battles.filter(
+        (b) =>
+          (b.prize_cents ?? 0) > 0 &&
+          b.status !== "completed" &&
+          b.status !== "ended" &&
+          b.status !== "cancelled" &&
+          b.status !== "forfeited"
+      ),
     [battles]
   );
   const completedBattles = useMemo(
-    () => battles.filter((b) => b.status === "completed" || b.status === "ended"),
+    () =>
+      battles.filter(
+        (b) =>
+          b.status === "completed" ||
+          b.status === "ended" ||
+          b.status === "cancelled" ||
+          b.status === "forfeited"
+      ),
     [battles]
   );
 
