@@ -1,4 +1,4 @@
-import { useState, useEffect, type ReactNode } from "react";
+import { useState, useEffect, useRef, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { DollarSign, Swords, Clock, Info, X, Loader2, Building2, ChevronRight } from "lucide-react";
@@ -160,24 +160,25 @@ function CashBattleCard({ battle, currentUserId }: { battle: any; currentUserId?
 }
 
 /** Card for a pending application — shows as an open matchup slot anyone can tap to accept */
-function OpenMatchupCard({ app, onJoin, currentUserId }: { app: CashBattleApplication; onJoin: () => void; currentUserId?: string }) {
+function OpenMatchupCard({ app, onJoin, onRemoved, currentUserId }: { app: CashBattleApplication; onJoin: () => void; onRemoved?: (id: string) => void; currentUserId?: string }) {
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const isOwnApp = currentUserId === app.user_id;
 
   async function handleCancel() {
     setCancelling(true);
+    onRemoved?.(app.id);
     const { error } = await supabase
       .from('cash_battle_applications')
       .delete()
       .eq('id', app.id)
-      .eq('user_id', app.user_id);
+      .eq('user_id', currentUserId || app.user_id);
     if (error) {
       const { error: fallbackError } = await supabase
         .from('cash_battle_applications')
         .update({ status: 'cancelled' } as any)
         .eq('id', app.id)
-        .eq('user_id', app.user_id);
+        .eq('user_id', currentUserId || app.user_id);
       if (fallbackError) toast.error('Failed to cancel');
       else toast.info('Matchup removed');
     } else {
@@ -561,6 +562,7 @@ export default function CashBattlesSection({
   const { isGuest } = useGuestMode();
   const accountPrompt = useAccountPrompt();
   const [pendingApps, setPendingApps] = useState<CashBattleApplication[]>([]);
+  const removedPendingAppIds = useRef(new Set<string>());
   const { entries: openQueue, loading: openQueueLoading } = useOpenQuickFightQueue();
   const endedBattleStatuses = new Set(['completed', 'forfeited', 'ended']);
 
@@ -573,7 +575,10 @@ export default function CashBattlesSection({
         .eq('status', 'pending')
         .order('created_at', { ascending: true });
 
-      setPendingApps((data as CashBattleApplication[] | null) || []);
+      const visiblePendingApps = ((data as CashBattleApplication[] | null) || []).filter(
+        (app) => !removedPendingAppIds.current.has(app.id)
+      );
+      setPendingApps(visiblePendingApps);
     }
     fetchPending();
 
@@ -727,7 +732,15 @@ export default function CashBattlesSection({
         {/* Open cash matchup cards — second priority (joinable) */}
         {pendingApps.map((app) => (
           <ArenaRailCard key={app.id}>
-            <OpenMatchupCard app={app} onJoin={() => handleAcceptFight(app)} currentUserId={user?.id} />
+            <OpenMatchupCard
+              app={app}
+              onJoin={() => handleAcceptFight(app)}
+              onRemoved={(id) => {
+                removedPendingAppIds.current.add(id);
+                setPendingApps((current) => current.filter((pendingApp) => pendingApp.id !== id));
+              }}
+              currentUserId={user?.id}
+            />
           </ArenaRailCard>
         ))}
 
