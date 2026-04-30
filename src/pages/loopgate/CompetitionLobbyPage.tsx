@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Trophy, Users, Clock, Play, Loader2, Send,
-  Share2, Check, MessageCircle, Layers, Pencil, X, ThumbsUp, Sparkles, Upload, Volume2, VolumeX, CheckCircle2, Circle, LogOut, Crown
+  Share2, Check, MessageCircle, Layers, Pencil, X, ThumbsUp, Sparkles, Upload, Volume2, VolumeX, CheckCircle2, Circle, LogOut, Crown, Info, Timer, Vote, Gavel
 } from "lucide-react";
 import { useCompetition } from "@/hooks/useCompetitions";
 import { useAuth } from "@/hooks/useAuth";
@@ -66,6 +66,7 @@ export default function CompetitionLobbyPage() {
   const [isJoining, setIsJoining] = useState(false);
   const [isReadying, setIsReadying] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
   const [showSubmit, setShowSubmit] = useState(false);
   const [subUrl, setSubUrl] = useState("");
   const [platform, setPlatform] = useState<PlatformType>("tiktok");
@@ -302,11 +303,13 @@ export default function CompetitionLobbyPage() {
               </div>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="h-8 px-2.5 inline-flex items-center rounded-md border border-white/[0.1] bg-white/[0.03]">
-                <span className="text-[11px] font-extrabold tracking-[0.2em] text-foreground/85 tabular-nums" style={teko}>
-                  {roomCode}
-                </span>
-              </div>
+              <button
+                onClick={() => setShowInfo(true)}
+                aria-label="How edit competitions work"
+                className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-white/[0.1] bg-white/[0.03] hover:bg-white/[0.06] active:scale-95 transition"
+              >
+                <Info className="w-[15px] h-[15px] text-foreground/75" />
+              </button>
               <button
                 onClick={handleShare}
                 className="h-8 px-2.5 inline-flex items-center gap-1.5 rounded-md border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/15 active:scale-95 transition"
@@ -317,6 +320,75 @@ export default function CompetitionLobbyPage() {
             </div>
           </div>
         </header>
+
+        {/* ── INFO MODAL ── */}
+        {showInfo && (
+          <div
+            className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/85 backdrop-blur-sm"
+            onClick={() => setShowInfo(false)}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="w-full sm:max-w-sm bg-[#0c0c0e] border border-white/[0.08] rounded-t-2xl sm:rounded-2xl p-5 mx-0 sm:mx-3 max-h-[85vh] overflow-y-auto"
+              style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)' }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-[20px] font-black text-foreground uppercase leading-none tracking-tight" style={teko}>
+                    How It Works
+                  </h3>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-foreground/50 mt-1.5" style={teko}>
+                    Edit Competition
+                  </p>
+                </div>
+                <button onClick={() => setShowInfo(false)} className="p-1.5 rounded-lg hover:bg-white/[0.06] active:scale-95 transition">
+                  <X className="w-4 h-4 text-foreground/60" />
+                </button>
+              </div>
+
+              <div className="space-y-2.5">
+                {[
+                  { icon: Users, color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20", title: "Join the Lobby", desc: "Editors gather in the room. Need at least 2 players to start. Host kicks it off when the squad's ready." },
+                  { icon: Timer, color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20", title: "30 Minute Edit Window", desc: "Once it goes live, you've got 30 minutes to drop your edit on the given theme. No extensions, no excuses." },
+                  { icon: Vote, color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20", title: "Community Vote", desc: "After submissions close, everyone votes for the best edit. Most votes wins the bag." },
+                  { icon: Gavel, color: "text-red-400", bg: "bg-red-500/10 border-red-500/20", title: "Judge Verdict", desc: "Some comps get a Loopgate judge to lock in the final winner instead of community vote — keeps it fair on high-stakes rooms." },
+                ].map((step, i) => (
+                  <div key={i} className={`flex items-start gap-3 p-3 rounded-xl border ${step.bg}`}>
+                    <div className="shrink-0 w-8 h-8 rounded-lg bg-black/30 flex items-center justify-center">
+                      <step.icon className={`w-4 h-4 ${step.color}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-[14px] font-extrabold uppercase tracking-wider text-foreground leading-none" style={teko}>
+                        {step.title}
+                      </h4>
+                      <p className="text-[12px] text-foreground/65 mt-1.5 leading-snug">
+                        {step.desc}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-4 p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-foreground/45 mb-1" style={teko}>
+                  Room Code
+                </p>
+                <p className="text-[16px] font-black tracking-[0.25em] text-foreground tabular-nums" style={teko}>
+                  {roomCode}
+                </p>
+                <p className="text-[11px] text-foreground/50 mt-1.5">Share this with your crew to pull up.</p>
+              </div>
+
+              <button
+                onClick={() => setShowInfo(false)}
+                className="mt-4 w-full h-11 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white border border-emerald-400/30"
+                style={teko}
+              >
+                <span className="text-[14px] font-extrabold uppercase tracking-[0.2em]">Got It</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* ── BODY: Members + Chat ── */}
         <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 gap-3 p-3 overflow-hidden">
