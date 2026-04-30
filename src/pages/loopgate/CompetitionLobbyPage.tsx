@@ -133,7 +133,10 @@ export default function CompetitionLobbyPage() {
   // If only one submission exists, finalize immediately. Also auto-finalize when voting deadline passes.
   useEffect(() => {
     if (!competition || competition.status !== "voting") return;
-    if (submissions.length === 0) return;
+    if (submissions.length === 0) {
+      finalizeVoting();
+      return;
+    }
 
     // Single submission → instant winner
     if (submissions.length === 1) {
@@ -152,6 +155,12 @@ export default function CompetitionLobbyPage() {
     const deadline = (competition as any).voting_deadline;
     if (deadline && new Date(deadline).getTime() <= Date.now()) {
       finalizeVoting();
+      return;
+    }
+
+    if (deadline) {
+      const timeout = window.setTimeout(() => finalizeVoting(), Math.max(0, new Date(deadline).getTime() - Date.now()) + 250);
+      return () => window.clearTimeout(timeout);
     }
   }, [competition?.status, submissions, (competition as any)?.voting_deadline]);
 
@@ -966,7 +975,7 @@ export default function CompetitionLobbyPage() {
         )}
 
         {/* ═══ VOTING PHASE ═══ */}
-        {isVoting && (
+        {isVoting && submissions.length > 0 && (competition as any).voting_deadline && new Date((competition as any).voting_deadline).getTime() > Date.now() && (
           <div className="space-y-3">
             <CompetitionVoting
               submissions={submissions}
@@ -981,7 +990,7 @@ export default function CompetitionLobbyPage() {
         )}
 
         {/* ═══ LEADERBOARD — only after editing closes / voting begins ═══ */}
-        {(isVoting || isCompleted) && <CompetitionLeaderboard submissions={submissions} />}
+        {((isVoting && submissions.length > 0) || isCompleted) && <CompetitionLeaderboard submissions={submissions} />}
 
         {/* ═══ WINNER SHARE CARD CTA — completed only ═══ */}
         {isCompleted && submissions.length > 0 && (() => {

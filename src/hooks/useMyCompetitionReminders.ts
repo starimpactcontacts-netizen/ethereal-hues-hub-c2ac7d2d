@@ -11,6 +11,7 @@ export type MyCompetitionReminder = {
   slug: string | null;
   hasSubmitted: boolean;
   hasVoted: boolean;
+  submissionCount: number;
 };
 
 export function useMyCompetitionReminders() {
@@ -52,7 +53,7 @@ export function useMyCompetitionReminders() {
         return;
       }
 
-      const [{ data: subs }, { data: votes }] = await Promise.all([
+      const [{ data: mySubs }, { data: votes }, { data: allSubs }] = await Promise.all([
         supabase
           .from("competition_submissions")
           .select("competition_id")
@@ -63,27 +64,55 @@ export function useMyCompetitionReminders() {
           .select("competition_id")
           .eq("voter_id", user.id)
           .in("competition_id", liveIds),
+        supabase
+          .from("competition_submissions")
+          .select("competition_id")
+          .in("competition_id", liveIds),
       ]);
 
-      const submittedIds = new Set((subs || []).map((s) => s.competition_id));
+      const submittedIds = new Set((mySubs || []).map((s) => s.competition_id));
       const votedIds = new Set(((votes as any[]) || []).map((v) => v.competition_id));
+      const submissionCounts = ((allSubs as any[]) || []).reduce<Record<string, number>>((acc, s) => {
+        acc[s.competition_id] = (acc[s.competition_id] || 0) + 1;
+        return acc;
+      }, {});
+      const now = Date.now();
+      const shouldFinalize = (comp: any) => {
+        const count = submissionCounts[comp.id] || 0;
+        const deadline = comp.deadline ? new Date(comp.deadline).getTime() : 0;
+        const votingDeadline = comp.voting_deadline ? new Date(comp.voting_deadline).getTime() : 0;
+        return (comp.status === "live" && deadline > 0 && deadline <= now) ||
+          (comp.status === "voting" && (count <= 1 || !votingDeadline || votingDeadline <= now));
+      };
+      const staleComps = (comps || []).filter(shouldFinalize);
+      if (staleComps.length > 0) {
+        await Promise.all(staleComps.map((comp) => supabase.rpc("finalize_competition_if_expired" as any, { p_competition_id: comp.id } as any)));
+      }
 
       setCompetitions(
-        (comps || []).map((comp) => ({
-          id: comp.id,
-          name: comp.name,
-          status: comp.status,
-          deadline: comp.deadline,
-          voting_deadline: (comp as any).voting_deadline,
-          slug: comp.slug,
-          hasSubmitted: submittedIds.has(comp.id),
-          hasVoted: votedIds.has(comp.id),
-        }))
+        (comps || [])
+          .filter((comp) => {
+            if (shouldFinalize(comp)) return false;
+            const endsAt = comp.status === "voting" ? (comp as any).voting_deadline : comp.deadline;
+            return true;
+          })
+          .map((comp) => ({
+            id: comp.id,
+            name: comp.name,
+            status: comp.status,
+            deadline: comp.deadline,
+            voting_deadline: (comp as any).voting_deadline,
+            slug: comp.slug,
+            hasSubmitted: submittedIds.has(comp.id),
+            hasVoted: votedIds.has(comp.id),
+            submissionCount: submissionCounts[comp.id] || 0,
+          }))
       );
       setLoading(false);
     };
 
     fetchMine();
+    const poll = window.setInterval(fetchMine, 5000);
 
     const channel = supabase
       .channel(`my-competition-reminders-${user.id}`)
@@ -93,7 +122,10 @@ export function useMyCompetitionReminders() {
       .on("postgres_changes", { event: "*", schema: "public", table: "competition_votes" }, () => fetchMine())
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      window.clearInterval(poll);
+      supabase.removeChannel(channel);
+    };
   }, [user?.id]);
 
   return { competitions, hasActiveCompetition: competitions.length > 0, loading };

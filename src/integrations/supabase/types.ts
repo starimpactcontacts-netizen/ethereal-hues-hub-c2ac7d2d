@@ -8326,6 +8326,11 @@ export type Database = {
         Args: { p_crew_id: string }
         Returns: undefined
       }
+      finalize_competition_if_expired: {
+        Args: { p_competition_id: string }
+        Returns: boolean
+      }
+      finalize_expired_competitions: { Args: never; Returns: undefined }
       find_practice_match: {
         Args: { p_duration: number; p_match_type: string; p_user_id: string }
         Returns: string

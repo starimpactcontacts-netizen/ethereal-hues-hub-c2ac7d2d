@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause, ChevronRight, Trophy, Check, Loader2, SkipForward, Crown, Volume2 } from "lucide-react";
+import { Play, Pause, ChevronRight, Check, Loader2, SkipForward, Crown, Volume2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { CompetitionSubmission } from "@/hooks/useCompetitions";
 import { toast } from "sonner";
@@ -109,14 +109,9 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
     return () => clearInterval(interval);
   }, [phase, paused, currentIdx, ordered.length]);
 
-  // Empty state
+  // Empty state — voting should immediately close/finalize before this renders.
   if (ordered.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-        <Trophy className="w-10 h-10 text-foreground/20 mb-3" />
-        <p className="text-sm text-foreground/50">No edits to vote on yet.</p>
-      </div>
-    );
+    return null;
   }
 
   const handleSkip = () => {

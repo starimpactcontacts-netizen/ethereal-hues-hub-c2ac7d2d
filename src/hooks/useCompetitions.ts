@@ -264,6 +264,19 @@ export function useCompetition(idOrSlug: string | undefined) {
   // Open the community voting phase (2 min window)
   const startVoting = async () => {
     if (!competition) return false;
+    if (competition.deadline && new Date(competition.deadline).getTime() <= Date.now()) {
+      const { data, error } = await supabase.rpc("finalize_competition_if_expired" as any, { p_competition_id: competition.id } as any);
+      if (!error && data) {
+        await fetchAll();
+        return true;
+      }
+    }
+    if (submissions.length === 0) {
+      const { error } = await supabase.from("competitions").update({ status: "closed" } as any).eq("id", competition.id);
+      if (error) return false;
+      await fetchAll();
+      return true;
+    }
     const now = new Date();
     const deadline = new Date(now.getTime() + 2 * 60 * 1000);
     const { error } = await supabase.from("competitions").update({
@@ -308,7 +321,15 @@ export function useCompetition(idOrSlug: string | undefined) {
   // Close voting and pick the winner by votes
   const finalizeVoting = async () => {
     if (!competition) return false;
-    if (competition.status === "completed") return false;
+    if (competition.status === "completed" || competition.status === "closed") return false;
+    const { data: finalized, error: finalizeError } = await supabase.rpc(
+      "finalize_competition_if_expired" as any,
+      { p_competition_id: competition.id } as any
+    );
+    if (!finalizeError && finalized) {
+      await fetchAll();
+      return true;
+    }
     const sorted = [...submissions].sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0));
     const winner = sorted[0];
     if (winner) {
@@ -317,7 +338,7 @@ export function useCompetition(idOrSlug: string | undefined) {
         .eq("id", winner.id);
     }
     await supabase.from("competitions")
-      .update({ status: "completed" } as any)
+      .update({ status: winner ? "completed" : "closed" } as any)
       .eq("id", competition.id);
     await fetchAll();
     return true;
