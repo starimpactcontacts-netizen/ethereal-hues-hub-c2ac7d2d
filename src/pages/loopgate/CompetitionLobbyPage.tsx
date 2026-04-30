@@ -103,6 +103,23 @@ export default function CompetitionLobbyPage() {
     return p === "upload" || /\.(mp4|webm|mov|m4v)(\?|$)/i.test(u);
   }, [competition?.inspo_video_url, competition?.inspo_video_platform]);
 
+  // Auto-transition: when the edit window closes, flip live → voting (creator triggers it,
+  // any viewer triggers as fallback so it never gets stuck).
+  useEffect(() => {
+    if (!competition) return;
+    if (competition.status !== "live") return;
+    if (!competition.deadline) return;
+    const deadlineMs = new Date(competition.deadline).getTime();
+    const tick = () => {
+      if (Date.now() >= deadlineMs && competition.status === "live") {
+        startVoting();
+      }
+    };
+    tick();
+    const interval = setInterval(tick, 5000);
+    return () => clearInterval(interval);
+  }, [competition?.status, competition?.deadline]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-background">
