@@ -1081,59 +1081,65 @@ export default function ArenaPage() {
                 </motion.div>
               )}
 
-              {/* Open Editor — Studio CTA */}
-              <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-                <Link to="/studio" className="block group">
+              {/* Quick Actions — Multiplayer + Edit Battle Instantly */}
+              <motion.div
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 }}
+                className="grid grid-cols-2 gap-2"
+              >
+                <button
+                  onClick={() => profile ? setShowCreateBattle(true) : navigate('/start')}
+                  className="relative overflow-hidden rounded-2xl p-[1px] transition-all active:scale-[0.98] text-left"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(59,130,246,0.55) 0%, rgba(255,255,255,0.06) 50%, rgba(124,58,237,0.45) 100%)',
+                    boxShadow: '0 14px 32px -16px rgba(59,130,246,0.45)',
+                  }}
+                >
                   <div
-                    className="relative overflow-hidden rounded-2xl p-[1px] transition-all active:scale-[0.99]"
-                    style={{
-                      background: 'linear-gradient(135deg, rgba(153,153,255,0.45) 0%, rgba(255,255,255,0.05) 50%, rgba(124,58,237,0.35) 100%)',
-                      boxShadow: '0 14px 32px -16px rgba(124,58,237,0.45)',
-                    }}
+                    className="relative rounded-[14px] p-3.5 flex flex-col gap-2 h-full overflow-hidden"
+                    style={{ background: 'linear-gradient(160deg, hsl(0 0% 11%) 0%, hsl(0 0% 7%) 100%)' }}
                   >
+                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
                     <div
-                      className="relative rounded-[14px] flex items-center gap-3.5 p-3.5 overflow-hidden"
-                      style={{ background: 'linear-gradient(160deg, hsl(0 0% 11%) 0%, hsl(0 0% 7%) 100%)' }}
+                      className="w-10 h-10 rounded-2xl flex items-center justify-center border border-white/10"
+                      style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.25), rgba(124,58,237,0.18))' }}
                     >
-                      <div className="absolute -top-10 -left-6 w-32 h-32 rounded-full opacity-30 blur-3xl" style={{ background: 'radial-gradient(circle, rgba(153,153,255,0.6), transparent 70%)' }} />
-                      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-                      <div
-                        className="relative w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border border-white/10"
-                        style={{ background: 'linear-gradient(135deg, rgba(153,153,255,0.22), rgba(124,58,237,0.15))', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12)' }}
-                      >
-                        <Clapperboard className="w-5 h-5 text-[#b4b4ff]" />
-                      </div>
-                      <div className="relative flex-1 min-w-0">
-                        <p className="text-[14px] font-black text-foreground tracking-tight">Open Studio</p>
-                        <p className="text-[11px] text-muted-foreground">Create, edit & export</p>
-                      </div>
-                      <div className="relative shrink-0 w-7 h-7 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center group-hover:bg-white/[0.1] transition-colors">
-                        <ArrowRight className="w-3.5 h-3.5 text-foreground/80" />
-                      </div>
+                      <Users className="w-5 h-5 text-blue-300" />
+                    </div>
+                    <div>
+                      <p className="text-[14px] font-black text-foreground tracking-tight" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>MULTIPLAYER</p>
+                      <p className="text-[10px] text-muted-foreground leading-tight">Invite a friend · 1v1</p>
                     </div>
                   </div>
-                </Link>
-              </motion.div>
+                </button>
 
-              {!activeSolo && profile && (
-                <div
-                  className="relative overflow-hidden rounded-2xl p-5 text-center border border-white/[0.06]"
-                  style={{ background: 'linear-gradient(160deg, hsl(0 0% 10%) 0%, hsl(0 0% 6%) 100%)' }}
+                <button
+                  onClick={handleQuickFight}
+                  className="relative overflow-hidden rounded-2xl p-[1px] transition-all active:scale-[0.98] text-left"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(239,68,68,0.55) 0%, rgba(255,255,255,0.06) 50%, rgba(245,158,11,0.45) 100%)',
+                    boxShadow: '0 14px 32px -16px rgba(239,68,68,0.45)',
+                  }}
                 >
-                  <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/30 to-transparent" />
-                  <div className="w-10 h-10 mx-auto mb-2 rounded-2xl flex items-center justify-center border border-amber-400/20" style={{ background: 'linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.05))' }}>
-                    <Sparkles className="w-4.5 h-4.5 text-amber-300" />
-                  </div>
-                  <p className="text-[12px] text-muted-foreground mb-3">No active solo — start one from the Arena tab</p>
-                  <button
-                    onClick={() => { setArenaView('arena'); setShowSoloMode(true); }}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[12px] text-amber-200 font-black tracking-wide border border-amber-400/30 active:scale-95 transition-transform"
-                    style={{ background: 'linear-gradient(135deg, rgba(245,158,11,0.18), rgba(239,68,68,0.12))' }}
+                  <div
+                    className="relative rounded-[14px] p-3.5 flex flex-col gap-2 h-full overflow-hidden"
+                    style={{ background: 'linear-gradient(160deg, hsl(0 0% 11%) 0%, hsl(0 0% 7%) 100%)' }}
                   >
-                    Start Solo Edit <ArrowRight className="w-3 h-3" />
-                  </button>
-                </div>
-              )}
+                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+                    <div
+                      className="w-10 h-10 rounded-2xl flex items-center justify-center border border-white/10"
+                      style={{ background: 'linear-gradient(135deg, rgba(239,68,68,0.25), rgba(245,158,11,0.18))' }}
+                    >
+                      <Zap className="w-5 h-5 text-red-300" />
+                    </div>
+                    <div>
+                      <p className="text-[14px] font-black text-foreground tracking-tight" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>EDIT BATTLE INSTANTLY</p>
+                      <p className="text-[10px] text-muted-foreground leading-tight">Quick match · auto opponent</p>
+                    </div>
+                  </div>
+                </button>
+              </motion.div>
 
               {/* Active Quick Fights */}
               {myActiveQuickFights.length > 0 && (
@@ -1193,63 +1199,6 @@ export default function ArenaPage() {
                   </div>
                 </div>
               )}
-
-              {/* Battle History */}
-              <div>
-                <div className="flex items-center gap-2 mb-2 px-1">
-                  <History className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span className="text-[11px] font-black text-foreground/90 uppercase tracking-[0.15em]">Battle History</span>
-                </div>
-                {(myCompletedQuickFights.length + myBattles.filter(b => b.status === 'completed').length) > 0 ? (
-                  <div
-                    className="rounded-2xl border border-white/[0.06] overflow-hidden divide-y divide-white/[0.05]"
-                    style={{ background: 'linear-gradient(160deg, hsl(0 0% 10%) 0%, hsl(0 0% 6%) 100%)' }}
-                  >
-                    {myBattles.filter(b => b.status === 'completed').slice(0, 10).map(battle => (
-                      <button key={battle.id} onClick={() => navigate(`/battle/${battle.id}`)}
-                        className="w-full flex items-center gap-3 px-3.5 py-2.5 hover:bg-white/[0.02] transition-all text-left">
-                        <div className="flex-1 min-w-0">
-                          <span className="text-[12px] text-foreground truncate block">
-                            {battle.challenger_username} vs {battle.opponent_username}
-                          </span>
-                        </div>
-                        {battle.winner_id === user?.id ? (
-                          <span className="text-[10px] font-black text-emerald-300 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/25">WON</span>
-                        ) : battle.winner_id ? (
-                          <span className="text-[10px] font-black text-red-300 px-2 py-0.5 rounded-full bg-red-500/15 border border-red-500/25">LOST</span>
-                        ) : (
-                          <span className="text-[10px] font-black text-muted-foreground px-2 py-0.5 rounded-full bg-white/5 border border-white/10">DRAW</span>
-                        )}
-                      </button>
-                    ))}
-                    {myCompletedQuickFights.slice(0, 10).map(fight => (
-                      <button key={fight.id} onClick={() => navigate(`/fight/${fight.id}`)}
-                        className="w-full flex items-center gap-3 px-3.5 py-2.5 hover:bg-white/[0.02] transition-all text-left">
-                        <div className="flex-1 min-w-0">
-                          <span className="text-[12px] text-foreground truncate block">
-                            {fight.player_1_username} vs {fight.player_2_username}
-                          </span>
-                          <span className="text-[10px] text-muted-foreground">Quick 1v1</span>
-                        </div>
-                        {fight.winner_id === user?.id ? (
-                          <span className="text-[10px] font-black text-emerald-300 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/25">WON</span>
-                        ) : fight.winner_id ? (
-                          <span className="text-[10px] font-black text-red-300 px-2 py-0.5 rounded-full bg-red-500/15 border border-red-500/25">LOST</span>
-                        ) : (
-                          <span className="text-[10px] font-black text-muted-foreground px-2 py-0.5 rounded-full bg-white/5 border border-white/10">—</span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <div
-                    className="rounded-2xl border border-white/[0.06] p-6 text-center"
-                    style={{ background: 'linear-gradient(160deg, hsl(0 0% 10%) 0%, hsl(0 0% 6%) 100%)' }}
-                  >
-                    <p className="text-[12px] text-muted-foreground">No completed battles yet</p>
-                  </div>
-                )}
-              </div>
 
               {/* Email Notification Settings */}
               <EmailNotificationSettings />
