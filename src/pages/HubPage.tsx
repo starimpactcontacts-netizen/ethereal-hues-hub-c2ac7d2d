@@ -287,6 +287,19 @@ export default function HubPage() {
     return () => { if (qfTimerRef.current) clearInterval(qfTimerRef.current); };
   }, [qfIsSearching]);
 
+  // Lobby music while waiting in matchmaking queue
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { setLobbyMusicActive } = await import('@/components/loopgate/LobbyMusicPlayer');
+      if (!cancelled) setLobbyMusicActive(qfIsSearching);
+    })();
+    return () => {
+      cancelled = true;
+      import('@/components/loopgate/LobbyMusicPlayer').then(m => m.setLobbyMusicActive(false));
+    };
+  }, [qfIsSearching]);
+
   useEffect(() => {
     if (!qfIsSearching) return;
     const iv = setInterval(() => setQfTipIdx(p => (p + 1) % QF_TIPS.length), 6000);
