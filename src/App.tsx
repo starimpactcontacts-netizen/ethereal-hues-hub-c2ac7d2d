@@ -98,6 +98,7 @@ const SoloArenaPage = lazy(() => import("./pages/loopgate/SoloArenaPage"));
 const MissionLobbyPage = lazy(() => import("./pages/loopgate/MissionLobbyPage"));
 const LoopyPage = lazy(() => import("./pages/loopgate/LoopyPage"));
 const CreateCompetitionPage = lazy(() => import("./pages/loopgate/CreateCompetitionPage"));
+const CompetitionsListPage = lazy(() => import("./pages/loopgate/CompetitionsListPage"));
 const LoopyRatePage = lazy(() => import("./pages/loopgate/LoopyRatePage"));
 const StandaloneLinkPage = lazy(() => import("./pages/loopgate/StandaloneLinkPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
