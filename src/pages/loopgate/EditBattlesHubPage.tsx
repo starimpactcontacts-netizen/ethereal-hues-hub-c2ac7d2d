@@ -581,7 +581,6 @@ export default function EditBattlesHubPage() {
         (b) =>
           b.status === "completed" ||
           b.status === "ended" ||
-          b.status === "cancelled" ||
           b.status === "forfeited"
       ),
     [battles]
