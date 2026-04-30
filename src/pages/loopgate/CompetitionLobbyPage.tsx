@@ -2,15 +2,14 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft, Trophy, Users, Clock, Play, Loader2, Send,
-  Share2, Check, MessageCircle, Layers, Pencil, X, ThumbsUp, Sparkles, Upload, Volume2, VolumeX, CheckCircle2, Circle, LogOut, Crown, Info, Timer, Vote, Gavel
+  ArrowLeft, Trophy, Users, Clock, Play, Loader2,
+  Share2, Check, MessageCircle, Layers, Pencil, X, ThumbsUp, Sparkles, Upload, Volume2, VolumeX, CheckCircle2, Circle, LogOut, Crown, Info, Timer, Vote, Gavel, FileVideo, Image as ImageIcon
 } from "lucide-react";
 import { useCompetition } from "@/hooks/useCompetitions";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { formatDistanceToNow, isPast, differenceInSeconds } from "date-fns";
-import { validatePlatformUrl, getPlatformUrlPlaceholder, detectPlatform, type PlatformType } from "@/lib/urlValidation";
 import { useAutoplayVideo } from "@/hooks/useAutoplayVideo";
 import { supabase } from "@/integrations/supabase/client";
 import CompetitionChat from "@/components/loopgate/CompetitionChat";
@@ -71,13 +70,13 @@ export default function CompetitionLobbyPage() {
   const [isLeaving, setIsLeaving] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [showSubmit, setShowSubmit] = useState(false);
-  const [subUrl, setSubUrl] = useState("");
-  const [platform, setPlatform] = useState<PlatformType>("tiktok");
+  const [selectedSubmitFile, setSelectedSubmitFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showInspoForm, setShowInspoForm] = useState(false);
   const [savingInspo, setSavingInspo] = useState(false);
   const inspoFileInputRef = useRef<HTMLInputElement>(null);
+  const submitFileInputRef = useRef<HTMLInputElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
   const inspoVideoRef = useAutoplayVideo(true);
   const [inspoMuted, setInspoMuted] = useState(true);
@@ -186,16 +185,47 @@ export default function CompetitionLobbyPage() {
     else { toast.error("Couldn't leave"); setIsLeaving(false); }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!subUrl.trim()) return;
-    const validation = validatePlatformUrl(platform, subUrl);
-    if (!validation.valid) { toast.error(validation.error || "Invalid URL"); return; }
+  const uploadSubmissionFile = async (file: File) => {
+    if (!user || !profile || !competition) { navigate("/start"); return; }
+    if (!canSubmit) return;
+    if (file.size > 500 * 1024 * 1024) { toast.error("Keep uploads under 500MB"); return; }
+    const isVideo = file.type.startsWith("video/");
+    const isImage = file.type.startsWith("image/");
+    if (!isVideo && !isImage) { toast.error("Upload a video or photo edit"); return; }
+
+    setSelectedSubmitFile(file);
     setIsSubmitting(true);
-    const ok = await submit(subUrl.trim(), platform);
-    if (ok) { toast.success("Edit submitted!"); setShowSubmit(false); setSubUrl(""); }
-    else toast.error("Failed to submit");
-    setIsSubmitting(false);
+    try {
+      const rawExt = file.name.split(".").pop()?.toLowerCase();
+      const ext = rawExt || (isVideo ? "mp4" : "jpg");
+      const path = `${user.id}/competition-submissions/${competition.id}-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("loop-media")
+        .upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type });
+      if (upErr) throw upErr;
+
+      const { data: urlData } = supabase.storage.from("loop-media").getPublicUrl(path);
+      const ok = await submit(urlData.publicUrl, isVideo ? "upload" : "image");
+      if (ok) {
+        toast.success("Edit uploaded!");
+        setShowSubmit(false);
+        setSelectedSubmitFile(null);
+      } else {
+        toast.error("Failed to submit");
+      }
+    } catch (err: any) {
+      console.error("Submission upload error:", err);
+      toast.error(err?.message || "Upload failed");
+    } finally {
+      setIsSubmitting(false);
+      if (submitFileInputRef.current) submitFileInputRef.current.value = "";
+    }
+  };
+
+  const handleSubmissionFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    await uploadSubmissionFile(file);
   };
 
   const handleShare = async () => {
