@@ -102,7 +102,8 @@ export function useBattle(battleId: string | undefined) {
       .select('*')
       .eq('id', battleId)
       .maybeSingle();
-    if (!error && data) setBattle(data as Battle);
+    if (!error && data && data.status !== 'cancelled') setBattle(data as Battle);
+    else setBattle(null);
   };
 
   useEffect(() => {
@@ -119,7 +120,7 @@ export function useBattle(battleId: string | undefined) {
         .maybeSingle();
 
       if (!error && data) {
-        setBattle(data as Battle);
+        setBattle(data.status === 'cancelled' ? null : data as Battle);
       }
       setLoading(false);
     }
@@ -139,7 +140,8 @@ export function useBattle(battleId: string | undefined) {
         },
         (payload) => {
           if (payload.new) {
-            setBattle(payload.new as Battle);
+            const nextBattle = payload.new as Battle;
+            setBattle(nextBattle.status === 'cancelled' ? null : nextBattle);
           }
         }
       )

@@ -85,7 +85,8 @@ export function useQuickFight(fightId: string | undefined) {
         .select('*')
         .eq('id', fightId)
         .maybeSingle();
-      if (data) setFight(data as unknown as QuickFight);
+      if (data && data.status !== 'cancelled') setFight(data as unknown as QuickFight);
+      else setFight(null);
       setLoading(false);
     };
     fetch();
@@ -93,7 +94,11 @@ export function useQuickFight(fightId: string | undefined) {
     const channel = supabase
       .channel(`qf_${fightId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'quick_fights', filter: `id=eq.${fightId}` },
-        (payload) => { if (payload.new) setFight(payload.new as unknown as QuickFight); }
+        (payload) => {
+          if (!payload.new) return;
+          const nextFight = payload.new as unknown as QuickFight;
+          setFight(nextFight.status === 'cancelled' ? null : nextFight);
+        }
       ).subscribe();
 
     return () => { supabase.removeChannel(channel); };
