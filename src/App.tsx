@@ -61,6 +61,7 @@ const CashBattlePage = lazy(() => import("./pages/loopgate/CashBattlePage"));
 const EditBattlesHubPage = lazy(() => import("./pages/loopgate/EditBattlesHubPage"));
 const QuickFightPage = lazy(() => import("./pages/loopgate/QuickFightPage"));
 const JudgeQueuePage = lazy(() => import("./pages/loopgate/JudgeQueuePage"));
+const GatekeeperRankPage = lazy(() => import("./pages/loopgate/GatekeeperRankPage"));
 const EnterpriseDashboard = lazy(() => import("./pages/loopgate/EnterpriseDashboard"));
 const ArtistDashboardPage = lazy(() => import("./pages/loopgate/ArtistDashboardPage"));
 const CampaignAdminPage = lazy(() => import("./pages/loopgate/CampaignAdminPage"));
