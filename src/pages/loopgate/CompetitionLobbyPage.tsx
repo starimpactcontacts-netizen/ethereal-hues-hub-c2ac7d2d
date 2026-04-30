@@ -15,6 +15,7 @@ import { useAutoplayVideo } from "@/hooks/useAutoplayVideo";
 import { supabase } from "@/integrations/supabase/client";
 import CompetitionChat from "@/components/loopgate/CompetitionChat";
 import CompetitionLeaderboard from "@/components/loopgate/CompetitionLeaderboard";
+import CompetitionVoting from "@/components/loopgate/CompetitionVoting";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 
@@ -58,7 +59,9 @@ export default function CompetitionLobbyPage() {
   const {
     competition, participants, submissions, loading,
     isCreator, hasJoined, hasSubmitted, hasUpvoted, isReady, readyCount,
+    myVoteSubmissionId,
     join, submit, toggleUpvote, updateInspo, toggleReady, leave,
+    startVoting, castVote, finalizeVoting,
   } = useCompetition(id);
 
   
@@ -100,6 +103,23 @@ export default function CompetitionLobbyPage() {
     return p === "upload" || /\.(mp4|webm|mov|m4v)(\?|$)/i.test(u);
   }, [competition?.inspo_video_url, competition?.inspo_video_platform]);
 
+  // Auto-transition: when the edit window closes, flip live → voting (creator triggers it,
+  // any viewer triggers as fallback so it never gets stuck).
+  useEffect(() => {
+    if (!competition) return;
+    if (competition.status !== "live") return;
+    if (!competition.deadline) return;
+    const deadlineMs = new Date(competition.deadline).getTime();
+    const tick = () => {
+      if (Date.now() >= deadlineMs && competition.status === "live") {
+        startVoting();
+      }
+    };
+    tick();
+    const interval = setInterval(tick, 5000);
+    return () => clearInterval(interval);
+  }, [competition?.status, competition?.deadline]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-background">
@@ -124,6 +144,8 @@ export default function CompetitionLobbyPage() {
 
   const isLobby = competition.status === "lobby";
   const isLive = competition.status === "live";
+  const isVoting = competition.status === "voting";
+  const isCompleted = competition.status === "completed";
   const deadlinePassed = competition.deadline ? isPast(new Date(competition.deadline)) : false;
   const canSubmit = isLive && !deadlinePassed && hasJoined && !hasSubmitted;
   const canStart = isCreator && isLobby && competition.current_players >= 2;
@@ -916,8 +938,33 @@ export default function CompetitionLobbyPage() {
           </motion.form>
         )}
 
-        {/* ═══ LEADERBOARD — only when live or judging ═══ */}
-        {!isLobby && <CompetitionLeaderboard submissions={submissions} />}
+        {/* ═══ VOTING PHASE ═══ */}
+        {isVoting && (
+          <div className="space-y-3">
+            <CompetitionVoting
+              submissions={submissions}
+              myUserId={user?.id}
+              myVoteSubmissionId={myVoteSubmissionId}
+              onVote={castVote}
+            />
+            {isCreator && (
+              <button
+                onClick={async () => {
+                  const ok = await finalizeVoting();
+                  if (ok) toast.success("Winner crowned 👑");
+                  else toast.error("Couldn't finalize");
+                }}
+                className="w-full py-3 rounded-xl bg-gold text-gold-foreground font-extrabold uppercase tracking-[0.2em] text-[13px] active:scale-[0.98]"
+                style={teko}
+              >
+                Crown Winner & Close Voting
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* ═══ LEADERBOARD — once live submissions exist or after voting closes ═══ */}
+        {(isLive || isCompleted) && <CompetitionLeaderboard submissions={submissions} />}
 
         {/* ═══ EDITORS — with ready badges in lobby ═══ */}
         <div>

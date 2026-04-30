@@ -1602,6 +1602,7 @@ export type Database = {
           submission_url: string
           user_id: string
           username: string
+          vote_count: number
           winner_place: number | null
         }
         Insert: {
@@ -1617,6 +1618,7 @@ export type Database = {
           submission_url: string
           user_id: string
           username: string
+          vote_count?: number
           winner_place?: number | null
         }
         Update: {
@@ -1632,6 +1634,7 @@ export type Database = {
           submission_url?: string
           user_id?: string
           username?: string
+          vote_count?: number
           winner_place?: number | null
         }
         Relationships: [
@@ -1673,6 +1676,45 @@ export type Database = {
           },
         ]
       }
+      competition_votes: {
+        Row: {
+          competition_id: string
+          created_at: string
+          id: string
+          submission_id: string
+          voter_id: string
+        }
+        Insert: {
+          competition_id: string
+          created_at?: string
+          id?: string
+          submission_id: string
+          voter_id: string
+        }
+        Update: {
+          competition_id?: string
+          created_at?: string
+          id?: string
+          submission_id?: string
+          voter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competition_votes_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_votes_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "competition_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       competitions: {
         Row: {
           cover_image_url: string | null
@@ -1698,6 +1740,8 @@ export type Database = {
           theme: string | null
           updated_at: string
           upvote_count: number
+          voting_deadline: string | null
+          voting_started_at: string | null
         }
         Insert: {
           cover_image_url?: string | null
@@ -1723,6 +1767,8 @@ export type Database = {
           theme?: string | null
           updated_at?: string
           upvote_count?: number
+          voting_deadline?: string | null
+          voting_started_at?: string | null
         }
         Update: {
           cover_image_url?: string | null
@@ -1748,6 +1794,8 @@ export type Database = {
           theme?: string | null
           updated_at?: string
           upvote_count?: number
+          voting_deadline?: string | null
+          voting_started_at?: string | null
         }
         Relationships: []
       }

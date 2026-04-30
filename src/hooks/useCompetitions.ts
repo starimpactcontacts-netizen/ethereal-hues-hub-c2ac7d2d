@@ -52,6 +52,7 @@ export interface CompetitionSubmission {
   winner_place: number | null;
   scored_at: string | null;
   created_at: string;
+  vote_count?: number;
 }
 
 export function useCompetitionsList() {
@@ -88,6 +89,7 @@ export function useCompetition(idOrSlug: string | undefined) {
   const [submissions, setSubmissions] = useState<CompetitionSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasUpvoted, setHasUpvoted] = useState(false);
+  const [myVoteSubmissionId, setMyVoteSubmissionId] = useState<string | null>(null);
 
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug || "");
 
@@ -122,8 +124,17 @@ export function useCompetition(idOrSlug: string | undefined) {
         .eq("user_id", user.id)
         .maybeSingle();
       setHasUpvoted(!!uv);
+
+      const { data: mv } = await supabase
+        .from("competition_votes" as any)
+        .select("submission_id")
+        .eq("competition_id", comp.id)
+        .eq("voter_id", user.id)
+        .maybeSingle();
+      setMyVoteSubmissionId(((mv as any)?.submission_id) || null);
     } else {
       setHasUpvoted(false);
+      setMyVoteSubmissionId(null);
     }
 
     setLoading(false);
@@ -138,6 +149,8 @@ export function useCompetition(idOrSlug: string | undefined) {
       .on("postgres_changes", { event: "*", schema: "public", table: "competitions" }, () => fetchAll())
       .on("postgres_changes", { event: "*", schema: "public", table: "competition_participants" }, () => fetchAll())
       .on("postgres_changes", { event: "*", schema: "public", table: "competition_upvotes" }, () => fetchAll())
+      .on("postgres_changes", { event: "*", schema: "public", table: "competition_submissions" }, () => fetchAll())
+      .on("postgres_changes", { event: "*", schema: "public", table: "competition_votes" }, () => fetchAll())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [idOrSlug, user?.id]);
@@ -248,9 +261,73 @@ export function useCompetition(idOrSlug: string | undefined) {
     return true;
   };
 
+  // Open the community voting phase (10 min window)
+  const startVoting = async () => {
+    if (!competition) return false;
+    const now = new Date();
+    const deadline = new Date(now.getTime() + 10 * 60 * 1000);
+    const { error } = await supabase.from("competitions").update({
+      status: "voting",
+      voting_started_at: now.toISOString(),
+      voting_deadline: deadline.toISOString(),
+    } as any).eq("id", competition.id);
+    if (error) return false;
+    await fetchAll();
+    return true;
+  };
+
+  // Cast / change vote for one submission. Cannot vote for own submission.
+  const castVote = async (submissionId: string) => {
+    if (!user || !competition) return false;
+    const target = submissions.find(s => s.id === submissionId);
+    if (!target || target.user_id === user.id) return false;
+    // Remove existing vote first (one vote per voter per competition)
+    if (myVoteSubmissionId) {
+      await supabase.from("competition_votes" as any)
+        .delete()
+        .eq("competition_id", competition.id)
+        .eq("voter_id", user.id);
+    }
+    if (myVoteSubmissionId === submissionId) {
+      // toggled off
+      setMyVoteSubmissionId(null);
+      await fetchAll();
+      return true;
+    }
+    const { error } = await supabase.from("competition_votes" as any).insert({
+      competition_id: competition.id,
+      submission_id: submissionId,
+      voter_id: user.id,
+    });
+    if (error) return false;
+    setMyVoteSubmissionId(submissionId);
+    await fetchAll();
+    return true;
+  };
+
+  // Close voting and pick the winner by votes
+  const finalizeVoting = async () => {
+    if (!competition || !isCreator) return false;
+    const sorted = [...submissions].sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0));
+    const winner = sorted[0];
+    if (winner) {
+      await supabase.from("competition_submissions")
+        .update({ is_winner: true, winner_place: 1, scored_at: new Date().toISOString() } as any)
+        .eq("id", winner.id);
+    }
+    await supabase.from("competitions")
+      .update({ status: "completed" } as any)
+      .eq("id", competition.id);
+    await fetchAll();
+    return true;
+  };
+
   return {
     competition, participants, submissions, loading,
     isCreator, hasJoined, hasSubmitted, hasUpvoted, isReady, readyCount,
-    join, start, submit, toggleUpvote, updateInspo, toggleReady, leave, refetch: fetchAll,
+    myVoteSubmissionId,
+    join, start, submit, toggleUpvote, updateInspo, toggleReady, leave,
+    startVoting, castVote, finalizeVoting,
+    refetch: fetchAll,
   };
 }
