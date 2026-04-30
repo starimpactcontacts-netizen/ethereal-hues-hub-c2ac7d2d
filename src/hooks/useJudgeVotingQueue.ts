@@ -1,0 +1,116 @@
+import { useEffect, useState, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+
+export type BattleSource = 'battle' | 'cash_battle' | 'quick_fight' | 'competition';
+
+export interface JudgeVoteItem {
+  id: string;
+  source: BattleSource;
+  player_1_username: string;
+  player_1_avatar_url: string | null;
+  player_2_username: string | null;
+  player_2_avatar_url: string | null;
+  prize_label: string | null;
+  created_at: string;
+  route: string;
+}
+
+export function useJudgeVotingQueue() {
+  const [items, setItems] = useState<JudgeVoteItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchAll = useCallback(async () => {
+    const [battles, cash, quick, comps] = await Promise.all([
+      supabase
+        .from('battles')
+        .select('id, challenger_username, opponent_username, challenger_avatar_url, opponent_avatar_url, created_at, status')
+        .eq('status', 'judging')
+        .is('judge_id', null)
+        .order('created_at', { ascending: true })
+        .limit(50),
+      supabase
+        .from('cash_battles')
+        .select('id, challenger_username, opponent_username, challenger_avatar_url, opponent_avatar_url, prize_cents, created_at, status')
+        .in('status', ['judging', 'voting'])
+        .order('created_at', { ascending: true })
+        .limit(50),
+      supabase
+        .from('quick_fights')
+        .select('id, player_1_username, player_2_username, player_1_avatar_url, player_2_avatar_url, created_at, status, judge_id')
+        .eq('status', 'judging')
+        .is('judge_id', null)
+        .order('created_at', { ascending: true })
+        .limit(50),
+      supabase
+        .from('competitions')
+        .select('id, slug, name, creator_username, creator_avatar_url, created_at, status')
+        .in('status', ['voting', 'judging'])
+        .order('created_at', { ascending: true })
+        .limit(50),
+    ]);
+
+    const merged: JudgeVoteItem[] = [];
+
+    (battles.data ?? []).forEach((b: any) => merged.push({
+      id: b.id, source: 'battle',
+      player_1_username: b.challenger_username,
+      player_1_avatar_url: b.challenger_avatar_url,
+      player_2_username: b.opponent_username,
+      player_2_avatar_url: b.opponent_avatar_url,
+      prize_label: '+20 IDX',
+      created_at: b.created_at,
+      route: `/battle/${b.id}`,
+    }));
+
+    (cash.data ?? []).forEach((b: any) => merged.push({
+      id: b.id, source: 'cash_battle',
+      player_1_username: b.challenger_username,
+      player_1_avatar_url: b.challenger_avatar_url,
+      player_2_username: b.opponent_username,
+      player_2_avatar_url: b.opponent_avatar_url,
+      prize_label: b.prize_cents ? `$${(b.prize_cents / 100).toFixed(0)}` : 'CASH',
+      created_at: b.created_at,
+      route: `/cash-battle/${b.id}`,
+    }));
+
+    (quick.data ?? []).forEach((q: any) => merged.push({
+      id: q.id, source: 'quick_fight',
+      player_1_username: q.player_1_username,
+      player_1_avatar_url: q.player_1_avatar_url,
+      player_2_username: q.player_2_username,
+      player_2_avatar_url: q.player_2_avatar_url,
+      prize_label: '+15 JXP',
+      created_at: q.created_at,
+      route: `/fight/${q.id}`,
+    }));
+
+    (comps.data ?? []).forEach((c: any) => merged.push({
+      id: c.id, source: 'competition',
+      player_1_username: c.name || c.creator_username,
+      player_1_avatar_url: c.creator_avatar_url,
+      player_2_username: null,
+      player_2_avatar_url: null,
+      prize_label: 'LOBBY',
+      created_at: c.created_at,
+      route: `/competition/${c.slug || c.id}`,
+    }));
+
+    merged.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+    setItems(merged);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchAll();
+    const channel = supabase
+      .channel('judge_voting_queue')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'battles' }, () => fetchAll())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'cash_battles' }, () => fetchAll())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'quick_fights' }, () => fetchAll())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'competitions' }, () => fetchAll())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [fetchAll]);
+
+  return { items, loading, refetch: fetchAll };
+}
