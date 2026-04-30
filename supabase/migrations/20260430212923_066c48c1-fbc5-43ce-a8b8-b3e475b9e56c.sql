@@ -1,0 +1,1 @@
+UPDATE public.battles SET status = 'cancelled' WHERE id = '9ed9d2ca-b3ad-4d59-a12e-689b7012a4f3';
