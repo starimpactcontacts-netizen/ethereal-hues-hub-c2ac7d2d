@@ -1070,7 +1070,7 @@ export default function HubPage() {
       {/* ═══════════════════════════════════════════════════════════════════
           🎵 FEATURED DROPS — All drops carousel
       ═══════════════════════════════════════════════════════════════════ */}
-      {totalArtistFeatured > 0 && (
+      {false && totalArtistFeatured > 0 && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
