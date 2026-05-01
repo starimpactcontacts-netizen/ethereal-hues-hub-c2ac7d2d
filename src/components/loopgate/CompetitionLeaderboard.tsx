@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Trophy, ExternalLink, Play, ChevronDown, ChevronUp,
-  Crown, X, ThumbsUp, ThumbsDown, MessageCircle, Vote
+  Crown, X, ThumbsUp, ThumbsDown, MessageCircle, Vote, Lock
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { CompetitionSubmission } from "@/hooks/useCompetitions";
@@ -44,10 +44,29 @@ function ScoreBar({ label, score, max, color }: { label: string; score: number; 
   );
 }
 
-function EditDetailView({ sub, rank, onClose }: { sub: CompetitionSubmission; rank: number; onClose: () => void }) {
+function EditDetailView({
+  sub,
+  rank,
+  onClose,
+  onVote,
+  myVoteSubmissionId,
+  votingOpen,
+  isOwn,
+}: {
+  sub: CompetitionSubmission;
+  rank: number;
+  onClose: () => void;
+  onVote?: (submissionId: string) => Promise<boolean> | void;
+  myVoteSubmissionId?: string | null;
+  votingOpen?: boolean;
+  isOwn?: boolean;
+}) {
   const style = rankColors[rank] || { border: "border-white/[0.08]", glow: "", bg: "from-white/5 to-transparent", text: "text-muted-foreground" };
   const directVideo = isDirectVideo(sub.submission_url);
   const imageFile = isImageFile(sub.submission_url);
+  const [shake, setShake] = useState(false);
+  const [showClosedModal, setShowClosedModal] = useState(false);
+  const hasMyVote = myVoteSubmissionId === sub.id;
   
   // Derive QOI pillars from total score (mock breakdown for now)
   const total = sub.score ?? 0;
@@ -55,14 +74,25 @@ function EditDetailView({ sub, rank, onClose }: { sub: CompetitionSubmission; ra
   const originality = Math.round(total * 0.35);
   const impact = total - quality - originality;
 
+  const handleVoteClick = async () => {
+    if (!votingOpen) {
+      setShake(true);
+      setShowClosedModal(true);
+      setTimeout(() => setShake(false), 600);
+      return;
+    }
+    if (isOwn) return;
+    if (onVote) await onVote(sub.id);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm overflow-y-auto"
+      className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm overflow-y-auto"
     >
-      <div className="min-h-screen pb-24">
+      <div className="min-h-screen pb-32 max-w-2xl mx-auto">
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 bg-background/80 backdrop-blur-xl border-b border-white/[0.06]">
           <div className="flex items-center gap-2 min-w-0">
@@ -80,12 +110,14 @@ function EditDetailView({ sub, rank, onClose }: { sub: CompetitionSubmission; ra
           )}
         </div>
 
-        {/* Video area */}
-        <div className="relative aspect-[9/16] max-h-[60vh] bg-black/50 flex items-center justify-center overflow-hidden">
+        {/* Video area — properly contained on mobile + laptop */}
+        <div className="relative w-full bg-black flex items-center justify-center overflow-hidden mx-auto"
+          style={{ height: "min(70vh, 720px)" }}
+        >
           {directVideo ? (
-            <video src={sub.submission_url} className="h-full w-full object-contain" controls playsInline autoPlay />
+            <video src={sub.submission_url} className="max-h-full max-w-full object-contain" controls playsInline autoPlay />
           ) : imageFile ? (
-            <img src={sub.submission_url} alt={`${sub.username} submission`} className="h-full w-full object-contain" />
+            <img src={sub.submission_url} alt={`${sub.username} submission`} className="max-h-full max-w-full object-contain" />
           ) : (
             <a
               href={sub.submission_url}
@@ -95,12 +127,6 @@ function EditDetailView({ sub, rank, onClose }: { sub: CompetitionSubmission; ra
             >
               <Play className="w-7 h-7 text-amber-400 ml-1" />
             </a>
-          )}
-          {sub.score !== null && (
-            <div className="absolute top-3 right-3 px-3 py-1.5 rounded-xl bg-black/60 backdrop-blur-sm border border-amber-400/20">
-              <span className="text-2xl font-black text-amber-400 tabular-nums" style={teko}>{sub.score}</span>
-              <span className="text-[10px] text-amber-400/50 ml-1" style={teko}>QOI</span>
-            </div>
           )}
         </div>
 
@@ -134,17 +160,32 @@ function EditDetailView({ sub, rank, onClose }: { sub: CompetitionSubmission; ra
             )}
           </div>
 
-          {/* Voting (placeholder) */}
-          <div className="flex items-center justify-center gap-4">
-            <button className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-white/[0.04] border border-white/[0.08] transition-all active:scale-95">
-              <ThumbsUp className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-bold text-muted-foreground tabular-nums">0</span>
+          {/* Voting */}
+          <motion.div
+            animate={shake ? { x: [0, -10, 10, -8, 8, -4, 4, 0] } : { x: 0 }}
+            transition={{ duration: 0.55 }}
+            className="flex items-center justify-center gap-3"
+          >
+            <button
+              onClick={handleVoteClick}
+              disabled={isOwn}
+              className={`flex items-center gap-2 px-6 py-3 rounded-2xl border transition-all active:scale-95 ${
+                !votingOpen
+                  ? shake
+                    ? "bg-red-500/20 border-red-500 text-red-400"
+                    : "bg-white/[0.03] border-white/[0.06] text-muted-foreground/60"
+                  : hasMyVote
+                    ? "bg-amber-400 border-amber-400 text-black"
+                    : "bg-white/[0.05] border-white/[0.10] text-foreground hover:bg-white/[0.08]"
+              } ${isOwn ? "opacity-40 cursor-not-allowed" : ""}`}
+            >
+              {!votingOpen ? <Lock className="w-4 h-4" /> : <Vote className="w-4 h-4" />}
+              <span className="text-sm font-bold tabular-nums" style={teko}>
+                {hasMyVote ? "VOTED" : !votingOpen ? "VOTING CLOSED" : isOwn ? "YOUR EDIT" : "VOTE"}
+              </span>
+              <span className="text-sm font-black tabular-nums">· {sub.vote_count ?? 0}</span>
             </button>
-            <button className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-white/[0.04] border border-white/[0.08] transition-all active:scale-95">
-              <ThumbsDown className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-bold text-muted-foreground tabular-nums">0</span>
-            </button>
-          </div>
+          </motion.div>
 
           {/* Score Breakdown */}
           {sub.score !== null && (
@@ -183,11 +224,64 @@ function EditDetailView({ sub, rank, onClose }: { sub: CompetitionSubmission; ra
           )}
         </div>
       </div>
+
+      {/* Voting closed modal */}
+      <AnimatePresence>
+        {showClosedModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowClosedModal(false)}
+            className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-md flex items-center justify-center p-6"
+          >
+            <motion.div
+              initial={{ scale: 0.85, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 22 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm rounded-2xl border border-red-500/40 bg-gradient-to-b from-red-950/60 to-black p-6 text-center shadow-[0_0_40px_rgba(239,68,68,0.35)]"
+            >
+              <div className="w-14 h-14 mx-auto rounded-full bg-red-500/15 border border-red-500/40 flex items-center justify-center mb-4">
+                <Lock className="w-6 h-6 text-red-400" />
+              </div>
+              <div className="text-2xl font-black uppercase tracking-wider text-red-400 mb-1.5" style={teko}>
+                Voting Ended
+              </div>
+              <p className="text-xs text-white/60 leading-relaxed mb-5">
+                This battle is over. The winner has already been crowned — no more votes can be cast.
+              </p>
+              <button
+                onClick={() => setShowClosedModal(false)}
+                className="w-full py-2.5 rounded-xl bg-red-500 text-white text-sm font-black uppercase tracking-wider active:scale-95 transition"
+                style={teko}
+              >
+                Got it
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
 
-export default function CompetitionLeaderboard({ submissions, isCompleted = false }: { submissions: CompetitionSubmission[]; isCompleted?: boolean }) {
+export default function CompetitionLeaderboard({
+  submissions,
+  isCompleted = false,
+  isVoting = false,
+  onVote,
+  myVoteSubmissionId,
+  currentUserId,
+}: {
+  submissions: CompetitionSubmission[];
+  isCompleted?: boolean;
+  isVoting?: boolean;
+  onVote?: (submissionId: string) => Promise<boolean> | void;
+  myVoteSubmissionId?: string | null;
+  currentUserId?: string | null;
+}) {
   const [selectedEdit, setSelectedEdit] = useState<{ sub: CompetitionSubmission; rank: number } | null>(null);
   const [showAll, setShowAll] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -435,6 +529,10 @@ export default function CompetitionLeaderboard({ submissions, isCompleted = fals
             sub={selectedEdit.sub}
             rank={selectedEdit.rank}
             onClose={() => setSelectedEdit(null)}
+            onVote={onVote}
+            myVoteSubmissionId={myVoteSubmissionId}
+            votingOpen={isVoting && !isCompleted}
+            isOwn={!!currentUserId && selectedEdit.sub.user_id === currentUserId}
           />
         )}
       </AnimatePresence>
