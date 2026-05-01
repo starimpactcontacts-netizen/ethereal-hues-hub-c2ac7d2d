@@ -106,10 +106,10 @@ export default function CompetitionLobbyPage() {
   const themeRevealedRef = useRef<string | null>(null);
   // Tick once per second during the live showcase so the leaderboard reveals
   // exactly when the synchronized 15s/edit playback ends — no waiting on poll.
-  const [, setNowTick] = useState(0);
+  const [phaseNow, setPhaseNow] = useState(() => Date.now());
   useEffect(() => {
     if (competition?.status !== "voting") return;
-    const i = setInterval(() => setNowTick(t => t + 1), 1000);
+    const i = setInterval(() => setPhaseNow(Date.now()), 500);
     return () => clearInterval(i);
   }, [competition?.status]);
 
@@ -273,6 +273,13 @@ export default function CompetitionLobbyPage() {
   const canSubmit = isLive && !deadlinePassed && hasJoined && !hasSubmitted;
   const submittedEditorCount = submissions.length;
   const totalEditorCount = participants.length || competition.current_players || competition.max_players;
+  const votingStartedAt = (competition as any).voting_started_at as string | null | undefined;
+  const votingDeadline = (competition as any).voting_deadline as string | null | undefined;
+  const showcaseMs = submissions.length * 15 * 1000;
+  const showcaseEndsAt = votingStartedAt ? new Date(votingStartedAt).getTime() + showcaseMs : null;
+  const votingDeadlineMs = votingDeadline ? new Date(votingDeadline).getTime() : null;
+  const showcaseDone = isVoting && showcaseEndsAt !== null && phaseNow >= showcaseEndsAt;
+  const votingWindowOpen = isVoting && submissions.length > 0 && showcaseDone && votingDeadlineMs !== null && phaseNow < votingDeadlineMs;
 
   const handleJoin = async () => {
     if (!user) { navigate("/start"); return; }
