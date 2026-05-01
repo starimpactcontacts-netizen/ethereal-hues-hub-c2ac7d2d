@@ -681,7 +681,27 @@ export default function CashBattlesSection({
 
       {/* Horizontal scroll — open matchups first, then existing battles */}
       {(loading || idxBattlesLoading || quickFightsLoading || openQueueLoading) ? <ArenaRailSkeleton count={3} /> : <ArenaRail key={`queue-first-${openQueue.map((entry) => entry.id).join('-')}`}>
-        {/* Open Quick-Fight queue cards removed per request */}
+        {/* Your own queue card — pinned to the FRONT of the rail while searching */}
+        {user?.id && openQueue
+          .filter((entry) => entry.user_id === user.id)
+          .map((entry) => (
+            <ArenaRailCard key={`my-queue-${entry.id}`}>
+              <div id="my-queue-card" className="w-full h-full">
+                <OpenQueueCard
+                  entry={entry}
+                  isOwn={true}
+                  onAccept={() => {}}
+                  onCancel={async () => {
+                    if (user?.id) {
+                      await leaveQueue(user.id);
+                      onCancelQueue?.();
+                      toast('Search cancelled', { duration: 2000 });
+                    }
+                  }}
+                />
+              </div>
+            </ArenaRailCard>
+          ))}
 
         {/* Open cash matchup cards — second priority (joinable) */}
         {pendingApps.map((app) => (
