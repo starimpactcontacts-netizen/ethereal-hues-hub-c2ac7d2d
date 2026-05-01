@@ -17,6 +17,7 @@ import CompetitionLeaderboard from "@/components/loopgate/CompetitionLeaderboard
 import CompetitionVoting from "@/components/loopgate/CompetitionVoting";
 import CompetitionWinnerCard from "@/components/loopgate/CompetitionWinnerCard";
 import { setLobbyMusicActive } from "@/components/loopgate/LobbyMusicPlayer";
+import ThemeRevealModal, { pickAutoTheme } from "@/components/loopgate/ThemeRevealModal";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 
@@ -81,6 +82,9 @@ export default function CompetitionLobbyPage() {
   const inspoVideoRef = useAutoplayVideo(true);
   const [inspoMuted, setInspoMuted] = useState(true);
   const [showWinnerCard, setShowWinnerCard] = useState(false);
+  const [showThemeReveal, setShowThemeReveal] = useState(false);
+  const prevStatusRef = useRef<string | null>(null);
+  const themeRevealedRef = useRef<string | null>(null);
 
   const toggleInspoMute = () => {
     const v = inspoVideoRef.current;
@@ -110,6 +114,31 @@ export default function CompetitionLobbyPage() {
     setLobbyMusicActive(inLobby);
     return () => setLobbyMusicActive(false);
   }, [competition?.status]);
+
+  // Theme reveal — fires the moment the host transitions lobby → live.
+  // Only show once per competition load; auto-dismisses inside the modal.
+  useEffect(() => {
+    if (!competition) return;
+    const prev = prevStatusRef.current;
+    const curr = competition.status;
+    // First load: if we mount directly into "live" within ~30s of start, also reveal.
+    if (prev === null) {
+      prevStatusRef.current = curr;
+      if (curr === "live" && competition.started_at) {
+        const startedMs = new Date(competition.started_at).getTime();
+        if (Date.now() - startedMs < 30_000 && themeRevealedRef.current !== competition.id) {
+          themeRevealedRef.current = competition.id;
+          setShowThemeReveal(true);
+        }
+      }
+      return;
+    }
+    if (prev === "lobby" && curr === "live" && themeRevealedRef.current !== competition.id) {
+      themeRevealedRef.current = competition.id;
+      setShowThemeReveal(true);
+    }
+    prevStatusRef.current = curr;
+  }, [competition?.status, competition?.id, competition?.started_at]);
 
   // Auto-transition: when the edit window closes, flip live → voting (creator triggers it,
   // any viewer triggers as fallback so it never gets stuck).
