@@ -94,6 +94,29 @@ export function playError() {
   } catch {}
 }
 
+/** Fanfare — cinematic theme-reveal sting (rising sparkle + boom) */
+export function playFanfare() {
+  try {
+    const c = getCtx();
+    const t = c.currentTime;
+    const master = c.createGain();
+    master.gain.value = 0.85;
+    master.connect(c.destination);
+
+    // Low boom
+    osc(c, 'sine', 90, t, 0.6, 0.7, master);
+    osc(c, 'triangle', 180, t, 0.5, 0.45, master);
+    // Rising sparkle arpeggio
+    osc(c, 'triangle', 660, t + 0.05, 0.18, 0.5, master);
+    osc(c, 'triangle', 880, t + 0.18, 0.18, 0.5, master);
+    osc(c, 'triangle', 1320, t + 0.32, 0.22, 0.5, master);
+    osc(c, 'sine',     1760, t + 0.50, 0.35, 0.45, master);
+    // Shimmer tail
+    osc(c, 'sine', 2640, t + 0.55, 0.45, 0.25, master);
+    osc(c, 'sine', 3520, t + 0.60, 0.40, 0.18, master);
+  } catch {}
+}
+
 /** Toggle on */
 export function playToggleOn() {
   try {
