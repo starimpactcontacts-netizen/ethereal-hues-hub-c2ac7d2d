@@ -100,7 +100,7 @@ export default function ProfilePage() {
 
   if (authLoading || !profile) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="text-muted-foreground">Loading...</p>
       </div>
     );
@@ -110,7 +110,6 @@ export default function ProfilePage() {
   const quickNav = [
     { to: "/profile/stats", icon: BarChart3, label: "Stats" },
     { to: "/connections", icon: Users, label: "Network" },
-    { to: "/payouts", icon: DollarSign, label: "Earnings" },
     { to: "/inventory", icon: Package, label: "Items" },
     { to: "/profile/settings", icon: Settings, label: "Settings" },
   ];
@@ -139,7 +138,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="bg-black min-h-screen text-foreground">
+    <div className="bg-background min-h-screen text-foreground">
       
       {/* ═══ TIKTOK-STYLE CENTERED HERO ═══ */}
       <div className="relative pt-2 pb-0">
