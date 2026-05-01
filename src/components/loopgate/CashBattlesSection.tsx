@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { DollarSign, Swords, Clock, Info, X, Loader2, Building2, ChevronRight } from "lucide-react";
 import CashBattleVoteBar from "@/components/loopgate/CashBattleVoteBar";
+import BattleVoteBarCompact from "@/components/loopgate/BattleVoteBarCompact";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCashBattles, useMyCashBattles, useMyCashBattleApplication, CashBattleApplication } from "@/hooks/useCashBattles";
 import { useOpenQuickFightQueue, leaveQueue, type OpenQueueEntry, type QuickFight } from "@/hooks/useQuickFight";
@@ -358,6 +359,29 @@ interface EditBattlesSectionProps {
 function QuickFightCarouselCard({ fight, isMine }: { fight: QuickFight; isMine: boolean }) {
   const navigate = useNavigate();
   const isLive = fight.status === 'active' || fight.status === 'submitted' || fight.status === 'judging';
+  const [votes, setVotes] = useState<{ blue: number; red: number }>({ blue: 0, red: 0 });
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      const { data } = await supabase
+        .from("quick_fight_votes")
+        .select("voted_for")
+        .eq("fight_id", fight.id);
+      if (cancelled || !data) return;
+      const rows = data as { voted_for: string }[];
+      setVotes({
+        blue: rows.filter(r => r.voted_for === fight.player_1_id).length,
+        red: fight.player_2_id ? rows.filter(r => r.voted_for === fight.player_2_id).length : 0,
+      });
+    }
+    load();
+    const ch = supabase
+      .channel(`qf-votes-${fight.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "quick_fight_votes", filter: `fight_id=eq.${fight.id}` }, load)
+      .subscribe();
+    return () => { cancelled = true; supabase.removeChannel(ch); };
+  }, [fight.id, fight.player_1_id, fight.player_2_id]);
 
   return (
     <motion.div
@@ -384,7 +408,7 @@ function QuickFightCarouselCard({ fight, isMine }: { fight: QuickFight; isMine: 
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             {isLive && <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
-            <span className="text-[10px] font-black uppercase tracking-[0.15em] text-emerald-400" style={{ fontFamily: "Teko, sans-serif" }}>
+            <span className="text-[10px] font-black uppercase tracking-[0.15em] text-blue-400" style={{ fontFamily: "Teko, sans-serif" }}>
               {isMine ? "YOUR BATTLE" : fight.status}
             </span>
           </div>
@@ -433,9 +457,12 @@ function QuickFightCarouselCard({ fight, isMine }: { fight: QuickFight; isMine: 
       </div>
 
       <div className="px-3 pb-3 mt-auto">
-        <div className="w-full py-1.5 rounded-md text-[11px] font-black uppercase tracking-wider text-center text-emerald-300 border border-emerald-500/30 bg-emerald-500/[0.10]" style={{ fontFamily: "Teko, sans-serif" }}>
-          Enter
-        </div>
+        <BattleVoteBarCompact
+          blueVotes={votes.blue}
+          redVotes={votes.red}
+          blueLabel={fight.player_1_username}
+          redLabel={fight.player_2_username || undefined}
+        />
       </div>
     </motion.div>
   );
