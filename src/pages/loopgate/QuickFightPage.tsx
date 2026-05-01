@@ -174,71 +174,132 @@ export default function QuickFightPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Header */}
-      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="px-4 py-3 flex items-center justify-between">
+      {/* ════════ ARCADE HUD ════════ */}
+      {/* Top bar: back + status pill */}
+      <div className="sticky top-0 z-40 bg-black/80 backdrop-blur-xl border-b border-white/5">
+        <div className="px-4 py-2.5 flex items-center justify-between">
           <button
             onClick={() => navigate('/hub')}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground touch-manipulation"
+            className="flex items-center gap-1.5 text-zinc-400 hover:text-white touch-manipulation"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm">Back</span>
+            <span className="text-xs">Back</span>
           </button>
-          <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider">
-            {fight.status === 'active' ? '⚔️ LIVE FIGHT' :
-             fight.status === 'judging' ? '⚖️ AWAITING JUDGE' :
-             fight.status === 'completed' ? '🏆 DECIDED' :
-             fight.status === 'cancelled' ? '🚫 CANCELLED' :
-             fight.status === 'forfeited' ? '🏳️ FORFEIT' : fight.status.toUpperCase()}
-          </span>
+          <div className="flex items-center gap-1.5">
+            {fight.status === 'active' && (
+              <span className="relative flex w-2 h-2">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+              </span>
+            )}
+            {fight.status === 'active' && <Swords className="w-3.5 h-3.5 text-red-400" />}
+            <span
+              className={`text-[11px] font-black uppercase tracking-[0.2em] ${
+                fight.status === 'active' ? 'text-red-400' :
+                fight.status === 'judging' ? 'text-purple-400' :
+                fight.status === 'completed' ? 'text-amber-400' : 'text-zinc-500'
+              }`}
+              style={{ fontFamily: 'Teko, sans-serif' }}
+            >
+              {fight.status === 'active' ? 'LIVE FIGHT' :
+               fight.status === 'judging' ? 'AWAITING JUDGE' :
+               fight.status === 'completed' ? 'DECIDED' :
+               fight.status === 'cancelled' ? 'CANCELLED' :
+               fight.status === 'forfeited' ? 'FORFEIT' : fight.status.toUpperCase()}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Compact VS strip — minimal chrome so the EDITS are the hero */}
-      <div className="relative overflow-hidden border-b border-border/50">
-        <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 via-background to-blue-500/10" />
-        <div className="relative px-4 py-2.5 flex items-center justify-between gap-3">
-          {/* Player 1 (RED) */}
+      {/* HUD scoreboard — RED · holographic timer · BLUE */}
+      <div className="relative overflow-hidden">
+        {/* Bleeding red/blue corner glows */}
+        <div className="absolute -left-20 -top-20 w-64 h-64 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(239,68,68,0.35) 0%, transparent 70%)' }} />
+        <div className="absolute -right-20 -top-20 w-64 h-64 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.35) 0%, transparent 70%)' }} />
+        {/* Scan-line divider */}
+        <div className="absolute inset-x-0 bottom-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(239,68,68,0.6), rgba(255,255,255,0.4), rgba(59,130,246,0.6), transparent)' }} />
+
+        <div className="relative px-3 py-3 flex items-center justify-between gap-2">
+          {/* RED player block */}
           <div className="flex items-center gap-2 min-w-0 flex-1">
-            <Avatar className={`w-7 h-7 border ${fight.winner_id === fight.player_1_id ? 'border-gold' : 'border-red-500/70'}`}>
-              <AvatarImage src={fight.player_1_avatar_url || ''} />
-              <AvatarFallback className="bg-red-500/20 text-red-400 text-[10px] font-bold">
-                {fight.player_1_username.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative shrink-0">
+              <Avatar className={`w-11 h-11 border-2 ${fight.winner_id === fight.player_1_id ? 'border-amber-400' : 'border-red-500'}`}
+                style={{ boxShadow: fight.status === 'active' ? '0 0 16px rgba(239,68,68,0.5)' : '0 0 10px rgba(239,68,68,0.25)' }}>
+                <AvatarImage src={fight.player_1_avatar_url || ''} />
+                <AvatarFallback className="bg-red-500/20 text-red-400 text-sm font-black">
+                  {fight.player_1_username.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              {fight.player_1_submitted_at && (
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-black flex items-center justify-center">
+                  <span className="text-[8px] text-white font-black">✓</span>
+                </div>
+              )}
+            </div>
             <div className="min-w-0">
-              <p className="text-[11px] font-bold text-foreground truncate leading-none">@{fight.player_1_username}</p>
-              <p className="text-[8px] text-red-400 font-bold uppercase tracking-wider mt-0.5">
-                RED{fight.player_1_submitted_at ? ' · ✓' : ''}
+              <p className="text-[14px] font-black text-white truncate leading-none tracking-tight" style={{ fontFamily: 'Teko, sans-serif' }}>
+                @{fight.player_1_username}
+              </p>
+              <p className="text-[9px] text-red-400 font-black uppercase tracking-[0.25em] mt-0.5" style={{ fontFamily: 'Teko, sans-serif' }}>
+                RED{isP1 ? ' · YOU' : ''}
               </p>
             </div>
           </div>
 
-          {/* Center: timer or VS */}
+          {/* Holographic HUD timer chip */}
           {fight.status === 'active' && fight.ends_at ? (
-            <div className="bg-surface-1 border border-border/60 px-2.5 py-1 shrink-0">
-              <CountdownTimer endDate={fight.ends_at} label="" />
+            <div className="relative shrink-0">
+              {/* Outer hex glow */}
+              <div className="absolute inset-0 rounded-lg blur-md" style={{ background: 'linear-gradient(135deg, rgba(239,68,68,0.4), rgba(59,130,246,0.4))' }} />
+              <div
+                className="relative px-3 py-1.5 rounded-lg"
+                style={{
+                  background: 'linear-gradient(180deg, rgba(0,0,0,0.95), rgba(15,15,20,0.95))',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 0 20px rgba(255,255,255,0.05)',
+                }}
+              >
+                <div className="text-[7px] font-black text-zinc-500 uppercase tracking-[0.3em] text-center mb-0.5" style={{ fontFamily: 'Teko, sans-serif' }}>
+                  TIME LEFT
+                </div>
+                <div className="font-mono tabular-nums text-white text-[15px] font-bold tracking-wider" style={{ textShadow: '0 0 8px rgba(255,255,255,0.4)' }}>
+                  <CountdownTimer endDate={fight.ends_at} label="" />
+                </div>
+              </div>
             </div>
           ) : (
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-blue-500 flex items-center justify-center shrink-0">
-              <Swords className="w-4 h-4 text-white" />
+            <div className="relative shrink-0">
+              <div className="absolute inset-0 rounded-full blur-md" style={{ background: 'linear-gradient(135deg, rgba(239,68,68,0.5), rgba(59,130,246,0.5))' }} />
+              <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-blue-500 flex items-center justify-center" style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25)' }}>
+                <Swords className="w-4 h-4 text-white" />
+              </div>
             </div>
           )}
 
-          {/* Player 2 (BLUE) */}
+          {/* BLUE player block */}
           <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
             <div className="min-w-0 text-right">
-              <p className="text-[11px] font-bold text-foreground truncate leading-none">@{fight.player_2_username || '???'}</p>
-              <p className="text-[8px] text-blue-400 font-bold uppercase tracking-wider mt-0.5">
-                BLUE{fight.player_2_submitted_at ? ' · ✓' : ''}
+              <p className="text-[14px] font-black text-white truncate leading-none tracking-tight" style={{ fontFamily: 'Teko, sans-serif' }}>
+                @{fight.player_2_username || '???'}
+              </p>
+              <p className="text-[9px] text-blue-400 font-black uppercase tracking-[0.25em] mt-0.5" style={{ fontFamily: 'Teko, sans-serif' }}>
+                {isP2 ? 'YOU · ' : ''}BLUE
               </p>
             </div>
-            <Avatar className={`w-7 h-7 border ${fight.winner_id === fight.player_2_id ? 'border-gold' : 'border-blue-500/70'}`}>
-              <AvatarImage src={fight.player_2_avatar_url || ''} />
-              <AvatarFallback className="bg-blue-500/20 text-blue-400 text-[10px] font-bold">
-                {fight.player_2_username?.charAt(0).toUpperCase() || '?'}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative shrink-0">
+              <Avatar className={`w-11 h-11 border-2 ${fight.winner_id === fight.player_2_id ? 'border-amber-400' : 'border-blue-500'}`}
+                style={{ boxShadow: fight.status === 'active' ? '0 0 16px rgba(59,130,246,0.5)' : '0 0 10px rgba(59,130,246,0.25)' }}>
+                <AvatarImage src={fight.player_2_avatar_url || ''} />
+                <AvatarFallback className="bg-blue-500/20 text-blue-400 text-sm font-black">
+                  {fight.player_2_username?.charAt(0).toUpperCase() || '?'}
+                </AvatarFallback>
+              </Avatar>
+              {fight.player_2_submitted_at && (
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-black flex items-center justify-center">
+                  <span className="text-[8px] text-white font-black">✓</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -271,8 +332,8 @@ export default function QuickFightPage() {
             </span>
           </div>
 
-          {/* Tall 9:16 cards so the actual edits dominate the screen — screen-record ready */}
-          <div className="grid grid-cols-2 gap-2">
+          {/* Stack vertical on mobile (tall 9:16, viral), side-by-side on desktop */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* RED slot — Player 1 */}
             {fight.player_1_submission_url ? (
               <BattleSubmissionCard
