@@ -1063,31 +1063,27 @@ export default function CompetitionLobbyPage() {
           </div>
         )}
 
-        {/* ═══ VOTING PHASE ═══ */}
-        {isVoting && submissions.length > 0 && (competition as any).voting_deadline && new Date((competition as any).voting_deadline).getTime() > Date.now() && (
-          <div className="space-y-3">
-            <CompetitionVoting
-              submissions={submissions}
-              myUserId={user?.id}
-              myVoteSubmissionId={myVoteSubmissionId}
-              onVote={castVote}
-              votingStartedAt={(competition as any).voting_started_at}
-            />
-            <p className="text-center text-[10px] uppercase tracking-[0.2em] text-foreground/40" style={teko}>
-              Auto-closes when everyone votes
-            </p>
-          </div>
-        )}
+        {/* ═══ SHOWCASE PHASE (inline) — only the player runs here. No leaderboard, no voting grid. ═══ */}
+        {isVoting && submissions.length > 0 && (competition as any).voting_started_at && (() => {
+          const startedAt = (competition as any).voting_started_at;
+          const showcaseMs = submissions.length * 15 * 1000;
+          const showcaseDone = Date.now() - new Date(startedAt).getTime() >= showcaseMs;
+          if (showcaseDone) return null;
+          return (
+            <div className="space-y-3">
+              <CompetitionVoting
+                submissions={submissions}
+                myUserId={user?.id}
+                myVoteSubmissionId={myVoteSubmissionId}
+                onVote={castVote}
+                votingStartedAt={startedAt}
+              />
+            </div>
+          );
+        })()}
 
-        {/* ═══ LEADERBOARD — only after the live showcase ends. During the
-              synchronized 15s/edit playback we hide the board so no one sees
-              the entries before everyone has watched them together. ═══ */}
-        {((isVoting && submissions.length > 0 && (() => {
-            const startedAt = (competition as any).voting_started_at;
-            if (!startedAt) return true;
-            const showcaseMs = submissions.length * 15 * 1000;
-            return Date.now() - new Date(startedAt).getTime() >= showcaseMs;
-          })()) || isCompleted) && (
+        {/* ═══ LEADERBOARD — completed only. Hidden entirely during showcase + voting. ═══ */}
+        {isCompleted && (
           <CompetitionLeaderboard
             submissions={submissions}
             isCompleted={isCompleted}
