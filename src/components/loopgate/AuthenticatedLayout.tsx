@@ -3,7 +3,6 @@ import { Suspense, type CSSProperties } from 'react';
 import AppHeader from './AppHeader';
 import BottomNav from './BottomNav';
 import LoadingScreen from './LoadingScreen';
-import BeginnerGuideModal from './BeginnerGuideModal';
 import TicketFAB from './TicketFAB';
 import LobbyMusicPlayer from './LobbyMusicPlayer';
 import { useGlobalNotifications } from '@/hooks/useGlobalNotifications';
@@ -53,7 +52,6 @@ export default function AuthenticatedLayout() {
       {showNav && <BottomNav />}
 
       <TicketFAB />
-      <BeginnerGuideModal autoShow />
       <LobbyMusicPlayer />
     </div>
   );
