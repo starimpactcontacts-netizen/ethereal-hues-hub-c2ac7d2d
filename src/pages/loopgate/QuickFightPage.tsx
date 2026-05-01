@@ -15,6 +15,7 @@ import QuickFightChat from '@/components/loopgate/QuickFightChat';
 import QuickFightResultCard from '@/components/loopgate/QuickFightResultCard';
 import BattleSongPicker from '@/components/loopgate/BattleSongPicker';
 import BattleSubmissionCard from '@/components/loopgate/BattleSubmissionCard';
+import BattleAutoplayDuo from '@/components/loopgate/BattleAutoplayDuo';
 
 /** Detect platform from URL */
 function detectPlatform(url: string): string {
