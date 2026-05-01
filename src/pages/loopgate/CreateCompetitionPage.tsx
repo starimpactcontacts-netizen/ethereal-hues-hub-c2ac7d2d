@@ -1,12 +1,12 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Trophy, ArrowLeft, ImagePlus, Loader2, X, Users, Clock, Hash } from "lucide-react";
+import { Trophy, ArrowLeft, ImagePlus, Loader2, X, Users, Clock, Hash, Vote } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 const MAX_PLAYERS = 10;
-const DURATION_MIN = 30;
+const DURATION_OPTIONS = [15, 30, 45, 60];
 
 export default function CreateCompetitionPage() {
   const { user, profile } = useAuth();
@@ -15,9 +15,17 @@ export default function CreateCompetitionPage() {
   const [name, setName] = useState("");
   const [theme, setTheme] = useState("");
   const [coverUrl, setCoverUrl] = useState("");
+  const [durationMin, setDurationMin] = useState(30);
   const [submitting, setSubmitting] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
+
+  // Pre-fill name with "{username}'s Room" once profile loads
+  useEffect(() => {
+    if (profile?.username && !name) {
+      setName(`${profile.username}'s Room`);
+    }
+  }, [profile?.username]);
 
   const handleSubmit = async () => {
     if (!user || !profile) { navigate("/start"); return; }
@@ -38,6 +46,7 @@ export default function CreateCompetitionPage() {
           creator_avatar_url: profile.avatar_url,
           cover_image_url: coverUrl.trim() || null,
           max_players: MAX_PLAYERS,
+          duration_minutes: durationMin,
           status: "lobby",
           slug,
         } as any)
@@ -89,14 +98,14 @@ export default function CreateCompetitionPage() {
           <div className="w-px h-10 bg-border/40" />
           <div className="flex flex-col items-center gap-1">
             <Clock className="w-4 h-4 text-gold" />
-            <span className="text-[11px] font-bold text-foreground">30 Mins</span>
+            <span className="text-[11px] font-bold text-foreground">{durationMin} Mins</span>
             <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Time Limit</span>
           </div>
           <div className="w-px h-10 bg-border/40" />
           <div className="flex flex-col items-center gap-1">
-            <Trophy className="w-4 h-4 text-gold" />
-            <span className="text-[11px] font-bold text-foreground">Judged</span>
-            <span className="text-[9px] text-muted-foreground uppercase tracking-wider">QOI Score</span>
+            <Vote className="w-4 h-4 text-gold" />
+            <span className="text-[11px] font-bold text-foreground">Voting</span>
+            <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Winner Pick</span>
           </div>
         </div>
 
@@ -108,10 +117,33 @@ export default function CreateCompetitionPage() {
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Best Squid Game Edit"
+            placeholder={profile?.username ? `${profile.username}'s Room` : "Your Room"}
             maxLength={60}
             className="w-full bg-surface-1 border border-border/40 rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-gold/40 transition-colors"
           />
+        </div>
+
+        {/* Duration selector */}
+        <div>
+          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+            <Clock className="w-3 h-3" /> Time Limit
+          </label>
+          <div className="grid grid-cols-4 gap-2">
+            {DURATION_OPTIONS.map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setDurationMin(m)}
+                className={`py-2.5 rounded-lg border text-sm font-bold transition-all ${
+                  durationMin === m
+                    ? "bg-gold/15 border-gold/50 text-gold"
+                    : "bg-surface-1 border-border/40 text-muted-foreground hover:border-border"
+                }`}
+              >
+                {m === 60 ? "1 hr" : `${m} min`}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Theme (optional) */}
@@ -132,7 +164,7 @@ export default function CreateCompetitionPage() {
         {/* Cover Image Upload */}
         <div>
           <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-            <ImagePlus className="w-3 h-3" /> Cover Image
+            <ImagePlus className="w-3 h-3" /> Cover Image <span className="text-muted-foreground/40 normal-case tracking-normal">— optional</span>
           </label>
           {coverUrl ? (
             <div className="relative rounded-lg overflow-hidden border border-border/40">
@@ -148,7 +180,7 @@ export default function CreateCompetitionPage() {
             <button
               onClick={() => coverInputRef.current?.click()}
               disabled={uploadingCover}
-              className="w-full bg-surface-1 border border-border/40 border-dashed rounded-lg px-3 py-6 flex flex-col items-center gap-2 hover:border-gold/30 transition-colors disabled:opacity-50"
+              className="w-full bg-surface-1 border border-border/40 border-dashed rounded-lg px-3 py-5 flex flex-col items-center gap-1.5 hover:border-gold/30 transition-colors disabled:opacity-50"
             >
               {uploadingCover ? (
                 <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
@@ -156,7 +188,7 @@ export default function CreateCompetitionPage() {
                 <ImagePlus className="w-5 h-5 text-muted-foreground/60" />
               )}
               <span className="text-[11px] text-muted-foreground/60 font-medium">
-                {uploadingCover ? "Uploading..." : "Tap to upload (optional)"}
+                {uploadingCover ? "Uploading..." : "Tap to upload — we'll auto-generate one if you skip"}
               </span>
             </button>
           )}
