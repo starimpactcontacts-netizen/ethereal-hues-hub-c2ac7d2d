@@ -1,7 +1,5 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { Swords, Play, Smartphone, DollarSign, Crosshair } from 'lucide-react';
-import { HubIcon, ArenaIcon, RankingsIcon, RateIcon, UnitsIcon, MissionsIcon } from '@/components/loopgate/LandingIcons';
-import { Button } from '@/components/ui/button';
+import { Link, useNavigate, Navigate } from 'react-router-dom';
+import { Swords } from 'lucide-react';
 import { motion } from 'framer-motion';
 import LandingHeader from '@/components/loopgate/LandingHeader';
 import IOSAppBanner from '@/components/loopgate/iOSAppBanner';
@@ -10,53 +8,27 @@ import { useGlobalStats } from '@/hooks/useRealData';
 import whereEditorsCompete from '@/assets/where-editors-compete-2.png';
 import SEO, { pageSEO } from '@/components/SEO';
 import { useGuestMode } from '@/hooks/useGuestMode';
+import { useAuth } from '@/hooks/useAuth';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 import loopgateHeroCinematic from '@/assets/hero-collage.jpeg';
-import editoriumLogo from '@/assets/editorium-logo.png';
-import loopyAvatar from '@/assets/loopy-avatar.png';
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-
-const quickLinks = [
-  { to: '/hub', label: 'Hub', Icon: HubIcon, desc: 'Browse edits & editors', color: '#ffffff', bgGrad: 'from-white/[0.07] to-white/[0.02]', glowColor: 'rgba(255,255,255,0.08)' },
-  { to: '/arena', label: 'Arena', Icon: ArenaIcon, desc: 'Compete now', color: '#ef4444', bgGrad: 'from-red-500/[0.12] to-red-500/[0.02]', glowColor: 'rgba(239,68,68,0.15)' },
-  { to: '/rankings', label: 'Rankings', Icon: RankingsIcon, desc: 'Global leaderboard', color: '#E8C84A', bgGrad: 'from-amber-500/[0.12] to-amber-500/[0.02]', glowColor: 'rgba(232,200,74,0.15)' },
-  { to: '/loopy', label: 'Rate My Edit', Icon: RateIcon, desc: 'Free AI rating', color: '#a855f7', bgGrad: 'from-purple-500/[0.12] to-purple-500/[0.02]', glowColor: 'rgba(168,85,247,0.15)' },
-  { to: '/units', label: 'Units', Icon: UnitsIcon, desc: 'Join a crew', color: '#06b6d4', bgGrad: 'from-cyan-500/[0.12] to-cyan-500/[0.02]', glowColor: 'rgba(6,182,212,0.15)' },
-  { to: '/missions', label: 'Missions', Icon: MissionsIcon, desc: 'Earn cash', color: '#10b981', bgGrad: 'from-emerald-500/[0.12] to-emerald-500/[0.02]', glowColor: 'rgba(16,185,129,0.15)' },
-];
+import { useState } from 'react';
 
 export default function LandingPage() {
   const navigate = useNavigate();
   const { setGuest } = useGuestMode();
   const { stats } = useGlobalStats();
+  const { user, loading } = useAuth();
   const [bannerVisible, setBannerVisible] = useState(false);
-  const [billboard, setBillboard] = useState<{ id: string; title: string; poster_url: string | null; artist_name: string | null; max_pay: number } | null>(null);
-
-  useEffect(() => {
-    const fetch = async () => {
-      const { data } = await supabase
-        .from('commissions')
-        .select('id, title, cover_url, artist_name, client_name, payout_cents')
-        .eq('is_marketplace', true)
-        .eq('status', 'open')
-        .order('created_at', { ascending: false })
-        .limit(1);
-      if (data && data[0]) {
-        setBillboard({
-          id: data[0].id, title: data[0].title, poster_url: data[0].cover_url,
-          artist_name: data[0].artist_name || data[0].client_name || null,
-          max_pay: (data[0].payout_cents || 0) / 100,
-        });
-      }
-    };
-    fetch();
-  }, []);
 
   const handleGuestExplore = () => {
     setGuest(true);
     navigate('/hub');
   };
+
+  // Logged-in users skip the marketing landing entirely.
+  if (!loading && user) {
+    return <Navigate to="/arena" replace />;
+  }
 
   return (
     <>
@@ -155,194 +127,6 @@ export default function LandingPage() {
               <span className="flex items-center gap-1.5"><span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" /></span><span className="text-foreground font-bold">{stats.activeUsers || 0}</span> online</span>
               <span className="w-px h-3 bg-border" />
               <span className="flex items-center gap-1.5"><Swords className="w-3.5 h-3.5 text-muted-foreground" /><span className="text-foreground font-bold">{stats.totalCompeting || 0}</span> competing</span>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* ═══════════════ DIRECT ACCESS — Premium Grid ═══════════════ */}
-        <section className="relative pt-0 pb-8 sm:pt-2 sm:pb-12 px-5 sm:px-6 -mt-14">
-          <div className="max-w-sm mx-auto">
-          {/* ═══ MISSION BILLBOARD ═══ */}
-          {billboard && (
-            <motion.button
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => navigate(`/commissions/${billboard.id}`)}
-              className="relative w-full overflow-hidden touch-manipulation group mb-3 rounded-lg"
-              style={{ boxShadow: '0 4px 24px rgba(16, 185, 129, 0.15)' }}
-            >
-              {billboard.poster_url ? (
-                <div className="absolute inset-0 bg-cover bg-center scale-[1.02] group-hover:scale-[1.06] transition-transform duration-700" style={{ backgroundImage: `url(${billboard.poster_url})` }} />
-              ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-950 via-background to-emerald-950/50" />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/40" />
-              <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent" />
-              <div className="relative px-4 py-3.5 flex items-center gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <DollarSign className="w-3 h-3 text-emerald-400" />
-                    <span className="text-[9px] font-black text-emerald-400 uppercase tracking-[0.15em]">Mission — Live</span>
-                  </div>
-                  <h3 className="text-[16px] font-black text-white leading-tight truncate tracking-tight" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
-                    {billboard.title}
-                  </h3>
-                  {billboard.artist_name && (
-                    <p className="text-[9px] text-white/40 font-bold uppercase tracking-wider mt-0.5 truncate">{billboard.artist_name}</p>
-                  )}
-                </div>
-                <div className="shrink-0 flex items-center gap-3">
-                  {billboard.max_pay > 0 && (
-                    <span className="font-display text-xl text-emerald-400 font-black leading-none">${billboard.max_pay}</span>
-                  )}
-                  <div className="bg-emerald-600 px-4 py-2 rounded-sm flex items-center gap-1.5 group-hover:bg-emerald-500 transition-colors">
-                    <Crosshair className="w-3.5 h-3.5 text-white" />
-                    <span className="text-[12px] font-black text-white uppercase tracking-wider" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>Enter</span>
-                  </div>
-                </div>
-              </div>
-            </motion.button>
-          )}
-
-            {/* Top row — 2 big tiles (Hub + Arena) */}
-            <motion.div
-              className="grid grid-cols-2 gap-2 mb-2"
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-            >
-              {quickLinks.slice(0, 2).map((link, i) => (
-                <Link key={link.to} to={link.to} className="group relative">
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.08, duration: 0.4 }}
-                    whileHover={{ scale: 1.03, y: -2 }}
-                    whileTap={{ scale: 0.97 }}
-                    className="relative aspect-[1/1.1] overflow-hidden flex flex-col items-center justify-center"
-                    style={{
-                      background: `linear-gradient(160deg, ${link.glowColor} 0%, rgba(15,15,15,0.95) 60%)`,
-                      boxShadow: `inset 0 1px 0 rgba(255,255,255,0.06), inset 0 0 0 1px rgba(255,255,255,0.04)`,
-                    }}
-                  >
-                    {/* Top edge light streak */}
-                    <div className="absolute top-0 inset-x-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${link.color}33, transparent)` }} />
-                    {/* Corner accent */}
-                    <div className="absolute top-0 right-0 w-12 h-12 opacity-30" style={{ background: `radial-gradient(circle at 100% 0%, ${link.color}22, transparent 70%)` }} />
-                    
-                    {/* Icon — large and bold */}
-                    <div className="relative mb-3 transition-transform duration-300 group-hover:scale-110">
-                      <div className="absolute inset-0 blur-xl opacity-0 group-hover:opacity-40 transition-opacity duration-500" style={{ background: link.color }} />
-                      <link.Icon size={28} className="relative text-foreground/50 group-hover:text-foreground/90 transition-colors duration-300" />
-                    </div>
-                    
-                    {/* Label */}
-                    <span className="text-[20px] font-black tracking-[0.12em] uppercase text-foreground/80 group-hover:text-foreground transition-colors duration-300" style={{ fontFamily: 'Teko, sans-serif' }}>
-                      {link.label}
-                    </span>
-                    <span className="text-[9px] text-foreground/20 group-hover:text-foreground/40 tracking-widest uppercase transition-colors duration-300">
-                      {link.desc}
-                    </span>
-
-                    {/* Shine sweep on hover */}
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none overflow-hidden">
-                      <div className="absolute inset-y-0 -left-full w-1/2 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent group-hover:translate-x-[300%] transition-transform duration-1000" />
-                    </div>
-                  </motion.div>
-                </Link>
-              ))}
-            </motion.div>
-
-            {/* Bottom grid — 4 smaller tiles */}
-            <motion.div
-              className="grid grid-cols-4 gap-2"
-              initial={{ opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.15, duration: 0.5 }}
-            >
-              {quickLinks.slice(2).map((link, i) => (
-                <Link key={link.to} to={link.to} className="group relative">
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.2 + i * 0.06, duration: 0.35 }}
-                    whileHover={{ scale: 1.06, y: -3 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="relative aspect-square overflow-hidden flex flex-col items-center justify-center gap-1.5"
-                    style={{
-                      background: `linear-gradient(160deg, ${link.glowColor} 0%, rgba(12,12,12,0.95) 55%)`,
-                      boxShadow: `inset 0 1px 0 rgba(255,255,255,0.05), inset 0 0 0 1px rgba(255,255,255,0.03)`,
-                    }}
-                  >
-                    {/* Top edge light */}
-                    <div className="absolute top-0 inset-x-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${link.color}22, transparent)` }} />
-                    
-                    {/* Icon */}
-                    <div className="relative transition-transform duration-300 group-hover:scale-110">
-                      <div className="absolute inset-0 blur-lg opacity-0 group-hover:opacity-40 transition-opacity duration-500" style={{ background: link.color }} />
-                      <link.Icon size={18} className="relative text-foreground/40 group-hover:text-foreground/80 transition-colors duration-300" />
-                    </div>
-                    
-                    {/* Label */}
-                    <span className="text-[11px] font-black tracking-[0.08em] uppercase text-foreground/50 group-hover:text-foreground/80 transition-colors text-center leading-tight" style={{ fontFamily: 'Teko, sans-serif' }}>
-                      {link.label}
-                    </span>
-                  </motion.div>
-                </Link>
-              ))}
-            </motion.div>
-
-            {/* Secondary row — ultra minimal */}
-            <motion.div
-              className="flex gap-2 mt-3"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.4, duration: 0.4 }}
-            >
-              {[
-                { to: '/editorium', content: <img src={editoriumLogo} alt="Editorium" className="h-3 opacity-20 group-hover:opacity-50 transition-opacity" /> },
-                { to: '/gqt', content: <span className="text-[10px] font-bold tracking-[0.2em] text-foreground/15 group-hover:text-foreground/40 transition-colors" style={{ fontFamily: 'Teko, sans-serif' }}>QOI TEST</span> },
-                { to: '/about', content: <span className="text-[10px] font-bold tracking-[0.2em] text-foreground/15 group-hover:text-foreground/40 transition-colors" style={{ fontFamily: 'Teko, sans-serif' }}>ABOUT</span> },
-              ].map((item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className="group flex-1 flex items-center justify-center py-2.5 transition-all hover:scale-[1.02] active:scale-[0.96]"
-                  style={{ background: 'rgba(255,255,255,0.015)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.03)' }}
-                >
-                  {item.content}
-                </Link>
-              ))}
-            </motion.div>
-          </div>
-        </section>
-
-        {/* ═══════════════ DOWNLOAD STRIP — COMPACT ═══════════════ */}
-        <section className="border-y border-border/30 bg-surface-0 py-10 sm:py-12 px-6">
-          <div className="max-w-3xl mx-auto text-center">
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              <h2 className="font-display text-2xl sm:text-3xl mb-3">GET THE APP</h2>
-              <p className="text-muted-foreground text-sm max-w-sm mx-auto mb-6">
-                Available on iOS and Web. Your rank follows you everywhere.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-                <Link to="/start">
-                  <Button size="lg" className="bg-gold hover:bg-gold/90 text-background font-display text-sm px-8 py-3 h-auto gap-2">
-                    <Play className="w-4 h-4" /> Open Web App
-                  </Button>
-                </Link>
-                <Link to="/download">
-                  <Button size="lg" variant="outline" className="border-border/60 bg-transparent hover:bg-surface-1 text-muted-foreground font-display text-sm px-6 py-3 h-auto gap-2">
-                    <Smartphone className="w-4 h-4" /> iOS App
-                  </Button>
-                </Link>
-              </div>
             </motion.div>
           </div>
         </section>
