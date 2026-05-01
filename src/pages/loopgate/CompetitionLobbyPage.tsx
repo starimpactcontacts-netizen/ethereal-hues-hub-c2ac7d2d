@@ -193,6 +193,14 @@ export default function CompetitionLobbyPage() {
     if (everyoneSubmitted) startVoting();
   }, [competition?.status, participants, submissions]);
 
+  const votingStartedAt = (competition as any)?.voting_started_at as string | null | undefined;
+  const votingDeadline = (competition as any)?.voting_deadline as string | null | undefined;
+  const showcaseMs = submissions.length * 15 * 1000;
+  const showcaseEndsAt = votingStartedAt ? new Date(votingStartedAt).getTime() + showcaseMs : null;
+  const votingDeadlineMs = votingDeadline ? new Date(votingDeadline).getTime() : null;
+  const showcaseDone = competition?.status === "voting" && showcaseEndsAt !== null && phaseNow >= showcaseEndsAt;
+  const votingWindowOpen = competition?.status === "voting" && submissions.length > 0 && showcaseDone && votingDeadlineMs !== null && phaseNow < votingDeadlineMs;
+
   // Auto-finalize only after the full showcase. Flow is always:
   // 15s per edit → 3-minute voting modal → reveal when all votes are in or timer hits 0.
   useEffect(() => {
@@ -264,13 +272,6 @@ export default function CompetitionLobbyPage() {
   const canSubmit = isLive && !deadlinePassed && hasJoined && !hasSubmitted;
   const submittedEditorCount = submissions.length;
   const totalEditorCount = participants.length || competition.current_players || competition.max_players;
-  const votingStartedAt = (competition as any).voting_started_at as string | null | undefined;
-  const votingDeadline = (competition as any).voting_deadline as string | null | undefined;
-  const showcaseMs = submissions.length * 15 * 1000;
-  const showcaseEndsAt = votingStartedAt ? new Date(votingStartedAt).getTime() + showcaseMs : null;
-  const votingDeadlineMs = votingDeadline ? new Date(votingDeadline).getTime() : null;
-  const showcaseDone = isVoting && showcaseEndsAt !== null && phaseNow >= showcaseEndsAt;
-  const votingWindowOpen = isVoting && submissions.length > 0 && showcaseDone && votingDeadlineMs !== null && phaseNow < votingDeadlineMs;
 
   const handleJoin = async () => {
     if (!user) { navigate("/start"); return; }
