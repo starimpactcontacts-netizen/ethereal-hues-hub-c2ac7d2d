@@ -442,6 +442,7 @@ export default function App() {
           </Suspense>
           <GlobalAccountPrompt />
           <GlobalGuestConversionModal />
+          <GuestNicknameModal />
           <DevModeBadge />
           <Toaster 
             position="top-center" 
