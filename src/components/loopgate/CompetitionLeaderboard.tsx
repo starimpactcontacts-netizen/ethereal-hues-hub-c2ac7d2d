@@ -187,7 +187,7 @@ function EditDetailView({ sub, rank, onClose }: { sub: CompetitionSubmission; ra
   );
 }
 
-export default function CompetitionLeaderboard({ submissions }: { submissions: CompetitionSubmission[] }) {
+export default function CompetitionLeaderboard({ submissions, isCompleted = false }: { submissions: CompetitionSubmission[]; isCompleted?: boolean }) {
   const [selectedEdit, setSelectedEdit] = useState<{ sub: CompetitionSubmission; rank: number } | null>(null);
   const [showAll, setShowAll] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -208,6 +208,11 @@ export default function CompetitionLeaderboard({ submissions }: { submissions: C
   const visibleList = showAll ? sorted : sorted.slice(0, 5);
 
   const isEmpty = sorted.length === 0;
+
+  // When the comp is over, surface ONE big hero for the winner and let the rest live in the rank list.
+  const winner = sorted[0];
+  const winnerVideoIsDirect = winner ? isDirectVideo(winner.submission_url) : false;
+  const winnerIsImage = winner ? isImageFile(winner.submission_url) : false;
 
   return (
     <>
@@ -233,7 +238,67 @@ export default function CompetitionLeaderboard({ submissions }: { submissions: C
           </div>
         ) : (
           <>
-            {/* ═══ TOP EDITS CAROUSEL ═══ */}
+            {/* ═══ WINNER HERO (completed only) — full-fledged autoplaying card ═══ */}
+            {isCompleted && winner && (
+              <motion.button
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                onClick={() => setSelectedEdit({ sub: winner, rank: 1 })}
+                className="relative w-full aspect-[9/16] max-h-[520px] rounded-2xl overflow-hidden border border-amber-400/60 shadow-[0_0_32px_rgba(251,191,36,0.35)] active:scale-[0.99] transition-transform"
+              >
+                {winnerVideoIsDirect ? (
+                  <video
+                    src={winner.submission_url}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                ) : winnerIsImage ? (
+                  <img src={winner.submission_url} alt={`${winner.username} winning edit`} className="absolute inset-0 h-full w-full object-cover" />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-amber-400/30 to-black flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm border border-white/30 flex items-center justify-center">
+                      <Play className="w-7 h-7 text-white ml-1" />
+                    </div>
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/40" />
+
+                {/* Crown + rank */}
+                <div className="absolute top-3 left-3 flex items-center gap-2 z-[2]">
+                  <span className="text-[42px] font-black leading-none text-amber-400" style={teko}>1</span>
+                  <Crown className="w-6 h-6 text-amber-400 drop-shadow-lg" />
+                </div>
+                <div className="absolute top-3 right-3 z-[2] px-2.5 py-1 rounded-full bg-amber-400 text-black text-[10px] font-black uppercase tracking-[0.18em]" style={teko}>
+                  Winner
+                </div>
+
+                {/* Footer info */}
+                <div className="absolute bottom-0 left-0 right-0 p-4 z-[2]">
+                  <div className="flex items-center gap-2.5">
+                    <Avatar className="w-10 h-10 border-2 border-amber-400/60">
+                      <AvatarImage src={winner.avatar_url || ""} />
+                      <AvatarFallback className="text-xs bg-surface-1 font-bold">{winner.username?.[0]?.toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0 text-left">
+                      <div className="text-sm font-extrabold text-white truncate" style={teko}>@{winner.username}</div>
+                      <div className="text-[10px] text-white/60 uppercase tracking-wider">{winner.platform}</div>
+                    </div>
+                    {(winner.vote_count || 0) > 0 && (
+                      <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-400/15 border border-amber-400/30">
+                        <span className="text-base font-black text-amber-400 tabular-nums" style={teko}>{winner.vote_count}</span>
+                        <Vote className="w-3.5 h-3.5 text-amber-400" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </motion.button>
+            )}
+
+            {/* ═══ TOP EDITS CAROUSEL — voting phase only ═══ */}
+            {!isCompleted && (
             <div
               ref={carouselRef}
               className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory pl-4"
@@ -298,6 +363,7 @@ export default function CompetitionLeaderboard({ submissions }: { submissions: C
                 );
               })}
             </div>
+            )}
 
             {/* ═══ FULL RANKINGS LIST ═══ */}
             <div className="space-y-0">

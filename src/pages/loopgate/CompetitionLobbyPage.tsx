@@ -999,7 +999,9 @@ export default function CompetitionLobbyPage() {
         )}
 
         {/* ═══ LEADERBOARD — only after editing closes / voting begins ═══ */}
-        {((isVoting && submissions.length > 0) || isCompleted) && <CompetitionLeaderboard submissions={submissions} />}
+        {((isVoting && submissions.length > 0) || isCompleted) && (
+          <CompetitionLeaderboard submissions={submissions} isCompleted={isCompleted} />
+        )}
 
         {/* ═══ WINNER SHARE CARD CTA — completed only ═══ */}
         {isCompleted && submissions.length > 0 && (() => {
