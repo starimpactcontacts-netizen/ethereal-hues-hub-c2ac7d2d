@@ -11,6 +11,7 @@ import { useTempProfile } from '@/hooks/useTempProfile';
 import authCollageBg from '@/assets/auth-collage-bg.jpg';
 import loopgateIcon from '@/assets/loopgate-logo.png';
 import { rememberAccount } from '@/lib/rememberedAccounts';
+import { useAuth } from '@/hooks/useAuth';
 
 type UserRole = 'editor' | 'judge';
 
@@ -28,9 +29,17 @@ export default function StartPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { setProfile: setTempProfile } = useTempProfile();
+  const { signInAsGuest } = useAuth();
   const returnTo = searchParams.get('returnTo');
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  // 'guest' = nickname-only zero-friction entry (default)
+  // 'full'  = existing email + password signup form
+  const [mode, setMode] = useState<'guest' | 'full'>(
+    searchParams.get('full') === '1' ? 'full' : 'guest'
+  );
+  const [guestNickname, setGuestNickname] = useState('');
+  const [guestError, setGuestError] = useState<string>('');
   const [showPassword, setShowPassword] = useState(false);
   const [showInviteCode, setShowInviteCode] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
