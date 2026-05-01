@@ -16,6 +16,8 @@ import QuickFightResultCard from '@/components/loopgate/QuickFightResultCard';
 import BattleSongPicker from '@/components/loopgate/BattleSongPicker';
 import BattleSubmissionCard from '@/components/loopgate/BattleSubmissionCard';
 import BattleAutoplayDuo from '@/components/loopgate/BattleAutoplayDuo';
+import QuickFightPublicChat from '@/components/loopgate/QuickFightPublicChat';
+import QuickFightPublicVote from '@/components/loopgate/QuickFightPublicVote';
 
 /** Detect platform from URL */
 function detectPlatform(url: string): string {
@@ -590,7 +592,29 @@ export default function QuickFightPage() {
           </div>
         )}
 
-        {/* Chat */}
+        {/* Public Vote — visible once both edits are in (or fight is decided) */}
+        {fight.player_2_id && fight.player_1_submission_url && fight.player_2_submission_url && (
+          <QuickFightPublicVote
+            fightId={fight.id}
+            player1Id={fight.player_1_id}
+            player2Id={fight.player_2_id}
+            player1Username={fight.player_1_username}
+            player2Username={fight.player_2_username || '???'}
+            locked={fight.status === 'completed'}
+            officialWinnerId={fight.winner_id}
+          />
+        )}
+
+        {/* Public spectator chat */}
+        {fight.player_2_id && (
+          <QuickFightPublicChat
+            fightId={fight.id}
+            player1Id={fight.player_1_id}
+            player2Id={fight.player_2_id}
+          />
+        )}
+
+        {/* Battle Chat — participants-only trash talk */}
         {fight.player_2_id && (
           <QuickFightChat
             fightId={fight.id}
