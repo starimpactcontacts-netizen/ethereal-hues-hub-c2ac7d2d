@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { Volume2, VolumeX } from "lucide-react";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 10;
@@ -47,7 +46,7 @@ export default function BattleAutoplayDuo({ red, blue, startedAt }: Props) {
   const initial = compute();
   const [activeIdx, setActiveIdx] = useState(initial.idx);
   const [secondsLeft, setSecondsLeft] = useState(initial.left);
-  const [muted, setMuted] = useState(true);
+  const [needsTapForSound, setNeedsTapForSound] = useState(false);
 
   const redVideoRef = useRef<HTMLVideoElement>(null);
   const blueVideoRef = useRef<HTMLVideoElement>(null);
@@ -75,21 +74,33 @@ export default function BattleAutoplayDuo({ red, blue, startedAt }: Props) {
     const refs = [redVideoRef.current, blueVideoRef.current];
     refs.forEach((v, i) => {
       if (!v) return;
-      v.muted = muted || i !== activeIdx;
       if (i === activeIdx) {
-        // Reset to start without forcing a re-fetch
+        v.muted = false;
         try { v.currentTime = 0; } catch {}
         v.play().catch(() => {
-          // Autoplay blocked → fall back to muted
+          // Autoplay-with-sound blocked → fall back to muted and prompt tap
           v.muted = true;
+          setNeedsTapForSound(true);
           v.play().catch(() => {});
         });
       } else {
         v.pause();
+        v.muted = true;
         try { v.currentTime = 0; } catch {}
       }
     });
-  }, [activeIdx, muted, bothReady]);
+  }, [activeIdx, bothReady]);
+
+  const enableSound = () => {
+    setNeedsTapForSound(false);
+    [redVideoRef.current, blueVideoRef.current].forEach((v, i) => {
+      if (!v) return;
+      if (i === activeIdx) {
+        v.muted = false;
+        v.play().catch(() => {});
+      }
+    });
+  };
 
   const progressPct = ((PER_EDIT_SECONDS - secondsLeft) / PER_EDIT_SECONDS) * 100;
 
@@ -108,8 +119,6 @@ export default function BattleAutoplayDuo({ red, blue, startedAt }: Props) {
         active={bothReady && activeIdx === 0}
         progressPct={bothReady ? (activeIdx === 0 ? progressPct : activeIdx > 0 ? 100 : 0) : 0}
         secondsLeft={secondsLeft}
-        muted={muted}
-        onToggleMute={() => setMuted((m) => !m)}
         onReady={() => setRedReady(true)}
         loading={!redReady}
       />
@@ -134,8 +143,6 @@ export default function BattleAutoplayDuo({ red, blue, startedAt }: Props) {
         active={bothReady && activeIdx === 1}
         progressPct={bothReady && activeIdx === 1 ? progressPct : 0}
         secondsLeft={secondsLeft}
-        muted={muted}
-        onToggleMute={() => setMuted((m) => !m)}
         onReady={() => setBlueReady(true)}
         loading={!blueReady}
       />
@@ -143,6 +150,18 @@ export default function BattleAutoplayDuo({ red, blue, startedAt }: Props) {
       <p className="pt-2 text-[10px] text-center text-foreground/40 uppercase tracking-[0.2em]" style={teko}>
         {bothReady ? '10s per edit · auto-rotating' : 'Buffering both edits in HD…'}
       </p>
+
+      {/* One-tap unmute overlay if browser blocked autoplay-with-sound */}
+      {needsTapForSound && bothReady && (
+        <button
+          onClick={enableSound}
+          className="fixed inset-0 z-[9998] bg-black/60 backdrop-blur-sm flex items-center justify-center"
+        >
+          <div className="px-6 py-3 bg-white text-black text-sm font-black uppercase tracking-[0.2em] rounded-full" style={teko}>
+            Tap for sound
+          </div>
+        </button>
+      )}
     </div>
   );
 }
@@ -153,8 +172,6 @@ function SidePanel({
   active,
   progressPct,
   secondsLeft,
-  muted,
-  onToggleMute,
   onReady,
   loading,
 }: {
@@ -163,8 +180,6 @@ function SidePanel({
   active: boolean;
   progressPct: number;
   secondsLeft: number;
-  muted: boolean;
-  onToggleMute: () => void;
   onReady: () => void;
   loading: boolean;
 }) {
@@ -228,15 +243,6 @@ function SidePanel({
           </span>
           <span className="text-[11px] font-bold text-white">@{side.username}</span>
         </div>
-        {active && isVid && (
-          <button
-            onClick={onToggleMute}
-            className="w-7 h-7 rounded-full bg-black/60 backdrop-blur-md border border-white/15 flex items-center justify-center active:scale-95"
-            aria-label={muted ? "Unmute" : "Mute"}
-          >
-            {muted ? <VolumeX className="w-3.5 h-3.5 text-white" /> : <Volume2 className="w-3.5 h-3.5 text-white" />}
-          </button>
-        )}
         {active && (
           <span className="text-[11px] font-black text-white tabular-nums px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-md border border-white/10" style={teko}>
             {secondsLeft}s
