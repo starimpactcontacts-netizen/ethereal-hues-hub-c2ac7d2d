@@ -31,6 +31,9 @@ export default function BattleAutoplayDuo({ red, blue, startedAt }: Props) {
   const sides: [Side, Side] = [red, blue];
   const startMsRef = useRef<number>(startedAt ? new Date(startedAt).getTime() : Date.now());
   const totalMs = sides.length * PER_EDIT_SECONDS * 1000;
+  const [redReady, setRedReady] = useState(false);
+  const [blueReady, setBlueReady] = useState(false);
+  const bothReady = redReady && blueReady;
 
   const compute = () => {
     const elapsed = Math.max(0, Date.now() - startMsRef.current);
@@ -49,8 +52,12 @@ export default function BattleAutoplayDuo({ red, blue, startedAt }: Props) {
   const redVideoRef = useRef<HTMLVideoElement>(null);
   const blueVideoRef = useRef<HTMLVideoElement>(null);
 
-  // Tick — drive activeIdx + countdown
+  // Tick — drive activeIdx + countdown. Pauses until both videos are ready
+  // so the rotation always starts in lockstep with playback.
   useEffect(() => {
+    if (!bothReady) return;
+    // Reset start clock the moment both clips are buffered so the first play is instant
+    startMsRef.current = Date.now();
     const tick = () => {
       const { idx, left } = compute();
       setActiveIdx((prev) => (prev !== idx ? idx : prev));
@@ -59,16 +66,19 @@ export default function BattleAutoplayDuo({ red, blue, startedAt }: Props) {
     tick();
     const id = setInterval(tick, 250);
     return () => clearInterval(id);
-  }, []);
+  }, [bothReady]);
 
-  // Drive playback: active plays w/ sound (if user unmuted), inactive pauses
+  // Drive playback: active plays full-quality, inactive PAUSES at currentTime=0
+  // (kept loaded so swap is instant — no re-buffer).
   useEffect(() => {
+    if (!bothReady) return;
     const refs = [redVideoRef.current, blueVideoRef.current];
     refs.forEach((v, i) => {
       if (!v) return;
       v.muted = muted || i !== activeIdx;
       if (i === activeIdx) {
-        v.currentTime = 0;
+        // Reset to start without forcing a re-fetch
+        try { v.currentTime = 0; } catch {}
         v.play().catch(() => {
           // Autoplay blocked → fall back to muted
           v.muted = true;
@@ -76,23 +86,32 @@ export default function BattleAutoplayDuo({ red, blue, startedAt }: Props) {
         });
       } else {
         v.pause();
+        try { v.currentTime = 0; } catch {}
       }
     });
-  }, [activeIdx, muted]);
+  }, [activeIdx, muted, bothReady]);
 
   const progressPct = ((PER_EDIT_SECONDS - secondsLeft) / PER_EDIT_SECONDS) * 100;
 
   return (
     <div className="space-y-0 select-none">
+      {/* Loading state until BOTH clips have buffered → guarantees zero stutter on first play */}
+      {!bothReady && (
+        <div className="absolute -z-10 opacity-0 pointer-events-none">
+          {/* preload work happens via the real <video> tags below; this is just a hint */}
+        </div>
+      )}
       {/* RED — top */}
       <SidePanel
         side={red}
         videoRef={redVideoRef}
-        active={activeIdx === 0}
-        progressPct={activeIdx === 0 ? progressPct : activeIdx > 0 ? 100 : 0}
+        active={bothReady && activeIdx === 0}
+        progressPct={bothReady ? (activeIdx === 0 ? progressPct : activeIdx > 0 ? 100 : 0) : 0}
         secondsLeft={secondsLeft}
         muted={muted}
         onToggleMute={() => setMuted((m) => !m)}
+        onReady={() => setRedReady(true)}
+        loading={!redReady}
       />
 
       {/* VS divider */}
@@ -112,15 +131,17 @@ export default function BattleAutoplayDuo({ red, blue, startedAt }: Props) {
       <SidePanel
         side={blue}
         videoRef={blueVideoRef}
-        active={activeIdx === 1}
-        progressPct={activeIdx === 1 ? progressPct : 0}
+        active={bothReady && activeIdx === 1}
+        progressPct={bothReady && activeIdx === 1 ? progressPct : 0}
         secondsLeft={secondsLeft}
         muted={muted}
         onToggleMute={() => setMuted((m) => !m)}
+        onReady={() => setBlueReady(true)}
+        loading={!blueReady}
       />
 
       <p className="pt-2 text-[10px] text-center text-foreground/40 uppercase tracking-[0.2em]" style={teko}>
-        10s per edit · auto-rotating
+        {bothReady ? '10s per edit · auto-rotating' : 'Buffering both edits in HD…'}
       </p>
     </div>
   );
@@ -134,6 +155,8 @@ function SidePanel({
   secondsLeft,
   muted,
   onToggleMute,
+  onReady,
+  loading,
 }: {
   side: Side;
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -142,6 +165,8 @@ function SidePanel({
   secondsLeft: number;
   muted: boolean;
   onToggleMute: () => void;
+  onReady: () => void;
+  loading: boolean;
 }) {
   const isVid = isVideo(side.url);
   const accent = side.color === "red" ? "bg-red-500" : "bg-blue-500";
@@ -156,12 +181,32 @@ function SidePanel({
           src={side.url}
           className="w-full h-full object-cover"
           playsInline
+          // @ts-ignore — iOS Safari hint
+          webkit-playsinline="true"
+          x-webkit-airplay="deny"
+          disableRemotePlayback
           loop
           muted
           preload="auto"
+          onLoadedData={onReady}
+          onCanPlayThrough={onReady}
         />
       ) : (
-        <img src={side.url} alt={`${side.username} edit`} className="w-full h-full object-contain bg-black" />
+        <img
+          src={side.url}
+          alt={`${side.username} edit`}
+          className="w-full h-full object-contain bg-black"
+          loading="eager"
+          decoding="async"
+          onLoad={onReady}
+        />
+      )}
+
+      {/* Buffering shimmer */}
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className={`w-8 h-8 rounded-full border-2 ${side.color === 'red' ? 'border-red-500/40 border-t-red-500' : 'border-blue-500/40 border-t-blue-500'} animate-spin`} />
+        </div>
       )}
 
       {/* Progress bar — only on active */}
