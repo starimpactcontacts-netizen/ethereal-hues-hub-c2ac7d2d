@@ -323,74 +323,88 @@ export default function QuickFightPage() {
 
         {/* SCREEN VS SCREEN — stacked vertical, RED on top, VS divider, BLUE on bottom */}
         <div className="space-y-0">
-          <div className="relative">
-            {fight.player_1_submission_url ? (
-              <BattleSubmissionCard
-                url={fight.player_1_submission_url}
-                username={fight.player_1_username}
-                color="red"
-                aspectClass="aspect-square"
-                avatarUrl={fight.player_1_avatar_url}
-                customThumbnailUrl={(fight as any).player_1_thumbnail_url}
-                score={fight.status === 'completed' ? (fight.winner_id === fight.player_1_id ? fight.winner_score : fight.loser_score) : undefined}
-                isWinner={fight.winner_id === fight.player_1_id}
-                votes={(fight as any).player_1_votes || 0}
-                canVote={!isParticipant && !!user && !myVote}
-                hasVoted={myVote === fight.player_1_id}
-                onVote={() => handleVote(fight.player_1_id)}
-              />
-            ) : (
-              <EmptyEditSlot
-                color="red"
-                username={fight.player_1_username}
-                avatarUrl={fight.player_1_avatar_url}
-                isYou={isP1}
-                isLive={fight.status === 'active'}
-                aspectClass="aspect-square"
-              />
-            )}
-          </div>
+          {fight.player_1_submission_url && fight.player_2_submission_url && fight.player_2_id ? (
+            // BOTH UPLOADED → autoplay loop, 10s each, screen-record-ready
+            <BattleAutoplayDuo
+              red={{
+                userId: fight.player_1_id,
+                username: fight.player_1_username,
+                url: fight.player_1_submission_url,
+                color: 'red',
+              }}
+              blue={{
+                userId: fight.player_2_id,
+                username: fight.player_2_username || '???',
+                url: fight.player_2_submission_url,
+                color: 'blue',
+              }}
+              startedAt={
+                fight.player_1_submitted_at && fight.player_2_submitted_at
+                  ? new Date(
+                      Math.max(
+                        new Date(fight.player_1_submitted_at).getTime(),
+                        new Date(fight.player_2_submitted_at).getTime(),
+                      ),
+                    ).toISOString()
+                  : null
+              }
+            />
+          ) : (
+            // Pre-upload state — placeholders stacked with VS divider
+            <>
+              {fight.player_1_submission_url ? (
+                <BattleSubmissionCard
+                  url={fight.player_1_submission_url}
+                  username={fight.player_1_username}
+                  color="red"
+                  aspectClass="aspect-square"
+                  avatarUrl={fight.player_1_avatar_url}
+                  customThumbnailUrl={(fight as any).player_1_thumbnail_url}
+                />
+              ) : (
+                <EmptyEditSlot
+                  color="red"
+                  username={fight.player_1_username}
+                  avatarUrl={fight.player_1_avatar_url}
+                  isYou={isP1}
+                  isLive={fight.status === 'active'}
+                  aspectClass="aspect-square"
+                />
+              )}
 
-          {/* VS divider */}
-          <div className="relative h-8 flex items-center justify-center">
-            <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-            <div className="relative px-3 py-0.5 bg-black border border-white/15">
-              <span
-                className="text-[14px] font-black tracking-[0.25em] bg-gradient-to-r from-red-400 to-blue-400 bg-clip-text text-transparent"
-                style={{ fontFamily: 'Teko, sans-serif' }}
-              >
-                VS
-              </span>
-            </div>
-          </div>
+              <div className="relative h-8 flex items-center justify-center">
+                <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                <div className="relative px-3 py-0.5 bg-black border border-white/15">
+                  <span
+                    className="text-[14px] font-black tracking-[0.25em] bg-gradient-to-r from-red-400 to-blue-400 bg-clip-text text-transparent"
+                    style={{ fontFamily: 'Teko, sans-serif' }}
+                  >
+                    VS
+                  </span>
+                </div>
+              </div>
 
-          <div className="relative">
-            {fight.player_2_submission_url ? (
-              <BattleSubmissionCard
-                url={fight.player_2_submission_url}
-                username={fight.player_2_username || '???'}
-                color="blue"
-                aspectClass="aspect-square"
-                avatarUrl={fight.player_2_avatar_url}
-                customThumbnailUrl={(fight as any).player_2_thumbnail_url}
-                score={fight.status === 'completed' ? (fight.winner_id === fight.player_2_id ? fight.winner_score : fight.loser_score) : undefined}
-                isWinner={fight.winner_id === fight.player_2_id}
-                votes={(fight as any).player_2_votes || 0}
-                canVote={!isParticipant && !!user && !myVote}
-                hasVoted={myVote === fight.player_2_id}
-                onVote={() => fight.player_2_id && handleVote(fight.player_2_id)}
-              />
-            ) : (
-              <EmptyEditSlot
-                color="blue"
-                username={fight.player_2_username || 'Waiting…'}
-                avatarUrl={fight.player_2_avatar_url}
-                isYou={isP2}
-                isLive={fight.status === 'active'}
-                aspectClass="aspect-square"
-              />
-            )}
-          </div>
+              {fight.player_2_submission_url ? (
+                <BattleSubmissionCard
+                  url={fight.player_2_submission_url}
+                  username={fight.player_2_username || '???'}
+                  color="blue"
+                  aspectClass="aspect-square"
+                  avatarUrl={fight.player_2_avatar_url}
+                  customThumbnailUrl={(fight as any).player_2_thumbnail_url}
+                />
+              ) : (
+                <EmptyEditSlot
+                  color="blue"
+                  username={fight.player_2_username || 'Waiting…'}
+                  avatarUrl={fight.player_2_avatar_url}
+                  isYou={isP2}
+                  isLive={fight.status === 'active'}
+                  aspectClass="aspect-square"
+                />
+              )}
+            </>
+          )}
 
           {/* Inline submit bar — always visible to participants while active */}
           {canSubmit && (
