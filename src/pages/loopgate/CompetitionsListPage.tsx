@@ -4,7 +4,7 @@ import { ArrowLeft, Trophy, Plus, Users, Hourglass, Radio, Share2 } from "lucide
 import { useCompetitionsList, type Competition } from "@/hooks/useCompetitions";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import lobbyDefaultCover from "@/assets/lobby-default-cover.jpg";
+import { LobbyDefaultCover } from "@/components/loopgate/LobbyDefaultCover";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 
@@ -39,12 +39,16 @@ function CompCard({ comp }: { comp: Competition }) {
       className="relative bg-surface-1 border border-white/[0.06] overflow-hidden rounded-2xl cursor-pointer flex flex-col aspect-[3/4]"
     >
       <div className="relative flex-1 overflow-hidden">
-        <img
-          src={comp.cover_image_url || lobbyDefaultCover}
-          alt={comp.name}
-          loading="lazy"
-          className="w-full h-full object-cover"
-        />
+        {comp.cover_image_url ? (
+          <img
+            src={comp.cover_image_url}
+            alt={comp.name}
+            loading="lazy"
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <LobbyDefaultCover name={comp.name} variant="card" />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
         <button
           onClick={handleShare}
