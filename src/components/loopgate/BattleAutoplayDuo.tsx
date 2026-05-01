@@ -188,7 +188,6 @@ function SidePanel({
           loop
           muted
           preload="auto"
-          crossOrigin="anonymous"
           onLoadedData={onReady}
           onCanPlayThrough={onReady}
         />
