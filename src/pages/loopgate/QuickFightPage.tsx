@@ -320,20 +320,9 @@ export default function QuickFightPage() {
           </div>
         )}
 
-        {/* ALWAYS-ON Edit vs Edit Showcase — viral side-by-side, even before submissions */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
-              <Play className="w-3.5 h-3.5 text-muted-foreground" />
-              Edit vs Edit
-            </h3>
-            <span className="text-[9px] text-muted-foreground uppercase tracking-wider">
-              {[fight.player_1_submission_url, fight.player_2_submission_url].filter(Boolean).length}/2 submitted
-            </span>
-          </div>
-
-          {/* SCREEN VS SCREEN — side-by-side vertical 9:16 panels, mobile + desktop */}
-          <div className="grid grid-cols-2 gap-2">
+        {/* SCREEN VS SCREEN — stacked vertical, RED on top, VS divider, BLUE on bottom */}
+        <div className="space-y-0">
+          <div className="relative">
             {fight.player_1_submission_url ? (
               <BattleSubmissionCard
                 url={fight.player_1_submission_url}
@@ -357,7 +346,22 @@ export default function QuickFightPage() {
                 isLive={fight.status === 'active'}
               />
             )}
+          </div>
 
+          {/* VS divider */}
+          <div className="relative h-8 flex items-center justify-center">
+            <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+            <div className="relative px-3 py-0.5 bg-black border border-white/15">
+              <span
+                className="text-[14px] font-black tracking-[0.25em] bg-gradient-to-r from-red-400 to-blue-400 bg-clip-text text-transparent"
+                style={{ fontFamily: 'Teko, sans-serif' }}
+              >
+                VS
+              </span>
+            </div>
+          </div>
+
+          <div className="relative">
             {fight.player_2_submission_url ? (
               <BattleSubmissionCard
                 url={fight.player_2_submission_url}
