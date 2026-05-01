@@ -550,7 +550,17 @@ export default function StartPage() {
       <main className="absolute inset-0 overflow-y-auto overscroll-contain"
             style={{ WebkitOverflowScrolling: 'touch', paddingTop: 'calc(env(safe-area-inset-top, 0px) + 72px)', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)' }}>
         <div className="px-5 mx-auto w-full max-w-[420px]">
-          {/* Glass card */}
+          {mode === 'guest' ? (
+            <GuestEntryCard
+              nickname={guestNickname}
+              setNickname={(v) => { setGuestNickname(v); setGuestError(''); }}
+              error={guestError}
+              loading={loading}
+              onEnter={handleGuestEnter}
+              onSwitchToFull={() => setMode('full')}
+              onSignIn={() => navigate('/login')}
+            />
+          ) : (
           <motion.div
             initial={{ opacity: 0, y: 16, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -776,8 +786,10 @@ export default function StartPage() {
               </AnimatePresence>
             </div>
           </motion.div>
+          )}
 
-          {/* Sign in link */}
+          {/* Sign in link — only shown in full mode (guest card has its own footer) */}
+          {mode === 'full' && (
           <div className="text-center mt-6">
             <button
               onClick={() => navigate('/login')}
@@ -786,6 +798,7 @@ export default function StartPage() {
               Already have an account? <span className="text-[#D4A857] font-semibold">Sign in</span>
             </button>
           </div>
+          )}
         </div>
       </main>
     </div>
