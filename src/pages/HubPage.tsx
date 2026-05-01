@@ -1232,9 +1232,32 @@ export default function HubPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="mt-3"
+        className="mt-3 relative"
       >
-        <div className="px-4 mb-2">
+        {/* Top decorative border line */}
+        <div className="relative h-[1px] pointer-events-none overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-foreground/15 to-transparent" />
+        </div>
+
+        {/* Dubai-style diamond pattern background */}
+        <div className="absolute inset-y-0 left-0 right-0 top-[3px] overflow-hidden pointer-events-none">
+          <div
+            className="absolute inset-0 opacity-[0.04]"
+            style={{
+              backgroundImage: `
+                radial-gradient(circle at 20px 20px, hsl(var(--foreground)) 1px, transparent 1px),
+                radial-gradient(circle at 0px 0px, hsl(var(--foreground)) 1px, transparent 1px),
+                linear-gradient(45deg, transparent 48%, hsl(var(--foreground)) 49%, hsl(var(--foreground)) 51%, transparent 52%),
+                linear-gradient(-45deg, transparent 48%, hsl(var(--foreground)) 49%, hsl(var(--foreground)) 51%, transparent 52%)
+              `,
+              backgroundSize: '40px 40px'
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-gold/5 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
+        </div>
+
+        <div className="relative px-4 pt-2.5 mb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-1 h-5 bg-gold rounded-full" />
@@ -1245,7 +1268,9 @@ export default function HubPage() {
             </Link>
           </div>
         </div>
-        <ArenaCompetitionsSection onCreateClick={() => navigate(profile ? '/competition/create' : '/start')} hideHeader />
+        <div className="relative">
+          <ArenaCompetitionsSection onCreateClick={() => navigate(profile ? '/competition/create' : '/start')} hideHeader />
+        </div>
       </motion.div>
 
 
