@@ -18,6 +18,7 @@ import CompetitionVoting from "@/components/loopgate/CompetitionVoting";
 import CompetitionWinnerCard from "@/components/loopgate/CompetitionWinnerCard";
 import { setLobbyMusicActive } from "@/components/loopgate/LobbyMusicPlayer";
 import ThemeRevealModal, { pickAutoTheme } from "@/components/loopgate/ThemeRevealModal";
+import lobbyDefaultCover from "@/assets/lobby-default-cover.jpg";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 
@@ -754,10 +755,13 @@ export default function CompetitionLobbyPage() {
               )}
             </button>
           </>
-        ) : competition.cover_image_url ? (
-          <img src={competition.cover_image_url} alt="" className="w-full h-52 object-cover" />
         ) : (
-          <div className="w-full h-52 bg-gradient-to-br from-white/[0.03] via-surface-2 to-black" />
+          <img
+            src={competition.cover_image_url || lobbyDefaultCover}
+            alt=""
+            loading="lazy"
+            className="w-full h-52 object-cover"
+          />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-black/40 pointer-events-none" />
 
