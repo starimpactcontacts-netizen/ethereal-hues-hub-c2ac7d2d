@@ -119,35 +119,30 @@ export default function LandingPage() {
                 Explore as Guest →
               </button>
             </motion.div>
-            {/* Secondary CTAs — clarify what Loopgate is */}
+            {/* Mode chips — inline, minimal, no boxy stack */}
             <motion.div
-              className="flex flex-row gap-3 items-stretch justify-center mt-4 w-full max-w-[420px] mx-auto"
+              className="flex items-center justify-center gap-3 mt-4"
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.35, duration: 0.6 }}
             >
-              <Link to="/start" className="flex-1">
-                <motion.div
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm cursor-pointer"
-                >
-                  <Film className="w-4 h-4 text-emerald-400" />
-                  <span className="text-white font-black text-sm sm:text-base tracking-[0.08em] uppercase" style={{ fontFamily: 'Teko, Bebas Neue, sans-serif' }}>
-                    Edit Battle
-                  </span>
-                </motion.div>
+              <Link
+                to="/start"
+                className="group flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Film className="w-3.5 h-3.5 text-emerald-400" strokeWidth={2.5} />
+                <span className="text-[11px] font-bold tracking-[0.2em] uppercase">
+                  Edit Battle
+                </span>
               </Link>
-              <Link to="/start" className="flex-1">
-                <motion.div
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm cursor-pointer"
-                >
-                  <Users className="w-4 h-4 text-amber-400" />
-                  <span className="text-white font-black text-sm sm:text-base tracking-[0.08em] uppercase" style={{ fontFamily: 'Teko, Bebas Neue, sans-serif' }}>
-                    Multiplayer
-                  </span>
-                </motion.div>
+              <span className="w-px h-3 bg-border" />
+              <Link
+                to="/start"
+                className="group flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Users className="w-3.5 h-3.5 text-amber-400" strokeWidth={2.5} />
+                <span className="text-[11px] font-bold tracking-[0.2em] uppercase">
+                  Multiplayer
+                </span>
               </Link>
             </motion.div>
             <motion.div
