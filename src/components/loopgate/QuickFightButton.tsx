@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Swords, Loader2, Clock, X, Info, Zap } from 'lucide-react';
+import { Swords, Loader2, Clock, X, Info, Zap, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useMyQuickFights } from '@/hooks/useQuickFight';
 import { useAccountPrompt } from '@/hooks/useAccountPrompt';
@@ -80,6 +80,18 @@ export default function QuickFightButton({ size = 'lg', className = '' }: QuickF
       .eq('user_id', user.id);
     setSearching(false);
     toast('Search cancelled', { duration: 2000 });
+  };
+
+  const scrollToLobby = () => {
+    // Wait a tick in case the card just mounted from realtime queue update
+    requestAnimationFrame(() => {
+      const el = document.getElementById('my-queue-card');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'start' });
+      } else {
+        toast('Your lobby card will appear in the Edit Battles rail.', { duration: 2500 });
+      }
+    });
   };
 
   const handleClick = async () => {
@@ -184,8 +196,12 @@ export default function QuickFightButton({ size = 'lg', className = '' }: QuickF
             className="flex flex-col gap-1.5"
           >
             {/* Rotating tip banner */}
-            <div className="bg-surface-1 border border-border px-3 py-2">
-              <div className="flex items-start gap-2">
+            <div className="bg-surface-1 border border-border px-3 py-2 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={scrollToLobby}
+                className="flex items-start gap-2 flex-1 min-w-0 text-left touch-manipulation select-none"
+              >
                 <Info className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
                 <AnimatePresence mode="wait">
                   <motion.p
@@ -199,7 +215,15 @@ export default function QuickFightButton({ size = 'lg', className = '' }: QuickF
                     {QUEUE_TIPS[tipIndex]}
                   </motion.p>
                 </AnimatePresence>
-              </div>
+              </button>
+              <button
+                type="button"
+                onClick={scrollToLobby}
+                className="shrink-0 flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[10px] font-black uppercase tracking-wider hover:bg-emerald-500/20 transition-colors touch-manipulation select-none"
+              >
+                Lobby
+                <ArrowRight className="w-3 h-3" />
+              </button>
             </div>
 
             {/* Cancel button */}
