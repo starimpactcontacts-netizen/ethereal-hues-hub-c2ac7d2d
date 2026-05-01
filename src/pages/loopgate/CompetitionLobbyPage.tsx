@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Trophy, Users, Clock, Play, Loader2,
   Share2, Check, MessageCircle, Layers, Pencil, X, ThumbsUp, Sparkles, Upload, Volume2, VolumeX, CheckCircle2, Circle, LogOut, Crown, Info, Timer, Vote, Gavel, Trash2
@@ -52,6 +52,23 @@ function LiveCountdown({ deadline }: { deadline: string }) {
       <span className="text-red-400/40 text-xs">:</span>
       <span className="text-sm font-bold text-red-400 tabular-nums" style={teko}>{String(s).padStart(2, '0')}s</span>
     </div>
+  );
+}
+
+function VoteWindowCountdown({ deadline }: { deadline: string }) {
+  const [remaining, setRemaining] = useState(() => Math.max(0, differenceInSeconds(new Date(deadline), new Date())));
+  useEffect(() => {
+    const i = setInterval(() => {
+      setRemaining(Math.max(0, differenceInSeconds(new Date(deadline), new Date())));
+    }, 500);
+    return () => clearInterval(i);
+  }, [deadline]);
+  const m = Math.floor(remaining / 60);
+  const s = remaining % 60;
+  return (
+    <span className="tabular-nums text-amber-400 font-black" style={teko}>
+      {String(m).padStart(2, "0")}:{String(s).padStart(2, "0")}
+    </span>
   );
 }
 
@@ -1063,31 +1080,27 @@ export default function CompetitionLobbyPage() {
           </div>
         )}
 
-        {/* ═══ VOTING PHASE ═══ */}
-        {isVoting && submissions.length > 0 && (competition as any).voting_deadline && new Date((competition as any).voting_deadline).getTime() > Date.now() && (
-          <div className="space-y-3">
-            <CompetitionVoting
-              submissions={submissions}
-              myUserId={user?.id}
-              myVoteSubmissionId={myVoteSubmissionId}
-              onVote={castVote}
-              votingStartedAt={(competition as any).voting_started_at}
-            />
-            <p className="text-center text-[10px] uppercase tracking-[0.2em] text-foreground/40" style={teko}>
-              Auto-closes when everyone votes
-            </p>
-          </div>
-        )}
+        {/* ═══ SHOWCASE PHASE (inline) — only the player runs here. No leaderboard, no voting grid. ═══ */}
+        {isVoting && submissions.length > 0 && (competition as any).voting_started_at && (() => {
+          const startedAt = (competition as any).voting_started_at;
+          const showcaseMs = submissions.length * 15 * 1000;
+          const showcaseDone = Date.now() - new Date(startedAt).getTime() >= showcaseMs;
+          if (showcaseDone) return null;
+          return (
+            <div className="space-y-3">
+              <CompetitionVoting
+                submissions={submissions}
+                myUserId={user?.id}
+                myVoteSubmissionId={myVoteSubmissionId}
+                onVote={castVote}
+                votingStartedAt={startedAt}
+              />
+            </div>
+          );
+        })()}
 
-        {/* ═══ LEADERBOARD — only after the live showcase ends. During the
-              synchronized 15s/edit playback we hide the board so no one sees
-              the entries before everyone has watched them together. ═══ */}
-        {((isVoting && submissions.length > 0 && (() => {
-            const startedAt = (competition as any).voting_started_at;
-            if (!startedAt) return true;
-            const showcaseMs = submissions.length * 15 * 1000;
-            return Date.now() - new Date(startedAt).getTime() >= showcaseMs;
-          })()) || isCompleted) && (
+        {/* ═══ LEADERBOARD — completed only. Hidden entirely during showcase + voting. ═══ */}
+        {isCompleted && (
           <CompetitionLeaderboard
             submissions={submissions}
             isCompleted={isCompleted}
@@ -1178,6 +1191,64 @@ export default function CompetitionLobbyPage() {
           <CompetitionChat competitionId={competition.id} />
         </div>
       </div>
+
+      {/* ═══ VOTING MODAL — opens after the showcase ends. 3-minute window. ═══ */}
+      <AnimatePresence>
+        {isVoting && submissions.length > 0 && (competition as any).voting_started_at && (() => {
+          const startedAt = (competition as any).voting_started_at;
+          const showcaseMs = submissions.length * 15 * 1000;
+          const showcaseDone = Date.now() - new Date(startedAt).getTime() >= showcaseMs;
+          const votingDeadline = (competition as any).voting_deadline;
+          const stillOpen = votingDeadline ? new Date(votingDeadline).getTime() > Date.now() : true;
+          if (!showcaseDone || !stillOpen) return null;
+          return (
+            <motion.div
+              key="vote-modal"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[9998] bg-black/95 backdrop-blur-md flex flex-col"
+            >
+              {/* Header */}
+              <div
+                className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-white/[0.06]"
+                style={{ paddingTop: "calc(env(safe-area-inset-top) + 12px)" }}
+              >
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-extrabold uppercase tracking-[0.3em] text-amber-400" style={teko}>
+                    Voting Open
+                  </span>
+                  <span className="text-[11px] text-foreground/50">Pick the best edit</span>
+                </div>
+                {votingDeadline && (
+                  <div className="flex flex-col items-end">
+                    <span className="text-[9px] font-extrabold uppercase tracking-[0.25em] text-foreground/40" style={teko}>
+                      Time Left
+                    </span>
+                    <div className="text-2xl leading-none">
+                      <VoteWindowCountdown deadline={votingDeadline} />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Body */}
+              <div className="flex-1 overflow-y-auto px-4 py-4">
+                <CompetitionVoting
+                  submissions={submissions}
+                  myUserId={user?.id}
+                  myVoteSubmissionId={myVoteSubmissionId}
+                  onVote={castVote}
+                  votingStartedAt={startedAt}
+                />
+                <p className="mt-4 text-center text-[10px] uppercase tracking-[0.2em] text-foreground/40" style={teko}>
+                  Winner reveals when everyone votes or timer hits 0
+                </p>
+              </div>
+            </motion.div>
+          );
+        })()}
+      </AnimatePresence>
     </div>
   );
 }
