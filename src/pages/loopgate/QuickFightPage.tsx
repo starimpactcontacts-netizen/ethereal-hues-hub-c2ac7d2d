@@ -502,9 +502,8 @@ function EmptyEditSlot({
 
   return (
     <div className={`bg-surface-1 border ${borderColor} overflow-hidden ${isYou ? `ring-2 ${ringColor}` : ''}`}>
-      {/* Thumbnail placeholder */}
-      <div className={`relative aspect-[16/9] bg-gradient-to-br ${gradientFrom} ${gradientTo} flex flex-col items-center justify-center overflow-hidden`}>
-        {/* Pattern */}
+      {/* Tall 9:16 placeholder — minimal, no big avatar. Matches the live edit card height. */}
+      <div className={`relative aspect-[9/16] bg-gradient-to-br ${gradientFrom} ${gradientTo} flex flex-col items-center justify-center overflow-hidden`}>
         <div
           className="absolute inset-0 opacity-[0.08]"
           style={{
@@ -513,52 +512,33 @@ function EmptyEditSlot({
           }}
         />
 
-        {/* Live pulse */}
         {isLive && (
-          <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/60 backdrop-blur-sm px-1.5 py-0.5">
+          <div className="absolute top-1.5 left-1.5 flex items-center gap-1 bg-black/60 backdrop-blur-sm px-1.5 py-0.5">
             <span className={`w-1.5 h-1.5 rounded-full ${color === 'red' ? 'bg-red-500' : 'bg-blue-500'} animate-pulse`} />
             <span className="text-[8px] font-bold text-white uppercase tracking-wider">Live</span>
           </div>
         )}
 
-        {/* You badge */}
         {isYou && (
-          <div className="absolute top-2 right-2 bg-gold px-1.5 py-0.5">
+          <div className="absolute top-1.5 right-1.5 bg-gold px-1.5 py-0.5">
             <span className="text-[8px] font-bold text-black uppercase tracking-wider">You</span>
           </div>
         )}
 
-        {/* Center content */}
-        <div className="flex flex-col items-center gap-2 z-10">
-          <Avatar className={`w-10 h-10 border-2 ${color === 'red' ? 'border-red-500/60' : 'border-blue-500/60'}`}>
-            <AvatarImage src={avatarUrl || ''} />
-            <AvatarFallback className={`${accentBg} ${accentText} text-sm font-bold`}>
-              {username?.charAt(0).toUpperCase() || '?'}
-            </AvatarFallback>
-          </Avatar>
-          <div className={`flex items-center gap-1 px-2 py-0.5 bg-black/40 backdrop-blur-sm border ${borderColor}`}>
-            <Upload className={`w-2.5 h-2.5 ${accentText}`} />
-            <span className={`text-[8px] font-bold ${accentText} uppercase tracking-wider`}>
-              {isYou ? 'Drop Edit' : 'Awaiting Drop'}
-            </span>
-          </div>
+        {/* Center: just the upload chip */}
+        <div className={`flex items-center gap-1.5 px-2.5 py-1 bg-black/50 backdrop-blur-sm border ${borderColor} z-10`}>
+          <Upload className={`w-3 h-3 ${accentText}`} />
+          <span className={`text-[9px] font-bold ${accentText} uppercase tracking-[0.15em]`}>
+            {isYou ? 'Drop Edit' : 'Awaiting Drop'}
+          </span>
         </div>
-      </div>
 
-      {/* Footer */}
-      <div className="px-3 py-2 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Avatar className="w-6 h-6 border border-border">
-            <AvatarImage src={avatarUrl || ''} />
-            <AvatarFallback className={`${accentBg} ${accentText} text-[8px] font-bold`}>
-              {username?.charAt(0).toUpperCase() || '?'}
-            </AvatarFallback>
-          </Avatar>
-          <span className="text-xs font-medium text-foreground truncate">@{username}</span>
+        {/* Username overlay at bottom — matches submitted card layout */}
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 bottom-0 px-2 py-1.5 flex items-center justify-between gap-1">
+          <span className="text-[10px] font-bold text-white truncate drop-shadow">@{username}</span>
+          <span className={`text-[8px] font-bold ${accentText} uppercase tracking-wider shrink-0`}>{color}</span>
         </div>
-        <span className={`text-[8px] font-bold ${accentText} uppercase tracking-wider`}>
-          {color}
-        </span>
       </div>
     </div>
   );
