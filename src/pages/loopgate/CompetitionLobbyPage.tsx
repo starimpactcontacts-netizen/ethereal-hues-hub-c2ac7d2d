@@ -1000,7 +1000,14 @@ export default function CompetitionLobbyPage() {
 
         {/* ═══ LEADERBOARD — only after editing closes / voting begins ═══ */}
         {((isVoting && submissions.length > 0) || isCompleted) && (
-          <CompetitionLeaderboard submissions={submissions} isCompleted={isCompleted} />
+          <CompetitionLeaderboard
+            submissions={submissions}
+            isCompleted={isCompleted}
+            isVoting={isVoting}
+            onVote={castVote}
+            myVoteSubmissionId={myVoteSubmissionId}
+            currentUserId={user?.id ?? null}
+          />
         )}
 
         {/* ═══ WINNER SHARE CARD CTA — completed only ═══ */}
