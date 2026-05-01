@@ -289,9 +289,9 @@ export function useCompetition(idOrSlug: string | undefined) {
       return true;
     }
     const now = new Date();
-    // Showcase = 15s per submission, then a 2-minute voting window.
+    // Showcase = 15s per submission, then a 3-minute voting window.
     const showcaseMs = submissions.length * 15 * 1000;
-    const votingWindowMs = 2 * 60 * 1000;
+    const votingWindowMs = 3 * 60 * 1000;
     const deadline = new Date(now.getTime() + showcaseMs + votingWindowMs);
     const { error } = await supabase.from("competitions").update({
       status: "voting",
