@@ -1,9 +1,12 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { Home, Search, User, LogIn, Infinity as InfinityIcon, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
+import { useEffect } from "react";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useActiveBattles } from "@/hooks/useActiveBattles";
 import { useMyCompetitionReminders } from "@/hooks/useMyCompetitionReminders";
+import { useAuth } from "@/hooks/useAuth";
+import { useGuestNicknamePrompt } from "@/hooks/useGuestNicknamePrompt";
 import GlitchEdge from "@/components/loopgate/GlitchEdge";
 
 const navItems = [
@@ -18,6 +21,20 @@ export default function BottomNav() {
   const { hasActiveBattle } = useActiveBattles();
   const { hasActiveCompetition } = useMyCompetitionReminders();
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
+
+  // One-time, in-app nudge: 10s after a fully-anonymous visitor enters Loopgate
+  // (any page that mounts BottomNav), pop the nickname modal. Once per session.
+  useEffect(() => {
+    if (loading || user) return;
+    if (typeof window === "undefined") return;
+    if (sessionStorage.getItem("loopgate_nick_nudged") === "1") return;
+    const t = window.setTimeout(() => {
+      sessionStorage.setItem("loopgate_nick_nudged", "1");
+      useGuestNicknamePrompt.getState().prompt({ reason: "Pick a nickname" });
+    }, 10000);
+    return () => window.clearTimeout(t);
+  }, [loading, user]);
 
   const handleSignIn = () => {
     clearGuest();
