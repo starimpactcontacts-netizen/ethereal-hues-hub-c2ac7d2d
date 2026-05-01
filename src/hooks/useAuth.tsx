@@ -19,6 +19,8 @@ interface Profile {
   verification_status?: boolean;
   verification_code?: string | null;
   activity_status?: 'online' | 'offline' | 'busy';
+  is_guest?: boolean;
+  prompted_for_password_at?: string | null;
 }
 
 interface ConnectedPlatform {
@@ -44,10 +46,14 @@ interface AuthContextType {
   signInWithOtp: (email: string, token: string, tokenHash?: string) => Promise<{ error: Error | null }>;
   signInWithPassword: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUpWithPassword: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signInAsGuest: (nickname: string) => Promise<{ error: Error | null; usernameTaken?: boolean }>;
+  convertGuestAccount: (password: string, email?: string) => Promise<{ error: Error | null }>;
+  markPasswordPrompted: () => Promise<void>;
   updatePassword: (newPassword: string) => Promise<{ error: Error | null }>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  isGuest: boolean;
   isAdmin: boolean;
   isJudge: boolean;
   isDev: boolean;
