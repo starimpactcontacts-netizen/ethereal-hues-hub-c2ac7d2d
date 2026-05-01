@@ -479,6 +479,16 @@ export default function CompetitionLobbyPage() {
                 {copied ? <Check className="w-3.5 h-3.5" /> : <Share2 className="w-3.5 h-3.5" />}
                 <span className="text-[11px] font-extrabold tracking-[0.2em]" style={teko}>ROOM</span>
               </button>
+              {isCreator && isLobby && (
+                <button
+                  onClick={handleDeleteRoom}
+                  disabled={isDeleting}
+                  aria-label="Delete room"
+                  className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-white/[0.1] bg-white/[0.03] hover:bg-red-500/15 hover:border-red-500/40 hover:text-red-400 text-foreground/70 active:scale-95 transition disabled:opacity-50"
+                >
+                  {isDeleting ? <Loader2 className="w-[15px] h-[15px] animate-spin" /> : <Trash2 className="w-[15px] h-[15px]" />}
+                </button>
+              )}
             </div>
           </div>
         </header>
