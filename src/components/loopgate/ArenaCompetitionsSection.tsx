@@ -7,6 +7,7 @@ import { useCompetitionsList, type Competition } from "@/hooks/useCompetitions";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ArenaRail, ArenaRailSkeleton } from "@/components/loopgate/ArenaCarouselSystem";
+import lobbyDefaultCover from "@/assets/lobby-default-cover.jpg";
 
 const CARD_W = 160;
 const CARD_H = 220;
@@ -54,13 +55,12 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
       >
         {/* Cover — fills most of the square */}
         <div className="relative flex-1 overflow-hidden">
-          {comp.cover_image_url ? (
-            <img src={comp.cover_image_url} alt={comp.name} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-white/[0.04] to-black flex items-center justify-center">
-              <Trophy className="w-8 h-8 text-white/[0.08]" />
-            </div>
-          )}
+          <img
+            src={comp.cover_image_url || lobbyDefaultCover}
+            alt={comp.name}
+            loading="lazy"
+            className="w-full h-full object-cover"
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
 
           <button
