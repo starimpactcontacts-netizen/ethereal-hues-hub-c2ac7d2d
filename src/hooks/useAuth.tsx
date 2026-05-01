@@ -590,7 +590,7 @@ export function useAuth() {
       signInWithOtp: async () => ({ error: null }),
       signInWithPassword: async () => ({ error: null }),
       signUpWithPassword: async () => ({ error: null }),
-      signInAsGuest: async () => ({ error: null }),
+      signInAsGuest: async () => ({ error: null, usernameTaken: false }),
       convertGuestAccount: async () => ({ error: null }),
       markPasswordPrompted: async () => {},
       updatePassword: async () => ({ error: null }),
