@@ -174,7 +174,7 @@ function SidePanel({
   const ring = side.color === "red" ? "ring-red-500/60" : "ring-blue-500/60";
 
   return (
-    <div className={`relative aspect-square w-full overflow-hidden bg-black border border-white/[0.06] ${active ? `ring-2 ${ring}` : "opacity-60"}`}>
+    <div className={`relative aspect-[4/3] w-full overflow-hidden bg-black border border-white/[0.06] ${active ? `ring-2 ${ring}` : "opacity-60"}`}>
       {isVid ? (
         <video
           ref={videoRef}
