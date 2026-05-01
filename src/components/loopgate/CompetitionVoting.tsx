@@ -73,9 +73,10 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
   // If the browser blocks it, fall back to muted and prompt the user to tap for sound.
   useEffect(() => {
     const v = videoRef.current;
-    if (!v) return;
+    if (!v || phase !== "watching") return;
     v.muted = false;
     v.volume = 1;
+    v.currentTime = 0;
     setNeedsSoundTap(false);
     const tryPlay = async () => {
       try {
@@ -106,10 +107,14 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
     setNeedsSoundTap(false);
   };
 
-  // Skip to voting if user already voted
+  // If a stale vote already exists, still force the showcase first. Only switch
+  // after the server-synced 15s/edit window has passed.
   useEffect(() => {
-    if (myVoteSubmissionId) setPhase(phase => phase === "watching" ? "voting" : phase);
-  }, [myVoteSubmissionId]);
+    if (!myVoteSubmissionId || !startMs) return;
+    if (Date.now() >= startMs + totalShowcaseMs) {
+      setPhase(phase => phase === "watching" ? "voting" : phase);
+    }
+  }, [myVoteSubmissionId, startMs, totalShowcaseMs]);
 
   // SERVER-SYNCED TICKER — every 250ms recompute position from voting_started_at
   // so every viewer sees the same edit at the same moment. No local advance.
