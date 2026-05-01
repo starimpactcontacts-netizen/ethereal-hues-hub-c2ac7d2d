@@ -18,6 +18,7 @@ import CompetitionVoting from "@/components/loopgate/CompetitionVoting";
 import CompetitionWinnerCard from "@/components/loopgate/CompetitionWinnerCard";
 import { setLobbyMusicActive } from "@/components/loopgate/LobbyMusicPlayer";
 import ThemeRevealModal, { pickAutoTheme } from "@/components/loopgate/ThemeRevealModal";
+import lobbyDefaultCover from "@/assets/lobby-default-cover.jpg";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 
