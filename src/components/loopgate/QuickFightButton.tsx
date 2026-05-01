@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Swords, Loader2, Clock, X, Info, Zap } from 'lucide-react';
+import { Swords, Loader2, Clock, X, Info, Zap, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useMyQuickFights } from '@/hooks/useQuickFight';
 import { useAccountPrompt } from '@/hooks/useAccountPrompt';
@@ -80,6 +80,18 @@ export default function QuickFightButton({ size = 'lg', className = '' }: QuickF
       .eq('user_id', user.id);
     setSearching(false);
     toast('Search cancelled', { duration: 2000 });
+  };
+
+  const scrollToLobby = () => {
+    // Wait a tick in case the card just mounted from realtime queue update
+    requestAnimationFrame(() => {
+      const el = document.getElementById('my-queue-card');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'start' });
+      } else {
+        toast('Your lobby card will appear in the Edit Battles rail.', { duration: 2500 });
+      }
+    });
   };
 
   const handleClick = async () => {
