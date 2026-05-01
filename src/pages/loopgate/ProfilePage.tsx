@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Camera, Lock, ArrowRight, Share2, BarChart3, Grid3X3, Shield, Gavel, Video, Users, Link2, Package, Settings, Sparkles, ShoppingBag, DollarSign } from "lucide-react";
+import { Camera, Lock, ArrowRight, Share2, BarChart3, Grid3X3, Gavel, Video, Users, Link2, Package, Settings, ShoppingBag, DollarSign, Pencil, Check, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTempProfile } from "@/hooks/useTempProfile";
@@ -8,24 +8,19 @@ import { useActiveSession } from "@/hooks/useRealData";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useUserSubmissions } from "@/hooks/useUserSubmissions";
 import { useJudgeRatingVideos } from "@/hooks/useJudgeRatingVideos";
-import { useCrewMembership } from "@/hooks/useCrewMembership";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { motion } from "framer-motion";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
-import FoundingBadge from "@/components/loopgate/FoundingBadge";
 import AvatarUploadModal from "@/components/loopgate/AvatarUploadModal";
 import ActivityStatusSelector from "@/components/loopgate/ActivityStatusSelector";
 
 import SubmissionGrid from "@/components/loopgate/SubmissionGrid";
-import ArchetypeBadge from "@/components/loopgate/ArchetypeBadge";
-import { SoftwareBadges } from "@/components/loopgate/SoftwareBadge";
 import MyJudgeReviews from "@/components/loopgate/MyJudgeReviews";
 import MyRatingVideos from "@/components/loopgate/MyRatingVideos";
 
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
-import { useEquippedBadges } from "@/hooks/useEquippedBadges";
 import LinkTreeEditor from "@/components/loopgate/LinkTreeEditor";
 
 export default function ProfilePage() {
@@ -35,11 +30,12 @@ export default function ProfilePage() {
   const { isGuest, clearGuest } = useGuestMode();
   const { submissions } = useUserSubmissions();
   const { videos: judgeVideos } = useJudgeRatingVideos();
-  const { primaryCrew } = useCrewMembership(profile?.id);
   const { isAnyJudge } = useUserRoles(profile?.id);
-  const { badges, hasEquippedOG } = useEquippedBadges(profile?.id);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'edits' | 'reviews' | 'videos' | 'links'>('edits');
+  const [editingBio, setEditingBio] = useState(false);
+  const [bioDraft, setBioDraft] = useState("");
+  const [savingBio, setSavingBio] = useState(false);
 
   useEffect(() => {
     if (isAnyJudge) setActiveTab('videos');
@@ -104,7 +100,7 @@ export default function ProfilePage() {
 
   if (authLoading || !profile) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center">
         <p className="text-muted-foreground">Loading...</p>
       </div>
     );
@@ -119,8 +115,31 @@ export default function ProfilePage() {
     { to: "/profile/settings", icon: Settings, label: "Settings" },
   ];
 
+  const currentBio = (profile as any).bio as string | null;
+
+  const startEditBio = () => {
+    setBioDraft(currentBio || "");
+    setEditingBio(true);
+  };
+
+  const saveBio = async () => {
+    setSavingBio(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ bio: bioDraft.trim() || null })
+      .eq("id", profile.id);
+    setSavingBio(false);
+    if (error) {
+      toast.error("Couldn't save bio");
+      return;
+    }
+    toast.success("Bio updated");
+    setEditingBio(false);
+    refreshProfile();
+  };
+
   return (
-    <div className="bg-background min-h-screen">
+    <div className="bg-black min-h-screen text-foreground">
       
       {/* ═══ TIKTOK-STYLE CENTERED HERO ═══ */}
       <div className="relative pt-2 pb-0">
@@ -153,12 +172,12 @@ export default function ProfilePage() {
         <div className="flex flex-col items-center px-4">
           <button
             onClick={() => setShowAvatarModal(true)}
-            className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-border/40 group mb-2"
+            className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-white/10 group mb-2"
           >
             {profile.avatar_url ? (
               <img src={profile.avatar_url} alt={profile.username} className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full bg-surface-1 flex items-center justify-center">
+              <div className="w-full h-full bg-[#111114] flex items-center justify-center">
                 <span className="font-display text-2xl text-muted-foreground">{profile.username?.charAt(0).toUpperCase() || '?'}</span>
               </div>
             )}
@@ -167,57 +186,64 @@ export default function ProfilePage() {
             </div>
           </button>
 
-          {/* Name + badges */}
+          {/* Name + verified */}
           <div className="flex items-center gap-1.5 mb-0.5">
             <h1 className="font-display text-lg leading-tight">{(profile as any).display_name || profile.username}</h1>
             {profile.verification_status && <VerifiedBadge size="sm" />}
-            {(hasEquippedOG || (profile as any).is_founding_member) && <FoundingBadge size="sm" animate={false} />}
           </div>
-          <p className="text-[11px] text-muted-foreground mb-1.5">@{profile.username}</p>
+          <p className="text-[11px] text-muted-foreground mb-3">@{profile.username}</p>
 
-          {/* Identity tags */}
-          {((profile as any).archetype || ((profile as any).software?.length > 0)) && (
-            <div className="flex items-center gap-1 mb-3">
-              {(profile as any).archetype && <ArchetypeBadge archetype={(profile as any).archetype} size="sm" animate={false} />}
-              {(profile as any).software?.length > 0 && <SoftwareBadges software={(profile as any).software} size="sm" animate={false} />}
-            </div>
-          )}
-
-          {/* Equipped badges inline */}
-          {badges.length > 0 && (
-            <div className="flex items-center gap-1.5 flex-wrap justify-center mb-2">
-              {badges.map((badge) => (
-                <Link key={badge.id} to="/inventory" className="flex items-center gap-1 px-2 py-1 bg-surface-1/60 border border-border/30 rounded-full hover:border-border/50 transition-colors">
-                  {badge.image_url ? (
-                    <img src={badge.image_url} alt={badge.item_name} className="w-3.5 h-3.5 rounded-sm object-cover" />
-                  ) : (
-                    <Sparkles className="w-3 h-3 text-gold" />
-                  )}
-                  <span className="text-[9px] font-medium">{badge.item_name}</span>
-                </Link>
-              ))}
-            </div>
-          )}
-
-          {/* Unit badge */}
-          {primaryCrew?.crew && (
-            <Link to={`/units/${primaryCrew.crew_id}`} className="flex items-center gap-1.5 px-2 py-1 bg-surface-1/50 border border-border/20 rounded-full hover:border-border/40 transition-colors w-fit mb-2">
-              <div className="w-4 h-4 rounded-full overflow-hidden bg-muted/30 flex items-center justify-center shrink-0">
-                {primaryCrew.crew.avatar_url ? (
-                  <img src={primaryCrew.crew.avatar_url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <Shield className="w-2 h-2 text-muted-foreground" />
-                )}
+          {/* Bio */}
+          <div className="w-full max-w-[320px] mb-4">
+            {editingBio ? (
+              <div className="flex flex-col items-center gap-2">
+                <textarea
+                  value={bioDraft}
+                  onChange={(e) => setBioDraft(e.target.value.slice(0, 160))}
+                  placeholder="Write a short bio..."
+                  rows={3}
+                  className="w-full bg-[#111114] border border-white/10 rounded-lg px-3 py-2 text-[13px] text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-white/30 resize-none"
+                />
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-muted-foreground">{bioDraft.length}/160</span>
+                  <button
+                    onClick={() => setEditingBio(false)}
+                    className="flex items-center gap-1 px-3 py-1 rounded-full bg-[#111114] border border-white/10 text-[11px] text-muted-foreground hover:text-white"
+                  >
+                    <X className="w-3 h-3" /> Cancel
+                  </button>
+                  <button
+                    onClick={saveBio}
+                    disabled={savingBio}
+                    className="flex items-center gap-1 px-3 py-1 rounded-full bg-white text-black text-[11px] font-semibold disabled:opacity-50"
+                  >
+                    <Check className="w-3 h-3" /> {savingBio ? "Saving..." : "Save"}
+                  </button>
+                </div>
               </div>
-              <span className="text-[10px] font-medium truncate max-w-[80px]">{primaryCrew.crew.name}</span>
-            </Link>
-          )}
+            ) : currentBio ? (
+              <button
+                onClick={startEditBio}
+                className="group w-full text-center text-[13px] text-foreground/80 leading-snug whitespace-pre-wrap hover:text-foreground transition-colors"
+              >
+                {currentBio}
+                <Pencil className="inline w-3 h-3 ml-1.5 opacity-40 group-hover:opacity-80" />
+              </button>
+            ) : (
+              <button
+                onClick={startEditBio}
+                className="flex items-center justify-center gap-1.5 mx-auto text-[12px] text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Pencil className="w-3 h-3" /> Add bio
+              </button>
+            )}
+          </div>
 
           {/* Quick nav — tiny circle icons */}
           <div className="flex items-center gap-3 mb-3">
             {quickNav.map(({ to, icon: Icon, label }) => (
               <Link key={to} to={to} className="group flex flex-col items-center gap-0.5">
-                <div className="w-8 h-8 rounded-full border border-border/30 bg-surface-1/40 flex items-center justify-center group-hover:border-border/60 transition-colors">
+                <div className="w-8 h-8 rounded-full border border-white/10 bg-[#111114] flex items-center justify-center group-hover:border-white/30 transition-colors">
                   <Icon className="w-3.5 h-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
                 </div>
                 <span className="text-[7px] text-muted-foreground">{label}</span>
@@ -228,7 +254,7 @@ export default function ProfilePage() {
       </div>
 
       {/* ═══ CONTENT TABS — flush ═══ */}
-      <div className="border-b border-border/20">
+      <div className="border-b border-white/5">
         <div className="flex">
           {[
             { id: 'edits' as const, icon: Grid3X3, label: 'Edits', show: true },
