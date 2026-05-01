@@ -22,11 +22,24 @@ export default function SupportPage() {
     setSending(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        // Not signed in — fall straight to mail client
+        window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(
+          kind === 'bug' ? 'Bug report' : 'Inquiry'
+        )}&body=${encodeURIComponent(message)}`;
+        return;
+      }
+      const username =
+        (user.user_metadata as any)?.username ||
+        user.email?.split('@')[0] ||
+        'user';
       const { error } = await supabase.from('support_tickets').insert({
-        user_id: user?.id ?? null,
-        kind,
-        email: email.trim() || user?.email || null,
-        message: message.trim(),
+        user_id: user.id,
+        username,
+        avatar_url: (user.user_metadata as any)?.avatar_url ?? null,
+        category: kind,
+        subject: kind === 'bug' ? 'Bug report' : 'Inquiry',
+        message: `${email.trim() ? `Reply-to: ${email.trim()}\n\n` : ''}${message.trim()}`,
       });
       if (error) throw error;
       toast.success("Got it — we'll get back to you shortly");
