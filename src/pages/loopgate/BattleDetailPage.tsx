@@ -19,6 +19,7 @@ import BattleJudgingPanel from "@/components/loopgate/BattleJudgingPanel";
 import BattleChat from "@/components/loopgate/BattleChat";
 import BattleSongPicker from "@/components/loopgate/BattleSongPicker";
 import BattleSubmissionCard from "@/components/loopgate/BattleSubmissionCard";
+import BattleShowcase from "@/components/loopgate/BattleShowcase";
 
 function formatViews(count: number): string {
   if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
@@ -91,6 +92,31 @@ export default function BattleDetailPage() {
   const isLive = battle.status === 'active';
   const isCompleted = battle.status === 'completed';
   const isJudging = battle.status === 'judging';
+  const bothSubmitted = !!battle.challenger_submission_url && !!battle.opponent_submission_url;
+  const showcaseStartedAt = (battle as any).showcase_started_at as string | null;
+  const judgingDeadline = (battle as any).judging_deadline as string | null;
+  const publicVoteStartedAt = (battle as any).public_vote_started_at as string | null;
+  const publicVoteDeadline = (battle as any).public_vote_deadline as string | null;
+  const inPublicVote = isJudging && !!publicVoteStartedAt;
+  const judgeMsLeft = judgingDeadline ? new Date(judgingDeadline).getTime() - Date.now() : 0;
+  const publicVoteMsLeft = publicVoteDeadline ? new Date(publicVoteDeadline).getTime() - Date.now() : 0;
+
+  // Poll the finalizer so judge-window → public-vote → completed transitions happen
+  // even if no one is online except the spectator viewing this page.
+  useEffect(() => {
+    if (!battleId || !isJudging) return;
+    const tick = async () => {
+      try {
+        await supabase.rpc('finalize_battle_if_expired' as any, { p_battle_id: battleId } as any);
+        await refetch();
+      } catch (e) {
+        console.debug('finalize_battle_if_expired:', e);
+      }
+    };
+    tick();
+    const id = window.setInterval(tick, 5000);
+    return () => window.clearInterval(id);
+  }, [battleId, isJudging, refetch]);
 
   const statusColor = isLive ? 'text-red-400' : isJudging ? 'text-purple-400' : isCompleted ? 'text-amber-400' : 'text-zinc-400';
   const statusLabel = isLive ? 'LIVE BATTLE' : battle.status === 'pending' && !battle.opponent_id ? 'OPEN CHALLENGE' : battle.status === 'pending' && battle.opponent_id ? 'AWAITING ACCEPTANCE' : isJudging ? 'UNDER REVIEW' : isCompleted ? 'DECIDED' : '';
