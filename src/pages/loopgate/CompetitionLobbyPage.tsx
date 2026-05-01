@@ -1094,10 +1094,7 @@ export default function CompetitionLobbyPage() {
         )}
 
         {/* ═══ SHOWCASE PHASE (inline) — only the player runs here. No leaderboard, no voting grid. ═══ */}
-        {isVoting && submissions.length > 0 && (competition as any).voting_started_at && (() => {
-          const startedAt = (competition as any).voting_started_at;
-          const showcaseMs = submissions.length * 15 * 1000;
-          const showcaseDone = Date.now() - new Date(startedAt).getTime() >= showcaseMs;
+        {isVoting && submissions.length > 0 && votingStartedAt && (() => {
           if (showcaseDone) return null;
           return (
             <div className="space-y-3">
@@ -1106,7 +1103,7 @@ export default function CompetitionLobbyPage() {
                 myUserId={user?.id}
                 myVoteSubmissionId={myVoteSubmissionId}
                 onVote={castVote}
-                votingStartedAt={startedAt}
+                votingStartedAt={votingStartedAt}
               />
             </div>
           );
@@ -1207,13 +1204,8 @@ export default function CompetitionLobbyPage() {
 
       {/* ═══ VOTING MODAL — opens after the showcase ends. 3-minute window. ═══ */}
       <AnimatePresence>
-        {isVoting && submissions.length > 0 && (competition as any).voting_started_at && (() => {
-          const startedAt = (competition as any).voting_started_at;
-          const showcaseMs = submissions.length * 15 * 1000;
-          const showcaseDone = Date.now() - new Date(startedAt).getTime() >= showcaseMs;
-          const votingDeadline = (competition as any).voting_deadline;
-          const stillOpen = votingDeadline ? new Date(votingDeadline).getTime() > Date.now() : true;
-          if (!showcaseDone || !stillOpen) return null;
+        {isVoting && submissions.length > 0 && votingStartedAt && (() => {
+          if (!votingWindowOpen) return null;
           return (
             <motion.div
               key="vote-modal"
@@ -1252,7 +1244,7 @@ export default function CompetitionLobbyPage() {
                   myUserId={user?.id}
                   myVoteSubmissionId={myVoteSubmissionId}
                   onVote={castVote}
-                  votingStartedAt={startedAt}
+                  votingStartedAt={votingStartedAt}
                 />
                 <p className="mt-4 text-center text-[10px] uppercase tracking-[0.2em] text-foreground/40" style={teko}>
                   Winner reveals when everyone votes or timer hits 0
