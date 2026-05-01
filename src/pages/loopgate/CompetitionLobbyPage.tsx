@@ -55,6 +55,23 @@ function LiveCountdown({ deadline }: { deadline: string }) {
   );
 }
 
+function VoteWindowCountdown({ deadline }: { deadline: string }) {
+  const [remaining, setRemaining] = useState(() => Math.max(0, differenceInSeconds(new Date(deadline), new Date())));
+  useEffect(() => {
+    const i = setInterval(() => {
+      setRemaining(Math.max(0, differenceInSeconds(new Date(deadline), new Date())));
+    }, 500);
+    return () => clearInterval(i);
+  }, [deadline]);
+  const m = Math.floor(remaining / 60);
+  const s = remaining % 60;
+  return (
+    <span className="tabular-nums text-amber-400 font-black" style={teko}>
+      {String(m).padStart(2, "0")}:{String(s).padStart(2, "0")}
+    </span>
+  );
+}
+
 export default function CompetitionLobbyPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
