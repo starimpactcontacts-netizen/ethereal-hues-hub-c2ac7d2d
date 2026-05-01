@@ -11,7 +11,8 @@ import { useGuestMode } from '@/hooks/useGuestMode';
 import { useAuth } from '@/hooks/useAuth';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 import loopgateHeroCinematic from '@/assets/hero-collage.jpeg';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useGuestNicknamePrompt } from '@/hooks/useGuestNicknamePrompt';
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -19,6 +20,19 @@ export default function LandingPage() {
   const { stats } = useGlobalStats();
   const { user, loading } = useAuth();
   const [bannerVisible, setBannerVisible] = useState(false);
+
+  // Auto-nudge: 10s after a guest lands, pop the nickname modal so they
+  // can enter with zero friction. Skips entirely for logged-in users.
+  useEffect(() => {
+    if (loading || user) return;
+    const t = setTimeout(() => {
+      useGuestNicknamePrompt.getState().prompt({
+        reason: 'Pick a nickname',
+        returnTo: '/arena',
+      });
+    }, 10000);
+    return () => clearTimeout(t);
+  }, [loading, user]);
 
   const handleGuestExplore = () => {
     setGuest(true);
