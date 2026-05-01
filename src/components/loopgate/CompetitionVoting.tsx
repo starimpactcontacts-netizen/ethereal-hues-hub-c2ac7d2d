@@ -6,7 +6,7 @@ import type { CompetitionSubmission } from "@/hooks/useCompetitions";
 import { toast } from "sonner";
 
 const teko = { fontFamily: "Teko, sans-serif" };
-const PER_EDIT_SECONDS = 20;
+export const PER_EDIT_SECONDS = 15;
 
 type Phase = "watching" | "voting" | "submitted";
 
@@ -15,6 +15,12 @@ interface Props {
   myUserId: string | undefined;
   myVoteSubmissionId: string | null;
   onVote: (submissionId: string) => Promise<boolean>;
+  /**
+   * Server timestamp (ISO) when voting/showcase started. Used to synchronize
+   * the 15s-per-edit playback across ALL viewers so everyone is on the same edit
+   * at the same moment — this is a live event, not a personal queue.
+   */
+  votingStartedAt?: string | null;
   onClose?: () => void;
 }
 
@@ -26,16 +32,36 @@ function isImageFile(url: string) {
   return /\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(url);
 }
 
-export default function CompetitionVoting({ submissions, myUserId, myVoteSubmissionId, onVote }: Props) {
+export default function CompetitionVoting({ submissions, myUserId, myVoteSubmissionId, onVote, votingStartedAt }: Props) {
   // Order: stable by created_at then id
   const ordered = useMemo(
     () => [...submissions].sort((a, b) => a.created_at.localeCompare(b.created_at)),
     [submissions]
   );
 
-  const [phase, setPhase] = useState<Phase>(myVoteSubmissionId ? "voting" : "watching");
-  const [currentIdx, setCurrentIdx] = useState(0);
-  const [secondsLeft, setSecondsLeft] = useState(PER_EDIT_SECONDS);
+  // ── SERVER-SYNCED CLOCK ───────────────────────────────────────────────
+  // All clients derive the current edit index from voting_started_at so the
+  // entire room sees the SAME edit at the SAME time. Showcase total length
+  // = ordered.length * 15s. After that, everyone switches to voting.
+  const startMs = votingStartedAt ? new Date(votingStartedAt).getTime() : null;
+  const totalShowcaseMs = ordered.length * PER_EDIT_SECONDS * 1000;
+
+  const computeFromClock = () => {
+    if (!startMs) return { idx: 0, left: PER_EDIT_SECONDS, done: false };
+    const elapsed = Math.max(0, Date.now() - startMs);
+    if (elapsed >= totalShowcaseMs) return { idx: ordered.length - 1, left: 0, done: true };
+    const idx = Math.min(ordered.length - 1, Math.floor(elapsed / (PER_EDIT_SECONDS * 1000)));
+    const intoEdit = elapsed - idx * PER_EDIT_SECONDS * 1000;
+    const left = Math.max(0, Math.ceil((PER_EDIT_SECONDS * 1000 - intoEdit) / 1000));
+    return { idx, left, done: false };
+  };
+
+  const initial = computeFromClock();
+  const [phase, setPhase] = useState<Phase>(
+    myVoteSubmissionId ? "voting" : (startMs && initial.done ? "voting" : "watching")
+  );
+  const [currentIdx, setCurrentIdx] = useState(initial.idx);
+  const [secondsLeft, setSecondsLeft] = useState(initial.left);
   const [paused, setPaused] = useState(false);
   const [castingId, setCastingId] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -85,39 +111,31 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
     if (myVoteSubmissionId) setPhase(phase => phase === "watching" ? "voting" : phase);
   }, [myVoteSubmissionId]);
 
-  // 20s countdown timer per edit
+  // SERVER-SYNCED TICKER — every 250ms recompute position from voting_started_at
+  // so every viewer sees the same edit at the same moment. No local advance.
   useEffect(() => {
-    if (phase !== "watching" || paused) return;
-    setSecondsLeft(PER_EDIT_SECONDS);
-    const interval = setInterval(() => {
-      setSecondsLeft(s => {
-        if (s <= 1) {
-          clearInterval(interval);
-          // Advance
-          setTimeout(() => {
-            if (currentIdx < ordered.length - 1) {
-              setCurrentIdx(i => i + 1);
-            } else {
-              setPhase("voting");
-            }
-          }, 0);
-          return 0;
-        }
-        return s - 1;
-      });
-    }, 1000);
+    if (phase !== "watching") return;
+    if (!startMs) return; // fallback: stay on first edit until clock arrives
+    const tick = () => {
+      const { idx, left, done } = computeFromClock();
+      if (done) {
+        setPhase(p => (p === "watching" ? "voting" : p));
+        return;
+      }
+      setCurrentIdx(prev => (prev !== idx ? idx : prev));
+      setSecondsLeft(left);
+    };
+    tick();
+    const interval = setInterval(tick, 250);
     return () => clearInterval(interval);
-  }, [phase, paused, currentIdx, ordered.length]);
+  }, [phase, startMs, ordered.length]);
 
   // Empty state — voting should immediately close/finalize before this renders.
   if (ordered.length === 0) {
     return null;
   }
 
-  const handleSkip = () => {
-    if (currentIdx < ordered.length - 1) setCurrentIdx(i => i + 1);
-    else setPhase("voting");
-  };
+  // No skip — this is a synchronized live broadcast. Everyone watches together.
 
   const handleVote = async (submissionId: string) => {
     if (castingId) return;
@@ -143,21 +161,18 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
         {/* Header */}
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-amber-400" style={teko}>
-              Watch & Judge
+            <span className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.2em] text-red-400" style={teko}>
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+              Live Showcase
             </span>
             <span className="text-foreground/30 text-[10px]">·</span>
             <span className="text-[10px] font-bold tabular-nums text-foreground/60" style={teko}>
               {currentIdx + 1}/{ordered.length}
             </span>
           </div>
-          <button
-            onClick={handleSkip}
-            className="flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-[0.18em] text-foreground/50 hover:text-foreground transition"
-            style={teko}
-          >
-            {currentIdx < ordered.length - 1 ? <>Skip <SkipForward className="w-3 h-3" /></> : <>Vote <ChevronRight className="w-3 h-3" /></>}
-          </button>
+          <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-foreground/40" style={teko}>
+            Synced for everyone
+          </span>
         </div>
 
         {/* Segmented progress bar (one per edit) */}
