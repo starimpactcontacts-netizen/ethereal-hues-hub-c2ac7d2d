@@ -332,25 +332,69 @@ export default function QuickFightPage() {
               className="bg-gradient-to-r from-red-500/10 via-surface-1 to-blue-500/10 border border-gold/40 p-3"
             >
               <div className="flex items-center gap-2 mb-2">
-                <Sparkles className="w-3.5 h-3.5 text-gold" />
+                <Upload className="w-3.5 h-3.5 text-gold" />
                 <span className="text-[10px] font-bold text-foreground uppercase tracking-wider">Drop Your Edit</span>
-                <span className="text-[9px] text-muted-foreground">TikTok · YouTube · CapCut</span>
+                <span className="text-[9px] text-muted-foreground">MP4 · MOV · max 200 MB</span>
               </div>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="https://tiktok.com/@you/video/..."
-                  value={submissionUrl}
-                  onChange={(e) => setSubmissionUrl(e.target.value)}
-                  className="flex-1 bg-background border-border h-10"
+              <label
+                className={`flex items-center justify-center gap-2 h-12 w-full bg-gold text-background font-display uppercase tracking-wider cursor-pointer active:scale-[0.99] transition ${submitting ? 'opacity-60 pointer-events-none' : 'hover:bg-gold/90'}`}
+              >
+                <input
+                  type="file"
+                  accept="video/*,image/*"
+                  className="hidden"
+                  disabled={submitting}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file || !user) return;
+                    if (file.size > 209715200) {
+                      toast.error('File too big — 200 MB max');
+                      return;
+                    }
+                    setSubmitting(true);
+                    try {
+                      const ext = file.name.split('.').pop() || 'mp4';
+                      const path = `${fight.id}/${user.id}-${Date.now()}.${ext}`;
+                      const { error: upErr } = await supabase.storage
+                        .from('battle-edits')
+                        .upload(path, file, { contentType: file.type, upsert: false });
+                      if (upErr) throw upErr;
+                      const { data: pub } = supabase.storage.from('battle-edits').getPublicUrl(path);
+                      const success = await submitQuickFight(fight.id, user.id, pub.publicUrl);
+                      if (!success) throw new Error('submit failed');
+                      if (hasSongPicked) {
+                        try {
+                          await supabase.rpc('award_xp', {
+                            p_user_id: user.id,
+                            p_amount: 50,
+                            p_action: 'song_pick_bonus',
+                            p_description: 'Picked a library song for Quick 1v1',
+                          });
+                          toast.success('🔥 Edit uploaded! +50 XP song bonus');
+                        } catch {
+                          toast.success('🔥 Edit uploaded!');
+                        }
+                      } else {
+                        toast.success('🔥 Edit uploaded!');
+                      }
+                    } catch (err) {
+                      console.error('upload failed', err);
+                      toast.error('Upload failed — try again');
+                    } finally {
+                      setSubmitting(false);
+                      e.target.value = '';
+                    }
+                  }}
                 />
-                <Button
-                  onClick={handleSubmit}
-                  disabled={submitting || !submissionUrl.trim()}
-                  className="bg-gold hover:bg-gold/90 text-background h-10 px-4 font-display uppercase tracking-wider"
-                >
-                  {submitting ? '...' : <><Send className="w-4 h-4 mr-1" /> Drop</>}
-                </Button>
-              </div>
+                {submitting ? (
+                  <span className="text-sm">UPLOADING…</span>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4" />
+                    <span className="text-sm">UPLOAD EDIT</span>
+                  </>
+                )}
+              </label>
             </motion.div>
           )}
         </div>

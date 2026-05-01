@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Swords, Clock, Eye, Trophy, ArrowLeft, 
-  CheckCircle, XCircle, Send, Share2, Users, Gavel, Zap, Play, Music, Flag
+  CheckCircle, XCircle, Send, Share2, Users, Gavel, Zap, Play, Music, Flag, Upload
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -634,24 +634,62 @@ export default function BattleDetailPage() {
         {canSubmit && (
           <div className="bg-zinc-900/60 border border-amber-500/15 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-3">
-              <Send className="w-3.5 h-3.5 text-amber-400" />
+              <Upload className="w-3.5 h-3.5 text-amber-400" />
               <span className="text-[10px] font-bold text-amber-400 uppercase tracking-[0.15em]">SUBMIT YOUR EDIT</span>
+              <span className="text-[9px] text-zinc-500">MP4 · MOV · max 200 MB</span>
             </div>
-            <div className="flex gap-2">
-              <Input
-                placeholder="Paste TikTok, IG, or YouTube URL..."
-                value={submissionUrl}
-                onChange={(e) => setSubmissionUrl(e.target.value)}
-                className="flex-1 bg-black/30 border-white/[0.08] text-sm rounded-lg"
+            <label
+              className={`flex items-center justify-center gap-2 h-12 w-full rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-black font-bold uppercase tracking-[0.15em] cursor-pointer active:scale-[0.99] transition ${submitting ? 'opacity-60 pointer-events-none' : 'hover:from-amber-400 hover:to-amber-500'}`}
+            >
+              <input
+                type="file"
+                accept="video/*,image/*"
+                className="hidden"
+                disabled={submitting}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file || !user) return;
+                  if (file.size > 209715200) { toast.error('File too big — 200 MB max'); return; }
+                  setSubmitting(true);
+                  try {
+                    const ext = file.name.split('.').pop() || 'mp4';
+                    const path = `${battle.id}/${user.id}-${Date.now()}.${ext}`;
+                    const { error: upErr } = await supabase.storage
+                      .from('battle-edits')
+                      .upload(path, file, { contentType: file.type, upsert: false });
+                    if (upErr) throw upErr;
+                    const { data: pub } = supabase.storage.from('battle-edits').getPublicUrl(path);
+                    const success = await submitToBattle(battle.id, user.id, isChallenger, pub.publicUrl, 'upload');
+                    if (!success) throw new Error('submit failed');
+                    if (hasSongPicked && user?.id) {
+                      try {
+                        await supabase.rpc('award_xp', {
+                          p_user_id: user.id,
+                          p_amount: 50,
+                          p_action: 'song_pick_bonus',
+                          p_description: 'Picked a library song for 1v1 Battle',
+                        });
+                        toast.success('Submission recorded! +50 XP song bonus 🎵');
+                      } catch { toast.success('Submission recorded!'); }
+                    } else {
+                      toast.success('Submission recorded!');
+                    }
+                    refetch();
+                  } catch (err) {
+                    console.error('upload failed', err);
+                    toast.error('Upload failed — try again');
+                  } finally {
+                    setSubmitting(false);
+                    e.target.value = '';
+                  }
+                }}
               />
-              <button
-                onClick={handleSubmit}
-                disabled={submitting || !submissionUrl.trim()}
-                className="px-4 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-bold disabled:opacity-50 transition-all"
-              >
-                {submitting ? "..." : <Send className="w-4 h-4" />}
-              </button>
-            </div>
+              {submitting ? (
+                <span>UPLOADING…</span>
+              ) : (
+                <><Upload className="w-4 h-4" /> <span>UPLOAD EDIT</span></>
+              )}
+            </label>
           </div>
         )}
 
