@@ -14,6 +14,7 @@ import ProtectedRoute from "./components/loopgate/ProtectedRoute";
 import DevModeBadge from "./components/loopgate/DevModeBadge";
 import LoadingScreen from "./components/loopgate/LoadingScreen";
 import GlobalAccountPrompt from "./components/loopgate/GlobalAccountPrompt";
+import GlobalGuestConversionModal from "./components/loopgate/GlobalGuestConversionModal";
 import { isNativeApp } from "./lib/native";
 import ClippersLayoutRoute from "./components/clippers/ClippersLayoutRoute";
 
