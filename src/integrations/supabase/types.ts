@@ -525,6 +525,7 @@ export type Database = {
           judge_notes: string | null
           judge_status: string | null
           judged_at: string | null
+          judging_deadline: string | null
           league_tier: string
           loser_index_penalty: number | null
           opponent_author_username: string | null
@@ -538,8 +539,11 @@ export type Database = {
           opponent_username: string | null
           opponent_video_title: string | null
           opponent_votes: number
+          public_vote_deadline: string | null
+          public_vote_started_at: string | null
           requested_judge_id: string | null
           requested_judge_username: string | null
+          showcase_started_at: string | null
           starts_at: string | null
           status: string
           submission_mode: string | null
@@ -575,6 +579,7 @@ export type Database = {
           judge_notes?: string | null
           judge_status?: string | null
           judged_at?: string | null
+          judging_deadline?: string | null
           league_tier?: string
           loser_index_penalty?: number | null
           opponent_author_username?: string | null
@@ -588,8 +593,11 @@ export type Database = {
           opponent_username?: string | null
           opponent_video_title?: string | null
           opponent_votes?: number
+          public_vote_deadline?: string | null
+          public_vote_started_at?: string | null
           requested_judge_id?: string | null
           requested_judge_username?: string | null
+          showcase_started_at?: string | null
           starts_at?: string | null
           status?: string
           submission_mode?: string | null
@@ -625,6 +633,7 @@ export type Database = {
           judge_notes?: string | null
           judge_status?: string | null
           judged_at?: string | null
+          judging_deadline?: string | null
           league_tier?: string
           loser_index_penalty?: number | null
           opponent_author_username?: string | null
@@ -638,8 +647,11 @@ export type Database = {
           opponent_username?: string | null
           opponent_video_title?: string | null
           opponent_votes?: number
+          public_vote_deadline?: string | null
+          public_vote_started_at?: string | null
           requested_judge_id?: string | null
           requested_judge_username?: string | null
+          showcase_started_at?: string | null
           starts_at?: string | null
           status?: string
           submission_mode?: string | null
@@ -8337,6 +8349,10 @@ export type Database = {
       }
       ensure_default_channels: {
         Args: { p_crew_id: string }
+        Returns: undefined
+      }
+      finalize_battle_if_expired: {
+        Args: { p_battle_id: string }
         Returns: undefined
       }
       finalize_competition_if_expired: {

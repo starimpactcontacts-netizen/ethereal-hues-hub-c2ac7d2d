@@ -19,6 +19,7 @@ import BattleJudgingPanel from "@/components/loopgate/BattleJudgingPanel";
 import BattleChat from "@/components/loopgate/BattleChat";
 import BattleSongPicker from "@/components/loopgate/BattleSongPicker";
 import BattleSubmissionCard from "@/components/loopgate/BattleSubmissionCard";
+import BattleShowcase from "@/components/loopgate/BattleShowcase";
 
 function formatViews(count: number): string {
   if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
@@ -91,6 +92,31 @@ export default function BattleDetailPage() {
   const isLive = battle.status === 'active';
   const isCompleted = battle.status === 'completed';
   const isJudging = battle.status === 'judging';
+  const bothSubmitted = !!battle.challenger_submission_url && !!battle.opponent_submission_url;
+  const showcaseStartedAt = (battle as any).showcase_started_at as string | null;
+  const judgingDeadline = (battle as any).judging_deadline as string | null;
+  const publicVoteStartedAt = (battle as any).public_vote_started_at as string | null;
+  const publicVoteDeadline = (battle as any).public_vote_deadline as string | null;
+  const inPublicVote = isJudging && !!publicVoteStartedAt;
+  const judgeMsLeft = judgingDeadline ? new Date(judgingDeadline).getTime() - Date.now() : 0;
+  const publicVoteMsLeft = publicVoteDeadline ? new Date(publicVoteDeadline).getTime() - Date.now() : 0;
+
+  // Poll the finalizer so judge-window → public-vote → completed transitions happen
+  // even if no one is online except the spectator viewing this page.
+  useEffect(() => {
+    if (!battleId || !isJudging) return;
+    const tick = async () => {
+      try {
+        await supabase.rpc('finalize_battle_if_expired' as any, { p_battle_id: battleId } as any);
+        await refetch();
+      } catch (e) {
+        console.debug('finalize_battle_if_expired:', e);
+      }
+    };
+    tick();
+    const id = window.setInterval(tick, 5000);
+    return () => window.clearInterval(id);
+  }, [battleId, isJudging, refetch]);
 
   const statusColor = isLive ? 'text-red-400' : isJudging ? 'text-purple-400' : isCompleted ? 'text-amber-400' : 'text-zinc-400';
   const statusLabel = isLive ? 'LIVE BATTLE' : battle.status === 'pending' && !battle.opponent_id ? 'OPEN CHALLENGE' : battle.status === 'pending' && battle.opponent_id ? 'AWAITING ACCEPTANCE' : isJudging ? 'UNDER REVIEW' : isCompleted ? 'DECIDED' : '';
@@ -632,6 +658,59 @@ export default function BattleDetailPage() {
         {/* Submissions Display */}
         {(battle.challenger_submission_url || battle.opponent_submission_url) && (
           <div className="space-y-3">
+            {/* ═══ AUTO-SHOWCASE — both submitted, judging phase ═══ */}
+            {isJudging && bothSubmitted && showcaseStartedAt && battle.opponent_id && (
+              <BattleShowcase
+                showcaseStartedAt={showcaseStartedAt}
+                sides={[
+                  {
+                    userId: battle.challenger_id,
+                    username: battle.challenger_username,
+                    avatarUrl: battle.challenger_avatar_url,
+                    url: battle.challenger_submission_url!,
+                    color: "red",
+                  },
+                  {
+                    userId: battle.opponent_id,
+                    username: battle.opponent_username || "???",
+                    avatarUrl: battle.opponent_avatar_url,
+                    url: battle.opponent_submission_url!,
+                    color: "blue",
+                  },
+                ]}
+              />
+            )}
+
+            {/* ═══ JUDGE WINDOW BANNER (30 min) ═══ */}
+            {isJudging && bothSubmitted && !inPublicVote && judgingDeadline && judgeMsLeft > 0 && (
+              <div className="bg-purple-500/8 border border-purple-500/20 rounded-xl px-3 py-2.5 flex items-center gap-2.5">
+                <Gavel className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-purple-300" style={{ fontFamily: 'Teko, sans-serif' }}>
+                    Judge deciding
+                  </p>
+                  <p className="text-[11px] text-zinc-400 leading-tight">
+                    {Math.ceil(judgeMsLeft / 60000)}m left — then it goes to public vote
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* ═══ PUBLIC VOTE BANNER (15 min) ═══ */}
+            {inPublicVote && publicVoteMsLeft > 0 && (
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-2.5 flex items-center gap-2.5">
+                <Users className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-amber-300" style={{ fontFamily: 'Teko, sans-serif' }}>
+                    Public Vote — {Math.ceil(publicVoteMsLeft / 60000)}m left
+                  </p>
+                  <p className="text-[11px] text-zinc-400 leading-tight">
+                    Judge didn't decide in time. Community picks the winner.
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center gap-2">
               <Play className="w-3.5 h-3.5 text-zinc-400" />
               <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-[0.15em]">
