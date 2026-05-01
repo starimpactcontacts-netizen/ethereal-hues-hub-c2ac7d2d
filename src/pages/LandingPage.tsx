@@ -1,5 +1,5 @@
 import { Link, useNavigate, Navigate } from 'react-router-dom';
-import { Swords } from 'lucide-react';
+import { Swords, Users, Film } from 'lucide-react';
 import { motion } from 'framer-motion';
 import LandingHeader from '@/components/loopgate/LandingHeader';
 import IOSAppBanner from '@/components/loopgate/iOSAppBanner';
@@ -118,6 +118,37 @@ export default function LandingPage() {
               >
                 Explore as Guest →
               </button>
+            </motion.div>
+            {/* Secondary CTAs — clarify what Loopgate is */}
+            <motion.div
+              className="flex flex-row gap-3 items-stretch justify-center mt-4 w-full max-w-[420px] mx-auto"
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35, duration: 0.6 }}
+            >
+              <Link to="/start" className="flex-1">
+                <motion.div
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm cursor-pointer"
+                >
+                  <Film className="w-4 h-4 text-emerald-400" />
+                  <span className="text-white font-black text-sm sm:text-base tracking-[0.08em] uppercase" style={{ fontFamily: 'Teko, Bebas Neue, sans-serif' }}>
+                    Edit Battle
+                  </span>
+                </motion.div>
+              </Link>
+              <Link to="/start" className="flex-1">
+                <motion.div
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm cursor-pointer"
+                >
+                  <Users className="w-4 h-4 text-amber-400" />
+                  <span className="text-white font-black text-sm sm:text-base tracking-[0.08em] uppercase" style={{ fontFamily: 'Teko, Bebas Neue, sans-serif' }}>
+                    Multiplayer
+                  </span>
+                </motion.div>
+              </Link>
             </motion.div>
             <motion.div
               className="flex items-center gap-5 mt-5 text-xs text-muted-foreground justify-center"
