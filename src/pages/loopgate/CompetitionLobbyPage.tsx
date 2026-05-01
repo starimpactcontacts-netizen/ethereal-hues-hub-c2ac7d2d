@@ -1034,6 +1034,7 @@ export default function CompetitionLobbyPage() {
               myUserId={user?.id}
               myVoteSubmissionId={myVoteSubmissionId}
               onVote={castVote}
+              votingStartedAt={(competition as any).voting_started_at}
             />
             <p className="text-center text-[10px] uppercase tracking-[0.2em] text-foreground/40" style={teko}>
               Auto-closes when everyone votes
@@ -1041,8 +1042,15 @@ export default function CompetitionLobbyPage() {
           </div>
         )}
 
-        {/* ═══ LEADERBOARD — only after editing closes / voting begins ═══ */}
-        {((isVoting && submissions.length > 0) || isCompleted) && (
+        {/* ═══ LEADERBOARD — only after the live showcase ends. During the
+              synchronized 15s/edit playback we hide the board so no one sees
+              the entries before everyone has watched them together. ═══ */}
+        {((isVoting && submissions.length > 0 && (() => {
+            const startedAt = (competition as any).voting_started_at;
+            if (!startedAt) return true;
+            const showcaseMs = submissions.length * 15 * 1000;
+            return Date.now() - new Date(startedAt).getTime() >= showcaseMs;
+          })()) || isCompleted) && (
           <CompetitionLeaderboard
             submissions={submissions}
             isCompleted={isCompleted}
