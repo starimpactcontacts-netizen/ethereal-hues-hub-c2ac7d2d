@@ -48,11 +48,12 @@ interface BattleSubmissionCardProps {
   onVote?: () => void;
   hasVoted?: boolean;
   canVote?: boolean;
+  aspectClass?: string;
 }
 
 export default function BattleSubmissionCard({
   url, username, color, customThumbnailUrl,
-  score, isWinner, votes, onVote, hasVoted, canVote,
+  score, isWinner, votes, onVote, hasVoted, canVote, aspectClass = 'aspect-[9/16]',
 }: BattleSubmissionCardProps) {
   const platform = detectPlatform(url);
   const { thumbnail, loading: thumbLoading } = useThumbnail(url, platform);
@@ -65,7 +66,7 @@ export default function BattleSubmissionCard({
   return (
     <div className={`bg-surface-1 border ${borderColor} ${hoverBorder} transition-all overflow-hidden ${isWinner ? "ring-2 ring-gold/50" : ""}`}>
       {/* Tall 9:16 — the EDIT is the entire card. Minimal overlay only. */}
-      <a href={url} target="_blank" rel="noopener noreferrer" className="block relative aspect-[9/16] bg-surface-2 overflow-hidden group">
+      <a href={url} target="_blank" rel="noopener noreferrer" className={`block relative ${aspectClass} bg-surface-2 overflow-hidden group`}>
         {displayThumb ? (
           <img src={displayThumb} alt={`${username}'s edit`} className="w-full h-full object-cover" />
         ) : thumbLoading ? (
