@@ -328,6 +328,7 @@ export default function QuickFightPage() {
                 url={fight.player_1_submission_url}
                 username={fight.player_1_username}
                 color="red"
+                aspectClass="aspect-square"
                 avatarUrl={fight.player_1_avatar_url}
                 customThumbnailUrl={(fight as any).player_1_thumbnail_url}
                 score={fight.status === 'completed' ? (fight.winner_id === fight.player_1_id ? fight.winner_score : fight.loser_score) : undefined}
@@ -344,6 +345,7 @@ export default function QuickFightPage() {
                 avatarUrl={fight.player_1_avatar_url}
                 isYou={isP1}
                 isLive={fight.status === 'active'}
+                aspectClass="aspect-square"
               />
             )}
           </div>
@@ -367,6 +369,7 @@ export default function QuickFightPage() {
                 url={fight.player_2_submission_url}
                 username={fight.player_2_username || '???'}
                 color="blue"
+                aspectClass="aspect-square"
                 avatarUrl={fight.player_2_avatar_url}
                 customThumbnailUrl={(fight as any).player_2_thumbnail_url}
                 score={fight.status === 'completed' ? (fight.winner_id === fight.player_2_id ? fight.winner_score : fight.loser_score) : undefined}
@@ -383,6 +386,7 @@ export default function QuickFightPage() {
                 avatarUrl={fight.player_2_avatar_url}
                 isYou={isP2}
                 isLive={fight.status === 'active'}
+                aspectClass="aspect-square"
               />
             )}
           </div>
@@ -594,6 +598,7 @@ function EmptyEditSlot({
   isYou,
   isLive,
   waitingFor,
+  aspectClass = 'aspect-[9/16]',
 }: {
   color: 'red' | 'blue';
   username: string;
@@ -601,6 +606,7 @@ function EmptyEditSlot({
   isYou: boolean;
   isLive: boolean;
   waitingFor?: string;
+  aspectClass?: string;
 }) {
   const borderColor = color === 'red' ? 'border-red-500/40' : 'border-blue-500/40';
   const gradientFrom = color === 'red' ? 'from-red-950/60' : 'from-blue-950/60';
@@ -612,7 +618,7 @@ function EmptyEditSlot({
   return (
     <div className={`bg-surface-1 border ${borderColor} overflow-hidden ${isYou ? `ring-2 ${ringColor}` : ''}`}>
       {/* Tall 9:16 placeholder — minimal, no big avatar. Matches the live edit card height. */}
-      <div className={`relative aspect-[9/16] bg-gradient-to-br ${gradientFrom} ${gradientTo} flex flex-col items-center justify-center overflow-hidden`}>
+      <div className={`relative ${aspectClass} bg-gradient-to-br ${gradientFrom} ${gradientTo} flex flex-col items-center justify-center overflow-hidden`}>
         <div
           className="absolute inset-0 opacity-[0.08]"
           style={{
