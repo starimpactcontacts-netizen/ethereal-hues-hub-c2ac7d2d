@@ -15,7 +15,6 @@ import QuickFightChat from '@/components/loopgate/QuickFightChat';
 import QuickFightResultCard from '@/components/loopgate/QuickFightResultCard';
 import BattleSongPicker from '@/components/loopgate/BattleSongPicker';
 import BattleSubmissionCard from '@/components/loopgate/BattleSubmissionCard';
-import BattleShowcase from '@/components/loopgate/BattleShowcase';
 
 /** Detect platform from URL */
 function detectPlatform(url: string): string {
@@ -333,52 +332,56 @@ export default function QuickFightPage() {
             </span>
           </div>
 
-          {/* ONE unified showcase — once both edits land, auto-rotate 10s each */}
-          {fight.player_1_submission_url && fight.player_2_submission_url && fight.player_2_id ? (
-            <BattleShowcase
-              sides={[
-                {
-                  userId: fight.player_1_id,
-                  username: fight.player_1_username,
-                  avatarUrl: fight.player_1_avatar_url,
-                  url: fight.player_1_submission_url,
-                  color: 'red',
-                },
-                {
-                  userId: fight.player_2_id,
-                  username: fight.player_2_username || '???',
-                  avatarUrl: fight.player_2_avatar_url,
-                  url: fight.player_2_submission_url,
-                  color: 'blue',
-                },
-              ]}
-              showcaseStartedAt={
-                fight.player_1_submitted_at && fight.player_2_submitted_at
-                  ? new Date(
-                      Math.max(
-                        new Date(fight.player_1_submitted_at).getTime(),
-                        new Date(fight.player_2_submitted_at).getTime(),
-                      ),
-                    ).toISOString()
-                  : null
-              }
-            />
-          ) : (
-            <EmptyEditSlot
-              color="red"
-              username={`${fight.player_1_username} vs ${fight.player_2_username || 'Waiting…'}`}
-              avatarUrl={null}
-              isYou={isParticipant}
-              isLive={fight.status === 'active'}
-              waitingFor={
-                !fight.player_1_submission_url && !fight.player_2_submission_url
-                  ? 'both'
-                  : !fight.player_1_submission_url
-                  ? fight.player_1_username
-                  : fight.player_2_username || 'opponent'
-              }
-            />
-          )}
+          {/* SCREEN VS SCREEN — side-by-side vertical 9:16 panels, mobile + desktop */}
+          <div className="grid grid-cols-2 gap-2">
+            {fight.player_1_submission_url ? (
+              <BattleSubmissionCard
+                url={fight.player_1_submission_url}
+                username={fight.player_1_username}
+                color="red"
+                avatarUrl={fight.player_1_avatar_url}
+                customThumbnailUrl={(fight as any).player_1_thumbnail_url}
+                score={fight.status === 'completed' ? (fight.winner_id === fight.player_1_id ? fight.winner_score : fight.loser_score) : undefined}
+                isWinner={fight.winner_id === fight.player_1_id}
+                votes={(fight as any).player_1_votes || 0}
+                canVote={!isParticipant && !!user && !myVote}
+                hasVoted={myVote === fight.player_1_id}
+                onVote={() => handleVote(fight.player_1_id)}
+              />
+            ) : (
+              <EmptyEditSlot
+                color="red"
+                username={fight.player_1_username}
+                avatarUrl={fight.player_1_avatar_url}
+                isYou={isP1}
+                isLive={fight.status === 'active'}
+              />
+            )}
+
+            {fight.player_2_submission_url ? (
+              <BattleSubmissionCard
+                url={fight.player_2_submission_url}
+                username={fight.player_2_username || '???'}
+                color="blue"
+                avatarUrl={fight.player_2_avatar_url}
+                customThumbnailUrl={(fight as any).player_2_thumbnail_url}
+                score={fight.status === 'completed' ? (fight.winner_id === fight.player_2_id ? fight.winner_score : fight.loser_score) : undefined}
+                isWinner={fight.winner_id === fight.player_2_id}
+                votes={(fight as any).player_2_votes || 0}
+                canVote={!isParticipant && !!user && !myVote}
+                hasVoted={myVote === fight.player_2_id}
+                onVote={() => fight.player_2_id && handleVote(fight.player_2_id)}
+              />
+            ) : (
+              <EmptyEditSlot
+                color="blue"
+                username={fight.player_2_username || 'Waiting…'}
+                avatarUrl={fight.player_2_avatar_url}
+                isYou={isP2}
+                isLive={fight.status === 'active'}
+              />
+            )}
+          </div>
 
           {/* Inline submit bar — always visible to participants while active */}
           {canSubmit && (
