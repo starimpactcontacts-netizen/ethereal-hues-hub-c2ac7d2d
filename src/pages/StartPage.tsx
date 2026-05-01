@@ -481,6 +481,32 @@ export default function StartPage() {
     return formData.username.trim().length >= 3 && formData.password.length >= 6;
   };
 
+  const handleGuestEnter = async () => {
+    const name = guestNickname.trim();
+    setGuestError('');
+    if (name.length < 3) {
+      setGuestError('At least 3 characters');
+      return;
+    }
+    if (name.length > 20) {
+      setGuestError('20 characters max');
+      return;
+    }
+    if (!/^[a-zA-Z0-9_]+$/.test(name)) {
+      setGuestError('Letters, numbers, underscores only');
+      return;
+    }
+    setLoading(true);
+    const { error, usernameTaken } = await signInAsGuest(name);
+    setLoading(false);
+    if (error) {
+      setGuestError(usernameTaken ? 'Nickname taken — pick another' : (error.message || 'Could not enter'));
+      return;
+    }
+    toast.success(`Welcome, ${name}!`);
+    navigate(returnTo || '/arena');
+  };
+
   return (
     <div className="fixed inset-0 overflow-hidden font-apple">
       {/* Translucent backdrop — Hub preview vibe (no opaque black trap) */}
