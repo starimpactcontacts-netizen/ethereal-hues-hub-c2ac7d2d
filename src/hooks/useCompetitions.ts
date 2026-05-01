@@ -272,7 +272,7 @@ export function useCompetition(idOrSlug: string | undefined) {
     return true;
   };
 
-  // Open the community voting phase (2 min window)
+  // Open the showcase phase: 15s per edit, then a 3-minute voting window.
   const startVoting = async () => {
     if (!competition) return false;
     if (competition.deadline && new Date(competition.deadline).getTime() <= Date.now()) {
@@ -308,6 +308,13 @@ export function useCompetition(idOrSlug: string | undefined) {
     if (!user || !competition) return false;
     const target = submissions.find(s => s.id === submissionId);
     if (!target || target.user_id === user.id) return false;
+    const votingStartedAt = (competition as any).voting_started_at as string | null | undefined;
+    const votingDeadline = (competition as any).voting_deadline as string | null | undefined;
+    const showcaseEndsAt = votingStartedAt
+      ? new Date(votingStartedAt).getTime() + submissions.length * 15 * 1000
+      : Number.POSITIVE_INFINITY;
+    if (competition.status !== "voting" || Date.now() < showcaseEndsAt) return false;
+    if (!votingDeadline || Date.now() >= new Date(votingDeadline).getTime()) return false;
     // Remove existing vote first (one vote per voter per competition)
     if (myVoteSubmissionId) {
       await supabase.from("competition_votes" as any)
