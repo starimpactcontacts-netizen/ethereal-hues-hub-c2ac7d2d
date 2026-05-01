@@ -439,6 +439,7 @@ export default function App() {
           </Routes>
           </Suspense>
           <GlobalAccountPrompt />
+          <GlobalGuestConversionModal />
           <DevModeBadge />
           <Toaster 
             position="top-center" 
