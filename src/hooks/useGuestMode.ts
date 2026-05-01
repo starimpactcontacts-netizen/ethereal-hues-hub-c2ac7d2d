@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useGuestNicknamePrompt } from './useGuestNicknamePrompt';
 
 interface GuestModeState {
   isGuest: boolean;
@@ -14,13 +15,12 @@ export const useGuestMode = create<GuestModeState>((set) => ({
   clearGuest: () => set({ isGuest: false }),
 }));
 
-// Helper to check if action should be blocked
-export const blockGuestAction = (isGuest: boolean, message = 'Sign in to continue'): boolean => {
+// Helper to check if action should be blocked.
+// Now opens the lightweight nickname-only modal instead of just toasting,
+// so guests can convert in-place without leaving the page.
+export const blockGuestAction = (isGuest: boolean, message = 'Pick a nickname to continue'): boolean => {
   if (isGuest) {
-    // Import toast dynamically to avoid circular deps
-    import('sonner').then(({ toast }) => {
-      toast.error(message);
-    });
+    useGuestNicknamePrompt.getState().prompt({ reason: message });
     return true;
   }
   return false;
