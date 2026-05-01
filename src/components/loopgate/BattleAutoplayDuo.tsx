@@ -114,12 +114,12 @@ export default function BattleAutoplayDuo({ red, blue, startedAt }: Props) {
         loading={!redReady}
       />
 
-      {/* VS divider */}
-      <div className="relative h-8 flex items-center justify-center bg-black">
-        <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-        <div className="relative px-3 py-0.5 bg-black border border-white/15">
+      {/* VS divider — thin line w/ centered circle */}
+      <div className="relative h-0 flex items-center justify-center bg-black">
+        <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+        <div className="relative z-10 w-7 h-7 rounded-full bg-black border border-white/20 flex items-center justify-center -my-3.5">
           <span
-            className="text-[14px] font-black tracking-[0.25em] bg-gradient-to-r from-red-400 to-blue-400 bg-clip-text text-transparent"
+            className="text-[11px] font-black tracking-[0.15em] bg-gradient-to-r from-red-400 to-blue-400 bg-clip-text text-transparent leading-none"
             style={teko}
           >
             VS
@@ -174,7 +174,7 @@ function SidePanel({
   const ring = side.color === "red" ? "ring-red-500/60" : "ring-blue-500/60";
 
   return (
-    <div className={`relative aspect-square w-full overflow-hidden bg-black border border-white/[0.06] ${active ? `ring-2 ${ring}` : "opacity-60"}`}>
+    <div className={`relative aspect-[4/3] w-full overflow-hidden bg-black border border-white/[0.06] ${active ? `ring-2 ${ring}` : "opacity-60"}`}>
       {isVid ? (
         <video
           ref={videoRef}
