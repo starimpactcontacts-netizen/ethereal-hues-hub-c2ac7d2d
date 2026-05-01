@@ -194,75 +194,52 @@ export default function QuickFightPage() {
         </div>
       </div>
 
-      {/* VS Banner */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 via-background to-blue-500/20" />
-        <div className="relative px-4 py-8">
-          <div className="flex items-center justify-center gap-6">
-            {/* Player 1 (RED) */}
-            <div className="flex flex-col items-center flex-1">
-              <div className={`relative ${fight.winner_id === fight.player_1_id ? 'ring-4 ring-gold ring-offset-2 ring-offset-background' : ''} rounded-full`}>
-                <Avatar className="w-20 h-20 border-4 border-red-500 shadow-lg shadow-red-500/30">
-                  <AvatarImage src={fight.player_1_avatar_url || ''} />
-                  <AvatarFallback className="bg-red-500/20 text-red-400 text-2xl font-bold">
-                    {fight.player_1_username.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                {fight.winner_id === fight.player_1_id && (
-                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-gold px-2 py-0.5 rounded-sm">
-                    <Trophy className="w-3 h-3 text-black" />
-                  </div>
-                )}
-              </div>
-              <span className="font-display text-sm text-foreground mt-3">{fight.player_1_username}</span>
-              <span className="text-[9px] text-red-400 font-bold uppercase">RED</span>
-              {fight.player_1_submitted_at && (
-                <span className="text-[9px] text-emerald-400 mt-1">✓ Submitted</span>
-              )}
-            </div>
-
-            {/* VS */}
-            <div className="relative">
-              <motion.div
-                animate={fight.status === 'active' ? { scale: [1, 1.1, 1] } : {}}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="w-14 h-14 rounded-full bg-gradient-to-br from-red-500 to-blue-500 flex items-center justify-center shadow-xl"
-              >
-                <Swords className="w-7 h-7 text-white" />
-              </motion.div>
-            </div>
-
-            {/* Player 2 (BLUE) */}
-            <div className="flex flex-col items-center flex-1">
-              <div className={`relative ${fight.winner_id === fight.player_2_id ? 'ring-4 ring-gold ring-offset-2 ring-offset-background' : ''} rounded-full`}>
-                <Avatar className="w-20 h-20 border-4 border-blue-500 shadow-lg shadow-blue-500/30">
-                  <AvatarImage src={fight.player_2_avatar_url || ''} />
-                  <AvatarFallback className="bg-blue-500/20 text-blue-400 text-2xl font-bold">
-                    {fight.player_2_username?.charAt(0).toUpperCase() || '?'}
-                  </AvatarFallback>
-                </Avatar>
-                {fight.winner_id === fight.player_2_id && (
-                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-gold px-2 py-0.5 rounded-sm">
-                    <Trophy className="w-3 h-3 text-black" />
-                  </div>
-                )}
-              </div>
-              <span className="font-display text-sm text-foreground mt-3">{fight.player_2_username || '???'}</span>
-              <span className="text-[9px] text-blue-400 font-bold uppercase">BLUE</span>
-              {fight.player_2_submitted_at && (
-                <span className="text-[9px] text-emerald-400 mt-1">✓ Submitted</span>
-              )}
+      {/* Compact VS strip — minimal chrome so the EDITS are the hero */}
+      <div className="relative overflow-hidden border-b border-border/50">
+        <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 via-background to-blue-500/10" />
+        <div className="relative px-4 py-2.5 flex items-center justify-between gap-3">
+          {/* Player 1 (RED) */}
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <Avatar className={`w-7 h-7 border ${fight.winner_id === fight.player_1_id ? 'border-gold' : 'border-red-500/70'}`}>
+              <AvatarImage src={fight.player_1_avatar_url || ''} />
+              <AvatarFallback className="bg-red-500/20 text-red-400 text-[10px] font-bold">
+                {fight.player_1_username.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <p className="text-[11px] font-bold text-foreground truncate leading-none">@{fight.player_1_username}</p>
+              <p className="text-[8px] text-red-400 font-bold uppercase tracking-wider mt-0.5">
+                RED{fight.player_1_submitted_at ? ' · ✓' : ''}
+              </p>
             </div>
           </div>
 
-          {/* Timer */}
-          {fight.status === 'active' && fight.ends_at && (
-            <div className="flex justify-center mt-4">
-              <div className="bg-surface-1 border border-red-500/30 px-6 py-2">
-                <CountdownTimer endDate={fight.ends_at} label="Time Left" />
-              </div>
+          {/* Center: timer or VS */}
+          {fight.status === 'active' && fight.ends_at ? (
+            <div className="bg-surface-1 border border-border/60 px-2.5 py-1 shrink-0">
+              <CountdownTimer endDate={fight.ends_at} label="" />
+            </div>
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-blue-500 flex items-center justify-center shrink-0">
+              <Swords className="w-4 h-4 text-white" />
             </div>
           )}
+
+          {/* Player 2 (BLUE) */}
+          <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
+            <div className="min-w-0 text-right">
+              <p className="text-[11px] font-bold text-foreground truncate leading-none">@{fight.player_2_username || '???'}</p>
+              <p className="text-[8px] text-blue-400 font-bold uppercase tracking-wider mt-0.5">
+                BLUE{fight.player_2_submitted_at ? ' · ✓' : ''}
+              </p>
+            </div>
+            <Avatar className={`w-7 h-7 border ${fight.winner_id === fight.player_2_id ? 'border-gold' : 'border-blue-500/70'}`}>
+              <AvatarImage src={fight.player_2_avatar_url || ''} />
+              <AvatarFallback className="bg-blue-500/20 text-blue-400 text-[10px] font-bold">
+                {fight.player_2_username?.charAt(0).toUpperCase() || '?'}
+              </AvatarFallback>
+            </Avatar>
+          </div>
         </div>
       </div>
 
@@ -294,6 +271,7 @@ export default function QuickFightPage() {
             </span>
           </div>
 
+          {/* Tall 9:16 cards so the actual edits dominate the screen — screen-record ready */}
           <div className="grid grid-cols-2 gap-2">
             {/* RED slot — Player 1 */}
             {fight.player_1_submission_url ? (
