@@ -272,7 +272,7 @@ export function useCompetition(idOrSlug: string | undefined) {
     return true;
   };
 
-  // Open the community voting phase (2 min window)
+  // Open the showcase phase: 15s per edit, then a 3-minute voting window.
   const startVoting = async () => {
     if (!competition) return false;
     if (competition.deadline && new Date(competition.deadline).getTime() <= Date.now()) {
@@ -308,6 +308,13 @@ export function useCompetition(idOrSlug: string | undefined) {
     if (!user || !competition) return false;
     const target = submissions.find(s => s.id === submissionId);
     if (!target || target.user_id === user.id) return false;
+    const votingStartedAt = (competition as any).voting_started_at as string | null | undefined;
+    const votingDeadline = (competition as any).voting_deadline as string | null | undefined;
+    const showcaseEndsAt = votingStartedAt
+      ? new Date(votingStartedAt).getTime() + submissions.length * 15 * 1000
+      : Number.POSITIVE_INFINITY;
+    if (competition.status !== "voting" || Date.now() < showcaseEndsAt) return false;
+    if (!votingDeadline || Date.now() >= new Date(votingDeadline).getTime()) return false;
     // Remove existing vote first (one vote per voter per competition)
     if (myVoteSubmissionId) {
       await supabase.from("competition_votes" as any)
@@ -344,20 +351,7 @@ export function useCompetition(idOrSlug: string | undefined) {
       await fetchAll();
       return true;
     }
-    const topVotes = submissions.reduce((m, s) => Math.max(m, s.vote_count || 0), 0);
-    const winners = submissions.filter(s => (s.vote_count || 0) === topVotes && submissions.length > 0);
-    if (winners.length > 0) {
-      await supabase.from("competition_submissions")
-        .update({ is_winner: true, winner_place: 1, scored_at: new Date().toISOString() } as any)
-        .in("id", winners.map(w => w.id));
-    }
-    await supabase.from("competitions")
-      .update({ status: winners.length > 0 ? "completed" : "closed" } as any)
-      .eq("id", competition.id);
-    // Pay out XP + Index (split equally on ties). Idempotent server-side.
-    await supabase.rpc("award_competition_rewards" as any, { p_competition_id: competition.id } as any);
-    await fetchAll();
-    return true;
+    return false;
   };
 
   return {

@@ -7,6 +7,7 @@ export type MyCompetitionReminder = {
   name: string;
   status: string;
   deadline: string | null;
+  voting_started_at: string | null;
   voting_deadline: string | null;
   slug: string | null;
   hasSubmitted: boolean;
@@ -41,7 +42,7 @@ export function useMyCompetitionReminders() {
 
       const { data: comps } = await supabase
         .from("competitions")
-        .select("id, name, status, deadline, voting_deadline, slug, updated_at")
+        .select("id, name, status, deadline, voting_started_at, voting_deadline, slug, updated_at")
         .in("id", ids)
         .in("status", ["live", "voting"])
         .order("updated_at", { ascending: false });
@@ -80,9 +81,11 @@ export function useMyCompetitionReminders() {
       const shouldFinalize = (comp: any) => {
         const count = submissionCounts[comp.id] || 0;
         const deadline = comp.deadline ? new Date(comp.deadline).getTime() : 0;
+        const votingStarted = comp.voting_started_at ? new Date(comp.voting_started_at).getTime() : 0;
+        const showcaseDone = votingStarted > 0 && now >= votingStarted + count * 15 * 1000;
         const votingDeadline = comp.voting_deadline ? new Date(comp.voting_deadline).getTime() : 0;
         return (comp.status === "live" && deadline > 0 && deadline <= now) ||
-          (comp.status === "voting" && (count <= 1 || !votingDeadline || votingDeadline <= now));
+          (comp.status === "voting" && (count === 0 || (showcaseDone && votingDeadline > 0 && votingDeadline <= now)));
       };
       const staleComps = (comps || []).filter(shouldFinalize);
       if (staleComps.length > 0) {
@@ -101,6 +104,7 @@ export function useMyCompetitionReminders() {
             name: comp.name,
             status: comp.status,
             deadline: comp.deadline,
+            voting_started_at: (comp as any).voting_started_at,
             voting_deadline: (comp as any).voting_deadline,
             slug: comp.slug,
             hasSubmitted: submittedIds.has(comp.id),

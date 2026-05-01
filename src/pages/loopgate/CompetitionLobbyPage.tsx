@@ -106,10 +106,10 @@ export default function CompetitionLobbyPage() {
   const themeRevealedRef = useRef<string | null>(null);
   // Tick once per second during the live showcase so the leaderboard reveals
   // exactly when the synchronized 15s/edit playback ends — no waiting on poll.
-  const [, setNowTick] = useState(0);
+  const [phaseNow, setPhaseNow] = useState(() => Date.now());
   useEffect(() => {
     if (competition?.status !== "voting") return;
-    const i = setInterval(() => setNowTick(t => t + 1), 1000);
+    const i = setInterval(() => setPhaseNow(Date.now()), 500);
     return () => clearInterval(i);
   }, [competition?.status]);
 
@@ -193,9 +193,16 @@ export default function CompetitionLobbyPage() {
     if (everyoneSubmitted) startVoting();
   }, [competition?.status, participants, submissions]);
 
-  // Auto-finalize: as soon as every eligible voter has cast their vote, close voting + crown winner instantly.
-  // Eligible voters = participants who submitted an edit (they can't vote for themselves, but they can vote for others).
-  // If only one submission exists, finalize immediately. Also auto-finalize when voting deadline passes.
+  const votingStartedAt = (competition as any)?.voting_started_at as string | null | undefined;
+  const votingDeadline = (competition as any)?.voting_deadline as string | null | undefined;
+  const showcaseMs = submissions.length * 15 * 1000;
+  const showcaseEndsAt = votingStartedAt ? new Date(votingStartedAt).getTime() + showcaseMs : null;
+  const votingDeadlineMs = votingDeadline ? new Date(votingDeadline).getTime() : null;
+  const showcaseDone = competition?.status === "voting" && showcaseEndsAt !== null && phaseNow >= showcaseEndsAt;
+  const votingWindowOpen = competition?.status === "voting" && submissions.length > 0 && showcaseDone && votingDeadlineMs !== null && phaseNow < votingDeadlineMs;
+
+  // Auto-finalize only after the full showcase. Flow is always:
+  // 15s per edit → 3-minute voting modal → reveal when all votes are in or timer hits 0.
   useEffect(() => {
     if (!competition || competition.status !== "voting") return;
     if (submissions.length === 0) {
@@ -203,39 +210,31 @@ export default function CompetitionLobbyPage() {
       return;
     }
 
-    // Single submission → instant winner
+    if (!showcaseDone) return;
+
+    // Single submission → winner only after its 15s showcase has played.
     if (submissions.length === 1) {
       finalizeVoting();
       return;
     }
 
-    // CRITICAL: every edit must be showcased for its full 15s before any winner can be crowned.
-    // Even if everyone has already voted, we wait until the synchronized showcase window ends.
-    const startedAt = (competition as any).voting_started_at;
-    const showcaseEndsMs = startedAt
-      ? new Date(startedAt).getTime() + submissions.length * 15 * 1000
-      : Date.now() + submissions.length * 15 * 1000;
-    const showcaseDone = Date.now() >= showcaseEndsMs;
-
     const totalVotes = submissions.reduce((sum, s) => sum + (s.vote_count || 0), 0);
     const eligibleVoterCount = submissions.length; // each submitter votes once (not for self, but for someone)
-    if (showcaseDone && totalVotes >= eligibleVoterCount) {
+    if (totalVotes >= eligibleVoterCount) {
       finalizeVoting();
       return;
     }
 
-    // Fallback: voting deadline passed
-    const deadline = (competition as any).voting_deadline;
-    if (deadline && new Date(deadline).getTime() <= Date.now()) {
+    if (votingDeadlineMs !== null && phaseNow >= votingDeadlineMs) {
       finalizeVoting();
       return;
     }
 
-    if (deadline) {
-      const timeout = window.setTimeout(() => finalizeVoting(), Math.max(0, new Date(deadline).getTime() - Date.now()) + 250);
+    if (votingDeadlineMs !== null) {
+      const timeout = window.setTimeout(() => finalizeVoting(), Math.max(0, votingDeadlineMs - Date.now()) + 250);
       return () => window.clearTimeout(timeout);
     }
-  }, [competition?.status, submissions, (competition as any)?.voting_deadline]);
+  }, [competition?.status, submissions, showcaseDone, votingDeadlineMs, phaseNow]);
 
   if (loading) {
     return (
@@ -1095,10 +1094,7 @@ export default function CompetitionLobbyPage() {
         )}
 
         {/* ═══ SHOWCASE PHASE (inline) — only the player runs here. No leaderboard, no voting grid. ═══ */}
-        {isVoting && submissions.length > 0 && (competition as any).voting_started_at && (() => {
-          const startedAt = (competition as any).voting_started_at;
-          const showcaseMs = submissions.length * 15 * 1000;
-          const showcaseDone = Date.now() - new Date(startedAt).getTime() >= showcaseMs;
+        {isVoting && submissions.length > 0 && votingStartedAt && (() => {
           if (showcaseDone) return null;
           return (
             <div className="space-y-3">
@@ -1107,7 +1103,7 @@ export default function CompetitionLobbyPage() {
                 myUserId={user?.id}
                 myVoteSubmissionId={myVoteSubmissionId}
                 onVote={castVote}
-                votingStartedAt={startedAt}
+                votingStartedAt={votingStartedAt}
               />
             </div>
           );
@@ -1208,13 +1204,8 @@ export default function CompetitionLobbyPage() {
 
       {/* ═══ VOTING MODAL — opens after the showcase ends. 3-minute window. ═══ */}
       <AnimatePresence>
-        {isVoting && submissions.length > 0 && (competition as any).voting_started_at && (() => {
-          const startedAt = (competition as any).voting_started_at;
-          const showcaseMs = submissions.length * 15 * 1000;
-          const showcaseDone = Date.now() - new Date(startedAt).getTime() >= showcaseMs;
-          const votingDeadline = (competition as any).voting_deadline;
-          const stillOpen = votingDeadline ? new Date(votingDeadline).getTime() > Date.now() : true;
-          if (!showcaseDone || !stillOpen) return null;
+        {isVoting && submissions.length > 0 && votingStartedAt && (() => {
+          if (!votingWindowOpen) return null;
           return (
             <motion.div
               key="vote-modal"
@@ -1253,7 +1244,7 @@ export default function CompetitionLobbyPage() {
                   myUserId={user?.id}
                   myVoteSubmissionId={myVoteSubmissionId}
                   onVote={castVote}
-                  votingStartedAt={startedAt}
+                  votingStartedAt={votingStartedAt}
                 />
                 <p className="mt-4 text-center text-[10px] uppercase tracking-[0.2em] text-foreground/40" style={teko}>
                   Winner reveals when everyone votes or timer hits 0
