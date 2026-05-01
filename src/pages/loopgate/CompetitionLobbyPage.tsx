@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Trophy, Users, Clock, Play, Loader2,
-  Share2, Check, MessageCircle, Layers, Pencil, X, ThumbsUp, Sparkles, Upload, Volume2, VolumeX, CheckCircle2, Circle, LogOut, Crown, Info, Timer, Vote, Gavel
+  Share2, Check, MessageCircle, Layers, Pencil, X, ThumbsUp, Sparkles, Upload, Volume2, VolumeX, CheckCircle2, Circle, LogOut, Crown, Info, Timer, Vote, Gavel, Trash2
 } from "lucide-react";
 import { useCompetition } from "@/hooks/useCompetitions";
 import { useAuth } from "@/hooks/useAuth";
@@ -72,6 +72,7 @@ export default function CompetitionLobbyPage() {
   const [isReadying, setIsReadying] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showInspoForm, setShowInspoForm] = useState(false);
@@ -270,6 +271,20 @@ export default function CompetitionLobbyPage() {
     const ok = await leave();
     if (ok) { toast.success("Left the lobby"); navigate("/arena"); }
     else { toast.error("Couldn't leave"); setIsLeaving(false); }
+  };
+
+  const handleDeleteRoom = async () => {
+    if (!competition || !isCreator) return;
+    if (!window.confirm("Delete this room? This can't be undone.")) return;
+    setIsDeleting(true);
+    const { error } = await supabase.from("competitions").delete().eq("id", competition.id);
+    if (error) {
+      toast.error("Couldn't delete room");
+      setIsDeleting(false);
+      return;
+    }
+    toast.success("Room deleted");
+    navigate("/arena");
   };
 
   const uploadSubmissionFile = async (file: File) => {
