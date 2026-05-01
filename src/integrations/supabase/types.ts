@@ -1725,6 +1725,7 @@ export type Database = {
           current_players: number
           deadline: string | null
           description: string | null
+          duration_minutes: number
           id: string
           index_reward_pool: number
           inspo_thumbnail_url: string | null
@@ -1752,6 +1753,7 @@ export type Database = {
           current_players?: number
           deadline?: string | null
           description?: string | null
+          duration_minutes?: number
           id?: string
           index_reward_pool?: number
           inspo_thumbnail_url?: string | null
@@ -1779,6 +1781,7 @@ export type Database = {
           current_players?: number
           deadline?: string | null
           description?: string | null
+          duration_minutes?: number
           id?: string
           index_reward_pool?: number
           inspo_thumbnail_url?: string | null
