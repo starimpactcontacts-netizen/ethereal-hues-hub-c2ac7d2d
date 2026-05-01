@@ -586,12 +586,14 @@ function EmptyEditSlot({
   avatarUrl,
   isYou,
   isLive,
+  waitingFor,
 }: {
   color: 'red' | 'blue';
   username: string;
   avatarUrl?: string | null;
   isYou: boolean;
   isLive: boolean;
+  waitingFor?: string;
 }) {
   const borderColor = color === 'red' ? 'border-red-500/40' : 'border-blue-500/40';
   const gradientFrom = color === 'red' ? 'from-red-950/60' : 'from-blue-950/60';
@@ -629,7 +631,13 @@ function EmptyEditSlot({
         <div className={`flex items-center gap-1.5 px-2.5 py-1 bg-black/50 backdrop-blur-sm border ${borderColor} z-10`}>
           <Upload className={`w-3 h-3 ${accentText}`} />
           <span className={`text-[9px] font-bold ${accentText} uppercase tracking-[0.15em]`}>
-            {isYou ? 'Drop Edit' : 'Awaiting Drop'}
+            {waitingFor === 'both'
+              ? 'Both edits pending'
+              : waitingFor
+              ? `Waiting on @${waitingFor}`
+              : isYou
+              ? 'Drop Edit'
+              : 'Awaiting Drop'}
           </span>
         </div>
 
