@@ -420,6 +420,66 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error };
   };
 
+  /**
+   * Zero-friction guest sign-in. Creates an anonymous Supabase auth.users row
+   * with the chosen nickname stored in user metadata. The handle_new_user
+   * trigger creates a profile with is_guest=true. Pre-checks nickname
+   * availability so the UI can prompt the user to pick another.
+   */
+  const signInAsGuest = async (nickname: string) => {
+    const trimmed = nickname.trim();
+    if (trimmed.length < 3) {
+      return { error: new Error('Nickname must be at least 3 characters') };
+    }
+    if (!/^[a-zA-Z0-9_]+$/.test(trimmed)) {
+      return { error: new Error('Letters, numbers, and underscores only') };
+    }
+
+    // Block taken usernames up front (case-insensitive)
+    const { data: existing } = await supabase
+      .from('profiles')
+      .select('id')
+      .ilike('username', trimmed)
+      .maybeSingle();
+    if (existing) {
+      return { error: new Error('Nickname taken — try another'), usernameTaken: true };
+    }
+
+    const { error } = await supabase.auth.signInAnonymously({
+      options: {
+        data: {
+          username: trimmed,
+          is_guest: true,
+        },
+      },
+    });
+    return { error };
+  };
+
+  /**
+   * Upgrade an anonymous account to a real one with a password and
+   * (optionally) an email for recovery. XP, rank, votes, history all
+   * carry over because it's the same auth.users row.
+   */
+  const convertGuestAccount = async (password: string, email?: string) => {
+    const trimmedEmail = email?.trim().toLowerCase();
+    const updates: { password: string; email?: string } = { password };
+    if (trimmedEmail) updates.email = trimmedEmail;
+
+    const { error } = await supabase.auth.updateUser(updates);
+    if (error) return { error };
+
+    // Flip the is_guest flag on the profile
+    await supabase.rpc('mark_account_converted');
+    await refreshProfile();
+    return { error: null };
+  };
+
+  const markPasswordPrompted = async () => {
+    await supabase.rpc('mark_password_prompted');
+    await refreshProfile();
+  };
+
   const resetPassword = async (email: string) => {
     const redirectUrl = `${window.location.origin}/auth`;
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -478,6 +538,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isJudge = roles.includes('judge');
   const isDev = roles.includes('dev');
   const hasOpsAccess = isAdmin || isJudge || isDev;
+  const isGuest = !!profile?.is_guest;
 
   return (
     <AuthContext.Provider
@@ -493,10 +554,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signInWithOtp,
         signInWithPassword,
         signUpWithPassword,
+        signInAsGuest,
+        convertGuestAccount,
+        markPasswordPrompted,
         updatePassword,
         resetPassword,
         signOut,
         refreshProfile,
+        isGuest,
         isAdmin,
         isJudge,
         isDev,
