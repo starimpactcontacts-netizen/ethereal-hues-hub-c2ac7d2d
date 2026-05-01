@@ -30,22 +30,6 @@ export default function BottomNav() {
 
   return (
     <>
-      {/* Guest Mode Banner */}
-      {isGuest && (
-        <div className="fixed left-0 right-0 z-50 bg-gold/10 border-t border-gold/30 px-4 py-2 flex items-center justify-between" style={{ bottom: 'var(--app-bottom-nav-height, calc(env(safe-area-inset-bottom, 0px) + 49px))' }}>
-          <span className="text-xs text-gold font-medium">
-            Browsing as guest (read-only)
-          </span>
-          <button
-            onClick={handleSignIn}
-            className="flex items-center gap-1.5 text-xs font-semibold text-gold hover:text-gold/80 transition-colors"
-          >
-            <LogIn size={14} />
-            Sign In
-          </button>
-        </div>
-      )}
-
       <nav
         className="fixed inset-x-0 bottom-0 z-[55]"
         style={{
