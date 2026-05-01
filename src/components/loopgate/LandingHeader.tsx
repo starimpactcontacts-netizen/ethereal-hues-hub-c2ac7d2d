@@ -1,13 +1,12 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Menu, X, LogIn } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import loopgateBrand from '@/assets/loopgate-brand.png';
 
 const navLinks = [
-  { to: '/start', label: 'Login' },
   { to: '/rules', label: 'Rules' },
   { to: '/privacy', label: 'Privacy' },
   { to: '/support', label: 'Support' },
@@ -19,20 +18,6 @@ interface LandingHeaderProps {
 
 export default function LandingHeader({ bannerVisible = false }: LandingHeaderProps) {
   const [open, setOpen] = useState(false);
-  const location = useLocation();
-  
-  const scrollToQOI = () => {
-    // If on landing page, scroll to section
-    if (location.pathname === '/') {
-      const element = document.getElementById('qoi-section');
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-        return;
-      }
-    }
-    // Otherwise navigate to /gqt
-    window.location.href = '/gqt';
-  };
 
   return (
     <header className="bg-background/95 backdrop-blur-sm border-b border-border/50">
@@ -49,27 +34,6 @@ export default function LandingHeader({ bannerVisible = false }: LandingHeaderPr
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
-          {/* QOI Score Button - Gold themed */}
-          <motion.button
-            onClick={scrollToQOI}
-            className="group relative px-5 py-2 overflow-hidden rounded-full"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            {/* Animated gradient border */}
-            <motion.div
-              className="absolute inset-0 rounded-full"
-              style={{ background: 'linear-gradient(135deg, #ef4444, #f59e0b, #06b6d4, #a855f7, #ef4444)' , backgroundSize: '300% 300%' }}
-              animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
-            />
-            {/* Inner bg */}
-            <div className="absolute inset-[1.5px] rounded-full bg-background" />
-            <span className="relative text-sm font-bold tracking-[0.2em] text-foreground">
-              QOI TEST
-            </span>
-          </motion.button>
-          
           {navLinks.map((link) => (
             <Link
               key={link.to}
@@ -79,28 +43,34 @@ export default function LandingHeader({ bannerVisible = false }: LandingHeaderPr
               {link.label}
             </Link>
           ))}
+          {/* Login / Sign In — primary CTA */}
+          <Link to="/start">
+            <motion.div
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              className="flex items-center gap-2 px-5 py-2 bg-white text-black font-bold text-sm tracking-[0.12em] uppercase rounded-full"
+              style={{ fontFamily: 'Teko, Inter, sans-serif' }}
+            >
+              <LogIn className="w-4 h-4" />
+              Login
+            </motion.div>
+          </Link>
         </nav>
 
         {/* Mobile Hamburger */}
         <div className="md:hidden flex items-center gap-3">
-          {/* Mobile QOI Button - Gold */}
-          <motion.button
-            onClick={scrollToQOI}
-            className="relative px-4 py-1.5 overflow-hidden rounded-full"
-            whileTap={{ scale: 0.95 }}
-          >
+          {/* Mobile Login Button */}
+          <Link to="/start">
             <motion.div
-              className="absolute inset-0 rounded-full"
-              style={{ background: 'linear-gradient(135deg, #ef4444, #f59e0b, #06b6d4, #a855f7, #ef4444)', backgroundSize: '300% 300%' }}
-              animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
-            />
-            <div className="absolute inset-[1.5px] rounded-full bg-background" />
-            <span className="relative text-xs font-bold tracking-[0.2em] text-foreground">
-              QOI TEST
-            </span>
-          </motion.button>
-          
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-white text-black font-bold text-xs tracking-[0.12em] uppercase rounded-full"
+              style={{ fontFamily: 'Teko, Inter, sans-serif' }}
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              Login
+            </motion.div>
+          </Link>
+
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="h-10 w-10 text-white hover:bg-white/10">
@@ -121,16 +91,17 @@ export default function LandingHeader({ bannerVisible = false }: LandingHeaderPr
 
                 {/* Navigation Links */}
                 <nav className="flex-1 py-6">
-                  {/* QOI Link in Mobile Menu - Gold */}
+                  {/* Login link at top of mobile menu */}
                   <SheetClose asChild>
-                    <button
-                      onClick={scrollToQOI}
-                      className="w-full flex items-center gap-3 px-6 py-4 text-lg font-medium text-foreground hover:bg-accent transition-colors"
+                    <Link
+                      to="/start"
+                      className="flex items-center gap-3 px-6 py-4 text-lg font-bold text-foreground bg-white/5 hover:bg-white/10 transition-colors"
                     >
-                      <span className="font-bold tracking-wider">QOI Score Test</span>
-                    </button>
+                      <LogIn className="w-5 h-5" />
+                      <span className="tracking-wider uppercase">Login / Sign Up</span>
+                    </Link>
                   </SheetClose>
-                  
+
                   {navLinks.map((link) => (
                     <SheetClose asChild key={link.to}>
                       <Link
