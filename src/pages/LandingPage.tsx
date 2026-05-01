@@ -1,7 +1,5 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { Swords, Play, Smartphone, DollarSign, Crosshair } from 'lucide-react';
-import { HubIcon, ArenaIcon, RankingsIcon, RateIcon, UnitsIcon, MissionsIcon } from '@/components/loopgate/LandingIcons';
-import { Button } from '@/components/ui/button';
+import { Link, useNavigate, Navigate } from 'react-router-dom';
+import { Swords } from 'lucide-react';
 import { motion } from 'framer-motion';
 import LandingHeader from '@/components/loopgate/LandingHeader';
 import IOSAppBanner from '@/components/loopgate/iOSAppBanner';
@@ -10,53 +8,27 @@ import { useGlobalStats } from '@/hooks/useRealData';
 import whereEditorsCompete from '@/assets/where-editors-compete-2.png';
 import SEO, { pageSEO } from '@/components/SEO';
 import { useGuestMode } from '@/hooks/useGuestMode';
+import { useAuth } from '@/hooks/useAuth';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 import loopgateHeroCinematic from '@/assets/hero-collage.jpeg';
-import editoriumLogo from '@/assets/editorium-logo.png';
-import loopyAvatar from '@/assets/loopy-avatar.png';
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-
-const quickLinks = [
-  { to: '/hub', label: 'Hub', Icon: HubIcon, desc: 'Browse edits & editors', color: '#ffffff', bgGrad: 'from-white/[0.07] to-white/[0.02]', glowColor: 'rgba(255,255,255,0.08)' },
-  { to: '/arena', label: 'Arena', Icon: ArenaIcon, desc: 'Compete now', color: '#ef4444', bgGrad: 'from-red-500/[0.12] to-red-500/[0.02]', glowColor: 'rgba(239,68,68,0.15)' },
-  { to: '/rankings', label: 'Rankings', Icon: RankingsIcon, desc: 'Global leaderboard', color: '#E8C84A', bgGrad: 'from-amber-500/[0.12] to-amber-500/[0.02]', glowColor: 'rgba(232,200,74,0.15)' },
-  { to: '/loopy', label: 'Rate My Edit', Icon: RateIcon, desc: 'Free AI rating', color: '#a855f7', bgGrad: 'from-purple-500/[0.12] to-purple-500/[0.02]', glowColor: 'rgba(168,85,247,0.15)' },
-  { to: '/units', label: 'Units', Icon: UnitsIcon, desc: 'Join a crew', color: '#06b6d4', bgGrad: 'from-cyan-500/[0.12] to-cyan-500/[0.02]', glowColor: 'rgba(6,182,212,0.15)' },
-  { to: '/missions', label: 'Missions', Icon: MissionsIcon, desc: 'Earn cash', color: '#10b981', bgGrad: 'from-emerald-500/[0.12] to-emerald-500/[0.02]', glowColor: 'rgba(16,185,129,0.15)' },
-];
+import { useState } from 'react';
 
 export default function LandingPage() {
   const navigate = useNavigate();
   const { setGuest } = useGuestMode();
   const { stats } = useGlobalStats();
+  const { user, loading } = useAuth();
   const [bannerVisible, setBannerVisible] = useState(false);
-  const [billboard, setBillboard] = useState<{ id: string; title: string; poster_url: string | null; artist_name: string | null; max_pay: number } | null>(null);
-
-  useEffect(() => {
-    const fetch = async () => {
-      const { data } = await supabase
-        .from('commissions')
-        .select('id, title, cover_url, artist_name, client_name, payout_cents')
-        .eq('is_marketplace', true)
-        .eq('status', 'open')
-        .order('created_at', { ascending: false })
-        .limit(1);
-      if (data && data[0]) {
-        setBillboard({
-          id: data[0].id, title: data[0].title, poster_url: data[0].cover_url,
-          artist_name: data[0].artist_name || data[0].client_name || null,
-          max_pay: (data[0].payout_cents || 0) / 100,
-        });
-      }
-    };
-    fetch();
-  }, []);
 
   const handleGuestExplore = () => {
     setGuest(true);
     navigate('/hub');
   };
+
+  // Logged-in users skip the marketing landing entirely.
+  if (!loading && user) {
+    return <Navigate to="/arena" replace />;
+  }
 
   return (
     <>
