@@ -85,6 +85,14 @@ export default function CompetitionLobbyPage() {
   const [showThemeReveal, setShowThemeReveal] = useState(false);
   const prevStatusRef = useRef<string | null>(null);
   const themeRevealedRef = useRef<string | null>(null);
+  // Tick once per second during the live showcase so the leaderboard reveals
+  // exactly when the synchronized 15s/edit playback ends — no waiting on poll.
+  const [, setNowTick] = useState(0);
+  useEffect(() => {
+    if (competition?.status !== "voting") return;
+    const i = setInterval(() => setNowTick(t => t + 1), 1000);
+    return () => clearInterval(i);
+  }, [competition?.status]);
 
   const toggleInspoMute = () => {
     const v = inspoVideoRef.current;
