@@ -11,6 +11,7 @@ import { useTempProfile } from '@/hooks/useTempProfile';
 import authCollageBg from '@/assets/auth-collage-bg.jpg';
 import loopgateIcon from '@/assets/loopgate-logo.png';
 import { rememberAccount } from '@/lib/rememberedAccounts';
+import { useAuth } from '@/hooks/useAuth';
 
 type UserRole = 'editor' | 'judge';
 
@@ -28,9 +29,17 @@ export default function StartPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { setProfile: setTempProfile } = useTempProfile();
+  const { signInAsGuest } = useAuth();
   const returnTo = searchParams.get('returnTo');
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  // 'guest' = nickname-only zero-friction entry (default)
+  // 'full'  = existing email + password signup form
+  const [mode, setMode] = useState<'guest' | 'full'>(
+    searchParams.get('full') === '1' ? 'full' : 'guest'
+  );
+  const [guestNickname, setGuestNickname] = useState('');
+  const [guestError, setGuestError] = useState<string>('');
   const [showPassword, setShowPassword] = useState(false);
   const [showInviteCode, setShowInviteCode] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -472,6 +481,32 @@ export default function StartPage() {
     return formData.username.trim().length >= 3 && formData.password.length >= 6;
   };
 
+  const handleGuestEnter = async () => {
+    const name = guestNickname.trim();
+    setGuestError('');
+    if (name.length < 3) {
+      setGuestError('At least 3 characters');
+      return;
+    }
+    if (name.length > 20) {
+      setGuestError('20 characters max');
+      return;
+    }
+    if (!/^[a-zA-Z0-9_]+$/.test(name)) {
+      setGuestError('Letters, numbers, underscores only');
+      return;
+    }
+    setLoading(true);
+    const { error, usernameTaken } = await signInAsGuest(name);
+    setLoading(false);
+    if (error) {
+      setGuestError(usernameTaken ? 'Nickname taken — pick another' : (error.message || 'Could not enter'));
+      return;
+    }
+    toast.success(`Welcome, ${name}!`);
+    navigate(returnTo || '/arena');
+  };
+
   return (
     <div className="fixed inset-0 overflow-hidden font-apple">
       {/* Translucent backdrop — Hub preview vibe (no opaque black trap) */}
@@ -515,7 +550,17 @@ export default function StartPage() {
       <main className="absolute inset-0 overflow-y-auto overscroll-contain"
             style={{ WebkitOverflowScrolling: 'touch', paddingTop: 'calc(env(safe-area-inset-top, 0px) + 72px)', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)' }}>
         <div className="px-5 mx-auto w-full max-w-[420px]">
-          {/* Glass card */}
+          {mode === 'guest' ? (
+            <GuestEntryCard
+              nickname={guestNickname}
+              setNickname={(v) => { setGuestNickname(v); setGuestError(''); }}
+              error={guestError}
+              loading={loading}
+              onEnter={handleGuestEnter}
+              onSwitchToFull={() => setMode('full')}
+              onSignIn={() => navigate('/login')}
+            />
+          ) : (
           <motion.div
             initial={{ opacity: 0, y: 16, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -741,8 +786,10 @@ export default function StartPage() {
               </AnimatePresence>
             </div>
           </motion.div>
+          )}
 
-          {/* Sign in link */}
+          {/* Sign in link — only shown in full mode (guest card has its own footer) */}
+          {mode === 'full' && (
           <div className="text-center mt-6">
             <button
               onClick={() => navigate('/login')}
@@ -751,8 +798,123 @@ export default function StartPage() {
               Already have an account? <span className="text-[#D4A857] font-semibold">Sign in</span>
             </button>
           </div>
+          )}
         </div>
       </main>
     </div>
+  );
+}
+
+function GuestEntryCard({
+  nickname,
+  setNickname,
+  error,
+  loading,
+  onEnter,
+  onSwitchToFull,
+  onSignIn,
+}: {
+  nickname: string;
+  setNickname: (v: string) => void;
+  error: string;
+  loading: boolean;
+  onEnter: () => void;
+  onSwitchToFull: () => void;
+  onSignIn: () => void;
+}) {
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 16, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        className="relative rounded-[28px] overflow-hidden"
+        style={{
+          background: 'linear-gradient(180deg, rgba(28,28,30,0.72) 0%, rgba(20,20,22,0.62) 100%)',
+          backdropFilter: 'blur(40px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          boxShadow: '0 30px 80px -20px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)',
+        }}
+      >
+        <div className="px-6 pt-7 pb-6">
+          <div className="mb-6">
+            <img
+              src={loopgateIcon}
+              alt="Loopgate"
+              className="h-12 w-12 mb-4 rounded-[12px] object-contain"
+              style={{ filter: 'drop-shadow(0 8px 20px rgba(212,168,87,0.35))' }}
+            />
+            <p className="text-[11px] font-semibold tracking-[0.22em] text-[#D4A857] uppercase mb-2">Step Inside</p>
+            <h1 className="text-white text-[34px] leading-[1.05] font-bold tracking-[-0.03em]">
+              Pick a<br/>nickname.
+            </h1>
+            <p className="text-white/55 text-[14px] mt-2 leading-snug tracking-[-0.01em]">
+              Skip the signup. Jump in, edit, vote, earn XP. Set a password later.
+            </p>
+          </div>
+
+          <div className="space-y-2 mb-3">
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/35 text-[15px] font-medium select-none">@</span>
+              <Input
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value.replace(/^@/, ''))}
+                onKeyDown={(e) => { if (e.key === 'Enter' && !loading) onEnter(); }}
+                placeholder="ViralEditor"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                autoFocus
+                maxLength={20}
+                className="h-14 pl-9 pr-4 rounded-2xl border-0 text-[17px] text-white placeholder:text-white/30 focus-visible:ring-1 focus-visible:ring-[#D4A857] tracking-[-0.01em]"
+                style={{ background: 'rgba(255,255,255,0.06)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)' }}
+              />
+            </div>
+            {error && <p className="text-[12px] text-[#FF453A] pl-1">{error}</p>}
+          </div>
+
+          <button
+            onClick={onEnter}
+            disabled={loading || nickname.trim().length < 3}
+            className="mt-3 w-full h-14 rounded-2xl text-[17px] font-bold tracking-[-0.01em] flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-40 disabled:active:scale-100"
+            style={{
+              background: nickname.trim().length >= 3
+                ? 'linear-gradient(180deg, #E8C271 0%, #C99A45 100%)'
+                : 'rgba(255,255,255,0.08)',
+              color: nickname.trim().length >= 3 ? '#1a1306' : 'rgba(255,255,255,0.5)',
+              boxShadow: nickname.trim().length >= 3 ? '0 10px 30px -8px rgba(212,168,87,0.55), inset 0 1px 0 rgba(255,255,255,0.4)' : 'none',
+            }}
+          >
+            {loading ? (
+              <div className="h-5 w-5 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+            ) : (
+              <>Enter the Arena <ArrowRight className="h-5 w-5" /></>
+            )}
+          </button>
+
+          <p className="text-[11px] text-white/35 text-center mt-3 leading-snug">
+            No password. No email. We'll ask you to save your progress after your first win.
+          </p>
+        </div>
+      </motion.div>
+
+      <div className="text-center mt-5 space-y-2">
+        <button
+          onClick={onSwitchToFull}
+          className="text-[13px] text-white/50 active:text-white/80 transition-colors"
+        >
+          Want a full account now? <span className="text-[#D4A857] font-semibold">Sign up</span>
+        </button>
+        <div>
+          <button
+            onClick={onSignIn}
+            className="text-[13px] text-white/50 active:text-white/80 transition-colors"
+          >
+            Already have an account? <span className="text-[#D4A857] font-semibold">Sign in</span>
+          </button>
+        </div>
+      </div>
+    </>
   );
 }

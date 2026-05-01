@@ -6398,6 +6398,7 @@ export type Database = {
           id: string
           is_banned: boolean
           is_founding_member: boolean | null
+          is_guest: boolean
           is_hidden: boolean
           judge_badge: string | null
           judge_bio: string | null
@@ -6419,6 +6420,7 @@ export type Database = {
           primary_crew_changed_at: string | null
           profile_bg_color: string | null
           profile_bg_image_url: string | null
+          prompted_for_password_at: string | null
           recovery_code: string | null
           region: string | null
           review_style: string | null
@@ -6462,6 +6464,7 @@ export type Database = {
           id: string
           is_banned?: boolean
           is_founding_member?: boolean | null
+          is_guest?: boolean
           is_hidden?: boolean
           judge_badge?: string | null
           judge_bio?: string | null
@@ -6483,6 +6486,7 @@ export type Database = {
           primary_crew_changed_at?: string | null
           profile_bg_color?: string | null
           profile_bg_image_url?: string | null
+          prompted_for_password_at?: string | null
           recovery_code?: string | null
           region?: string | null
           review_style?: string | null
@@ -6526,6 +6530,7 @@ export type Database = {
           id?: string
           is_banned?: boolean
           is_founding_member?: boolean | null
+          is_guest?: boolean
           is_hidden?: boolean
           judge_badge?: string | null
           judge_bio?: string | null
@@ -6547,6 +6552,7 @@ export type Database = {
           primary_crew_changed_at?: string | null
           profile_bg_color?: string | null
           profile_bg_image_url?: string | null
+          prompted_for_password_at?: string | null
           recovery_code?: string | null
           region?: string | null
           review_style?: string | null
@@ -8387,10 +8393,12 @@ export type Database = {
         Args: { check_username: string }
         Returns: boolean
       }
+      mark_account_converted: { Args: never; Returns: undefined }
       mark_conversation_read: {
         Args: { p_conversation_id: string; p_user_id: string }
         Returns: undefined
       }
+      mark_password_prompted: { Args: never; Returns: undefined }
       pick_practice_song: {
         Args: {
           p_drop_id: string
