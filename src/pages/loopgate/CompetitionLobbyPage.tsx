@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Trophy, Users, Clock, Play, Loader2,
-  Share2, Check, MessageCircle, Layers, Pencil, X, ThumbsUp, Sparkles, Upload, Volume2, VolumeX, CheckCircle2, Circle, LogOut, Crown, Info, Timer, Vote, Gavel
+  Share2, Check, MessageCircle, Layers, Pencil, X, ThumbsUp, Sparkles, Upload, Volume2, VolumeX, CheckCircle2, Circle, LogOut, Crown, Info, Timer, Vote, Gavel, Trash2
 } from "lucide-react";
 import { useCompetition } from "@/hooks/useCompetitions";
 import { useAuth } from "@/hooks/useAuth";
@@ -72,6 +72,7 @@ export default function CompetitionLobbyPage() {
   const [isReadying, setIsReadying] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showInspoForm, setShowInspoForm] = useState(false);
@@ -272,6 +273,20 @@ export default function CompetitionLobbyPage() {
     else { toast.error("Couldn't leave"); setIsLeaving(false); }
   };
 
+  const handleDeleteRoom = async () => {
+    if (!competition || !isCreator) return;
+    if (!window.confirm("Delete this room? This can't be undone.")) return;
+    setIsDeleting(true);
+    const { error } = await supabase.from("competitions").delete().eq("id", competition.id);
+    if (error) {
+      toast.error("Couldn't delete room");
+      setIsDeleting(false);
+      return;
+    }
+    toast.success("Room deleted");
+    navigate("/arena");
+  };
+
   const uploadSubmissionFile = async (file: File) => {
     if (!user || !profile || !competition) { navigate("/start"); return; }
     if (!canSubmit) return;
@@ -464,6 +479,16 @@ export default function CompetitionLobbyPage() {
                 {copied ? <Check className="w-3.5 h-3.5" /> : <Share2 className="w-3.5 h-3.5" />}
                 <span className="text-[11px] font-extrabold tracking-[0.2em]" style={teko}>ROOM</span>
               </button>
+              {isCreator && isLobby && (
+                <button
+                  onClick={handleDeleteRoom}
+                  disabled={isDeleting}
+                  aria-label="Delete room"
+                  className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-white/[0.1] bg-white/[0.03] hover:bg-red-500/15 hover:border-red-500/40 hover:text-red-400 text-foreground/70 active:scale-95 transition disabled:opacity-50"
+                >
+                  {isDeleting ? <Loader2 className="w-[15px] h-[15px] animate-spin" /> : <Trash2 className="w-[15px] h-[15px]" />}
+                </button>
+              )}
             </div>
           </div>
         </header>
