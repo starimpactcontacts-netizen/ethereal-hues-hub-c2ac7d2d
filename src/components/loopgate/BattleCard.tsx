@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
-import { Swords, Clock, Eye, Trophy, Flame, Zap } from "lucide-react";
+import { Swords, Clock, Trophy } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import BattleVoteBarCompact from "@/components/loopgate/BattleVoteBarCompact";
 import type { Battle } from "@/hooks/useBattles";
 
 interface BattleCardProps {
@@ -125,8 +126,14 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
         </div>
       </div>
 
-      {/* Bottom — reward + CTA */}
+      {/* Bottom — blue vs red vote bar (replaces ENTER CTA) */}
       <div className="px-3 pb-3 mt-auto space-y-1.5">
+        <BattleVoteBarCompact
+          blueVotes={battle.challenger_votes || 0}
+          redVotes={battle.opponent_votes || 0}
+          blueLabel={battle.challenger_username}
+          redLabel={battle.opponent_username || undefined}
+        />
         <div className="flex items-center gap-0.5">
           <Trophy className={`w-2.5 h-2.5 ${isDone ? 'text-zinc-600' : 'text-gold'}`} />
           <span className={`text-[9px] font-bold tabular-nums ${isDone ? 'text-zinc-600' : 'text-gold'}`}>+{battle.winner_index_awarded}</span>
