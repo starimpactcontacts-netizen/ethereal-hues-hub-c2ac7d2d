@@ -193,9 +193,8 @@ export default function CompetitionLobbyPage() {
     if (everyoneSubmitted) startVoting();
   }, [competition?.status, participants, submissions]);
 
-  // Auto-finalize: as soon as every eligible voter has cast their vote, close voting + crown winner instantly.
-  // Eligible voters = participants who submitted an edit (they can't vote for themselves, but they can vote for others).
-  // If only one submission exists, finalize immediately. Also auto-finalize when voting deadline passes.
+  // Auto-finalize only after the full showcase. Flow is always:
+  // 15s per edit → 3-minute voting modal → reveal when all votes are in or timer hits 0.
   useEffect(() => {
     if (!competition || competition.status !== "voting") return;
     if (submissions.length === 0) {
@@ -203,39 +202,31 @@ export default function CompetitionLobbyPage() {
       return;
     }
 
-    // Single submission → instant winner
+    if (!showcaseDone) return;
+
+    // Single submission → winner only after its 15s showcase has played.
     if (submissions.length === 1) {
       finalizeVoting();
       return;
     }
 
-    // CRITICAL: every edit must be showcased for its full 15s before any winner can be crowned.
-    // Even if everyone has already voted, we wait until the synchronized showcase window ends.
-    const startedAt = (competition as any).voting_started_at;
-    const showcaseEndsMs = startedAt
-      ? new Date(startedAt).getTime() + submissions.length * 15 * 1000
-      : Date.now() + submissions.length * 15 * 1000;
-    const showcaseDone = Date.now() >= showcaseEndsMs;
-
     const totalVotes = submissions.reduce((sum, s) => sum + (s.vote_count || 0), 0);
     const eligibleVoterCount = submissions.length; // each submitter votes once (not for self, but for someone)
-    if (showcaseDone && totalVotes >= eligibleVoterCount) {
+    if (totalVotes >= eligibleVoterCount) {
       finalizeVoting();
       return;
     }
 
-    // Fallback: voting deadline passed
-    const deadline = (competition as any).voting_deadline;
-    if (deadline && new Date(deadline).getTime() <= Date.now()) {
+    if (votingDeadlineMs !== null && phaseNow >= votingDeadlineMs) {
       finalizeVoting();
       return;
     }
 
-    if (deadline) {
-      const timeout = window.setTimeout(() => finalizeVoting(), Math.max(0, new Date(deadline).getTime() - Date.now()) + 250);
+    if (votingDeadlineMs !== null) {
+      const timeout = window.setTimeout(() => finalizeVoting(), Math.max(0, votingDeadlineMs - Date.now()) + 250);
       return () => window.clearTimeout(timeout);
     }
-  }, [competition?.status, submissions, (competition as any)?.voting_deadline]);
+  }, [competition?.status, submissions, showcaseDone, votingDeadlineMs, phaseNow]);
 
   if (loading) {
     return (
