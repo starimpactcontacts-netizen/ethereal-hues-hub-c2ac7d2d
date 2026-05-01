@@ -209,9 +209,17 @@ export default function CompetitionLobbyPage() {
       return;
     }
 
+    // CRITICAL: every edit must be showcased for its full 15s before any winner can be crowned.
+    // Even if everyone has already voted, we wait until the synchronized showcase window ends.
+    const startedAt = (competition as any).voting_started_at;
+    const showcaseEndsMs = startedAt
+      ? new Date(startedAt).getTime() + submissions.length * 15 * 1000
+      : Date.now() + submissions.length * 15 * 1000;
+    const showcaseDone = Date.now() >= showcaseEndsMs;
+
     const totalVotes = submissions.reduce((sum, s) => sum + (s.vote_count || 0), 0);
     const eligibleVoterCount = submissions.length; // each submitter votes once (not for self, but for someone)
-    if (totalVotes >= eligibleVoterCount) {
+    if (showcaseDone && totalVotes >= eligibleVoterCount) {
       finalizeVoting();
       return;
     }
