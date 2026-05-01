@@ -6671,6 +6671,44 @@ export type Database = {
           },
         ]
       }
+      quick_fight_public_messages: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          fight_id: string
+          id: string
+          message_text: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          fight_id: string
+          id?: string
+          message_text: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          fight_id?: string
+          id?: string
+          message_text?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quick_fight_public_messages_fight_id_fkey"
+            columns: ["fight_id"]
+            isOneToOne: false
+            referencedRelation: "quick_fights"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quick_fight_queue: {
         Row: {
           avatar_url: string | null
