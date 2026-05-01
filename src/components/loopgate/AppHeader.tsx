@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import NotificationCenter from './NotificationCenter';
-import BeginnerGuideModal from './BeginnerGuideModal';
 import HeaderMusicPlayer from './HeaderMusicPlayer';
 import MessagesHeaderIcon from './MessagesHeaderIcon';
 import loopgateBrand from '@/assets/loopgate-brand.png';
@@ -171,18 +170,6 @@ export default function AppHeader() {
                       </SheetClose>
                     );
                   })}
-
-                  {/* How It Works Guide */}
-                  <div className="px-4 py-3">
-                    <BeginnerGuideModal
-                      trigger={
-                        <button className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors w-full">
-                          <BookOpen className="w-5 h-5" />
-                          <span className="font-display text-sm">How It Works</span>
-                        </button>
-                      }
-                    />
-                  </div>
 
                   {/* QOI Judges - Premium Feature Link */}
                   <div className="my-3 mx-4">
