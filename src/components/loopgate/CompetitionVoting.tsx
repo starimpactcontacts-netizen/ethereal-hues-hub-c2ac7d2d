@@ -58,7 +58,7 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
 
   const initial = computeFromClock();
   const [phase, setPhase] = useState<Phase>(
-    myVoteSubmissionId ? "voting" : (startMs && initial.done ? "voting" : "watching")
+    !startMs || !initial.done ? "watching" : (myVoteSubmissionId ? "submitted" : "voting")
   );
   const [currentIdx, setCurrentIdx] = useState(initial.idx);
   const [secondsLeft, setSecondsLeft] = useState(initial.left);
