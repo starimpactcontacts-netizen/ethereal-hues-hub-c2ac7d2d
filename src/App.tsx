@@ -15,6 +15,7 @@ import DevModeBadge from "./components/loopgate/DevModeBadge";
 import LoadingScreen from "./components/loopgate/LoadingScreen";
 import GlobalAccountPrompt from "./components/loopgate/GlobalAccountPrompt";
 import GlobalGuestConversionModal from "./components/loopgate/GlobalGuestConversionModal";
+import GuestNicknameModal from "./components/loopgate/GuestNicknameModal";
 import { isNativeApp } from "./lib/native";
 import ClippersLayoutRoute from "./components/clippers/ClippersLayoutRoute";
 
@@ -441,6 +442,7 @@ export default function App() {
           </Suspense>
           <GlobalAccountPrompt />
           <GlobalGuestConversionModal />
+          <GuestNicknameModal />
           <DevModeBadge />
           <Toaster 
             position="top-center" 
