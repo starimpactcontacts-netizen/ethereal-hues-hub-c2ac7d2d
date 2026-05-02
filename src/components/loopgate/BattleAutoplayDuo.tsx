@@ -105,7 +105,7 @@ export default function BattleAutoplayDuo({ red, blue, startedAt }: Props) {
   const progressPct = ((PER_EDIT_SECONDS - secondsLeft) / PER_EDIT_SECONDS) * 100;
 
   return (
-    <div className="space-y-0 select-none">
+    <div className="space-y-0 select-none -mx-4">
       {/* Loading state until BOTH clips have buffered → guarantees zero stutter on first play */}
       {!bothReady && (
         <div className="absolute -z-10 opacity-0 pointer-events-none">
@@ -123,12 +123,27 @@ export default function BattleAutoplayDuo({ red, blue, startedAt }: Props) {
         loading={!redReady}
       />
 
-      {/* VS divider — thin line w/ centered circle */}
-      <div className="relative h-0 flex items-center justify-center bg-black">
-        <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
-        <div className="relative z-10 w-7 h-7 rounded-full bg-black border border-white/20 flex items-center justify-center -my-3.5">
+      {/* VS divider — cinematic neon split */}
+      <div className="relative h-0 flex items-center justify-center bg-black z-20">
+        <div
+          className="absolute inset-x-0 top-1/2 h-[2px]"
+          style={{
+            background:
+              'linear-gradient(90deg, transparent 0%, rgba(239,68,68,0.9) 30%, #fff 50%, rgba(59,130,246,0.9) 70%, transparent 100%)',
+            boxShadow:
+              '0 0 12px rgba(239,68,68,0.6), 0 0 12px rgba(59,130,246,0.6)',
+          }}
+        />
+        <div
+          className="relative z-10 w-10 h-10 rounded-full bg-black flex items-center justify-center -my-5"
+          style={{
+            border: '1.5px solid rgba(255,255,255,0.25)',
+            boxShadow:
+              '0 0 20px rgba(239,68,68,0.45), 0 0 20px rgba(59,130,246,0.45), inset 0 1px 0 rgba(255,255,255,0.15)',
+          }}
+        >
           <span
-            className="text-[11px] font-black tracking-[0.15em] bg-gradient-to-r from-red-400 to-blue-400 bg-clip-text text-transparent leading-none"
+            className="text-[14px] font-black tracking-[0.15em] bg-gradient-to-r from-red-400 via-white to-blue-400 bg-clip-text text-transparent leading-none"
             style={teko}
           >
             VS
@@ -147,7 +162,7 @@ export default function BattleAutoplayDuo({ red, blue, startedAt }: Props) {
         loading={!blueReady}
       />
 
-      <p className="pt-2 text-[10px] text-center text-foreground/40 uppercase tracking-[0.2em]" style={teko}>
+      <p className="pt-2 px-4 text-[10px] text-center text-foreground/40 uppercase tracking-[0.2em]" style={teko}>
         {bothReady ? '10s per edit · auto-rotating' : 'Buffering both edits in HD…'}
       </p>
 
@@ -189,12 +204,22 @@ function SidePanel({
   const ring = side.color === "red" ? "ring-red-500/60" : "ring-blue-500/60";
 
   return (
-    <div className={`relative aspect-[4/3] w-full overflow-hidden bg-black border border-white/[0.06] ${active ? `ring-2 ${ring}` : "opacity-60"}`}>
+    <div
+      className={`relative aspect-square w-full overflow-hidden bg-black ${active ? `ring-2 ${ring} ring-inset` : "opacity-50"}`}
+      style={{
+        boxShadow: active
+          ? side.color === 'red'
+            ? 'inset 0 0 80px rgba(239,68,68,0.25)'
+            : 'inset 0 0 80px rgba(59,130,246,0.25)'
+          : undefined,
+      }}
+    >
       {isVid ? (
         <video
           ref={videoRef}
           src={side.url}
           className="w-full h-full object-cover"
+          style={{ imageRendering: 'auto' as any }}
           playsInline
           // @ts-ignore — iOS Safari hint
           webkit-playsinline="true"
@@ -203,6 +228,8 @@ function SidePanel({
           loop
           muted
           preload="auto"
+          // @ts-ignore — Chrome/Edge HD hint
+          disablePictureInPicture
           onLoadedData={onReady}
           onCanPlayThrough={onReady}
         />
@@ -210,9 +237,10 @@ function SidePanel({
         <img
           src={side.url}
           alt={`${side.username} edit`}
-          className="w-full h-full object-contain bg-black"
+          className="w-full h-full object-cover bg-black"
           loading="eager"
           decoding="async"
+          style={{ imageRendering: 'auto' as any }}
           onLoad={onReady}
         />
       )}
