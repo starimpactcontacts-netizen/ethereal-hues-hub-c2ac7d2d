@@ -357,17 +357,44 @@ export default function CompetitionChat({ competitionId, embedded = false }: { c
         )}
       </div>
 
-      {/* GIF Picker */}
+      {/* GIF Picker — fullscreen sheet on mobile so phones get real room, inline on desktop */}
       <AnimatePresence>
         {showGifPicker && (
-          <motion.div
-            initial={{ height: 0 }}
-            animate={{ height: 280 }}
-            exit={{ height: 0 }}
-            className="overflow-hidden border-t border-border/30"
-          >
-            <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
-          </motion.div>
+          <>
+            {/* Mobile: full-screen overlay sheet */}
+            <motion.div
+              key="gif-mobile"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="sm:hidden fixed inset-0 z-[120] bg-black/85 backdrop-blur-sm flex items-end"
+              onClick={() => setShowGifPicker(false)}
+            >
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 28, stiffness: 280 }}
+                onClick={(e) => e.stopPropagation()}
+                className="w-full max-h-[88vh] rounded-t-2xl overflow-hidden bg-card border-t border-border/40 shadow-2xl"
+                style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+              >
+                <div className="mx-auto mt-2 mb-1 h-1 w-10 rounded-full bg-white/15" />
+                <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
+              </motion.div>
+            </motion.div>
+
+            {/* Desktop: inline panel above input */}
+            <motion.div
+              key="gif-desktop"
+              initial={{ height: 0 }}
+              animate={{ height: 320 }}
+              exit={{ height: 0 }}
+              className="hidden sm:block overflow-hidden border-t border-border/30"
+            >
+              <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 
