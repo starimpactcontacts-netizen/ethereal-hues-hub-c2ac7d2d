@@ -344,9 +344,27 @@ export default function CompetitionLeaderboard({
                   <video
                     src={winner.submission_url}
                     autoPlay
-                    muted
                     loop
                     playsInline
+                    ref={(el) => {
+                      if (!el) return;
+                      // Try unmuted first; if blocked, mute then unmute on first interaction.
+                      el.muted = false;
+                      el.volume = 1;
+                      el.play().catch(() => {
+                        el.muted = true;
+                        el.play().catch(() => {});
+                        const unmute = () => {
+                          el.muted = false;
+                          el.volume = 1;
+                          el.play().catch(() => {});
+                          window.removeEventListener("pointerdown", unmute);
+                          window.removeEventListener("touchstart", unmute);
+                        };
+                        window.addEventListener("pointerdown", unmute, { once: true });
+                        window.addEventListener("touchstart", unmute, { once: true });
+                      });
+                    }}
                     className="absolute inset-0 h-full w-full object-cover"
                   />
                 ) : winnerIsImage ? (

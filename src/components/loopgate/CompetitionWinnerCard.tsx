@@ -1,11 +1,12 @@
 import { useRef, useState } from "react";
-import { Download, Share2, X, Crown, Loader2, Trophy } from "lucide-react";
+import { Download, Share2, X, Loader2, Trophy } from "lucide-react";
 import { toast } from "sonner";
 import html2canvas from "html2canvas";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 import type { CompetitionSubmission } from "@/hooks/useCompetitions";
+import { getThumbnail } from "@/lib/thumbnail";
 
 interface CompetitionWinnerCardProps {
   isOpen: boolean;
@@ -32,6 +33,17 @@ export default function CompetitionWinnerCard({
   const battleUrl = `${window.location.origin}/competition/${competitionId}`;
   const winnerVotes = winner.vote_count ?? 0;
   const runnerVotes = runnerUp?.vote_count ?? 0;
+  const totalVotes = winnerVotes + runnerVotes;
+  const winPct = totalVotes > 0 ? Math.round((winnerVotes / totalVotes) * 100) : 100;
+
+  // Resolve background poster image (TikTok/IG/YT thumbnail or direct file)
+  const isDirectVideo = /\.(mp4|webm|mov|m4v)(\?|$)/i.test(winner.submission_url);
+  const isImageFile = /\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(winner.submission_url);
+  const posterUrl = isImageFile
+    ? winner.submission_url
+    : isDirectVideo
+    ? null
+    : getThumbnail(winner.submission_url, winner.platform || "", null, (winner as any).thumbnail_url).url;
 
   const captureBlob = async (): Promise<Blob | null> => {
     if (!cardRef.current) return null;
@@ -91,41 +103,34 @@ export default function CompetitionWinnerCard({
     }
   };
 
-  const Avatar = ({ url, name, gold }: { url?: string | null; name?: string | null; gold?: boolean }) => {
-    const ringBg = gold
-      ? "linear-gradient(135deg, #fcd34d 0%, #facc15 50%, #d97706 100%)"
-      : "linear-gradient(135deg, #6b7280 0%, #4b5563 50%, #374151 100%)";
-    const size = gold ? 110 : 70;
-    return (
-      <div style={{ padding: "3px", borderRadius: "9999px", background: ringBg, display: "inline-block" }}>
-        <div
-          style={{
-            width: `${size}px`,
-            height: `${size}px`,
-            borderRadius: "9999px",
-            overflow: "hidden",
-            background: "#18181b",
-            border: "2px solid #000",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {url ? (
-            <img src={url} alt={name || ""} crossOrigin="anonymous" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-          ) : (
-            <span style={{ fontFamily: "Teko, sans-serif", fontSize: gold ? "44px" : "28px", fontWeight: 900, color: "rgba(255,255,255,0.6)" }}>
-              {name?.charAt(0).toUpperCase() || "?"}
-            </span>
-          )}
-        </div>
-      </div>
-    );
-  };
+  const AvatarChip = ({ url, name }: { url?: string | null; name?: string | null }) => (
+    <div
+      style={{
+        width: "44px",
+        height: "44px",
+        borderRadius: "9999px",
+        overflow: "hidden",
+        background: "#0a0a0a",
+        border: "1.5px solid rgba(255,255,255,0.85)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+      }}
+    >
+      {url ? (
+        <img src={url} alt={name || ""} crossOrigin="anonymous" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+      ) : (
+        <span style={{ fontFamily: "Teko, sans-serif", fontSize: "22px", fontWeight: 900, color: "rgba(255,255,255,0.7)" }}>
+          {name?.charAt(0).toUpperCase() || "?"}
+        </span>
+      )}
+    </div>
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={() => onClose()}>
-      <DialogContent className="max-w-[400px] w-[calc(100vw-2rem)] p-3 bg-zinc-950 border border-white/10 rounded-2xl overflow-y-auto max-h-[90vh]">
+      <DialogContent className="max-w-[420px] w-[calc(100vw-2rem)] p-3 bg-zinc-950 border border-white/10 rounded-2xl overflow-y-auto max-h-[90vh]">
         <button
           onClick={onClose}
           className="absolute top-2 right-2 z-50 p-1.5 rounded-full bg-black/70 ring-1 ring-white/10 text-white/70 hover:text-white"
@@ -139,208 +144,174 @@ export default function CompetitionWinnerCard({
           style={{
             position: "relative",
             width: "360px",
-            height: "360px",
+            height: "640px",
             margin: "0 auto",
             overflow: "hidden",
-            borderRadius: "16px",
-            background: "linear-gradient(180deg, #422006 0%, #000000 55%, #1c1917 100%)",
+            borderRadius: "20px",
+            background: "#000000",
             fontFamily: "Teko, system-ui, sans-serif",
+            boxShadow: "0 0 40px rgba(0,0,0,0.6)",
           }}
         >
-          {/* Gold glow */}
+          {/* Full-bleed poster image */}
+          {posterUrl && (
+            <img
+              src={posterUrl}
+              alt=""
+              crossOrigin="anonymous"
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                filter: "saturate(1.1) contrast(1.05)",
+              }}
+            />
+          )}
+          {/* Cinematic gradient overlay */}
           <div
             style={{
               position: "absolute",
               inset: 0,
-              backgroundImage:
-                "radial-gradient(circle at 50% 25%, rgba(252,211,77,0.45), transparent 55%), radial-gradient(circle at 50% 100%, rgba(180,83,9,0.35), transparent 60%)",
+              background:
+                "linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 30%, rgba(0,0,0,0.55) 65%, rgba(0,0,0,0.95) 100%)",
             }}
           />
-          {/* Diagonal lines */}
+          {/* Subtle vignette */}
           <div
             style={{
               position: "absolute",
               inset: 0,
-              opacity: 0.06,
-              backgroundImage: "repeating-linear-gradient(45deg, #ffffff 0 1px, transparent 1px 14px)",
+              background: "radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.55) 100%)",
             }}
           />
 
+          {/* Content */}
           <div
             style={{
               position: "relative",
               zIndex: 10,
               height: "100%",
-              padding: "18px",
+              padding: "22px 22px 24px",
               display: "flex",
               flexDirection: "column",
               boxSizing: "border-box",
             }}
           >
-            {/* Header */}
+            {/* Top bar */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <img src={loopgateLogo} alt="LOOPGATE" crossOrigin="anonymous" style={{ height: "22px", width: "auto", display: "block", opacity: 0.95 }} />
-              <span
-                style={{
-                  fontSize: "9px",
-                  fontWeight: 700,
-                  color: "#fcd34d",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.3em",
-                  padding: "2px 8px",
-                  borderRadius: "9999px",
-                  background: "rgba(245,158,11,0.18)",
-                  border: "1px solid rgba(245,158,11,0.4)",
-                }}
-              >
-                🏆 Winner
-              </span>
-            </div>
-
-            {/* Headline */}
-            <div style={{ textAlign: "center", marginTop: "10px" }}>
+              <img src={loopgateLogo} alt="LOOPGATE" crossOrigin="anonymous" style={{ height: "20px", width: "auto", display: "block", opacity: 0.9 }} />
               <div
                 style={{
-                  display: "inline-flex",
+                  display: "flex",
                   alignItems: "center",
                   gap: "6px",
-                  padding: "3px 10px",
-                  borderRadius: "9999px",
-                  background: "rgba(255,255,255,0.06)",
-                  border: "1px solid rgba(255,255,255,0.1)",
+                  padding: "4px 10px",
+                  borderRadius: "6px",
+                  background: "rgba(255,255,255,0.95)",
                 }}
               >
-                <span
-                  style={{
-                    fontSize: "10px",
-                    letterSpacing: "0.35em",
-                    textTransform: "uppercase",
-                    color: "rgba(255,255,255,0.75)",
-                    fontWeight: 700,
-                  }}
-                >
-                  Edit Battle Result
+                <span style={{ width: "6px", height: "6px", borderRadius: "9999px", background: "#16a34a" }} />
+                <span style={{ fontSize: "9px", fontWeight: 800, color: "#000", letterSpacing: "0.22em", fontFamily: "system-ui, sans-serif" }}>
+                  WINNER
                 </span>
               </div>
-              <h2
-                style={{
-                  fontSize: "24px",
-                  color: "#ffffff",
-                  marginTop: "6px",
-                  lineHeight: 1,
-                  letterSpacing: "0.05em",
-                  fontWeight: 700,
-                  margin: "6px 0 0 0",
-                  maxWidth: "320px",
-                  marginLeft: "auto",
-                  marginRight: "auto",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}
-              >
-                {competitionName.toUpperCase()}
-              </h2>
             </div>
 
-            {/* Winner */}
-            <div style={{ marginTop: "14px", display: "flex", flexDirection: "column", alignItems: "center" }}>
-              <Avatar url={winner.avatar_url} name={winner.username} gold />
-              <div style={{ display: "flex", alignItems: "center", gap: "5px", marginTop: "8px" }}>
-                <Crown style={{ width: "14px", height: "14px", color: "#fcd34d" }} />
-                <span
-                  style={{
-                    fontSize: "22px",
-                    color: "#ffffff",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    fontWeight: 700,
-                    maxWidth: "200px",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {winner.username}
-                </span>
+            {/* Spacer pushes content to bottom */}
+            <div style={{ flex: 1 }} />
+
+            {/* Eyebrow */}
+            <span
+              style={{
+                fontSize: "10px",
+                fontWeight: 700,
+                letterSpacing: "0.35em",
+                textTransform: "uppercase",
+                color: "rgba(255,255,255,0.6)",
+                fontFamily: "system-ui, sans-serif",
+              }}
+            >
+              Edit Battle · Champion
+            </span>
+
+            {/* Username — hero */}
+            <h1
+              style={{
+                fontSize: "56px",
+                lineHeight: 0.9,
+                letterSpacing: "-0.01em",
+                color: "#ffffff",
+                margin: "6px 0 0 0",
+                fontWeight: 700,
+                textTransform: "uppercase",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                textShadow: "0 2px 24px rgba(0,0,0,0.7)",
+              }}
+            >
+              @{winner.username}
+            </h1>
+
+            {/* Competition name */}
+            <p
+              style={{
+                fontSize: "12px",
+                color: "rgba(255,255,255,0.65)",
+                margin: "8px 0 0 0",
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                fontFamily: "system-ui, sans-serif",
+                fontWeight: 600,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {competitionName}
+            </p>
+
+            {/* Stats row */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "stretch",
+                gap: "10px",
+                marginTop: "16px",
+              }}
+            >
+              <div style={{ flex: 1, padding: "10px 12px", borderRadius: "10px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", backdropFilter: "blur(10px)" }}>
+                <div style={{ fontSize: "9px", color: "rgba(255,255,255,0.55)", letterSpacing: "0.2em", textTransform: "uppercase", fontFamily: "system-ui, sans-serif", fontWeight: 700 }}>Votes</div>
+                <div style={{ fontSize: "30px", color: "#ffffff", fontWeight: 700, lineHeight: 1, marginTop: "2px" }}>{winnerVotes}</div>
               </div>
-              <span
-                style={{
-                  fontSize: "26px",
-                  color: "#fcd34d",
-                  fontWeight: 900,
-                  lineHeight: 1,
-                  marginTop: "4px",
-                  fontFamily: "Teko, sans-serif",
-                }}
-              >
-                {winnerVotes} VOTE{winnerVotes !== 1 ? "S" : ""}
-              </span>
-              {runnerUp && (
-                <span
-                  style={{
-                    fontSize: "10px",
-                    color: "rgba(255,255,255,0.5)",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.2em",
-                    marginTop: "6px",
-                    fontFamily: "system-ui, sans-serif",
-                    fontWeight: 600,
-                  }}
-                >
-                  beat @{runnerUp.username} ({runnerVotes})
-                </span>
-              )}
+              <div style={{ flex: 1, padding: "10px 12px", borderRadius: "10px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", backdropFilter: "blur(10px)" }}>
+                <div style={{ fontSize: "9px", color: "rgba(255,255,255,0.55)", letterSpacing: "0.2em", textTransform: "uppercase", fontFamily: "system-ui, sans-serif", fontWeight: 700 }}>Win Rate</div>
+                <div style={{ fontSize: "30px", color: "#ffffff", fontWeight: 700, lineHeight: 1, marginTop: "2px" }}>{winPct}%</div>
+              </div>
+              <div style={{ flex: 1, padding: "10px 12px", borderRadius: "10px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", backdropFilter: "blur(10px)" }}>
+                <div style={{ fontSize: "9px", color: "rgba(255,255,255,0.55)", letterSpacing: "0.2em", textTransform: "uppercase", fontFamily: "system-ui, sans-serif", fontWeight: 700 }}>Field</div>
+                <div style={{ fontSize: "30px", color: "#ffffff", fontWeight: 700, lineHeight: 1, marginTop: "2px" }}>{totalEditors}</div>
+              </div>
             </div>
 
-            {/* CTA strip */}
-            <div style={{ marginTop: "auto" }}>
-              <p
-                style={{
-                  textAlign: "center",
-                  fontSize: "10px",
-                  color: "rgba(255,255,255,0.55)",
-                  margin: "0 0 8px 0",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.2em",
-                  fontFamily: "system-ui, sans-serif",
-                  fontWeight: 600,
-                }}
-              >
-                {totalEditors} editors · community vote
-              </p>
-              <div
-                style={{
-                  borderRadius: "10px",
-                  background: "rgba(252,211,77,0.08)",
-                  border: "1px solid rgba(252,211,77,0.25)",
-                  padding: "8px 12px",
-                  textAlign: "center",
-                }}
-              >
-                <p
-                  style={{
-                    fontSize: "9px",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.3em",
-                    color: "rgba(252,211,77,0.7)",
-                    margin: 0,
-                    fontFamily: "system-ui, sans-serif",
-                  }}
-                >
-                  Run it back
-                </p>
-                <p
-                  style={{
-                    fontSize: "16px",
-                    fontWeight: 700,
-                    color: "#ffffff",
-                    letterSpacing: "0.08em",
-                    margin: "2px 0 0 0",
-                  }}
-                >
+            {/* Footer row: avatar + URL */}
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "18px", paddingTop: "14px", borderTop: "1px solid rgba(255,255,255,0.12)" }}>
+              <AvatarChip url={winner.avatar_url} name={winner.username} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                {runnerUp ? (
+                  <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.55)", letterSpacing: "0.18em", textTransform: "uppercase", fontFamily: "system-ui, sans-serif", fontWeight: 600 }}>
+                    Defeated @{runnerUp.username} · {runnerVotes} vote{runnerVotes !== 1 ? "s" : ""}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.55)", letterSpacing: "0.18em", textTransform: "uppercase", fontFamily: "system-ui, sans-serif", fontWeight: 600 }}>
+                    Community Vote · Live Showcase
+                  </div>
+                )}
+                <div style={{ fontSize: "16px", color: "#ffffff", fontWeight: 700, letterSpacing: "0.18em", fontFamily: "Teko, sans-serif", marginTop: "2px" }}>
                   LOOPGATE.IO
-                </p>
+                </div>
               </div>
             </div>
           </div>
