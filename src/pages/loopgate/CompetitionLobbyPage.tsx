@@ -116,6 +116,43 @@ export default function CompetitionLobbyPage() {
     return () => clearInterval(i);
   }, [competition?.status]);
 
+  // Chat counter + unread badge — fetches initial total and listens for new messages.
+  // Unread increments only when the chat tab isn't visible; resets when user opens chat.
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    (async () => {
+      const { count } = await supabase
+        .from('competition_messages' as any)
+        .select('*', { count: 'exact', head: true })
+        .eq('competition_id', id);
+      if (!cancelled && typeof count === 'number') setChatMessageCount(count);
+    })();
+    const channel = supabase
+      .channel(`comp-chat-count-${id}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'competition_messages',
+        filter: `competition_id=eq.${id}`,
+      }, (payload: any) => {
+        setChatMessageCount(c => c + 1);
+        const isSystem = payload?.new?.is_system;
+        if (!isSystem) {
+          setChatUnread(prev => (lobbyTabRef.current === 'chat' ? 0 : prev + 1));
+        }
+      })
+      .subscribe();
+    return () => { cancelled = true; supabase.removeChannel(channel); };
+  }, [id]);
+
+  // Mirror lobbyTab in a ref so the realtime callback always sees the latest value.
+  const lobbyTabRef = useRef<"members" | "chat">("members");
+  useEffect(() => {
+    lobbyTabRef.current = lobbyTab;
+    if (lobbyTab === "chat") setChatUnread(0);
+  }, [lobbyTab]);
+
   const toggleInspoMute = () => {
     const v = inspoVideoRef.current;
     if (!v) return;
