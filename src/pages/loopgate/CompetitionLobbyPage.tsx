@@ -92,6 +92,8 @@ export default function CompetitionLobbyPage() {
   const [showInfo, setShowInfo] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [lobbyTab, setLobbyTab] = useState<"members" | "chat">("members");
+  const [chatMessageCount, setChatMessageCount] = useState(0);
+  const [chatUnread, setChatUnread] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showInspoForm, setShowInspoForm] = useState(false);
@@ -113,6 +115,43 @@ export default function CompetitionLobbyPage() {
     const i = setInterval(() => setPhaseNow(Date.now()), 500);
     return () => clearInterval(i);
   }, [competition?.status]);
+
+  // Chat counter + unread badge — fetches initial total and listens for new messages.
+  // Unread increments only when the chat tab isn't visible; resets when user opens chat.
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    (async () => {
+      const { count } = await supabase
+        .from('competition_messages' as any)
+        .select('*', { count: 'exact', head: true })
+        .eq('competition_id', id);
+      if (!cancelled && typeof count === 'number') setChatMessageCount(count);
+    })();
+    const channel = supabase
+      .channel(`comp-chat-count-${id}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'competition_messages',
+        filter: `competition_id=eq.${id}`,
+      }, (payload: any) => {
+        setChatMessageCount(c => c + 1);
+        const isSystem = payload?.new?.is_system;
+        if (!isSystem) {
+          setChatUnread(prev => (lobbyTabRef.current === 'chat' ? 0 : prev + 1));
+        }
+      })
+      .subscribe();
+    return () => { cancelled = true; supabase.removeChannel(channel); };
+  }, [id]);
+
+  // Mirror lobbyTab in a ref so the realtime callback always sees the latest value.
+  const lobbyTabRef = useRef<"members" | "chat">("members");
+  useEffect(() => {
+    lobbyTabRef.current = lobbyTab;
+    if (lobbyTab === "chat") setChatUnread(0);
+  }, [lobbyTab]);
 
   const toggleInspoMute = () => {
     const v = inspoVideoRef.current;
@@ -461,9 +500,9 @@ export default function CompetitionLobbyPage() {
     const memberCount = participants.length;
 
     return (
-      <div className="fixed inset-0 bg-background flex flex-col overflow-hidden">
+      <div className="fixed inset-0 flex flex-col overflow-hidden" style={{ backgroundColor: '#0A0A0A' }}>
         {/* ── HEADER ── */}
-        <header className="shrink-0 px-4 pt-[env(safe-area-inset-top)] border-b border-white/[0.06] bg-background/95 backdrop-blur-sm">
+        <header className="shrink-0 px-4 pt-[env(safe-area-inset-top)] border-b border-white/[0.06] backdrop-blur-sm" style={{ backgroundColor: 'rgba(10,10,10,0.95)' }}>
           <div className="flex items-center gap-2.5 py-3">
             <button onClick={() => navigate(-1)} className="p-1.5 -ml-1.5 rounded-lg hover:bg-white/[0.04] active:scale-95 transition">
               <ArrowLeft className="w-[18px] h-[18px] text-foreground/70" />
@@ -590,39 +629,46 @@ export default function CompetitionLobbyPage() {
 
         {/* ── MOBILE TAB SWITCHER (Roblox-style chunky pills) ── */}
         <div className="md:hidden shrink-0 px-3 pt-3">
-          <div className="relative grid grid-cols-2 gap-1 p-1 rounded-2xl bg-white/[0.04] border border-white/[0.08]">
+          <div className="relative grid grid-cols-2 gap-1.5 p-1 rounded-2xl bg-white/[0.035] border border-white/[0.07] shadow-inner">
             <button
               onClick={() => setLobbyTab("members")}
-              className={`relative h-10 rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-[0.97] ${
+              className={`relative h-11 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.97] ${
                 lobbyTab === "members"
-                  ? "bg-white text-black shadow-[0_4px_14px_-4px_rgba(255,255,255,0.35)]"
-                  : "text-foreground/60"
+                  ? "bg-gradient-to-b from-white to-white/90 text-black shadow-[0_6px_18px_-6px_rgba(255,255,255,0.45)] ring-1 ring-white/40"
+                  : "text-foreground/55 hover:text-foreground/80"
               }`}
             >
-              <Users className="w-3.5 h-3.5" strokeWidth={2.5} />
-              <span className="text-[12px] font-extrabold uppercase tracking-[0.2em] leading-none" style={teko}>
+              <Users className="w-4 h-4" strokeWidth={2.6} />
+              <span className="text-[13px] font-extrabold uppercase tracking-[0.22em] leading-none" style={teko}>
                 Squad
               </span>
-              <span className={`text-[10px] font-black tabular-nums px-1.5 py-0.5 rounded-md ${
-                lobbyTab === "members" ? "bg-black/10 text-black" : "bg-white/[0.06] text-foreground/50"
+              <span className={`min-w-[28px] text-center text-[10px] font-black tabular-nums px-1.5 py-0.5 rounded-md leading-none ${
+                lobbyTab === "members" ? "bg-black/10 text-black" : "bg-white/[0.07] text-foreground/55"
               }`} style={teko}>
                 {memberCount}/{cap}
               </span>
             </button>
             <button
               onClick={() => setLobbyTab("chat")}
-              className={`relative h-10 rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-[0.97] ${
+              className={`relative h-11 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.97] ${
                 lobbyTab === "chat"
-                  ? "bg-red-500 text-white shadow-[0_4px_14px_-4px_rgba(239,68,68,0.55)]"
-                  : "text-foreground/60"
+                  ? "bg-gradient-to-b from-red-500 to-red-600 text-white shadow-[0_6px_18px_-6px_rgba(239,68,68,0.65)] ring-1 ring-red-400/40"
+                  : "text-foreground/55 hover:text-foreground/80"
               }`}
             >
-              <MessageCircle className="w-3.5 h-3.5" strokeWidth={2.5} />
-              <span className="text-[12px] font-extrabold uppercase tracking-[0.2em] leading-none" style={teko}>
+              <MessageCircle className="w-4 h-4" strokeWidth={2.6} />
+              <span className="text-[13px] font-extrabold uppercase tracking-[0.22em] leading-none" style={teko}>
                 Chat
               </span>
-              {lobbyTab !== "chat" && (
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+              <span className={`min-w-[28px] text-center text-[10px] font-black tabular-nums px-1.5 py-0.5 rounded-md leading-none ${
+                lobbyTab === "chat" ? "bg-white/15 text-white" : "bg-white/[0.07] text-foreground/55"
+              }`} style={teko}>
+                {chatMessageCount}
+              </span>
+              {lobbyTab !== "chat" && chatUnread > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center ring-2 ring-[#0A0A0A] shadow-[0_2px_8px_rgba(239,68,68,0.6)] animate-pulse">
+                  {chatUnread > 9 ? '9+' : chatUnread}
+                </span>
               )}
             </button>
           </div>
@@ -631,7 +677,7 @@ export default function CompetitionLobbyPage() {
         {/* ── BODY: Members + Chat ── */}
         <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 gap-3 p-3 overflow-hidden">
           {/* MEMBERS PANEL */}
-          <section className={`${lobbyTab === "members" ? "flex" : "hidden"} md:flex flex-col min-h-0 rounded-xl border border-white/[0.08] bg-surface-1 overflow-hidden`}>
+          <section className={`${lobbyTab === "members" ? "flex" : "hidden"} md:flex flex-col min-h-0 rounded-xl border border-white/[0.07] overflow-hidden`} style={{ backgroundColor: '#111114' }}>
             <div className="shrink-0 flex items-center justify-between px-3 py-2 border-b border-white/[0.06]">
               <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-foreground/60" style={teko}>
                 Members
@@ -698,12 +744,14 @@ export default function CompetitionLobbyPage() {
           </section>
 
           {/* CHAT PANEL */}
-          <section className={`${lobbyTab === "chat" ? "flex" : "hidden"} md:flex flex-col min-h-0 rounded-xl border border-white/[0.08] bg-surface-1 overflow-hidden`}>
+          <section className={`${lobbyTab === "chat" ? "flex" : "hidden"} md:flex flex-col min-h-0 rounded-xl border border-white/[0.07] overflow-hidden`} style={{ backgroundColor: '#111114' }}>
             <div className="shrink-0 flex items-center justify-between px-3 py-2 border-b border-white/[0.06]">
               <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-red-400" style={teko}>
                 Chat
               </span>
-              <MessageCircle className="w-3 h-3 text-foreground/30" />
+              <span className="text-[10px] font-bold tabular-nums text-foreground/40" style={teko}>
+                {chatMessageCount} {chatMessageCount === 1 ? 'message' : 'messages'}
+              </span>
             </div>
             <div className="flex-1 min-h-0 overflow-hidden flex">
               <CompetitionChat competitionId={competition.id} embedded />
@@ -712,7 +760,7 @@ export default function CompetitionLobbyPage() {
         </div>
 
         {/* ── ACTION BAR ── */}
-        <footer className="shrink-0 border-t border-white/[0.06] bg-background/95 backdrop-blur-sm px-3 pt-2.5 pb-[max(env(safe-area-inset-bottom),12px)]">
+        <footer className="shrink-0 border-t border-white/[0.06] backdrop-blur-sm px-3 pt-2.5 pb-[max(env(safe-area-inset-bottom),12px)]" style={{ backgroundColor: 'rgba(10,10,10,0.95)' }}>
           {!hasJoined ? (
             <button
               onClick={handleJoin}
