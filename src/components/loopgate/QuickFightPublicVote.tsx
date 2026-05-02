@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Vote, Check } from 'lucide-react';
+import { Trophy, Check, Zap } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -43,6 +43,8 @@ export default function QuickFightPublicVote({
   const total = redCount + blueCount;
   const redPct = total === 0 ? 0 : Math.round((redCount / total) * 100);
   const bluePct = total === 0 ? 0 : 100 - redPct;
+  const leadingSide: 'red' | 'blue' | null =
+    total === 0 ? null : redCount === blueCount ? null : redCount > blueCount ? 'red' : 'blue';
 
   useEffect(() => {
     if (!fightId) return;
@@ -95,6 +97,8 @@ export default function QuickFightPublicVote({
     setVoting(false);
   };
 
+  const disabled = !!myVote || !!locked || isParticipant || !user || voting;
+
   const Side = ({
     side,
     pid,
@@ -110,82 +114,140 @@ export default function QuickFightPublicVote({
   }) => {
     const isMine = myVote === pid;
     const isOfficial = officialWinnerId === pid;
-    const accent = side === 'red' ? 'red' : 'blue';
-    const baseBg = side === 'red' ? 'bg-red-500/5' : 'bg-blue-500/5';
-    const fillBg = side === 'red' ? 'bg-red-500/25' : 'bg-blue-500/25';
-    const borderCls = isMine
-      ? side === 'red' ? 'border-red-500' : 'border-blue-500'
-      : 'border-white/10';
-    const textAccent = side === 'red' ? 'text-red-400' : 'text-blue-400';
-    const disabled = !!myVote || locked || isParticipant || !user || voting;
+    const isLeading = leadingSide === side;
+    const isRed = side === 'red';
 
     return (
-      <button
+      <motion.button
         onClick={() => castVote(pid)}
         disabled={disabled}
-        className={`relative flex-1 overflow-hidden border ${borderCls} ${baseBg} active:scale-[0.99] transition disabled:cursor-default`}
+        whileTap={disabled ? undefined : { scale: 0.96 }}
+        className={`relative flex-1 overflow-hidden border-2 transition-all duration-300 ${
+          isMine
+            ? isRed ? 'border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]' : 'border-blue-500 shadow-[0_0_30px_rgba(59,130,246,0.5)]'
+            : isOfficial
+            ? 'border-amber-400 shadow-[0_0_24px_rgba(251,191,36,0.4)]'
+            : isLeading
+            ? isRed ? 'border-red-500/60' : 'border-blue-500/60'
+            : 'border-white/10'
+        } ${disabled && !isMine && !isOfficial ? 'opacity-80' : ''} disabled:cursor-default`}
+        style={{
+          background: isRed
+            ? `linear-gradient(135deg, rgba(239,68,68,${isLeading ? 0.18 : 0.08}) 0%, rgba(0,0,0,0.95) 100%)`
+            : `linear-gradient(135deg, rgba(59,130,246,${isLeading ? 0.18 : 0.08}) 0%, rgba(0,0,0,0.95) 100%)`,
+        }}
       >
-        {/* Fill bar */}
+        {/* Animated fill bar from bottom */}
         <motion.div
-          className={`absolute inset-y-0 left-0 ${fillBg}`}
-          initial={{ width: 0 }}
-          animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
+          className={`absolute inset-x-0 bottom-0 ${isRed ? 'bg-gradient-to-t from-red-500/40 to-red-500/10' : 'bg-gradient-to-t from-blue-500/40 to-blue-500/10'}`}
+          initial={{ height: 0 }}
+          animate={{ height: `${pct}%` }}
+          transition={{ duration: 0.7, ease: 'easeOut' }}
         />
-        <div className="relative px-3 py-3 flex items-center justify-between gap-2">
-          <div className="text-left min-w-0">
-            <div className="flex items-center gap-1.5">
-              <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${textAccent}`} style={teko}>
-                EDITOR {accent.toUpperCase()}
+
+        {/* Pulsing glow when leading */}
+        {isLeading && !isOfficial && (
+          <motion.div
+            className={`absolute inset-0 pointer-events-none ${isRed ? 'bg-red-500/5' : 'bg-blue-500/5'}`}
+            animate={{ opacity: [0.3, 0.7, 0.3] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+        )}
+
+        <div className="relative px-3 py-4 flex flex-col items-center justify-center gap-1 min-h-[120px]">
+          {/* Top tag row */}
+          <div className="flex items-center gap-1.5 mb-1">
+            <span className={`text-[9px] font-black uppercase tracking-[0.25em] ${isRed ? 'text-red-400' : 'text-blue-400'}`} style={teko}>
+              {side.toUpperCase()}
+            </span>
+            {isOfficial && (
+              <span className="text-[8px] font-black uppercase tracking-wider text-amber-400 flex items-center gap-0.5">
+                <Trophy className="w-2.5 h-2.5" /> WINNER
               </span>
-              {isOfficial && (
-                <span className="text-[8px] font-black uppercase tracking-wider text-amber-400">★ JUDGED</span>
-              )}
-            </div>
-            <p className="text-[13px] font-bold text-white truncate">@{username}</p>
+            )}
           </div>
-          <div className="flex items-center gap-1.5 shrink-0">
-            {isMine && <Check className={`w-3.5 h-3.5 ${textAccent}`} />}
-            <div className="text-right">
-              <p className="text-base font-black text-white tabular-nums leading-none" style={teko}>
-                {pct}%
-              </p>
-              <p className="text-[9px] text-muted-foreground tabular-nums">{count}</p>
-            </div>
-          </div>
+
+          {/* Massive percentage */}
+          <p
+            className="text-5xl font-black text-white tabular-nums leading-none"
+            style={{ ...teko, textShadow: isRed ? '0 0 20px rgba(239,68,68,0.5)' : '0 0 20px rgba(59,130,246,0.5)' }}
+          >
+            {pct}<span className="text-2xl text-white/60">%</span>
+          </p>
+
+          {/* Username */}
+          <p className="text-[12px] font-bold text-white truncate max-w-full px-2">@{username}</p>
+
+          {/* Vote count */}
+          <p className="text-[9px] text-zinc-400 tabular-nums uppercase tracking-wider">
+            {count} {count === 1 ? 'vote' : 'votes'}
+          </p>
+
+          {/* Mine indicator */}
+          {isMine && (
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className={`absolute top-1.5 right-1.5 w-5 h-5 rounded-full ${isRed ? 'bg-red-500' : 'bg-blue-500'} flex items-center justify-center`}
+            >
+              <Check className="w-3 h-3 text-white" strokeWidth={3} />
+            </motion.div>
+          )}
         </div>
-      </button>
+      </motion.button>
     );
   };
 
+  const ctaText = !user
+    ? 'SIGN IN TO VOTE'
+    : isParticipant
+    ? "PLAYERS CAN'T VOTE"
+    : myVote
+    ? '✓ VOTE LOCKED IN'
+    : locked
+    ? 'VOTING CLOSED'
+    : 'TAP A SIDE TO VOTE';
+
   return (
-    <div className="bg-surface-1 border border-border overflow-hidden">
-      <div className="flex items-center justify-between px-3 py-2 border-b border-border">
+    <div className="relative bg-black border border-white/10 overflow-hidden">
+      {/* Header */}
+      <div className="relative px-3 py-2.5 border-b border-white/10 bg-gradient-to-r from-red-500/10 via-amber-500/5 to-blue-500/10 flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <Vote className="w-3.5 h-3.5 text-foreground" />
-          <span className="text-xs font-bold text-foreground uppercase tracking-wider">
-            Which edit won?
+          <Zap className="w-3.5 h-3.5 text-amber-400" fill="currentColor" />
+          <span className="text-[12px] font-black text-white uppercase tracking-[0.25em]" style={teko}>
+            WHO WON?
           </span>
         </div>
-        <span className="text-[9px] text-muted-foreground uppercase tracking-wider">
-          {total} {total === 1 ? 'vote' : 'votes'}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span className="relative flex w-1.5 h-1.5">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75 animate-ping" />
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-400" />
+          </span>
+          <span className="text-[9px] text-zinc-400 uppercase tracking-wider tabular-nums">
+            {total} {total === 1 ? 'vote' : 'votes'}
+          </span>
+        </div>
       </div>
 
-      <div className="p-3 space-y-2">
-        <Side side="red" pid={player1Id} username={player1Username} count={redCount} pct={redPct} />
-        <Side side="blue" pid={player2Id} username={player2Username} count={blueCount} pct={bluePct} />
+      {/* Duel */}
+      <div className="relative p-3">
+        <div className="flex gap-2 items-stretch">
+          <Side side="red" pid={player1Id} username={player1Username} count={redCount} pct={redPct} />
+          <Side side="blue" pid={player2Id} username={player2Username} count={blueCount} pct={bluePct} />
+        </div>
 
-        <p className="text-[9px] text-center text-muted-foreground uppercase tracking-[0.2em] pt-1" style={teko}>
-          {!user
-            ? 'Sign in to cast your vote'
-            : isParticipant
-            ? 'Players cannot vote on their own battle'
-            : myVote
-            ? 'Your vote is locked in'
-            : locked
-            ? 'Voting closed'
-            : 'Tap a side to vote'}
+        {/* Center VS chip overlapping the two sides */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10">
+          <div className="w-9 h-9 rounded-full bg-black border border-white/20 flex items-center justify-center shadow-[0_0_20px_rgba(0,0,0,0.8)]">
+            <span className="text-[12px] font-black text-white tracking-wider" style={teko}>VS</span>
+          </div>
+        </div>
+      </div>
+
+      {/* CTA bar */}
+      <div className={`px-3 py-2 border-t border-white/10 text-center ${myVote ? 'bg-emerald-500/10' : 'bg-black'}`}>
+        <p className={`text-[10px] font-black uppercase tracking-[0.3em] ${myVote ? 'text-emerald-400' : 'text-zinc-500'}`} style={teko}>
+          {ctaText}
         </p>
       </div>
     </div>
