@@ -4,6 +4,7 @@ import { Play, Pause, Check, Loader2, Crown, Volume2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { CompetitionSubmission } from "@/hooks/useCompetitions";
 import { toast } from "sonner";
+import { useUnifiedThumbnail } from "@/lib/thumbnail";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 export const PER_EDIT_SECONDS = 15;
@@ -30,6 +31,108 @@ function isDirectVideo(url: string) {
 
 function isImageFile(url: string) {
   return /\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(url);
+}
+
+/** Tile that resolves a thumbnail for non-direct video URLs (TikTok / IG / YT). */
+function SubmissionTileMedia({ sub }: { sub: CompetitionSubmission }) {
+  const direct = isDirectVideo(sub.submission_url);
+  const image = isImageFile(sub.submission_url);
+  const thumb = useUnifiedThumbnail(
+    sub.submission_url,
+    sub.platform || "",
+    (sub as any).manual_thumbnail_url,
+    (sub as any).thumbnail_url,
+  );
+  if (direct) {
+    return (
+      <video
+        src={sub.submission_url}
+        muted
+        playsInline
+        preload="metadata"
+        className="w-full h-full object-cover"
+      />
+    );
+  }
+  if (image) {
+    return <img src={sub.submission_url} alt={`${sub.username} submission`} className="w-full h-full object-cover" loading="lazy" />;
+  }
+  return (
+    <>
+      <img
+        src={thumb.url}
+        alt={`${sub.username} thumbnail`}
+        className="w-full h-full object-cover"
+        loading="lazy"
+      />
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="w-10 h-10 rounded-full bg-black/55 backdrop-blur-sm border border-white/20 flex items-center justify-center">
+          <Play className="w-4 h-4 text-white ml-0.5" fill="currentColor" />
+        </div>
+      </div>
+    </>
+  );
+}
+
+/** Watching-phase media for the active edit — shows thumbnail for non-direct URLs. */
+function WatchingMedia({
+  sub,
+  videoRef,
+}: {
+  sub: CompetitionSubmission;
+  videoRef: React.RefObject<HTMLVideoElement>;
+}) {
+  const direct = isDirectVideo(sub.submission_url);
+  const image = isImageFile(sub.submission_url);
+  const thumb = useUnifiedThumbnail(
+    sub.submission_url,
+    sub.platform || "",
+    (sub as any).manual_thumbnail_url,
+    (sub as any).thumbnail_url,
+  );
+  if (direct) {
+    return (
+      <video
+        ref={videoRef}
+        src={sub.submission_url}
+        className="w-full h-full object-cover"
+        autoPlay
+        playsInline
+        loop
+        preload="auto"
+      />
+    );
+  }
+  if (image) {
+    return (
+      <img src={sub.submission_url} alt={`${sub.username} submission`} className="w-full h-full object-contain bg-black" />
+    );
+  }
+  return (
+    <a
+      href={sub.submission_url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="absolute inset-0 block"
+    >
+      <img
+        src={thumb.url}
+        alt={`${sub.username} thumbnail`}
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="w-20 h-20 rounded-full bg-amber-400/20 border-2 border-amber-400/60 backdrop-blur-md flex items-center justify-center">
+          <Play className="w-9 h-9 text-amber-400 ml-1" fill="currentColor" />
+        </div>
+      </div>
+      <div className="absolute bottom-4 left-0 right-0 text-center">
+        <span className="text-xs text-white/80 uppercase tracking-wider" style={teko}>
+          Tap to open on {sub.platform}
+        </span>
+      </div>
+    </a>
+  );
 }
 
 export default function CompetitionVoting({ submissions, myUserId, myVoteSubmissionId, onVote, votingStartedAt }: Props) {
@@ -66,6 +169,8 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
   const [castingId, setCastingId] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [needsSoundTap, setNeedsSoundTap] = useState(false);
+  // Local re-watch mode — when true, ignore the server clock and advance locally.
+  const [rewatching, setRewatching] = useState(false);
 
   const current = ordered[currentIdx];
 
@@ -120,6 +225,26 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
   // so every viewer sees the same edit at the same moment. No local advance.
   useEffect(() => {
     if (phase !== "watching") return;
+    // If user opted to re-watch, drive playback locally instead of from server clock.
+    if (rewatching) {
+      if (paused) return;
+      const interval = setInterval(() => {
+        setSecondsLeft(s => {
+          if (s > 1) return s - 1;
+          // advance to next edit, or end re-watch
+          setCurrentIdx(idx => {
+            if (idx + 1 >= ordered.length) {
+              setRewatching(false);
+              setPhase("voting");
+              return idx;
+            }
+            return idx + 1;
+          });
+          return PER_EDIT_SECONDS;
+        });
+      }, 1000);
+      return () => clearInterval(interval);
+    }
     if (!startMs) return; // fallback: stay on first edit until clock arrives
     const tick = () => {
       const { idx, left, done } = computeFromClock();
@@ -133,7 +258,7 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
     tick();
     const interval = setInterval(tick, 250);
     return () => clearInterval(interval);
-  }, [phase, startMs, ordered.length]);
+  }, [phase, startMs, ordered.length, rewatching, paused]);
 
   // Empty state — voting should immediately close/finalize before this renders.
   if (ordered.length === 0) {
@@ -204,38 +329,7 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
             exit={{ opacity: 0 }}
             className="relative aspect-[9/16] max-h-[60vh] w-full rounded-2xl overflow-hidden bg-black border border-white/[0.06]"
           >
-            {direct ? (
-              <video
-                ref={videoRef}
-                src={current.submission_url}
-                className="w-full h-full object-cover"
-                autoPlay
-                playsInline
-                loop
-              />
-            ) : image ? (
-              <img
-                src={current.submission_url}
-                alt={`${current.username} submission`}
-                className="w-full h-full object-contain bg-black"
-              />
-            ) : (
-              <a
-                href={current.submission_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-white/[0.04] to-black"
-              >
-                <div className="w-20 h-20 rounded-full bg-amber-400/20 border-2 border-amber-400/40 flex items-center justify-center">
-                  <Play className="w-9 h-9 text-amber-400 ml-1" />
-                </div>
-                <div className="absolute bottom-4 left-0 right-0 text-center">
-                  <span className="text-xs text-white/70 uppercase tracking-wider" style={teko}>
-                    Tap to open on {current.platform}
-                  </span>
-                </div>
-              </a>
-            )}
+            <WatchingMedia sub={current} videoRef={videoRef} />
 
             {/* Overlay info */}
             <div className="absolute inset-x-0 top-0 bg-gradient-to-b from-black/60 to-transparent p-3 flex items-center justify-between">
@@ -308,8 +402,6 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
             const isSelf = sub.user_id === myUserId;
             const isMyVote = myVoteSubmissionId === sub.id;
             const isCasting = castingId === sub.id;
-            const direct = isDirectVideo(sub.submission_url);
-            const image = isImageFile(sub.submission_url);
 
             return (
               <button
@@ -324,15 +416,7 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
                     : "border-white/[0.08] hover:border-amber-400/60"
                 }`}
               >
-                {direct ? (
-                  <video src={sub.submission_url} muted playsInline className="w-full h-full object-cover" />
-                ) : image ? (
-                  <img src={sub.submission_url} alt={`${sub.username} submission`} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-white/[0.04] to-black flex items-center justify-center">
-                    <Play className="w-8 h-8 text-white/40" />
-                  </div>
-                )}
+                <SubmissionTileMedia sub={sub} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/30" />
 
                 {/* Number badge */}
@@ -378,7 +462,13 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
         </div>
 
         <button
-          onClick={() => { setCurrentIdx(0); setPhase("watching"); }}
+          onClick={() => {
+            setRewatching(true);
+            setCurrentIdx(0);
+            setSecondsLeft(PER_EDIT_SECONDS);
+            setPaused(false);
+            setPhase("watching");
+          }}
           className="w-full py-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] text-[11px] font-extrabold uppercase tracking-[0.2em] text-foreground/60 hover:text-foreground hover:bg-white/[0.05] transition"
           style={teko}
         >
