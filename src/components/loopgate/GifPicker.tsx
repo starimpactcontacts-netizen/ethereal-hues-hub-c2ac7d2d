@@ -66,7 +66,7 @@ export default function GifPicker({ onSelect, onClose }: GifPickerProps) {
   };
 
   return (
-    <div className="bg-card border border-border shadow-xl overflow-hidden z-[100] max-h-[60vh]">
+    <div className="bg-card border border-border shadow-xl overflow-hidden z-[100] max-h-[75vh]">
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b border-border">
         <span className="text-sm font-medium">GIFs</span>
@@ -111,7 +111,7 @@ export default function GifPicker({ onSelect, onClose }: GifPickerProps) {
       </div>
 
       {/* GIF Grid */}
-      <ScrollArea className="h-64">
+      <ScrollArea className="h-[380px]">
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
@@ -121,7 +121,7 @@ export default function GifPicker({ onSelect, onClose }: GifPickerProps) {
             No GIFs found
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-1 p-2">
+          <div className="grid grid-cols-4 gap-1 p-2">
             {gifs.map((gif) => (
               <button
                 key={gif.id}
