@@ -125,7 +125,7 @@ export default function QuickFightChat({ fightId, player1Id, player2Id, player1U
       </div>
 
       {/* Messages */}
-      <div ref={scrollRef} className="h-64 overflow-y-auto p-3 space-y-1.5 bg-[#0a0a0a]">
+      <div ref={scrollRef} className="h-[420px] sm:h-[480px] overflow-y-auto p-3 space-y-1.5 bg-[#0a0a0a]">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-zinc-600">
             <Swords className="w-7 h-7 mb-2 opacity-40" />
@@ -151,7 +151,7 @@ export default function QuickFightChat({ fightId, player1Id, player2Id, player1U
                 <div className="max-w-[75%]">
                   <div className={`${tag ? (user?.id === player1Id ? 'bg-red-500/20 border-red-500/40' : 'bg-blue-500/20 border-blue-500/40') : 'bg-emerald-500/15 border-emerald-500/30'} border px-3 py-1.5 rounded-2xl rounded-tr-sm`}>
                     {isGifUrl(msg.message_text) ? (
-                      <img src={msg.message_text} alt="GIF" className="max-w-[200px] rounded-md" loading="lazy" />
+                      <img src={msg.message_text} alt="GIF" className="w-[240px] max-w-full rounded-md" loading="lazy" />
                     ) : (
                       <p className="text-[13px] text-white leading-snug break-words">{msg.message_text}</p>
                     )}
@@ -179,7 +179,7 @@ export default function QuickFightChat({ fightId, player1Id, player2Id, player1U
                     </div>
                     <div className={`${tag ? (msg.user_id === player1Id ? 'bg-red-500/10 border-red-500/25' : 'bg-blue-500/10 border-blue-500/25') : 'bg-white/5 border-white/10'} border px-3 py-1.5 mt-0.5 rounded-2xl rounded-tl-sm`}>
                       {isGifUrl(msg.message_text) ? (
-                        <img src={msg.message_text} alt="GIF" className="max-w-[200px] rounded-md" loading="lazy" />
+                        <img src={msg.message_text} alt="GIF" className="w-[240px] max-w-full rounded-md" loading="lazy" />
                       ) : (
                         <p className="text-[13px] text-white leading-snug break-words">{msg.message_text}</p>
                       )}
@@ -238,16 +238,14 @@ export default function QuickFightChat({ fightId, player1Id, player2Id, player1U
       {/* Input — anyone signed in */}
       {user ? (
         <div className="border-t border-white/10 px-3 py-2 flex gap-2 bg-black">
-          {isParticipant && (
-            <button
-              onClick={() => setShowGifPicker(!showGifPicker)}
-              className={`h-9 w-9 flex items-center justify-center shrink-0 border rounded-lg transition-colors ${
-                showGifPicker ? "bg-amber-400/20 border-amber-400/40 text-amber-400" : "bg-white/5 border-white/10 text-zinc-400 hover:text-white"
-              }`}
-            >
-              <ImageIcon className="w-3.5 h-3.5" />
-            </button>
-          )}
+          <button
+            onClick={() => setShowGifPicker(!showGifPicker)}
+            className={`h-9 w-9 flex items-center justify-center shrink-0 border rounded-lg transition-colors ${
+              showGifPicker ? "bg-amber-400/20 border-amber-400/40 text-amber-400" : "bg-white/5 border-white/10 text-zinc-400 hover:text-white"
+            }`}
+          >
+            <ImageIcon className="w-3.5 h-3.5" />
+          </button>
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
