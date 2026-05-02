@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MessageSquare, ArrowLeft, Search, MoreVertical, Trash2, Tag, BadgeCheck, Users, UserX } from 'lucide-react';
+import { MessageSquare, ArrowLeft, Search, MoreVertical, Trash2, Tag, BadgeCheck } from 'lucide-react';
 import { useConversations, Conversation } from '@/hooks/useDirectMessages';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   DropdownMenu,
@@ -100,6 +99,11 @@ function ConversationItem({ conv, userId, onDelete, onOpenLabelSheet, onOpenActi
           <span className={`text-sm font-medium truncate ${unreadCount > 0 ? 'text-foreground' : 'text-foreground/80'}`}>
             {conv.other_user?.username || 'Unknown'}
           </span>
+          {conv.is_connected && (
+            <span className="text-[8px] px-1 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-medium uppercase tracking-wide">
+              Connected
+            </span>
+          )}
           {currentLabel && (
             <span className="text-[8px] px-1 py-0.5 rounded-full bg-primary/20 text-primary font-medium uppercase tracking-wide">
               {currentLabel}
@@ -181,11 +185,12 @@ export default function MessagesPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [labelSheetId, setLabelSheetId] = useState<string | null>(null);
   const [actionsSheetId, setActionsSheetId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'connected' | 'other'>('connected');
 
-  // Split conversations by connection status
-  const connectedConversations = conversations.filter(c => c.is_connected);
-  const otherConversations = conversations.filter(c => !c.is_connected);
+  // Unified inbox — connected conversations float to the top, then by recency
+  const sortedConversations = [...conversations].sort((a, b) => {
+    if (!!a.is_connected !== !!b.is_connected) return a.is_connected ? -1 : 1;
+    return new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime();
+  });
 
   // Get current label for the conversation being edited
   const labelSheetConv = conversations.find(c => c.id === labelSheetId);
@@ -276,42 +281,9 @@ export default function MessagesPage() {
           </Link>
         </div>
       ) : (
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'connected' | 'other')} className="w-full">
-          <TabsList className="w-full grid grid-cols-2 bg-surface-1 rounded-none border-b border-border h-11">
-            <TabsTrigger 
-              value="connected" 
-              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-foreground rounded-none relative gap-2"
-            >
-              <Users className="w-4 h-4" />
-              <span>Connected</span>
-              {connectedConversations.length > 0 && (
-                <span className="ml-1 text-[10px] text-muted-foreground">
-                  ({connectedConversations.length})
-                </span>
-              )}
-            </TabsTrigger>
-            <TabsTrigger 
-              value="other"
-              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-foreground rounded-none relative gap-2"
-            >
-              <UserX className="w-4 h-4" />
-              <span>Other</span>
-              {otherConversations.length > 0 && (
-                <span className="ml-1 text-[10px] text-muted-foreground">
-                  ({otherConversations.length})
-                </span>
-              )}
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="connected" className="mt-0 divide-y divide-border">
-            {renderConversationList(connectedConversations)}
-          </TabsContent>
-          
-          <TabsContent value="other" className="mt-0 divide-y divide-border">
-            {renderConversationList(otherConversations)}
-          </TabsContent>
-        </Tabs>
+        <div className="divide-y divide-border">
+          {renderConversationList(sortedConversations)}
+        </div>
       )}
 
       {/* Delete Confirmation Dialog */}
