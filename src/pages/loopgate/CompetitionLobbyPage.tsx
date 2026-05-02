@@ -91,6 +91,7 @@ export default function CompetitionLobbyPage() {
   const [isLeaving, setIsLeaving] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [lobbyTab, setLobbyTab] = useState<"members" | "chat">("members");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showInspoForm, setShowInspoForm] = useState(false);
@@ -587,10 +588,50 @@ export default function CompetitionLobbyPage() {
           </div>
         )}
 
+        {/* ── MOBILE TAB SWITCHER (Roblox-style chunky pills) ── */}
+        <div className="md:hidden shrink-0 px-3 pt-3">
+          <div className="relative grid grid-cols-2 gap-1 p-1 rounded-2xl bg-white/[0.04] border border-white/[0.08]">
+            <button
+              onClick={() => setLobbyTab("members")}
+              className={`relative h-10 rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-[0.97] ${
+                lobbyTab === "members"
+                  ? "bg-white text-black shadow-[0_4px_14px_-4px_rgba(255,255,255,0.35)]"
+                  : "text-foreground/60"
+              }`}
+            >
+              <Users className="w-3.5 h-3.5" strokeWidth={2.5} />
+              <span className="text-[12px] font-extrabold uppercase tracking-[0.2em] leading-none" style={teko}>
+                Squad
+              </span>
+              <span className={`text-[10px] font-black tabular-nums px-1.5 py-0.5 rounded-md ${
+                lobbyTab === "members" ? "bg-black/10 text-black" : "bg-white/[0.06] text-foreground/50"
+              }`} style={teko}>
+                {memberCount}/{cap}
+              </span>
+            </button>
+            <button
+              onClick={() => setLobbyTab("chat")}
+              className={`relative h-10 rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-[0.97] ${
+                lobbyTab === "chat"
+                  ? "bg-red-500 text-white shadow-[0_4px_14px_-4px_rgba(239,68,68,0.55)]"
+                  : "text-foreground/60"
+              }`}
+            >
+              <MessageCircle className="w-3.5 h-3.5" strokeWidth={2.5} />
+              <span className="text-[12px] font-extrabold uppercase tracking-[0.2em] leading-none" style={teko}>
+                Chat
+              </span>
+              {lobbyTab !== "chat" && (
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+              )}
+            </button>
+          </div>
+        </div>
+
         {/* ── BODY: Members + Chat ── */}
         <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 gap-3 p-3 overflow-hidden">
           {/* MEMBERS PANEL */}
-          <section className="flex flex-col min-h-0 rounded-xl border border-white/[0.08] bg-surface-1 overflow-hidden">
+          <section className={`${lobbyTab === "members" ? "flex" : "hidden"} md:flex flex-col min-h-0 rounded-xl border border-white/[0.08] bg-surface-1 overflow-hidden`}>
             <div className="shrink-0 flex items-center justify-between px-3 py-2 border-b border-white/[0.06]">
               <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-foreground/60" style={teko}>
                 Members
@@ -657,7 +698,7 @@ export default function CompetitionLobbyPage() {
           </section>
 
           {/* CHAT PANEL */}
-          <section className="flex flex-col min-h-0 rounded-xl border border-white/[0.08] bg-surface-1 overflow-hidden">
+          <section className={`${lobbyTab === "chat" ? "flex" : "hidden"} md:flex flex-col min-h-0 rounded-xl border border-white/[0.08] bg-surface-1 overflow-hidden`}>
             <div className="shrink-0 flex items-center justify-between px-3 py-2 border-b border-white/[0.06]">
               <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-red-400" style={teko}>
                 Chat
