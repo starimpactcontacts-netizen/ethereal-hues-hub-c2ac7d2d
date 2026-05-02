@@ -394,17 +394,14 @@ function QuickFightCarouselCard({ fight, isMine }: { fight: QuickFight; isMine: 
         boxShadow: isMine ? "0 0 0 1px rgba(16,185,129,0.45), 0 14px 34px -18px rgba(16,185,129,0.7)" : "inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 24px -12px rgba(0,0,0,0.5)",
       }}
     >
-      <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, #10b981, transparent 40%, transparent 60%, #ef4444)" }} />
+      <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, #3b82f6, transparent 40%, transparent 60%, #ef4444)" }} />
 
       <div className="px-4 pt-4 pb-1">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
-            <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #10b981, #ef4444)' }}>
+            <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}>
               <Swords className="w-3.5 h-3.5 text-white" />
             </div>
-            <span className="text-2xl font-black text-white leading-none" style={{ fontFamily: "Teko, sans-serif" }}>
-              EDIT
-            </span>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             {isLive && <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
@@ -491,16 +488,16 @@ function OpenQueueCard({
         boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 24px -12px rgba(0,0,0,0.5)",
       }}
     >
-      {/* Top accent — emerald (ranked / free 1v1) */}
+      {/* Top accent — blue (ranked / free 1v1) */}
       <div className="absolute top-0 left-0 right-0 h-[2px]" style={{
-        background: "linear-gradient(90deg, #10b981, transparent 40%, transparent 60%, #ef4444)",
+        background: "linear-gradient(90deg, #3b82f6, transparent 40%, transparent 60%, #ef4444)",
       }} />
 
       {/* Header */}
       <div className="px-4 pt-4 pb-1">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #10b981, #ef4444)' }}>
+            <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}>
               <Swords className="w-3.5 h-3.5 text-white" />
             </div>
             <span className="text-2xl font-black text-white leading-none" style={{ fontFamily: "Teko, sans-serif" }}>
