@@ -16,7 +16,6 @@ import QuickFightResultCard from '@/components/loopgate/QuickFightResultCard';
 import BattleSongPicker from '@/components/loopgate/BattleSongPicker';
 import BattleSubmissionCard from '@/components/loopgate/BattleSubmissionCard';
 import BattleAutoplayDuo from '@/components/loopgate/BattleAutoplayDuo';
-import QuickFightPublicChat from '@/components/loopgate/QuickFightPublicChat';
 import QuickFightPublicVote from '@/components/loopgate/QuickFightPublicVote';
 
 /** Detect platform from URL */
@@ -605,16 +604,7 @@ export default function QuickFightPage() {
           />
         )}
 
-        {/* Public spectator chat */}
-        {fight.player_2_id && (
-          <QuickFightPublicChat
-            fightId={fight.id}
-            player1Id={fight.player_1_id}
-            player2Id={fight.player_2_id}
-          />
-        )}
-
-        {/* Battle Chat — participants-only trash talk */}
+        {/* Unified live chat — participants get RED/BLUE tags, spectators just hype */}
         {fight.player_2_id && (
           <QuickFightChat
             fightId={fight.id}
