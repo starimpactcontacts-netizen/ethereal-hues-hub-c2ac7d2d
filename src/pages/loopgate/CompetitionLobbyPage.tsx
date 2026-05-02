@@ -118,23 +118,25 @@ export default function CompetitionLobbyPage() {
 
   // Chat counter + unread badge — fetches initial total and listens for new messages.
   // Unread increments only when the chat tab isn't visible; resets when user opens chat.
+  // IMPORTANT: must use the resolved competition UUID (id param can be a slug).
+  const competitionId = competition?.id;
   useEffect(() => {
-    if (!id) return;
+    if (!competitionId) return;
     let cancelled = false;
     (async () => {
       const { count } = await supabase
         .from('competition_messages' as any)
         .select('*', { count: 'exact', head: true })
-        .eq('competition_id', id);
+        .eq('competition_id', competitionId);
       if (!cancelled && typeof count === 'number') setChatMessageCount(count);
     })();
     const channel = supabase
-      .channel(`comp-chat-count-${id}`)
+      .channel(`comp-chat-count-${competitionId}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'competition_messages',
-        filter: `competition_id=eq.${id}`,
+        filter: `competition_id=eq.${competitionId}`,
       }, (payload: any) => {
         setChatMessageCount(c => c + 1);
         const isSystem = payload?.new?.is_system;
@@ -144,7 +146,7 @@ export default function CompetitionLobbyPage() {
       })
       .subscribe();
     return () => { cancelled = true; supabase.removeChannel(channel); };
-  }, [id]);
+  }, [competitionId]);
 
   // Mirror lobbyTab in a ref so the realtime callback always sees the latest value.
   const lobbyTabRef = useRef<"members" | "chat">("members");
