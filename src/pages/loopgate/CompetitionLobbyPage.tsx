@@ -92,6 +92,8 @@ export default function CompetitionLobbyPage() {
   const [showInfo, setShowInfo] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [lobbyTab, setLobbyTab] = useState<"members" | "chat">("members");
+  const [chatMessageCount, setChatMessageCount] = useState(0);
+  const [chatUnread, setChatUnread] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showInspoForm, setShowInspoForm] = useState(false);
@@ -461,9 +463,9 @@ export default function CompetitionLobbyPage() {
     const memberCount = participants.length;
 
     return (
-      <div className="fixed inset-0 bg-background flex flex-col overflow-hidden">
+      <div className="fixed inset-0 flex flex-col overflow-hidden" style={{ backgroundColor: '#0A0A0A' }}>
         {/* ── HEADER ── */}
-        <header className="shrink-0 px-4 pt-[env(safe-area-inset-top)] border-b border-white/[0.06] bg-background/95 backdrop-blur-sm">
+        <header className="shrink-0 px-4 pt-[env(safe-area-inset-top)] border-b border-white/[0.06] backdrop-blur-sm" style={{ backgroundColor: 'rgba(10,10,10,0.95)' }}>
           <div className="flex items-center gap-2.5 py-3">
             <button onClick={() => navigate(-1)} className="p-1.5 -ml-1.5 rounded-lg hover:bg-white/[0.04] active:scale-95 transition">
               <ArrowLeft className="w-[18px] h-[18px] text-foreground/70" />
