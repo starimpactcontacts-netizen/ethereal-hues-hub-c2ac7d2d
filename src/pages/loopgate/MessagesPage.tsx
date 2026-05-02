@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MessageSquare, ArrowLeft, Search, MoreVertical, Trash2, Tag, BadgeCheck, Users, UserX } from 'lucide-react';
+import { MessageSquare, ArrowLeft, Search, MoreVertical, Trash2, Tag, BadgeCheck } from 'lucide-react';
 import { useConversations, Conversation } from '@/hooks/useDirectMessages';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   DropdownMenu,
@@ -100,6 +99,11 @@ function ConversationItem({ conv, userId, onDelete, onOpenLabelSheet, onOpenActi
           <span className={`text-sm font-medium truncate ${unreadCount > 0 ? 'text-foreground' : 'text-foreground/80'}`}>
             {conv.other_user?.username || 'Unknown'}
           </span>
+          {conv.is_connected && (
+            <span className="text-[8px] px-1 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-medium uppercase tracking-wide">
+              Connected
+            </span>
+          )}
           {currentLabel && (
             <span className="text-[8px] px-1 py-0.5 rounded-full bg-primary/20 text-primary font-medium uppercase tracking-wide">
               {currentLabel}
