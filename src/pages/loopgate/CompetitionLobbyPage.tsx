@@ -91,6 +91,7 @@ export default function CompetitionLobbyPage() {
   const [isLeaving, setIsLeaving] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [lobbyTab, setLobbyTab] = useState<"members" | "chat">("members");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showInspoForm, setShowInspoForm] = useState(false);
