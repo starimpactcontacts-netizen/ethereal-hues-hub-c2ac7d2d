@@ -79,7 +79,7 @@ type TextOverlay = {
 };
 type MediaItem = { id: string; file: File; url: string; thumbnail: string; duration: number; name: string; type: "video" | "audio" | "image" };
 type TimelineTrack = { id: string; name: string; type: "video" | "audio" | "text" | "effect"; visible: boolean; locked: boolean };
-type ToolTab = "media" | "audio" | "text" | "effects" | "transitions" | "filters" | "adjust" | "export" | "upscale" | "crop" | "ai";
+type ToolTab = "media" | "audio" | "text" | "effects" | "transitions" | "filters" | "adjust" | "color" | "export" | "upscale" | "crop" | "ai";
 type EffectIntensity = Record<string, number>;
 
 // Studio accent — monochrome premium
