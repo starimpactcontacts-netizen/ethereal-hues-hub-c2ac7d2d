@@ -43,7 +43,9 @@ import {
 import {
   DEFAULT_ADJUSTMENTS, ADJUST_SECTIONS,
   buildAdjustFilter, applyCanvasAdjustments, hasAdjustments,
+  NEUTRAL_WHEELS, identityCurve, wheelsAreNeutral,
   type AdjustmentValues, type AdjustSection,
+  type ColorWheels,
 } from "@/lib/studioAdjustments";
 import { ANIMATION_PRESETS } from "@/lib/studioKeyframes";
 import { SPEED_CURVE_PRESETS, type SpeedCurve } from "@/lib/studioSpeedCurves";
@@ -52,6 +54,9 @@ import { type TimelineMarker } from "@/lib/studioTimeline";
 import SpeedCurvesPanel from "./studio/SpeedCurvesPanel";
 import ChromaKeyPanel from "./studio/ChromaKeyPanel";
 import TimelineMarkersPanel from "./studio/TimelineMarkersPanel";
+import ColorLabPanel from "./studio/ColorLabPanel";
+import ColorScopes from "./studio/ColorScopes";
+import { LUT_PRESETS, applyLUTPreset, applyLUT, type LUT3D } from "@/lib/studioColorScience";
 
 // ─── Types ───
 type TextOverlay = {
@@ -74,7 +79,7 @@ type TextOverlay = {
 };
 type MediaItem = { id: string; file: File; url: string; thumbnail: string; duration: number; name: string; type: "video" | "audio" | "image" };
 type TimelineTrack = { id: string; name: string; type: "video" | "audio" | "text" | "effect"; visible: boolean; locked: boolean };
-type ToolTab = "media" | "audio" | "text" | "effects" | "transitions" | "filters" | "adjust" | "export" | "upscale" | "crop" | "ai";
+type ToolTab = "media" | "audio" | "text" | "effects" | "transitions" | "filters" | "adjust" | "color" | "export" | "upscale" | "crop" | "ai";
 type EffectIntensity = Record<string, number>;
 
 // Studio accent — monochrome premium
@@ -105,6 +110,7 @@ const TOOL_TABS: { id: ToolTab; icon: typeof Film; label: string }[] = [
   { id: "transitions", icon: Layers, label: "Transitions" },
   { id: "filters", icon: Wand2, label: "Filters" },
   { id: "adjust", icon: SlidersHorizontal, label: "Adjust" },
+  { id: "color", icon: Palette, label: "Color Lab" },
   { id: "ai", icon: Wand2, label: "Smart Tools" },
   { id: "upscale", icon: ArrowUpCircle, label: "Upscale" },
   { id: "export", icon: Settings, label: "Export" },
@@ -235,6 +241,15 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
   // Advanced adjustments
   const [adjustments, setAdjustments] = useState<AdjustmentValues>({ ...DEFAULT_ADJUSTMENTS });
   const [openSections, setOpenSections] = useState<Record<AdjustSection, boolean>>({ color: true, lightness: true, effects: true });
+
+  // Pro Color Lab — wheels, curve, LUT
+  const [wheels, setWheels] = useState<ColorWheels>({ ...NEUTRAL_WHEELS });
+  const [curvePoints, setCurvePoints] = useState<{ x: number; y: number }[]>([{ x: 0, y: 0 }, { x: 1, y: 1 }]);
+  const [lumaCurve, setLumaCurve] = useState<number[] | null>(null);
+  const [activeLUT, setActiveLUT] = useState<string | null>(null);
+  const [lutIntensity, setLutIntensity] = useState<number>(1);
+  const [customLUT, setCustomLUT] = useState<LUT3D | null>(null);
+  const [showScopes, setShowScopes] = useState<boolean>(false);
 
   // Undo/Redo system
   const { pushSnapshot, undo: undoAction, redo: redoAction, canUndo, canRedo } = useUndoRedo<EditorSnapshot>();
@@ -546,9 +561,25 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
         ctx.filter = "none";
         ctx.restore();
 
-        // Apply pixel-based adjustments (highlights, shadows, sharpen, vignette, etc.)
-        if (hasAdjustments(adjustments)) {
-          applyCanvasAdjustments(ctx, canvas, adjustments);
+        // Apply pixel-based adjustments (highlights, shadows, sharpen, vignette, wheels, curve)
+        const hasWheelWork = !wheelsAreNeutral(wheels);
+        const hasCurveWork = !!lumaCurve;
+        if (hasAdjustments(adjustments) || hasWheelWork || hasCurveWork) {
+          applyCanvasAdjustments(ctx, canvas, adjustments, wheels, lumaCurve);
+        }
+
+        // Apply LUT (preset or custom .cube)
+        if (activeLUT || customLUT) {
+          try {
+            const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            if (activeLUT) {
+              const preset = LUT_PRESETS.find(p => p.id === activeLUT);
+              if (preset) applyLUTPreset(img, preset, lutIntensity);
+            } else if (customLUT) {
+              applyLUT(img, customLUT, lutIntensity);
+            }
+            ctx.putImageData(img, 0, 0);
+          } catch { /* graceful */ }
         }
 
         // Apply effects with per-effect intensity
@@ -590,7 +621,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     };
     draw();
     return () => { running = false; cancelAnimationFrame(animRef.current); };
-  }, [videoUrl, computedFilter, textOverlays, activeEffects, effectIntensities, activeTransition, transitionDuration, duration, adjustments, cropPreset, rotation, flipH, flipV, activeToolTab]);
+  }, [videoUrl, computedFilter, textOverlays, activeEffects, effectIntensities, activeTransition, transitionDuration, duration, adjustments, wheels, lumaCurve, activeLUT, customLUT, lutIntensity, cropPreset, rotation, flipH, flipV, activeToolTab]);
 
   // ─── Text Rendering Engine ───
   const renderFullTextOverlay = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, overlay: TextOverlay, time: number) => {
@@ -908,7 +939,13 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     toast.success("Segment deleted");
   };
 
-  const resetColorGrading = () => { setBrightness(100); setContrast(100); setSaturation(100); setHueRotate(0); setAdjustments({ ...DEFAULT_ADJUSTMENTS }); };
+  const resetColorGrading = () => {
+    setBrightness(100); setContrast(100); setSaturation(100); setHueRotate(0);
+    setAdjustments({ ...DEFAULT_ADJUSTMENTS });
+    setWheels({ ...NEUTRAL_WHEELS });
+    setCurvePoints([{ x: 0, y: 0 }, { x: 1, y: 1 }]); setLumaCurve(null);
+    setActiveLUT(null); setCustomLUT(null); setLutIntensity(1);
+  };
 
   const updateAdjustment = (key: keyof AdjustmentValues, value: number) => {
     setAdjustments(prev => ({ ...prev, [key]: value }));
@@ -1062,8 +1099,22 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
       ctx.drawImage(vid, cropSx, cropSy, cropSw, cropSh, 0, 0, exportW, exportH);
       ctx.filter = "none";
       ctx.restore();
-      if (hasAdjustments(adjustments)) {
-        applyCanvasAdjustments(ctx, canvas, adjustments);
+      const expWheelWork = !wheelsAreNeutral(wheels);
+      const expCurveWork = !!lumaCurve;
+      if (hasAdjustments(adjustments) || expWheelWork || expCurveWork) {
+        applyCanvasAdjustments(ctx, canvas, adjustments, wheels, lumaCurve);
+      }
+      if (activeLUT || customLUT) {
+        try {
+          const img = ctx.getImageData(0, 0, exportW, exportH);
+          if (activeLUT) {
+            const preset = LUT_PRESETS.find(p => p.id === activeLUT);
+            if (preset) applyLUTPreset(img, preset, lutIntensity);
+          } else if (customLUT) {
+            applyLUT(img, customLUT, lutIntensity);
+          }
+          ctx.putImageData(img, 0, 0);
+        } catch { /* skip */ }
       }
       activeEffects.forEach(effectId => {
         const intensity = effectIntensities[effectId] ?? 0.7;
@@ -1086,7 +1137,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     setProgress(100); setState("done"); vid.muted = muted; vid.playbackRate = speed;
     canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
     toast.success("Export complete!");
-  }, [activeMedia, trimStart, trimEnd, computedFilter, textOverlays, audioFile, muted, speed, activeEffects, effectIntensities, exportQuality, activeTransition, transitionDuration, adjustments, cropPreset, rotation, flipH, flipV]);
+  }, [activeMedia, trimStart, trimEnd, computedFilter, textOverlays, audioFile, muted, speed, activeEffects, effectIntensities, exportQuality, activeTransition, transitionDuration, adjustments, wheels, lumaCurve, activeLUT, customLUT, lutIntensity, cropPreset, rotation, flipH, flipV]);
 
   const handleDownload = () => {
     if (!resultUrl || !activeMedia) return;
@@ -1773,6 +1824,22 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
                   </>
                 )}
 
+                {/* ════════ COLOR LAB ════════ */}
+                {activeToolTab === "color" && (
+                  <ColorLabPanel
+                    wheels={wheels}
+                    onWheelsChange={setWheels}
+                    curvePoints={curvePoints}
+                    onCurveChange={(pts, compiled) => { setCurvePoints(pts); setLumaCurve(compiled); }}
+                    activeLUT={activeLUT}
+                    lutIntensity={lutIntensity}
+                    onLUTChange={setActiveLUT}
+                    onLUTIntensityChange={setLutIntensity}
+                    onCustomLUTLoad={(lut) => { setCustomLUT(lut); setActiveLUT(null); }}
+                    onOpenScopes={() => setShowScopes(true)}
+                  />
+                )}
+
                 {/* ════════ EXPORT ════════ */}
                 {activeToolTab === "export" && (
                   <>
@@ -2363,6 +2430,19 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
       <input ref={fileInputRef} type="file" accept="video/*,image/*,audio/*" multiple onChange={handleFileSelect} className="hidden" />
       <input ref={audioInputRef} type="file" accept="audio/*" onChange={handleAudioSelect} className="hidden" />
       </div>
+      {showScopes && (
+        <ColorScopes
+          canvasRef={canvasRef}
+          isPlaying={playing}
+          activeLUT={activeLUT}
+          lutIntensity={lutIntensity}
+          customLUT={customLUT}
+          onLUTChange={setActiveLUT}
+          onLUTIntensityChange={setLutIntensity}
+          onCustomLUTLoad={(lut) => { setCustomLUT(lut); setActiveLUT(null); }}
+          onClose={() => setShowScopes(false)}
+        />
+      )}
     </div>
   );
 }

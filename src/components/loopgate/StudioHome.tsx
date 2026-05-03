@@ -5,7 +5,7 @@ import {
   Plus, Clock, Film, Trash2, ChevronLeft, MoreVertical,
   Layers, Scissors, Type, Music, Play, Upload,
   Crop, SlidersHorizontal, Palette, ExternalLink, Bug, Sparkles,
-  Wand2, ArrowRight
+  Wand2, ArrowRight, Headphones, Activity, Box, BookOpen
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ActiveSoloBanner from "./ActiveSoloBanner";
@@ -74,11 +74,11 @@ function formatDuration(sec: number): string {
 
 const CAPABILITIES = [
   { icon: Scissors, label: "Trim & Split", desc: "Frame-perfect cuts" },
-  { icon: Palette, label: "24+ Filters", desc: "Cinema-grade LUTs" },
+  { icon: Palette, label: "Color Lab", desc: "3-way wheels · Curves · LUTs" },
   { icon: Type, label: "50+ Fonts", desc: "Animated text overlays" },
-  { icon: Music, label: "Audio Mix", desc: "Multi-track mixing" },
+  { icon: Activity, label: "Live Scopes", desc: "Histogram · Waveform · Vector" },
   { icon: Crop, label: "Crop & Transform", desc: "9:16, 4:3, custom" },
-  { icon: SlidersHorizontal, label: "Color Grade", desc: "13-point grading" },
+  { icon: SlidersHorizontal, label: "13-pt Grade", desc: "Lift · Gamma · Gain" },
 ];
 
 interface StudioHomeProps {
@@ -263,29 +263,59 @@ export default function StudioHome({ onNewProject, onOpenProject }: StudioHomePr
 
         {/* ═══════════════════ SECTION: RESOURCES ═══════════════════ */}
         <section>
-          <SectionHeader icon={Sparkles} title="Resources" subtitle="Pro-grade editing tools & links" />
+          <SectionHeader icon={Sparkles} title="Pro Resources" subtitle="Battle-tested NLEs · LUT packs · SFX · plugins" />
 
-          <div className={`grid gap-2.5 ${isMobile ? "grid-cols-1" : "grid-cols-2"}`}>
-            {[
-              { name: "CapCut", url: "https://www.capcut.com", desc: "Free, mobile + desktop", accent: "#00E5FF" },
-              { name: "DaVinci Resolve", url: "https://www.blackmagicdesign.com/products/davinciresolve", desc: "Pro-grade, free tier", accent: "#FF6B35" },
-              { name: "Premiere Pro", url: "https://www.adobe.com/products/premiere.html", desc: "Industry standard", accent: "#9B8AFF" },
-              { name: "After Effects", url: "https://www.adobe.com/products/aftereffects.html", desc: "Motion & VFX", accent: "#CF96FD" },
-            ].map(editor => (
-              <a key={editor.name} href={editor.url} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-3 p-3.5 rounded-xl transition-all hover:bg-white/[0.03] group/link"
-                style={{ border: "1px solid rgba(255,255,255,0.04)" }}
-              >
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${editor.accent}0A` }}>
-                  <ExternalLink className="w-3.5 h-3.5" style={{ color: editor.accent }} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[12px] font-semibold text-white/50 group-hover/link:text-white/80 transition-colors">{editor.name}</p>
-                  <p className="text-[10px] text-white/20">{editor.desc}</p>
-                </div>
-                <ArrowRight className="w-3 h-3 text-white/10 group-hover/link:text-white/30 transition-colors flex-shrink-0" />
-              </a>
-            ))}
+          <ResourceGroup title="Editors / NLE" icon={Film} items={[
+            { name: "DaVinci Resolve", url: "https://www.blackmagicdesign.com/products/davinciresolve", desc: "Hollywood color & edit · Free", accent: "#FF6B35" },
+            { name: "CapCut", url: "https://www.capcut.com", desc: "Fast mobile + desktop · Free", accent: "#00E5FF" },
+            { name: "Premiere Pro", url: "https://www.adobe.com/products/premiere.html", desc: "Industry standard NLE", accent: "#9B8AFF" },
+            { name: "After Effects", url: "https://www.adobe.com/products/aftereffects.html", desc: "Motion · VFX · Compositing", accent: "#CF96FD" },
+            { name: "Final Cut Pro", url: "https://www.apple.com/final-cut-pro/", desc: "Apple's pro suite", accent: "#E0E0E0" },
+            { name: "VN Editor", url: "https://www.vlognow.me/", desc: "Pro-feel free mobile", accent: "#3DA8FF" },
+          ]} />
+
+          <ResourceGroup title="LUT Packs" icon={Palette} items={[
+            { name: "Lutify.me Free Pack", url: "https://lutify.me/free-luts/", desc: "20 cinematic .cube LUTs", accent: "#FF9F0A" },
+            { name: "RocketStock Free 35", url: "https://www.rocketstock.com/free-after-effects-templates/35-free-luts-for-color-grading/", desc: "35 Hollywood looks", accent: "#FF453A" },
+            { name: "Ground Control Free", url: "https://groundcontrolcolor.com/products/free-luts", desc: "Premium-grade free LUTs", accent: "#30D158" },
+            { name: "IWLTBAP", url: "https://luts.iwltbap.com/", desc: "Film-emulation LUTs", accent: "#5AC8FA" },
+          ]} />
+
+          <ResourceGroup title="SFX / Music" icon={Headphones} items={[
+            { name: "Pixabay SFX", url: "https://pixabay.com/sound-effects/", desc: "Royalty-free SFX library", accent: "#34C759" },
+            { name: "Freesound", url: "https://freesound.org/", desc: "Massive crowd library", accent: "#64D2FF" },
+            { name: "Epidemic Sound", url: "https://www.epidemicsound.com/", desc: "Pro music & SFX (sub)", accent: "#FF375F" },
+            { name: "Uppbeat", url: "https://uppbeat.io/", desc: "Free music for creators", accent: "#BF5AF2" },
+          ]} />
+
+          <ResourceGroup title="Plugins · Effects" icon={Box} items={[
+            { name: "Red Giant Universe", url: "https://www.maxon.net/en/red-giant-universe", desc: "Transitions · Glitch · Looks", accent: "#FF6961" },
+            { name: "Boris FX Sapphire", url: "https://borisfx.com/products/sapphire/", desc: "Industry VFX standard", accent: "#0A84FF" },
+            { name: "Motion Array", url: "https://motionarray.com/", desc: "Templates · LUTs · SFX", accent: "#FFD60A" },
+            { name: "Mixkit Free Assets", url: "https://mixkit.co/", desc: "Free templates & stock", accent: "#5E5CE6" },
+          ]} />
+
+          <ResourceGroup title="Learn · Reference" icon={BookOpen} items={[
+            { name: "Cinema Palettes", url: "https://www.cinemapalettes.com/", desc: "Frame color references", accent: "#FF9F0A" },
+            { name: "Shutter Encoder", url: "https://www.shutterencoder.com/", desc: "Free pro encoder/converter", accent: "#30D158" },
+            { name: "FFmpeg", url: "https://ffmpeg.org/", desc: "The CLI Swiss-army knife", accent: "#A1A1A6" },
+            { name: "Blackmagic Training", url: "https://www.blackmagicdesign.com/products/davinciresolve/training", desc: "Free DaVinci certification", accent: "#FF6B35" },
+          ]} />
+
+          {/* Studio capabilities note */}
+          <div className="mt-5 rounded-xl p-3.5"
+            style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))", border: "1px solid rgba(255,255,255,0.06)" }}
+          >
+            <div className="flex items-center gap-2 mb-1.5">
+              <Activity className="w-3 h-3 text-white/60" />
+              <span className="text-[10px] font-bold tracking-[0.22em] text-white/70">STUDIO COLOR LAB</span>
+              <span className="text-[8px] font-bold tracking-widest px-1.5 py-0.5 rounded text-black"
+                style={{ background: "linear-gradient(135deg, #fff, #b8b8b8)" }}>NEW</span>
+            </div>
+            <p className="text-[10px] text-white/35 leading-relaxed">
+              3-way wheels (Lift · Gamma · Gain), Luma Curve editor, .cube LUT loader and live scopes
+              (Histogram · Waveform · Vectorscope) — all free, in your browser. Open any project → Color Lab.
+            </p>
           </div>
 
           {/* Bug report */}
@@ -314,6 +344,44 @@ function SectionHeader({ icon: Icon, title, subtitle }: { icon: any; title: stri
       </div>
       <p className="text-[11px] text-white/25 ml-6">{subtitle}</p>
       <div className="mt-3 h-px" style={{ background: "linear-gradient(90deg, hsl(0 0% 100% / 0.24), transparent 60%)" }} />
+    </div>
+  );
+}
+
+/* ═══════════════════ RESOURCE GROUP ═══════════════════ */
+function ResourceGroup({
+  title, icon: Icon, items,
+}: {
+  title: string;
+  icon: any;
+  items: { name: string; url: string; desc: string; accent: string }[];
+}) {
+  return (
+    <div className="mb-4">
+      <div className="flex items-center gap-1.5 mb-2">
+        <Icon className="w-3 h-3 text-white/45" />
+        <span className="text-[10px] font-bold tracking-[0.22em] text-white/55">{title.toUpperCase()}</span>
+        <div className="flex-1 h-px ml-1" style={{ background: "linear-gradient(90deg, hsl(0 0% 100% / 0.08), transparent)" }} />
+      </div>
+      <div className="grid gap-2 grid-cols-2">
+        {items.map(it => (
+          <a key={it.name} href={it.url} target="_blank" rel="noopener noreferrer"
+            className="flex items-center gap-2.5 p-2.5 rounded-lg transition-all hover:bg-white/[0.04] group/link"
+            style={{ border: "1px solid rgba(255,255,255,0.05)", background: "rgba(255,255,255,0.015)" }}
+          >
+            <div className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 font-display text-[12px] font-bold"
+              style={{ background: `${it.accent}18`, color: it.accent, border: `1px solid ${it.accent}30` }}
+            >
+              {it.name.charAt(0)}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-semibold text-white/75 group-hover/link:text-white transition-colors truncate">{it.name}</p>
+              <p className="text-[9px] text-white/30 truncate">{it.desc}</p>
+            </div>
+            <ArrowRight className="w-3 h-3 text-white/15 group-hover/link:text-white/45 transition-colors flex-shrink-0" />
+          </a>
+        ))}
+      </div>
     </div>
   );
 }
