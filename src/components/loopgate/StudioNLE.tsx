@@ -939,7 +939,13 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     toast.success("Segment deleted");
   };
 
-  const resetColorGrading = () => { setBrightness(100); setContrast(100); setSaturation(100); setHueRotate(0); setAdjustments({ ...DEFAULT_ADJUSTMENTS }); };
+  const resetColorGrading = () => {
+    setBrightness(100); setContrast(100); setSaturation(100); setHueRotate(0);
+    setAdjustments({ ...DEFAULT_ADJUSTMENTS });
+    setWheels({ ...NEUTRAL_WHEELS });
+    setCurvePoints([{ x: 0, y: 0 }, { x: 1, y: 1 }]); setLumaCurve(null);
+    setActiveLUT(null); setCustomLUT(null); setLutIntensity(1);
+  };
 
   const updateAdjustment = (key: keyof AdjustmentValues, value: number) => {
     setAdjustments(prev => ({ ...prev, [key]: value }));
