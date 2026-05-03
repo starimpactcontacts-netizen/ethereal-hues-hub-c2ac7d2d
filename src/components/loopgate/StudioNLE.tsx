@@ -1818,6 +1818,22 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
                   </>
                 )}
 
+                {/* ════════ COLOR LAB ════════ */}
+                {activeToolTab === "color" && (
+                  <ColorLabPanel
+                    wheels={wheels}
+                    onWheelsChange={setWheels}
+                    curvePoints={curvePoints}
+                    onCurveChange={(pts, compiled) => { setCurvePoints(pts); setLumaCurve(compiled); }}
+                    activeLUT={activeLUT}
+                    lutIntensity={lutIntensity}
+                    onLUTChange={setActiveLUT}
+                    onLUTIntensityChange={setLutIntensity}
+                    onCustomLUTLoad={(lut) => { setCustomLUT(lut); setActiveLUT(null); }}
+                    onOpenScopes={() => setShowScopes(true)}
+                  />
+                )}
+
                 {/* ════════ EXPORT ════════ */}
                 {activeToolTab === "export" && (
                   <>
