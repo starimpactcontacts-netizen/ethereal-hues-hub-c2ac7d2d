@@ -1338,6 +1338,24 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
 
                 {/* ════════ CROP / TRANSFORM ════════ */}
                 {activeToolTab === "crop" && (
+                  <></>
+                )}
+                {activeToolTab === "viral" && (
+                  <ViralPresetsPanel
+                    audioFile={audioFile}
+                    videoFile={activeMedia?.file ?? null}
+                    beats={beats}
+                    onBeatsDetected={setBeats}
+                    beatPulse={beatPulseEnabled}
+                    onBeatPulseChange={setBeatPulseEnabled}
+                    beatIntensity={beatPulseIntensity}
+                    onBeatIntensityChange={setBeatPulseIntensity}
+                    activePresetId={activeViralPreset}
+                    onApplyPreset={applyViralPreset}
+                    onCutOnBeats={cutOnBeats}
+                  />
+                )}
+                {activeToolTab === "crop2_REMOVED__" && (
                   <>
                     <div className="space-y-1.5">
                       <span className="text-[10px] font-semibold tracking-wide uppercase" style={{ color: "#666" }}>Aspect Ratio</span>
