@@ -106,7 +106,6 @@ export default function BattleDecidedOverlay({
       };
 
       retryPlayRef.current = attempt;
-      a.addEventListener("canplaythrough", attempt, { once: true });
       a.load();
       attempt();
     };
