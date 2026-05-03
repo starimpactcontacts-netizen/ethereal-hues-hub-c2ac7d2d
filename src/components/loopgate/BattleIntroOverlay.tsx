@@ -64,19 +64,25 @@ export default function BattleIntroOverlay({ fightId, active, onComplete }: Batt
 
   return (
     <div className="fixed inset-0 z-[9998] pointer-events-none flex items-center justify-center">
-      {/* Vignette flash */}
+      {/* Solid black backdrop — kills all video/visuals while intro runs */}
+      <motion.div
+        initial={{ opacity: 1 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.25 }}
+        className="absolute inset-0 bg-black"
+      />
+      {/* Optional colored glow per cue, on top of black */}
       <AnimatePresence>
         {cue && (
           <motion.div
-            key={`bg-${currentCue}`}
+            key={`glow-${currentCue}`}
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.55 }}
+            animate={{ opacity: 0.4 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
             className="absolute inset-0"
-            style={{
-              background: `radial-gradient(circle at center, ${cue.color}55 0%, transparent 60%), rgba(0,0,0,0.55)`,
-            }}
+            style={{ background: `radial-gradient(circle at center, ${cue.color}66 0%, transparent 55%)` }}
           />
         )}
       </AnimatePresence>
