@@ -1093,8 +1093,22 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
       ctx.drawImage(vid, cropSx, cropSy, cropSw, cropSh, 0, 0, exportW, exportH);
       ctx.filter = "none";
       ctx.restore();
-      if (hasAdjustments(adjustments)) {
-        applyCanvasAdjustments(ctx, canvas, adjustments);
+      const expWheelWork = !wheelsAreNeutral(wheels);
+      const expCurveWork = !!lumaCurve;
+      if (hasAdjustments(adjustments) || expWheelWork || expCurveWork) {
+        applyCanvasAdjustments(ctx, canvas, adjustments, wheels, lumaCurve);
+      }
+      if (activeLUT || customLUT) {
+        try {
+          const img = ctx.getImageData(0, 0, exportW, exportH);
+          if (activeLUT) {
+            const preset = LUT_PRESETS.find(p => p.id === activeLUT);
+            if (preset) applyLUTPreset(img, preset, lutIntensity);
+          } else if (customLUT) {
+            applyLUT(img, customLUT, lutIntensity);
+          }
+          ctx.putImageData(img, 0, 0);
+        } catch { /* skip */ }
       }
       activeEffects.forEach(effectId => {
         const intensity = effectIntensities[effectId] ?? 0.7;
