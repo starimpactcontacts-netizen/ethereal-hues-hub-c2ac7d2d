@@ -605,6 +605,18 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
           ctx.translate(-crop.dw / 2, -crop.dh / 2);
         }
 
+        // Beat-driven zoom pulse
+        let pulseScale = 1;
+        if (beatPulseEnabled && beats?.beats?.length) {
+          const { intensity } = beatPhase(vid.currentTime, beats.beats);
+          pulseScale = 1 + intensity * beatPulseIntensity * 0.18;
+          if (pulseScale !== 1) {
+            ctx.translate(crop.dw / 2, crop.dh / 2);
+            ctx.scale(pulseScale, pulseScale);
+            ctx.translate(-crop.dw / 2, -crop.dh / 2);
+          }
+        }
+
         // Apply CSS-based filters (presets + basic grading)
         const adjFilter = buildAdjustFilter(adjustments);
         const combinedFilter = [computedFilter, adjFilter].filter(f => f !== "none").join(" ") || "none";
@@ -673,7 +685,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     };
     draw();
     return () => { running = false; cancelAnimationFrame(animRef.current); };
-  }, [videoUrl, computedFilter, textOverlays, activeEffects, effectIntensities, activeTransition, transitionDuration, duration, adjustments, wheels, lumaCurve, activeLUT, customLUT, lutIntensity, cropPreset, rotation, flipH, flipV, activeToolTab]);
+  }, [videoUrl, computedFilter, textOverlays, activeEffects, effectIntensities, activeTransition, transitionDuration, duration, adjustments, wheels, lumaCurve, activeLUT, customLUT, lutIntensity, cropPreset, rotation, flipH, flipV, activeToolTab, beatPulseEnabled, beatPulseIntensity, beats]);
 
   // ─── Text Rendering Engine ───
   const renderFullTextOverlay = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, overlay: TextOverlay, time: number) => {
