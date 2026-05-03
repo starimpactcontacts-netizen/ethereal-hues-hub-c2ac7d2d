@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import loopgateLogo from "@/assets/loopgate-logo.png";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 
@@ -143,22 +144,25 @@ export default function FNFVoteScoreboard({
             </span>
           </div>
 
-          {/* Center VS chip */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          {/* Loopgate chip — sits at the boundary between red & blue (shows who's winning) */}
+          <div
+            className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 transition-all duration-700 ease-out"
+            style={{ left: `${redBarPct}%` }}
+          >
             <div
-              className="w-10 h-10 rounded-full bg-black flex items-center justify-center"
+              className="w-10 h-10 rounded-full bg-black flex items-center justify-center overflow-hidden"
               style={{
-                border: "1.5px solid rgba(255,255,255,0.3)",
+                border: "1.5px solid rgba(255,255,255,0.35)",
                 boxShadow:
-                  "0 0 14px rgba(0,0,0,0.9), 0 0 18px rgba(239,68,68,0.35), 0 0 18px rgba(59,130,246,0.35)",
+                  "0 0 14px rgba(0,0,0,0.9), 0 0 18px rgba(239,68,68,0.45), 0 0 18px rgba(59,130,246,0.45)",
               }}
             >
-              <span
-                className="text-[14px] font-black tracking-[0.12em] bg-gradient-to-r from-red-400 via-white to-blue-400 bg-clip-text text-transparent leading-none"
-                style={teko}
-              >
-                VS
-              </span>
+              <img
+                src={loopgateLogo}
+                alt="Loopgate"
+                className="w-7 h-7 object-contain"
+                draggable={false}
+              />
             </div>
           </div>
         </div>
