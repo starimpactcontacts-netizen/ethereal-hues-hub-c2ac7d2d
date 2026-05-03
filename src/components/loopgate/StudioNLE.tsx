@@ -57,6 +57,8 @@ import TimelineMarkersPanel from "./studio/TimelineMarkersPanel";
 import ColorLabPanel from "./studio/ColorLabPanel";
 import ColorScopes from "./studio/ColorScopes";
 import { LUT_PRESETS, applyLUTPreset, applyLUT, type LUT3D } from "@/lib/studioColorScience";
+import ViralPresetsPanel, { VIRAL_PRESETS, type ViralPresetId } from "./studio/ViralPresetsPanel";
+import { beatPhase, type BeatAnalysis } from "@/lib/studioBeatDetector";
 
 // ─── Types ───
 type TextOverlay = {
@@ -79,7 +81,7 @@ type TextOverlay = {
 };
 type MediaItem = { id: string; file: File; url: string; thumbnail: string; duration: number; name: string; type: "video" | "audio" | "image" };
 type TimelineTrack = { id: string; name: string; type: "video" | "audio" | "text" | "effect"; visible: boolean; locked: boolean };
-type ToolTab = "media" | "audio" | "text" | "effects" | "transitions" | "filters" | "adjust" | "color" | "export" | "upscale" | "crop" | "ai";
+type ToolTab = "media" | "audio" | "text" | "effects" | "transitions" | "filters" | "adjust" | "color" | "export" | "upscale" | "crop" | "ai" | "viral";
 type EffectIntensity = Record<string, number>;
 
 // Studio accent — monochrome premium
@@ -103,6 +105,7 @@ const CROP_PRESETS: CropPreset[] = [
 
 const TOOL_TABS: { id: ToolTab; icon: typeof Film; label: string }[] = [
   { id: "media", icon: FileVideo, label: "Media" },
+  { id: "viral", icon: Flame, label: "Viral" },
   { id: "audio", icon: Music, label: "Audio" },
   { id: "text", icon: Type, label: "Text" },
   { id: "crop", icon: Crop, label: "Crop" },
