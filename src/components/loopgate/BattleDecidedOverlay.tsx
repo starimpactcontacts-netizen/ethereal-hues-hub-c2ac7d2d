@@ -30,7 +30,45 @@ export default function BattleDecidedOverlay({
 }: Props) {
   const [show, setShow] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const unlockedRef = useRef(false);
   const retryPlayRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    const a = new Audio(decidedSfx);
+    a.preload = "auto";
+    a.volume = 1;
+    a.muted = false;
+    audioRef.current = a;
+
+    const unlock = () => {
+      if (unlockedRef.current || !audioRef.current) return;
+      const el = audioRef.current;
+      const originalVolume = el.volume;
+      el.volume = 0;
+      el.muted = true;
+      el.play()
+        .then(() => {
+          el.pause();
+          el.currentTime = 0;
+          el.muted = false;
+          el.volume = originalVolume;
+          unlockedRef.current = true;
+        })
+        .catch(() => {
+          el.muted = false;
+          el.volume = originalVolume;
+        });
+    };
+
+    window.addEventListener("pointerdown", unlock, { capture: true });
+    window.addEventListener("touchstart", unlock, { capture: true });
+    return () => {
+      window.removeEventListener("pointerdown", unlock, { capture: true });
+      window.removeEventListener("touchstart", unlock, { capture: true });
+      a.pause();
+      audioRef.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     if (!active) {
@@ -52,20 +90,15 @@ export default function BattleDecidedOverlay({
     };
 
     const playStinger = () => {
-      const current = audioRef.current;
-      if (current) {
-        current.pause();
-        current.currentTime = 0;
-      }
-
-      const a = new Audio(decidedSfx);
-      a.preload = "auto";
+      const a = audioRef.current ?? new Audio(decidedSfx);
+      audioRef.current = a;
       a.volume = 1;
       a.muted = false;
-      audioRef.current = a;
       muteEverythingExcept(a);
 
       const attempt = () => {
+        a.muted = false;
+        a.volume = 1;
         a.currentTime = 0;
         a.play().catch(() => {
           retryPlayRef.current = attempt;
