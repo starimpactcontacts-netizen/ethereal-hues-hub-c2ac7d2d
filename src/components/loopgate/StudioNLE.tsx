@@ -254,6 +254,12 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
   const [customLUT, setCustomLUT] = useState<LUT3D | null>(null);
   const [showScopes, setShowScopes] = useState<boolean>(false);
 
+  // Viral / Beat sync state
+  const [beats, setBeats] = useState<BeatAnalysis | null>(null);
+  const [beatPulseEnabled, setBeatPulseEnabled] = useState<boolean>(false);
+  const [beatPulseIntensity, setBeatPulseIntensity] = useState<number>(0.5);
+  const [activeViralPreset, setActiveViralPreset] = useState<ViralPresetId | null>(null);
+
   // Undo/Redo system
   const { pushSnapshot, undo: undoAction, redo: redoAction, canUndo, canRedo } = useUndoRedo<EditorSnapshot>();
 
