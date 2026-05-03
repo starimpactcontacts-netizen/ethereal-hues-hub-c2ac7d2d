@@ -349,6 +349,44 @@ function SectionHeader({ icon: Icon, title, subtitle }: { icon: any; title: stri
   );
 }
 
+/* ═══════════════════ RESOURCE GROUP ═══════════════════ */
+function ResourceGroup({
+  title, icon: Icon, items,
+}: {
+  title: string;
+  icon: any;
+  items: { name: string; url: string; desc: string; accent: string }[];
+}) {
+  return (
+    <div className="mb-4">
+      <div className="flex items-center gap-1.5 mb-2">
+        <Icon className="w-3 h-3 text-white/45" />
+        <span className="text-[10px] font-bold tracking-[0.22em] text-white/55">{title.toUpperCase()}</span>
+        <div className="flex-1 h-px ml-1" style={{ background: "linear-gradient(90deg, hsl(0 0% 100% / 0.08), transparent)" }} />
+      </div>
+      <div className="grid gap-2 grid-cols-2">
+        {items.map(it => (
+          <a key={it.name} href={it.url} target="_blank" rel="noopener noreferrer"
+            className="flex items-center gap-2.5 p-2.5 rounded-lg transition-all hover:bg-white/[0.04] group/link"
+            style={{ border: "1px solid rgba(255,255,255,0.05)", background: "rgba(255,255,255,0.015)" }}
+          >
+            <div className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 font-display text-[12px] font-bold"
+              style={{ background: `${it.accent}18`, color: it.accent, border: `1px solid ${it.accent}30` }}
+            >
+              {it.name.charAt(0)}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-semibold text-white/75 group-hover/link:text-white transition-colors truncate">{it.name}</p>
+              <p className="text-[9px] text-white/30 truncate">{it.desc}</p>
+            </div>
+            <ArrowRight className="w-3 h-3 text-white/15 group-hover/link:text-white/45 transition-colors flex-shrink-0" />
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ═══════════════════ PROJECT CARD ═══════════════════ */
 function ProjectCard({
   project, index, contextMenu, setContextMenu, onOpen, onDelete,
