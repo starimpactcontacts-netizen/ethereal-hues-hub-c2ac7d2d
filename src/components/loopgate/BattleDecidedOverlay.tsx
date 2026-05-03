@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Crown, X } from "lucide-react";
+import { Crown, X, Swords } from "lucide-react";
 import decidedSfx from "@/assets/sounds/battle-decided.mp3";
 
 const teko = { fontFamily: "Teko, sans-serif" };
@@ -101,23 +101,39 @@ export default function BattleDecidedOverlay({
           />
 
           <div className="relative flex flex-col items-center gap-5 px-6 text-center">
-            {/* Verdict label */}
+            {/* Verdict badge — proper crest/shield design */}
             <motion.div
-              initial={{ y: -16, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.1, duration: 0.4 }}
-              className="px-3 py-1 rounded-full border"
-              style={{
-                borderColor: "rgba(252,211,77,0.5)",
-                background: "rgba(252,211,77,0.08)",
-              }}
+              initial={{ y: -16, opacity: 0, scale: 0.85 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1, duration: 0.45, type: "spring", stiffness: 260, damping: 18 }}
+              className="relative flex items-center"
             >
-              <span
-                className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-300"
-                style={teko}
+              {/* Left wing */}
+              <div className="h-px w-10 bg-gradient-to-r from-transparent to-amber-300/70" />
+              {/* Core badge */}
+              <div
+                className="relative flex items-center gap-2 px-4 py-1.5 mx-2"
+                style={{
+                  background:
+                    "linear-gradient(180deg, #1a1306 0%, #0a0703 100%)",
+                  border: "1px solid rgba(252,211,77,0.55)",
+                  boxShadow:
+                    "inset 0 1px 0 rgba(252,211,77,0.25), 0 0 18px rgba(252,211,77,0.18)",
+                  clipPath:
+                    "polygon(8px 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0 50%)",
+                }}
               >
-                ⚔ Battle Decided
-              </span>
+                <Swords className="w-3 h-3 text-amber-300" strokeWidth={2.5} />
+                <span
+                  className="text-[11px] font-black uppercase tracking-[0.45em] text-amber-300"
+                  style={{ ...teko, textShadow: "0 0 10px rgba(252,211,77,0.5)" }}
+                >
+                  Battle Decided
+                </span>
+                <Swords className="w-3 h-3 text-amber-300 scale-x-[-1]" strokeWidth={2.5} />
+              </div>
+              {/* Right wing */}
+              <div className="h-px w-10 bg-gradient-to-l from-transparent to-amber-300/70" />
             </motion.div>
 
             {/* WINNER headline */}
