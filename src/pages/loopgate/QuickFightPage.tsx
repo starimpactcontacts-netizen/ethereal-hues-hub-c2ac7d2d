@@ -302,6 +302,7 @@ export default function QuickFightPage() {
                     ).toISOString()
                   : null
               }
+              paused={!introDone}
             />
           ) : (
             // Pre-upload state — placeholders stacked with VS divider
