@@ -63,7 +63,7 @@ export default function FNFVoteScoreboard({
         src.connect(a);
         a.connect(ctx.destination);
         analyser = a;
-        dataArr = new Uint8Array(a.frequencyBinCount);
+        dataArr = new Uint8Array(new ArrayBuffer(a.frequencyBinCount));
         attached.add(playing);
         hookedEl = playing;
       } catch {
