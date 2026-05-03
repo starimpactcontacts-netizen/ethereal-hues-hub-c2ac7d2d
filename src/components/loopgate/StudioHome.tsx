@@ -5,8 +5,7 @@ import {
   Plus, Clock, Film, Trash2, ChevronLeft, MoreVertical,
   Layers, Scissors, Type, Music, Play, Upload,
   Crop, SlidersHorizontal, Palette, ExternalLink, Bug, Sparkles,
-  Wand2, ArrowRight, Download, Cpu, Aperture, Headphones, Keyboard, Gauge,
-  Activity, Box, Sliders, Volume2, BookOpen
+  Wand2, ArrowRight, Headphones, Activity, Box, BookOpen
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ActiveSoloBanner from "./ActiveSoloBanner";
