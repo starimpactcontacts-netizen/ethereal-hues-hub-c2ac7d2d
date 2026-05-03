@@ -109,6 +109,7 @@ export default function BattleDecidedOverlay({
     if (!active) {
       setShow(false);
       audioRef.current?.pause();
+      try { sourceRef.current?.stop(); } catch {}
       retryPlayRef.current = null;
       return;
     }
@@ -169,6 +170,7 @@ export default function BattleDecidedOverlay({
     const t = setTimeout(() => {
       setShow(false);
       audioRef.current?.pause();
+      try { sourceRef.current?.stop(); } catch {}
       onDismiss?.();
     }, 6000);
     return () => {
@@ -176,6 +178,7 @@ export default function BattleDecidedOverlay({
       window.removeEventListener("pointerdown", forceRetry, { capture: true });
       window.removeEventListener("touchstart", forceRetry, { capture: true });
       audioRef.current?.pause();
+      try { sourceRef.current?.stop(); } catch {}
       retryPlayRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
