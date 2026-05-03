@@ -18,6 +18,7 @@ import BattleSubmissionCard from '@/components/loopgate/BattleSubmissionCard';
 import BattleAutoplayDuo from '@/components/loopgate/BattleAutoplayDuo';
 import FNFVoteScoreboard from '@/components/loopgate/FNFVoteScoreboard';
 import QuickFightPublicVote from '@/components/loopgate/QuickFightPublicVote';
+import BattleIntroOverlay from '@/components/loopgate/BattleIntroOverlay';
 
 /** Detect platform from URL */
 function detectPlatform(url: string): string {
@@ -177,6 +178,11 @@ export default function QuickFightPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
+      {/* Smash-Bros style 3-2-1-GO intro when both edits are in */}
+      <BattleIntroOverlay
+        fightId={fight.id}
+        active={!!(fight.player_1_submission_url && fight.player_2_submission_url && fight.player_2_id)}
+      />
       {/* ════════ ARCADE HUD ════════ */}
       {/* Top bar: back + status pill */}
       <div className="sticky top-0 z-40 bg-black/80 backdrop-blur-xl border-b border-white/5">
