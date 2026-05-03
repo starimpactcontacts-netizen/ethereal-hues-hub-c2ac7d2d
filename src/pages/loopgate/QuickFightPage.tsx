@@ -19,6 +19,7 @@ import BattleAutoplayDuo from '@/components/loopgate/BattleAutoplayDuo';
 import FNFVoteScoreboard from '@/components/loopgate/FNFVoteScoreboard';
 import QuickFightPublicVote from '@/components/loopgate/QuickFightPublicVote';
 import BattleIntroOverlay from '@/components/loopgate/BattleIntroOverlay';
+import BattleDecidedOverlay from '@/components/loopgate/BattleDecidedOverlay';
 
 /** Detect platform from URL */
 function detectPlatform(url: string): string {
@@ -48,6 +49,23 @@ export default function QuickFightPage() {
   const [introDone, setIntroDone] = useState<boolean>(() => {
     try { return !!sessionStorage.getItem(`battle-intro-played:${fightId}`); } catch { return false; }
   });
+  const [decidedActive, setDecidedActive] = useState(false);
+  const [decidedShown, setDecidedShown] = useState(false);
+
+  // Once intro is done AND fight is decided, wait one full rotation
+  // (both edits shown = 20s) then trigger the cinematic verdict reveal.
+  useEffect(() => {
+    if (!introDone) return;
+    if (decidedShown) return;
+    if (!fight) return;
+    if (fight.status !== 'completed' || !fight.winner_id) return;
+    if (!fight.player_1_submission_url || !fight.player_2_submission_url) return;
+    const t = setTimeout(() => {
+      setDecidedActive(true);
+      setDecidedShown(true);
+    }, 20_000);
+    return () => clearTimeout(t);
+  }, [introDone, decidedShown, fight?.status, fight?.winner_id, fight?.player_1_submission_url, fight?.player_2_submission_url]);
   // Auto-resolve expired fights on page load
   useEffect(() => {
     supabase.rpc('resolve_expired_quick_fights').then(() => {});
@@ -187,6 +205,29 @@ export default function QuickFightPage() {
         active={!!(fight.player_1_submission_url && fight.player_2_submission_url && fight.player_2_id)}
         onComplete={() => setIntroDone(true)}
       />
+      {/* Cinematic winner reveal — fires once both edits have looped */}
+      {fight.status === 'completed' && fight.winner_id && (
+        <BattleDecidedOverlay
+          active={decidedActive}
+          winnerUsername={
+            fight.winner_id === fight.player_1_id
+              ? fight.player_1_username
+              : (fight.player_2_username || '???')
+          }
+          winnerAvatarUrl={
+            fight.winner_id === fight.player_1_id
+              ? fight.player_1_avatar_url
+              : fight.player_2_avatar_url
+          }
+          winnerColor={fight.winner_id === fight.player_1_id ? 'red' : 'blue'}
+          loserUsername={
+            fight.winner_id === fight.player_1_id
+              ? (fight.player_2_username || undefined)
+              : fight.player_1_username
+          }
+          onDismiss={() => setDecidedActive(false)}
+        />
+      )}
       {/* ════════ ARCADE HUD ════════ */}
       {/* Top bar: back + status pill */}
       <div className="sticky top-0 z-40 bg-black/80 backdrop-blur-xl border-b border-white/5">
