@@ -30,27 +30,71 @@ export default function BattleDecidedOverlay({
 }: Props) {
   const [show, setShow] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const triggeredRef = useRef(false);
+  const retryPlayRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    if (!active || triggeredRef.current) return;
-    triggeredRef.current = true;
+    if (!active) {
+      setShow(false);
+      audioRef.current?.pause();
+      retryPlayRef.current = null;
+      return;
+    }
+
     setShow(true);
-    // Play stinger
-    try {
+
+    const muteEverythingExcept = (stinger: HTMLAudioElement) => {
+      document.querySelectorAll("video, audio").forEach((media) => {
+        if (media === stinger) return;
+        const el = media as HTMLMediaElement;
+        el.muted = true;
+        el.pause();
+      });
+    };
+
+    const playStinger = () => {
+      const current = audioRef.current;
+      if (current) {
+        current.pause();
+        current.currentTime = 0;
+      }
+
       const a = new Audio(decidedSfx);
-      a.volume = 0.95;
+      a.preload = "auto";
+      a.volume = 1;
+      a.muted = false;
       audioRef.current = a;
-      a.play().catch(() => {});
-    } catch {}
+      muteEverythingExcept(a);
+
+      const attempt = () => {
+        a.currentTime = 0;
+        a.play().catch(() => {
+          retryPlayRef.current = attempt;
+        });
+      };
+
+      retryPlayRef.current = attempt;
+      a.addEventListener("canplaythrough", attempt, { once: true });
+      a.load();
+      attempt();
+    };
+
+    playStinger();
+
+    const forceRetry = () => retryPlayRef.current?.();
+    window.addEventListener("pointerdown", forceRetry, { capture: true });
+    window.addEventListener("touchstart", forceRetry, { capture: true });
     // Auto-dismiss after the sting + reveal (~6s)
     const t = setTimeout(() => {
       setShow(false);
+      audioRef.current?.pause();
       onDismiss?.();
     }, 6000);
     return () => {
       clearTimeout(t);
+      window.removeEventListener("pointerdown", forceRetry, { capture: true });
+      window.removeEventListener("touchstart", forceRetry, { capture: true });
       audioRef.current?.pause();
+      retryPlayRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
