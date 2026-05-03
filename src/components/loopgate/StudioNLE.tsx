@@ -561,9 +561,25 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
         ctx.filter = "none";
         ctx.restore();
 
-        // Apply pixel-based adjustments (highlights, shadows, sharpen, vignette, etc.)
-        if (hasAdjustments(adjustments)) {
-          applyCanvasAdjustments(ctx, canvas, adjustments);
+        // Apply pixel-based adjustments (highlights, shadows, sharpen, vignette, wheels, curve)
+        const hasWheelWork = !wheelsAreNeutral(wheels);
+        const hasCurveWork = !!lumaCurve;
+        if (hasAdjustments(adjustments) || hasWheelWork || hasCurveWork) {
+          applyCanvasAdjustments(ctx, canvas, adjustments, wheels, lumaCurve);
+        }
+
+        // Apply LUT (preset or custom .cube)
+        if (activeLUT || customLUT) {
+          try {
+            const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            if (activeLUT) {
+              const preset = LUT_PRESETS.find(p => p.id === activeLUT);
+              if (preset) applyLUTPreset(img, preset, lutIntensity);
+            } else if (customLUT) {
+              applyLUT(img, customLUT, lutIntensity);
+            }
+            ctx.putImageData(img, 0, 0);
+          } catch { /* graceful */ }
         }
 
         // Apply effects with per-effect intensity
@@ -605,7 +621,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     };
     draw();
     return () => { running = false; cancelAnimationFrame(animRef.current); };
-  }, [videoUrl, computedFilter, textOverlays, activeEffects, effectIntensities, activeTransition, transitionDuration, duration, adjustments, cropPreset, rotation, flipH, flipV, activeToolTab]);
+  }, [videoUrl, computedFilter, textOverlays, activeEffects, effectIntensities, activeTransition, transitionDuration, duration, adjustments, wheels, lumaCurve, activeLUT, customLUT, lutIntensity, cropPreset, rotation, flipH, flipV, activeToolTab]);
 
   // ─── Text Rendering Engine ───
   const renderFullTextOverlay = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, overlay: TextOverlay, time: number) => {
