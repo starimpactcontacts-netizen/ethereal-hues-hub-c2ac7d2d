@@ -30,6 +30,10 @@ export default function BattleDecidedOverlay({
 }: Props) {
   const [show, setShow] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const audioBufferRef = useRef<AudioBuffer | null>(null);
+  const sourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const bufferPromiseRef = useRef<Promise<AudioBuffer | null> | null>(null);
   const unlockedRef = useRef(false);
   const retryPlayRef = useRef<(() => void) | null>(null);
 
@@ -40,7 +44,36 @@ export default function BattleDecidedOverlay({
     a.muted = false;
     audioRef.current = a;
 
+    const getAudioContext = () => {
+      const AudioCtor = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtor) return null;
+      if (!audioContextRef.current) audioContextRef.current = new AudioCtor();
+      return audioContextRef.current;
+    };
+
+    const decodeSfx = () => {
+      if (audioBufferRef.current) return Promise.resolve(audioBufferRef.current);
+      if (bufferPromiseRef.current) return bufferPromiseRef.current;
+      const ctx = getAudioContext();
+      if (!ctx) return Promise.resolve(null);
+      bufferPromiseRef.current = fetch(decidedSfx)
+        .then((res) => res.arrayBuffer())
+        .then((data) => ctx.decodeAudioData(data.slice(0)))
+        .then((buffer) => {
+          audioBufferRef.current = buffer;
+          return buffer;
+        })
+        .catch(() => null);
+      return bufferPromiseRef.current;
+    };
+
+    a.load();
+    decodeSfx();
+
     const unlock = () => {
+      const ctx = getAudioContext();
+      ctx?.resume().catch(() => {});
+      decodeSfx();
       if (unlockedRef.current || !audioRef.current) return;
       const el = audioRef.current;
       const originalVolume = el.volume;
@@ -66,6 +99,8 @@ export default function BattleDecidedOverlay({
       window.removeEventListener("pointerdown", unlock, { capture: true });
       window.removeEventListener("touchstart", unlock, { capture: true });
       a.pause();
+      sourceRef.current?.stop();
+      audioContextRef.current?.close().catch(() => {});
       audioRef.current = null;
     };
   }, []);
@@ -74,6 +109,7 @@ export default function BattleDecidedOverlay({
     if (!active) {
       setShow(false);
       audioRef.current?.pause();
+      try { sourceRef.current?.stop(); } catch {}
       retryPlayRef.current = null;
       return;
     }
@@ -96,7 +132,23 @@ export default function BattleDecidedOverlay({
       a.muted = false;
       muteEverythingExcept(a);
 
+      const playDecoded = () => {
+        const ctx = audioContextRef.current;
+        const buffer = audioBufferRef.current;
+        if (!ctx || !buffer) return false;
+        sourceRef.current?.stop();
+        const source = ctx.createBufferSource();
+        const gain = ctx.createGain();
+        source.buffer = buffer;
+        gain.gain.value = 1;
+        source.connect(gain).connect(ctx.destination);
+        sourceRef.current = source;
+        ctx.resume().then(() => source.start(0)).catch(() => retryPlayRef.current = attempt);
+        return true;
+      };
+
       const attempt = () => {
+        if (playDecoded()) return;
         a.muted = false;
         a.volume = 1;
         a.currentTime = 0;
@@ -106,7 +158,6 @@ export default function BattleDecidedOverlay({
       };
 
       retryPlayRef.current = attempt;
-      a.load();
       attempt();
     };
 
@@ -119,6 +170,7 @@ export default function BattleDecidedOverlay({
     const t = setTimeout(() => {
       setShow(false);
       audioRef.current?.pause();
+      try { sourceRef.current?.stop(); } catch {}
       onDismiss?.();
     }, 6000);
     return () => {
@@ -126,6 +178,7 @@ export default function BattleDecidedOverlay({
       window.removeEventListener("pointerdown", forceRetry, { capture: true });
       window.removeEventListener("touchstart", forceRetry, { capture: true });
       audioRef.current?.pause();
+      try { sourceRef.current?.stop(); } catch {}
       retryPlayRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -152,6 +205,7 @@ export default function BattleDecidedOverlay({
           onClick={() => {
             setShow(false);
             audioRef.current?.pause();
+            try { sourceRef.current?.stop(); } catch {}
             onDismiss?.();
           }}
         >
@@ -161,6 +215,7 @@ export default function BattleDecidedOverlay({
               e.stopPropagation();
               setShow(false);
               audioRef.current?.pause();
+              try { sourceRef.current?.stop(); } catch {}
               onDismiss?.();
             }}
             className="absolute top-4 right-4 p-2 rounded-full bg-white/5 border border-white/10 text-white/60 hover:text-white"
