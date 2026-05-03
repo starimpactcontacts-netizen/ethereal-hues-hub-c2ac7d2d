@@ -489,6 +489,49 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     setEffectIntensities(prev => ({ ...prev, [effectId]: value }));
   };
 
+  // ─── Viral Pack: apply preset (filter + effects + speed + beat sync) ───
+  const applyViralPreset = useCallback((preset: typeof VIRAL_PRESETS[number]) => {
+    saveUndoSnapshot();
+    if (preset.apply.filter) {
+      const f = FILTER_PRESETS.find(p => p.name === preset.apply.filter);
+      if (f) setActiveFilter(f);
+    }
+    if (preset.apply.effects) {
+      setActiveEffects(preset.apply.effects.map(e => e.id));
+      const intens: EffectIntensity = {};
+      preset.apply.effects.forEach(e => { intens[e.id] = e.intensity; });
+      setEffectIntensities(prev => ({ ...prev, ...intens }));
+    }
+    if (preset.apply.speed) setSpeed(preset.apply.speed);
+    if (preset.apply.beatPulse !== undefined) setBeatPulseEnabled(preset.apply.beatPulse);
+    setActiveViralPreset(preset.id);
+    if (preset.apply.cutOnBeats && beats?.beats?.length) {
+      cutOnBeats(preset.apply.cutInterval ?? 4);
+    }
+    toast.success(`${preset.label} applied`);
+  }, [beats, saveUndoSnapshot]);
+
+  // ─── Auto-cut every Nth beat as timeline markers ───
+  const cutOnBeats = useCallback((interval: number) => {
+    if (!beats?.beats?.length) {
+      toast.error("Detect beats first");
+      return;
+    }
+    const newMarkers: TimelineMarker[] = beats.beats
+      .filter((_, i) => i % interval === 0)
+      .filter(t => t > 0 && t < duration)
+      .slice(0, 80)
+      .map((t, i) => ({
+        id: `beat-${i}-${t.toFixed(3)}`,
+        time: t,
+        label: `Beat ${i + 1}`,
+        color: "#FF3D7F",
+        type: "beat" as const,
+      }));
+    setTimelineMarkers(prev => [...prev.filter(m => m.type !== "beat"), ...newMarkers]);
+    toast.success(`${newMarkers.length} beat markers added`);
+  }, [beats, duration]);
+
   // ─── Timeline Thumbnails ───
   useEffect(() => {
     if (!videoUrl) { setThumbnails([]); return; }
