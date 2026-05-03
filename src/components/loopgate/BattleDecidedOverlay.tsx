@@ -131,7 +131,23 @@ export default function BattleDecidedOverlay({
       a.muted = false;
       muteEverythingExcept(a);
 
+      const playDecoded = () => {
+        const ctx = audioContextRef.current;
+        const buffer = audioBufferRef.current;
+        if (!ctx || !buffer) return false;
+        sourceRef.current?.stop();
+        const source = ctx.createBufferSource();
+        const gain = ctx.createGain();
+        source.buffer = buffer;
+        gain.gain.value = 1;
+        source.connect(gain).connect(ctx.destination);
+        sourceRef.current = source;
+        ctx.resume().then(() => source.start(0)).catch(() => retryPlayRef.current = attempt);
+        return true;
+      };
+
       const attempt = () => {
+        if (playDecoded()) return;
         a.muted = false;
         a.volume = 1;
         a.currentTime = 0;
@@ -141,7 +157,6 @@ export default function BattleDecidedOverlay({
       };
 
       retryPlayRef.current = attempt;
-      a.load();
       attempt();
     };
 
