@@ -25,10 +25,6 @@ export default function BattleIntroOverlay({ fightId, active, onComplete }: Batt
 
   useEffect(() => {
     if (!active) return;
-    const key = `battle-intro-played:${fightId}`;
-    if (sessionStorage.getItem(key)) return;
-    sessionStorage.setItem(key, '1');
-
     setRunning(true);
     setCurrentCue(-1);
 
@@ -74,15 +70,19 @@ export default function BattleIntroOverlay({ fightId, active, onComplete }: Batt
       />
 
       {/* FNF-style number/word */}
-      <AnimatePresence mode="popLayout">
+      <AnimatePresence mode="wait">
         {cue && (
           <motion.div
             key={`cue-${currentCue}`}
-            initial={{ scale: 0.2, rotate: -12, opacity: 0 }}
-            animate={{ scale: [0.2, 1.25, 1], rotate: [-12, 6, 0], opacity: 1 }}
-            exit={{ scale: 1.6, opacity: 0, y: -40 }}
-            transition={{ duration: 0.45, ease: [0.34, 1.56, 0.64, 1] }}
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 1.4, opacity: 0 }}
+            transition={{
+              scale: { type: 'spring', stiffness: 380, damping: 18, mass: 0.6 },
+              opacity: { duration: 0.18, ease: 'easeOut' },
+            }}
             className="relative select-none"
+            style={{ willChange: 'transform, opacity', transform: 'translateZ(0)' }}
           >
             <div
               className="font-black tracking-tighter"
@@ -93,8 +93,7 @@ export default function BattleIntroOverlay({ fightId, active, onComplete }: Batt
                 color: cue.color,
                 WebkitTextStroke: '4px #000',
                 textShadow: `6px 6px 0 #000`,
-                transform: 'skewX(-6deg) translateZ(0)',
-                willChange: 'transform, opacity',
+                transform: 'skewX(-6deg)',
               }}
             >
               {cue.label}
