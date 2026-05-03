@@ -76,7 +76,7 @@ export default function FNFVoteScoreboard({
       if (t - lastT > 90) tryHook();
       let amp = 0;
       if (analyser && dataArr) {
-        analyser.getByteFrequencyData(dataArr);
+        analyser.getByteFrequencyData(dataArr as any);
         let sum = 0;
         const n = Math.min(8, dataArr.length);
         for (let i = 0; i < n; i++) sum += dataArr[i];
