@@ -2424,6 +2424,19 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
       <input ref={fileInputRef} type="file" accept="video/*,image/*,audio/*" multiple onChange={handleFileSelect} className="hidden" />
       <input ref={audioInputRef} type="file" accept="audio/*" onChange={handleAudioSelect} className="hidden" />
       </div>
+      {showScopes && (
+        <ColorScopes
+          canvasRef={canvasRef}
+          isPlaying={playing}
+          activeLUT={activeLUT}
+          lutIntensity={lutIntensity}
+          customLUT={customLUT}
+          onLUTChange={setActiveLUT}
+          onLUTIntensityChange={setLutIntensity}
+          onCustomLUTLoad={(lut) => { setCustomLUT(lut); setActiveLUT(null); }}
+          onClose={() => setShowScopes(false)}
+        />
+      )}
     </div>
   );
 }
