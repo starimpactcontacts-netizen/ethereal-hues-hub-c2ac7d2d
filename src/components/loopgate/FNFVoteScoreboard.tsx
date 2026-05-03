@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 
@@ -32,6 +32,76 @@ export default function FNFVoteScoreboard({
 }: Props) {
   const [redVotes, setRedVotes] = useState(0);
   const [blueVotes, setBlueVotes] = useState(0);
+  const barWrapRef = useRef<HTMLDivElement>(null);
+  const chipRef = useRef<HTMLDivElement>(null);
+  const redGlowRef = useRef<HTMLDivElement>(null);
+  const blueGlowRef = useRef<HTMLDivElement>(null);
+
+  // Audio-reactive bounce — taps the currently playing unmuted <video>
+  // via Web Audio AnalyserNode. Falls back to a soft idle pulse.
+  useEffect(() => {
+    let raf = 0;
+    let ctx: AudioContext | null = null;
+    let analyser: AnalyserNode | null = null;
+    let dataArr: Uint8Array | null = null;
+    let hookedEl: HTMLMediaElement | null = null;
+    const attached = new WeakSet<HTMLMediaElement>();
+
+    const tryHook = () => {
+      if (analyser && hookedEl && !hookedEl.paused && !hookedEl.muted) return;
+      const vids = Array.from(document.querySelectorAll("video")) as HTMLVideoElement[];
+      const playing = vids.find((v) => !v.paused && !v.muted && v.readyState >= 2);
+      if (!playing || attached.has(playing)) {
+        hookedEl = playing || hookedEl;
+        return;
+      }
+      try {
+        if (!ctx) ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const src = ctx.createMediaElementSource(playing);
+        const a = ctx.createAnalyser();
+        a.fftSize = 64;
+        src.connect(a);
+        a.connect(ctx.destination);
+        analyser = a;
+        dataArr = new Uint8Array(a.frequencyBinCount);
+        attached.add(playing);
+        hookedEl = playing;
+      } catch {
+        // CORS / already-connected — fallback pulse continues
+      }
+    };
+
+    let lastT = 0;
+    const loop = (t: number) => {
+      if (t - lastT > 90) tryHook();
+      let amp = 0;
+      if (analyser && dataArr) {
+        analyser.getByteFrequencyData(dataArr);
+        let sum = 0;
+        const n = Math.min(8, dataArr.length);
+        for (let i = 0; i < n; i++) sum += dataArr[i];
+        amp = sum / (n * 255);
+      } else {
+        amp = 0.12 + 0.08 * Math.abs(Math.sin(t / 380));
+      }
+      const scale = 1 + Math.min(0.4, amp * 0.6);
+      if (chipRef.current) {
+        chipRef.current.style.transform = `translate(-50%, -50%) scale(${scale.toFixed(3)})`;
+      }
+      if (redGlowRef.current) redGlowRef.current.style.opacity = String(0.2 + amp * 0.75);
+      if (blueGlowRef.current) blueGlowRef.current.style.opacity = String(0.2 + amp * 0.75);
+      if (barWrapRef.current) {
+        barWrapRef.current.style.boxShadow = `0 0 ${6 + amp * 18}px rgba(255,255,255,${0.08 + amp * 0.18})`;
+      }
+      lastT = t;
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => {
+      cancelAnimationFrame(raf);
+      try { ctx?.close(); } catch {}
+    };
+  }, []);
 
   useEffect(() => {
     if (!fightId) return;
@@ -105,39 +175,50 @@ export default function FNFVoteScoreboard({
   return (
     <div className="relative bg-black z-20 px-3 py-2.5 border-y border-white/10">
       <div className="flex items-center gap-2.5">
-        <SideAvatar side="red" username={redUsername} avatarUrl={redAvatarUrl} />
+        <div className="relative">
+          <div
+            ref={redGlowRef}
+            className="absolute inset-0 rounded-full pointer-events-none"
+            style={{ boxShadow: "0 0 22px rgba(239,68,68,0.7)", opacity: 0.3, transition: "opacity 80ms linear" }}
+          />
+          <SideAvatar side="red" username={redUsername} avatarUrl={redAvatarUrl} />
+        </div>
 
         {/* Health bar */}
-        <div className="relative flex-1 h-8">
-          <div className="absolute inset-0 rounded-full overflow-hidden border border-white/15 bg-black/80 flex">
+        <div className="relative flex-1 h-4">
+          <div
+            ref={barWrapRef}
+            className="absolute inset-0 rounded-full overflow-hidden border border-white/10 bg-black/80 flex"
+            style={{ transition: "box-shadow 80ms linear" }}
+          >
             <div
               className="h-full transition-all duration-700 ease-out"
               style={{
                 width: `${redBarPct}%`,
-                background: "linear-gradient(90deg, #ef4444 0%, #dc2626 100%)",
-                boxShadow: "inset 0 0 12px rgba(239,68,68,0.6)",
+                background: "linear-gradient(90deg, #b91c1c 0%, #ef4444 60%, #f87171 100%)",
+                boxShadow: "inset 0 0 8px rgba(239,68,68,0.7), inset 0 1px 0 rgba(255,255,255,0.18)",
               }}
             />
             <div
               className="h-full transition-all duration-700 ease-out"
               style={{
                 width: `${blueBarPct}%`,
-                background: "linear-gradient(90deg, #3b82f6 0%, #2563eb 100%)",
-                boxShadow: "inset 0 0 12px rgba(59,130,246,0.6)",
+                background: "linear-gradient(90deg, #60a5fa 0%, #3b82f6 40%, #1d4ed8 100%)",
+                boxShadow: "inset 0 0 8px rgba(59,130,246,0.7), inset 0 1px 0 rgba(255,255,255,0.18)",
               }}
             />
           </div>
 
           {/* Vote counts */}
-          <div className="absolute inset-0 flex items-center justify-between px-3 pointer-events-none">
+          <div className="absolute inset-0 flex items-center justify-between px-2.5 pointer-events-none">
             <span
-              className="text-[13px] font-black text-white tabular-nums leading-none"
+              className="text-[10px] font-black text-white tabular-nums leading-none"
               style={{ ...teko, textShadow: "0 1px 2px rgba(0,0,0,0.9)" }}
             >
               {redVotes}
             </span>
             <span
-              className="text-[13px] font-black text-white tabular-nums leading-none"
+              className="text-[10px] font-black text-white tabular-nums leading-none"
               style={{ ...teko, textShadow: "0 1px 2px rgba(0,0,0,0.9)" }}
             >
               {blueVotes}
@@ -146,41 +227,50 @@ export default function FNFVoteScoreboard({
 
           {/* Loopgate chip — sits at the boundary between red & blue (shows who's winning) */}
           <div
-            className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 transition-all duration-700 ease-out"
+            className="absolute top-1/2 transition-[left] duration-700 ease-out"
             style={{ left: `${redBarPct}%` }}
           >
             <div
-              className="w-10 h-10 rounded-full bg-black flex items-center justify-center overflow-hidden"
+              ref={chipRef}
+              className="w-7 h-7 rounded-full bg-black flex items-center justify-center overflow-hidden will-change-transform"
               style={{
+                transform: "translate(-50%, -50%)",
                 border: "1.5px solid rgba(255,255,255,0.35)",
                 boxShadow:
-                  "0 0 14px rgba(0,0,0,0.9), 0 0 18px rgba(239,68,68,0.45), 0 0 18px rgba(59,130,246,0.45)",
+                  "0 0 10px rgba(0,0,0,0.95), 0 0 14px rgba(239,68,68,0.5), 0 0 14px rgba(59,130,246,0.5)",
               }}
             >
               <img
                 src={loopgateLogo}
                 alt="Loopgate"
-                className="w-7 h-7 object-contain"
+                className="w-5 h-5 object-contain"
                 draggable={false}
               />
             </div>
           </div>
         </div>
 
-        <SideAvatar side="blue" username={blueUsername} avatarUrl={blueAvatarUrl} />
+        <div className="relative">
+          <div
+            ref={blueGlowRef}
+            className="absolute inset-0 rounded-full pointer-events-none"
+            style={{ boxShadow: "0 0 22px rgba(59,130,246,0.7)", opacity: 0.3, transition: "opacity 80ms linear" }}
+          />
+          <SideAvatar side="blue" username={blueUsername} avatarUrl={blueAvatarUrl} />
+        </div>
       </div>
 
       {/* Sub-row */}
-      <div className="flex items-center justify-between mt-1 px-1">
-        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-red-400 truncate max-w-[35%]" style={teko}>
+      <div className="flex items-center justify-between mt-1.5 px-1">
+        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-red-400 truncate max-w-[45%]" style={teko}>
           @{redUsername}
         </span>
-        <span className="text-[8px] uppercase tracking-[0.25em] text-zinc-500 tabular-nums" style={teko}>
-          {total === 0
-            ? "NO VOTES YET"
-            : `${total} ${total === 1 ? "VOTE" : "VOTES"}${leading ? ` · ${leading.toUpperCase()} LEADS` : ""}`}
-        </span>
-        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-400 truncate max-w-[35%] text-right" style={teko}>
+        {total > 0 && (
+          <span className="text-[8px] uppercase tracking-[0.25em] text-zinc-500 tabular-nums" style={teko}>
+            {`${total} ${total === 1 ? "VOTE" : "VOTES"}${leading ? ` · ${leading.toUpperCase()} LEADS` : ""}`}
+          </span>
+        )}
+        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-400 truncate max-w-[45%] text-right" style={teko}>
           @{blueUsername}
         </span>
       </div>
