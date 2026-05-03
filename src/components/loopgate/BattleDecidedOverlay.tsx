@@ -205,6 +205,7 @@ export default function BattleDecidedOverlay({
           onClick={() => {
             setShow(false);
             audioRef.current?.pause();
+            try { sourceRef.current?.stop(); } catch {}
             onDismiss?.();
           }}
         >
@@ -214,6 +215,7 @@ export default function BattleDecidedOverlay({
               e.stopPropagation();
               setShow(false);
               audioRef.current?.pause();
+              try { sourceRef.current?.stop(); } catch {}
               onDismiss?.();
             }}
             className="absolute top-4 right-4 p-2 rounded-full bg-white/5 border border-white/10 text-white/60 hover:text-white"
