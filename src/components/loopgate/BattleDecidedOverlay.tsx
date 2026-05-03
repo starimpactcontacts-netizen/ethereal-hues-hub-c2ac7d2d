@@ -30,6 +30,10 @@ export default function BattleDecidedOverlay({
 }: Props) {
   const [show, setShow] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const audioBufferRef = useRef<AudioBuffer | null>(null);
+  const sourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const bufferPromiseRef = useRef<Promise<AudioBuffer | null> | null>(null);
   const unlockedRef = useRef(false);
   const retryPlayRef = useRef<(() => void) | null>(null);
 
@@ -40,7 +44,36 @@ export default function BattleDecidedOverlay({
     a.muted = false;
     audioRef.current = a;
 
+    const getAudioContext = () => {
+      const AudioCtor = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtor) return null;
+      if (!audioContextRef.current) audioContextRef.current = new AudioCtor();
+      return audioContextRef.current;
+    };
+
+    const decodeSfx = () => {
+      if (audioBufferRef.current) return Promise.resolve(audioBufferRef.current);
+      if (bufferPromiseRef.current) return bufferPromiseRef.current;
+      const ctx = getAudioContext();
+      if (!ctx) return Promise.resolve(null);
+      bufferPromiseRef.current = fetch(decidedSfx)
+        .then((res) => res.arrayBuffer())
+        .then((data) => ctx.decodeAudioData(data.slice(0)))
+        .then((buffer) => {
+          audioBufferRef.current = buffer;
+          return buffer;
+        })
+        .catch(() => null);
+      return bufferPromiseRef.current;
+    };
+
+    a.load();
+    decodeSfx();
+
     const unlock = () => {
+      const ctx = getAudioContext();
+      ctx?.resume().catch(() => {});
+      decodeSfx();
       if (unlockedRef.current || !audioRef.current) return;
       const el = audioRef.current;
       const originalVolume = el.volume;
@@ -66,6 +99,8 @@ export default function BattleDecidedOverlay({
       window.removeEventListener("pointerdown", unlock, { capture: true });
       window.removeEventListener("touchstart", unlock, { capture: true });
       a.pause();
+      sourceRef.current?.stop();
+      audioContextRef.current?.close().catch(() => {});
       audioRef.current = null;
     };
   }, []);
