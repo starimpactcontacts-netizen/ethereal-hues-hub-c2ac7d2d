@@ -214,98 +214,38 @@ export default function QuickFightPage() {
         </div>
       </div>
 
-      {/* HUD scoreboard — RED · holographic timer · BLUE */}
-      <div className="relative overflow-hidden">
-        {/* Bleeding red/blue corner glows */}
-        <div className="absolute -left-20 -top-20 w-64 h-64 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(239,68,68,0.35) 0%, transparent 70%)' }} />
-        <div className="absolute -right-20 -top-20 w-64 h-64 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.35) 0%, transparent 70%)' }} />
-        {/* Scan-line divider */}
-        <div className="absolute inset-x-0 bottom-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(239,68,68,0.6), rgba(255,255,255,0.4), rgba(59,130,246,0.6), transparent)' }} />
+      {/* FNF-style live vote scoreboard — replaces the old red/blue HUD topbar */}
+      {fight.player_2_id && fight.player_2_username ? (
+        <FNFVoteScoreboard
+          fightId={fight.id}
+          redUserId={fight.player_1_id}
+          blueUserId={fight.player_2_id}
+          redUsername={fight.player_1_username}
+          blueUsername={fight.player_2_username}
+          redAvatarUrl={fight.player_1_avatar_url}
+          blueAvatarUrl={fight.player_2_avatar_url}
+        />
+      ) : null}
 
-        <div className="relative px-3 py-3 flex items-center justify-between gap-2">
-          {/* RED player block */}
-          <div className="flex items-center gap-2 min-w-0 flex-1">
-            <div className="relative shrink-0">
-              <Avatar className={`w-11 h-11 border-2 ${fight.winner_id === fight.player_1_id ? 'border-amber-400' : 'border-red-500'}`}
-                style={{ boxShadow: fight.status === 'active' ? '0 0 16px rgba(239,68,68,0.5)' : '0 0 10px rgba(239,68,68,0.25)' }}>
-                <AvatarImage src={fight.player_1_avatar_url || ''} />
-                <AvatarFallback className="bg-red-500/20 text-red-400 text-sm font-black">
-                  {fight.player_1_username.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              {fight.player_1_submitted_at && (
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-black flex items-center justify-center">
-                  <span className="text-[8px] text-white font-black">✓</span>
-                </div>
-              )}
-            </div>
-            <div className="min-w-0">
-              <p className="text-[14px] font-black text-white truncate leading-none tracking-tight" style={{ fontFamily: 'Teko, sans-serif' }}>
-                @{fight.player_1_username}
-              </p>
-              <p className="text-[9px] text-red-400 font-black uppercase tracking-[0.25em] mt-0.5" style={{ fontFamily: 'Teko, sans-serif' }}>
-                RED{isP1 ? ' · YOU' : ''}
-              </p>
-            </div>
-          </div>
-
-          {/* Holographic HUD timer chip */}
-          {fight.status === 'active' && fight.ends_at ? (
-            <div className="relative shrink-0">
-              {/* Outer hex glow */}
-              <div className="absolute inset-0 rounded-lg blur-md" style={{ background: 'linear-gradient(135deg, rgba(239,68,68,0.4), rgba(59,130,246,0.4))' }} />
-              <div
-                className="relative px-3 py-1.5 rounded-lg"
-                style={{
-                  background: 'linear-gradient(180deg, rgba(0,0,0,0.95), rgba(15,15,20,0.95))',
-                  border: '1px solid rgba(255,255,255,0.15)',
-                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 0 20px rgba(255,255,255,0.05)',
-                }}
-              >
-                <div className="text-[7px] font-black text-zinc-500 uppercase tracking-[0.3em] text-center mb-0.5" style={{ fontFamily: 'Teko, sans-serif' }}>
-                  TIME LEFT
-                </div>
-                <div className="font-mono tabular-nums text-white text-[15px] font-bold tracking-wider" style={{ textShadow: '0 0 8px rgba(255,255,255,0.4)' }}>
-                  <CountdownTimer endDate={fight.ends_at} label="" />
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="relative shrink-0">
-              <div className="absolute inset-0 rounded-full blur-md" style={{ background: 'linear-gradient(135deg, rgba(239,68,68,0.5), rgba(59,130,246,0.5))' }} />
-              <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-blue-500 flex items-center justify-center" style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25)' }}>
-                <Swords className="w-4 h-4 text-white" />
-              </div>
-            </div>
-          )}
-
-          {/* BLUE player block */}
-          <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
-            <div className="min-w-0 text-right">
-              <p className="text-[14px] font-black text-white truncate leading-none tracking-tight" style={{ fontFamily: 'Teko, sans-serif' }}>
-                @{fight.player_2_username || '???'}
-              </p>
-              <p className="text-[9px] text-blue-400 font-black uppercase tracking-[0.25em] mt-0.5" style={{ fontFamily: 'Teko, sans-serif' }}>
-                {isP2 ? 'YOU · ' : ''}BLUE
-              </p>
-            </div>
-            <div className="relative shrink-0">
-              <Avatar className={`w-11 h-11 border-2 ${fight.winner_id === fight.player_2_id ? 'border-amber-400' : 'border-blue-500'}`}
-                style={{ boxShadow: fight.status === 'active' ? '0 0 16px rgba(59,130,246,0.5)' : '0 0 10px rgba(59,130,246,0.25)' }}>
-                <AvatarImage src={fight.player_2_avatar_url || ''} />
-                <AvatarFallback className="bg-blue-500/20 text-blue-400 text-sm font-black">
-                  {fight.player_2_username?.charAt(0).toUpperCase() || '?'}
-                </AvatarFallback>
-              </Avatar>
-              {fight.player_2_submitted_at && (
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-black flex items-center justify-center">
-                  <span className="text-[8px] text-white font-black">✓</span>
-                </div>
-              )}
-            </div>
+      {/* Active match countdown chip */}
+      {fight.status === 'active' && fight.ends_at && (
+        <div className="px-3 pt-2 flex items-center justify-center">
+          <div
+            className="px-3 py-1 rounded-md flex items-center gap-2"
+            style={{
+              background: 'linear-gradient(180deg, rgba(0,0,0,0.95), rgba(15,15,20,0.95))',
+              border: '1px solid rgba(255,255,255,0.15)',
+            }}
+          >
+            <span className="text-[8px] font-black text-zinc-500 uppercase tracking-[0.3em]" style={{ fontFamily: 'Teko, sans-serif' }}>
+              TIME LEFT
+            </span>
+            <span className="font-mono tabular-nums text-white text-[13px] font-bold tracking-wider">
+              <CountdownTimer endDate={fight.ends_at} label="" />
+            </span>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Content */}
       <div className="px-4 space-y-4 mt-2">
