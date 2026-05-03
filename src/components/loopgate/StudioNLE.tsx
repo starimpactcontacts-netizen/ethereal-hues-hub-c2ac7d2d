@@ -2385,6 +2385,15 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
                   </span>
                 </div>
               ))}
+              {/* Beat dots */}
+              {beats?.beats?.length ? (
+                <div className="absolute inset-0 pointer-events-none">
+                  {beats.beats.filter(t => t < duration).map((t, i) => (
+                    <div key={i} className="absolute top-0 w-[2px] h-2 rounded-full"
+                      style={{ left: `${t * 60 * timelineZoom}px`, background: "#FF3D7F", boxShadow: "0 0 4px #FF3D7F" }} />
+                  ))}
+                </div>
+              ) : null}
             </div>
 
             {/* Video track */}
