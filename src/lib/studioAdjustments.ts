@@ -31,6 +31,60 @@ export const DEFAULT_ADJUSTMENTS: AdjustmentValues = {
   sharpen: 0, clarity: 0, fade: 0, vignette: 0,
 };
 
+// ─── Pro Color (DaVinci-style 3-way + Luma Curve) ───
+export type RGB = { r: number; g: number; b: number };
+export type ColorWheels = {
+  lift: RGB;   // shadows offset, each -1..1
+  gamma: RGB;  // midtones gain, each 0.2..2 (1 = neutral)
+  gain: RGB;   // highlights gain, each 0..2 (1 = neutral)
+};
+
+export const NEUTRAL_WHEELS: ColorWheels = {
+  lift:  { r: 0, g: 0, b: 0 },
+  gamma: { r: 1, g: 1, b: 1 },
+  gain:  { r: 1, g: 1, b: 1 },
+};
+
+export function wheelsAreNeutral(w: ColorWheels): boolean {
+  return w.lift.r === 0 && w.lift.g === 0 && w.lift.b === 0
+    && w.gamma.r === 1 && w.gamma.g === 1 && w.gamma.b === 1
+    && w.gain.r === 1 && w.gain.g === 1 && w.gain.b === 1;
+}
+
+/** 256-entry luma LUT (0..255 → 0..255). null = identity. */
+export type LumaCurve = number[] | null;
+
+/** Build a smooth identity curve. */
+export function identityCurve(): number[] {
+  return Array.from({ length: 256 }, (_, i) => i);
+}
+
+/** Build a luma curve from control points [{x:0..1, y:0..1}, ...] sorted by x. */
+export function buildLumaCurve(points: { x: number; y: number }[]): number[] {
+  if (points.length < 2) return identityCurve();
+  const sorted = [...points].sort((a, b) => a.x - b.x);
+  const out = new Array(256);
+  for (let i = 0; i < 256; i++) {
+    const t = i / 255;
+    // find segment
+    let p0 = sorted[0], p1 = sorted[sorted.length - 1];
+    for (let j = 0; j < sorted.length - 1; j++) {
+      if (t >= sorted[j].x && t <= sorted[j + 1].x) {
+        p0 = sorted[j]; p1 = sorted[j + 1]; break;
+      }
+    }
+    if (t <= sorted[0].x) { out[i] = Math.round(sorted[0].y * 255); continue; }
+    if (t >= sorted[sorted.length - 1].x) { out[i] = Math.round(sorted[sorted.length - 1].y * 255); continue; }
+    const span = p1.x - p0.x || 1e-6;
+    const k = (t - p0.x) / span;
+    // smoothstep for buttery curves
+    const s = k * k * (3 - 2 * k);
+    const y = p0.y + (p1.y - p0.y) * s;
+    out[i] = Math.max(0, Math.min(255, Math.round(y * 255)));
+  }
+  return out;
+}
+
 export type AdjustSection = "color" | "lightness" | "effects";
 
 export const ADJUST_SECTIONS: { id: AdjustSection; label: string; params: { key: keyof AdjustmentValues; label: string; min: number; max: number; gradient?: string }[] }[] = [
@@ -110,10 +164,14 @@ export function buildAdjustFilter(adj: AdjustmentValues): string {
 export function applyCanvasAdjustments(
   ctx: CanvasRenderingContext2D,
   canvas: HTMLCanvasElement,
-  adj: AdjustmentValues
+  adj: AdjustmentValues,
+  wheels?: ColorWheels,
+  lumaCurve?: LumaCurve,
 ) {
   const w = canvas.width, h = canvas.height;
-  const hasPixelWork = adj.highlight !== 0 || adj.shadow !== 0 || adj.whites !== 0 || adj.blacks !== 0 || adj.sharpen > 0 || adj.clarity > 0;
+  const hasWheels = wheels && !wheelsAreNeutral(wheels);
+  const hasCurve = !!(lumaCurve && lumaCurve.length === 256);
+  const hasPixelWork = adj.highlight !== 0 || adj.shadow !== 0 || adj.whites !== 0 || adj.blacks !== 0 || adj.sharpen > 0 || adj.clarity > 0 || hasWheels || hasCurve;
 
   if (hasPixelWork) {
     const imgData = ctx.getImageData(0, 0, w, h);
@@ -152,6 +210,37 @@ export function applyCanvasAdjustments(
       }
 
       d[i] = r; d[i + 1] = g; d[i + 2] = b;
+    }
+
+    // ─── Lift / Gamma / Gain (3-way color) ───
+    if (hasWheels && wheels) {
+      for (let i = 0; i < d.length; i += 4) {
+        for (let c = 0; c < 3; c++) {
+          const ch = c === 0 ? "r" : c === 1 ? "g" : "b";
+          const lift = (wheels.lift as any)[ch] as number;   // -1..1
+          const gamma = (wheels.gamma as any)[ch] as number; // 0.2..2
+          const gain = (wheels.gain as any)[ch] as number;   // 0..2
+          let v = d[i + c] / 255;
+          // gain (highlights), lift (shadows offset), then gamma curve
+          v = v * gain + lift * (1 - v);
+          v = Math.max(0, Math.min(1, v));
+          if (gamma !== 1) v = Math.pow(v, 1 / Math.max(0.05, gamma));
+          d[i + c] = clamp(v * 255);
+        }
+      }
+    }
+
+    // ─── Luma Curve ───
+    if (hasCurve && lumaCurve) {
+      for (let i = 0; i < d.length; i += 4) {
+        const r = d[i], g = d[i + 1], b = d[i + 2];
+        const luma = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+        const target = lumaCurve[Math.min(255, Math.max(0, luma))];
+        const diff = target - luma;
+        d[i]     = clamp(r + diff);
+        d[i + 1] = clamp(g + diff);
+        d[i + 2] = clamp(b + diff);
+      }
     }
 
     // Clarity — local contrast enhancement (simplified unsharp mask on luminance)
