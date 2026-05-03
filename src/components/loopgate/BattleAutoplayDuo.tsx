@@ -16,6 +16,8 @@ interface Props {
   blue: Side;
   /** ISO timestamp the showcase started (for cross-viewer sync). Defaults to mount time. */
   startedAt?: string | null;
+  /** When true, hold playback (e.g. while intro overlay is running) */
+  paused?: boolean;
 }
 
 function isVideo(url: string) {
@@ -27,7 +29,7 @@ function isVideo(url: string) {
  * Auto-plays one for 10s, then the other for 10s, on infinite loop.
  * Synced for all viewers using `startedAt` timestamp.
  */
-export default function BattleAutoplayDuo({ red, blue, startedAt }: Props) {
+export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false }: Props) {
   const sides: [Side, Side] = [red, blue];
   const startMsRef = useRef<number>(startedAt ? new Date(startedAt).getTime() : Date.now());
   const totalMs = sides.length * PER_EDIT_SECONDS * 1000;
@@ -55,7 +57,7 @@ export default function BattleAutoplayDuo({ red, blue, startedAt }: Props) {
   // Tick — drive activeIdx + countdown. Pauses until both videos are ready
   // so the rotation always starts in lockstep with playback.
   useEffect(() => {
-    if (!bothReady) return;
+    if (!bothReady || paused) return;
     // Reset start clock the moment both clips are buffered so the first play is instant
     startMsRef.current = Date.now();
     const tick = () => {
@@ -66,12 +68,21 @@ export default function BattleAutoplayDuo({ red, blue, startedAt }: Props) {
     tick();
     const id = setInterval(tick, 250);
     return () => clearInterval(id);
-  }, [bothReady]);
+  }, [bothReady, paused]);
 
   // Drive playback: active plays full-quality, inactive PAUSES at currentTime=0
   // (kept loaded so swap is instant — no re-buffer).
   useEffect(() => {
     if (!bothReady) return;
+    if (paused) {
+      [redVideoRef.current, blueVideoRef.current].forEach((v) => {
+        if (!v) return;
+        v.pause();
+        v.muted = true;
+        try { v.currentTime = 0; } catch {}
+      });
+      return;
+    }
     const refs = [redVideoRef.current, blueVideoRef.current];
     refs.forEach((v, i) => {
       if (!v) return;
@@ -90,7 +101,7 @@ export default function BattleAutoplayDuo({ red, blue, startedAt }: Props) {
         try { v.currentTime = 0; } catch {}
       }
     });
-  }, [activeIdx, bothReady]);
+  }, [activeIdx, bothReady, paused]);
 
   const enableSound = () => {
     setNeedsTapForSound(false);

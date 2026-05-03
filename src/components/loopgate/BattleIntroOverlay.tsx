@@ -64,28 +64,14 @@ export default function BattleIntroOverlay({ fightId, active, onComplete }: Batt
 
   return (
     <div className="fixed inset-0 z-[9998] pointer-events-none flex items-center justify-center">
-      {/* Solid black backdrop — kills all video/visuals while intro runs */}
+      {/* Slightly transparent backdrop — dims video without full blackout */}
       <motion.div
         initial={{ opacity: 1 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.25 }}
-        className="absolute inset-0 bg-black"
+        transition={{ duration: 0.3 }}
+        className="absolute inset-0 bg-black/85 backdrop-blur-sm"
       />
-      {/* Optional colored glow per cue, on top of black */}
-      <AnimatePresence>
-        {cue && (
-          <motion.div
-            key={`glow-${currentCue}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.4 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.18 }}
-            className="absolute inset-0"
-            style={{ background: `radial-gradient(circle at center, ${cue.color}66 0%, transparent 55%)` }}
-          />
-        )}
-      </AnimatePresence>
 
       {/* FNF-style number/word */}
       <AnimatePresence mode="popLayout">
@@ -102,17 +88,13 @@ export default function BattleIntroOverlay({ fightId, active, onComplete }: Batt
               className="font-black tracking-tighter"
               style={{
                 fontFamily: 'Teko, "Arial Black", sans-serif',
-                fontSize: cue.label === 'GO!' ? '14rem' : '12rem',
+                fontSize: cue.label === 'GO!' ? '13rem' : '11rem',
                 lineHeight: 1,
                 color: cue.color,
-                WebkitTextStroke: '6px #000',
-                textShadow: `
-                  0 0 24px ${cue.color},
-                  0 0 60px ${cue.color}99,
-                  8px 8px 0 #000,
-                  -2px -2px 0 #fff
-                `,
-                transform: 'skewX(-6deg)',
+                WebkitTextStroke: '4px #000',
+                textShadow: `6px 6px 0 #000`,
+                transform: 'skewX(-6deg) translateZ(0)',
+                willChange: 'transform, opacity',
               }}
             >
               {cue.label}

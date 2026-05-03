@@ -45,6 +45,9 @@ export default function QuickFightPage() {
   const [judgeVideoUrl, setJudgeVideoUrl] = useState('');
   const [myVote, setMyVote] = useState<string | null>(null);
   const [voting, setVoting] = useState(false);
+  const [introDone, setIntroDone] = useState<boolean>(() => {
+    try { return !!sessionStorage.getItem(`battle-intro-played:${fightId}`); } catch { return false; }
+  });
   // Auto-resolve expired fights on page load
   useEffect(() => {
     supabase.rpc('resolve_expired_quick_fights').then(() => {});
@@ -182,6 +185,7 @@ export default function QuickFightPage() {
       <BattleIntroOverlay
         fightId={fight.id}
         active={!!(fight.player_1_submission_url && fight.player_2_submission_url && fight.player_2_id)}
+        onComplete={() => setIntroDone(true)}
       />
       {/* ════════ ARCADE HUD ════════ */}
       {/* Top bar: back + status pill */}
@@ -298,6 +302,7 @@ export default function QuickFightPage() {
                     ).toISOString()
                   : null
               }
+              paused={!introDone}
             />
           ) : (
             // Pre-upload state — placeholders stacked with VS divider
