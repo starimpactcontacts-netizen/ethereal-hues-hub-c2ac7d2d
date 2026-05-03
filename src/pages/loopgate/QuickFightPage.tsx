@@ -16,6 +16,7 @@ import QuickFightResultCard from '@/components/loopgate/QuickFightResultCard';
 import BattleSongPicker from '@/components/loopgate/BattleSongPicker';
 import BattleSubmissionCard from '@/components/loopgate/BattleSubmissionCard';
 import BattleAutoplayDuo from '@/components/loopgate/BattleAutoplayDuo';
+import FNFVoteScoreboard from '@/components/loopgate/FNFVoteScoreboard';
 import QuickFightPublicVote from '@/components/loopgate/QuickFightPublicVote';
 
 /** Detect platform from URL */
