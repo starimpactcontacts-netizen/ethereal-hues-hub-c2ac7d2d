@@ -53,6 +53,8 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
 
   const redVideoRef = useRef<HTMLVideoElement>(null);
   const blueVideoRef = useRef<HTMLVideoElement>(null);
+  const redPanelRef = useRef<HTMLDivElement>(null);
+  const bluePanelRef = useRef<HTMLDivElement>(null);
 
   // Tick — drive activeIdx + countdown. Pauses until both videos are ready
   // so the rotation always starts in lockstep with playback.
@@ -103,6 +105,14 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
     });
   }, [activeIdx, bothReady, paused]);
 
+  // Smooth-scroll the active panel into view when it switches
+  useEffect(() => {
+    if (!bothReady || paused) return;
+    const target = activeIdx === 0 ? redPanelRef.current : bluePanelRef.current;
+    if (!target) return;
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [activeIdx, bothReady, paused]);
+
   const enableSound = () => {
     setNeedsTapForSound(false);
     [redVideoRef.current, blueVideoRef.current].forEach((v, i) => {
@@ -128,6 +138,7 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
       <SidePanel
         side={red}
         videoRef={redVideoRef}
+        panelRef={redPanelRef}
         active={bothReady && activeIdx === 0}
         progressPct={bothReady ? (activeIdx === 0 ? progressPct : activeIdx > 0 ? 100 : 0) : 0}
         secondsLeft={secondsLeft}
@@ -166,6 +177,7 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
       <SidePanel
         side={blue}
         videoRef={blueVideoRef}
+        panelRef={bluePanelRef}
         active={bothReady && activeIdx === 1}
         progressPct={bothReady && activeIdx === 1 ? progressPct : 0}
         secondsLeft={secondsLeft}
@@ -195,6 +207,7 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
 function SidePanel({
   side,
   videoRef,
+  panelRef,
   active,
   progressPct,
   secondsLeft,
@@ -203,6 +216,7 @@ function SidePanel({
 }: {
   side: Side;
   videoRef: React.RefObject<HTMLVideoElement>;
+  panelRef?: React.RefObject<HTMLDivElement>;
   active: boolean;
   progressPct: number;
   secondsLeft: number;
@@ -216,6 +230,7 @@ function SidePanel({
 
   return (
     <div
+      ref={panelRef}
       className={`relative aspect-square w-full overflow-hidden bg-black ${active ? `ring-2 ${ring} ring-inset` : "opacity-50"}`}
       style={{
         boxShadow: active
