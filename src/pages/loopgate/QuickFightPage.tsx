@@ -45,6 +45,9 @@ export default function QuickFightPage() {
   const [judgeVideoUrl, setJudgeVideoUrl] = useState('');
   const [myVote, setMyVote] = useState<string | null>(null);
   const [voting, setVoting] = useState(false);
+  const [introDone, setIntroDone] = useState<boolean>(() => {
+    try { return !!sessionStorage.getItem(`battle-intro-played:${fightId}`); } catch { return false; }
+  });
   // Auto-resolve expired fights on page load
   useEffect(() => {
     supabase.rpc('resolve_expired_quick_fights').then(() => {});
