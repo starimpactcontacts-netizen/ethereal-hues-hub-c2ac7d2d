@@ -43,7 +43,9 @@ import {
 import {
   DEFAULT_ADJUSTMENTS, ADJUST_SECTIONS,
   buildAdjustFilter, applyCanvasAdjustments, hasAdjustments,
+  NEUTRAL_WHEELS, identityCurve, wheelsAreNeutral,
   type AdjustmentValues, type AdjustSection,
+  type ColorWheels,
 } from "@/lib/studioAdjustments";
 import { ANIMATION_PRESETS } from "@/lib/studioKeyframes";
 import { SPEED_CURVE_PRESETS, type SpeedCurve } from "@/lib/studioSpeedCurves";
@@ -52,6 +54,9 @@ import { type TimelineMarker } from "@/lib/studioTimeline";
 import SpeedCurvesPanel from "./studio/SpeedCurvesPanel";
 import ChromaKeyPanel from "./studio/ChromaKeyPanel";
 import TimelineMarkersPanel from "./studio/TimelineMarkersPanel";
+import ColorLabPanel from "./studio/ColorLabPanel";
+import ColorScopes from "./studio/ColorScopes";
+import { LUT_PRESETS, applyLUTPreset, applyLUT, type LUT3D } from "@/lib/studioColorScience";
 
 // ─── Types ───
 type TextOverlay = {
