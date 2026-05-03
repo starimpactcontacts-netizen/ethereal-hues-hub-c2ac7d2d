@@ -332,13 +332,16 @@ export default function QuickFightPage() {
                 username: fight.player_1_username,
                 url: fight.player_1_submission_url,
                 color: 'red',
+                avatarUrl: fight.player_1_avatar_url,
               }}
               blue={{
                 userId: fight.player_2_id,
                 username: fight.player_2_username || '???',
                 url: fight.player_2_submission_url,
                 color: 'blue',
+                avatarUrl: fight.player_2_avatar_url,
               }}
+              fightId={fight.id}
               startedAt={
                 fight.player_1_submitted_at && fight.player_2_submitted_at
                   ? new Date(
