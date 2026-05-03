@@ -30,27 +30,103 @@ export default function BattleDecidedOverlay({
 }: Props) {
   const [show, setShow] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const triggeredRef = useRef(false);
+  const unlockedRef = useRef(false);
+  const retryPlayRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    if (!active || triggeredRef.current) return;
-    triggeredRef.current = true;
+    const a = new Audio(decidedSfx);
+    a.preload = "auto";
+    a.volume = 1;
+    a.muted = false;
+    audioRef.current = a;
+
+    const unlock = () => {
+      if (unlockedRef.current || !audioRef.current) return;
+      const el = audioRef.current;
+      const originalVolume = el.volume;
+      el.volume = 0;
+      el.muted = true;
+      el.play()
+        .then(() => {
+          el.pause();
+          el.currentTime = 0;
+          el.muted = false;
+          el.volume = originalVolume;
+          unlockedRef.current = true;
+        })
+        .catch(() => {
+          el.muted = false;
+          el.volume = originalVolume;
+        });
+    };
+
+    window.addEventListener("pointerdown", unlock, { capture: true });
+    window.addEventListener("touchstart", unlock, { capture: true });
+    return () => {
+      window.removeEventListener("pointerdown", unlock, { capture: true });
+      window.removeEventListener("touchstart", unlock, { capture: true });
+      a.pause();
+      audioRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!active) {
+      setShow(false);
+      audioRef.current?.pause();
+      retryPlayRef.current = null;
+      return;
+    }
+
     setShow(true);
-    // Play stinger
-    try {
-      const a = new Audio(decidedSfx);
-      a.volume = 0.95;
+
+    const muteEverythingExcept = (stinger: HTMLAudioElement) => {
+      document.querySelectorAll("video, audio").forEach((media) => {
+        if (media === stinger) return;
+        const el = media as HTMLMediaElement;
+        el.muted = true;
+        el.pause();
+      });
+    };
+
+    const playStinger = () => {
+      const a = audioRef.current ?? new Audio(decidedSfx);
       audioRef.current = a;
-      a.play().catch(() => {});
-    } catch {}
+      a.volume = 1;
+      a.muted = false;
+      muteEverythingExcept(a);
+
+      const attempt = () => {
+        a.muted = false;
+        a.volume = 1;
+        a.currentTime = 0;
+        a.play().catch(() => {
+          retryPlayRef.current = attempt;
+        });
+      };
+
+      retryPlayRef.current = attempt;
+      a.load();
+      attempt();
+    };
+
+    playStinger();
+
+    const forceRetry = () => retryPlayRef.current?.();
+    window.addEventListener("pointerdown", forceRetry, { capture: true });
+    window.addEventListener("touchstart", forceRetry, { capture: true });
     // Auto-dismiss after the sting + reveal (~6s)
     const t = setTimeout(() => {
       setShow(false);
+      audioRef.current?.pause();
       onDismiss?.();
     }, 6000);
     return () => {
       clearTimeout(t);
+      window.removeEventListener("pointerdown", forceRetry, { capture: true });
+      window.removeEventListener("touchstart", forceRetry, { capture: true });
       audioRef.current?.pause();
+      retryPlayRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
