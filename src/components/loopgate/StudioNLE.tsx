@@ -17,7 +17,7 @@ import {
   ArrowLeft, ArrowRight, ArrowUp, MoveHorizontal,
   RotateCw, Maximize, Minimize, Blend, GripVertical,
   Crop, FlipVertical, RectangleHorizontal, Square, Smartphone, Monitor,
-  Ratio
+  Ratio, Flame
 } from "lucide-react";
 import { useUndoRedo } from "./studio/useUndoRedo";
 import { useCanvasDrag } from "./studio/useCanvasDrag";
