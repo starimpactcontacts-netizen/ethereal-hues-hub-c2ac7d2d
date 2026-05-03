@@ -5,7 +5,8 @@ import {
   Plus, Clock, Film, Trash2, ChevronLeft, MoreVertical,
   Layers, Scissors, Type, Music, Play, Upload,
   Crop, SlidersHorizontal, Palette, ExternalLink, Bug, Sparkles,
-  Wand2, ArrowRight
+  Wand2, ArrowRight, Download, Cpu, Aperture, Headphones, Keyboard, Gauge,
+  Activity, Box, Sliders, Volume2, BookOpen
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ActiveSoloBanner from "./ActiveSoloBanner";
@@ -74,11 +75,11 @@ function formatDuration(sec: number): string {
 
 const CAPABILITIES = [
   { icon: Scissors, label: "Trim & Split", desc: "Frame-perfect cuts" },
-  { icon: Palette, label: "24+ Filters", desc: "Cinema-grade LUTs" },
+  { icon: Palette, label: "Color Lab", desc: "3-way wheels · Curves · LUTs" },
   { icon: Type, label: "50+ Fonts", desc: "Animated text overlays" },
-  { icon: Music, label: "Audio Mix", desc: "Multi-track mixing" },
+  { icon: Activity, label: "Live Scopes", desc: "Histogram · Waveform · Vector" },
   { icon: Crop, label: "Crop & Transform", desc: "9:16, 4:3, custom" },
-  { icon: SlidersHorizontal, label: "Color Grade", desc: "13-point grading" },
+  { icon: SlidersHorizontal, label: "13-pt Grade", desc: "Lift · Gamma · Gain" },
 ];
 
 interface StudioHomeProps {
