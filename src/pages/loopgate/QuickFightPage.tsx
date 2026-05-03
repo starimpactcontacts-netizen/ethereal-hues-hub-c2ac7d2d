@@ -182,6 +182,7 @@ export default function QuickFightPage() {
       <BattleIntroOverlay
         fightId={fight.id}
         active={!!(fight.player_1_submission_url && fight.player_2_submission_url && fight.player_2_id)}
+        onComplete={() => setIntroDone(true)}
       />
       {/* ════════ ARCADE HUD ════════ */}
       {/* Top bar: back + status pill */}
