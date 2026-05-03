@@ -242,6 +242,15 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
   const [adjustments, setAdjustments] = useState<AdjustmentValues>({ ...DEFAULT_ADJUSTMENTS });
   const [openSections, setOpenSections] = useState<Record<AdjustSection, boolean>>({ color: true, lightness: true, effects: true });
 
+  // Pro Color Lab — wheels, curve, LUT
+  const [wheels, setWheels] = useState<ColorWheels>({ ...NEUTRAL_WHEELS });
+  const [curvePoints, setCurvePoints] = useState<{ x: number; y: number }[]>([{ x: 0, y: 0 }, { x: 1, y: 1 }]);
+  const [lumaCurve, setLumaCurve] = useState<number[] | null>(null);
+  const [activeLUT, setActiveLUT] = useState<string | null>(null);
+  const [lutIntensity, setLutIntensity] = useState<number>(1);
+  const [customLUT, setCustomLUT] = useState<LUT3D | null>(null);
+  const [showScopes, setShowScopes] = useState<boolean>(false);
+
   // Undo/Redo system
   const { pushSnapshot, undo: undoAction, redo: redoAction, canUndo, canRedo } = useUndoRedo<EditorSnapshot>();
 
