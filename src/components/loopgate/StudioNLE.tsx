@@ -17,7 +17,7 @@ import {
   ArrowLeft, ArrowRight, ArrowUp, MoveHorizontal,
   RotateCw, Maximize, Minimize, Blend, GripVertical,
   Crop, FlipVertical, RectangleHorizontal, Square, Smartphone, Monitor,
-  Ratio
+  Ratio, Flame
 } from "lucide-react";
 import { useUndoRedo } from "./studio/useUndoRedo";
 import { useCanvasDrag } from "./studio/useCanvasDrag";
@@ -57,6 +57,8 @@ import TimelineMarkersPanel from "./studio/TimelineMarkersPanel";
 import ColorLabPanel from "./studio/ColorLabPanel";
 import ColorScopes from "./studio/ColorScopes";
 import { LUT_PRESETS, applyLUTPreset, applyLUT, type LUT3D } from "@/lib/studioColorScience";
+import ViralPresetsPanel, { VIRAL_PRESETS, type ViralPresetId } from "./studio/ViralPresetsPanel";
+import { beatPhase, type BeatAnalysis } from "@/lib/studioBeatDetector";
 
 // ─── Types ───
 type TextOverlay = {
@@ -79,7 +81,7 @@ type TextOverlay = {
 };
 type MediaItem = { id: string; file: File; url: string; thumbnail: string; duration: number; name: string; type: "video" | "audio" | "image" };
 type TimelineTrack = { id: string; name: string; type: "video" | "audio" | "text" | "effect"; visible: boolean; locked: boolean };
-type ToolTab = "media" | "audio" | "text" | "effects" | "transitions" | "filters" | "adjust" | "color" | "export" | "upscale" | "crop" | "ai";
+type ToolTab = "media" | "audio" | "text" | "effects" | "transitions" | "filters" | "adjust" | "color" | "export" | "upscale" | "crop" | "ai" | "viral";
 type EffectIntensity = Record<string, number>;
 
 // Studio accent — monochrome premium
@@ -103,6 +105,7 @@ const CROP_PRESETS: CropPreset[] = [
 
 const TOOL_TABS: { id: ToolTab; icon: typeof Film; label: string }[] = [
   { id: "media", icon: FileVideo, label: "Media" },
+  { id: "viral", icon: Flame, label: "Viral" },
   { id: "audio", icon: Music, label: "Audio" },
   { id: "text", icon: Type, label: "Text" },
   { id: "crop", icon: Crop, label: "Crop" },
@@ -250,6 +253,12 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
   const [lutIntensity, setLutIntensity] = useState<number>(1);
   const [customLUT, setCustomLUT] = useState<LUT3D | null>(null);
   const [showScopes, setShowScopes] = useState<boolean>(false);
+
+  // Viral / Beat sync state
+  const [beats, setBeats] = useState<BeatAnalysis | null>(null);
+  const [beatPulseEnabled, setBeatPulseEnabled] = useState<boolean>(false);
+  const [beatPulseIntensity, setBeatPulseIntensity] = useState<number>(0.5);
+  const [activeViralPreset, setActiveViralPreset] = useState<ViralPresetId | null>(null);
 
   // Undo/Redo system
   const { pushSnapshot, undo: undoAction, redo: redoAction, canUndo, canRedo } = useUndoRedo<EditorSnapshot>();
@@ -480,6 +489,49 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     setEffectIntensities(prev => ({ ...prev, [effectId]: value }));
   };
 
+  // ─── Viral Pack: apply preset (filter + effects + speed + beat sync) ───
+  const applyViralPreset = useCallback((preset: typeof VIRAL_PRESETS[number]) => {
+    saveUndoSnapshot();
+    if (preset.apply.filter) {
+      const f = FILTER_PRESETS.find(p => p.name === preset.apply.filter);
+      if (f) setActiveFilter(f);
+    }
+    if (preset.apply.effects) {
+      setActiveEffects(preset.apply.effects.map(e => e.id));
+      const intens: EffectIntensity = {};
+      preset.apply.effects.forEach(e => { intens[e.id] = e.intensity; });
+      setEffectIntensities(prev => ({ ...prev, ...intens }));
+    }
+    if (preset.apply.speed) setSpeed(preset.apply.speed);
+    if (preset.apply.beatPulse !== undefined) setBeatPulseEnabled(preset.apply.beatPulse);
+    setActiveViralPreset(preset.id);
+    if (preset.apply.cutOnBeats && beats?.beats?.length) {
+      cutOnBeats(preset.apply.cutInterval ?? 4);
+    }
+    toast.success(`${preset.label} applied`);
+  }, [beats, saveUndoSnapshot]);
+
+  // ─── Auto-cut every Nth beat as timeline markers ───
+  const cutOnBeats = useCallback((interval: number) => {
+    if (!beats?.beats?.length) {
+      toast.error("Detect beats first");
+      return;
+    }
+    const newMarkers: TimelineMarker[] = beats.beats
+      .filter((_, i) => i % interval === 0)
+      .filter(t => t > 0 && t < duration)
+      .slice(0, 80)
+      .map((t, i) => ({
+        id: `beat-${i}-${t.toFixed(3)}`,
+        time: t,
+        label: `Beat ${i + 1}`,
+        color: "#FF3D7F",
+        type: "beat" as const,
+      }));
+    setTimelineMarkers(prev => [...prev.filter(m => m.type !== "beat"), ...newMarkers]);
+    toast.success(`${newMarkers.length} beat markers added`);
+  }, [beats, duration]);
+
   // ─── Timeline Thumbnails ───
   useEffect(() => {
     if (!videoUrl) { setThumbnails([]); return; }
@@ -553,6 +605,18 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
           ctx.translate(-crop.dw / 2, -crop.dh / 2);
         }
 
+        // Beat-driven zoom pulse
+        let pulseScale = 1;
+        if (beatPulseEnabled && beats?.beats?.length) {
+          const { intensity } = beatPhase(vid.currentTime, beats.beats);
+          pulseScale = 1 + intensity * beatPulseIntensity * 0.18;
+          if (pulseScale !== 1) {
+            ctx.translate(crop.dw / 2, crop.dh / 2);
+            ctx.scale(pulseScale, pulseScale);
+            ctx.translate(-crop.dw / 2, -crop.dh / 2);
+          }
+        }
+
         // Apply CSS-based filters (presets + basic grading)
         const adjFilter = buildAdjustFilter(adjustments);
         const combinedFilter = [computedFilter, adjFilter].filter(f => f !== "none").join(" ") || "none";
@@ -621,7 +685,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     };
     draw();
     return () => { running = false; cancelAnimationFrame(animRef.current); };
-  }, [videoUrl, computedFilter, textOverlays, activeEffects, effectIntensities, activeTransition, transitionDuration, duration, adjustments, wheels, lumaCurve, activeLUT, customLUT, lutIntensity, cropPreset, rotation, flipH, flipV, activeToolTab]);
+  }, [videoUrl, computedFilter, textOverlays, activeEffects, effectIntensities, activeTransition, transitionDuration, duration, adjustments, wheels, lumaCurve, activeLUT, customLUT, lutIntensity, cropPreset, rotation, flipH, flipV, activeToolTab, beatPulseEnabled, beatPulseIntensity, beats]);
 
   // ─── Text Rendering Engine ───
   const renderFullTextOverlay = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, overlay: TextOverlay, time: number) => {
@@ -1272,6 +1336,21 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
                   </>
                 )}
 
+                {activeToolTab === "viral" && (
+                  <ViralPresetsPanel
+                    audioFile={audioFile}
+                    videoFile={activeMedia?.file ?? null}
+                    beats={beats}
+                    onBeatsDetected={setBeats}
+                    beatPulse={beatPulseEnabled}
+                    onBeatPulseChange={setBeatPulseEnabled}
+                    beatIntensity={beatPulseIntensity}
+                    onBeatIntensityChange={setBeatPulseIntensity}
+                    activePresetId={activeViralPreset}
+                    onApplyPreset={applyViralPreset}
+                    onCutOnBeats={cutOnBeats}
+                  />
+                )}
                 {/* ════════ CROP / TRANSFORM ════════ */}
                 {activeToolTab === "crop" && (
                   <>
@@ -2306,6 +2385,15 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
                   </span>
                 </div>
               ))}
+              {/* Beat dots */}
+              {beats?.beats?.length ? (
+                <div className="absolute inset-0 pointer-events-none">
+                  {beats.beats.filter(t => t < duration).map((t, i) => (
+                    <div key={i} className="absolute top-0 w-[2px] h-2 rounded-full"
+                      style={{ left: `${t * 60 * timelineZoom}px`, background: "#FF3D7F", boxShadow: "0 0 4px #FF3D7F" }} />
+                  ))}
+                </div>
+              ) : null}
             </div>
 
             {/* Video track */}
