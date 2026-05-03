@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 10;
@@ -8,6 +9,7 @@ type Side = {
   username: string;
   url: string;
   color: "red" | "blue";
+  avatarUrl?: string | null;
 };
 
 interface Props {
@@ -15,6 +17,8 @@ interface Props {
   blue: Side;
   /** ISO timestamp the showcase started (for cross-viewer sync). Defaults to mount time. */
   startedAt?: string | null;
+  /** If supplied, fetches live vote counts for the FNF-style health bar. */
+  fightId?: string | null;
 }
 
 function isVideo(url: string) {
@@ -26,13 +30,47 @@ function isVideo(url: string) {
  * Auto-plays one for 10s, then the other for 10s, on infinite loop.
  * Synced for all viewers using `startedAt` timestamp.
  */
-export default function BattleAutoplayDuo({ red, blue, startedAt }: Props) {
+export default function BattleAutoplayDuo({ red, blue, startedAt, fightId }: Props) {
   const sides: [Side, Side] = [red, blue];
   const startMsRef = useRef<number>(startedAt ? new Date(startedAt).getTime() : Date.now());
   const totalMs = sides.length * PER_EDIT_SECONDS * 1000;
   const [redReady, setRedReady] = useState(false);
   const [blueReady, setBlueReady] = useState(false);
   const bothReady = redReady && blueReady;
+
+  // Live vote counts (FNF-style health bar)
+  const [redVotes, setRedVotes] = useState(0);
+  const [blueVotes, setBlueVotes] = useState(0);
+  useEffect(() => {
+    if (!fightId) return;
+    const fetchVotes = async () => {
+      const { data } = await supabase
+        .from('quick_fight_votes')
+        .select('voted_for')
+        .eq('fight_id', fightId);
+      if (!data) return;
+      let r = 0, b = 0;
+      for (const v of data) {
+        if (v.voted_for === red.userId) r++;
+        else if (v.voted_for === blue.userId) b++;
+      }
+      setRedVotes(r);
+      setBlueVotes(b);
+    };
+    fetchVotes();
+    const ch = supabase
+      .channel(`bduo_votes_${fightId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'quick_fight_votes', filter: `fight_id=eq.${fightId}` }, fetchVotes)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [fightId, red.userId, blue.userId]);
+
+  const totalVotes = redVotes + blueVotes;
+  // FNF-style: red on the LEFT side of the bar, blue on the RIGHT.
+  // When votes are tied (or empty) the bar sits at 50/50.
+  const redBarPct = totalVotes === 0 ? 50 : (redVotes / totalVotes) * 100;
+  const leading: 'red' | 'blue' | null =
+    totalVotes === 0 ? null : redVotes === blueVotes ? null : redVotes > blueVotes ? 'red' : 'blue';
 
   const compute = () => {
     const elapsed = Math.max(0, Date.now() - startMsRef.current);
@@ -123,33 +161,16 @@ export default function BattleAutoplayDuo({ red, blue, startedAt }: Props) {
         loading={!redReady}
       />
 
-      {/* VS divider — cinematic neon split */}
-      <div className="relative h-0 flex items-center justify-center bg-black z-20">
-        <div
-          className="absolute inset-x-0 top-1/2 h-[2px]"
-          style={{
-            background:
-              'linear-gradient(90deg, transparent 0%, rgba(239,68,68,0.9) 30%, #fff 50%, rgba(59,130,246,0.9) 70%, transparent 100%)',
-            boxShadow:
-              '0 0 12px rgba(239,68,68,0.6), 0 0 12px rgba(59,130,246,0.6)',
-          }}
-        />
-        <div
-          className="relative z-10 w-10 h-10 rounded-full bg-black flex items-center justify-center -my-5"
-          style={{
-            border: '1.5px solid rgba(255,255,255,0.25)',
-            boxShadow:
-              '0 0 20px rgba(239,68,68,0.45), 0 0 20px rgba(59,130,246,0.45), inset 0 1px 0 rgba(255,255,255,0.15)',
-          }}
-        >
-          <span
-            className="text-[14px] font-black tracking-[0.15em] bg-gradient-to-r from-red-400 via-white to-blue-400 bg-clip-text text-transparent leading-none"
-            style={teko}
-          >
-            VS
-          </span>
-        </div>
-      </div>
+      {/* FNF-style scoreboard divider — avatars on each side, live vote health bar in the middle */}
+      <FNFScoreboard
+        red={red}
+        blue={blue}
+        redVotes={redVotes}
+        blueVotes={blueVotes}
+        redBarPct={redBarPct}
+        leading={leading}
+        activeSide={bothReady ? (activeIdx === 0 ? 'red' : 'blue') : null}
+      />
 
       {/* BLUE — bottom */}
       <SidePanel
