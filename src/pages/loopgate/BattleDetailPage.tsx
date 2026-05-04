@@ -92,6 +92,8 @@ export default function BattleDetailPage() {
   const totalVotes = battle.challenger_votes + battle.opponent_votes;
   const hasSongPicked = !!(battle as any).theme_song_name;
   const isRapid = (battle as any).is_rapid;
+  const submissionMode = (battle as any).submission_mode as 'create' | 'reuse' | undefined;
+  const isPremade = submissionMode === 'reuse';
   const isLive = battle.status === 'active';
   const isCompleted = battle.status === 'completed';
   const isJudging = battle.status === 'judging';
@@ -259,6 +261,13 @@ export default function BattleDetailPage() {
             {isRapid && (
               <span className="flex items-center gap-1 text-amber-400 text-xs tracking-wider ml-1">
                 <Zap className="w-3 h-3" /> RAPID
+              </span>
+            )}
+            {submissionMode && (
+              <span className={`flex items-center gap-1 text-xs tracking-wider ml-1 ${
+                isPremade ? 'text-sky-400' : 'text-emerald-400'
+              }`}>
+                {isPremade ? '⬆ PRE-MADE' : '📦 SCENEPACK'}
               </span>
             )}
           </div>
