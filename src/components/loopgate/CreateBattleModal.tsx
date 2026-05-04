@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Swords, Clock, Trophy, Search, User, Gavel, Zap, Music, Globe2, Target, Film } from "lucide-react";
+import { X, Swords, Clock, Trophy, Search, User, Gavel, Zap, Music, Globe2, Target, Film, Lock, Link2, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
@@ -24,7 +24,7 @@ interface SearchResult {
 
 export default function CreateBattleModal({ isOpen, onClose, onSuccess }: CreateBattleModalProps) {
   const { profile } = useAuth();
-  const [challengeType, setChallengeType] = useState<'open' | 'direct'>('open');
+  const [challengeType, setChallengeType] = useState<'open' | 'direct' | 'private'>('open');
   const [duration, setDuration] = useState<number>(48);
   const [isRapid, setIsRapid] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -116,14 +116,15 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
     }
 
     setLoading(true);
-    
+    // Private lobby = open battle but flagged unlisted
+    const effectiveType: 'open' | 'direct' = challengeType === 'private' ? 'open' : challengeType;
     const result = await createBattle(
       profile.id,
       profile.username,
       profile.avatar_url,
       profile.league || 'open',
       duration,
-      challengeType,
+      effectiveType,
       selectedOpponent?.id,
       selectedOpponent?.username,
       selectedOpponent?.avatar_url
@@ -132,6 +133,9 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
     if (result.success && result.battleId) {
       // Always update is_rapid flag + theme song
       const updateData: any = { is_rapid: isRapid };
+      if (challengeType === 'private') {
+        updateData.challenge_type = 'private';
+      }
       if (selectedTheme) {
         updateData.theme_song_name = `${selectedTheme.artist_name} — ${selectedTheme.song_name}`;
         updateData.theme_song_preview_url = selectedTheme.song_preview_url;
@@ -200,7 +204,17 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
     setLoading(false);
 
     if (result.success && result.battleId) {
-      toast.success(challengeType === 'open' ? "Battle posted! Waiting for challenger..." : "Challenge sent!");
+      if (challengeType === 'private') {
+        const link = `${window.location.origin}/battle/${result.battleId}`;
+        try {
+          await navigator.clipboard.writeText(link);
+          toast.success("Lobby created — invite link copied!", { description: link, duration: 6000 });
+        } catch {
+          toast.success("Lobby created!", { description: link, duration: 8000 });
+        }
+      } else {
+        toast.success(challengeType === 'open' ? "Battle posted! Waiting for challenger..." : "Challenge sent!");
+      }
       onSuccess(result.battleId);
     } else {
       toast.error(result.error || "Failed to create battle");
@@ -291,32 +305,52 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
             {/* Challenge Type */}
             <div>
               <label className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2 block font-semibold">Challenge Type</label>
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-3 gap-2">
                 <button
                   onClick={() => setChallengeType('open')}
-                  className={`p-3.5 rounded-2xl text-left transition-all active:scale-[0.98] ${
+                  className={`p-3 rounded-2xl text-left transition-all active:scale-[0.98] ${
                     challengeType === 'open'
                       ? 'bg-gradient-to-br from-red-500/25 to-red-600/10 border border-red-400/50 shadow-[0_0_20px_-4px_rgba(239,68,68,0.5)]'
                       : 'bg-white/[0.04] border border-white/[0.06]'
                   }`}
                 >
                   <Globe2 className={`w-4 h-4 mb-1.5 ${challengeType === 'open' ? 'text-red-300' : 'text-zinc-500'}`} />
-                  <span className="text-sm font-semibold text-white block">Open</span>
-                  <span className="text-[10px] text-zinc-500">Anyone can join</span>
+                  <span className="text-[13px] font-semibold text-white block">Open</span>
+                  <span className="text-[9px] text-zinc-500">Anyone joins</span>
                 </button>
                 <button
                   onClick={() => setChallengeType('direct')}
-                  className={`p-3.5 rounded-2xl text-left transition-all active:scale-[0.98] ${
+                  className={`p-3 rounded-2xl text-left transition-all active:scale-[0.98] ${
                     challengeType === 'direct'
                       ? 'bg-gradient-to-br from-red-500/25 to-red-600/10 border border-red-400/50 shadow-[0_0_20px_-4px_rgba(239,68,68,0.5)]'
                       : 'bg-white/[0.04] border border-white/[0.06]'
                   }`}
                 >
                   <Target className={`w-4 h-4 mb-1.5 ${challengeType === 'direct' ? 'text-red-300' : 'text-zinc-500'}`} />
-                  <span className="text-sm font-semibold text-white block">Invite</span>
-                  <span className="text-[10px] text-zinc-500">Pick an editor</span>
+                  <span className="text-[13px] font-semibold text-white block">Invite</span>
+                  <span className="text-[9px] text-zinc-500">Pick editor</span>
+                </button>
+                <button
+                  onClick={() => setChallengeType('private')}
+                  className={`p-3 rounded-2xl text-left transition-all active:scale-[0.98] ${
+                    challengeType === 'private'
+                      ? 'bg-gradient-to-br from-amber-500/25 to-amber-600/10 border border-amber-400/50 shadow-[0_0_20px_-4px_rgba(245,158,11,0.5)]'
+                      : 'bg-white/[0.04] border border-white/[0.06]'
+                  }`}
+                >
+                  <Lock className={`w-4 h-4 mb-1.5 ${challengeType === 'private' ? 'text-amber-300' : 'text-zinc-500'}`} />
+                  <span className="text-[13px] font-semibold text-white block">Private</span>
+                  <span className="text-[9px] text-zinc-500">Share link</span>
                 </button>
               </div>
+              {challengeType === 'private' && (
+                <div className="mt-2 flex items-start gap-2 p-2.5 rounded-xl bg-amber-500/[0.06] border border-amber-500/20">
+                  <Link2 className="w-3.5 h-3.5 text-amber-400 mt-0.5 shrink-0" />
+                  <p className="text-[10.5px] text-amber-100/80 leading-relaxed">
+                    Lobby is unlisted. You'll get an invite link to share — only people with the link can join.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Search Opponent (for direct) */}

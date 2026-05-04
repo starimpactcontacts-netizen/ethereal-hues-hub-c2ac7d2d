@@ -42,6 +42,7 @@ import CashBattlesSection from "@/components/loopgate/CashBattlesSection";
 import { useMyCashBattles } from "@/hooks/useCashBattles";
 import { ArenaRail, ArenaRailCard, ArenaRailSkeleton } from "@/components/loopgate/ArenaCarouselSystem";
 import { useMyCompetitionReminders } from "@/hooks/useMyCompetitionReminders";
+import ArenaQOITop from "@/components/loopgate/ArenaQOITop";
 
 interface Event {
   id: string;
@@ -1283,6 +1284,9 @@ export default function ArenaPage() {
               onCancelQueue={handleCancelQueue}
             />
           </div>
+
+          {/* ═══ TOP QOI (Loopgate elite leaderboard) ═══ */}
+          <ArenaQOITop />
 
           {/* ═══ COMPETITIONS ═══ */}
           {(activeFilter === "all" || activeFilter === "competitions") && (
