@@ -1285,6 +1285,9 @@ export default function ArenaPage() {
             />
           </div>
 
+          {/* ═══ TOP QOI (Loopgate elite leaderboard) ═══ */}
+          <ArenaQOITop />
+
           {/* ═══ COMPETITIONS ═══ */}
           {(activeFilter === "all" || activeFilter === "competitions") && (
             <div className="mb-5">
