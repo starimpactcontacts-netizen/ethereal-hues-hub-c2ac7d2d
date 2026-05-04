@@ -134,7 +134,7 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
       // Always update is_rapid flag + theme song
       const updateData: any = { is_rapid: isRapid };
       if (challengeType === 'private') {
-        updateData.challenge_type = 'private';
+        updateData.is_private = true;
       }
       if (selectedTheme) {
         updateData.theme_song_name = `${selectedTheme.artist_name} — ${selectedTheme.song_name}`;
