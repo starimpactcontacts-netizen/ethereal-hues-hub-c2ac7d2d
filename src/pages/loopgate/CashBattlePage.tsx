@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import CashBattleChat from "@/components/loopgate/CashBattleChat";
 import CashBattleVoteBar from "@/components/loopgate/CashBattleVoteBar";
 import ScenepackButtons from "@/components/loopgate/ScenepackButtons";
+import ScenepackVote from "@/components/loopgate/ScenepackVote";
 import weirdCityPoster from "@/assets/weird-city-poster.jpeg";
 
 function formatPrize(cents: number): string {
@@ -405,6 +406,26 @@ export default function CashBattlePage() {
             gdriveUrl={battle.scenepack_gdrive_url}
             legacyUrl={battle.scenepack_url}
             variant="full"
+          />
+        </div>
+      )}
+
+      {/* Scenepack Vote — map-style 30s pick */}
+      {battle.status === 'live' && (battle as any).scenepack_option_a_id && (
+        <div className="mx-4 mt-3">
+          <ScenepackVote
+            battleId={battle.id}
+            isCash
+            isParticipant={isFighter}
+            optionAId={(battle as any).scenepack_option_a_id}
+            optionBId={(battle as any).scenepack_option_b_id}
+            voteDeadline={(battle as any).scenepack_vote_deadline}
+            myVote={isChallenger ? (battle as any).challenger_scenepack_vote : isOpponent ? (battle as any).opponent_scenepack_vote : null}
+            opponentVote={isChallenger ? (battle as any).opponent_scenepack_vote : isOpponent ? (battle as any).challenger_scenepack_vote : null}
+            lockedId={(battle as any).scenepack_locked_id}
+            lockedYoutube={battle.scenepack_youtube_url}
+            lockedGdrive={battle.scenepack_gdrive_url}
+            onChanged={fetchBattle}
           />
         </div>
       )}

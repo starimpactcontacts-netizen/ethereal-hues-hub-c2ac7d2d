@@ -507,6 +507,7 @@ export type Database = {
           challenger_author_username: string | null
           challenger_avatar_url: string | null
           challenger_id: string
+          challenger_scenepack_vote: string | null
           challenger_score: number | null
           challenger_submission_platform: string | null
           challenger_submission_url: string | null
@@ -531,6 +532,7 @@ export type Database = {
           opponent_author_username: string | null
           opponent_avatar_url: string | null
           opponent_id: string | null
+          opponent_scenepack_vote: string | null
           opponent_score: number | null
           opponent_submission_platform: string | null
           opponent_submission_url: string | null
@@ -543,6 +545,14 @@ export type Database = {
           public_vote_started_at: string | null
           requested_judge_id: string | null
           requested_judge_username: string | null
+          scenepack_gdrive_url: string | null
+          scenepack_locked_id: string | null
+          scenepack_option_a_id: string | null
+          scenepack_option_b_id: string | null
+          scenepack_url: string | null
+          scenepack_vote_deadline: string | null
+          scenepack_vote_started_at: string | null
+          scenepack_youtube_url: string | null
           showcase_started_at: string | null
           starts_at: string | null
           status: string
@@ -561,6 +571,7 @@ export type Database = {
           challenger_author_username?: string | null
           challenger_avatar_url?: string | null
           challenger_id: string
+          challenger_scenepack_vote?: string | null
           challenger_score?: number | null
           challenger_submission_platform?: string | null
           challenger_submission_url?: string | null
@@ -585,6 +596,7 @@ export type Database = {
           opponent_author_username?: string | null
           opponent_avatar_url?: string | null
           opponent_id?: string | null
+          opponent_scenepack_vote?: string | null
           opponent_score?: number | null
           opponent_submission_platform?: string | null
           opponent_submission_url?: string | null
@@ -597,6 +609,14 @@ export type Database = {
           public_vote_started_at?: string | null
           requested_judge_id?: string | null
           requested_judge_username?: string | null
+          scenepack_gdrive_url?: string | null
+          scenepack_locked_id?: string | null
+          scenepack_option_a_id?: string | null
+          scenepack_option_b_id?: string | null
+          scenepack_url?: string | null
+          scenepack_vote_deadline?: string | null
+          scenepack_vote_started_at?: string | null
+          scenepack_youtube_url?: string | null
           showcase_started_at?: string | null
           starts_at?: string | null
           status?: string
@@ -615,6 +635,7 @@ export type Database = {
           challenger_author_username?: string | null
           challenger_avatar_url?: string | null
           challenger_id?: string
+          challenger_scenepack_vote?: string | null
           challenger_score?: number | null
           challenger_submission_platform?: string | null
           challenger_submission_url?: string | null
@@ -639,6 +660,7 @@ export type Database = {
           opponent_author_username?: string | null
           opponent_avatar_url?: string | null
           opponent_id?: string | null
+          opponent_scenepack_vote?: string | null
           opponent_score?: number | null
           opponent_submission_platform?: string | null
           opponent_submission_url?: string | null
@@ -651,6 +673,14 @@ export type Database = {
           public_vote_started_at?: string | null
           requested_judge_id?: string | null
           requested_judge_username?: string | null
+          scenepack_gdrive_url?: string | null
+          scenepack_locked_id?: string | null
+          scenepack_option_a_id?: string | null
+          scenepack_option_b_id?: string | null
+          scenepack_url?: string | null
+          scenepack_vote_deadline?: string | null
+          scenepack_vote_started_at?: string | null
+          scenepack_youtube_url?: string | null
           showcase_started_at?: string | null
           starts_at?: string | null
           status?: string
@@ -690,6 +720,27 @@ export type Database = {
             columns: ["requested_judge_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "battles_scenepack_locked_id_fkey"
+            columns: ["scenepack_locked_id"]
+            isOneToOne: false
+            referencedRelation: "scenepack_pool"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "battles_scenepack_option_a_id_fkey"
+            columns: ["scenepack_option_a_id"]
+            isOneToOne: false
+            referencedRelation: "scenepack_pool"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "battles_scenepack_option_b_id_fkey"
+            columns: ["scenepack_option_b_id"]
+            isOneToOne: false
+            referencedRelation: "scenepack_pool"
             referencedColumns: ["id"]
           },
           {
@@ -943,6 +994,7 @@ export type Database = {
           challenger_accepted_at: string | null
           challenger_avatar_url: string | null
           challenger_id: string
+          challenger_scenepack_vote: string | null
           challenger_submission_platform: string | null
           challenger_submission_url: string | null
           challenger_submitted_at: string | null
@@ -958,6 +1010,7 @@ export type Database = {
           opponent_accepted_at: string | null
           opponent_avatar_url: string | null
           opponent_id: string | null
+          opponent_scenepack_vote: string | null
           opponent_submission_platform: string | null
           opponent_submission_url: string | null
           opponent_submitted_at: string | null
@@ -965,7 +1018,12 @@ export type Database = {
           opponent_username: string | null
           prize_cents: number
           scenepack_gdrive_url: string | null
+          scenepack_locked_id: string | null
+          scenepack_option_a_id: string | null
+          scenepack_option_b_id: string | null
           scenepack_url: string | null
+          scenepack_vote_deadline: string | null
+          scenepack_vote_started_at: string | null
           scenepack_youtube_url: string | null
           sponsor_campaign_id: string | null
           sponsor_logo_url: string | null
@@ -984,6 +1042,7 @@ export type Database = {
           challenger_accepted_at?: string | null
           challenger_avatar_url?: string | null
           challenger_id: string
+          challenger_scenepack_vote?: string | null
           challenger_submission_platform?: string | null
           challenger_submission_url?: string | null
           challenger_submitted_at?: string | null
@@ -999,6 +1058,7 @@ export type Database = {
           opponent_accepted_at?: string | null
           opponent_avatar_url?: string | null
           opponent_id?: string | null
+          opponent_scenepack_vote?: string | null
           opponent_submission_platform?: string | null
           opponent_submission_url?: string | null
           opponent_submitted_at?: string | null
@@ -1006,7 +1066,12 @@ export type Database = {
           opponent_username?: string | null
           prize_cents?: number
           scenepack_gdrive_url?: string | null
+          scenepack_locked_id?: string | null
+          scenepack_option_a_id?: string | null
+          scenepack_option_b_id?: string | null
           scenepack_url?: string | null
+          scenepack_vote_deadline?: string | null
+          scenepack_vote_started_at?: string | null
           scenepack_youtube_url?: string | null
           sponsor_campaign_id?: string | null
           sponsor_logo_url?: string | null
@@ -1025,6 +1090,7 @@ export type Database = {
           challenger_accepted_at?: string | null
           challenger_avatar_url?: string | null
           challenger_id?: string
+          challenger_scenepack_vote?: string | null
           challenger_submission_platform?: string | null
           challenger_submission_url?: string | null
           challenger_submitted_at?: string | null
@@ -1040,6 +1106,7 @@ export type Database = {
           opponent_accepted_at?: string | null
           opponent_avatar_url?: string | null
           opponent_id?: string | null
+          opponent_scenepack_vote?: string | null
           opponent_submission_platform?: string | null
           opponent_submission_url?: string | null
           opponent_submitted_at?: string | null
@@ -1047,7 +1114,12 @@ export type Database = {
           opponent_username?: string | null
           prize_cents?: number
           scenepack_gdrive_url?: string | null
+          scenepack_locked_id?: string | null
+          scenepack_option_a_id?: string | null
+          scenepack_option_b_id?: string | null
           scenepack_url?: string | null
+          scenepack_vote_deadline?: string | null
+          scenepack_vote_started_at?: string | null
           scenepack_youtube_url?: string | null
           sponsor_campaign_id?: string | null
           sponsor_logo_url?: string | null
@@ -1061,6 +1133,27 @@ export type Database = {
           winner_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "cash_battles_scenepack_locked_id_fkey"
+            columns: ["scenepack_locked_id"]
+            isOneToOne: false
+            referencedRelation: "scenepack_pool"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_battles_scenepack_option_a_id_fkey"
+            columns: ["scenepack_option_a_id"]
+            isOneToOne: false
+            referencedRelation: "scenepack_pool"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_battles_scenepack_option_b_id_fkey"
+            columns: ["scenepack_option_b_id"]
+            isOneToOne: false
+            referencedRelation: "scenepack_pool"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "cash_battles_sponsor_campaign_id_fkey"
             columns: ["sponsor_campaign_id"]
@@ -7493,6 +7586,45 @@ export type Database = {
           },
         ]
       }
+      scenepack_pool: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          preview_video_url: string | null
+          scenepack_gdrive_url: string | null
+          scenepack_youtube_url: string | null
+          series: string | null
+          sort_order: number
+          thumbnail_url: string | null
+          title: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          preview_video_url?: string | null
+          scenepack_gdrive_url?: string | null
+          scenepack_youtube_url?: string | null
+          series?: string | null
+          sort_order?: number
+          thumbnail_url?: string | null
+          title: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          preview_video_url?: string | null
+          scenepack_gdrive_url?: string | null
+          scenepack_youtube_url?: string | null
+          series?: string | null
+          sort_order?: number
+          thumbnail_url?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       shop_items: {
         Row: {
           available_until: string | null
@@ -8352,6 +8484,14 @@ export type Database = {
       calculate_level_from_xp: { Args: { xp_amount: number }; Returns: number }
       can_change_house: { Args: { user_uuid: string }; Returns: boolean }
       can_change_username: { Args: { user_uuid: string }; Returns: boolean }
+      cast_scenepack_vote: {
+        Args: {
+          p_battle_id: string
+          p_is_cash?: boolean
+          p_scenepack_id: string
+        }
+        Returns: string
+      }
       check_invite_submission_bonus: {
         Args: { p_user_id: string }
         Returns: number
@@ -8463,6 +8603,13 @@ export type Database = {
         }
         Returns: Json
       }
+      pick_random_scenepack_pair: {
+        Args: never
+        Returns: {
+          a: string
+          b: string
+        }[]
+      }
       post_hosted_comp_system_message: {
         Args: {
           p_competition_id: string
@@ -8503,6 +8650,14 @@ export type Database = {
         }[]
       }
       resolve_expired_quick_fights: { Args: never; Returns: number }
+      resolve_scenepack_if_expired: {
+        Args: { p_battle_id: string; p_is_cash?: boolean }
+        Returns: string
+      }
+      resolve_scenepack_vote: {
+        Args: { p_battle_id: string; p_is_cash?: boolean }
+        Returns: string
+      }
       spend_index: {
         Args: { p_amount: number; p_user_id: string }
         Returns: boolean
