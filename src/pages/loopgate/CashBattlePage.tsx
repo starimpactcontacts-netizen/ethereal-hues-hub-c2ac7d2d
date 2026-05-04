@@ -430,6 +430,17 @@ export default function CashBattlePage() {
         />
       )}
 
+      {/* Persistent scenepack download card — visible after vote locks */}
+      {battle.status === 'live' && (battle as any).scenepack_locked_id && (
+        <div className="mx-4 mt-3">
+          <ScenepackDownloadCard
+            lockedId={(battle as any).scenepack_locked_id}
+            lockedYoutube={battle.scenepack_youtube_url}
+            lockedGdrive={battle.scenepack_gdrive_url}
+          />
+        </div>
+      )}
+
       {/* Countdown Timer */}
       {isLive && (
         <motion.div
