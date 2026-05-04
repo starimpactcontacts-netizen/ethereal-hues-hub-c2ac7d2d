@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Swords, Clock, Trophy, Search, User, Gavel, Zap, Music, Globe2, Target, Film, Lock, Link2, Copy } from "lucide-react";
+import { X, Swords, Clock, Trophy, Search, User, Gavel, Zap, Globe2, Target, Film, Lock, Link2, Copy, Package, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
@@ -27,6 +27,7 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
   const [challengeType, setChallengeType] = useState<'open' | 'direct' | 'private'>('open');
   const [duration, setDuration] = useState<number>(48);
   const [isRapid, setIsRapid] = useState(false);
+  const [battleMode, setBattleMode] = useState<'scenepack' | 'premade'>('scenepack');
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [selectedOpponent, setSelectedOpponent] = useState<SearchResult | null>(null);
@@ -35,32 +36,6 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
   const [selectedJudge, setSelectedJudge] = useState<SearchResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
-
-  // Featured song themes
-  const [themeSongs, setThemeSongs] = useState<{ id: string; song_name: string; song_preview_url: string | null; title: string; artist_name: string }[]>([]);
-  const [selectedTheme, setSelectedTheme] = useState<typeof themeSongs[0] | null>(null);
-
-  useEffect(() => {
-    const fetchSongs = async () => {
-      const { data } = await supabase
-        .from('featured_drops')
-        .select('id, song_name, song_preview_url, title, featured_artists(name)')
-        .in('status', ['live', 'closed'])
-        .not('song_preview_url', 'is', null)
-        .order('created_at', { ascending: false })
-        .limit(20);
-      if (data) {
-        setThemeSongs(data.map((d: any) => ({
-          id: d.id,
-          song_name: d.song_name,
-          song_preview_url: d.song_preview_url,
-          title: d.title,
-          artist_name: d.featured_artists?.name || 'Unknown',
-        })));
-      }
-    };
-    if (isOpen) fetchSongs();
-  }, [isOpen]);
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
@@ -136,12 +111,6 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
       if (challengeType === 'private') {
         updateData.is_private = true;
       }
-      if (selectedTheme) {
-        updateData.theme_song_name = `${selectedTheme.artist_name} — ${selectedTheme.song_name}`;
-        updateData.theme_song_preview_url = selectedTheme.song_preview_url;
-        updateData.theme_drop_id = selectedTheme.id;
-      }
-
       if (selectedJudge) {
         // Specific judge selected — send them a request
         updateData.requested_judge_id = selectedJudge.id;
