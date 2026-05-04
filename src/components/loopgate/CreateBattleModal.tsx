@@ -209,7 +209,8 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
 
   if (!isOpen) return null;
 
-  const durationOptions = isRapid ? [1, 2, 3] : [24, 48, 72];
+  // Edit battles cap at 1 hour — fast turnaround like a game match
+  const durationOptions = [1];
 
   return (
     <AnimatePresence>
