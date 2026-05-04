@@ -6882,6 +6882,7 @@ export type Database = {
           matched_at: string | null
           player_1_avatar_url: string | null
           player_1_id: string
+          player_1_scenepack_vote: string | null
           player_1_submission_url: string | null
           player_1_submitted_at: string | null
           player_1_thumbnail_url: string | null
@@ -6889,11 +6890,19 @@ export type Database = {
           player_1_votes: number
           player_2_avatar_url: string | null
           player_2_id: string | null
+          player_2_scenepack_vote: string | null
           player_2_submission_url: string | null
           player_2_submitted_at: string | null
           player_2_thumbnail_url: string | null
           player_2_username: string | null
           player_2_votes: number
+          scenepack_gdrive_url: string | null
+          scenepack_locked_id: string | null
+          scenepack_option_a_id: string | null
+          scenepack_option_b_id: string | null
+          scenepack_vote_deadline: string | null
+          scenepack_vote_started_at: string | null
+          scenepack_youtube_url: string | null
           starts_at: string | null
           status: string
           theme_drop_id: string | null
@@ -6918,6 +6927,7 @@ export type Database = {
           matched_at?: string | null
           player_1_avatar_url?: string | null
           player_1_id: string
+          player_1_scenepack_vote?: string | null
           player_1_submission_url?: string | null
           player_1_submitted_at?: string | null
           player_1_thumbnail_url?: string | null
@@ -6925,11 +6935,19 @@ export type Database = {
           player_1_votes?: number
           player_2_avatar_url?: string | null
           player_2_id?: string | null
+          player_2_scenepack_vote?: string | null
           player_2_submission_url?: string | null
           player_2_submitted_at?: string | null
           player_2_thumbnail_url?: string | null
           player_2_username?: string | null
           player_2_votes?: number
+          scenepack_gdrive_url?: string | null
+          scenepack_locked_id?: string | null
+          scenepack_option_a_id?: string | null
+          scenepack_option_b_id?: string | null
+          scenepack_vote_deadline?: string | null
+          scenepack_vote_started_at?: string | null
+          scenepack_youtube_url?: string | null
           starts_at?: string | null
           status?: string
           theme_drop_id?: string | null
@@ -6954,6 +6972,7 @@ export type Database = {
           matched_at?: string | null
           player_1_avatar_url?: string | null
           player_1_id?: string
+          player_1_scenepack_vote?: string | null
           player_1_submission_url?: string | null
           player_1_submitted_at?: string | null
           player_1_thumbnail_url?: string | null
@@ -6961,11 +6980,19 @@ export type Database = {
           player_1_votes?: number
           player_2_avatar_url?: string | null
           player_2_id?: string | null
+          player_2_scenepack_vote?: string | null
           player_2_submission_url?: string | null
           player_2_submitted_at?: string | null
           player_2_thumbnail_url?: string | null
           player_2_username?: string | null
           player_2_votes?: number
+          scenepack_gdrive_url?: string | null
+          scenepack_locked_id?: string | null
+          scenepack_option_a_id?: string | null
+          scenepack_option_b_id?: string | null
+          scenepack_vote_deadline?: string | null
+          scenepack_vote_started_at?: string | null
+          scenepack_youtube_url?: string | null
           starts_at?: string | null
           status?: string
           theme_drop_id?: string | null
@@ -8498,6 +8525,10 @@ export type Database = {
         }
         Returns: string
       }
+      cast_scenepack_vote_quick_fight: {
+        Args: { p_fight_id: string; p_scenepack_id: string }
+        Returns: string
+      }
       check_invite_submission_bonus: {
         Args: { p_user_id: string }
         Returns: number
@@ -8660,8 +8691,16 @@ export type Database = {
         Args: { p_battle_id: string; p_is_cash?: boolean }
         Returns: string
       }
+      resolve_scenepack_if_expired_quick_fight: {
+        Args: { p_fight_id: string }
+        Returns: string
+      }
       resolve_scenepack_vote: {
         Args: { p_battle_id: string; p_is_cash?: boolean }
+        Returns: string
+      }
+      resolve_scenepack_vote_quick_fight: {
+        Args: { p_fight_id: string }
         Returns: string
       }
       spend_index: {
