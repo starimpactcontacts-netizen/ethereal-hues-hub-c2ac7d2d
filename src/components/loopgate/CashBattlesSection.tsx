@@ -672,16 +672,27 @@ export default function CashBattlesSection({
           </button>
         </div>
         <div className="flex items-center gap-1 shrink-0">
-          <button
-            type="button"
-            disabled
-            onClick={() => toast.info("Ranked battles — coming soon")}
-            className="flex items-center gap-1 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-zinc-400 rounded-md border border-white/10 bg-white/[0.03] whitespace-nowrap cursor-not-allowed opacity-70"
-          >
-            <Swords className="w-3 h-3" />
-            Ranked
-            <span className="ml-1 text-[8px] font-bold text-amber-400/80 normal-case tracking-normal">Soon</span>
-          </button>
+          {onChallenge && (
+            <button
+              type="button"
+              onClick={onChallenge}
+              className="group relative flex items-center gap-1.5 pl-2 pr-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-white whitespace-nowrap rounded-md overflow-hidden active:scale-[0.97] transition-transform"
+              style={{
+                background: 'linear-gradient(135deg, #ef4444 0%, #f59e0b 50%, #ef4444 100%)',
+                backgroundSize: '200% 200%',
+                animation: 'gradientShift 3s ease infinite',
+                boxShadow: '0 0 16px -4px rgba(239,68,68,0.6), inset 0 1px 0 rgba(255,255,255,0.25)',
+              }}
+            >
+              <Plus className="w-3 h-3" strokeWidth={3} />
+              Custom Lobby
+              <span
+                aria-hidden
+                className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{ background: 'linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.25) 50%, transparent 70%)' }}
+              />
+            </button>
+          )}
         </div>
       </div>
 
