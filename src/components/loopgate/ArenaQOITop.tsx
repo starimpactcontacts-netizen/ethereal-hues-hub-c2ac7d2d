@@ -64,7 +64,6 @@ export default function ArenaQOITop() {
           >
             Top Editors
           </h2>
-          <span className="text-[8px] font-bold text-amber-400/80 uppercase tracking-[0.18em] ml-1">Loopgate Index</span>
         </div>
         <Link
           to="/rankings"
