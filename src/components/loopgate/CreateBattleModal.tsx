@@ -507,16 +507,25 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
               <span className="text-[9px] font-bold text-amber-400 uppercase tracking-wider px-2 py-1 rounded-full bg-amber-500/10 border border-amber-400/30">You</span>
             </div>
 
-            {/* Create Button */}
+          </div>
+
+          {/* Sticky Footer CTA */}
+          <div
+            className="absolute bottom-0 left-0 right-0 px-4 pt-3 shrink-0 pointer-events-none"
+            style={{
+              paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)",
+              background: "linear-gradient(180deg, rgba(14,14,16,0) 0%, rgba(14,14,16,0.92) 35%, rgba(14,14,16,0.98) 100%)",
+            }}
+          >
             <Button
               onClick={handleCreate}
               disabled={loading || (challengeType === 'direct' && !selectedOpponent)}
-              className="w-full h-14 rounded-2xl bg-gradient-to-r from-red-500 via-red-400 to-red-500 hover:shadow-[0_8px_30px_-4px_rgba(239,68,68,0.6)] text-white font-display text-sm uppercase tracking-wider shadow-[0_4px_20px_-4px_rgba(239,68,68,0.5)]"
+              className="pointer-events-auto w-full h-13 py-3.5 rounded-2xl bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 disabled:opacity-50 text-white font-display text-[13px] uppercase tracking-[0.18em] shadow-[0_8px_24px_-6px_rgba(239,68,68,0.6)] border border-red-400/40"
             >
               {loading ? <span className="animate-pulse">Creating...</span> : (
                 <>
-                  <Swords className="w-4 h-4 mr-2" />
-                  {challengeType === 'open' ? 'Post Edit Battle' : 'Send Challenge'}
+                  {challengeType === 'private' ? <Lock className="w-3.5 h-3.5 mr-2" /> : <Swords className="w-3.5 h-3.5 mr-2" />}
+                  {challengeType === 'open' ? 'Post Battle' : challengeType === 'private' ? 'Create Lobby' : 'Send Challenge'}
                 </>
               )}
             </Button>
