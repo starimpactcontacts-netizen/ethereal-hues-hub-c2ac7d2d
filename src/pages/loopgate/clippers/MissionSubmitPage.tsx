@@ -33,6 +33,7 @@ interface Mission {
   deadline: string | null;
   approval_rate_pct: number | null;
   base_payout_requirements: string | null;
+  payout_display_override?: string | null;
 }
 
 function detectPlatform(url: string): string {
@@ -151,7 +152,7 @@ export default function MissionSubmitPage() {
     (async () => {
       const { data } = await supabase
         .from('missions')
-        .select('id, title, description, cover_image_url, base_payout_cents, view_milestones, budget_cents, spent_cents, cap_type, max_posts, approved_count, inspirations, scenepack_url, scenepack_gdrive_url, scenepack_youtube_url, eligible_platforms, status, deadline, approval_rate_pct, base_payout_requirements')
+        .select('id, title, description, cover_image_url, base_payout_cents, view_milestones, budget_cents, spent_cents, cap_type, max_posts, approved_count, inspirations, scenepack_url, scenepack_gdrive_url, scenepack_youtube_url, eligible_platforms, status, deadline, approval_rate_pct, base_payout_requirements, payout_display_override')
         .eq('id', id)
         .maybeSingle();
       setMission((data as any) || null);
@@ -350,10 +351,16 @@ export default function MissionSubmitPage() {
                   : 'Check'}
               </span>
             </div>
-            <p className="font-apple-tight text-[32px] font-semibold text-white leading-none mt-1 tabular-nums tracking-[-0.02em]">
-              ${(mission.base_payout_cents / 100).toFixed(2)}
-              <span className="text-[13px] text-[#8E8E93] font-normal ml-1.5 tracking-normal">per approved clip</span>
-            </p>
+            {mission.payout_display_override ? (
+              <p className="font-apple-tight text-[32px] font-semibold text-white leading-none mt-1 tracking-[-0.02em]">
+                {mission.payout_display_override}
+              </p>
+            ) : (
+              <p className="font-apple-tight text-[32px] font-semibold text-white leading-none mt-1 tabular-nums tracking-[-0.02em]">
+                ${(mission.base_payout_cents / 100).toFixed(2)}
+                <span className="text-[13px] text-[#8E8E93] font-normal ml-1.5 tracking-normal">per approved clip</span>
+              </p>
+            )}
             {mission.approval_rate_pct != null && (
               <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 rounded-full" style={{ background: 'rgba(48,209,88,0.10)' }}>
                 <CheckCircle2 className="w-3 h-3 text-[#30D158]" strokeWidth={2.75} />
