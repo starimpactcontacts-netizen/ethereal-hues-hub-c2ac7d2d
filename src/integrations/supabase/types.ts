@@ -520,6 +520,7 @@ export type Database = {
           duration_hours: number
           ends_at: string | null
           id: string
+          is_private: boolean
           is_rapid: boolean | null
           judge_claimed_at: string | null
           judge_id: string | null
@@ -584,6 +585,7 @@ export type Database = {
           duration_hours?: number
           ends_at?: string | null
           id?: string
+          is_private?: boolean
           is_rapid?: boolean | null
           judge_claimed_at?: string | null
           judge_id?: string | null
@@ -648,6 +650,7 @@ export type Database = {
           duration_hours?: number
           ends_at?: string | null
           id?: string
+          is_private?: boolean
           is_rapid?: boolean | null
           judge_claimed_at?: string | null
           judge_id?: string | null

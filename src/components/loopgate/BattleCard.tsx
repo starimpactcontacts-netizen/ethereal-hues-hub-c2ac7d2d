@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Swords, Clock, Trophy } from "lucide-react";
+import { Swords, Clock, Trophy, Lock } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import BattleVoteBarCompact from "@/components/loopgate/BattleVoteBarCompact";
 import type { Battle } from "@/hooks/useBattles";
@@ -26,6 +26,7 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
   const isCompleted = battle.status === 'completed';
   const isJudging = battle.status === 'judging';
   const isRapid = (battle as any).is_rapid;
+  const isPrivate = (battle as any).is_private;
   const totalVotes = battle.challenger_votes + battle.opponent_votes;
   
   // Check if time has ended even if status hasn't updated yet
@@ -67,6 +68,12 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
           }`} style={{ fontFamily: 'Teko, sans-serif' }}>
             {statusText}
           </span>
+          {isPrivate && (
+            <span className="ml-1 inline-flex items-center gap-0.5 px-1 py-[1px] rounded-sm bg-amber-500/15 border border-amber-500/30">
+              <Lock className="w-2 h-2 text-amber-400" strokeWidth={3} />
+              <span className="text-[8px] font-black uppercase tracking-wider text-amber-300" style={{ fontFamily: 'Teko, sans-serif' }}>Private</span>
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-1 text-[8px] text-zinc-500">
           <Clock className="w-2.5 h-2.5" />
