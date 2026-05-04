@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Trophy, ChevronRight, Crown, Medal } from "lucide-react";
+import { Trophy, ChevronRight, Crown, Medal, Flame } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-interface QoiRow {
+interface EditorRow {
   id: string;
   username: string;
   avatar_url: string | null;
   best_gatekeeper_qoi: number | null;
   global_index_score: number | null;
+  total_wins: number | null;
+  level: number | null;
 }
 
 /**
@@ -18,25 +20,33 @@ interface QoiRow {
  * by their best gatekeeper QOI score (the QOI ranking system).
  */
 export default function ArenaQOITop() {
-  const [rows, setRows] = useState<QoiRow[]>([]);
+  const [rows, setRows] = useState<EditorRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+    const load = async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("id, username, avatar_url, best_gatekeeper_qoi, global_index_score")
+        .select("id, username, avatar_url, best_gatekeeper_qoi, global_index_score, total_wins, level")
         .eq("is_hidden", false)
-        .not("best_gatekeeper_qoi", "is", null)
+        .order("global_index_score", { ascending: false, nullsFirst: false })
         .order("best_gatekeeper_qoi", { ascending: false, nullsFirst: false })
+        .order("level", { ascending: false, nullsFirst: false })
         .limit(5);
       if (!cancelled) {
-        setRows((data as QoiRow[]) || []);
+        setRows((data as EditorRow[]) || []);
         setLoading(false);
       }
-    })();
-    return () => { cancelled = true; };
+    };
+    load();
+
+    // Realtime — pull fresh stats whenever profiles update
+    const ch = supabase
+      .channel("arena-top-editors")
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "profiles" }, () => load())
+      .subscribe();
+    return () => { cancelled = true; supabase.removeChannel(ch); };
   }, []);
 
   if (!loading && rows.length === 0) return null;
@@ -52,9 +62,9 @@ export default function ArenaQOITop() {
             className="text-[15px] font-extrabold tracking-tight text-foreground whitespace-nowrap"
             style={{ fontFamily: "Inter, system-ui, sans-serif" }}
           >
-            Top QOI
+            Top Editors
           </h2>
-          <span className="text-[8px] font-bold text-amber-400/80 uppercase tracking-[0.18em] ml-1">Loopgate</span>
+          <span className="text-[8px] font-bold text-amber-400/80 uppercase tracking-[0.18em] ml-1">Loopgate Index</span>
         </div>
         <Link
           to="/rankings"
@@ -75,6 +85,8 @@ export default function ArenaQOITop() {
               const rank = i + 1;
               const Icon = rank === 1 ? Crown : rank <= 3 ? Medal : null;
               const accent = rank === 1 ? "text-amber-300" : rank === 2 ? "text-zinc-300" : rank === 3 ? "text-orange-400" : "text-muted-foreground";
+              const idx = Number(row.global_index_score || 0);
+              const idxLabel = idx >= 1000 ? `${(idx / 1000).toFixed(idx >= 10000 ? 0 : 1)}K` : idx.toFixed(0);
               return (
                 <Link
                   key={row.id}
@@ -96,15 +108,28 @@ export default function ArenaQOITop() {
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <p className="text-[12.5px] font-semibold text-foreground truncate">{row.username}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {row.level ? (
+                        <span className="text-[9px] text-muted-foreground tabular-nums">Lvl {row.level}</span>
+                      ) : null}
+                      {row.total_wins ? (
+                        <span className="text-[9px] text-emerald-400/90 font-semibold tabular-nums flex items-center gap-0.5">
+                          <Flame className="w-2.5 h-2.5" /> {row.total_wins}W
+                        </span>
+                      ) : null}
+                      {row.best_gatekeeper_qoi ? (
+                        <span className="text-[9px] text-purple-300/80 font-semibold tabular-nums">QOI {Number(row.best_gatekeeper_qoi).toFixed(1)}</span>
+                      ) : null}
+                    </div>
                   </div>
                   <div className="text-right shrink-0">
                     <span
-                      className="font-display text-base text-amber-300 tabular-nums leading-none"
+                      className="font-display text-lg text-amber-300 tabular-nums leading-none"
                       style={{ fontFamily: "Teko, sans-serif", letterSpacing: "0.02em" }}
                     >
-                      {(row.best_gatekeeper_qoi || 0).toFixed(1)}
+                      {idxLabel}
                     </span>
-                    <span className="block text-[8px] text-muted-foreground uppercase tracking-wider">QOI</span>
+                    <span className="block text-[8px] text-muted-foreground uppercase tracking-wider">IDX</span>
                   </div>
                 </Link>
               );
