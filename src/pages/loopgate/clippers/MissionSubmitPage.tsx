@@ -404,19 +404,24 @@ export default function MissionSubmitPage() {
 
         {/* Sound — link to post (TikTok sound ID) */}
         {mission.sound_url && (
-          <a
-            href={mission.sound_url}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-3 w-full flex items-center justify-center gap-2 h-12 rounded-[14px] active:scale-[0.99] transition-transform"
-            style={{ background: '#000', border: '0.5px solid rgba(255,255,255,0.12)' }}
-          >
-            <SiTiktok size={18} color="#FFFFFF" />
-            <span className="font-apple-tight text-[15px] font-semibold text-white tracking-[-0.01em]">
-              Sound — link to post
-            </span>
-            <ExternalLink className="w-[14px] h-[14px] text-[#8E8E93]" strokeWidth={2.5} />
-          </a>
+          <div className="mt-3">
+            <a
+              href={mission.sound_url}
+              target="_blank"
+              rel="noreferrer"
+              className="w-full flex items-center justify-center gap-2 h-12 rounded-[14px] active:scale-[0.99] transition-transform"
+              style={{ background: '#000', border: '0.5px solid rgba(255,255,255,0.12)' }}
+            >
+              <SiTiktok size={18} color="#FFFFFF" />
+              <span className="font-apple-tight text-[15px] font-semibold text-white tracking-[-0.01em]">
+                SOUND ID
+              </span>
+              <ExternalLink className="w-[14px] h-[14px] text-[#8E8E93]" strokeWidth={2.5} />
+            </a>
+            <p className="text-[11px] text-[#8E8E93] text-center mt-1.5">
+              Make sure to post using this sound ID!
+            </p>
+          </div>
         )}
 
         {/* Unified Brief + Resources — one cinematic card */}
@@ -745,8 +750,8 @@ export default function MissionSubmitPage() {
               <RuleRow title="Follow the brief">
                 Stick to what the brief asks for — wrong concept, wrong character, or off-topic edits get rejected.
               </RuleRow>
-              <RuleRow title="Submit from your linked account">
-                Send the live public post URL from the same handle you verified in Linked. Different account = no payout.
+              <RuleRow title="Submit from your own account">
+                Send the live public post URL from your own handle so we can credit and pay you correctly.
               </RuleRow>
               <button
                 onClick={() => setRulesOpen(false)}
