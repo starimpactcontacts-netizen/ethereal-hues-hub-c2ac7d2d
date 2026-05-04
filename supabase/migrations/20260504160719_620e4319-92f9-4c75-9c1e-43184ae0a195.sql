@@ -1,0 +1,1 @@
+ALTER TABLE public.missions ADD COLUMN IF NOT EXISTS payout_display_override text;

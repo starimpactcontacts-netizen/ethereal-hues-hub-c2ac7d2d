@@ -6069,6 +6069,7 @@ export type Database = {
           id: string
           inspirations: Json
           max_posts: number | null
+          payout_display_override: string | null
           reference_video_url: string | null
           scenepack_gdrive_url: string | null
           scenepack_url: string | null
@@ -6099,6 +6100,7 @@ export type Database = {
           id?: string
           inspirations?: Json
           max_posts?: number | null
+          payout_display_override?: string | null
           reference_video_url?: string | null
           scenepack_gdrive_url?: string | null
           scenepack_url?: string | null
@@ -6129,6 +6131,7 @@ export type Database = {
           id?: string
           inspirations?: Json
           max_posts?: number | null
+          payout_display_override?: string | null
           reference_video_url?: string | null
           scenepack_gdrive_url?: string | null
           scenepack_url?: string | null
