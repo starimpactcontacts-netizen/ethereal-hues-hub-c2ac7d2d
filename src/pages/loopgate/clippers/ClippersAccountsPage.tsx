@@ -105,10 +105,7 @@ export default function ClippersAccountsPage() {
       </section>
 
       <section className="max-w-6xl mx-auto px-4 mb-5">
-        <div className="grid grid-cols-2 gap-2">
-          <StatCard label="Linked" value={accounts.length.toString()} />
-          <StatCard label="Verified" value={verifiedCount.toString()} accent="#D4A857" />
-        </div>
+        <StatCard label="Linked" value={accounts.length.toString()} />
       </section>
 
       <div className="max-w-6xl mx-auto px-4">
@@ -117,10 +114,44 @@ export default function ClippersAccountsPage() {
             {[1, 2].map((i) => <div key={i} className="h-16 rounded-[16px] bg-[#1c1c1e] animate-pulse" />)}
           </div>
         ) : !user || accounts.length === 0 ? (
-          <div className="rounded-[20px] p-10 text-center" style={{ background: '#1c1c1e' }}>
-            <Link2 className="w-7 h-7 text-[#8E8E93] mx-auto mb-3" />
-            <p className="text-[17px] font-semibold text-white mb-1">No accounts linked</p>
-            <p className="text-[13px] text-[#8E8E93]">{user ? 'Add TikTok, IG or YouTube' : 'Lock in to link socials'}</p>
+          <div
+            className="relative overflow-hidden rounded-[24px] px-6 py-12 text-center"
+            style={{
+              background: 'linear-gradient(180deg, #1a1a1d 0%, #111114 100%)',
+              border: '0.5px solid rgba(255,255,255,0.06)',
+              boxShadow: '0 1px 0 rgba(255,255,255,0.04) inset, 0 16px 32px -16px rgba(0,0,0,0.6)',
+            }}
+          >
+            <div
+              aria-hidden
+              className="absolute inset-0 pointer-events-none opacity-60"
+              style={{ background: 'radial-gradient(120% 80% at 50% 0%, rgba(212,168,87,0.08) 0%, transparent 60%)' }}
+            />
+            <div className="relative">
+              <div
+                className="w-14 h-14 mx-auto rounded-2xl flex items-center justify-center mb-4"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(212,168,87,0.18), rgba(212,168,87,0.04))',
+                  border: '0.5px solid rgba(212,168,87,0.25)',
+                }}
+              >
+                <Link2 className="w-6 h-6" strokeWidth={2.2} style={{ color: '#D4A857' }} />
+              </div>
+              <p className="font-apple-tight text-[19px] font-bold text-white tracking-[-0.02em]">
+                Link your first account
+              </p>
+              <p className="text-[13px] text-[#8E8E93] mt-1.5 max-w-[260px] mx-auto leading-snug">
+                Connect TikTok, Instagram or YouTube so we know where to credit and pay you.
+              </p>
+              <button
+                onClick={() => (user ? setShowAdd(true) : setShowGate(true))}
+                className="mt-5 inline-flex items-center gap-1.5 h-10 px-5 rounded-full text-[14px] font-semibold text-black active:opacity-70"
+                style={{ background: '#D4A857' }}
+              >
+                <Plus className="w-[15px] h-[15px]" strokeWidth={2.8} />
+                {user ? 'Add account' : 'Lock in to link'}
+              </button>
+            </div>
           </div>
         ) : (
           <div className="rounded-[16px] overflow-hidden" style={{ background: '#1c1c1e' }}>
