@@ -18,6 +18,7 @@ import BattleInviteModal from "@/components/loopgate/BattleInviteModal";
 import BattleJudgingPanel from "@/components/loopgate/BattleJudgingPanel";
 import BattleChat from "@/components/loopgate/BattleChat";
 import BattleSongPicker from "@/components/loopgate/BattleSongPicker";
+import ScenepackVote from "@/components/loopgate/ScenepackVote";
 import BattleSubmissionCard from "@/components/loopgate/BattleSubmissionCard";
 import BattleShowcase from "@/components/loopgate/BattleShowcase";
 
@@ -496,11 +497,20 @@ export default function BattleDetailPage() {
           </div>
         )}
 
-        {/* Song Picker */}
-        {isParticipant && battle.status === 'active' && (
-          <BattleSongPicker
-            onSongPicked={handleSongPick}
-            selectedSongName={(battle as any).theme_song_name}
+        {/* Scenepack Vote (map-style 30s pick) */}
+        {battle.status === 'active' && (battle as any).scenepack_option_a_id && (
+          <ScenepackVote
+            battleId={battle.id}
+            isParticipant={isParticipant}
+            optionAId={(battle as any).scenepack_option_a_id}
+            optionBId={(battle as any).scenepack_option_b_id}
+            voteDeadline={(battle as any).scenepack_vote_deadline}
+            myVote={isChallenger ? (battle as any).challenger_scenepack_vote : isOpponent ? (battle as any).opponent_scenepack_vote : null}
+            opponentVote={isChallenger ? (battle as any).opponent_scenepack_vote : isOpponent ? (battle as any).challenger_scenepack_vote : null}
+            lockedId={(battle as any).scenepack_locked_id}
+            lockedYoutube={(battle as any).scenepack_youtube_url}
+            lockedGdrive={(battle as any).scenepack_gdrive_url}
+            onChanged={refetch}
           />
         )}
 
