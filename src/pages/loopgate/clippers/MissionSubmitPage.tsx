@@ -740,22 +740,13 @@ export default function MissionSubmitPage() {
             </div>
             <div className="px-5 pb-5 space-y-3">
               <RuleRow title="Keep your post up for 30 days">
-                Don't delete, archive, or set it private. Deleted posts forfeit base + view payouts.
+                Don't delete, archive, or set it private. Deleted posts forfeit any payout.
               </RuleRow>
-              <RuleRow title="Tag the official account">
-                Use the exact handle from the brief. Misspelled or missing tags = rejected.
+              <RuleRow title="Follow the brief">
+                Stick to what the brief asks for — wrong concept, wrong character, or off-topic edits get rejected.
               </RuleRow>
-              <RuleRow title="Post from your linked account">
-                Submit from the same handle you verified in Linked. Different account = no payout.
-              </RuleRow>
-              <RuleRow title="Use the ready-made clips">
-                Don't reupload other clippers' edits or random unrelated footage. Original framing only.
-              </RuleRow>
-              <RuleRow title="One submission per post">
-                Don't submit the same link twice or spam reposts. Repeated abuse = ban.
-              </RuleRow>
-              <RuleRow title="Public post link only">
-                Send the live post URL — not a story, draft, or screenshot. Reviewed within 24h.
+              <RuleRow title="Submit from your linked account">
+                Send the live public post URL from the same handle you verified in Linked. Different account = no payout.
               </RuleRow>
               <button
                 onClick={() => setRulesOpen(false)}
