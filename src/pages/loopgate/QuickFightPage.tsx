@@ -21,6 +21,7 @@ import QuickFightPublicVote from '@/components/loopgate/QuickFightPublicVote';
 import BattleIntroOverlay from '@/components/loopgate/BattleIntroOverlay';
 import BattleDecidedOverlay from '@/components/loopgate/BattleDecidedOverlay';
 import ScenepackVoteModal from '@/components/loopgate/ScenepackVoteModal';
+import ScenepackDownloadCard from '@/components/loopgate/ScenepackDownloadCard';
 
 /** Detect platform from URL */
 function detectPlatform(url: string): string {
