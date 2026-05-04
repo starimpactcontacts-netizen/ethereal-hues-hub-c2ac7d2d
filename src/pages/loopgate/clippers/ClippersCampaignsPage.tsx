@@ -29,6 +29,7 @@ interface Mission {
   eligible_platforms?: string[] | null;
   status: string;
   deadline: string | null;
+  payout_display_override?: string | null;
 }
 
 interface UserStats {
