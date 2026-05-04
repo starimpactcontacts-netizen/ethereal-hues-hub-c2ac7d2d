@@ -241,38 +241,45 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
           exit={{ y: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
           onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-md rounded-t-[28px] overflow-hidden relative flex flex-col"
+          className="w-full max-w-md rounded-t-[32px] overflow-hidden relative flex flex-col"
           style={{
-            maxHeight: "calc(100dvh - env(safe-area-inset-top, 0px) - 24px)",
-            background: "linear-gradient(180deg, rgba(28,28,32,0.98) 0%, rgba(18,18,22,0.98) 100%)",
-            boxShadow: "0 -20px 60px -10px rgba(239,68,68,0.25), inset 0 1px 0 rgba(255,255,255,0.08)",
-            border: "1px solid rgba(255,255,255,0.06)",
+            maxHeight: "calc(100dvh - env(safe-area-inset-top, 0px) - 16px)",
+            background: "rgba(14,14,16,0.92)",
+            backdropFilter: "blur(40px) saturate(180%)",
+            WebkitBackdropFilter: "blur(40px) saturate(180%)",
+            boxShadow: "0 -24px 80px -12px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.06)",
+            border: "1px solid rgba(255,255,255,0.05)",
           }}
         >
           {/* Drag handle */}
-          <div className="flex justify-center pt-2 pb-1 shrink-0">
-            <div className="w-10 h-1 rounded-full bg-white/15" />
+          <div className="flex justify-center pt-2.5 pb-1 shrink-0">
+            <div className="w-9 h-[3px] rounded-full bg-white/20" />
           </div>
 
           {/* Header */}
-          <div className="relative px-5 pt-2 pb-4 flex items-center justify-between shrink-0">
-            <div>
-              <h2 className="font-display text-xl text-white tracking-tight">New Edit Battle</h2>
-              <p className="text-[11px] text-zinc-400 mt-0.5">Challenge an editor — winner takes Index</p>
+          <div className="relative px-5 pt-1 pb-3 flex items-center justify-between shrink-0 border-b border-white/[0.05]">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-red-500/30 to-red-600/10 border border-red-400/30 flex items-center justify-center">
+                <Swords className="w-4 h-4 text-red-300" strokeWidth={2.5} />
+              </div>
+              <div>
+                <h2 className="font-display text-[18px] text-white tracking-tight leading-none">New Battle</h2>
+                <p className="text-[10px] text-zinc-500 mt-1 tracking-wide">Winner takes Index</p>
+              </div>
             </div>
             <button
               onClick={onClose}
               aria-label="Close"
-              className="w-9 h-9 rounded-full bg-white/[0.08] hover:bg-white/[0.14] active:scale-95 transition-all flex items-center justify-center backdrop-blur-xl border border-white/10"
+              className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] active:scale-90 transition-all flex items-center justify-center"
             >
-              <X className="w-4 h-4 text-white" strokeWidth={2.5} />
+              <X className="w-3.5 h-3.5 text-zinc-300" strokeWidth={2.5} />
             </button>
           </div>
 
           <div
-            className="px-4 space-y-4 overflow-y-auto overscroll-contain flex-1 min-h-0"
+            className="px-4 pt-4 space-y-3.5 overflow-y-auto overscroll-contain flex-1 min-h-0"
             style={{
-              paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 24px)",
+              paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 100px)",
               WebkitOverflowScrolling: "touch",
             }}
           >
