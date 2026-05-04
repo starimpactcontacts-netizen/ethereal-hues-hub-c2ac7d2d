@@ -66,7 +66,7 @@ export default function ClippersCampaignsPage() {
       const [mRes, subsRes, paysRes] = await Promise.all([
         supabase
           .from('missions')
-          .select('id, title, description, cover_image_url, sponsor_name, sponsor_logo_url, base_payout_cents, view_milestones, budget_cents, spent_cents, cap_type, max_posts, approved_count, eligible_platforms, status, deadline')
+          .select('id, title, description, cover_image_url, sponsor_name, sponsor_logo_url, base_payout_cents, view_milestones, budget_cents, spent_cents, cap_type, max_posts, approved_count, eligible_platforms, status, deadline, payout_display_override')
           .in('status', ['live', 'paused'])
           .order('created_at', { ascending: false })
           .limit(40),
@@ -310,14 +310,25 @@ function MissionCard({ m, formatMoney }: { m: Mission; formatMoney: (n: number) 
 
           {/* Payout strip */}
           <div className="flex items-center gap-2 mt-auto pt-2 flex-wrap">
-            <span
-              className="inline-flex items-center gap-0.5 text-[12.5px] font-bold tabular-nums leading-none"
-              style={{ color: '#30D158' }}
-            >
-              <DollarSign className="w-[12px] h-[12px]" strokeWidth={3} />
-              {(m.base_payout_cents / 100).toFixed(2)}
-              <span className="text-[#8E8E93] font-medium ml-0.5">base</span>
-            </span>
+            {m.payout_display_override ? (
+              <span
+                className="inline-flex items-center gap-0.5 text-[12.5px] font-bold leading-none"
+                style={{ color: '#30D158' }}
+              >
+                <DollarSign className="w-[12px] h-[12px]" strokeWidth={3} />
+                {m.payout_display_override.replace(/^\$/, '')}
+                <span className="text-[#8E8E93] font-medium ml-0.5">base</span>
+              </span>
+            ) : (
+              <span
+                className="inline-flex items-center gap-0.5 text-[12.5px] font-bold tabular-nums leading-none"
+                style={{ color: '#30D158' }}
+              >
+                <DollarSign className="w-[12px] h-[12px]" strokeWidth={3} />
+                {(m.base_payout_cents / 100).toFixed(2)}
+                <span className="text-[#8E8E93] font-medium ml-0.5">base</span>
+              </span>
+            )}
             {milestones.length > 0 && (
               <span className="inline-flex items-center gap-1 text-[11px] text-[#8E8E93] leading-none">
                 <TrendingUp className="w-3 h-3" strokeWidth={2.5} />
