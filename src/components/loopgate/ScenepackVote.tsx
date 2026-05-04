@@ -18,6 +18,8 @@ type Pool = {
 interface Props {
   battleId: string;
   isCash?: boolean;
+  /** What kind of match this scenepack vote is attached to. Defaults to "battle". */
+  kind?: 'battle' | 'cash' | 'quick_fight';
   isParticipant: boolean;
   optionAId: string | null;
   optionBId: string | null;
@@ -31,10 +33,11 @@ interface Props {
 }
 
 export default function ScenepackVote({
-  battleId, isCash = false, isParticipant,
+  battleId, isCash = false, kind, isParticipant,
   optionAId, optionBId, voteDeadline,
   myVote, opponentVote, lockedId, lockedYoutube, lockedGdrive, onChanged,
 }: Props) {
+  const matchKind: 'battle' | 'cash' | 'quick_fight' = kind ?? (isCash ? 'cash' : 'battle');
   const [pool, setPool] = useState<Record<string, Pool>>({});
   const [voting, setVoting] = useState(false);
   const [now, setNow] = useState(Date.now());
@@ -66,18 +69,24 @@ export default function ScenepackVote({
     polledRef.current = true;
     (async () => {
       try {
-        await supabase.rpc("resolve_scenepack_if_expired" as any, { p_battle_id: battleId, p_is_cash: isCash } as any);
+        if (matchKind === 'quick_fight') {
+          await supabase.rpc("resolve_scenepack_if_expired_quick_fight" as any, { p_fight_id: battleId } as any);
+        } else {
+          await supabase.rpc("resolve_scenepack_if_expired" as any, { p_battle_id: battleId, p_is_cash: matchKind === 'cash' } as any);
+        }
         onChanged?.();
       } catch {}
       polledRef.current = false;
     })();
-  }, [expired, lockedId, battleId, isCash, onChanged]);
+  }, [expired, lockedId, battleId, matchKind, onChanged]);
 
   const cast = async (id: string) => {
     if (!isParticipant || voting || myVote || lockedId) return;
     setVoting(true);
     try {
-      const { error } = await supabase.rpc("cast_scenepack_vote" as any, { p_battle_id: battleId, p_scenepack_id: id, p_is_cash: isCash } as any);
+      const { error } = matchKind === 'quick_fight'
+        ? await supabase.rpc("cast_scenepack_vote_quick_fight" as any, { p_fight_id: battleId, p_scenepack_id: id } as any)
+        : await supabase.rpc("cast_scenepack_vote" as any, { p_battle_id: battleId, p_scenepack_id: id, p_is_cash: matchKind === 'cash' } as any);
       if (error) throw error;
       onChanged?.();
     } catch (e: any) {

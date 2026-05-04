@@ -20,6 +20,7 @@ import FNFVoteScoreboard from '@/components/loopgate/FNFVoteScoreboard';
 import QuickFightPublicVote from '@/components/loopgate/QuickFightPublicVote';
 import BattleIntroOverlay from '@/components/loopgate/BattleIntroOverlay';
 import BattleDecidedOverlay from '@/components/loopgate/BattleDecidedOverlay';
+import ScenepackVoteModal from '@/components/loopgate/ScenepackVoteModal';
 
 /** Detect platform from URL */
 function detectPlatform(url: string): string {
@@ -199,6 +200,22 @@ export default function QuickFightPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
+      {/* Scenepack vote / locked banner — opens automatically when entering an active fight */}
+      {isParticipant && fight.status === 'active' && (
+        <ScenepackVoteModal
+          battleId={fight.id}
+          kind="quick_fight"
+          isParticipant={isParticipant}
+          optionAId={(fight as any).scenepack_option_a_id || null}
+          optionBId={(fight as any).scenepack_option_b_id || null}
+          voteDeadline={(fight as any).scenepack_vote_deadline || null}
+          myVote={isP1 ? ((fight as any).player_1_scenepack_vote || null) : ((fight as any).player_2_scenepack_vote || null)}
+          opponentVote={isP1 ? ((fight as any).player_2_scenepack_vote || null) : ((fight as any).player_1_scenepack_vote || null)}
+          lockedId={(fight as any).scenepack_locked_id || null}
+          lockedYoutube={(fight as any).scenepack_youtube_url || null}
+          lockedGdrive={(fight as any).scenepack_gdrive_url || null}
+        />
+      )}
       {/* Smash-Bros style 3-2-1-GO intro when both edits are in */}
       <BattleIntroOverlay
         fightId={fight.id}
