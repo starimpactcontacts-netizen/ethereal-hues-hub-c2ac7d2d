@@ -12,6 +12,7 @@ import CashBattleVoteBar from "@/components/loopgate/CashBattleVoteBar";
 import ScenepackButtons from "@/components/loopgate/ScenepackButtons";
 import ScenepackVote from "@/components/loopgate/ScenepackVote";
 import ScenepackVoteModal from "@/components/loopgate/ScenepackVoteModal";
+import ScenepackDownloadCard from "@/components/loopgate/ScenepackDownloadCard";
 import weirdCityPoster from "@/assets/weird-city-poster.jpeg";
 
 function formatPrize(cents: number): string {
