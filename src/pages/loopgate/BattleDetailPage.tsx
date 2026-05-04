@@ -19,6 +19,7 @@ import BattleJudgingPanel from "@/components/loopgate/BattleJudgingPanel";
 import BattleChat from "@/components/loopgate/BattleChat";
 import BattleSongPicker from "@/components/loopgate/BattleSongPicker";
 import ScenepackVote from "@/components/loopgate/ScenepackVote";
+import ScenepackVoteModal from "@/components/loopgate/ScenepackVoteModal";
 import BattleSubmissionCard from "@/components/loopgate/BattleSubmissionCard";
 import BattleShowcase from "@/components/loopgate/BattleShowcase";
 
@@ -497,9 +498,9 @@ export default function BattleDetailPage() {
           </div>
         )}
 
-        {/* Scenepack Vote (map-style 30s pick) */}
+        {/* Scenepack Vote — full-screen game-style modal pops up on entry */}
         {battle.status === 'active' && (battle as any).scenepack_option_a_id && (
-          <ScenepackVote
+          <ScenepackVoteModal
             battleId={battle.id}
             isParticipant={isParticipant}
             optionAId={(battle as any).scenepack_option_a_id}
