@@ -149,7 +149,7 @@ export default function ClippersAccountsPage() {
                 style={{ background: '#D4A857' }}
               >
                 <Plus className="w-[15px] h-[15px]" strokeWidth={2.8} />
-                {user ? 'Add account' : 'Lock in to link'}
+                {user ? 'Add account' : 'Sign in to link'}
               </button>
             </div>
           </div>
@@ -271,7 +271,7 @@ export default function ClippersAccountsPage() {
         </Sheet>
       )}
 
-      <ClipperLockGate open={showGate} onClose={() => setShowGate(false)} onSuccess={load} reason="Lock in to link your social accounts." />
+      <ClipperLockGate open={showGate} onClose={() => setShowGate(false)} onSuccess={load} reason="Sign in to link your social accounts." />
 
       {verifying && (
         <VerifySheet
