@@ -31,6 +31,7 @@ interface PickableMission {
   view_milestones: Milestone[];
   eligible_platforms: string[] | null;
   status: string;
+  payout_display_override?: string | null;
 }
 
 const TABS = [
@@ -84,7 +85,7 @@ export default function ClippersSubmissionsPage() {
       setMissionsLoading(true);
       const { data } = await supabase
         .from('missions')
-        .select('id, title, cover_image_url, sponsor_name, sponsor_logo_url, base_payout_cents, view_milestones, eligible_platforms, status')
+        .select('id, title, cover_image_url, sponsor_name, sponsor_logo_url, base_payout_cents, view_milestones, eligible_platforms, status, payout_display_override')
         .eq('status', 'live')
         .order('created_at', { ascending: false })
         .limit(40);
@@ -328,9 +329,9 @@ function MissionPickCard({ m, onPick }: { m: PickableMission; onPick: () => void
             <ChevronRight className="w-4 h-4 text-[#48484A] flex-shrink-0 mt-0.5 group-active:translate-x-0.5 transition-transform" strokeWidth={2.75} />
           </div>
           <div className="flex items-center gap-2 mt-auto pt-2 flex-wrap">
-            <span className="inline-flex items-center gap-0.5 text-[12px] font-bold tabular-nums leading-none" style={{ color: '#30D158' }}>
+            <span className="inline-flex items-center gap-0.5 text-[12px] font-bold leading-none" style={{ color: '#30D158' }}>
               <DollarSign className="w-[11px] h-[11px]" strokeWidth={3} />
-              {(m.base_payout_cents / 100).toFixed(2)}
+              {m.payout_display_override ? m.payout_display_override.replace(/^\$/, '') : (m.base_payout_cents / 100).toFixed(2)}
               <span className="text-[#8E8E93] font-medium ml-0.5">base</span>
             </span>
             {bonusTotal > 0 && (
