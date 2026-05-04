@@ -34,6 +34,7 @@ interface Mission {
   approval_rate_pct: number | null;
   base_payout_requirements: string | null;
   payout_display_override?: string | null;
+  sound_url?: string | null;
 }
 
 function detectPlatform(url: string): string {
@@ -152,7 +153,7 @@ export default function MissionSubmitPage() {
     (async () => {
       const { data } = await supabase
         .from('missions')
-        .select('id, title, description, cover_image_url, base_payout_cents, view_milestones, budget_cents, spent_cents, cap_type, max_posts, approved_count, inspirations, scenepack_url, scenepack_gdrive_url, scenepack_youtube_url, eligible_platforms, status, deadline, approval_rate_pct, base_payout_requirements, payout_display_override')
+        .select('id, title, description, cover_image_url, base_payout_cents, view_milestones, budget_cents, spent_cents, cap_type, max_posts, approved_count, inspirations, scenepack_url, scenepack_gdrive_url, scenepack_youtube_url, eligible_platforms, status, deadline, approval_rate_pct, base_payout_requirements, payout_display_override, sound_url')
         .eq('id', id)
         .maybeSingle();
       setMission((data as any) || null);
@@ -400,6 +401,23 @@ export default function MissionSubmitPage() {
             </div>
           )}
         </section>
+
+        {/* Sound — link to post (TikTok sound ID) */}
+        {mission.sound_url && (
+          <a
+            href={mission.sound_url}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-3 w-full flex items-center justify-center gap-2 h-12 rounded-[14px] active:scale-[0.99] transition-transform"
+            style={{ background: '#000', border: '0.5px solid rgba(255,255,255,0.12)' }}
+          >
+            <SiTiktok size={18} color="#FFFFFF" />
+            <span className="font-apple-tight text-[15px] font-semibold text-white tracking-[-0.01em]">
+              Sound — link to post
+            </span>
+            <ExternalLink className="w-[14px] h-[14px] text-[#8E8E93]" strokeWidth={2.5} />
+          </a>
+        )}
 
         {/* Unified Brief + Resources — one cinematic card */}
         {(mission.description || scenepacks.length > 0 || inspoItems.length > 0) && (
@@ -722,22 +740,13 @@ export default function MissionSubmitPage() {
             </div>
             <div className="px-5 pb-5 space-y-3">
               <RuleRow title="Keep your post up for 30 days">
-                Don't delete, archive, or set it private. Deleted posts forfeit base + view payouts.
+                Don't delete, archive, or set it private. Deleted posts forfeit any payout.
               </RuleRow>
-              <RuleRow title="Tag the official account">
-                Use the exact handle from the brief. Misspelled or missing tags = rejected.
+              <RuleRow title="Follow the brief">
+                Stick to what the brief asks for — wrong concept, wrong character, or off-topic edits get rejected.
               </RuleRow>
-              <RuleRow title="Post from your linked account">
-                Submit from the same handle you verified in Linked. Different account = no payout.
-              </RuleRow>
-              <RuleRow title="Use the ready-made clips">
-                Don't reupload other clippers' edits or random unrelated footage. Original framing only.
-              </RuleRow>
-              <RuleRow title="One submission per post">
-                Don't submit the same link twice or spam reposts. Repeated abuse = ban.
-              </RuleRow>
-              <RuleRow title="Public post link only">
-                Send the live post URL — not a story, draft, or screenshot. Reviewed within 24h.
+              <RuleRow title="Submit from your linked account">
+                Send the live public post URL from the same handle you verified in Linked. Different account = no payout.
               </RuleRow>
               <button
                 onClick={() => setRulesOpen(false)}
@@ -865,7 +874,7 @@ export default function MissionSubmitPage() {
                   onClick={() => setEligibilityOpen(false)}
                   className="w-full h-11 rounded-[14px] font-medium text-[15px] text-[#0A84FF] mt-1"
                 >
-                  Aim for view targets instead
+                  {milestones.length > 0 ? 'Aim for view targets instead' : 'Dismiss'}
                 </button>
               </>
             )}

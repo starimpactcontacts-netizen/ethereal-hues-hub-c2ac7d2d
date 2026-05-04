@@ -6074,6 +6074,7 @@ export type Database = {
           scenepack_gdrive_url: string | null
           scenepack_url: string | null
           scenepack_youtube_url: string | null
+          sound_url: string | null
           spent_cents: number
           sponsor_logo_url: string | null
           sponsor_name: string | null
@@ -6105,6 +6106,7 @@ export type Database = {
           scenepack_gdrive_url?: string | null
           scenepack_url?: string | null
           scenepack_youtube_url?: string | null
+          sound_url?: string | null
           spent_cents?: number
           sponsor_logo_url?: string | null
           sponsor_name?: string | null
@@ -6136,6 +6138,7 @@ export type Database = {
           scenepack_gdrive_url?: string | null
           scenepack_url?: string | null
           scenepack_youtube_url?: string | null
+          sound_url?: string | null
           spent_cents?: number
           sponsor_logo_url?: string | null
           sponsor_name?: string | null
