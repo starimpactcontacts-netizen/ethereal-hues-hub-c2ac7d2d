@@ -120,7 +120,7 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
         updateData.judge_status = 'requested';
       } else {
         // No judge selected — broadcast to ALL judges' inboxes
-        updateData.judge_status = 'open';
+        updateData.judge_status = 'none';
       }
 
       await supabase
