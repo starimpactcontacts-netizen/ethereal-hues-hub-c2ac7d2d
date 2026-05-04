@@ -189,6 +189,13 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
     }
   };
 
+  // Hide top bar + bottom nav while sheet is open so CTA is reachable
+  useEffect(() => {
+    if (!isOpen) return;
+    document.body.classList.add('battle-modal-open');
+    return () => { document.body.classList.remove('battle-modal-open'); };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   // Edit battles span quick rapid sessions to a full day
@@ -200,15 +207,16 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
     { value: 24, label: '24H' },
   ];
 
-  // Stakes scale with duration so longer battles are worth more
-  const stakesByDuration: Record<string, { win: number; lose: number }> = {
-    '0.25': { win: 5, lose: 2 },
-    '0.5':  { win: 10, lose: 3 },
-    '1':    { win: 20, lose: 5 },
-    '3':    { win: 40, lose: 10 },
-    '24':   { win: 100, lose: 25 },
+  // Index prize is FIXED — XP is what scales massively with duration
+  const FIXED_STAKES = { win: 20, lose: 5 };
+  const xpByDuration: Record<string, number> = {
+    '0.25': 2500,
+    '0.5':  5000,
+    '1':    10000,
+    '3':    25000,
+    '24':   100000,
   };
-  const stakes = stakesByDuration[String(duration)] || { win: 20, lose: 5 };
+  const xpReward = xpByDuration[String(duration)] || 10000;
 
   return (
     <AnimatePresence>
@@ -216,7 +224,7 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[100] flex items-end justify-center bg-black/70 backdrop-blur-sm"
+        className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/70 backdrop-blur-sm"
         onClick={onClose}
       >
         <motion.div
@@ -434,22 +442,23 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
               </div>
             </div>
 
-            {/* Stakes */}
-            <div className="rounded-2xl p-3.5 bg-gradient-to-br from-amber-500/[0.08] to-transparent border border-amber-500/20">
-              <div className="flex items-center gap-2 mb-2">
-                <Trophy className="w-4 h-4 text-amber-400 fill-amber-400/30" />
-                <span className="text-[11px] font-bold text-white uppercase tracking-wider">Stakes</span>
-                <span className="ml-auto text-[9px] text-zinc-500 uppercase tracking-wide">Auto-scaled</span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-3 py-2">
-                  <span className="text-[9px] text-emerald-300/70 uppercase block">Winner</span>
-                  <span className="text-sm font-display text-emerald-300">+{stakes.win} IDX</span>
+            {/* XP Reward — hero block, Index prize is fixed */}
+            <div className="rounded-2xl p-4 bg-gradient-to-br from-violet-500/[0.18] via-fuchsia-500/[0.10] to-transparent border border-violet-400/30 shadow-[0_0_30px_-8px_rgba(168,85,247,0.4)] relative overflow-hidden">
+              <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-violet-500/20 blur-3xl pointer-events-none" />
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-[10px] font-bold text-violet-300 uppercase tracking-[0.2em]">XP Reward</span>
+                  <span className="ml-auto text-[9px] text-violet-300/60 uppercase tracking-wide">Winner</span>
                 </div>
-                <div className="flex-1 rounded-xl bg-red-500/10 border border-red-500/20 px-3 py-2">
-                  <span className="text-[9px] text-red-300/70 uppercase block">Loser</span>
-                  <span className="text-sm font-display text-red-300">−{stakes.lose} IDX</span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="font-display text-[44px] leading-none text-white tracking-tight tabular-nums">
+                    +{xpReward.toLocaleString()}
+                  </span>
+                  <span className="font-display text-[18px] text-violet-300 tracking-wide">XP</span>
                 </div>
+                <p className="text-[10.5px] text-zinc-400 mt-1.5 leading-relaxed">
+                  Longer battles = <span className="text-violet-200 font-semibold">massive XP</span>. Index prize stays fixed at <span className="text-emerald-300 font-semibold">+{FIXED_STAKES.win} IDX</span> · <span className="text-red-300 font-semibold">−{FIXED_STAKES.lose} IDX</span>.
+                </p>
               </div>
             </div>
 
