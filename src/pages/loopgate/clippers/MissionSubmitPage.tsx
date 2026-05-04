@@ -883,7 +883,7 @@ export default function MissionSubmitPage() {
                   onClick={() => setEligibilityOpen(false)}
                   className="w-full h-11 rounded-[14px] font-medium text-[15px] text-[#0A84FF] mt-1"
                 >
-                  Aim for view targets instead
+                  {milestones.length > 0 ? 'Aim for view targets instead' : 'Dismiss'}
                 </button>
               </>
             )}
