@@ -750,8 +750,8 @@ export default function MissionSubmitPage() {
               <RuleRow title="Follow the brief">
                 Stick to what the brief asks for — wrong concept, wrong character, or off-topic edits get rejected.
               </RuleRow>
-              <RuleRow title="Submit from your linked account">
-                Send the live public post URL from the same handle you verified in Linked. Different account = no payout.
+              <RuleRow title="Submit from your own account">
+                Send the live public post URL from your own handle so we can credit and pay you correctly.
               </RuleRow>
               <button
                 onClick={() => setRulesOpen(false)}
