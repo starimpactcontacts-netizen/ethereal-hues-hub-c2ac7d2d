@@ -12,6 +12,7 @@ import CashBattleVoteBar from "@/components/loopgate/CashBattleVoteBar";
 import ScenepackButtons from "@/components/loopgate/ScenepackButtons";
 import ScenepackVote from "@/components/loopgate/ScenepackVote";
 import ScenepackVoteModal from "@/components/loopgate/ScenepackVoteModal";
+import ScenepackDownloadCard from "@/components/loopgate/ScenepackDownloadCard";
 import weirdCityPoster from "@/assets/weird-city-poster.jpeg";
 
 function formatPrize(cents: number): string {
@@ -427,6 +428,17 @@ export default function CashBattlePage() {
           lockedGdrive={battle.scenepack_gdrive_url}
           onChanged={fetchBattle}
         />
+      )}
+
+      {/* Persistent scenepack download card — visible after vote locks */}
+      {battle.status === 'live' && (battle as any).scenepack_locked_id && (
+        <div className="mx-4 mt-3">
+          <ScenepackDownloadCard
+            lockedId={(battle as any).scenepack_locked_id}
+            lockedYoutube={battle.scenepack_youtube_url}
+            lockedGdrive={battle.scenepack_gdrive_url}
+          />
+        </div>
       )}
 
       {/* Countdown Timer */}

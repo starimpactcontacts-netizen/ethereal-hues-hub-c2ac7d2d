@@ -21,6 +21,7 @@ import QuickFightPublicVote from '@/components/loopgate/QuickFightPublicVote';
 import BattleIntroOverlay from '@/components/loopgate/BattleIntroOverlay';
 import BattleDecidedOverlay from '@/components/loopgate/BattleDecidedOverlay';
 import ScenepackVoteModal from '@/components/loopgate/ScenepackVoteModal';
+import ScenepackDownloadCard from '@/components/loopgate/ScenepackDownloadCard';
 
 /** Detect platform from URL */
 function detectPlatform(url: string): string {
@@ -317,6 +318,14 @@ export default function QuickFightPage() {
 
       {/* Content */}
       <div className="px-4 space-y-4 mt-2">
+        {/* Persistent scenepack download card — visible after vote locks */}
+        {fight.status === 'active' && (fight as any).scenepack_locked_id && (
+          <ScenepackDownloadCard
+            lockedId={(fight as any).scenepack_locked_id}
+            lockedYoutube={(fight as any).scenepack_youtube_url}
+            lockedGdrive={(fight as any).scenepack_gdrive_url}
+          />
+        )}
         {/* Show picked song for non-participants */}
         {!isParticipant && (fight as any).theme_song_name && (
           <div className="bg-surface-1 border border-border p-3 flex items-center gap-3">

@@ -20,6 +20,7 @@ import BattleChat from "@/components/loopgate/BattleChat";
 import BattleSongPicker from "@/components/loopgate/BattleSongPicker";
 import ScenepackVote from "@/components/loopgate/ScenepackVote";
 import ScenepackVoteModal from "@/components/loopgate/ScenepackVoteModal";
+import ScenepackDownloadCard from "@/components/loopgate/ScenepackDownloadCard";
 import BattleSubmissionCard from "@/components/loopgate/BattleSubmissionCard";
 import BattleShowcase from "@/components/loopgate/BattleShowcase";
 
@@ -512,6 +513,15 @@ export default function BattleDetailPage() {
             lockedYoutube={(battle as any).scenepack_youtube_url}
             lockedGdrive={(battle as any).scenepack_gdrive_url}
             onChanged={refetch}
+          />
+        )}
+
+        {/* Persistent scenepack download card — visible after vote locks */}
+        {battle.status === 'active' && (battle as any).scenepack_locked_id && (
+          <ScenepackDownloadCard
+            lockedId={(battle as any).scenepack_locked_id}
+            lockedYoutube={(battle as any).scenepack_youtube_url}
+            lockedGdrive={(battle as any).scenepack_gdrive_url}
           />
         )}
 
