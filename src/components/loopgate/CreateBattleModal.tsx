@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Swords, Clock, Trophy, Search, User, Gavel, Zap, Music, Globe2, Target, Film, Lock, Link2, Copy } from "lucide-react";
+import { X, Swords, Clock, Trophy, Search, User, Gavel, Zap, Globe2, Target, Film, Lock, Link2, Copy, Package, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
@@ -27,6 +27,7 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
   const [challengeType, setChallengeType] = useState<'open' | 'direct' | 'private'>('open');
   const [duration, setDuration] = useState<number>(48);
   const [isRapid, setIsRapid] = useState(false);
+  const [battleMode, setBattleMode] = useState<'scenepack' | 'premade'>('scenepack');
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [selectedOpponent, setSelectedOpponent] = useState<SearchResult | null>(null);
@@ -35,32 +36,6 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
   const [selectedJudge, setSelectedJudge] = useState<SearchResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
-
-  // Featured song themes
-  const [themeSongs, setThemeSongs] = useState<{ id: string; song_name: string; song_preview_url: string | null; title: string; artist_name: string }[]>([]);
-  const [selectedTheme, setSelectedTheme] = useState<typeof themeSongs[0] | null>(null);
-
-  useEffect(() => {
-    const fetchSongs = async () => {
-      const { data } = await supabase
-        .from('featured_drops')
-        .select('id, song_name, song_preview_url, title, featured_artists(name)')
-        .in('status', ['live', 'closed'])
-        .not('song_preview_url', 'is', null)
-        .order('created_at', { ascending: false })
-        .limit(20);
-      if (data) {
-        setThemeSongs(data.map((d: any) => ({
-          id: d.id,
-          song_name: d.song_name,
-          song_preview_url: d.song_preview_url,
-          title: d.title,
-          artist_name: d.featured_artists?.name || 'Unknown',
-        })));
-      }
-    };
-    if (isOpen) fetchSongs();
-  }, [isOpen]);
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
@@ -136,12 +111,6 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
       if (challengeType === 'private') {
         updateData.is_private = true;
       }
-      if (selectedTheme) {
-        updateData.theme_song_name = `${selectedTheme.artist_name} — ${selectedTheme.song_name}`;
-        updateData.theme_song_preview_url = selectedTheme.song_preview_url;
-        updateData.theme_drop_id = selectedTheme.id;
-      }
-
       if (selectedJudge) {
         // Specific judge selected — send them a request
         updateData.requested_judge_id = selectedJudge.id;
@@ -422,39 +391,36 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
               )}
             </div>
 
-            {/* Theme Song */}
-            {themeSongs.length > 0 && (
-              <div>
-                <label className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2 flex items-center gap-1.5 font-semibold">
-                  <Music className="w-3 h-3" /> Theme Song
-                  <span className="text-[9px] text-zinc-600 ml-1 normal-case tracking-normal">optional</span>
-                </label>
-                <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
-                  {themeSongs.map((song) => (
-                    <button
-                      key={song.id}
-                      onClick={() => setSelectedTheme(selectedTheme?.id === song.id ? null : song)}
-                      className={`w-full flex items-center gap-2.5 p-2.5 rounded-xl text-left transition-all ${
-                        selectedTheme?.id === song.id
-                          ? 'border border-purple-400/50 bg-purple-500/10'
-                          : 'border border-white/[0.06] bg-white/[0.03]'
-                      }`}
-                    >
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${selectedTheme?.id === song.id ? 'bg-purple-500/25' : 'bg-white/[0.06]'}`}>
-                        <Music className={`w-4 h-4 ${selectedTheme?.id === song.id ? 'text-purple-300' : 'text-zinc-500'}`} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <span className="text-xs font-semibold text-white truncate block">{song.song_name}</span>
-                        <span className="text-[10px] text-zinc-500 truncate block">{song.artist_name}</span>
-                      </div>
-                      {song.song_preview_url && selectedTheme?.id === song.id && (
-                        <audio src={song.song_preview_url} controls className="h-6 w-24 shrink-0" onClick={(e) => e.stopPropagation()} />
-                      )}
-                    </button>
-                  ))}
-                </div>
+            {/* Battle Mode */}
+            <div>
+              <label className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2 block font-semibold">Battle Mode</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setBattleMode('scenepack')}
+                  className={`p-3 rounded-2xl text-left transition-all active:scale-[0.98] ${
+                    battleMode === 'scenepack'
+                      ? 'bg-gradient-to-br from-emerald-500/20 to-emerald-600/5 border border-emerald-400/50 shadow-[0_0_18px_-4px_rgba(16,185,129,0.45)]'
+                      : 'bg-white/[0.04] border border-white/[0.06]'
+                  }`}
+                >
+                  <Package className={`w-4 h-4 mb-1.5 ${battleMode === 'scenepack' ? 'text-emerald-300' : 'text-zinc-500'}`} />
+                  <span className="text-[13px] font-semibold text-white block">Scenepack</span>
+                  <span className="text-[9px] text-zinc-500">Both vote, edit live</span>
+                </button>
+                <button
+                  onClick={() => setBattleMode('premade')}
+                  className={`p-3 rounded-2xl text-left transition-all active:scale-[0.98] ${
+                    battleMode === 'premade'
+                      ? 'bg-gradient-to-br from-sky-500/20 to-sky-600/5 border border-sky-400/50 shadow-[0_0_18px_-4px_rgba(56,189,248,0.45)]'
+                      : 'bg-white/[0.04] border border-white/[0.06]'
+                  }`}
+                >
+                  <Upload className={`w-4 h-4 mb-1.5 ${battleMode === 'premade' ? 'text-sky-300' : 'text-zinc-500'}`} />
+                  <span className="text-[13px] font-semibold text-white block">Pre-Made</span>
+                  <span className="text-[9px] text-zinc-500">Submit existing edit</span>
+                </button>
               </div>
-            )}
+            </div>
 
             {/* Duration */}
             <div>
