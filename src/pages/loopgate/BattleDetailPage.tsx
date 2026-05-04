@@ -516,6 +516,15 @@ export default function BattleDetailPage() {
           />
         )}
 
+        {/* Persistent scenepack download card — visible after vote locks */}
+        {battle.status === 'active' && (battle as any).scenepack_locked_id && (
+          <ScenepackDownloadCard
+            lockedId={(battle as any).scenepack_locked_id}
+            lockedYoutube={(battle as any).scenepack_youtube_url}
+            lockedGdrive={(battle as any).scenepack_gdrive_url}
+          />
+        )}
+
         {/* Forfeit Battle — escape hatch for active participants */}
         {isParticipant && battle.status === 'active' && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
