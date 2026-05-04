@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Trophy, ChevronRight, Crown, Medal, Flame } from "lucide-react";
+import { Trophy, ChevronRight, Crown, Medal, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -22,6 +22,7 @@ interface EditorRow {
 export default function ArenaQOITop() {
   const [rows, setRows] = useState<EditorRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [prevRanks, setPrevRanks] = useState<Record<string, number>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -35,7 +36,19 @@ export default function ArenaQOITop() {
         .order("level", { ascending: false, nullsFirst: false })
         .limit(5);
       if (!cancelled) {
-        setRows((data as EditorRow[]) || []);
+        const fresh = (data as EditorRow[]) || [];
+        // Read previous snapshot for climb/fall arrows
+        try {
+          const raw = localStorage.getItem('arena_top_editors_ranks');
+          if (raw) setPrevRanks(JSON.parse(raw));
+        } catch {}
+        // Save current snapshot for next visit
+        try {
+          const snap: Record<string, number> = {};
+          fresh.forEach((r, i) => { snap[r.id] = i + 1; });
+          localStorage.setItem('arena_top_editors_ranks', JSON.stringify(snap));
+        } catch {}
+        setRows(fresh);
         setLoading(false);
       }
     };
@@ -111,11 +124,36 @@ export default function ArenaQOITop() {
                       {row.level ? (
                         <span className="text-[9px] text-muted-foreground tabular-nums">Lvl {row.level}</span>
                       ) : null}
-                      {row.total_wins ? (
-                        <span className="text-[9px] text-emerald-400/90 font-semibold tabular-nums flex items-center gap-0.5">
-                          <Flame className="w-2.5 h-2.5" /> {row.total_wins}W
-                        </span>
-                      ) : null}
+                      {(() => {
+                        const prev = prevRanks[row.id];
+                        if (!prev) {
+                          return (
+                            <span className="text-[9px] text-sky-400/90 font-semibold tabular-nums flex items-center gap-0.5">
+                              <TrendingUp className="w-2.5 h-2.5" /> NEW
+                            </span>
+                          );
+                        }
+                        const delta = prev - rank; // positive = climbed
+                        if (delta > 0) {
+                          return (
+                            <span className="text-[9px] text-emerald-400 font-bold tabular-nums flex items-center gap-0.5">
+                              <TrendingUp className="w-2.5 h-2.5" strokeWidth={2.75} /> {delta}
+                            </span>
+                          );
+                        }
+                        if (delta < 0) {
+                          return (
+                            <span className="text-[9px] text-red-400 font-bold tabular-nums flex items-center gap-0.5">
+                              <TrendingDown className="w-2.5 h-2.5" strokeWidth={2.75} /> {Math.abs(delta)}
+                            </span>
+                          );
+                        }
+                        return (
+                          <span className="text-[9px] text-muted-foreground/70 font-semibold tabular-nums flex items-center gap-0.5">
+                            <Minus className="w-2.5 h-2.5" />
+                          </span>
+                        );
+                      })()}
                       {row.best_gatekeeper_qoi ? (
                         <span className="text-[9px] text-purple-300/80 font-semibold tabular-nums">QOI {Number(row.best_gatekeeper_qoi).toFixed(1)}</span>
                       ) : null}
