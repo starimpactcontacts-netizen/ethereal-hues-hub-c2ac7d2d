@@ -694,79 +694,25 @@ export default function CashBattlesSection({
         </div>
       </div>
 
-      {/* Ranked Edit Battles — Coming Soon teaser */}
-      <div className="mx-4 mb-3 relative rounded-2xl overflow-hidden border border-white/[0.08]"
-        style={{
-          background: 'linear-gradient(135deg, #0b0b10 0%, #1a0b1f 50%, #0b0b10 100%)',
-        }}
-      >
-        {/* Animated grid backdrop */}
+      {/* Ranked — Coming Soon badge */}
+      <div className="px-4 mb-3">
         <div
-          aria-hidden
-          className="absolute inset-0 opacity-[0.18] pointer-events-none"
+          className="inline-flex items-center gap-1.5 pl-1.5 pr-2.5 py-1 rounded-full border border-purple-400/30 relative overflow-hidden"
           style={{
-            backgroundImage:
-              'linear-gradient(rgba(168,85,247,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(168,85,247,0.5) 1px, transparent 1px)',
-            backgroundSize: '22px 22px',
-            maskImage: 'radial-gradient(ellipse at top right, black 0%, transparent 70%)',
-            WebkitMaskImage: 'radial-gradient(ellipse at top right, black 0%, transparent 70%)',
+            background: 'linear-gradient(135deg, rgba(168,85,247,0.16), rgba(236,72,153,0.10))',
+            boxShadow: '0 0 12px -4px rgba(168,85,247,0.5), inset 0 1px 0 rgba(255,255,255,0.08)',
           }}
-        />
-        {/* Glow orb */}
-        <div
-          aria-hidden
-          className="absolute -top-10 -right-10 w-40 h-40 rounded-full pointer-events-none blur-3xl opacity-40"
-          style={{ background: 'radial-gradient(circle, rgba(168,85,247,0.7), transparent 70%)' }}
-        />
-        {/* Sweep shimmer */}
-        <div
-          aria-hidden
-          className="absolute inset-0 pointer-events-none animate-[shimmer_3.2s_ease-in-out_infinite]"
-          style={{
-            background: 'linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.07) 50%, transparent 65%)',
-          }}
-        />
-
-        <div className="relative flex items-center gap-3 px-3.5 py-3">
-          <div
-            className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 relative overflow-hidden"
-            style={{
-              background: 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)',
-              boxShadow: '0 0 24px -4px rgba(168,85,247,0.7), inset 0 1px 0 rgba(255,255,255,0.3)',
-            }}
-          >
-            <Swords className="w-5 h-5 text-white relative z-10" strokeWidth={2.5} />
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 mb-0.5">
-              <span
-                className="text-[8.5px] font-black tracking-[0.28em] text-purple-300/90 uppercase"
-              >
-                Coming Soon
-              </span>
-              <span className="w-1 h-1 rounded-full bg-purple-400/60" />
-              <span className="text-[8.5px] font-black tracking-[0.18em] text-fuchsia-300/80 uppercase">Beta Soon</span>
-            </div>
-            <h3
-              className="text-[20px] leading-none text-white font-black"
-              style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.02em' }}
-            >
-              RANKED EDIT BATTLES
-            </h3>
-            <p className="text-[10px] text-zinc-400 mt-1 leading-tight">
-              Climb the ladder · Index on the line · Pro-tier matchmaking
-            </p>
-          </div>
-
-          <div className="shrink-0">
-            <div
-              className="px-2 py-1 rounded-md text-[8.5px] font-black uppercase tracking-[0.18em] text-purple-200 border border-purple-400/40"
-              style={{ background: 'rgba(168,85,247,0.12)' }}
-            >
-              Soon™
-            </div>
-          </div>
+        >
+          <span
+            aria-hidden
+            className="absolute inset-0 pointer-events-none animate-[shimmer_3.2s_ease-in-out_infinite]"
+            style={{ background: 'linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.08) 50%, transparent 65%)' }}
+          />
+          <span className="w-4 h-4 rounded-full flex items-center justify-center bg-gradient-to-br from-purple-500 to-fuchsia-500 shrink-0">
+            <Swords className="w-2.5 h-2.5 text-white" strokeWidth={3} />
+          </span>
+          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-purple-100">Ranked</span>
+          <span className="text-[8.5px] font-bold uppercase tracking-[0.22em] text-purple-300/80">Coming Soon</span>
         </div>
       </div>
 
