@@ -186,7 +186,7 @@ export default function ClippersWithdrawalsPage() {
           <div className="rounded-[20px] p-10 text-center" style={{ background: '#1c1c1e' }}>
             <Wallet className="w-7 h-7 text-[#8E8E93] mx-auto mb-3" />
             <p className="text-[17px] font-semibold text-white mb-1">No withdrawals yet</p>
-            <p className="text-[13px] text-[#8E8E93]">{user ? 'Cash out anytime — $0 minimum' : 'Lock in to cash out — $0 minimum, no fees'}</p>
+            <p className="text-[13px] text-[#8E8E93]">{user ? 'Cash out anytime — $0 minimum' : 'Sign in to cash out — $0 minimum, no fees'}</p>
           </div>
         ) : (
           <div className="rounded-[16px] overflow-hidden" style={{ background: '#1c1c1e' }}>
@@ -390,7 +390,7 @@ export default function ClippersWithdrawalsPage() {
         </Sheet>
       )}
 
-      <ClipperLockGate open={showGate} onClose={() => setShowGate(false)} onSuccess={load} reason="Lock in to request withdrawals." />
+      <ClipperLockGate open={showGate} onClose={() => setShowGate(false)} onSuccess={load} reason="Sign in to request withdrawals." />
     </>
   );
 }

@@ -157,7 +157,7 @@ export default function ClippersSubmissionsPage() {
             {[1, 2, 3].map((i) => <div key={i} className="h-20 rounded-[16px] bg-[#1c1c1e] animate-pulse" />)}
           </div>
         ) : !user ? (
-          <EmptyCTA onClick={() => setShowGate(true)} text="Lock in to start submitting" />
+          <EmptyCTA onClick={() => setShowGate(true)} text="Sign in to start submitting" />
         ) : filtered.length === 0 ? (
           <EmptyCTA onClick={openPicker} text="No posts yet — pick a mission to drop your first one" />
         ) : (
@@ -204,7 +204,7 @@ export default function ClippersSubmissionsPage() {
         </Sheet>
       )}
 
-      <ClipperLockGate open={showGate} onClose={() => setShowGate(false)} onSuccess={load} reason="Lock in to submit posts and earn payouts." />
+      <ClipperLockGate open={showGate} onClose={() => setShowGate(false)} onSuccess={load} reason="Sign in to submit posts and earn payouts." />
     </>
   );
 }
