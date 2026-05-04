@@ -456,3 +456,9 @@ body.hide-app-chrome [data-clippers-header],
 body.hide-app-chrome [data-clippers-bottom-nav] {
   display: none !important;
 }
+
+/* Hide top bar and bottom nav when create-battle modal is open */
+body.battle-modal-open [data-mobile-topbar],
+body.battle-modal-open [data-bottom-nav] {
+  display: none !important;
+}

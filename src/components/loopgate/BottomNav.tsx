@@ -48,6 +48,7 @@ export default function BottomNav() {
   return (
     <>
       <nav
+        data-bottom-nav
         className="fixed inset-x-0 bottom-0 z-[55]"
         style={{
           minHeight: 'var(--app-bottom-nav-height, calc(env(safe-area-inset-bottom, 0px) + 49px))',
