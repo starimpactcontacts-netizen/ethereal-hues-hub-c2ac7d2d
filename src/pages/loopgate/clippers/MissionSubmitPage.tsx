@@ -34,6 +34,7 @@ interface Mission {
   approval_rate_pct: number | null;
   base_payout_requirements: string | null;
   payout_display_override?: string | null;
+  sound_url?: string | null;
 }
 
 function detectPlatform(url: string): string {
@@ -152,7 +153,7 @@ export default function MissionSubmitPage() {
     (async () => {
       const { data } = await supabase
         .from('missions')
-        .select('id, title, description, cover_image_url, base_payout_cents, view_milestones, budget_cents, spent_cents, cap_type, max_posts, approved_count, inspirations, scenepack_url, scenepack_gdrive_url, scenepack_youtube_url, eligible_platforms, status, deadline, approval_rate_pct, base_payout_requirements, payout_display_override')
+        .select('id, title, description, cover_image_url, base_payout_cents, view_milestones, budget_cents, spent_cents, cap_type, max_posts, approved_count, inspirations, scenepack_url, scenepack_gdrive_url, scenepack_youtube_url, eligible_platforms, status, deadline, approval_rate_pct, base_payout_requirements, payout_display_override, sound_url')
         .eq('id', id)
         .maybeSingle();
       setMission((data as any) || null);
