@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Swords, Clock, Trophy, Search, User, Gavel, Zap, Globe2, Target, Film, Lock, Link2, Copy, Package, Upload } from "lucide-react";
+import { X, Swords, Clock, Trophy, Search, Gavel, Globe2, Target, Lock, Link2, Package, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
@@ -25,8 +25,7 @@ interface SearchResult {
 export default function CreateBattleModal({ isOpen, onClose, onSuccess }: CreateBattleModalProps) {
   const { profile } = useAuth();
   const [challengeType, setChallengeType] = useState<'open' | 'direct' | 'private'>('open');
-  const [duration, setDuration] = useState<number>(48);
-  const [isRapid, setIsRapid] = useState(false);
+  const [duration, setDuration] = useState<number>(1);
   const [battleMode, setBattleMode] = useState<'scenepack' | 'premade'>('scenepack');
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -106,8 +105,8 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
     );
 
     if (result.success && result.battleId) {
-      // Always update is_rapid flag + theme song
-      const updateData: any = { is_rapid: isRapid };
+      // Rapid is implicit when duration <= 1 hour
+      const updateData: any = { is_rapid: duration <= 1 };
       if (challengeType === 'private') {
         updateData.is_private = true;
       }
@@ -192,8 +191,24 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
 
   if (!isOpen) return null;
 
-  // Edit battles cap at 1 hour — fast turnaround like a game match
-  const durationOptions = [1];
+  // Edit battles span quick rapid sessions to a full day
+  const durationOptions: { value: number; label: string }[] = [
+    { value: 0.25, label: '15M' },
+    { value: 0.5, label: '30M' },
+    { value: 1, label: '1H' },
+    { value: 3, label: '3H' },
+    { value: 24, label: '24H' },
+  ];
+
+  // Stakes scale with duration so longer battles are worth more
+  const stakesByDuration: Record<string, { win: number; lose: number }> = {
+    '0.25': { win: 5, lose: 2 },
+    '0.5':  { win: 10, lose: 3 },
+    '1':    { win: 20, lose: 5 },
+    '3':    { win: 40, lose: 10 },
+    '24':   { win: 100, lose: 25 },
+  };
+  const stakes = stakesByDuration[String(duration)] || { win: 20, lose: 5 };
 
   return (
     <AnimatePresence>
@@ -201,7 +216,7 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 z-[100] flex items-end justify-center bg-black/70 backdrop-blur-sm"
         onClick={onClose}
       >
         <motion.div
@@ -212,7 +227,8 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
           onClick={(e) => e.stopPropagation()}
           className="w-full max-w-md rounded-t-[32px] overflow-hidden relative flex flex-col"
           style={{
-            maxHeight: "calc(100dvh - env(safe-area-inset-top, 0px) - 16px)",
+            maxHeight: "100dvh",
+            height: "100dvh",
             background: "rgba(14,14,16,0.92)",
             backdropFilter: "blur(40px) saturate(180%)",
             WebkitBackdropFilter: "blur(40px) saturate(180%)",
@@ -252,32 +268,6 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
               WebkitOverflowScrolling: "touch",
             }}
           >
-            {/* Rapid Mode Toggle */}
-            <div>
-              <button
-                onClick={() => {
-                  setIsRapid(!isRapid);
-                  setDuration(!isRapid ? 3 : 48);
-                }}
-                className={`w-full p-3.5 rounded-2xl text-left transition-all flex items-center gap-3 active:scale-[0.99] ${
-                  isRapid
-                    ? 'bg-gradient-to-r from-amber-500/20 to-orange-500/10 border border-amber-400/40 shadow-[0_0_20px_-4px_rgba(245,158,11,0.4)]'
-                    : 'bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.06]'
-                }`}
-              >
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${isRapid ? 'bg-amber-500/25' : 'bg-white/[0.06]'}`}>
-                  <Zap className={`w-4.5 h-4.5 ${isRapid ? 'text-amber-300 fill-amber-300' : 'text-zinc-500'}`} />
-                </div>
-                <div className="flex-1">
-                  <span className="text-sm font-semibold text-white block">Rapid Mode</span>
-                  <span className="text-[10px] text-zinc-500">1-3h battles · instant action</span>
-                </div>
-                <div className={`w-11 h-6 rounded-full transition-colors relative ${isRapid ? 'bg-amber-500' : 'bg-white/10'}`}>
-                  <div className={`w-5 h-5 rounded-full bg-white absolute top-0.5 transition-all shadow-md ${isRapid ? 'left-[22px]' : 'left-0.5'}`} />
-                </div>
-              </button>
-            </div>
-
             {/* Challenge Type */}
             <div>
               <label className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2 block font-semibold">Challenge Type</label>
@@ -427,19 +417,18 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
               <label className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2 block font-semibold">
                 Duration
               </label>
-              <div className="grid grid-cols-3 gap-2.5">
-                {durationOptions.map((hours) => (
+              <div className="grid grid-cols-5 gap-2">
+                {durationOptions.map(({ value, label }) => (
                   <button
-                    key={hours}
-                    onClick={() => setDuration(hours)}
-                    className={`p-3 rounded-2xl text-center transition-all active:scale-[0.97] ${
-                      duration === hours
+                    key={value}
+                    onClick={() => setDuration(value)}
+                    className={`px-1 py-2.5 rounded-xl text-center transition-all active:scale-[0.97] ${
+                      duration === value
                         ? 'bg-gradient-to-br from-red-500/25 to-red-600/10 border border-red-400/50 shadow-[0_0_16px_-4px_rgba(239,68,68,0.5)]'
                         : 'bg-white/[0.04] border border-white/[0.06]'
                     }`}
                   >
-                    <Clock className={`w-3.5 h-3.5 mx-auto mb-1 ${duration === hours ? 'text-red-300' : 'text-zinc-500'}`} />
-                    <span className="text-base font-display text-white">{hours}H</span>
+                    <span className={`text-[13px] font-display block ${duration === value ? 'text-white' : 'text-zinc-300'}`}>{label}</span>
                   </button>
                 ))}
               </div>
@@ -450,27 +439,18 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
               <div className="flex items-center gap-2 mb-2">
                 <Trophy className="w-4 h-4 text-amber-400 fill-amber-400/30" />
                 <span className="text-[11px] font-bold text-white uppercase tracking-wider">Stakes</span>
+                <span className="ml-auto text-[9px] text-zinc-500 uppercase tracking-wide">Auto-scaled</span>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <div className="flex-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-3 py-2">
                   <span className="text-[9px] text-emerald-300/70 uppercase block">Winner</span>
-                  <span className="text-sm font-display text-emerald-300">+20 IDX</span>
+                  <span className="text-sm font-display text-emerald-300">+{stakes.win} IDX</span>
                 </div>
                 <div className="flex-1 rounded-xl bg-red-500/10 border border-red-500/20 px-3 py-2">
                   <span className="text-[9px] text-red-300/70 uppercase block">Loser</span>
-                  <span className="text-sm font-display text-red-300">−5 IDX</span>
+                  <span className="text-sm font-display text-red-300">−{stakes.lose} IDX</span>
                 </div>
               </div>
-            </div>
-
-            {/* Your Info */}
-            <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/[0.04] border border-white/[0.06]">
-              <Avatar className="w-10 h-10 ring-2 ring-amber-400/60"><AvatarImage src={profile?.avatar_url || ''} /><AvatarFallback className="bg-amber-500/20 text-amber-400">{profile?.username?.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
-              <div className="flex-1">
-                <span className="text-sm font-semibold text-white">{profile?.username}</span>
-                <span className="text-[10px] text-zinc-500 block uppercase">{profile?.league} League</span>
-              </div>
-              <span className="text-[9px] font-bold text-amber-400 uppercase tracking-wider px-2 py-1 rounded-full bg-amber-500/10 border border-amber-400/30">You</span>
             </div>
 
           </div>
