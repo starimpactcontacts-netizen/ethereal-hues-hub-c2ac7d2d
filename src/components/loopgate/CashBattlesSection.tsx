@@ -678,9 +678,7 @@ export default function CashBattlesSection({
               onClick={onChallenge}
               className="group relative flex items-center gap-1.5 pl-2 pr-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-white whitespace-nowrap rounded-md overflow-hidden active:scale-[0.97] transition-transform"
               style={{
-                background: 'linear-gradient(135deg, #ef4444 0%, #f59e0b 50%, #ef4444 100%)',
-                backgroundSize: '200% 200%',
-                animation: 'gradientShift 3s ease infinite',
+                background: 'linear-gradient(135deg, #ef4444 0%, #f59e0b 100%)',
                 boxShadow: '0 0 16px -4px rgba(239,68,68,0.6), inset 0 1px 0 rgba(255,255,255,0.25)',
               }}
             >
