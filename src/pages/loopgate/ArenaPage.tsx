@@ -1228,21 +1228,13 @@ export default function ArenaPage() {
             })}
             {/* Ranked — Coming Soon inline badge */}
             <div
-              className="inline-flex items-center gap-1 pl-1 pr-2 py-[3px] rounded-full border border-purple-400/30 relative overflow-hidden shrink-0"
-              style={{
-                background: 'linear-gradient(135deg, rgba(168,85,247,0.16), rgba(236,72,153,0.10))',
-                boxShadow: '0 0 8px -3px rgba(168,85,247,0.45), inset 0 1px 0 rgba(255,255,255,0.06)',
-              }}
+              className="inline-flex items-center gap-1 pl-1 pr-2 py-[3px] rounded-full border border-red-500/30 shrink-0"
+              style={{ background: 'rgba(239,68,68,0.08)' }}
             >
-              <span
-                aria-hidden
-                className="absolute inset-0 pointer-events-none animate-[shimmer_3.2s_ease-in-out_infinite]"
-                style={{ background: 'linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.08) 50%, transparent 65%)' }}
-              />
-              <span className="w-3 h-3 rounded-full flex items-center justify-center bg-gradient-to-br from-purple-500 to-fuchsia-500 shrink-0">
+              <span className="w-3 h-3 rounded-full flex items-center justify-center bg-red-500/80 shrink-0">
                 <Swords className="w-2 h-2 text-white" strokeWidth={3} />
               </span>
-              <span className="text-[8.5px] font-black uppercase tracking-[0.16em] text-purple-100 whitespace-nowrap">Ranked Soon</span>
+              <span className="text-[8.5px] font-black uppercase tracking-[0.16em] text-red-200 whitespace-nowrap">Ranked Soon</span>
             </div>
           </div>
 
