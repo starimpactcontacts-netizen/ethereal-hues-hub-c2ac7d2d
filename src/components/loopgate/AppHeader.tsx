@@ -56,6 +56,7 @@ export default function AppHeader() {
 
   return (
     <header
+      data-mobile-topbar
       className="sticky top-0 z-50 backdrop-blur-xl border-b border-border/30"
       style={{
         minHeight: 'var(--app-header-height, calc(env(safe-area-inset-top, 0px) + 44px))',
