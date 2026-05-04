@@ -7,6 +7,7 @@ import ScenepackVote from "./ScenepackVote";
 interface Props {
   battleId: string;
   isCash?: boolean;
+  kind?: 'battle' | 'cash' | 'quick_fight';
   isParticipant: boolean;
   optionAId: string | null;
   optionBId: string | null;
