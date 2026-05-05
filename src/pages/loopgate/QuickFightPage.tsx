@@ -1,10 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Share2, Search, Play, Video, Music, ThumbsUp, Upload, Sparkles } from 'lucide-react';
+import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Share2, Search, Play, Video, Music, ThumbsUp, Upload, Sparkles, EyeOff } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuickFight, submitQuickFight } from '@/hooks/useQuickFight';
 import { useUserRoles } from '@/hooks/useUserRoles';
@@ -48,6 +58,8 @@ export default function QuickFightPage() {
   const [judgeVideoUrl, setJudgeVideoUrl] = useState('');
   const [myVote, setMyVote] = useState<string | null>(null);
   const [voting, setVoting] = useState(false);
+  const [hideConfirmOpen, setHideConfirmOpen] = useState(false);
+  const [hiding, setHiding] = useState(false);
   const [introDone, setIntroDone] = useState<boolean>(() => {
     try { return !!sessionStorage.getItem(`battle-intro-played:${fightId}`); } catch { return false; }
   });
