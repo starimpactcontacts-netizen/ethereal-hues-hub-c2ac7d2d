@@ -176,7 +176,7 @@ export default function FNFVoteScoreboard({
   const MK_CLIP = "polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%)";
 
   return (
-    <div className="relative bg-black z-20 px-3 py-2.5">
+    <div className="relative bg-black z-20 px-3 pt-2 pb-1">
       <div className="flex items-center gap-2.5">
         <div className="relative">
           <div
@@ -264,7 +264,7 @@ export default function FNFVoteScoreboard({
       </div>
 
       {/* Sub-row */}
-      <div className="flex items-center justify-between mt-1.5 px-1">
+      <div className="flex items-center justify-between mt-0.5 px-1">
         <span className="text-[9px] font-black uppercase tracking-[0.2em] text-red-400 truncate max-w-[45%]" style={teko}>
           @{redUsername}
         </span>
