@@ -675,6 +675,32 @@ export default function QuickFightPage() {
           />
         )}
       </div>
+
+      <AlertDialog open={hideConfirmOpen} onOpenChange={setHideConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <EyeOff className="w-4 h-4 text-red-400" />
+              Hide this edit battle?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This battle will be removed from public carousels and feeds. Your stats, votes,
+              and judge results stay intact — only the battle's visibility changes. You can
+              still access it via direct link.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={hiding}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleHideFight}
+              disabled={hiding}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              {hiding ? 'Hiding…' : 'Hide Battle'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
