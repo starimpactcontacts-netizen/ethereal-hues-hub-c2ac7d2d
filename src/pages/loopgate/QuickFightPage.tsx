@@ -211,6 +211,23 @@ export default function QuickFightPage() {
     setJudging(false);
   };
 
+  const handleHideFight = async () => {
+    if (!fight || hiding) return;
+    setHiding(true);
+    const { error } = await supabase.rpc('toggle_quick_fight_hidden' as any, {
+      p_fight_id: fight.id,
+      p_hide: true,
+    } as any);
+    setHiding(false);
+    setHideConfirmOpen(false);
+    if (error) {
+      toast.error('Failed to hide fight');
+      return;
+    }
+    toast.success('Battle hidden from public view');
+    navigate('/hub');
+  };
+
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Scenepack vote / locked banner — opens automatically when entering an active fight */}
