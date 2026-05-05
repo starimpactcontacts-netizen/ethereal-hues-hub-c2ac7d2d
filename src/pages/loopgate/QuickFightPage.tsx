@@ -291,6 +291,16 @@ export default function QuickFightPage() {
                fight.status === 'cancelled' ? 'CANCELLED' :
                fight.status === 'forfeited' ? 'FORFEIT' : fight.status.toUpperCase()}
             </span>
+            {(user?.id === fight.player_1_id || user?.id === fight.player_2_id) && fight.status === 'completed' && (
+              <button
+                onClick={() => setHideConfirmOpen(true)}
+                className="ml-1 flex items-center gap-1 px-2 py-1 rounded-md bg-red-500/10 border border-red-500/25 hover:bg-red-500/20 transition-colors"
+                aria-label="Hide this fight"
+              >
+                <EyeOff className="w-3 h-3 text-red-400" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-red-400">Hide</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
