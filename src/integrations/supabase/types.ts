@@ -6881,6 +6881,8 @@ export type Database = {
           created_at: string
           duration_minutes: number
           ends_at: string | null
+          hidden_at: string | null
+          hidden_by: string | null
           id: string
           judge_id: string | null
           judge_notes: string | null
@@ -6926,6 +6928,8 @@ export type Database = {
           created_at?: string
           duration_minutes?: number
           ends_at?: string | null
+          hidden_at?: string | null
+          hidden_by?: string | null
           id?: string
           judge_id?: string | null
           judge_notes?: string | null
@@ -6971,6 +6975,8 @@ export type Database = {
           created_at?: string
           duration_minutes?: number
           ends_at?: string | null
+          hidden_at?: string | null
+          hidden_by?: string | null
           id?: string
           judge_id?: string | null
           judge_notes?: string | null
@@ -8722,6 +8728,10 @@ export type Database = {
       }
       toggle_battle_hidden: {
         Args: { p_battle_id: string; p_hide: boolean }
+        Returns: undefined
+      }
+      toggle_quick_fight_hidden: {
+        Args: { p_fight_id: string; p_hide: boolean }
         Returns: undefined
       }
       update_active_session: { Args: never; Returns: undefined }
