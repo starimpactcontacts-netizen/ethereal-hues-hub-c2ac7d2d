@@ -71,27 +71,49 @@ export default function FNFVoteScoreboard({
       }
     };
 
+    // Beat detection state — envelope follower + adaptive threshold
     let lastT = 0;
+    let envelope = 0;       // smoothed bass energy
+    let baseline = 0.05;    // adaptive baseline
+    let beatScale = 1;      // current chip scale (eased back to 1)
+    let lastBeatT = 0;
     const loop = (t: number) => {
       if (t - lastT > 90) tryHook();
-      let amp = 0;
+      let bass = 0;
       if (analyser && dataArr) {
         analyser.getByteFrequencyData(dataArr as any);
+        // Bass-focused: first ~4 bins are kick/sub
         let sum = 0;
-        const n = Math.min(8, dataArr.length);
+        const n = Math.min(4, dataArr.length);
         for (let i = 0; i < n; i++) sum += dataArr[i];
-        amp = sum / (n * 255);
+        bass = sum / (n * 255);
       } else {
-        amp = 0.12 + 0.08 * Math.abs(Math.sin(t / 380));
+        bass = 0.10 + 0.06 * Math.abs(Math.sin(t / 380));
       }
-      const scale = 1 + Math.min(0.4, amp * 0.6);
+
+      // Envelope follower (fast attack, slow release)
+      envelope = bass > envelope ? envelope + (bass - envelope) * 0.6 : envelope + (bass - envelope) * 0.08;
+      // Adaptive baseline tracks ambient loudness
+      baseline += (envelope - baseline) * 0.005;
+
+      // Detect beat: spike above baseline + min interval
+      const threshold = baseline * 1.45 + 0.06;
+      if (envelope > threshold && t - lastBeatT > 110) {
+        beatScale = 1.55 + Math.min(0.35, (envelope - threshold) * 1.2);
+        lastBeatT = t;
+      } else {
+        // Ease back to neutral aggressively
+        beatScale += (1 - beatScale) * 0.18;
+      }
+
       if (chipRef.current) {
-        chipRef.current.style.transform = `translate(-50%, -50%) scale(${scale.toFixed(3)})`;
+        chipRef.current.style.transform = `translate(-50%, -50%) scale(${beatScale.toFixed(3)})`;
       }
-      if (redGlowRef.current) redGlowRef.current.style.opacity = String(0.2 + amp * 0.75);
-      if (blueGlowRef.current) blueGlowRef.current.style.opacity = String(0.2 + amp * 0.75);
+      const glow = 0.2 + envelope * 0.85 + (beatScale - 1) * 0.6;
+      if (redGlowRef.current) redGlowRef.current.style.opacity = String(glow);
+      if (blueGlowRef.current) blueGlowRef.current.style.opacity = String(glow);
       if (barWrapRef.current) {
-        barWrapRef.current.style.boxShadow = `0 0 ${6 + amp * 18}px rgba(255,255,255,${0.08 + amp * 0.18})`;
+        barWrapRef.current.style.boxShadow = `0 0 ${6 + envelope * 22 + (beatScale - 1) * 28}px rgba(255,255,255,${0.08 + envelope * 0.22})`;
       }
       lastT = t;
       raf = requestAnimationFrame(loop);
@@ -176,7 +198,7 @@ export default function FNFVoteScoreboard({
   const MK_CLIP = "polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%)";
 
   return (
-    <div className="relative bg-black z-20 px-3 pt-2 pb-1">
+    <div className="relative bg-black z-20 px-3 pt-2 pb-0.5">
       <div className="flex items-center gap-2.5">
         <div className="relative">
           <div
@@ -264,7 +286,7 @@ export default function FNFVoteScoreboard({
       </div>
 
       {/* Sub-row */}
-      <div className="flex items-center justify-between mt-0.5 px-1">
+      <div className="flex items-center justify-between mt-0 px-1 leading-none">
         <span className="text-[9px] font-black uppercase tracking-[0.2em] text-red-400 truncate max-w-[45%]" style={teko}>
           @{redUsername}
         </span>
