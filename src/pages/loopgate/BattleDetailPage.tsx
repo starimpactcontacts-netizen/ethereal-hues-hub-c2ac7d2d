@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Swords, Clock, Eye, Trophy, ArrowLeft, 
-  CheckCircle, XCircle, Send, Share2, Users, Gavel, Zap, Play, Music, Flag, Upload
+  CheckCircle, XCircle, Send, Share2, Users, Gavel, Zap, Play, Music, Flag, Upload, EyeOff
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,16 @@ import ScenepackVoteModal from "@/components/loopgate/ScenepackVoteModal";
 import ScenepackDownloadCard from "@/components/loopgate/ScenepackDownloadCard";
 import BattleSubmissionCard from "@/components/loopgate/BattleSubmissionCard";
 import BattleShowcase from "@/components/loopgate/BattleShowcase";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 function formatViews(count: number): string {
   if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
@@ -42,6 +52,8 @@ export default function BattleDetailPage() {
   const [voting, setVoting] = useState(false);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [shareCardOpen, setShareCardOpen] = useState(false);
+  const [hideConfirmOpen, setHideConfirmOpen] = useState(false);
+  const [hiding, setHiding] = useState(false);
 
   useEffect(() => {
     if (battleId) recordBattleView(battleId, user?.id || null);
@@ -220,6 +232,23 @@ export default function BattleDetailPage() {
 
   const handleShare = () => {
     setShareCardOpen(true);
+  };
+
+  const handleHideBattle = async () => {
+    if (!battle) return;
+    setHiding(true);
+    const { error } = await supabase.rpc('toggle_battle_hidden' as any, {
+      p_battle_id: battle.id,
+      p_hide: true,
+    } as any);
+    setHiding(false);
+    setHideConfirmOpen(false);
+    if (error) {
+      toast.error('Failed to hide battle');
+      return;
+    }
+    toast.success('Battle hidden from public view');
+    navigate('/arena');
   };
 
   const getMyRole = () => {
@@ -912,6 +941,17 @@ export default function BattleDetailPage() {
             </div>
           </motion.div>
         )}
+
+        {/* Hide battle (participants only, after it's done) */}
+        {isParticipant && (isCompleted || battle.status === 'judging') && (
+          <button
+            onClick={() => setHideConfirmOpen(true)}
+            className="w-full flex items-center justify-center gap-2 py-3 text-[11px] uppercase tracking-[0.2em] text-zinc-500 hover:text-red-400 transition-colors"
+          >
+            <EyeOff className="w-3.5 h-3.5" />
+            Hide this battle
+          </button>
+        )}
       </div>
 
       {/* Battle Invite Modal */}
@@ -928,6 +968,35 @@ export default function BattleDetailPage() {
         onClose={() => setShareCardOpen(false)}
         battle={battle as any}
       />
+
+      {/* Hide Battle Confirmation */}
+      <AlertDialog open={hideConfirmOpen} onOpenChange={setHideConfirmOpen}>
+        <AlertDialogContent className="bg-zinc-950 border-white/10">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white flex items-center gap-2">
+              <EyeOff className="w-4 h-4 text-red-400" />
+              Hide this battle?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-zinc-400 text-sm leading-relaxed">
+              This battle will be removed from the Arena carousel and public lists.
+              Your stats, wins/losses, and Index won't change — only the battle card
+              gets hidden from public view. You can't undo this from the app.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-transparent border-white/10 text-zinc-300 hover:bg-white/5">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleHideBattle}
+              disabled={hiding}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              {hiding ? 'Hiding…' : 'Yes, hide it'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

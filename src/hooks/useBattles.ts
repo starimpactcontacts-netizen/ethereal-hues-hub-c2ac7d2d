@@ -55,6 +55,7 @@ export function useBattles(statuses?: string[]) {
         .from('battles')
         .select('*')
         .neq('status', 'cancelled')
+        .is('hidden_at' as any, null)
         .order('created_at', { ascending: false });
 
       if (statuses && statuses.length > 0) {

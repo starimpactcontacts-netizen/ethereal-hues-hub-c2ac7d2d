@@ -519,6 +519,8 @@ export type Database = {
           created_at: string
           duration_hours: number
           ends_at: string | null
+          hidden_at: string | null
+          hidden_by: string | null
           id: string
           is_private: boolean
           is_rapid: boolean | null
@@ -584,6 +586,8 @@ export type Database = {
           created_at?: string
           duration_hours?: number
           ends_at?: string | null
+          hidden_at?: string | null
+          hidden_by?: string | null
           id?: string
           is_private?: boolean
           is_rapid?: boolean | null
@@ -649,6 +653,8 @@ export type Database = {
           created_at?: string
           duration_hours?: number
           ends_at?: string | null
+          hidden_at?: string | null
+          hidden_by?: string | null
           id?: string
           is_private?: boolean
           is_rapid?: boolean | null
@@ -8713,6 +8719,10 @@ export type Database = {
       start_event_round: {
         Args: { p_event_id: string; p_round_number: number }
         Returns: boolean
+      }
+      toggle_battle_hidden: {
+        Args: { p_battle_id: string; p_hide: boolean }
+        Returns: undefined
       }
       update_active_session: { Args: never; Returns: undefined }
     }
