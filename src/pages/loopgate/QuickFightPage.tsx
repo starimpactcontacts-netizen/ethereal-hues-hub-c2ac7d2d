@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Share2, Search, Play, Video, Music, ThumbsUp, Upload, Sparkles } from 'lucide-react';
+import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Share2, Search, Play, Video, Music, ThumbsUp, Upload, Sparkles, EyeOff } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +22,16 @@ import BattleIntroOverlay from '@/components/loopgate/BattleIntroOverlay';
 import BattleDecidedOverlay from '@/components/loopgate/BattleDecidedOverlay';
 import ScenepackVoteModal from '@/components/loopgate/ScenepackVoteModal';
 import ScenepackDownloadCard from '@/components/loopgate/ScenepackDownloadCard';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 /** Detect platform from URL */
 function detectPlatform(url: string): string {
@@ -53,6 +63,8 @@ export default function QuickFightPage() {
   });
   const [decidedActive, setDecidedActive] = useState(false);
   const [decidedShown, setDecidedShown] = useState(false);
+  const [hideConfirmOpen, setHideConfirmOpen] = useState(false);
+  const [hiding, setHiding] = useState(false);
 
   // Once intro is done AND fight is decided, wait one full rotation
   // (both edits shown = 20s) then trigger the cinematic verdict reveal.
@@ -279,6 +291,16 @@ export default function QuickFightPage() {
                fight.status === 'cancelled' ? 'CANCELLED' :
                fight.status === 'forfeited' ? 'FORFEIT' : fight.status.toUpperCase()}
             </span>
+            {(user?.id === fight.player_1_id || user?.id === fight.player_2_id) && fight.status === 'completed' && (
+              <button
+                onClick={() => setHideConfirmOpen(true)}
+                className="ml-1 flex items-center gap-1 px-2 py-1 rounded-md bg-red-500/10 border border-red-500/25 hover:bg-red-500/20 transition-colors"
+                aria-label="Hide this fight"
+              >
+                <EyeOff className="w-3 h-3 text-red-400" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-red-400">Hide</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -636,6 +658,49 @@ export default function QuickFightPage() {
           />
         )}
       </div>
+
+      <AlertDialog open={hideConfirmOpen} onOpenChange={setHideConfirmOpen}>
+        <AlertDialogContent className="bg-black border border-white/10">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-white">
+              <EyeOff className="w-4 h-4 text-red-400" />
+              Hide this fight?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-zinc-400 text-sm leading-relaxed">
+              This 1v1 will be removed from public carousels and the global feed. Your stats, XP and
+              record stay exactly the same — only the matchup card gets hidden. You can unhide it
+              later from the database if you change your mind.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-white/5 border-white/10 text-white hover:bg-white/10">
+              Keep it
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={hiding}
+              onClick={async () => {
+                if (!fight) return;
+                setHiding(true);
+                const { error } = await supabase.rpc('toggle_quick_fight_hidden' as any, {
+                  p_fight_id: fight.id,
+                  p_hide: true,
+                } as any);
+                setHiding(false);
+                setHideConfirmOpen(false);
+                if (error) {
+                  toast.error(error.message || 'Could not hide this fight');
+                  return;
+                }
+                toast.success('Fight hidden from public view');
+                navigate('/arena');
+              }}
+              className="bg-red-500 text-white hover:bg-red-600"
+            >
+              {hiding ? 'Hiding…' : 'Hide it'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
