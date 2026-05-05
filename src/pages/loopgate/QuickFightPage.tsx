@@ -658,6 +658,49 @@ export default function QuickFightPage() {
           />
         )}
       </div>
+
+      <AlertDialog open={hideConfirmOpen} onOpenChange={setHideConfirmOpen}>
+        <AlertDialogContent className="bg-black border border-white/10">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-white">
+              <EyeOff className="w-4 h-4 text-red-400" />
+              Hide this fight?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-zinc-400 text-sm leading-relaxed">
+              This 1v1 will be removed from public carousels and the global feed. Your stats, XP and
+              record stay exactly the same — only the matchup card gets hidden. You can unhide it
+              later from the database if you change your mind.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-white/5 border-white/10 text-white hover:bg-white/10">
+              Keep it
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={hiding}
+              onClick={async () => {
+                if (!fight) return;
+                setHiding(true);
+                const { error } = await supabase.rpc('toggle_quick_fight_hidden' as any, {
+                  p_fight_id: fight.id,
+                  p_hide: true,
+                } as any);
+                setHiding(false);
+                setHideConfirmOpen(false);
+                if (error) {
+                  toast.error(error.message || 'Could not hide this fight');
+                  return;
+                }
+                toast.success('Fight hidden from public view');
+                navigate('/arena');
+              }}
+              className="bg-red-500 text-white hover:bg-red-600"
+            >
+              {hiding ? 'Hiding…' : 'Hide it'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
