@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Swords, Clock, Eye, Trophy, ArrowLeft, 
-  CheckCircle, XCircle, Send, Share2, Users, Gavel, Zap, Play, Music, Flag, Upload
+  CheckCircle, XCircle, Send, Share2, Users, Gavel, Zap, Play, Music, Flag, Upload, EyeOff
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,16 @@ import ScenepackVoteModal from "@/components/loopgate/ScenepackVoteModal";
 import ScenepackDownloadCard from "@/components/loopgate/ScenepackDownloadCard";
 import BattleSubmissionCard from "@/components/loopgate/BattleSubmissionCard";
 import BattleShowcase from "@/components/loopgate/BattleShowcase";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 function formatViews(count: number): string {
   if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
@@ -42,6 +52,8 @@ export default function BattleDetailPage() {
   const [voting, setVoting] = useState(false);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [shareCardOpen, setShareCardOpen] = useState(false);
+  const [hideConfirmOpen, setHideConfirmOpen] = useState(false);
+  const [hiding, setHiding] = useState(false);
 
   useEffect(() => {
     if (battleId) recordBattleView(battleId, user?.id || null);
@@ -220,6 +232,23 @@ export default function BattleDetailPage() {
 
   const handleShare = () => {
     setShareCardOpen(true);
+  };
+
+  const handleHideBattle = async () => {
+    if (!battle) return;
+    setHiding(true);
+    const { error } = await supabase.rpc('toggle_battle_hidden' as any, {
+      p_battle_id: battle.id,
+      p_hide: true,
+    } as any);
+    setHiding(false);
+    setHideConfirmOpen(false);
+    if (error) {
+      toast.error('Failed to hide battle');
+      return;
+    }
+    toast.success('Battle hidden from public view');
+    navigate('/arena');
   };
 
   const getMyRole = () => {
