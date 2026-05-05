@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Share2, Search, Play, Video, Music, ThumbsUp, Upload, Sparkles } from 'lucide-react';
+import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Share2, Search, Play, Video, Music, ThumbsUp, Upload, Sparkles, EyeOff } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +22,16 @@ import BattleIntroOverlay from '@/components/loopgate/BattleIntroOverlay';
 import BattleDecidedOverlay from '@/components/loopgate/BattleDecidedOverlay';
 import ScenepackVoteModal from '@/components/loopgate/ScenepackVoteModal';
 import ScenepackDownloadCard from '@/components/loopgate/ScenepackDownloadCard';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 /** Detect platform from URL */
 function detectPlatform(url: string): string {
@@ -53,6 +63,8 @@ export default function QuickFightPage() {
   });
   const [decidedActive, setDecidedActive] = useState(false);
   const [decidedShown, setDecidedShown] = useState(false);
+  const [hideConfirmOpen, setHideConfirmOpen] = useState(false);
+  const [hiding, setHiding] = useState(false);
 
   // Once intro is done AND fight is decided, wait one full rotation
   // (both edits shown = 20s) then trigger the cinematic verdict reveal.
