@@ -165,8 +165,8 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
           }}
         >
           <span
-            className="text-[13px] font-black tracking-[0.15em] bg-gradient-to-r from-red-400 via-white to-blue-400 bg-clip-text text-transparent leading-none"
-            style={teko}
+            className="text-[13px] font-black bg-gradient-to-r from-red-400 via-white to-blue-400 bg-clip-text text-transparent leading-none flex items-center justify-center"
+            style={{ ...teko, letterSpacing: 0, transform: 'translateY(0.5px)' }}
           >
             VS
           </span>
