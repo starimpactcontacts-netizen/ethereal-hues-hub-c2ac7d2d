@@ -331,6 +331,7 @@ export default function DiscoverEditsCarousel() {
           .from("battles")
           .select("id, challenger_id, challenger_username, challenger_avatar_url, challenger_submission_url, challenger_submission_platform, challenger_thumbnail_url, challenger_score, opponent_id, opponent_username, opponent_avatar_url, opponent_submission_url, opponent_submission_platform, opponent_thumbnail_url, opponent_score, created_at")
           .not("challenger_submission_url", "is", null)
+          .is("hidden_at" as any, null)
           .order("created_at", { ascending: false })
           .limit(10),
         // Featured drop submissions
