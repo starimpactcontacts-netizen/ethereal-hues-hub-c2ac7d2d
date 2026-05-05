@@ -283,6 +283,16 @@ export default function BattleDetailPage() {
             <button onClick={handleShare} className="p-2 rounded-lg hover:bg-white/[0.05] transition-colors">
               <Share2 className="w-4 h-4 text-zinc-400" />
             </button>
+            {isParticipant && isCompleted && (
+              <button
+                onClick={() => setHideConfirmOpen(true)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-colors"
+                aria-label="Hide this battle"
+              >
+                <EyeOff className="w-3.5 h-3.5 text-red-400" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-red-400">Hide</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
