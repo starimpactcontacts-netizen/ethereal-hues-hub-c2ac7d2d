@@ -1,10 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Share2, Search, Play, Video, Music, ThumbsUp, Upload, Sparkles } from 'lucide-react';
+import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Share2, Search, Play, Video, Music, ThumbsUp, Upload, Sparkles, EyeOff } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuickFight, submitQuickFight } from '@/hooks/useQuickFight';
 import { useUserRoles } from '@/hooks/useUserRoles';
@@ -48,6 +58,8 @@ export default function QuickFightPage() {
   const [judgeVideoUrl, setJudgeVideoUrl] = useState('');
   const [myVote, setMyVote] = useState<string | null>(null);
   const [voting, setVoting] = useState(false);
+  const [hideConfirmOpen, setHideConfirmOpen] = useState(false);
+  const [hiding, setHiding] = useState(false);
   const [introDone, setIntroDone] = useState<boolean>(() => {
     try { return !!sessionStorage.getItem(`battle-intro-played:${fightId}`); } catch { return false; }
   });
@@ -199,6 +211,23 @@ export default function QuickFightPage() {
     setJudging(false);
   };
 
+  const handleHideFight = async () => {
+    if (!fight || hiding) return;
+    setHiding(true);
+    const { error } = await supabase.rpc('toggle_quick_fight_hidden' as any, {
+      p_fight_id: fight.id,
+      p_hide: true,
+    } as any);
+    setHiding(false);
+    setHideConfirmOpen(false);
+    if (error) {
+      toast.error('Failed to hide fight');
+      return;
+    }
+    toast.success('Battle hidden from public view');
+    navigate('/hub');
+  };
+
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Scenepack vote / locked banner — opens automatically when entering an active fight */}
@@ -279,6 +308,16 @@ export default function QuickFightPage() {
                fight.status === 'cancelled' ? 'CANCELLED' :
                fight.status === 'forfeited' ? 'FORFEIT' : fight.status.toUpperCase()}
             </span>
+            {isParticipant && fight.status === 'completed' && (
+              <button
+                onClick={() => setHideConfirmOpen(true)}
+                className="ml-2 flex items-center gap-1 px-2 py-1 rounded-md bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-colors touch-manipulation"
+                aria-label="Hide this battle"
+              >
+                <EyeOff className="w-3 h-3 text-red-400" />
+                <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-red-400">Hide</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -636,6 +675,32 @@ export default function QuickFightPage() {
           />
         )}
       </div>
+
+      <AlertDialog open={hideConfirmOpen} onOpenChange={setHideConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <EyeOff className="w-4 h-4 text-red-400" />
+              Hide this edit battle?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This battle will be removed from public carousels and feeds. Your stats, votes,
+              and judge results stay intact — only the battle's visibility changes. You can
+              still access it via direct link.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={hiding}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleHideFight}
+              disabled={hiding}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              {hiding ? 'Hiding…' : 'Hide Battle'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

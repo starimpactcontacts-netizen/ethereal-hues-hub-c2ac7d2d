@@ -118,9 +118,9 @@ export default function FeedPage() {
         supabase.from('event_participations').select('id, submission_url, platform, qoi_score, quality_score, originality_score, impact_score, user_id, event_id, final_rank, thumbnail_url, custom_title, submitted_at').not('qoi_score', 'is', null).not('submission_url', 'is', null).order('qoi_score', { ascending: false }).range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
         supabase.from('sanctioned_tournament_participants').select('id, submission_url, submission_platform, qoi_score, user_id, tournament_id, submitted_at, final_rank, thumbnail_url, custom_title').not('qoi_score', 'is', null).not('submission_url', 'is', null).order('submitted_at', { ascending: false }).range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
         supabase.from('review_requests').select('*').eq('status', 'reviewed').not('total_score', 'is', null).order('reviewed_at', { ascending: false }).range(reviewOffset, reviewOffset + BATCH_SIZE - 1),
-        supabase.from('battles').select('*').in('status', ['pending', 'active', 'judging', 'completed']).order('updated_at', { ascending: false }).range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
+        supabase.from('battles').select('*').in('status', ['pending', 'active', 'judging', 'completed']).is('hidden_at' as any, null).order('updated_at', { ascending: false }).range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
         supabase.from('judge_rating_videos').select('id, video_url, platform, title, thumbnail_url, current_views, judge_id, submitted_at').order('submitted_at', { ascending: false }).range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
-        supabase.from('quick_fights').select('*').in('status', ['active', 'judging', 'completed', 'waiting']).order('created_at', { ascending: false }).range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
+        supabase.from('quick_fights').select('*').in('status', ['active', 'judging', 'completed', 'waiting']).is('hidden_at' as any, null).order('created_at', { ascending: false }).range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
       ]);
 
       const roundData = roundRes.data || []; const eventData = eventRes.data || []; const sanctionedData = sanctionedRes.data || [];
