@@ -40,14 +40,18 @@ export interface Battle {
   winner_index_awarded: number;
   loser_index_penalty: number;
   is_rapid: boolean | null;
+  hidden_at?: string | null;
+  hidden_by?: string | null;
   created_at: string;
   updated_at: string;
 }
 
-export function useBattles(statuses?: string[]) {
+export function useBattles(statuses?: string[], options?: { includeHiddenForParticipants?: boolean }) {
   const [battles, setBattles] = useState<Battle[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const statusKey = statuses?.join(',') || '';
+  const includeHiddenForParticipants = !!options?.includeHiddenForParticipants && !!user?.id;
 
   useEffect(() => {
     async function fetchBattles() {
@@ -55,12 +59,15 @@ export function useBattles(statuses?: string[]) {
         .from('battles')
         .select('*')
         .neq('status', 'cancelled')
-        .is('hidden_at' as any, null)
         .order('created_at', { ascending: false });
 
       if (statuses && statuses.length > 0) {
         query = query.in('status', statuses);
       }
+
+      query = includeHiddenForParticipants && user?.id
+        ? query.or(`hidden_at.is.null,challenger_id.eq.${user.id},opponent_id.eq.${user.id}`)
+        : query.is('hidden_at' as any, null);
 
       const { data, error } = await query.limit(50);
 
@@ -87,7 +94,7 @@ export function useBattles(statuses?: string[]) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [statuses?.join(',')]);
+  }, [statusKey, includeHiddenForParticipants, user?.id]);
 
   return { battles, loading };
 }

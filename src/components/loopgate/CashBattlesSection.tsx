@@ -756,6 +756,7 @@ export default function CashBattlesSection({
         {[...myQuickFights, ...quickFights]
           .filter((fight, index, all) =>
             fight.status !== 'cancelled' &&
+            !(fight as any).hidden_at &&
             all.findIndex((item) => item.id === fight.id) === index
           )
           .sort((a, b) => {
@@ -777,6 +778,28 @@ export default function CashBattlesSection({
           .map((fight) => (
             <ArenaRailCard key={`quick-${fight.id}`}>
               <QuickFightCarouselCard fight={fight} isMine={!!user?.id && (fight.player_1_id === user.id || fight.player_2_id === user.id)} />
+            </ArenaRailCard>
+          ))}
+
+        {/* Standard custom-lobby edit battles */}
+        {renderIdxBattleCard && idxBattles
+          .filter((battle) => battle.status !== 'cancelled' && !battle.hidden_at)
+          .sort((a, b) => {
+            const rank = (x: any) => {
+              if (endedBattleStatuses.has(x.status)) return 10;
+              if (x.status === 'active' || x.status === 'judging') return 0;
+              if (x.status === 'pending') return 1;
+              return 4;
+            };
+            const ra = rank(a);
+            const rb = rank(b);
+            if (ra !== rb) return ra - rb;
+            return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+          })
+          .slice(0, 12)
+          .map((battle) => (
+            <ArenaRailCard key={`idx-${battle.id}`}>
+              {renderIdxBattleCard(battle)}
             </ArenaRailCard>
           ))}
 
@@ -811,7 +834,7 @@ export default function CashBattlesSection({
           ))}
 
         {/* Join teaser — only show if no pending apps */}
-        {pendingApps.length === 0 && battles.length === 0 && idxBattles.length === 0 && quickFights.length === 0 && (
+        {pendingApps.length === 0 && battles.length === 0 && idxBattles.filter((battle) => !battle.hidden_at).length === 0 && quickFights.filter((fight) => !(fight as any).hidden_at).length === 0 && (
           <ArenaRailCard>
             <motion.div
               whileTap={{ scale: 0.97 }}
