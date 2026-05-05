@@ -132,6 +132,7 @@ export function useLiveActivity(limit = 8) {
           .from('quick_fights')
           .select('id, player_1_id, player_1_username, player_1_avatar_url, player_2_id, player_2_username, player_2_avatar_url, status, winner_id, winner_score, updated_at')
           .in('status', ['matched', 'active', 'judging', 'completed'])
+          .is('hidden_at' as any, null)
           .order('updated_at', { ascending: false })
           .limit(limit),
         // GQT / Gatekeeper submissions
