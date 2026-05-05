@@ -941,6 +941,17 @@ export default function BattleDetailPage() {
             </div>
           </motion.div>
         )}
+
+        {/* Hide battle (participants only, after it's done) */}
+        {isParticipant && (isCompleted || battle.status === 'judging') && (
+          <button
+            onClick={() => setHideConfirmOpen(true)}
+            className="w-full flex items-center justify-center gap-2 py-3 text-[11px] uppercase tracking-[0.2em] text-zinc-500 hover:text-red-400 transition-colors"
+          >
+            <EyeOff className="w-3.5 h-3.5" />
+            Hide this battle
+          </button>
+        )}
       </div>
 
       {/* Battle Invite Modal */}
@@ -957,6 +968,35 @@ export default function BattleDetailPage() {
         onClose={() => setShareCardOpen(false)}
         battle={battle as any}
       />
+
+      {/* Hide Battle Confirmation */}
+      <AlertDialog open={hideConfirmOpen} onOpenChange={setHideConfirmOpen}>
+        <AlertDialogContent className="bg-zinc-950 border-white/10">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white flex items-center gap-2">
+              <EyeOff className="w-4 h-4 text-red-400" />
+              Hide this battle?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-zinc-400 text-sm leading-relaxed">
+              This battle will be removed from the Arena carousel and public lists.
+              Your stats, wins/losses, and Index won't change — only the battle card
+              gets hidden from public view. You can't undo this from the app.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-transparent border-white/10 text-zinc-300 hover:bg-white/5">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleHideBattle}
+              disabled={hiding}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              {hiding ? 'Hiding…' : 'Yes, hide it'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
