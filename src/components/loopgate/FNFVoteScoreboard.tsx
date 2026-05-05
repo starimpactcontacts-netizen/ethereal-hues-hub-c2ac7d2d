@@ -155,7 +155,7 @@ export default function FNFVoteScoreboard({
     const isActive = activeSide === side;
     return (
       <div
-        className={`shrink-0 w-10 h-10 rounded-full overflow-hidden bg-black ring-2 ${ring} ${isActive ? "animate-pulse" : ""}`}
+        className={`shrink-0 w-8 h-8 rounded-full overflow-hidden bg-black ring-2 ${ring} ${isActive ? "animate-pulse" : ""}`}
         style={{ boxShadow: glow }}
       >
         {avatarUrl ? (
@@ -172,8 +172,11 @@ export default function FNFVoteScoreboard({
     );
   };
 
+  // Mortal-Kombat style parallelogram health bar (slanted ends)
+  const MK_CLIP = "polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%)";
+
   return (
-    <div className="relative bg-black z-20 px-3 py-2.5 border-y border-white/10">
+    <div className="relative bg-black z-20 px-3 py-2.5">
       <div className="flex items-center gap-2.5">
         <div className="relative">
           <div
@@ -188,8 +191,8 @@ export default function FNFVoteScoreboard({
         <div className="relative flex-1 h-4">
           <div
             ref={barWrapRef}
-            className="absolute inset-0 rounded-full overflow-hidden border border-white/10 bg-black/80 flex"
-            style={{ transition: "box-shadow 80ms linear" }}
+            className="absolute inset-0 overflow-hidden border border-white/10 bg-black/80 flex"
+            style={{ transition: "box-shadow 80ms linear", clipPath: MK_CLIP }}
           >
             <div
               className="h-full transition-all duration-700 ease-out"
