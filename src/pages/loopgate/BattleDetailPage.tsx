@@ -76,6 +76,24 @@ export default function BattleDetailPage() {
     );
   }
 
+  // Handle forfeited / cancelled — show a clear screen instead of a blank page
+  if (battle.status === 'forfeited' || battle.status === 'cancelled') {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 px-6 text-center">
+        <Flag className="w-10 h-10 text-zinc-500" />
+        <p className="text-white text-2xl tracking-[0.18em] uppercase" style={{ fontFamily: 'Teko, sans-serif' }}>
+          {battle.status === 'forfeited' ? 'BATTLE FORFEITED' : 'BATTLE CANCELLED'}
+        </p>
+        <p className="text-xs text-zinc-500 max-w-xs">
+          This lobby is no longer active. Head back to the Arena to start a new one.
+        </p>
+        <Button variant="outline" onClick={() => navigate('/arena')} className="uppercase tracking-wider text-xs">
+          Back to Arena
+        </Button>
+      </div>
+    );
+  }
+
   const isChallenger = user?.id === battle.challenger_id;
   const isOpponent = user?.id === battle.opponent_id;
   const isParticipant = isChallenger || isOpponent;
