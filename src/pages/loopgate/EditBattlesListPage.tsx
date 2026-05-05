@@ -21,7 +21,7 @@ function statusColor(status: string) {
 
 export default function EditBattlesListPage() {
   const navigate = useNavigate();
-  const { battles, loading } = useBattles(["pending", "active", "judging", "completed"], { includeHiddenForParticipants: true });
+  const { battles, loading } = useBattles(["pending", "active", "judging", "completed"]);
 
   return (
     <div className="min-h-screen bg-background">

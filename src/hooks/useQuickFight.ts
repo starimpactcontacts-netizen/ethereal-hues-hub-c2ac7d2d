@@ -27,8 +27,6 @@ export interface QuickFight {
   starts_at: string | null;
   ends_at: string | null;
   view_count: number;
-  hidden_at?: string | null;
-  hidden_by?: string | null;
   created_at: string;
 }
 
@@ -250,25 +248,18 @@ export function usePendingJudgeFights() {
 }
 
 // All recent quick fights (for feed/spectating)
-export function useRecentQuickFights(limit = 20, options?: { includeHiddenForParticipants?: boolean }) {
+export function useRecentQuickFights(limit = 20) {
   const [fights, setFights] = useState<QuickFight[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
-  const includeHiddenForParticipants = !!options?.includeHiddenForParticipants && !!user?.id;
 
   useEffect(() => {
     const fetch = async () => {
-      let query = supabase
+      const { data } = await supabase
         .from('quick_fights')
         .select('*')
         .in('status', ['active', 'submitted', 'judging', 'completed'])
-        .order('created_at', { ascending: false });
-
-      query = includeHiddenForParticipants && user?.id
-        ? query.or(`hidden_at.is.null,player_1_id.eq.${user.id},player_2_id.eq.${user.id}`)
-        : query.is('hidden_at' as any, null);
-
-      const { data } = await query.limit(limit);
+        .order('created_at', { ascending: false })
+        .limit(limit);
       setFights((data as unknown as QuickFight[]) || []);
       setLoading(false);
     };
@@ -280,7 +271,7 @@ export function useRecentQuickFights(limit = 20, options?: { includeHiddenForPar
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [limit, includeHiddenForParticipants, user?.id]);
+  }, [limit]);
 
   return { fights, loading };
 }

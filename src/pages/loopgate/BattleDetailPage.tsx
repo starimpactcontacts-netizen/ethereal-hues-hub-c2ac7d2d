@@ -247,7 +247,8 @@ export default function BattleDetailPage() {
       toast.error('Failed to hide battle');
       return;
     }
-    toast.success('Hidden from carousels only — this page stays accessible');
+    toast.success('Battle hidden from public view');
+    navigate('/arena');
   };
 
   const getMyRole = () => {
@@ -282,6 +283,16 @@ export default function BattleDetailPage() {
             <button onClick={handleShare} className="p-2 rounded-lg hover:bg-white/[0.05] transition-colors">
               <Share2 className="w-4 h-4 text-zinc-400" />
             </button>
+            {isParticipant && isCompleted && (
+              <button
+                onClick={() => setHideConfirmOpen(true)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-colors"
+                aria-label="Hide this battle"
+              >
+                <EyeOff className="w-3.5 h-3.5 text-red-400" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-red-400">Hide</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -942,13 +953,13 @@ export default function BattleDetailPage() {
         )}
 
         {/* Hide battle (participants only, after it's done) */}
-        {isParticipant && isCompleted && (
+        {isParticipant && (isCompleted || battle.status === 'judging') && (
           <button
             onClick={() => setHideConfirmOpen(true)}
-            className="w-full flex items-center justify-center gap-2 py-3 text-[10px] uppercase tracking-[0.2em] text-zinc-600 hover:text-zinc-400 transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-3 text-[11px] uppercase tracking-[0.2em] text-zinc-500 hover:text-red-400 transition-colors"
           >
             <EyeOff className="w-3.5 h-3.5" />
-            Hide this edit battle from carousel
+            Hide this battle
           </button>
         )}
       </div>
@@ -977,9 +988,9 @@ export default function BattleDetailPage() {
               Hide this battle?
             </AlertDialogTitle>
             <AlertDialogDescription className="text-zinc-400 text-sm leading-relaxed">
-              This battle will be removed from the Arena carousel and public lists for everyone except the battle participants.
+              This battle will be removed from the Arena carousel and public lists.
               Your stats, wins/losses, and Index won't change — only the battle card
-              gets hidden from public discovery. This page will still work from your battle history.
+              gets hidden from public view. You can't undo this from the app.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

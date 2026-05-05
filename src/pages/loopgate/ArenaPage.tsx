@@ -538,9 +538,9 @@ export default function ArenaPage() {
   const [qfElapsed, setQfElapsed] = useState(0);
 
   const { tournaments: sanctionedTournaments, loading: sanctionedLoading } = useSanctionedTournaments(["approved", "ready_up", "live", "bracket", "completed"]);
-  const { battles, loading: battlesLoading } = useBattles(["pending", "active", "judging", "completed"], { includeHiddenForParticipants: true });
+  const { battles, loading: battlesLoading } = useBattles(["pending", "active", "judging", "completed"]);
   
-  const { fights: quickFights, loading: quickLoading } = useRecentQuickFights(100, { includeHiddenForParticipants: true });
+  const { fights: quickFights, loading: quickLoading } = useRecentQuickFights(100);
   const { liveDrops } = useFeaturedDrops();
   const [missionBillboards, setMissionBillboards] = useState<Array<{ id: string; song_name: string; poster_url: string | null; artist_name: string | null; max_pay: number }>>([]);
   const { activeSolo, loading: soloLoading, cancelSolo } = useSoloMode();
