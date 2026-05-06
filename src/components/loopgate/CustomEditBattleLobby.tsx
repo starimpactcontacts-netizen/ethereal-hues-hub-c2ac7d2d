@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, Copy, Eye, Music, Share2, Swords, UserPlus, Users, Zap } from "lucide-react";
+import { ArrowLeft, Clock, Copy, Eye, Share2, Swords, UserPlus, Users, Zap } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import BattleSongPicker from "@/components/loopgate/BattleSongPicker";
+import OsuManiaMiniGame from "@/components/loopgate/OsuManiaMiniGame";
 import type { OpenQueueEntry, QuickFight } from "@/hooks/useQuickFight";
 
 interface CustomEditBattleLobbyProps {
@@ -14,7 +14,7 @@ interface CustomEditBattleLobbyProps {
   onCopy: () => void;
   onJoin: () => void;
   onCancel: () => void;
-  onSongPicked: (drop: any) => Promise<void>;
+  onSongPicked?: (drop: any) => Promise<void>;
 }
 
 function StatTile({ value, label }: { value: string; label: string }) {
@@ -36,7 +36,6 @@ export default function CustomEditBattleLobby({
   onCopy,
   onJoin,
   onCancel,
-  onSongPicked,
 }: CustomEditBattleLobbyProps) {
   const duration = fight.duration_minutes >= 60 ? `${Math.round(fight.duration_minutes / 60)}H` : `${fight.duration_minutes}M`;
   const otherEditors = openQueue.filter((entry) => entry.user_id !== fight.player_1_id && entry.user_id !== viewerId).slice(0, 5);
@@ -90,9 +89,9 @@ export default function CustomEditBattleLobby({
               <span className="w-1.5 h-1.5 rounded-full bg-status-live animate-pulse" />
               <span className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300">Lobby Live</span>
             </div>
-            <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground">
-              <Music className="w-3.5 h-3.5 text-gold" /> Queue Song
-            </div>
+          <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground">
+            <Zap className="w-3.5 h-3.5 text-fuchsia-400" /> Lobby Arcade
+          </div>
           </div>
 
           <div className="relative px-5 pt-8 pb-6 flex items-center justify-between gap-4">
@@ -139,11 +138,7 @@ export default function CustomEditBattleLobby({
         </div>
 
         <div className="mt-4 space-y-3">
-          {isHost && (
-            <div className="rounded-2xl border border-border/70 bg-surface-1/70 p-2">
-              <BattleSongPicker onSongPicked={onSongPicked} selectedSongName={(fight as any).theme_song_name} compact />
-            </div>
-          )}
+          <OsuManiaMiniGame />
 
           {isHost ? (
             <div className="grid grid-cols-[1fr_auto] gap-2">
