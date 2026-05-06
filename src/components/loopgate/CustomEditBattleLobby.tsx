@@ -131,9 +131,7 @@ export default function CustomEditBattleLobby({
           </div>
         </motion.section>
 
-        <div className="mt-3 grid grid-cols-3 gap-2">
-          <StatTile value="+50" label="Winner" />
-          <StatTile value="-10" label="Loser" />
+        <div className="mt-3 grid grid-cols-1 gap-2">
           <StatTile value={duration} label="Duration" />
         </div>
 
