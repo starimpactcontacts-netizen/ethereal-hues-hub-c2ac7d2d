@@ -16,7 +16,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useAuth } from '@/hooks/useAuth';
-import { useQuickFight, submitQuickFight, joinWaitingQuickFight } from '@/hooks/useQuickFight';
+import { useQuickFight, submitQuickFight, joinWaitingQuickFight, useOpenQuickFightQueue } from '@/hooks/useQuickFight';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -49,6 +49,7 @@ export default function QuickFightPage() {
   const navigate = useNavigate();
   const { profile, user } = useAuth();
   const { fight, loading } = useQuickFight(fightId);
+  const { entries: openQueue } = useOpenQuickFightQueue();
   const { isJudge, isAnyJudge, isAdmin, isDev } = useUserRoles(user?.id);
   const [submissionUrl, setSubmissionUrl] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -407,6 +408,58 @@ export default function QuickFightPage() {
               className="w-full relative overflow-hidden py-4 rounded-xl bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 transition-all shadow-[0_4px_24px_rgba(239,68,68,0.25)] active:scale-[0.98] text-white text-sm font-black uppercase tracking-wider flex items-center justify-center gap-2"
             >
               <UserPlus className="w-5 h-5" /> Accept Challenge
+            </button>
+          )}
+
+          {/* Other editors searching */}
+          {(() => {
+            const others = openQueue.filter(e => e.user_id !== fight.player_1_id && e.user_id !== user?.id);
+            return (
+              <div className="pt-2">
+                <div className="flex items-center gap-1.5 mb-2 px-1">
+                  <Users className="w-3 h-3 text-white/40" />
+                  <span className="text-[10px] uppercase tracking-[0.18em] text-white/40 font-bold">
+                    {others.length > 0 ? `${others.length} also searching` : "First lobby open right now"}
+                  </span>
+                </div>
+                {others.length > 0 && (
+                  <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-2 space-y-0.5">
+                    {others.slice(0, 6).map((e) => (
+                      <div key={e.id} className="flex items-center gap-3 px-2 py-2 rounded-lg">
+                        <Avatar className="w-9 h-9 ring-1 ring-white/10">
+                          <AvatarImage src={e.avatar_url || ''} />
+                          <AvatarFallback className="text-xs font-bold bg-zinc-800 text-zinc-300">
+                            {e.username?.charAt(0)?.toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[13px] font-bold text-white/90 truncate" style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.04em' }}>
+                            {e.username}
+                          </p>
+                          <p className="text-[9px] text-emerald-400 uppercase tracking-wider font-bold">In queue</p>
+                        </div>
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* Cancel lobby — host only */}
+          {isP1 && (
+            <button
+              onClick={async () => {
+                if (!window.confirm('Close this lobby?')) return;
+                await supabase.from('quick_fights').update({ status: 'cancelled' }).eq('id', fight.id);
+                toast('Lobby closed', { duration: 1500 });
+                navigate('/arena');
+              }}
+              className="w-full py-3 rounded-xl text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500 border border-zinc-800 bg-zinc-950/60 hover:text-red-400 hover:border-red-500/30 active:scale-[0.98] transition-colors mt-2"
+              style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.18em' }}
+            >
+              Cancel Lobby
             </button>
           )}
         </div>
