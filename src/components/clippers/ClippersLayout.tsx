@@ -87,7 +87,6 @@ export default function ClippersLayout({ children, title, hideBottomNav = false 
             <span className="text-[15px] font-normal">{backLabel}</span>
           </button>
 
-          <h1 className="text-[15px] font-semibold tracking-[-0.02em] text-white truncate">
           <h1 className="font-teko text-[20px] font-bold tracking-[0.08em] uppercase text-white truncate flex items-center gap-2">
             {avatarUrl ? (
               <img src={avatarUrl} alt="" className="w-6 h-6 rounded-full object-cover ring-1 ring-white/20" />
