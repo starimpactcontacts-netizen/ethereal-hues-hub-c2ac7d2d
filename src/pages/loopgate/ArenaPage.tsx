@@ -1295,15 +1295,15 @@ export default function ArenaPage() {
             />
           </div>
 
-          {/* ═══ TOP QOI (Loopgate elite leaderboard) ═══ */}
-          <ArenaQOITop />
-
           {/* ═══ COMPETITIONS ═══ */}
           {(activeFilter === "all" || activeFilter === "competitions") && (
             <div className="mb-5">
               <ArenaCompetitionsSection onCreateClick={() => navigate(profile ? '/competition/create' : '/start')} />
             </div>
           )}
+
+          {/* ═══ TOP QOI (Loopgate elite leaderboard) ═══ */}
+          <ArenaQOITop />
 
           {/* Marketplace removed */}
 
