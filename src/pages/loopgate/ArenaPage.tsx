@@ -43,6 +43,7 @@ import { useMyCashBattles } from "@/hooks/useCashBattles";
 import { ArenaRail, ArenaRailCard, ArenaRailSkeleton } from "@/components/loopgate/ArenaCarouselSystem";
 import { useMyCompetitionReminders } from "@/hooks/useMyCompetitionReminders";
 import ArenaQOITop from "@/components/loopgate/ArenaQOITop";
+import MatchmakingLobby from "@/components/loopgate/MatchmakingLobby";
 
 interface Event {
   id: string;
@@ -1345,6 +1346,13 @@ export default function ArenaPage() {
         isOpen={showCreateBattle}
         onClose={() => setShowCreateBattle(false)}
         onSuccess={(battleId) => { setShowCreateBattle(false); navigate(`/battle/${battleId}`); }}
+      />
+
+      <MatchmakingLobby
+        open={isQfSearching && !qfActiveFight}
+        elapsedSec={qfElapsed}
+        currentUserId={user?.id}
+        onCancel={handleCancelQueue}
       />
 
     </div>
