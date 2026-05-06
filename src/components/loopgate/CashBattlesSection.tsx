@@ -354,6 +354,7 @@ interface EditBattlesSectionProps {
   onChallenge?: () => void;
   isQfSearching?: boolean;
   onCancelQueue?: () => void;
+  onOpenLobby?: () => void;
 }
 
 function QuickFightCarouselCard({ fight, isMine }: { fight: QuickFight; isMine: boolean }) {
@@ -471,17 +472,19 @@ function OpenQueueCard({
   isOwn,
   onAccept,
   onCancel,
+  onOpenLobby,
 }: {
   entry: OpenQueueEntry;
   isOwn: boolean;
   onAccept: () => void;
   onCancel: () => void;
+  onOpenLobby?: () => void;
 }) {
   return (
     <motion.div
       whileTap={{ scale: 0.97 }}
       whileHover={{ y: -2 }}
-      onClick={isOwn ? undefined : onAccept}
+      onClick={isOwn ? onOpenLobby : onAccept}
       className="w-full h-full rounded-2xl overflow-hidden cursor-pointer relative flex flex-col border border-white/[0.08]"
       style={{
         background: "linear-gradient(180deg, rgba(38,38,42,0.95) 0%, rgba(28,28,32,0.95) 100%)",
@@ -576,6 +579,7 @@ export default function CashBattlesSection({
   onChallenge,
   isQfSearching = false,
   onCancelQueue,
+  onOpenLobby,
 }: EditBattlesSectionProps = {}) {
   const navigate = useNavigate();
   const { battles, loading } = useCashBattles();
@@ -724,6 +728,7 @@ export default function CashBattlesSection({
                   entry={entry}
                   isOwn={true}
                   onAccept={() => {}}
+                  onOpenLobby={onOpenLobby}
                   onCancel={async () => {
                     if (user?.id) {
                       await leaveQueue(user.id);
