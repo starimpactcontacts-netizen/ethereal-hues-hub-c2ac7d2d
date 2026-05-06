@@ -8634,6 +8634,16 @@ export type Database = {
           unread_count: number
         }[]
       }
+      get_mission_leaderboard: {
+        Args: { _mission_id?: string }
+        Returns: {
+          avatar_url: string
+          posts: number
+          total_cents: number
+          user_id: string
+          username: string
+        }[]
+      }
       get_or_create_conversation: {
         Args: { p_user_1: string; p_user_2: string }
         Returns: string
