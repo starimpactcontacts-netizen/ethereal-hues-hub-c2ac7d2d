@@ -155,7 +155,7 @@ export default function CustomEditBattleLobby({
               </button>
             </div>
           ) : (
-            <button onClick={onJoin} className="h-15 w-full rounded-xl bg-primary text-primary-foreground flex items-center justify-center gap-2 text-[16px] font-black uppercase tracking-[0.14em] active:scale-[0.98] transition-transform" style={{ fontFamily: "Teko, sans-serif" }}>
+            <button onClick={onJoin} className="h-[60px] w-full rounded-xl bg-primary text-primary-foreground flex items-center justify-center gap-2 text-[16px] font-black uppercase tracking-[0.14em] active:scale-[0.98] transition-transform" style={{ fontFamily: "Teko, sans-serif" }}>
               <UserPlus className="w-5 h-5" /> Accept Battle
             </button>
           )}
