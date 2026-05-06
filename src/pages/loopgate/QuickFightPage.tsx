@@ -99,6 +99,13 @@ export default function QuickFightPage() {
   }, [fightId, user?.id]);
 
   const hasSongPicked = !!(fight as any)?.theme_song_name;
+  const isWaitingLobby = !!fight && fight.status === 'waiting' && !fight.player_2_id;
+
+  useEffect(() => {
+    if (!isWaitingLobby) return;
+    setLobbyMusicActive(true);
+    return () => setLobbyMusicActive(false);
+  }, [isWaitingLobby]);
 
   const handleSongPick = async (drop: any) => {
     if (!fight) return;
@@ -135,14 +142,6 @@ export default function QuickFightPage() {
       </div>
     );
   }
-
-  const isWaitingLobby = !!fight && fight.status === 'waiting' && !fight.player_2_id;
-
-  useEffect(() => {
-    if (!isWaitingLobby) return;
-    setLobbyMusicActive(true);
-    return () => setLobbyMusicActive(false);
-  }, [isWaitingLobby]);
 
   if (!fight) {
     return (
