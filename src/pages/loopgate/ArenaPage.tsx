@@ -1357,6 +1357,12 @@ export default function ArenaPage() {
         onCancel={() => { setLobbyOpen(false); handleCancelQueue(); }}
       />
 
+      <CustomLobbyTypeModal
+        open={lobbyTypeOpen}
+        onOpenChange={setLobbyTypeOpen}
+        onSelect={handleCreateLobby}
+      />
+
     </div>
   );
 }
