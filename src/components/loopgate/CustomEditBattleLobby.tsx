@@ -82,8 +82,8 @@ export default function CustomEditBattleLobby({
           transition={{ delay: 0.05, duration: 0.24 }}
           className="relative mt-5 overflow-hidden rounded-2xl border border-border bg-surface-1 min-h-[258px]"
         >
-          <div aria-hidden className="absolute inset-0 bg-[radial-gradient(circle_at_18%_25%,hsl(217_91%_60%/0.18),transparent_32%),radial-gradient(circle_at_82%_24%,hsl(0_72%_51%/0.18),transparent_34%)]" />
-          <div className="absolute inset-x-0 top-0 h-[2px] bg-[linear-gradient(90deg,hsl(217_91%_60%),transparent_46%,transparent_54%,hsl(0_72%_51%))]" />
+          <div aria-hidden className="absolute inset-0 bg-[radial-gradient(circle_at_18%_25%,hsl(var(--verified)/0.18),transparent_32%),radial-gradient(circle_at_82%_24%,hsl(var(--destructive)/0.18),transparent_34%)]" />
+          <div className="absolute inset-x-0 top-0 h-[2px] bg-[linear-gradient(90deg,hsl(var(--verified)),transparent_46%,transparent_54%,hsl(var(--destructive)))]" />
 
           <div className="relative px-5 pt-5 flex items-center justify-between">
             <div className="flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1">
