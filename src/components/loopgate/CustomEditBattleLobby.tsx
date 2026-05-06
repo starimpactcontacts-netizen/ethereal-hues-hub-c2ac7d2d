@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, Copy, Eye, Share2, Swords, UserPlus, Users, Zap } from "lucide-react";
+import { ArrowLeft, Clock, Copy, Eye, Lock, Share2, Swords, UserPlus, Users, Zap } from "lucide-react";
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import OsuManiaMiniGame from "@/components/loopgate/OsuManiaMiniGame";
 import type { OpenQueueEntry, QuickFight } from "@/hooks/useQuickFight";
+import { toast } from "sonner";
 
 interface CustomEditBattleLobbyProps {
   fight: QuickFight;
@@ -12,7 +14,7 @@ interface CustomEditBattleLobbyProps {
   onBack: () => void;
   onShare: () => void;
   onCopy: () => void;
-  onJoin: () => void;
+  onJoin: (code?: string) => void;
   onCancel: () => void;
   onSongPicked?: (drop: any) => Promise<void>;
 }
@@ -39,6 +41,18 @@ export default function CustomEditBattleLobby({
 }: CustomEditBattleLobbyProps) {
   const duration = fight.duration_minutes >= 60 ? `${Math.round(fight.duration_minutes / 60)}H` : `${fight.duration_minutes}M`;
   const otherEditors = openQueue.filter((entry) => entry.user_id !== fight.player_1_id && entry.user_id !== viewerId).slice(0, 5);
+  const isPrivate = !!fight.is_private;
+  const [codeInput, setCodeInput] = useState("");
+
+  const handleCopyCode = async () => {
+    if (!fight.join_code) return;
+    try {
+      await navigator.clipboard.writeText(fight.join_code);
+      toast.success("Code copied");
+    } catch {
+      toast.error("Couldn't copy");
+    }
+  };
 
   return (
     <div className="relative min-h-[100dvh] overflow-hidden bg-background text-foreground">
@@ -87,7 +101,8 @@ export default function CustomEditBattleLobby({
           <div className="relative px-5 pt-5 flex items-center justify-between">
             <div className="flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1">
               <span className="w-1.5 h-1.5 rounded-full bg-status-live animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300">Lobby Live</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300">{isPrivate ? "Private Lobby" : "Lobby Live"}</span>
+            {isPrivate && <Lock className="w-3 h-3 text-fuchsia-300" />}
             </div>
           <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground">
             <Zap className="w-3.5 h-3.5 text-fuchsia-400" /> Lobby Arcade
@@ -135,6 +150,21 @@ export default function CustomEditBattleLobby({
           <StatTile value={duration} label="Duration" />
         </div>
 
+        {isPrivate && isHost && fight.join_code && (
+          <div className="mt-3 rounded-2xl border border-fuchsia-500/30 bg-fuchsia-500/[0.06] p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[9px] font-black uppercase tracking-[0.24em] text-fuchsia-300">Join Code</p>
+                <p className="mt-1 text-[28px] leading-none font-black tracking-[0.3em] text-foreground" style={{ fontFamily: "Teko, sans-serif" }}>{fight.join_code}</p>
+              </div>
+              <button onClick={handleCopyCode} className="h-10 w-10 rounded-lg border border-fuchsia-500/30 bg-background grid place-items-center text-fuchsia-300 active:scale-95 transition-transform" aria-label="Copy code">
+                <Copy className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="mt-2 text-[10px] text-muted-foreground">Share this code privately. Only people with the code can accept this battle.</p>
+          </div>
+        )}
+
         <div className="mt-4 space-y-3">
           <OsuManiaMiniGame />
 
@@ -147,8 +177,29 @@ export default function CustomEditBattleLobby({
                 <Copy className="w-5 h-5" />
               </button>
             </div>
+          ) : isPrivate ? (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-fuchsia-300">
+                <Lock className="w-3 h-3" /> Code Required
+              </div>
+              <input
+                value={codeInput}
+                onChange={(e) => setCodeInput(e.target.value.toUpperCase().slice(0, 6))}
+                placeholder="ENTER CODE"
+                className="w-full h-14 rounded-xl border border-border bg-surface-1 px-4 text-center text-[20px] font-black tracking-[0.4em] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-fuchsia-500/50"
+                style={{ fontFamily: "Teko, sans-serif" }}
+              />
+              <button
+                onClick={() => onJoin(codeInput.trim())}
+                disabled={codeInput.trim().length < 4}
+                className="h-[60px] w-full rounded-xl bg-primary text-primary-foreground flex items-center justify-center gap-2 text-[16px] font-black uppercase tracking-[0.14em] active:scale-[0.98] transition-transform disabled:opacity-40"
+                style={{ fontFamily: "Teko, sans-serif" }}
+              >
+                <UserPlus className="w-5 h-5" /> Accept Battle
+              </button>
+            </div>
           ) : (
-            <button onClick={onJoin} className="h-[60px] w-full rounded-xl bg-primary text-primary-foreground flex items-center justify-center gap-2 text-[16px] font-black uppercase tracking-[0.14em] active:scale-[0.98] transition-transform" style={{ fontFamily: "Teko, sans-serif" }}>
+            <button onClick={() => onJoin()} className="h-[60px] w-full rounded-xl bg-primary text-primary-foreground flex items-center justify-center gap-2 text-[16px] font-black uppercase tracking-[0.14em] active:scale-[0.98] transition-transform" style={{ fontFamily: "Teko, sans-serif" }}>
               <UserPlus className="w-5 h-5" /> Accept Battle
             </button>
           )}
