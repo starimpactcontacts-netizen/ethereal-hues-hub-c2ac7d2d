@@ -579,6 +579,7 @@ export default function CashBattlesSection({
   onChallenge,
   isQfSearching = false,
   onCancelQueue,
+  onOpenLobby,
 }: EditBattlesSectionProps = {}) {
   const navigate = useNavigate();
   const { battles, loading } = useCashBattles();
@@ -727,6 +728,7 @@ export default function CashBattlesSection({
                   entry={entry}
                   isOwn={true}
                   onAccept={() => {}}
+                  onOpenLobby={onOpenLobby}
                   onCancel={async () => {
                     if (user?.id) {
                       await leaveQueue(user.id);
