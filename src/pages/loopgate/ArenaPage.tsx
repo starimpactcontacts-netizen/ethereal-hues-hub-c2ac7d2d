@@ -22,7 +22,7 @@ import BattleCard from "@/components/loopgate/BattleCard";
 import CreateBattleModal from "@/components/loopgate/CreateBattleModal";
 import { useSanctionedTournaments } from "@/hooks/useSanctionedTournaments";
 import { useBattles } from "@/hooks/useBattles";
-import { useRecentQuickFights, leaveQueue } from "@/hooks/useQuickFight";
+import { useRecentQuickFights, createQuickFightLobby, leaveQueue } from "@/hooks/useQuickFight";
 import LiveBattleReminders, { type LiveBattleReminderItem } from "@/components/loopgate/LiveBattleReminder";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -700,25 +700,13 @@ export default function ArenaPage() {
     if (qfActiveFight) { navigate(`/fight/${qfActiveFight.id}`); return; }
     setQfSearching(true);
     try {
-      const result = await startQuickMatch({
-        userId: user.id,
-        username: profile.username,
-        avatarUrl: profile.avatar_url,
-      });
-
-      if (result.type === 'battle') {
-        toast.success('⚔️ Opponent found!');
-        navigate(`/battle/${result.id}`);
-        setQfSearching(false);
-      } else if (result.type === 'fight') {
-        toast.success('⚔️ Match found!');
-        navigate(`/fight/${result.id}`);
-        setQfSearching(false);
-      } else {
-        toast('🔍 In queue — we\'ll notify you when matched!', { duration: 4000 });
-      }
+      const fightId = await createQuickFightLobby(user.id, profile.username, profile.avatar_url);
+      if (!fightId) throw new Error('create lobby failed');
+      await leaveQueue(user.id);
+      navigate(`/fight/${fightId}`);
+      setQfSearching(false);
     } catch {
-      toast.error('Matchmaking failed');
+      toast.error('Couldn\'t create lobby');
       setQfSearching(false);
     }
   };

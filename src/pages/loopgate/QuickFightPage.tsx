@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Share2, Search, Play, Video, Music, ThumbsUp, Upload, Sparkles, EyeOff } from 'lucide-react';
+import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Share2, Search, Play, Video, Music, ThumbsUp, Upload, Sparkles, EyeOff, Copy, UserPlus, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,7 +16,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useAuth } from '@/hooks/useAuth';
-import { useQuickFight, submitQuickFight } from '@/hooks/useQuickFight';
+import { useQuickFight, submitQuickFight, joinWaitingQuickFight } from '@/hooks/useQuickFight';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -32,6 +32,7 @@ import BattleIntroOverlay from '@/components/loopgate/BattleIntroOverlay';
 import BattleDecidedOverlay from '@/components/loopgate/BattleDecidedOverlay';
 import ScenepackVoteModal from '@/components/loopgate/ScenepackVoteModal';
 import ScenepackDownloadCard from '@/components/loopgate/ScenepackDownloadCard';
+import { setLobbyMusicActive } from '@/components/loopgate/LobbyMusicPlayer';
 
 /** Detect platform from URL */
 function detectPlatform(url: string): string {
@@ -98,6 +99,13 @@ export default function QuickFightPage() {
   }, [fightId, user?.id]);
 
   const hasSongPicked = !!(fight as any)?.theme_song_name;
+  const isWaitingLobby = !!fight && fight.status === 'waiting' && !fight.player_2_id;
+
+  useEffect(() => {
+    if (!isWaitingLobby) return;
+    setLobbyMusicActive(true);
+    return () => setLobbyMusicActive(false);
+  }, [isWaitingLobby]);
 
   const handleSongPick = async (drop: any) => {
     if (!fight) return;
@@ -152,6 +160,35 @@ export default function QuickFightPage() {
     (isP1 && !fight.player_1_submitted_at) || (isP2 && !fight.player_2_submitted_at)
   );
   const canJudge = fight.status === 'judging' && (isJudge || isAnyJudge || isAdmin || isDev) && !fight.judge_id;
+
+  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/fight/${fight.id}` : '';
+
+  const handleCopyLobby = async () => {
+    try {
+      await navigator.clipboard.writeText(`⚔️ Join my custom Loopgate edit battle: ${shareUrl}`);
+      toast.success('Lobby link copied');
+    } catch {
+      toast.error("Couldn't copy link");
+    }
+  };
+
+  const handleShareLobby = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'Custom Edit Battle', text: `Join @${fight.player_1_username}'s edit battle`, url: shareUrl });
+      } else {
+        await handleCopyLobby();
+      }
+    } catch {}
+  };
+
+  const handleJoinLobby = async () => {
+    if (!user || !profile) { navigate('/start'); return; }
+    if (isP1) return;
+    const ok = await joinWaitingQuickFight(fight.id, user.id, profile.username, profile.avatar_url || null);
+    if (ok) toast.success('⚔️ Battle started');
+    else toast.error("Couldn't join lobby");
+  };
 
   const handleSubmit = async () => {
     if (!submissionUrl.trim() || !user) return;
@@ -227,6 +264,71 @@ export default function QuickFightPage() {
     toast.success('Battle hidden from public view');
     navigate('/hub');
   };
+
+  if (isWaitingLobby) {
+    return (
+      <div className="min-h-screen bg-background text-foreground pb-8 overflow-hidden">
+        <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-white/5 px-4 py-3 flex items-center justify-between">
+          <button onClick={() => navigate('/edit-battles')} className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-xs uppercase tracking-wider" style={{ fontFamily: 'Teko, sans-serif' }}>Battles</span>
+          </button>
+          <div className="flex items-center gap-1.5 text-emerald-400">
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            <span className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ fontFamily: 'Teko, sans-serif' }}>Lobby Open</span>
+          </div>
+        </div>
+
+        <div className="px-4 pt-5 space-y-4">
+          <div className="rounded-2xl border border-white/[0.06] overflow-hidden p-5 relative" style={{ background: 'radial-gradient(circle at 50% 0%, rgba(239,68,68,0.18), rgba(0,0,0,0) 60%), linear-gradient(180deg, #18181b 0%, #0a0a0a 100%)' }}>
+            <div className="flex items-center justify-between mb-5">
+              <span className="text-[11px] font-black text-white uppercase tracking-[0.22em]" style={{ fontFamily: 'Teko, sans-serif' }}>Custom Edit Battle</span>
+              <span className="text-[10px] text-emerald-400 font-mono">WAITING</span>
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex-1 flex flex-col items-center text-center min-w-0">
+                <Avatar className="w-[76px] h-[76px] ring-2 ring-red-500/50">
+                  <AvatarImage src={fight.player_1_avatar_url || ''} />
+                  <AvatarFallback className="bg-red-500/15 text-red-400 text-xl font-bold">{fight.player_1_username.charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <span className="mt-2 text-[14px] font-bold text-white uppercase truncate max-w-full" style={{ fontFamily: 'Teko, sans-serif' }}>{fight.player_1_username}</span>
+                <span className="text-[8px] text-red-400/70 font-bold uppercase tracking-[0.15em]">HOST</span>
+              </div>
+              <div className="relative shrink-0 mx-1">
+                <div className="w-[54px] h-[54px] rounded-full bg-red-500 flex items-center justify-center shadow-[0_0_30px_rgba(239,68,68,0.4)]">
+                  <Swords className="w-6 h-6 text-white" />
+                </div>
+              </div>
+              <div className="flex-1 flex flex-col items-center text-center min-w-0">
+                <div className="w-[76px] h-[76px] rounded-full border-2 border-dashed border-zinc-600/70 flex items-center justify-center bg-zinc-900/60">
+                  <span className="text-3xl text-zinc-600" style={{ fontFamily: 'Teko, sans-serif' }}>?</span>
+                </div>
+                <span className="mt-2 text-[13px] text-zinc-500 uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>Opponent</span>
+              </div>
+            </div>
+          </div>
+
+          {isP1 ? (
+            <>
+              <BattleSongPicker onSongPicked={handleSongPick} selectedSongName={(fight as any).theme_song_name} compact />
+              <div className="grid grid-cols-2 gap-2">
+                <button onClick={handleCopyLobby} className="py-3 rounded-xl border border-white/[0.08] bg-white/[0.05] flex items-center justify-center gap-2 active:scale-[0.98]">
+                  <Copy className="w-4 h-4" /><span className="text-sm font-bold uppercase" style={{ fontFamily: 'Teko, sans-serif' }}>Copy</span>
+                </button>
+                <button onClick={handleShareLobby} className="py-3 rounded-xl bg-red-500 text-white flex items-center justify-center gap-2 active:scale-[0.98]">
+                  <Share2 className="w-4 h-4" /><span className="text-sm font-bold uppercase" style={{ fontFamily: 'Teko, sans-serif' }}>Invite</span>
+                </button>
+              </div>
+            </>
+          ) : (
+            <button onClick={handleJoinLobby} className="w-full py-4 rounded-xl bg-red-500 text-white flex items-center justify-center gap-2 active:scale-[0.98]">
+              <UserPlus className="w-5 h-5" /><span className="text-base font-black uppercase" style={{ fontFamily: 'Teko, sans-serif' }}>Join Battle</span>
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20">

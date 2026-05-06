@@ -6,7 +6,7 @@ import { ArrowLeft, Swords, DollarSign, Flame, Trophy, Clock, Users, Loader2, Za
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useCashBattles, useMyCashBattles, useMyCashBattleApplication, type CashBattleApplication } from "@/hooks/useCashBattles";
-import { useMyQuickFights, useRecentQuickFights, findQuickFight, leaveQueue, type QuickFight } from "@/hooks/useQuickFight";
+import { useMyQuickFights, useRecentQuickFights, findQuickFight, createQuickFightLobby, leaveQueue, type QuickFight } from "@/hooks/useQuickFight";
 import { useAuth } from "@/hooks/useAuth";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useAccountPrompt } from "@/hooks/useAccountPrompt";
@@ -607,18 +607,22 @@ export default function EditBattlesHubPage() {
       return;
     }
     if (inQuickQueue) {
-      await leaveQueue(user.id);
-      toast("Left the queue");
+      const lobbyId = await createQuickFightLobby(user.id, profile.username, profile.avatar_url);
+      if (lobbyId) {
+        await leaveQueue(user.id);
+        navigate(`/fight/${lobbyId}`);
+      } else {
+        toast.error("Couldn't create lobby");
+      }
       return;
     }
     setJoining(true);
-    const fightId = await findQuickFight(user.id, profile.username, profile.avatar_url);
+    const fightId = await createQuickFightLobby(user.id, profile.username, profile.avatar_url);
     setJoining(false);
     if (fightId) {
-      toast.success("⚔️ Match found!");
       navigate(`/fight/${fightId}`);
     } else {
-      toast.success("🔍 In queue — we'll match you in seconds");
+      toast.error("Couldn't create lobby");
     }
   };
 
