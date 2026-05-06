@@ -698,6 +698,9 @@ export default function ArenaPage() {
   const handleQuickFight = async () => {
     if (!user || !profile) { navigate('/start'); return; }
     if (qfActiveFight) { navigate(`/fight/${qfActiveFight.id}`); return; }
+    // Reuse existing waiting lobby if user already has one open
+    const existingWaiting = myQuickFights.find(f => f.status === 'waiting' && f.player_1_id === user.id);
+    if (existingWaiting) { navigate(`/fight/${existingWaiting.id}`); return; }
     setQfSearching(true);
     try {
       const fightId = await createQuickFightLobby(user.id, profile.username, profile.avatar_url);
@@ -1280,7 +1283,7 @@ export default function ArenaPage() {
                 <BattleCard battle={battle} onClick={() => navigate(`/battle/${battle.id}`)} />
               )}
               onQuickFight={handleQuickFight}
-              onChallenge={() => profile ? setShowCreateBattle(true) : navigate('/start')}
+              onChallenge={handleQuickFight}
               isQfSearching={isQfSearching}
               onCancelQueue={handleCancelQueue}
               onOpenLobby={() => setLobbyOpen(true)}
