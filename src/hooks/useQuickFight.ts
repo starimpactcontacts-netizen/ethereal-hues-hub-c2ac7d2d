@@ -31,6 +31,8 @@ export interface QuickFight {
   view_count: number;
   theme_song_name?: string | null;
   theme_song_preview_url?: string | null;
+  is_private?: boolean;
+  join_code?: string | null;
   created_at: string;
 }
 
@@ -61,7 +63,21 @@ export async function findQuickFight(userId: string, username: string, avatarUrl
 }
 
 // Create a shareable custom lobby page instead of dropping into anonymous queue
-export async function createQuickFightLobby(userId: string, username: string, avatarUrl: string | null): Promise<string | null> {
+export async function createQuickFightLobby(
+  userId: string,
+  username: string,
+  avatarUrl: string | null,
+  options?: { isPrivate?: boolean }
+): Promise<{ id: string; joinCode: string | null } | null> {
+  let joinCode: string | null = null;
+  if (options?.isPrivate) {
+    const { data: codeData, error: codeError } = await supabase.rpc('generate_quick_fight_join_code' as any);
+    if (codeError) {
+      console.error('Join code error:', codeError);
+      return null;
+    }
+    joinCode = codeData as string;
+  }
   const { data, error } = await supabase
     .from('quick_fights')
     .insert({
@@ -70,28 +86,37 @@ export async function createQuickFightLobby(userId: string, username: string, av
       player_1_avatar_url: avatarUrl,
       status: 'waiting',
       duration_minutes: 60,
-    })
+      is_private: !!options?.isPrivate,
+      join_code: joinCode,
+    } as any)
     .select('id')
     .single();
   if (error) {
     console.error('Custom lobby creation error:', error);
     return null;
   }
-  return data.id;
+  return { id: data.id, joinCode };
 }
 
-export async function joinWaitingQuickFight(fightId: string, userId: string, username: string, avatarUrl: string | null): Promise<boolean> {
+export async function joinWaitingQuickFight(
+  fightId: string,
+  userId: string,
+  username: string,
+  avatarUrl: string | null,
+  joinCode?: string | null
+): Promise<{ ok: boolean; error?: string }> {
   const { error } = await supabase.rpc('join_waiting_quick_fight' as any, {
     p_fight_id: fightId,
     p_user_id: userId,
     p_username: username,
     p_avatar_url: avatarUrl,
+    p_join_code: joinCode || null,
   } as any);
   if (error) {
     console.error('Custom lobby join error:', error);
-    return false;
+    return { ok: false, error: error.message };
   }
-  return true;
+  return { ok: true };
 }
 
 // Submit edit
