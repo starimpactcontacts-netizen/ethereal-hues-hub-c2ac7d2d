@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft, LayoutGrid, Film, Link2, Wallet, ScrollText, MoreHorizontal, LogIn, UserPlus, LogOut, Settings } from 'lucide-react';
+import { ChevronLeft, LayoutGrid, Film, Link2, Wallet, ScrollText, MoreHorizontal, LogIn, UserPlus, LogOut, Settings, Trophy } from 'lucide-react';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 import { useAuth } from '@/hooks/useAuth';
 import { useTempProfile } from '@/hooks/useTempProfile';
@@ -18,6 +18,7 @@ const tabs = [
   { to: '/missions/submissions', icon: Film, label: 'Posts' },
   { to: '/missions/accounts', icon: Link2, label: 'Linked' },
   { to: '/missions/withdrawals', icon: Wallet, label: 'Cashout' },
+  { to: '/missions/community', icon: Trophy, label: 'Community' },
 ];
 
 export default function ClippersLayout({ children, title, hideBottomNav = false }: Props) {
@@ -174,7 +175,7 @@ export default function ClippersLayout({ children, title, hideBottomNav = false 
           borderTop: '0.5px solid rgba(255, 255, 255, 0.1)',
         }}
       >
-        <div className="max-w-6xl mx-auto grid grid-cols-4 px-1 pt-1.5">
+        <div className="max-w-6xl mx-auto grid grid-cols-5 px-1 pt-1.5">
           {tabs.map((t) => (
             <NavLink
               key={t.to}

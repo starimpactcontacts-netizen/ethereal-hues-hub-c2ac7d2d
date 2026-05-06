@@ -5906,6 +5906,33 @@ export type Database = {
           },
         ]
       }
+      mission_global_chat: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          message: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          message: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
       mission_lobby_presence: {
         Row: {
           avatar_url: string | null

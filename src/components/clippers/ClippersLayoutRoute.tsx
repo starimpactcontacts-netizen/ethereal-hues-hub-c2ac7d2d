@@ -1,7 +1,6 @@
 import { Suspense } from 'react';
 import { Outlet, useLocation, useMatches } from 'react-router-dom';
 import ClippersLayout from './ClippersLayout';
-import MissionsSupportBubble from './MissionsSupportBubble';
 import TicketFAB from '@/components/loopgate/TicketFAB';
 
 // Map routes to titles so the persistent header updates without remount
@@ -10,6 +9,7 @@ const TITLE_MAP: Record<string, string> = {
   '/missions/submissions': 'Posts',
   '/missions/accounts': 'Linked',
   '/missions/withdrawals': 'Cashout',
+  '/missions/community': 'Community',
   '/missions/settings': 'Settings',
   '/missions/policy': 'Policy',
 };
@@ -34,7 +34,6 @@ export default function ClippersLayoutRoute() {
       >
         <Outlet />
       </Suspense>
-      <MissionsSupportBubble />
       <TicketFAB />
     </ClippersLayout>
   );
