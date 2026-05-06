@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { Search, Sparkles, DollarSign, BadgeCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import AccountPromptModal from '@/components/loopgate/AccountPromptModal';
 import NotificationsInlineCard from '@/components/loopgate/NotificationsInlineCard';
-import loopgateLogo from '@/assets/loopgate-logo.png';
 
 interface Milestone { views: number; bonus_cents: number; }
 
@@ -43,10 +41,11 @@ export default function ClippersCampaignsPage() {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [authOpen, setAuthOpen] = useState(false);
+  const [profile, setProfile] = useState<{ username: string | null; avatar_url: string | null } | null>(null);
 
   useEffect(() => {
     const load = async () => {
-      const [mRes, subsRes, paysRes] = await Promise.all([
+      const [mRes, subsRes, paysRes, profRes] = await Promise.all([
         supabase
           .from('missions')
           .select('id, title, description, cover_image_url, sponsor_name, sponsor_logo_url, base_payout_cents, view_milestones, budget_cents, spent_cents, cap_type, max_posts, approved_count, eligible_platforms, status, deadline, payout_display_override')
@@ -59,6 +58,9 @@ export default function ClippersCampaignsPage() {
         user
           ? supabase.from('mission_payouts').select('amount_cents, status').eq('user_id', user.id).neq('status', 'rejected')
           : Promise.resolve({ data: [] as any[] }),
+        user
+          ? supabase.from('profiles').select('username, avatar_url').eq('id', user.id).maybeSingle()
+          : Promise.resolve({ data: null as any }),
       ]);
       setMissions(((mRes.data as any) || []) as Mission[]);
       const subs = (subsRes.data || []) as Array<{ total_earned_cents: number; status: string }>;
@@ -66,6 +68,7 @@ export default function ClippersCampaignsPage() {
       const earned = subs.reduce((s, x) => s + (x.total_earned_cents || 0), 0);
       const paid = pays.reduce((s, x) => s + (x.amount_cents || 0), 0);
       setStats({ earned, paid, clips: subs.length });
+      if (profRes.data) setProfile(profRes.data as any);
       setLoading(false);
     };
     load();
@@ -76,13 +79,45 @@ export default function ClippersCampaignsPage() {
     !search || m.title.toLowerCase().includes(search.toLowerCase()) || m.sponsor_name?.toLowerCase().includes(search.toLowerCase()),
   );
   const balance = Math.max(0, stats.earned - stats.paid);
+  const displayName = profile?.username || (user?.user_metadata?.username as string) || user?.email?.split('@')[0] || 'Guest';
+  const initial = displayName.charAt(0).toUpperCase();
 
   return (
     <>
-      {/* Header */}
+      {/* Profile-led stats header */}
       <section className="max-w-6xl mx-auto px-4 pt-4 pb-3">
-        <h1 className="font-teko text-[44px] font-bold text-white leading-[0.95] uppercase tracking-[0.02em]">Missions</h1>
-        <p className="text-[13px] text-[#8E8E93] mt-1 uppercase tracking-[0.1em] font-medium">Get paid · per post · per view</p>
+        <div className="flex items-center gap-3.5">
+          {profile?.avatar_url ? (
+            <img
+              src={profile.avatar_url}
+              alt=""
+              className="w-[68px] h-[68px] rounded-2xl object-cover"
+              style={{ border: '2px solid rgba(255,255,255,0.14)', boxShadow: '0 4px 0 rgba(0,0,0,0.5)' }}
+            />
+          ) : (
+            <div
+              className="w-[68px] h-[68px] rounded-2xl flex items-center justify-center font-teko text-[36px] font-bold text-black bg-[#D4A857]"
+              style={{ border: '2px solid rgba(255,255,255,0.14)', boxShadow: '0 4px 0 rgba(0,0,0,0.5)' }}
+            >
+              {initial}
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="text-[11px] text-[#8E8E93] uppercase tracking-[0.15em] font-bold">@{displayName}</p>
+            <p className="font-teko text-[36px] font-bold text-white leading-[0.9] tabular-nums tracking-[0.01em] mt-0.5">
+              {formatMoney(balance)}
+            </p>
+            <div className="flex items-center gap-3 mt-1">
+              <span className="font-teko text-[14px] text-white tracking-[0.05em] uppercase">
+                <span className="text-[#30D158] font-bold">{stats.clips}</span> <span className="text-[#8E8E93]">Posts</span>
+              </span>
+              <span className="text-white/20">·</span>
+              <span className="font-teko text-[14px] text-white tracking-[0.05em] uppercase">
+                <span className="text-[#D4A857] font-bold">{filtered.length}</span> <span className="text-[#8E8E93]">Live</span>
+              </span>
+            </div>
+          </div>
+        </div>
 
         {/* iOS search */}
         <div className="relative mt-4">
@@ -97,43 +132,9 @@ export default function ClippersCampaignsPage() {
         </div>
       </section>
 
-      {/* Earnings hero card */}
-      <section className="max-w-6xl mx-auto px-4 mb-5">
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="relative overflow-hidden rounded-[22px] p-5"
-          style={{
-            background: 'linear-gradient(135deg, #1f1f22 0%, #131316 50%, #1a1a1d 100%)',
-            boxShadow: '0 1px 0 0 rgba(255,255,255,0.06) inset, 0 16px 32px -16px rgba(0,0,0,0.6)',
-          }}
-        >
-          <div aria-hidden className="absolute inset-0 pointer-events-none opacity-50" style={{ background: 'radial-gradient(120% 80% at 0% 0%, rgba(255,255,255,0.06) 0%, transparent 50%)' }} />
-          <img src={loopgateLogo} alt="" aria-hidden className="absolute -bottom-5 -right-5 w-36 h-36 object-contain pointer-events-none select-none opacity-[0.06]" />
-
-          <div className="relative flex items-start justify-between">
-            <div>
-              <p className="text-[10.5px] text-[#8E8E93] font-medium uppercase tracking-[0.12em]">Balance</p>
-              <p className="font-apple-tight text-[40px] font-semibold leading-none mt-1.5 tabular-nums text-white tracking-[-0.025em]">
-                {formatMoney(balance)}
-              </p>
-              <p className="text-[10.5px] text-[#8E8E93] mt-1.5 tracking-[-0.005em]">No minimum · no fees · paid within 24h</p>
-            </div>
-            <img src={loopgateLogo} alt="Loopgate" className="w-6 h-6 object-contain opacity-90" />
-          </div>
-
-          <div className="relative flex items-center gap-5 mt-4 pt-4 border-t border-white/[0.06]">
-            <MiniStat label="Posts" value={stats.clips.toString()} />
-            <div className="w-px h-7 bg-white/[0.08]" />
-            <MiniStat label="Live" value={filtered.length.toString()} />
-          </div>
-        </motion.div>
-      </section>
-
       {/* iOS-style inline notifications card */}
       {user && (
-        <section className="max-w-6xl mx-auto px-4 mb-5">
+        <section className="max-w-6xl mx-auto px-4 mt-4 mb-5">
           <NotificationsInlineCard />
         </section>
       )}
@@ -171,15 +172,6 @@ export default function ClippersCampaignsPage() {
         reason="Create your account to start earning from missions."
       />
     </>
-  );
-}
-
-function MiniStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="text-[11px] text-[#8E8E93] font-medium">{label}</p>
-      <p className="text-[17px] font-semibold text-white tabular-nums mt-0.5">{value}</p>
-    </div>
   );
 }
 
