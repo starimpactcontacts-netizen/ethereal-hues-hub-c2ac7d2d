@@ -231,10 +231,7 @@ function MissionTile({ m, formatMoney }: { m: Mission; formatMoney: (n: number) 
 
       {/* Bottom content */}
       <div className="absolute inset-x-0 bottom-0 p-2.5">
-        <p className="text-[10px] text-white/70 font-medium truncate leading-none uppercase tracking-wider">
-          {m.sponsor_name || 'Loopgate Official'}
-        </p>
-        <h3 className="font-teko text-[18px] font-bold text-white tracking-[0.02em] uppercase line-clamp-2 leading-[1] mt-1">
+        <h3 className="font-teko text-[18px] font-bold text-white tracking-[0.02em] uppercase line-clamp-2 leading-[1]">
           {m.title}
         </h3>
         <div className="mt-1.5">
