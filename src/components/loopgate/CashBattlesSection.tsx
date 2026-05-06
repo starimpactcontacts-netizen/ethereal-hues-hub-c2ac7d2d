@@ -361,7 +361,8 @@ function QuickFightCarouselCard({ fight, isMine }: { fight: QuickFight; isMine: 
   const navigate = useNavigate();
   const isLive = fight.status === 'active' || fight.status === 'submitted' || fight.status === 'judging';
   const isWaiting = fight.status === 'waiting' && !fight.player_2_id;
-  const [votes, setVotes] = useState<{ blue: number; red: number }>({ blue: 0, red: 0 });
+  const isCompleted = fight.status === 'completed' || fight.status === 'forfeited' || fight.status === 'cancelled';
+  const [votes, setVotes] = useState<{ blue: number; red: number }>({ blue: fight.player_1_votes || 0, red: fight.player_2_votes || 0 });
 
   useEffect(() => {
     let cancelled = false;
@@ -373,8 +374,8 @@ function QuickFightCarouselCard({ fight, isMine }: { fight: QuickFight; isMine: 
       if (cancelled || !data) return;
       const rows = data as { voted_for: string }[];
       setVotes({
-        blue: rows.filter(r => r.voted_for === fight.player_1_id).length,
-        red: fight.player_2_id ? rows.filter(r => r.voted_for === fight.player_2_id).length : 0,
+        blue: rows.filter(r => r.voted_for === fight.player_1_id).length || fight.player_1_votes || 0,
+        red: fight.player_2_id ? rows.filter(r => r.voted_for === fight.player_2_id).length || fight.player_2_votes || 0 : 0,
       });
     }
     load();
@@ -383,94 +384,101 @@ function QuickFightCarouselCard({ fight, isMine }: { fight: QuickFight; isMine: 
       .on("postgres_changes", { event: "*", schema: "public", table: "quick_fight_votes", filter: `fight_id=eq.${fight.id}` }, load)
       .subscribe();
     return () => { cancelled = true; supabase.removeChannel(ch); };
-  }, [fight.id, fight.player_1_id, fight.player_2_id]);
+  }, [fight.id, fight.player_1_id, fight.player_2_id, fight.player_1_votes, fight.player_2_votes]);
+
+  const statusText = isWaiting ? (isMine ? 'YOUR LOBBY' : 'OPEN') : isLive ? (isMine ? 'YOUR BATTLE' : 'LIVE') : isCompleted ? 'DECIDED' : fight.status;
+  const duration = fight.duration_minutes >= 60 ? `${Math.round(fight.duration_minutes / 60)}H` : `${fight.duration_minutes}M`;
 
   return (
     <motion.div
       whileTap={{ scale: 0.97 }}
-      whileHover={{ y: -2 }}
+      whileHover={{ y: -3 }}
       onClick={() => navigate(`/fight/${fight.id}`)}
-      className="w-full h-full rounded-2xl overflow-hidden cursor-pointer relative flex flex-col border border-white/[0.08]"
+      className={`w-full h-full overflow-hidden cursor-pointer group rounded-2xl relative flex flex-col ${isCompleted ? 'opacity-55 grayscale-[60%]' : ''}`}
       style={{
-        background: "linear-gradient(180deg, rgba(38,38,42,0.95) 0%, rgba(28,28,32,0.95) 100%)",
-        boxShadow: isMine ? "0 0 0 1px rgba(16,185,129,0.45), 0 14px 34px -18px rgba(16,185,129,0.7)" : "inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 24px -12px rgba(0,0,0,0.5)",
+        background: isCompleted
+          ? 'linear-gradient(160deg, hsl(var(--surface-2)) 0%, hsl(var(--surface-0)) 100%)'
+          : 'linear-gradient(160deg, hsl(var(--surface-2)) 0%, hsl(var(--background)) 100%)',
+        boxShadow: isWaiting
+          ? '0 0 0 1px hsl(var(--status-live) / 0.28), 0 16px 34px -22px hsl(var(--status-live) / 0.55), inset 0 1px 0 hsl(var(--foreground) / 0.04)'
+          : isLive
+          ? '0 0 24px hsl(var(--destructive) / 0.15), 0 8px 32px hsl(var(--background) / 0.5), inset 0 1px 0 hsl(var(--foreground) / 0.04)'
+          : '0 8px 32px hsl(var(--background) / 0.5), inset 0 1px 0 hsl(var(--foreground) / 0.04)',
       }}
     >
-      <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, #3b82f6, transparent 40%, transparent 60%, #ef4444)" }} />
+      <div className="absolute top-0 left-0 right-0 h-[1px] bg-[linear-gradient(90deg,transparent,hsl(var(--foreground)/0.08),transparent)]" />
+      <div className="absolute inset-x-0 top-0 h-[2px] bg-[linear-gradient(90deg,hsl(217_91%_60%),transparent_44%,transparent_56%,hsl(0_72%_51%))]" />
+      {isWaiting && <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,hsl(var(--status-live)/0.10),transparent_48%)]" />}
 
-      <div className="px-4 pt-4 pb-1">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}>
-              <Swords className="w-3.5 h-3.5 text-white" />
+      <div className="relative flex items-center justify-between px-2.5 pt-2 pb-0.5">
+        <div className="flex items-center gap-1 min-w-0">
+          {(isLive || isWaiting) && <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${isWaiting ? 'bg-status-live' : 'bg-destructive'}`} />}
+          <span className={`text-[9px] font-bold uppercase tracking-[0.12em] ${isWaiting ? 'text-emerald-400' : isLive ? 'text-red-400' : isCompleted ? 'text-muted-foreground' : 'text-blue-400'}`} style={{ fontFamily: 'Teko, sans-serif' }}>
+            {statusText}
+          </span>
+        </div>
+        <div className="flex items-center gap-1 text-[8px] text-muted-foreground">
+          <Clock className="w-2.5 h-2.5" />
+          <span>{duration}</span>
+        </div>
+      </div>
+
+      <div className="relative px-3 py-3 flex-1 flex items-center">
+        <div className="relative flex items-center justify-between w-full">
+          <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+            <Avatar className={`w-10 h-10 border-2 ${isCompleted ? 'border-border/60' : 'border-blue-500/40'}`}>
+              <AvatarImage src={fight.player_1_avatar_url || ''} />
+              <AvatarFallback className="text-xs font-bold bg-surface-2 text-blue-300">
+                {fight.player_1_username?.charAt(0)?.toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <span className="text-[9px] font-bold truncate max-w-[55px] uppercase text-foreground" style={{ fontFamily: 'Teko, sans-serif' }}>
+              {fight.player_1_username}
+            </span>
+          </div>
+
+          <div className="mx-1 shrink-0">
+            <div className="w-7 h-7 rounded-full flex items-center justify-center border border-border bg-background/70">
+              <Swords className="w-3 h-3 text-foreground/70" />
             </div>
           </div>
-          <div className="flex items-center gap-1.5 shrink-0">
-            {(isLive || isWaiting) && (
-              <span className={`w-2 h-2 rounded-full animate-pulse ${isWaiting ? 'bg-emerald-400' : 'bg-red-500'}`} />
+
+          <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+            {fight.player_2_id ? (
+              <Avatar className={`w-10 h-10 border-2 ${isCompleted ? 'border-border/60' : 'border-red-500/40'}`}>
+                <AvatarImage src={fight.player_2_avatar_url || ''} />
+                <AvatarFallback className="text-xs font-bold bg-surface-2 text-red-300">
+                  {fight.player_2_username?.charAt(0)?.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            ) : (
+              <div className="w-10 h-10 rounded-full border-2 border-dashed border-emerald-500/35 flex items-center justify-center bg-background/60">
+                <span className="text-sm text-emerald-400/70 font-bold">?</span>
+              </div>
             )}
-            <span
-              className={`text-[10px] font-black uppercase tracking-[0.15em] ${isWaiting ? 'text-emerald-400' : 'text-blue-400'}`}
-              style={{ fontFamily: "Teko, sans-serif" }}
-            >
-              {isWaiting ? (isMine ? "YOUR LOBBY" : "OPEN LOBBY") : (isMine ? "YOUR BATTLE" : fight.status)}
+            <span className={`text-[9px] font-bold truncate max-w-[55px] uppercase ${fight.player_2_id ? 'text-foreground' : 'text-emerald-400'}`} style={{ fontFamily: 'Teko, sans-serif' }}>
+              {fight.player_2_username || 'Open'}
             </span>
           </div>
         </div>
       </div>
 
-      <div className="px-3 py-2.5 flex items-center justify-between">
-        <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
-          <Avatar className="w-11 h-11 ring-1 ring-white/10">
-            <AvatarImage src={fight.player_1_avatar_url || ""} />
-            <AvatarFallback className="text-sm font-bold bg-zinc-800 text-zinc-300">
-              {fight.player_1_username?.charAt(0)?.toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <span className="text-[10px] font-bold truncate max-w-[75px] uppercase text-zinc-200" style={{ fontFamily: "Teko, sans-serif" }}>
-            {fight.player_1_username}
-          </span>
-        </div>
-
-        <div className="mx-2 shrink-0">
-          <span className="text-base font-black text-white/40" style={{ fontFamily: "Teko, sans-serif" }}>VS</span>
-        </div>
-
-        <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
-          {fight.player_2_username ? (
-            <>
-              <Avatar className="w-11 h-11 ring-1 ring-white/10">
-                <AvatarImage src={fight.player_2_avatar_url || ""} />
-                <AvatarFallback className="text-sm font-bold bg-zinc-800 text-zinc-300">
-                  {fight.player_2_username?.charAt(0)?.toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-[10px] font-bold truncate max-w-[75px] uppercase text-zinc-200" style={{ fontFamily: "Teko, sans-serif" }}>
-                {fight.player_2_username}
-              </span>
-            </>
-          ) : (
-            <>
-              <div className="w-11 h-11 rounded-full border-2 border-dashed border-emerald-500/30 flex items-center justify-center bg-emerald-500/5">
-                <span className="text-base text-emerald-400/60">?</span>
-              </div>
-              <span className="text-[10px] font-black uppercase text-emerald-400" style={{ fontFamily: "Teko, sans-serif" }}>OPEN</span>
-            </>
-          )}
-        </div>
-      </div>
-
-      <div className="px-3 pb-3 mt-auto">
+      <div className="relative px-3 pb-3 mt-auto space-y-1.5">
         <BattleVoteBarCompact
           blueVotes={votes.blue}
           redVotes={votes.red}
           blueLabel={fight.player_1_username}
           redLabel={fight.player_2_username || undefined}
         />
+        <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-[0.12em]">
+          <span className={isWaiting ? 'text-emerald-400' : 'text-gold'}>{isWaiting ? 'Tap to enter lobby' : '+50 Index'}</span>
+          {isMine && <span className="text-muted-foreground">Yours</span>}
+        </div>
       </div>
     </motion.div>
   );
 }
+
 
 /** Open queue card — a user is waiting in matchmaking and anyone can accept to instant-pair */
 function OpenQueueCard({
