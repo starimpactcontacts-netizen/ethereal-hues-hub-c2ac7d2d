@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Share2, Search, Play, Video, Music, ThumbsUp, Upload, Sparkles, EyeOff, Copy, UserPlus, Loader2 } from 'lucide-react';
+import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Share2, Search, Play, Video, Music, ThumbsUp, Upload, Sparkles, EyeOff, Copy, UserPlus, Loader2, Zap, Users, Eye } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -267,62 +267,146 @@ export default function QuickFightPage() {
 
   if (isWaitingLobby) {
     return (
-      <div className="min-h-screen bg-background text-foreground pb-8 overflow-hidden">
-        <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-white/5 px-4 py-3 flex items-center justify-between">
+      <div className="min-h-screen bg-background text-foreground pb-8">
+        {/* Top bar — minimal, mirrors BattleDetailPage */}
+        <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl px-4 py-3 flex items-center justify-between">
           <button onClick={() => navigate('/edit-battles')} className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground">
             <ArrowLeft className="w-4 h-4" />
-            <span className="text-xs uppercase tracking-wider" style={{ fontFamily: 'Teko, sans-serif' }}>Battles</span>
+            <span className="text-xs uppercase tracking-wider" style={{ fontFamily: 'Teko, sans-serif' }}>Arena</span>
           </button>
-          <div className="flex items-center gap-1.5 text-emerald-400">
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            <span className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ fontFamily: 'Teko, sans-serif' }}>Lobby Open</span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 text-zinc-500">
+              <Eye className="w-3.5 h-3.5" />
+              <span className="text-xs tabular-nums">{fight.view_count || 1}</span>
+            </div>
+            <button onClick={handleShareLobby} className="text-zinc-400 hover:text-white" aria-label="Share">
+              <Share2 className="w-4 h-4" />
+            </button>
           </div>
         </div>
 
-        <div className="px-4 pt-5 space-y-4">
-          <div className="rounded-2xl border border-white/[0.06] overflow-hidden p-5 relative" style={{ background: 'radial-gradient(circle at 50% 0%, rgba(239,68,68,0.18), rgba(0,0,0,0) 60%), linear-gradient(180deg, #18181b 0%, #0a0a0a 100%)' }}>
-            <div className="flex items-center justify-between mb-5">
-              <span className="text-[11px] font-black text-white uppercase tracking-[0.22em]" style={{ fontFamily: 'Teko, sans-serif' }}>Custom Edit Battle</span>
-              <span className="text-[10px] text-emerald-400 font-mono">WAITING</span>
+        {/* ═══ HERO BANNER — same as BattleDetailPage open challenge ═══ */}
+        <div className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-red-950/40 via-red-950/15 to-background" />
+          <div className="absolute inset-0 bg-gradient-to-r from-red-600/5 via-transparent to-blue-600/5" />
+          <div className="absolute inset-0 opacity-[0.03]" style={{
+            backgroundImage: `radial-gradient(circle at 20% 30%, rgba(239,68,68,0.15) 0%, transparent 50%),
+                              radial-gradient(circle at 80% 30%, rgba(59,130,246,0.1) 0%, transparent 50%)`
+          }} />
+
+          <div className="relative px-4 pt-5 pb-6">
+            {/* Status + chips */}
+            <div className="flex items-center justify-center gap-2 mb-5 flex-wrap">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_12px_rgba(16,185,129,0.5)]" />
+              <span className="text-sm tracking-[0.25em] uppercase font-bold text-emerald-400" style={{ fontFamily: 'Teko, sans-serif' }}>
+                Open Challenge
+              </span>
+              <span className="flex items-center gap-1 text-amber-400 text-xs tracking-wider ml-1">
+                <Zap className="w-3 h-3" /> RAPID
+              </span>
+              <span className="flex items-center gap-1 text-emerald-400 text-xs tracking-wider ml-1">
+                📦 SCENEPACK
+              </span>
             </div>
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex-1 flex flex-col items-center text-center min-w-0">
-                <Avatar className="w-[76px] h-[76px] ring-2 ring-red-500/50">
-                  <AvatarImage src={fight.player_1_avatar_url || ''} />
-                  <AvatarFallback className="bg-red-500/15 text-red-400 text-xl font-bold">{fight.player_1_username.charAt(0).toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <span className="mt-2 text-[14px] font-bold text-white uppercase truncate max-w-full" style={{ fontFamily: 'Teko, sans-serif' }}>{fight.player_1_username}</span>
-                <span className="text-[8px] text-red-400/70 font-bold uppercase tracking-[0.15em]">HOST</span>
+
+            {/* VS Display */}
+            <div className="flex items-center justify-center gap-2">
+              {/* Host (You) */}
+              <div className="flex-1 flex flex-col items-center text-center">
+                <div className="relative mb-2">
+                  <div className="absolute -inset-1 rounded-full opacity-40 blur-md bg-red-500/50" />
+                  <div className="relative p-[2px] rounded-full bg-gradient-to-br from-red-500/70 to-red-800/70">
+                    <Avatar className="w-[72px] h-[72px] border-2 border-background rounded-full">
+                      <AvatarImage src={fight.player_1_avatar_url || ''} />
+                      <AvatarFallback className="bg-red-500/15 text-red-400 text-xl font-bold">
+                        {fight.player_1_username.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                </div>
+                <span className="text-[14px] font-bold text-white uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.08em' }}>
+                  {fight.player_1_username}
+                </span>
+                {isP1 && (
+                  <span className="text-[8px] text-red-400/70 font-bold uppercase tracking-[0.15em] mt-1">YOU</span>
+                )}
               </div>
+
+              {/* VS Center */}
               <div className="relative shrink-0 mx-1">
-                <div className="w-[54px] h-[54px] rounded-full bg-red-500 flex items-center justify-center shadow-[0_0_30px_rgba(239,68,68,0.4)]">
+                <div className="w-[52px] h-[52px] rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-[0_0_30px_rgba(239,68,68,0.25)]">
                   <Swords className="w-6 h-6 text-white" />
                 </div>
+                <div className="absolute inset-0 rounded-full animate-ping bg-red-500/20" />
               </div>
-              <div className="flex-1 flex flex-col items-center text-center min-w-0">
-                <div className="w-[76px] h-[76px] rounded-full border-2 border-dashed border-zinc-600/70 flex items-center justify-center bg-zinc-900/60">
-                  <span className="text-3xl text-zinc-600" style={{ fontFamily: 'Teko, sans-serif' }}>?</span>
+
+              {/* Awaiting */}
+              <div className="flex-1 flex flex-col items-center text-center">
+                <div className="relative mb-2">
+                  <div className="w-[72px] h-[72px] rounded-full border-2 border-dashed border-zinc-600/50 flex items-center justify-center bg-zinc-900/50">
+                    <span className="text-2xl text-zinc-600" style={{ fontFamily: 'Teko, sans-serif' }}>?</span>
+                  </div>
                 </div>
-                <span className="mt-2 text-[13px] text-zinc-500 uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>Opponent</span>
+                <span className="text-[13px] text-zinc-500 uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>
+                  AWAITING
+                </span>
+              </div>
+            </div>
+
+            <p className="text-center text-[11px] text-zinc-500 mt-3 tracking-wide">
+              {fight.player_1_username} vs ???
+            </p>
+          </div>
+        </div>
+
+        {/* ═══ CONTENT ═══ */}
+        <div className="px-4 space-y-3 mt-1">
+          {/* Stakes strip */}
+          <div className="bg-zinc-900/60 border border-white/[0.06] rounded-xl p-3">
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div>
+                <span className="text-xl font-bold text-emerald-400 tabular-nums" style={{ fontFamily: 'Teko, sans-serif' }}>+50</span>
+                <span className="text-[8px] text-zinc-500 block uppercase tracking-[0.2em] mt-0.5">WINNER</span>
+              </div>
+              <div>
+                <span className="text-xl font-bold text-red-400 tabular-nums" style={{ fontFamily: 'Teko, sans-serif' }}>-10</span>
+                <span className="text-[8px] text-zinc-500 block uppercase tracking-[0.2em] mt-0.5">LOSER</span>
+              </div>
+              <div>
+                <span className="text-xl font-bold text-white tabular-nums" style={{ fontFamily: 'Teko, sans-serif' }}>{fight.duration_minutes >= 60 ? `${Math.round(fight.duration_minutes / 60)}H` : `${fight.duration_minutes}M`}</span>
+                <span className="text-[8px] text-zinc-500 block uppercase tracking-[0.2em] mt-0.5">DURATION</span>
               </div>
             </div>
           </div>
 
+          {/* Host: song picker */}
+          {isP1 && (
+            <BattleSongPicker onSongPicked={handleSongPick} selectedSongName={(fight as any).theme_song_name} compact />
+          )}
+
+          {/* INVITE CHALLENGERS — same as BattleDetailPage */}
           {isP1 ? (
             <>
-              <BattleSongPicker onSongPicked={handleSongPick} selectedSongName={(fight as any).theme_song_name} compact />
-              <div className="grid grid-cols-2 gap-2">
-                <button onClick={handleCopyLobby} className="py-3 rounded-xl border border-white/[0.08] bg-white/[0.05] flex items-center justify-center gap-2 active:scale-[0.98]">
-                  <Copy className="w-4 h-4" /><span className="text-sm font-bold uppercase" style={{ fontFamily: 'Teko, sans-serif' }}>Copy</span>
-                </button>
-                <button onClick={handleShareLobby} className="py-3 rounded-xl bg-red-500 text-white flex items-center justify-center gap-2 active:scale-[0.98]">
-                  <Share2 className="w-4 h-4" /><span className="text-sm font-bold uppercase" style={{ fontFamily: 'Teko, sans-serif' }}>Invite</span>
-                </button>
-              </div>
+              <button
+                onClick={handleShareLobby}
+                className="w-full py-3.5 rounded-xl border border-red-500/25 text-red-400 hover:bg-red-500/5 transition-colors text-sm font-bold uppercase tracking-wider flex items-center justify-center gap-2"
+              >
+                <Users className="w-4 h-4" />
+                INVITE CHALLENGERS
+              </button>
+              <button
+                onClick={handleCopyLobby}
+                className="w-full py-3 rounded-xl border border-white/[0.06] bg-white/[0.03] text-zinc-400 hover:text-white transition-colors text-xs font-bold uppercase tracking-[0.2em] flex items-center justify-center gap-2"
+              >
+                <Copy className="w-3.5 h-3.5" /> Copy Lobby Link
+              </button>
             </>
           ) : (
-            <button onClick={handleJoinLobby} className="w-full py-4 rounded-xl bg-red-500 text-white flex items-center justify-center gap-2 active:scale-[0.98]">
-              <UserPlus className="w-5 h-5" /><span className="text-base font-black uppercase" style={{ fontFamily: 'Teko, sans-serif' }}>Join Battle</span>
+            <button
+              onClick={handleJoinLobby}
+              className="w-full relative overflow-hidden py-4 rounded-xl bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 transition-all shadow-[0_4px_24px_rgba(239,68,68,0.25)] active:scale-[0.98] text-white text-sm font-black uppercase tracking-wider flex items-center justify-center gap-2"
+            >
+              <UserPlus className="w-5 h-5" /> Accept Challenge
             </button>
           )}
         </div>
