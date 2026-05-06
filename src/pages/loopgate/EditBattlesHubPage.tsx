@@ -607,20 +607,20 @@ export default function EditBattlesHubPage() {
       return;
     }
     if (inQuickQueue) {
-      const lobbyId = await createQuickFightLobby(user.id, profile.username, profile.avatar_url);
-      if (lobbyId) {
+      const lobby = await createQuickFightLobby(user.id, profile.username, profile.avatar_url);
+      if (lobby) {
         await leaveQueue(user.id);
-        navigate(`/fight/${lobbyId}`);
+        navigate(`/fight/${lobby.id}`);
       } else {
         toast.error("Couldn't create lobby");
       }
       return;
     }
     setJoining(true);
-    const fightId = await createQuickFightLobby(user.id, profile.username, profile.avatar_url);
+    const lobby = await createQuickFightLobby(user.id, profile.username, profile.avatar_url);
     setJoining(false);
-    if (fightId) {
-      navigate(`/fight/${fightId}`);
+    if (lobby) {
+      navigate(`/fight/${lobby.id}`);
     } else {
       toast.error("Couldn't create lobby");
     }

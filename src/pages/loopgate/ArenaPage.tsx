@@ -39,6 +39,7 @@ import LiveWinnersTicker from "@/components/loopgate/LiveWinnersTicker";
 import ArenaCompetitionsSection from "@/components/loopgate/ArenaCompetitionsSection";
 import { startQuickMatch } from "@/lib/startQuickMatch";
 import CashBattlesSection from "@/components/loopgate/CashBattlesSection";
+import CustomLobbyTypeModal from "@/components/loopgate/CustomLobbyTypeModal";
 import { useMyCashBattles } from "@/hooks/useCashBattles";
 import { ArenaRail, ArenaRailCard, ArenaRailSkeleton } from "@/components/loopgate/ArenaCarouselSystem";
 import { useMyCompetitionReminders } from "@/hooks/useMyCompetitionReminders";
@@ -536,6 +537,7 @@ export default function ArenaPage() {
   const [selectedMode, setSelectedMode] = useState<'quick' | 'battle' | 'solo' | 'practice' | 'drop'>((searchParams.get('mode') as any) || 'drop');
   const [userStats, setUserStats] = useState<{ wins: number; losses: number; streak: number; events: number } | null>(null);
   const [qfSearching, setQfSearching] = useState(false);
+  const [lobbyTypeOpen, setLobbyTypeOpen] = useState(false);
   const [qfElapsed, setQfElapsed] = useState(0);
   const [lobbyOpen, setLobbyOpen] = useState(false);
 
@@ -701,15 +703,21 @@ export default function ArenaPage() {
     // Reuse existing waiting lobby if user already has one open
     const existingWaiting = myQuickFights.find(f => f.status === 'waiting' && f.player_1_id === user.id);
     if (existingWaiting) { navigate(`/fight/${existingWaiting.id}`); return; }
+    setLobbyTypeOpen(true);
+  };
+
+  const handleCreateLobby = async (isPrivate: boolean) => {
+    if (!user || !profile) return;
     setQfSearching(true);
     try {
-      const fightId = await createQuickFightLobby(user.id, profile.username, profile.avatar_url);
-      if (!fightId) throw new Error('create lobby failed');
+      const lobby = await createQuickFightLobby(user.id, profile.username, profile.avatar_url, { isPrivate });
+      if (!lobby) throw new Error('create lobby failed');
       await leaveQueue(user.id);
-      navigate(`/fight/${fightId}`);
+      setLobbyTypeOpen(false);
+      navigate(`/fight/${lobby.id}`);
       setQfSearching(false);
     } catch {
-      toast.error('Couldn\'t create lobby');
+      toast.error("Couldn't create lobby");
       setQfSearching(false);
     }
   };
@@ -1347,6 +1355,12 @@ export default function ArenaPage() {
         elapsedSec={qfElapsed}
         currentUserId={user?.id}
         onCancel={() => { setLobbyOpen(false); handleCancelQueue(); }}
+      />
+
+      <CustomLobbyTypeModal
+        open={lobbyTypeOpen}
+        onOpenChange={setLobbyTypeOpen}
+        onSelect={handleCreateLobby}
       />
 
     </div>
