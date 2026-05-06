@@ -6911,6 +6911,8 @@ export type Database = {
           hidden_at: string | null
           hidden_by: string | null
           id: string
+          is_private: boolean
+          join_code: string | null
           judge_id: string | null
           judge_notes: string | null
           judge_username: string | null
@@ -6958,6 +6960,8 @@ export type Database = {
           hidden_at?: string | null
           hidden_by?: string | null
           id?: string
+          is_private?: boolean
+          join_code?: string | null
           judge_id?: string | null
           judge_notes?: string | null
           judge_username?: string | null
@@ -7005,6 +7009,8 @@ export type Database = {
           hidden_at?: string | null
           hidden_by?: string | null
           id?: string
+          is_private?: boolean
+          join_code?: string | null
           judge_id?: string | null
           judge_notes?: string | null
           judge_username?: string | null
@@ -8627,6 +8633,7 @@ export type Database = {
         Returns: string
       }
       generate_invite_code: { Args: never; Returns: string }
+      generate_quick_fight_join_code: { Args: never; Returns: string }
       get_channel_unread_counts: {
         Args: { p_crew_id: string; p_user_id: string }
         Returns: {
@@ -8676,15 +8683,26 @@ export type Database = {
         Args: { check_username: string }
         Returns: boolean
       }
-      join_waiting_quick_fight: {
-        Args: {
-          p_avatar_url?: string
-          p_fight_id: string
-          p_user_id: string
-          p_username: string
-        }
-        Returns: string
-      }
+      join_waiting_quick_fight:
+        | {
+            Args: {
+              p_avatar_url?: string
+              p_fight_id: string
+              p_user_id: string
+              p_username: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_avatar_url?: string
+              p_fight_id: string
+              p_join_code?: string
+              p_user_id: string
+              p_username: string
+            }
+            Returns: string
+          }
       mark_account_converted: { Args: never; Returns: undefined }
       mark_conversation_read: {
         Args: { p_conversation_id: string; p_user_id: string }
