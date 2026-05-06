@@ -1295,6 +1295,7 @@ export default function ArenaPage() {
               onChallenge={() => profile ? setShowCreateBattle(true) : navigate('/start')}
               isQfSearching={isQfSearching}
               onCancelQueue={handleCancelQueue}
+              onOpenLobby={() => setLobbyOpen(true)}
             />
           </div>
 
@@ -1351,10 +1352,10 @@ export default function ArenaPage() {
       />
 
       <MatchmakingLobby
-        open={isQfSearching && !qfActiveFight}
+        open={lobbyOpen && isQfSearching && !qfActiveFight}
         elapsedSec={qfElapsed}
         currentUserId={user?.id}
-        onCancel={handleCancelQueue}
+        onCancel={() => { setLobbyOpen(false); handleCancelQueue(); }}
       />
 
     </div>
