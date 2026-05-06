@@ -81,8 +81,8 @@ export default function ClippersCampaignsPage() {
     <>
       {/* Header */}
       <section className="max-w-6xl mx-auto px-4 pt-4 pb-3">
-        <h1 className="font-apple-tight text-[32px] font-bold text-white leading-[1.05]">Missions</h1>
-        <p className="text-[13px] text-[#8E8E93] mt-1">Get paid per post and per view.</p>
+        <h1 className="font-teko text-[44px] font-bold text-white leading-[0.95] uppercase tracking-[0.02em]">Missions</h1>
+        <p className="text-[13px] text-[#8E8E93] mt-1 uppercase tracking-[0.1em] font-medium">Get paid · per post · per view</p>
 
         {/* iOS search */}
         <div className="relative mt-4">
@@ -139,7 +139,13 @@ export default function ClippersCampaignsPage() {
       )}
 
       <div className="max-w-6xl mx-auto px-4 space-y-4 pb-8">
-        <h2 className="font-teko text-[26px] font-bold text-white tracking-[0.02em] uppercase px-0.5 leading-none">Live Missions</h2>
+        <div className="flex items-center justify-between px-0.5">
+          <h2 className="font-teko text-[30px] font-bold text-white tracking-[0.04em] uppercase leading-none flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#30D158] animate-pulse shadow-[0_0_8px_rgba(48,209,88,0.8)]" />
+            Live Missions
+          </h2>
+          <span className="font-teko text-[18px] text-[#8E8E93] tracking-[0.1em]">{filtered.length}</span>
+        </div>
         {loading ? (
           <div className="grid grid-cols-2 gap-3">
             {[1, 2, 3, 4].map((i) => <div key={i} className="aspect-square rounded-[18px] bg-[#1c1c1e] animate-pulse" />)}
@@ -151,7 +157,7 @@ export default function ClippersCampaignsPage() {
             <p className="text-[13px] text-[#8E8E93] mt-1">New paid drops every week</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5">
             {filtered.map((m) => (
               <MissionTile key={m.id} m={m} formatMoney={formatMoney} />
             ))}
@@ -195,11 +201,11 @@ function MissionTile({ m, formatMoney }: { m: Mission; formatMoney: (n: number) 
   return (
     <Link
       to={`/missions/submit?id=${m.id}`}
-      className="block aspect-square rounded-[18px] overflow-hidden active:scale-[0.97] transition-all duration-150 relative group"
+      className="block aspect-square rounded-[14px] overflow-hidden active:scale-[0.96] transition-all duration-150 relative group"
       style={{
         background: '#161618',
-        boxShadow: '0 1px 0 rgba(255,255,255,0.05) inset, 0 6px 16px -8px rgba(0,0,0,0.7)',
-        border: '0.5px solid rgba(255,255,255,0.06)',
+        boxShadow: '0 0 0 2px rgba(255,255,255,0.08) inset, 0 4px 0 0 rgba(0,0,0,0.5), 0 8px 20px -6px rgba(0,0,0,0.8)',
+        border: '1.5px solid rgba(255,255,255,0.12)',
       }}
     >
       {/* Cover fills entire tile */}
@@ -218,12 +224,16 @@ function MissionTile({ m, formatMoney }: { m: Mission; formatMoney: (n: number) 
         style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.2) 45%, rgba(0,0,0,0.92) 100%)' }}
       />
 
-      {/* Top-left payout pill */}
+      {/* Top-left payout pill — chunky Roblox style */}
       <div
-        className="absolute top-2 left-2 px-2 py-1 rounded-full flex items-center gap-0.5 text-[11px] font-bold leading-none tabular-nums"
-        style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', color: '#30D158' }}
+        className="absolute top-2 left-2 px-2 py-1 rounded-md flex items-center gap-0.5 font-teko text-[15px] font-bold leading-none tabular-nums tracking-wider"
+        style={{
+          background: '#30D158',
+          color: '#000',
+          boxShadow: '0 2px 0 0 rgba(0,0,0,0.4), 0 0 0 1.5px rgba(0,0,0,0.3)',
+        }}
       >
-        <DollarSign className="w-[11px] h-[11px]" strokeWidth={3} />
+        <DollarSign className="w-[12px] h-[12px]" strokeWidth={3.5} />
         {payoutLabel.replace(/^\$/, '')}
       </div>
 
@@ -236,7 +246,7 @@ function MissionTile({ m, formatMoney }: { m: Mission; formatMoney: (n: number) 
 
       {/* Bottom content */}
       <div className="absolute inset-x-0 bottom-0 p-2.5">
-        <p className="text-[10px] text-white/70 font-medium truncate flex items-center gap-1 leading-none">
+        <p className="text-[10px] text-white/70 font-medium truncate flex items-center gap-1 leading-none uppercase tracking-wider">
           <span className="truncate">{m.sponsor_name || 'Loopgate Official'}</span>
           <BadgeCheck
             className="w-[10px] h-[10px] flex-shrink-0 fill-[hsl(214,89%,52%)] text-black"
@@ -244,7 +254,7 @@ function MissionTile({ m, formatMoney }: { m: Mission; formatMoney: (n: number) 
             aria-label="Verified"
           />
         </p>
-        <h3 className="font-apple-tight text-[14px] font-bold text-white tracking-[-0.02em] line-clamp-2 leading-[1.15] mt-1">
+        <h3 className="font-teko text-[18px] font-bold text-white tracking-[0.02em] uppercase line-clamp-2 leading-[1] mt-1">
           {m.title}
         </h3>
         {showProgress && (

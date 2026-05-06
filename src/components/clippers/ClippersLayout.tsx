@@ -87,8 +87,13 @@ export default function ClippersLayout({ children, title, hideBottomNav = false 
             <span className="text-[15px] font-normal">{backLabel}</span>
           </button>
 
-          <h1 className="text-[15px] font-semibold tracking-[-0.02em] text-white truncate">
-            {title || 'Missions'}
+          <h1 className="font-teko text-[20px] font-bold tracking-[0.08em] uppercase text-white truncate flex items-center gap-2">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="" className="w-6 h-6 rounded-full object-cover ring-1 ring-white/20" />
+            ) : !isGuest ? (
+              <span className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold bg-[#D4A857] text-black ring-1 ring-white/20">{initial}</span>
+            ) : null}
+            <span>{title || 'Missions'}</span>
           </h1>
 
           {/* Menu */}
