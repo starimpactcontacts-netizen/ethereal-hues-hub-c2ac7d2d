@@ -65,6 +65,23 @@ export default function BattleDetailPage() {
     }
   }, [battleId, user?.id, battle?.status]);
 
+  // Poll the finalizer so judge-window → public-vote → completed transitions happen
+  // without breaking React hook order while the battle is still loading.
+  useEffect(() => {
+    if (!battleId || battle?.status !== 'judging') return;
+    const tick = async () => {
+      try {
+        await supabase.rpc('finalize_battle_if_expired' as any, { p_battle_id: battleId } as any);
+        await refetch();
+      } catch (e) {
+        console.debug('finalize_battle_if_expired:', e);
+      }
+    };
+    tick();
+    const id = window.setInterval(tick, 5000);
+    return () => window.clearInterval(id);
+  }, [battleId, battle?.status, refetch]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -135,23 +152,6 @@ export default function BattleDetailPage() {
   const inPublicVote = isJudging && !!publicVoteStartedAt;
   const judgeMsLeft = judgingDeadline ? new Date(judgingDeadline).getTime() - Date.now() : 0;
   const publicVoteMsLeft = publicVoteDeadline ? new Date(publicVoteDeadline).getTime() - Date.now() : 0;
-
-  // Poll the finalizer so judge-window → public-vote → completed transitions happen
-  // even if no one is online except the spectator viewing this page.
-  useEffect(() => {
-    if (!battleId || !isJudging) return;
-    const tick = async () => {
-      try {
-        await supabase.rpc('finalize_battle_if_expired' as any, { p_battle_id: battleId } as any);
-        await refetch();
-      } catch (e) {
-        console.debug('finalize_battle_if_expired:', e);
-      }
-    };
-    tick();
-    const id = window.setInterval(tick, 5000);
-    return () => window.clearInterval(id);
-  }, [battleId, isJudging, refetch]);
 
   const statusColor = isLive ? 'text-red-400' : isJudging ? 'text-purple-400' : isCompleted ? 'text-amber-400' : 'text-zinc-400';
   const statusLabel = isLive ? 'LIVE BATTLE' : battle.status === 'pending' && !battle.opponent_id ? 'OPEN CHALLENGE' : battle.status === 'pending' && battle.opponent_id ? 'AWAITING ACCEPTANCE' : isJudging ? 'UNDER REVIEW' : isCompleted ? 'DECIDED' : '';

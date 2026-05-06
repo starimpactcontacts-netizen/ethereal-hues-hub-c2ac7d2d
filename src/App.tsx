@@ -5,7 +5,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "sonner";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { useUserRoles } from "./hooks/useUserRoles";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 
 // Eagerly loaded (critical path)
 import LandingPage from "./pages/LandingPage";
@@ -60,7 +60,7 @@ const SanctionedTournamentPage = lazy(() => import("./pages/loopgate/SanctionedT
 const BattleDetailPage = lazy(() => import("./pages/loopgate/BattleDetailPage"));
 const CashBattleReadyPage = lazy(() => import("./pages/loopgate/CashBattleReadyPage"));
 const CashBattlePage = lazy(() => import("./pages/loopgate/CashBattlePage"));
-const EditBattlesHubPage = lazy(() => import("./pages/loopgate/EditBattlesListPage"));
+const EditBattlesHubPage = lazy(() => import("./pages/loopgate/EditBattlesHubPage"));
 const QuickFightPage = lazy(() => import("./pages/loopgate/QuickFightPage"));
 const JudgeQueuePage = lazy(() => import("./pages/loopgate/JudgeQueuePage"));
 const GatekeeperRankPage = lazy(() => import("./pages/loopgate/GatekeeperRankPage"));
@@ -280,6 +280,17 @@ function EnterpriseOnboardingWrapper() {
 }
 
 export default function App() {
+  useEffect(() => {
+    const splash = document.getElementById('splash');
+    if (!splash) return;
+    splash.style.opacity = '0';
+    splash.style.pointerEvents = 'none';
+    const id = window.setTimeout(() => {
+      splash.style.display = 'none';
+    }, 250);
+    return () => window.clearTimeout(id);
+  }, []);
+
   return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
