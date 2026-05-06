@@ -56,34 +56,21 @@ export default function ClippersCommunityPage() {
   // Load rankings — aggregate paid + earned per user, optionally filtered by mission
   useEffect(() => {
     const load = async () => {
-      let q = supabase
-        .from('mission_submissions')
-        .select('user_id, username, avatar_url, total_earned_cents, mission_id, status')
-        .eq('status', 'approved');
-      if (missionFilter !== 'all') q = q.eq('mission_id', missionFilter);
-      const { data } = await q.order('total_earned_cents', { ascending: false }).limit(1000);
-      const map = new Map<string, LeaderRow>();
-      (data || []).forEach((r: any) => {
-        if (!r.user_id) return;
-        const ex = map.get(r.user_id);
-        if (ex) {
-          ex.total_cents += r.total_earned_cents || 0;
-          ex.posts += 1;
-        } else {
-          map.set(r.user_id, {
-            user_id: r.user_id,
-            username: r.username || 'editor',
-            avatar_url: r.avatar_url,
-            total_cents: r.total_earned_cents || 0,
-            posts: 1,
-          });
-        }
+      const { data, error } = await supabase.rpc('get_mission_leaderboard', {
+        _mission_id: missionFilter === 'all' ? null : missionFilter,
       });
-      const sorted = Array.from(map.values())
-        .filter(r => r.total_cents > 0)
-        .sort((a, b) => b.total_cents - a.total_cents)
-        .slice(0, 100);
-      setLeaders(sorted);
+      if (error) {
+        console.error('leaderboard error', error);
+        setLeaders([]);
+        return;
+      }
+      setLeaders(((data || []) as any[]).map((r) => ({
+        user_id: r.user_id,
+        username: r.username || 'editor',
+        avatar_url: r.avatar_url,
+        total_cents: Number(r.total_cents) || 0,
+        posts: Number(r.posts) || 0,
+      })));
     };
     load();
   }, [missionFilter]);
