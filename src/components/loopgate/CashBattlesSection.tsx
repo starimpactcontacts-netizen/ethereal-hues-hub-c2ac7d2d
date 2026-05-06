@@ -775,7 +775,9 @@ export default function CashBattlesSection({
         {[...myQuickFights, ...quickFights]
           .filter((fight, index, all) =>
             fight.status !== 'cancelled' &&
-            all.findIndex((item) => item.id === fight.id) === index
+            all.findIndex((item) => item.id === fight.id) === index &&
+            // Hide private waiting lobbies from public rail (host still sees via myQuickFights)
+            !(fight.is_private && fight.status === 'waiting' && fight.player_1_id !== user?.id)
           )
           .sort((a, b) => {
             const owned = (x: QuickFight) => user?.id && (x.player_1_id === user.id || x.player_2_id === user.id) ? 0 : 1;
