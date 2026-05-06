@@ -1348,6 +1348,13 @@ export default function ArenaPage() {
         onSuccess={(battleId) => { setShowCreateBattle(false); navigate(`/battle/${battleId}`); }}
       />
 
+      <MatchmakingLobby
+        open={isQfSearching && !qfActiveFight}
+        elapsedSec={qfElapsed}
+        currentUserId={user?.id}
+        onCancel={handleCancelQueue}
+      />
+
     </div>
   );
 }
