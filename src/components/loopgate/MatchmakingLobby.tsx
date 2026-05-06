@@ -3,6 +3,9 @@ import { Loader2, X, Copy, Swords, Users } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useOpenQuickFightQueue } from "@/hooks/useQuickFight";
 import { toast } from "sonner";
+import { useEffect } from "react";
+import { createPortal } from "react-dom";
+import { setLobbyMusicActive } from "./LobbyMusicPlayer";
 
 interface MatchmakingLobbyProps {
   open: boolean;
@@ -20,6 +23,13 @@ function fmt(sec: number) {
 export default function MatchmakingLobby({ open, elapsedSec, currentUserId, onCancel }: MatchmakingLobbyProps) {
   const { entries } = useOpenQuickFightQueue();
   const others = entries.filter((e) => e.user_id !== currentUserId);
+
+  // Toggle lobby music while this full-screen lobby is open
+  useEffect(() => {
+    if (!open) return;
+    setLobbyMusicActive(true);
+    return () => setLobbyMusicActive(false);
+  }, [open]);
 
   const handleInvite = async () => {
     const url = `${window.location.origin}/arena?invite=1v1`;
@@ -40,7 +50,9 @@ export default function MatchmakingLobby({ open, elapsedSec, currentUserId, onCa
     }
   };
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
@@ -48,7 +60,7 @@ export default function MatchmakingLobby({ open, elapsedSec, currentUserId, onCa
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-[9998] flex flex-col"
+          className="fixed inset-0 z-[2147483646] flex flex-col"
           style={{
             background: "radial-gradient(circle at 50% 35%, rgba(59,130,246,0.18), rgba(0,0,0,0.96) 60%), #000000",
             paddingTop: "env(safe-area-inset-top)",
@@ -164,6 +176,7 @@ export default function MatchmakingLobby({ open, elapsedSec, currentUserId, onCa
           </div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
