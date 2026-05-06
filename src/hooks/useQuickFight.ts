@@ -13,8 +13,10 @@ export interface QuickFight {
   status: 'waiting' | 'active' | 'submitted' | 'judging' | 'completed' | 'forfeited' | 'cancelled';
   player_1_submission_url: string | null;
   player_1_submitted_at: string | null;
+  player_1_votes?: number;
   player_2_submission_url: string | null;
   player_2_submitted_at: string | null;
+  player_2_votes?: number;
   judge_id: string | null;
   judge_username: string | null;
   winner_id: string | null;
@@ -27,6 +29,8 @@ export interface QuickFight {
   starts_at: string | null;
   ends_at: string | null;
   view_count: number;
+  theme_song_name?: string | null;
+  theme_song_preview_url?: string | null;
   created_at: string;
 }
 
