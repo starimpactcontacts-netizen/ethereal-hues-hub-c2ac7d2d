@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search, Sparkles, ChevronRight, DollarSign, TrendingUp, BadgeCheck } from 'lucide-react';
+import { Search, Sparkles, DollarSign, BadgeCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useTempProfile } from '@/hooks/useTempProfile';
 import AccountPromptModal from '@/components/loopgate/AccountPromptModal';
-import PlatformBadges from '@/components/loopgate/missions/PlatformBadges';
 import NotificationsInlineCard from '@/components/loopgate/NotificationsInlineCard';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 
@@ -40,26 +38,11 @@ interface UserStats {
 
 export default function ClippersCampaignsPage() {
   const { user } = useAuth();
-  const navigate = useNavigate();
-  const { profile: tempProfile } = useTempProfile();
   const [missions, setMissions] = useState<Mission[]>([]);
   const [stats, setStats] = useState<UserStats>({ earned: 0, paid: 0, clips: 0 });
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [authOpen, setAuthOpen] = useState(false);
-  const [dbProfile, setDbProfile] = useState<{ username: string | null; avatar_url: string | null } | null>(null);
-
-  useEffect(() => {
-    if (!user) { setDbProfile(null); return; }
-    let cancelled = false;
-    supabase
-      .from('profiles')
-      .select('username, avatar_url')
-      .eq('id', user.id)
-      .maybeSingle()
-      .then(({ data }) => { if (!cancelled && data) setDbProfile(data as any); });
-    return () => { cancelled = true; };
-  }, [user]);
 
   useEffect(() => {
     const load = async () => {
@@ -94,51 +77,11 @@ export default function ClippersCampaignsPage() {
   );
   const balance = Math.max(0, stats.earned - stats.paid);
 
-  const isGuest = !user;
-  const displayName =
-    dbProfile?.username ||
-    (user?.user_metadata?.username as string | undefined) ||
-    user?.email?.split('@')[0] ||
-    tempProfile?.username ||
-    'Guest';
-  const avatarUrl = dbProfile?.avatar_url || (user?.user_metadata?.avatar_url as string | undefined) || tempProfile?.avatarUrl;
-  const initial = displayName.charAt(0).toUpperCase();
-  const hour = new Date().getHours();
-  const greeting = hour < 5 ? 'Up late' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-
   return (
     <>
-      {/* Personalized greeting */}
+      {/* Header */}
       <section className="max-w-6xl mx-auto px-4 pt-4 pb-3">
-        <button
-          type="button"
-          onClick={() => { if (isGuest) setAuthOpen(true); else navigate('/missions/settings'); }}
-          className="flex items-center gap-3 w-full text-left active:opacity-60 transition-opacity"
-        >
-          <div
-            className="w-11 h-11 rounded-full flex items-center justify-center overflow-hidden shrink-0"
-            style={{
-              background: isGuest ? 'rgba(255,255,255,0.06)' : 'linear-gradient(135deg,#3a3a3c,#1c1c1e)',
-              border: isGuest ? '1px dashed rgba(255,255,255,0.22)' : '0.5px solid rgba(255,255,255,0.1)',
-            }}
-          >
-            {avatarUrl ? (
-              <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-[16px] font-semibold text-white/85">{initial}</span>
-            )}
-          </div>
-          <div className="min-w-0">
-            <p className="text-[12px] text-[#8E8E93] font-medium leading-none">
-              {isGuest ? 'Tap to sign in' : `${greeting} · tap for settings`}
-            </p>
-            <p className="text-[18px] font-semibold text-white tracking-[-0.02em] mt-1 leading-none truncate">
-              {isGuest ? 'Not signed in' : `@${displayName}`}
-            </p>
-          </div>
-        </button>
-
-        <h1 className="font-apple-tight text-[32px] font-bold text-white leading-[1.05] mt-5">Missions</h1>
+        <h1 className="font-apple-tight text-[32px] font-bold text-white leading-[1.05]">Missions</h1>
         <p className="text-[13px] text-[#8E8E93] mt-1">Get paid per post and per view.</p>
 
         {/* iOS search */}
@@ -196,10 +139,10 @@ export default function ClippersCampaignsPage() {
       )}
 
       <div className="max-w-6xl mx-auto px-4 space-y-4 pb-8">
-        <h2 className="text-[22px] font-bold text-white tracking-[-0.022em] px-0.5">Live missions</h2>
+        <h2 className="font-teko text-[26px] font-bold text-white tracking-[0.02em] uppercase px-0.5 leading-none">Live Missions</h2>
         {loading ? (
-          <div className="space-y-2">
-            {[1, 2, 3].map((i) => <div key={i} className="h-24 rounded-[16px] bg-[#1c1c1e] animate-pulse" />)}
+          <div className="grid grid-cols-2 gap-3">
+            {[1, 2, 3, 4].map((i) => <div key={i} className="aspect-square rounded-[18px] bg-[#1c1c1e] animate-pulse" />)}
           </div>
         ) : filtered.length === 0 ? (
           <div className="rounded-[20px] p-10 text-center" style={{ background: '#1c1c1e' }}>
@@ -208,9 +151,9 @@ export default function ClippersCampaignsPage() {
             <p className="text-[13px] text-[#8E8E93] mt-1">New paid drops every week</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
             {filtered.map((m) => (
-              <MissionCard key={m.id} m={m} formatMoney={formatMoney} />
+              <MissionTile key={m.id} m={m} formatMoney={formatMoney} />
             ))}
           </div>
         )}
@@ -234,7 +177,7 @@ function MiniStat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function MissionCard({ m, formatMoney }: { m: Mission; formatMoney: (n: number) => string }) {
+function MissionTile({ m, formatMoney }: { m: Mission; formatMoney: (n: number) => string }) {
   const isPostsCap = m.cap_type === 'posts';
   const budget = m.budget_cents || 0;
   const spent = m.spent_cents || 0;
@@ -244,120 +187,83 @@ function MissionCard({ m, formatMoney }: { m: Mission; formatMoney: (n: number) 
     ? (maxPosts > 0 ? Math.min(100, (approved / maxPosts) * 100) : 0)
     : (budget > 0 ? Math.min(100, (spent / budget) * 100) : 0);
   const showProgress = isPostsCap ? maxPosts > 0 : budget > 0;
-  const milestones = (m.view_milestones || []).slice(0, 3);
   const isPaused = m.status === 'paused';
+  const payoutLabel = m.payout_display_override
+    ? m.payout_display_override
+    : `$${(m.base_payout_cents / 100).toFixed(2)}`;
 
   return (
     <Link
       to={`/missions/submit?id=${m.id}`}
-      className="block rounded-[22px] overflow-hidden active:scale-[0.985] transition-all duration-200 relative group"
+      className="block aspect-square rounded-[18px] overflow-hidden active:scale-[0.97] transition-all duration-150 relative group"
       style={{
-        background: 'linear-gradient(180deg, #1f1f21 0%, #161618 100%)',
-        boxShadow: '0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px -12px rgba(0,0,0,0.6)',
+        background: '#161618',
+        boxShadow: '0 1px 0 rgba(255,255,255,0.05) inset, 0 6px 16px -8px rgba(0,0,0,0.7)',
         border: '0.5px solid rgba(255,255,255,0.06)',
       }}
     >
-      <div className="flex p-2.5 gap-3">
-        {/* Cover — squared, inset, with gloss */}
-        <div
-          className="w-[104px] h-[104px] flex-shrink-0 rounded-[14px] overflow-hidden relative bg-[#2c2c2e]"
-          style={{ boxShadow: '0 0 0 0.5px rgba(255,255,255,0.08) inset' }}
-        >
-          {m.cover_image_url ? (
-            <img src={m.cover_image_url} alt={m.title} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#2c2c2e] to-[#1c1c1e]">
-              <DollarSign className="w-7 h-7 text-[#48484A]" />
-            </div>
-          )}
-          {/* subtle top gloss */}
-          <div
-            aria-hidden
-            className="absolute inset-x-0 top-0 h-1/3 pointer-events-none"
-            style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 100%)' }}
+      {/* Cover fills entire tile */}
+      {m.cover_image_url ? (
+        <img src={m.cover_image_url} alt={m.title} className="absolute inset-0 w-full h-full object-cover" />
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#2c2c2e] to-[#1c1c1e]">
+          <DollarSign className="w-10 h-10 text-[#48484A]" />
+        </div>
+      )}
+
+      {/* Bottom gradient overlay */}
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.2) 45%, rgba(0,0,0,0.92) 100%)' }}
+      />
+
+      {/* Top-left payout pill */}
+      <div
+        className="absolute top-2 left-2 px-2 py-1 rounded-full flex items-center gap-0.5 text-[11px] font-bold leading-none tabular-nums"
+        style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', color: '#30D158' }}
+      >
+        <DollarSign className="w-[11px] h-[11px]" strokeWidth={3} />
+        {payoutLabel.replace(/^\$/, '')}
+      </div>
+
+      {isPaused && (
+        <div className="absolute top-2 right-2 px-2 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider"
+          style={{ background: 'rgba(0,0,0,0.65)', color: '#FFD60A' }}>
+          Paused
+        </div>
+      )}
+
+      {/* Bottom content */}
+      <div className="absolute inset-x-0 bottom-0 p-2.5">
+        <p className="text-[10px] text-white/70 font-medium truncate flex items-center gap-1 leading-none">
+          <span className="truncate">{m.sponsor_name || 'Loopgate Official'}</span>
+          <BadgeCheck
+            className="w-[10px] h-[10px] flex-shrink-0 fill-[hsl(214,89%,52%)] text-black"
+            strokeWidth={2.5}
+            aria-label="Verified"
           />
-          {isPaused && (
-            <div className="absolute inset-0 bg-black/65 backdrop-blur-[2px] flex items-center justify-center">
-              <span className="text-[10px] font-bold uppercase tracking-wide text-amber-400">Paused</span>
+        </p>
+        <h3 className="font-apple-tight text-[14px] font-bold text-white tracking-[-0.02em] line-clamp-2 leading-[1.15] mt-1">
+          {m.title}
+        </h3>
+        {showProgress && (
+          <div className="mt-1.5">
+            <div className="h-[2.5px] rounded-full bg-white/[0.18] overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{
+                  width: `${pct}%`,
+                  background: '#30D158',
+                  boxShadow: '0 0 6px rgba(48,209,88,0.5)',
+                }}
+              />
             </div>
-          )}
-        </div>
-
-        {/* Body */}
-        <div className="flex-1 min-w-0 py-0.5 pr-1 flex flex-col">
-          <div className="flex items-start justify-between gap-1.5">
-            <div className="min-w-0 flex-1">
-              <p className="text-[11px] text-[#8E8E93] font-medium truncate leading-none flex items-center gap-1">
-                <span className="truncate">{m.sponsor_name || 'Loopgate Official'}</span>
-                <BadgeCheck
-                  className="w-[12px] h-[12px] flex-shrink-0 fill-[hsl(214,89%,52%)] text-black"
-                  strokeWidth={2.5}
-                  aria-label="Verified"
-                />
-              </p>
-              <h3 className="font-apple-tight text-[17px] font-bold text-white tracking-[-0.022em] line-clamp-2 leading-[1.15] mt-1">
-                {m.title}
-              </h3>
-              <div className="mt-1.5">
-                <PlatformBadges platforms={m.eligible_platforms} />
-              </div>
-            </div>
-            <ChevronRight
-              className="w-[16px] h-[16px] text-[#48484A] flex-shrink-0 mt-0.5 group-active:translate-x-0.5 transition-transform"
-              strokeWidth={2.75}
-            />
+            <p className="text-[9.5px] text-white/60 mt-1 tabular-nums font-medium leading-none">
+              {isPostsCap ? `${approved}/${maxPosts} posts` : `${Math.round(pct)}% pool`}
+            </p>
           </div>
-
-          {/* Payout strip */}
-          <div className="flex items-center gap-2 mt-auto pt-2 flex-wrap">
-            {m.payout_display_override ? (
-              <span
-                className="inline-flex items-center gap-0.5 text-[12.5px] font-bold leading-none"
-                style={{ color: '#30D158' }}
-              >
-                <DollarSign className="w-[12px] h-[12px]" strokeWidth={3} />
-                {m.payout_display_override.replace(/^\$/, '')}
-                <span className="text-[#8E8E93] font-medium ml-0.5">base</span>
-              </span>
-            ) : (
-              <span
-                className="inline-flex items-center gap-0.5 text-[12.5px] font-bold tabular-nums leading-none"
-                style={{ color: '#30D158' }}
-              >
-                <DollarSign className="w-[12px] h-[12px]" strokeWidth={3} />
-                {(m.base_payout_cents / 100).toFixed(2)}
-                <span className="text-[#8E8E93] font-medium ml-0.5">base</span>
-              </span>
-            )}
-            {milestones.length > 0 && (
-              <span className="inline-flex items-center gap-1 text-[11px] text-[#8E8E93] leading-none">
-                <TrendingUp className="w-3 h-3" strokeWidth={2.5} />
-                up to +{formatMoney(milestones.reduce((s, x) => s + x.bonus_cents, 0))}
-              </span>
-            )}
-          </div>
-
-          {/* Progress bar — posts or budget */}
-          {showProgress && (
-            <div className="mt-2">
-              <div className="h-[3px] rounded-full bg-white/[0.07] overflow-hidden">
-                <div
-                  className="h-full rounded-full transition-all"
-                  style={{
-                    width: `${pct}%`,
-                    background: 'linear-gradient(90deg, #30D158 0%, #34d869 100%)',
-                    boxShadow: '0 0 8px rgba(48,209,88,0.4)',
-                  }}
-                />
-              </div>
-              <p className="text-[10.5px] text-[#8E8E93] mt-1 tabular-nums font-medium">
-                {isPostsCap
-                  ? `${approved} / ${maxPosts} posts filled`
-                  : `${formatMoney(spent)} / ${formatMoney(budget)} pool`}
-              </p>
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </Link>
   );
