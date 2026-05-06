@@ -56,6 +56,40 @@ export async function findQuickFight(userId: string, username: string, avatarUrl
   return data as string | null; // null = in queue, string = fight ID
 }
 
+// Create a shareable custom lobby page instead of dropping into anonymous queue
+export async function createQuickFightLobby(userId: string, username: string, avatarUrl: string | null): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('quick_fights')
+    .insert({
+      player_1_id: userId,
+      player_1_username: username,
+      player_1_avatar_url: avatarUrl,
+      status: 'waiting',
+      duration_minutes: 60,
+    })
+    .select('id')
+    .single();
+  if (error) {
+    console.error('Custom lobby creation error:', error);
+    return null;
+  }
+  return data.id;
+}
+
+export async function joinWaitingQuickFight(fightId: string, userId: string, username: string, avatarUrl: string | null): Promise<boolean> {
+  const { error } = await supabase.rpc('join_waiting_quick_fight' as any, {
+    p_fight_id: fightId,
+    p_user_id: userId,
+    p_username: username,
+    p_avatar_url: avatarUrl,
+  } as any);
+  if (error) {
+    console.error('Custom lobby join error:', error);
+    return false;
+  }
+  return true;
+}
+
 // Submit edit
 export async function submitQuickFight(fightId: string, userId: string, url: string): Promise<boolean> {
   const { data, error } = await supabase.rpc('quick_fight_submit', {
