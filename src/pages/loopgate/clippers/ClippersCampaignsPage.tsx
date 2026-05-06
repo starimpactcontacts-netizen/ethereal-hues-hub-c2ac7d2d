@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Sparkles, DollarSign, BadgeCheck } from 'lucide-react';
+import { Search, Sparkles, DollarSign } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import AccountPromptModal from '@/components/loopgate/AccountPromptModal';
 import NotificationsInlineCard from '@/components/loopgate/NotificationsInlineCard';
+import PlatformBadges from '@/components/loopgate/missions/PlatformBadges';
 
 interface Milestone { views: number; bonus_cents: number; }
 
@@ -111,10 +112,6 @@ export default function ClippersCampaignsPage() {
               <span className="font-teko text-[14px] text-white tracking-[0.05em] uppercase">
                 <span className="text-[#30D158] font-bold">{stats.clips}</span> <span className="text-[#8E8E93]">Posts</span>
               </span>
-              <span className="text-white/20">·</span>
-              <span className="font-teko text-[14px] text-white tracking-[0.05em] uppercase">
-                <span className="text-[#D4A857] font-bold">{filtered.length}</span> <span className="text-[#8E8E93]">Live</span>
-              </span>
             </div>
           </div>
         </div>
@@ -140,13 +137,9 @@ export default function ClippersCampaignsPage() {
       )}
 
       <div className="max-w-6xl mx-auto px-4 space-y-4 pb-8">
-        <div className="flex items-center justify-between px-0.5">
-          <h2 className="font-teko text-[30px] font-bold text-white tracking-[0.04em] uppercase leading-none flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#30D158] animate-pulse shadow-[0_0_8px_rgba(48,209,88,0.8)]" />
-            Live Missions
-          </h2>
-          <span className="font-teko text-[18px] text-[#8E8E93] tracking-[0.1em]">{filtered.length}</span>
-        </div>
+        <h2 className="font-teko text-[30px] font-bold text-white tracking-[0.04em] uppercase leading-none px-0.5">
+          Live Missions
+        </h2>
         {loading ? (
           <div className="grid grid-cols-2 gap-3">
             {[1, 2, 3, 4].map((i) => <div key={i} className="aspect-square rounded-[18px] bg-[#1c1c1e] animate-pulse" />)}
@@ -238,17 +231,15 @@ function MissionTile({ m, formatMoney }: { m: Mission; formatMoney: (n: number) 
 
       {/* Bottom content */}
       <div className="absolute inset-x-0 bottom-0 p-2.5">
-        <p className="text-[10px] text-white/70 font-medium truncate flex items-center gap-1 leading-none uppercase tracking-wider">
-          <span className="truncate">{m.sponsor_name || 'Loopgate Official'}</span>
-          <BadgeCheck
-            className="w-[10px] h-[10px] flex-shrink-0 fill-[hsl(214,89%,52%)] text-black"
-            strokeWidth={2.5}
-            aria-label="Verified"
-          />
+        <p className="text-[10px] text-white/70 font-medium truncate leading-none uppercase tracking-wider">
+          {m.sponsor_name || 'Loopgate Official'}
         </p>
         <h3 className="font-teko text-[18px] font-bold text-white tracking-[0.02em] uppercase line-clamp-2 leading-[1] mt-1">
           {m.title}
         </h3>
+        <div className="mt-1.5">
+          <PlatformBadges platforms={m.eligible_platforms} size="sm" />
+        </div>
         {showProgress && (
           <div className="mt-1.5">
             <div className="h-[2.5px] rounded-full bg-white/[0.18] overflow-hidden">
