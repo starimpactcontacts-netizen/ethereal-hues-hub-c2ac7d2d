@@ -537,6 +537,7 @@ export default function ArenaPage() {
   const [userStats, setUserStats] = useState<{ wins: number; losses: number; streak: number; events: number } | null>(null);
   const [qfSearching, setQfSearching] = useState(false);
   const [qfElapsed, setQfElapsed] = useState(0);
+  const [lobbyOpen, setLobbyOpen] = useState(false);
 
   const { tournaments: sanctionedTournaments, loading: sanctionedLoading } = useSanctionedTournaments(["approved", "ready_up", "live", "bracket", "completed"]);
   const { battles, loading: battlesLoading } = useBattles(["pending", "active", "judging", "completed"]);
@@ -726,6 +727,7 @@ export default function ArenaPage() {
     if (!user) return;
     await leaveQueue(user.id);
     setQfSearching(false);
+    setLobbyOpen(false);
     toast('Search cancelled', { duration: 2000 });
   };
 
