@@ -83,28 +83,33 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
   };
 
   const handleCreate = async () => {
-    if (!profile) return;
+    if (!profile) {
+      toast.error("You must be signed in to post a battle");
+      return;
+    }
     if (challengeType === 'direct' && !selectedOpponent) {
       toast.error("Select an opponent for direct challenge");
       return;
     }
 
     setLoading(true);
-    // Private lobby = open battle but flagged unlisted
-    const effectiveType: 'open' | 'direct' = challengeType === 'private' ? 'open' : challengeType;
-    const result = await createBattle(
-      profile.id,
-      profile.username,
-      profile.avatar_url,
-      profile.league || 'open',
-      duration,
-      effectiveType,
-      selectedOpponent?.id,
-      selectedOpponent?.username,
-      selectedOpponent?.avatar_url
-    );
+    let result: { success: boolean; battleId?: string; error?: string } = { success: false };
+    try {
+      // Private lobby = open battle but flagged unlisted
+      const effectiveType: 'open' | 'direct' = challengeType === 'private' ? 'open' : challengeType;
+      result = await createBattle(
+        profile.id,
+        profile.username,
+        profile.avatar_url,
+        profile.league || 'open',
+        duration,
+        effectiveType,
+        selectedOpponent?.id,
+        selectedOpponent?.username,
+        selectedOpponent?.avatar_url
+      );
 
-    if (result.success && result.battleId) {
+      if (result.success && result.battleId) {
       // Rapid is implicit when duration <= 1 hour
       const updateData: any = {
         is_rapid: duration <= 1,
@@ -123,12 +128,14 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
         updateData.judge_status = 'none';
       }
 
-      await supabase
+      const { error: updateErr } = await supabase
         .from('battles')
         .update(updateData)
         .eq('id', result.battleId);
+      if (updateErr) console.error('battle update failed (non-fatal):', updateErr);
 
-      // Judge notifications
+      // Judge notifications — wrap so failures don't kill the flow
+      try {
       if (selectedJudge) {
         await supabase.from('notifications').insert({
           user_id: selectedJudge.id,
@@ -159,20 +166,29 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
           }
         }
       }
+      } catch (notifyErr) {
+        console.error('judge notify failed (non-fatal):', notifyErr);
+      }
 
       // Notify opponent for direct challenges
       if (challengeType === 'direct' && selectedOpponent) {
-        await supabase.from('notifications').insert({
+        try {
+          await supabase.from('notifications').insert({
           user_id: selectedOpponent.id,
           type: 'battle_challenge',
           title: '⚔️ You\'ve Been Challenged!',
           message: `@${profile.username} is calling you out for a 1v1 battle!`,
           data: { battle_id: result.battleId, challenger_username: profile.username },
         });
+        } catch (e) { console.error('opponent notify failed (non-fatal):', e); }
       }
+      }
+    } catch (e: any) {
+      console.error('handleCreate fatal:', e);
+      toast.error(e?.message || 'Failed to create battle');
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
 
     if (result.success && result.battleId) {
       if (challengeType === 'private') {
@@ -188,7 +204,7 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
       }
       onSuccess(result.battleId);
     } else {
-      toast.error(result.error || "Failed to create battle");
+      if (result.error) toast.error(result.error);
     }
   };
 
