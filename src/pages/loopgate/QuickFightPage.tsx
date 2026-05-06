@@ -136,6 +136,14 @@ export default function QuickFightPage() {
     );
   }
 
+  const isWaitingLobby = !!fight && fight.status === 'waiting' && !fight.player_2_id;
+
+  useEffect(() => {
+    if (!isWaitingLobby) return;
+    setLobbyMusicActive(true);
+    return () => setLobbyMusicActive(false);
+  }, [isWaitingLobby]);
+
   if (!fight) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
@@ -149,17 +157,10 @@ export default function QuickFightPage() {
   const isP1 = user?.id === fight.player_1_id;
   const isP2 = user?.id === fight.player_2_id;
   const isParticipant = isP1 || isP2;
-  const isWaitingLobby = fight.status === 'waiting' && !fight.player_2_id;
   const canSubmit = fight.status === 'active' && isParticipant && (
     (isP1 && !fight.player_1_submitted_at) || (isP2 && !fight.player_2_submitted_at)
   );
   const canJudge = fight.status === 'judging' && (isJudge || isAnyJudge || isAdmin || isDev) && !fight.judge_id;
-
-  useEffect(() => {
-    if (!isWaitingLobby) return;
-    setLobbyMusicActive(true);
-    return () => setLobbyMusicActive(false);
-  }, [isWaitingLobby]);
 
   const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/fight/${fight.id}` : '';
 
