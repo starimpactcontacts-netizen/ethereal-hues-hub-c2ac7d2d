@@ -18,6 +18,13 @@ interface LeaderRow {
   username: string;
   avatar_url: string | null;
   total_cents: number;
+  posts: number;
+}
+
+interface MissionOption {
+  id: string;
+  title: string;
+  status: string;
 }
 
 const formatMoney = (cents: number) =>
@@ -27,32 +34,48 @@ export default function ClippersCommunityPage() {
   const { user } = useAuth();
   const [tab, setTab] = useState<'rankings' | 'chat'>('rankings');
   const [leaders, setLeaders] = useState<LeaderRow[]>([]);
+  const [missionsList, setMissionsList] = useState<MissionOption[]>([]);
+  const [missionFilter, setMissionFilter] = useState<string>('all'); // 'all' | mission_id
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [text, setText] = useState('');
   const [authOpen, setAuthOpen] = useState(false);
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Load rankings — aggregate paid + earned per user
+  // Load mission list for the filter
+  useEffect(() => {
+    supabase
+      .from('missions')
+      .select('id, title, status')
+      .in('status', ['live', 'paused', 'closed', 'completed'])
+      .order('created_at', { ascending: false })
+      .limit(40)
+      .then(({ data }) => setMissionsList((data || []) as MissionOption[]));
+  }, []);
+
+  // Load rankings — aggregate paid + earned per user, optionally filtered by mission
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase
+      let q = supabase
         .from('mission_submissions')
-        .select('user_id, username, avatar_url, total_earned_cents')
-        .order('total_earned_cents', { ascending: false })
-        .limit(500);
+        .select('user_id, username, avatar_url, total_earned_cents, mission_id, status')
+        .eq('status', 'approved');
+      if (missionFilter !== 'all') q = q.eq('mission_id', missionFilter);
+      const { data } = await q.order('total_earned_cents', { ascending: false }).limit(1000);
       const map = new Map<string, LeaderRow>();
       (data || []).forEach((r: any) => {
         if (!r.user_id) return;
         const ex = map.get(r.user_id);
         if (ex) {
           ex.total_cents += r.total_earned_cents || 0;
+          ex.posts += 1;
         } else {
           map.set(r.user_id, {
             user_id: r.user_id,
             username: r.username || 'editor',
             avatar_url: r.avatar_url,
             total_cents: r.total_earned_cents || 0,
+            posts: 1,
           });
         }
       });
@@ -63,7 +86,7 @@ export default function ClippersCommunityPage() {
       setLeaders(sorted);
     };
     load();
-  }, []);
+  }, [missionFilter]);
 
   // Load chat + realtime
   useEffect(() => {
@@ -147,6 +170,25 @@ export default function ClippersCommunityPage() {
 
       {tab === 'rankings' ? (
         <section className="max-w-6xl mx-auto px-4 mt-4 pb-10">
+          {/* Mission filter chips */}
+          <div className="-mx-4 px-4 overflow-x-auto mb-3 scrollbar-hide">
+            <div className="flex items-center gap-2 min-w-min pb-1">
+              <FilterChip
+                label="All missions"
+                active={missionFilter === 'all'}
+                onClick={() => setMissionFilter('all')}
+              />
+              {missionsList.map((m) => (
+                <FilterChip
+                  key={m.id}
+                  label={m.title}
+                  active={missionFilter === m.id}
+                  onClick={() => setMissionFilter(m.id)}
+                />
+              ))}
+            </div>
+          </div>
+
           {leaders.length === 0 ? (
             <div className="rounded-[20px] p-10 text-center" style={{ background: '#1c1c1e' }}>
               <Trophy className="w-7 h-7 text-[#8E8E93] mx-auto mb-3" />
@@ -184,7 +226,9 @@ export default function ClippersCommunityPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[15px] font-semibold text-white truncate tracking-[-0.01em]">@{r.username}</p>
-                      <p className="text-[11px] text-[#8E8E93]">Mission earnings</p>
+                      <p className="text-[11px] text-[#8E8E93] tabular-nums">
+                        {r.posts} {r.posts === 1 ? 'post' : 'posts'} approved
+                      </p>
                     </div>
                     <p className="text-[15px] font-bold tabular-nums text-[#30D158] tracking-[-0.01em]">
                       {formatMoney(r.total_cents)}
@@ -267,5 +311,21 @@ export default function ClippersCommunityPage() {
         reason="Create your account to join the mission community chat."
       />
     </>
+  );
+}
+
+function FilterChip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`shrink-0 h-8 px-3 rounded-full text-[12px] font-semibold tracking-[-0.01em] transition-all whitespace-nowrap max-w-[180px] truncate ${
+        active ? 'text-black' : 'text-white/80'
+      }`}
+      style={{
+        background: active ? '#30D158' : 'rgba(118,118,128,0.24)',
+      }}
+    >
+      {label}
+    </button>
   );
 }
