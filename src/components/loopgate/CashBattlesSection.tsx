@@ -360,6 +360,7 @@ interface EditBattlesSectionProps {
 function QuickFightCarouselCard({ fight, isMine }: { fight: QuickFight; isMine: boolean }) {
   const navigate = useNavigate();
   const isLive = fight.status === 'active' || fight.status === 'submitted' || fight.status === 'judging';
+  const isWaiting = fight.status === 'waiting' && !fight.player_2_id;
   const [votes, setVotes] = useState<{ blue: number; red: number }>({ blue: 0, red: 0 });
 
   useEffect(() => {
@@ -405,9 +406,14 @@ function QuickFightCarouselCard({ fight, isMine }: { fight: QuickFight; isMine: 
             </div>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
-            {isLive && <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
-            <span className="text-[10px] font-black uppercase tracking-[0.15em] text-blue-400" style={{ fontFamily: "Teko, sans-serif" }}>
-              {isMine ? "YOUR BATTLE" : fight.status}
+            {(isLive || isWaiting) && (
+              <span className={`w-2 h-2 rounded-full animate-pulse ${isWaiting ? 'bg-emerald-400' : 'bg-red-500'}`} />
+            )}
+            <span
+              className={`text-[10px] font-black uppercase tracking-[0.15em] ${isWaiting ? 'text-emerald-400' : 'text-blue-400'}`}
+              style={{ fontFamily: "Teko, sans-serif" }}
+            >
+              {isWaiting ? (isMine ? "YOUR LOBBY" : "OPEN LOBBY") : (isMine ? "YOUR BATTLE" : fight.status)}
             </span>
           </div>
         </div>
