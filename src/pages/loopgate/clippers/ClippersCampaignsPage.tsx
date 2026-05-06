@@ -81,8 +81,8 @@ export default function ClippersCampaignsPage() {
     <>
       {/* Header */}
       <section className="max-w-6xl mx-auto px-4 pt-4 pb-3">
-        <h1 className="font-apple-tight text-[32px] font-bold text-white leading-[1.05]">Missions</h1>
-        <p className="text-[13px] text-[#8E8E93] mt-1">Get paid per post and per view.</p>
+        <h1 className="font-teko text-[44px] font-bold text-white leading-[0.95] uppercase tracking-[0.02em]">Missions</h1>
+        <p className="text-[13px] text-[#8E8E93] mt-1 uppercase tracking-[0.1em] font-medium">Get paid · per post · per view</p>
 
         {/* iOS search */}
         <div className="relative mt-4">
@@ -139,7 +139,13 @@ export default function ClippersCampaignsPage() {
       )}
 
       <div className="max-w-6xl mx-auto px-4 space-y-4 pb-8">
-        <h2 className="font-teko text-[26px] font-bold text-white tracking-[0.02em] uppercase px-0.5 leading-none">Live Missions</h2>
+        <div className="flex items-center justify-between px-0.5">
+          <h2 className="font-teko text-[30px] font-bold text-white tracking-[0.04em] uppercase leading-none flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#30D158] animate-pulse shadow-[0_0_8px_rgba(48,209,88,0.8)]" />
+            Live Missions
+          </h2>
+          <span className="font-teko text-[18px] text-[#8E8E93] tracking-[0.1em]">{filtered.length}</span>
+        </div>
         {loading ? (
           <div className="grid grid-cols-2 gap-3">
             {[1, 2, 3, 4].map((i) => <div key={i} className="aspect-square rounded-[18px] bg-[#1c1c1e] animate-pulse" />)}
@@ -151,7 +157,7 @@ export default function ClippersCampaignsPage() {
             <p className="text-[13px] text-[#8E8E93] mt-1">New paid drops every week</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5">
             {filtered.map((m) => (
               <MissionTile key={m.id} m={m} formatMoney={formatMoney} />
             ))}
