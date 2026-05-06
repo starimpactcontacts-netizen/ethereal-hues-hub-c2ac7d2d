@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Share2, Search, Play, Video, Music, ThumbsUp, Upload, Sparkles, EyeOff } from 'lucide-react';
+import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Share2, Search, Play, Video, Music, ThumbsUp, Upload, Sparkles, EyeOff, Copy, UserPlus, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,7 +16,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useAuth } from '@/hooks/useAuth';
-import { useQuickFight, submitQuickFight } from '@/hooks/useQuickFight';
+import { useQuickFight, submitQuickFight, joinWaitingQuickFight } from '@/hooks/useQuickFight';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -32,6 +32,7 @@ import BattleIntroOverlay from '@/components/loopgate/BattleIntroOverlay';
 import BattleDecidedOverlay from '@/components/loopgate/BattleDecidedOverlay';
 import ScenepackVoteModal from '@/components/loopgate/ScenepackVoteModal';
 import ScenepackDownloadCard from '@/components/loopgate/ScenepackDownloadCard';
+import { setLobbyMusicActive } from '@/components/loopgate/LobbyMusicPlayer';
 
 /** Detect platform from URL */
 function detectPlatform(url: string): string {
@@ -148,10 +149,46 @@ export default function QuickFightPage() {
   const isP1 = user?.id === fight.player_1_id;
   const isP2 = user?.id === fight.player_2_id;
   const isParticipant = isP1 || isP2;
+  const isWaitingLobby = fight.status === 'waiting' && !fight.player_2_id;
   const canSubmit = fight.status === 'active' && isParticipant && (
     (isP1 && !fight.player_1_submitted_at) || (isP2 && !fight.player_2_submitted_at)
   );
   const canJudge = fight.status === 'judging' && (isJudge || isAnyJudge || isAdmin || isDev) && !fight.judge_id;
+
+  useEffect(() => {
+    if (!isWaitingLobby) return;
+    setLobbyMusicActive(true);
+    return () => setLobbyMusicActive(false);
+  }, [isWaitingLobby]);
+
+  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/fight/${fight.id}` : '';
+
+  const handleCopyLobby = async () => {
+    try {
+      await navigator.clipboard.writeText(`⚔️ Join my custom Loopgate edit battle: ${shareUrl}`);
+      toast.success('Lobby link copied');
+    } catch {
+      toast.error("Couldn't copy link");
+    }
+  };
+
+  const handleShareLobby = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'Custom Edit Battle', text: `Join @${fight.player_1_username}'s edit battle`, url: shareUrl });
+      } else {
+        await handleCopyLobby();
+      }
+    } catch {}
+  };
+
+  const handleJoinLobby = async () => {
+    if (!user || !profile) { navigate('/start'); return; }
+    if (isP1) return;
+    const ok = await joinWaitingQuickFight(fight.id, user.id, profile.username, profile.avatar_url || null);
+    if (ok) toast.success('⚔️ Battle started');
+    else toast.error("Couldn't join lobby");
+  };
 
   const handleSubmit = async () => {
     if (!submissionUrl.trim() || !user) return;
