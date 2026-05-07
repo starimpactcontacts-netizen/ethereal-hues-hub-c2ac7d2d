@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Lock, Loader2, Eye, EyeOff, X, User, Zap } from 'lucide-react';
+import { ArrowLeft, Lock, Loader2, Eye, EyeOff, X, User, Zap, KeyRound } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,6 +13,7 @@ import {
   rememberAccount,
   forgetAccount,
   decodePassword,
+  decodeRefreshToken,
   type RememberedAccount,
 } from '@/lib/rememberedAccounts';
 
@@ -166,6 +167,36 @@ export default function LoginPage() {
 
   // One-tap login when we have the saved password
   const handleAccountTap = async (acc: RememberedAccount) => {
+    // Guest accounts have no password — restore the session from the
+    // saved refresh token instead, so the user gets back into the same
+    // anonymous user_id (XP, history, profile all intact).
+    if (acc.isGuest) {
+      const rt = decodeRefreshToken(acc.rt);
+      if (!rt) {
+        toast.error('This guest session expired — pick a new nickname');
+        return;
+      }
+      setLoading(true);
+      const { data, error } = await supabase.auth.refreshSession({ refresh_token: rt });
+      if (error || !data.session) {
+        setLoading(false);
+        toast.error('Could not restore guest — please set a password next time');
+        return;
+      }
+      // Update the stored refresh token (it rotates on each refresh)
+      rememberAccount({
+        username: acc.username,
+        email: acc.email,
+        avatarUrl: acc.avatarUrl,
+        refreshToken: data.session.refresh_token,
+        isGuest: true,
+      });
+      toast.success(`Welcome back, @${acc.username}`, {
+        description: 'Tip: set a password in Settings to lock in your account',
+      });
+      navigate(returnTo);
+      return;
+    }
     const savedPw = decodePassword(acc.pw);
     if (savedPw) {
       await doLogin(acc.email, savedPw, acc.username);
@@ -343,7 +374,9 @@ export default function LoginPage() {
                                 @{acc.username}
                               </p>
                               <p className="text-white/40 text-[11px] truncate flex items-center gap-1">
-                                {acc.pw ? (
+                                {acc.isGuest ? (
+                                  <><KeyRound className="h-2.5 w-2.5 text-[#FF9F0A]" /> Set password</>
+                                ) : acc.pw ? (
                                   <><Zap className="h-2.5 w-2.5 text-[#D4A857]" /> One‑tap login</>
                                 ) : (
                                   'Tap to continue'

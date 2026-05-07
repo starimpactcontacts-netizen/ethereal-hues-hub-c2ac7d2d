@@ -445,7 +445,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: new Error('Nickname taken — try another'), usernameTaken: true };
     }
 
-    const { error } = await supabase.auth.signInAnonymously({
+    const { data, error } = await supabase.auth.signInAnonymously({
       options: {
         data: {
           username: trimmed,
@@ -453,6 +453,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
       },
     });
+    // Persist guest as a one-tap entry (no password — uses refresh token).
+    if (!error && data?.session?.refresh_token && data.user) {
+      try {
+        const { rememberAccount } = await import('@/lib/rememberedAccounts');
+        rememberAccount({
+          username: trimmed,
+          email: data.user.email || `${trimmed.toLowerCase()}.guest@loopgate.local`,
+          refreshToken: data.session.refresh_token,
+          isGuest: true,
+        });
+      } catch { /* ignore */ }
+    }
     return { error };
   };
 
@@ -472,6 +484,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Flip the is_guest flag on the profile
     await supabase.rpc('mark_account_converted');
     await refreshProfile();
+    // Update the remembered-accounts entry so the chip stops showing
+    // the "Set password" reminder and gets one-tap-with-password.
+    try {
+      const { rememberAccount } = await import('@/lib/rememberedAccounts');
+      const u = (profile?.username) || (user?.user_metadata as any)?.username;
+      const e = trimmedEmail || user?.email;
+      if (u && e) {
+        rememberAccount({ username: u, email: e, password, isGuest: false });
+      }
+    } catch { /* ignore */ }
     return { error: null };
   };
 
