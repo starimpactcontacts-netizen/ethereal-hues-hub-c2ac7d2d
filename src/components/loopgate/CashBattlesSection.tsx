@@ -13,28 +13,12 @@ import { useAccountPrompt } from "@/hooks/useAccountPrompt";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { ArenaRail, ArenaRailCard, ArenaRailSkeleton } from "@/components/loopgate/ArenaCarouselSystem";
+import RingsCoin from "@/components/loopgate/RingsCoin";
 
 function formatPrize(cents: number): string {
   return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
 }
 
-// Sonic-style golden ring icon with "R" engraved
-function RingIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-      <defs>
-        <radialGradient id="ringG" cx="50%" cy="40%" r="60%">
-          <stop offset="0%" stopColor="#fde68a" />
-          <stop offset="60%" stopColor="#f59e0b" />
-          <stop offset="100%" stopColor="#b45309" />
-        </radialGradient>
-      </defs>
-      <circle cx="12" cy="12" r="9" fill="none" stroke="url(#ringG)" strokeWidth="4" />
-      <circle cx="9" cy="9" r="1.2" fill="#fff" opacity="0.85" />
-      <text x="12" y="15.5" textAnchor="middle" fontSize="7" fontWeight="900" fill="#7c2d12" fontFamily="Inter, system-ui, sans-serif">R</text>
-    </svg>
-  );
-}
 
 function formatTimeLeft(endDate: string | null): string {
   if (!endDate) return "TBD";
@@ -492,7 +476,7 @@ function QuickFightCarouselCard({ fight, isMine }: { fight: QuickFight; isMine: 
           <span className={`flex items-center gap-1 ${isWaiting ? 'text-emerald-400' : 'text-gold'}`}>
             {isWaiting ? 'Tap to enter lobby' : (
               <>
-                <RingIcon className="w-3 h-3" />
+                <RingsCoin size={12} />
                 +50 Rings
               </>
             )}
