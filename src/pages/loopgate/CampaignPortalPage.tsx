@@ -461,25 +461,10 @@ export default function CampaignPortalPage() {
                     <Music size={18} className="text-neutral-500" />
                   </div>
                 )}
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 flex items-center">
                   <div className="flex items-center gap-2">
                     <h2 className="text-xl font-black text-neutral-50 truncate">{artist.name}</h2>
                     {artist.verified && <CheckCircle size={14} className="text-neutral-50 flex-shrink-0" />}
-                  </div>
-                  {artist.genre && <span className="text-[10px] uppercase tracking-widest text-neutral-500 font-black">{artist.genre}</span>}
-                  {artist.bio && <p className="text-xs text-neutral-400 mt-1.5 line-clamp-2">{artist.bio}</p>}
-                  <div className="flex items-center gap-4 mt-3">
-                    {artist.monthly_streams && artist.monthly_streams > 0 && (
-                      <div>
-                        <p className="text-sm font-black text-neutral-50">{formatNumber(artist.monthly_streams)}</p>
-                        <p className="text-[7px] uppercase tracking-widest text-neutral-500 font-bold">Monthly Streams</p>
-                      </div>
-                    )}
-                    <a href={`/artist/${artist.slug}`} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-[10px] text-neutral-500 hover:text-neutral-200 transition-colors font-bold"
-                    >
-                      <Globe size={10} /> Artist Profile
-                    </a>
                   </div>
                 </div>
               </div>
@@ -512,6 +497,21 @@ export default function CampaignPortalPage() {
             {campaign.client_name && !isBrandCampaign && <span>• {campaign.client_name}</span>}
           </div>
         </motion.div>
+
+        {/* Empty state — surfaced early so client sees pipeline status immediately */}
+        {edits.length === 0 && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+            className="rounded-xl p-10 text-center border border-neutral-800 bg-neutral-950"
+          >
+            <div className="w-12 h-12 rounded-xl mx-auto mb-4 flex items-center justify-center bg-neutral-800">
+              <BarChart3 size={20} className="text-neutral-500" />
+            </div>
+            <p className="text-lg font-black text-neutral-50 mb-1">Content Pipeline Initializing</p>
+            <p className="text-xs text-neutral-500 max-w-sm mx-auto">
+              Your campaign content is being produced and distributed. Performance metrics will populate in real-time as content goes live.
+            </p>
+          </motion.div>
+        )}
 
         {/* ★ BIG Views Generated Counter */}
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.18 }}
@@ -784,21 +784,6 @@ export default function CampaignPortalPage() {
                 <span className="text-neutral-400"><strong className="text-neutral-50 font-black">{formatNumber(totalLikes + totalShares + totalComments)}</strong> engagement</span>
               </div>
             </div>
-          </motion.div>
-        )}
-
-        {/* Empty state */}
-        {edits.length === 0 && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
-            className="rounded-xl p-10 text-center border border-neutral-800 bg-neutral-950"
-          >
-            <div className="w-12 h-12 rounded-xl mx-auto mb-4 flex items-center justify-center bg-neutral-800">
-              <BarChart3 size={20} className="text-neutral-500" />
-            </div>
-            <p className="text-lg font-black text-neutral-50 mb-1">Content Pipeline Initializing</p>
-            <p className="text-xs text-neutral-500 max-w-sm mx-auto">
-              Your campaign content is being produced and distributed. Performance metrics will populate in real-time as content goes live.
-            </p>
           </motion.div>
         )}
 
