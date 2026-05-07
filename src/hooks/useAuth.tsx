@@ -484,6 +484,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Flip the is_guest flag on the profile
     await supabase.rpc('mark_account_converted');
     await refreshProfile();
+    // Update the remembered-accounts entry so the chip stops showing
+    // the "Set password" reminder and gets one-tap-with-password.
+    try {
+      const { rememberAccount } = await import('@/lib/rememberedAccounts');
+      const u = (profile?.username) || (user?.user_metadata as any)?.username;
+      const e = trimmedEmail || user?.email;
+      if (u && e) {
+        rememberAccount({ username: u, email: e, password, isGuest: false });
+      }
+    } catch { /* ignore */ }
     return { error: null };
   };
 
