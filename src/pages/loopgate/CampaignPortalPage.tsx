@@ -878,47 +878,6 @@ export default function CampaignPortalPage() {
           </motion.div>
         )}
 
-        {/* ★ Content Grid (posts as grid tiles) */}
-        {edits.length > 0 && (
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-xl font-black text-neutral-50">Content Performance</h3>
-                <p className="text-[10px] text-neutral-500 font-bold mt-0.5">
-                  {edits.length} published pieces{totalEditViews > 0 ? ` • ${formatNumber(totalEditViews)} combined reach` : ''}
-                </p>
-              </div>
-              <button onClick={() => exportCSV(campaign, edits)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[9px] uppercase tracking-wider font-black rounded-md border border-neutral-800 text-neutral-400 hover:bg-neutral-900 transition-all"
-              >
-                <Download size={11} /> CSV
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {edits.map((edit, i) => (
-                <ContentTile
-                  key={edit.id}
-                  edit={edit}
-                  index={i}
-                  pColor={getPlatformColor(edit.platform)}
-                  getPlatformIcon={getPlatformIcon}
-                  formatNumber={formatNumber}
-                />
-              ))}
-            </div>
-
-            {/* Aggregate footer */}
-            <div className="mt-4 rounded-xl border border-neutral-800 bg-neutral-900 px-5 py-4 flex items-center justify-between">
-              <span className="text-[9px] font-black uppercase tracking-wider text-neutral-500">Aggregate Performance</span>
-              <div className="flex items-center gap-5 text-[10px]">
-                <span className="text-neutral-400"><strong className="text-neutral-50 font-black">{formatNumber(totalEditViews)}</strong> reach</span>
-                <span className="text-neutral-400"><strong className="text-neutral-50 font-black">{formatNumber(totalLikes + totalShares + totalComments)}</strong> engagement</span>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
         {/* Footer */}
         <div className="text-center pt-6 pb-10">
           <img src={viralCartelCrest} alt="" className="w-5 h-5 mx-auto opacity-15 mb-2" />
