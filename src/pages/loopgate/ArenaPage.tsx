@@ -771,12 +771,6 @@ export default function ArenaPage() {
                   <span className="text-[11px] font-bold text-red-400 tabular-nums">{userStats.losses}L</span>
                 </div>
               )}
-              {totalLive > 0 && (
-                <div className="flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                  <span className="text-[10px] font-bold text-red-400 tabular-nums">{totalLive}</span>
-                </div>
-              )}
               <button onClick={() => setShowSearch(s => !s)} className="p-1 hover:bg-surface-1 transition-colors">
                 <Search className="w-3.5 h-3.5 text-muted-foreground" />
               </button>
