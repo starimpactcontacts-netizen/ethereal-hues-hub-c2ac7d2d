@@ -20,6 +20,15 @@ async function uploadLogoFile(file: File): Promise<string> {
   return urlData.publicUrl;
 }
 
+async function uploadThumbnailFile(file: File): Promise<string> {
+  const ext = file.name.split('.').pop() || 'png';
+  const fileName = `clip-thumbs/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage.from('campaign-logos').upload(fileName, file, { upsert: true });
+  if (error) throw new Error('Upload failed: ' + error.message);
+  const { data: urlData } = supabase.storage.from('campaign-logos').getPublicUrl(fileName);
+  return urlData.publicUrl;
+}
+
 function formatNumber(n: number): string {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
   if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
