@@ -706,6 +706,40 @@ export default function CampaignPortalPage() {
           </motion.div>
         )}
 
+        {/* ★ Content Grid (posts as grid tiles) — surfaced above metrics for client visibility */}
+        {edits.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-xl font-black text-neutral-50">Content Performance</h3>
+                <p className="text-[10px] text-neutral-500 font-bold mt-0.5">
+                  {edits.length} published pieces{totalEditViews > 0 ? ` • ${formatNumber(totalEditViews)} combined reach` : ''}
+                </p>
+              </div>
+              <button onClick={() => exportCSV(campaign, edits)}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[9px] uppercase tracking-wider font-black rounded-md border border-neutral-800 text-neutral-400 hover:bg-neutral-900 transition-all"
+              >
+                <Download size={11} /> CSV
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {edits.map((edit, i) => (
+                <ContentTile
+                  key={edit.id}
+                  edit={edit}
+                  index={i}
+                  pColor={getPlatformColor(edit.platform)}
+                  getPlatformIcon={getPlatformIcon}
+                  formatNumber={formatNumber}
+                  campaignId={campaign.id}
+                  clientName={campaign.client_name}
+                />
+              ))}
+            </div>
+          </motion.div>
+        )}
+
         {/* KPI Grid */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
           className="grid grid-cols-2 sm:grid-cols-4 gap-3"
