@@ -30,6 +30,36 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Reclaim flow for username-only anonymous accounts
+  const [showReclaim, setShowReclaim] = useState(false);
+  const [reclaimUser, setReclaimUser] = useState('');
+  const [reclaimPw, setReclaimPw] = useState('');
+  const [reclaimLoading, setReclaimLoading] = useState(false);
+
+  const handleReclaim = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const u = reclaimUser.trim().replace(/^@/, '');
+    if (u.length < 3) { toast.error('Enter your old handle'); return; }
+    if (reclaimPw.length < 6) { toast.error('Password must be at least 6 characters'); return; }
+    setReclaimLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('reclaim-guest-account', {
+        body: { username: u, password: reclaimPw },
+      });
+      if (error || data?.error) {
+        toast.error(data?.error || error?.message || 'Could not reclaim account');
+        setReclaimLoading(false);
+        return;
+      }
+      toast.success(`Reclaimed @${data.username} — logging you in`);
+      await doLogin(data.email, reclaimPw, data.username);
+    } catch (err) {
+      toast.error('Could not reclaim account');
+    } finally {
+      setReclaimLoading(false);
+    }
+  };
+
   useEffect(() => {
     const initial = getRememberedAccounts();
     // Sanitize immediately so UI never shows an email as the handle
