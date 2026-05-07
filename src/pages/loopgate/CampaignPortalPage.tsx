@@ -13,7 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 
 // ── Auto-pulling thumbnail tile ──────────────────────────────────
-function ContentTile({ edit, index, pColor, getPlatformIcon, formatNumber }: any) {
+function ContentTile({ edit, index, pColor, getPlatformIcon, formatNumber, campaignId, clientName }: any) {
   const thumbResult = useUnifiedThumbnail(
     edit.video_url || '',
     edit.platform || '',
@@ -21,18 +21,48 @@ function ContentTile({ edit, index, pColor, getPlatformIcon, formatNumber }: any
     edit.thumbnail_url,
   );
   const thumb = thumbResult.url && thumbResult.status !== 'error' ? thumbResult.url : null;
+  const [reaction, setReaction] = useState<'up' | 'down' | null>(null);
+  const [showNoteFor, setShowNoteFor] = useState(false);
+  const [note, setNote] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const hasMetrics = (edit.view_count || 0) > 0 || (edit.like_count || 0) > 0 || (edit.comment_count || 0) > 0;
+
+  const submitReaction = async (r: 'up' | 'down', noteText?: string) => {
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.from('campaign_edit_feedback').insert({
+        edit_id: edit.id,
+        campaign_id: campaignId,
+        reaction: r,
+        note: noteText || null,
+        client_name: clientName || null,
+      });
+      if (error) throw error;
+      setReaction(r);
+      toast.success(r === 'up' ? 'Liked — your team will see this' : 'Feedback sent to the editing team');
+      setShowNoteFor(false);
+      setNote('');
+    } catch (err: any) {
+      toast.error('Could not save feedback');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
-    <motion.a
-      href={edit.video_url || '#'}
-      target={edit.video_url ? '_blank' : undefined}
-      rel="noopener noreferrer"
+    <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: 0.55 + index * 0.03 }}
-      className="group rounded-xl overflow-hidden border border-neutral-800 bg-neutral-950 hover:shadow-lg hover:border-neutral-700 transition-all cursor-pointer"
+      className="group rounded-xl overflow-hidden border border-neutral-800 bg-neutral-950 hover:shadow-lg hover:border-neutral-700 transition-all relative"
     >
-      <div className="aspect-[4/3] bg-neutral-900 relative overflow-hidden">
+      <a
+        href={edit.video_url || '#'}
+        target={edit.video_url ? '_blank' : undefined}
+        rel="noopener noreferrer"
+        className="block aspect-[4/3] bg-neutral-900 relative overflow-hidden cursor-pointer"
+      >
         {thumb ? (
           <img
             src={thumb}
@@ -59,20 +89,87 @@ function ContentTile({ edit, index, pColor, getPlatformIcon, formatNumber }: any
             <ExternalLink size={10} className="text-neutral-300" />
           </div>
         )}
-      </div>
+      </a>
       <div className="p-3">
         {edit.editor_username && (
           <p className="text-[10px] text-neutral-500 font-bold truncate">@{edit.editor_username}</p>
         )}
-        <div className="flex items-center gap-3 mt-1">
-          <span className="text-xs font-black text-neutral-50">{formatNumber(edit.view_count)} <span className="text-neutral-500 font-bold text-[9px]">views</span></span>
-          <span className="text-xs font-black text-neutral-50">{formatNumber(edit.like_count)} <span className="text-neutral-500 font-bold text-[9px]">likes</span></span>
-          {edit.comment_count > 0 && (
-            <span className="text-xs font-black text-neutral-50">{formatNumber(edit.comment_count)} <span className="text-neutral-500 font-bold text-[9px]">comments</span></span>
+        <div className="flex items-center justify-between gap-2 mt-1.5">
+          {hasMetrics ? (
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-black text-neutral-50">{formatNumber(edit.view_count)} <span className="text-neutral-500 font-bold text-[9px]">views</span></span>
+              <span className="text-xs font-black text-neutral-50">{formatNumber(edit.like_count)} <span className="text-neutral-500 font-bold text-[9px]">likes</span></span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+              <span className="text-[9px] font-black uppercase tracking-[0.15em] text-amber-400">Processing</span>
+            </div>
           )}
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              disabled={submitting || reaction !== null}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); submitReaction('up'); }}
+              className={`w-7 h-7 rounded-md flex items-center justify-center border transition-all ${
+                reaction === 'up'
+                  ? 'border-emerald-500/60 bg-emerald-500/15 text-emerald-400'
+                  : 'border-neutral-800 text-neutral-500 hover:text-emerald-400 hover:border-emerald-500/40'
+              } disabled:opacity-50`}
+              aria-label="Like edit"
+            >
+              <ThumbsUp size={12} />
+            </button>
+            <button
+              type="button"
+              disabled={submitting || reaction !== null}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowNoteFor(true); }}
+              className={`w-7 h-7 rounded-md flex items-center justify-center border transition-all ${
+                reaction === 'down'
+                  ? 'border-red-500/60 bg-red-500/15 text-red-400'
+                  : 'border-neutral-800 text-neutral-500 hover:text-red-400 hover:border-red-500/40'
+              } disabled:opacity-50`}
+              aria-label="Dislike edit"
+            >
+              <ThumbsDown size={12} />
+            </button>
+          </div>
         </div>
       </div>
-    </motion.a>
+
+      {/* Dislike note modal */}
+      {showNoteFor && (
+        <div className="absolute inset-0 z-20 bg-neutral-950/95 backdrop-blur-sm flex flex-col p-3">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[10px] font-black uppercase tracking-[0.15em] text-red-400">Tell the team why</p>
+            <button
+              type="button"
+              onClick={() => { setShowNoteFor(false); setNote(''); }}
+              className="w-6 h-6 rounded-md flex items-center justify-center text-neutral-500 hover:text-neutral-200"
+            >
+              <X size={12} />
+            </button>
+          </div>
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="What's off? Pacing, music, color, hook..."
+            className="flex-1 w-full rounded-md bg-neutral-900 border border-neutral-800 p-2 text-[11px] text-neutral-100 placeholder:text-neutral-600 resize-none focus:outline-none focus:border-red-500/40"
+            autoFocus
+          />
+          <div className="flex gap-2 mt-2">
+            <button
+              type="button"
+              onClick={() => submitReaction('down', note.trim() || undefined)}
+              disabled={submitting}
+              className="flex-1 h-8 rounded-md bg-red-500 text-white text-[10px] font-black uppercase tracking-wider hover:bg-red-600 transition-colors disabled:opacity-50"
+            >
+              Send to team
+            </button>
+          </div>
+        </div>
+      )}
+    </motion.div>
   );
 }
 
