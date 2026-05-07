@@ -4,6 +4,11 @@ export interface RememberedAccount {
   avatarUrl?: string | null;
   /** Base64-encoded password for one-tap re-login. Optional. */
   pw?: string;
+  /** Base64-encoded supabase refresh token, used for one-tap re-login on
+   *  guest (anonymous) accounts that have no password. */
+  rt?: string;
+  /** True for anonymous/guest accounts that haven't set a password yet. */
+  isGuest?: boolean;
   lastUsedAt: number;
 }
 
@@ -22,6 +27,11 @@ export function decodePassword(pw?: string): string {
   return dec(pw);
 }
 
+export function decodeRefreshToken(rt?: string): string {
+  if (!rt) return '';
+  return dec(rt);
+}
+
 export function getRememberedAccounts(): RememberedAccount[] {
   try {
     const raw = localStorage.getItem(KEY);
@@ -37,7 +47,14 @@ export function getRememberedAccounts(): RememberedAccount[] {
   }
 }
 
-export function rememberAccount(acc: { username: string; email: string; avatarUrl?: string | null; password?: string }) {
+export function rememberAccount(acc: {
+  username: string;
+  email: string;
+  avatarUrl?: string | null;
+  password?: string;
+  refreshToken?: string;
+  isGuest?: boolean;
+}) {
   try {
     const prior = getRememberedAccounts();
     const same = prior.find(a => a.email.toLowerCase() === acc.email.toLowerCase());
@@ -45,12 +62,16 @@ export function rememberAccount(acc: { username: string; email: string; avatarUr
       (a) => a.email.toLowerCase() !== acc.email.toLowerCase(),
     );
     const pw = acc.password ? enc(acc.password) : same?.pw;
+    const rt = acc.refreshToken ? enc(acc.refreshToken) : same?.rt;
+    const isGuest = acc.isGuest ?? same?.isGuest ?? false;
     const next: RememberedAccount[] = [
       {
         username: acc.username,
         email: acc.email,
         avatarUrl: acc.avatarUrl ?? same?.avatarUrl,
         pw,
+        rt,
+        isGuest,
         lastUsedAt: Date.now(),
       },
       ...existing,
