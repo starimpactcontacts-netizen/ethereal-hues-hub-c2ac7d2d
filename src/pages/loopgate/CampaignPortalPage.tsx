@@ -498,6 +498,21 @@ export default function CampaignPortalPage() {
           </div>
         </motion.div>
 
+        {/* Empty state — surfaced early so client sees pipeline status immediately */}
+        {edits.length === 0 && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+            className="rounded-xl p-10 text-center border border-neutral-800 bg-neutral-950"
+          >
+            <div className="w-12 h-12 rounded-xl mx-auto mb-4 flex items-center justify-center bg-neutral-800">
+              <BarChart3 size={20} className="text-neutral-500" />
+            </div>
+            <p className="text-lg font-black text-neutral-50 mb-1">Content Pipeline Initializing</p>
+            <p className="text-xs text-neutral-500 max-w-sm mx-auto">
+              Your campaign content is being produced and distributed. Performance metrics will populate in real-time as content goes live.
+            </p>
+          </motion.div>
+        )}
+
         {/* ★ BIG Views Generated Counter */}
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.18 }}
           className="relative overflow-hidden rounded-2xl border border-neutral-800/80 bg-gradient-to-b from-neutral-900 to-neutral-950 p-6 sm:p-8"
@@ -769,21 +784,6 @@ export default function CampaignPortalPage() {
                 <span className="text-neutral-400"><strong className="text-neutral-50 font-black">{formatNumber(totalLikes + totalShares + totalComments)}</strong> engagement</span>
               </div>
             </div>
-          </motion.div>
-        )}
-
-        {/* Empty state */}
-        {edits.length === 0 && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
-            className="rounded-xl p-10 text-center border border-neutral-800 bg-neutral-950"
-          >
-            <div className="w-12 h-12 rounded-xl mx-auto mb-4 flex items-center justify-center bg-neutral-800">
-              <BarChart3 size={20} className="text-neutral-500" />
-            </div>
-            <p className="text-lg font-black text-neutral-50 mb-1">Content Pipeline Initializing</p>
-            <p className="text-xs text-neutral-500 max-w-sm mx-auto">
-              Your campaign content is being produced and distributed. Performance metrics will populate in real-time as content goes live.
-            </p>
           </motion.div>
         )}
 
