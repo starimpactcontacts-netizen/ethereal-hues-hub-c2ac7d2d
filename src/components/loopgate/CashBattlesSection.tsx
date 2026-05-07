@@ -13,7 +13,6 @@ import { useAccountPrompt } from "@/hooks/useAccountPrompt";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { ArenaRail, ArenaRailCard, ArenaRailSkeleton } from "@/components/loopgate/ArenaCarouselSystem";
-import RingsCoin from "@/components/loopgate/RingsCoin";
 
 function formatPrize(cents: number): string {
   return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
@@ -472,17 +471,12 @@ function QuickFightCarouselCard({ fight, isMine }: { fight: QuickFight; isMine: 
           blueLabel={fight.player_1_username}
           redLabel={fight.player_2_username || undefined}
         />
-        <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-[0.12em]">
-          <span className={`flex items-center gap-1 ${isWaiting ? 'text-emerald-400' : 'text-gold'}`}>
-            {isWaiting ? 'Tap to enter lobby' : (
-              <>
-                <RingsCoin size={12} />
-                +50 Rings
-              </>
-            )}
-          </span>
-          {isMine && <span className="text-muted-foreground">Yours</span>}
-        </div>
+        {(isWaiting || isMine) && (
+          <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-[0.12em]">
+            {isWaiting && <span className="text-emerald-400">Tap to enter lobby</span>}
+            {isMine && <span className="text-muted-foreground ml-auto">Yours</span>}
+          </div>
+        )}
       </div>
     </motion.div>
   );
