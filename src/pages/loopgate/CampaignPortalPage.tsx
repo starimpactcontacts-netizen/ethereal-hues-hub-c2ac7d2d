@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Eye, TrendingUp, Zap, MousePointerClick, BarChart3, ExternalLink, Play, Music, Globe, CheckCircle, Download, Link2, RefreshCw, Share2 } from 'lucide-react';
+import { Eye, TrendingUp, Zap, MousePointerClick, BarChart3, ExternalLink, Play, Music, Globe, CheckCircle, Download, Link2, RefreshCw, Share2, ThumbsUp, ThumbsDown, X } from 'lucide-react';
 import { ComposedChart, Area, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { SiTiktok, SiYoutube, SiInstagram } from '@icons-pack/react-simple-icons';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,6 +10,7 @@ import loopgateLogo from '@/assets/loopgate-logo.png';
 import { useUnifiedThumbnail } from '@/lib/thumbnail';
 import CampaignSupportChat from '@/components/loopgate/CampaignSupportChat';
 import { Switch } from '@/components/ui/switch';
+import { toast } from 'sonner';
 
 // ── Auto-pulling thumbnail tile ──────────────────────────────────
 function ContentTile({ edit, index, pColor, getPlatformIcon, formatNumber }: any) {
