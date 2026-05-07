@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { DollarSign, Swords, Clock, Info, X, Loader2, Building2, ChevronRight, Plus, Circle } from "lucide-react";
+import { DollarSign, Swords, Clock, Info, X, Loader2, Building2, ChevronRight, Plus } from "lucide-react";
 import CashBattleVoteBar from "@/components/loopgate/CashBattleVoteBar";
 import BattleVoteBarCompact from "@/components/loopgate/BattleVoteBarCompact";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -474,7 +474,7 @@ function QuickFightCarouselCard({ fight, isMine }: { fight: QuickFight; isMine: 
           <span className={`flex items-center gap-1 ${isWaiting ? 'text-emerald-400' : 'text-gold'}`}>
             {isWaiting ? 'Tap to enter lobby' : (
               <>
-                <Circle className="w-2.5 h-2.5" strokeWidth={2.5} />
+                <RingIcon className="w-3 h-3" />
                 +50 Rings
               </>
             )}
