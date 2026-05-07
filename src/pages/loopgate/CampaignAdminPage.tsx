@@ -1035,7 +1035,43 @@ export default function CampaignAdminPage() {
                                       </div>
                                     )}
                                     <Input placeholder="Title (auto-generated, editable)" value={newEdit.title} onChange={e => setNewEdit(p => ({ ...p, title: e.target.value }))} className="bg-background/60 h-8 text-xs border-border/30" />
-                                    <Input placeholder="Thumbnail URL (optional)" value={newEdit.thumbnail_url} onChange={e => setNewEdit(p => ({ ...p, thumbnail_url: e.target.value }))} className="bg-background/60 h-8 text-xs border-border/30" />
+                                    <div className="flex items-center gap-2">
+                                      <div className="relative w-12 h-12 rounded-md border border-border/30 bg-background/60 overflow-hidden flex-shrink-0">
+                                        {newEdit.thumbnail_url ? (
+                                          <img src={newEdit.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                                        ) : (
+                                          <div className="w-full h-full flex items-center justify-center text-muted-foreground/40">
+                                            <Upload className="w-4 h-4" />
+                                          </div>
+                                        )}
+                                      </div>
+                                      <div className="flex-1 space-y-1">
+                                        <Input placeholder="Thumbnail URL (optional)" value={newEdit.thumbnail_url} onChange={e => setNewEdit(p => ({ ...p, thumbnail_url: e.target.value }))} className="bg-background/60 h-8 text-xs border-border/30" />
+                                        <label className="flex items-center gap-1.5 cursor-pointer text-[9px] uppercase tracking-wider font-bold text-muted-foreground hover:text-foreground transition-colors">
+                                          <Upload className="w-3 h-3" />
+                                          <span>Upload from photos / files</span>
+                                          <input
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={async (e) => {
+                                              const file = e.target.files?.[0];
+                                              if (!file) return;
+                                              try {
+                                                toast.loading('Uploading thumbnail…', { id: 'thumb-upload' });
+                                                const url = await uploadThumbnailFile(file);
+                                                setNewEdit(p => ({ ...p, thumbnail_url: url }));
+                                                toast.success('Thumbnail uploaded', { id: 'thumb-upload' });
+                                              } catch (err: any) {
+                                                toast.error(err.message || 'Upload failed', { id: 'thumb-upload' });
+                                              } finally {
+                                                e.target.value = '';
+                                              }
+                                            }}
+                                          />
+                                        </label>
+                                      </div>
+                                    </div>
                                     <div className="grid grid-cols-3 gap-2">
                                       <select value={newEdit.platform} onChange={e => setNewEdit(p => ({ ...p, platform: e.target.value }))} className="bg-background/60 border border-border/30 rounded-md text-xs h-8 px-2 text-foreground">
                                         <option value="tiktok">TikTok</option>
