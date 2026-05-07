@@ -374,7 +374,9 @@ export default function LoginPage() {
                                 @{acc.username}
                               </p>
                               <p className="text-white/40 text-[11px] truncate flex items-center gap-1">
-                                {acc.pw ? (
+                                {acc.isGuest ? (
+                                  <><KeyRound className="h-2.5 w-2.5 text-[#FF9F0A]" /> Set password</>
+                                ) : acc.pw ? (
                                   <><Zap className="h-2.5 w-2.5 text-[#D4A857]" /> One‑tap login</>
                                 ) : (
                                   'Tap to continue'
