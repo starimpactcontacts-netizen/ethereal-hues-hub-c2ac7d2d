@@ -13,7 +13,7 @@ export interface RememberedAccount {
 }
 
 const KEY = 'loopgate_remembered_accounts';
-const MAX = 4;
+const MAX = 10;
 
 const enc = (s: string) => {
   try { return btoa(unescape(encodeURIComponent(s))); } catch { return ''; }
