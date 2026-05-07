@@ -806,6 +806,39 @@ export type Database = {
           },
         ]
       }
+      campaign_edit_feedback: {
+        Row: {
+          campaign_id: string | null
+          client_name: string | null
+          created_at: string
+          edit_id: string
+          id: string
+          note: string | null
+          reaction: string
+          reviewed: boolean
+        }
+        Insert: {
+          campaign_id?: string | null
+          client_name?: string | null
+          created_at?: string
+          edit_id: string
+          id?: string
+          note?: string | null
+          reaction: string
+          reviewed?: boolean
+        }
+        Update: {
+          campaign_id?: string | null
+          client_name?: string | null
+          created_at?: string
+          edit_id?: string
+          id?: string
+          note?: string | null
+          reaction?: string
+          reviewed?: boolean
+        }
+        Relationships: []
+      }
       campaign_portal_messages: {
         Row: {
           campaign_id: string
