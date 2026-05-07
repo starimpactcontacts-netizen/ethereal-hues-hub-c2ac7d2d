@@ -30,6 +30,36 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Reclaim flow for username-only anonymous accounts
+  const [showReclaim, setShowReclaim] = useState(false);
+  const [reclaimUser, setReclaimUser] = useState('');
+  const [reclaimPw, setReclaimPw] = useState('');
+  const [reclaimLoading, setReclaimLoading] = useState(false);
+
+  const handleReclaim = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const u = reclaimUser.trim().replace(/^@/, '');
+    if (u.length < 3) { toast.error('Enter your old handle'); return; }
+    if (reclaimPw.length < 6) { toast.error('Password must be at least 6 characters'); return; }
+    setReclaimLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('reclaim-guest-account', {
+        body: { username: u, password: reclaimPw },
+      });
+      if (error || data?.error) {
+        toast.error(data?.error || error?.message || 'Could not reclaim account');
+        setReclaimLoading(false);
+        return;
+      }
+      toast.success(`Reclaimed @${data.username} — logging you in`);
+      await doLogin(data.email, reclaimPw, data.username);
+    } catch (err) {
+      toast.error('Could not reclaim account');
+    } finally {
+      setReclaimLoading(false);
+    }
+  };
+
   useEffect(() => {
     const initial = getRememberedAccounts();
     // Sanitize immediately so UI never shows an email as the handle
@@ -493,6 +523,51 @@ export default function LoginPage() {
                 >
                   New here? <span className="text-[#0A84FF] font-medium">Create a profile</span>
                 </button>
+                <div className="mt-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowReclaim((v) => !v)}
+                    className="text-[12px] text-white/40 active:opacity-60"
+                  >
+                    Lost a username-only account?{' '}
+                    <span className="text-[#D4A857] font-medium">Reclaim it</span>
+                  </button>
+                </div>
+                {showReclaim && (
+                  <form onSubmit={handleReclaim} className="mt-3 text-left space-y-2 p-3 rounded-[14px]"
+                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <p className="text-[11px] text-white/55 leading-snug">
+                      If you signed up with just a nickname (no password), enter it
+                      below and choose a password to lock it in. We'll restore your
+                      profile, XP, and history.
+                    </p>
+                    <Input
+                      value={reclaimUser}
+                      onChange={(e) => setReclaimUser(e.target.value)}
+                      placeholder="Old handle (e.g. slaxeditz)"
+                      autoCapitalize="none"
+                      spellCheck={false}
+                      className="h-11 rounded-[10px] border-0 text-[15px] text-white placeholder:text-white/35"
+                      style={{ background: 'rgba(118, 118, 128, 0.24)' }}
+                    />
+                    <Input
+                      type="password"
+                      value={reclaimPw}
+                      onChange={(e) => setReclaimPw(e.target.value)}
+                      placeholder="New password (6+ chars)"
+                      autoComplete="new-password"
+                      className="h-11 rounded-[10px] border-0 text-[15px] text-white placeholder:text-white/35"
+                      style={{ background: 'rgba(118, 118, 128, 0.24)' }}
+                    />
+                    <button
+                      type="submit"
+                      disabled={reclaimLoading}
+                      className="w-full h-11 rounded-[12px] bg-white/10 text-white text-[14px] font-semibold active:opacity-60 disabled:opacity-50 flex items-center justify-center"
+                    >
+                      {reclaimLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Reclaim & set password'}
+                    </button>
+                  </form>
+                )}
               </div>
             </div>
           </motion.div>
