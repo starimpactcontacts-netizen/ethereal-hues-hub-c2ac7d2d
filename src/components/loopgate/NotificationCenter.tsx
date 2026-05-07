@@ -286,18 +286,6 @@ export default function NotificationCenter() {
       <SheetTrigger asChild>
         <button className="relative p-2 transition-transform active:scale-90">
           <Bell size={20} />
-          <AnimatePresence>
-            {unreadCount > 0 && (
-              <motion.span
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0 }}
-                className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center"
-              >
-                {unreadCount > 99 ? '99+' : unreadCount}
-              </motion.span>
-            )}
-          </AnimatePresence>
         </button>
       </SheetTrigger>
       <SheetContent side="right" className="w-full sm:max-w-md bg-background border-border p-0">
