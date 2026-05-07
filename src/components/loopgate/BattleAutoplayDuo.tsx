@@ -127,14 +127,15 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
   const progressPct = ((PER_EDIT_SECONDS - secondsLeft) / PER_EDIT_SECONDS) * 100;
 
   return (
-    <div className="space-y-0 select-none -mx-4">
+    <div className="space-y-0 select-none -mx-4 md:flex md:items-stretch md:gap-0 md:-mx-0">
       {/* Loading state until BOTH clips have buffered → guarantees zero stutter on first play */}
       {!bothReady && (
         <div className="absolute -z-10 opacity-0 pointer-events-none">
           {/* preload work happens via the real <video> tags below; this is just a hint */}
         </div>
       )}
-      {/* RED — top */}
+      {/* RED — top (mobile) / left (desktop) */}
+      <div className="md:flex-1 md:min-w-0">
       <SidePanel
         side={red}
         videoRef={redVideoRef}
@@ -145,11 +146,12 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
         onReady={() => setRedReady(true)}
         loading={!redReady}
       />
+      </div>
 
-      {/* Slim VS divider — the live FNF scoreboard now lives at the top of the page */}
-      <div className="relative h-0 flex items-center justify-center bg-black z-20">
+      {/* Slim VS divider — horizontal on mobile, vertical on desktop */}
+      <div className="relative h-0 md:h-auto md:w-0 flex items-center justify-center bg-black z-20">
         <div
-          className="absolute inset-x-0 top-1/2 h-[2px]"
+          className="absolute inset-x-0 top-1/2 h-[2px] md:inset-y-0 md:left-1/2 md:top-0 md:h-auto md:w-[2px]"
           style={{
             background:
               'linear-gradient(90deg, transparent 0%, rgba(239,68,68,0.9) 30%, #fff 50%, rgba(59,130,246,0.9) 70%, transparent 100%)',
@@ -173,7 +175,8 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
         </div>
       </div>
 
-      {/* BLUE — bottom */}
+      {/* BLUE — bottom (mobile) / right (desktop) */}
+      <div className="md:flex-1 md:min-w-0">
       <SidePanel
         side={blue}
         videoRef={blueVideoRef}
@@ -184,8 +187,9 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
         onReady={() => setBlueReady(true)}
         loading={!blueReady}
       />
+      </div>
 
-      <p className="pt-2 px-4 text-[10px] text-center text-foreground/40 uppercase tracking-[0.2em]" style={teko}>
+      <p className="pt-2 px-4 text-[10px] text-center text-foreground/40 uppercase tracking-[0.2em] md:hidden" style={teko}>
         {bothReady ? '10s per edit · auto-rotating' : 'Buffering both edits in HD…'}
       </p>
 
