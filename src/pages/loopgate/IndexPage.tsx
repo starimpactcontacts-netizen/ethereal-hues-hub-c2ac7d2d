@@ -23,7 +23,7 @@ import { supabase } from "@/integrations/supabase/client";
 import GatePattern from "@/components/loopgate/GatePattern";
 import IndexHeroPattern from "@/components/loopgate/IndexHeroPattern";
 import EditoriumCarousel from "@/components/loopgate/EditoriumCarousel";
-import DiscoverEditsCarousel from "@/components/loopgate/DiscoverEditsCarousel";
+import EditoriumPicks from "@/components/loopgate/EditoriumPicks";
 import heroCollage from "@/assets/hero-collage.jpeg";
 
 type LeagueFilter = "all" | "open" | "pro" | "elite";
@@ -692,8 +692,8 @@ export default function IndexPage() {
                   </div>
                 )}
 
-                {/* ─── LATEST EDITS SHOWCASE ─── */}
-                <DiscoverEditsCarousel />
+                {/* ─── EDITOR'S PICKS ─── */}
+                <EditoriumPicks limit={10} />
 
                 {/* ─── EDITORIUM CAROUSEL ─── */}
                 <EditoriumCarousel />
