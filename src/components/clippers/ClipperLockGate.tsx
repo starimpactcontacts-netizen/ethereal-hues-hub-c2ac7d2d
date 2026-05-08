@@ -46,10 +46,17 @@ export default function ClipperLockGate({ open, onClose, onSuccess, reason }: Pr
     if (!remembered) return;
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      let { error } = await supabase.auth.signInWithPassword({
         email: remembered.email,
         password: remembered.password,
       });
+      if (error && /confirm/i.test(error.message)) {
+        await supabase.functions.invoke('auto-confirm-user', { body: { email: remembered.email } });
+        ({ error } = await supabase.auth.signInWithPassword({
+          email: remembered.email,
+          password: remembered.password,
+        }));
+      }
       if (error) throw error;
       toast.success(`Welcome back, @${remembered.handle}`);
       onSuccess();
