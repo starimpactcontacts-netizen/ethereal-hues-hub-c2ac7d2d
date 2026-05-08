@@ -98,6 +98,12 @@ function EditShowcaseCard({
     getThumbnail(entry.submission_url, entry.platform, entry.thumbnail_url)
   );
 
+  // Direct video uploads (loop-media .mp4/.mov/.webm) — use the video itself
+  // as a poster frame. The browser will fetch metadata + first frame only.
+  const isDirectVideo =
+    /\.(mp4|mov|webm)(\?|$)/i.test(entry.submission_url) ||
+    entry.submission_url.includes("loop-media");
+
   // Async resolve for TikTok/Instagram thumbnails
   useEffect(() => {
     if (thumb.status !== "error") return;
@@ -126,7 +132,16 @@ function EditShowcaseCard({
         onClick={() => onPlay(entry)}
         className="relative w-full aspect-[16/9] bg-surface-2 overflow-hidden block"
       >
-        {showFallback ? (
+        {isDirectVideo ? (
+          <video
+            src={`${entry.submission_url}#t=0.5`}
+            muted
+            playsInline
+            preload="metadata"
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            onError={() => setImgError(true)}
+          />
+        ) : showFallback ? (
           <BrandedThumb username={entry.username} />
         ) : (
           <img
