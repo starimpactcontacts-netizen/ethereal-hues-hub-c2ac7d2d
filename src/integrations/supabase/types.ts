@@ -8067,6 +8067,24 @@ export type Database = {
         }
         Relationships: []
       }
+      thumbnail_cache: {
+        Row: {
+          cached_at: string
+          thumbnail_url: string | null
+          url: string
+        }
+        Insert: {
+          cached_at?: string
+          thumbnail_url?: string | null
+          url: string
+        }
+        Update: {
+          cached_at?: string
+          thumbnail_url?: string | null
+          url?: string
+        }
+        Relationships: []
+      }
       tournament_messages: {
         Row: {
           avatar_url: string | null
