@@ -696,7 +696,6 @@ export default function IndexPage() {
                 <div className="pt-5 pb-2">
                   <div className="flex items-center gap-2 px-4 mb-3">
                     <img src={editoriumLogo} alt="Editorium" className="h-6 w-auto object-contain" />
-                    <h2 className="font-display text-2xl tracking-wide text-foreground">PICKS</h2>
                   </div>
                   <EditoriumPicks limit={10} />
                 </div>
