@@ -8707,6 +8707,13 @@ export type Database = {
         Returns: string
       }
       get_skill_tier: { Args: { qoi_score: number }; Returns: string }
+      get_user_global_rank: {
+        Args: { p_user_id: string }
+        Returns: {
+          rank: number
+          total: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
