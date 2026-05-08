@@ -56,6 +56,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   const [needsSoundTap, setNeedsSoundTap] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const completedFiredRef = useRef(false);
+  const audioUnlockedRef = useRef(false);
 
   const current = sides[currentIdx];
 
@@ -70,7 +71,19 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     (async () => {
       try {
         await v.play();
+        audioUnlockedRef.current = true;
+        setNeedsSoundTap(false);
       } catch {
+        // If we already unlocked audio on a previous edit, keep trying unmuted —
+        // browser should allow it because the document already had a gesture.
+        if (audioUnlockedRef.current) {
+          try {
+            v.muted = false;
+            await v.play();
+            setNeedsSoundTap(false);
+            return;
+          } catch {}
+        }
         v.muted = true;
         setNeedsSoundTap(true);
         try { await v.play(); } catch {}
@@ -108,6 +121,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     v.muted = false;
     v.volume = 1;
     v.play().catch(() => {});
+    audioUnlockedRef.current = true;
     setNeedsSoundTap(false);
   };
 
