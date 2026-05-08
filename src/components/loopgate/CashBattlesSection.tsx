@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { DollarSign, Swords, Clock, Info, X, Loader2, Building2, ChevronRight, Plus } from "lucide-react";
+import { DollarSign, Swords, Clock, Info, X, Loader2, Building2, ChevronRight, Plus, Lock } from "lucide-react";
 import CashBattleVoteBar from "@/components/loopgate/CashBattleVoteBar";
 import BattleVoteBarCompact from "@/components/loopgate/BattleVoteBarCompact";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -417,6 +417,12 @@ function QuickFightCarouselCard({ fight, isMine }: { fight: QuickFight; isMine: 
           <span className={`text-[9px] font-bold uppercase tracking-[0.12em] ${isWaiting ? 'text-emerald-400' : isLive ? 'text-red-400' : isCompleted ? 'text-muted-foreground' : 'text-blue-400'}`} style={{ fontFamily: 'Teko, sans-serif' }}>
             {statusText}
           </span>
+          {fight.is_private && (
+            <span className="ml-1 inline-flex items-center gap-0.5 px-1 py-[1px] rounded-sm bg-amber-500/15 border border-amber-500/30">
+              <Lock className="w-2 h-2 text-amber-400" strokeWidth={3} />
+              <span className="text-[8px] font-black uppercase tracking-wider text-amber-300" style={{ fontFamily: 'Teko, sans-serif' }}>Private</span>
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-1 text-[8px] text-muted-foreground">
           <Clock className="w-2.5 h-2.5" />
@@ -778,9 +784,9 @@ export default function CashBattlesSection({
         {[...myQuickFights, ...quickFights]
           .filter((fight, index, all) =>
             fight.status !== 'cancelled' &&
-            all.findIndex((item) => item.id === fight.id) === index &&
-            // Hide private waiting lobbies from public rail (host still sees via myQuickFights)
-            !(fight.is_private && fight.status === 'waiting' && fight.player_1_id !== user?.id)
+            all.findIndex((item) => item.id === fight.id) === index
+            // Private lobbies are visible on the rail with a Lock badge — anyone can tap
+            // and will be prompted for the join code on the lobby page.
           )
           .sort((a, b) => {
             const owned = (x: QuickFight) => user?.id && (x.player_1_id === user.id || x.player_2_id === user.id) ? 0 : 1;
