@@ -22,7 +22,7 @@ import { getRankFromScore, getEffectiveRank, GQTRank } from "@/data/gqtConfig";
 import { supabase } from "@/integrations/supabase/client";
 import GatePattern from "@/components/loopgate/GatePattern";
 import IndexHeroPattern from "@/components/loopgate/IndexHeroPattern";
-import EditoriumCarousel from "@/components/loopgate/EditoriumCarousel";
+import editoriumLogo from "@/assets/editorium-logo.png";
 import EditoriumPicks from "@/components/loopgate/EditoriumPicks";
 import heroCollage from "@/assets/hero-collage.jpeg";
 
@@ -692,11 +692,14 @@ export default function IndexPage() {
                   </div>
                 )}
 
-                {/* ─── EDITOR'S PICKS ─── */}
-                <EditoriumPicks limit={10} />
-
-                {/* ─── EDITORIUM CAROUSEL ─── */}
-                <EditoriumCarousel />
+                {/* ─── EDITORIUM PICKS ─── */}
+                <div className="pt-5 pb-2">
+                  <div className="flex items-center gap-2 px-4 mb-3">
+                    <img src={editoriumLogo} alt="Editorium" className="h-6 w-auto object-contain" />
+                    <h2 className="font-display text-2xl tracking-wide text-foreground">PICKS</h2>
+                  </div>
+                  <EditoriumPicks limit={10} />
+                </div>
 
                 {/* ─── TRENDING CAROUSEL ─── */}
                 {trending.length > 0 && (
