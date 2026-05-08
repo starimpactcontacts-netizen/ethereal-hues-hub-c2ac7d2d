@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, X, ArrowRight, Lock, Zap, Copy, Check, AlertTriangle } from 'lucide-react';
+import { Loader2, X, ArrowRight, Lock, Zap, Copy, Check, AlertTriangle, Eye, EyeOff, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,6 +28,40 @@ export default function ClipperLockGate({ open, onClose, onSuccess, reason }: Pr
   const [isFastPassword, setIsFastPassword] = useState(false);
   const [savedAck, setSavedAck] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [remembered, setRemembered] = useState<{ handle: string; password: string; email: string } | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    try {
+      const raw = localStorage.getItem('loopgate_clipper_login');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.handle && parsed?.password && parsed?.email) setRemembered(parsed);
+      }
+    } catch {/* ignore */}
+  }, [open]);
+
+  const oneTapSignIn = async () => {
+    if (!remembered) return;
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: remembered.email,
+        password: remembered.password,
+      });
+      if (error) throw error;
+      toast.success(`Welcome back, @${remembered.handle}`);
+      onSuccess();
+      onClose();
+    } catch (e: any) {
+      toast.error(e?.message || 'One-tap sign-in failed');
+      try { localStorage.removeItem('loopgate_clipper_login'); } catch {/* ignore */}
+      setRemembered(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const generateFastPassword = () => {
     const words = ['loop','edit','wave','beat','flame','tiger','neon','rapid','pulse','storm','blaze','swift','cobra','vortex','echo','bolt','shadow','rogue'];
@@ -137,6 +171,9 @@ export default function ClipperLockGate({ open, onClose, onSuccess, reason }: Pr
         role: 'clipper' as never,
       } as never);
       toast.success(`Welcome, @${handle}`);
+      try {
+        localStorage.setItem('loopgate_clipper_login', JSON.stringify({ handle, password, email: fakeEmail }));
+      } catch {/* ignore */}
       onSuccess();
       onClose();
     } catch (e: unknown) {
