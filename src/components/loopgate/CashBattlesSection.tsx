@@ -417,6 +417,12 @@ function QuickFightCarouselCard({ fight, isMine }: { fight: QuickFight; isMine: 
           <span className={`text-[9px] font-bold uppercase tracking-[0.12em] ${isWaiting ? 'text-emerald-400' : isLive ? 'text-red-400' : isCompleted ? 'text-muted-foreground' : 'text-blue-400'}`} style={{ fontFamily: 'Teko, sans-serif' }}>
             {statusText}
           </span>
+          {fight.is_private && (
+            <span className="ml-1 inline-flex items-center gap-0.5 px-1 py-[1px] rounded-sm bg-amber-500/15 border border-amber-500/30">
+              <Lock className="w-2 h-2 text-amber-400" strokeWidth={3} />
+              <span className="text-[8px] font-black uppercase tracking-wider text-amber-300" style={{ fontFamily: 'Teko, sans-serif' }}>Private</span>
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-1 text-[8px] text-muted-foreground">
           <Clock className="w-2.5 h-2.5" />
