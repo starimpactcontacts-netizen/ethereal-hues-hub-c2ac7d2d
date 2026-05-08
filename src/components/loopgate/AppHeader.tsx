@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, LogOut, User, HelpCircle, FileText, Home, Trophy, Shield, Search, Calendar, Building2, ShoppingBag, BookOpen, Gavel, Crown, Clapperboard } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
-import { useRealRankings } from '@/hooks/useRealData';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
@@ -31,16 +31,26 @@ const menuItems = [
 export default function AppHeader() {
   const { user, profile, signOut, isAdmin } = useAuth();
   const { roles, isJudge, isDev } = useUserRoles(user?.id);
-  const { rankings } = useRealRankings();
+  const [userRank, setUserRank] = useState<number | string>('—');
+  useEffect(() => {
+    if (!profile?.id) return;
+    let cancelled = false;
+    supabase
+      .rpc('get_user_global_rank', { p_user_id: profile.id })
+      .single()
+      .then(({ data }) => {
+        if (cancelled || !data) return;
+        const r = (data as { rank: number | null }).rank;
+        if (typeof r === 'number') setUserRank(r);
+      });
+    return () => { cancelled = true; };
+  }, [profile?.id]);
   const location = useLocation();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [menuSearch, setMenuSearch] = useState('');
 
   const isEnterprise = roles.includes('enterprise');
-
-  const userRanking = profile ? rankings.find(r => r.id === profile.id) : null;
-  const userRank = userRanking?.rank || (rankings.length > 0 ? rankings.length + 1 : '—');
 
   const handleSignOut = async (e: React.MouseEvent) => {
     e.preventDefault();
