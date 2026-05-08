@@ -107,6 +107,18 @@ export default function ClipperLockGate({ open, onClose, onSuccess, reason }: Pr
         setErr('Could not create account.');
         return;
       }
+      // Ensure we have an active session before doing any RLS-protected writes.
+      // (If email confirmation was on, signUp returns no session.)
+      if (!data.session) {
+        const { error: signInErr } = await supabase.auth.signInWithPassword({
+          email: fakeEmail,
+          password,
+        });
+        if (signInErr) {
+          setErr('Account created but sign-in failed. Try logging in.');
+          return;
+        }
+      }
       await supabase.from('profiles').upsert({
         id: uid,
         username: handle,
