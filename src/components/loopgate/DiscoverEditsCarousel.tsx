@@ -303,64 +303,22 @@ export default function DiscoverEditsCarousel() {
 
   async function fetchAllEdits() {
     try {
-      // Fetch from multiple sources in parallel
-      const [roundRes, eventRes, sanctionedRes, battleRes, dropRes, judgeRes] = await Promise.all([
-        // Round submissions
-        supabase
-          .from("round_participations")
-          .select("id, user_id, submission_url, platform, qoi_score, status, submitted_at, round_number, thumbnail_url")
-          .not("submission_url", "is", null)
-          .order("submitted_at", { ascending: false, nullsFirst: false })
-          .limit(15),
-        // Event submissions
-        supabase
-          .from("event_participations")
-          .select("id, user_id, submission_url, platform, qoi_score, status, submitted_at, thumbnail_url")
-          .not("submission_url", "is", null)
-          .order("submitted_at", { ascending: false, nullsFirst: false })
-          .limit(15),
-        // Sanctioned tournament submissions
-        supabase
-          .from("sanctioned_tournament_participants")
-          .select("id, user_id, submission_url, submission_platform, qoi_score, submitted_at")
-          .not("submission_url", "is", null)
-          .order("submitted_at", { ascending: false, nullsFirst: false })
-          .limit(10),
-        // Battle submissions (both challenger and opponent)
-        supabase
-          .from("battles")
-          .select("id, challenger_id, challenger_username, challenger_avatar_url, challenger_submission_url, challenger_submission_platform, challenger_thumbnail_url, challenger_score, opponent_id, opponent_username, opponent_avatar_url, opponent_submission_url, opponent_submission_platform, opponent_thumbnail_url, opponent_score, created_at")
-          .not("challenger_submission_url", "is", null)
-          .is("hidden_at" as any, null)
-          .order("created_at", { ascending: false })
-          .limit(10),
-        // Featured drop submissions
-        supabase
-          .from("featured_submissions")
-          .select("id, user_id, username, avatar_url, submission_url, platform, qoi_score, status, created_at, thumbnail_url")
-          .order("created_at", { ascending: false })
-          .limit(15),
-        // Judge rating videos
-        supabase
-          .from("judge_rating_videos")
-          .select("id, judge_id, video_url, platform, title, submitted_at, thumbnail_url")
-          .order("submitted_at", { ascending: false })
-          .limit(10),
-      ]);
+      // ONLY battle submissions — these are uploaded directly to Loopgate
+      // storage, so the videos actually load (no third-party scraping needed).
+      const battleRes = await supabase
+        .from("battles")
+        .select("id, challenger_id, challenger_username, challenger_avatar_url, challenger_submission_url, challenger_submission_platform, challenger_thumbnail_url, challenger_score, opponent_id, opponent_username, opponent_avatar_url, opponent_submission_url, opponent_submission_platform, opponent_thumbnail_url, opponent_score, created_at")
+        .not("challenger_submission_url", "is", null)
+        .is("hidden_at" as any, null)
+        .order("created_at", { ascending: false })
+        .limit(40);
 
-      // Collect all user IDs we need profiles for
+      // Backfill any missing usernames/avatars from profiles
       const userIds = new Set<string>();
-      (roundRes.data || []).forEach((r) => userIds.add(r.user_id));
-      (eventRes.data || []).forEach((r) => userIds.add(r.user_id));
-      (sanctionedRes.data || []).forEach((r) => userIds.add(r.user_id));
       (battleRes.data || []).forEach((b) => {
         userIds.add(b.challenger_id);
         if (b.opponent_id) userIds.add(b.opponent_id);
       });
-      (judgeRes.data || []).forEach((j) => userIds.add(j.judge_id));
-      // Drop submissions already have username/avatar
-
-      // Fetch profiles
       const profileIds = Array.from(userIds);
       const { data: profiles } = profileIds.length > 0
         ? await supabase.from("profiles").select("id, username, avatar_url").in("id", profileIds)
@@ -369,61 +327,6 @@ export default function DiscoverEditsCarousel() {
 
       const allEntries: EditEntry[] = [];
 
-      // Round submissions
-      (roundRes.data || []).forEach((r) => {
-        const p = profileMap.get(r.user_id);
-        allEntries.push({
-          id: `round-${r.id}`,
-          user_id: r.user_id,
-          username: p?.username || "editor",
-          avatar_url: p?.avatar_url || null,
-          submission_url: r.submission_url!,
-          platform: r.platform || "tiktok",
-          thumbnail_url: r.thumbnail_url || null,
-          qoi_score: r.qoi_score,
-          source: "competition",
-          source_label: `Round ${r.round_number || ""}`,
-          created_at: r.submitted_at || new Date().toISOString(),
-        });
-      });
-
-      // Event submissions
-      (eventRes.data || []).forEach((e) => {
-        const p = profileMap.get(e.user_id);
-        allEntries.push({
-          id: `event-${e.id}`,
-          user_id: e.user_id,
-          username: p?.username || "editor",
-          avatar_url: p?.avatar_url || null,
-          submission_url: e.submission_url!,
-          platform: e.platform || "tiktok",
-          thumbnail_url: e.thumbnail_url || null,
-          qoi_score: e.qoi_score,
-          source: "competition",
-          source_label: "Arena",
-          created_at: e.submitted_at || new Date().toISOString(),
-        });
-      });
-
-      // Sanctioned
-      (sanctionedRes.data || []).forEach((s) => {
-        const p = profileMap.get(s.user_id);
-        allEntries.push({
-          id: `sanc-${s.id}`,
-          user_id: s.user_id,
-          username: p?.username || "editor",
-          avatar_url: p?.avatar_url || null,
-          submission_url: s.submission_url!,
-          platform: s.submission_platform || "tiktok",
-          thumbnail_url: null,
-          qoi_score: s.qoi_score,
-          source: "competition",
-          source_label: "Tournament",
-          created_at: s.submitted_at || new Date().toISOString(),
-        });
-      });
-
-      // Battles
       (battleRes.data || []).forEach((b) => {
         if (b.challenger_submission_url) {
           allEntries.push({
@@ -455,41 +358,6 @@ export default function DiscoverEditsCarousel() {
             created_at: b.created_at,
           });
         }
-      });
-
-      // Featured drop submissions
-      (dropRes.data || []).forEach((d) => {
-        allEntries.push({
-          id: `drop-${d.id}`,
-          user_id: d.user_id,
-          username: d.username || "editor",
-          avatar_url: d.avatar_url || null,
-          submission_url: d.submission_url,
-          platform: d.platform || "tiktok",
-          thumbnail_url: d.thumbnail_url || null,
-          qoi_score: d.qoi_score,
-          source: "drop",
-          source_label: "Drop",
-          created_at: d.created_at,
-        });
-      });
-
-      // Judge rating videos
-      (judgeRes.data || []).forEach((j) => {
-        const p = profileMap.get(j.judge_id);
-        allEntries.push({
-          id: `judge-${j.id}`,
-          user_id: j.judge_id,
-          username: p?.username || "judge",
-          avatar_url: p?.avatar_url || null,
-          submission_url: j.video_url,
-          platform: j.platform || "tiktok",
-          thumbnail_url: j.thumbnail_url || null,
-          qoi_score: null,
-          source: "judge_video",
-          source_label: j.title || "Rating",
-          created_at: j.submitted_at,
-        });
       });
 
       // Composite ranking: recent + thumbnail + score = highest
