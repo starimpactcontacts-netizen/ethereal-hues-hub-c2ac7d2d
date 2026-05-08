@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, X, ArrowRight, Lock, Zap, Copy, Check, AlertTriangle } from 'lucide-react';
+import { Loader2, X, ArrowRight, Lock, Zap, Copy, Check, AlertTriangle, Eye, EyeOff, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,6 +28,40 @@ export default function ClipperLockGate({ open, onClose, onSuccess, reason }: Pr
   const [isFastPassword, setIsFastPassword] = useState(false);
   const [savedAck, setSavedAck] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [remembered, setRemembered] = useState<{ handle: string; password: string; email: string } | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    try {
+      const raw = localStorage.getItem('loopgate_clipper_login');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.handle && parsed?.password && parsed?.email) setRemembered(parsed);
+      }
+    } catch {/* ignore */}
+  }, [open]);
+
+  const oneTapSignIn = async () => {
+    if (!remembered) return;
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: remembered.email,
+        password: remembered.password,
+      });
+      if (error) throw error;
+      toast.success(`Welcome back, @${remembered.handle}`);
+      onSuccess();
+      onClose();
+    } catch (e: any) {
+      toast.error(e?.message || 'One-tap sign-in failed');
+      try { localStorage.removeItem('loopgate_clipper_login'); } catch {/* ignore */}
+      setRemembered(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const generateFastPassword = () => {
     const words = ['loop','edit','wave','beat','flame','tiger','neon','rapid','pulse','storm','blaze','swift','cobra','vortex','echo','bolt','shadow','rogue'];
@@ -137,6 +171,9 @@ export default function ClipperLockGate({ open, onClose, onSuccess, reason }: Pr
         role: 'clipper' as never,
       } as never);
       toast.success(`Welcome, @${handle}`);
+      try {
+        localStorage.setItem('loopgate_clipper_login', JSON.stringify({ handle, password, email: fakeEmail }));
+      } catch {/* ignore */}
       onSuccess();
       onClose();
     } catch (e: unknown) {
@@ -179,6 +216,25 @@ export default function ClipperLockGate({ open, onClose, onSuccess, reason }: Pr
             </button>
 
             <div className="px-7 pt-9">
+              {remembered && (
+                <button
+                  type="button"
+                  onClick={oneTapSignIn}
+                  disabled={loading}
+                  className="w-full mb-5 rounded-[14px] p-3 flex items-center gap-3 active:opacity-70 disabled:opacity-50 transition-opacity"
+                  style={{ background: 'rgba(212, 168, 87, 0.10)', border: '0.5px solid rgba(212, 168, 87, 0.45)' }}
+                >
+                  <div className="w-9 h-9 rounded-full bg-[#D4A857] flex items-center justify-center shrink-0">
+                    <UserCheck className="w-4 h-4 text-black" strokeWidth={2.4} />
+                  </div>
+                  <div className="flex-1 text-left min-w-0">
+                    <div className="text-[10px] uppercase tracking-wider text-[#D4A857] font-semibold">One-tap sign in</div>
+                    <div className="text-[14px] text-white font-medium truncate">Continue as @{remembered.handle}</div>
+                  </div>
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin text-white/70" /> : <ArrowRight className="w-4 h-4 text-[#D4A857]" />}
+                </button>
+              )}
+
               {/* Icon */}
               <div className="flex justify-center mb-5">
                 <div
@@ -214,14 +270,23 @@ export default function ClipperLockGate({ open, onClose, onSuccess, reason }: Pr
                 <div className="space-y-2">
                   <div className="relative">
                     <Input
-                      type={isFastPassword ? 'text' : 'password'}
+                      type={isFastPassword || showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => { setPassword(e.target.value); if (isFastPassword) setIsFastPassword(false); }}
                       placeholder="Password"
-                      className="h-12 bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.06] focus:bg-white/[0.06] focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:ring-offset-0 rounded-xl text-[15px] text-white placeholder:text-white/25 transition-colors pr-12"
+                      className="h-12 bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.06] focus:bg-white/[0.06] focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:ring-offset-0 rounded-xl text-[15px] text-white placeholder:text-white/25 transition-colors pr-20"
                       style={{ fontFamily: isFastPassword ? 'ui-monospace, SFMono-Regular, monospace' : undefined, letterSpacing: isFastPassword ? '0.02em' : undefined }}
                       onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(v => !v)}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-[8px] bg-white/[0.08] active:bg-white/[0.16] flex items-center justify-center"
+                      style={isFastPassword ? { right: '2.75rem' } : undefined}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4 text-white/80" /> : <Eye className="w-4 h-4 text-white/80" />}
+                    </button>
                     {isFastPassword && (
                       <button
                         type="button"

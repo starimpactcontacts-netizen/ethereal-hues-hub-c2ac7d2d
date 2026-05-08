@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Zap, Copy, Check, AlertTriangle } from 'lucide-react';
+import { Loader2, Zap, Copy, Check, AlertTriangle, Eye, EyeOff, UserCheck } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useTempProfile } from '@/hooks/useTempProfile';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,6 +25,61 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
   const [isFastPassword, setIsFastPassword] = useState(false);
   const [savedAck, setSavedAck] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [remembered, setRemembered] = useState<{ identifier: string; password: string } | null>(null);
+
+  // Load remembered credentials for one-tap sign-in
+  useEffect(() => {
+    if (!isOpen) return;
+    try {
+      const raw = localStorage.getItem('loopgate_last_login');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.identifier && parsed?.password) {
+          setRemembered(parsed);
+        }
+      }
+    } catch {/* ignore */}
+  }, [isOpen]);
+
+  const rememberLogin = (identifier: string, password: string) => {
+    try {
+      localStorage.setItem('loopgate_last_login', JSON.stringify({ identifier, password }));
+    } catch {/* ignore */}
+  };
+
+  const oneTapSignIn = async () => {
+    if (!remembered) return;
+    setLoading(true);
+    try {
+      const idVal = remembered.identifier.trim();
+      let loginEmail = idVal;
+      const isEmail = loginEmail.includes('@') && loginEmail.includes('.') && !loginEmail.endsWith('@user.loopgate.io');
+      if (!isEmail && !loginEmail.includes('@')) {
+        const uname = loginEmail.replace(/^@/, '').toLowerCase();
+        const { data: profileRow } = await supabase
+          .from('profiles')
+          .select('email')
+          .ilike('username', uname)
+          .maybeSingle();
+        loginEmail = profileRow?.email || `${uname}@user.loopgate.io`;
+      }
+      const { error } = await supabase.auth.signInWithPassword({
+        email: loginEmail,
+        password: remembered.password,
+      });
+      if (error) throw error;
+      toast.success(`Welcome back, @${remembered.identifier.replace(/^@/, '')}`);
+      onClose();
+      onSuccess?.();
+    } catch (e: any) {
+      toast.error(e.message || 'One-tap sign-in failed');
+      try { localStorage.removeItem('loopgate_last_login'); } catch {/* ignore */}
+      setRemembered(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const generateFastPassword = () => {
     // Memorable & strong: word-word-#### (e.g. tiger-loop-4829)
@@ -111,6 +166,7 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
             .eq('id', data.user.id);
 
           clearProfile();
+          rememberLogin(cleanUsername, password);
           toast.success('Account created! Welcome to Loopgate.');
           onClose();
           onSuccess?.();
@@ -142,6 +198,7 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
         if (error) throw error;
 
         clearProfile();
+        rememberLogin(idVal, password);
         toast.success('Welcome back!');
         onClose();
         onSuccess?.();
@@ -197,6 +254,25 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
               className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] space-y-4"
               style={{ WebkitOverflowScrolling: 'touch' }}
             >
+              {remembered && (
+                <button
+                  type="button"
+                  onClick={oneTapSignIn}
+                  disabled={loading}
+                  className="w-full rounded-[14px] p-3 flex items-center gap-3 active:opacity-70 disabled:opacity-50 transition-opacity"
+                  style={{ background: 'rgba(10, 132, 255, 0.12)', border: '0.5px solid rgba(10, 132, 255, 0.45)' }}
+                >
+                  <div className="w-9 h-9 rounded-full bg-[#0A84FF] flex items-center justify-center shrink-0">
+                    <UserCheck className="w-4 h-4 text-white" strokeWidth={2.4} />
+                  </div>
+                  <div className="flex-1 text-left min-w-0">
+                    <div className="text-[11px] uppercase tracking-wider text-[#0A84FF] font-semibold">One-tap sign in</div>
+                    <div className="text-[14px] text-white font-medium truncate">Continue as @{remembered.identifier.replace(/^@/, '')}</div>
+                  </div>
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin text-white/70" /> : <span className="text-[#0A84FF] text-[13px] font-semibold">Tap →</span>}
+                </button>
+              )}
+
               <div className="space-y-1.5">
                 <label className="text-[13px] text-[#8E8E93] font-medium px-1">
                   {mode === 'signup' ? 'Username' : 'Username or email'}
@@ -230,16 +306,25 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
                 </div>
                 <div className="relative">
                   <Input
-                    type={isFastPassword ? 'text' : 'password'}
+                    type={isFastPassword || showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => { setPassword(e.target.value); if (isFastPassword) setIsFastPassword(false); }}
                     placeholder="••••••••"
                     autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
                     autoCapitalize="none"
                     spellCheck={false}
-                    className="h-11 rounded-[10px] border-0 text-[16px] text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#D4A857] pr-12"
+                    className="h-11 rounded-[10px] border-0 text-[16px] text-white placeholder:text-[#8E8E93] focus-visible:ring-1 focus-visible:ring-[#D4A857] pr-20"
                     style={{ background: 'rgba(118, 118, 128, 0.24)', fontFamily: isFastPassword ? 'ui-monospace, SFMono-Regular, monospace' : undefined, letterSpacing: isFastPassword ? '0.02em' : undefined }}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(v => !v)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-[8px] bg-white/[0.08] active:bg-white/[0.16] flex items-center justify-center"
+                    style={isFastPassword ? { right: '2.75rem' } : undefined}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4 text-white/80" /> : <Eye className="w-4 h-4 text-white/80" />}
+                  </button>
                   {isFastPassword && (
                     <button
                       type="button"
