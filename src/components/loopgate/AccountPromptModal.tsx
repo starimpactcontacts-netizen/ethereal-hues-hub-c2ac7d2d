@@ -64,10 +64,17 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
           .maybeSingle();
         loginEmail = profileRow?.email || `${uname}@user.loopgate.io`;
       }
-      const { error } = await supabase.auth.signInWithPassword({
+      let { error } = await supabase.auth.signInWithPassword({
         email: loginEmail,
         password: remembered.password,
       });
+      if (error && /confirm/i.test(error.message)) {
+        await supabase.functions.invoke('auto-confirm-user', { body: { email: loginEmail } });
+        ({ error } = await supabase.auth.signInWithPassword({
+          email: loginEmail,
+          password: remembered.password,
+        }));
+      }
       if (error) throw error;
       toast.success(`Welcome back, @${remembered.identifier.replace(/^@/, '')}`);
       onClose();
@@ -190,11 +197,17 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
             loginEmail = `${uname}@user.loopgate.io`;
           }
         }
-        const { error } = await supabase.auth.signInWithPassword({
+        let { error } = await supabase.auth.signInWithPassword({
           email: loginEmail,
           password,
         });
-
+        if (error && /confirm/i.test(error.message)) {
+          await supabase.functions.invoke('auto-confirm-user', { body: { email: loginEmail } });
+          ({ error } = await supabase.auth.signInWithPassword({
+            email: loginEmail,
+            password,
+          }));
+        }
         if (error) throw error;
 
         clearProfile();
