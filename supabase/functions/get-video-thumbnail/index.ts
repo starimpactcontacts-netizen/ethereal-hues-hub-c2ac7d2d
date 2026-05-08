@@ -1,7 +1,40 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
+
+// Cap how much HTML we ever read into memory per scrape (prevents OOM on huge pages)
+const MAX_HTML_BYTES = 600_000; // 600 KB is plenty to find og:image / SIGI_STATE
+
+async function fetchHtmlCapped(url: string, headers: Record<string, string>, timeoutMs: number): Promise<string | null> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { headers, redirect: 'follow', signal: controller.signal });
+    if (!res.ok || !res.body) { try { await res.body?.cancel(); } catch {} return null; }
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let html = '';
+    let total = 0;
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      html += decoder.decode(value, { stream: true });
+      if (total >= MAX_HTML_BYTES) {
+        try { await reader.cancel(); } catch {}
+        break;
+      }
+    }
+    return html;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 // ── Resolve short URLs ──────────────────────────────────
 
@@ -20,6 +53,7 @@ async function resolveShortUrl(url: string): Promise<string> {
     });
     clearTimeout(timeout);
     const resolved = res.url || url;
+    try { await res.body?.cancel(); } catch {}
     // If it resolved to /notfound, the link is dead
     if (resolved.includes('/notfound')) {
       console.log('Short URL expired (notfound):', url);
@@ -56,23 +90,14 @@ async function getTikTokThumbnail(url: string): Promise<string | null> {
   // Step 2: Mobile page scrape — parse embedded JSON (PROVEN approach from get-video-stats)
   try {
     console.log('TikTok mobile scrape for:', resolvedUrl);
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
-    const res = await fetch(resolvedUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Cache-Control': 'no-cache',
-      },
-      redirect: 'follow',
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
+    const html = await fetchHtmlCapped(resolvedUrl, {
+      'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Cache-Control': 'no-cache',
+    }, 8000);
 
-    if (res.ok) {
-      const html = await res.text();
-
+    if (html) {
       // Try SIGI_STATE
       const sigiMatch = html.match(/<script id="SIGI_STATE"[^>]*>([^<]+)<\/script>/);
       if (sigiMatch) {
@@ -182,33 +207,34 @@ async function getInstagramThumbnail(url: string): Promise<string | null> {
     console.log('IG oEmbed error:', e);
   }
 
-  // Method 2: Scrape og:image with mobile UA
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 6000);
-    const res = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
-        'Accept': 'text/html,application/xhtml+xml',
-      },
-      redirect: 'follow',
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-    if (res.ok) {
-      const html = await res.text();
-      const ogMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
-        || html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
-      if (ogMatch?.[1]) { console.log('IG thumb from og:image'); return ogMatch[1]; }
-    }
-  } catch (e) {
-    console.log('IG scrape error:', e);
+  // Method 2: Scrape og:image with mobile UA (memory-capped)
+  const html = await fetchHtmlCapped(url, {
+    'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+    'Accept': 'text/html,application/xhtml+xml',
+  }, 6000);
+  if (html) {
+    const ogMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
+      || html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
+    if (ogMatch?.[1]) { console.log('IG thumb from og:image'); return ogMatch[1]; }
   }
 
   return null;
 }
 
 // ── Main ─────────────────────────────────────────────────
+
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+const cacheClient = SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY
+  ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } })
+  : null;
+
+function isDirectMediaUrl(url: string): boolean {
+  // Supabase Storage videos / direct media files — there is nothing to scrape
+  if (url.includes('/storage/v1/object/')) return true;
+  if (/\.(mp4|webm|mov|m4v|jpg|jpeg|png|webp|gif)(\?|$)/i.test(url)) return true;
+  return false;
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -223,6 +249,33 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: 'URL is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // ── 0. Short-circuit direct media (Supabase storage mp4s, etc.) ──
+    if (isDirectMediaUrl(url)) {
+      return new Response(
+        JSON.stringify({ thumbnailUrl: null }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // ── 1. Cache hit? Return instantly. ──
+    if (cacheClient) {
+      try {
+        const { data: cached } = await cacheClient
+          .from('thumbnail_cache')
+          .select('thumbnail_url')
+          .eq('url', url)
+          .maybeSingle();
+        if (cached) {
+          return new Response(
+            JSON.stringify({ thumbnailUrl: cached.thumbnail_url, cached: true }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      } catch (e) {
+        console.log('cache read error:', e);
+      }
     }
 
     let thumbnailUrl: string | null = null;
@@ -245,30 +298,28 @@ Deno.serve(async (req) => {
       thumbnailUrl = await getInstagramThumbnail(url);
     }
 
-    // Generic fallback — scrape og:image
+    // Generic fallback — scrape og:image (memory-capped)
     if (!thumbnailUrl) {
-      try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 5000);
-        const res = await fetch(url, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
-            'Accept': 'text/html,application/xhtml+xml',
-          },
-          redirect: 'follow',
-          signal: controller.signal,
-        });
-        clearTimeout(timeout);
-        if (res.ok) {
-          const html = await res.text();
-          const ogMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
-            || html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
-          if (ogMatch?.[1]) thumbnailUrl = ogMatch[1];
-        }
-      } catch { /* give up */ }
+      const html = await fetchHtmlCapped(url, {
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+        'Accept': 'text/html,application/xhtml+xml',
+      }, 5000);
+      if (html) {
+        const ogMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
+          || html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
+        if (ogMatch?.[1]) thumbnailUrl = ogMatch[1];
+      }
     }
 
     console.log('FINAL:', url.substring(0, 60), '->', thumbnailUrl ? 'RESOLVED' : 'NULL');
+
+    // ── 2. Cache the result (success OR null) so we never re-scrape this URL ──
+    if (cacheClient) {
+      cacheClient
+        .from('thumbnail_cache')
+        .upsert({ url, thumbnail_url: thumbnailUrl, cached_at: new Date().toISOString() })
+        .then(({ error }) => { if (error) console.log('cache write error:', error.message); });
+    }
 
     return new Response(
       JSON.stringify({ thumbnailUrl }),
