@@ -289,15 +289,25 @@ export function useRealRankings() {
   useEffect(() => {
     fetchRankings();
 
-    // Subscribe to realtime updates
+    // Subscribe to realtime updates (debounced — profiles update constantly
+    // as XP/score changes, so coalesce bursts into a single refetch)
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const scheduleRefetch = () => {
+      if (timer) return;
+      timer = setTimeout(() => {
+        timer = null;
+        fetchRankings();
+      }, 30000);
+    };
     const channel = supabase
       .channel('rankings-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
-        fetchRankings();
+        scheduleRefetch();
       })
       .subscribe();
 
     return () => {
+      if (timer) clearTimeout(timer);
       supabase.removeChannel(channel);
     };
   }, [fetchRankings]);
