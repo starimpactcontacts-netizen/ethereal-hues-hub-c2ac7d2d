@@ -303,61 +303,32 @@ export default function DiscoverEditsCarousel() {
 
   async function fetchAllEdits() {
     try {
-      // ONLY battle submissions — these are uploaded directly to Loopgate
-      // storage, so the videos actually load (no third-party scraping needed).
-      const battleRes = await supabase
-        .from("battles")
-        .select("id, challenger_id, challenger_username, challenger_avatar_url, challenger_submission_url, challenger_submission_platform, challenger_thumbnail_url, challenger_score, opponent_id, opponent_username, opponent_avatar_url, opponent_submission_url, opponent_submission_platform, opponent_thumbnail_url, opponent_score, created_at")
-        .not("challenger_submission_url", "is", null)
-        .is("hidden_at" as any, null)
+      // ONLY edits uploaded directly into Loopgate (Edit Battles competition
+      // submissions stored in the loop-media bucket). Third-party links like
+      // raw TikTok URLs don't reliably load, so we exclude them entirely.
+      const compRes = await supabase
+        .from("competition_submissions")
+        .select("id, user_id, username, avatar_url, submission_url, platform, score, created_at")
+        .or("submission_url.ilike.%loop-media%,submission_url.ilike.%.mp4,submission_url.ilike.%.mov,submission_url.ilike.%.webm")
         .order("created_at", { ascending: false })
         .limit(40);
 
-      // Backfill any missing usernames/avatars from profiles
-      const userIds = new Set<string>();
-      (battleRes.data || []).forEach((b) => {
-        userIds.add(b.challenger_id);
-        if (b.opponent_id) userIds.add(b.opponent_id);
-      });
-      const profileIds = Array.from(userIds);
-      const { data: profiles } = profileIds.length > 0
-        ? await supabase.from("profiles").select("id, username, avatar_url").in("id", profileIds)
-        : { data: [] };
-      const profileMap = new Map((profiles || []).map((p) => [p.id, p]));
-
       const allEntries: EditEntry[] = [];
-
-      (battleRes.data || []).forEach((b) => {
-        if (b.challenger_submission_url) {
-          allEntries.push({
-            id: `battle-c-${b.id}`,
-            user_id: b.challenger_id,
-            username: b.challenger_username || profileMap.get(b.challenger_id)?.username || "editor",
-            avatar_url: b.challenger_avatar_url || profileMap.get(b.challenger_id)?.avatar_url || null,
-            submission_url: b.challenger_submission_url,
-            platform: b.challenger_submission_platform || "tiktok",
-            thumbnail_url: b.challenger_thumbnail_url || null,
-            qoi_score: b.challenger_score,
-            source: "battle",
-            source_label: "1v1",
-            created_at: b.created_at,
-          });
-        }
-        if (b.opponent_submission_url && b.opponent_id) {
-          allEntries.push({
-            id: `battle-o-${b.id}`,
-            user_id: b.opponent_id,
-            username: b.opponent_username || profileMap.get(b.opponent_id)?.username || "editor",
-            avatar_url: b.opponent_avatar_url || profileMap.get(b.opponent_id)?.avatar_url || null,
-            submission_url: b.opponent_submission_url,
-            platform: b.opponent_submission_platform || "tiktok",
-            thumbnail_url: b.opponent_thumbnail_url || null,
-            qoi_score: b.opponent_score,
-            source: "battle",
-            source_label: "1v1",
-            created_at: b.created_at,
-          });
-        }
+      (compRes.data || []).forEach((c) => {
+        if (!c.submission_url) return;
+        allEntries.push({
+          id: `comp-${c.id}`,
+          user_id: c.user_id,
+          username: c.username || "editor",
+          avatar_url: c.avatar_url || null,
+          submission_url: c.submission_url,
+          platform: c.platform || "loopgate",
+          thumbnail_url: null,
+          qoi_score: c.score,
+          source: "battle",
+          source_label: "Edit Battle",
+          created_at: c.created_at,
+        });
       });
 
       // Composite ranking: recent + thumbnail + score = highest
