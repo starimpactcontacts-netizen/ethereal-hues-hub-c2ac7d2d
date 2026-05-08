@@ -216,6 +216,25 @@ export default function ClipperLockGate({ open, onClose, onSuccess, reason }: Pr
             </button>
 
             <div className="px-7 pt-9">
+              {remembered && (
+                <button
+                  type="button"
+                  onClick={oneTapSignIn}
+                  disabled={loading}
+                  className="w-full mb-5 rounded-[14px] p-3 flex items-center gap-3 active:opacity-70 disabled:opacity-50 transition-opacity"
+                  style={{ background: 'rgba(212, 168, 87, 0.10)', border: '0.5px solid rgba(212, 168, 87, 0.45)' }}
+                >
+                  <div className="w-9 h-9 rounded-full bg-[#D4A857] flex items-center justify-center shrink-0">
+                    <UserCheck className="w-4 h-4 text-black" strokeWidth={2.4} />
+                  </div>
+                  <div className="flex-1 text-left min-w-0">
+                    <div className="text-[10px] uppercase tracking-wider text-[#D4A857] font-semibold">One-tap sign in</div>
+                    <div className="text-[14px] text-white font-medium truncate">Continue as @{remembered.handle}</div>
+                  </div>
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin text-white/70" /> : <ArrowRight className="w-4 h-4 text-[#D4A857]" />}
+                </button>
+              )}
+
               {/* Icon */}
               <div className="flex justify-center mb-5">
                 <div
@@ -251,14 +270,23 @@ export default function ClipperLockGate({ open, onClose, onSuccess, reason }: Pr
                 <div className="space-y-2">
                   <div className="relative">
                     <Input
-                      type={isFastPassword ? 'text' : 'password'}
+                      type={isFastPassword || showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => { setPassword(e.target.value); if (isFastPassword) setIsFastPassword(false); }}
                       placeholder="Password"
-                      className="h-12 bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.06] focus:bg-white/[0.06] focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:ring-offset-0 rounded-xl text-[15px] text-white placeholder:text-white/25 transition-colors pr-12"
+                      className="h-12 bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.06] focus:bg-white/[0.06] focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:ring-offset-0 rounded-xl text-[15px] text-white placeholder:text-white/25 transition-colors pr-20"
                       style={{ fontFamily: isFastPassword ? 'ui-monospace, SFMono-Regular, monospace' : undefined, letterSpacing: isFastPassword ? '0.02em' : undefined }}
                       onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(v => !v)}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-[8px] bg-white/[0.08] active:bg-white/[0.16] flex items-center justify-center"
+                      style={isFastPassword ? { right: '2.75rem' } : undefined}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4 text-white/80" /> : <Eye className="w-4 h-4 text-white/80" />}
+                    </button>
                     {isFastPassword && (
                       <button
                         type="button"
