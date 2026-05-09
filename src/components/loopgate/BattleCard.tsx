@@ -27,8 +27,6 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
   const isJudging = battle.status === 'judging';
   const isRapid = (battle as any).is_rapid;
   const isPrivate = (battle as any).is_private;
-  const mode = (battle as any).submission_mode as 'create' | 'reuse' | undefined;
-  const isPremade = mode === 'reuse';
   const totalVotes = battle.challenger_votes + battle.opponent_votes;
   
   // Check if time has ended even if status hasn't updated yet
