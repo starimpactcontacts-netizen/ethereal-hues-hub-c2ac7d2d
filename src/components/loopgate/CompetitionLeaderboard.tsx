@@ -2,12 +2,43 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Trophy, ExternalLink, Play, ChevronDown, ChevronUp,
-  Crown, X, ThumbsUp, ThumbsDown, MessageCircle, Vote, Lock
+  X, ThumbsUp, ThumbsDown, MessageCircle, Vote, Lock
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { CompetitionSubmission } from "@/hooks/useCompetitions";
 
 const teko = { fontFamily: "Teko, sans-serif" };
+
+/** Custom regal crown — replaces the generic lucide Crown */
+function CustomCrown({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 24" className={className} xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <defs>
+        <linearGradient id="crownGold" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#fde68a" />
+          <stop offset="45%" stopColor="#fbbf24" />
+          <stop offset="100%" stopColor="#b45309" />
+        </linearGradient>
+      </defs>
+      {/* Crown body — 5 peaks */}
+      <path
+        d="M2 8 L7 16 L11 6 L16 14 L21 6 L25 16 L30 8 L28 21 L4 21 Z"
+        fill="url(#crownGold)"
+        stroke="#78350f"
+        strokeWidth="0.8"
+        strokeLinejoin="round"
+      />
+      {/* Base band */}
+      <rect x="4" y="20" width="24" height="2.2" rx="0.6" fill="#92400e" stroke="#78350f" strokeWidth="0.4" />
+      {/* Jewels on peaks */}
+      <circle cx="7" cy="6" r="1.4" fill="#ef4444" stroke="#7f1d1d" strokeWidth="0.4" />
+      <circle cx="16" cy="4" r="1.6" fill="#3b82f6" stroke="#1e3a8a" strokeWidth="0.4" />
+      <circle cx="25" cy="6" r="1.4" fill="#10b981" stroke="#064e3b" strokeWidth="0.4" />
+      {/* Center gem on band */}
+      <circle cx="16" cy="21" r="0.9" fill="#fde68a" />
+    </svg>
+  );
+}
 
 const rankColors: Record<number, { border: string; glow: string; bg: string; text: string }> = {
   1: { border: "border-amber-400/60", glow: "shadow-[0_0_20px_rgba(251,191,36,0.3)]", bg: "from-amber-400/20 to-amber-400/5", text: "text-amber-400" },
