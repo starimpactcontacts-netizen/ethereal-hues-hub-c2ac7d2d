@@ -57,8 +57,8 @@ function CompCard({ comp }: { comp: Competition }) {
           <Share2 className="w-3 h-3 text-white/70" />
         </button>
         {comp.index_reward_pool > 0 && (
-          <div className="absolute top-2 left-2 z-20 px-1.5 py-0.5 bg-gold/90 rounded text-[9px] font-extrabold text-black flex items-center gap-1">
-            <Trophy className="w-2.5 h-2.5" /> {comp.index_reward_pool} IDX
+          <div className="absolute top-2 left-2 z-20 px-2 py-1 bg-gold rounded-md text-[11px] font-black text-black flex items-center gap-1 shadow-lg shadow-gold/30 tracking-wide">
+            <Trophy className="w-3 h-3" strokeWidth={3} /> {comp.index_reward_pool} IDX
           </div>
         )}
         <div className="absolute bottom-0 left-0 right-0 p-2.5">
@@ -68,15 +68,15 @@ function CompCard({ comp }: { comp: Competition }) {
         </div>
       </div>
       <div className="px-2.5 py-2 flex items-center justify-between gap-2 border-t border-white/[0.04]">
-        <div className="flex items-center gap-1.5 text-[9px] font-bold text-zinc-300 min-w-0 w-full">
-          <span className="flex items-center gap-1 whitespace-nowrap text-zinc-400">
-            <Users className="w-3 h-3" strokeWidth={2.5} />
+        <div className="flex items-center gap-1.5 text-[11px] font-black text-zinc-200 min-w-0 w-full">
+          <span className="flex items-center gap-1 whitespace-nowrap text-zinc-300">
+            <Users className="w-3.5 h-3.5" strokeWidth={3} />
             {comp.current_players}/{comp.max_players}
           </span>
-          <span className="text-white/15">·</span>
+          <span className="text-white/20">·</span>
           <span className={`flex items-center gap-1 whitespace-nowrap ${statusColor} truncate`}>
-            <StatusIcon className="w-2.5 h-2.5" strokeWidth={2.5} />
-            <span className="truncate tracking-wider">{statusLabel}</span>
+            <StatusIcon className="w-3 h-3" strokeWidth={3} />
+            <span className="truncate tracking-[0.1em] font-black uppercase">{statusLabel}</span>
           </span>
         </div>
       </div>
