@@ -448,29 +448,35 @@ export default function QuickFightPage() {
             />
           ) : (
             // Pre-upload state — placeholders stacked with VS divider
-            <>
-              {fight.player_1_submission_url ? (
-                <BattleSubmissionCard
-                  url={fight.player_1_submission_url}
-                  username={fight.player_1_username}
-                  color="red"
-                  aspectClass="aspect-square"
-                  avatarUrl={fight.player_1_avatar_url}
-                  customThumbnailUrl={(fight as any).player_1_thumbnail_url}
-                />
-              ) : (
-                <EmptyEditSlot
-                  color="red"
-                  username={fight.player_1_username}
-                  avatarUrl={fight.player_1_avatar_url}
-                  isYou={isP1}
-                  isLive={fight.status === 'active'}
-                  aspectClass="aspect-square"
-                />
-              )}
+            <div className="md:flex md:items-stretch md:gap-0 -mx-4 md:-mx-0">
+              <div className="md:flex-1 md:min-w-0">
+                {fight.player_1_submission_url ? (
+                  <BattleSubmissionCard
+                    url={fight.player_1_submission_url}
+                    username={fight.player_1_username}
+                    color="red"
+                    aspectClass="aspect-square"
+                    avatarUrl={fight.player_1_avatar_url}
+                    customThumbnailUrl={(fight as any).player_1_thumbnail_url}
+                  />
+                ) : (
+                  <EmptyEditSlot
+                    color="red"
+                    username={fight.player_1_username}
+                    avatarUrl={fight.player_1_avatar_url}
+                    isYou={isP1}
+                    isLive={fight.status === 'active'}
+                    aspectClass="aspect-square"
+                  />
+                )}
+              </div>
 
-              <div className="relative h-8 flex items-center justify-center">
-                <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+              {/* VS divider — horizontal on mobile, vertical on laptop */}
+              <div className="relative h-8 md:h-auto md:w-0 flex items-center justify-center bg-black z-20">
+                <div
+                  className="absolute inset-x-0 top-1/2 h-px md:inset-y-0 md:left-1/2 md:top-0 md:h-auto md:w-px"
+                  style={{ background: 'linear-gradient(90deg, transparent, rgba(239,68,68,0.7), #fff, rgba(59,130,246,0.7), transparent)' }}
+                />
                 <div className="relative px-3 py-0.5 bg-black border border-white/15">
                   <span
                     className="text-[14px] font-black tracking-[0.25em] bg-gradient-to-r from-red-400 to-blue-400 bg-clip-text text-transparent"
@@ -481,26 +487,28 @@ export default function QuickFightPage() {
                 </div>
               </div>
 
-              {fight.player_2_submission_url ? (
-                <BattleSubmissionCard
-                  url={fight.player_2_submission_url}
-                  username={fight.player_2_username || '???'}
-                  color="blue"
-                  aspectClass="aspect-square"
-                  avatarUrl={fight.player_2_avatar_url}
-                  customThumbnailUrl={(fight as any).player_2_thumbnail_url}
-                />
-              ) : (
-                <EmptyEditSlot
-                  color="blue"
-                  username={fight.player_2_username || 'Waiting…'}
-                  avatarUrl={fight.player_2_avatar_url}
-                  isYou={isP2}
-                  isLive={fight.status === 'active'}
-                  aspectClass="aspect-square"
-                />
-              )}
-            </>
+              <div className="md:flex-1 md:min-w-0">
+                {fight.player_2_submission_url ? (
+                  <BattleSubmissionCard
+                    url={fight.player_2_submission_url}
+                    username={fight.player_2_username || '???'}
+                    color="blue"
+                    aspectClass="aspect-square"
+                    avatarUrl={fight.player_2_avatar_url}
+                    customThumbnailUrl={(fight as any).player_2_thumbnail_url}
+                  />
+                ) : (
+                  <EmptyEditSlot
+                    color="blue"
+                    username={fight.player_2_username || 'Waiting…'}
+                    avatarUrl={fight.player_2_avatar_url}
+                    isYou={isP2}
+                    isLive={fight.status === 'active'}
+                    aspectClass="aspect-square"
+                  />
+                )}
+              </div>
+            </div>
           )}
 
           {/* Inline submit bar — always visible to participants while active */}
