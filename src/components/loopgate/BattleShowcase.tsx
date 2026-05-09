@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Play, Pause, Volume2, VolumeX } from "lucide-react";
+import { Play, Pause } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useBattleAudioUnlock } from "@/hooks/useBattleAudioUnlock";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
@@ -34,6 +35,8 @@ function isImageFile(url: string) {
  * after the first full pass.
  */
 export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }: Props) {
+  const videoKey = useMemo(() => sides.map((side) => side.url).join("|"), [sides]);
+  const audioUnlocked = useBattleAudioUnlock();
   const startMs = showcaseStartedAt ? new Date(showcaseStartedAt).getTime() : null;
   const totalMs = sides.length * PER_EDIT_SECONDS * 1000;
 
@@ -53,25 +56,26 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   const [currentIdx, setCurrentIdx] = useState(initial.idx);
   const [secondsLeft, setSecondsLeft] = useState(initial.left);
   const [paused, setPaused] = useState(false);
-  const [soundOn, setSoundOn] = useState(false);
   const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
   const completedFiredRef = useRef(false);
 
   const current = sides[currentIdx];
 
-  // Preload and play every direct video muted so switching sides never re-fetches/rebuffers.
+  // Preload and play every direct video; after the first page tap, active edit is unmuted automatically.
   useEffect(() => {
     videoRefs.current.forEach((v, index) => {
       if (!v) return;
-      v.muted = !(soundOn && index === currentIdx);
+      const active = index === currentIdx;
+      v.muted = !(audioUnlocked && active);
+      v.defaultMuted = false;
+      v.volume = active ? 1 : 0;
       v.preload = "auto";
       v.play().catch(() => {
         v.muted = true;
-        if (index === currentIdx) setSoundOn(false);
         v.play().catch((error) => { void error; });
       });
     });
-  }, [currentIdx, sides, soundOn]);
+  }, [audioUnlocked, currentIdx, videoKey]);
 
   useEffect(() => {
     videoRefs.current.forEach((v) => {
@@ -98,19 +102,6 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     return () => clearInterval(id);
   }, [compute, startMs, sides.length, onComplete]);
 
-  const toggleSound = () => {
-    const next = !soundOn;
-    setSoundOn(next);
-    videoRefs.current.forEach((v, index) => {
-      if (!v) return;
-      v.muted = !(next && index === currentIdx);
-      v.volume = 1;
-      if (index === currentIdx) v.play().catch(() => setSoundOn(false));
-    });
-  };
-
-  const direct = isDirectVideo(current.url);
-  const image = isImageFile(current.url);
   const progressPct = ((PER_EDIT_SECONDS - secondsLeft) / PER_EDIT_SECONDS) * 100;
   const ringColor = current.color === "red" ? "ring-red-500/40" : "ring-blue-500/40";
   const accent = current.color === "red" ? "bg-red-500" : "bg-blue-500";
@@ -169,7 +160,6 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
                     autoPlay
                     playsInline
                     loop
-                    muted={!(soundOn && active)}
                     preload="auto"
                     controls={false}
                     disablePictureInPicture
@@ -227,15 +217,6 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
             {paused ? <Play className="w-4 h-4 text-white ml-0.5" /> : <Pause className="w-4 h-4 text-white" />}
           </button>
 
-          {direct && (
-            <button
-              onClick={toggleSound}
-              className="absolute bottom-3 right-3 w-10 h-10 rounded-full bg-background/70 backdrop-blur-md border border-border flex items-center justify-center active:scale-95"
-              aria-label={soundOn ? "Mute showcase audio" : "Enable showcase audio"}
-            >
-              {soundOn ? <Volume2 className="w-4 h-4 text-foreground" /> : <VolumeX className="w-4 h-4 text-foreground" />}
-            </button>
-          )}
       </motion.div>
 
       <p className="text-[10px] text-center text-foreground/40 uppercase tracking-[0.2em]" style={teko}>

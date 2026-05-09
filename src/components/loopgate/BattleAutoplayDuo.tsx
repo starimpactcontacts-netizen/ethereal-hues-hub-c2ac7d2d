@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Volume2, VolumeX } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useBattleAudioUnlock } from "@/hooks/useBattleAudioUnlock";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
@@ -31,12 +31,12 @@ function isVideo(url: string) {
  * Synced for all viewers using `startedAt` timestamp.
  */
 export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false }: Props) {
-  const sides: [Side, Side] = [red, blue];
+  const sides = useMemo<[Side, Side]>(() => [red, blue], [red, blue]);
   const startMsRef = useRef<number>(startedAt ? new Date(startedAt).getTime() : Date.now());
   const totalMs = sides.length * PER_EDIT_SECONDS * 1000;
   const [redReady, setRedReady] = useState(false);
   const [blueReady, setBlueReady] = useState(false);
-  const [soundOn, setSoundOn] = useState(false);
+  const audioUnlocked = useBattleAudioUnlock();
 
   const compute = useCallback(() => {
     const elapsed = Math.max(0, Date.now() - startMsRef.current);
@@ -70,16 +70,17 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
     return () => clearInterval(id);
   }, [compute, tickEnabled]);
 
-  // Warm both videos and keep them decoding muted so the active side appears instantly.
+  // Preload both videos immediately; only the active edit decodes/plays to avoid mobile lag.
   useEffect(() => {
-    [redVideoRef.current, blueVideoRef.current].forEach((v) => {
+    [redVideoRef.current, blueVideoRef.current].forEach((v, i) => {
       if (!v) return;
-      v.muted = true;
+      v.muted = !(audioUnlocked && i === activeIdx);
+      v.defaultMuted = false;
+      v.volume = i === activeIdx ? 1 : 0;
       v.preload = "auto";
       v.load();
-      v.play().catch(() => {});
     });
-  }, [red.url, blue.url]);
+  }, [red.url, blue.url, activeIdx, audioUnlocked]);
 
   // Drive playback without seeking/resetting; seeking on mobile was causing black frames and stutter.
   useEffect(() => {
@@ -87,31 +88,26 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
       [redVideoRef.current, blueVideoRef.current].forEach((v) => {
         if (!v) return;
         v.pause();
-        v.muted = true;
       });
       return;
     }
     const refs = [redVideoRef.current, blueVideoRef.current];
     refs.forEach((v, i) => {
       if (!v) return;
-      v.muted = !(soundOn && i === activeIdx);
+      const active = i === activeIdx;
+      v.muted = !(audioUnlocked && active);
+      v.defaultMuted = false;
+      v.volume = active ? 1 : 0;
+      if (!active) {
+        v.pause();
+        return;
+      }
       v.play().catch(() => {
         v.muted = true;
-        if (i === activeIdx) setSoundOn(false);
         v.play().catch((error) => { void error; });
       });
     });
-  }, [activeIdx, paused, soundOn]);
-
-  const toggleSound = () => {
-    const next = !soundOn;
-    setSoundOn(next);
-    [redVideoRef.current, blueVideoRef.current].forEach((v, i) => {
-      if (!v) return;
-      v.muted = !(next && i === activeIdx);
-      if (i === activeIdx) v.play().catch(() => setSoundOn(false));
-    });
-  };
+  }, [activeIdx, audioUnlocked, paused]);
 
   const progressPct = ((PER_EDIT_SECONDS - secondsLeft) / PER_EDIT_SECONDS) * 100;
 
@@ -176,13 +172,6 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
         15s per edit · auto-rotating
       </p>
 
-      <button
-        onClick={toggleSound}
-        className="fixed bottom-[calc(env(safe-area-inset-bottom)+18px)] right-4 z-50 w-11 h-11 rounded-full bg-background/75 backdrop-blur-md border border-border flex items-center justify-center active:scale-95"
-        aria-label={soundOn ? "Mute battle audio" : "Enable battle audio"}
-      >
-        {soundOn ? <Volume2 className="w-4 h-4 text-foreground" /> : <VolumeX className="w-4 h-4 text-foreground" />}
-      </button>
     </div>
   );
 }
@@ -234,10 +223,11 @@ function SidePanel({
           x-webkit-airplay="deny"
           disableRemotePlayback
           loop
-          muted
           preload="auto"
           disablePictureInPicture
           controls={false}
+          onLoadStart={onReady}
+          onLoadedMetadata={onReady}
           onLoadedData={onReady}
           onCanPlay={onReady}
           onCanPlayThrough={onReady}
@@ -253,7 +243,7 @@ function SidePanel({
         />
       )}
 
-      {/* Buffering shimmer */}
+      {/* Only show a spinner before metadata exists; playback starts as soon as the browser can decode. */}
       {loading && active && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/30">
           <div className={`w-8 h-8 rounded-full border-2 ${side.color === 'red' ? 'border-red-500/40 border-t-red-500' : 'border-blue-500/40 border-t-blue-500'} animate-spin`} />

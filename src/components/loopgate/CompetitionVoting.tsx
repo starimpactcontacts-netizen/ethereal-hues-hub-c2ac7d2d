@@ -1,13 +1,14 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause, Check, Loader2, Crown, Volume2 } from "lucide-react";
+import { Play, Pause, Check, Loader2, Crown } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { CompetitionSubmission } from "@/hooks/useCompetitions";
 import { toast } from "sonner";
 import { useUnifiedThumbnail } from "@/lib/thumbnail";
+import { useBattleAudioUnlock } from "@/hooks/useBattleAudioUnlock";
 
 const teko = { fontFamily: "Teko, sans-serif" };
-export const PER_EDIT_SECONDS = 30;
+export const PER_EDIT_SECONDS = 15;
 
 type Phase = "watching" | "voting" | "submitted";
 
@@ -136,6 +137,7 @@ function WatchingMedia({
 }
 
 export default function CompetitionVoting({ submissions, myUserId, myVoteSubmissionId, onVote, votingStartedAt }: Props) {
+  const audioUnlocked = useBattleAudioUnlock();
   // Order: stable by created_at then id
   const ordered = useMemo(
     () => [...submissions].sort((a, b) => a.created_at.localeCompare(b.created_at)),
@@ -168,7 +170,6 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
   const [paused, setPaused] = useState(false);
   const [castingId, setCastingId] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [needsSoundTap, setNeedsSoundTap] = useState(false);
   // Local re-watch mode — when true, ignore the server clock and advance locally.
   const [rewatching, setRewatching] = useState(false);
 
@@ -179,21 +180,19 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
   useEffect(() => {
     const v = videoRef.current;
     if (!v || phase !== "watching") return;
-    v.muted = false;
+    v.muted = !audioUnlocked;
+    v.defaultMuted = false;
     v.volume = 1;
-    v.currentTime = 0;
-    setNeedsSoundTap(false);
     const tryPlay = async () => {
       try {
         await v.play();
       } catch {
         v.muted = true;
-        setNeedsSoundTap(true);
         try { await v.play(); } catch {}
       }
     };
     tryPlay();
-  }, [current?.id, currentIdx, phase]);
+  }, [audioUnlocked, current?.id, currentIdx, phase]);
 
   // Sync pause toggle with the actual <video> element
   useEffect(() => {
@@ -202,15 +201,6 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
     if (paused) v.pause();
     else v.play().catch(() => {});
   }, [paused]);
-
-  const enableSound = () => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.muted = false;
-    v.volume = 1;
-    v.play().catch(() => {});
-    setNeedsSoundTap(false);
-  };
 
   // If a stale vote already exists, still force the showcase first. Only switch
   // after the server-synced 15s/edit window has passed.
@@ -282,8 +272,6 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
 
   // ─────────── WATCHING PHASE ───────────
   if (phase === "watching" && current) {
-    const direct = isDirectVideo(current.submission_url);
-    const image = isImageFile(current.submission_url);
     const progressPct = ((PER_EDIT_SECONDS - secondsLeft) / PER_EDIT_SECONDS) * 100;
 
     return (
@@ -358,21 +346,6 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
               {paused ? <Play className="w-4 h-4 text-white ml-0.5" /> : <Pause className="w-4 h-4 text-white" />}
             </button>
 
-            {/* Tap for sound — appears if browser blocked unmuted autoplay */}
-            {direct && needsSoundTap && (
-              <button
-                onClick={enableSound}
-                className="absolute inset-0 flex items-center justify-center bg-black/30 active:bg-black/40"
-                aria-label="Enable sound"
-              >
-                <div className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-black/80 backdrop-blur-md border border-white/20">
-                  <Volume2 className="w-4 h-4 text-amber-400" />
-                  <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-white" style={teko}>
-                    Tap for Sound
-                  </span>
-                </div>
-              </button>
-            )}
           </motion.div>
         </AnimatePresence>
 
