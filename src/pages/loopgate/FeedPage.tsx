@@ -113,24 +113,23 @@ export default function FeedPage() {
       const arenaOffset = offsetRef.current.arena;
       const reviewOffset = offsetRef.current.review;
 
-      const [roundRes, eventRes, sanctionedRes, reviewRes, battlesRes, judgeVideosRes, quickFightsRes] = await Promise.all([
+      const [roundRes, eventRes, sanctionedRes, reviewRes, battlesRes, judgeVideosRes] = await Promise.all([
         supabase.from('round_participations').select('id, submission_url, platform, qoi_score, quality_score, originality_score, impact_score, user_id, event_id, created_at, thumbnail_url, custom_title').not('qoi_score', 'is', null).not('submission_url', 'is', null).order('created_at', { ascending: false }).range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
         supabase.from('event_participations').select('id, submission_url, platform, qoi_score, quality_score, originality_score, impact_score, user_id, event_id, final_rank, thumbnail_url, custom_title, submitted_at').not('qoi_score', 'is', null).not('submission_url', 'is', null).order('qoi_score', { ascending: false }).range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
         supabase.from('sanctioned_tournament_participants').select('id, submission_url, submission_platform, qoi_score, user_id, tournament_id, submitted_at, final_rank, thumbnail_url, custom_title').not('qoi_score', 'is', null).not('submission_url', 'is', null).order('submitted_at', { ascending: false }).range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
         supabase.from('review_requests').select('*').eq('status', 'reviewed').not('total_score', 'is', null).order('reviewed_at', { ascending: false }).range(reviewOffset, reviewOffset + BATCH_SIZE - 1),
         supabase.from('battles').select('*').in('status', ['pending', 'active', 'judging', 'completed']).is('hidden_at' as any, null).order('updated_at', { ascending: false }).range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
         supabase.from('judge_rating_videos').select('id, video_url, platform, title, thumbnail_url, current_views, judge_id, submitted_at').order('submitted_at', { ascending: false }).range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
-        supabase.from('quick_fights').select('*').in('status', ['active', 'judging', 'completed', 'waiting']).is('hidden_at' as any, null).order('created_at', { ascending: false }).range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
       ]);
 
       const roundData = roundRes.data || []; const eventData = eventRes.data || []; const sanctionedData = sanctionedRes.data || [];
       const reviewData = reviewRes.data || []; const battlesData = battlesRes.data || [];
-      const judgeVideosData = judgeVideosRes.data || []; const quickFightsData = quickFightsRes.data || [];
+      const judgeVideosData = judgeVideosRes.data || [];
 
-      offsetRef.current.arena += Math.max(roundData.length, eventData.length, sanctionedData.length, battlesData.length, judgeVideosData.length, quickFightsData.length);
+      offsetRef.current.arena += Math.max(roundData.length, eventData.length, sanctionedData.length, battlesData.length, judgeVideosData.length);
       offsetRef.current.review += reviewData.length;
 
-      const fetchedCount = roundData.length + eventData.length + sanctionedData.length + reviewData.length + battlesData.length + judgeVideosData.length + quickFightsData.length;
+      const fetchedCount = roundData.length + eventData.length + sanctionedData.length + reviewData.length + battlesData.length + judgeVideosData.length;
       if (fetchedCount === 0) { setHasMore(false); if (isLoadMore) { setLoadingMore(false); return; } }
 
       const allUserIds = [...roundData.map(s => s.user_id), ...eventData.map(s => s.user_id), ...sanctionedData.map(s => s.user_id), ...reviewData.map(r => r.user_id), ...judgeVideosData.map(j => j.judge_id)];
@@ -156,11 +155,8 @@ export default function FeedPage() {
       const reviewItems: LoopFeedItem[] = reviewData.map(r => ({ id: `review-${r.id}`, rawId: r.id, type: 'review' as const, submission_url: r.submission_url, platform: r.platform || 'tiktok', user_id: r.user_id, username: r.username || 'editor', avatar_url: r.avatar_url, created_at: r.reviewed_at || r.requested_at, thumbnail_url: null, custom_title: null, total_score: r.total_score || 0, judge_comment: r.judge_comment, judge_username: r.judge_username, judge_avatar_url: r.judge_avatar_url }));
       const battleItems: LoopFeedItem[] = battlesData.map(b => ({ id: `battle-${b.id}`, rawId: b.id, type: 'battle' as const, submission_url: b.challenger_submission_url || b.opponent_submission_url || '', platform: b.challenger_submission_platform || b.opponent_submission_platform || 'tiktok', user_id: b.challenger_id, username: b.challenger_username, avatar_url: b.challenger_avatar_url, created_at: b.updated_at || b.created_at, thumbnail_url: null, custom_title: null, battle_id: b.id, challenger_username: b.challenger_username, challenger_avatar_url: b.challenger_avatar_url, opponent_username: b.opponent_username, opponent_avatar_url: b.opponent_avatar_url, challenger_score: b.challenger_score, opponent_score: b.opponent_score, winner_id: b.winner_id, battle_status: b.status }));
       const judgeVideoItems: LoopFeedItem[] = judgeVideosData.map(j => ({ id: `judge-video-${j.id}`, rawId: j.id, type: 'judge_video' as const, submission_url: j.video_url, platform: j.platform || 'tiktok', user_id: j.judge_id, username: profileMap.get(j.judge_id)?.username || 'judge', avatar_url: profileMap.get(j.judge_id)?.avatar_url || null, created_at: j.submitted_at || new Date().toISOString(), thumbnail_url: j.thumbnail_url || null, custom_title: null, video_title: j.title || 'Judge Rating Video', current_views: j.current_views, is_verified: true }));
-      const quickFightItems: LoopFeedItem[] = quickFightsData.map((f: any) => ({ id: `qf-${f.id}`, rawId: f.id, type: 'quick_fight' as const, submission_url: f.player_1_submission_url || f.player_2_submission_url || '', platform: 'tiktok', user_id: f.player_1_id, username: f.player_1_username, avatar_url: f.player_1_avatar_url, created_at: f.created_at, thumbnail_url: null, custom_title: null, fight_id: f.id, fight_status: f.status, player_1_username: f.player_1_username, player_1_avatar_url: f.player_1_avatar_url, player_2_username: f.player_2_username, player_2_avatar_url: f.player_2_avatar_url, winner_id: f.winner_id, winner_score: f.winner_score, loser_score: f.loser_score, duration_minutes: f.duration_minutes, ends_at: f.ends_at }));
 
       const getBoost = (item: LoopFeedItem) => {
-        if (item.id.startsWith('qf-') && (item.fight_status === 'active' || item.fight_status === 'waiting')) return 3.5;
-        if (item.id.startsWith('qf-') && item.fight_status === 'judging') return 3;
         if (item.id.startsWith('battle-') && (item.battle_status === 'active' || item.battle_status === 'pending')) return 3;
         if (item.id.startsWith('battle-') && item.battle_status === 'judging') return 2.5;
         if (item.id.startsWith('arena-event-')) return 2;
@@ -169,7 +165,7 @@ export default function FeedPage() {
         return 0;
       };
 
-      const allItems = [...roundItems, ...eventItems, ...sanctionedItems, ...reviewItems, ...battleItems, ...judgeVideoItems, ...quickFightItems]
+      const allItems = [...roundItems, ...eventItems, ...sanctionedItems, ...reviewItems, ...battleItems, ...judgeVideoItems]
         .sort((a, b) => { const d = getBoost(b) - getBoost(a); return d !== 0 ? d : new Date(b.created_at).getTime() - new Date(a.created_at).getTime(); });
 
       const newItems = allItems.filter(item => { if (seenUrls.current.has(item.submission_url)) return false; seenUrls.current.add(item.submission_url); return true; });
