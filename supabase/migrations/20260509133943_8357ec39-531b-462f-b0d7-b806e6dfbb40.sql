@@ -1,0 +1,1 @@
+CREATE POLICY "Host can kick participants" ON public.competition_participants FOR DELETE USING (EXISTS (SELECT 1 FROM public.competitions c WHERE c.id = competition_participants.competition_id AND c.creator_id = auth.uid()));
