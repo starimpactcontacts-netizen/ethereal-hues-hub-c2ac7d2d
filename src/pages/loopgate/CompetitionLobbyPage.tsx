@@ -80,7 +80,7 @@ export default function CompetitionLobbyPage() {
     competition, participants, submissions, loading,
     isCreator, hasJoined, hasSubmitted, hasUpvoted, isReady, readyCount,
     myVoteSubmissionId,
-    join, submit, toggleUpvote, updateInspo, toggleReady, leave,
+    join, submit, toggleUpvote, updateInspo, toggleReady, leave, kick,
     startVoting, castVote, finalizeVoting,
   } = useCompetition(id);
 
@@ -731,6 +731,20 @@ export default function CompetitionLobbyPage() {
                         <Crown className="w-2.5 h-2.5 text-gold" />
                         <span className="text-[9px] font-extrabold tracking-[0.2em] text-gold leading-none" style={teko}>HOST</span>
                       </span>
+                    )}
+                    {isCreator && !isHost && isLobby && (
+                      <button
+                        onClick={async () => {
+                          if (!confirm(`Kick ${p.username} from the room?`)) return;
+                          const ok = await kick(p.user_id);
+                          if (ok) toast.success(`${p.username} was kicked`);
+                          else toast.error("Couldn't kick");
+                        }}
+                        title="Kick"
+                        className="shrink-0 h-6 w-6 inline-flex items-center justify-center rounded-md border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 active:scale-95 transition"
+                      >
+                        <X className="w-3 h-3" strokeWidth={3} />
+                      </button>
                     )}
                   </div>
                 );
