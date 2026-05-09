@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Plus, Share2, Users, Info, X, Gavel, Hourglass, Radio, Timer, Vote } from "lucide-react";
+import { Trophy, Plus, Share2, Users, Info, X, Gavel, Hourglass, Radio, Timer, Vote, Lock } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCompetitionsList, type Competition } from "@/hooks/useCompetitions";
 import { toast } from "sonner";
@@ -74,6 +74,13 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
             <Share2 className="w-3 h-3 text-white/70" />
           </button>
 
+          {comp.is_private && (
+            <div className="absolute top-2 left-2 z-20 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-fuchsia-500/20 backdrop-blur-md border border-fuchsia-400/40">
+              <Lock className="w-2.5 h-2.5 text-fuchsia-200" strokeWidth={2.5} />
+              <span className="text-[8px] font-black uppercase tracking-wider text-fuchsia-100">Private</span>
+            </div>
+          )}
+
           {/* Title overlaid bottom */}
           <div className="absolute bottom-0 left-0 right-0 p-2.5">
             <h3 className="text-[12px] font-bold text-white leading-tight line-clamp-2" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
@@ -109,6 +116,13 @@ export default function ArenaCompetitionsSection({ onCreateClick, hideHeader = f
 
   const handleJoin = async (compId: string) => {
     if (!user || !profile) { navigate("/start"); return; }
+
+    // Private rooms — go to lobby and let user enter code there
+    const target = comps.find(c => c.id === compId);
+    if (target?.is_private && target.creator_id !== user.id) {
+      navigate(`/competition/${target.slug || compId}`);
+      return;
+    }
 
     const { data: existing } = await supabase
       .from("competition_participants")

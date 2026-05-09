@@ -26,6 +26,8 @@ export interface Competition {
   inspo_video_platform?: string | null;
   inspo_thumbnail_url?: string | null;
   upvote_count?: number;
+  is_private?: boolean;
+  join_code?: string | null;
 }
 
 export interface CompetitionParticipant {
@@ -211,6 +213,18 @@ export function useCompetition(idOrSlug: string | undefined) {
     return true;
   };
 
+  const joinWithCode = async (code: string) => {
+    if (!user || !competition) return { ok: false, error: "not_authenticated" as const };
+    const { data, error } = await supabase.rpc("join_private_competition" as any, {
+      p_competition_id: competition.id,
+      p_code: code,
+    } as any);
+    if (error) return { ok: false, error: error.message };
+    const result = (data || {}) as { ok?: boolean; error?: string; already?: boolean };
+    if (result.ok) await fetchAll();
+    return { ok: !!result.ok, error: result.error };
+  };
+
   const kick = async (targetUserId: string) => {
     if (!user || !competition || !isCreator) return false;
     if (targetUserId === competition.creator_id) return false;
@@ -371,7 +385,7 @@ export function useCompetition(idOrSlug: string | undefined) {
     competition, participants, submissions, loading,
     isCreator, hasJoined, hasSubmitted, hasUpvoted, isReady, readyCount,
     myVoteSubmissionId,
-    join, start, submit, toggleUpvote, updateInspo, toggleReady, leave, kick,
+    join, joinWithCode, start, submit, toggleUpvote, updateInspo, toggleReady, leave, kick,
     startVoting, castVote, finalizeVoting,
     refetch: fetchAll,
   };

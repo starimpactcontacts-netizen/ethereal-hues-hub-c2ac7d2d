@@ -1878,6 +1878,8 @@ export type Database = {
           inspo_thumbnail_url: string | null
           inspo_video_platform: string | null
           inspo_video_url: string | null
+          is_private: boolean
+          join_code: string | null
           league: string
           max_players: number
           name: string
@@ -1906,6 +1908,8 @@ export type Database = {
           inspo_thumbnail_url?: string | null
           inspo_video_platform?: string | null
           inspo_video_url?: string | null
+          is_private?: boolean
+          join_code?: string | null
           league?: string
           max_players?: number
           name: string
@@ -1934,6 +1938,8 @@ export type Database = {
           inspo_thumbnail_url?: string | null
           inspo_video_platform?: string | null
           inspo_video_url?: string | null
+          is_private?: boolean
+          join_code?: string | null
           league?: string
           max_players?: number
           name?: string
@@ -8740,6 +8746,10 @@ export type Database = {
       is_username_available: {
         Args: { check_username: string }
         Returns: boolean
+      }
+      join_private_competition: {
+        Args: { p_code: string; p_competition_id: string }
+        Returns: Json
       }
       join_waiting_quick_fight:
         | {
