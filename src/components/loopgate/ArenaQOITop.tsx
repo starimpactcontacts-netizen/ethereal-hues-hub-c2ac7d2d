@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Trophy, ChevronRight, Crown, Medal, ChevronsUp, ChevronsDown, Minus, Flame, Sparkles } from "lucide-react";
+import { Trophy, ChevronRight, ChevronsUp, ChevronsDown, Minus, Flame, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -12,6 +12,38 @@ interface EditorRow {
   global_index_score: number | null;
   total_wins: number | null;
   level: number | null;
+}
+
+/** Custom podium marks — bespoke geometric medals, not lucide presets. */
+function PodiumMark({ rank }: { rank: 1 | 2 | 3 }) {
+  if (rank === 1) {
+    // Sovereign crown: 3-spike with gem dots
+    return (
+      <svg viewBox="0 0 24 24" className="w-5 h-5 text-amber-300 drop-shadow-[0_0_6px_rgba(251,191,36,0.55)]" fill="currentColor">
+        <path d="M3 8.5 7 13l5-7 5 7 4-4.5L20 18H4L3 8.5Z" />
+        <rect x="4" y="19" width="16" height="2" rx="0.5" />
+        <circle cx="3" cy="7.5" r="1.2" fill="#fde68a" />
+        <circle cx="21" cy="7.5" r="1.2" fill="#fde68a" />
+        <circle cx="12" cy="4.5" r="1.4" fill="#fff7d6" />
+      </svg>
+    );
+  }
+  if (rank === 2) {
+    // Hex shield with "2"
+    return (
+      <svg viewBox="0 0 24 24" className="w-5 h-5 text-zinc-200 drop-shadow-[0_0_4px_rgba(228,228,231,0.4)]">
+        <path d="M12 2 21 7v10l-9 5-9-5V7l9-5Z" fill="currentColor" opacity="0.18" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+        <text x="12" y="16" textAnchor="middle" fontSize="10" fontWeight="900" fill="currentColor" fontFamily="Teko, sans-serif" letterSpacing="0.5">2</text>
+      </svg>
+    );
+  }
+  // Hex shield with "3"
+  return (
+    <svg viewBox="0 0 24 24" className="w-5 h-5 text-orange-400 drop-shadow-[0_0_4px_rgba(251,146,60,0.4)]">
+      <path d="M12 2 21 7v10l-9 5-9-5V7l9-5Z" fill="currentColor" opacity="0.18" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <text x="12" y="16" textAnchor="middle" fontSize="10" fontWeight="900" fill="currentColor" fontFamily="Teko, sans-serif" letterSpacing="0.5">3</text>
+    </svg>
+  );
 }
 
 /**
@@ -37,16 +69,30 @@ export default function ArenaQOITop() {
           .limit(50);
       if (!cancelled) {
         const fresh = (data as EditorRow[]) || [];
-        // Read previous snapshot for climb/fall arrows
+        // Daily-bucketed snapshot so the climb/fall badges reflect a real
+        // 24h delta instead of being wiped on every realtime refresh.
         try {
-          const raw = localStorage.getItem('arena_top_editors_ranks');
-          if (raw) setPrevRanks(JSON.parse(raw));
-        } catch {}
-        // Save current snapshot for next visit
-        try {
+          const today = new Date().toISOString().slice(0, 10);
+          const rawCur = localStorage.getItem('arena_top_editors_ranks_v2');
+          const cur = rawCur ? JSON.parse(rawCur) : null;
+          const rawPrev = localStorage.getItem('arena_top_editors_ranks_prev_v2');
+          const prev = rawPrev ? JSON.parse(rawPrev) : null;
+
+          // Show deltas against the most recent prior bucket we have.
+          if (prev?.ranks) setPrevRanks(prev.ranks);
+          else if (cur?.date && cur.date !== today && cur.ranks) setPrevRanks(cur.ranks);
+
           const snap: Record<string, number> = {};
           fresh.forEach((r, i) => { snap[r.id] = i + 1; });
-          localStorage.setItem('arena_top_editors_ranks', JSON.stringify(snap));
+
+          if (!cur || cur.date !== today) {
+            // Roll today's snapshot into "prev", start a new "current" bucket.
+            if (cur) localStorage.setItem('arena_top_editors_ranks_prev_v2', JSON.stringify(cur));
+            localStorage.setItem('arena_top_editors_ranks_v2', JSON.stringify({ date: today, ranks: snap }));
+          } else {
+            // Same day — just refresh the current bucket; don't touch prev.
+            localStorage.setItem('arena_top_editors_ranks_v2', JSON.stringify({ date: today, ranks: snap }));
+          }
         } catch {}
         setRows(fresh);
         setLoading(false);
@@ -95,7 +141,6 @@ export default function ArenaQOITop() {
           <div className="divide-y divide-white/[0.04]">
             {rows.map((row, i) => {
               const rank = i + 1;
-              const Icon = rank === 1 ? Crown : rank <= 3 ? Medal : null;
               const accent = rank === 1 ? "text-amber-300" : rank === 2 ? "text-zinc-300" : rank === 3 ? "text-orange-400" : "text-muted-foreground";
               const idx = Number(row.global_index_score || 0);
               const idxLabel = idx >= 1000 ? `${(idx / 1000).toFixed(idx >= 10000 ? 0 : 1)}K` : idx.toFixed(0);
@@ -106,8 +151,8 @@ export default function ArenaQOITop() {
                   className="flex items-center gap-3 px-3 py-2.5 hover:bg-white/[0.03] active:bg-white/[0.05] transition-colors"
                 >
                   <div className="w-6 flex items-center justify-center shrink-0">
-                    {Icon ? (
-                      <Icon className={`w-4 h-4 ${accent}`} strokeWidth={2.5} />
+                    {rank <= 3 ? (
+                      <PodiumMark rank={rank as 1 | 2 | 3} />
                     ) : (
                       <span className={`text-[11px] font-black tabular-nums ${accent}`}>{rank}</span>
                     )}
