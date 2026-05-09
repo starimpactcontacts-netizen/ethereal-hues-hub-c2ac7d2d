@@ -70,7 +70,7 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
     return () => clearInterval(id);
   }, [compute, tickEnabled]);
 
-  // Warm both videos immediately; once the page has had a tap, keep ONLY the active edit unmuted.
+  // Preload both videos immediately; only the active edit decodes/plays to avoid mobile lag.
   useEffect(() => {
     [redVideoRef.current, blueVideoRef.current].forEach((v, i) => {
       if (!v) return;
@@ -79,7 +79,6 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
       v.volume = i === activeIdx ? 1 : 0;
       v.preload = "auto";
       v.load();
-      v.play().catch(() => {});
     });
   }, [red.url, blue.url, activeIdx, audioUnlocked]);
 
@@ -99,6 +98,10 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
       v.muted = !(audioUnlocked && active);
       v.defaultMuted = false;
       v.volume = active ? 1 : 0;
+      if (!active) {
+        v.pause();
+        return;
+      }
       v.play().catch(() => {
         v.muted = true;
         v.play().catch((error) => { void error; });
