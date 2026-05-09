@@ -317,13 +317,6 @@ export default function BattleDetailPage() {
                 <Zap className="w-3 h-3" /> RAPID
               </span>
             )}
-            {submissionMode && (
-              <span className={`flex items-center gap-1 text-xs tracking-wider ml-1 ${
-                isPremade ? 'text-sky-400' : 'text-emerald-400'
-              }`}>
-                {isPremade ? '⬆ PRE-MADE' : '📦 SCENEPACK'}
-              </span>
-            )}
           </div>
 
           {/* VS Display */}
