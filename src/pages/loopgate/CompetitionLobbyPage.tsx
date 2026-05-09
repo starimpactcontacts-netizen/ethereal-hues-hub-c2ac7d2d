@@ -547,19 +547,19 @@ export default function CompetitionLobbyPage() {
               <h1 className="text-[22px] font-black text-foreground uppercase leading-none truncate tracking-tight" style={teko}>
                 {competition.name}
               </h1>
-              <div className="flex items-center gap-1.5 mt-1">
+              <div className="flex items-center gap-1.5 mt-0.5">
                 <span className="relative flex w-1.5 h-1.5">
                   <span className="absolute inline-flex w-full h-full rounded-full bg-amber-400 opacity-60 animate-ping" />
                   <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-amber-400" />
                 </span>
-                <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-amber-400/90" style={teko}>
-                  Awaiting Start
+                <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-amber-400/90">
+                  Awaiting start
                 </span>
                 {competition.index_reward_pool > 0 && (
                   <>
-                    <span className="text-foreground/20 text-[10px]">·</span>
-                    <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-gold flex items-center gap-1" style={teko}>
-                      <Trophy className="w-2.5 h-2.5" /> {competition.index_reward_pool} IDX
+                    <span className="text-foreground/30 text-[11px] leading-none">·</span>
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-gold flex items-center gap-1">
+                      <Trophy className="w-3 h-3" /> {competition.index_reward_pool} IDX
                     </span>
                   </>
                 )}
