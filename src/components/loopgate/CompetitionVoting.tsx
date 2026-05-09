@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause, Check, Loader2, Crown, Volume2 } from "lucide-react";
+import { Play, Pause, Check, Loader2, Crown } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { CompetitionSubmission } from "@/hooks/useCompetitions";
 import { toast } from "sonner";
@@ -204,15 +204,6 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
     else v.play().catch(() => {});
   }, [paused]);
 
-  const enableSound = () => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.muted = false;
-    v.volume = 1;
-    v.play().catch(() => {});
-    setNeedsSoundTap(false);
-  };
-
   // If a stale vote already exists, still force the showcase first. Only switch
   // after the server-synced 15s/edit window has passed.
   useEffect(() => {
@@ -359,21 +350,6 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
               {paused ? <Play className="w-4 h-4 text-white ml-0.5" /> : <Pause className="w-4 h-4 text-white" />}
             </button>
 
-            {/* Tap for sound — appears if browser blocked unmuted autoplay */}
-            {direct && needsSoundTap && (
-              <button
-                onClick={enableSound}
-                className="absolute inset-0 flex items-center justify-center bg-black/30 active:bg-black/40"
-                aria-label="Enable sound"
-              >
-                <div className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-black/80 backdrop-blur-md border border-white/20">
-                  <Volume2 className="w-4 h-4 text-amber-400" />
-                  <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-white" style={teko}>
-                    Tap for Sound
-                  </span>
-                </div>
-              </button>
-            )}
           </motion.div>
         </AnimatePresence>
 
