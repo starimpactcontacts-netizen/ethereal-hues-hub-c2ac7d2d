@@ -4,7 +4,7 @@ import { Play, Pause, Volume2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const teko = { fontFamily: "Teko, sans-serif" };
-const PER_EDIT_SECONDS = 10;
+const PER_EDIT_SECONDS = 15;
 
 type Side = {
   userId: string;
