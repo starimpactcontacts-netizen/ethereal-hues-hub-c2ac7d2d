@@ -170,7 +170,6 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
   const [paused, setPaused] = useState(false);
   const [castingId, setCastingId] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [needsSoundTap, setNeedsSoundTap] = useState(false);
   // Local re-watch mode — when true, ignore the server clock and advance locally.
   const [rewatching, setRewatching] = useState(false);
 
@@ -184,7 +183,6 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
     v.muted = !audioUnlocked;
     v.defaultMuted = false;
     v.volume = 1;
-    setNeedsSoundTap(false);
     const tryPlay = async () => {
       try {
         await v.play();
@@ -274,8 +272,6 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
 
   // ─────────── WATCHING PHASE ───────────
   if (phase === "watching" && current) {
-    const direct = isDirectVideo(current.submission_url);
-    const image = isImageFile(current.submission_url);
     const progressPct = ((PER_EDIT_SECONDS - secondsLeft) / PER_EDIT_SECONDS) * 100;
 
     return (
