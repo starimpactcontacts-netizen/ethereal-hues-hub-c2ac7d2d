@@ -5,9 +5,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { CompetitionSubmission } from "@/hooks/useCompetitions";
 import { toast } from "sonner";
 import { useUnifiedThumbnail } from "@/lib/thumbnail";
+import { useBattleAudioUnlock } from "@/hooks/useBattleAudioUnlock";
 
 const teko = { fontFamily: "Teko, sans-serif" };
-export const PER_EDIT_SECONDS = 30;
+export const PER_EDIT_SECONDS = 15;
 
 type Phase = "watching" | "voting" | "submitted";
 
@@ -136,6 +137,7 @@ function WatchingMedia({
 }
 
 export default function CompetitionVoting({ submissions, myUserId, myVoteSubmissionId, onVote, votingStartedAt }: Props) {
+  const audioUnlocked = useBattleAudioUnlock();
   // Order: stable by created_at then id
   const ordered = useMemo(
     () => [...submissions].sort((a, b) => a.created_at.localeCompare(b.created_at)),
@@ -179,21 +181,20 @@ export default function CompetitionVoting({ submissions, myUserId, myVoteSubmiss
   useEffect(() => {
     const v = videoRef.current;
     if (!v || phase !== "watching") return;
-    v.muted = false;
+    v.muted = !audioUnlocked;
+    v.defaultMuted = false;
     v.volume = 1;
-    v.currentTime = 0;
     setNeedsSoundTap(false);
     const tryPlay = async () => {
       try {
         await v.play();
       } catch {
         v.muted = true;
-        setNeedsSoundTap(true);
         try { await v.play(); } catch {}
       }
     };
     tryPlay();
-  }, [current?.id, currentIdx, phase]);
+  }, [audioUnlocked, current?.id, currentIdx, phase]);
 
   // Sync pause toggle with the actual <video> element
   useEffect(() => {
