@@ -547,19 +547,19 @@ export default function CompetitionLobbyPage() {
               <h1 className="text-[22px] font-black text-foreground uppercase leading-none truncate tracking-tight" style={teko}>
                 {competition.name}
               </h1>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="relative flex w-1.5 h-1.5">
+              <div className="flex items-center gap-1 mt-0.5">
+                <span className="relative flex w-1 h-1">
                   <span className="absolute inline-flex w-full h-full rounded-full bg-amber-400 opacity-60 animate-ping" />
-                  <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  <span className="relative inline-flex w-1 h-1 rounded-full bg-amber-400" />
                 </span>
-                <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-amber-400/90">
-                  Awaiting start
+                <span className="text-[9.5px] font-medium uppercase tracking-[0.06em] text-amber-400/80">
+                  Awaiting
                 </span>
                 {competition.index_reward_pool > 0 && (
                   <>
-                    <span className="text-foreground/30 text-[11px] leading-none">·</span>
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-gold flex items-center gap-1">
-                      <Trophy className="w-3 h-3" /> {competition.index_reward_pool} IDX
+                    <span className="text-foreground/25 text-[9px] leading-none mx-0.5">•</span>
+                    <span className="text-[9.5px] font-medium uppercase tracking-[0.06em] text-gold/90 flex items-center gap-0.5">
+                      <Trophy className="w-2.5 h-2.5" />{competition.index_reward_pool} IDX
                     </span>
                   </>
                 )}
