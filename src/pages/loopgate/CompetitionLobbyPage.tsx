@@ -1200,7 +1200,7 @@ export default function CompetitionLobbyPage() {
             className="space-y-3"
           >
             {/* Cinematic urgency strip — big countdown, live dot, submissions */}
-            <div className="relative overflow-hidden rounded-2xl border border-destructive/30 bg-gradient-to-br from-destructive/[0.18] via-black to-black p-4">
+            <div className="relative overflow-hidden rounded-2xl border border-destructive/30 bg-gradient-to-br from-destructive/[0.18] via-card to-card p-4">
               <div className="pointer-events-none absolute -top-16 -right-16 w-48 h-48 rounded-full bg-destructive/30 blur-3xl" />
               <div className="relative flex items-center justify-between gap-3">
                 <div className="min-w-0">
