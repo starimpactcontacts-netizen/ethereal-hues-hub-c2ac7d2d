@@ -669,6 +669,28 @@ export default function CompetitionLobbyPage() {
               )}
             </div>
           </div>
+          {isCreator && competition.is_private && privateJoinCode && (
+            <button
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(privateJoinCode);
+                  toast.success(`Code ${privateJoinCode} copied`);
+                } catch {
+                  toast.error("Couldn't copy code");
+                }
+              }}
+              className="w-full flex items-center justify-between gap-2 px-2 py-1.5 -mx-1 mb-1.5 rounded-md hover:bg-emerald-500/[0.06] active:scale-[0.99] transition"
+              aria-label="Copy join code"
+            >
+              <span className="text-[9px] font-semibold uppercase tracking-[0.25em] text-emerald-300/70 shrink-0">
+                Share Code
+              </span>
+              <span className="font-mono text-[13px] font-bold tracking-[0.35em] text-emerald-200 tabular-nums leading-none ml-auto">
+                {privateJoinCode}
+              </span>
+              <Copy className="w-3 h-3 text-emerald-300/80 shrink-0" />
+            </button>
+          )}
         </header>
 
         {/* ── INFO MODAL ── */}
