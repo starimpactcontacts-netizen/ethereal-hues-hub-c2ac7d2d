@@ -202,7 +202,7 @@ export default function MatchmakingLobby({ open, elapsedSec, currentUserId, onCa
 
             {/* Matchup text */}
             <p className="text-center text-[11px] text-zinc-500 mt-4 tracking-wide">
-              {myUsername} vs ???
+              Open Challenge — anyone can jump in
             </p>
           </div>
 
