@@ -91,20 +91,16 @@ export default function CustomEditBattleLobby({
           className="relative mt-5 overflow-hidden rounded-2xl border border-border bg-surface-1 min-h-[258px]"
         >
           <div aria-hidden className="absolute inset-0" style={{ background: "radial-gradient(circle at 18% 25%, hsl(var(--verified) / 0.18), transparent 32%), radial-gradient(circle at 82% 24%, hsl(var(--destructive) / 0.18), transparent 34%)" }} />
-          <div className="absolute inset-x-0 top-0 h-[2px]" style={{ background: "linear-gradient(90deg, hsl(var(--verified)), transparent 46%, transparent 54%, hsl(var(--destructive)))" }} />
-
-          <div className="relative px-5 pt-5 flex items-center justify-between">
-            <div className="flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-status-live animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300">{isPrivate ? "Private Lobby" : "Lobby Live"}</span>
-            {isPrivate && <Lock className="w-3 h-3 text-fuchsia-300" />}
+          {isPrivate && (
+            <div className="relative px-5 pt-5 flex items-center justify-start">
+              <div className="flex items-center gap-2 rounded-full border border-fuchsia-500/30 bg-fuchsia-500/10 px-3 py-1">
+                <Lock className="w-3 h-3 text-fuchsia-300" />
+                <span className="text-[10px] font-black uppercase tracking-[0.18em] text-fuchsia-300">Private Lobby</span>
+              </div>
             </div>
-          <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground">
-            <Zap className="w-3.5 h-3.5 text-fuchsia-400" /> Lobby Arcade
-          </div>
-          </div>
+          )}
 
-          <div className="relative px-5 pt-8 pb-6 flex items-center justify-between gap-4">
+          <div className={`relative px-5 ${isPrivate ? "pt-6" : "pt-10"} pb-6 flex items-center justify-between gap-4`}>
             <div className="flex-1 min-w-0 flex flex-col items-center">
               <div className="relative">
                 <span className="absolute -inset-2 rounded-full bg-blue-500/20 blur-lg" />
@@ -127,6 +123,10 @@ export default function CustomEditBattleLobby({
                 <Swords className="w-6 h-6 text-foreground" />
               </div>
               <span className="text-[13px] font-black uppercase tracking-[0.18em] text-muted-foreground" style={{ fontFamily: "Teko, sans-serif" }}>VS</span>
+              <div className="flex flex-col items-center -mt-0.5">
+                <span className="text-[20px] leading-none font-black text-foreground tabular-nums" style={{ fontFamily: "Teko, sans-serif" }}>{duration}</span>
+                <span className="text-[8px] font-black uppercase tracking-[0.22em] text-muted-foreground">Duration</span>
+              </div>
             </div>
 
             <div className="flex-1 min-w-0 flex flex-col items-center">
@@ -140,10 +140,6 @@ export default function CustomEditBattleLobby({
             </div>
           </div>
         </motion.section>
-
-        <div className="mt-3 grid grid-cols-1 gap-2">
-          <StatTile value={duration} label="Duration" />
-        </div>
 
         {isPrivate && isHost && fight.join_code && (
           <div className="mt-3 rounded-2xl border border-fuchsia-500/30 bg-fuchsia-500/[0.06] p-4">
