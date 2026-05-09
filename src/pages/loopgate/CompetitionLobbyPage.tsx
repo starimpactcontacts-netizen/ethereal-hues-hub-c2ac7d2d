@@ -112,6 +112,11 @@ export default function CompetitionLobbyPage() {
   const [showThemeReveal, setShowThemeReveal] = useState(false);
   const prevStatusRef = useRef<string | null>(null);
   const themeRevealedRef = useRef<string | null>(null);
+  const [infoIdx, setInfoIdx] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setInfoIdx((i) => i + 1), 3800);
+    return () => clearInterval(id);
+  }, []);
   // Tick once per second during the live showcase so the leaderboard reveals
   // exactly when the synchronized 15s/edit playback ends — no waiting on poll.
   const [phaseNow, setPhaseNow] = useState(() => Date.now());
