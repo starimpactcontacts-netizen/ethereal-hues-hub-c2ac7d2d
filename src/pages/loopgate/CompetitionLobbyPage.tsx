@@ -1062,12 +1062,6 @@ export default function CompetitionLobbyPage() {
         {/* Title overlay */}
         <div className="absolute bottom-4 left-4 right-4">
           <div className="flex items-center gap-2 mb-1.5">
-            {/* League */}
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-black/50 backdrop-blur-sm border border-white/[0.12] rounded">
-              <span className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-white/80" style={teko}>
-                {competition.league === "elite" ? "ELITE" : competition.league === "pro" ? "PRO" : "OPEN"} LEAGUE
-              </span>
-            </div>
             {/* Status — no green badge, just subtle amber/white text */}
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-black/50 backdrop-blur-sm border border-white/[0.08]">
               <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${isLive ? "bg-red-500" : "bg-amber-400"}`} />
@@ -1205,26 +1199,29 @@ export default function CompetitionLobbyPage() {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-3"
           >
-            <div className="grid grid-cols-3 gap-2 rounded-xl border border-border bg-card p-2">
-              <div className="min-w-0">
-                <p className="text-[9px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground" style={teko}>Round</p>
-                <div className="mt-1 flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-destructive animate-pulse" />
-                  <span className="text-[13px] font-black uppercase text-destructive" style={teko}>Open</span>
+            {/* Cinematic urgency strip — big countdown, live dot, submissions */}
+            <div className="relative overflow-hidden rounded-2xl border border-destructive/30 bg-gradient-to-br from-destructive/[0.18] via-black to-black p-4">
+              <div className="pointer-events-none absolute -top-16 -right-16 w-48 h-48 rounded-full bg-destructive/30 blur-3xl" />
+              <div className="relative flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-destructive animate-pulse" />
+                    <span className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-destructive" style={teko}>Time Left</span>
+                  </div>
+                  <div className="mt-1 text-3xl font-black text-white leading-none tabular-nums" style={teko}>
+                    {competition.deadline ? <LiveCountdown deadline={competition.deadline} /> : <span>LIVE</span>}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground" style={teko}>Edits In</p>
+                  <p className="mt-1 text-3xl font-black tabular-nums text-white leading-none" style={teko}>
+                    {submittedEditorCount}<span className="text-white/30">/{totalEditorCount}</span>
+                  </p>
                 </div>
               </div>
-              <div className="min-w-0 text-center border-x border-border">
-                <p className="text-[9px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground" style={teko}>Edits In</p>
-                <p className="mt-1 text-[16px] font-black tabular-nums text-foreground leading-none" style={teko}>
-                  {submittedEditorCount}/{totalEditorCount}
-                </p>
-              </div>
-              <div className="min-w-0 text-right">
-                <p className="text-[9px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground" style={teko}>Timer</p>
-                <div className="mt-1 flex justify-end">
-                  {competition.deadline ? <LiveCountdown deadline={competition.deadline} /> : <span className="text-[13px] font-black text-muted-foreground" style={teko}>LIVE</span>}
-                </div>
-              </div>
+              <p className="relative mt-3 text-[10px] font-bold uppercase tracking-[0.15em] text-white/60" style={teko}>
+                {submittedEditorCount === 0 ? "Be the first to drop your edit" : `${totalEditorCount - submittedEditorCount} editor${totalEditorCount - submittedEditorCount === 1 ? "" : "s"} left to submit`}
+              </p>
             </div>
 
             <input
@@ -1235,7 +1232,7 @@ export default function CompetitionLobbyPage() {
               className="hidden"
             />
 
-            <div className="grid grid-cols-[1.15fr_1fr] gap-2">
+            <div className="grid grid-cols-[1.15fr_1fr] gap-2.5">
               <button
                 onClick={() => {
                   const params = new URLSearchParams();
@@ -1244,18 +1241,20 @@ export default function CompetitionLobbyPage() {
                   if (competition.id) params.set("comp_id", competition.id);
                   navigate(`/studio?${params.toString()}`);
                 }}
-                className="h-16 rounded-xl border border-destructive/30 bg-destructive text-destructive-foreground flex items-center justify-center gap-2.5 transition active:scale-[0.98]"
+                className="relative overflow-hidden h-[68px] rounded-2xl border border-destructive/40 bg-destructive text-destructive-foreground flex items-center justify-center gap-2.5 transition active:scale-[0.98] shadow-[0_10px_30px_-10px_hsl(var(--destructive)/0.6)]"
                 style={teko}
               >
+                <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/30" />
                 <Pencil className="w-5 h-5" strokeWidth={2.5} />
                 <span className="text-[19px] font-extrabold uppercase tracking-[0.16em] leading-none">Edit</span>
               </button>
               <button
                 onClick={() => submitFileInputRef.current?.click()}
                 disabled={isSubmitting}
-                className="h-16 rounded-xl border border-status-live/30 bg-status-live text-primary-foreground flex items-center justify-center gap-2.5 transition active:scale-[0.98] disabled:opacity-50"
+                className="relative overflow-hidden h-[68px] rounded-2xl border border-status-live/40 bg-status-live text-primary-foreground flex items-center justify-center gap-2.5 transition active:scale-[0.98] disabled:opacity-50 shadow-[0_10px_30px_-10px_hsl(var(--status-live)/0.6)]"
                 style={teko}
               >
+                <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/30" />
                 {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload className="w-5 h-5" strokeWidth={2.5} />}
                 <span className="text-[19px] font-extrabold uppercase tracking-[0.16em] leading-none">Upload</span>
               </button>
