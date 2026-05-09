@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Heart, MessageCircle, Flame, Play } from 'lucide-react';
+import { MessageCircle, Flame, Play } from 'lucide-react';
+import LoopHeart from './LoopHeart';
 import { cn } from '@/lib/utils';
 
 interface TrendingPost {
@@ -141,7 +142,7 @@ export default function TrendingLoops({ limit = 10 }: { limit?: number }) {
             <div className="flex items-center gap-2.5 mt-1">
               {post.like_count > 0 && (
                 <span className="flex items-center gap-0.5 text-[9px] text-white/60">
-                  <Heart size={9} className="text-red-400" fill="currentColor" /> {post.like_count}
+                  <LoopHeart size={9} filled className="text-red-400" /> {post.like_count}
                 </span>
               )}
               {post.comment_count > 0 && (
