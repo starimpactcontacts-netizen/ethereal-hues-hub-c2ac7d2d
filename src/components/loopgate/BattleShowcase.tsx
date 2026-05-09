@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Play, Pause, Volume2, VolumeX } from "lucide-react";
+import { Play, Pause } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useBattleAudioUnlock } from "@/hooks/useBattleAudioUnlock";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
@@ -34,6 +35,8 @@ function isImageFile(url: string) {
  * after the first full pass.
  */
 export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }: Props) {
+  const videoKey = useMemo(() => sides.map((side) => side.url).join("|"), [sides]);
+  const audioUnlocked = useBattleAudioUnlock();
   const startMs = showcaseStartedAt ? new Date(showcaseStartedAt).getTime() : null;
   const totalMs = sides.length * PER_EDIT_SECONDS * 1000;
 
@@ -53,25 +56,26 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   const [currentIdx, setCurrentIdx] = useState(initial.idx);
   const [secondsLeft, setSecondsLeft] = useState(initial.left);
   const [paused, setPaused] = useState(false);
-  const [soundOn, setSoundOn] = useState(false);
   const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
   const completedFiredRef = useRef(false);
 
   const current = sides[currentIdx];
 
-  // Preload and play every direct video muted so switching sides never re-fetches/rebuffers.
+  // Preload and play every direct video; after the first page tap, active edit is unmuted automatically.
   useEffect(() => {
     videoRefs.current.forEach((v, index) => {
       if (!v) return;
-      v.muted = !(soundOn && index === currentIdx);
+      const active = index === currentIdx;
+      v.muted = !(audioUnlocked && active);
+      v.defaultMuted = false;
+      v.volume = active ? 1 : 0;
       v.preload = "auto";
       v.play().catch(() => {
         v.muted = true;
-        if (index === currentIdx) setSoundOn(false);
         v.play().catch((error) => { void error; });
       });
     });
-  }, [currentIdx, sides, soundOn]);
+  }, [audioUnlocked, currentIdx, videoKey]);
 
   useEffect(() => {
     videoRefs.current.forEach((v) => {
@@ -97,17 +101,6 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     const id = setInterval(tick, 250);
     return () => clearInterval(id);
   }, [compute, startMs, sides.length, onComplete]);
-
-  const toggleSound = () => {
-    const next = !soundOn;
-    setSoundOn(next);
-    videoRefs.current.forEach((v, index) => {
-      if (!v) return;
-      v.muted = !(next && index === currentIdx);
-      v.volume = 1;
-      if (index === currentIdx) v.play().catch(() => setSoundOn(false));
-    });
-  };
 
   const direct = isDirectVideo(current.url);
   const image = isImageFile(current.url);
