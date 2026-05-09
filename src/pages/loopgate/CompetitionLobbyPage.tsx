@@ -742,21 +742,18 @@ export default function CompetitionLobbyPage() {
                   toast.error("Couldn't copy code");
                 }
               }}
-              className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border border-emerald-500/40 bg-gradient-to-r from-emerald-500/15 to-emerald-500/5 hover:from-emerald-500/20 hover:to-emerald-500/10 active:scale-[0.99] transition"
+              className="w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/[0.06] hover:bg-emerald-500/[0.1] active:scale-[0.99] transition"
               aria-label="Copy join code"
             >
               <div className="flex flex-col items-start min-w-0">
-                <span className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-emerald-300/80" style={teko}>
-                  Share This Code
+                <span className="text-[9px] font-semibold uppercase tracking-[0.25em] text-emerald-300/70">
+                  Share Code
                 </span>
-                <span className="text-[28px] font-black tracking-[0.35em] text-emerald-300 tabular-nums leading-none mt-1" style={teko}>
+                <span className="font-mono text-[22px] font-bold tracking-[0.4em] text-emerald-200 tabular-nums leading-none mt-1">
                   {privateJoinCode}
                 </span>
               </div>
-              <div className="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-400/30">
-                <Copy className="w-3.5 h-3.5 text-emerald-300" />
-                <span className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-emerald-200" style={teko}>Copy</span>
-              </div>
+              <Copy className="w-4 h-4 text-emerald-300 shrink-0" />
             </button>
           </div>
         )}
