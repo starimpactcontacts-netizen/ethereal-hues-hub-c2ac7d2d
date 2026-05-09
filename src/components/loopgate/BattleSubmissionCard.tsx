@@ -68,7 +68,7 @@ export default function BattleSubmissionCard({
       {/* Tall 9:16 — the EDIT is the entire card. Minimal overlay only. */}
       <a href={url} target="_blank" rel="noopener noreferrer" className={`block relative ${aspectClass} bg-surface-2 overflow-hidden group`}>
         {displayThumb ? (
-          <img src={displayThumb} alt={`${username}'s edit`} className="w-full h-full object-cover" />
+          <img src={displayThumb} alt={`${username}'s edit`} className="w-full h-full object-contain bg-black" loading="eager" decoding="async" />
         ) : thumbLoading ? (
           <div className="w-full h-full flex items-center justify-center">
             <div className="text-center">
