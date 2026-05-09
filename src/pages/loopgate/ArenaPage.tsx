@@ -706,11 +706,11 @@ export default function ArenaPage() {
     setLobbyTypeOpen(true);
   };
 
-  const handleCreateLobby = async (isPrivate: boolean) => {
+  const handleCreateLobby = async (isPrivate: boolean, durationMinutes: number) => {
     if (!user || !profile) return;
     setQfSearching(true);
     try {
-      const lobby = await createQuickFightLobby(user.id, profile.username, profile.avatar_url, { isPrivate });
+      const lobby = await createQuickFightLobby(user.id, profile.username, profile.avatar_url, { isPrivate, durationMinutes });
       if (!lobby) throw new Error('create lobby failed');
       await leaveQueue(user.id);
       setLobbyTypeOpen(false);

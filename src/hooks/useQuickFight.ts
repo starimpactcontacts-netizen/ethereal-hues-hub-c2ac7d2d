@@ -67,7 +67,7 @@ export async function createQuickFightLobby(
   userId: string,
   username: string,
   avatarUrl: string | null,
-  options?: { isPrivate?: boolean }
+  options?: { isPrivate?: boolean; durationMinutes?: number }
 ): Promise<{ id: string; joinCode: string | null } | null> {
   let joinCode: string | null = null;
   if (options?.isPrivate) {
@@ -85,7 +85,7 @@ export async function createQuickFightLobby(
       player_1_username: username,
       player_1_avatar_url: avatarUrl,
       status: 'waiting',
-      duration_minutes: 60,
+      duration_minutes: options?.durationMinutes ?? 60,
       is_private: !!options?.isPrivate,
       join_code: joinCode,
     } as any)
