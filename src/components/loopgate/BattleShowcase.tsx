@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause, Volume2 } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const teko = { fontFamily: "Teko, sans-serif" };
@@ -53,43 +53,26 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   const [currentIdx, setCurrentIdx] = useState(initial.idx);
   const [secondsLeft, setSecondsLeft] = useState(initial.left);
   const [paused, setPaused] = useState(false);
-  const [needsSoundTap, setNeedsSoundTap] = useState(false);
+  const [soundOn, setSoundOn] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const completedFiredRef = useRef(false);
-  const audioUnlockedRef = useRef(false);
 
   const current = sides[currentIdx];
 
-  // Try unmuted autoplay; fall back to muted + tap-for-sound CTA
+  // Autoplay muted by default for reliable loading; user controls sound explicitly.
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
-    v.muted = false;
-    v.volume = 1;
+    v.muted = !soundOn;
     v.currentTime = 0;
-    setNeedsSoundTap(false);
-    (async () => {
-      try {
-        await v.play();
-        audioUnlockedRef.current = true;
-        setNeedsSoundTap(false);
-      } catch {
-        // If we already unlocked audio on a previous edit, keep trying unmuted —
-        // browser should allow it because the document already had a gesture.
-        if (audioUnlockedRef.current) {
-          try {
-            v.muted = false;
-            await v.play();
-            setNeedsSoundTap(false);
-            return;
-          } catch {}
-        }
+    v.play().catch(() => {
+      if (soundOn) {
         v.muted = true;
-        setNeedsSoundTap(true);
-        try { await v.play(); } catch {}
+        setSoundOn(false);
+        v.play().catch(() => {});
       }
-    })();
-  }, [current?.userId, currentIdx]);
+    });
+  }, [current?.userId, currentIdx, soundOn]);
 
   useEffect(() => {
     const v = videoRef.current;
@@ -115,14 +98,14 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     return () => clearInterval(id);
   }, [startMs, sides.length, onComplete]);
 
-  const enableSound = () => {
+  const toggleSound = () => {
     const v = videoRef.current;
     if (!v) return;
-    v.muted = false;
+    const next = !soundOn;
+    setSoundOn(next);
+    v.muted = !next;
     v.volume = 1;
-    v.play().catch(() => {});
-    audioUnlockedRef.current = true;
-    setNeedsSoundTap(false);
+    v.play().catch(() => setSoundOn(false));
   };
 
   const direct = isDirectVideo(current.url);
@@ -183,6 +166,8 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
               autoPlay
               playsInline
               loop
+              muted={!soundOn}
+              preload="auto"
             />
           ) : image ? (
             <img src={current.url} alt={`${current.username} edit`} className="w-full h-full object-contain bg-black" />
@@ -234,18 +219,13 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
             {paused ? <Play className="w-4 h-4 text-white ml-0.5" /> : <Pause className="w-4 h-4 text-white" />}
           </button>
 
-          {direct && needsSoundTap && (
+          {direct && (
             <button
-              onClick={enableSound}
-              className="absolute inset-0 flex items-center justify-center bg-black/30 active:bg-black/40"
-              aria-label="Enable sound"
+              onClick={toggleSound}
+              className="absolute bottom-3 right-3 w-10 h-10 rounded-full bg-black/60 backdrop-blur-md border border-white/10 flex items-center justify-center active:scale-95"
+              aria-label={soundOn ? "Mute showcase audio" : "Enable showcase audio"}
             >
-              <div className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-black/80 backdrop-blur-md border border-white/20">
-                <Volume2 className="w-4 h-4 text-white" />
-                <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-white" style={teko}>
-                  Tap for Sound
-                </span>
-              </div>
+              {soundOn ? <Volume2 className="w-4 h-4 text-white" /> : <VolumeX className="w-4 h-4 text-white" />}
             </button>
           )}
         </motion.div>
