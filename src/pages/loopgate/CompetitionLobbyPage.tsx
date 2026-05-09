@@ -741,16 +741,6 @@ export default function CompetitionLobbyPage() {
                 ))}
               </div>
 
-              <div className="mt-4 p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-foreground/45 mb-1" style={teko}>
-                  {competition.is_private ? "Join Code" : "Room Code"}
-                </p>
-                <p className="text-[16px] font-black tracking-[0.25em] text-foreground tabular-nums" style={teko}>
-                  {roomCode}
-                </p>
-                <p className="text-[11px] text-foreground/50 mt-1.5">Share this with your crew to pull up.</p>
-              </div>
-
               <button
                 onClick={() => setShowInfo(false)}
                 className="mt-4 w-full h-11 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white border border-emerald-400/30"
