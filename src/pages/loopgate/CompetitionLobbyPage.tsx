@@ -684,7 +684,7 @@ export default function CompetitionLobbyPage() {
               }`}
             >
               <Users className="w-4 h-4" strokeWidth={2.6} />
-              <span className="text-[13px] font-extrabold uppercase tracking-[0.22em] leading-none" style={teko}>
+              <span className="text-[13px] font-extrabold uppercase tracking-[0.08em] leading-none" style={teko}>
                 Squad
               </span>
               <span className={`min-w-[28px] text-center text-[10px] font-black tabular-nums px-1.5 py-0.5 rounded-md leading-none ${
@@ -702,7 +702,7 @@ export default function CompetitionLobbyPage() {
               }`}
             >
               <MessageCircle className="w-4 h-4" strokeWidth={2.6} />
-              <span className="text-[13px] font-extrabold uppercase tracking-[0.22em] leading-none" style={teko}>
+              <span className="text-[13px] font-extrabold uppercase tracking-[0.08em] leading-none" style={teko}>
                 Chat
               </span>
               <span className={`min-w-[28px] text-center text-[10px] font-black tabular-nums px-1.5 py-0.5 rounded-md leading-none ${
@@ -1117,20 +1117,20 @@ export default function CompetitionLobbyPage() {
           >
             <div className="grid grid-cols-3 gap-2 rounded-xl border border-border bg-card p-2">
               <div className="min-w-0">
-                <p className="text-[9px] font-extrabold uppercase tracking-[0.22em] text-muted-foreground" style={teko}>Round</p>
+                <p className="text-[9px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground" style={teko}>Round</p>
                 <div className="mt-1 flex items-center gap-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-destructive animate-pulse" />
                   <span className="text-[13px] font-black uppercase text-destructive" style={teko}>Open</span>
                 </div>
               </div>
               <div className="min-w-0 text-center border-x border-border">
-                <p className="text-[9px] font-extrabold uppercase tracking-[0.22em] text-muted-foreground" style={teko}>Edits In</p>
+                <p className="text-[9px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground" style={teko}>Edits In</p>
                 <p className="mt-1 text-[16px] font-black tabular-nums text-foreground leading-none" style={teko}>
                   {submittedEditorCount}/{totalEditorCount}
                 </p>
               </div>
               <div className="min-w-0 text-right">
-                <p className="text-[9px] font-extrabold uppercase tracking-[0.22em] text-muted-foreground" style={teko}>Timer</p>
+                <p className="text-[9px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground" style={teko}>Timer</p>
                 <div className="mt-1 flex justify-end">
                   {competition.deadline ? <LiveCountdown deadline={competition.deadline} /> : <span className="text-[13px] font-black text-muted-foreground" style={teko}>LIVE</span>}
                 </div>
