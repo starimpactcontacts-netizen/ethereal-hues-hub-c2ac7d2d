@@ -595,7 +595,10 @@ export default function CompetitionLobbyPage() {
   // LOBBY ROOM — dedicated interface (members + chat + ready bar)
   // ═══════════════════════════════════════════════════════════════
   if (isLobby) {
-    const roomCode = (competition.slug || competition.id).slice(0, 6).toUpperCase();
+    const privateJoinCode = ((competition as any).join_code || "").trim().toUpperCase();
+    const roomCode = competition.is_private && privateJoinCode
+      ? privateJoinCode
+      : (competition.slug || competition.id).slice(0, 6).toUpperCase();
     const cap = competition.max_players;
     const memberCount = participants.length;
 
@@ -717,7 +720,7 @@ export default function CompetitionLobbyPage() {
 
               <div className="mt-4 p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
                 <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-foreground/45 mb-1" style={teko}>
-                  Room Code
+                  {competition.is_private ? "Join Code" : "Room Code"}
                 </p>
                 <p className="text-[16px] font-black tracking-[0.25em] text-foreground tabular-nums" style={teko}>
                   {roomCode}
