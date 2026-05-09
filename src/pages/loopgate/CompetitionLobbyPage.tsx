@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Trophy, Users, Clock, Play, Loader2,
-  Share2, Check, MessageCircle, Layers, Pencil, X, ThumbsUp, Sparkles, Upload, Volume2, VolumeX, CheckCircle2, Circle, LogOut, Crown, Info, Timer, Vote, Gavel, Trash2
+  Share2, Check, MessageCircle, Layers, Pencil, X, ThumbsUp, Sparkles, Upload, Volume2, VolumeX, CheckCircle2, Circle, LogOut, Crown, Info, Timer, Vote, Gavel, Trash2, Copy
 } from "lucide-react";
 import { useCompetition } from "@/hooks/useCompetitions";
 import { useAuth } from "@/hooks/useAuth";
@@ -628,6 +628,28 @@ export default function CompetitionLobbyPage() {
                     <span className="text-[9.5px] font-medium uppercase tracking-[0.06em] text-gold/90 flex items-center gap-0.5">
                       <Trophy className="w-2.5 h-2.5" />{competition.index_reward_pool} IDX
                     </span>
+                  </>
+                )}
+                {isCreator && competition.is_private && privateJoinCode && (
+                  <>
+                    <span className="text-foreground/25 text-[9px] leading-none mx-0.5">•</span>
+                    <button
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(privateJoinCode);
+                          toast.success(`Code ${privateJoinCode} copied`);
+                        } catch {
+                          toast.error("Couldn't copy code");
+                        }
+                      }}
+                      className="inline-flex items-center gap-1 h-[18px] px-1.5 rounded-[5px] border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/15 active:scale-95 transition"
+                      aria-label="Copy join code"
+                    >
+                      <Copy className="w-2.5 h-2.5 text-emerald-400" />
+                      <span className="text-[10px] font-black tracking-[0.2em] text-emerald-300 tabular-nums" style={teko}>
+                        {privateJoinCode}
+                      </span>
+                    </button>
                   </>
                 )}
               </div>
