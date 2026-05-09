@@ -731,6 +731,35 @@ export default function CompetitionLobbyPage() {
         )}
 
         {/* ── MOBILE TAB SWITCHER (Roblox-style chunky pills) ── */}
+        {isCreator && competition.is_private && privateJoinCode && (
+          <div className="shrink-0 px-3 pt-3">
+            <button
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(privateJoinCode);
+                  toast.success(`Code ${privateJoinCode} copied`);
+                } catch {
+                  toast.error("Couldn't copy code");
+                }
+              }}
+              className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border border-emerald-500/40 bg-gradient-to-r from-emerald-500/15 to-emerald-500/5 hover:from-emerald-500/20 hover:to-emerald-500/10 active:scale-[0.99] transition"
+              aria-label="Copy join code"
+            >
+              <div className="flex flex-col items-start min-w-0">
+                <span className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-emerald-300/80" style={teko}>
+                  Share This Code
+                </span>
+                <span className="text-[28px] font-black tracking-[0.35em] text-emerald-300 tabular-nums leading-none mt-1" style={teko}>
+                  {privateJoinCode}
+                </span>
+              </div>
+              <div className="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-400/30">
+                <Copy className="w-3.5 h-3.5 text-emerald-300" />
+                <span className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-emerald-200" style={teko}>Copy</span>
+              </div>
+            </button>
+          </div>
+        )}
         {(hasJoined || isCreator) && (isLobby || isLive) && (
           <div className="shrink-0 px-3 pt-3">
             <CompetitionVoiceChat competitionId={competition.id} />
