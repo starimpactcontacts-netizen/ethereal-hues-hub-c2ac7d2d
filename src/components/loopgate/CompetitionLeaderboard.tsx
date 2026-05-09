@@ -2,12 +2,43 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Trophy, ExternalLink, Play, ChevronDown, ChevronUp,
-  Crown, X, ThumbsUp, ThumbsDown, MessageCircle, Vote, Lock
+  X, ThumbsUp, ThumbsDown, MessageCircle, Vote, Lock
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { CompetitionSubmission } from "@/hooks/useCompetitions";
 
 const teko = { fontFamily: "Teko, sans-serif" };
+
+/** Custom regal crown — replaces the generic lucide Crown */
+function CustomCrown({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 24" className={className} xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <defs>
+        <linearGradient id="crownGold" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#fde68a" />
+          <stop offset="45%" stopColor="#fbbf24" />
+          <stop offset="100%" stopColor="#b45309" />
+        </linearGradient>
+      </defs>
+      {/* Crown body — 5 peaks */}
+      <path
+        d="M2 8 L7 16 L11 6 L16 14 L21 6 L25 16 L30 8 L28 21 L4 21 Z"
+        fill="url(#crownGold)"
+        stroke="#78350f"
+        strokeWidth="0.8"
+        strokeLinejoin="round"
+      />
+      {/* Base band */}
+      <rect x="4" y="20" width="24" height="2.2" rx="0.6" fill="#92400e" stroke="#78350f" strokeWidth="0.4" />
+      {/* Jewels on peaks */}
+      <circle cx="7" cy="6" r="1.4" fill="#ef4444" stroke="#7f1d1d" strokeWidth="0.4" />
+      <circle cx="16" cy="4" r="1.6" fill="#3b82f6" stroke="#1e3a8a" strokeWidth="0.4" />
+      <circle cx="25" cy="6" r="1.4" fill="#10b981" stroke="#064e3b" strokeWidth="0.4" />
+      {/* Center gem on band */}
+      <circle cx="16" cy="21" r="0.9" fill="#fde68a" />
+    </svg>
+  );
+}
 
 const rankColors: Record<number, { border: string; glow: string; bg: string; text: string }> = {
   1: { border: "border-amber-400/60", glow: "shadow-[0_0_20px_rgba(251,191,36,0.3)]", bg: "from-amber-400/20 to-amber-400/5", text: "text-amber-400" },
@@ -152,7 +183,7 @@ function EditDetailView({
               <span className="text-sm font-bold text-foreground">@{sub.username}</span>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-[10px] text-muted-foreground/50 uppercase">{sub.platform}</span>
-                {rank === 1 && <Crown className="w-3 h-3 text-amber-400" />}
+                {rank === 1 && <CustomCrown className="w-3 h-3 text-amber-400" />}
               </div>
             </div>
             {sub.is_winner && (
@@ -338,7 +369,7 @@ export default function CompetitionLeaderboard({
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 onClick={() => setSelectedEdit({ sub: winner, rank: 1 })}
-                className="relative w-full aspect-[9/16] max-h-[520px] rounded-2xl overflow-hidden border border-amber-400/60 shadow-[0_0_32px_rgba(251,191,36,0.35)] active:scale-[0.99] transition-transform"
+                className="relative w-full mx-auto aspect-[9/16] max-h-[64vh] max-w-[min(100%,calc(64vh*9/16))] sm:max-w-[360px] rounded-2xl overflow-hidden border border-amber-400/60 shadow-[0_0_32px_rgba(251,191,36,0.35)] active:scale-[0.99] transition-transform"
               >
                 {winnerVideoIsDirect ? (
                   <video
@@ -378,10 +409,10 @@ export default function CompetitionLeaderboard({
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/40" />
 
-                {/* Crown + rank */}
+                {/* Rank + custom crown */}
                 <div className="absolute top-3 left-3 flex items-center gap-2 z-[2]">
-                  <span className="text-[42px] font-black leading-none text-amber-400" style={teko}>1</span>
-                  <Crown className="w-6 h-6 text-amber-400 drop-shadow-lg" />
+                  <span className="text-[42px] font-black leading-none text-amber-400 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]" style={teko}>1</span>
+                  <CustomCrown className="w-7 h-7 drop-shadow-[0_2px_6px_rgba(251,191,36,0.6)]" />
                 </div>
                 <div className="absolute top-3 right-3 z-[2] px-2.5 py-1 rounded-full bg-amber-400 text-black text-[10px] font-black uppercase tracking-[0.18em]" style={teko}>
                   Winner
@@ -444,7 +475,7 @@ export default function CompetitionLeaderboard({
 
                     {rank === 1 && (
                       <div className="absolute top-2 right-2 z-[2]">
-                        <Crown className="w-4 h-4 text-amber-400 drop-shadow-lg" />
+                        <CustomCrown className="w-4 h-4 text-amber-400 drop-shadow-lg" />
                       </div>
                     )}
 
@@ -501,7 +532,7 @@ export default function CompetitionLeaderboard({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs font-bold text-foreground truncate">{sub.username}</span>
-                        {isKing && <Crown className="w-3 h-3 text-amber-400 shrink-0" />}
+                        {isKing && <CustomCrown className="w-3 h-3 text-amber-400 shrink-0" />}
                       </div>
                       <span className="text-[9px] text-muted-foreground/40 uppercase">{sub.platform}</span>
                     </div>
