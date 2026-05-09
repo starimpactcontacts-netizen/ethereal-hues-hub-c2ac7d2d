@@ -136,8 +136,6 @@ export default function BattleDetailPage() {
   const totalVotes = battle.challenger_votes + battle.opponent_votes;
   const hasSongPicked = !!(battle as any).theme_song_name;
   const isRapid = (battle as any).is_rapid;
-  const submissionMode = (battle as any).submission_mode as 'create' | 'reuse' | undefined;
-  const isPremade = submissionMode === 'reuse';
   const isLive = battle.status === 'active';
   const isCompleted = battle.status === 'completed';
   const isJudging = battle.status === 'judging';
