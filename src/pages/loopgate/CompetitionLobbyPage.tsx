@@ -80,7 +80,7 @@ export default function CompetitionLobbyPage() {
     competition, participants, submissions, loading,
     isCreator, hasJoined, hasSubmitted, hasUpvoted, isReady, readyCount,
     myVoteSubmissionId,
-    join, submit, toggleUpvote, updateInspo, toggleReady, leave,
+    join, submit, toggleUpvote, updateInspo, toggleReady, leave, kick,
     startVoting, castVote, finalizeVoting,
   } = useCompetition(id);
 
