@@ -80,7 +80,7 @@ export default function CompetitionLobbyPage() {
     competition, participants, submissions, loading,
     isCreator, hasJoined, hasSubmitted, hasUpvoted, isReady, readyCount,
     myVoteSubmissionId,
-    join, submit, toggleUpvote, updateInspo, toggleReady, leave, kick,
+    join, joinWithCode, submit, toggleUpvote, updateInspo, toggleReady, leave, kick,
     startVoting, castVote, finalizeVoting,
   } = useCompetition(id);
 
@@ -317,6 +317,19 @@ export default function CompetitionLobbyPage() {
 
   const handleJoin = async () => {
     if (!user) { navigate("/start"); return; }
+    // Private rooms — prompt for code unless host
+    if (competition?.is_private && competition.creator_id !== user.id) {
+      const entered = window.prompt("🔒 This is a private lobby — enter the join code:");
+      if (!entered) return;
+      setIsJoining(true);
+      const res = await joinWithCode(entered.trim());
+      setIsJoining(false);
+      if (res.ok) toast.success("You're in!");
+      else if (res.error === "invalid_code") toast.error("Wrong code");
+      else if (res.error === "full") toast.error("Lobby is full");
+      else toast.error("Couldn't join");
+      return;
+    }
     setIsJoining(true);
     const ok = await join();
     if (ok) toast.success("You're in!");
