@@ -595,7 +595,7 @@ export default function CompetitionLobbyPage() {
   // LOBBY ROOM — dedicated interface (members + chat + ready bar)
   // ═══════════════════════════════════════════════════════════════
   if (isLobby) {
-    const privateJoinCode = ((competition as any).join_code || "").trim().toUpperCase();
+    const privateJoinCode = (competition.join_code || "").trim().toUpperCase();
     const roomCode = competition.is_private && privateJoinCode
       ? privateJoinCode
       : (competition.slug || competition.id).slice(0, 6).toUpperCase();
