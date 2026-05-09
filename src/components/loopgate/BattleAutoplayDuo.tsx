@@ -234,14 +234,12 @@ function SidePanel({
           src={side.url}
           className="w-full h-full object-contain"
           playsInline
-          // @ts-expect-error — iOS Safari hint
           webkit-playsinline="true"
           x-webkit-airplay="deny"
           disableRemotePlayback
           loop
           muted
           preload="auto"
-          // @ts-expect-error — Chrome/Edge HD hint
           disablePictureInPicture
           onLoadedData={onReady}
           onCanPlayThrough={onReady}
