@@ -102,7 +102,6 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     return () => clearInterval(id);
   }, [compute, startMs, sides.length, onComplete]);
 
-  const direct = isDirectVideo(current.url);
   const image = isImageFile(current.url);
   const progressPct = ((PER_EDIT_SECONDS - secondsLeft) / PER_EDIT_SECONDS) * 100;
   const ringColor = current.color === "red" ? "ring-red-500/40" : "ring-blue-500/40";
@@ -162,7 +161,6 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
                     autoPlay
                     playsInline
                     loop
-                    muted={!(soundOn && active)}
                     preload="auto"
                     controls={false}
                     disablePictureInPicture
@@ -220,15 +218,6 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
             {paused ? <Play className="w-4 h-4 text-white ml-0.5" /> : <Pause className="w-4 h-4 text-white" />}
           </button>
 
-          {direct && (
-            <button
-              onClick={toggleSound}
-              className="absolute bottom-3 right-3 w-10 h-10 rounded-full bg-background/70 backdrop-blur-md border border-border flex items-center justify-center active:scale-95"
-              aria-label={soundOn ? "Mute showcase audio" : "Enable showcase audio"}
-            >
-              {soundOn ? <Volume2 className="w-4 h-4 text-foreground" /> : <VolumeX className="w-4 h-4 text-foreground" />}
-            </button>
-          )}
       </motion.div>
 
       <p className="text-[10px] text-center text-foreground/40 uppercase tracking-[0.2em]" style={teko}>
