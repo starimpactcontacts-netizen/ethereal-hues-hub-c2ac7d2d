@@ -640,7 +640,7 @@ export default function CompetitionLobbyPage() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -8 }}
                         transition={{ duration: 0.3 }}
-                        className="block text-[10.5px] font-bold uppercase tracking-[0.08em] text-white/85 truncate"
+                        className="block text-[10.5px] font-bold uppercase tracking-[0.08em] text-white/40 truncate"
                       >
                         {line}
                       </motion.span>
