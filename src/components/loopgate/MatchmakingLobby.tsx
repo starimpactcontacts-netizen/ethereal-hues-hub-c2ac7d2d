@@ -1,10 +1,10 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Swords, X, Users, Share2, Eye } from "lucide-react";
+import { Swords, X, Users, Share2, Eye, Info } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useOpenQuickFightQueue } from "@/hooks/useQuickFight";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { setLobbyMusicActive } from "./LobbyMusicPlayer";
 
