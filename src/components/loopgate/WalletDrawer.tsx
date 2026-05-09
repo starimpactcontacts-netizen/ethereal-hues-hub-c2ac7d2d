@@ -409,7 +409,7 @@ export default function WalletDrawer({ open, onClose }: WalletDrawerProps) {
                 </button>
 
                 <a 
-                  href="https://discord.gg/loopgate" 
+                  href="https://discord.gg/R4bPuSvN57" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/[0.03] transition-colors text-left"
