@@ -10,6 +10,7 @@ import CountdownTimer from "@/components/loopgate/CountdownTimer";
 import SubmissionModal from "@/components/loopgate/SubmissionModal";
 import OpenArenaRoundLeaderboard from "@/components/loopgate/OpenArenaRoundLeaderboard";
 import OpenArenaGuide, { OpenArenaInfoButton } from "@/components/loopgate/OpenArenaGuide";
+import ReportUserButton from "@/components/loopgate/ReportUserButton";
 import { Badge } from "@/components/ui/badge";
 
 export default function EventDetailPage() {
@@ -450,6 +451,12 @@ export default function EventDetailPage() {
                     <div className="flex items-center gap-3">
                       <span className="w-6 text-center font-bold text-gold">{r.final_rank || index + 1}</span>
                       <span className="font-semibold text-sm">{r.profile?.username || 'Unknown'}</span>
+                      <ReportUserButton
+                        userId={r.user_id}
+                        username={r.profile?.username}
+                        context="competition"
+                        contextId={event.id}
+                      />
                     </div>
                     <div className="flex items-center gap-4 text-xs">
                       <div className="text-muted-foreground">

@@ -8503,6 +8503,51 @@ export type Database = {
           },
         ]
       }
+      user_reports: {
+        Row: {
+          admin_notes: string | null
+          context: Database["public"]["Enums"]["report_context"]
+          context_id: string | null
+          created_at: string
+          details: string | null
+          id: string
+          reason: Database["public"]["Enums"]["report_reason"]
+          reported_user_id: string
+          reporter_id: string
+          resolved_at: string | null
+          status: Database["public"]["Enums"]["report_status"]
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          context?: Database["public"]["Enums"]["report_context"]
+          context_id?: string | null
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason: Database["public"]["Enums"]["report_reason"]
+          reported_user_id: string
+          reporter_id: string
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["report_status"]
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          context?: Database["public"]["Enums"]["report_context"]
+          context_id?: string | null
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason?: Database["public"]["Enums"]["report_reason"]
+          reported_user_id?: string
+          reporter_id?: string
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["report_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -8893,6 +8938,22 @@ export type Database = {
       participant_status: "active" | "advanced" | "eliminated" | "pending"
       platform_type: "tiktok" | "instagram" | "youtube"
       redemption_status: "pending" | "approved" | "fulfilled" | "rejected"
+      report_context:
+        | "battle"
+        | "competition"
+        | "submission"
+        | "profile"
+        | "chat"
+        | "other"
+      report_reason:
+        | "cheating"
+        | "toxicity"
+        | "harassment"
+        | "spam"
+        | "impersonation"
+        | "inappropriate_content"
+        | "other"
+      report_status: "pending" | "reviewing" | "resolved" | "dismissed"
       round_status: "pending" | "active" | "completed"
       round_type: "open" | "elimination" | "threshold"
       shop_item_type: "cosmetic" | "digital" | "physical"
@@ -9050,6 +9111,24 @@ export const Constants = {
       participant_status: ["active", "advanced", "eliminated", "pending"],
       platform_type: ["tiktok", "instagram", "youtube"],
       redemption_status: ["pending", "approved", "fulfilled", "rejected"],
+      report_context: [
+        "battle",
+        "competition",
+        "submission",
+        "profile",
+        "chat",
+        "other",
+      ],
+      report_reason: [
+        "cheating",
+        "toxicity",
+        "harassment",
+        "spam",
+        "impersonation",
+        "inappropriate_content",
+        "other",
+      ],
+      report_status: ["pending", "reviewing", "resolved", "dismissed"],
       round_status: ["pending", "active", "completed"],
       round_type: ["open", "elimination", "threshold"],
       shop_item_type: ["cosmetic", "digital", "physical"],

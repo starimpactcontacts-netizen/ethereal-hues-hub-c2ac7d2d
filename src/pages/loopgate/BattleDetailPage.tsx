@@ -20,6 +20,7 @@ import BattleChat from "@/components/loopgate/BattleChat";
 import BattleSongPicker from "@/components/loopgate/BattleSongPicker";
 import BattleSubmissionCard from "@/components/loopgate/BattleSubmissionCard";
 import BattleShowcase from "@/components/loopgate/BattleShowcase";
+import ReportUserButton from "@/components/loopgate/ReportUserButton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -357,8 +358,15 @@ export default function BattleDetailPage() {
                   {battle.challenger_score}
                 </span>
               )}
-              {isChallenger && (
+              {isChallenger ? (
                 <span className="text-[8px] text-red-400/70 font-bold uppercase tracking-[0.15em] mt-1">YOU</span>
+              ) : (
+                <ReportUserButton
+                  userId={battle.challenger_id}
+                  username={battle.challenger_username}
+                  context="battle"
+                  contextId={battle.id}
+                />
               )}
             </div>
 
@@ -411,9 +419,16 @@ export default function BattleDetailPage() {
                       {battle.opponent_score}
                     </span>
                   )}
-                  {isOpponent && (
+                  {isOpponent ? (
                     <span className="text-[8px] text-blue-400/70 font-bold uppercase tracking-[0.15em] mt-1">YOU</span>
-                  )}
+                  ) : battle.opponent_id ? (
+                    <ReportUserButton
+                      userId={battle.opponent_id}
+                      username={battle.opponent_username}
+                      context="battle"
+                      contextId={battle.id}
+                    />
+                  ) : null}
                 </>
               ) : (
                 <>
