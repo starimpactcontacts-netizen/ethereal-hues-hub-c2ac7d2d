@@ -220,10 +220,11 @@ function SidePanel({
           x-webkit-airplay="deny"
           disableRemotePlayback
           loop
-          muted
           preload="auto"
           disablePictureInPicture
           controls={false}
+          onLoadStart={onReady}
+          onLoadedMetadata={onReady}
           onLoadedData={onReady}
           onCanPlay={onReady}
           onCanPlayThrough={onReady}
@@ -239,7 +240,7 @@ function SidePanel({
         />
       )}
 
-      {/* Buffering shimmer */}
+      {/* Only show a spinner before metadata exists; playback starts as soon as the browser can decode. */}
       {loading && active && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/30">
           <div className={`w-8 h-8 rounded-full border-2 ${side.color === 'red' ? 'border-red-500/40 border-t-red-500' : 'border-blue-500/40 border-t-blue-500'} animate-spin`} />
