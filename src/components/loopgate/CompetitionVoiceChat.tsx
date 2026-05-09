@@ -12,6 +12,7 @@ interface CompetitionVoiceChatProps {
 interface SpeakerInfo {
   identity: string;
   name: string;
+  avatarUrl?: string;
   isSpeaking: boolean;
   isMuted: boolean;
   isLocal: boolean;
@@ -30,9 +31,20 @@ export function CompetitionVoiceChat({ competitionId, className }: CompetitionVo
     setSpeakers(
       all.map((p) => {
         const micPub = p.getTrackPublication(Track.Source.Microphone);
+        let avatarUrl: string | undefined;
+        let displayName = p.name || '';
+        if (p.metadata) {
+          try {
+            const meta = JSON.parse(p.metadata);
+            avatarUrl = meta.avatar_url || undefined;
+            displayName = meta.username || displayName;
+          } catch (_) {}
+        }
+        if (!displayName) displayName = p.identity.slice(0, 6);
         return {
           identity: p.identity,
-          name: p.name || p.identity.slice(0, 6),
+          name: displayName,
+          avatarUrl,
           isSpeaking: p.isSpeaking,
           isMuted: !micPub || micPub.isMuted || !micPub.track,
           isLocal: p === r.localParticipant,
@@ -147,12 +159,26 @@ export function CompetitionVoiceChat({ competitionId, className }: CompetitionVo
               <div
                 key={s.identity}
                 className={cn(
-                  'flex items-center gap-1.5 rounded-full pl-2 pr-2.5 py-1 text-[11px] border transition-all',
+                  'flex items-center gap-1.5 rounded-full pl-1 pr-2.5 py-1 text-[11px] border transition-all',
                   s.isSpeaking && !s.isMuted
                     ? 'bg-emerald-500/15 border-emerald-400/60 text-emerald-200'
                     : 'bg-white/5 border-white/10 text-white/70'
                 )}
               >
+                {s.avatarUrl ? (
+                  <img
+                    src={s.avatarUrl}
+                    alt={s.name}
+                    className={cn(
+                      'w-5 h-5 rounded-full object-cover border',
+                      s.isSpeaking && !s.isMuted ? 'border-emerald-400' : 'border-white/10'
+                    )}
+                  />
+                ) : (
+                  <div className="w-5 h-5 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-[9px] font-bold uppercase">
+                    {s.name.charAt(0)}
+                  </div>
+                )}
                 {s.isMuted ? <MicOff className="w-3 h-3 opacity-60" /> : <Mic className="w-3 h-3" />}
                 <span className="font-medium">{s.name}{s.isLocal ? ' (you)' : ''}</span>
               </div>
