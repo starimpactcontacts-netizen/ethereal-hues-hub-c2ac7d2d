@@ -183,10 +183,10 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
 
       <button
         onClick={toggleSound}
-        className="fixed bottom-[calc(env(safe-area-inset-bottom)+18px)] right-4 z-50 w-11 h-11 rounded-full bg-black/75 backdrop-blur-md border border-white/15 flex items-center justify-center active:scale-95"
+        className="fixed bottom-[calc(env(safe-area-inset-bottom)+18px)] right-4 z-50 w-11 h-11 rounded-full bg-background/75 backdrop-blur-md border border-border flex items-center justify-center active:scale-95"
         aria-label={soundOn ? "Mute battle audio" : "Enable battle audio"}
       >
-        {soundOn ? <Volume2 className="w-4 h-4 text-white" /> : <VolumeX className="w-4 h-4 text-white" />}
+        {soundOn ? <Volume2 className="w-4 h-4 text-foreground" /> : <VolumeX className="w-4 h-4 text-foreground" />}
       </button>
     </div>
   );
