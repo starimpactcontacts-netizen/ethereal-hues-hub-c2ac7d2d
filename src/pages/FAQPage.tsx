@@ -179,7 +179,7 @@ export default function FAQPage() {
               Contact Support
             </Link>
             <a 
-              href="https://discord.gg/loopgate" 
+              href="https://discord.gg/R4bPuSvN57" 
               target="_blank" 
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center px-6 py-3 border border-border hover:bg-surface-0 font-display"

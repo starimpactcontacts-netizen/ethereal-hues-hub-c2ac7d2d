@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 const SUPPORT_EMAIL = 'contact@viral-cartel.com';
+const DISCORD_INVITE = 'https://discord.gg/R4bPuSvN57';
 
 export default function SupportPage() {
   const [open, setOpen] = useState(false);
@@ -57,7 +58,10 @@ export default function SupportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div
+      className="fixed inset-0 overflow-y-auto bg-background"
+      style={{ WebkitOverflowScrolling: 'touch', paddingTop: 'env(safe-area-inset-top, 0px)', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 6rem)' }}
+    >
       <div className="px-4 pt-6 pb-8">
         <Link to="/hub" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6">
           <ArrowLeft size={16} />
@@ -69,6 +73,27 @@ export default function SupportPage() {
       </div>
 
       <div className="px-4 space-y-4">
+        {/* Discord */}
+        <a
+          href={DISCORD_INVITE}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block bg-surface-1 border border-border p-6 hover:border-[#5865F2]/40 transition-colors"
+        >
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 bg-[#5865F2]/10 border border-[#5865F2]/30 flex items-center justify-center">
+              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-[#5865F2]" aria-hidden="true">
+                <path d="M20.317 4.369A19.79 19.79 0 0 0 16.558 3.2a.075.075 0 0 0-.079.037c-.34.6-.719 1.385-.984 2a18.27 18.27 0 0 0-5.487 0 12.6 12.6 0 0 0-1-2 .077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 5.17 4.369a.07.07 0 0 0-.032.027C1.533 9.046.55 13.58 1.04 18.057a.082.082 0 0 0 .031.056 19.9 19.9 0 0 0 5.993 3.03.077.077 0 0 0 .084-.027 14.1 14.1 0 0 0 1.226-1.994.075.075 0 0 0-.041-.105 13.1 13.1 0 0 1-1.872-.892.077.077 0 0 1-.008-.127c.126-.094.252-.192.371-.291a.074.074 0 0 1 .078-.01c3.927 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .079.009c.12.099.245.198.372.292a.077.077 0 0 1-.006.127c-.598.349-1.22.645-1.873.891a.076.076 0 0 0-.04.106c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.661a.06.06 0 0 0-.031-.028zM8.02 15.331c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.974 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="font-display text-xl">Join the Discord</h3>
+              <p className="text-sm text-muted-foreground">Live chat with the team & editors</p>
+            </div>
+          </div>
+          <div className="text-xs text-[#5865F2] font-semibold tracking-wide">discord.gg/R4bPuSvN57 →</div>
+        </a>
+
         {/* Chat with us — bugs / inquiries */}
         <div className="bg-surface-1 border border-border p-6">
           <div className="flex items-center gap-3 mb-4">
