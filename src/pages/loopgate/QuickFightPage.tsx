@@ -292,7 +292,10 @@ export default function QuickFightPage() {
       <BattleIntroOverlay
         fightId={fight.id}
         active={!!(fight.player_1_submission_url && fight.player_2_submission_url && fight.player_2_id)}
-        onComplete={() => setIntroDone(true)}
+        onComplete={() => {
+          try { sessionStorage.setItem(`battle-intro-played:${fight.id}`, '1'); } catch {}
+          setIntroDone(true);
+        }}
       />
       {/* Cinematic winner reveal — fires once both edits have looped */}
       {fight.status === 'completed' && fight.winner_id && (
@@ -444,7 +447,7 @@ export default function QuickFightPage() {
                     ).toISOString()
                   : null
               }
-              paused={!introDone || decidedActive}
+              paused={decidedActive}
             />
           ) : (
             // Pre-upload state — placeholders stacked with VS divider

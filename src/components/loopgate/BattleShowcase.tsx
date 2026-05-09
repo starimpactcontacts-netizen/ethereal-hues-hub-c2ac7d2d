@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -54,31 +54,31 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   const [secondsLeft, setSecondsLeft] = useState(initial.left);
   const [paused, setPaused] = useState(false);
   const [soundOn, setSoundOn] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
   const completedFiredRef = useRef(false);
 
   const current = sides[currentIdx];
 
-  // Autoplay muted by default for reliable loading; user controls sound explicitly.
+  // Preload and play every direct video muted so switching sides never re-fetches/rebuffers.
   useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.muted = !soundOn;
-    v.currentTime = 0;
-    v.play().catch(() => {
-      if (soundOn) {
+    videoRefs.current.forEach((v, index) => {
+      if (!v) return;
+      v.muted = !(soundOn && index === currentIdx);
+      v.preload = "auto";
+      v.play().catch(() => {
         v.muted = true;
-        setSoundOn(false);
+        if (index === currentIdx) setSoundOn(false);
         v.play().catch((error) => { void error; });
-      }
+      });
     });
-  }, [current?.userId, currentIdx, soundOn]);
+  }, [currentIdx, sides, soundOn]);
 
   useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    if (paused) v.pause();
-    else v.play().catch((error) => { void error; });
+    videoRefs.current.forEach((v) => {
+      if (!v) return;
+      if (paused) v.pause();
+      else v.play().catch((error) => { void error; });
+    });
   }, [paused]);
 
   // Server-synced ticker
@@ -99,13 +99,14 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   }, [compute, startMs, sides.length, onComplete]);
 
   const toggleSound = () => {
-    const v = videoRef.current;
-    if (!v) return;
     const next = !soundOn;
     setSoundOn(next);
-    v.muted = !next;
-    v.volume = 1;
-    v.play().catch(() => setSoundOn(false));
+    videoRefs.current.forEach((v, index) => {
+      if (!v) return;
+      v.muted = !(next && index === currentIdx);
+      v.volume = 1;
+      if (index === currentIdx) v.play().catch(() => setSoundOn(false));
+    });
   };
 
   const direct = isDirectVideo(current.url);
@@ -150,44 +151,51 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
       </div>
 
       {/* Player */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={current.userId}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className={`relative aspect-[9/16] max-h-[78vh] w-full max-w-[min(100%,calc(78vh*9/16))] mx-auto rounded-2xl overflow-hidden bg-black border border-white/[0.06] ring-2 ${ringColor}`}
-        >
-          {direct ? (
-            <video
-              ref={videoRef}
-              src={current.url}
-              className="w-full h-full object-cover"
-              autoPlay
-              playsInline
-              loop
-              muted={!soundOn}
-              preload="auto"
-            />
-          ) : image ? (
-            <img src={current.url} alt={`${current.username} edit`} className="w-full h-full object-contain bg-black" />
-          ) : (
-            <a
-              href={current.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-white/[0.04] to-black"
-            >
-              <div className="w-20 h-20 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center">
-                <Play className="w-9 h-9 text-white ml-1" />
+      <motion.div
+        className={`relative aspect-[9/16] max-h-[78vh] w-full max-w-[min(100%,calc(78vh*9/16))] mx-auto rounded-2xl overflow-hidden bg-black border border-white/[0.06] ring-2 ${ringColor}`}
+      >
+          {sides.map((side, index) => {
+            const sideDirect = isDirectVideo(side.url);
+            const sideImage = isImageFile(side.url);
+            const active = index === currentIdx;
+
+            return (
+              <div key={side.userId} className={`absolute inset-0 transition-opacity duration-75 ${active ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+                {sideDirect ? (
+                  <video
+                    ref={(node) => { videoRefs.current[index] = node; }}
+                    src={side.url}
+                    className="w-full h-full object-contain bg-black"
+                    autoPlay
+                    playsInline
+                    loop
+                    muted={!(soundOn && active)}
+                    preload="auto"
+                    controls={false}
+                    disablePictureInPicture
+                  />
+                ) : sideImage ? (
+                  <img src={side.url} alt={`${side.username} edit`} className="w-full h-full object-contain bg-black" loading="eager" decoding="async" />
+                ) : active ? (
+                  <a
+                    href={side.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-white/[0.04] to-black"
+                  >
+                    <div className="w-20 h-20 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center">
+                      <Play className="w-9 h-9 text-white ml-1" />
+                    </div>
+                    <div className="absolute bottom-4 left-0 right-0 text-center">
+                      <span className="text-xs text-white/70 uppercase tracking-wider" style={teko}>
+                        Tap to open
+                      </span>
+                    </div>
+                  </a>
+                ) : null}
               </div>
-              <div className="absolute bottom-4 left-0 right-0 text-center">
-                <span className="text-xs text-white/70 uppercase tracking-wider" style={teko}>
-                  Tap to open
-                </span>
-              </div>
-            </a>
-          )}
+            );
+          })}
 
           {/* Top overlay: who's playing */}
           <div className="absolute inset-x-0 top-0 bg-gradient-to-b from-black/70 to-transparent p-3 flex items-center justify-between">
@@ -228,8 +236,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
               {soundOn ? <Volume2 className="w-4 h-4 text-foreground" /> : <VolumeX className="w-4 h-4 text-foreground" />}
             </button>
           )}
-        </motion.div>
-      </AnimatePresence>
+      </motion.div>
 
       <p className="text-[10px] text-center text-foreground/40 uppercase tracking-[0.2em]" style={teko}>
         {PER_EDIT_SECONDS}s per edit · auto-rotating
