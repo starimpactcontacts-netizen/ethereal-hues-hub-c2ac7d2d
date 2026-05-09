@@ -362,14 +362,15 @@ export default function CompetitionLeaderboard({
             <p className="text-xs text-muted-foreground/40">No edits submitted yet — be the first to claim the top spot</p>
           </div>
         ) : (
-          <>
+          <div className={isCompleted && winner ? "lg:grid lg:grid-cols-[minmax(0,460px)_1fr] lg:gap-8 lg:items-start space-y-3 lg:space-y-0" : "space-y-3"}>
             {/* ═══ WINNER HERO (completed only) — full-fledged autoplaying card ═══ */}
             {isCompleted && winner && (
+            <div className="relative">
               <motion.button
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 onClick={() => setSelectedEdit({ sub: winner, rank: 1 })}
-                className="relative w-full mx-auto aspect-[9/16] max-h-[64vh] max-w-[min(100%,calc(64vh*9/16))] sm:max-w-[360px] rounded-2xl overflow-hidden border border-amber-400/60 shadow-[0_0_32px_rgba(251,191,36,0.35)] active:scale-[0.99] transition-transform"
+                className="relative w-full mx-auto aspect-[9/16] max-h-[68vh] max-w-[min(100%,calc(68vh*9/16))] sm:max-w-[400px] lg:max-w-none lg:max-h-[78vh] rounded-2xl overflow-hidden border border-amber-400/60 shadow-[0_0_48px_rgba(251,191,36,0.35)] active:scale-[0.99] transition-transform"
               >
                 {winnerVideoIsDirect ? (
                   <video
@@ -438,6 +439,7 @@ export default function CompetitionLeaderboard({
                   </div>
                 </div>
               </motion.button>
+            </div>
             )}
 
             {/* ═══ TOP EDITS CAROUSEL — voting phase only ═══ */}
@@ -509,7 +511,15 @@ export default function CompetitionLeaderboard({
             )}
 
             {/* ═══ FULL RANKINGS LIST ═══ */}
-            <div className="space-y-0">
+            <div className={isCompleted && winner ? "space-y-0 lg:bg-white/[0.02] lg:rounded-2xl lg:border lg:border-white/[0.06] lg:p-3" : "space-y-0"}>
+              {isCompleted && winner && (
+                <div className="hidden lg:flex items-center gap-2 pb-2 mb-1 border-b border-white/[0.04]">
+                  <Trophy className="w-3.5 h-3.5 text-amber-400/80" />
+                  <span className="text-[12px] font-extrabold uppercase tracking-[0.18em] text-foreground/80" style={teko}>
+                    Final Standings
+                  </span>
+                </div>
+              )}
               {visibleList.map((sub, i) => {
                 const rank = i + 1;
                 const style = rankColors[rank] || { border: "", glow: "", bg: "", text: "text-muted-foreground/40" };
@@ -553,22 +563,23 @@ export default function CompetitionLeaderboard({
                   </motion.button>
                 );
               })}
+
+              {sorted.length > 5 && (
+                <button
+                  onClick={() => setShowAll(!showAll)}
+                  className="w-full flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider hover:text-foreground/60 transition-colors"
+                  style={teko}
+                >
+                  {showAll ? (
+                    <><ChevronUp className="w-3 h-3" /> Show Less</>
+                  ) : (
+                    <><ChevronDown className="w-3 h-3" /> Show All ({sorted.length})</>
+                  )}
+                </button>
+              )}
             </div>
 
-            {sorted.length > 5 && (
-              <button
-                onClick={() => setShowAll(!showAll)}
-                className="w-full flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider hover:text-foreground/60 transition-colors"
-                style={teko}
-              >
-                {showAll ? (
-                  <><ChevronUp className="w-3 h-3" /> Show Less</>
-                ) : (
-                  <><ChevronDown className="w-3 h-3" /> Show All ({sorted.length})</>
-                )}
-              </button>
-            )}
-          </>
+          </div>
         )}
       </div>
 
