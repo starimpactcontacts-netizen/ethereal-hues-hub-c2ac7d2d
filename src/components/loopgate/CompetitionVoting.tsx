@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { useUnifiedThumbnail } from "@/lib/thumbnail";
 
 const teko = { fontFamily: "Teko, sans-serif" };
-export const PER_EDIT_SECONDS = 15;
+export const PER_EDIT_SECONDS = 30;
 
 type Phase = "watching" | "voting" | "submitted";
 
