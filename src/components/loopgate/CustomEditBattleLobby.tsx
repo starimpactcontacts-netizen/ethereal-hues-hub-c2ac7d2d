@@ -88,11 +88,11 @@ export default function CustomEditBattleLobby({
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.05, duration: 0.24 }}
-          className="relative mt-5 overflow-hidden rounded-2xl border border-border bg-surface-1 min-h-[258px]"
+          className="relative mt-6"
         >
-          <div aria-hidden className="absolute inset-0" style={{ background: "radial-gradient(circle at 18% 25%, hsl(var(--verified) / 0.18), transparent 32%), radial-gradient(circle at 82% 24%, hsl(var(--destructive) / 0.18), transparent 34%)" }} />
+          <div aria-hidden className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(circle at 18% 30%, hsl(var(--verified) / 0.16), transparent 38%), radial-gradient(circle at 82% 30%, hsl(var(--destructive) / 0.16), transparent 40%)" }} />
           {isPrivate && (
-            <div className="relative px-5 pt-5 flex items-center justify-start">
+            <div className="relative flex items-center justify-center mb-4">
               <div className="flex items-center gap-2 rounded-full border border-fuchsia-500/30 bg-fuchsia-500/10 px-3 py-1">
                 <Lock className="w-3 h-3 text-fuchsia-300" />
                 <span className="text-[10px] font-black uppercase tracking-[0.18em] text-fuchsia-300">Private Lobby</span>
@@ -100,7 +100,7 @@ export default function CustomEditBattleLobby({
             </div>
           )}
 
-          <div className={`relative px-5 ${isPrivate ? "pt-6" : "pt-10"} pb-6 flex items-center justify-between gap-4`}>
+          <div className="relative flex items-center justify-between gap-4 px-2">
             <div className="flex-1 min-w-0 flex flex-col items-center">
               <div className="relative">
                 <span className="absolute -inset-2 rounded-full bg-blue-500/20 blur-lg" />
@@ -123,7 +123,7 @@ export default function CustomEditBattleLobby({
                 <Swords className="w-6 h-6 text-foreground" />
               </div>
               <span className="text-[13px] font-black uppercase tracking-[0.18em] text-muted-foreground" style={{ fontFamily: "Teko, sans-serif" }}>VS</span>
-              <div className="flex flex-col items-center -mt-0.5">
+              <div className="flex flex-col items-center">
                 <span className="text-[20px] leading-none font-black text-foreground tabular-nums" style={{ fontFamily: "Teko, sans-serif" }}>{duration}</span>
                 <span className="text-[8px] font-black uppercase tracking-[0.22em] text-muted-foreground">Duration</span>
               </div>
@@ -141,24 +141,8 @@ export default function CustomEditBattleLobby({
           </div>
         </motion.section>
 
-        {isPrivate && isHost && fight.join_code && (
-          <div className="mt-3 rounded-2xl border border-fuchsia-500/30 bg-fuchsia-500/[0.06] p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-[9px] font-black uppercase tracking-[0.24em] text-fuchsia-300">Join Code</p>
-                <p className="mt-1 text-[28px] leading-none font-black tracking-[0.3em] text-foreground" style={{ fontFamily: "Teko, sans-serif" }}>{fight.join_code}</p>
-              </div>
-              <button onClick={handleCopyCode} className="h-10 w-10 rounded-lg border border-fuchsia-500/30 bg-background grid place-items-center text-fuchsia-300 active:scale-95 transition-transform" aria-label="Copy code">
-                <Copy className="w-4 h-4" />
-              </button>
-            </div>
-            <p className="mt-2 text-[10px] text-muted-foreground">Share this code privately. Only people with the code can accept this battle.</p>
-          </div>
-        )}
-
-        <div className="mt-4 space-y-3">
-          <OsuManiaMiniGame />
-
+        {/* Primary actions — right under the matchup for fast activation */}
+        <div className="mt-5 space-y-3">
           {isHost ? (
             <div className="grid grid-cols-[1fr_auto] gap-2">
               <button onClick={onShare} className="h-14 rounded-xl bg-primary text-primary-foreground flex items-center justify-center gap-2 text-[14px] font-black uppercase tracking-[0.14em] active:scale-[0.98] transition-transform" style={{ fontFamily: "Teko, sans-serif" }}>
@@ -194,6 +178,25 @@ export default function CustomEditBattleLobby({
               <UserPlus className="w-5 h-5" /> Accept Battle
             </button>
           )}
+        </div>
+
+        {isPrivate && isHost && fight.join_code && (
+          <div className="mt-3 rounded-2xl border border-fuchsia-500/30 bg-fuchsia-500/[0.06] p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[9px] font-black uppercase tracking-[0.24em] text-fuchsia-300">Join Code</p>
+                <p className="mt-1 text-[28px] leading-none font-black tracking-[0.3em] text-foreground" style={{ fontFamily: "Teko, sans-serif" }}>{fight.join_code}</p>
+              </div>
+              <button onClick={handleCopyCode} className="h-10 w-10 rounded-lg border border-fuchsia-500/30 bg-background grid place-items-center text-fuchsia-300 active:scale-95 transition-transform" aria-label="Copy code">
+                <Copy className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="mt-2 text-[10px] text-muted-foreground">Share this code privately. Only people with the code can accept this battle.</p>
+          </div>
+        )}
+
+        <div className="mt-4 space-y-3">
+          <OsuManiaMiniGame />
 
           <div className="rounded-2xl border border-border/70 bg-surface-1/50 p-3">
             <div className="flex items-center justify-between gap-3">
