@@ -157,6 +157,92 @@ function NotificationItem({ notification, onMarkAsRead, onDelete, index }: Notif
   const link = getNotificationLink(notification);
   const data = notification.data as Record<string, any>;
   const avatarUrl = data?.liker_avatar || data?.commenter_avatar || data?.sender_avatar || data?.avatar || null;
+  const isSystem = SYSTEM_TYPES.includes(notification.type);
+  const highlights: string[] = Array.isArray(data?.highlights) ? data.highlights : [];
+  const version: string | null = data?.version || null;
+  const [expanded, setExpanded] = useState(false);
+
+  if (isSystem) {
+    const card = (
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.03 }}
+        className={`group relative mx-3 my-2 rounded-2xl border overflow-hidden
+          ${notification.read
+            ? 'bg-white/[0.02] border-white/[0.05] opacity-70'
+            : 'bg-gradient-to-br from-gold/[0.07] via-white/[0.02] to-transparent border-gold/30 shadow-[0_8px_24px_-12px_rgba(201,168,76,0.35)]'
+          }`}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (!notification.read) onMarkAsRead(notification.id);
+          setExpanded((v) => !v);
+        }}
+      >
+        {/* Top strip */}
+        <div className="flex items-start gap-3 p-3.5">
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${config.bg} border border-white/[0.06]`}>
+            <Icon size={18} className={config.color} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[8.5px] font-black uppercase tracking-[0.18em] text-gold/90">
+                {notification.type === 'announcement' ? 'Announcement' : notification.type === 'maintenance' ? 'Maintenance' : notification.type === 'update' ? 'Update' : 'System'}
+              </span>
+              {version && (
+                <span className="text-[8.5px] font-black uppercase tracking-[0.12em] text-gold bg-gold/10 border border-gold/30 rounded px-1.5 py-[1px]">
+                  v{version}
+                </span>
+              )}
+              {!notification.read && (
+                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+              )}
+            </div>
+            <p className="text-[14px] font-black text-white leading-tight mt-1" style={{ fontFamily: "Teko, sans-serif", letterSpacing: "0.01em" }}>
+              {notification.title}
+            </p>
+            {notification.message && (
+              <p className={`text-[12px] text-white/70 leading-relaxed mt-1 ${expanded ? '' : 'line-clamp-2'}`}>
+                {notification.message}
+              </p>
+            )}
+
+            {expanded && highlights.length > 0 && (
+              <ul className="mt-2.5 space-y-1.5">
+                {highlights.map((h, idx) => (
+                  <li key={idx} className="flex items-start gap-2 text-[11.5px] text-white/80 leading-snug">
+                    <span className="mt-1.5 w-1 h-1 rounded-full bg-gold shrink-0" />
+                    <span>{h}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <div className="flex items-center justify-between mt-2.5">
+              <span className="text-[10px] text-white/40">
+                {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+              </span>
+              <span className="text-[10px] uppercase tracking-[0.15em] font-bold text-gold/80 inline-flex items-center gap-1">
+                {expanded ? 'Show less' : (notification.message && notification.message.length > 80) || highlights.length > 0 ? 'Read more' : ''}
+                {((notification.message && notification.message.length > 80) || highlights.length > 0) && (
+                  <ChevronRight size={11} className={`transition-transform ${expanded ? 'rotate-90' : ''}`} />
+                )}
+              </span>
+            </div>
+          </div>
+
+          <button
+            onClick={(e) => { e.stopPropagation(); onDelete(notification.id); }}
+            className="p-1 text-white/30 hover:text-destructive transition-colors shrink-0"
+            title="Delete"
+          >
+            <Trash2 size={12} />
+          </button>
+        </div>
+      </motion.div>
+    );
+    return card;
+  }
 
   const content = (
     <motion.div
