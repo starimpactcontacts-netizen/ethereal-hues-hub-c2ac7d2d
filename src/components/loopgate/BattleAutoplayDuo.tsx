@@ -70,43 +70,38 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
     return () => clearInterval(id);
   }, [compute, tickEnabled]);
 
-  // Drive playback: active plays full-quality, inactive PAUSES at currentTime=0
-  // (kept loaded so swap is instant — no re-buffer).
+  // Warm both videos and keep them decoding muted so the active side appears instantly.
+  useEffect(() => {
+    [redVideoRef.current, blueVideoRef.current].forEach((v) => {
+      if (!v) return;
+      v.muted = true;
+      v.preload = "auto";
+      v.load();
+      v.play().catch(() => {});
+    });
+  }, [red.url, blue.url]);
+
+  // Drive playback without seeking/resetting; seeking on mobile was causing black frames and stutter.
   useEffect(() => {
     if (paused) {
       [redVideoRef.current, blueVideoRef.current].forEach((v) => {
         if (!v) return;
         v.pause();
         v.muted = true;
-        try { v.currentTime = 0; } catch (error) { void error; }
       });
       return;
     }
     const refs = [redVideoRef.current, blueVideoRef.current];
     refs.forEach((v, i) => {
       if (!v) return;
-      if (i === activeIdx) {
-        v.muted = !soundOn;
-        v.play().catch(() => {
-          v.muted = true;
-          setSoundOn(false);
-          v.play().catch((error) => { void error; });
-        });
-      } else {
-        v.pause();
+      v.muted = !(soundOn && i === activeIdx);
+      v.play().catch(() => {
         v.muted = true;
-        try { v.currentTime = 0; } catch (error) { void error; }
-      }
+        if (i === activeIdx) setSoundOn(false);
+        v.play().catch((error) => { void error; });
+      });
     });
   }, [activeIdx, paused, soundOn]);
-
-  // Smooth-scroll the active panel into view when it switches
-  useEffect(() => {
-    if (paused) return;
-    const target = activeIdx === 0 ? redPanelRef.current : bluePanelRef.current;
-    if (!target) return;
-    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, [activeIdx, paused]);
 
   const toggleSound = () => {
     const next = !soundOn;
