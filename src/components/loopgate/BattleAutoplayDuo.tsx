@@ -228,6 +228,7 @@ function SidePanel({
           ref={videoRef}
           src={side.url}
           className="w-full h-full object-contain"
+          autoPlay
           playsInline
           webkit-playsinline="true"
           x-webkit-airplay="deny"
@@ -236,7 +237,9 @@ function SidePanel({
           muted
           preload="auto"
           disablePictureInPicture
+          controls={false}
           onLoadedData={onReady}
+          onCanPlay={onReady}
           onCanPlayThrough={onReady}
         />
       ) : (
@@ -251,8 +254,8 @@ function SidePanel({
       )}
 
       {/* Buffering shimmer */}
-      {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+      {loading && active && (
+        <div className="absolute inset-0 flex items-center justify-center bg-background/30">
           <div className={`w-8 h-8 rounded-full border-2 ${side.color === 'red' ? 'border-red-500/40 border-t-red-500' : 'border-blue-500/40 border-t-blue-500'} animate-spin`} />
         </div>
       )}
