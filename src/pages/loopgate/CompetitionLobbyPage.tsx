@@ -112,6 +112,11 @@ export default function CompetitionLobbyPage() {
   const [showThemeReveal, setShowThemeReveal] = useState(false);
   const prevStatusRef = useRef<string | null>(null);
   const themeRevealedRef = useRef<string | null>(null);
+  const [infoIdx, setInfoIdx] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setInfoIdx((i) => i + 1), 3800);
+    return () => clearInterval(id);
+  }, []);
   // Tick once per second during the live showcase so the leaderboard reveals
   // exactly when the synchronized 15s/edit playback ends — no waiting on poll.
   const [phaseNow, setPhaseNow] = useState(() => Date.now());
@@ -615,23 +620,34 @@ export default function CompetitionLobbyPage() {
               <h1 className="text-[22px] font-black text-foreground uppercase leading-none truncate tracking-tight" style={teko}>
                 {competition.name}
               </h1>
-              <div className="flex items-center gap-1 mt-0.5">
-                <span className="relative flex w-1 h-1">
-                  <span className="absolute inline-flex w-full h-full rounded-full bg-amber-400 opacity-60 animate-ping" />
-                  <span className="relative inline-flex w-1 h-1 rounded-full bg-amber-400" />
-                </span>
-                <span className="text-[9.5px] font-medium uppercase tracking-[0.06em] text-amber-400/80">
-                  Awaiting
-                </span>
-                {competition.index_reward_pool > 0 && (
-                  <>
-                    <span className="text-foreground/25 text-[9px] leading-none mx-0.5">•</span>
-                    <span className="text-[9.5px] font-medium uppercase tracking-[0.06em] text-gold/90 flex items-center gap-0.5">
-                      <Trophy className="w-2.5 h-2.5" />{competition.index_reward_pool} IDX
-                    </span>
-                  </>
-                )}
-              </div>
+              {(() => {
+                const lines = [
+                  `Battle starts when all ${cap} editors ready up`,
+                  `Lobby fills to ${cap}/${cap} — then it's GO`,
+                  "Tap READY to lock in your slot",
+                  competition.index_reward_pool > 0
+                    ? `Winner takes ${competition.index_reward_pool} IDX`
+                    : "Winner earns rings + bragging rights",
+                  "Invite friends to fill the lobby faster",
+                ];
+                const line = lines[infoIdx % lines.length];
+                return (
+                  <div className="h-3.5 mt-0.5 overflow-hidden relative">
+                    <AnimatePresence mode="wait">
+                      <motion.span
+                        key={infoIdx}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.3 }}
+                        className="block text-[10.5px] font-bold uppercase tracking-[0.08em] text-white/85 truncate"
+                      >
+                        {line}
+                      </motion.span>
+                    </AnimatePresence>
+                  </div>
+                );
+              })()}
             </div>
             <div className="flex items-center gap-1.5">
               <button
