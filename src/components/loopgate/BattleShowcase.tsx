@@ -173,7 +173,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className={`relative aspect-[9/16] max-h-[60vh] w-full rounded-2xl overflow-hidden bg-black border border-white/[0.06] ring-2 ${ringColor}`}
+          className={`relative aspect-[9/16] max-h-[78vh] w-full max-w-[min(100%,calc(78vh*9/16))] mx-auto rounded-2xl overflow-hidden bg-black border border-white/[0.06] ring-2 ${ringColor}`}
         >
           {direct ? (
             <video
