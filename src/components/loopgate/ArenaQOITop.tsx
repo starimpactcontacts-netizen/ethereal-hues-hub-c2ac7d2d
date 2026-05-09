@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Trophy, ChevronRight, ChevronsUp, ChevronsDown, Minus, Flame, Sparkles } from "lucide-react";
+import { Trophy, ChevronRight, ArrowUp, ArrowDown, Minus, Flame } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -69,29 +69,38 @@ export default function ArenaQOITop() {
           .limit(50);
       if (!cancelled) {
         const fresh = (data as EditorRow[]) || [];
-        // Daily-bucketed snapshot so the climb/fall badges reflect a real
-        // 24h delta instead of being wiped on every realtime refresh.
+        // Weekly-bucketed snapshot — deltas reflect movement over the past 7 days.
+        // ISO-week key (year + week number) so a snapshot persists for a full week
+        // before being rolled into "prev" for next week's comparison.
         try {
-          const today = new Date().toISOString().slice(0, 10);
-          const rawCur = localStorage.getItem('arena_top_editors_ranks_v2');
+          const isoWeek = (d: Date) => {
+            const t = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+            const day = t.getUTCDay() || 7;
+            t.setUTCDate(t.getUTCDate() + 4 - day);
+            const yearStart = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+            const wk = Math.ceil((((t.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+            return `${t.getUTCFullYear()}-W${String(wk).padStart(2, '0')}`;
+          };
+          const week = isoWeek(new Date());
+          const rawCur = localStorage.getItem('arena_top_editors_ranks_w1');
           const cur = rawCur ? JSON.parse(rawCur) : null;
-          const rawPrev = localStorage.getItem('arena_top_editors_ranks_prev_v2');
+          const rawPrev = localStorage.getItem('arena_top_editors_ranks_w0');
           const prev = rawPrev ? JSON.parse(rawPrev) : null;
 
-          // Show deltas against the most recent prior bucket we have.
+          // Compare against last week's frozen snapshot if we have one.
           if (prev?.ranks) setPrevRanks(prev.ranks);
-          else if (cur?.date && cur.date !== today && cur.ranks) setPrevRanks(cur.ranks);
+          else if (cur?.week && cur.week !== week && cur.ranks) setPrevRanks(cur.ranks);
 
           const snap: Record<string, number> = {};
           fresh.forEach((r, i) => { snap[r.id] = i + 1; });
 
-          if (!cur || cur.date !== today) {
-            // Roll today's snapshot into "prev", start a new "current" bucket.
-            if (cur) localStorage.setItem('arena_top_editors_ranks_prev_v2', JSON.stringify(cur));
-            localStorage.setItem('arena_top_editors_ranks_v2', JSON.stringify({ date: today, ranks: snap }));
+          if (!cur || cur.week !== week) {
+            // New week — roll the previous current into prev, start fresh.
+            if (cur) localStorage.setItem('arena_top_editors_ranks_w0', JSON.stringify(cur));
+            localStorage.setItem('arena_top_editors_ranks_w1', JSON.stringify({ week, ranks: snap }));
           } else {
-            // Same day — just refresh the current bucket; don't touch prev.
-            localStorage.setItem('arena_top_editors_ranks_v2', JSON.stringify({ date: today, ranks: snap }));
+            // Same week — keep updating the current bucket so it stabilises.
+            localStorage.setItem('arena_top_editors_ranks_w1', JSON.stringify({ week, ranks: snap }));
           }
         } catch {}
         setRows(fresh);
@@ -171,13 +180,8 @@ export default function ArenaQOITop() {
                       ) : null}
                       {(() => {
                         const prev = prevRanks[row.id];
-                        if (!prev) {
-                          return (
-                            <span className="inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-md bg-sky-400/15 border border-sky-400/30 text-[8.5px] font-black uppercase tracking-wider text-sky-300">
-                              <Sparkles className="w-2.5 h-2.5" strokeWidth={2.75} /> NEW
-                            </span>
-                          );
-                        }
+                        // No prior week snapshot → render nothing (no "NEW" tag).
+                        if (!prev) return null;
                         const delta = prev - rank; // positive = climbed
                         if (delta > 0) {
                           const blazing = delta >= 5;
@@ -192,17 +196,17 @@ export default function ArenaQOITop() {
                               {blazing ? (
                                 <Flame className="w-2.5 h-2.5" strokeWidth={2.75} fill="currentColor" />
                               ) : (
-                                <ChevronsUp className="w-3 h-3 -ml-0.5" strokeWidth={3} />
+                                <ArrowUp className="w-2.5 h-2.5" strokeWidth={3} />
                               )}
-                              {delta}
+                              +{delta}
                             </span>
                           );
                         }
                         if (delta < 0) {
                           return (
                             <span className="inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-md bg-red-500/10 border border-red-400/30 text-[9px] font-black tabular-nums text-red-300">
-                              <ChevronsDown className="w-3 h-3 -ml-0.5" strokeWidth={3} />
-                              {Math.abs(delta)}
+                              <ArrowDown className="w-2.5 h-2.5" strokeWidth={3} />
+                              {delta}
                             </span>
                           );
                         }
