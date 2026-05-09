@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Star, Trophy, MessageCircle, Share2, ExternalLink, Swords, Video, Heart, Bookmark, BarChart3 } from "lucide-react";
+import { Star, Trophy, MessageCircle, Share2, ExternalLink, Swords, Video, Bookmark, BarChart3 } from "lucide-react";
+import LoopHeart from "./LoopHeart";
 import GateIcon from '@/components/loopgate/GateIcon';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
@@ -384,7 +385,7 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
                   liked ? 'text-red-500' : 'text-muted-foreground hover:text-red-400 hover:bg-red-400/10'
                 }`}
               >
-                <Heart className={`w-[18px] h-[18px] ${liked ? 'fill-current' : ''}`} />
+                <LoopHeart size={18} filled={liked} strokeWidth={2.25} />
               </button>
 
               {/* Bookmark */}

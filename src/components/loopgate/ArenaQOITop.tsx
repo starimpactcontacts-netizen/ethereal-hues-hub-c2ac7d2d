@@ -33,8 +33,8 @@ export default function ArenaQOITop() {
         .eq("is_hidden", false)
         .order("global_index_score", { ascending: false, nullsFirst: false })
         .order("best_gatekeeper_qoi", { ascending: false, nullsFirst: false })
-        .order("level", { ascending: false, nullsFirst: false })
-        .limit(5);
+          .order("level", { ascending: false, nullsFirst: false })
+          .limit(50);
       if (!cancelled) {
         const fresh = (data as EditorRow[]) || [];
         // Read previous snapshot for climb/fall arrows

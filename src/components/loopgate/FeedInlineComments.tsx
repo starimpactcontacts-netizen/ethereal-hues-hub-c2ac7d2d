@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Heart, Reply, Send, Loader2, MessageCircle, ChevronDown, Smile, Trash2 } from 'lucide-react';
+import { Reply, Send, Loader2, MessageCircle, ChevronDown, Smile, Trash2 } from 'lucide-react';
+import LoopHeart from './LoopHeart';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -366,7 +367,7 @@ function ThreadComment({
         )}
         <div className="flex items-center gap-3 mt-1.5">
           <button onClick={onLike} className="flex items-center gap-1 text-muted-foreground hover:text-red-400 transition-colors">
-            <Heart className={`w-3.5 h-3.5 ${comment.isLiked ? 'fill-red-500 text-red-500' : ''}`} />
+            <LoopHeart size={14} filled={!!comment.isLiked} className={comment.isLiked ? 'text-red-500' : ''} />
             {comment.like_count > 0 && <span className="text-[11px]">{comment.like_count}</span>}
           </button>
           {onReply && !isReply && (
