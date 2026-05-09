@@ -30,11 +30,25 @@ export default function MatchmakingLobby({ open, elapsedSec, currentUserId, onCa
   const myUsername = me?.username || profile?.username || "YOU";
   const myAvatar = me?.avatar_url || profile?.avatar_url || "";
 
+  const infoLines = [
+    "Lobby fills to 10/10 — winner earns rings!",
+    "At max capacity, battle auto-starts instantly",
+    "Winner gets +50 — loser drops 10 rings",
+    "Invite friends to fill the lobby faster",
+  ];
+  const [infoIdx, setInfoIdx] = useState(0);
+
   useEffect(() => {
     if (!open) return;
     setLobbyMusicActive(true);
     return () => setLobbyMusicActive(false);
   }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const id = setInterval(() => setInfoIdx((i) => (i + 1) % infoLines.length), 4000);
+    return () => clearInterval(id);
+  }, [open, infoLines.length]);
 
   const handleInvite = async () => {
     const url = `${window.location.origin}/arena?invite=1v1`;
