@@ -256,7 +256,7 @@ export default function BattleDetailPage() {
     <div className="min-h-screen bg-background pb-24">
       {/* ═══ HEADER ═══ */}
       <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-white/[0.06]">
-        <div className="px-4 py-3 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <button onClick={() => navigate('/arena')} className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
             <ArrowLeft className="w-4 h-4" />
             <span className="text-sm font-medium">Arena</span>
@@ -303,7 +303,7 @@ export default function BattleDetailPage() {
                             radial-gradient(circle at 80% 30%, rgba(59,130,246,0.1) 0%, transparent 50%)`
         }} />
 
-        <div className="relative px-4 pt-5 pb-6">
+        <div className="relative max-w-3xl mx-auto px-4 pt-5 pb-6">
           {/* Status + Role */}
           <div className="flex items-center justify-center gap-2 mb-5">
             {isLive && <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_12px_rgba(239,68,68,0.5)]" />}
@@ -454,7 +454,9 @@ export default function BattleDetailPage() {
       </div>
 
       {/* ═══ CONTENT ═══ */}
-      <div className="px-4 space-y-3 mt-1">
+      <div className="max-w-6xl mx-auto px-4 mt-1 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(320px,400px)] lg:gap-5 lg:items-start">
+        {/* ── MAIN COLUMN ── */}
+        <div className="space-y-3 min-w-0">
 
         {/* Stakes Strip */}
         <div className="bg-zinc-900/60 border border-white/[0.06] rounded-xl p-3">
@@ -553,62 +555,6 @@ export default function BattleDetailPage() {
           </div>
         )}
 
-        {/* Forfeit Battle — escape hatch for active participants */}
-        {isParticipant && battle.status === 'active' && (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-            <button
-              onClick={async () => {
-                const confirmed = window.confirm(
-                  "Forfeit this battle?\n\n• Your opponent will be declared the winner\n• You will lose 5 IDX\n• This cannot be undone"
-                );
-                if (!confirmed) return;
-                const opponentId = isChallenger ? battle.opponent_id : battle.challenger_id;
-                try {
-                  await supabase.from('battles').update({
-                    status: 'completed',
-                    winner_id: opponentId,
-                    judged_at: new Date().toISOString(),
-                    winner_index_awarded: 20,
-                    loser_index_penalty: 5,
-                  }).eq('id', battle.id);
-                  if (user?.id) {
-                    try {
-                      await supabase.rpc('increment_user_index' as any, {
-                        p_user_id: user.id,
-                        p_amount: -5,
-                      });
-                    } catch {}
-                  }
-                  if (opponentId) {
-                    try {
-                      await supabase.from('notifications').insert({
-                        user_id: opponentId,
-                        type: 'battle_won',
-                        title: 'Opponent forfeited',
-                        message: `Your opponent walked away — you win this battle!`,
-                        data: { battle_id: battle.id },
-                      } as any);
-                    } catch {}
-                  }
-                  toast.info("You forfeited the battle. -5 IDX");
-                  navigate('/arena');
-                } catch (err) {
-                  console.error('Forfeit failed:', err);
-                  toast.error("Couldn't forfeit. Try again.");
-                }
-              }}
-              className="w-full py-3 rounded-xl border border-zinc-800 bg-zinc-950/60 text-zinc-500 hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/5 transition-colors text-xs font-bold uppercase tracking-[0.2em] flex items-center justify-center gap-2"
-              style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.18em' }}
-            >
-              <Flag className="w-3.5 h-3.5" />
-              Forfeit Battle · −5 IDX
-            </button>
-            <p className="text-[10px] text-zinc-600 text-center mt-1.5">
-              Walk away if you can't submit. Opponent wins.
-            </p>
-          </motion.div>
-        )}
-
         {/* Song Display for spectators */}
         {!isParticipant && (battle as any).theme_song_name && (
           <div className="bg-emerald-500/5 border border-emerald-500/15 rounded-xl p-3 flex items-center gap-3">
@@ -621,124 +567,6 @@ export default function BattleDetailPage() {
                 {(battle as any).theme_song_name}
               </p>
             </div>
-          </div>
-        )}
-
-        {/* Invite Challengers */}
-        {isChallenger && battle.status === 'pending' && !battle.opponent_id && (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-            <button
-              onClick={() => setInviteModalOpen(true)}
-              className="w-full py-3.5 rounded-xl border border-red-500/25 text-red-400 hover:bg-red-500/5 transition-colors text-sm font-bold uppercase tracking-wider flex items-center justify-center gap-2"
-            >
-              <Users className="w-4 h-4" />
-              INVITE CHALLENGERS
-            </button>
-          </motion.div>
-        )}
-
-        {/* Accept Challenge — Premium CTA */}
-        {canAccept && (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
-            <button
-              onClick={handleAccept}
-              disabled={accepting}
-              className="w-full relative overflow-hidden py-4 rounded-xl bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 transition-all disabled:opacity-50 shadow-[0_4px_24px_rgba(239,68,68,0.25)] active:scale-[0.98]"
-            >
-              <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.1] to-transparent pointer-events-none rounded-t-xl" />
-              <span className="relative z-10 flex items-center justify-center gap-2.5">
-                <Swords className="w-5 h-5 text-white" />
-                <span className="text-lg text-white font-bold uppercase tracking-[0.15em]" style={{ fontFamily: 'Teko, sans-serif' }}>
-                  {accepting ? "ACCEPTING..." : "ACCEPT CHALLENGE"}
-                </span>
-              </span>
-            </button>
-            {canAcceptDirect && (
-              <button
-                onClick={async () => {
-                  await supabase.from('battles').update({ status: 'cancelled' }).eq('id', battle.id);
-                  toast.info("Challenge declined");
-                  navigate('/arena');
-                }}
-                className="w-full py-3 rounded-xl border border-red-500/20 text-red-400/70 hover:bg-red-500/5 text-sm font-bold uppercase tracking-wider transition-colors"
-              >
-                DECLINE
-              </button>
-            )}
-          </motion.div>
-        )}
-
-        {/* Waiting for opponent */}
-        {isChallenger && battle.status === 'pending' && battle.opponent_id && (
-          <div className="bg-zinc-900/60 border border-amber-500/15 rounded-xl p-4 text-center">
-            <Clock className="w-5 h-5 text-amber-400/60 mx-auto mb-2" />
-            <p className="text-sm font-bold text-white uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>
-              Waiting for {battle.opponent_username}
-            </p>
-            <p className="text-[10px] text-zinc-500 mt-1">They've been notified</p>
-          </div>
-        )}
-
-        {/* Submission Form — song pick optional (+50 XP bonus) */}
-        {canSubmit && (
-          <div className="bg-zinc-900/60 border border-amber-500/15 rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Upload className="w-3.5 h-3.5 text-amber-400" />
-              <span className="text-[10px] font-bold text-amber-400 uppercase tracking-[0.15em]">SUBMIT YOUR EDIT</span>
-              <span className="text-[9px] text-zinc-500">MP4 · MOV · max 200 MB</span>
-            </div>
-            <label
-              className={`flex items-center justify-center gap-2 h-12 w-full rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-black font-bold uppercase tracking-[0.15em] cursor-pointer active:scale-[0.99] transition ${submitting ? 'opacity-60 pointer-events-none' : 'hover:from-amber-400 hover:to-amber-500'}`}
-            >
-              <input
-                type="file"
-                accept="video/*,image/*"
-                className="hidden"
-                disabled={submitting}
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (!file || !user) return;
-                  if (file.size > 209715200) { toast.error('File too big — 200 MB max'); return; }
-                  setSubmitting(true);
-                  try {
-                    const ext = file.name.split('.').pop() || 'mp4';
-                    const path = `${battle.id}/${user.id}-${Date.now()}.${ext}`;
-                    const { error: upErr } = await supabase.storage
-                      .from('battle-edits')
-                      .upload(path, file, { contentType: file.type, upsert: false });
-                    if (upErr) throw upErr;
-                    const { data: pub } = supabase.storage.from('battle-edits').getPublicUrl(path);
-                    const success = await submitToBattle(battle.id, user.id, isChallenger, pub.publicUrl, 'upload');
-                    if (!success) throw new Error('submit failed');
-                    if (hasSongPicked && user?.id) {
-                      try {
-                        await supabase.rpc('award_xp', {
-                          p_user_id: user.id,
-                          p_amount: 50,
-                          p_action: 'song_pick_bonus',
-                          p_description: 'Picked a library song for 1v1 Battle',
-                        });
-                        toast.success('Submission recorded! +50 XP song bonus 🎵');
-                      } catch { toast.success('Submission recorded!'); }
-                    } else {
-                      toast.success('Submission recorded!');
-                    }
-                    refetch();
-                  } catch (err) {
-                    console.error('upload failed', err);
-                    toast.error('Upload failed — try again');
-                  } finally {
-                    setSubmitting(false);
-                    e.target.value = '';
-                  }
-                }}
-              />
-              {submitting ? (
-                <span>UPLOADING…</span>
-              ) : (
-                <><Upload className="w-4 h-4" /> <span>UPLOAD EDIT</span></>
-              )}
-            </label>
           </div>
         )}
 
@@ -863,16 +691,6 @@ export default function BattleDetailPage() {
           </p>
         )}
 
-        {/* Battle Chat */}
-        {battle.opponent_id && (
-          <BattleChat
-            battleId={battle.id}
-            challengerId={battle.challenger_id}
-            opponentId={battle.opponent_id}
-            judgeId={battle.judge_id}
-          />
-        )}
-
         {/* Winner Announcement */}
         {isCompleted && battle.winner_id && (
           <motion.div
@@ -924,6 +742,194 @@ export default function BattleDetailPage() {
             Hide this battle
           </button>
         )}
+        </div>
+
+        {/* ── RIGHT RAIL (actions / submission / chat) ── */}
+        <aside className="space-y-3 min-w-0 mt-3 lg:mt-0 lg:sticky lg:top-20 lg:self-start">
+          {/* Invite Challengers */}
+          {isChallenger && battle.status === 'pending' && !battle.opponent_id && (
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+              <button
+                onClick={() => setInviteModalOpen(true)}
+                className="w-full py-3.5 rounded-xl border border-red-500/25 text-red-400 hover:bg-red-500/5 transition-colors text-sm font-bold uppercase tracking-wider flex items-center justify-center gap-2"
+              >
+                <Users className="w-4 h-4" />
+                INVITE CHALLENGERS
+              </button>
+            </motion.div>
+          )}
+
+          {/* Accept Challenge — Premium CTA */}
+          {canAccept && (
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
+              <button
+                onClick={handleAccept}
+                disabled={accepting}
+                className="w-full relative overflow-hidden py-4 rounded-xl bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 transition-all disabled:opacity-50 shadow-[0_4px_24px_rgba(239,68,68,0.25)] active:scale-[0.98]"
+              >
+                <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.1] to-transparent pointer-events-none rounded-t-xl" />
+                <span className="relative z-10 flex items-center justify-center gap-2.5">
+                  <Swords className="w-5 h-5 text-white" />
+                  <span className="text-lg text-white font-bold uppercase tracking-[0.15em]" style={{ fontFamily: 'Teko, sans-serif' }}>
+                    {accepting ? "ACCEPTING..." : "ACCEPT CHALLENGE"}
+                  </span>
+                </span>
+              </button>
+              {canAcceptDirect && (
+                <button
+                  onClick={async () => {
+                    await supabase.from('battles').update({ status: 'cancelled' }).eq('id', battle.id);
+                    toast.info("Challenge declined");
+                    navigate('/arena');
+                  }}
+                  className="w-full py-3 rounded-xl border border-red-500/20 text-red-400/70 hover:bg-red-500/5 text-sm font-bold uppercase tracking-wider transition-colors"
+                >
+                  DECLINE
+                </button>
+              )}
+            </motion.div>
+          )}
+
+          {/* Waiting for opponent */}
+          {isChallenger && battle.status === 'pending' && battle.opponent_id && (
+            <div className="bg-zinc-900/60 border border-amber-500/15 rounded-xl p-4 text-center">
+              <Clock className="w-5 h-5 text-amber-400/60 mx-auto mb-2" />
+              <p className="text-sm font-bold text-white uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>
+                Waiting for {battle.opponent_username}
+              </p>
+              <p className="text-[10px] text-zinc-500 mt-1">They've been notified</p>
+            </div>
+          )}
+
+          {/* Submission Form — song pick optional (+50 XP bonus) */}
+          {canSubmit && (
+            <div className="bg-zinc-900/60 border border-amber-500/15 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Upload className="w-3.5 h-3.5 text-amber-400" />
+                <span className="text-[10px] font-bold text-amber-400 uppercase tracking-[0.15em]">SUBMIT YOUR EDIT</span>
+                <span className="text-[9px] text-zinc-500">MP4 · MOV · max 200 MB</span>
+              </div>
+              <label
+                className={`flex items-center justify-center gap-2 h-12 w-full rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-black font-bold uppercase tracking-[0.15em] cursor-pointer active:scale-[0.99] transition ${submitting ? 'opacity-60 pointer-events-none' : 'hover:from-amber-400 hover:to-amber-500'}`}
+              >
+                <input
+                  type="file"
+                  accept="video/*,image/*"
+                  className="hidden"
+                  disabled={submitting}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file || !user) return;
+                    if (file.size > 209715200) { toast.error('File too big — 200 MB max'); return; }
+                    setSubmitting(true);
+                    try {
+                      const ext = file.name.split('.').pop() || 'mp4';
+                      const path = `${battle.id}/${user.id}-${Date.now()}.${ext}`;
+                      const { error: upErr } = await supabase.storage
+                        .from('battle-edits')
+                        .upload(path, file, { contentType: file.type, upsert: false });
+                      if (upErr) throw upErr;
+                      const { data: pub } = supabase.storage.from('battle-edits').getPublicUrl(path);
+                      const success = await submitToBattle(battle.id, user.id, isChallenger, pub.publicUrl, 'upload');
+                      if (!success) throw new Error('submit failed');
+                      if (hasSongPicked && user?.id) {
+                        try {
+                          await supabase.rpc('award_xp', {
+                            p_user_id: user.id,
+                            p_amount: 50,
+                            p_action: 'song_pick_bonus',
+                            p_description: 'Picked a library song for 1v1 Battle',
+                          });
+                          toast.success('Submission recorded! +50 XP song bonus 🎵');
+                        } catch { toast.success('Submission recorded!'); }
+                      } else {
+                        toast.success('Submission recorded!');
+                      }
+                      refetch();
+                    } catch (err) {
+                      console.error('upload failed', err);
+                      toast.error('Upload failed — try again');
+                    } finally {
+                      setSubmitting(false);
+                      e.target.value = '';
+                    }
+                  }}
+                />
+                {submitting ? (
+                  <span>UPLOADING…</span>
+                ) : (
+                  <><Upload className="w-4 h-4" /> <span>UPLOAD EDIT</span></>
+                )}
+              </label>
+            </div>
+          )}
+
+          {/* Battle Chat */}
+          {battle.opponent_id && (
+            <BattleChat
+              battleId={battle.id}
+              challengerId={battle.challenger_id}
+              opponentId={battle.opponent_id}
+              judgeId={battle.judge_id}
+            />
+          )}
+
+          {/* Forfeit Battle — escape hatch for active participants */}
+          {isParticipant && battle.status === 'active' && (
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+              <button
+                onClick={async () => {
+                  const confirmed = window.confirm(
+                    "Forfeit this battle?\n\n• Your opponent will be declared the winner\n• You will lose 5 IDX\n• This cannot be undone"
+                  );
+                  if (!confirmed) return;
+                  const opponentId = isChallenger ? battle.opponent_id : battle.challenger_id;
+                  try {
+                    await supabase.from('battles').update({
+                      status: 'completed',
+                      winner_id: opponentId,
+                      judged_at: new Date().toISOString(),
+                      winner_index_awarded: 20,
+                      loser_index_penalty: 5,
+                    }).eq('id', battle.id);
+                    if (user?.id) {
+                      try {
+                        await supabase.rpc('increment_user_index' as any, {
+                          p_user_id: user.id,
+                          p_amount: -5,
+                        });
+                      } catch {}
+                    }
+                    if (opponentId) {
+                      try {
+                        await supabase.from('notifications').insert({
+                          user_id: opponentId,
+                          type: 'battle_won',
+                          title: 'Opponent forfeited',
+                          message: `Your opponent walked away — you win this battle!`,
+                          data: { battle_id: battle.id },
+                        } as any);
+                      } catch {}
+                    }
+                    toast.info("You forfeited the battle. -5 IDX");
+                    navigate('/arena');
+                  } catch (err) {
+                    console.error('Forfeit failed:', err);
+                    toast.error("Couldn't forfeit. Try again.");
+                  }
+                }}
+                className="w-full py-3 rounded-xl border border-zinc-800 bg-zinc-950/60 text-zinc-500 hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/5 transition-colors text-xs font-bold uppercase tracking-[0.2em] flex items-center justify-center gap-2"
+                style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.18em' }}
+              >
+                <Flag className="w-3.5 h-3.5" />
+                Forfeit Battle · −5 IDX
+              </button>
+              <p className="text-[10px] text-zinc-600 text-center mt-1.5">
+                Walk away if you can't submit. Opponent wins.
+              </p>
+            </motion.div>
+          )}
+        </aside>
       </div>
 
       {/* Battle Invite Modal */}
