@@ -54,31 +54,31 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   const [secondsLeft, setSecondsLeft] = useState(initial.left);
   const [paused, setPaused] = useState(false);
   const [soundOn, setSoundOn] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
   const completedFiredRef = useRef(false);
 
   const current = sides[currentIdx];
 
-  // Autoplay muted by default for reliable loading; user controls sound explicitly.
+  // Preload and play every direct video muted so switching sides never re-fetches/rebuffers.
   useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.muted = !soundOn;
-    v.currentTime = 0;
-    v.play().catch(() => {
-      if (soundOn) {
+    videoRefs.current.forEach((v, index) => {
+      if (!v) return;
+      v.muted = !(soundOn && index === currentIdx);
+      v.preload = "auto";
+      v.play().catch(() => {
         v.muted = true;
-        setSoundOn(false);
+        if (index === currentIdx) setSoundOn(false);
         v.play().catch((error) => { void error; });
-      }
+      });
     });
-  }, [current?.userId, currentIdx, soundOn]);
+  }, [currentIdx, sides, soundOn]);
 
   useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    if (paused) v.pause();
-    else v.play().catch((error) => { void error; });
+    videoRefs.current.forEach((v) => {
+      if (!v) return;
+      if (paused) v.pause();
+      else v.play().catch((error) => { void error; });
+    });
   }, [paused]);
 
   // Server-synced ticker
@@ -99,13 +99,14 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   }, [compute, startMs, sides.length, onComplete]);
 
   const toggleSound = () => {
-    const v = videoRef.current;
-    if (!v) return;
     const next = !soundOn;
     setSoundOn(next);
-    v.muted = !next;
-    v.volume = 1;
-    v.play().catch(() => setSoundOn(false));
+    videoRefs.current.forEach((v, index) => {
+      if (!v) return;
+      v.muted = !(next && index === currentIdx);
+      v.volume = 1;
+      if (index === currentIdx) v.play().catch(() => setSoundOn(false));
+    });
   };
 
   const direct = isDirectVideo(current.url);
