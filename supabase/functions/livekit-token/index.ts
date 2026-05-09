@@ -26,7 +26,20 @@ Deno.serve(async (req) => {
     }
     const userId = userData.user.id;
     const meta = (userData.user.user_metadata || {}) as Record<string, any>;
-    const username = meta.username || meta.display_name || userData.user.email?.split('@')[0] || userId.slice(0, 6);
+    let username = meta.username || meta.display_name || '';
+    let avatarUrl = '';
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('username, display_name, avatar_url')
+        .eq('id', userId)
+        .maybeSingle();
+      if (profile) {
+        username = profile.username || profile.display_name || username;
+        avatarUrl = profile.avatar_url || '';
+      }
+    } catch (_) {}
+    if (!username) username = userId.slice(0, 6);
 
     const body = await req.json().catch(() => ({}));
     const room = typeof body?.room === 'string' ? body.room.trim() : '';
@@ -45,6 +58,7 @@ Deno.serve(async (req) => {
       identity: userId,
       name: username,
       ttl: 60 * 60 * 4,
+      metadata: JSON.stringify({ username, avatar_url: avatarUrl }),
     });
     at.addGrant({
       room,
