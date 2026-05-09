@@ -74,24 +74,6 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
               <span className="text-[8px] font-black uppercase tracking-wider text-amber-300" style={{ fontFamily: 'Teko, sans-serif' }}>Private</span>
             </span>
           )}
-          {mode && (
-            <span className={`ml-1 inline-flex items-center gap-0.5 px-1 py-[1px] rounded-sm border ${
-              isPremade
-                ? 'bg-sky-500/15 border-sky-500/30'
-                : 'bg-emerald-500/15 border-emerald-500/30'
-            }`}>
-              {isPremade ? (
-                <Upload className="w-2 h-2 text-sky-400" strokeWidth={3} />
-              ) : (
-                <Package className="w-2 h-2 text-emerald-400" strokeWidth={3} />
-              )}
-              <span className={`text-[8px] font-black uppercase tracking-wider ${
-                isPremade ? 'text-sky-300' : 'text-emerald-300'
-              }`} style={{ fontFamily: 'Teko, sans-serif' }}>
-                {isPremade ? 'Pre-Made' : 'Scenepack'}
-              </span>
-            </span>
-          )}
         </div>
         <div className="flex items-center gap-1 text-[8px] text-zinc-500">
           <Clock className="w-2.5 h-2.5" />
