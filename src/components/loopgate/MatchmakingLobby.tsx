@@ -175,25 +175,28 @@ export default function MatchmakingLobby({ open, elapsedSec, currentUserId, onCa
                 </div>
               </div>
 
-              {/* Awaiting */}
-              <div className="flex-1 flex flex-col items-center text-center">
+              {/* Info Ticker */}
+              <div className="flex-1 flex flex-col items-center justify-center text-center min-w-0 px-1">
                 <div className="relative mb-2">
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                    className="w-[72px] h-[72px] rounded-full border-2 border-dashed border-zinc-600/50 flex items-center justify-center bg-zinc-900/50"
-                  >
-                    <span className="text-2xl text-zinc-600" style={{ fontFamily: "Teko, sans-serif" }}>
-                      ?
-                    </span>
-                  </motion.div>
+                  <div className="w-[72px] h-[72px] rounded-full border border-white/[0.06] bg-white/[0.03] flex items-center justify-center">
+                    <Info className="w-6 h-6 text-white/40" />
+                  </div>
                 </div>
-                <span
-                  className="text-[13px] text-zinc-500 uppercase tracking-wide"
-                  style={{ fontFamily: "Teko, sans-serif" }}
-                >
-                  AWAITING
-                </span>
+                <div className="h-8 overflow-hidden w-full">
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={infoIdx}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.35 }}
+                      className="block text-[11px] font-bold text-white/80 leading-tight"
+                      style={{ fontFamily: "Inter, system-ui, sans-serif" }}
+                    >
+                      {infoLines[infoIdx]}
+                    </motion.span>
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
 
