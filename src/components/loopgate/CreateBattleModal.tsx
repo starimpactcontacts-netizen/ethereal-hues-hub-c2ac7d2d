@@ -112,7 +112,6 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
       // Rapid is implicit when duration <= 1 hour
       const updateData: any = {
         is_rapid: duration <= 1,
-        submission_mode: battleMode === 'scenepack' ? 'create' : 'reuse',
       };
       if (challengeType === 'private') {
         updateData.is_private = true;
