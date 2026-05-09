@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Volume2, VolumeX } from "lucide-react";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
@@ -35,7 +36,7 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
   const totalMs = sides.length * PER_EDIT_SECONDS * 1000;
   const [redReady, setRedReady] = useState(false);
   const [blueReady, setBlueReady] = useState(false);
-  const bothReady = redReady && blueReady;
+  const [soundOn, setSoundOn] = useState(false);
 
   const compute = () => {
     const elapsed = Math.max(0, Date.now() - startMsRef.current);
@@ -49,19 +50,16 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
   const initial = compute();
   const [activeIdx, setActiveIdx] = useState(initial.idx);
   const [secondsLeft, setSecondsLeft] = useState(initial.left);
-  const [needsTapForSound, setNeedsTapForSound] = useState(false);
+  const tickEnabled = !paused;
 
   const redVideoRef = useRef<HTMLVideoElement>(null);
   const blueVideoRef = useRef<HTMLVideoElement>(null);
   const redPanelRef = useRef<HTMLDivElement>(null);
   const bluePanelRef = useRef<HTMLDivElement>(null);
 
-  // Tick — drive activeIdx + countdown. Pauses until both videos are ready
-  // so the rotation always starts in lockstep with playback.
+  // Tick immediately instead of waiting for both videos to fully buffer.
   useEffect(() => {
-    if (!bothReady || paused) return;
-    // Reset start clock the moment both clips are buffered so the first play is instant
-    startMsRef.current = Date.now();
+    if (!tickEnabled) return;
     const tick = () => {
       const { idx, left } = compute();
       setActiveIdx((prev) => (prev !== idx ? idx : prev));
@@ -70,12 +68,11 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
     tick();
     const id = setInterval(tick, 250);
     return () => clearInterval(id);
-  }, [bothReady, paused]);
+  }, [tickEnabled]);
 
   // Drive playback: active plays full-quality, inactive PAUSES at currentTime=0
   // (kept loaded so swap is instant — no re-buffer).
   useEffect(() => {
-    if (!bothReady) return;
     if (paused) {
       [redVideoRef.current, blueVideoRef.current].forEach((v) => {
         if (!v) return;
@@ -89,12 +86,10 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
     refs.forEach((v, i) => {
       if (!v) return;
       if (i === activeIdx) {
-        v.muted = false;
-        try { v.currentTime = 0; } catch {}
+        v.muted = !soundOn;
         v.play().catch(() => {
-          // Autoplay-with-sound blocked → fall back to muted and prompt tap
           v.muted = true;
-          setNeedsTapForSound(true);
+          setSoundOn(false);
           v.play().catch(() => {});
         });
       } else {
@@ -103,24 +98,23 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
         try { v.currentTime = 0; } catch {}
       }
     });
-  }, [activeIdx, bothReady, paused]);
+  }, [activeIdx, paused, soundOn]);
 
   // Smooth-scroll the active panel into view when it switches
   useEffect(() => {
-    if (!bothReady || paused) return;
+    if (paused) return;
     const target = activeIdx === 0 ? redPanelRef.current : bluePanelRef.current;
     if (!target) return;
     target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, [activeIdx, bothReady, paused]);
+  }, [activeIdx, paused]);
 
-  const enableSound = () => {
-    setNeedsTapForSound(false);
+  const toggleSound = () => {
+    const next = !soundOn;
+    setSoundOn(next);
     [redVideoRef.current, blueVideoRef.current].forEach((v, i) => {
       if (!v) return;
-      if (i === activeIdx) {
-        v.muted = false;
-        v.play().catch(() => {});
-      }
+      v.muted = !(next && i === activeIdx);
+      if (i === activeIdx) v.play().catch(() => setSoundOn(false));
     });
   };
 
@@ -128,20 +122,14 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
 
   return (
     <div className="space-y-0 select-none -mx-4 md:flex md:items-stretch md:gap-0 md:-mx-0">
-      {/* Loading state until BOTH clips have buffered → guarantees zero stutter on first play */}
-      {!bothReady && (
-        <div className="absolute -z-10 opacity-0 pointer-events-none">
-          {/* preload work happens via the real <video> tags below; this is just a hint */}
-        </div>
-      )}
       {/* RED — top (mobile) / left (desktop) */}
       <div className="md:flex-1 md:min-w-0">
       <SidePanel
         side={red}
         videoRef={redVideoRef}
         panelRef={redPanelRef}
-        active={bothReady && activeIdx === 0}
-        progressPct={bothReady ? (activeIdx === 0 ? progressPct : activeIdx > 0 ? 100 : 0) : 0}
+        active={activeIdx === 0}
+        progressPct={activeIdx === 0 ? progressPct : activeIdx > 0 ? 100 : 0}
         secondsLeft={secondsLeft}
         onReady={() => setRedReady(true)}
         loading={!redReady}
@@ -181,8 +169,8 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
         side={blue}
         videoRef={blueVideoRef}
         panelRef={bluePanelRef}
-        active={bothReady && activeIdx === 1}
-        progressPct={bothReady && activeIdx === 1 ? progressPct : 0}
+        active={activeIdx === 1}
+        progressPct={activeIdx === 1 ? progressPct : 0}
         secondsLeft={secondsLeft}
         onReady={() => setBlueReady(true)}
         loading={!blueReady}
@@ -190,20 +178,16 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
       </div>
 
       <p className="pt-2 px-4 text-[10px] text-center text-foreground/40 uppercase tracking-[0.2em] md:hidden" style={teko}>
-        {bothReady ? '15s per edit · auto-rotating' : 'Buffering both edits in HD…'}
+        15s per edit · auto-rotating
       </p>
 
-      {/* One-tap unmute overlay if browser blocked autoplay-with-sound */}
-      {needsTapForSound && bothReady && (
-        <button
-          onClick={enableSound}
-          className="fixed inset-0 z-[9998] bg-black/60 backdrop-blur-sm flex items-center justify-center"
-        >
-          <div className="px-6 py-3 bg-white text-black text-sm font-black uppercase tracking-[0.2em] rounded-full" style={teko}>
-            Tap for sound
-          </div>
-        </button>
-      )}
+      <button
+        onClick={toggleSound}
+        className="fixed bottom-[calc(env(safe-area-inset-bottom)+18px)] right-4 z-50 w-11 h-11 rounded-full bg-black/75 backdrop-blur-md border border-white/15 flex items-center justify-center active:scale-95"
+        aria-label={soundOn ? "Mute battle audio" : "Enable battle audio"}
+      >
+        {soundOn ? <Volume2 className="w-4 h-4 text-white" /> : <VolumeX className="w-4 h-4 text-white" />}
+      </button>
     </div>
   );
 }
