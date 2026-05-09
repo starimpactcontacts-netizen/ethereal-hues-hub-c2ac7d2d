@@ -29,8 +29,6 @@ import FNFVoteScoreboard from '@/components/loopgate/FNFVoteScoreboard';
 import QuickFightPublicVote from '@/components/loopgate/QuickFightPublicVote';
 import BattleIntroOverlay from '@/components/loopgate/BattleIntroOverlay';
 import BattleDecidedOverlay from '@/components/loopgate/BattleDecidedOverlay';
-import ScenepackVoteModal from '@/components/loopgate/ScenepackVoteModal';
-import ScenepackDownloadCard from '@/components/loopgate/ScenepackDownloadCard';
 import { setLobbyMusicActive } from '@/components/loopgate/LobbyMusicPlayer';
 import CustomEditBattleLobby from '@/components/loopgate/CustomEditBattleLobby';
 
@@ -290,22 +288,6 @@ export default function QuickFightPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Scenepack vote / locked banner — opens automatically when entering an active fight */}
-      {isParticipant && fight.status === 'active' && (
-        <ScenepackVoteModal
-          battleId={fight.id}
-          kind="quick_fight"
-          isParticipant={isParticipant}
-          optionAId={(fight as any).scenepack_option_a_id || null}
-          optionBId={(fight as any).scenepack_option_b_id || null}
-          voteDeadline={(fight as any).scenepack_vote_deadline || null}
-          myVote={isP1 ? ((fight as any).player_1_scenepack_vote || null) : ((fight as any).player_2_scenepack_vote || null)}
-          opponentVote={isP1 ? ((fight as any).player_2_scenepack_vote || null) : ((fight as any).player_1_scenepack_vote || null)}
-          lockedId={(fight as any).scenepack_locked_id || null}
-          lockedYoutube={(fight as any).scenepack_youtube_url || null}
-          lockedGdrive={(fight as any).scenepack_gdrive_url || null}
-        />
-      )}
       {/* Smash-Bros style 3-2-1-GO intro when both edits are in */}
       <BattleIntroOverlay
         fightId={fight.id}
@@ -417,14 +399,6 @@ export default function QuickFightPage() {
 
       {/* Content */}
       <div className="px-4 space-y-4 mt-2">
-        {/* Persistent scenepack download card — visible after vote locks */}
-        {fight.status === 'active' && (fight as any).scenepack_locked_id && (
-          <ScenepackDownloadCard
-            lockedId={(fight as any).scenepack_locked_id}
-            lockedYoutube={(fight as any).scenepack_youtube_url}
-            lockedGdrive={(fight as any).scenepack_gdrive_url}
-          />
-        )}
         {/* Show picked song for non-participants */}
         {!isParticipant && (fight as any).theme_song_name && (
           <div className="bg-surface-1 border border-border p-3 flex items-center gap-3">
