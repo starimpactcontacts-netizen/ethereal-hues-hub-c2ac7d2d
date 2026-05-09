@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Room, RoomEvent, Track, RemoteParticipant, LocalParticipant, Participant, ConnectionState, RemoteTrack, RemoteTrackPublication } from 'livekit-client';
 import { supabase } from '@/integrations/supabase/client';
-import { Mic, MicOff, Radio, Loader2, Users } from 'lucide-react';
+import { Mic, MicOff, Radio, Loader2, Users, Volume2, VolumeX } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface CompetitionVoiceChatProps {
@@ -28,6 +28,22 @@ export function CompetitionVoiceChat({ competitionId, className, compact = false
   const mountedRef = useRef(true);
   const audioContainerRef = useRef<HTMLDivElement | null>(null);
   const [needsAudioUnlock, setNeedsAudioUnlock] = useState(false);
+  const [mutedRemotes, setMutedRemotes] = useState<Set<string>>(new Set());
+
+  const toggleRemoteMute = (identity: string) => {
+    if (!room) return;
+    setMutedRemotes((prev) => {
+      const next = new Set(prev);
+      const willMute = !next.has(identity);
+      if (willMute) next.add(identity);
+      else next.delete(identity);
+      const p = room.remoteParticipants.get(identity);
+      if (p) {
+        try { (p as any).setVolume?.(willMute ? 0 : 1); } catch (_) {}
+      }
+      return next;
+    });
+  };
 
   const refreshSpeakers = (r: Room) => {
     const all: Participant[] = [r.localParticipant, ...Array.from(r.remoteParticipants.values())];
@@ -201,7 +217,7 @@ export function CompetitionVoiceChat({ competitionId, className, compact = false
                   <span
                     key={s.identity}
                     className={cn(
-                      'inline-flex items-center gap-1.5 min-w-0 max-w-[120px] rounded-full border pl-0.5 pr-2 py-0.5 text-[11px] transition-colors',
+                      'inline-flex items-center gap-1 min-w-0 max-w-[160px] rounded-full border pl-0.5 pr-0.5 py-0.5 text-[11px] transition-colors',
                       s.isSpeaking && !s.isMuted
                         ? 'border-status-live/60 bg-status-live/10 text-status-live'
                         : s.isLocal
@@ -228,10 +244,26 @@ export function CompetitionVoiceChat({ competitionId, className, compact = false
                     ) : (
                       <Mic className={cn('w-3 h-3 shrink-0', s.isSpeaking ? '' : 'opacity-70')} />
                     )}
-                    <span className="truncate font-medium">
+                    <span className="truncate font-medium px-0.5">
                       {s.name}
                       {s.isLocal ? ' (you)' : ''}
                     </span>
+                    {!s.isLocal && (
+                      <button
+                        type="button"
+                        onClick={() => toggleRemoteMute(s.identity)}
+                        className={cn(
+                          'shrink-0 w-5 h-5 rounded-full inline-flex items-center justify-center transition active:scale-90',
+                          mutedRemotes.has(s.identity)
+                            ? 'bg-destructive/20 text-destructive hover:bg-destructive/30'
+                            : 'bg-surface-3/60 text-muted-foreground hover:bg-surface-3 hover:text-foreground'
+                        )}
+                        aria-label={mutedRemotes.has(s.identity) ? `Unmute ${s.name}` : `Mute ${s.name}`}
+                        title={mutedRemotes.has(s.identity) ? `Unmute ${s.name}` : `Mute ${s.name}`}
+                      >
+                        {mutedRemotes.has(s.identity) ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
+                      </button>
+                    )}
                   </span>
                 ))}
                 {overflow > 0 && (
