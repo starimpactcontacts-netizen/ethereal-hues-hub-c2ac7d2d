@@ -32,7 +32,10 @@ const rules = [
 
 export default function RulesPage() {
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div
+      className="fixed inset-0 overflow-y-auto bg-background"
+      style={{ WebkitOverflowScrolling: 'touch', paddingTop: 'env(safe-area-inset-top, 0px)', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 6rem)' }}
+    >
       <SEO {...pageSEO.rules} />
       <div className="px-4 pt-6 pb-8">
         <Link to="/hub" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6">
