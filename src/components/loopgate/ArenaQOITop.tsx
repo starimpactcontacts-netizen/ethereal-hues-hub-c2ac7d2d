@@ -180,13 +180,8 @@ export default function ArenaQOITop() {
                       ) : null}
                       {(() => {
                         const prev = prevRanks[row.id];
-                        if (!prev) {
-                          return (
-                            <span className="inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-md bg-sky-400/15 border border-sky-400/30 text-[8.5px] font-black uppercase tracking-wider text-sky-300">
-                              <Sparkles className="w-2.5 h-2.5" strokeWidth={2.75} /> NEW
-                            </span>
-                          );
-                        }
+                        // No prior week snapshot → render nothing (no "NEW" tag).
+                        if (!prev) return null;
                         const delta = prev - rank; // positive = climbed
                         if (delta > 0) {
                           const blazing = delta >= 5;
@@ -201,17 +196,17 @@ export default function ArenaQOITop() {
                               {blazing ? (
                                 <Flame className="w-2.5 h-2.5" strokeWidth={2.75} fill="currentColor" />
                               ) : (
-                                <ChevronsUp className="w-3 h-3 -ml-0.5" strokeWidth={3} />
+                                <ArrowUp className="w-2.5 h-2.5" strokeWidth={3} />
                               )}
-                              {delta}
+                              +{delta}
                             </span>
                           );
                         }
                         if (delta < 0) {
                           return (
                             <span className="inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-md bg-red-500/10 border border-red-400/30 text-[9px] font-black tabular-nums text-red-300">
-                              <ChevronsDown className="w-3 h-3 -ml-0.5" strokeWidth={3} />
-                              {Math.abs(delta)}
+                              <ArrowDown className="w-2.5 h-2.5" strokeWidth={3} />
+                              {delta}
                             </span>
                           );
                         }
