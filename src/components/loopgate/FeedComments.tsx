@@ -1,6 +1,7 @@
  import { useState, useEffect, useRef } from 'react';
  import { motion, AnimatePresence } from 'framer-motion';
- import { X, Heart, Send, Reply, Loader2, MessageCircle, Smile } from 'lucide-react';
+ import { X, Send, Reply, Loader2, MessageCircle, Smile } from 'lucide-react';
+ import LoopHeart from './LoopHeart';
  import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
  import { Button } from '@/components/ui/button';
  import { Textarea } from '@/components/ui/textarea';
@@ -460,8 +461,10 @@
              onClick={onLike}
              className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
            >
-             <Heart 
-               className={`w-4 h-4 ${comment.isLiked ? 'fill-red-500 text-red-500' : ''}`} 
+             <LoopHeart
+               size={16}
+               filled={!!comment.isLiked}
+               className={comment.isLiked ? 'text-red-500' : ''}
              />
              {comment.like_count > 0 && (
                <span className="text-xs">{comment.like_count}</span>
