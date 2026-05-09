@@ -421,10 +421,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   /**
-   * Zero-friction guest sign-in. Creates an anonymous Supabase auth.users row
-   * with the chosen nickname stored in user metadata. The handle_new_user
-   * trigger creates a profile with is_guest=true. Pre-checks nickname
-   * availability so the UI can prompt the user to pick another.
+   * Zero-friction guest sign-in. Uses a private internal email + generated
+   * password because anonymous auth is disabled in Lovable Cloud. Users still
+   * only enter a nickname; the synthetic credentials stay hidden locally.
    */
   const signInAsGuest = async (nickname: string) => {
     const trimmed = nickname.trim();
@@ -445,23 +444,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: new Error('Nickname taken — try another'), usernameTaken: true };
     }
 
-    const { data, error } = await supabase.auth.signInAnonymously({
+    const guestEmail = `${trimmed.toLowerCase()}@loopgate.local`;
+    const guestPassword = `guest-${crypto.randomUUID()}-${Date.now()}`;
+
+    let { data, error } = await supabase.auth.signUp({
+      email: guestEmail,
+      password: guestPassword,
       options: {
+        emailRedirectTo: `${window.location.origin}/`,
         data: {
           username: trimmed,
           is_guest: true,
+          is_username_only: true,
         },
       },
     });
-    // Persist guest as a one-tap entry (no password — uses refresh token).
-    if (!error && data?.session?.refresh_token && data.user) {
+
+    if (error && error.message.toLowerCase().includes('already registered')) {
+      return { error: new Error('Nickname taken — try another'), usernameTaken: true };
+    }
+
+    if (!error && !data.session) {
+      await supabase.functions.invoke('auto-confirm-user', { body: { email: guestEmail } });
+      const signIn = await supabase.auth.signInWithPassword({
+        email: guestEmail,
+        password: guestPassword,
+      });
+      data = signIn.data;
+      error = signIn.error;
+    }
+
+    if (!error && data.user) {
+      await supabase
+        .from('profiles')
+        .update({
+          username: trimmed,
+          display_name: trimmed,
+          is_guest: true,
+          onboarding_completed: true,
+        })
+        .eq('id', data.user.id);
+
+      await fetchProfile(data.user.id);
+
       try {
         const { rememberAccount } = await import('@/lib/rememberedAccounts');
         rememberAccount({
           username: trimmed,
-          email: data.user.email || `${trimmed.toLowerCase()}.guest@loopgate.local`,
-          refreshToken: data.session.refresh_token,
-          isGuest: true,
+          email: guestEmail,
+          password: guestPassword,
+          isGuest: false,
         });
       } catch { /* ignore */ }
     }
