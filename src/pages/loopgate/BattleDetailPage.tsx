@@ -18,9 +18,6 @@ import BattleInviteModal from "@/components/loopgate/BattleInviteModal";
 import BattleJudgingPanel from "@/components/loopgate/BattleJudgingPanel";
 import BattleChat from "@/components/loopgate/BattleChat";
 import BattleSongPicker from "@/components/loopgate/BattleSongPicker";
-import ScenepackVote from "@/components/loopgate/ScenepackVote";
-import ScenepackVoteModal from "@/components/loopgate/ScenepackVoteModal";
-import ScenepackDownloadCard from "@/components/loopgate/ScenepackDownloadCard";
 import BattleSubmissionCard from "@/components/loopgate/BattleSubmissionCard";
 import BattleShowcase from "@/components/loopgate/BattleShowcase";
 import {
