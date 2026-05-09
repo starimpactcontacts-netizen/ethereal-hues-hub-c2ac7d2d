@@ -232,7 +232,7 @@ function SidePanel({
         <video
           ref={videoRef}
           src={side.url}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-contain"
           style={{ imageRendering: 'auto' as any }}
           playsInline
           // @ts-ignore — iOS Safari hint
@@ -251,7 +251,7 @@ function SidePanel({
         <img
           src={side.url}
           alt={`${side.username} edit`}
-          className="w-full h-full object-cover bg-black"
+          className="w-full h-full object-contain bg-black"
           loading="eager"
           decoding="async"
           style={{ imageRendering: 'auto' as any }}
