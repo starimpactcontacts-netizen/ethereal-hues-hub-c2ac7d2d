@@ -753,11 +753,6 @@ export default function CompetitionLobbyPage() {
         )}
 
         {/* ── MOBILE TAB SWITCHER (Roblox-style chunky pills) ── */}
-        {(hasJoined || isCreator) && (isLobby || isLive) && (
-          <div className="shrink-0 px-3 pt-3">
-            <CompetitionVoiceChat competitionId={competition.id} />
-          </div>
-        )}
         <div className="md:hidden shrink-0 px-3 pt-3">
           <div className="relative grid grid-cols-2 gap-1.5 p-1 rounded-2xl bg-white/[0.035] border border-white/[0.07] shadow-inner">
             <button
@@ -816,6 +811,9 @@ export default function CompetitionLobbyPage() {
                 {memberCount}/{cap}
               </span>
             </div>
+            {(hasJoined || isCreator) && (isLobby || isLive) && (
+              <CompetitionVoiceChat competitionId={competition.id} compact />
+            )}
             <div className="flex-1 min-h-0 overflow-y-auto px-2 py-2 space-y-1">
               {participants.length === 0 ? (
                 <p className="text-xs text-muted-foreground/40 text-center py-6">No editors yet</p>

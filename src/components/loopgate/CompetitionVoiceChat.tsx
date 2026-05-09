@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 interface CompetitionVoiceChatProps {
   competitionId: string;
   className?: string;
+  compact?: boolean;
 }
 
 interface SpeakerInfo {
@@ -18,7 +19,7 @@ interface SpeakerInfo {
   isLocal: boolean;
 }
 
-export function CompetitionVoiceChat({ competitionId, className }: CompetitionVoiceChatProps) {
+export function CompetitionVoiceChat({ competitionId, className, compact = false }: CompetitionVoiceChatProps) {
   const [room, setRoom] = useState<Room | null>(null);
   const [state, setState] = useState<'idle' | 'connecting' | 'connected' | 'error'>('idle');
   const [muted, setMuted] = useState(true);
@@ -163,27 +164,107 @@ export function CompetitionVoiceChat({ competitionId, className }: CompetitionVo
     }
   };
 
-  return (
-    <div className={cn('rounded-2xl bg-[#111114] border border-white/10 p-4', className)}>
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <Radio className={cn('w-4 h-4', state === 'connected' ? 'text-emerald-400 animate-pulse' : 'text-white/40')} />
-          <span className="text-xs uppercase tracking-[0.2em] text-white/70 font-semibold">Voice Lobby</span>
+  if (compact) {
+    const localSpeaker = speakers.find((s) => s.isLocal);
+    const activeSpeakers = speakers.filter((s) => s.isSpeaking && !s.isMuted && !s.isLocal);
+    const visibleSpeakers = activeSpeakers.length > 0 ? activeSpeakers.slice(0, 2) : speakers.filter((s) => !s.isLocal).slice(0, 2);
+
+    return (
+      <div className={cn('shrink-0 border-b border-border bg-surface-1/80 px-3 py-2', className)}>
+        <div ref={audioContainerRef} className="hidden" aria-hidden />
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Radio className={cn('w-3.5 h-3.5', state === 'connected' ? 'text-status-live' : 'text-muted-foreground')} />
+            <span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground font-semibold">Voice</span>
+            <span className="text-[10px] tabular-nums text-muted-foreground/70">{speakers.length}</span>
+          </div>
+
+          <div className="flex items-center gap-1 flex-1 min-w-0 overflow-hidden">
+            {state === 'connecting' && (
+              <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground truncate">
+                <Loader2 className="w-3 h-3 animate-spin shrink-0" /> Joining…
+              </span>
+            )}
+            {state === 'error' && (
+              <span className="text-[11px] text-destructive truncate">{error || 'Voice unavailable'}</span>
+            )}
+            {state === 'connected' && (
+              <>
+                {visibleSpeakers.map((s) => (
+                  <span
+                    key={s.identity}
+                    className={cn(
+                      'inline-flex items-center gap-1 min-w-0 max-w-[92px] rounded-full border px-1.5 py-0.5 text-[10px]',
+                      s.isSpeaking && !s.isMuted
+                        ? 'border-status-live/50 bg-status-live/10 text-status-live'
+                        : 'border-border bg-surface-2 text-muted-foreground'
+                    )}
+                  >
+                    {s.avatarUrl ? (
+                      <img src={s.avatarUrl} alt={s.name} className="w-4 h-4 rounded-full object-cover shrink-0" />
+                    ) : (
+                      <span className="w-4 h-4 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[8px] font-bold uppercase shrink-0">
+                        {s.name.charAt(0)}
+                      </span>
+                    )}
+                    <span className="truncate">{s.name}</span>
+                  </span>
+                ))}
+                {visibleSpeakers.length === 0 && (
+                  <span className="text-[11px] text-muted-foreground/70 truncate">{localSpeaker?.name || 'Connected'} in voice</span>
+                )}
+              </>
+            )}
+          </div>
+
+          {needsAudioUnlock && state === 'connected' && (
+            <button
+              onClick={unlockAudio}
+              className="h-8 px-2.5 rounded-lg text-[11px] font-semibold bg-gold text-gold-foreground active:scale-95 transition shrink-0"
+            >
+              Enable
+            </button>
+          )}
+          {state === 'connected' && (
+            <button
+              onClick={toggleMute}
+              className={cn(
+                'h-8 px-3 rounded-lg inline-flex items-center justify-center gap-1.5 text-[11px] font-semibold border transition active:scale-95 shrink-0',
+                muted
+                  ? 'bg-surface-2 border-border text-foreground hover:bg-surface-3'
+                  : 'bg-status-live border-status-live text-background hover:bg-status-live/90'
+              )}
+            >
+              {muted ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+              {muted ? 'Unmute' : 'Mute'}
+            </button>
+          )}
         </div>
-        <div className="flex items-center gap-1.5 text-[11px] text-white/50">
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn('rounded-xl bg-surface-1 border border-border p-3', className)}>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <Radio className={cn('w-4 h-4', state === 'connected' ? 'text-status-live animate-pulse' : 'text-muted-foreground')} />
+          <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground font-semibold">Voice Lobby</span>
+        </div>
+        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
           <Users className="w-3 h-3" />
           <span>{speakers.length}</span>
         </div>
       </div>
 
       {state === 'connecting' && (
-        <div className="flex items-center gap-2 text-xs text-white/60 py-2">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">
           <Loader2 className="w-3.5 h-3.5 animate-spin" /> Joining voice…
         </div>
       )}
 
       {state === 'error' && (
-        <div className="text-xs text-red-400 py-2">{error || 'Voice unavailable'}</div>
+        <div className="text-xs text-destructive py-2">{error || 'Voice unavailable'}</div>
       )}
 
       {state === 'connected' && (
@@ -192,7 +273,7 @@ export function CompetitionVoiceChat({ competitionId, className }: CompetitionVo
           {needsAudioUnlock && (
             <button
               onClick={unlockAudio}
-              className="w-full mb-2 py-2 rounded-xl text-xs font-semibold bg-amber-500 text-black hover:bg-amber-400"
+              className="w-full mb-2 py-2 rounded-lg text-xs font-semibold bg-gold text-gold-foreground hover:opacity-90"
             >
               Tap to enable voice audio
             </button>
@@ -204,8 +285,8 @@ export function CompetitionVoiceChat({ competitionId, className }: CompetitionVo
                 className={cn(
                   'flex items-center gap-1.5 rounded-full pl-1 pr-2.5 py-1 text-[11px] border transition-all',
                   s.isSpeaking && !s.isMuted
-                    ? 'bg-emerald-500/15 border-emerald-400/60 text-emerald-200'
-                    : 'bg-white/5 border-white/10 text-white/70'
+                    ? 'bg-status-live/10 border-status-live/60 text-status-live'
+                    : 'bg-surface-2 border-border text-muted-foreground'
                 )}
               >
                 {s.avatarUrl ? (
@@ -214,11 +295,11 @@ export function CompetitionVoiceChat({ competitionId, className }: CompetitionVo
                     alt={s.name}
                     className={cn(
                       'w-5 h-5 rounded-full object-cover border',
-                      s.isSpeaking && !s.isMuted ? 'border-emerald-400' : 'border-white/10'
+                      s.isSpeaking && !s.isMuted ? 'border-status-live' : 'border-border'
                     )}
                   />
                 ) : (
-                  <div className="w-5 h-5 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-[9px] font-bold uppercase">
+                  <div className="w-5 h-5 rounded-full bg-muted border border-border flex items-center justify-center text-[9px] font-bold uppercase">
                     {s.name.charAt(0)}
                   </div>
                 )}
@@ -227,17 +308,17 @@ export function CompetitionVoiceChat({ competitionId, className }: CompetitionVo
               </div>
             ))}
             {speakers.length === 0 && (
-              <span className="text-[11px] text-white/40">No one in voice yet</span>
+              <span className="text-[11px] text-muted-foreground">No one in voice yet</span>
             )}
           </div>
 
           <button
             onClick={toggleMute}
             className={cn(
-              'w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-sm transition-all border',
+              'w-full flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold text-sm transition-all border',
               muted
-                ? 'bg-white/5 border-white/10 text-white/80 hover:bg-white/10'
-                : 'bg-emerald-500 border-emerald-400 text-black hover:bg-emerald-400'
+                ? 'bg-surface-2 border-border text-foreground hover:bg-surface-3'
+                : 'bg-status-live border-status-live text-background hover:bg-status-live/90'
             )}
           >
             {muted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
