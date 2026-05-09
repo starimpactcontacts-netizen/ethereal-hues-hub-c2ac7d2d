@@ -87,19 +87,27 @@ export default function ArenaQOITop() {
           const rawPrev = localStorage.getItem('arena_top_editors_ranks_w0');
           const prev = rawPrev ? JSON.parse(rawPrev) : null;
 
-          // Compare against last week's frozen snapshot if we have one.
-          if (prev?.ranks) setPrevRanks(prev.ranks);
-          else if (cur?.week && cur.week !== week && cur.ranks) setPrevRanks(cur.ranks);
-
           const snap: Record<string, number> = {};
           fresh.forEach((r, i) => { snap[r.id] = i + 1; });
 
+          // Seed baseline immediately so arrows show up on the very first session
+          // instead of waiting a full week for w0 to populate.
+          if (!prev?.ranks) {
+            // First-ever load: snapshot current ranks as the "previous" baseline.
+            // Future ladder shifts within this week will now produce visible deltas.
+            const baseline = cur?.ranks && Object.keys(cur.ranks).length ? cur.ranks : snap;
+            localStorage.setItem('arena_top_editors_ranks_w0', JSON.stringify({ week, ranks: baseline }));
+            setPrevRanks(baseline);
+          } else {
+            setPrevRanks(prev.ranks);
+          }
+
           if (!cur || cur.week !== week) {
-            // New week — roll the previous current into prev, start fresh.
-            if (cur) localStorage.setItem('arena_top_editors_ranks_w0', JSON.stringify(cur));
+            // New ISO week — roll current → prev so next week compares against this week.
+            if (cur?.ranks) localStorage.setItem('arena_top_editors_ranks_w0', JSON.stringify(cur));
             localStorage.setItem('arena_top_editors_ranks_w1', JSON.stringify({ week, ranks: snap }));
           } else {
-            // Same week — keep updating the current bucket so it stabilises.
+            // Same week — keep updating current bucket so it stabilises.
             localStorage.setItem('arena_top_editors_ranks_w1', JSON.stringify({ week, ranks: snap }));
           }
         } catch {}
