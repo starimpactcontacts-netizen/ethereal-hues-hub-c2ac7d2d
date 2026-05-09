@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -37,7 +37,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   const startMs = showcaseStartedAt ? new Date(showcaseStartedAt).getTime() : null;
   const totalMs = sides.length * PER_EDIT_SECONDS * 1000;
 
-  const compute = () => {
+  const compute = useCallback(() => {
     if (!startMs) return { idx: 0, left: PER_EDIT_SECONDS, completedOnce: false };
     const elapsed = Math.max(0, Date.now() - startMs);
     const completedOnce = elapsed >= totalMs;
@@ -47,7 +47,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     const intoEdit = looped - idx * PER_EDIT_SECONDS * 1000;
     const left = Math.max(0, Math.ceil((PER_EDIT_SECONDS * 1000 - intoEdit) / 1000));
     return { idx, left, completedOnce };
-  };
+  }, [sides.length, startMs, totalMs]);
 
   const initial = compute();
   const [currentIdx, setCurrentIdx] = useState(initial.idx);
@@ -69,7 +69,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
       if (soundOn) {
         v.muted = true;
         setSoundOn(false);
-        v.play().catch(() => {});
+        v.play().catch((error) => { void error; });
       }
     });
   }, [current?.userId, currentIdx, soundOn]);
@@ -78,7 +78,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     const v = videoRef.current;
     if (!v) return;
     if (paused) v.pause();
-    else v.play().catch(() => {});
+    else v.play().catch((error) => { void error; });
   }, [paused]);
 
   // Server-synced ticker
@@ -96,7 +96,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     tick();
     const id = setInterval(tick, 250);
     return () => clearInterval(id);
-  }, [startMs, sides.length, onComplete]);
+  }, [compute, startMs, sides.length, onComplete]);
 
   const toggleSound = () => {
     const v = videoRef.current;
