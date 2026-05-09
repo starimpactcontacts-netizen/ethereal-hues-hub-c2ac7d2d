@@ -7,7 +7,7 @@ const corsHeaders = {
 
 /**
  * Auto-confirm a user account that uses a synthetic internal email
- * (e.g. @user.loopgate.io or @loopgate.clip). This unblocks sign-in for
+ * (e.g. @user.loopgate.io, @loopgate.clip, or @loopgate.local). This unblocks sign-in for
  * accounts created before auto_confirm_email was enabled.
  *
  * Body: { email: string }
@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
     }
 
     // Only allow our internal synthetic domains — never real user emails
-    const allowed = email.endsWith("@user.loopgate.io") || email.endsWith("@loopgate.clip");
+    const allowed = email.endsWith("@user.loopgate.io") || email.endsWith("@loopgate.clip") || email.endsWith("@loopgate.local");
     if (!allowed) {
       return new Response(JSON.stringify({ error: "domain not allowed" }), {
         status: 403,
