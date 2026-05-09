@@ -19,6 +19,7 @@ import CompetitionWinnerCard from "@/components/loopgate/CompetitionWinnerCard";
 import { setLobbyMusicActive, useLobbyMusicMute } from "@/components/loopgate/LobbyMusicPlayer";
 import ThemeRevealModal, { pickAutoTheme } from "@/components/loopgate/ThemeRevealModal";
 import { LobbyDefaultCover } from "@/components/loopgate/LobbyDefaultCover";
+import CompetitionVoiceChat from "@/components/loopgate/CompetitionVoiceChat";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 
