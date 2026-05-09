@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Swords, Clock, Trophy, Search, Gavel, Globe2, Target, Lock, Link2, Package, Upload } from "lucide-react";
+import { X, Swords, Clock, Trophy, Search, Gavel, Globe2, Target, Lock, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
@@ -26,7 +26,6 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
   const { profile } = useAuth();
   const [challengeType, setChallengeType] = useState<'open' | 'direct' | 'private'>('open');
   const [duration, setDuration] = useState<number>(1);
-  const [battleMode, setBattleMode] = useState<'scenepack' | 'premade'>('scenepack');
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [selectedOpponent, setSelectedOpponent] = useState<SearchResult | null>(null);
@@ -113,7 +112,6 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
       // Rapid is implicit when duration <= 1 hour
       const updateData: any = {
         is_rapid: duration <= 1,
-        submission_mode: battleMode === 'scenepack' ? 'create' : 'reuse',
       };
       if (challengeType === 'private') {
         updateData.is_private = true;
@@ -406,37 +404,6 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
                   <button onClick={() => setSelectedJudge(null)} className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center"><X className="w-3.5 h-3.5 text-white" /></button>
                 </div>
               )}
-            </div>
-
-            {/* Battle Mode */}
-            <div>
-              <label className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2 block font-semibold">Battle Mode</label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => setBattleMode('scenepack')}
-                  className={`p-3 rounded-2xl text-left transition-all active:scale-[0.98] ${
-                    battleMode === 'scenepack'
-                      ? 'bg-gradient-to-br from-emerald-500/20 to-emerald-600/5 border border-emerald-400/50 shadow-[0_0_18px_-4px_rgba(16,185,129,0.45)]'
-                      : 'bg-white/[0.04] border border-white/[0.06]'
-                  }`}
-                >
-                  <Package className={`w-4 h-4 mb-1.5 ${battleMode === 'scenepack' ? 'text-emerald-300' : 'text-zinc-500'}`} />
-                  <span className="text-[13px] font-semibold text-white block">Scenepack</span>
-                  <span className="text-[9px] text-zinc-500">Both vote, edit live</span>
-                </button>
-                <button
-                  onClick={() => setBattleMode('premade')}
-                  className={`p-3 rounded-2xl text-left transition-all active:scale-[0.98] ${
-                    battleMode === 'premade'
-                      ? 'bg-gradient-to-br from-sky-500/20 to-sky-600/5 border border-sky-400/50 shadow-[0_0_18px_-4px_rgba(56,189,248,0.45)]'
-                      : 'bg-white/[0.04] border border-white/[0.06]'
-                  }`}
-                >
-                  <Upload className={`w-4 h-4 mb-1.5 ${battleMode === 'premade' ? 'text-sky-300' : 'text-zinc-500'}`} />
-                  <span className="text-[13px] font-semibold text-white block">Pre-Made</span>
-                  <span className="text-[9px] text-zinc-500">Submit existing edit</span>
-                </button>
-              </div>
             </div>
 
             {/* Duration */}

@@ -18,9 +18,6 @@ import BattleInviteModal from "@/components/loopgate/BattleInviteModal";
 import BattleJudgingPanel from "@/components/loopgate/BattleJudgingPanel";
 import BattleChat from "@/components/loopgate/BattleChat";
 import BattleSongPicker from "@/components/loopgate/BattleSongPicker";
-import ScenepackVote from "@/components/loopgate/ScenepackVote";
-import ScenepackVoteModal from "@/components/loopgate/ScenepackVoteModal";
-import ScenepackDownloadCard from "@/components/loopgate/ScenepackDownloadCard";
 import BattleSubmissionCard from "@/components/loopgate/BattleSubmissionCard";
 import BattleShowcase from "@/components/loopgate/BattleShowcase";
 import {
@@ -139,8 +136,6 @@ export default function BattleDetailPage() {
   const totalVotes = battle.challenger_votes + battle.opponent_votes;
   const hasSongPicked = !!(battle as any).theme_song_name;
   const isRapid = (battle as any).is_rapid;
-  const submissionMode = (battle as any).submission_mode as 'create' | 'reuse' | undefined;
-  const isPremade = submissionMode === 'reuse';
   const isLive = battle.status === 'active';
   const isCompleted = battle.status === 'completed';
   const isJudging = battle.status === 'judging';
@@ -318,13 +313,6 @@ export default function BattleDetailPage() {
             {isRapid && (
               <span className="flex items-center gap-1 text-amber-400 text-xs tracking-wider ml-1">
                 <Zap className="w-3 h-3" /> RAPID
-              </span>
-            )}
-            {submissionMode && (
-              <span className={`flex items-center gap-1 text-xs tracking-wider ml-1 ${
-                isPremade ? 'text-sky-400' : 'text-emerald-400'
-              }`}>
-                {isPremade ? '⬆ PRE-MADE' : '📦 SCENEPACK'}
               </span>
             )}
           </div>
@@ -563,32 +551,6 @@ export default function BattleDetailPage() {
               </div>
             )}
           </div>
-        )}
-
-        {/* Scenepack Vote — full-screen game-style modal pops up on entry */}
-        {battle.status === 'active' && (battle as any).scenepack_option_a_id && (
-          <ScenepackVoteModal
-            battleId={battle.id}
-            isParticipant={isParticipant}
-            optionAId={(battle as any).scenepack_option_a_id}
-            optionBId={(battle as any).scenepack_option_b_id}
-            voteDeadline={(battle as any).scenepack_vote_deadline}
-            myVote={isChallenger ? (battle as any).challenger_scenepack_vote : isOpponent ? (battle as any).opponent_scenepack_vote : null}
-            opponentVote={isChallenger ? (battle as any).opponent_scenepack_vote : isOpponent ? (battle as any).challenger_scenepack_vote : null}
-            lockedId={(battle as any).scenepack_locked_id}
-            lockedYoutube={(battle as any).scenepack_youtube_url}
-            lockedGdrive={(battle as any).scenepack_gdrive_url}
-            onChanged={refetch}
-          />
-        )}
-
-        {/* Persistent scenepack download card — visible after vote locks */}
-        {battle.status === 'active' && (battle as any).scenepack_locked_id && (
-          <ScenepackDownloadCard
-            lockedId={(battle as any).scenepack_locked_id}
-            lockedYoutube={(battle as any).scenepack_youtube_url}
-            lockedGdrive={(battle as any).scenepack_gdrive_url}
-          />
         )}
 
         {/* Forfeit Battle — escape hatch for active participants */}

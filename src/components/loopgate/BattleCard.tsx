@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Swords, Clock, Trophy, Lock, Package, Upload } from "lucide-react";
+import { Swords, Clock, Trophy, Lock } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import BattleVoteBarCompact from "@/components/loopgate/BattleVoteBarCompact";
 import type { Battle } from "@/hooks/useBattles";
@@ -27,8 +27,6 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
   const isJudging = battle.status === 'judging';
   const isRapid = (battle as any).is_rapid;
   const isPrivate = (battle as any).is_private;
-  const mode = (battle as any).submission_mode as 'create' | 'reuse' | undefined;
-  const isPremade = mode === 'reuse';
   const totalVotes = battle.challenger_votes + battle.opponent_votes;
   
   // Check if time has ended even if status hasn't updated yet
@@ -74,24 +72,6 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
             <span className="ml-1 inline-flex items-center gap-0.5 px-1 py-[1px] rounded-sm bg-amber-500/15 border border-amber-500/30">
               <Lock className="w-2 h-2 text-amber-400" strokeWidth={3} />
               <span className="text-[8px] font-black uppercase tracking-wider text-amber-300" style={{ fontFamily: 'Teko, sans-serif' }}>Private</span>
-            </span>
-          )}
-          {mode && (
-            <span className={`ml-1 inline-flex items-center gap-0.5 px-1 py-[1px] rounded-sm border ${
-              isPremade
-                ? 'bg-sky-500/15 border-sky-500/30'
-                : 'bg-emerald-500/15 border-emerald-500/30'
-            }`}>
-              {isPremade ? (
-                <Upload className="w-2 h-2 text-sky-400" strokeWidth={3} />
-              ) : (
-                <Package className="w-2 h-2 text-emerald-400" strokeWidth={3} />
-              )}
-              <span className={`text-[8px] font-black uppercase tracking-wider ${
-                isPremade ? 'text-sky-300' : 'text-emerald-300'
-              }`} style={{ fontFamily: 'Teko, sans-serif' }}>
-                {isPremade ? 'Pre-Made' : 'Scenepack'}
-              </span>
             </span>
           )}
         </div>
