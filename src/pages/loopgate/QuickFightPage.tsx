@@ -27,7 +27,6 @@ import BattleSubmissionCard from '@/components/loopgate/BattleSubmissionCard';
 import BattleAutoplayDuo from '@/components/loopgate/BattleAutoplayDuo';
 import FNFVoteScoreboard from '@/components/loopgate/FNFVoteScoreboard';
 import QuickFightPublicVote from '@/components/loopgate/QuickFightPublicVote';
-import BattleIntroOverlay from '@/components/loopgate/BattleIntroOverlay';
 import BattleDecidedOverlay from '@/components/loopgate/BattleDecidedOverlay';
 import { setLobbyMusicActive } from '@/components/loopgate/LobbyMusicPlayer';
 import CustomEditBattleLobby from '@/components/loopgate/CustomEditBattleLobby';
@@ -60,9 +59,7 @@ export default function QuickFightPage() {
   const [voting, setVoting] = useState(false);
   const [hideConfirmOpen, setHideConfirmOpen] = useState(false);
   const [hiding, setHiding] = useState(false);
-  const [introDone, setIntroDone] = useState<boolean>(() => {
-    try { return !!sessionStorage.getItem(`battle-intro-played:${fightId}`); } catch { return false; }
-  });
+  const introDone = true;
   const [decidedActive, setDecidedActive] = useState(false);
   const [decidedShown, setDecidedShown] = useState(false);
 
@@ -288,15 +285,6 @@ export default function QuickFightPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Smash-Bros style 3-2-1-GO intro when both edits are in */}
-      <BattleIntroOverlay
-        fightId={fight.id}
-        active={!!(fight.player_1_submission_url && fight.player_2_submission_url && fight.player_2_id)}
-        onComplete={() => {
-          try { sessionStorage.setItem(`battle-intro-played:${fight.id}`, '1'); } catch {}
-          setIntroDone(true);
-        }}
-      />
       {/* Cinematic winner reveal — fires once both edits have looped */}
       {fight.status === 'completed' && fight.winner_id && (
         <BattleDecidedOverlay
