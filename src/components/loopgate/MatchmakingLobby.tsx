@@ -1,10 +1,10 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Swords, X, Users, Share2, Eye } from "lucide-react";
+import { Swords, X, Users, Share2, Eye, Info } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useOpenQuickFightQueue } from "@/hooks/useQuickFight";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { setLobbyMusicActive } from "./LobbyMusicPlayer";
 
@@ -30,11 +30,25 @@ export default function MatchmakingLobby({ open, elapsedSec, currentUserId, onCa
   const myUsername = me?.username || profile?.username || "YOU";
   const myAvatar = me?.avatar_url || profile?.avatar_url || "";
 
+  const infoLines = [
+    "Lobby fills to 10/10 — winner earns rings!",
+    "At max capacity, battle auto-starts instantly",
+    "Winner gets +50 — loser drops 10 rings",
+    "Invite friends to fill the lobby faster",
+  ];
+  const [infoIdx, setInfoIdx] = useState(0);
+
   useEffect(() => {
     if (!open) return;
     setLobbyMusicActive(true);
     return () => setLobbyMusicActive(false);
   }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const id = setInterval(() => setInfoIdx((i) => (i + 1) % infoLines.length), 4000);
+    return () => clearInterval(id);
+  }, [open, infoLines.length]);
 
   const handleInvite = async () => {
     const url = `${window.location.origin}/arena?invite=1v1`;
@@ -161,31 +175,34 @@ export default function MatchmakingLobby({ open, elapsedSec, currentUserId, onCa
                 </div>
               </div>
 
-              {/* Awaiting */}
-              <div className="flex-1 flex flex-col items-center text-center">
+              {/* Info Ticker */}
+              <div className="flex-1 flex flex-col items-center justify-center text-center min-w-0 px-1">
                 <div className="relative mb-2">
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                    className="w-[72px] h-[72px] rounded-full border-2 border-dashed border-zinc-600/50 flex items-center justify-center bg-zinc-900/50"
-                  >
-                    <span className="text-2xl text-zinc-600" style={{ fontFamily: "Teko, sans-serif" }}>
-                      ?
-                    </span>
-                  </motion.div>
+                  <div className="w-[72px] h-[72px] rounded-full border border-white/[0.06] bg-white/[0.03] flex items-center justify-center">
+                    <Info className="w-6 h-6 text-white/40" />
+                  </div>
                 </div>
-                <span
-                  className="text-[13px] text-zinc-500 uppercase tracking-wide"
-                  style={{ fontFamily: "Teko, sans-serif" }}
-                >
-                  AWAITING
-                </span>
+                <div className="h-8 overflow-hidden w-full">
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={infoIdx}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.35 }}
+                      className="block text-[11px] font-bold text-white/80 leading-tight"
+                      style={{ fontFamily: "Inter, system-ui, sans-serif" }}
+                    >
+                      {infoLines[infoIdx]}
+                    </motion.span>
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
 
             {/* Matchup text */}
             <p className="text-center text-[11px] text-zinc-500 mt-4 tracking-wide">
-              {myUsername} vs ???
+              Open Challenge — anyone can jump in
             </p>
           </div>
 
