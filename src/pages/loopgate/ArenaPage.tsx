@@ -1221,14 +1221,11 @@ export default function ArenaPage() {
               );
             })}
             {/* Ranked — Coming Soon inline badge */}
-            <div
-              className="inline-flex items-center gap-1 pl-1 pr-2 py-[3px] rounded-full border border-red-500/30 shrink-0"
-              style={{ background: 'rgba(239,68,68,0.08)' }}
-            >
-              <span className="w-3 h-3 rounded-full flex items-center justify-center bg-red-500/80 shrink-0">
-                <Swords className="w-2 h-2 text-white" strokeWidth={3} />
+            <div className="inline-flex items-center gap-1 pl-1 pr-2 py-[3px] rounded-full border border-white/[0.08] bg-white/[0.04] shrink-0">
+              <span className="w-3 h-3 rounded-full flex items-center justify-center bg-white/10 shrink-0">
+                <Swords className="w-2 h-2 text-foreground/70" strokeWidth={3} />
               </span>
-              <span className="text-[8.5px] font-black uppercase tracking-[0.16em] text-red-200 whitespace-nowrap">Ranked Soon</span>
+              <span className="text-[8.5px] font-black uppercase tracking-[0.16em] text-foreground/55 whitespace-nowrap">Ranked Soon</span>
             </div>
           </div>
 
