@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Room, RoomEvent, Track, RemoteParticipant, LocalParticipant, Participant, ConnectionState } from 'livekit-client';
+import { Room, RoomEvent, Track, RemoteParticipant, LocalParticipant, Participant, ConnectionState, RemoteTrack, RemoteTrackPublication } from 'livekit-client';
 import { supabase } from '@/integrations/supabase/client';
 import { Mic, MicOff, Radio, Loader2, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -25,6 +25,8 @@ export function CompetitionVoiceChat({ competitionId, className }: CompetitionVo
   const [speakers, setSpeakers] = useState<SpeakerInfo[]>([]);
   const [error, setError] = useState<string | null>(null);
   const mountedRef = useRef(true);
+  const audioContainerRef = useRef<HTMLDivElement | null>(null);
+  const [needsAudioUnlock, setNeedsAudioUnlock] = useState(false);
 
   const refreshSpeakers = (r: Room) => {
     const all: Participant[] = [r.localParticipant, ...Array.from(r.remoteParticipants.values())];
@@ -79,10 +81,27 @@ export function CompetitionVoiceChat({ competitionId, className }: CompetitionVo
           .on(RoomEvent.ParticipantDisconnected, handle)
           .on(RoomEvent.TrackMuted, handle)
           .on(RoomEvent.TrackUnmuted, handle)
-          .on(RoomEvent.TrackSubscribed, handle)
-          .on(RoomEvent.TrackUnsubscribed, handle)
+          .on(RoomEvent.TrackSubscribed, (track: RemoteTrack, _pub: RemoteTrackPublication, _p: RemoteParticipant) => {
+            if (track.kind === Track.Kind.Audio && audioContainerRef.current) {
+              const el = track.attach() as HTMLAudioElement;
+              el.autoplay = true;
+              (el as any).playsInline = true;
+              audioContainerRef.current.appendChild(el);
+              el.play().catch(() => {
+                if (mountedRef.current) setNeedsAudioUnlock(true);
+              });
+            }
+            handle();
+          })
+          .on(RoomEvent.TrackUnsubscribed, (track: RemoteTrack) => {
+            track.detach().forEach((el) => el.remove());
+            handle();
+          })
           .on(RoomEvent.ActiveSpeakersChanged, handle)
           .on(RoomEvent.LocalTrackPublished, handle)
+          .on(RoomEvent.AudioPlaybackStatusChanged, () => {
+            if (r && mountedRef.current) setNeedsAudioUnlock(!r.canPlaybackAudio);
+          })
           .on(RoomEvent.ConnectionStateChanged, (s) => {
             if (s === ConnectionState.Disconnected && mountedRef.current) setState('idle');
           });
@@ -97,6 +116,7 @@ export function CompetitionVoiceChat({ competitionId, className }: CompetitionVo
         setRoom(r);
         setMuted(true);
         setState('connected');
+        setNeedsAudioUnlock(!r.canPlaybackAudio);
         refreshSpeakers(r);
       } catch (e) {
         console.error('voice connect failed', e);
@@ -118,6 +138,10 @@ export function CompetitionVoiceChat({ competitionId, className }: CompetitionVo
 
   const toggleMute = async () => {
     if (!room) return;
+    // Browsers require a user gesture to start audio playback
+    if (!room.canPlaybackAudio) {
+      try { await room.startAudio(); setNeedsAudioUnlock(false); } catch (_) {}
+    }
     const next = !muted;
     try {
       await room.localParticipant.setMicrophoneEnabled(!next);
@@ -126,6 +150,16 @@ export function CompetitionVoiceChat({ competitionId, className }: CompetitionVo
     } catch (e) {
       console.error('mic toggle failed', e);
       setError('Microphone permission denied');
+    }
+  };
+
+  const unlockAudio = async () => {
+    if (!room) return;
+    try {
+      await room.startAudio();
+      setNeedsAudioUnlock(false);
+    } catch (e) {
+      console.error('startAudio failed', e);
     }
   };
 
@@ -154,6 +188,15 @@ export function CompetitionVoiceChat({ competitionId, className }: CompetitionVo
 
       {state === 'connected' && (
         <>
+          <div ref={audioContainerRef} className="hidden" aria-hidden />
+          {needsAudioUnlock && (
+            <button
+              onClick={unlockAudio}
+              className="w-full mb-2 py-2 rounded-xl text-xs font-semibold bg-amber-500 text-black hover:bg-amber-400"
+            >
+              Tap to enable voice audio
+            </button>
+          )}
           <div className="flex flex-wrap gap-2 mb-3">
             {speakers.map((s) => (
               <div
