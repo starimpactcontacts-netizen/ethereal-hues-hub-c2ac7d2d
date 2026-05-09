@@ -91,6 +91,9 @@ export default function CompetitionLobbyPage() {
   const [isLeaving, setIsLeaving] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showJoinCode, setShowJoinCode] = useState(false);
+  const [joinCodeInput, setJoinCodeInput] = useState("");
+  const [joinCodeError, setJoinCodeError] = useState<string | null>(null);
   const [lobbyTab, setLobbyTab] = useState<"members" | "chat">("members");
   const [chatMessageCount, setChatMessageCount] = useState(0);
   const [chatUnread, setChatUnread] = useState(0);
@@ -319,15 +322,9 @@ export default function CompetitionLobbyPage() {
     if (!user) { navigate("/start"); return; }
     // Private rooms — prompt for code unless host
     if (competition?.is_private && competition.creator_id !== user.id) {
-      const entered = window.prompt("🔒 This is a private lobby — enter the join code:");
-      if (!entered) return;
-      setIsJoining(true);
-      const res = await joinWithCode(entered.trim());
-      setIsJoining(false);
-      if (res.ok) toast.success("You're in!");
-      else if (res.error === "invalid_code") toast.error("Wrong code");
-      else if (res.error === "full") toast.error("Lobby is full");
-      else toast.error("Couldn't join");
+      setJoinCodeError(null);
+      setJoinCodeInput("");
+      setShowJoinCode(true);
       return;
     }
     setIsJoining(true);
@@ -335,6 +332,29 @@ export default function CompetitionLobbyPage() {
     if (ok) toast.success("You're in!");
     else toast.error("Failed to join");
     setIsJoining(false);
+  };
+
+  const submitJoinCode = async () => {
+    const code = joinCodeInput.replace(/\s+/g, "").toUpperCase();
+    if (!code) { setJoinCodeError("Enter the code"); return; }
+    setIsJoining(true);
+    setJoinCodeError(null);
+    const res = await joinWithCode(code);
+    setIsJoining(false);
+    if (res.ok) {
+      setShowJoinCode(false);
+      toast.success("You're in!");
+    } else if (res.error === "invalid_code") {
+      setJoinCodeError("Wrong code — double-check with the host.");
+    } else if (res.error === "full") {
+      setJoinCodeError("This lobby is full.");
+    } else if (res.error === "closed") {
+      setJoinCodeError("This lobby is no longer accepting players.");
+    } else if (res.error === "not_authenticated") {
+      setJoinCodeError("You need to sign in first.");
+    } else {
+      setJoinCodeError(res.error || "Couldn't join. Try again.");
+    }
   };
 
   const handleReady = async () => {
