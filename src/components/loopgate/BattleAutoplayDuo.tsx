@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 const teko = { fontFamily: "Teko, sans-serif" };
-const PER_EDIT_SECONDS = 10;
+const PER_EDIT_SECONDS = 15;
 
 type Side = {
   userId: string;
@@ -190,7 +190,7 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
       </div>
 
       <p className="pt-2 px-4 text-[10px] text-center text-foreground/40 uppercase tracking-[0.2em] md:hidden" style={teko}>
-        {bothReady ? '10s per edit · auto-rotating' : 'Buffering both edits in HD…'}
+        {bothReady ? '15s per edit · auto-rotating' : 'Buffering both edits in HD…'}
       </p>
 
       {/* One-tap unmute overlay if browser blocked autoplay-with-sound */}
