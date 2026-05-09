@@ -338,7 +338,7 @@ export default function CompetitionLeaderboard({
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 onClick={() => setSelectedEdit({ sub: winner, rank: 1 })}
-                className="relative w-full aspect-[9/16] max-h-[520px] rounded-2xl overflow-hidden border border-amber-400/60 shadow-[0_0_32px_rgba(251,191,36,0.35)] active:scale-[0.99] transition-transform"
+                className="relative w-full mx-auto aspect-[9/16] max-h-[64vh] max-w-[min(100%,calc(64vh*9/16))] sm:max-w-[360px] rounded-2xl overflow-hidden border border-amber-400/60 shadow-[0_0_32px_rgba(251,191,36,0.35)] active:scale-[0.99] transition-transform"
               >
                 {winnerVideoIsDirect ? (
                   <video
@@ -378,10 +378,10 @@ export default function CompetitionLeaderboard({
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/40" />
 
-                {/* Crown + rank */}
+                {/* Rank + custom crown */}
                 <div className="absolute top-3 left-3 flex items-center gap-2 z-[2]">
-                  <span className="text-[42px] font-black leading-none text-amber-400" style={teko}>1</span>
-                  <Crown className="w-6 h-6 text-amber-400 drop-shadow-lg" />
+                  <span className="text-[42px] font-black leading-none text-amber-400 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]" style={teko}>1</span>
+                  <CustomCrown className="w-7 h-7 drop-shadow-[0_2px_6px_rgba(251,191,36,0.6)]" />
                 </div>
                 <div className="absolute top-3 right-3 z-[2] px-2.5 py-1 rounded-full bg-amber-400 text-black text-[10px] font-black uppercase tracking-[0.18em]" style={teko}>
                   Winner
