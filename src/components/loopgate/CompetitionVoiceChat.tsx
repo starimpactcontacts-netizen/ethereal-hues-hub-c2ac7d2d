@@ -107,9 +107,8 @@ export function CompetitionVoiceChat({ competitionId, className, compact = false
             if (s === ConnectionState.Disconnected && mountedRef.current) setState('idle');
           });
         await r.connect(data.url, data.token);
-        // auto-join muted: enable mic but immediately mute
-        await r.localParticipant.setMicrophoneEnabled(true);
-        await r.localParticipant.setMicrophoneEnabled(false);
+        // Listen-only by default — do NOT request mic permission until the user taps Unmute.
+        // This way Safari/iOS won't prompt on join, and users can still hear everyone.
         if (!mountedRef.current) {
           await r.disconnect();
           return;
