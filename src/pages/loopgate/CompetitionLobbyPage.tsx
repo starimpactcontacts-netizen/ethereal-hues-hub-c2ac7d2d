@@ -19,6 +19,7 @@ import CompetitionWinnerCard from "@/components/loopgate/CompetitionWinnerCard";
 import { setLobbyMusicActive, useLobbyMusicMute } from "@/components/loopgate/LobbyMusicPlayer";
 import ThemeRevealModal, { pickAutoTheme } from "@/components/loopgate/ThemeRevealModal";
 import { LobbyDefaultCover } from "@/components/loopgate/LobbyDefaultCover";
+import CompetitionVoiceChat from "@/components/loopgate/CompetitionVoiceChat";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 
@@ -762,6 +763,11 @@ export default function CompetitionLobbyPage() {
         )}
 
         {/* ── MOBILE TAB SWITCHER (Roblox-style chunky pills) ── */}
+        {(hasJoined || isCreator) && (isLobby || isLive) && (
+          <div className="shrink-0 px-3 pt-3">
+            <CompetitionVoiceChat competitionId={competition.id} />
+          </div>
+        )}
         <div className="md:hidden shrink-0 px-3 pt-3">
           <div className="relative grid grid-cols-2 gap-1.5 p-1 rounded-2xl bg-white/[0.035] border border-white/[0.07] shadow-inner">
             <button

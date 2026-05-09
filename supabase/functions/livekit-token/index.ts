@@ -1,0 +1,64 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
+import { AccessToken } from 'https://esm.sh/livekit-server-sdk@2.9.7?target=deno';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
+
+  try {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsErr } = await supabase.auth.getClaims(token);
+    if (claimsErr || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    const userId = claimsData.claims.sub as string;
+    const username = (claimsData.claims as any).user_metadata?.username || (claimsData.claims.email as string)?.split('@')[0] || userId.slice(0, 6);
+
+    const body = await req.json().catch(() => ({}));
+    const room = typeof body?.room === 'string' ? body.room.trim() : '';
+    if (!room || room.length > 128) {
+      return new Response(JSON.stringify({ error: 'Invalid room' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    const apiKey = Deno.env.get('LIVEKIT_API_KEY');
+    const apiSecret = Deno.env.get('LIVEKIT_API_SECRET');
+    const url = Deno.env.get('LIVEKIT_URL');
+    if (!apiKey || !apiSecret || !url) {
+      return new Response(JSON.stringify({ error: 'LiveKit not configured' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    const at = new AccessToken(apiKey, apiSecret, {
+      identity: userId,
+      name: username,
+      ttl: 60 * 60 * 4,
+    });
+    at.addGrant({
+      room,
+      roomJoin: true,
+      canPublish: true,
+      canSubscribe: true,
+      canPublishData: true,
+    });
+    const jwt = await at.toJwt();
+
+    return new Response(JSON.stringify({ token: jwt, url, identity: userId, name: username }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  } catch (e) {
+    console.error('livekit-token error', e);
+    return new Response(JSON.stringify({ error: (e as Error).message }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+  }
+});
