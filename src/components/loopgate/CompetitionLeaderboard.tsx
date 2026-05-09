@@ -183,7 +183,7 @@ function EditDetailView({
               <span className="text-sm font-bold text-foreground">@{sub.username}</span>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-[10px] text-muted-foreground/50 uppercase">{sub.platform}</span>
-                {rank === 1 && <Crown className="w-3 h-3 text-amber-400" />}
+                {rank === 1 && <CustomCrown className="w-3 h-3 text-amber-400" />}
               </div>
             </div>
             {sub.is_winner && (
@@ -475,7 +475,7 @@ export default function CompetitionLeaderboard({
 
                     {rank === 1 && (
                       <div className="absolute top-2 right-2 z-[2]">
-                        <Crown className="w-4 h-4 text-amber-400 drop-shadow-lg" />
+                        <CustomCrown className="w-4 h-4 text-amber-400 drop-shadow-lg" />
                       </div>
                     )}
 
@@ -532,7 +532,7 @@ export default function CompetitionLeaderboard({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs font-bold text-foreground truncate">{sub.username}</span>
-                        {isKing && <Crown className="w-3 h-3 text-amber-400 shrink-0" />}
+                        {isKing && <CustomCrown className="w-3 h-3 text-amber-400 shrink-0" />}
                       </div>
                       <span className="text-[9px] text-muted-foreground/40 uppercase">{sub.platform}</span>
                     </div>
