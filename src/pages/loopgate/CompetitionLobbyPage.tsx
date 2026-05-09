@@ -321,8 +321,11 @@ export default function CompetitionLobbyPage() {
 
   const handleJoin = async () => {
     if (!user) { navigate("/start"); return; }
-    // Private rooms — prompt for code unless host
-    if (competition?.is_private && competition.creator_id !== user.id) {
+    // Private rooms — prompt for code unless host.
+    // Detect private via either flag or presence of a join_code so the modal
+    // still opens if the `is_private` field is missing from the payload.
+    const looksPrivate = !!(competition?.is_private || (competition as any)?.join_code);
+    if (looksPrivate && competition?.creator_id !== user.id) {
       setJoinCodeError(null);
       setJoinCodeInput("");
       setShowJoinCode(true);
@@ -331,7 +334,7 @@ export default function CompetitionLobbyPage() {
     setIsJoining(true);
     const ok = await join();
     if (ok) toast.success("You're in!");
-    else toast.error("Failed to join");
+    else toast.error("Failed to join — if this is a private lobby, tap 'Have a code?' below.");
     setIsJoining(false);
   };
 
