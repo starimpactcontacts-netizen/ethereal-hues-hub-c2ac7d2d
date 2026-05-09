@@ -753,32 +753,6 @@ export default function CompetitionLobbyPage() {
         )}
 
         {/* ── MOBILE TAB SWITCHER (Roblox-style chunky pills) ── */}
-        {isCreator && competition.is_private && privateJoinCode && (
-          <div className="shrink-0 px-3 pt-3">
-            <button
-              onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(privateJoinCode);
-                  toast.success(`Code ${privateJoinCode} copied`);
-                } catch {
-                  toast.error("Couldn't copy code");
-                }
-              }}
-              className="w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/[0.06] hover:bg-emerald-500/[0.1] active:scale-[0.99] transition"
-              aria-label="Copy join code"
-            >
-              <div className="flex flex-col items-start min-w-0">
-                <span className="text-[9px] font-semibold uppercase tracking-[0.25em] text-emerald-300/70">
-                  Share Code
-                </span>
-                <span className="font-mono text-[22px] font-bold tracking-[0.4em] text-emerald-200 tabular-nums leading-none mt-1">
-                  {privateJoinCode}
-                </span>
-              </div>
-              <Copy className="w-4 h-4 text-emerald-300 shrink-0" />
-            </button>
-          </div>
-        )}
         {(hasJoined || isCreator) && (isLobby || isLive) && (
           <div className="shrink-0 px-3 pt-3">
             <CompetitionVoiceChat competitionId={competition.id} />
