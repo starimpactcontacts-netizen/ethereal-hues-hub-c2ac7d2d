@@ -114,6 +114,62 @@ export default function CreateCompetitionPage() {
           </div>
         </div>
 
+        {/* Privacy — top of form: most important decision */}
+        <div>
+          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+            <Lock className="w-3 h-3" /> Lobby Access
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setIsPrivate(false)}
+              className={`py-2.5 rounded-lg border text-[12px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                !isPrivate ? "bg-emerald-500/15 border-emerald-500/50 text-emerald-300" : "bg-surface-1 border-border/40 text-muted-foreground"
+              }`}
+            >
+              <Globe className="w-3.5 h-3.5" /> Public
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsPrivate(true)}
+              className={`py-2.5 rounded-lg border text-[12px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                isPrivate ? "bg-fuchsia-500/15 border-fuchsia-500/50 text-fuchsia-300" : "bg-surface-1 border-border/40 text-muted-foreground"
+              }`}
+            >
+              <Lock className="w-3.5 h-3.5" /> Private
+            </button>
+          </div>
+          {isPrivate && (
+            <div className="mt-2 rounded-lg border border-fuchsia-500/30 bg-fuchsia-500/5 p-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-[9px] font-bold text-fuchsia-300/80 uppercase tracking-wider mb-0.5">Join Code</div>
+                  <div className="text-2xl font-black text-foreground tabular-nums tracking-[0.3em]" style={{ fontFamily: "Teko, sans-serif" }}>{joinCode}</div>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setJoinCode(Math.random().toString(36).slice(2, 6).toUpperCase())}
+                    className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground border border-border/40 rounded-md px-2 py-1.5"
+                  >
+                    New
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try { await navigator.clipboard.writeText(joinCode); setCodeCopied(true); setTimeout(() => setCodeCopied(false), 1500); } catch {}
+                    }}
+                    className="text-[9px] font-bold uppercase tracking-wider text-fuchsia-300 border border-fuchsia-500/40 bg-fuchsia-500/10 rounded-md px-2 py-1.5 flex items-center gap-1"
+                  >
+                    {codeCopied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />} {codeCopied ? "Copied" : "Copy"}
+                  </button>
+                </div>
+              </div>
+              <p className="text-[10px] text-muted-foreground/70 mt-2">Lobby still shows in the carousel with a 🔒 — but only editors with the code can join & ready up.</p>
+            </div>
+          )}
+        </div>
+
         {/* Name */}
         <div>
           <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5 block">
@@ -222,62 +278,6 @@ export default function CreateCompetitionPage() {
               }
             }}
           />
-        </div>
-
-        {/* Privacy */}
-        <div>
-          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-            <Lock className="w-3 h-3" /> Lobby Access
-          </label>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => setIsPrivate(false)}
-              className={`py-2.5 rounded-lg border text-[12px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
-                !isPrivate ? "bg-emerald-500/15 border-emerald-500/50 text-emerald-300" : "bg-surface-1 border-border/40 text-muted-foreground"
-              }`}
-            >
-              <Globe className="w-3.5 h-3.5" /> Public
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsPrivate(true)}
-              className={`py-2.5 rounded-lg border text-[12px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
-                isPrivate ? "bg-fuchsia-500/15 border-fuchsia-500/50 text-fuchsia-300" : "bg-surface-1 border-border/40 text-muted-foreground"
-              }`}
-            >
-              <Lock className="w-3.5 h-3.5" /> Private
-            </button>
-          </div>
-          {isPrivate && (
-            <div className="mt-2 rounded-lg border border-fuchsia-500/30 bg-fuchsia-500/5 p-3">
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="text-[9px] font-bold text-fuchsia-300/80 uppercase tracking-wider mb-0.5">Join Code</div>
-                  <div className="text-2xl font-black text-foreground tabular-nums tracking-[0.3em]" style={{ fontFamily: "Teko, sans-serif" }}>{joinCode}</div>
-                </div>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => setJoinCode(Math.random().toString(36).slice(2, 6).toUpperCase())}
-                    className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground border border-border/40 rounded-md px-2 py-1.5"
-                  >
-                    New
-                  </button>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      try { await navigator.clipboard.writeText(joinCode); setCodeCopied(true); setTimeout(() => setCodeCopied(false), 1500); } catch {}
-                    }}
-                    className="text-[9px] font-bold uppercase tracking-wider text-fuchsia-300 border border-fuchsia-500/40 bg-fuchsia-500/10 rounded-md px-2 py-1.5 flex items-center gap-1"
-                  >
-                    {codeCopied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />} {codeCopied ? "Copied" : "Copy"}
-                  </button>
-                </div>
-              </div>
-              <p className="text-[10px] text-muted-foreground/70 mt-2">Lobby still shows in the carousel with a 🔒 — but only editors with the code can join & ready up.</p>
-            </div>
-          )}
         </div>
 
         {/* Submit */}
