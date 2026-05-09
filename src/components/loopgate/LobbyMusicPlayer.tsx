@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { Volume2, VolumeX } from 'lucide-react';
 
 const LOBBY_PATTERNS: RegExp[] = [
   /^\/arena\/friendly\/[^/]+/,            // FriendlyTournamentLobby
@@ -32,6 +33,11 @@ export function setLobbyMusicActive(active: boolean) {
 export default function LobbyMusicPlayer() {
   const location = useLocation();
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [muted, setMuted] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('lobby-music-muted') === '1';
+  });
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     if (!audioRef.current) {
@@ -42,9 +48,11 @@ export default function LobbyMusicPlayer() {
       audioRef.current = a;
     }
     const audio = audioRef.current;
+    audio.muted = muted;
 
     const evaluate = () => {
       const inLobby = isLobbyPath(location.pathname) || window.__lobbyMusicActive === true;
+      setVisible(inLobby);
       if (inLobby) {
         audio.play().catch(() => {
           const resume = () => {
@@ -67,7 +75,7 @@ export default function LobbyMusicPlayer() {
     const handler = () => evaluate();
     window.addEventListener('lobby-music-state', handler);
     return () => window.removeEventListener('lobby-music-state', handler);
-  }, [location.pathname]);
+  }, [location.pathname, muted]);
 
   useEffect(() => {
     return () => {
@@ -78,5 +86,25 @@ export default function LobbyMusicPlayer() {
     };
   }, []);
 
-  return null;
+  const toggleMute = () => {
+    setMuted((m) => {
+      const next = !m;
+      try { localStorage.setItem('lobby-music-muted', next ? '1' : '0'); } catch {}
+      if (audioRef.current) audioRef.current.muted = next;
+      return next;
+    });
+  };
+
+  if (!visible) return null;
+
+  return (
+    <button
+      onClick={toggleMute}
+      aria-label={muted ? 'Unmute lobby music' : 'Mute lobby music'}
+      className="fixed z-[2147483645] right-3 h-9 w-9 rounded-full bg-black/70 backdrop-blur-md border border-white/15 text-white/85 flex items-center justify-center shadow-lg hover:bg-black/85 active:scale-95 transition"
+      style={{ top: 'calc(env(safe-area-inset-top, 0px) + 10px)' }}
+    >
+      {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+    </button>
+  );
 }

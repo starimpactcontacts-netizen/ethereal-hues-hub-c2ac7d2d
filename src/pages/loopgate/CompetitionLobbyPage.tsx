@@ -91,6 +91,9 @@ export default function CompetitionLobbyPage() {
   const [isLeaving, setIsLeaving] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showJoinCode, setShowJoinCode] = useState(false);
+  const [joinCodeInput, setJoinCodeInput] = useState("");
+  const [joinCodeError, setJoinCodeError] = useState<string | null>(null);
   const [lobbyTab, setLobbyTab] = useState<"members" | "chat">("members");
   const [chatMessageCount, setChatMessageCount] = useState(0);
   const [chatUnread, setChatUnread] = useState(0);
@@ -319,15 +322,9 @@ export default function CompetitionLobbyPage() {
     if (!user) { navigate("/start"); return; }
     // Private rooms — prompt for code unless host
     if (competition?.is_private && competition.creator_id !== user.id) {
-      const entered = window.prompt("🔒 This is a private lobby — enter the join code:");
-      if (!entered) return;
-      setIsJoining(true);
-      const res = await joinWithCode(entered.trim());
-      setIsJoining(false);
-      if (res.ok) toast.success("You're in!");
-      else if (res.error === "invalid_code") toast.error("Wrong code");
-      else if (res.error === "full") toast.error("Lobby is full");
-      else toast.error("Couldn't join");
+      setJoinCodeError(null);
+      setJoinCodeInput("");
+      setShowJoinCode(true);
       return;
     }
     setIsJoining(true);
@@ -335,6 +332,29 @@ export default function CompetitionLobbyPage() {
     if (ok) toast.success("You're in!");
     else toast.error("Failed to join");
     setIsJoining(false);
+  };
+
+  const submitJoinCode = async () => {
+    const code = joinCodeInput.replace(/\s+/g, "").toUpperCase();
+    if (!code) { setJoinCodeError("Enter the code"); return; }
+    setIsJoining(true);
+    setJoinCodeError(null);
+    const res = await joinWithCode(code);
+    setIsJoining(false);
+    if (res.ok) {
+      setShowJoinCode(false);
+      toast.success("You're in!");
+    } else if (res.error === "invalid_code") {
+      setJoinCodeError("Wrong code — double-check with the host.");
+    } else if (res.error === "full") {
+      setJoinCodeError("This lobby is full.");
+    } else if (res.error === "closed") {
+      setJoinCodeError("This lobby is no longer accepting players.");
+    } else if (res.error === "not_authenticated") {
+      setJoinCodeError("You need to sign in first.");
+    } else {
+      setJoinCodeError(res.error || "Couldn't join. Try again.");
+    }
   };
 
   const handleReady = async () => {
@@ -1371,6 +1391,66 @@ export default function CompetitionLobbyPage() {
             </motion.div>
           );
         })()}
+      </AnimatePresence>
+
+      {/* ═══ JOIN CODE MODAL ═══ */}
+      <AnimatePresence>
+        {showJoinCode && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[2147483646] flex items-center justify-center bg-black/80 px-5"
+            onClick={() => !isJoining && setShowJoinCode(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm rounded-2xl border border-white/10 bg-zinc-950 p-5 shadow-2xl"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[11px] font-black uppercase tracking-[0.24em] text-fuchsia-300" style={teko}>
+                  🔒 Private Lobby
+                </span>
+                <button
+                  onClick={() => !isJoining && setShowJoinCode(false)}
+                  className="text-foreground/40 hover:text-foreground"
+                  aria-label="Close"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <p className="text-[12px] text-foreground/60 mb-3">Enter the join code from the host.</p>
+              <input
+                autoFocus
+                value={joinCodeInput}
+                onChange={(e) => { setJoinCodeInput(e.target.value); setJoinCodeError(null); }}
+                onKeyDown={(e) => { if (e.key === "Enter") submitJoinCode(); }}
+                placeholder="CODE"
+                maxLength={12}
+                autoCapitalize="characters"
+                autoCorrect="off"
+                spellCheck={false}
+                inputMode="text"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-center text-2xl font-black tracking-[0.4em] uppercase text-foreground outline-none focus:border-fuchsia-400/60"
+                style={teko}
+              />
+              {joinCodeError && (
+                <p className="mt-2 text-[11px] text-red-400">{joinCodeError}</p>
+              )}
+              <button
+                onClick={submitJoinCode}
+                disabled={isJoining || !joinCodeInput.trim()}
+                className="mt-4 w-full py-3 rounded-xl bg-fuchsia-500 hover:bg-fuchsia-400 disabled:opacity-50 text-white font-black uppercase tracking-[0.2em] text-sm flex items-center justify-center gap-2"
+                style={teko}
+              >
+                {isJoining ? <Loader2 className="w-4 h-4 animate-spin" /> : "Enter Lobby"}
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );
