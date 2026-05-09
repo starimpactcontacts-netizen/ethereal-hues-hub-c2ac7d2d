@@ -165,9 +165,17 @@ export function CompetitionVoiceChat({ competitionId, className, compact = false
   };
 
   if (compact) {
-    const localSpeaker = speakers.find((s) => s.isLocal);
-    const activeSpeakers = speakers.filter((s) => s.isSpeaking && !s.isMuted && !s.isLocal);
-    const visibleSpeakers = activeSpeakers.length > 0 ? activeSpeakers.slice(0, 2) : speakers.filter((s) => !s.isLocal).slice(0, 2);
+    // Sort: active speakers first, then local, then others. Show avatar+name chips for everyone in voice.
+    const sorted = [...speakers].sort((a, b) => {
+      const aActive = a.isSpeaking && !a.isMuted ? 1 : 0;
+      const bActive = b.isSpeaking && !b.isMuted ? 1 : 0;
+      if (aActive !== bActive) return bActive - aActive;
+      if (a.isLocal !== b.isLocal) return a.isLocal ? -1 : 1;
+      return 0;
+    });
+    const MAX_VISIBLE = 4;
+    const visibleSpeakers = sorted.slice(0, MAX_VISIBLE);
+    const overflow = Math.max(0, sorted.length - visibleSpeakers.length);
 
     return (
       <div className={cn('shrink-0 border-b border-border bg-surface-1/80 px-3 py-2', className)}>
@@ -194,24 +202,44 @@ export function CompetitionVoiceChat({ competitionId, className, compact = false
                   <span
                     key={s.identity}
                     className={cn(
-                      'inline-flex items-center gap-1 min-w-0 max-w-[92px] rounded-full border px-1.5 py-0.5 text-[10px]',
+                      'inline-flex items-center gap-1.5 min-w-0 max-w-[120px] rounded-full border pl-0.5 pr-2 py-0.5 text-[11px] transition-colors',
                       s.isSpeaking && !s.isMuted
-                        ? 'border-status-live/50 bg-status-live/10 text-status-live'
+                        ? 'border-status-live/60 bg-status-live/10 text-status-live'
+                        : s.isLocal
+                        ? 'border-border bg-surface-2 text-foreground'
                         : 'border-border bg-surface-2 text-muted-foreground'
                     )}
                   >
                     {s.avatarUrl ? (
-                      <img src={s.avatarUrl} alt={s.name} className="w-4 h-4 rounded-full object-cover shrink-0" />
+                      <img
+                        src={s.avatarUrl}
+                        alt={s.name}
+                        className={cn(
+                          'w-5 h-5 rounded-full object-cover shrink-0 border',
+                          s.isSpeaking && !s.isMuted ? 'border-status-live' : 'border-border'
+                        )}
+                      />
                     ) : (
-                      <span className="w-4 h-4 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[8px] font-bold uppercase shrink-0">
+                      <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[9px] font-bold uppercase shrink-0 border border-border">
                         {s.name.charAt(0)}
                       </span>
                     )}
-                    <span className="truncate">{s.name}</span>
+                    {s.isMuted ? (
+                      <MicOff className="w-3 h-3 opacity-60 shrink-0" />
+                    ) : (
+                      <Mic className={cn('w-3 h-3 shrink-0', s.isSpeaking ? '' : 'opacity-70')} />
+                    )}
+                    <span className="truncate font-medium">
+                      {s.name}
+                      {s.isLocal ? ' (you)' : ''}
+                    </span>
                   </span>
                 ))}
+                {overflow > 0 && (
+                  <span className="text-[10px] text-muted-foreground/80 tabular-nums shrink-0">+{overflow}</span>
+                )}
                 {visibleSpeakers.length === 0 && (
-                  <span className="text-[11px] text-muted-foreground/70 truncate">{localSpeaker?.name || 'Connected'} in voice</span>
+                  <span className="text-[11px] text-muted-foreground/70 truncate">No one in voice</span>
                 )}
               </>
             )}
