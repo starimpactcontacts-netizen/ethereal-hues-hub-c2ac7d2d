@@ -16,7 +16,7 @@ import CompetitionChat from "@/components/loopgate/CompetitionChat";
 import CompetitionLeaderboard from "@/components/loopgate/CompetitionLeaderboard";
 import CompetitionVoting from "@/components/loopgate/CompetitionVoting";
 import CompetitionWinnerCard from "@/components/loopgate/CompetitionWinnerCard";
-import { setLobbyMusicActive } from "@/components/loopgate/LobbyMusicPlayer";
+import { setLobbyMusicActive, useLobbyMusicMute } from "@/components/loopgate/LobbyMusicPlayer";
 import ThemeRevealModal, { pickAutoTheme } from "@/components/loopgate/ThemeRevealModal";
 import { LobbyDefaultCover } from "@/components/loopgate/LobbyDefaultCover";
 
@@ -94,6 +94,7 @@ export default function CompetitionLobbyPage() {
   const [showJoinCode, setShowJoinCode] = useState(false);
   const [joinCodeInput, setJoinCodeInput] = useState("");
   const [joinCodeError, setJoinCodeError] = useState<string | null>(null);
+  const [musicMuted, toggleMusicMuted] = useLobbyMusicMute();
   const [lobbyTab, setLobbyTab] = useState<"members" | "chat">("members");
   const [chatMessageCount, setChatMessageCount] = useState(0);
   const [chatUnread, setChatUnread] = useState(0);
@@ -565,6 +566,15 @@ export default function CompetitionLobbyPage() {
               </div>
             </div>
             <div className="flex items-center gap-1.5">
+              <button
+                onClick={toggleMusicMuted}
+                aria-label={musicMuted ? 'Unmute lobby music' : 'Mute lobby music'}
+                className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-white/[0.1] bg-white/[0.03] hover:bg-white/[0.06] active:scale-95 transition"
+              >
+                {musicMuted
+                  ? <VolumeX className="w-[15px] h-[15px] text-foreground/55" />
+                  : <Volume2 className="w-[15px] h-[15px] text-foreground/75" />}
+              </button>
               <button
                 onClick={() => setShowInfo(true)}
                 aria-label="How edit competitions work"
