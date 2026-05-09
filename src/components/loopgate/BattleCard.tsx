@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Swords, Clock, Trophy, Lock, Package, Upload } from "lucide-react";
+import { Swords, Clock, Trophy, Lock } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import BattleVoteBarCompact from "@/components/loopgate/BattleVoteBarCompact";
 import type { Battle } from "@/hooks/useBattles";
