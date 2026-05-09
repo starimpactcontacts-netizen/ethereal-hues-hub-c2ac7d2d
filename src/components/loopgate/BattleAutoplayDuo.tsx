@@ -233,16 +233,15 @@ function SidePanel({
           ref={videoRef}
           src={side.url}
           className="w-full h-full object-contain"
-          style={{ imageRendering: 'auto' as any }}
           playsInline
-          // @ts-ignore — iOS Safari hint
+          // @ts-expect-error — iOS Safari hint
           webkit-playsinline="true"
           x-webkit-airplay="deny"
           disableRemotePlayback
           loop
           muted
           preload="auto"
-          // @ts-ignore — Chrome/Edge HD hint
+          // @ts-expect-error — Chrome/Edge HD hint
           disablePictureInPicture
           onLoadedData={onReady}
           onCanPlayThrough={onReady}
@@ -254,7 +253,6 @@ function SidePanel({
           className="w-full h-full object-contain bg-black"
           loading="eager"
           decoding="async"
-          style={{ imageRendering: 'auto' as any }}
           onLoad={onReady}
         />
       )}
