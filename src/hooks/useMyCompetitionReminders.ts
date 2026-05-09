@@ -82,7 +82,7 @@ export function useMyCompetitionReminders() {
         const count = submissionCounts[comp.id] || 0;
         const deadline = comp.deadline ? new Date(comp.deadline).getTime() : 0;
         const votingStarted = comp.voting_started_at ? new Date(comp.voting_started_at).getTime() : 0;
-        const showcaseDone = votingStarted > 0 && now >= votingStarted + count * 15 * 1000;
+        const showcaseDone = votingStarted > 0 && now >= votingStarted + count * 30 * 1000;
         const votingDeadline = comp.voting_deadline ? new Date(comp.voting_deadline).getTime() : 0;
         return (comp.status === "live" && deadline > 0 && deadline <= now) ||
           (comp.status === "voting" && (count === 0 || (showcaseDone && votingDeadline > 0 && votingDeadline <= now)));

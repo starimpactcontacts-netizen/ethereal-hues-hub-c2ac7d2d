@@ -317,7 +317,7 @@ export function useCompetition(idOrSlug: string | undefined) {
     }
     const now = new Date();
     // Showcase = 15s per submission, then a 3-minute voting window.
-    const showcaseMs = submissions.length * 15 * 1000;
+    const showcaseMs = submissions.length * 30 * 1000;
     const votingWindowMs = 3 * 60 * 1000;
     const deadline = new Date(now.getTime() + showcaseMs + votingWindowMs);
     const { error } = await supabase.from("competitions").update({
@@ -338,7 +338,7 @@ export function useCompetition(idOrSlug: string | undefined) {
     const votingStartedAt = (competition as any).voting_started_at as string | null | undefined;
     const votingDeadline = (competition as any).voting_deadline as string | null | undefined;
     const showcaseEndsAt = votingStartedAt
-      ? new Date(votingStartedAt).getTime() + submissions.length * 15 * 1000
+      ? new Date(votingStartedAt).getTime() + submissions.length * 30 * 1000
       : Number.POSITIVE_INFINITY;
     if (competition.status !== "voting" || Date.now() < showcaseEndsAt) return false;
     if (!votingDeadline || Date.now() >= new Date(votingDeadline).getTime()) return false;

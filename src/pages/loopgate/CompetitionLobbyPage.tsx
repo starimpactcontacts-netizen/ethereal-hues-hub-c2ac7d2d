@@ -241,7 +241,7 @@ export default function CompetitionLobbyPage() {
 
   const votingStartedAt = (competition as any)?.voting_started_at as string | null | undefined;
   const votingDeadline = (competition as any)?.voting_deadline as string | null | undefined;
-  const showcaseMs = submissions.length * 15 * 1000;
+  const showcaseMs = submissions.length * 30 * 1000;
   const showcaseEndsAt = votingStartedAt ? new Date(votingStartedAt).getTime() + showcaseMs : null;
   const votingDeadlineMs = votingDeadline ? new Date(votingDeadline).getTime() : null;
   const showcaseDone = competition?.status === "voting" && showcaseEndsAt !== null && phaseNow >= showcaseEndsAt;
