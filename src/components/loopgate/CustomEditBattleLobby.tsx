@@ -79,12 +79,7 @@ export default function CustomEditBattleLobby({
 
       <main className="relative z-10 px-4 pt-5 pb-[calc(env(safe-area-inset-bottom,0px)+28px)]">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22 }}>
-          <div className="flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[0.24em] text-emerald-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-status-live animate-pulse" />
-            Open Challenge
-            <span className="text-gold flex items-center gap-1"><Zap className="w-3 h-3" />Rapid</span>
-          </div>
-          <h1 className="mt-3 text-center text-[46px] leading-[0.88] font-black uppercase text-foreground" style={{ fontFamily: "Teko, sans-serif" }}>
+          <h1 className="text-center text-[46px] leading-[0.88] font-black uppercase text-foreground" style={{ fontFamily: "Teko, sans-serif" }}>
             Custom Edit Battle
           </h1>
         </motion.div>
