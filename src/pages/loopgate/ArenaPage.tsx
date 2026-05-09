@@ -801,38 +801,36 @@ export default function ArenaPage() {
             )}
           </AnimatePresence>
 
-          {/* Arena / My Arena toggle */}
-          <div className="grid grid-cols-2 gap-0 mb-3 rounded-xl border border-border overflow-hidden bg-surface-1">
+          {/* Arena / My Arena toggle — slim segmented pill with sliding indicator */}
+          <div className="relative grid grid-cols-2 mb-3 p-1 rounded-full border border-white/[0.08] bg-white/[0.03] backdrop-blur-md shadow-inner">
+            {/* Sliding active pill */}
+            <div
+              className={`absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-full transition-transform duration-300 ease-out ${
+                arenaView === 'arena'
+                  ? 'translate-x-0 bg-gradient-to-b from-red-500 to-red-600 shadow-[0_4px_14px_-4px_rgba(239,68,68,0.55)] ring-1 ring-red-400/30'
+                  : 'translate-x-full bg-gradient-to-b from-amber-300 to-amber-500 shadow-[0_4px_14px_-4px_rgba(252,211,77,0.55)] ring-1 ring-amber-300/40'
+              }`}
+            />
             <button
               onClick={() => setArenaView('arena')}
-              className={`relative py-3 text-[14px] font-black uppercase tracking-wider transition-all touch-manipulation rounded-l-xl ${
-                arenaView === 'arena'
-                  ? 'bg-red-600 text-white'
-                  : 'bg-transparent text-muted-foreground hover:text-foreground hover:bg-surface-2'
+              className={`relative z-10 h-8 inline-flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] transition-colors active:scale-[0.97] ${
+                arenaView === 'arena' ? 'text-white' : 'text-foreground/55 hover:text-foreground/80'
               }`}
-              style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}
             >
-              <div className="flex items-center justify-center gap-2">
-                <Swords className="w-4 h-4" />
-                <span>Arena</span>
-              </div>
+              <Swords className="w-3.5 h-3.5" strokeWidth={2.5} />
+              <span>Arena</span>
             </button>
             <button
               onClick={() => setArenaView('my')}
-              className={`relative py-3 text-[14px] font-black uppercase tracking-wider transition-all touch-manipulation rounded-r-xl ${
-                arenaView === 'my'
-                  ? 'bg-gold text-background'
-                  : 'bg-transparent text-muted-foreground hover:text-foreground hover:bg-surface-2'
+              className={`relative z-10 h-8 inline-flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] transition-colors active:scale-[0.97] ${
+                arenaView === 'my' ? 'text-black' : 'text-foreground/55 hover:text-foreground/80'
               }`}
-              style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}
             >
-              <div className="flex items-center justify-center gap-2">
-                <UserRound className="w-4 h-4" />
-                <span>My Arena</span>
-                {(activeSolo || myBattles.length > 0 || myActiveQuickFights.length > 0 || myJudgingBattles.length > 0 || myCashBattles.length > 0 || myLiveCompetitions.length > 0) && (
-                  <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                )}
-              </div>
+              <UserRound className="w-3.5 h-3.5" strokeWidth={2.5} />
+              <span>My Arena</span>
+              {(activeSolo || myBattles.length > 0 || myActiveQuickFights.length > 0 || myJudgingBattles.length > 0 || myCashBattles.length > 0 || myLiveCompetitions.length > 0) && (
+                <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${arenaView === 'my' ? 'bg-black/70' : 'bg-red-500'}`} />
+              )}
             </button>
           </div>
 
