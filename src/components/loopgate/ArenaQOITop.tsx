@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Trophy, ChevronRight, Crown, Medal, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Trophy, ChevronRight, Crown, Medal, ChevronsUp, ChevronsDown, Minus, Flame, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -128,29 +128,42 @@ export default function ArenaQOITop() {
                         const prev = prevRanks[row.id];
                         if (!prev) {
                           return (
-                            <span className="text-[9px] text-sky-400/90 font-semibold tabular-nums flex items-center gap-0.5">
-                              <TrendingUp className="w-2.5 h-2.5" /> NEW
+                            <span className="inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-md bg-sky-400/15 border border-sky-400/30 text-[8.5px] font-black uppercase tracking-wider text-sky-300">
+                              <Sparkles className="w-2.5 h-2.5" strokeWidth={2.75} /> NEW
                             </span>
                           );
                         }
                         const delta = prev - rank; // positive = climbed
                         if (delta > 0) {
+                          const blazing = delta >= 5;
                           return (
-                            <span className="text-[9px] text-emerald-400 font-bold tabular-nums flex items-center gap-0.5">
-                              <TrendingUp className="w-2.5 h-2.5" strokeWidth={2.75} /> {delta}
+                            <span
+                              className={`inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-md text-[9px] font-black tabular-nums border ${
+                                blazing
+                                  ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300 animate-pulse'
+                                  : 'bg-emerald-500/10 border-emerald-400/30 text-emerald-300'
+                              }`}
+                            >
+                              {blazing ? (
+                                <Flame className="w-2.5 h-2.5" strokeWidth={2.75} fill="currentColor" />
+                              ) : (
+                                <ChevronsUp className="w-3 h-3 -ml-0.5" strokeWidth={3} />
+                              )}
+                              {delta}
                             </span>
                           );
                         }
                         if (delta < 0) {
                           return (
-                            <span className="text-[9px] text-red-400 font-bold tabular-nums flex items-center gap-0.5">
-                              <TrendingDown className="w-2.5 h-2.5" strokeWidth={2.75} /> {Math.abs(delta)}
+                            <span className="inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-md bg-red-500/10 border border-red-400/30 text-[9px] font-black tabular-nums text-red-300">
+                              <ChevronsDown className="w-3 h-3 -ml-0.5" strokeWidth={3} />
+                              {Math.abs(delta)}
                             </span>
                           );
                         }
                         return (
-                          <span className="text-[9px] text-muted-foreground/70 font-semibold tabular-nums flex items-center gap-0.5">
-                            <Minus className="w-2.5 h-2.5" />
+                          <span className="inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-md bg-white/[0.04] border border-white/10 text-[8.5px] font-bold uppercase tracking-wider text-muted-foreground/70">
+                            <Minus className="w-2.5 h-2.5" strokeWidth={3} />
                           </span>
                         );
                       })()}
