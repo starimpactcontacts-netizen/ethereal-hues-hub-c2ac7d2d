@@ -321,8 +321,11 @@ export default function CompetitionLobbyPage() {
 
   const handleJoin = async () => {
     if (!user) { navigate("/start"); return; }
-    // Private rooms — prompt for code unless host
-    if (competition?.is_private && competition.creator_id !== user.id) {
+    // Private rooms — prompt for code unless host.
+    // Detect private via either flag or presence of a join_code so the modal
+    // still opens if the `is_private` field is missing from the payload.
+    const looksPrivate = !!(competition?.is_private || (competition as any)?.join_code);
+    if (looksPrivate && competition?.creator_id !== user.id) {
       setJoinCodeError(null);
       setJoinCodeInput("");
       setShowJoinCode(true);
@@ -331,7 +334,7 @@ export default function CompetitionLobbyPage() {
     setIsJoining(true);
     const ok = await join();
     if (ok) toast.success("You're in!");
-    else toast.error("Failed to join");
+    else toast.error("Failed to join — if this is a private lobby, tap 'Have a code?' below.");
     setIsJoining(false);
   };
 
@@ -821,19 +824,31 @@ export default function CompetitionLobbyPage() {
         {/* ── ACTION BAR ── */}
         <footer className="shrink-0 border-t border-white/[0.06] backdrop-blur-sm px-3 pt-2.5 pb-[max(env(safe-area-inset-bottom),12px)]" style={{ backgroundColor: 'rgba(10,10,10,0.95)' }}>
           {!hasJoined ? (
-            <button
-              onClick={handleJoin}
-              disabled={isJoining || memberCount >= cap}
-              className="w-full h-12 rounded-xl flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white border border-emerald-400/30 disabled:opacity-30 disabled:hover:bg-emerald-500 transition active:scale-[0.98]"
-              style={teko}
-            >
-              {isJoining ? <Loader2 className="w-4 h-4 animate-spin" /> : (
-                <>
-                  <Play className="w-4 h-4" strokeWidth={2.5} />
-                  <span className="text-[15px] font-extrabold uppercase tracking-[0.08em] leading-none">Join Lobby</span>
-                </>
-              )}
-            </button>
+            <>
+              <button
+                onClick={handleJoin}
+                disabled={isJoining || memberCount >= cap}
+                className="w-full h-12 rounded-xl flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white border border-emerald-400/30 disabled:opacity-30 disabled:hover:bg-emerald-500 transition active:scale-[0.98]"
+                style={teko}
+              >
+                {isJoining ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                  <>
+                    <Play className="w-4 h-4" strokeWidth={2.5} />
+                    <span className="text-[15px] font-extrabold uppercase tracking-[0.08em] leading-none">Join Lobby</span>
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => {
+                  setJoinCodeError(null);
+                  setJoinCodeInput("");
+                  setShowJoinCode(true);
+                }}
+                className="mt-2 w-full text-center text-[11px] font-semibold uppercase tracking-[0.12em] text-fuchsia-300/80 hover:text-fuchsia-200 active:scale-[0.98] transition py-1"
+              >
+                🔒 Have a code? Enter it
+              </button>
+            </>
           ) : (
             <>
               <div className="flex items-stretch gap-2">
