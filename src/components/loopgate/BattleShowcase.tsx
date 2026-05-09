@@ -102,7 +102,6 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     return () => clearInterval(id);
   }, [compute, startMs, sides.length, onComplete]);
 
-  const image = isImageFile(current.url);
   const progressPct = ((PER_EDIT_SECONDS - secondsLeft) / PER_EDIT_SECONDS) * 100;
   const ringColor = current.color === "red" ? "ring-red-500/40" : "ring-blue-500/40";
   const accent = current.color === "red" ? "bg-red-500" : "bg-blue-500";
