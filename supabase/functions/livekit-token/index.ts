@@ -20,12 +20,13 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
     const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsErr } = await supabase.auth.getClaims(token);
-    if (claimsErr || !claimsData?.claims) {
+    const { data: userData, error: userErr } = await supabase.auth.getUser(token);
+    if (userErr || !userData?.user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
-    const userId = claimsData.claims.sub as string;
-    const username = (claimsData.claims as any).user_metadata?.username || (claimsData.claims.email as string)?.split('@')[0] || userId.slice(0, 6);
+    const userId = userData.user.id;
+    const meta = (userData.user.user_metadata || {}) as Record<string, any>;
+    const username = meta.username || meta.display_name || userData.user.email?.split('@')[0] || userId.slice(0, 6);
 
     const body = await req.json().catch(() => ({}));
     const room = typeof body?.room === 'string' ? body.room.trim() : '';
