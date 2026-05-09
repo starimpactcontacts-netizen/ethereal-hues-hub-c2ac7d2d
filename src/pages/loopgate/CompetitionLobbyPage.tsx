@@ -830,7 +830,7 @@ export default function CompetitionLobbyPage() {
               {isJoining ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                 <>
                   <Play className="w-4 h-4" strokeWidth={2.5} />
-                  <span className="text-[15px] font-extrabold uppercase tracking-[0.2em] leading-none">Join Lobby</span>
+                  <span className="text-[15px] font-extrabold uppercase tracking-[0.08em] leading-none">Join Lobby</span>
                 </>
               )}
             </button>
