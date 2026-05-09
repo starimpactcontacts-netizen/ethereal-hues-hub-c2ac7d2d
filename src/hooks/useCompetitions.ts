@@ -211,6 +211,19 @@ export function useCompetition(idOrSlug: string | undefined) {
     return true;
   };
 
+  const kick = async (targetUserId: string) => {
+    if (!user || !competition || !isCreator) return false;
+    if (targetUserId === competition.creator_id) return false;
+    const { error } = await supabase
+      .from("competition_participants")
+      .delete()
+      .eq("competition_id", competition.id)
+      .eq("user_id", targetUserId);
+    if (error) return false;
+    await fetchAll();
+    return true;
+  };
+
   const start = async () => {
     if (!competition || !isCreator) return false;
     const minutes = (competition as any).duration_minutes || 30;
@@ -358,7 +371,7 @@ export function useCompetition(idOrSlug: string | undefined) {
     competition, participants, submissions, loading,
     isCreator, hasJoined, hasSubmitted, hasUpvoted, isReady, readyCount,
     myVoteSubmissionId,
-    join, start, submit, toggleUpvote, updateInspo, toggleReady, leave,
+    join, start, submit, toggleUpvote, updateInspo, toggleReady, leave, kick,
     startVoting, castVote, finalizeVoting,
     refetch: fetchAll,
   };
