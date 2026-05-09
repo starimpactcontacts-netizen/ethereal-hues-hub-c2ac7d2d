@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Trophy, ArrowLeft, ImagePlus, Loader2, X, Users, Clock, Hash, Vote } from "lucide-react";
+import { Trophy, ArrowLeft, ImagePlus, Loader2, X, Users, Clock, Hash, Vote, Lock, Globe, Copy, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -18,6 +18,9 @@ export default function CreateCompetitionPage() {
   const [durationMin, setDurationMin] = useState(30);
   const [submitting, setSubmitting] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [joinCode, setJoinCode] = useState(() => Math.random().toString(36).slice(2, 6).toUpperCase());
+  const [codeCopied, setCodeCopied] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
   // Pre-fill name with "{username}'s Room" once profile loads
@@ -49,6 +52,8 @@ export default function CreateCompetitionPage() {
           duration_minutes: durationMin,
           status: "lobby",
           slug,
+          is_private: isPrivate,
+          join_code: isPrivate ? joinCode : null,
         } as any)
         .select("id, slug")
         .single();
@@ -66,7 +71,7 @@ export default function CreateCompetitionPage() {
       // Bump current_players to 1
       await supabase.from("competitions").update({ current_players: 1 } as any).eq("id", data.id);
 
-      toast.success("🏆 Lobby opened — waiting for editors!");
+      toast.success(isPrivate ? `🔒 Private lobby opened — code ${joinCode}` : "🏆 Lobby opened — waiting for editors!");
       navigate(`/competition/${data.slug || data.id}`);
     } catch (err: any) {
       console.error(err);
