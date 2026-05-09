@@ -141,6 +141,7 @@ export default function BattleDetailPage() {
   const isLive = battle.status === 'active';
   const isCompleted = battle.status === 'completed';
   const isJudging = battle.status === 'judging';
+  const bothSubmitted = !!battle.challenger_submission_url && !!battle.opponent_submission_url;
   const showcaseStartedAt = (battle as any).showcase_started_at as string | null;
   const judgingDeadline = (battle as any).judging_deadline as string | null;
   const publicVoteStartedAt = (battle as any).public_vote_started_at as string | null;
