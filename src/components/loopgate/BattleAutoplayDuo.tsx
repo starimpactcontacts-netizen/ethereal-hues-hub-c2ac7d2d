@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 
 const teko = { fontFamily: "Teko, sans-serif" };
@@ -38,14 +38,14 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
   const [blueReady, setBlueReady] = useState(false);
   const [soundOn, setSoundOn] = useState(false);
 
-  const compute = () => {
+  const compute = useCallback(() => {
     const elapsed = Math.max(0, Date.now() - startMsRef.current);
     const looped = elapsed % totalMs;
     const idx = Math.min(sides.length - 1, Math.floor(looped / (PER_EDIT_SECONDS * 1000)));
     const intoEdit = looped - idx * PER_EDIT_SECONDS * 1000;
     const left = Math.max(0, Math.ceil((PER_EDIT_SECONDS * 1000 - intoEdit) / 1000));
     return { idx, left };
-  };
+  }, [sides.length, totalMs]);
 
   const initial = compute();
   const [activeIdx, setActiveIdx] = useState(initial.idx);
@@ -68,7 +68,7 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
     tick();
     const id = setInterval(tick, 250);
     return () => clearInterval(id);
-  }, [tickEnabled]);
+  }, [compute, tickEnabled]);
 
   // Drive playback: active plays full-quality, inactive PAUSES at currentTime=0
   // (kept loaded so swap is instant — no re-buffer).
@@ -78,7 +78,7 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
         if (!v) return;
         v.pause();
         v.muted = true;
-        try { v.currentTime = 0; } catch {}
+        try { v.currentTime = 0; } catch (error) { void error; }
       });
       return;
     }
@@ -90,12 +90,12 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
         v.play().catch(() => {
           v.muted = true;
           setSoundOn(false);
-          v.play().catch(() => {});
+          v.play().catch((error) => { void error; });
         });
       } else {
         v.pause();
         v.muted = true;
-        try { v.currentTime = 0; } catch {}
+        try { v.currentTime = 0; } catch (error) { void error; }
       }
     });
   }, [activeIdx, paused, soundOn]);
