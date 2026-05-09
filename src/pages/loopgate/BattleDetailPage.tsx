@@ -555,32 +555,6 @@ export default function BattleDetailPage() {
           </div>
         )}
 
-        {/* Scenepack Vote — full-screen game-style modal pops up on entry */}
-        {battle.status === 'active' && (battle as any).scenepack_option_a_id && (
-          <ScenepackVoteModal
-            battleId={battle.id}
-            isParticipant={isParticipant}
-            optionAId={(battle as any).scenepack_option_a_id}
-            optionBId={(battle as any).scenepack_option_b_id}
-            voteDeadline={(battle as any).scenepack_vote_deadline}
-            myVote={isChallenger ? (battle as any).challenger_scenepack_vote : isOpponent ? (battle as any).opponent_scenepack_vote : null}
-            opponentVote={isChallenger ? (battle as any).opponent_scenepack_vote : isOpponent ? (battle as any).challenger_scenepack_vote : null}
-            lockedId={(battle as any).scenepack_locked_id}
-            lockedYoutube={(battle as any).scenepack_youtube_url}
-            lockedGdrive={(battle as any).scenepack_gdrive_url}
-            onChanged={refetch}
-          />
-        )}
-
-        {/* Persistent scenepack download card — visible after vote locks */}
-        {battle.status === 'active' && (battle as any).scenepack_locked_id && (
-          <ScenepackDownloadCard
-            lockedId={(battle as any).scenepack_locked_id}
-            lockedYoutube={(battle as any).scenepack_youtube_url}
-            lockedGdrive={(battle as any).scenepack_gdrive_url}
-          />
-        )}
-
         {/* Forfeit Battle — escape hatch for active participants */}
         {isParticipant && battle.status === 'active' && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
