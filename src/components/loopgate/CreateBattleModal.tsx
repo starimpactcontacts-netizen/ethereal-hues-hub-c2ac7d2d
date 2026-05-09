@@ -26,7 +26,6 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
   const { profile } = useAuth();
   const [challengeType, setChallengeType] = useState<'open' | 'direct' | 'private'>('open');
   const [duration, setDuration] = useState<number>(1);
-  const [battleMode, setBattleMode] = useState<'scenepack' | 'premade'>('scenepack');
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [selectedOpponent, setSelectedOpponent] = useState<SearchResult | null>(null);
