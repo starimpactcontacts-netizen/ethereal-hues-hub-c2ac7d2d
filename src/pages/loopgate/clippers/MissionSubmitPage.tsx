@@ -75,7 +75,7 @@ export default function MissionSubmitPage() {
     total_earned_cents: number | null;
     status: string | null;
   } | null>(null);
-  const [missionCounts, setMissionCounts] = useState<{ approved: number; pending: number }>({ approved: 0, pending: 0 });
+  const [missionCounts, setMissionCounts] = useState<{ approved: number; pending: number; total: number }>({ approved: 0, pending: 0, total: 0 });
 
   const loadEligibility = async () => {
     if (!user || !id) return;
@@ -185,14 +185,16 @@ export default function MissionSubmitPage() {
     if (!id) return;
     let cancelled = false;
     (async () => {
-      const [approvedRes, pendingRes] = await Promise.all([
+      const [approvedRes, pendingRes, totalRes] = await Promise.all([
         supabase.from('mission_submissions').select('id', { count: 'exact', head: true }).eq('mission_id', id).eq('status', 'approved'),
         supabase.from('mission_submissions').select('id', { count: 'exact', head: true }).eq('mission_id', id).eq('status', 'pending'),
+        supabase.from('mission_submissions').select('id', { count: 'exact', head: true }).eq('mission_id', id),
       ]);
       if (!cancelled) {
         setMissionCounts({
           approved: approvedRes.count || 0,
           pending: pendingRes.count || 0,
+          total: totalRes.count || 0,
         });
       }
     })();
@@ -412,8 +414,8 @@ export default function MissionSubmitPage() {
               </div>
               <p className="text-[11px] text-[#8E8E93] mt-1.5 tabular-nums">
                 {isPostsCap
-                  ? `${approved} / ${maxPosts} posts filled${pendingCount > 0 ? ` · ${pendingCount} pending review` : ''}`
-                  : `${formatMoney(spent)} / ${formatMoney(budget)} pool${pendingCount > 0 ? ` · ${pendingCount} pending review` : ''}`}
+                  ? `${approved} / ${maxPosts} posts filled${missionCounts.total > 0 ? ` · ${missionCounts.total} submissions` : ''}`
+                  : `${formatMoney(spent)} / ${formatMoney(budget)} pool${missionCounts.total > 0 ? ` · ${missionCounts.total} submissions` : ''}`}
               </p>
             </div>
           )}
