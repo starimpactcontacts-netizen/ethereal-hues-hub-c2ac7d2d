@@ -1,31 +1,53 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, User, HelpCircle, FileText, Home, Trophy, Shield, Search, Calendar, Building2, ShoppingBag, BookOpen, Gavel, Crown, Clapperboard } from 'lucide-react';
+import { Menu, X, LogOut, User, HelpCircle, FileText, Home, Trophy, Shield, Search, Calendar, Building2, ShoppingBag, BookOpen, Gavel, Crown, Clapperboard, ChevronRight, Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import NotificationCenter from './NotificationCenter';
 import HeaderMusicPlayer from './HeaderMusicPlayer';
 import MessagesHeaderIcon from './MessagesHeaderIcon';
 import loopgateBrand from '@/assets/loopgate-brand.png';
 
-const menuItems = [
-  { to: '/hub', icon: Home, label: 'Hub' },
-  { to: '/arena', icon: Calendar, label: 'Arena', primary: true },
-  { to: '/studio', icon: Clapperboard, label: 'Studio', highlight: true },
-  { to: '/league', icon: Crown, label: 'League' },
-  { to: '/rankings', icon: Trophy, label: 'Rankings' },
-  { to: '/class', icon: Shield, label: 'Class' },
-  { to: '/index', icon: Search, label: 'Index' },
-  { to: '/shop', icon: ShoppingBag, label: 'Shop', highlight: true },
-  { to: '/editorium', icon: BookOpen, label: 'Editorium' },
-  { to: '/profile', icon: User, label: 'Profile' },
-  { divider: true },
-  { to: '/support', icon: HelpCircle, label: 'Support' },
-  { to: '/rules', icon: FileText, label: 'Rules' },
+type NavItem = { to: string; icon: typeof Home; label: string; highlight?: boolean };
+type NavSection = { title: string; items: NavItem[] };
+
+const navSections: NavSection[] = [
+  {
+    title: 'Play',
+    items: [
+      { to: '/hub', icon: Home, label: 'Hub' },
+      { to: '/studio', icon: Clapperboard, label: 'Studio', highlight: true },
+      { to: '/league', icon: Crown, label: 'League' },
+    ],
+  },
+  {
+    title: 'Discover',
+    items: [
+      { to: '/rankings', icon: Trophy, label: 'Rankings' },
+      { to: '/class', icon: Shield, label: 'Class' },
+      { to: '/index', icon: Search, label: 'Index' },
+      { to: '/editorium', icon: BookOpen, label: 'Editorium' },
+    ],
+  },
+  {
+    title: 'You',
+    items: [
+      { to: '/shop', icon: ShoppingBag, label: 'Shop', highlight: true },
+      { to: '/profile', icon: User, label: 'Profile' },
+    ],
+  },
+  {
+    title: 'Help',
+    items: [
+      { to: '/support', icon: HelpCircle, label: 'Support' },
+      { to: '/rules', icon: FileText, label: 'Rules' },
+    ],
+  },
 ];
 
 export default function AppHeader() {
@@ -99,170 +121,185 @@ export default function AppHeader() {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-72 bg-background border-border/30 p-0">
-              <div className="flex flex-col h-full">
-                {/* Header */}
-                <div className="border-b border-border/30 p-4">
-                  <div className="flex items-center justify-between">
-                    <span className="font-display text-xl text-foreground tracking-tight">MENU</span>
-                    <SheetClose asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
-                        <X className="h-5 w-5" />
-                      </Button>
-                    </SheetClose>
-                  </div>
-                  {profile && (
-                    <div className="mt-4 p-3 bg-foreground/[0.03] border border-border/30 rounded-sm">
-                      <p className="font-display text-lg">{profile.username}</p>
-                      <p className="text-xs text-muted-foreground uppercase tracking-widest">
-                        {profile.league} League · Rank #{userRank}
-                      </p>
-                    </div>
-                  )}
+            <SheetContent
+              side="right"
+              className="w-[88vw] max-w-[360px] p-0 border-l border-border/30 bg-[#0a0a0a]/95 backdrop-blur-2xl"
+              style={{ paddingTop: 'env(safe-area-inset-top, 0px)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+            >
+              {/* Ambient gradient wash */}
+              <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                <div className="absolute -top-32 -right-24 w-72 h-72 rounded-full bg-gold/[0.06] blur-3xl" />
+                <div className="absolute bottom-0 -left-24 w-64 h-64 rounded-full bg-blue-500/[0.04] blur-3xl" />
+              </div>
+
+              <div className="relative flex flex-col h-full">
+                {/* Top bar */}
+                <div className="flex items-center justify-between px-5 pt-4 pb-3">
+                  <span className="font-display text-[22px] tracking-[0.02em] text-foreground">Menu</span>
+                  <SheetClose asChild>
+                    <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground hover:bg-foreground/[0.06]">
+                      <X className="h-5 w-5" />
+                    </Button>
+                  </SheetClose>
                 </div>
 
+                {/* Profile card */}
+                {profile && (
+                  <SheetClose asChild>
+                    <Link
+                      to="/profile"
+                      className="group mx-4 mb-3 flex items-center gap-3 p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] hover:border-white/[0.1] transition-all"
+                    >
+                      <Avatar className="h-12 w-12 border border-white/10">
+                        <AvatarImage src={profile.avatar_url || undefined} className="object-cover" />
+                        <AvatarFallback className="bg-gradient-to-br from-zinc-700 to-zinc-900 text-white font-display text-base">
+                          {profile.username?.[0]?.toUpperCase() || '?'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-display text-lg leading-tight text-foreground truncate">{profile.username}</p>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <span className="text-[9px] font-bold tracking-[0.15em] uppercase px-1.5 py-0.5 rounded bg-gold/15 text-gold border border-gold/20">
+                            {profile.league}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground tracking-wide">Rank #{userRank}</span>
+                        </div>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground/60 group-hover:text-foreground transition-colors" />
+                    </Link>
+                  </SheetClose>
+                )}
+
+                {/* Enter Arena hero CTA */}
+                <SheetClose asChild>
+                  <Link
+                    to="/arena"
+                    className="relative mx-4 mb-3 flex items-center justify-center gap-2 h-12 rounded-2xl overflow-hidden group"
+                    style={{ background: 'linear-gradient(180deg, #E8C84A 0%, #D4A843 50%, #C49A2C 100%)', boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.25), 0 6px 20px rgba(212,168,67,0.25)' }}
+                  >
+                    <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/35 to-transparent pointer-events-none" />
+                    <Calendar className="relative w-4 h-4 text-black" />
+                    <span className="relative font-display text-sm uppercase tracking-[0.18em] text-black font-bold">Enter Arena</span>
+                  </Link>
+                </SheetClose>
+
                 {/* Search */}
-                <div className="px-4 pb-3">
+                <div className="px-4 pb-2">
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
                     <Input
-                      placeholder="Search pages..."
+                      placeholder="Search"
                       value={menuSearch}
                       onChange={(e) => setMenuSearch(e.target.value)}
-                      className="pl-9 h-9 text-xs bg-transparent border-border/30 focus:border-foreground/20"
+                      className="pl-10 h-10 text-sm rounded-xl bg-white/[0.04] border-white/[0.06] focus-visible:ring-1 focus-visible:ring-foreground/20 placeholder:text-muted-foreground/50"
                     />
                   </div>
                 </div>
 
-                {/* Navigation */}
-                <nav className="flex-1 overflow-y-auto py-2">
-                  {menuItems.filter(item => {
-                    if (!menuSearch.trim()) return true;
-                    if ('divider' in item && item.divider) return false;
-                    return item.label?.toLowerCase().includes(menuSearch.toLowerCase());
-                  }).map((item, index) => {
-                    if ('divider' in item && item.divider) {
-                      return <div key={index} className="my-2 border-t border-border/20" />;
-                    }
-                    const Icon = item.icon!;
-                    const isActive = location.pathname === item.to;
-                    const isHighlight = 'highlight' in item && item.highlight;
-                    const isPrimary = 'primary' in item && item.primary;
-                    
-                    if (isPrimary) {
-                      return (
-                        <SheetClose asChild key={`primary-${item.label}`}>
-                          <Link
-                            to={item.to!}
-                            className="mx-4 my-2 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-gold via-amber-400 to-gold text-black font-bold rounded-sm transition-all hover:shadow-lg hover:shadow-gold/30"
-                          >
-                            <Icon className="w-5 h-5" />
-                            <span className="font-display text-sm uppercase tracking-wider">Enter Arena</span>
-                          </Link>
-                        </SheetClose>
-                      );
-                    }
-                    
+                {/* Navigation — sectioned */}
+                <nav className="flex-1 overflow-y-auto px-2 pb-3 scrollbar-hide">
+                  {navSections.map((section) => {
+                    const filtered = section.items.filter(it =>
+                      !menuSearch.trim() || it.label.toLowerCase().includes(menuSearch.toLowerCase())
+                    );
+                    if (!filtered.length) return null;
                     return (
-                      <SheetClose asChild key={item.to}>
-                        <Link
-                          to={item.to!}
-                          className={`flex items-center gap-3 px-4 py-3 transition-colors ${
-                            isActive 
-                              ? 'bg-gold/10 text-gold border-l-2 border-gold' 
-                              : isHighlight
-                                ? 'text-gold hover:bg-gold/10'
-                                : 'text-muted-foreground hover:text-foreground hover:bg-foreground/[0.03]'
-                          }`}
-                        >
-                          <Icon className="w-5 h-5" />
-                          <span className="font-display text-sm">{item.label}</span>
-                        </Link>
-                      </SheetClose>
+                      <div key={section.title} className="mt-3 first:mt-1">
+                        <p className="px-3 mb-1 text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground/50">
+                          {section.title}
+                        </p>
+                        <div className="space-y-0.5">
+                          {filtered.map((item) => {
+                            const Icon = item.icon;
+                            const isActive = location.pathname === item.to;
+                            return (
+                              <SheetClose asChild key={item.to}>
+                                <Link
+                                  to={item.to}
+                                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
+                                    isActive
+                                      ? 'bg-white/[0.06] text-foreground'
+                                      : 'text-muted-foreground hover:text-foreground hover:bg-white/[0.03]'
+                                  }`}
+                                >
+                                  <Icon className={`w-[18px] h-[18px] ${item.highlight ? 'text-gold' : ''}`} />
+                                  <span className={`font-display text-[15px] tracking-tight ${item.highlight ? 'text-gold' : ''}`}>{item.label}</span>
+                                  {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-gold" />}
+                                </Link>
+                              </SheetClose>
+                            );
+                          })}
+                        </div>
+                      </div>
                     );
                   })}
 
-                  {/* QOI Judges - Premium Feature Link */}
-                  <div className="my-3 mx-4">
+                  {/* The Bureau — premium card */}
+                  <div className="mt-4 mx-2">
                     <SheetClose asChild>
                       <Link
                         to="/judges"
-                        className="group relative flex items-center gap-3 p-3 rounded-sm bg-red-950/20 border border-red-800/20 hover:border-red-700/40 transition-all overflow-hidden"
+                        className="group relative flex items-center gap-3 p-3 rounded-2xl bg-gradient-to-br from-red-950/40 to-red-950/10 border border-red-900/30 hover:border-red-700/50 transition-all overflow-hidden"
                       >
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-red-700/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                        
-                        <div className="relative flex items-center justify-center w-10 h-10 rounded-sm bg-red-950/50 border border-red-800/30">
-                          <Gavel className="w-5 h-5 text-red-400" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-red-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                        <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-red-950/60 border border-red-800/40">
+                          <Gavel className="w-[18px] h-[18px] text-red-400" />
                         </div>
-                        
-                        <div className="relative flex-1">
-                          <p className="font-display text-sm text-white">The Bureau</p>
-                          <p className="text-[10px] text-muted-foreground">Get elite feedback on your edits</p>
+                        <div className="relative flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <p className="font-display text-sm text-white">The Bureau</p>
+                            <Sparkles className="w-3 h-3 text-red-400/80" />
+                          </div>
+                          <p className="text-[10px] text-muted-foreground truncate">Elite feedback on your edits</p>
                         </div>
-                        
-                        <div className="relative text-zinc-500 group-hover:text-white transition-colors">
-                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M9 18l6-6-6-6" />
-                          </svg>
-                        </div>
+                        <ChevronRight className="relative w-4 h-4 text-zinc-500 group-hover:text-white transition-colors" />
                       </Link>
                     </SheetClose>
                   </div>
 
-                  {/* Judge Panel */}
-                  {(isJudge || isDev || isAdmin) && (
-                    <SheetClose asChild>
-                      <Link
-                        to="/judge-panel"
-                        className="flex items-center gap-3 px-4 py-3 text-gold hover:bg-gold/10 transition-colors"
-                      >
-                        <Shield className="w-5 h-5" />
-                        <span className="font-display text-sm">Judge Panel</span>
-                      </Link>
-                    </SheetClose>
-                  )}
-
-                  {isEnterprise && (
-                    <>
-                      <div className="my-2 border-t border-border/20" />
-                      <SheetClose asChild>
-                        <Link
-                          to="/enterprise-dashboard"
-                          className="flex items-center gap-3 px-4 py-3 text-gold hover:bg-gold/10 transition-colors"
-                        >
-                          <Building2 className="w-5 h-5" />
-                          <span className="font-display text-sm">Enterprise Portal</span>
-                        </Link>
-                      </SheetClose>
-                    </>
-                  )}
-
-                  {isAdmin && (
-                    <>
-                      <div className="my-2 border-t border-border/20" />
-                      <SheetClose asChild>
-                        <Link
-                          to="/ops-panel/a7c92ff31b"
-                          className="flex items-center gap-3 px-4 py-3 text-blue-400 hover:bg-blue-500/10 transition-colors"
-                        >
-                          <Shield className="w-5 h-5" />
-                          <span className="font-display text-sm">Admin Panel</span>
-                        </Link>
-                      </SheetClose>
-                    </>
+                  {/* Privileged sections */}
+                  {(isJudge || isDev || isAdmin || isEnterprise || isAdmin) && (
+                    <div className="mt-4">
+                      <p className="px-3 mb-1 text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground/50">Access</p>
+                      <div className="space-y-0.5">
+                        {(isJudge || isDev || isAdmin) && (
+                          <SheetClose asChild>
+                            <Link to="/judge-panel" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gold hover:bg-gold/10 transition-colors">
+                              <Shield className="w-[18px] h-[18px]" />
+                              <span className="font-display text-[15px] tracking-tight">Judge Panel</span>
+                            </Link>
+                          </SheetClose>
+                        )}
+                        {isEnterprise && (
+                          <SheetClose asChild>
+                            <Link to="/enterprise-dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gold hover:bg-gold/10 transition-colors">
+                              <Building2 className="w-[18px] h-[18px]" />
+                              <span className="font-display text-[15px] tracking-tight">Enterprise Portal</span>
+                            </Link>
+                          </SheetClose>
+                        )}
+                        {isAdmin && (
+                          <SheetClose asChild>
+                            <Link to="/ops-panel/a7c92ff31b" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-blue-400 hover:bg-blue-500/10 transition-colors">
+                              <Shield className="w-[18px] h-[18px]" />
+                              <span className="font-display text-[15px] tracking-tight">Admin Panel</span>
+                            </Link>
+                          </SheetClose>
+                        )}
+                      </div>
+                    </div>
                   )}
                 </nav>
 
                 {/* Sign Out */}
-                <div className="border-t border-border/20 p-4">
-                  <Button
+                <div className="px-4 pt-3 pb-4 border-t border-white/[0.06]">
+                  <button
                     onClick={handleSignOut}
-                    variant="outline"
-                    className="w-full border-destructive/30 text-destructive hover:bg-destructive/10"
+                    className="w-full flex items-center justify-center gap-2 h-11 rounded-xl bg-white/[0.03] hover:bg-red-500/10 border border-white/[0.06] hover:border-red-500/30 text-muted-foreground hover:text-red-400 transition-all"
                   >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sign Out
-                  </Button>
+                    <LogOut className="w-4 h-4" />
+                    <span className="text-sm font-semibold tracking-wide">Sign Out</span>
+                  </button>
                 </div>
               </div>
             </SheetContent>
