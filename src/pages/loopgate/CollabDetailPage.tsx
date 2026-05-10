@@ -2,7 +2,6 @@ import { useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   ChevronLeft,
-  Music,
   Clock,
   Check,
   Upload,
@@ -13,7 +12,6 @@ import {
   ExternalLink,
   X,
   Share2,
-  Info,
   Sparkles,
   MessageCircle,
   Mic,
