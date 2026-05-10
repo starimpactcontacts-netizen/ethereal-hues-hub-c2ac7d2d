@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import battleIntroSfx from '@/assets/sounds/battle-intro.m4a';
+import { notifyBattleAudioUnlocked } from '@/hooks/useBattleAudioUnlock';
 
 interface BattleIntroOverlayProps {
   fightId: string;
@@ -31,8 +32,11 @@ export default function BattleIntroOverlay({ fightId, active, onComplete }: Batt
     // Play the SFX
     const a = new Audio(battleIntroSfx);
     a.volume = 0.95;
+    a.muted = false;
     audioRef.current = a;
-    a.play().catch(() => {});
+    a.play()
+      .then(() => notifyBattleAudioUnlocked())
+      .catch(() => {});
 
     // Schedule cue swaps
     CUES.forEach((cue, i) => {
