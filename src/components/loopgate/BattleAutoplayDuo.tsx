@@ -70,17 +70,16 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
     return () => clearInterval(id);
   }, [compute, tickEnabled]);
 
-  // Preload both videos immediately; only the active edit decodes/plays to avoid mobile lag.
+  // Preload both videos once. Do not call load() during side switches — that was rebuffering and stuttering.
   useEffect(() => {
-    [redVideoRef.current, blueVideoRef.current].forEach((v, i) => {
+    [redVideoRef.current, blueVideoRef.current].forEach((v) => {
       if (!v) return;
-      v.muted = !(audioUnlocked && i === activeIdx);
+      v.muted = true;
       v.defaultMuted = false;
-      v.volume = i === activeIdx ? 1 : 0;
       v.preload = "auto";
       v.load();
     });
-  }, [red.url, blue.url, activeIdx, audioUnlocked]);
+  }, [red.url, blue.url]);
 
   // Drive playback without seeking/resetting; seeking on mobile was causing black frames and stutter.
   useEffect(() => {
@@ -103,8 +102,10 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
         return;
       }
       v.play().catch(() => {
-        v.muted = true;
-        v.play().catch((error) => { void error; });
+        if (!audioUnlocked) {
+          v.muted = true;
+          v.play().catch((error) => { void error; });
+        }
       });
     });
   }, [activeIdx, audioUnlocked, paused]);
@@ -217,7 +218,6 @@ function SidePanel({
           ref={videoRef}
           src={side.url}
           className="w-full h-full object-contain"
-          autoPlay
           playsInline
           webkit-playsinline="true"
           x-webkit-airplay="deny"
