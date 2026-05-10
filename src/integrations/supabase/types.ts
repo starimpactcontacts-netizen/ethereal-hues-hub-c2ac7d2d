@@ -1478,6 +1478,44 @@ export type Database = {
           },
         ]
       }
+      collab_messages: {
+        Row: {
+          avatar_url: string | null
+          body: string
+          created_at: string
+          id: string
+          slot_id: string
+          user_id: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          slot_id: string
+          user_id: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          slot_id?: string
+          user_id?: string
+          username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collab_messages_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: false
+            referencedRelation: "collab_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       collab_reactions: {
         Row: {
           created_at: string
