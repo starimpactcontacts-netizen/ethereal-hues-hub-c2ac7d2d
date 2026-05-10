@@ -377,45 +377,26 @@ export default function JudgeHubPage() {
   return (
     <div className="min-h-screen bg-black pb-24">
       {/* ═══════════ HEADER ═══════════ */}
-      <div className="sticky top-0 z-40 bg-black/90 backdrop-blur-xl border-b border-zinc-800/80">
+      <div className="sticky top-0 z-40 bg-black/90 backdrop-blur-xl border-b border-zinc-900">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate(-1)} className="p-1 -ml-1 hover:bg-zinc-800 rounded-lg transition-colors">
+            <button onClick={() => navigate(-1)} className="p-1 -ml-1 hover:bg-zinc-900 rounded-lg transition-colors">
               <ArrowLeft size={20} className="text-zinc-400" />
             </button>
             <h1 className="text-[17px] font-semibold text-white" style={{ letterSpacing: '-0.02em' }}>
-              The Bureau
+              Judges
             </h1>
           </div>
-          <div className="flex items-center gap-2">
-            {(isJudge || isDev) && (
-              <Link
-                to="/judge-panel"
-                className="px-3 py-1.5 bg-white text-black text-[12px] font-semibold rounded-lg hover:bg-zinc-200 transition-colors flex items-center gap-1.5"
-              >
-                <Gavel size={12} />
-                Panel
-              </Link>
-            )}
-          </div>
+          {(isJudge || isDev) && (
+            <Link
+              to="/judge-panel"
+              className="px-3 py-1.5 bg-white text-black text-[12px] font-semibold rounded-lg hover:bg-zinc-200 transition-colors flex items-center gap-1.5"
+            >
+              <Gavel size={12} />
+              Panel
+            </Link>
+          )}
         </div>
-      </div>
-
-      {/* ═══════════ HERO ═══════════ */}
-      <div className="px-4 pt-8 pb-6">
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-950/60 rounded-full mb-4">
-            <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-[11px] text-red-400 font-medium tracking-wide uppercase">QOI Authority</span>
-          </div>
-
-          <h2 className="text-[34px] font-bold text-white leading-[1.1] mb-2" style={{ letterSpacing: '-0.03em' }}>
-            Judge Division
-          </h2>
-          <p className="text-[15px] text-zinc-400 max-w-xs mx-auto leading-relaxed" style={{ letterSpacing: '-0.01em' }}>
-            Official judges who rate, rank, and shape the standard of editing excellence.
-          </p>
-        </motion.div>
       </div>
 
       {/* ═══════════ QUICK ACTIONS ═══════════ */}
