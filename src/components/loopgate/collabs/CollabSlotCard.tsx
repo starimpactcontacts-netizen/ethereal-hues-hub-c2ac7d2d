@@ -32,18 +32,27 @@ export default function CollabSlotCard({ slot, rank }: { slot: CollabSlot; rank?
   return (
     <Link
       to={`/collab/${slot.id}`}
-      className="block rounded-2xl p-[1px] transition-all active:scale-[0.99]"
+      className="block rounded-3xl p-[1.5px] transition-all active:translate-y-[2px] shadow-[0_6px_0_rgba(0,0,0,0.4)]"
       style={{
         background:
           slot.status === "live"
-            ? "linear-gradient(135deg, rgba(168,85,247,0.55), rgba(255,255,255,0.05), rgba(16,185,129,0.45))"
-            : "linear-gradient(135deg, rgba(168,85,247,0.55), rgba(255,255,255,0.05), rgba(124,58,237,0.4))",
+            ? "linear-gradient(135deg, rgba(168,85,247,0.8), rgba(255,255,255,0.1), rgba(16,185,129,0.6))"
+            : "linear-gradient(135deg, rgba(168,85,247,0.7), rgba(255,255,255,0.08), rgba(124,58,237,0.55))",
       }}
     >
       <div
-        className="rounded-[15px] p-3.5 relative overflow-hidden"
-        style={{ background: "linear-gradient(160deg, hsl(0 0% 11%) 0%, hsl(0 0% 6%) 100%)" }}
+        className="rounded-[22px] p-3.5 relative overflow-hidden backdrop-blur-md"
+        style={{
+          background:
+            "linear-gradient(160deg, rgba(46,21,77,0.92) 0%, rgba(20,10,40,0.92) 50%, rgba(8,4,18,0.95) 100%)",
+        }}
       >
+        {/* Violet glow */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-12 -right-10 w-40 h-40 rounded-full opacity-40"
+          style={{ background: "radial-gradient(circle, rgba(168,85,247,0.55), transparent 70%)" }}
+        />
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
 
         {/* Header row */}
