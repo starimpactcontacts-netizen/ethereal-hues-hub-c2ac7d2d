@@ -414,8 +414,8 @@ export default function MissionSubmitPage() {
               </div>
               <p className="text-[11px] text-[#8E8E93] mt-1.5 tabular-nums">
                 {isPostsCap
-                  ? `${approved} / ${maxPosts} posts filled${pendingCount > 0 ? ` · ${pendingCount} pending review` : ''}`
-                  : `${formatMoney(spent)} / ${formatMoney(budget)} pool${pendingCount > 0 ? ` · ${pendingCount} pending review` : ''}`}
+                  ? `${approved} / ${maxPosts} posts filled${missionCounts.total > 0 ? ` · ${missionCounts.total} submissions` : ''}`
+                  : `${formatMoney(spent)} / ${formatMoney(budget)} pool${missionCounts.total > 0 ? ` · ${missionCounts.total} submissions` : ''}`}
               </p>
             </div>
           )}
