@@ -75,6 +75,7 @@ export default function MissionSubmitPage() {
     total_earned_cents: number | null;
     status: string | null;
   } | null>(null);
+  const [missionCounts, setMissionCounts] = useState<{ approved: number; pending: number }>({ approved: 0, pending: 0 });
 
   const loadEligibility = async () => {
     if (!user || !id) return;
@@ -179,6 +180,25 @@ export default function MissionSubmitPage() {
     return () => { cancelled = true; };
   }, [id, user?.id]);
 
+  // Live counts of approved + pending submissions for transparency (the missions.approved_count column can lag)
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    (async () => {
+      const [approvedRes, pendingRes] = await Promise.all([
+        supabase.from('mission_submissions').select('id', { count: 'exact', head: true }).eq('mission_id', id).eq('status', 'approved'),
+        supabase.from('mission_submissions').select('id', { count: 'exact', head: true }).eq('mission_id', id).eq('status', 'pending'),
+      ]);
+      if (!cancelled) {
+        setMissionCounts({
+          approved: approvedRes.count || 0,
+          pending: pendingRes.count || 0,
+        });
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [id, mySubmission?.status]);
+
   const handleSubmit = async () => {
     if (!user) { setAuthOpen(true); return; }
     if (!mission || !videoUrl.trim()) {
@@ -253,7 +273,9 @@ export default function MissionSubmitPage() {
   const budget = mission.budget_cents || 0;
   const spent = mission.spent_cents || 0;
   const maxPosts = mission.max_posts || 0;
-  const approved = mission.approved_count || 0;
+  // Prefer live count over the (sometimes-stale) cached column on missions
+  const approved = Math.max(missionCounts.approved, mission.approved_count || 0);
+  const pendingCount = missionCounts.pending;
   const pct = isPostsCap
     ? (maxPosts > 0 ? Math.min(100, (approved / maxPosts) * 100) : 0)
     : (budget > 0 ? Math.min(100, (spent / budget) * 100) : 0);
@@ -389,7 +411,9 @@ export default function MissionSubmitPage() {
                 <div className="h-full rounded-full" style={{ width: `${pct}%`, background: '#30D158' }} />
               </div>
               <p className="text-[11px] text-[#8E8E93] mt-1.5 tabular-nums">
-                {isPostsCap ? `${approved} / ${maxPosts} posts filled` : `${formatMoney(spent)} / ${formatMoney(budget)} pool`}
+                {isPostsCap
+                  ? `${approved} / ${maxPosts} posts filled${pendingCount > 0 ? ` · ${pendingCount} pending review` : ''}`
+                  : `${formatMoney(spent)} / ${formatMoney(budget)} pool${pendingCount > 0 ? ` · ${pendingCount} pending review` : ''}`}
               </p>
             </div>
           )}
