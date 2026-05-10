@@ -1402,6 +1402,113 @@ export type Database = {
         }
         Relationships: []
       }
+      collab_battle_judges: {
+        Row: {
+          battle_id: string
+          created_at: string
+          id: string
+          judge_id: string
+          note: string | null
+          pick_slot_id: string
+          qoi_score: number
+        }
+        Insert: {
+          battle_id: string
+          created_at?: string
+          id?: string
+          judge_id: string
+          note?: string | null
+          pick_slot_id: string
+          qoi_score?: number
+        }
+        Update: {
+          battle_id?: string
+          created_at?: string
+          id?: string
+          judge_id?: string
+          note?: string | null
+          pick_slot_id?: string
+          qoi_score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collab_battle_judges_battle_id_fkey"
+            columns: ["battle_id"]
+            isOneToOne: false
+            referencedRelation: "collab_battles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collab_battles: {
+        Row: {
+          created_at: string
+          ends_at: string
+          id: string
+          judge_score_a: number
+          judge_score_b: number
+          reactions_a: number
+          reactions_b: number
+          score_a: number
+          score_b: number
+          settled_at: string | null
+          slot_a_id: string
+          slot_b_id: string
+          started_at: string
+          status: string
+          winner_slot_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          ends_at?: string
+          id?: string
+          judge_score_a?: number
+          judge_score_b?: number
+          reactions_a?: number
+          reactions_b?: number
+          score_a?: number
+          score_b?: number
+          settled_at?: string | null
+          slot_a_id: string
+          slot_b_id: string
+          started_at?: string
+          status?: string
+          winner_slot_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string
+          id?: string
+          judge_score_a?: number
+          judge_score_b?: number
+          reactions_a?: number
+          reactions_b?: number
+          score_a?: number
+          score_b?: number
+          settled_at?: string | null
+          slot_a_id?: string
+          slot_b_id?: string
+          started_at?: string
+          status?: string
+          winner_slot_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collab_battles_slot_a_id_fkey"
+            columns: ["slot_a_id"]
+            isOneToOne: true
+            referencedRelation: "collab_slots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collab_battles_slot_b_id_fkey"
+            columns: ["slot_b_id"]
+            isOneToOne: true
+            referencedRelation: "collab_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       collab_daily_winners: {
         Row: {
           award_date: string
@@ -8930,6 +9037,10 @@ export type Database = {
         Returns: boolean
       }
       cleanup_expired_login_codes: { Args: never; Returns: undefined }
+      collab_battle_recompute: {
+        Args: { _battle_id: string }
+        Returns: undefined
+      }
       collab_recompute_score: { Args: { p_slot: string }; Returns: undefined }
       create_invite:
         | {
