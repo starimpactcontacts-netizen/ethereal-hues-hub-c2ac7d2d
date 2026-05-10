@@ -8866,6 +8866,10 @@ export type Database = {
         Args: { p_fight_id: string; p_url: string; p_user_id: string }
         Returns: boolean
       }
+      recalc_mission_approved_count: {
+        Args: { _mission_id: string }
+        Returns: undefined
+      }
       recalculate_user_index: {
         Args: { user_uuid: string }
         Returns: undefined
