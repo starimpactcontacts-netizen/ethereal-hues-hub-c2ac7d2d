@@ -76,7 +76,7 @@ function PickVideoCard({
   return (
     <div
       ref={containerRef}
-      className="group relative w-[260px] aspect-[9/16] flex-shrink-0 snap-start rounded-2xl overflow-hidden bg-black border border-border/20"
+      className="group relative w-[200px] aspect-[9/16] flex-shrink-0 snap-start rounded-2xl overflow-hidden bg-black border border-border/20"
     >
       {/* Media */}
       {hasVideo ? (
@@ -194,7 +194,7 @@ export default function EditoriumPicks({ limit = 10 }: { limit?: number }) {
     return (
       <div className="flex gap-3 pl-4 overflow-x-auto scrollbar-hide">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="w-[260px] aspect-[9/16] flex-shrink-0 bg-surface-1 animate-pulse rounded-2xl" />
+          <div key={i} className="w-[200px] aspect-[9/16] flex-shrink-0 bg-surface-1 animate-pulse rounded-2xl" />
         ))}
       </div>
     );
