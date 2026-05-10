@@ -41,25 +41,52 @@ export default function CollabsPage() {
       : null;
 
   return (
-    <div className="min-h-screen bg-black text-white pb-32">
+    <div
+      className="relative min-h-screen text-white pb-32 overflow-hidden"
+      style={{
+        background:
+          "linear-gradient(to bottom, #1a0b2e 0%, #0f0820 45%, #000000 100%)",
+      }}
+    >
+      {/* Violet stage glow */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-[420px] opacity-70"
+        style={{
+          background:
+            "radial-gradient(ellipse at 50% 0%, rgba(168,85,247,0.35), rgba(124,58,237,0.12) 40%, transparent 70%)",
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage:
+            "radial-gradient(rgba(255,255,255,0.6) 1px, transparent 1px)",
+          backgroundSize: "22px 22px",
+        }}
+      />
+
       {/* Header */}
-      <div className="sticky top-0 z-30 bg-black/95 backdrop-blur-xl border-b border-white/5">
+      <div className="relative sticky top-0 z-30 backdrop-blur-xl border-b border-white/5"
+        style={{ background: "linear-gradient(to bottom, rgba(26,11,46,0.85), rgba(15,8,32,0.7))" }}
+      >
         <div className="px-4 pt-3 pb-3 flex items-center gap-3">
           <button onClick={() => navigate("/arena")} className="-ml-2 p-2 rounded-full active:bg-white/10">
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 flex items-center gap-2">
             <h1
-              className="text-2xl font-black tracking-tight uppercase leading-none"
+              className="text-3xl font-black tracking-tight uppercase leading-none"
               style={{ fontFamily: "Teko, Inter, system-ui, sans-serif" }}
             >
               Collabs
             </h1>
-            <p className="text-[11px] text-muted-foreground">Team up · split the edit · stack rewards</p>
+            <span className="text-[8px] font-black tracking-widest uppercase px-1.5 py-0.5 rounded-full bg-violet-500 text-white">NEW</span>
           </div>
           <button
             onClick={() => (user ? navigate("/collabs/create") : navigate("/start"))}
-            className="rounded-full px-3.5 py-2 bg-violet-500 text-white text-[11px] font-black tracking-widest uppercase flex items-center gap-1 active:scale-95"
+            className="rounded-full px-3.5 py-2 bg-gradient-to-b from-violet-400 to-violet-600 text-white text-[11px] font-black tracking-widest uppercase flex items-center gap-1 active:translate-y-[2px] shadow-[0_4px_0_rgba(0,0,0,0.4)]"
           >
             <Plus className="w-3.5 h-3.5" />
             Create
@@ -67,7 +94,7 @@ export default function CollabsPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 px-4 pb-3 overflow-x-auto no-scrollbar">
+        <div className="flex gap-1.5 px-4 pb-3 overflow-x-auto no-scrollbar">
           {TABS.map((t) => {
             const active = tab === t.key;
             const Icon = t.icon;
@@ -75,16 +102,16 @@ export default function CollabsPage() {
               <button
                 key={t.key}
                 onClick={() => setTab(t.key)}
-                className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-colors ${
+                className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all ${
                   active
-                    ? "bg-white text-black"
-                    : "bg-white/[0.04] text-white/60 border border-white/5"
+                    ? "bg-white text-black shadow-[0_3px_0_rgba(0,0,0,0.5)]"
+                    : "bg-white/[0.06] text-white/70 border border-violet-400/20 backdrop-blur-md"
                 }`}
               >
                 <Icon className="w-3 h-3" />
                 {t.label}
                 {t.count > 0 && (
-                  <span className={`text-[10px] ${active ? "text-black/60" : "text-white/40"}`}>
+                  <span className={`text-[10px] ${active ? "text-black/60" : "text-violet-300"}`}>
                     {t.count}
                   </span>
                 )}
@@ -96,12 +123,12 @@ export default function CollabsPage() {
 
       {/* Hero pitch */}
       {tab === "lobby" && (
-        <div className="px-4 pt-4">
+        <div className="relative px-4 pt-4">
           <div
-            className="rounded-2xl p-4 border border-violet-400/20"
+            className="rounded-3xl p-4 border border-violet-400/25 backdrop-blur-md shadow-[0_6px_0_rgba(0,0,0,0.4)]"
             style={{
               background:
-                "linear-gradient(135deg, rgba(168,85,247,0.12) 0%, rgba(0,0,0,0.6) 60%)",
+                "linear-gradient(135deg, rgba(168,85,247,0.22) 0%, rgba(15,8,32,0.65) 60%)",
             }}
           >
             <p
@@ -111,7 +138,7 @@ export default function CollabsPage() {
               PICK A SONG. SPLIT THE EDIT.<br />
               <span className="text-violet-300">CASH THE FIRE.</span>
             </p>
-            <p className="text-[11px] text-white/60 mt-1.5 leading-snug">
+            <p className="text-[11px] text-white/70 mt-1.5 leading-snug">
               2 editors. One track. Each owns a half. Top 3 daily collabs win <span className="text-violet-300 font-bold">7× XP + 7× Index</span> for both partners.
             </p>
           </div>
@@ -119,12 +146,12 @@ export default function CollabsPage() {
       )}
 
       {/* List */}
-      <div className="px-4 pt-4 grid grid-cols-1 gap-3">
+      <div className="relative px-4 pt-4 grid grid-cols-1 gap-3">
         {loading && (
-          <div className="text-center text-white/40 py-12 text-sm">Loading collabs…</div>
+          <div className="text-center text-violet-300/60 py-12 text-sm">Loading collabs…</div>
         )}
         {empty && (
-          <div className="text-center text-white/40 py-12 text-sm px-6">{empty}</div>
+          <div className="text-center text-white/50 py-12 text-sm px-6">{empty}</div>
         )}
         {!loading &&
           list.map((s, i) => (
