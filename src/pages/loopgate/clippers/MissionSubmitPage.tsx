@@ -75,7 +75,7 @@ export default function MissionSubmitPage() {
     total_earned_cents: number | null;
     status: string | null;
   } | null>(null);
-  const [missionCounts, setMissionCounts] = useState<{ approved: number; pending: number }>({ approved: 0, pending: 0 });
+  const [missionCounts, setMissionCounts] = useState<{ approved: number; pending: number; total: number }>({ approved: 0, pending: 0, total: 0 });
 
   const loadEligibility = async () => {
     if (!user || !id) return;
