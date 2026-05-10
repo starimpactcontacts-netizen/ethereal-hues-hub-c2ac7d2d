@@ -1,8 +1,22 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ChevronLeft, Music, Clock, Check, Upload, AlertCircle, Flame, Crown } from "lucide-react";
+import {
+  ChevronLeft,
+  Music,
+  Clock,
+  Check,
+  Upload,
+  AlertCircle,
+  Flame,
+  Crown,
+  Loader2,
+  Link2,
+  ExternalLink,
+  X,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import {
   useCollabSlot,
   joinCollabSlot,
@@ -17,8 +31,11 @@ export default function CollabDetailPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { slot, reactions, loading, toggleReaction, reload } = useCollabSlot(id);
-  const [videoUrl, setVideoUrl] = useState("");
+  const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
+  const [socialUrl, setSocialUrl] = useState("");
   const [busy, setBusy] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   if (loading || !slot) {
     return (
@@ -47,13 +64,40 @@ export default function CollabDetailPage() {
     }
   };
 
-  const handleUpload = async () => {
-    if (!videoUrl.trim()) return toast.error("Paste your final edit URL");
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    if (file.size > 200 * 1024 * 1024) {
+      toast.error("Video must be under 200MB");
+      return;
+    }
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "mp4";
+      const path = `${user.id}/collabs/${slot.id}-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage
+        .from("loop-media")
+        .upload(path, file, { cacheControl: "3600", upsert: false });
+      if (error) throw error;
+      const { data: urlData } = supabase.storage.from("loop-media").getPublicUrl(path);
+      setUploadedUrl(urlData.publicUrl);
+      toast.success("Video uploaded — submit to lock it in");
+    } catch (err: any) {
+      toast.error(err?.message || "Upload failed");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!uploadedUrl) return toast.error("Upload your final edit first");
     setBusy(true);
     try {
-      await uploadCollabVideo(slot.id, videoUrl.trim());
+      await uploadCollabVideo(slot.id, uploadedUrl, socialUrl.trim() || null);
       toast.success("Uploaded — waiting on partner approval");
-      setVideoUrl("");
+      setUploadedUrl(null);
+      setSocialUrl("");
       reload();
     } catch (e: any) {
       toast.error(e.message || "Upload failed");
@@ -134,18 +178,54 @@ export default function CollabDetailPage() {
               <Upload className="w-3.5 h-3.5" /> Upload the final stitched edit
             </p>
             <p className="text-[10px] text-white/50">
-              One of you assembles both halves and pastes the URL (TikTok, Instagram, YouTube, etc.). The other approves.
+              One of you assembles both halves and uploads the video file. Optionally drop a TikTok/IG/YT link too. The other approves.
             </p>
-            <Input
-              placeholder="https://..."
-              value={videoUrl}
-              onChange={(e) => setVideoUrl(e.target.value)}
-              className="bg-white/[0.04] border-white/10"
+
+            {uploadedUrl ? (
+              <div className="relative rounded-xl overflow-hidden bg-black border border-white/10">
+                <video src={uploadedUrl} controls playsInline className="w-full max-h-[360px] object-contain bg-black" />
+                <button
+                  onClick={() => setUploadedUrl(null)}
+                  className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/70 border border-white/20 flex items-center justify-center"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => fileRef.current?.click()}
+                disabled={uploading}
+                className="w-full py-6 rounded-xl border-2 border-dashed border-amber-400/40 bg-amber-500/5 text-amber-200 text-[12px] font-bold uppercase tracking-widest active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {uploading ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Uploading…</>
+                ) : (
+                  <><Upload className="w-4 h-4" /> Tap to upload video (mp4 / mov, ≤200MB)</>
+                )}
+              </button>
+            )}
+            <input
+              ref={fileRef}
+              type="file"
+              accept="video/mp4,video/webm,video/quicktime"
+              onChange={handleFileSelect}
+              className="hidden"
             />
+
+            <div className="flex items-center gap-1.5 pt-1">
+              <Link2 className="w-3.5 h-3.5 text-white/40" />
+              <Input
+                placeholder="Optional — TikTok / IG / YT link"
+                value={socialUrl}
+                onChange={(e) => setSocialUrl(e.target.value)}
+                className="bg-white/[0.04] border-white/10 h-9 text-[12px]"
+              />
+            </div>
+
             <button
-              onClick={handleUpload}
-              disabled={busy}
-              className="w-full py-2.5 rounded-xl bg-amber-500 text-black text-[12px] font-black uppercase tracking-widest active:scale-[0.98] disabled:opacity-50"
+              onClick={handleSubmit}
+              disabled={busy || !uploadedUrl}
+              className="w-full py-2.5 rounded-xl bg-amber-500 text-black text-[12px] font-black uppercase tracking-widest active:scale-[0.98] disabled:opacity-40"
             >
               Submit Final Edit
             </button>
@@ -191,16 +271,25 @@ export default function CollabDetailPage() {
         {/* LIVE — video + reactions */}
         {slot.status === "live" && slot.final_video_url && (
           <>
-            <div className="rounded-2xl overflow-hidden border border-white/5 bg-black aspect-video flex items-center justify-center">
-              <a
-                href={slot.final_video_url}
-                target="_blank"
-                rel="noreferrer"
-                className="text-[12px] text-violet-300 underline px-4 py-8 text-center"
-              >
-                Open final edit ↗<br />
-                <span className="text-white/40 text-[10px]">{slot.final_video_url}</span>
-              </a>
+            <div className="rounded-2xl overflow-hidden border border-white/5 bg-black">
+              <video
+                src={slot.final_video_url}
+                controls
+                playsInline
+                className="w-full max-h-[70vh] object-contain bg-black"
+              />
+              {slot.social_url && (
+                <div className="px-3 py-2 border-t border-white/5 flex justify-end">
+                  <a
+                    href={slot.social_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-[10px] font-bold uppercase tracking-widest text-white/70"
+                  >
+                    <ExternalLink className="w-3 h-3" /> Watch on Social
+                  </a>
+                </div>
+              )}
             </div>
 
             <div className="rounded-2xl p-4 border border-white/5 bg-white/[0.03]">
