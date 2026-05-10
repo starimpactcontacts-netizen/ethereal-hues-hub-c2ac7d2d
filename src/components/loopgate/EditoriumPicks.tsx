@@ -76,7 +76,7 @@ function PickVideoCard({
   return (
     <div
       ref={containerRef}
-      className="group relative w-[260px] aspect-[9/16] flex-shrink-0 snap-start rounded-2xl overflow-hidden bg-black border border-border/20"
+      className="group relative w-[200px] aspect-[9/16] flex-shrink-0 snap-start rounded-2xl overflow-hidden bg-black border border-border/20"
     >
       {/* Media */}
       {hasVideo ? (
