@@ -8826,6 +8826,15 @@ export type Database = {
           xp_awarded: number
         }[]
       }
+      award_daily_collabs: {
+        Args: never
+        Returns: {
+          idx: number
+          place: number
+          slot_id: string
+          xp: number
+        }[]
+      }
       award_judge_xp: {
         Args: {
           p_action: string
