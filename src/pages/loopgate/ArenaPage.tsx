@@ -37,6 +37,7 @@ import { toast } from "sonner";
 import EmailNotificationSettings from "@/components/loopgate/EmailNotificationSettings";
 import LiveWinnersTicker from "@/components/loopgate/LiveWinnersTicker";
 import ArenaCompetitionsSection from "@/components/loopgate/ArenaCompetitionsSection";
+import ArenaCollabsSection from "@/components/loopgate/ArenaCollabsSection";
 import { startQuickMatch } from "@/lib/startQuickMatch";
 import CashBattlesSection from "@/components/loopgate/CashBattlesSection";
 import CustomLobbyTypeModal from "@/components/loopgate/CustomLobbyTypeModal";
