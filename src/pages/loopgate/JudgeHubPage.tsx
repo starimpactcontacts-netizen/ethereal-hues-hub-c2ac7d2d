@@ -400,7 +400,7 @@ export default function JudgeHubPage() {
       </div>
 
       {/* ═══════════ QUICK ACTIONS ═══════════ */}
-      <div className="px-4 pb-5">
+      <div className="px-4 pt-5 pb-4">
         <div className="flex gap-2">
           {(isJudge || isDev) && (
             <motion.button
@@ -416,7 +416,7 @@ export default function JudgeHubPage() {
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={handleQuickSubmit}
-            className={`${(isJudge || isDev) ? '' : 'flex-1'} py-3.5 px-5 bg-red-600 text-white text-[14px] font-semibold rounded-xl flex items-center justify-center gap-2 hover:bg-red-500 transition-colors`}
+            className={`${(isJudge || isDev) ? '' : 'flex-1'} py-3.5 px-5 bg-zinc-900 border border-zinc-800 text-white text-[14px] font-semibold rounded-xl flex items-center justify-center gap-2 hover:bg-zinc-800 transition-colors`}
             style={{ letterSpacing: '-0.01em' }}
           >
             <Send size={14} />
@@ -428,35 +428,15 @@ export default function JudgeHubPage() {
       {/* Trial Judge Banner */}
       {isTrialJudge && <TrialJudgeBanner />}
 
-      {/* Daily Spotlight */}
-      <JudgeSpotlight />
-
-      {/* Featured Judge */}
-      <FeaturedJudgeHero />
-
-      {/* Rankings */}
-      <div className="px-4 pb-4">
-        <JudgeLeaderboardCard limit={5} />
-      </div>
-
-      {/* Live Wire */}
-      <div className="border-t border-zinc-800">
-        <div className="px-4 pt-4 pb-2 flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-          <span className="text-[13px] text-zinc-300 font-semibold" style={{ letterSpacing: '-0.01em' }}>Recent Verdicts</span>
-        </div>
-        <JudgeReviewsFeed />
-      </div>
-
       {/* ═══════════ ROSTER ═══════════ */}
-      <div className="border-t border-zinc-800 pt-5">
+      <div className="pt-2">
         <div className="px-4 mb-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-[20px] font-bold text-white" style={{ letterSpacing: '-0.02em' }}>
-              Official Roster
+              Roster
             </h2>
             <span className="text-[13px] text-zinc-500 font-medium tabular-nums">
-              {filteredJudges.length} judges
+              {filteredJudges.length}
             </span>
           </div>
 
@@ -476,7 +456,7 @@ export default function JudgeHubPage() {
         <div>
           {loading ? (
             <div className="flex items-center justify-center py-16">
-              <div className="w-6 h-6 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-zinc-600 border-t-transparent rounded-full animate-spin" />
             </div>
           ) : filteredJudges.length === 0 ? (
             <div className="text-center py-16 px-4">
@@ -487,7 +467,7 @@ export default function JudgeHubPage() {
                 No judges found
               </p>
               <p className="text-[13px] text-zinc-500">
-                {searchQuery ? 'Try a different search' : 'The Bureau is assembling'}
+                {searchQuery ? 'Try a different search' : 'Roster is assembling'}
               </p>
             </div>
           ) : (
@@ -520,10 +500,10 @@ export default function JudgeHubPage() {
               <Gavel size={20} className="text-zinc-400" />
             </div>
             <h3 className="text-[17px] font-semibold text-white mb-1" style={{ letterSpacing: '-0.02em' }}>
-              Join the Bureau
+              Become a Judge
             </h3>
             <p className="text-[13px] text-zinc-400 mb-4 max-w-[260px] mx-auto leading-relaxed">
-              Apply to become an official QOI authority. Rate, rank, and shape the standard.
+              Apply to rate, rank, and shape the standard of editing.
             </p>
             <Link
               to="/judges/apply"
