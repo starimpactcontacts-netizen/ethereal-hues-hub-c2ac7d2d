@@ -1139,6 +1139,40 @@ export default function ArenaPage() {
                 </button>
               </motion.div>
 
+              {/* COLLABS — duo edit mode */}
+              <motion.button
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.08 }}
+                onClick={() => navigate('/collabs')}
+                className="relative overflow-hidden rounded-2xl p-[1px] transition-all active:scale-[0.99] text-left w-full"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(168,85,247,0.6) 0%, rgba(255,255,255,0.06) 50%, rgba(124,58,237,0.5) 100%)',
+                  boxShadow: '0 14px 32px -16px rgba(168,85,247,0.5)',
+                }}
+              >
+                <div
+                  className="relative rounded-[14px] p-3.5 flex items-center gap-3 overflow-hidden"
+                  style={{ background: 'linear-gradient(160deg, hsl(0 0% 11%) 0%, hsl(0 0% 7%) 100%)' }}
+                >
+                  <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+                  <div
+                    className="w-11 h-11 rounded-2xl flex items-center justify-center border border-white/10 shrink-0"
+                    style={{ background: 'linear-gradient(135deg, rgba(168,85,247,0.3), rgba(124,58,237,0.2))' }}
+                  >
+                    <UserRound className="w-5 h-5 text-violet-300" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-[15px] font-black text-foreground tracking-tight" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>COLLABS</p>
+                      <span className="text-[8px] font-black tracking-widest uppercase px-1.5 py-0.5 rounded-full bg-violet-500 text-white">NEW</span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground leading-tight">2 editors · split a track · top 3 daily win 7× rewards</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-violet-300/70 shrink-0" />
+                </div>
+              </motion.button>
+
               {/* Active Battles — countdown + forfeit */}
               {(() => {
                 const reminderItems: LiveBattleReminderItem[] = [
