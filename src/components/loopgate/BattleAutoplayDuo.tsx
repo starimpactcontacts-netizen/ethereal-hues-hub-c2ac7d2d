@@ -51,11 +51,21 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
   const [activeIdx, setActiveIdx] = useState(initial.idx);
   const [secondsLeft, setSecondsLeft] = useState(initial.left);
   const tickEnabled = !paused;
+  const mountedPausedRef = useRef(paused);
 
   const redVideoRef = useRef<HTMLVideoElement>(null);
   const blueVideoRef = useRef<HTMLVideoElement>(null);
   const redPanelRef = useRef<HTMLDivElement>(null);
   const bluePanelRef = useRef<HTMLDivElement>(null);
+
+  // If the battle mounted behind the 3-2-1 overlay, start the filmed showcase from RED at 15s.
+  useEffect(() => {
+    if (!mountedPausedRef.current || paused) return;
+    mountedPausedRef.current = false;
+    startMsRef.current = Date.now();
+    setActiveIdx(0);
+    setSecondsLeft(PER_EDIT_SECONDS);
+  }, [paused]);
 
   // Tick immediately instead of waiting for both videos to fully buffer.
   useEffect(() => {
