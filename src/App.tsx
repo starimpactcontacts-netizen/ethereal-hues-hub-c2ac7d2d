@@ -38,6 +38,9 @@ const IndexPage = lazy(() => import("./pages/loopgate/IndexPage"));
 const ArenasPage = lazy(() => import("./pages/loopgate/ArenasPage"));
 const ArenaPage = lazy(() => import("./pages/loopgate/ArenaPage"));
 const ArenaChatPage = lazy(() => import("./pages/loopgate/ArenaChatPage"));
+const CollabsPage = lazy(() => import("./pages/loopgate/CollabsPage"));
+const CreateCollabPage = lazy(() => import("./pages/loopgate/CreateCollabPage"));
+const CollabDetailPage = lazy(() => import("./pages/loopgate/CollabDetailPage"));
 const CrewsPage = lazy(() => import("./pages/loopgate/CrewsPage"));
 const CreateCrewPage = lazy(() => import("./pages/loopgate/CreateCrewPage"));
 const CrewDetailPage = lazy(() => import("./pages/loopgate/CrewDetailPage"));
@@ -335,6 +338,9 @@ export default function App() {
               <Route path="/index" element={<IndexPage />} />
               <Route path="/arenas" element={<ArenasPage />} />
               <Route path="/arena" element={<ArenaPage />} />
+              <Route path="/collabs" element={<CollabsPage />} />
+              <Route path="/collabs/create" element={<CreateCollabPage />} />
+              <Route path="/collab/:id" element={<CollabDetailPage />} />
               <Route path="/competitions" element={<CompetitionsListPage />} />
               <Route path="/competition/create" element={<CreateCompetitionPage />} />
               <Route path="/sanctioned/:id" element={<SanctionedTournamentPage />} />
