@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, User, HelpCircle, FileText, Home, Trophy, Shield, Search, Calendar, Building2, ShoppingBag, BookOpen, Gavel, Crown, Clapperboard, ChevronRight, Sparkles } from 'lucide-react';
+import { Menu, X, LogOut, User, HelpCircle, FileText, Home, Trophy, Shield, Search, Calendar, Building2, ShoppingBag, BookOpen, Gavel, Crown, Clapperboard, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { supabase } from '@/integrations/supabase/client';
@@ -234,25 +234,21 @@ export default function AppHeader() {
                     );
                   })}
 
-                  {/* The Bureau — premium card */}
+                  {/* Judges Place */}
                   <div className="mt-4 mx-2">
                     <SheetClose asChild>
                       <Link
                         to="/judges"
-                        className="group relative flex items-center gap-3 p-3 rounded-2xl bg-gradient-to-br from-red-950/40 to-red-950/10 border border-red-900/30 hover:border-red-700/50 transition-all overflow-hidden"
+                        className="group flex items-center gap-3 p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] hover:border-white/[0.1] transition-all"
                       >
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-red-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                        <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-red-950/60 border border-red-800/40">
-                          <Gavel className="w-[18px] h-[18px] text-red-400" />
+                        <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+                          <Gavel className="w-[18px] h-[18px] text-muted-foreground" />
                         </div>
-                        <div className="relative flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <p className="font-display text-sm text-white">The Bureau</p>
-                            <Sparkles className="w-3 h-3 text-red-400/80" />
-                          </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-display text-sm text-foreground">Judges Place</p>
                           <p className="text-[10px] text-muted-foreground truncate">Elite feedback on your edits</p>
                         </div>
-                        <ChevronRight className="relative w-4 h-4 text-zinc-500 group-hover:text-white transition-colors" />
+                        <ChevronRight className="w-4 h-4 text-muted-foreground/60 group-hover:text-foreground transition-colors" />
                       </Link>
                     </SheetClose>
                   </div>
