@@ -3,6 +3,7 @@ import { useBattleAudioUnlock } from "@/hooks/useBattleAudioUnlock";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
+const PRELOAD_LEAD_SECONDS = 2.5; // start fetching the inactive side this many seconds before swap
 
 type Side = {
   userId: string;
@@ -57,6 +58,10 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
   const blueVideoRef = useRef<HTMLVideoElement>(null);
   const redPanelRef = useRef<HTMLDivElement>(null);
   const bluePanelRef = useRef<HTMLDivElement>(null);
+  const [redPoster, setRedPoster] = useState<string | null>(null);
+  const [bluePoster, setBluePoster] = useState<string | null>(null);
+  const [redStarted, setRedStarted] = useState(false);
+  const [blueStarted, setBlueStarted] = useState(false);
 
   // If the battle mounted behind the 3-2-1 overlay, start the filmed showcase from RED at 15s.
   useEffect(() => {
@@ -80,16 +85,23 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
     return () => clearInterval(id);
   }, [compute, tickEnabled]);
 
-  // Preload both videos once. Do not call load() during side switches — that was rebuffering and stuttering.
+  // Serial preload: only the active side opens a connection. Inactive side waits until
+  // ~2.5s before its turn so its first frames are warm by swap time. This prevents two
+  // streams from fighting for mobile bandwidth.
   useEffect(() => {
-    [redVideoRef.current, blueVideoRef.current].forEach((v) => {
+    const refs = [redVideoRef.current, blueVideoRef.current];
+    refs.forEach((v, i) => {
       if (!v) return;
-      v.muted = true;
-      v.defaultMuted = false;
-      v.preload = "auto";
-      v.load();
+      const isActive = i === activeIdx;
+      // Wake the inactive side when we're close to the swap.
+      const shouldWarm = !isActive && secondsLeft <= PRELOAD_LEAD_SECONDS;
+      const desired = isActive || shouldWarm ? "auto" : "none";
+      if (v.preload !== desired) {
+        v.preload = desired;
+        if (desired === "auto") v.load();
+      }
     });
-  }, [red.url, blue.url]);
+  }, [activeIdx, secondsLeft, red.url, blue.url]);
 
   // Drive playback without seeking/resetting; seeking on mobile was causing black frames and stutter.
   useEffect(() => {
@@ -135,6 +147,10 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
         secondsLeft={secondsLeft}
         onReady={() => setRedReady(true)}
         loading={!redReady}
+        poster={redPoster}
+        onPoster={setRedPoster}
+        started={redStarted}
+        onStarted={() => setRedStarted(true)}
       />
       </div>
 
@@ -176,6 +192,10 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
         secondsLeft={secondsLeft}
         onReady={() => setBlueReady(true)}
         loading={!blueReady}
+        poster={bluePoster}
+        onPoster={setBluePoster}
+        started={blueStarted}
+        onStarted={() => setBlueStarted(true)}
       />
       </div>
 
@@ -196,6 +216,10 @@ function SidePanel({
   secondsLeft,
   onReady,
   loading,
+  poster,
+  onPoster,
+  started,
+  onStarted,
 }: {
   side: Side;
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -205,11 +229,38 @@ function SidePanel({
   secondsLeft: number;
   onReady: () => void;
   loading: boolean;
+  poster: string | null;
+  onPoster: (dataUrl: string) => void;
+  started: boolean;
+  onStarted: () => void;
 }) {
   const isVid = isVideo(side.url);
   const accent = side.color === "red" ? "bg-red-500" : "bg-blue-500";
   const accentText = side.color === "red" ? "text-red-400" : "text-blue-400";
   const ring = side.color === "red" ? "ring-red-500/60" : "ring-blue-500/60";
+
+  // Capture first frame to use as instant poster — eliminates the "black freeze" flash.
+  const handleLoadedData = () => {
+    onReady();
+    const v = videoRef.current;
+    if (!v || poster) return;
+    try {
+      const canvas = document.createElement("canvas");
+      const w = v.videoWidth;
+      const h = v.videoHeight;
+      if (!w || !h) return;
+      const max = 480;
+      const scale = Math.min(1, max / Math.max(w, h));
+      canvas.width = Math.round(w * scale);
+      canvas.height = Math.round(h * scale);
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
+      onPoster(canvas.toDataURL("image/jpeg", 0.6));
+    } catch {
+      /* tainted canvas — skip */
+    }
+  };
 
   return (
     <div
@@ -223,24 +274,33 @@ function SidePanel({
           : undefined,
       }}
     >
+      {isVid && poster && (
+        <img
+          src={poster}
+          alt=""
+          aria-hidden
+          className={`absolute inset-0 w-full h-full object-contain bg-black pointer-events-none transition-opacity duration-200 ${started && active ? "opacity-0" : "opacity-100"}`}
+        />
+      )}
       {isVid ? (
         <video
           ref={videoRef}
           src={side.url}
-          className="w-full h-full object-contain"
+          className={`relative w-full h-full object-contain transition-opacity duration-200 ${poster && !started ? "opacity-0" : "opacity-100"}`}
           playsInline
           webkit-playsinline="true"
           x-webkit-airplay="deny"
           disableRemotePlayback
           loop
-          preload="auto"
+          preload="none"
           disablePictureInPicture
           controls={false}
           onLoadStart={onReady}
           onLoadedMetadata={onReady}
-          onLoadedData={onReady}
+          onLoadedData={handleLoadedData}
           onCanPlay={onReady}
           onCanPlayThrough={onReady}
+          onPlaying={onStarted}
         />
       ) : (
         <img
@@ -254,7 +314,7 @@ function SidePanel({
       )}
 
       {/* Only show a spinner before metadata exists; playback starts as soon as the browser can decode. */}
-      {loading && active && (
+      {loading && active && !poster && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/30">
           <div className={`w-8 h-8 rounded-full border-2 ${side.color === 'red' ? 'border-red-500/40 border-t-red-500' : 'border-blue-500/40 border-t-blue-500'} animate-spin`} />
         </div>
