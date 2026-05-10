@@ -1,21 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ArrowLeft, Send, AlertTriangle, ChevronRight, Gavel, Star, TrendingUp } from 'lucide-react';
-import { AuthorityGavel, ScopeTarget, NexusStar, ArrowLink } from '@/components/loopgate/LoopgateIcons';
+import { Search, ArrowLeft, Send, AlertTriangle, ChevronRight, Gavel } from 'lucide-react';
+import { AuthorityGavel } from '@/components/loopgate/LoopgateIcons';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { Input } from '@/components/ui/input';
 import VerifiedBadge from '@/components/loopgate/VerifiedBadge';
-import FeaturedJudgeHero from '@/components/loopgate/FeaturedJudgeHero';
 import BottomNav from '@/components/loopgate/BottomNav';
 import RequestJudgeReviewModal from '@/components/loopgate/RequestJudgeReviewModal';
-import JudgeReviewsFeed from '@/components/loopgate/JudgeReviewsFeed';
-import JudgeLeaderboardCard from '@/components/loopgate/JudgeLeaderboardCard';
 import JudgeLevelBadge from '@/components/loopgate/JudgeLevelBadge';
-import JudgeSpotlight from '@/components/loopgate/JudgeSpotlight';
-import JudgeDivisionBadge, { getDivisionFromJxp } from '@/components/loopgate/JudgeDivisionBadge';
 
 interface JudgeProfile {
   id: string;
