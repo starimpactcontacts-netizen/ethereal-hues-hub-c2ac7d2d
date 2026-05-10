@@ -16,7 +16,6 @@ import JudgeLeaderboardCard from '@/components/loopgate/JudgeLeaderboardCard';
 import JudgeLevelBadge from '@/components/loopgate/JudgeLevelBadge';
 import JudgeSpotlight from '@/components/loopgate/JudgeSpotlight';
 import JudgeDivisionBadge, { getDivisionFromJxp } from '@/components/loopgate/JudgeDivisionBadge';
-import JudgeDivisionsSection from '@/components/loopgate/JudgeDivisionsSection';
 
 interface JudgeProfile {
   id: string;
@@ -467,9 +466,6 @@ export default function JudgeHubPage() {
         </div>
         <JudgeReviewsFeed />
       </div>
-
-      {/* Divisions */}
-      <JudgeDivisionsSection />
 
       {/* ═══════════ ROSTER ═══════════ */}
       <div className="border-t border-zinc-800 pt-5">
