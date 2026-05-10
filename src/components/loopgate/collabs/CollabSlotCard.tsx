@@ -105,11 +105,11 @@ export default function CollabSlotCard({ slot, rank }: { slot: CollabSlot; rank?
 
         {/* Segment briefs */}
         <div className="grid grid-cols-2 gap-2 text-[10px]">
-          <div className="rounded-lg bg-white/[0.03] border border-white/5 p-2">
+          <div className="rounded-lg bg-violet-500/[0.08] border border-violet-400/15 p-2 backdrop-blur-sm">
             <p className="text-[8px] uppercase tracking-widest text-violet-300 font-bold mb-0.5">Half 1</p>
             <p className="text-foreground/80 line-clamp-2">{slot.creator_segment}</p>
           </div>
-          <div className="rounded-lg bg-white/[0.03] border border-white/5 p-2">
+          <div className="rounded-lg bg-violet-500/[0.08] border border-violet-400/15 p-2 backdrop-blur-sm">
             <p className="text-[8px] uppercase tracking-widest text-violet-300 font-bold mb-0.5">Half 2</p>
             <p className="text-foreground/80 line-clamp-2">{slot.partner_segment}</p>
           </div>
@@ -117,7 +117,7 @@ export default function CollabSlotCard({ slot, rank }: { slot: CollabSlot; rank?
 
         {/* Footer reactions */}
         {slot.status === "live" && (
-          <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
+          <div className="flex items-center justify-between mt-3 pt-3 border-t border-violet-400/15">
             <span className="text-[10px] text-muted-foreground flex items-center gap-1">
               <Flame className="w-3 h-3 text-orange-400" />
               {slot.total_reactions > 0 ? `${slot.reaction_score} fire score` : "Be the first to react"}
@@ -126,7 +126,7 @@ export default function CollabSlotCard({ slot, rank }: { slot: CollabSlot; rank?
           </div>
         )}
         {slot.status === "open" && (
-          <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
+          <div className="flex items-center justify-between mt-3 pt-3 border-t border-violet-400/15">
             <span className="text-[10px] text-muted-foreground">Looking for a partner</span>
             <span className="text-[10px] font-bold text-violet-300 uppercase tracking-wider">Join →</span>
           </div>
