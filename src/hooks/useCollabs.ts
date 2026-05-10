@@ -28,6 +28,7 @@ export interface CollabSlot {
   partner_segment: string;
   status: CollabStatus;
   final_video_url: string | null;
+  social_url: string | null;
   uploaded_by: string | null;
   creator_approved: boolean;
   partner_approved: boolean;
@@ -257,12 +258,20 @@ export async function joinCollabSlot(slotId: string) {
   return data as CollabSlot;
 }
 
-export async function uploadCollabVideo(slotId: string, videoUrl: string) {
+export async function uploadCollabVideo(
+  slotId: string,
+  videoUrl: string,
+  socialUrl?: string | null
+) {
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) throw new Error("Not authenticated");
   const { error } = await supabase
     .from("collab_slots")
-    .update({ final_video_url: videoUrl, uploaded_by: auth.user.id })
+    .update({
+      final_video_url: videoUrl,
+      social_url: socialUrl ?? null,
+      uploaded_by: auth.user.id,
+    })
     .eq("id", slotId);
   if (error) throw error;
 }

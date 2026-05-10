@@ -1529,6 +1529,7 @@ export type Database = {
           partner_segment: string
           partner_username: string | null
           reaction_score: number
+          social_url: string | null
           song_artist: string | null
           song_title: string
           song_url: string | null
@@ -1556,6 +1557,7 @@ export type Database = {
           partner_segment: string
           partner_username?: string | null
           reaction_score?: number
+          social_url?: string | null
           song_artist?: string | null
           song_title: string
           song_url?: string | null
@@ -1583,6 +1585,7 @@ export type Database = {
           partner_segment?: string
           partner_username?: string | null
           reaction_score?: number
+          social_url?: string | null
           song_artist?: string | null
           song_title?: string
           song_url?: string | null
