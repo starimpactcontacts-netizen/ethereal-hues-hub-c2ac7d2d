@@ -179,6 +179,9 @@ function MissionTile({ m, formatMoney }: { m: Mission; formatMoney: (n: number) 
     : (budget > 0 ? Math.min(100, (spent / budget) * 100) : 0);
   const showProgress = isPostsCap ? maxPosts > 0 : budget > 0;
   const isPaused = m.status === 'paused';
+  const deadlinePassed = m.deadline ? new Date(m.deadline).getTime() < Date.now() : false;
+  const capReached = isPostsCap ? (maxPosts > 0 && approved >= maxPosts) : (budget > 0 && spent >= budget);
+  const isEnded = deadlinePassed || capReached || m.status === 'ended' || m.status === 'closed';
   const payoutLabel = m.payout_display_override
     ? m.payout_display_override
     : `$${(m.base_payout_cents / 100).toFixed(2)}`;
@@ -195,7 +198,7 @@ function MissionTile({ m, formatMoney }: { m: Mission; formatMoney: (n: number) 
     >
       {/* Cover fills entire tile */}
       {m.cover_image_url ? (
-        <img src={m.cover_image_url} alt={m.title} className="absolute inset-0 w-full h-full object-cover" />
+        <img src={m.cover_image_url} alt={m.title} className={`absolute inset-0 w-full h-full object-cover ${isEnded ? 'grayscale opacity-50' : ''}`} />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#2c2c2e] to-[#1c1c1e]">
           <DollarSign className="w-10 h-10 text-[#48484A]" />
@@ -209,12 +212,16 @@ function MissionTile({ m, formatMoney }: { m: Mission; formatMoney: (n: number) 
         style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.2) 45%, rgba(0,0,0,0.92) 100%)' }}
       />
 
+      {isEnded && (
+        <div aria-hidden className="absolute inset-0 pointer-events-none bg-black/45" />
+      )}
+
       {/* Top-left payout pill — chunky Roblox style */}
       <div
         className="absolute top-2 left-2 px-2 py-1 rounded-md flex items-center gap-0.5 font-teko text-[15px] font-bold leading-none tabular-nums tracking-wider"
         style={{
-          background: '#30D158',
-          color: '#000',
+          background: isEnded ? '#3a3a3c' : '#30D158',
+          color: isEnded ? '#9a9a9e' : '#000',
           boxShadow: '0 2px 0 0 rgba(0,0,0,0.4), 0 0 0 1.5px rgba(0,0,0,0.3)',
         }}
       >
@@ -222,7 +229,12 @@ function MissionTile({ m, formatMoney }: { m: Mission; formatMoney: (n: number) 
         {payoutLabel.replace(/^\$/, '')}
       </div>
 
-      {isPaused && (
+      {isEnded ? (
+        <div className="absolute top-2 right-2 px-2 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider"
+          style={{ background: 'rgba(0,0,0,0.75)', color: '#9a9a9e', border: '1px solid rgba(255,255,255,0.15)' }}>
+          Ended
+        </div>
+      ) : isPaused && (
         <div className="absolute top-2 right-2 px-2 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider"
           style={{ background: 'rgba(0,0,0,0.65)', color: '#FFD60A' }}>
           Paused
@@ -231,7 +243,7 @@ function MissionTile({ m, formatMoney }: { m: Mission; formatMoney: (n: number) 
 
       {/* Bottom content */}
       <div className="absolute inset-x-0 bottom-0 p-2.5">
-        <h3 className="font-teko text-[18px] font-bold text-white tracking-[0.02em] uppercase line-clamp-2 leading-[1]">
+        <h3 className={`font-teko text-[18px] font-bold tracking-[0.02em] uppercase line-clamp-2 leading-[1] ${isEnded ? 'text-white/55' : 'text-white'}`}>
           {m.title}
         </h3>
         <div className="mt-1.5">
@@ -244,8 +256,8 @@ function MissionTile({ m, formatMoney }: { m: Mission; formatMoney: (n: number) 
                 className="h-full rounded-full transition-all"
                 style={{
                   width: `${pct}%`,
-                  background: '#30D158',
-                  boxShadow: '0 0 6px rgba(48,209,88,0.5)',
+                  background: isEnded ? '#6b6b70' : '#30D158',
+                  boxShadow: isEnded ? 'none' : '0 0 6px rgba(48,209,88,0.5)',
                 }}
               />
             </div>
