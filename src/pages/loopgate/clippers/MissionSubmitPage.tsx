@@ -185,14 +185,16 @@ export default function MissionSubmitPage() {
     if (!id) return;
     let cancelled = false;
     (async () => {
-      const [approvedRes, pendingRes] = await Promise.all([
+      const [approvedRes, pendingRes, totalRes] = await Promise.all([
         supabase.from('mission_submissions').select('id', { count: 'exact', head: true }).eq('mission_id', id).eq('status', 'approved'),
         supabase.from('mission_submissions').select('id', { count: 'exact', head: true }).eq('mission_id', id).eq('status', 'pending'),
+        supabase.from('mission_submissions').select('id', { count: 'exact', head: true }).eq('mission_id', id),
       ]);
       if (!cancelled) {
         setMissionCounts({
           approved: approvedRes.count || 0,
           pending: pendingRes.count || 0,
+          total: totalRes.count || 0,
         });
       }
     })();
