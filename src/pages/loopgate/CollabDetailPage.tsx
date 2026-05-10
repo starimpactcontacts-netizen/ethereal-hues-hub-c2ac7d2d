@@ -13,6 +13,10 @@ import {
   Link2,
   ExternalLink,
   X,
+  Share2,
+  Info,
+  Trophy,
+  Sparkles,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -121,39 +125,168 @@ export default function CollabDetailPage() {
 
   const youApproved = isCreator ? slot.creator_approved : isPartner ? slot.partner_approved : false;
 
+  const statusLabel = slot.status.replace("_", " ").toUpperCase();
+  const statusTone =
+    slot.status === "live"
+      ? "text-emerald-300"
+      : slot.status === "pending_approval"
+      ? "text-amber-300"
+      : slot.status === "open"
+      ? "text-sky-300"
+      : "text-violet-300";
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) await navigator.share({ url, title: `${slot.creator_username} × ${slot.partner_username ?? "???"}` });
+      else {
+        await navigator.clipboard.writeText(url);
+        toast.success("Link copied");
+      }
+    } catch {}
+  };
+
+  // ── Speed-Draw style HUD pill (used on left + right rails) ──────────
+  const RailButton = ({
+    color,
+    icon: Icon,
+    label,
+    onClick,
+    badge,
+  }: {
+    color: string;
+    icon: any;
+    label: string;
+    onClick?: () => void;
+    badge?: string | number;
+  }) => (
+    <button
+      onClick={onClick}
+      title={label}
+      className="relative w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center shadow-[0_4px_0_rgba(0,0,0,0.45),0_8px_20px_rgba(0,0,0,0.5)] active:translate-y-[2px] active:shadow-[0_2px_0_rgba(0,0,0,0.45)] transition-all"
+      style={{ background: color }}
+    >
+      <Icon className="w-5 h-5 md:w-6 md:h-6 text-white drop-shadow-[0_1px_0_rgba(0,0,0,0.4)]" strokeWidth={2.5} />
+      {badge !== undefined && (
+        <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-black text-white text-[10px] font-black flex items-center justify-center border border-white/20">
+          {badge}
+        </span>
+      )}
+    </button>
+  );
+
+  const ChipPill = ({ icon: Icon, value, color }: { icon: any; value: string | number; color: string }) => (
+    <div
+      className="flex items-center gap-1.5 pl-1 pr-3 py-1 rounded-full bg-white shadow-[0_3px_0_rgba(0,0,0,0.4),0_6px_14px_rgba(0,0,0,0.4)]"
+    >
+      <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: color }}>
+        <Icon className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+      </span>
+      <span className="text-[13px] font-black text-black tabular-nums" style={{ fontFamily: "Teko, sans-serif" }}>
+        {value}
+      </span>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-black text-white pb-32">
-      <div className="sticky top-0 z-30 bg-black/95 backdrop-blur-xl border-b border-white/5 px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate("/collabs")} className="-ml-2 p-2 rounded-full active:bg-white/10">
-          <ChevronLeft className="w-5 h-5" />
+    <div className="min-h-screen bg-gradient-to-b from-[#1a0b2e] via-[#0f0820] to-black text-white pb-32 relative overflow-hidden">
+      {/* Soft stage glow background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[140%] h-[420px] rounded-full bg-violet-600/20 blur-3xl" />
+        <div className="absolute top-1/3 -left-20 w-[280px] h-[280px] rounded-full bg-fuchsia-500/15 blur-3xl" />
+        <div className="absolute top-1/2 -right-20 w-[260px] h-[260px] rounded-full bg-sky-500/15 blur-3xl" />
+      </div>
+
+      {/* ═══ Top floating HUD banner — Speed Draw style ═══ */}
+      <div className="relative z-30 px-3 pt-3 flex items-center gap-2">
+        <button
+          onClick={() => navigate("/collabs")}
+          className="w-11 h-11 rounded-2xl bg-black/80 border border-white/10 flex items-center justify-center shadow-[0_3px_0_rgba(0,0,0,0.6)] active:translate-y-[2px]"
+        >
+          <ChevronLeft className="w-5 h-5 text-white" strokeWidth={2.5} />
         </button>
-        <div className="flex-1 min-w-0">
-          <h1
-            className="text-xl font-black tracking-tight uppercase leading-none truncate"
-            style={{ fontFamily: "Teko, Inter, system-ui, sans-serif" }}
-          >
-            {slot.creator_username} × {slot.partner_username ?? "???"}
-          </h1>
-          <p className="text-[11px] text-violet-300 uppercase tracking-widest">{slot.status.replace("_", " ")}</p>
+
+        {/* The big banner */}
+        <div className="flex-1 relative">
+          <div className="relative bg-white rounded-2xl px-3 py-2 flex items-center gap-3 shadow-[0_4px_0_rgba(0,0,0,0.5),0_10px_24px_rgba(0,0,0,0.5)]">
+            <div className="flex-1 min-w-0">
+              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-black/50 leading-none">Theme:</p>
+              <p
+                className="text-[18px] font-black text-violet-600 leading-tight truncate"
+                style={{ fontFamily: "Teko, sans-serif" }}
+              >
+                {slot.song_title}
+              </p>
+            </div>
+
+            {/* Center pill — status */}
+            <div className={`px-3 py-2 rounded-xl bg-gradient-to-b from-violet-500 to-violet-700 shadow-[0_3px_0_rgba(0,0,0,0.4)] ${statusTone}`}>
+              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-white/80 leading-none">Status</p>
+              <p className="text-[13px] font-black text-white leading-tight" style={{ fontFamily: "Teko, sans-serif" }}>
+                {statusLabel}
+              </p>
+            </div>
+
+            <div className="text-right">
+              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-black/50 leading-none">Length:</p>
+              <p className="text-[18px] font-black text-sky-600 leading-tight tabular-nums" style={{ fontFamily: "Teko, sans-serif" }}>
+                {String(Math.floor(slot.total_duration_seconds / 60)).padStart(2, "0")}:
+                {String(slot.total_duration_seconds % 60).padStart(2, "0")}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="px-4 pt-4 space-y-4 max-w-2xl mx-auto">
+      {/* ═══ Editor pair sub-banner ═══ */}
+      <div className="relative z-20 px-3 mt-2">
+        <p
+          className="text-center text-[20px] font-black uppercase tracking-tight text-white drop-shadow-[0_2px_0_rgba(0,0,0,0.6)]"
+          style={{ fontFamily: "Teko, sans-serif" }}
+        >
+          {slot.creator_username} <span className="text-fuchsia-400">×</span> {slot.partner_username ?? "???"}
+        </p>
+      </div>
+
+      {/* ═══ Left rail — score chips ═══ */}
+      <div className="absolute z-20 left-2 top-32 flex flex-col gap-2">
+        <ChipPill icon={Flame} value={slot.reaction_score ?? 0} color="#f59e0b" />
+        <ChipPill icon={Sparkles} value={slot.total_reactions ?? 0} color="#ef4444" />
+      </div>
+
+      {/* ═══ Right rail — chunky action buttons ═══ */}
+      <div className="absolute z-20 right-2 top-32 flex flex-col gap-2.5">
+        <RailButton color="linear-gradient(180deg,#22c55e,#16a34a)" icon={Music} label="Song" onClick={() => toast(slot.song_title + (slot.song_artist ? ` — ${slot.song_artist}` : ""))} />
+        <RailButton color="linear-gradient(180deg,#f59e0b,#d97706)" icon={Share2} label="Share" onClick={handleShare} />
+        <RailButton
+          color="linear-gradient(180deg,#a855f7,#7c3aed)"
+          icon={Trophy}
+          label="Daily prizes"
+          onClick={() => toast("Top 3 collabs at midnight UTC win 7× XP + 7× Index 🏆")}
+        />
+        <RailButton
+          color="linear-gradient(180deg,#0ea5e9,#0284c7)"
+          icon={Info}
+          label="Brief"
+          onClick={() =>
+            toast(`${slot.creator_username}: ${slot.creator_segment}\n${slot.partner_username ?? "Partner"}: ${slot.partner_segment}`)
+          }
+        />
+      </div>
+
+      {/* ═══ Center stage ═══ */}
+      <div className="relative z-10 px-16 sm:px-20 md:px-24 pt-4 max-w-3xl mx-auto space-y-3">
         {/* Brief card */}
-        <div className="rounded-2xl p-4 border border-white/5 bg-white/[0.03]">
-          <div className="flex items-center gap-2 mb-2">
-            <Music className="w-4 h-4 text-violet-300" />
-            <p className="text-[14px] font-bold">{slot.song_title}{slot.song_artist ? ` — ${slot.song_artist}` : ""}</p>
-          </div>
-          <p className="text-[11px] text-white/50 flex items-center gap-1 mb-3">
+        <div className="rounded-3xl p-4 border-2 border-white/10 bg-white/[0.04] backdrop-blur-md shadow-[0_6px_0_rgba(0,0,0,0.4)]">
+          <p className="text-[11px] text-white/60 flex items-center gap-1 mb-3">
             <Clock className="w-3 h-3" /> {slot.total_duration_seconds}s total — {half}s each
           </p>
           <div className="grid grid-cols-2 gap-2 text-[11px]">
-            <div className="rounded-lg bg-violet-500/10 border border-violet-400/20 p-2.5">
+            <div className="rounded-2xl bg-violet-500/15 border-2 border-violet-400/30 p-2.5">
               <p className="text-[9px] uppercase tracking-widest text-violet-300 font-bold mb-1">{slot.creator_username} · 0–{half}s</p>
               <p className="text-foreground/80">{slot.creator_segment}</p>
             </div>
-            <div className="rounded-lg bg-violet-500/10 border border-violet-400/20 p-2.5">
+            <div className="rounded-2xl bg-fuchsia-500/15 border-2 border-fuchsia-400/30 p-2.5">
               <p className="text-[9px] uppercase tracking-widest text-violet-300 font-bold mb-1">{slot.partner_username ?? "Partner"} · {half}–{slot.total_duration_seconds}s</p>
               <p className="text-foreground/80">{slot.partner_segment}</p>
             </div>
@@ -165,7 +298,7 @@ export default function CollabDetailPage() {
           <button
             onClick={handleJoin}
             disabled={busy}
-            className="w-full py-3.5 rounded-2xl bg-violet-500 text-white text-[13px] font-black uppercase tracking-widest active:scale-[0.98] disabled:opacity-50"
+            className="w-full py-4 rounded-2xl bg-gradient-to-b from-violet-500 to-violet-700 text-white text-[15px] font-black uppercase tracking-widest shadow-[0_5px_0_rgba(0,0,0,0.5),0_12px_24px_rgba(124,58,237,0.5)] active:translate-y-[3px] active:shadow-[0_2px_0_rgba(0,0,0,0.5)] disabled:opacity-50"
           >
             {busy ? "Joining…" : "Join This Collab"}
           </button>
@@ -271,7 +404,7 @@ export default function CollabDetailPage() {
         {/* LIVE — video + reactions */}
         {slot.status === "live" && slot.final_video_url && (
           <>
-            <div className="rounded-2xl overflow-hidden border border-white/5 bg-black">
+            <div className="rounded-3xl overflow-hidden border-2 border-white/15 bg-black shadow-[0_8px_0_rgba(0,0,0,0.5),0_16px_40px_rgba(168,85,247,0.3)]">
               <video
                 src={slot.final_video_url}
                 controls
@@ -292,7 +425,7 @@ export default function CollabDetailPage() {
               )}
             </div>
 
-            <div className="rounded-2xl p-4 border border-white/5 bg-white/[0.03]">
+            <div className="rounded-3xl p-4 border-2 border-white/10 bg-white/[0.04] backdrop-blur-md shadow-[0_6px_0_rgba(0,0,0,0.4)]">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-[11px] font-bold text-white/70 uppercase tracking-widest flex items-center gap-1.5">
                   <Flame className="w-3.5 h-3.5 text-orange-400" /> Fire This Collab
@@ -313,15 +446,6 @@ export default function CollabDetailPage() {
                   <button onClick={() => navigate("/start")} className="text-violet-300 underline">Sign in</button> to react
                 </p>
               )}
-            </div>
-
-            <div className="rounded-2xl p-3.5 border border-violet-400/20 bg-violet-500/5">
-              <p className="text-[11px] text-violet-200 flex items-center gap-1.5">
-                <Crown className="w-3.5 h-3.5" />
-                <span>
-                  Top 3 collabs at midnight UTC win <span className="font-black">7× XP + 7× Index</span> for both editors.
-                </span>
-              </p>
             </div>
           </>
         )}
