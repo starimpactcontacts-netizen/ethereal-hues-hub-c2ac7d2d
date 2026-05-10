@@ -405,8 +405,8 @@ export default function QuickFightPage() {
         </div>
       )}
 
-      {/* Content — single column on mobile, side-by-side on laptop */}
-      <div className="max-w-6xl mx-auto px-4 mt-2 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(320px,400px)] lg:gap-5 lg:items-start">
+      {/* Content — videos full-width up top, vote+chat stacked underneath. */}
+      <div className="max-w-7xl mx-auto px-4 mt-2">
         {/* ── MAIN COLUMN (videos + judge + result) ── */}
         <div className="space-y-4 min-w-0">
         {/* Show picked song for non-participants */}
@@ -704,8 +704,8 @@ export default function QuickFightPage() {
         )}
         </div>
 
-        {/* ── RIGHT RAIL (vote + chat) — stacks under main on mobile ── */}
-        <aside className="space-y-4 min-w-0 mt-4 lg:mt-0 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1">
+        {/* ── BELOW-VIDEO RAIL (vote + chat) — stacked on mobile, side-by-side on desktop ── */}
+        <aside className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4 min-w-0">
         {/* Public Vote — visible once both edits are in (or fight is decided) */}
         {fight.player_2_id && fight.player_1_submission_url && fight.player_2_submission_url && (
           <QuickFightPublicVote
