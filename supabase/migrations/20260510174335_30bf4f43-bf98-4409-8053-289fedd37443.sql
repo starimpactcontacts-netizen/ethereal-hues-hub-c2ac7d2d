@@ -1,0 +1,1 @@
+ALTER TABLE public.collab_slots ADD COLUMN IF NOT EXISTS social_url text;
