@@ -1,44 +1,29 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { ChevronLeft, Plus, Users, Crown, Flame, Sparkles } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ChevronLeft, Plus, Users, Swords, Crown, Sparkles } from "lucide-react";
 import { useCollabs } from "@/hooks/useCollabs";
+import { useCollabBattles } from "@/hooks/useCollabBattles";
 import { useAuth } from "@/hooks/useAuth";
 import CollabSlotCard from "@/components/loopgate/collabs/CollabSlotCard";
+import DuoBattleCard from "@/components/loopgate/collabs/DuoBattleCard";
 
-type Tab = "lobby" | "live" | "top" | "mine";
+type Tab = "battles" | "lobby" | "top" | "mine";
 
 export default function CollabsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [tab, setTab] = useState<Tab>("lobby");
-  const { openSlots, liveSlots, mySlots, topToday, loading } = useCollabs();
+  const [tab, setTab] = useState<Tab>("battles");
+  const { openSlots, mySlots, topToday, loading: loadingSlots } = useCollabs();
+  const { liveBattles, loading: loadingBattles } = useCollabBattles();
 
   const TABS: { key: Tab; label: string; icon: any; count: number }[] = [
+    { key: "battles", label: "Battles", icon: Swords, count: liveBattles.length },
     { key: "lobby", label: "Lobby", icon: Users, count: openSlots.length },
-    { key: "live", label: "Live", icon: Flame, count: liveSlots.length },
     { key: "top", label: "Top Today", icon: Crown, count: topToday.length },
     { key: "mine", label: "Mine", icon: Sparkles, count: mySlots.length },
   ];
 
-  const list =
-    tab === "lobby"
-      ? openSlots
-      : tab === "live"
-        ? liveSlots
-        : tab === "top"
-          ? topToday
-          : mySlots;
-
-  const empty =
-    !loading && list.length === 0
-      ? tab === "lobby"
-        ? "No open collab slots right now. Be the first — create one and find a partner."
-        : tab === "live"
-          ? "No live collabs yet today."
-          : tab === "top"
-            ? "Top collabs will appear here once today's reactions roll in."
-            : "You haven't started a collab yet. Tap Create Collab."
-      : null;
+  const loading = tab === "battles" ? loadingBattles : loadingSlots;
 
   return (
     <div
@@ -80,9 +65,9 @@ export default function CollabsPage() {
               className="text-3xl font-black tracking-tight uppercase leading-none"
               style={{ fontFamily: "Teko, Inter, system-ui, sans-serif" }}
             >
-              Collabs
+              Duo Battles
             </h1>
-            <span className="text-[8px] font-black tracking-widest uppercase px-1.5 py-0.5 rounded-full bg-violet-500 text-white">NEW</span>
+            <span className="text-[8px] font-black tracking-widest uppercase px-1.5 py-0.5 rounded-full bg-rose-500 text-white">LIVE</span>
           </div>
           <button
             onClick={() => (user ? navigate("/collabs/create") : navigate("/start"))}
@@ -122,6 +107,29 @@ export default function CollabsPage() {
       </div>
 
       {/* Hero pitch */}
+      {tab === "battles" && (
+        <div className="relative px-4 pt-4">
+          <div
+            className="rounded-3xl p-4 border border-white/10 backdrop-blur-md shadow-[0_6px_0_rgba(0,0,0,0.4)] overflow-hidden relative"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(168,85,247,0.30) 0%, rgba(0,0,0,0.4) 50%, rgba(56,189,248,0.30) 100%)",
+            }}
+          >
+            <p
+              className="text-[20px] font-black tracking-tight leading-tight"
+              style={{ fontFamily: "Teko, Inter, system-ui, sans-serif" }}
+            >
+              DUO vs DUO. <span className="text-violet-300">FIRE</span> vs <span className="text-sky-300">FIRE</span>.
+            </p>
+            <p className="text-[11px] text-white/70 mt-1 leading-snug">
+              Pair up. Split the song. Once your duo goes live, you auto-match against another duo.
+              Public cheers + judge QOI decide the winner.
+            </p>
+          </div>
+        </div>
+      )}
+
       {tab === "lobby" && (
         <div className="relative px-4 pt-4">
           <div
@@ -135,11 +143,12 @@ export default function CollabsPage() {
               className="text-[18px] font-black tracking-tight leading-tight"
               style={{ fontFamily: "Teko, Inter, system-ui, sans-serif" }}
             >
-              PICK A SONG. SPLIT THE EDIT.<br />
-              <span className="text-violet-300">CASH THE FIRE.</span>
+              FIND A PARTNER.<br />
+              <span className="text-violet-300">FORM YOUR DUO.</span>
             </p>
             <p className="text-[11px] text-white/70 mt-1.5 leading-snug">
-              2 editors. One track. Each owns a half. Top 3 daily collabs win <span className="text-violet-300 font-bold">7× XP + 7× Index</span> for both partners.
+              Open slots looking for a second editor. Join one or post your own.
+              Once you ship live, you'll be auto-matched into a duo battle.
             </p>
           </div>
         </div>
@@ -148,15 +157,40 @@ export default function CollabsPage() {
       {/* List */}
       <div className="relative px-4 pt-4 grid grid-cols-1 gap-3">
         {loading && (
-          <div className="text-center text-violet-300/60 py-12 text-sm">Loading collabs…</div>
+          <div className="text-center text-violet-300/60 py-12 text-sm">Loading…</div>
         )}
-        {empty && (
-          <div className="text-center text-white/50 py-12 text-sm px-6">{empty}</div>
+
+        {tab === "battles" && !loading && liveBattles.length === 0 && (
+          <div className="text-center text-white/50 py-12 text-sm px-6">
+            No live duo battles right now. Two duos need to ship — be one of them.
+          </div>
         )}
-        {!loading &&
-          list.map((s, i) => (
-            <CollabSlotCard key={s.id} slot={s} rank={tab === "top" ? i + 1 : undefined} />
-          ))}
+        {tab === "battles" && !loading &&
+          liveBattles.map((b) => <DuoBattleCard key={b.id} battle={b} />)}
+
+        {tab === "lobby" && !loading && openSlots.length === 0 && (
+          <div className="text-center text-white/50 py-12 text-sm px-6">
+            No open slots. Tap Create to start a duo.
+          </div>
+        )}
+        {tab === "lobby" && !loading &&
+          openSlots.map((s) => <CollabSlotCard key={s.id} slot={s} />)}
+
+        {tab === "top" && !loading && topToday.length === 0 && (
+          <div className="text-center text-white/50 py-12 text-sm px-6">
+            Top duos will appear here once cheers roll in.
+          </div>
+        )}
+        {tab === "top" && !loading &&
+          topToday.map((s, i) => <CollabSlotCard key={s.id} slot={s} rank={i + 1} />)}
+
+        {tab === "mine" && !loading && mySlots.length === 0 && (
+          <div className="text-center text-white/50 py-12 text-sm px-6">
+            You haven't joined a duo yet. Tap Create.
+          </div>
+        )}
+        {tab === "mine" && !loading &&
+          mySlots.map((s) => <CollabSlotCard key={s.id} slot={s} />)}
       </div>
     </div>
   );
