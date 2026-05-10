@@ -3,16 +3,20 @@ import { useEffect, useState } from "react";
 let unlocked = false;
 const subscribers = new Set<(value: boolean) => void>();
 
-const notifyUnlocked = () => {
+export const notifyBattleAudioUnlocked = () => {
   if (unlocked) return;
   unlocked = true;
   subscribers.forEach((subscriber) => subscriber(true));
 };
 
+export const isBattleAudioUnlocked = () => unlocked;
+
 if (typeof window !== "undefined") {
-  window.addEventListener("pointerdown", notifyUnlocked, { passive: true });
-  window.addEventListener("touchstart", notifyUnlocked, { passive: true });
-  window.addEventListener("keydown", notifyUnlocked);
+  const unlock = () => notifyBattleAudioUnlocked();
+  window.addEventListener("pointerdown", unlock, { passive: true, capture: true });
+  window.addEventListener("touchstart", unlock, { passive: true, capture: true });
+  window.addEventListener("click", unlock, { passive: true, capture: true });
+  window.addEventListener("keydown", unlock, { capture: true });
 }
 
 export function useBattleAudioUnlock() {
