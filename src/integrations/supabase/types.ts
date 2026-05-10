@@ -1402,6 +1402,198 @@ export type Database = {
         }
         Relationships: []
       }
+      collab_daily_winners: {
+        Row: {
+          award_date: string
+          created_at: string
+          id: string
+          index_awarded: number
+          place: number
+          slot_id: string
+          xp_awarded: number
+        }
+        Insert: {
+          award_date: string
+          created_at?: string
+          id?: string
+          index_awarded?: number
+          place: number
+          slot_id: string
+          xp_awarded?: number
+        }
+        Update: {
+          award_date?: string
+          created_at?: string
+          id?: string
+          index_awarded?: number
+          place?: number
+          slot_id?: string
+          xp_awarded?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collab_daily_winners_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: false
+            referencedRelation: "collab_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collab_invites: {
+        Row: {
+          created_at: string
+          from_user_id: string
+          id: string
+          responded_at: string | null
+          slot_id: string
+          status: Database["public"]["Enums"]["collab_invite_status"]
+          to_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          from_user_id: string
+          id?: string
+          responded_at?: string | null
+          slot_id: string
+          status?: Database["public"]["Enums"]["collab_invite_status"]
+          to_user_id: string
+        }
+        Update: {
+          created_at?: string
+          from_user_id?: string
+          id?: string
+          responded_at?: string | null
+          slot_id?: string
+          status?: Database["public"]["Enums"]["collab_invite_status"]
+          to_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collab_invites_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: false
+            referencedRelation: "collab_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collab_reactions: {
+        Row: {
+          created_at: string
+          emoji: Database["public"]["Enums"]["collab_emoji"]
+          id: string
+          slot_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: Database["public"]["Enums"]["collab_emoji"]
+          id?: string
+          slot_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: Database["public"]["Enums"]["collab_emoji"]
+          id?: string
+          slot_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collab_reactions_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: false
+            referencedRelation: "collab_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collab_slots: {
+        Row: {
+          created_at: string
+          creator_approved: boolean
+          creator_avatar_url: string | null
+          creator_id: string
+          creator_segment: string
+          creator_username: string
+          expires_at: string
+          final_video_url: string | null
+          id: string
+          live_at: string | null
+          paired_at: string | null
+          partner_approved: boolean
+          partner_avatar_url: string | null
+          partner_id: string | null
+          partner_segment: string
+          partner_username: string | null
+          reaction_score: number
+          song_artist: string | null
+          song_title: string
+          song_url: string | null
+          status: Database["public"]["Enums"]["collab_status"]
+          total_duration_seconds: number
+          total_reactions: number
+          uploaded_at: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          creator_approved?: boolean
+          creator_avatar_url?: string | null
+          creator_id: string
+          creator_segment: string
+          creator_username: string
+          expires_at?: string
+          final_video_url?: string | null
+          id?: string
+          live_at?: string | null
+          paired_at?: string | null
+          partner_approved?: boolean
+          partner_avatar_url?: string | null
+          partner_id?: string | null
+          partner_segment: string
+          partner_username?: string | null
+          reaction_score?: number
+          song_artist?: string | null
+          song_title: string
+          song_url?: string | null
+          status?: Database["public"]["Enums"]["collab_status"]
+          total_duration_seconds?: number
+          total_reactions?: number
+          uploaded_at?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          creator_approved?: boolean
+          creator_avatar_url?: string | null
+          creator_id?: string
+          creator_segment?: string
+          creator_username?: string
+          expires_at?: string
+          final_video_url?: string | null
+          id?: string
+          live_at?: string | null
+          paired_at?: string | null
+          partner_approved?: boolean
+          partner_avatar_url?: string | null
+          partner_id?: string | null
+          partner_segment?: string
+          partner_username?: string | null
+          reaction_score?: number
+          song_artist?: string | null
+          song_title?: string
+          song_url?: string | null
+          status?: Database["public"]["Enums"]["collab_status"]
+          total_duration_seconds?: number
+          total_reactions?: number
+          uploaded_at?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
       commission_messages: {
         Row: {
           avatar_url: string | null
@@ -8634,6 +8826,15 @@ export type Database = {
           xp_awarded: number
         }[]
       }
+      award_daily_collabs: {
+        Args: never
+        Returns: {
+          idx: number
+          place: number
+          slot_id: string
+          xp: number
+        }[]
+      }
       award_judge_xp: {
         Args: {
           p_action: string
@@ -8688,6 +8889,7 @@ export type Database = {
         Returns: boolean
       }
       cleanup_expired_login_codes: { Args: never; Returns: undefined }
+      collab_recompute_score: { Args: { p_slot: string }; Returns: undefined }
       create_invite:
         | {
             Args: { p_user_id: string }
@@ -8928,6 +9130,16 @@ export type Database = {
         | "enterprise"
         | "trial_judge"
         | "clipper"
+      collab_emoji: "fire" | "zap" | "diamond" | "crown" | "clapper"
+      collab_invite_status: "pending" | "accepted" | "declined"
+      collab_status:
+        | "open"
+        | "paired"
+        | "editing"
+        | "pending_approval"
+        | "live"
+        | "rejected"
+        | "expired"
       crew_extended_role:
         | "ace_editor"
         | "veteran"
@@ -9099,6 +9311,17 @@ export const Constants = {
         "enterprise",
         "trial_judge",
         "clipper",
+      ],
+      collab_emoji: ["fire", "zap", "diamond", "crown", "clapper"],
+      collab_invite_status: ["pending", "accepted", "declined"],
+      collab_status: [
+        "open",
+        "paired",
+        "editing",
+        "pending_approval",
+        "live",
+        "rejected",
+        "expired",
       ],
       crew_extended_role: [
         "ace_editor",
