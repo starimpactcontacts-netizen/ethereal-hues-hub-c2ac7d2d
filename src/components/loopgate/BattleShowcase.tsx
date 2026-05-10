@@ -6,6 +6,7 @@ import { useBattleAudioUnlock } from "@/hooks/useBattleAudioUnlock";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
+const PRELOAD_LEAD_SECONDS = 2.5;
 
 type Side = {
   userId: string;
@@ -58,19 +59,27 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   const [paused, setPaused] = useState(false);
   const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
   const completedFiredRef = useRef(false);
+  const [posters, setPosters] = useState<Record<number, string>>({});
+  const [started, setStarted] = useState<Record<number, boolean>>({});
 
   const current = sides[currentIdx];
 
-  // Preload once. Only the visible edit plays, so mobile isn't decoding two videos at once.
+  // Serial preload — only the active video opens a connection. Inactive sides wake up
+  // ~2.5s before swap so their first frames are warm without fighting for bandwidth.
   useEffect(() => {
-    videoRefs.current.forEach((v) => {
+    videoRefs.current.forEach((v, i) => {
       if (!v) return;
       v.muted = true;
       v.defaultMuted = false;
-      v.preload = "auto";
-      v.load();
+      const isActive = i === currentIdx;
+      const shouldWarm = !isActive && secondsLeft <= PRELOAD_LEAD_SECONDS;
+      const desired = isActive || shouldWarm ? "auto" : "none";
+      if (v.preload !== desired) {
+        v.preload = desired;
+        if (desired === "auto") v.load();
+      }
     });
-  }, [videoKey]);
+  }, [currentIdx, secondsLeft, videoKey]);
 
   useEffect(() => {
     videoRefs.current.forEach((v, index) => {
@@ -114,6 +123,28 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   const accent = current.color === "red" ? "bg-red-500" : "bg-blue-500";
   const accentText = current.color === "red" ? "text-red-400" : "text-blue-400";
 
+  const capturePoster = (index: number) => {
+    const v = videoRefs.current[index];
+    if (!v || posters[index]) return;
+    try {
+      const w = v.videoWidth;
+      const h = v.videoHeight;
+      if (!w || !h) return;
+      const canvas = document.createElement("canvas");
+      const max = 540;
+      const scale = Math.min(1, max / Math.max(w, h));
+      canvas.width = Math.round(w * scale);
+      canvas.height = Math.round(h * scale);
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.6);
+      setPosters((prev) => ({ ...prev, [index]: dataUrl }));
+    } catch {
+      /* tainted canvas */
+    }
+  };
+
   return (
     <div className="space-y-2">
       {/* Header */}
@@ -156,20 +187,34 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
             const sideDirect = isDirectVideo(side.url);
             const sideImage = isImageFile(side.url);
             const active = index === currentIdx;
+            const poster = posters[index];
+            const hasStarted = !!started[index];
 
             return (
               <div key={side.userId} className={`absolute inset-0 transition-opacity duration-75 ${active ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
                 {sideDirect ? (
-                  <video
-                    ref={(node) => { videoRefs.current[index] = node; }}
-                    src={side.url}
-                    className="w-full h-full object-contain bg-black"
-                    playsInline
-                    loop
-                    preload="auto"
-                    controls={false}
-                    disablePictureInPicture
-                  />
+                  <>
+                    {poster && (
+                      <img
+                        src={poster}
+                        alt=""
+                        aria-hidden
+                        className={`absolute inset-0 w-full h-full object-contain bg-black pointer-events-none transition-opacity duration-200 ${hasStarted && active ? "opacity-0" : "opacity-100"}`}
+                      />
+                    )}
+                    <video
+                      ref={(node) => { videoRefs.current[index] = node; }}
+                      src={side.url}
+                      className={`relative w-full h-full object-contain bg-black transition-opacity duration-200 ${poster && !hasStarted ? "opacity-0" : "opacity-100"}`}
+                      playsInline
+                      loop
+                      preload="none"
+                      controls={false}
+                      disablePictureInPicture
+                      onLoadedData={() => capturePoster(index)}
+                      onPlaying={() => setStarted((prev) => (prev[index] ? prev : { ...prev, [index]: true }))}
+                    />
+                  </>
                 ) : sideImage ? (
                   <img src={side.url} alt={`${side.username} edit`} className="w-full h-full object-contain bg-black" loading="eager" decoding="async" />
                 ) : active ? (
