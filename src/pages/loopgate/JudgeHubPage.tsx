@@ -467,9 +467,6 @@ export default function JudgeHubPage() {
         <JudgeReviewsFeed />
       </div>
 
-      {/* Divisions */}
-      <JudgeDivisionsSection />
-
       {/* ═══════════ ROSTER ═══════════ */}
       <div className="border-t border-zinc-800 pt-5">
         <div className="px-4 mb-4">
