@@ -417,6 +417,17 @@ export default function JudgeHubPage() {
             <Send size={14} />
             Get Rated
           </motion.button>
+          {!isJudge && !isTrialJudge && (
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={() => navigate('/judges/apply')}
+              className="flex-1 py-3.5 px-5 bg-white text-black text-[14px] font-semibold rounded-xl flex items-center justify-center gap-2 hover:bg-zinc-200 transition-colors"
+              style={{ letterSpacing: '-0.01em' }}
+            >
+              <Gavel size={14} />
+              Apply
+            </motion.button>
+          )}
         </div>
       </div>
 
