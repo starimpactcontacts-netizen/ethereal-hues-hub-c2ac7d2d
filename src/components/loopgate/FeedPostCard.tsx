@@ -340,16 +340,17 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm"
+                      className="fixed inset-0 z-[9998] bg-black/80 backdrop-blur-sm"
                       onClick={() => setShowChallengeConfirm(false)}
                     />
                     <motion.div
                       initial={{ opacity: 0, scale: 0.9, y: 20 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                      className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-[101] max-w-sm mx-auto"
+                      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto pointer-events-none"
+                      style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))', paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
                     >
-                      <div className="bg-background border border-border/50 rounded-xl overflow-hidden shadow-2xl shadow-black/50">
+                      <div className="w-full max-w-sm bg-background border border-border/50 rounded-xl overflow-hidden shadow-2xl shadow-black/50 pointer-events-auto my-auto">
                         {/* Header — red-to-blue gradient */}
                         <div className="relative bg-gradient-to-r from-red-950/60 to-blue-950/60 p-4 border-b border-border/30">
                           <button onClick={() => setShowChallengeConfirm(false)} className="absolute top-3 right-3 p-1 hover:bg-white/10 rounded-lg transition-colors">
