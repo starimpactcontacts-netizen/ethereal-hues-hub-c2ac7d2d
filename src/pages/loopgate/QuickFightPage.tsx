@@ -30,6 +30,7 @@ import QuickFightPublicVote from '@/components/loopgate/QuickFightPublicVote';
 import BattleDecidedOverlay from '@/components/loopgate/BattleDecidedOverlay';
 import { setLobbyMusicActive } from '@/components/loopgate/LobbyMusicPlayer';
 import CustomEditBattleLobby from '@/components/loopgate/CustomEditBattleLobby';
+import BattleIntroOverlay from '@/components/loopgate/BattleIntroOverlay';
 
 /** Detect platform from URL */
 function detectPlatform(url: string): string {
@@ -59,9 +60,15 @@ export default function QuickFightPage() {
   const [voting, setVoting] = useState(false);
   const [hideConfirmOpen, setHideConfirmOpen] = useState(false);
   const [hiding, setHiding] = useState(false);
-  const introDone = true;
+  const introKey = fightId ? `battle-intro-played:${fightId}` : null;
+  const [introDone, setIntroDone] = useState(() => (introKey ? sessionStorage.getItem(introKey) === '1' : true));
   const [decidedActive, setDecidedActive] = useState(false);
   const [decidedShown, setDecidedShown] = useState(false);
+
+  useEffect(() => {
+    if (!introKey) return;
+    setIntroDone(sessionStorage.getItem(introKey) === '1');
+  }, [introKey]);
 
   // Once intro is done AND fight is decided, wait one full rotation
   // (both edits shown = 20s) then trigger the cinematic verdict reveal.
@@ -308,6 +315,16 @@ export default function QuickFightPage() {
           onDismiss={() => setDecidedActive(false)}
         />
       )}
+      {fight.player_1_submission_url && fight.player_2_submission_url && fight.player_2_id && !introDone && (
+        <BattleIntroOverlay
+          fightId={fight.id}
+          active
+          onComplete={() => {
+            if (introKey) sessionStorage.setItem(introKey, '1');
+            setIntroDone(true);
+          }}
+        />
+      )}
       {/* ════════ ARCADE HUD ════════ */}
       {/* Top bar: back + status pill */}
       <div className="sticky top-0 z-40 bg-black/80 backdrop-blur-xl border-b border-white/5">
@@ -435,7 +452,7 @@ export default function QuickFightPage() {
                     ).toISOString()
                   : null
               }
-              paused={decidedActive}
+              paused={!introDone || decidedActive}
             />
           ) : (
             // Pre-upload state — placeholders stacked with VS divider

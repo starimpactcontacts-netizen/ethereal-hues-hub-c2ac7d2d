@@ -61,7 +61,17 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
 
   const current = sides[currentIdx];
 
-  // Preload and play every direct video; after the first page tap, active edit is unmuted automatically.
+  // Preload once. Only the visible edit plays, so mobile isn't decoding two videos at once.
+  useEffect(() => {
+    videoRefs.current.forEach((v) => {
+      if (!v) return;
+      v.muted = true;
+      v.defaultMuted = false;
+      v.preload = "auto";
+      v.load();
+    });
+  }, [videoKey]);
+
   useEffect(() => {
     videoRefs.current.forEach((v, index) => {
       if (!v) return;
@@ -69,21 +79,18 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
       v.muted = !(audioUnlocked && active);
       v.defaultMuted = false;
       v.volume = active ? 1 : 0;
-      v.preload = "auto";
+      if (paused || !active) {
+        v.pause();
+        return;
+      }
       v.play().catch(() => {
-        v.muted = true;
-        v.play().catch((error) => { void error; });
+        if (!audioUnlocked) {
+          v.muted = true;
+          v.play().catch((error) => { void error; });
+        }
       });
     });
-  }, [audioUnlocked, currentIdx, videoKey]);
-
-  useEffect(() => {
-    videoRefs.current.forEach((v) => {
-      if (!v) return;
-      if (paused) v.pause();
-      else v.play().catch((error) => { void error; });
-    });
-  }, [paused]);
+  }, [audioUnlocked, currentIdx, paused]);
 
   // Server-synced ticker
   useEffect(() => {
@@ -157,7 +164,6 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
                     ref={(node) => { videoRefs.current[index] = node; }}
                     src={side.url}
                     className="w-full h-full object-contain bg-black"
-                    autoPlay
                     playsInline
                     loop
                     preload="auto"
