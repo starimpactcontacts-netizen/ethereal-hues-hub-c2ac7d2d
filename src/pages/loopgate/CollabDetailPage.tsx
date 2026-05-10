@@ -2,21 +2,19 @@ import { useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   ChevronLeft,
-  Music,
   Clock,
   Check,
   Upload,
   AlertCircle,
   Flame,
-  Crown,
   Loader2,
   Link2,
   ExternalLink,
   X,
   Share2,
-  Info,
-  Trophy,
   Sparkles,
+  MessageCircle,
+  Mic,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -29,6 +27,8 @@ import {
 } from "@/hooks/useCollabs";
 import { useAuth } from "@/hooks/useAuth";
 import CollabEmojiRail from "@/components/loopgate/collabs/CollabEmojiRail";
+import CollabChatPanel from "@/components/loopgate/collabs/CollabChatPanel";
+import CollabVoiceRoom from "@/components/loopgate/collabs/CollabVoiceRoom";
 
 export default function CollabDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -40,6 +40,8 @@ export default function CollabDetailPage() {
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [voiceOpen, setVoiceOpen] = useState(false);
 
   if (loading || !slot) {
     return (
@@ -256,21 +258,23 @@ export default function CollabDetailPage() {
 
       {/* ═══ Right rail — chunky action buttons ═══ */}
       <div className="absolute z-20 right-2 top-32 flex flex-col gap-2.5">
-        <RailButton color="linear-gradient(180deg,#22c55e,#16a34a)" icon={Music} label="Song" onClick={() => toast(slot.song_title + (slot.song_artist ? ` — ${slot.song_artist}` : ""))} />
-        <RailButton color="linear-gradient(180deg,#f59e0b,#d97706)" icon={Share2} label="Share" onClick={handleShare} />
         <RailButton
           color="linear-gradient(180deg,#a855f7,#7c3aed)"
-          icon={Trophy}
-          label="Daily prizes"
-          onClick={() => toast("Top 3 collabs at midnight UTC win 7× XP + 7× Index 🏆")}
+          icon={MessageCircle}
+          label="Chat"
+          onClick={() => setChatOpen(true)}
         />
         <RailButton
-          color="linear-gradient(180deg,#0ea5e9,#0284c7)"
-          icon={Info}
-          label="Brief"
-          onClick={() =>
-            toast(`${slot.creator_username}: ${slot.creator_segment}\n${slot.partner_username ?? "Partner"}: ${slot.partner_segment}`)
-          }
+          color="linear-gradient(180deg,#22c55e,#16a34a)"
+          icon={Mic}
+          label="Voice"
+          onClick={() => setVoiceOpen(true)}
+        />
+        <RailButton
+          color="linear-gradient(180deg,#f59e0b,#d97706)"
+          icon={Share2}
+          label="Share"
+          onClick={handleShare}
         />
       </div>
 
@@ -450,6 +454,20 @@ export default function CollabDetailPage() {
           </>
         )}
       </div>
+
+      {/* Chat + Voice modals */}
+      <CollabChatPanel
+        slotId={slot.id}
+        open={chatOpen}
+        onClose={() => setChatOpen(false)}
+        creatorId={slot.creator_id}
+        partnerId={slot.partner_id}
+      />
+      <CollabVoiceRoom
+        slotId={slot.id}
+        open={voiceOpen}
+        onClose={() => setVoiceOpen(false)}
+      />
     </div>
   );
 }
