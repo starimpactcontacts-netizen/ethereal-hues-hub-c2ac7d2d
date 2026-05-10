@@ -452,7 +452,7 @@ export default function QuickFightPage() {
                     ).toISOString()
                   : null
               }
-              paused={decidedActive}
+              paused={!introDone || decidedActive}
             />
           ) : (
             // Pre-upload state — placeholders stacked with VS divider
