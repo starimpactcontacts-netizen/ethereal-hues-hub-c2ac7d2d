@@ -75,7 +75,7 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
     (post.uploaded_media_type?.startsWith('video') ?? false) ||
     /\.(mp4|mov|webm|m4v)(\?|$)/i.test(post.uploaded_media_url || '')
   );
-  const videoRef = useAutoplayVideo(isUploadedVideo);
+  const videoRef = useAutoplayVideo(isUploadedVideo, post.uploaded_media_url ?? undefined);
 
   // Extract YouTube video ID for thumbnail
   const ytMatch = post.media_url?.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?\s]+)/);
@@ -172,13 +172,13 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
                   <div className="relative">
                     <video
                       ref={videoRef}
-                      src={post.uploaded_media_url!}
-                      className="w-full max-h-[360px] object-cover"
+                      poster={post.uploaded_media_url ? `${post.uploaded_media_url}#t=0.1` : undefined}
+                      className="w-full max-h-[360px] object-cover bg-black"
                       controls
                       muted={muted}
                       playsInline
                       loop
-                      preload="metadata"
+                      preload="none"
                     />
                     <button
                       onClick={(e) => {
