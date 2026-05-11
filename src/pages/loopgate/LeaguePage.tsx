@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Crown, Shield, Star, Lock, Trophy, ChevronRight, Swords, Flame, Target } from 'lucide-react';
+import { Crown, Shield, Star, Lock, Trophy, ChevronRight, Swords, Flame, Target, type LucideIcon } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRealRankings } from '@/hooks/useRealData';
 
@@ -103,13 +103,13 @@ export default function LeaguePage() {
               {/* Stats */}
               <div className="grid grid-cols-4 gap-2">
                 <Stat icon={Trophy} label="Wins" value={totalWins} accent="text-amber-300" />
-                <Stat icon={Swords} label="Battles" value={totalEvents} accent="text-foreground" />
+                <Stat icon={Swords} label="Entries" value={totalEvents} accent="text-foreground" />
                 <Stat icon={Target} label="Win %" value={`${Math.round(winRate)}`} suffix="%" accent="text-emerald-300" />
                 <Stat icon={Flame} label="Index" value={indexScore} accent="text-sky-300" />
               </div>
 
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground/60 mt-3 text-center">
-                Live · Synced from battles, tournaments & competitions
+                Live · Synced from edit battles, duo battles & competitions
               </p>
             </div>
           </div>
@@ -225,7 +225,7 @@ export default function LeaguePage() {
                     <div className="flex-1 min-w-0">
                       <p className="font-display text-base truncate leading-tight">{editor.username}{isMe && <span className="text-[9px] text-muted-foreground/70 ml-1.5 uppercase tracking-wider">You</span>}</p>
                       <p className="text-[10px] text-muted-foreground/70 uppercase tracking-wider">
-                        {editor.total_wins ?? 0}W · {editor.total_events ?? 0} battles
+                        {editor.total_wins ?? 0}W · {editor.total_events ?? 0} entries
                       </p>
                     </div>
                     <div className="text-right">
@@ -250,7 +250,7 @@ function Stat({
   suffix,
   accent,
 }: {
-  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  icon: LucideIcon;
   label: string;
   value: number | string;
   suffix?: string;
