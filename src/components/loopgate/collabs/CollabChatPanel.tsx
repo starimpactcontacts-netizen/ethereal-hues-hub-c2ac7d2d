@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { X, Send, Loader2 } from "lucide-react";
+import { X, Send, Loader2, Smile } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import GifPicker from "@/components/loopgate/GifPicker";
 
 interface CollabMessage {
   id: string;
@@ -10,7 +11,8 @@ interface CollabMessage {
   user_id: string;
   username: string | null;
   avatar_url: string | null;
-  body: string;
+  body: string | null;
+  gif_url?: string | null;
   created_at: string;
 }
 
@@ -34,6 +36,7 @@ export default function CollabChatPanel({
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [gifOpen, setGifOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -80,13 +83,13 @@ export default function CollabChatPanel({
     }
   }, [messages, open]);
 
-  const send = async () => {
+  const send = async (overrideGif?: string) => {
     if (!user) {
       toast.error("Sign in to chat");
       return;
     }
     const body = input.trim();
-    if (!body) return;
+    if (!body && !overrideGif) return;
     setSending(true);
     try {
       const username =
@@ -100,10 +103,12 @@ export default function CollabChatPanel({
         user_id: user.id,
         username,
         avatar_url,
-        body,
-      });
+        body: overrideGif ? (body || null) : body,
+        gif_url: overrideGif || null,
+      } as any);
       if (error) throw error;
       setInput("");
+      setGifOpen(false);
     } catch (e: any) {
       toast.error(e.message || "Couldn't send");
     } finally {
@@ -117,7 +122,7 @@ export default function CollabChatPanel({
     <div
       className={
         inline
-          ? "relative w-full h-[60vh] bg-gradient-to-b from-[#1a0b2e] to-[#0a0418] border-2 border-violet-500/30 rounded-3xl shadow-[0_6px_0_rgba(0,0,0,0.5)] flex flex-col overflow-hidden"
+          ? "relative w-full h-[78vh] min-h-[560px] bg-gradient-to-b from-[#1a0b2e] to-[#0a0418] border-2 border-violet-500/30 rounded-3xl shadow-[0_6px_0_rgba(0,0,0,0.5)] flex flex-col overflow-hidden"
           : "relative w-full sm:max-w-md h-[80vh] sm:h-[70vh] bg-gradient-to-b from-[#1a0b2e] to-[#0a0418] border-t-2 sm:border-2 border-violet-500/30 rounded-t-3xl sm:rounded-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden"
       }
     >
@@ -165,13 +170,22 @@ export default function CollabChatPanel({
                     </div>
                   )}
                   <div
-                    className={`px-3 py-2 rounded-2xl text-[13px] leading-snug break-words ${
+                    className={`${m.gif_url ? "p-1 bg-transparent" : `px-3 py-2 ${
                       mine
                         ? "bg-gradient-to-b from-violet-500 to-violet-700 text-white rounded-br-md shadow-[0_2px_0_rgba(0,0,0,0.4)]"
                         : "bg-white/[0.08] text-white border border-white/10 rounded-bl-md"
-                    }`}
+                    }`} rounded-2xl text-[13px] leading-snug break-words`}
                   >
-                    {m.body}
+                    {m.gif_url ? (
+                      <img
+                        src={m.gif_url}
+                        alt="gif"
+                        className="max-w-[220px] w-full rounded-xl border border-white/10"
+                        loading="lazy"
+                      />
+                    ) : (
+                      m.body
+                    )}
                   </div>
                 </div>
               </div>
@@ -184,6 +198,17 @@ export default function CollabChatPanel({
       <div className={`p-3 border-t border-white/10 bg-black/40 ${inline ? "" : "pb-[calc(env(safe-area-inset-bottom)+12px)]"}`}>
         {user ? (
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setGifOpen((v) => !v)}
+              className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 active:translate-y-[1px] shadow-[0_3px_0_rgba(0,0,0,0.5)] ${
+                gifOpen
+                  ? "bg-violet-500 text-white"
+                  : "bg-white/[0.06] border border-white/10 text-white/80"
+              }`}
+              title="GIFs & Stickers"
+            >
+              <Smile className="w-5 h-5" />
+            </button>
             <input
               type="text"
               value={input}
@@ -199,7 +224,7 @@ export default function CollabChatPanel({
               className="flex-1 bg-white/[0.06] border border-white/10 rounded-full px-4 py-2.5 text-[13px] text-white placeholder:text-white/30 focus:outline-none focus:border-violet-400/60"
             />
             <button
-              onClick={send}
+              onClick={() => send()}
               disabled={sending || !input.trim()}
               className="w-11 h-11 rounded-full bg-gradient-to-b from-violet-500 to-violet-700 flex items-center justify-center disabled:opacity-40 active:translate-y-[2px] shadow-[0_3px_0_rgba(0,0,0,0.5)]"
             >
@@ -210,6 +235,16 @@ export default function CollabChatPanel({
           <p className="text-center text-[12px] text-white/50">Sign in to join the chat</p>
         )}
       </div>
+
+      {/* GIF picker overlay */}
+      {gifOpen && user && (
+        <div className="absolute inset-x-0 bottom-0 z-10 max-h-[70%] border-t-2 border-violet-500/40 rounded-t-2xl overflow-hidden">
+          <GifPicker
+            onSelect={(url) => send(url)}
+            onClose={() => setGifOpen(false)}
+          />
+        </div>
+      )}
     </div>
   );
 
