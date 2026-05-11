@@ -16,7 +16,7 @@ export interface UserSubmission {
   submitted_at: string;
   thumbnail_url: string | null;
   custom_title: string | null;
-  source: 'standard' | 'round' | 'sanctioned' | 'featured' | 'battle';
+  source: 'standard' | 'round' | 'sanctioned' | 'featured' | 'battle' | 'collab';
   is_hidden?: boolean;
   qoi_hidden?: boolean;
   earned_cents?: number;
@@ -47,12 +47,13 @@ export function useUserSubmissions(targetUserId?: string) {
     }
 
     // Fetch all sources in parallel
-    const [standardRes, roundRes, sanctionedRes, featuredRes, battlesRes, hiddenRes, qoiHiddenRes] = await Promise.all([
+    const [standardRes, roundRes, sanctionedRes, featuredRes, battlesRes, collabsRes, hiddenRes, qoiHiddenRes] = await Promise.all([
       supabase.from('event_participations').select('*').eq('user_id', userId).order('submitted_at', { ascending: false }),
       supabase.from('round_participations').select('*').eq('user_id', userId).not('submission_url', 'is', null).order('submitted_at', { ascending: false }),
       supabase.from('sanctioned_tournament_participants').select('*, sanctioned_tournaments!inner(id, name, status)').eq('user_id', userId).not('submission_url', 'is', null).order('submitted_at', { ascending: false }),
       supabase.from('featured_submissions').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
       supabase.from('battles').select('*').or(`challenger_id.eq.${userId},opponent_id.eq.${userId}`).not('status', 'eq', 'pending').neq('status', 'cancelled').order('created_at', { ascending: false }),
+      supabase.from('collab_slots').select('*').or(`creator_id.eq.${userId},partner_id.eq.${userId}`).not('final_video_url', 'is', null).order('uploaded_at', { ascending: false }),
       supabase.from('hidden_edits').select('source, source_id').eq('user_id', userId),
       supabase.from('qoi_hidden_edits').select('source, source_id').eq('user_id', userId),
     ]);
@@ -139,6 +140,28 @@ export function useUserSubmissions(targetUserId?: string) {
         custom_title: b.theme_song_name ? `Battle: ${b.theme_song_name}` : 'Battle',
         source: 'battle',
         is_hidden: hiddenSet.has(`battle:${b.id}`), qoi_hidden: qoiHiddenSet.has(`battle:${b.id}`),
+      });
+    }
+
+    // Collab (duo) submissions — show final shipped video on profile
+    for (const c of collabsRes.data || []) {
+      const url = (c as any).social_url || c.final_video_url;
+      if (!url) continue;
+      const partnerName = c.creator_id === userId ? c.partner_username : c.creator_username;
+      allSubmissions.push({
+        id: c.id,
+        event_id: c.id,
+        submission_url: url,
+        platform: (url.includes('tiktok') ? 'tiktok' : url.includes('youtube') || url.includes('youtu.be') ? 'youtube' : url.includes('instagram') ? 'instagram' : 'tiktok'),
+        status: 'scored',
+        quality_score: null, originality_score: null, impact_score: null,
+        qoi_score: null, final_rank: null,
+        submitted_at: c.uploaded_at || c.live_at || c.created_at,
+        thumbnail_url: null,
+        custom_title: `Duo w/ @${partnerName || 'partner'} — ${c.song_title}`,
+        source: 'collab',
+        is_hidden: hiddenSet.has(`collab:${c.id}`),
+        qoi_hidden: qoiHiddenSet.has(`collab:${c.id}`),
       });
     }
 
