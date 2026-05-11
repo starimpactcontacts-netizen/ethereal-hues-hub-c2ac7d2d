@@ -200,12 +200,18 @@ export async function createCollabSlot(input: {
 }) {
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) throw new Error("Not authenticated");
+  const { data: prof } = await supabase
+    .from("profiles")
+    .select("username, avatar_url")
+    .eq("id", auth.user.id)
+    .maybeSingle();
   const username =
+    (prof as any)?.username ||
     (auth.user.user_metadata as any)?.username ||
     (auth.user.user_metadata as any)?.full_name ||
-    auth.user.email?.split("@")[0] ||
     "editor";
   const avatar =
+    (prof as any)?.avatar_url ||
     (auth.user.user_metadata as any)?.avatar_url ||
     (auth.user.user_metadata as any)?.picture ||
     null;
@@ -232,12 +238,18 @@ export async function createCollabSlot(input: {
 export async function joinCollabSlot(slotId: string) {
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) throw new Error("Not authenticated");
+  const { data: prof } = await supabase
+    .from("profiles")
+    .select("username, avatar_url")
+    .eq("id", auth.user.id)
+    .maybeSingle();
   const username =
+    (prof as any)?.username ||
     (auth.user.user_metadata as any)?.username ||
     (auth.user.user_metadata as any)?.full_name ||
-    auth.user.email?.split("@")[0] ||
     "editor";
   const avatar =
+    (prof as any)?.avatar_url ||
     (auth.user.user_metadata as any)?.avatar_url ||
     (auth.user.user_metadata as any)?.picture ||
     null;
