@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ChevronLeft, Plus, Swords, Users, Flame, Clock, Music, Trophy, Sparkles, UserPlus, Zap, Crown, Upload, CheckCircle2, Hourglass } from "lucide-react";
+import { ChevronLeft, Plus, Swords, Users, Flame, Clock, Music, Trophy, Sparkles, UserPlus, Zap, Crown, Upload, CheckCircle2, Hourglass, Info, Play, X } from "lucide-react";
 import { useCollabs, type CollabSlot } from "@/hooks/useCollabs";
 import { useCollabBattles, type CollabBattle } from "@/hooks/useCollabBattles";
 import { useAuth } from "@/hooks/useAuth";
@@ -485,36 +485,82 @@ function PickedUpRow({ slot }: { slot: CollabSlot }) {
 }
 
 function LiveAwaitingRow({ slot }: { slot: CollabSlot }) {
+  const video = slot.final_video_url;
+  const isDirectVideo = !!video && /\.(mp4|webm|mov|m4v)(\?|$)/i.test(video);
   return (
     <Link
       to={`/collab/${slot.id}`}
-      className="block rounded-2xl p-3 border border-rose-400/30 bg-rose-500/[0.05] backdrop-blur-md active:scale-[0.99] transition-transform"
+      className="block relative w-full overflow-hidden rounded-2xl bg-[#0a0612] border border-white/10 active:scale-[0.99] transition-transform shadow-[0_6px_0_rgba(0,0,0,0.5)]"
+      style={{ aspectRatio: "16 / 10" }}
     >
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-[10px] font-black tracking-[0.18em] uppercase text-rose-300 flex items-center gap-1">
+      {/* media */}
+      {isDirectVideo ? (
+        <video
+          src={video!}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      ) : (
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse at 25% 0%, rgba(168,85,247,0.45), transparent 55%), radial-gradient(ellipse at 80% 100%, rgba(56,189,248,0.4), transparent 55%), linear-gradient(160deg, #1a0a2e 0%, #050108 100%)",
+          }}
+        />
+      )}
+
+      {/* gradient overlays */}
+      <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/70 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black via-black/70 to-transparent" />
+
+      {/* top: LIVE pill + reactions */}
+      <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between">
+        <span className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-rose-500 text-white text-[9px] font-black tracking-widest uppercase shadow-[0_2px_0_rgba(0,0,0,0.5)]">
           <span className="relative flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white" />
           </span>
-          LIVE · AWAITING CHALLENGER
+          LIVE
         </span>
-        <span className="text-[10px] text-white/50 font-mono flex items-center gap-1">
+        <span className="px-2 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] text-white font-mono flex items-center gap-1">
           <Flame className="w-2.5 h-2.5 text-orange-300" />
           {slot.reaction_score}
         </span>
       </div>
-      <div className="flex items-center gap-2.5">
-        <DuoFaces slot={slot} side="L" />
+
+      {/* center play */}
+      {isDirectVideo ? null : (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-14 h-14 rounded-full bg-white/15 backdrop-blur-md border border-white/30 flex items-center justify-center shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
+            <Play className="w-6 h-6 text-white fill-white ml-0.5" />
+          </div>
+        </div>
+      )}
+
+      {/* bottom: duo info + WATCH */}
+      <div className="absolute bottom-0 inset-x-0 p-3 flex items-end gap-3">
+        <div className="shrink-0">
+          <DuoFaces slot={slot} side="L" />
+        </div>
         <div className="min-w-0 flex-1">
-          <p className="text-[12px] font-bold text-white truncate leading-tight">
+          <p
+            className="text-[18px] font-black text-white truncate leading-none"
+            style={{ fontFamily: "Teko, Inter, system-ui, sans-serif", letterSpacing: "0.02em" }}
+          >
             {slot.creator_username} <span className="text-violet-300">×</span>{" "}
             <span className="text-sky-200">{slot.partner_username ?? "?"}</span>
           </p>
-          <p className="text-[10px] text-white/60 truncate flex items-center gap-1 mt-0.5">
+          <p className="text-[10px] text-white/70 truncate flex items-center gap-1 mt-1">
             <Music className="w-2.5 h-2.5 text-violet-300" /> {slot.song_title}
           </p>
         </div>
-        <span className="rounded-lg px-2.5 py-1.5 bg-white text-black text-[10px] font-black uppercase tracking-widest">
+        <span className="shrink-0 rounded-xl px-3 py-2 bg-white text-black text-[11px] font-black uppercase tracking-widest shadow-[0_3px_0_rgba(0,0,0,0.5)] flex items-center gap-1">
+          <Play className="w-3 h-3 fill-black" />
           WATCH
         </span>
       </div>
@@ -526,6 +572,7 @@ export default function CollabsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [tab, setTab] = useState<Tab>("live");
+  const [infoOpen, setInfoOpen] = useState(false);
   const { openSlots, liveSlots, mySlots, topToday, pairedSlots, loading: loadingSlots } = useCollabs();
   const { liveBattles, loading: loadingBattles } = useCollabBattles();
 
@@ -644,27 +691,61 @@ export default function CollabsPage() {
         </div>
       </div>
 
-      {/* HERO PITCH (only on live) */}
+      {/* Floating info button */}
       {tab === "live" && (
-        <div className="relative px-4 pt-4">
+        <button
+          onClick={() => setInfoOpen(true)}
+          aria-label="What is this?"
+          className="fixed z-40 w-9 h-9 rounded-full bg-black/70 backdrop-blur-md border border-white/15 flex items-center justify-center text-white/80 active:scale-95"
+          style={{
+            top: "calc(env(safe-area-inset-top, 0px) + 12px)",
+            left: "calc(50% - 18px)",
+          }}
+        >
+          <Info className="w-4 h-4" />
+        </button>
+      )}
+
+      {/* Info modal */}
+      {infoOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm"
+          onClick={() => setInfoOpen(false)}
+        >
           <div
-            className="rounded-3xl p-4 border border-white/10 backdrop-blur-md shadow-[0_6px_0_rgba(0,0,0,0.4)] overflow-hidden relative"
+            className="relative w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.6)]"
             style={{
               background:
-                "linear-gradient(135deg, rgba(168,85,247,0.28) 0%, rgba(0,0,0,0.45) 50%, rgba(56,189,248,0.28) 100%)",
+                "linear-gradient(160deg, rgba(28,14,55,0.98) 0%, rgba(8,4,18,1) 100%)",
+              paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 20px)",
             }}
+            onClick={(e) => e.stopPropagation()}
           >
+            <button
+              onClick={() => setInfoOpen(false)}
+              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center active:scale-95"
+              aria-label="Close"
+            >
+              <X className="w-4 h-4 text-white" />
+            </button>
             <p
-              className="text-[24px] font-black tracking-tight leading-none"
+              className="text-[28px] font-black tracking-tight leading-none pr-10"
               style={{ fontFamily: "Teko, Inter, system-ui, sans-serif" }}
             >
-              <span className="text-violet-300">DUO</span> vs <span className="text-sky-300">DUO</span>.
-              ONE WINNER.
+              <span className="text-violet-300">DUO</span> vs{" "}
+              <span className="text-sky-300">DUO</span>. ONE WINNER.
             </p>
-            <p className="text-[11px] text-white/70 mt-1.5 leading-snug">
+            <p className="text-[13px] text-white/80 mt-3 leading-relaxed">
               Two editors collab on one song, then their edit clashes against another duo.
-              Cheers + judge QOI decide. Winners split <span className="text-amber-300 font-black">7× XP + Index</span>.
+              Cheers + judge QOI decide. Winners split{" "}
+              <span className="text-amber-300 font-black">7× XP + Index</span>.
             </p>
+            <button
+              onClick={() => setInfoOpen(false)}
+              className="mt-5 w-full rounded-2xl py-3 bg-white text-black text-[12px] font-black uppercase tracking-widest"
+            >
+              GOT IT
+            </button>
           </div>
         </div>
       )}
