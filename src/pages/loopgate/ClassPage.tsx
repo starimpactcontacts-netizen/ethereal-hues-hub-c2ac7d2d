@@ -1,452 +1,239 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Star, Crown, Flame, Lock, TrendingUp, Zap } from 'lucide-react';
+import { Lock, TrendingUp, Crown, Flame, Zap, Star, Shield } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRealRankings } from '@/hooks/useRealData';
-import { getRankFromScore, GQTRank, getIndexFloorFromRank } from '@/data/gqtConfig';
+import {
+  getRankFromScore,
+  getRankFromLevel,
+  getEffectiveRank,
+  getRankIndex,
+  getIndexFloorFromRank,
+  type GQTRank,
+} from '@/data/gqtConfig';
 import { Button } from '@/components/ui/button';
 
-// GQT Class System - Your class is your rank letter (F through S++)
-const classes = [
-  {
-    rank: 'S++' as GQTRank,
-    name: 'S++ CLASS',
-    subtitle: 'LEGENDARY',
-    icon: Flame,
-    description: 'The apex of the editing world. Reserved for editors who have proven absolute mastery. Maximum prestige and recognition.',
-    badge: 'Score 96+',
-    bgGradient: 'from-gold/20 via-black to-gold/10',
-    borderColor: 'border-gold',
-    textColor: 'text-gold',
-    glowColor: 'shadow-gold/30',
-    indexFloor: 300,
-  },
-  {
-    rank: 'S+' as GQTRank,
-    name: 'S+ CLASS',
-    subtitle: 'ELITE',
-    icon: Flame,
-    description: 'Elite editors at the peak of competitive editing. Your work stands among the very best in the world.',
-    badge: 'Score 90-95',
-    bgGradient: 'from-gold/15 via-black to-gold/5',
-    borderColor: 'border-gold/80',
-    textColor: 'text-gold',
-    glowColor: 'shadow-gold/20',
-    indexFloor: 200,
-  },
-  {
-    rank: 'S' as GQTRank,
-    name: 'S CLASS',
-    subtitle: 'MASTER',
-    icon: Crown,
-    description: 'Top-tier editors with professional-grade work. You\'ve proven you can compete with the best.',
-    badge: 'Score 80-89',
-    bgGradient: 'from-amber-400/10 via-surface-1 to-amber-400/5',
-    borderColor: 'border-amber-400',
-    textColor: 'text-amber-400',
-    glowColor: 'shadow-amber-400/20',
-    indexFloor: 120,
-  },
-  {
-    rank: 'A' as GQTRank,
-    name: 'A CLASS',
-    subtitle: 'ADVANCED',
-    icon: Zap,
-    description: 'Skilled editors entering the pro conversation. Clear artistic intention with solid execution.',
-    badge: 'Score 70-79',
-    bgGradient: 'from-emerald-400/10 via-surface-1 to-emerald-400/5',
-    borderColor: 'border-emerald-400',
-    textColor: 'text-emerald-400',
-    glowColor: 'shadow-emerald-400/20',
-    indexFloor: 75,
-  },
-  {
-    rank: 'B' as GQTRank,
-    name: 'B CLASS',
-    subtitle: 'SKILLED',
-    icon: Star,
-    description: 'Above-average editors with solid fundamentals. You understand the rules — now learn to break them.',
-    badge: 'Score 60-69',
-    bgGradient: 'from-blue-500/10 via-surface-1 to-blue-500/5',
-    borderColor: 'border-blue-500/50',
-    textColor: 'text-blue-400',
-    glowColor: '',
-    indexFloor: 40,
-  },
-  {
-    rank: 'C' as GQTRank,
-    name: 'C CLASS',
-    subtitle: 'CONTRIBUTOR',
-    icon: Shield,
-    description: 'Average editors building their foundation. Technically competent work that needs more soul and identity.',
-    badge: 'Score 50-59',
-    bgGradient: 'from-slate-400/10 via-surface-0 to-slate-400/5',
-    borderColor: 'border-slate-400/50',
-    textColor: 'text-slate-300',
-    glowColor: '',
-    indexFloor: 20,
-  },
-  {
-    rank: 'D' as GQTRank,
-    name: 'D CLASS',
-    subtitle: 'BEGINNER',
-    icon: Shield,
-    description: 'Developing editors learning the craft. Keep practicing and experimenting with your style.',
-    badge: 'Score 40-49',
-    bgGradient: 'from-orange-500/10 via-surface-0 to-orange-500/5',
-    borderColor: 'border-orange-500/40',
-    textColor: 'text-orange-400',
-    glowColor: '',
-    indexFloor: 10,
-  },
-  {
-    rank: 'F' as GQTRank,
-    name: 'F CLASS',
-    subtitle: 'UNRANKED',
-    icon: Shield,
-    description: 'Default class for all new editors. Take the Global QOI Test or reach Level 2 to get classified.',
-    badge: 'Score 0-39',
-    bgGradient: 'from-surface-1 via-surface-0 to-surface-1',
-    borderColor: 'border-border',
-    textColor: 'text-muted-foreground',
-    glowColor: '',
-    indexFloor: 0,
-  },
+type ClassMeta = {
+  rank: GQTRank;
+  name: string;
+  subtitle: string;
+  icon: typeof Shield;
+  description: string;
+  scoreBadge: string;
+  levelBadge: string;
+  textColor: string;
+  borderColor: string;
+  glow: boolean;
+};
+
+const CLASSES: ClassMeta[] = [
+  { rank: 'S++', name: 'S++ CLASS', subtitle: 'LEGENDARY', icon: Flame, description: 'The apex. Absolute mastery. Maximum prestige.', scoreBadge: 'GQT 96+', levelBadge: 'LVL 90+', textColor: 'text-gold', borderColor: 'border-gold', glow: true },
+  { rank: 'S+',  name: 'S+ CLASS',  subtitle: 'ELITE',     icon: Flame, description: 'Elite editors at the peak of competitive editing.', scoreBadge: 'GQT 90+', levelBadge: 'LVL 70+', textColor: 'text-gold', borderColor: 'border-gold/70', glow: true },
+  { rank: 'S',   name: 'S CLASS',   subtitle: 'MASTER',    icon: Crown, description: 'Pro-tier editors competing with the best.', scoreBadge: 'GQT 80+', levelBadge: 'LVL 40+', textColor: 'text-amber-400', borderColor: 'border-amber-400', glow: true },
+  { rank: 'A',   name: 'A CLASS',   subtitle: 'ADVANCED',  icon: Zap,   description: 'Skilled editors entering the pro conversation.', scoreBadge: 'GQT 70+', levelBadge: 'LVL 20+', textColor: 'text-emerald-400', borderColor: 'border-emerald-400', glow: false },
+  { rank: 'B',   name: 'B CLASS',   subtitle: 'SKILLED',   icon: Star,  description: 'Above-average editors with solid fundamentals.', scoreBadge: 'GQT 60+', levelBadge: 'LVL 10+', textColor: 'text-blue-400', borderColor: 'border-blue-400/60', glow: false },
+  { rank: 'C',   name: 'C CLASS',   subtitle: 'CONTRIBUTOR', icon: Shield, description: 'Average editors building their foundation.', scoreBadge: 'GQT 50+', levelBadge: 'LVL 5+', textColor: 'text-slate-300', borderColor: 'border-slate-400/50', glow: false },
+  { rank: 'D',   name: 'D CLASS',   subtitle: 'BEGINNER',  icon: Shield, description: 'Developing editors learning the craft.', scoreBadge: 'GQT 40+', levelBadge: 'LVL 2+', textColor: 'text-orange-400', borderColor: 'border-orange-500/40', glow: false },
+  { rank: 'F',   name: 'F CLASS',   subtitle: 'UNRANKED',  icon: Shield, description: 'Default for new editors. Rank up by leveling or taking the GQT.', scoreBadge: 'GQT < 40', levelBadge: 'LVL 1', textColor: 'text-muted-foreground', borderColor: 'border-border', glow: false },
 ];
 
-// Get user's class from their best GQT score
-const getClassFromScore = (score: number | null, level: number): typeof classes[0] => {
-  // Users at level 2+ without a score get D class minimum
-  if (!score || score === 0) {
-    if (level >= 2) return classes.find(c => c.rank === 'D')!;
-    return classes[classes.length - 1]; // F
-  }
-  if (score >= 96) return classes[0]; // S++
-  if (score >= 90) return classes[1]; // S+
-  if (score >= 80) return classes[2]; // S
-  if (score >= 70) return classes[3]; // A
-  if (score >= 60) return classes[4]; // B
-  if (score >= 50) return classes[5]; // C
-  if (score >= 40) return classes[6]; // D
-  return classes[7]; // F
-};
+const getMeta = (rank: GQTRank) => CLASSES.find(c => c.rank === rank) || CLASSES[CLASSES.length - 1];
 
-const getProgressInfo = (currentScore: number | null, level: number) => {
-  const score = currentScore || 0;
-  
-  if (score >= 96) {
-    return { 
-      current: 100, 
-      target: 100, 
-      label: 'S++ CLASS — Maximum tier achieved',
-      nextClass: null,
-      requirement: 'You are at the top'
-    };
-  }
-  if (score >= 90) {
-    return { 
-      current: Math.round(((score - 90) / 6) * 100), 
-      target: 100, 
-      label: 'Reach S++ CLASS (96+)', 
-      nextClass: 'S++',
-      requirement: 'Score 96+ on GQT'
-    };
-  }
-  if (score >= 80) {
-    return { 
-      current: Math.round(((score - 80) / 10) * 100), 
-      target: 100, 
-      label: 'Reach S+ CLASS (90+)', 
-      nextClass: 'S+',
-      requirement: 'Score 90+ on GQT'
-    };
-  }
-  if (score >= 70) {
-    return { 
-      current: Math.round(((score - 70) / 10) * 100), 
-      target: 100, 
-      label: 'Reach S CLASS (80+)', 
-      nextClass: 'S',
-      requirement: 'Score 80+ on GQT'
-    };
-  }
-  if (score >= 60) {
-    return { 
-      current: Math.round(((score - 60) / 10) * 100), 
-      target: 100, 
-      label: 'Reach A CLASS (70+)', 
-      nextClass: 'A',
-      requirement: 'Score 70+ on GQT'
-    };
-  }
-  if (score >= 50) {
-    return { 
-      current: Math.round(((score - 50) / 10) * 100), 
-      target: 100, 
-      label: 'Reach B CLASS (60+)', 
-      nextClass: 'B',
-      requirement: 'Score 60+ on GQT'
-    };
-  }
-  if (score >= 40) {
-    return { 
-      current: Math.round(((score - 40) / 10) * 100), 
-      target: 100, 
-      label: 'Reach C CLASS (50+)', 
-      nextClass: 'C',
-      requirement: 'Score 50+ on GQT'
-    };
-  }
-  if (level >= 2) {
-    return { 
-      current: Math.round((score / 40) * 100), 
-      target: 100, 
-      label: 'Take the GQT to unlock higher classes', 
-      nextClass: 'C',
-      requirement: 'Score 50+ on GQT'
-    };
-  }
-  return { 
-    current: 0, 
-    target: 100, 
-    label: 'Take the GQT or reach Level 2 to get classified', 
-    nextClass: 'D',
-    requirement: 'Complete GQT or reach Level 2'
-  };
+// Level thresholds matching getRankFromLevel
+const LEVEL_TARGETS: Record<GQTRank, number> = {
+  'F': 1, 'D': 2, 'C': 5, 'B': 10, 'A': 20, 'S': 40, 'S+': 70, 'S++': 90,
 };
+// GQT thresholds matching getRankFromScore
+const GQT_TARGETS: Record<GQTRank, number> = {
+  'F': 0, 'D': 40, 'C': 50, 'B': 60, 'A': 70, 'S': 80, 'S+': 90, 'S++': 96,
+};
+const RANK_ORDER: GQTRank[] = ['F','D','C','B','A','S','S+','S++'];
+
+function nextRank(current: GQTRank): GQTRank | null {
+  const idx = RANK_ORDER.indexOf(current);
+  if (idx < 0 || idx >= RANK_ORDER.length - 1) return null;
+  return RANK_ORDER[idx + 1];
+}
 
 export default function ClassPage() {
   const navigate = useNavigate();
   const { profile, loading: authLoading } = useAuth();
   const { rankings, loading: rankingsLoading } = useRealRankings();
-
   const loading = authLoading || rankingsLoading;
 
-  // Get user's best GQT score and level
-  const userBestGQT = profile?.best_gatekeeper_qoi || null;
+  const userScore = profile?.best_gatekeeper_qoi || 0;
   const userLevel = profile?.level || 1;
-  const userClass = getClassFromScore(userBestGQT, userLevel);
-  const progressInfo = getProgressInfo(userBestGQT, userLevel);
+  const effectiveRank = getEffectiveRank(userScore || null, userLevel);
+  const userMeta = getMeta(effectiveRank);
+  const userIdx = getRankIndex(effectiveRank);
+  const next = nextRank(effectiveRank);
 
-  // Find user's rank position
-  const userRank = profile 
-    ? rankings.findIndex(r => r.id === profile.id) + 1 
-    : null;
+  const userRank = profile ? rankings.findIndex(r => r.id === profile.id) + 1 : null;
+  const indexFloor = getIndexFloorFromRank(effectiveRank);
+
+  // Progress to next class — track best of GQT path or Level path
+  let progressPct = 0;
+  let progressLabel = 'Maximum tier reached';
+  if (next) {
+    const gqtTarget = GQT_TARGETS[next];
+    const gqtFloor = GQT_TARGETS[effectiveRank];
+    const lvlTarget = LEVEL_TARGETS[next];
+    const lvlFloor = LEVEL_TARGETS[effectiveRank];
+    const gqtPct = gqtTarget > gqtFloor ? Math.max(0, Math.min(1, (userScore - gqtFloor) / (gqtTarget - gqtFloor))) : 0;
+    const lvlPct = lvlTarget > lvlFloor ? Math.max(0, Math.min(1, (userLevel - lvlFloor) / (lvlTarget - lvlFloor))) : 0;
+    progressPct = Math.round(Math.max(gqtPct, lvlPct) * 100);
+    progressLabel = `Reach ${next} CLASS — Hit LVL ${lvlTarget} or score ${gqtTarget}+ on GQT`;
+  }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      {/* Hero Section */}
-      <div className="px-4 pt-6 pb-4">
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <h1 className="font-display text-2xl text-gold mb-2">CLASS SYSTEM</h1>
-          <p className="text-xs text-muted-foreground">
-            Your class is determined by your best Global QOI Test score. Everyone starts at F Class until they take the GQT or reach Level 2.
+    <div className="min-h-screen bg-[#000000] pb-24">
+      {/* ─── Hero ─── */}
+      <div className="px-4 pt-6 pb-2">
+        <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}>
+          <h1 className="font-display text-3xl text-foreground tracking-tight">CLASS SYSTEM</h1>
+          <p className="text-xs text-muted-foreground mt-1 max-w-md">
+            Your class reflects your <span className="text-foreground">overall standing</span> — the higher of your GQT score or your level progression.
           </p>
         </motion.div>
       </div>
 
-      {/* Class Cards */}
-      <div className="px-4 space-y-4">
-        {classes.map((classItem, index) => {
-          const isCurrentClass = userClass.rank === classItem.rank;
-          const userScore = userBestGQT || 0;
-          const isLocked = !isCurrentClass && (
-            (classItem.rank === 'S++' && userScore < 96) ||
-            (classItem.rank === 'S+' && userScore < 90) ||
-            (classItem.rank === 'S' && userScore < 80) ||
-            (classItem.rank === 'A' && userScore < 70) ||
-            (classItem.rank === 'B' && userScore < 60) ||
-            (classItem.rank === 'C' && userScore < 50) ||
-            (classItem.rank === 'D' && userScore < 40 && userLevel < 2)
-          );
-          const showGlow = classItem.rank === 'S++' || classItem.rank === 'S+' || classItem.rank === 'S';
-          
+      {/* ─── Your Status Card ─── */}
+      <div className="px-4 mt-3">
+        {loading ? (
+          <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-5 animate-pulse h-40" />
+        ) : profile ? (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`relative overflow-hidden rounded-2xl bg-[#0a0a0a] border ${userMeta.borderColor} p-5`}
+          >
+            {userMeta.glow && (
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-gold/5 via-transparent to-transparent" />
+            )}
+            <div className="relative">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-1">Your Class</p>
+                  <p className={`font-display text-5xl leading-none ${userMeta.textColor}`}>{userMeta.name}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-[0.25em] mt-1">{userMeta.subtitle}</p>
+                </div>
+                <div className={`w-14 h-14 rounded-xl bg-black border ${userMeta.borderColor} flex items-center justify-center shrink-0`}>
+                  <userMeta.icon className={`w-6 h-6 ${userMeta.textColor}`} strokeWidth={2} />
+                </div>
+              </div>
+
+              {/* Stat strip */}
+              <div className="grid grid-cols-4 gap-2 py-4 border-y border-white/5">
+                <Stat label="Level" value={`${userLevel}`} />
+                <Stat label="Best GQT" value={userScore ? userScore.toFixed(0) : '—'} />
+                <Stat label="Index Floor" value={`+${indexFloor}`} />
+                <Stat label="Global" value={userRank ? `#${userRank}` : '—'} />
+              </div>
+
+              {/* Progress */}
+              {next ? (
+                <div className="mt-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Next: {next} Class</span>
+                    <span className="text-[10px] text-foreground font-semibold">{progressPct}%</span>
+                  </div>
+                  <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${progressPct}%` }}
+                      transition={{ duration: 0.7, delay: 0.2 }}
+                      className={`h-full bg-gradient-to-r from-amber-400 to-gold`}
+                    />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">{progressLabel}</p>
+                </div>
+              ) : (
+                <p className="mt-4 text-center text-gold font-display text-base">S++ — Maximum tier reached</p>
+              )}
+
+              {/* GQT CTA */}
+              {!userScore && (
+                <Button onClick={() => navigate('/gqt')} className="w-full mt-4 bg-foreground text-background hover:bg-foreground/90 rounded-xl">
+                  Take the Global QOI Test
+                </Button>
+              )}
+            </div>
+          </motion.div>
+        ) : (
+          <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-5 text-center">
+            <p className="text-sm text-muted-foreground">Sign in to see your class</p>
+          </div>
+        )}
+      </div>
+
+      {/* ─── How it works ─── */}
+      <div className="px-4 mt-6">
+        <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4 flex items-start gap-3">
+          <TrendingUp className="w-4 h-4 text-gold shrink-0 mt-0.5" />
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            Two ways to rank up: <span className="text-foreground">level up</span> by competing, judging, and posting — or <span className="text-foreground">score high on the GQT</span>. Whichever rank is higher becomes your class.
+          </p>
+        </div>
+      </div>
+
+      {/* ─── All Classes ─── */}
+      <div className="px-4 mt-6 space-y-2">
+        <p className="text-[10px] text-muted-foreground uppercase tracking-[0.25em] mb-3 px-1">All Classes</p>
+        {CLASSES.map((c, i) => {
+          const cIdx = getRankIndex(c.rank);
+          const isCurrent = c.rank === effectiveRank;
+          const isLocked = cIdx > userIdx;
+          const isUnlocked = cIdx <= userIdx;
+
           return (
             <motion.div
-              key={classItem.rank}
-              initial={{ opacity: 0, x: -20 }}
+              key={c.rank}
+              initial={{ opacity: 0, x: -12 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.05 }}
-              className={`
-                relative overflow-hidden
-                bg-gradient-to-br ${classItem.bgGradient}
-                border-l-4 ${classItem.borderColor}
-                ${isCurrentClass ? 'ring-2 ring-gold/50' : ''}
-                ${showGlow && !isLocked ? `shadow-lg ${classItem.glowColor}` : ''}
-              `}
+              transition={{ delay: i * 0.03 }}
+              className={`relative overflow-hidden rounded-xl bg-[#0a0a0a] border ${isCurrent ? c.borderColor + ' ring-1 ring-gold/40' : 'border-white/5'} ${isLocked ? 'opacity-50' : ''} p-4`}
             >
-              {/* Animated glow for top tiers */}
-              {showGlow && (
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gold/5 to-transparent animate-pulse" />
-              )}
-              
-              <div className="relative p-5">
-                {/* Current / Locked Badge */}
-                {isCurrentClass ? (
-                  <div className="absolute top-4 right-4 flex items-center gap-1.5 text-gold">
-                    <span className="text-[10px] uppercase tracking-wider font-bold bg-gold/20 px-2 py-1">Your Class</span>
-                  </div>
-                ) : isLocked && (
-                  <div className="absolute top-4 right-4 flex items-center gap-1.5 text-muted-foreground">
-                    <Lock size={12} />
-                    <span className="text-[10px] uppercase tracking-wider">Locked</span>
-                  </div>
-                )}
-
-                {/* Icon + Name */}
-                <div className="flex items-center gap-4 mb-3">
-                  <div className={`w-12 h-12 bg-surface-0 border ${classItem.borderColor} flex items-center justify-center`}>
-                    <classItem.icon size={24} className={classItem.textColor} strokeWidth={2} />
-                  </div>
-                  <div>
-                    <h2 className={`font-display text-3xl ${classItem.textColor}`}>{classItem.name}</h2>
-                    <p className="text-xs text-muted-foreground uppercase tracking-widest">{classItem.subtitle}</p>
-                  </div>
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-lg bg-black border ${c.borderColor} flex items-center justify-center shrink-0`}>
+                  <c.icon className={`w-4 h-4 ${c.textColor}`} strokeWidth={2} />
                 </div>
-
-                {/* Description */}
-                <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                  {classItem.description}
-                </p>
-
-                {/* Badge + Index Floor */}
-                <div className="flex items-center justify-between pt-4 border-t border-border/50">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className={`text-[10px] uppercase tracking-wider px-2 py-1 border ${classItem.borderColor} ${classItem.textColor} bg-surface-0`}>
-                      {classItem.badge}
-                    </span>
-                    {classItem.indexFloor > 0 && (
-                      <span className="text-[10px] uppercase tracking-wider px-2 py-1 bg-gold/10 text-gold border border-gold/30">
-                        +{classItem.indexFloor} INDEX
-                      </span>
+                    <p className={`font-display text-xl ${c.textColor}`}>{c.name}</p>
+                    {isCurrent && (
+                      <span className="text-[8px] uppercase tracking-wider font-bold bg-gold/20 text-gold px-1.5 py-0.5 rounded">You</span>
+                    )}
+                    {isUnlocked && !isCurrent && (
+                      <span className="text-[8px] uppercase tracking-wider text-emerald-400/80">Unlocked</span>
                     )}
                   </div>
+                  <p className="text-[10px] text-muted-foreground/80 truncate">{c.description}</p>
                 </div>
+                {isLocked && <Lock className="w-3.5 h-3.5 text-muted-foreground shrink-0" />}
+              </div>
+              <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-white/5 flex-wrap">
+                <span className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 border ${c.borderColor} ${c.textColor} bg-black rounded`}>{c.scoreBadge}</span>
+                <span className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 border border-white/10 text-muted-foreground bg-black rounded`}>{c.levelBadge}</span>
+                {c.rank !== 'F' && (
+                  <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 bg-gold/10 text-gold border border-gold/20 rounded">+{getIndexFloorFromRank(c.rank)} INDEX</span>
+                )}
               </div>
             </motion.div>
           );
         })}
-        
-        {/* Footer tooltip */}
-        <p className="text-center text-[10px] text-muted-foreground uppercase tracking-widest mt-6 px-4">
-          Class updates automatically based on your GQT score
+        <p className="text-center text-[10px] text-muted-foreground/60 uppercase tracking-widest pt-4">
+          Class updates automatically
         </p>
       </div>
+    </div>
+  );
+}
 
-      {/* User Status & Progression */}
-      <section className="px-4 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          <h3 className="font-display text-xl mb-4 flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-gold" />
-            Your Progression
-          </h3>
-          
-          {loading ? (
-            <div className="bg-surface-1 border border-border p-6">
-              <div className="animate-pulse space-y-3">
-                <div className="h-4 bg-muted rounded w-1/3" />
-                <div className="h-8 bg-muted rounded w-full" />
-                <div className="h-3 bg-muted rounded w-2/3" />
-              </div>
-            </div>
-          ) : profile ? (
-            <div className={`bg-surface-1 border-l-4 ${userClass.borderColor} p-5`}>
-              {/* Current Class */}
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-1">
-                    Current Class
-                  </p>
-                  <p className={`font-display text-3xl ${userClass.textColor}`}>{userClass.name}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-1">Best GQT Score</p>
-                  <p className="font-display text-2xl">
-                    {userBestGQT ? `${userBestGQT.toFixed(0)}/100` : '--'}
-                  </p>
-                </div>
-              </div>
-
-              {/* Stats */}
-              <div className="grid grid-cols-3 gap-4 mb-6 py-4 border-y border-border/50">
-                <div className="text-center">
-                  <p className="font-display text-xl text-foreground">
-                    {userBestGQT ? getRankFromScore(userBestGQT).rank : userLevel >= 2 ? 'D' : 'F'}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground uppercase">Class</p>
-                </div>
-                <div className="text-center">
-                  <p className="font-display text-xl text-foreground">+{userClass.indexFloor}</p>
-                  <p className="text-[10px] text-muted-foreground uppercase">Index Floor</p>
-                </div>
-                <div className="text-center">
-                  <p className="font-display text-xl text-foreground">{userRank ? `#${userRank}` : '--'}</p>
-                  <p className="text-[10px] text-muted-foreground uppercase">Global Rank</p>
-                </div>
-              </div>
-
-              {/* Progress Bar */}
-              {progressInfo.nextClass && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground uppercase tracking-wider">
-                      Next: {progressInfo.nextClass} Class
-                    </span>
-                    <span className="text-gold font-semibold">
-                      {progressInfo.requirement}
-                    </span>
-                  </div>
-                  <div className="h-2 bg-surface-0 border border-border overflow-hidden">
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      animate={{ width: `${(progressInfo.current / progressInfo.target) * 100}%` }}
-                      transition={{ delay: 0.6, duration: 0.8 }}
-                      className="h-full bg-gradient-to-r from-gold/50 to-gold"
-                    />
-                  </div>
-                  <p className="text-[10px] text-muted-foreground">
-                    {progressInfo.label}
-                  </p>
-                </div>
-              )}
-
-              {!progressInfo.nextClass && (
-                <div className="py-2 text-center">
-                  <span className="text-gold font-display text-lg">S++ CLASS — Maximum tier reached</span>
-                </div>
-              )}
-              
-              {/* Take GQT CTA */}
-              {!userBestGQT && (
-                <div className="mt-4 pt-4 border-t border-border/50">
-                  <Button 
-                    onClick={() => navigate('/gqt')}
-                    className="w-full bg-gold text-background hover:bg-gold/90"
-                  >
-                    Take the Global QOI Test
-                  </Button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="bg-surface-1 border border-border p-6 text-center">
-              <p className="text-sm text-muted-foreground mb-2">
-                Take the Global QOI Test to get classified
-              </p>
-              <p className="text-xs text-gold">
-                Your class is determined by your best GQT score
-              </p>
-            </div>
-          )}
-        </motion.div>
-      </section>
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="text-center">
+      <p className="font-display text-lg text-foreground leading-none">{value}</p>
+      <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-1">{label}</p>
     </div>
   );
 }
