@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useRef, useState, useEffect } from "react";
+import { useNavigate, useParams, useSearchParams, Link } from "react-router-dom";
 import {
   ChevronLeft,
   Clock,
@@ -15,6 +15,7 @@ import {
   Sparkles,
   MessageCircle,
   Mic,
+  Swords,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -33,8 +34,23 @@ import CollabVoiceRoom from "@/components/loopgate/collabs/CollabVoiceRoom";
 export default function CollabDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const vsSlotId = searchParams.get("vs");
   const { user } = useAuth();
   const { slot, reactions, loading, toggleReaction, reload } = useCollabSlot(id);
+  const [vsSlot, setVsSlot] = useState<{ id: string; creator_username: string; partner_username: string | null; creator_avatar_url: string | null; partner_avatar_url: string | null } | null>(null);
+
+  useEffect(() => {
+    if (!vsSlotId) { setVsSlot(null); return; }
+    (async () => {
+      const { data } = await supabase
+        .from("collab_slots")
+        .select("id, creator_username, partner_username, creator_avatar_url, partner_avatar_url")
+        .eq("id", vsSlotId)
+        .maybeSingle();
+      if (data) setVsSlot(data as any);
+    })();
+  }, [vsSlotId]);
   const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
   const [socialUrl, setSocialUrl] = useState("");
   const [busy, setBusy] = useState(false);
@@ -408,6 +424,33 @@ export default function CollabDetailPage() {
         {/* LIVE — video + reactions */}
         {slot.status === "live" && slot.final_video_url && (
           <>
+            {vsSlot && (
+              <Link
+                to={`/collab/${vsSlot.id}?vs=${slot.id}`}
+                className="block rounded-2xl p-3 border-2 border-rose-500/40 bg-gradient-to-r from-rose-500/15 to-red-600/10 active:translate-y-[2px] shadow-[0_4px_0_rgba(0,0,0,0.4)]"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-rose-500 flex items-center justify-center shrink-0 shadow-[0_3px_0_rgba(0,0,0,0.4)]">
+                    <Swords className="w-5 h-5 text-white" strokeWidth={2.5} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-rose-300 leading-none">Battling vs</p>
+                    <p className="text-[14px] font-black text-white truncate leading-tight" style={{ fontFamily: "Teko, sans-serif" }}>
+                      {vsSlot.creator_username}{vsSlot.partner_username ? ` × ${vsSlot.partner_username}` : ""}
+                    </p>
+                  </div>
+                  <div className="flex -space-x-2 shrink-0">
+                    {vsSlot.creator_avatar_url && (
+                      <img src={vsSlot.creator_avatar_url} className="w-7 h-7 rounded-full border-2 border-rose-400/70 object-cover" alt="" />
+                    )}
+                    {vsSlot.partner_avatar_url && (
+                      <img src={vsSlot.partner_avatar_url} className="w-7 h-7 rounded-full border-2 border-rose-400/70 object-cover" alt="" />
+                    )}
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-rose-200 shrink-0">View →</span>
+                </div>
+              </Link>
+            )}
             <div className="rounded-3xl overflow-hidden border-2 border-white/15 bg-black shadow-[0_8px_0_rgba(0,0,0,0.5),0_16px_40px_rgba(168,85,247,0.3)]">
               <video
                 src={slot.final_video_url}
