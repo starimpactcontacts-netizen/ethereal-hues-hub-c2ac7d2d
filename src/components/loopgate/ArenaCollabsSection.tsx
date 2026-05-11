@@ -251,7 +251,7 @@ function OpenSeatCard({ slot }: { slot: CollabSlot }) {
   );
 }
 
-function LiveDuoCard({ slot }: { slot: CollabSlot }) {
+function LiveDuoCard({ slot, challenger }: { slot: CollabSlot; challenger?: CollabSlot }) {
   return (
     <CardShell to={`/collab/${slot.id}`} isLive>
       <div className="relative w-full h-full p-3 flex flex-col">
@@ -292,7 +292,15 @@ function LiveDuoCard({ slot }: { slot: CollabSlot }) {
                 <Swords className="w-3 h-3 text-white/70" />
               </div>
             </div>
-            {/* awaiting challenger duo */}
+            {challenger ? (
+              <DuoSide
+                creatorName={challenger.creator_username}
+                creatorAvatar={challenger.creator_avatar_url}
+                partnerName={challenger.partner_username}
+                partnerAvatar={challenger.partner_avatar_url}
+                team="red"
+              />
+            ) : (
             <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
               <div className="flex -space-x-2">
                 {[0, 1].map((i) => (
@@ -311,11 +319,13 @@ function LiveDuoCard({ slot }: { slot: CollabSlot }) {
                 Awaiting
               </span>
             </div>
+            )}
           </div>
         </div>
 
         <div className="mt-auto h-1.5 rounded-full overflow-hidden bg-white/5 flex">
-          <div className="h-full bg-blue-500/40" style={{ width: `100%` }} />
+          <div className="h-full bg-blue-500/40" style={{ width: challenger ? "50%" : "100%" }} />
+          {challenger && <div className="h-full bg-red-500/40" style={{ width: "50%" }} />}
         </div>
       </div>
     </CardShell>
@@ -324,7 +334,7 @@ function LiveDuoCard({ slot }: { slot: CollabSlot }) {
 
 export default function ArenaCollabsSection({ onCreateClick }: { onCreateClick: () => void }) {
   const navigate = useNavigate();
-  const { openSlots, liveSlots, loading: loadingSlots } = useCollabs();
+  const { openSlots, liveSlots, pairedSlots, loading: loadingSlots } = useCollabs();
   const { liveBattles, loading: loadingBattles } = useCollabBattles();
   const loading = loadingSlots || loadingBattles;
 
@@ -335,6 +345,22 @@ export default function ArenaCollabsSection({ onCreateClick }: { onCreateClick: 
     inBattle.add(b.slot_b_id);
   });
   const standaloneLive = liveSlots.filter((s) => !inBattle.has(s.id));
+
+  // Map of target_slot_id -> challenger slot (challenger filled with both editors)
+  const challengerMap = new Map<string, CollabSlot>();
+  [...pairedSlots, ...liveSlots].forEach((s) => {
+    if (s.challenges_slot_id && s.partner_id) {
+      const existing = challengerMap.get(s.challenges_slot_id);
+      if (!existing) challengerMap.set(s.challenges_slot_id, s);
+    }
+  });
+  const challengerSlotIds = new Set(
+    [...pairedSlots, ...liveSlots]
+      .filter((s) => s.challenges_slot_id && s.partner_id)
+      .map((s) => s.id),
+  );
+  // Don't show challenger duos as standalone — they belong to the host card
+  const filteredStandaloneLive = standaloneLive.filter((s) => !challengerSlotIds.has(s.id));
 
   return (
     <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -372,7 +398,9 @@ export default function ArenaCollabsSection({ onCreateClick }: { onCreateClick: 
       ) : (
         <ArenaRail>
           {liveBattles.map((b) => <BattleCard key={b.id} battle={b} />)}
-          {standaloneLive.map((s) => <LiveDuoCard key={s.id} slot={s} />)}
+          {filteredStandaloneLive.map((s) => (
+            <LiveDuoCard key={s.id} slot={s} challenger={challengerMap.get(s.id)} />
+          ))}
           {openSlots.map((s) => <OpenSeatCard key={s.id} slot={s} />)}
 
           {/* Create poster */}
