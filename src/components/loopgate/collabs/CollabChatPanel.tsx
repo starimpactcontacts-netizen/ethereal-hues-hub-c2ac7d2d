@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { X, Send, Loader2, Smile } from "lucide-react";
+import { X, Send, Loader2, Smile, ChevronDown, ChevronUp, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -23,6 +23,7 @@ export default function CollabChatPanel({
   creatorId,
   partnerId,
   inline = false,
+  dock = false,
 }: {
   slotId: string;
   open: boolean;
@@ -30,6 +31,7 @@ export default function CollabChatPanel({
   creatorId: string;
   partnerId: string | null;
   inline?: boolean;
+  dock?: boolean;
 }) {
   const { user } = useAuth();
   const [messages, setMessages] = useState<CollabMessage[]>([]);
@@ -37,6 +39,9 @@ export default function CollabChatPanel({
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [gifOpen, setGifOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [unread, setUnread] = useState(0);
+  const lastSeenIdRef = useRef<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
