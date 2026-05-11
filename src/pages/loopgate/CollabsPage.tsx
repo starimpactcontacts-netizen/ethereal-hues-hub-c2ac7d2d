@@ -790,28 +790,44 @@ export default function CollabsPage() {
       </button>
 
       <div className="relative" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 64px)" }}>
-        {/* HUD stats */}
-        <div className="px-4 pb-3 grid grid-cols-3 gap-2">
-          {[
-            { label: "LIVE", value: liveBattles.length, color: "text-rose-300", border: "border-rose-400/30" },
-            { label: "OPEN", value: openSlots.length, color: "text-violet-300", border: "border-violet-400/30" },
-            { label: "TOP 24H", value: topToday.length, color: "text-sky-300", border: "border-sky-400/30" },
-          ].map((s) => (
-            <div
-              key={s.label}
-              className={`rounded-xl px-2.5 py-1.5 bg-white/[0.03] border ${s.border} backdrop-blur-md flex items-baseline justify-between`}
-            >
-              <span
-                className={`${s.color} text-[20px] font-black leading-none`}
-                style={{ fontFamily: "Teko, Inter, system-ui, sans-serif" }}
-              >
-                {s.value}
-              </span>
-              <span className="text-[9px] font-black tracking-widest text-white/50 uppercase">
-                {s.label}
-              </span>
+        {/* QUICK ACTIONS */}
+        <div className="px-4 pb-3 grid grid-cols-2 gap-2">
+          <button
+            onClick={() => setTab("top")}
+            className="group relative overflow-hidden rounded-xl px-3 py-2.5 bg-gradient-to-br from-amber-500/20 to-amber-900/10 border border-amber-400/30 backdrop-blur-md flex items-center gap-2 active:translate-y-[1px] transition-transform"
+          >
+            <div className="w-7 h-7 rounded-lg bg-amber-400/20 border border-amber-300/30 flex items-center justify-center">
+              <Crown className="w-4 h-4 text-amber-300" />
             </div>
-          ))}
+            <div className="flex flex-col items-start leading-none">
+              <span className="text-[11px] font-black tracking-widest text-white uppercase">Leaderboard</span>
+              <span className="text-[9px] font-bold tracking-wider text-amber-200/70 uppercase mt-0.5">Top Duos</span>
+            </div>
+          </button>
+          <button
+            onClick={() => {
+              const pool = [
+                ...liveBattles.map((b: any) => ({ kind: "battle", id: b.id })),
+                ...standaloneLive.map((s) => ({ kind: "slot", id: s.id })),
+              ];
+              if (pool.length === 0) {
+                setTab("live");
+                return;
+              }
+              const pick = pool[Math.floor(Math.random() * pool.length)];
+              navigate(pick.kind === "battle" ? `/battle/${pick.id}` : `/collab/${pick.id}`);
+            }}
+            className="group relative overflow-hidden rounded-xl px-3 py-2.5 bg-gradient-to-br from-rose-500/20 to-rose-900/10 border border-rose-400/30 backdrop-blur-md flex items-center gap-2 active:translate-y-[1px] transition-transform"
+          >
+            <div className="w-7 h-7 rounded-lg bg-rose-400/20 border border-rose-300/30 flex items-center justify-center relative">
+              <Play className="w-3.5 h-3.5 text-rose-300 fill-rose-300" />
+              <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse" />
+            </div>
+            <div className="flex flex-col items-start leading-none">
+              <span className="text-[11px] font-black tracking-widest text-white uppercase">Watch Live</span>
+              <span className="text-[9px] font-bold tracking-wider text-rose-200/70 uppercase mt-0.5">Random Duo</span>
+            </div>
+          </button>
         </div>
 
         {/* tabs */}
