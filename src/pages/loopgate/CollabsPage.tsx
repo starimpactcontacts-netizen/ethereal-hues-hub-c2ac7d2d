@@ -585,31 +585,9 @@ function ChallengeModal({
       navigate("/start");
       return;
     }
-    try {
-      setBusy(true);
-      const newSlot = await createCollabSlot({
-        song_title: target.song_title,
-        song_artist: target.song_artist ?? undefined,
-        song_url: target.song_url ?? undefined,
-        total_duration_seconds: target.total_duration_seconds,
-        creator_segment: target.creator_segment,
-        partner_segment: target.partner_segment,
-      });
-      toast({
-        title: "Challenger seat posted",
-        description: "Share the link — once your partner joins, the 3H clock starts.",
-      });
-      onClose();
-      navigate(`/collab/${newSlot.id}`);
-    } catch (e: any) {
-      toast({
-        title: "Couldn't post seat",
-        description: e?.message ?? "Try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setBusy(false);
-    }
+    setBusy(true);
+    onClose();
+    navigate(`/collabs/create?challenge=${target.id}`);
   };
 
   return (
