@@ -314,6 +314,134 @@ function OpenSlotCard({ slot }: { slot: CollabSlot }) {
 /* ------------------------------------------------------------------ */
 /*  page                                                               */
 /* ------------------------------------------------------------------ */
+function MyDuoCard({ slot, meId }: { slot: CollabSlot; meId: string }) {
+  const isCreator = slot.creator_id === meId;
+  const me = isCreator
+    ? { name: slot.creator_username, avatar: slot.creator_avatar_url }
+    : { name: slot.partner_username ?? "you", avatar: slot.partner_avatar_url };
+  const partner = isCreator
+    ? slot.partner_id
+      ? { name: slot.partner_username ?? "?", avatar: slot.partner_avatar_url, empty: false }
+      : { name: "Waiting", avatar: null, empty: true }
+    : { name: slot.creator_username, avatar: slot.creator_avatar_url, empty: false };
+
+  const statusMeta: Record<string, { label: string; color: string; icon: any }> = {
+    open:             { label: "AWAITING PARTNER", color: "text-violet-300", icon: UserPlus },
+    paired:           { label: "PAIRED · EDIT NOW", color: "text-amber-300",  icon: Hourglass },
+    editing:          { label: "EDITING",           color: "text-amber-300",  icon: Hourglass },
+    pending_approval: { label: "AWAITING APPROVAL", color: "text-sky-300",    icon: CheckCircle2 },
+    live:             { label: "LIVE BATTLE",       color: "text-rose-300",   icon: Swords },
+    rejected:         { label: "REJECTED",          color: "text-white/50",   icon: Sparkles },
+    expired:          { label: "EXPIRED",           color: "text-white/40",   icon: Clock },
+  };
+  const sm = statusMeta[slot.status] ?? statusMeta.open;
+  const StatusIcon = sm.icon;
+
+  const cta =
+    slot.status === "open"
+      ? { label: "VIEW SEAT",   to: `/collab/${slot.id}` }
+      : slot.status === "live"
+      ? { label: "OPEN BATTLE", to: `/collab/${slot.id}` }
+      : slot.status === "paired" || slot.status === "editing"
+      ? { label: "UPLOAD EDIT", to: `/collab/${slot.id}` }
+      : { label: "OPEN DUO",    to: `/collab/${slot.id}` };
+
+  return (
+    <Link
+      to={cta.to}
+      className="block rounded-2xl p-[1.5px] active:scale-[0.99] transition-transform shadow-[0_5px_0_rgba(0,0,0,0.4)]"
+      style={{
+        background:
+          "linear-gradient(135deg, rgba(168,85,247,0.55), rgba(255,255,255,0.04) 50%, rgba(56,189,248,0.45))",
+      }}
+    >
+      <div
+        className="rounded-[14px] p-3"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(28,14,55,0.95) 0%, rgba(10,5,22,0.98) 100%)",
+        }}
+      >
+        <div className="flex items-center justify-between mb-2">
+          <span className={`text-[9px] font-black tracking-[0.18em] uppercase ${sm.color} flex items-center gap-1`}>
+            <StatusIcon className="w-2.5 h-2.5" />
+            {sm.label}
+          </span>
+          <span className="text-[9px] text-white/50 font-mono flex items-center gap-0.5">
+            <Clock className="w-2.5 h-2.5" />
+            {slot.total_duration_seconds}s
+          </span>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {/* me */}
+          <div className="flex flex-col items-center gap-1 w-[64px]">
+            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-violet-400/80 bg-[#0a0612] flex items-center justify-center text-[11px] font-black text-white/80">
+              {me.avatar ? (
+                <img src={me.avatar} alt="" className="w-full h-full object-cover" />
+              ) : (
+                me.name.slice(0, 2).toUpperCase()
+              )}
+            </div>
+            <span className="text-[9px] text-white/80 font-bold truncate max-w-[64px]">
+              {me.name}
+            </span>
+            <span className="text-[8px] text-violet-300 font-black tracking-widest">YOU</span>
+          </div>
+
+          <span
+            className="text-white/40 text-[20px] font-black"
+            style={{ fontFamily: "Teko, Inter, system-ui, sans-serif" }}
+          >
+            ×
+          </span>
+
+          {/* partner */}
+          <div className="flex flex-col items-center gap-1 w-[64px]">
+            <div
+              className={`w-12 h-12 rounded-full overflow-hidden flex items-center justify-center text-[11px] font-black text-white/70 ${
+                partner.empty
+                  ? "border-2 border-dashed border-violet-300/50 bg-violet-500/[0.06] animate-pulse"
+                  : "border-2 border-sky-400/80 bg-[#0a0612]"
+              }`}
+            >
+              {partner.empty ? (
+                <UserPlus className="w-5 h-5 text-violet-300" />
+              ) : partner.avatar ? (
+                <img src={partner.avatar} alt="" className="w-full h-full object-cover" />
+              ) : (
+                partner.name.slice(0, 2).toUpperCase()
+              )}
+            </div>
+            <span className="text-[9px] text-white/80 font-bold truncate max-w-[64px]">
+              {partner.empty ? "Open" : partner.name}
+            </span>
+            <span className="text-[8px] text-sky-300 font-black tracking-widest">
+              {partner.empty ? "OPEN" : "PARTNER"}
+            </span>
+          </div>
+
+          {/* song + cta */}
+          <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div className="px-2 py-1.5 rounded-lg bg-white/[0.04] border border-white/10 flex items-center gap-1.5">
+              <Music className="w-3 h-3 text-violet-300 shrink-0" />
+              <span className="text-[10px] text-white/80 font-bold truncate">{slot.song_title}</span>
+            </div>
+            <div className="rounded-xl py-2 text-center bg-white text-black text-[10px] font-black uppercase tracking-widest shadow-[0_3px_0_rgba(0,0,0,0.4)] flex items-center justify-center gap-1">
+              {slot.status === "paired" || slot.status === "editing" ? (
+                <Upload className="w-3 h-3" />
+              ) : (
+                <Zap className="w-3 h-3" />
+              )}
+              {cta.label}
+            </div>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 export default function CollabsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
