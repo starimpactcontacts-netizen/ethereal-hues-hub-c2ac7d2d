@@ -484,12 +484,58 @@ function PickedUpRow({ slot }: { slot: CollabSlot }) {
   );
 }
 
+function LiveAwaitingRow({ slot }: { slot: CollabSlot }) {
+  return (
+    <Link
+      to={`/collab/${slot.id}`}
+      className="block rounded-2xl p-3 border border-rose-400/30 bg-rose-500/[0.05] backdrop-blur-md active:scale-[0.99] transition-transform"
+    >
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-black tracking-[0.18em] uppercase text-rose-300 flex items-center gap-1">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500" />
+          </span>
+          LIVE · AWAITING CHALLENGER
+        </span>
+        <span className="text-[10px] text-white/50 font-mono flex items-center gap-1">
+          <Flame className="w-2.5 h-2.5 text-orange-300" />
+          {slot.reaction_score}
+        </span>
+      </div>
+      <div className="flex items-center gap-2.5">
+        <DuoFaces slot={slot} side="L" />
+        <div className="min-w-0 flex-1">
+          <p className="text-[12px] font-bold text-white truncate leading-tight">
+            {slot.creator_username} <span className="text-violet-300">×</span>{" "}
+            <span className="text-sky-200">{slot.partner_username ?? "?"}</span>
+          </p>
+          <p className="text-[10px] text-white/60 truncate flex items-center gap-1 mt-0.5">
+            <Music className="w-2.5 h-2.5 text-violet-300" /> {slot.song_title}
+          </p>
+        </div>
+        <span className="rounded-lg px-2.5 py-1.5 bg-white text-black text-[10px] font-black uppercase tracking-widest">
+          WATCH
+        </span>
+      </div>
+    </Link>
+  );
+}
+
 export default function CollabsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [tab, setTab] = useState<Tab>("live");
-  const { openSlots, mySlots, topToday, pairedSlots, loading: loadingSlots } = useCollabs();
+  const { openSlots, liveSlots, mySlots, topToday, pairedSlots, loading: loadingSlots } = useCollabs();
   const { liveBattles, loading: loadingBattles } = useCollabBattles();
+
+  // Standalone live duos (shipped, but no battle yet — awaiting challenger)
+  const inBattle = new Set<string>();
+  liveBattles.forEach((b) => {
+    inBattle.add(b.slot_a_id);
+    inBattle.add(b.slot_b_id);
+  });
+  const standaloneLive = liveSlots.filter((s) => !inBattle.has(s.id));
 
   const TABS: { key: Tab; label: string; icon: any; count: number }[] = [
     { key: "live", label: "Live Bracket", icon: Swords, count: liveBattles.length },
@@ -654,7 +700,29 @@ export default function CollabsPage() {
               </div>
             )}
 
-            {liveBattles.length === 0 && pairedSlots.length === 0 ? (
+            {standaloneLive.length > 0 && (
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-2 px-1">
+                  <h3
+                    className="text-[14px] font-black uppercase tracking-tight text-rose-200 flex items-center gap-1.5"
+                    style={{ fontFamily: "Teko, Inter, system-ui, sans-serif" }}
+                  >
+                    <Swords className="w-3.5 h-3.5" />
+                    Shipped · Awaiting Challenger
+                  </h3>
+                  <span className="text-[9px] font-black tracking-widest text-rose-300/70 uppercase">
+                    {standaloneLive.length} LIVE
+                  </span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  {standaloneLive.map((s) => (
+                    <LiveAwaitingRow key={s.id} slot={s} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {liveBattles.length === 0 && pairedSlots.length === 0 && standaloneLive.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-violet-400/30 bg-violet-500/[0.04] py-12 px-6 text-center">
                 <Swords className="w-8 h-8 text-violet-300 mx-auto mb-2" />
                 <p className="text-white text-[13px] font-bold mb-1">No live brackets yet</p>
