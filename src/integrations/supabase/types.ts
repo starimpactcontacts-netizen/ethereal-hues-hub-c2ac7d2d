@@ -1679,6 +1679,7 @@ export type Database = {
           song_title: string
           song_url: string | null
           status: Database["public"]["Enums"]["collab_status"]
+          submit_deadline_at: string | null
           total_duration_seconds: number
           total_reactions: number
           uploaded_at: string | null
@@ -1707,6 +1708,7 @@ export type Database = {
           song_title: string
           song_url?: string | null
           status?: Database["public"]["Enums"]["collab_status"]
+          submit_deadline_at?: string | null
           total_duration_seconds?: number
           total_reactions?: number
           uploaded_at?: string | null
@@ -1735,6 +1737,7 @@ export type Database = {
           song_title?: string
           song_url?: string | null
           status?: Database["public"]["Enums"]["collab_status"]
+          submit_deadline_at?: string | null
           total_duration_seconds?: number
           total_reactions?: number
           uploaded_at?: string | null
@@ -9070,6 +9073,7 @@ export type Database = {
         Args: { p_crew_id: string }
         Returns: undefined
       }
+      expire_overdue_collab_slots: { Args: never; Returns: number }
       finalize_battle_if_expired: {
         Args: { p_battle_id: string }
         Returns: undefined
