@@ -55,7 +55,6 @@ export default function LeaguePage() {
   const me = rankings.find(r => r.id === profile?.id);
   const totalWins = me?.total_wins ?? 0;
   const totalEvents = me?.total_events ?? 0;
-  const totalBattles = me?.total_battles ?? totalEvents;
   const indexScore = me?.global_index_score ?? profile?.global_index_score ?? 0;
   const winRate = me?.win_rate ?? 0;
 
@@ -104,13 +103,13 @@ export default function LeaguePage() {
               {/* Stats */}
               <div className="grid grid-cols-4 gap-2">
                 <Stat icon={Trophy} label="Wins" value={totalWins} accent="text-amber-300" />
-                <Stat icon={Swords} label="Battles" value={totalBattles} accent="text-foreground" />
+                <Stat icon={Swords} label="Entries" value={totalEvents} accent="text-foreground" />
                 <Stat icon={Target} label="Win %" value={`${Math.round(winRate)}`} suffix="%" accent="text-emerald-300" />
                 <Stat icon={Flame} label="Index" value={indexScore} accent="text-sky-300" />
               </div>
 
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground/60 mt-3 text-center">
-                Live · Synced from battles, tournaments & competitions
+                Live · Synced from edit battles, duo battles & competitions
               </p>
             </div>
           </div>
@@ -226,7 +225,7 @@ export default function LeaguePage() {
                     <div className="flex-1 min-w-0">
                       <p className="font-display text-base truncate leading-tight">{editor.username}{isMe && <span className="text-[9px] text-muted-foreground/70 ml-1.5 uppercase tracking-wider">You</span>}</p>
                       <p className="text-[10px] text-muted-foreground/70 uppercase tracking-wider">
-                        {editor.total_wins ?? 0}W · {editor.total_battles ?? editor.total_events ?? 0} battles
+                        {editor.total_wins ?? 0}W · {editor.total_events ?? 0} entries
                       </p>
                     </div>
                     <div className="text-right">
