@@ -323,10 +323,30 @@ function LiveDuoCard({ slot, challenger }: { slot: CollabSlot; challenger?: Coll
           </div>
         </div>
 
-        <div className="mt-auto h-1.5 rounded-full overflow-hidden bg-white/5 flex">
-          <div className="h-full bg-blue-500/40" style={{ width: challenger ? "50%" : "100%" }} />
-          {challenger && <div className="h-full bg-red-500/40" style={{ width: "50%" }} />}
-        </div>
+        {(() => {
+          const blue = slot.total_reactions ?? 0;
+          const red = challenger ? (challenger.total_reactions ?? 0) : 0;
+          const total = blue + red;
+          const bluePct = !challenger ? 100 : total > 0 ? (blue / total) * 100 : 50;
+          const redPct = !challenger ? 0 : total > 0 ? (red / total) * 100 : 50;
+          return (
+            <div className="mt-auto">
+              {challenger && (
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-black tabular-nums text-blue-400" style={{ fontFamily: "Teko, sans-serif" }}>{blue}</span>
+                  <span className="text-[8px] uppercase tracking-widest text-zinc-600" style={{ fontFamily: "Teko, sans-serif" }}>
+                    {total > 0 ? `${total} REACT${total === 1 ? "" : "S"}` : "REACT TO VOTE"}
+                  </span>
+                  <span className="text-[10px] font-black tabular-nums text-red-400" style={{ fontFamily: "Teko, sans-serif" }}>{red}</span>
+                </div>
+              )}
+              <div className="h-1.5 rounded-full overflow-hidden bg-white/5 flex">
+                <div className="h-full transition-all duration-500" style={{ width: `${bluePct}%`, background: "linear-gradient(90deg,#2563eb,#60a5fa)", minWidth: blue > 0 ? 4 : 0 }} />
+                {challenger && <div className="h-full transition-all duration-500" style={{ width: `${redPct}%`, background: "linear-gradient(90deg,#f87171,#dc2626)", minWidth: red > 0 ? 4 : 0 }} />}
+              </div>
+            </div>
+          );
+        })()}
       </div>
     </CardShell>
   );
