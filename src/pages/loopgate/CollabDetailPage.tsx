@@ -456,18 +456,19 @@ export default function CollabDetailPage() {
         )}
       </div>
 
-      {/* Inline chat — always available so duos can cook together */}
+      {/* Spacer so content isn't hidden behind the docked chat */}
+      <div className="h-[140px]" aria-hidden />
+
+      {/* Docked chat — always pinned to the bottom so duos can cook together */}
       {(slot.status === "live" || slot.status === "open") && (
-        <div className="relative z-10 mt-4 px-3 sm:px-4 md:px-6">
-          <CollabChatPanel
-            slotId={slot.id}
-            open={true}
-            onClose={() => {}}
-            creatorId={slot.creator_id}
-            partnerId={slot.partner_id}
-            inline
-          />
-        </div>
+        <CollabChatPanel
+          slotId={slot.id}
+          open={true}
+          onClose={() => {}}
+          creatorId={slot.creator_id}
+          partnerId={slot.partner_id}
+          dock
+        />
       )}
 
       {/* Chat + Voice modals */}
