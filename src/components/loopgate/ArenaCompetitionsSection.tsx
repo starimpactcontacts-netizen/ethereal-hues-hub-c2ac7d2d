@@ -212,7 +212,7 @@ export default function ArenaCompetitionsSection({ onCreateClick, hideHeader = f
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setShowInfo(false)}
-            className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-4"
+            className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-3 sm:p-4 overflow-y-auto"
           >
             <motion.div
               initial={{ y: 40, opacity: 0, scale: 0.96 }}
@@ -220,13 +220,13 @@ export default function ArenaCompetitionsSection({ onCreateClick, hideHeader = f
               exit={{ y: 40, opacity: 0, scale: 0.96 }}
               transition={{ type: 'spring', damping: 24, stiffness: 280 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-md rounded-3xl overflow-hidden border border-gold/20"
+              className="w-full max-w-md rounded-3xl border border-gold/20 flex flex-col max-h-[92vh] sm:max-h-[88vh] my-auto"
               style={{
                 background: 'linear-gradient(165deg, #1a1410 0%, #0a0a0d 60%, #100a14 100%)',
                 boxShadow: '0 30px 80px -20px rgba(234,179,8,0.35), inset 0 1px 0 rgba(255,255,255,0.06)',
               }}
             >
-              <div className="relative px-5 pt-5 pb-4 border-b border-white/[0.06]">
+              <div className="relative px-5 pt-5 pb-4 border-b border-white/[0.06] rounded-t-3xl overflow-hidden shrink-0">
                 <div className="absolute inset-0 opacity-50" style={{
                   background: 'radial-gradient(circle at 30% 0%, rgba(234,179,8,0.25), transparent 60%)',
                 }} />
@@ -248,17 +248,17 @@ export default function ArenaCompetitionsSection({ onCreateClick, hideHeader = f
                     <h2 className="text-[22px] font-black text-white leading-none uppercase" style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.01em' }}>
                       Competitions
                     </h2>
-                    <p className="text-[11px] font-bold text-gold/80 uppercase tracking-[0.15em] mt-0.5">Group battles · One winner</p>
+                    <p className="text-[11px] font-bold text-gold/80 uppercase tracking-[0.15em] mt-0.5">Up to 10 editors · One winner</p>
                   </div>
                 </div>
               </div>
 
-              <div className="px-5 py-4 space-y-3">
+              <div className="px-5 py-4 space-y-3 overflow-y-auto flex-1 overscroll-contain">
                 {[
-                  { icon: Users, color: '#10b981', title: 'Join the lobby', desc: 'Editors gather in the room. Need at least 2 players. Host kicks it off when the squad is ready.' },
-                  { icon: Timer, color: '#fbbf24', title: '30 minute edit window', desc: 'Once it goes live, you have 30 minutes to drop your edit on the given theme. No extensions.' },
-                  { icon: Vote, color: '#3b82f6', title: 'Community vote', desc: 'After submissions close, everyone votes for the best edit. Most votes wins the bag.' },
-                  { icon: Gavel, color: '#ef4444', title: 'Judge verdict', desc: 'Some comps get a Loopgate judge to lock in the final winner — keeps it fair on high-stakes rooms.' },
+                  { icon: Users, color: '#10b981', title: 'Open or private lobby', desc: 'Up to 10 editors per room. Make it public, or lock it private with a 4-character join code.' },
+                  { icon: Timer, color: '#fbbf24', title: 'Host picks the window', desc: 'Pick 15, 30, 45 or 60 minutes when you create the room. Once the host starts it, the timer is locked — no extensions.' },
+                  { icon: Trophy, color: '#a855f7', title: 'Optional theme', desc: 'Host can set a theme prompt (song, vibe, brief). Any software allowed — CapCut, Premiere, AE, mobile, anything.' },
+                  { icon: Vote, color: '#3b82f6', title: 'Community vote decides', desc: 'After submissions close, the lobby + viewers vote on every entry. Most votes takes the win and the IDX pool.' },
                 ].map((step, i) => {
                   const Icon = step.icon;
                   return (
@@ -284,7 +284,7 @@ export default function ArenaCompetitionsSection({ onCreateClick, hideHeader = f
                 </p>
               </div>
 
-              <div className="px-5 pb-5">
+              <div className="px-5 pb-5 pt-3 border-t border-white/[0.06] shrink-0 rounded-b-3xl">
                 <button
                   onClick={() => { setShowInfo(false); onCreateClick(); }}
                   className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black text-black uppercase active:scale-[0.98] transition-transform"
