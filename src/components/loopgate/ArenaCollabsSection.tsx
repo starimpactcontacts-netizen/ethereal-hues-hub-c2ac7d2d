@@ -1,8 +1,7 @@
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Swords, Plus, Music, Clock, Flame, UserPlus, Zap } from "lucide-react";
+import { Swords, Plus, Music, Clock, UserPlus } from "lucide-react";
 import { useCollabs, type CollabSlot } from "@/hooks/useCollabs";
-import { Trophy } from "lucide-react";
 import { useCollabBattles, type CollabBattle } from "@/hooks/useCollabBattles";
 import { ArenaRail, ArenaRailSkeleton } from "@/components/loopgate/ArenaCarouselSystem";
 
@@ -17,135 +16,164 @@ function useCountdown(iso: string) {
   return h > 0 ? `${h}H ${m}M` : `${m}M`;
 }
 
-function DuoMini({ slot, side }: { slot: CollabSlot; side: "L" | "R" }) {
-  const ring = side === "L" ? "border-violet-400/80" : "border-sky-400/80";
-  const accent = side === "L" ? "text-violet-300" : "text-sky-300";
+function Avatar({ url, name, ring }: { url: string | null; name: string; ring: string }) {
   return (
-    <div className="flex-1 min-w-0">
-      <div className={`flex items-center gap-1.5 ${side === "R" ? "flex-row-reverse" : ""}`}>
-        <div className={`flex ${side === "L" ? "-space-x-1.5" : "-space-x-1.5 flex-row-reverse space-x-reverse"}`}>
-          {[slot.creator_avatar_url, slot.partner_avatar_url].map((u, i) => (
-            <div
-              key={i}
-              className={`w-7 h-7 rounded-full overflow-hidden border ${ring} bg-[#0a0612] flex items-center justify-center text-[8px] font-black text-white/80`}
-            >
-              {u ? <img src={u} alt="" className="w-full h-full object-cover" /> : "?"}
-            </div>
-          ))}
-        </div>
-        <span className={`text-[8px] font-black tracking-widest uppercase ${accent}`}>
-          DUO {side === "L" ? "A" : "B"}
-        </span>
+    <div
+      className={`w-10 h-10 rounded-full overflow-hidden border-2 ${ring} bg-[#0a0612] flex items-center justify-center text-[11px] font-black text-white/80`}
+    >
+      {url ? (
+        <img src={url} alt={name} className="w-full h-full object-cover" />
+      ) : (
+        name.slice(0, 1).toUpperCase()
+      )}
+    </div>
+  );
+}
+
+function DuoSide({
+  creatorName,
+  creatorAvatar,
+  partnerName,
+  partnerAvatar,
+  team,
+}: {
+  creatorName: string;
+  creatorAvatar: string | null;
+  partnerName: string | null;
+  partnerAvatar: string | null;
+  team: "blue" | "red";
+}) {
+  const ring = team === "blue" ? "border-blue-500/60" : "border-red-500/60";
+  return (
+    <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+      <div className="flex -space-x-2">
+        <Avatar url={creatorAvatar} name={creatorName} ring={ring} />
+        {partnerName ? (
+          <Avatar url={partnerAvatar} name={partnerName} ring={ring} />
+        ) : (
+          <div className={`w-10 h-10 rounded-full border-2 border-dashed ${ring} bg-white/[0.02] flex items-center justify-center`}>
+            <span className="text-sm text-white/30 font-bold">?</span>
+          </div>
+        )}
       </div>
-      <p className={`text-[10px] font-bold text-white truncate mt-1 ${side === "R" ? "text-right" : ""}`}>
-        {slot.creator_username.slice(0, 6)}
-        <span className={accent}>×</span>
-        {(slot.partner_username ?? "?").slice(0, 6)}
-      </p>
+      <span
+        className="text-[10px] font-bold text-foreground uppercase truncate max-w-[90px] leading-tight text-center"
+        style={{ fontFamily: "Teko, sans-serif", letterSpacing: "0.04em" }}
+      >
+        {creatorName}
+        {partnerName ? ` × ${partnerName}` : ""}
+      </span>
+    </div>
+  );
+}
+
+function CardShell({
+  to,
+  children,
+  isLive,
+}: {
+  to: string;
+  children: React.ReactNode;
+  isLive?: boolean;
+}) {
+  return (
+    <div className="shrink-0 snap-start" style={{ width: CARD_W, height: CARD_H }}>
+      <Link
+        to={to}
+        className="block w-full h-full overflow-hidden rounded-2xl relative"
+        style={{
+          background: "linear-gradient(160deg, rgba(30,30,40,1) 0%, rgba(10,10,15,1) 100%)",
+          boxShadow: isLive
+            ? "0 0 24px rgba(239,68,68,0.15), 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)"
+            : "0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)",
+        }}
+      >
+        <div
+          className="absolute top-0 left-0 right-0 h-[1px]"
+          style={{
+            background: isLive
+              ? "linear-gradient(90deg, transparent, rgba(239,68,68,0.5), transparent)"
+              : "linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)",
+          }}
+        />
+        {children}
+      </Link>
     </div>
   );
 }
 
 function BattleCard({ battle }: { battle: CollabBattle }) {
   const cd = useCountdown(battle.ends_at);
-  const total = battle.score_a + battle.score_b;
-  const pctA = total > 0 ? Math.round((battle.score_a / total) * 100) : 50;
-  const pctB = 100 - pctA;
+  const blue = battle.reactions_a;
+  const red = battle.reactions_b;
+  const tot = blue + red || 1;
+  const bluePct = Math.round((blue / tot) * 100);
+  const redPct = 100 - bluePct;
   return (
-    <div className="shrink-0 snap-start" style={{ width: CARD_W, height: CARD_H }}>
-      <Link
-        to={`/duo-battle/${battle.id}`}
-        className="block w-full h-full rounded-2xl p-[1.5px] active:scale-[0.98] transition-transform shadow-[0_5px_0_rgba(0,0,0,0.45)]"
-        style={{
-          background:
-            "linear-gradient(135deg, rgba(168,85,247,0.6), rgba(255,255,255,0.04) 50%, rgba(56,189,248,0.6))",
-        }}
-      >
-        <div
-          className="relative w-full h-full rounded-[14px] p-3 flex flex-col"
-          style={{
-            background:
-              "linear-gradient(180deg, rgba(20,10,40,0.97) 0%, rgba(8,4,18,0.98) 100%)",
-          }}
-        >
-          {/* meta */}
-          <div className="flex items-center justify-between mb-2">
-            <span className="flex items-center gap-1">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500" />
-              </span>
-              <span className="text-[8px] font-black tracking-widest text-rose-300 uppercase">LIVE</span>
-            </span>
-            <span className="text-[9px] text-white/50 font-mono flex items-center gap-0.5">
-              <Clock className="w-2.5 h-2.5" />
-              {cd}
-            </span>
-          </div>
-
-          {/* duos + VS */}
-          <div className="flex items-center gap-1.5 mb-2">
-            <DuoMini slot={battle.slot_a} side="L" />
-            <div className="relative w-7 h-7 flex items-center justify-center shrink-0">
-              <div
-                className="absolute inset-0 bg-white/[0.05] border border-white/15"
-                style={{
-                  clipPath:
-                    "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
-                }}
-              />
-              <span
-                className="relative text-white text-[10px] font-black"
-                style={{ fontFamily: "Teko, Inter, system-ui, sans-serif" }}
-              >
-                VS
-              </span>
-            </div>
-            <DuoMini slot={battle.slot_b} side="R" />
-          </div>
-
-          {/* scores */}
-          <div className="flex items-center justify-between px-1">
+    <CardShell to={`/duo-battle/${battle.id}`} isLive>
+      <div className="relative w-full h-full p-3 flex flex-col">
+        {/* status */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
             <span
-              className="text-violet-300 text-[22px] font-black leading-none"
-              style={{ fontFamily: "Teko, Inter, system-ui, sans-serif" }}
+              className="text-[10px] font-bold uppercase tracking-[0.12em] text-red-400"
+              style={{ fontFamily: "Teko, sans-serif" }}
             >
-              {battle.score_a.toFixed(1)}
-            </span>
-            <span
-              className="text-sky-300 text-[22px] font-black leading-none"
-              style={{ fontFamily: "Teko, Inter, system-ui, sans-serif" }}
-            >
-              {battle.score_b.toFixed(1)}
+              LIVE
             </span>
           </div>
-
-          {/* split bar */}
-          <div className="mt-1.5 h-1 rounded-full overflow-hidden bg-white/5 flex">
-            <div className="h-full bg-violet-400" style={{ width: `${pctA}%` }} />
-            <div className="h-full bg-sky-400" style={{ width: `${pctB}%` }} />
-          </div>
-
-          {/* footer */}
-          <div className="mt-auto pt-2 flex items-center justify-between border-t border-white/5">
-            <span className="flex items-center gap-2 text-[9px] text-white/60 font-mono">
-              <span className="flex items-center gap-0.5">
-                <Flame className="w-2.5 h-2.5 text-violet-300" />
-                {battle.reactions_a}
-              </span>
-              <span className="flex items-center gap-0.5">
-                <Flame className="w-2.5 h-2.5 text-sky-300" />
-                {battle.reactions_b}
-              </span>
-            </span>
-            <span className="text-[10px] font-black uppercase tracking-widest text-white flex items-center gap-1">
-              <Zap className="w-3 h-3 text-amber-300" />
-              ENTER
-            </span>
+          <div className="flex items-center gap-1 text-[9px] text-zinc-500">
+            <Clock className="w-2.5 h-2.5" />
+            <span>{cd}</span>
           </div>
         </div>
-      </Link>
-    </div>
+
+        {/* VS */}
+        <div className="relative px-1 py-2 flex-1 flex items-center">
+          <div className="relative flex items-center justify-between w-full">
+            <DuoSide
+              creatorName={battle.slot_a.creator_username}
+              creatorAvatar={battle.slot_a.creator_avatar_url}
+              partnerName={battle.slot_a.partner_username}
+              partnerAvatar={battle.slot_a.partner_avatar_url}
+              team="blue"
+            />
+            <div className="mx-1 shrink-0">
+              <div
+                className="w-7 h-7 rounded-full flex items-center justify-center"
+                style={{
+                  background:
+                    "linear-gradient(135deg, rgba(59,130,246,0.25), rgba(239,68,68,0.25))",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                }}
+              >
+                <Swords className="w-3 h-3 text-white/70" />
+              </div>
+            </div>
+            <DuoSide
+              creatorName={battle.slot_b.creator_username}
+              creatorAvatar={battle.slot_b.creator_avatar_url}
+              partnerName={battle.slot_b.partner_username}
+              partnerAvatar={battle.slot_b.partner_avatar_url}
+              team="red"
+            />
+          </div>
+        </div>
+
+        {/* blue vs red bar */}
+        <div className="mt-auto">
+          <div className="h-1.5 rounded-full overflow-hidden bg-white/5 flex">
+            <div className="h-full bg-blue-500" style={{ width: `${bluePct}%` }} />
+            <div className="h-full bg-red-500" style={{ width: `${redPct}%` }} />
+          </div>
+          <div className="flex items-center justify-between mt-1 text-[9px] font-bold tabular-nums">
+            <span className="text-blue-400">{blue}</span>
+            <span className="text-red-400">{red}</span>
+          </div>
+        </div>
+      </div>
+    </CardShell>
   );
 }
 
@@ -225,93 +253,72 @@ function OpenSeatCard({ slot }: { slot: CollabSlot }) {
 
 function LiveDuoCard({ slot }: { slot: CollabSlot }) {
   return (
-    <div className="shrink-0 snap-start" style={{ width: CARD_W, height: CARD_H }}>
-      <Link
-        to={`/collab/${slot.id}`}
-        className="block w-full h-full rounded-2xl p-[1.5px] active:scale-[0.98] transition-transform shadow-[0_5px_0_rgba(0,0,0,0.45)]"
-        style={{
-          background:
-            "linear-gradient(135deg, rgba(168,85,247,0.6), rgba(255,255,255,0.04) 50%, rgba(56,189,248,0.6))",
-        }}
-      >
-        <div
-          className="relative w-full h-full rounded-[14px] p-3 flex flex-col"
-          style={{
-            background:
-              "linear-gradient(180deg, rgba(20,10,40,0.97) 0%, rgba(8,4,18,0.98) 100%)",
-          }}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="flex items-center gap-1">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500" />
-              </span>
-              <span className="text-[8px] font-black tracking-widest text-rose-300 uppercase">LIVE DUO</span>
-            </span>
-            <span className="text-[9px] text-white/50 font-mono flex items-center gap-0.5">
-              <Flame className="w-2.5 h-2.5 text-orange-400" />
-              {slot.total_reactions}
+    <CardShell to={`/collab/${slot.id}`} isLive>
+      <div className="relative w-full h-full p-3 flex flex-col">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+            <span
+              className="text-[10px] font-bold uppercase tracking-[0.12em] text-red-400"
+              style={{ fontFamily: "Teko, sans-serif" }}
+            >
+              LIVE
             </span>
           </div>
-
-          <div className="flex items-center gap-1.5 mb-2">
-            <DuoMini slot={slot} side="L" />
-            <div className="relative w-7 h-7 flex items-center justify-center shrink-0">
-              <div
-                className="absolute inset-0 bg-white/[0.05] border border-white/15"
-                style={{
-                  clipPath:
-                    "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
-                }}
-              />
-              <span
-                className="relative text-white text-[10px] font-black"
-                style={{ fontFamily: "Teko, Inter, system-ui, sans-serif" }}
-              >
-                VS
-              </span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 flex-row-reverse">
-                <div className="flex -space-x-1.5 flex-row-reverse space-x-reverse">
-                  {[0, 1].map((i) => (
-                    <div
-                      key={i}
-                      className="w-7 h-7 rounded-full border border-dashed border-sky-400/60 bg-sky-500/[0.06] flex items-center justify-center"
-                    >
-                      <UserPlus className="w-3 h-3 text-sky-300" />
-                    </div>
-                  ))}
-                </div>
-                <span className="text-[8px] font-black tracking-widest uppercase text-sky-300">
-                  CHALLENGER
-                </span>
-              </div>
-              <p className="text-[10px] font-bold text-sky-300/80 truncate mt-1 text-right">
-                AWAITING
-              </p>
-            </div>
-          </div>
-
-          <div className="px-2 py-1.5 rounded-lg bg-white/[0.04] border border-white/10 flex items-center gap-1.5 mb-2">
-            <Music className="w-3 h-3 text-violet-300 shrink-0" />
-            <span className="text-[10px] text-white/80 font-bold truncate">{slot.song_title}</span>
-          </div>
-
-          <div className="mt-auto flex items-center justify-between border-t border-white/5 pt-2">
-            <span className="text-[9px] text-white/60 font-mono flex items-center gap-1">
-              <Trophy className="w-2.5 h-2.5 text-amber-300" />
-              {slot.reaction_score.toFixed(1)}
-            </span>
-            <span className="text-[10px] font-black uppercase tracking-widest text-white flex items-center gap-1">
-              <Zap className="w-3 h-3 text-amber-300" />
-              WATCH
-            </span>
+          <div className="flex items-center gap-1 text-[9px] text-zinc-500">
+            <Music className="w-2.5 h-2.5" />
+            <span className="truncate max-w-[110px]">{slot.song_title}</span>
           </div>
         </div>
-      </Link>
-    </div>
+
+        <div className="relative px-1 py-2 flex-1 flex items-center">
+          <div className="relative flex items-center justify-between w-full">
+            <DuoSide
+              creatorName={slot.creator_username}
+              creatorAvatar={slot.creator_avatar_url}
+              partnerName={slot.partner_username}
+              partnerAvatar={slot.partner_avatar_url}
+              team="blue"
+            />
+            <div className="mx-1 shrink-0">
+              <div
+                className="w-7 h-7 rounded-full flex items-center justify-center"
+                style={{
+                  background:
+                    "linear-gradient(135deg, rgba(59,130,246,0.25), rgba(239,68,68,0.25))",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                }}
+              >
+                <Swords className="w-3 h-3 text-white/70" />
+              </div>
+            </div>
+            {/* awaiting challenger duo */}
+            <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+              <div className="flex -space-x-2">
+                {[0, 1].map((i) => (
+                  <div
+                    key={i}
+                    className="w-10 h-10 rounded-full border-2 border-dashed border-red-500/60 bg-white/[0.02] flex items-center justify-center"
+                  >
+                    <UserPlus className="w-4 h-4 text-red-400/70" />
+                  </div>
+                ))}
+              </div>
+              <span
+                className="text-[10px] font-bold uppercase text-zinc-500 leading-tight"
+                style={{ fontFamily: "Teko, sans-serif", letterSpacing: "0.04em" }}
+              >
+                Awaiting
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-auto h-1.5 rounded-full overflow-hidden bg-white/5 flex">
+          <div className="h-full bg-blue-500/40" style={{ width: `100%` }} />
+        </div>
+      </div>
+    </CardShell>
   );
 }
 
