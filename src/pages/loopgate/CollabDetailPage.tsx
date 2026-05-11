@@ -452,18 +452,23 @@ export default function CollabDetailPage() {
               )}
             </div>
 
-            {/* Inline chat under the collab video */}
-            <CollabChatPanel
-              slotId={slot.id}
-              open={true}
-              onClose={() => {}}
-              creatorId={slot.creator_id}
-              partnerId={slot.partner_id}
-              inline
-            />
           </>
         )}
       </div>
+
+      {/* Inline chat — full-width breakout */}
+      {slot.status === "live" && slot.final_video_url && (
+        <div className="relative z-10 mt-4 px-3 sm:px-4 md:px-6">
+          <CollabChatPanel
+            slotId={slot.id}
+            open={true}
+            onClose={() => {}}
+            creatorId={slot.creator_id}
+            partnerId={slot.partner_id}
+            inline
+          />
+        </div>
+      )}
 
       {/* Chat + Voice modals */}
       <CollabChatPanel
