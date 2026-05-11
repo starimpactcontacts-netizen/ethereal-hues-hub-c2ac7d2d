@@ -485,87 +485,236 @@ function PickedUpRow({ slot }: { slot: CollabSlot }) {
   );
 }
 
-function LiveAwaitingRow({ slot }: { slot: CollabSlot }) {
+function LiveAwaitingRow({
+  slot,
+  onChallenge,
+}: {
+  slot: CollabSlot;
+  onChallenge: (slot: CollabSlot) => void;
+}) {
   const video = slot.final_video_url;
   const isDirectVideo = !!video && /\.(mp4|webm|mov|m4v)(\?|$)/i.test(video);
   return (
-    <Link
-      to={`/collab/${slot.id}`}
-      className="block relative w-full overflow-hidden rounded-2xl bg-[#0a0612] border border-white/10 active:scale-[0.99] transition-transform shadow-[0_6px_0_rgba(0,0,0,0.5)]"
-      style={{ aspectRatio: "16 / 10" }}
-    >
-      {/* media */}
-      {isDirectVideo ? (
-        <video
-          src={video!}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-      ) : (
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(ellipse at 25% 0%, rgba(168,85,247,0.45), transparent 55%), radial-gradient(ellipse at 80% 100%, rgba(56,189,248,0.4), transparent 55%), linear-gradient(160deg, #1a0a2e 0%, #050108 100%)",
-          }}
-        />
-      )}
-
-      {/* gradient overlays */}
-      <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/70 to-transparent" />
-      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black via-black/70 to-transparent" />
-
-      {/* top: LIVE pill + reactions */}
-      <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between">
-        <span className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-rose-500 text-white text-[9px] font-black tracking-widest uppercase shadow-[0_2px_0_rgba(0,0,0,0.5)]">
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white" />
+    <div className="relative w-full overflow-hidden rounded-2xl bg-[#0a0612] border border-white/10 shadow-[0_5px_0_rgba(0,0,0,0.5)] flex">
+      {/* media — left thumbnail */}
+      <Link
+        to={`/collab/${slot.id}`}
+        className="relative shrink-0 w-[112px] aspect-[3/4] overflow-hidden active:scale-[0.98] transition-transform"
+      >
+        {isDirectVideo ? (
+          <video
+            src={video!}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        ) : (
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(ellipse at 25% 0%, rgba(168,85,247,0.45), transparent 55%), radial-gradient(ellipse at 80% 100%, rgba(56,189,248,0.4), transparent 55%), linear-gradient(160deg, #1a0a2e 0%, #050108 100%)",
+            }}
+          />
+        )}
+        <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-black/70 to-transparent" />
+        <div className="absolute top-1.5 left-1.5">
+          <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[8px] font-black tracking-widest uppercase">
+            <span className="w-1 h-1 rounded-full bg-white animate-pulse" />
+            LIVE
           </span>
-          LIVE
-        </span>
-        <span className="px-2 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] text-white font-mono flex items-center gap-1">
-          <Flame className="w-2.5 h-2.5 text-orange-300" />
-          {slot.reaction_score}
-        </span>
-      </div>
-
-      {/* center play */}
-      {isDirectVideo ? null : (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-14 h-14 rounded-full bg-white/15 backdrop-blur-md border border-white/30 flex items-center justify-center shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
-            <Play className="w-6 h-6 text-white fill-white ml-0.5" />
+        </div>
+        {!isDirectVideo && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-full bg-white/15 backdrop-blur-md border border-white/30 flex items-center justify-center">
+              <Play className="w-4 h-4 text-white fill-white ml-0.5" />
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </Link>
 
-      {/* bottom: duo info + WATCH */}
-      <div className="absolute bottom-0 inset-x-0 p-3 flex items-end gap-3">
-        <div className="shrink-0">
-          <DuoFaces slot={slot} side="L" />
-        </div>
-        <div className="min-w-0 flex-1">
+      {/* right info + actions */}
+      <div className="flex-1 min-w-0 p-3 flex flex-col justify-between gap-2">
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <DuoFaces slot={slot} side="L" />
+            <span className="text-[9px] text-white/50 font-mono flex items-center gap-1 ml-auto">
+              <Flame className="w-2.5 h-2.5 text-orange-300" />
+              {slot.reaction_score}
+            </span>
+          </div>
           <p
-            className="text-[18px] font-black text-white truncate leading-none"
+            className="text-[16px] font-black text-white truncate leading-none"
             style={{ fontFamily: "Teko, Inter, system-ui, sans-serif", letterSpacing: "0.02em" }}
           >
             {slot.creator_username} <span className="text-violet-300">×</span>{" "}
             <span className="text-sky-200">{slot.partner_username ?? "?"}</span>
           </p>
-          <p className="text-[10px] text-white/70 truncate flex items-center gap-1 mt-1">
+          <p className="text-[10px] text-white/60 truncate flex items-center gap-1 mt-1">
             <Music className="w-2.5 h-2.5 text-violet-300" /> {slot.song_title}
           </p>
         </div>
-        <span className="shrink-0 rounded-xl px-3 py-2 bg-white text-black text-[11px] font-black uppercase tracking-widest shadow-[0_3px_0_rgba(0,0,0,0.5)] flex items-center gap-1">
-          <Play className="w-3 h-3 fill-black" />
-          WATCH
-        </span>
+        <button
+          onClick={() => onChallenge(slot)}
+          className="w-full rounded-xl py-2 bg-rose-500 text-white text-[11px] font-black uppercase tracking-widest shadow-[0_3px_0_rgba(0,0,0,0.5)] active:translate-y-[1px] flex items-center justify-center gap-1.5"
+        >
+          <Swords className="w-3 h-3" />
+          CHALLENGE
+        </button>
       </div>
-    </Link>
+    </div>
+  );
+}
+
+function ChallengeModal({
+  target,
+  onClose,
+}: {
+  target: CollabSlot;
+  onClose: () => void;
+}) {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [busy, setBusy] = useState(false);
+
+  const handleStart = async () => {
+    if (!user) {
+      navigate("/start");
+      return;
+    }
+    try {
+      setBusy(true);
+      const newSlot = await createCollabSlot({
+        song_title: target.song_title,
+        song_artist: target.song_artist ?? undefined,
+        song_url: target.song_url ?? undefined,
+        total_duration_seconds: target.total_duration_seconds,
+        creator_segment: target.creator_segment,
+        partner_segment: target.partner_segment,
+      });
+      toast({
+        title: "Challenger seat posted",
+        description: "Share the link — once your partner joins, the 3H clock starts.",
+      });
+      onClose();
+      navigate(`/collab/${newSlot.id}`);
+    } catch (e: any) {
+      toast({
+        title: "Couldn't post seat",
+        description: e?.message ?? "Try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/75 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.6)]"
+        style={{
+          background: "linear-gradient(160deg, rgba(28,14,55,0.98) 0%, rgba(8,4,18,1) 100%)",
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 20px)",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center active:scale-95"
+          aria-label="Close"
+        >
+          <X className="w-4 h-4 text-white" />
+        </button>
+
+        <p className="text-[10px] font-black tracking-[0.25em] uppercase text-rose-300 mb-1">
+          CHALLENGE THIS DUO
+        </p>
+        <p
+          className="text-[26px] font-black tracking-tight leading-none pr-10"
+          style={{ fontFamily: "Teko, Inter, system-ui, sans-serif" }}
+        >
+          {target.creator_username} <span className="text-violet-300">×</span>{" "}
+          <span className="text-sky-200">{target.partner_username ?? "?"}</span>
+        </p>
+        <p className="text-[11px] text-white/60 mt-1 truncate flex items-center gap-1">
+          <Music className="w-3 h-3 text-violet-300" /> {target.song_title}
+        </p>
+
+        <div className="mt-5 rounded-2xl p-4 bg-white/[0.03] border border-white/10">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <p className="text-[8px] font-black tracking-widest text-rose-300 uppercase mb-2">
+                DEFENDERS
+              </p>
+              <div className="flex -space-x-2">
+                {[
+                  { url: target.creator_avatar_url, name: target.creator_username },
+                  { url: target.partner_avatar_url, name: target.partner_username ?? "?" },
+                ].map((p, i) => (
+                  <div
+                    key={i}
+                    className="w-10 h-10 rounded-full overflow-hidden border-2 border-rose-400/70 bg-[#0a0612] flex items-center justify-center text-[10px] font-black text-white/80"
+                  >
+                    {p.url ? (
+                      <img src={p.url} alt={p.name} className="w-full h-full object-cover" />
+                    ) : (
+                      p.name.slice(0, 1).toUpperCase()
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <span
+              className="text-white/30 text-[26px] font-black px-1"
+              style={{ fontFamily: "Teko, Inter, system-ui, sans-serif" }}
+            >
+              VS
+            </span>
+
+            <div className="flex-1 min-w-0">
+              <p className="text-[8px] font-black tracking-widest text-emerald-300 uppercase mb-2 text-right">
+                CHALLENGERS
+              </p>
+              <div className="flex -space-x-2 flex-row-reverse space-x-reverse">
+                {[0, 1].map((i) => (
+                  <div
+                    key={i}
+                    className="w-10 h-10 rounded-full border-2 border-dashed border-emerald-400/60 bg-emerald-500/[0.08] flex items-center justify-center animate-pulse"
+                  >
+                    <UserPlus className="w-4 h-4 text-emerald-300" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 flex items-center gap-2 text-[10px] text-amber-200">
+            <Hourglass className="w-3 h-3" />
+            <span>3H to ship once your partner joins.</span>
+          </div>
+        </div>
+
+        <button
+          onClick={handleStart}
+          disabled={busy}
+          className="mt-5 w-full rounded-2xl py-3 bg-rose-500 text-white text-[12px] font-black uppercase tracking-widest disabled:opacity-50 active:translate-y-[1px] shadow-[0_4px_0_rgba(0,0,0,0.5)] flex items-center justify-center gap-2"
+        >
+          <Swords className="w-3.5 h-3.5" />
+          {busy ? "POSTING…" : "POST CHALLENGER SEAT"}
+        </button>
+        <p className="mt-2 text-[10px] text-white/50 text-center leading-snug">
+          Same song, same length. Share your seat link so a partner can fill the 2nd spot.
+        </p>
+      </div>
+    </div>
   );
 }
 
