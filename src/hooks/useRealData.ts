@@ -40,6 +40,7 @@ export interface RealEditor {
   global_index_score: number;
   win_rate: number;
   total_events: number;
+  total_battles?: number;
   total_wins: number;
   rank?: number;
   avatar_url?: string | null;
@@ -157,25 +158,58 @@ export function useRealRankings() {
       // Fetch roles for all users
       const userIds = (data || []).map(e => e.id);
       
-      // Fetch all user activity stats in parallel
-      const [rolesResult, roundParticipationsResult, battlesResult, hostedSubsResult, eventParticipationsResult, hostedWinnersResult, friendlyTournamentResult, sanctionedTournamentResult] = await Promise.all([
+      // Fetch all user activity stats in parallel. League stats must include every
+      // competitive lane: edit battles, quick fights, cash battles, duo/collab battles,
+      // competitions, hosted comps, official events, and tournaments.
+      const [
+        rolesResult,
+        roundParticipationsResult,
+        battlesResult,
+        quickFightsResult,
+        cashBattlesResult,
+        hostedSubsResult,
+        hostedParticipantsResult,
+        competitionSubsResult,
+        competitionParticipantsResult,
+        eventParticipationsResult,
+        friendlyTournamentResult,
+        sanctionedTournamentResult,
+        collabBattlesResult,
+      ] = await Promise.all([
         // User roles
         supabase.from('user_roles').select('user_id, role').in('user_id', userIds),
         // Round participations (Open Arena events)
-        supabase.from('round_participations').select('user_id, qoi_score').in('user_id', userIds),
-        // Battles (completed with winner)
-        supabase.from('battles').select('challenger_id, opponent_id, winner_id').eq('status', 'completed'),
+        supabase.from('round_participations').select('user_id, event_id').in('user_id', userIds),
+        // Standard edit battles
+        supabase.from('battles').select('id, challenger_id, opponent_id, winner_id, status').neq('status', 'cancelled').not('opponent_id', 'is', null),
+        // Quick edit battles
+        supabase.from('quick_fights').select('id, player_1_id, player_2_id, winner_id, status').neq('status', 'cancelled').not('player_2_id', 'is', null),
+        // Cash battles
+        supabase.from('cash_battles').select('id, challenger_id, opponent_id, winner_id, status').neq('status', 'cancelled').not('opponent_id', 'is', null),
         // Hosted competition submissions
-        supabase.from('hosted_competition_submissions').select('user_id, is_winner, winner_place').in('user_id', userIds),
+        supabase.from('hosted_competition_submissions').select('user_id, competition_id, is_winner, winner_place, final_rank').in('user_id', userIds),
+        // Hosted competition joins without submitted edits
+        supabase.from('hosted_competition_participants').select('user_id, competition_id').in('user_id', userIds),
+        // New Arena competition submissions
+        supabase.from('competition_submissions').select('user_id, competition_id, is_winner, winner_place').in('user_id', userIds),
+        // New Arena competition joins without submitted edits
+        supabase.from('competition_participants').select('user_id, competition_id').in('user_id', userIds),
         // Official event participations (old-style events)
-        supabase.from('event_participations').select('user_id, final_rank').in('user_id', userIds),
-        // Hosted competition winners (1st place)
-        supabase.from('hosted_competition_submissions').select('user_id').in('user_id', userIds).eq('winner_place', 1),
+        supabase.from('event_participations').select('user_id, event_id, final_rank').in('user_id', userIds),
         // Friendly tournament participants
-        supabase.from('friendly_tournament_participants').select('user_id, final_rank').in('user_id', userIds),
+        supabase.from('friendly_tournament_participants').select('user_id, tournament_id, final_rank').in('user_id', userIds),
         // Sanctioned tournament participants (THE MAIN TOURNAMENT SYSTEM!)
-        supabase.from('sanctioned_tournament_participants').select('user_id, final_rank').in('user_id', userIds),
+        supabase.from('sanctioned_tournament_participants').select('user_id, tournament_id, final_rank').in('user_id', userIds),
+        // Duo/collab battles; participant ids are resolved through collab_slots below
+        supabase.from('collab_battles').select('id, slot_a_id, slot_b_id, winner_slot_id, status'),
       ]);
+
+      const collabSlotIds = Array.from(new Set(
+        ((collabBattlesResult.data || []) as Array<{ slot_a_id: string; slot_b_id: string; winner_slot_id: string | null }>).flatMap(b => [b.slot_a_id, b.slot_b_id, b.winner_slot_id].filter(Boolean) as string[])
+      ));
+      const collabSlotsResult = collabSlotIds.length
+        ? await supabase.from('collab_slots').select('id, creator_id, partner_id').in('id', collabSlotIds)
+        : { data: [] as Array<{ id: string; creator_id: string; partner_id: string | null }> };
 
       // Build roles map
       const rolesMap = new Map<string, string[]>();
@@ -185,86 +219,103 @@ export function useRealRankings() {
         rolesMap.set(r.user_id, existing);
       });
 
-      // Build event participation counts (unique events per user)
-      const eventCountMap = new Map<string, number>();
-      // Round participations (open arena)
-      (roundParticipationsResult.data || []).forEach(p => {
-        eventCountMap.set(p.user_id, (eventCountMap.get(p.user_id) || 0) + 1);
-      });
-      // Hosted competition submissions
-      (hostedSubsResult.data || []).forEach(p => {
-        eventCountMap.set(p.user_id, (eventCountMap.get(p.user_id) || 0) + 1);
-      });
-      // Official event participations
-      (eventParticipationsResult.data || []).forEach(p => {
-        eventCountMap.set(p.user_id, (eventCountMap.get(p.user_id) || 0) + 1);
-      });
-      // Friendly tournament participations
-      (friendlyTournamentResult.data || []).forEach(p => {
-        eventCountMap.set(p.user_id, (eventCountMap.get(p.user_id) || 0) + 1);
-      });
-      // Sanctioned tournament participations
-      (sanctionedTournamentResult.data || []).forEach(p => {
-        eventCountMap.set(p.user_id, (eventCountMap.get(p.user_id) || 0) + 1);
-      });
-
-      // Build battle stats (wins and total battles)
+      // Build participation, battle, and win maps. Sets prevent a joined+submitted
+      // competition from being counted twice for the same editor.
+      const participationMap = new Map<string, Set<string>>();
       const battleWinsMap = new Map<string, number>();
       const battleCountMap = new Map<string, number>();
-      (battlesResult.data || []).forEach(b => {
-        // Count battles for both participants
-        if (b.challenger_id) {
-          battleCountMap.set(b.challenger_id, (battleCountMap.get(b.challenger_id) || 0) + 1);
-        }
-        if (b.opponent_id) {
-          battleCountMap.set(b.opponent_id, (battleCountMap.get(b.opponent_id) || 0) + 1);
-        }
-        // Count wins
-        if (b.winner_id) {
-          battleWinsMap.set(b.winner_id, (battleWinsMap.get(b.winner_id) || 0) + 1);
-        }
+      const totalWinsMap = new Map<string, Set<string>>();
+
+      const addParticipation = (userId: string | null | undefined, key: string) => {
+        if (!userId) return;
+        const set = participationMap.get(userId) || new Set<string>();
+        set.add(key);
+        participationMap.set(userId, set);
+      };
+      const addBattle = (userId: string | null | undefined) => {
+        if (!userId) return;
+        battleCountMap.set(userId, (battleCountMap.get(userId) || 0) + 1);
+      };
+      const addWin = (userId: string | null | undefined, key: string) => {
+        if (!userId) return;
+        const set = totalWinsMap.get(userId) || new Set<string>();
+        set.add(key);
+        totalWinsMap.set(userId, set);
+      };
+      const addBattleWin = (userId: string | null | undefined, key: string) => {
+        if (!userId) return;
+        battleWinsMap.set(userId, (battleWinsMap.get(userId) || 0) + 1);
+        addWin(userId, key);
+      };
+
+      (roundParticipationsResult.data || []).forEach(p => addParticipation(p.user_id, `round:${p.event_id}`));
+      (hostedParticipantsResult.data || []).forEach(p => addParticipation(p.user_id, `hosted:${p.competition_id}`));
+      (hostedSubsResult.data || []).forEach(p => {
+        addParticipation(p.user_id, `hosted:${p.competition_id}`);
+        if (p.winner_place === 1 || p.final_rank === 1 || p.is_winner) addWin(p.user_id, `hosted:${p.competition_id}`);
+      });
+      (competitionParticipantsResult.data || []).forEach(p => addParticipation(p.user_id, `competition:${p.competition_id}`));
+      (competitionSubsResult.data || []).forEach(p => {
+        addParticipation(p.user_id, `competition:${p.competition_id}`);
+        if (p.winner_place === 1 || p.is_winner) addWin(p.user_id, `competition:${p.competition_id}`);
+      });
+      (eventParticipationsResult.data || []).forEach(p => {
+        addParticipation(p.user_id, `event:${p.event_id}`);
+        if (p.final_rank === 1) addWin(p.user_id, `event:${p.event_id}`);
+      });
+      (friendlyTournamentResult.data || []).forEach(p => {
+        addParticipation(p.user_id, `friendly:${p.tournament_id}`);
+        if (p.final_rank === 1) addWin(p.user_id, `friendly:${p.tournament_id}`);
+      });
+      (sanctionedTournamentResult.data || []).forEach(p => {
+        addParticipation(p.user_id, `sanctioned:${p.tournament_id}`);
+        if (p.final_rank === 1) addWin(p.user_id, `sanctioned:${p.tournament_id}`);
       });
 
-      // Count all wins: battles + official events (rank 1) + hosted comps (winner_place 1) + tournaments
-      const totalWinsMap = new Map<string, number>();
-      
-      // Battle wins
-      battleWinsMap.forEach((wins, oderId) => {
-        totalWinsMap.set(oderId, (totalWinsMap.get(oderId) || 0) + wins);
+      (battlesResult.data || []).forEach(b => {
+        addBattle(b.challenger_id);
+        addBattle(b.opponent_id);
+        if (b.winner_id) addBattleWin(b.winner_id, `battle:${b.id}`);
       });
-      
-      // Official event wins (final_rank = 1)
-      (eventParticipationsResult.data || []).forEach(p => {
-        if (p.final_rank === 1) {
-          totalWinsMap.set(p.user_id, (totalWinsMap.get(p.user_id) || 0) + 1);
-        }
+      (quickFightsResult.data || []).forEach(f => {
+        addBattle(f.player_1_id);
+        addBattle(f.player_2_id);
+        if (f.winner_id) addBattleWin(f.winner_id, `quick:${f.id}`);
       });
-      
-      // Hosted competition wins (winner_place = 1)
-      (hostedWinnersResult.data || []).forEach(p => {
-        totalWinsMap.set(p.user_id, (totalWinsMap.get(p.user_id) || 0) + 1);
+      (cashBattlesResult.data || []).forEach(b => {
+        addBattle(b.challenger_id);
+        addBattle(b.opponent_id);
+        if (b.winner_id) addBattleWin(b.winner_id, `cash:${b.id}`);
       });
-      
-      // Friendly tournament wins (final_rank = 1)
-      (friendlyTournamentResult.data || []).forEach(p => {
-        if (p.final_rank === 1) {
-          totalWinsMap.set(p.user_id, (totalWinsMap.get(p.user_id) || 0) + 1);
-        }
+
+      const collabSlotMap = new Map<string, { creator_id: string; partner_id: string | null }>();
+      ((collabSlotsResult.data || []) as Array<{ id: string; creator_id: string; partner_id: string | null }>).forEach(slot => {
+        collabSlotMap.set(slot.id, { creator_id: slot.creator_id, partner_id: slot.partner_id });
       });
-      
-      // Sanctioned tournament wins (final_rank = 1) - THIS IS THE KEY ONE!
-      (sanctionedTournamentResult.data || []).forEach(p => {
-        if (p.final_rank === 1) {
-          totalWinsMap.set(p.user_id, (totalWinsMap.get(p.user_id) || 0) + 1);
-        }
+      const addDuoSlotBattle = (slotId: string | null | undefined) => {
+        const slot = slotId ? collabSlotMap.get(slotId) : null;
+        if (!slot) return;
+        addBattle(slot.creator_id);
+        addBattle(slot.partner_id);
+      };
+      const addDuoSlotWin = (slotId: string | null | undefined, battleId: string) => {
+        const slot = slotId ? collabSlotMap.get(slotId) : null;
+        if (!slot) return;
+        addBattleWin(slot.creator_id, `duo:${battleId}`);
+        addBattleWin(slot.partner_id, `duo:${battleId}`);
+      };
+      (collabBattlesResult.data || []).forEach(b => {
+        addDuoSlotBattle(b.slot_a_id);
+        addDuoSlotBattle(b.slot_b_id);
+        addDuoSlotWin(b.winner_slot_id, b.id);
       });
 
       // Add rank and roles based on order
       const rankedData = (data || []).map((editor, index) => {
-        const eventCount = eventCountMap.get(editor.id) || 0;
+        const eventCount = participationMap.get(editor.id)?.size || 0;
         const battleCount = battleCountMap.get(editor.id) || 0;
         const totalEvents = eventCount + battleCount;
-        const totalWins = totalWinsMap.get(editor.id) || 0;
+        const totalWins = totalWinsMap.get(editor.id)?.size || 0;
         
         // Win rate = total wins / total events (if they have events)
         const winRate = totalEvents > 0 ? (totalWins / totalEvents) * 100 : 0;
