@@ -327,6 +327,7 @@ export function useRealRankings() {
           crew: editor.crews as RealEditor['crew'],
           house: editor.houses as RealEditor['house'],
           total_events: totalEvents,
+          total_battles: battleCount,
           total_wins: totalWins,
           win_rate: winRate,
           connection_count: editor.connection_count || 0,
