@@ -451,6 +451,16 @@ export default function CollabDetailPage() {
                 </p>
               )}
             </div>
+
+            {/* Inline chat under the collab video */}
+            <CollabChatPanel
+              slotId={slot.id}
+              open={true}
+              onClose={() => {}}
+              creatorId={slot.creator_id}
+              partnerId={slot.partner_id}
+              inline
+            />
           </>
         )}
       </div>
