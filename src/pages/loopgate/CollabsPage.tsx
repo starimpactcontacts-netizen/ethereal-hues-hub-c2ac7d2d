@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronLeft, Plus, Swords, Users, Flame, Clock, Music, Trophy, Sparkles, UserPlus, Zap, Crown, Upload, CheckCircle2, Hourglass, Info, Play, X } from "lucide-react";
-import { useCollabs, type CollabSlot } from "@/hooks/useCollabs";
+import { useCollabs, cancelCollabSlot, type CollabSlot } from "@/hooks/useCollabs";
 import { useCollabBattles, type CollabBattle } from "@/hooks/useCollabBattles";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
@@ -315,8 +315,27 @@ function OpenSlotCard({ slot }: { slot: CollabSlot }) {
 /* ------------------------------------------------------------------ */
 /*  page                                                               */
 /* ------------------------------------------------------------------ */
-function MyDuoCard({ slot, meId }: { slot: CollabSlot; meId: string }) {
+function MyDuoCard({ slot, meId, onCanceled }: { slot: CollabSlot; meId: string; onCanceled: () => void }) {
   const isCreator = slot.creator_id === meId;
+  const [canceling, setCanceling] = useState(false);
+  const canCancel = isCreator && slot.status === "open" && !slot.partner_id;
+
+  const handleCancel = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (canceling) return;
+    if (!confirm("Cancel this open seat? This cannot be undone.")) return;
+    setCanceling(true);
+    try {
+      await cancelCollabSlot(slot.id);
+      toast({ title: "Seat canceled" });
+      onCanceled();
+    } catch (err: any) {
+      toast({ title: "Couldn't cancel", description: err?.message ?? "Try again.", variant: "destructive" });
+      setCanceling(false);
+    }
+  };
+
   const me = isCreator
     ? { name: slot.creator_username, avatar: slot.creator_avatar_url }
     : { name: slot.partner_username ?? "you", avatar: slot.partner_avatar_url };
@@ -363,15 +382,27 @@ function MyDuoCard({ slot, meId }: { slot: CollabSlot; meId: string }) {
             "linear-gradient(180deg, rgba(28,14,55,0.95) 0%, rgba(10,5,22,0.98) 100%)",
         }}
       >
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-2 gap-2">
           <span className={`text-[9px] font-black tracking-[0.18em] uppercase ${sm.color} flex items-center gap-1`}>
             <StatusIcon className="w-2.5 h-2.5" />
             {sm.label}
           </span>
-          <span className="text-[9px] text-white/50 font-mono flex items-center gap-0.5">
-            <Clock className="w-2.5 h-2.5" />
-            {slot.total_duration_seconds}s
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[9px] text-white/50 font-mono flex items-center gap-0.5">
+              <Clock className="w-2.5 h-2.5" />
+              {slot.total_duration_seconds}s
+            </span>
+            {canCancel && (
+              <button
+                onClick={handleCancel}
+                disabled={canceling}
+                className="px-2 py-0.5 rounded-md bg-rose-500/15 hover:bg-rose-500/25 border border-rose-400/40 text-rose-200 text-[9px] font-black tracking-widest uppercase flex items-center gap-1 disabled:opacity-50"
+              >
+                <X className="w-2.5 h-2.5" />
+                {canceling ? "…" : "CANCEL"}
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
@@ -702,7 +733,7 @@ export default function CollabsPage() {
   const [tab, setTab] = useState<Tab>("live");
   const [infoOpen, setInfoOpen] = useState(false);
   const [challengeTarget, setChallengeTarget] = useState<CollabSlot | null>(null);
-  const { openSlots, liveSlots, mySlots, topToday, pairedSlots, loading: loadingSlots } = useCollabs();
+  const { openSlots, liveSlots, mySlots, topToday, pairedSlots, loading: loadingSlots, refresh } = useCollabs();
   const { liveBattles, loading: loadingBattles } = useCollabBattles();
 
   // Standalone live duos (shipped, but no battle yet — awaiting challenger)
@@ -1105,7 +1136,7 @@ export default function CollabsPage() {
             ) : (
               <div className="flex flex-col gap-2.5">
                 {mySlots.map((s) => (
-                  <MyDuoCard key={s.id} slot={s} meId={user?.id ?? ""} />
+                  <MyDuoCard key={s.id} slot={s} meId={user?.id ?? ""} onCanceled={refresh} />
                 ))}
               </div>
             )}

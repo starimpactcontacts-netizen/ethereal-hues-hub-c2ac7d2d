@@ -320,6 +320,20 @@ export async function joinCollabSlot(slotId: string) {
   return data as CollabSlot;
 }
 
+export async function cancelCollabSlot(slotId: string) {
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth.user) throw new Error("Not authenticated");
+  // Only allow canceling your own open seat with no partner yet.
+  const { error } = await supabase
+    .from("collab_slots")
+    .delete()
+    .eq("id", slotId)
+    .eq("creator_id", auth.user.id)
+    .eq("status", "open")
+    .is("partner_id", null);
+  if (error) throw error;
+}
+
 export async function uploadCollabVideo(
   slotId: string,
   videoUrl: string,
