@@ -723,6 +723,7 @@ export default function CollabsPage() {
   const { user } = useAuth();
   const [tab, setTab] = useState<Tab>("live");
   const [infoOpen, setInfoOpen] = useState(false);
+  const [challengeTarget, setChallengeTarget] = useState<CollabSlot | null>(null);
   const { openSlots, liveSlots, mySlots, topToday, pairedSlots, loading: loadingSlots } = useCollabs();
   const { liveBattles, loading: loadingBattles } = useCollabBattles();
 
@@ -947,7 +948,7 @@ export default function CollabsPage() {
                 </div>
                 <div className="flex flex-col gap-2">
                   {standaloneLive.map((s) => (
-                    <LiveAwaitingRow key={s.id} slot={s} />
+                    <LiveAwaitingRow key={s.id} slot={s} onChallenge={setChallengeTarget} />
                   ))}
                 </div>
               </div>
