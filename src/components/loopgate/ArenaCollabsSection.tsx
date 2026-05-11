@@ -104,7 +104,6 @@ function CardShell({
 
 function BattleCard({ battle }: { battle: CollabBattle }) {
   const cd = useCountdown(battle.ends_at);
-  const total = battle.challenger_votes_total ?? (battle.reactions_a + battle.reactions_b);
   const blue = battle.reactions_a;
   const red = battle.reactions_b;
   const tot = blue + red || 1;
