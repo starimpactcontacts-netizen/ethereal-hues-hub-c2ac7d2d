@@ -460,7 +460,11 @@ export default function CollabDetailPage() {
       <div className="h-[140px]" aria-hidden />
 
       {/* Docked chat — always pinned to the bottom so duos can cook together */}
-      {(slot.status === "live" || slot.status === "open") && (
+      {(slot.status === "live" ||
+        slot.status === "open" ||
+        slot.status === "paired" ||
+        slot.status === "editing" ||
+        slot.status === "pending_approval") && (
         <CollabChatPanel
           slotId={slot.id}
           open={true}
