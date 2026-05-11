@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronLeft, Plus, Swords, Users, Flame, Clock, Music, Trophy, Sparkles, UserPlus, Zap, Crown, Upload, CheckCircle2, Hourglass, Info, Play, X } from "lucide-react";
-import { useCollabs, type CollabSlot } from "@/hooks/useCollabs";
+import { useCollabs, cancelCollabSlot, type CollabSlot } from "@/hooks/useCollabs";
 import { useCollabBattles, type CollabBattle } from "@/hooks/useCollabBattles";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
@@ -315,8 +315,27 @@ function OpenSlotCard({ slot }: { slot: CollabSlot }) {
 /* ------------------------------------------------------------------ */
 /*  page                                                               */
 /* ------------------------------------------------------------------ */
-function MyDuoCard({ slot, meId }: { slot: CollabSlot; meId: string }) {
+function MyDuoCard({ slot, meId, onCanceled }: { slot: CollabSlot; meId: string; onCanceled: () => void }) {
   const isCreator = slot.creator_id === meId;
+  const [canceling, setCanceling] = useState(false);
+  const canCancel = isCreator && slot.status === "open" && !slot.partner_id;
+
+  const handleCancel = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (canceling) return;
+    if (!confirm("Cancel this open seat? This cannot be undone.")) return;
+    setCanceling(true);
+    try {
+      await cancelCollabSlot(slot.id);
+      toast({ title: "Seat canceled" });
+      onCanceled();
+    } catch (err: any) {
+      toast({ title: "Couldn't cancel", description: err?.message ?? "Try again.", variant: "destructive" });
+      setCanceling(false);
+    }
+  };
+
   const me = isCreator
     ? { name: slot.creator_username, avatar: slot.creator_avatar_url }
     : { name: slot.partner_username ?? "you", avatar: slot.partner_avatar_url };
