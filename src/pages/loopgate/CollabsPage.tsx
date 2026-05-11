@@ -485,38 +485,25 @@ export default function CollabsPage() {
         }}
       />
 
-      {/* HEADER */}
-      <div
-        className="relative sticky top-0 z-30 backdrop-blur-xl border-b border-white/5"
-        style={{
-          background:
-            "linear-gradient(to bottom, rgba(21,8,38,0.9), rgba(10,4,24,0.75))",
-        }}
+      {/* Floating immersive controls */}
+      <button
+        onClick={() => navigate("/arena")}
+        className="fixed top-3 left-3 z-40 w-10 h-10 rounded-full bg-black/60 backdrop-blur-md border border-white/10 flex items-center justify-center active:scale-95"
+        style={{ top: "calc(env(safe-area-inset-top, 0px) + 12px)" }}
+        aria-label="Back"
       >
-        <div className="px-4 pt-3 pb-3 flex items-center gap-3">
-          <button onClick={() => navigate("/arena")} className="-ml-2 p-2 rounded-full active:bg-white/10">
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <div className="flex-1 min-w-0 flex items-center gap-2">
-            <h1
-              className="text-[34px] font-black tracking-tight uppercase leading-none"
-              style={{ fontFamily: "Teko, Inter, system-ui, sans-serif" }}
-            >
-              Duo Battles
-            </h1>
-            <span className="text-[8px] font-black tracking-[0.18em] uppercase px-1.5 py-0.5 rounded-full bg-rose-500 text-white">
-              LIVE
-            </span>
-          </div>
-          <button
-            onClick={() => (user ? navigate("/collabs/create") : navigate("/start"))}
-            className="rounded-full px-3.5 py-2 bg-white text-black text-[11px] font-black tracking-widest uppercase flex items-center gap-1 active:translate-y-[2px] shadow-[0_4px_0_rgba(0,0,0,0.5)]"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            CREATE
-          </button>
-        </div>
+        <ChevronLeft className="w-5 h-5 text-white" />
+      </button>
+      <button
+        onClick={() => (user ? navigate("/collabs/create") : navigate("/start"))}
+        className="fixed top-3 right-3 z-40 rounded-full px-3.5 py-2 bg-white text-black text-[11px] font-black tracking-widest uppercase flex items-center gap-1 active:translate-y-[2px] shadow-[0_4px_0_rgba(0,0,0,0.5)]"
+        style={{ top: "calc(env(safe-area-inset-top, 0px) + 12px)" }}
+      >
+        <Plus className="w-3.5 h-3.5" />
+        CREATE
+      </button>
 
+      <div className="relative" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 64px)" }}>
         {/* HUD stats */}
         <div className="px-4 pb-3 grid grid-cols-3 gap-2">
           {[
