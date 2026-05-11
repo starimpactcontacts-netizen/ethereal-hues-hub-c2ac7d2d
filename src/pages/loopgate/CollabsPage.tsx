@@ -442,11 +442,53 @@ function MyDuoCard({ slot, meId }: { slot: CollabSlot; meId: string }) {
   );
 }
 
+function PickedUpRow({ slot }: { slot: CollabSlot }) {
+  const deadline = slot.submit_deadline_at ?? slot.paired_at ?? slot.created_at;
+  const cd = useCountdown(deadline);
+  const overdue = cd === "ENDED";
+  return (
+    <Link
+      to={`/collab/${slot.id}`}
+      className="block rounded-2xl p-3 border border-amber-400/30 bg-amber-500/[0.06] backdrop-blur-md active:scale-[0.99] transition-transform"
+    >
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-black tracking-[0.18em] uppercase text-amber-300 flex items-center gap-1">
+          <Hourglass className="w-2.5 h-2.5" />
+          {slot.status === "pending_approval" ? "AWAITING APPROVAL" : "PICKED UP · EDITING"}
+        </span>
+        <span
+          className={`text-[10px] font-black tracking-widest uppercase flex items-center gap-1 ${
+            overdue ? "text-rose-400" : "text-amber-300"
+          }`}
+        >
+          <Clock className="w-2.5 h-2.5" />
+          {overdue ? "OVERDUE" : `${cd} LEFT`}
+        </span>
+      </div>
+      <div className="flex items-center gap-2.5">
+        <DuoFaces slot={slot} side="L" />
+        <div className="min-w-0 flex-1">
+          <p className="text-[12px] font-bold text-white truncate leading-tight">
+            {slot.creator_username} <span className="text-violet-300">×</span>{" "}
+            <span className="text-sky-200">{slot.partner_username ?? "?"}</span>
+          </p>
+          <p className="text-[10px] text-white/60 truncate flex items-center gap-1 mt-0.5">
+            <Music className="w-2.5 h-2.5 text-violet-300" /> {slot.song_title}
+          </p>
+        </div>
+        <span className="rounded-lg px-2.5 py-1.5 bg-white text-black text-[10px] font-black uppercase tracking-widest">
+          OPEN
+        </span>
+      </div>
+    </Link>
+  );
+}
+
 export default function CollabsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [tab, setTab] = useState<Tab>("live");
-  const { openSlots, mySlots, topToday, loading: loadingSlots } = useCollabs();
+  const { openSlots, mySlots, topToday, pairedSlots, loading: loadingSlots } = useCollabs();
   const { liveBattles, loading: loadingBattles } = useCollabBattles();
 
   const TABS: { key: Tab; label: string; icon: any; count: number }[] = [
@@ -590,7 +632,29 @@ export default function CollabsPage() {
         {/* LIVE BRACKET */}
         {tab === "live" && !loading && (
           <>
-            {liveBattles.length === 0 ? (
+            {pairedSlots.length > 0 && (
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-2 px-1">
+                  <h3
+                    className="text-[14px] font-black uppercase tracking-tight text-amber-200 flex items-center gap-1.5"
+                    style={{ fontFamily: "Teko, Inter, system-ui, sans-serif" }}
+                  >
+                    <Hourglass className="w-3.5 h-3.5" />
+                    Picked Up · 3H to Ship
+                  </h3>
+                  <span className="text-[9px] font-black tracking-widest text-amber-300/70 uppercase">
+                    {pairedSlots.length} ACTIVE
+                  </span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  {pairedSlots.map((s) => (
+                    <PickedUpRow key={s.id} slot={s} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {liveBattles.length === 0 && pairedSlots.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-violet-400/30 bg-violet-500/[0.04] py-12 px-6 text-center">
                 <Swords className="w-8 h-8 text-violet-300 mx-auto mb-2" />
                 <p className="text-white text-[13px] font-bold mb-1">No live brackets yet</p>
@@ -604,13 +668,13 @@ export default function CollabsPage() {
                   Open Lobby
                 </button>
               </div>
-            ) : (
+            ) : liveBattles.length > 0 ? (
               <div className="flex flex-col gap-4">
                 {liveBattles.map((b, i) => (
                   <BracketRow key={b.id} battle={b} index={i} />
                 ))}
               </div>
-            )}
+            ) : null}
           </>
         )}
 
