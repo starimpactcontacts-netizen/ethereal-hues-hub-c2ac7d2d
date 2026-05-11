@@ -1660,6 +1660,7 @@ export type Database = {
       }
       collab_slots: {
         Row: {
+          challenges_slot_id: string | null
           created_at: string
           creator_approved: boolean
           creator_avatar_url: string | null
@@ -1689,6 +1690,7 @@ export type Database = {
           uploaded_by: string | null
         }
         Insert: {
+          challenges_slot_id?: string | null
           created_at?: string
           creator_approved?: boolean
           creator_avatar_url?: string | null
@@ -1718,6 +1720,7 @@ export type Database = {
           uploaded_by?: string | null
         }
         Update: {
+          challenges_slot_id?: string | null
           created_at?: string
           creator_approved?: boolean
           creator_avatar_url?: string | null
@@ -1746,7 +1749,15 @@ export type Database = {
           uploaded_at?: string | null
           uploaded_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "collab_slots_challenges_slot_id_fkey"
+            columns: ["challenges_slot_id"]
+            isOneToOne: false
+            referencedRelation: "collab_slots"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       commission_messages: {
         Row: {

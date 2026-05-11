@@ -40,6 +40,7 @@ export interface CollabSlot {
   live_at: string | null;
   expires_at: string;
   submit_deadline_at: string | null;
+  challenges_slot_id?: string | null;
 }
 
 export function useCollabs() {
@@ -244,6 +245,7 @@ export async function createCollabSlot(input: {
   total_duration_seconds: number;
   creator_segment: string;
   partner_segment: string;
+  challenges_slot_id?: string | null;
 }) {
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) throw new Error("Not authenticated");
@@ -275,6 +277,7 @@ export async function createCollabSlot(input: {
       total_duration_seconds: input.total_duration_seconds,
       creator_segment: input.creator_segment,
       partner_segment: input.partner_segment,
+      challenges_slot_id: input.challenges_slot_id ?? null,
     })
     .select()
     .single();
