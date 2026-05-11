@@ -1588,8 +1588,9 @@ export type Database = {
       collab_messages: {
         Row: {
           avatar_url: string | null
-          body: string
+          body: string | null
           created_at: string
+          gif_url: string | null
           id: string
           slot_id: string
           user_id: string
@@ -1597,8 +1598,9 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
-          body: string
+          body?: string | null
           created_at?: string
+          gif_url?: string | null
           id?: string
           slot_id: string
           user_id: string
@@ -1606,8 +1608,9 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
-          body?: string
+          body?: string | null
           created_at?: string
+          gif_url?: string | null
           id?: string
           slot_id?: string
           user_id?: string
