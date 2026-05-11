@@ -39,6 +39,7 @@ export interface CollabSlot {
   uploaded_at: string | null;
   live_at: string | null;
   expires_at: string;
+  submit_deadline_at: string | null;
 }
 
 export function useCollabs() {
@@ -47,6 +48,7 @@ export function useCollabs() {
   const [liveSlots, setLiveSlots] = useState<CollabSlot[]>([]);
   const [mySlots, setMySlots] = useState<CollabSlot[]>([]);
   const [topToday, setTopToday] = useState<CollabSlot[]>([]);
+  const [pairedSlots, setPairedSlots] = useState<CollabSlot[]>([]);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
@@ -54,7 +56,7 @@ export function useCollabs() {
 
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-    const [openRes, liveRes, topRes, mineRes] = await Promise.all([
+    const [openRes, liveRes, topRes, mineRes, pairedRes] = await Promise.all([
       supabase
         .from("collab_slots")
         .select("*")
@@ -82,11 +84,18 @@ export function useCollabs() {
             .order("created_at", { ascending: false })
             .limit(50)
         : Promise.resolve({ data: [] as any[] }),
+      supabase
+        .from("collab_slots")
+        .select("*")
+        .in("status", ["paired", "editing", "pending_approval"])
+        .order("paired_at", { ascending: false })
+        .limit(50),
     ]);
 
     setOpenSlots((openRes.data ?? []) as CollabSlot[]);
     setLiveSlots((liveRes.data ?? []) as CollabSlot[]);
     setTopToday((topRes.data ?? []) as CollabSlot[]);
+    setPairedSlots(((pairedRes as any).data ?? []) as CollabSlot[]);
     const mine = ((mineRes as any).data ?? []) as CollabSlot[];
     setMySlots(mine);
     setLoading(false);
@@ -144,7 +153,7 @@ export function useCollabs() {
     };
   }, [refresh]);
 
-  return { openSlots, liveSlots, mySlots, topToday, loading, refresh };
+  return { openSlots, liveSlots, mySlots, topToday, pairedSlots, loading, refresh };
 }
 
 export function useCollabSlot(id: string | undefined) {
