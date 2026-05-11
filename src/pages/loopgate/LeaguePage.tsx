@@ -1,10 +1,8 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Crown, Shield, Star, Lock, Trophy, TrendingUp, ChevronRight, CheckCircle, Clock, XCircle, Zap } from 'lucide-react';
+import { Crown, Shield, Star, Lock, Trophy, ChevronRight, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRealRankings } from '@/hooks/useRealData';
-import { useLeagueApplications } from '@/hooks/useLeagueApplications';
-import { Button } from '@/components/ui/button';
 import IndexEarnBadge from '@/components/loopgate/IndexEarnBadge';
 
 const leagues = [
@@ -56,25 +54,19 @@ export default function LeaguePage() {
   const navigate = useNavigate();
   const { profile, loading: authLoading } = useAuth();
   const { rankings, loading: rankLoading } = useRealRankings();
-  const { myApplication, loading: appLoading, applyForProLeague } = useLeagueApplications();
 
-  const loading = authLoading || rankLoading || appLoading;
+  const loading = authLoading || rankLoading;
   const currentLeague = profile?.league || 'open';
-  const totalWins = profile?.total_wins || 0;
-  const meetsProRequirement = totalWins >= 2;
 
-  // League-filtered rankings
-  const leagueRankings = rankings.filter(r => (r as any).league === currentLeague);
+  // Real wins from rankings (synced from battles/tournaments/comps), fallback to profile
+  const me = rankings.find(r => r.id === profile?.id);
+  const totalWins = me?.total_wins ?? profile?.total_wins ?? 0;
+  const totalEvents = me?.total_events ?? profile?.total_events ?? 0;
 
-  const getApplicationStatus = () => {
-    if (!myApplication) return null;
-    if (myApplication.status === 'pending') return { icon: Clock, text: 'Application Pending', color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/30' };
-    if (myApplication.status === 'approved') return { icon: CheckCircle, text: 'Approved! Welcome to Pro League', color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/30' };
-    if (myApplication.status === 'rejected') return { icon: XCircle, text: 'Application Declined', color: 'text-red-400', bg: 'bg-red-500/10 border-red-500/30' };
-    return null;
-  };
-
-  const appStatus = getApplicationStatus();
+  // League-filtered rankings (re-rank within the league)
+  const leagueRankings = rankings
+    .filter(r => (r.league || 'open') === currentLeague)
+    .map((r, i) => ({ ...r, leagueRank: i + 1 }));
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -115,7 +107,7 @@ export default function LeaguePage() {
                     <p className="text-[10px] text-muted-foreground uppercase">Wins</p>
                   </div>
                   <div className="text-center">
-                    <p className="font-display text-xl">{profile.total_events || 0}</p>
+                    <p className="font-display text-xl">{totalEvents}</p>
                     <p className="text-[10px] text-muted-foreground uppercase">Events</p>
                   </div>
                   <div className="text-center">
@@ -129,70 +121,6 @@ export default function LeaguePage() {
               </div>
             );
           })()}
-        </motion.div>
-      )}
-
-      {/* Pro League Application */}
-      {currentLeague === 'open' && !loading && profile && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="mx-4 mb-6"
-        >
-          <div className="bg-surface-1 border border-border p-5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-emerald-400" />
-              </div>
-              <div>
-                <h3 className="font-display text-lg text-emerald-400">Path to Pro</h3>
-                <p className="text-[10px] text-muted-foreground">Win events to unlock Pro League</p>
-              </div>
-            </div>
-
-            {/* Progress */}
-            <div className="mb-4">
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-muted-foreground">Arena Wins</span>
-                <span className={meetsProRequirement ? 'text-emerald-400 font-bold' : 'text-foreground'}>{totalWins} / 2</span>
-              </div>
-              <div className="h-2 bg-surface-0 border border-border overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.min((totalWins / 2) * 100, 100)}%` }}
-                  transition={{ delay: 0.3, duration: 0.6 }}
-                  className="h-full bg-gradient-to-r from-emerald-500/50 to-emerald-400"
-                />
-              </div>
-            </div>
-
-            {/* Application status or button */}
-            {appStatus ? (
-              <div className={`flex items-center gap-2 p-3 border ${appStatus.bg} rounded-sm`}>
-                <appStatus.icon className={`w-4 h-4 ${appStatus.color}`} />
-                <span className={`text-sm font-medium ${appStatus.color}`}>{appStatus.text}</span>
-              </div>
-            ) : meetsProRequirement ? (
-              <Button
-                onClick={applyForProLeague}
-                className="w-full bg-emerald-500 text-white hover:bg-emerald-600 font-display"
-              >
-                <Zap className="w-4 h-4 mr-2" />
-                Apply for Pro League
-              </Button>
-            ) : (
-              <p className="text-xs text-muted-foreground text-center py-2">
-                Win {2 - totalWins} more event{2 - totalWins !== 1 ? 's' : ''} to unlock the application
-              </p>
-            )}
-
-            {myApplication?.status === 'rejected' && myApplication.admin_notes && (
-              <p className="text-xs text-muted-foreground mt-2 p-2 bg-surface-0 border border-border">
-                <span className="text-red-400 font-semibold">Note:</span> {myApplication.admin_notes}
-              </p>
-            )}
-          </div>
         </motion.div>
       )}
 
@@ -278,9 +206,13 @@ export default function LeaguePage() {
             <div className="bg-surface-1 border border-border p-6 text-center">
               <p className="text-sm text-muted-foreground">No ranked editors yet</p>
             </div>
+          ) : leagueRankings.length === 0 ? (
+            <div className="bg-surface-1 border border-border p-6 text-center">
+              <p className="text-sm text-muted-foreground">No editors in this league yet</p>
+            </div>
           ) : (
             <div className="space-y-1">
-              {rankings.slice(0, 10).map((editor, idx) => (
+              {leagueRankings.slice(0, 10).map((editor, idx) => (
                 <button
                   key={editor.id}
                   onClick={() => navigate(`/editor/${editor.id}`)}
