@@ -35,9 +35,6 @@ export default function CreateCollabPage() {
       if (data) {
         const t = data as CollabSlot;
         setTarget(t);
-        setSongTitle(t.song_title);
-        setSongArtist(t.song_artist ?? "");
-        setDuration(t.total_duration_seconds);
       }
       setLoadingTarget(false);
     })();
@@ -49,7 +46,7 @@ export default function CreateCollabPage() {
   }
 
   const half = Math.round(duration / 2);
-  const locked = !!target;
+  const locked = false;
 
   const submit = async () => {
     if (!songTitle.trim() || !creatorSegment.trim() || !partnerSegment.trim()) {
@@ -154,7 +151,7 @@ export default function CreateCollabPage() {
             </div>
             <div className="mt-3 flex items-center gap-1.5 text-[10px] text-amber-200">
               <Hourglass className="w-3 h-3" />
-              <span>Same song, same length — locked. 3H to ship once your partner joins.</span>
+              <span>Pick any song or length. 3H to ship once your partner joins.</span>
             </div>
           </div>
         )}
