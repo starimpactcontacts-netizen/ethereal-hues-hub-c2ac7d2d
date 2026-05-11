@@ -201,8 +201,8 @@ export default function FeedPage() {
     const combined: Array<{ kind: 'activity'; item: LoopFeedItem } | { kind: 'post'; item: FeedPostItem }> = [];
     let ai = 0, pi = 0;
     const activityItems = filteredItems;
-    // Exclude own posts from "For You" so users see other editors, not themselves
-    const postItems = user ? feedPosts.filter(p => p.user_id !== user.id) : feedPosts;
+    // Show own posts in feed — users want to see what they shared
+    const postItems = feedPosts;
     while (ai < activityItems.length || pi < postItems.length) {
       const aTime = ai < activityItems.length ? new Date(activityItems[ai].created_at).getTime() : -Infinity;
       const pTime = pi < postItems.length ? new Date(postItems[pi].created_at).getTime() : -Infinity;
@@ -355,7 +355,7 @@ export default function FeedPage() {
 
             {activeTab === 'posts' ? (
               (() => {
-                const visiblePosts = user ? feedPosts.filter(p => p.user_id !== user.id) : feedPosts;
+                const visiblePosts = feedPosts;
                 return visiblePosts.length === 0 ? (
                 <EmptyState icon={<PenSquare className="w-6 h-6 text-muted-foreground/30" />} title="No loops yet" subtitle="Be the first — share a flex, an edit, or just say what's on your mind." />
               ) : (
