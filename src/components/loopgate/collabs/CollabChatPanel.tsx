@@ -123,7 +123,7 @@ export default function CollabChatPanel({
       className={
         inline
           ? "relative w-full h-[78vh] min-h-[560px] bg-gradient-to-b from-[#1a0b2e] to-[#0a0418] border-2 border-violet-500/30 rounded-3xl shadow-[0_6px_0_rgba(0,0,0,0.5)] flex flex-col overflow-hidden"
-          : "relative w-full sm:max-w-md h-[80vh] sm:h-[70vh] bg-gradient-to-b from-[#1a0b2e] to-[#0a0418] border-t-2 sm:border-2 border-violet-500/30 rounded-t-3xl sm:rounded-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden"
+          : "relative w-full sm:max-w-xl h-[85vh] sm:h-[75vh] bg-gradient-to-b from-[#1a0b2e] to-[#0a0418] border-t-2 sm:border-2 border-violet-500/30 rounded-t-3xl sm:rounded-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden"
       }
     >
       {/* Header */}
@@ -155,7 +155,7 @@ export default function CollabChatPanel({
             const isHost = m.user_id === creatorId || m.user_id === partnerId;
             return (
               <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[78%] ${mine ? "items-end" : "items-start"} flex flex-col`}>
+                <div className={`max-w-[88%] sm:max-w-[82%] ${mine ? "items-end" : "items-start"} flex flex-col`}>
                   {!mine && (
                     <div className="flex items-center gap-1.5 mb-0.5 px-1">
                       {m.avatar_url ? (
