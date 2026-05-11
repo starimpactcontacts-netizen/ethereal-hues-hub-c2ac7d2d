@@ -382,15 +382,27 @@ function MyDuoCard({ slot, meId, onCanceled }: { slot: CollabSlot; meId: string;
             "linear-gradient(180deg, rgba(28,14,55,0.95) 0%, rgba(10,5,22,0.98) 100%)",
         }}
       >
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-2 gap-2">
           <span className={`text-[9px] font-black tracking-[0.18em] uppercase ${sm.color} flex items-center gap-1`}>
             <StatusIcon className="w-2.5 h-2.5" />
             {sm.label}
           </span>
-          <span className="text-[9px] text-white/50 font-mono flex items-center gap-0.5">
-            <Clock className="w-2.5 h-2.5" />
-            {slot.total_duration_seconds}s
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[9px] text-white/50 font-mono flex items-center gap-0.5">
+              <Clock className="w-2.5 h-2.5" />
+              {slot.total_duration_seconds}s
+            </span>
+            {canCancel && (
+              <button
+                onClick={handleCancel}
+                disabled={canceling}
+                className="px-2 py-0.5 rounded-md bg-rose-500/15 hover:bg-rose-500/25 border border-rose-400/40 text-rose-200 text-[9px] font-black tracking-widest uppercase flex items-center gap-1 disabled:opacity-50"
+              >
+                <X className="w-2.5 h-2.5" />
+                {canceling ? "…" : "CANCEL"}
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
