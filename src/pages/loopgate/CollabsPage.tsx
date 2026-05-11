@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ChevronLeft, Plus, Swords, Users, Flame, Clock, Music, Trophy, Sparkles, UserPlus, Zap, Crown } from "lucide-react";
+import { ChevronLeft, Plus, Swords, Users, Flame, Clock, Music, Trophy, Sparkles, UserPlus, Zap, Crown, Upload, CheckCircle2, Hourglass } from "lucide-react";
 import { useCollabs, type CollabSlot } from "@/hooks/useCollabs";
 import { useCollabBattles, type CollabBattle } from "@/hooks/useCollabBattles";
 import { useAuth } from "@/hooks/useAuth";
@@ -626,9 +626,9 @@ export default function CollabsPage() {
                 <p className="text-white/50 text-[11px]">Post a seat or join an open lobby.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="flex flex-col gap-2.5">
                 {mySlots.map((s) => (
-                  <OpenSlotCard key={s.id} slot={s} />
+                  <MyDuoCard key={s.id} slot={s} meId={user?.id ?? ""} />
                 ))}
               </div>
             )}
