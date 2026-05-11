@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronLeft, Plus, Swords, Users, Flame, Clock, Music, Trophy, Sparkles, UserPlus, Zap, Crown, Upload, CheckCircle2, Hourglass, Info, Play, X } from "lucide-react";
-import { useCollabs, createCollabSlot, type CollabSlot } from "@/hooks/useCollabs";
+import { useCollabs, type CollabSlot } from "@/hooks/useCollabs";
 import { useCollabBattles, type CollabBattle } from "@/hooks/useCollabBattles";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
