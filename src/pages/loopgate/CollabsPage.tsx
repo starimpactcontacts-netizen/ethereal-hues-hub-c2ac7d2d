@@ -901,6 +901,10 @@ export default function CollabsPage() {
         </div>
       )}
 
+      {challengeTarget && (
+        <ChallengeModal target={challengeTarget} onClose={() => setChallengeTarget(null)} />
+      )}
+
       {/* BODY */}
       <div className="relative px-4 pt-4">
         {loading && (
