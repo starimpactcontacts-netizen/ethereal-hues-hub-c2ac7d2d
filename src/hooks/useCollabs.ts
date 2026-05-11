@@ -87,8 +87,46 @@ export function useCollabs() {
     setOpenSlots((openRes.data ?? []) as CollabSlot[]);
     setLiveSlots((liveRes.data ?? []) as CollabSlot[]);
     setTopToday((topRes.data ?? []) as CollabSlot[]);
-    setMySlots(((mineRes as any).data ?? []) as CollabSlot[]);
+    const mine = ((mineRes as any).data ?? []) as CollabSlot[];
+    setMySlots(mine);
     setLoading(false);
+
+    // Self-heal: if any of "my" slots have an email-looking username stored,
+    // replace it with the real profile username + avatar.
+    if (user && mine.length) {
+      const looksLikeEmail = (s?: string | null) => !!s && /@/.test(s);
+      const needsFix = mine.some(
+        (s) =>
+          (s.creator_id === user.id && looksLikeEmail(s.creator_username)) ||
+          (s.partner_id === user.id && looksLikeEmail(s.partner_username)),
+      );
+      if (needsFix) {
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("username, avatar_url")
+          .eq("id", user.id)
+          .maybeSingle();
+        const username = (prof as any)?.username;
+        const avatar = (prof as any)?.avatar_url ?? null;
+        if (username) {
+          await Promise.all(
+            mine.map(async (s) => {
+              if (s.creator_id === user.id && looksLikeEmail(s.creator_username)) {
+                await supabase
+                  .from("collab_slots")
+                  .update({ creator_username: username, creator_avatar_url: avatar })
+                  .eq("id", s.id);
+              } else if (s.partner_id === user.id && looksLikeEmail(s.partner_username)) {
+                await supabase
+                  .from("collab_slots")
+                  .update({ partner_username: username, partner_avatar_url: avatar })
+                  .eq("id", s.id);
+              }
+            }),
+          );
+        }
+      }
+    }
   }, [user]);
 
   useEffect(() => {
