@@ -733,7 +733,7 @@ export default function CollabsPage() {
   const [tab, setTab] = useState<Tab>("live");
   const [infoOpen, setInfoOpen] = useState(false);
   const [challengeTarget, setChallengeTarget] = useState<CollabSlot | null>(null);
-  const { openSlots, liveSlots, mySlots, topToday, pairedSlots, loading: loadingSlots } = useCollabs();
+  const { openSlots, liveSlots, mySlots, topToday, pairedSlots, loading: loadingSlots, refresh } = useCollabs();
   const { liveBattles, loading: loadingBattles } = useCollabBattles();
 
   // Standalone live duos (shipped, but no battle yet — awaiting challenger)
@@ -1136,7 +1136,7 @@ export default function CollabsPage() {
             ) : (
               <div className="flex flex-col gap-2.5">
                 {mySlots.map((s) => (
-                  <MyDuoCard key={s.id} slot={s} meId={user?.id ?? ""} />
+                  <MyDuoCard key={s.id} slot={s} meId={user?.id ?? ""} onCanceled={refresh} />
                 ))}
               </div>
             )}
