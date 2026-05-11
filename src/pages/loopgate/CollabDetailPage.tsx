@@ -456,8 +456,8 @@ export default function CollabDetailPage() {
         )}
       </div>
 
-      {/* Inline chat — full-width breakout */}
-      {slot.status === "live" && slot.final_video_url && (
+      {/* Inline chat — always available so duos can cook together */}
+      {(slot.status === "live" || slot.status === "open") && (
         <div className="relative z-10 mt-4 px-3 sm:px-4 md:px-6">
           <CollabChatPanel
             slotId={slot.id}
