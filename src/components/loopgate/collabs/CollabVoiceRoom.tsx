@@ -4,10 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import type { RealtimeChannel } from "@supabase/supabase-js";
+import GateIcon from "@/components/loopgate/GateIcon";
 
 interface Peer {
   userId: string;
   username: string;
+  avatar_url: string | null;
   speaking: boolean;
   muted: boolean;
 }
@@ -31,6 +33,7 @@ export default function CollabVoiceRoom({
   const [joined, setJoined] = useState(false);
   const [muted, setMuted] = useState(false);
   const [peers, setPeers] = useState<Record<string, Peer>>({});
+  const [myProfile, setMyProfile] = useState<{ username: string; avatar_url: string | null } | null>(null);
 
   const channelRef = useRef<RealtimeChannel | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
@@ -39,9 +42,27 @@ export default function CollabVoiceRoom({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const myUsername =
+    myProfile?.username ||
     (user?.user_metadata as any)?.username ||
     user?.email?.split("@")[0] ||
     "guest";
+  const myAvatar =
+    myProfile?.avatar_url ||
+    (user?.user_metadata as any)?.avatar_url ||
+    (user?.user_metadata as any)?.picture ||
+    null;
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("username, avatar_url")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (data) setMyProfile({ username: (data as any).username, avatar_url: (data as any).avatar_url ?? null });
+    })();
+  }, [user]);
 
   const cleanup = () => {
     Object.values(peerConnsRef.current).forEach((pc) => pc.close());
@@ -129,6 +150,7 @@ export default function CollabVoiceRoom({
             next[uid] = {
               userId: uid,
               username: m.username || "user",
+              avatar_url: m.avatar_url || null,
               speaking: false,
               muted: !!m.muted,
             };
@@ -176,12 +198,12 @@ export default function CollabVoiceRoom({
 
       await channel.subscribe(async (status) => {
         if (status === "SUBSCRIBED") {
-          await channel.track({ username: myUsername, muted: false });
+          await channel.track({ username: myUsername, avatar_url: myAvatar, muted: false });
           // tell existing peers we're here
           channel.send({
             type: "broadcast",
             event: "hello",
-            payload: { from: user.id, username: myUsername },
+            payload: { from: user.id, username: myUsername, avatar_url: myAvatar },
           });
         }
       });
@@ -200,7 +222,7 @@ export default function CollabVoiceRoom({
     const next = !muted;
     localStreamRef.current.getAudioTracks().forEach((t) => (t.enabled = !next));
     setMuted(next);
-    channelRef.current?.track({ username: myUsername, muted: next });
+    channelRef.current?.track({ username: myUsername, avatar_url: myAvatar, muted: next });
   };
 
   const hangup = () => {
@@ -219,8 +241,11 @@ export default function CollabVoiceRoom({
         ref={containerRef}
         className="relative w-full sm:max-w-sm bg-gradient-to-b from-[#0a1f0e] to-[#06120a] border-t-2 sm:border-2 border-emerald-500/30 rounded-t-3xl sm:rounded-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.7)] p-5 pb-[calc(env(safe-area-inset-bottom)+20px)]"
       >
-        <div className="text-center mb-4">
-          <p className="text-[11px] font-black uppercase tracking-widest text-emerald-300/80">Voice Room</p>
+        <div className="text-center mb-4 flex flex-col items-center gap-1">
+          <div className="flex items-center gap-1.5">
+            <GateIcon size={14} />
+            <p className="text-[11px] font-black uppercase tracking-widest text-emerald-300/80">Loopgate Voice</p>
+          </div>
           <p className="text-[22px] font-black text-white" style={{ fontFamily: "Teko, sans-serif" }}>
             {joined ? `${peerList.length} in room` : "Live Voice Chat"}
           </p>
@@ -231,16 +256,20 @@ export default function CollabVoiceRoom({
             {peerList.map((p) => (
               <div key={p.userId} className="flex flex-col items-center gap-1">
                 <div
-                  className={`w-16 h-16 rounded-full flex items-center justify-center text-white text-[20px] font-black shadow-[0_4px_0_rgba(0,0,0,0.5)] ${
+                  className={`relative w-16 h-16 rounded-full overflow-hidden flex items-center justify-center text-white text-[20px] font-black shadow-[0_4px_0_rgba(0,0,0,0.5)] ${
                     p.muted
                       ? "bg-white/10 border border-white/20"
                       : "bg-gradient-to-b from-emerald-400 to-emerald-600 ring-2 ring-emerald-300/60"
                   }`}
                   style={{ fontFamily: "Teko, sans-serif" }}
                 >
-                  {p.username.charAt(0).toUpperCase()}
+                  {p.avatar_url ? (
+                    <img src={p.avatar_url} alt={p.username} className="w-full h-full object-cover" />
+                  ) : (
+                    p.username.charAt(0).toUpperCase()
+                  )}
                 </div>
-                <p className="text-[10px] text-white/70 font-bold truncate max-w-[64px]">{p.username}</p>
+                <p className="text-[10px] text-white/80 font-bold truncate max-w-[72px]">@{p.username}</p>
                 {p.muted ? (
                   <MicOff className="w-3 h-3 text-white/40" />
                 ) : (
