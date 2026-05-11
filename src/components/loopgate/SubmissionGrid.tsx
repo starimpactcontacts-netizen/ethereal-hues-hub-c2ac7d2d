@@ -1,11 +1,12 @@
 import { useState, useCallback } from "react";
-import { Play, Star, ExternalLink, Trophy, Clock, CheckCircle, RefreshCw, ArrowRight, ImagePlus, Upload, Link as LinkIcon, Pencil, Check, X, EyeOff, Eye, DollarSign, Zap, Eye as EyeIcon } from "lucide-react";
+import { Play, Star, ExternalLink, Trophy, Clock, CheckCircle, RefreshCw, ArrowRight, ImagePlus, Upload, Link as LinkIcon, Pencil, Check, X, EyeOff, Eye, DollarSign, Zap, Eye as EyeIcon, MoreHorizontal } from "lucide-react";
 import { useUserSubmissions } from "@/hooks/useUserSubmissions";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import FeedVideoPlayer from "@/components/loopgate/FeedVideoPlayer";
 
 // Extract thumbnail from platform URL
 function getThumbnailUrl(url: string, platform: string): string | null {
@@ -73,6 +74,7 @@ export default function SubmissionGrid({ userId }: SubmissionGridProps) {
     }
   }, [isRefreshing, y]);
   const [selectedSubmission, setSelectedSubmission] = useState<string | null>(null);
+  const [playingSubmission, setPlayingSubmission] = useState<string | null>(null);
 
   if (loading) {
     return (
@@ -142,7 +144,7 @@ export default function SubmissionGrid({ userId }: SubmissionGridProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: submission.is_hidden ? 0.4 : 1 }}
               transition={{ delay: index * 0.05 }}
-              onClick={() => setSelectedSubmission(submission.id)}
+              onClick={() => setPlayingSubmission(submission.id)}
               className="relative aspect-[9/16] overflow-hidden group"
             >
               {/* Background */}
@@ -227,10 +229,45 @@ export default function SubmissionGrid({ userId }: SubmissionGridProps) {
                   <EyeOff className="w-5 h-5 text-white/60" />
                 </div>
               )}
+
+              {/* Owner edit/options button */}
+              {(!userId || userId === user?.id) && (
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedSubmission(submission.id);
+                  }}
+                  className="absolute bottom-2 right-2 w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/90 hover:bg-black/80 z-10"
+                  aria-label="Edit submission"
+                >
+                  <MoreHorizontal className="w-4 h-4" />
+                </div>
+              )}
             </motion.button>
           );
         })}
       </motion.div>
+
+      {/* TikTok-style fullscreen player */}
+      {playingSubmission && (() => {
+        const sub = submissions.find(s => s.id === playingSubmission);
+        if (!sub) return null;
+        const submissionType: 'arena' | 'review' | 'battle' | 'judge_video' | 'quick_fight' =
+          sub.source === 'battle' ? 'battle' : 'arena';
+        return (
+          <FeedVideoPlayer
+            isOpen={true}
+            onClose={() => setPlayingSubmission(null)}
+            submissionUrl={sub.submission_url}
+            platform={sub.platform}
+            submissionId={sub.id}
+            submissionType={submissionType}
+            username={''}
+          />
+        );
+      })()}
 
       {/* Detail Modal */}
       <AnimatePresence>
