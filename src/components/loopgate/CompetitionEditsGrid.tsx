@@ -18,11 +18,22 @@ function isVideoUrl(url: string, platform?: string) {
 interface Props {
   submissions: CompetitionSubmission[];
   currentUserId?: string | null;
+  autoTrimSubmissionId?: string | null;
+  onAutoTrimConsumed?: () => void;
 }
 
-export default function CompetitionEditsGrid({ submissions, currentUserId }: Props) {
+export default function CompetitionEditsGrid({ submissions, currentUserId, autoTrimSubmissionId, onAutoTrimConsumed }: Props) {
   const [playing, setPlaying] = useState<CompetitionSubmission | null>(null);
   const [trimming, setTrimming] = useState<CompetitionSubmission | null>(null);
+
+  useEffect(() => {
+    if (!autoTrimSubmissionId) return;
+    const match = submissions.find((s) => s.id === autoTrimSubmissionId);
+    if (match && isVideoUrl(match.submission_url, match.platform)) {
+      setTrimming(match);
+      onAutoTrimConsumed?.();
+    }
+  }, [autoTrimSubmissionId, submissions, onAutoTrimConsumed]);
 
   if (submissions.length === 0) return null;
 
