@@ -1341,6 +1341,14 @@ export default function CompetitionLobbyPage() {
           </div>
         )}
 
+        {/* ═══ ROBLOX-STYLE DROPS GRID — visible from first submission onward ═══ */}
+        {(isLive || isVoting || isCompleted) && submissions.length > 0 && (
+          <CompetitionEditsGrid
+            submissions={submissions}
+            currentUserId={user?.id ?? null}
+          />
+        )}
+
         {/* ═══ SHOWCASE PHASE (inline) — only the player runs here. No leaderboard, no voting grid. ═══ */}
         {isVoting && submissions.length > 0 && votingStartedAt && (() => {
           if (showcaseDone) return null;
