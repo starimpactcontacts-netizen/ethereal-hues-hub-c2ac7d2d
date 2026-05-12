@@ -102,6 +102,7 @@ export default function CompetitionLobbyPage() {
   const [chatUnread, setChatUnread] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [autoTrimId, setAutoTrimId] = useState<string | null>(null);
   const [showInspoForm, setShowInspoForm] = useState(false);
   const [savingInspo, setSavingInspo] = useState(false);
   const inspoFileInputRef = useRef<HTMLInputElement>(null);
@@ -417,9 +418,10 @@ export default function CompetitionLobbyPage() {
       if (upErr) throw upErr;
 
       const { data: urlData } = supabase.storage.from("loop-media").getPublicUrl(path);
-      const ok = await submit(urlData.publicUrl, isVideo ? "upload" : "image");
-      if (ok) {
+      const newId = await submit(urlData.publicUrl, isVideo ? "upload" : "image");
+      if (newId) {
         toast.success("Edit uploaded!");
+        if (isVideo) setAutoTrimId(newId);
       } else {
         toast.error("Failed to submit");
       }
@@ -1346,6 +1348,8 @@ export default function CompetitionLobbyPage() {
           <CompetitionEditsGrid
             submissions={submissions}
             currentUserId={user?.id ?? null}
+            autoTrimSubmissionId={autoTrimId}
+            onAutoTrimConsumed={() => setAutoTrimId(null)}
           />
         )}
 
