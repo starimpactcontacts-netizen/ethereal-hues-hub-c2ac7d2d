@@ -2095,6 +2095,7 @@ export type Database = {
       competition_submissions: {
         Row: {
           avatar_url: string | null
+          clip_start: number
           competition_id: string
           created_at: string
           id: string
@@ -2111,6 +2112,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          clip_start?: number
           competition_id: string
           created_at?: string
           id?: string
@@ -2127,6 +2129,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          clip_start?: number
           competition_id?: string
           created_at?: string
           id?: string
