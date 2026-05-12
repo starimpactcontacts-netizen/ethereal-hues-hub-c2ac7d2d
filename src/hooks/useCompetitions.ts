@@ -55,6 +55,7 @@ export interface CompetitionSubmission {
   scored_at: string | null;
   created_at: string;
   vote_count?: number;
+  clip_start?: number;
 }
 
 export function useCompetitionsList() {
