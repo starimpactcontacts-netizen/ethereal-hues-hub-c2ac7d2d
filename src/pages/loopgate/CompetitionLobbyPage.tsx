@@ -20,6 +20,7 @@ import { setLobbyMusicActive, useLobbyMusicMute } from "@/components/loopgate/Lo
 import ThemeRevealModal, { pickAutoTheme } from "@/components/loopgate/ThemeRevealModal";
 import { LobbyDefaultCover } from "@/components/loopgate/LobbyDefaultCover";
 import CompetitionVoiceChat from "@/components/loopgate/CompetitionVoiceChat";
+import CompetitionEditsGrid from "@/components/loopgate/CompetitionEditsGrid";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 
