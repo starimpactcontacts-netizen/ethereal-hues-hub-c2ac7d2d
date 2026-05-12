@@ -20,6 +20,7 @@ import { setLobbyMusicActive, useLobbyMusicMute } from "@/components/loopgate/Lo
 import ThemeRevealModal, { pickAutoTheme } from "@/components/loopgate/ThemeRevealModal";
 import { LobbyDefaultCover } from "@/components/loopgate/LobbyDefaultCover";
 import CompetitionVoiceChat from "@/components/loopgate/CompetitionVoiceChat";
+import CompetitionEditsGrid from "@/components/loopgate/CompetitionEditsGrid";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 
@@ -101,6 +102,7 @@ export default function CompetitionLobbyPage() {
   const [chatUnread, setChatUnread] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [autoTrimId, setAutoTrimId] = useState<string | null>(null);
   const [showInspoForm, setShowInspoForm] = useState(false);
   const [savingInspo, setSavingInspo] = useState(false);
   const inspoFileInputRef = useRef<HTMLInputElement>(null);
@@ -416,9 +418,10 @@ export default function CompetitionLobbyPage() {
       if (upErr) throw upErr;
 
       const { data: urlData } = supabase.storage.from("loop-media").getPublicUrl(path);
-      const ok = await submit(urlData.publicUrl, isVideo ? "upload" : "image");
-      if (ok) {
+      const newId = await submit(urlData.publicUrl, isVideo ? "upload" : "image");
+      if (newId) {
         toast.success("Edit uploaded!");
+        if (isVideo) setAutoTrimId(newId);
       } else {
         toast.error("Failed to submit");
       }
@@ -1338,6 +1341,16 @@ export default function CompetitionLobbyPage() {
               </p>
             )}
           </div>
+        )}
+
+        {/* ═══ ROBLOX-STYLE DROPS GRID — visible from first submission onward ═══ */}
+        {(isLive || isVoting || isCompleted) && submissions.length > 0 && (
+          <CompetitionEditsGrid
+            submissions={submissions}
+            currentUserId={user?.id ?? null}
+            autoTrimSubmissionId={autoTrimId}
+            onAutoTrimConsumed={() => setAutoTrimId(null)}
+          />
         )}
 
         {/* ═══ SHOWCASE PHASE (inline) — only the player runs here. No leaderboard, no voting grid. ═══ */}
