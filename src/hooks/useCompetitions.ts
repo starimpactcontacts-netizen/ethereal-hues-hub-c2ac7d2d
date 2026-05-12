@@ -253,18 +253,18 @@ export function useCompetition(idOrSlug: string | undefined) {
   };
 
   const submit = async (url: string, platform: string) => {
-    if (!user || !profile || !competition) return false;
-    const { error } = await supabase.from("competition_submissions").insert({
+    if (!user || !profile || !competition) return null;
+    const { data, error } = await supabase.from("competition_submissions").insert({
       competition_id: competition.id,
       user_id: user.id,
       username: profile.username,
       avatar_url: profile.avatar_url,
       submission_url: url,
       platform,
-    });
-    if (error) return false;
+    }).select("id").single();
+    if (error) return null;
     await fetchAll();
-    return true;
+    return (data as any)?.id as string | null;
   };
 
   const toggleUpvote = async () => {
