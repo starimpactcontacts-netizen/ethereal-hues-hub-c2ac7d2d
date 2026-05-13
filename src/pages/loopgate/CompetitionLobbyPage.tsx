@@ -1426,22 +1426,6 @@ export default function CompetitionLobbyPage() {
           />
         )}
 
-        {/* ═══ SHOWCASE PHASE (inline) — only the player runs here. No leaderboard, no voting grid. ═══ */}
-        {isVoting && submissions.length > 0 && votingStartedAt && (() => {
-          if (showcaseDone) return null;
-          return (
-            <div className="space-y-3">
-              <CompetitionVoting
-                submissions={submissions}
-                myUserId={user?.id}
-                myVoteSubmissionId={myVoteSubmissionId}
-                onVote={castVote}
-                votingStartedAt={votingStartedAt}
-              />
-            </div>
-          );
-        })()}
-
         {/* ═══ LEADERBOARD — completed only. Hidden entirely during showcase + voting. ═══ */}
         {isCompleted && (
           <CompetitionLeaderboard
