@@ -253,7 +253,7 @@ serve(async (req) => {
           .eq("video_url", video_url)
           .maybeSingle();
         if (existing) {
-          return jsonRes({ error: "This clip is already added to this campaign." }, 409);
+          return jsonRes({ error: "This clip is already added to this campaign." });
         }
       }
 
