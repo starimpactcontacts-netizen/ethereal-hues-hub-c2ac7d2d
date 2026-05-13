@@ -460,6 +460,38 @@ export default function CompetitionShowcaseStage({
           );
         })()}
       </main>
+
+      {/* Chat slide-up sheet — keep talking shit / say GGs while showcase plays */}
+      <AnimatePresence>
+        {chatOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 z-[10]"
+              onClick={() => setChatOpen(false)}
+            />
+            <motion.div
+              initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 32, stiffness: 320 }}
+              className="absolute inset-x-0 bottom-0 z-[11] flex flex-col bg-[#0A0A0A] border-t border-white/[0.08] rounded-t-2xl overflow-hidden"
+              style={{ height: "78%" }}
+            >
+              <div className="shrink-0 flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="w-4 h-4 text-amber-400" />
+                  <span className="text-[13px] font-black uppercase tracking-[0.2em] text-white" style={teko}>Lobby Chat</span>
+                </div>
+                <button onClick={() => setChatOpen(false)} className="w-8 h-8 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center active:scale-95">
+                  <X className="w-4 h-4 text-white/80" />
+                </button>
+              </div>
+              <div className="flex-1 min-h-0">
+                <CompetitionChat competitionId={competitionId} embedded />
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
