@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ChevronLeft, Plus, Swords, Users, Flame, Clock, Music, Trophy, Sparkles, UserPlus, Zap, Crown, Upload, CheckCircle2, Hourglass, Info, Play, X } from "lucide-react";
 import { useCollabs, cancelCollabSlot, type CollabSlot } from "@/hooks/useCollabs";
 import { useCollabBattles, type CollabBattle } from "@/hooks/useCollabBattles";
+import { BattleCard as DuoBattleMiniCard } from "@/components/loopgate/ArenaCollabsSection";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 
@@ -998,9 +999,18 @@ export default function CollabsPage() {
                 </button>
               </div>
             ) : liveBattles.length > 0 ? (
-              <div className="flex flex-col gap-4">
-                {liveBattles.map((b, i) => (
-                  <BracketRow key={b.id} battle={b} index={i} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {liveBattles.map((b) => (
+                  <motion.div
+                    key={b.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="w-full"
+                  >
+                    <div className="w-full" style={{ minHeight: 220 }}>
+                      <DuoBattleMiniCard battle={b} />
+                    </div>
+                  </motion.div>
                 ))}
               </div>
             ) : null}
