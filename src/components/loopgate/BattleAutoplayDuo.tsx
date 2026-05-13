@@ -304,9 +304,12 @@ function SidePanel({
   fill?: boolean;
 }) {
   const isVid = isVideo(side.url);
+  const [loadError, setLoadError] = useState(false);
   const accent = side.color === "red" ? "bg-red-500" : "bg-blue-500";
   const accentText = side.color === "red" ? "text-red-400" : "text-blue-400";
   const ring = side.color === "red" ? "ring-red-500/60" : "ring-blue-500/60";
+
+  useEffect(() => setLoadError(false), [side.url]);
 
   // Capture first frame to use as instant poster — eliminates the "black freeze" flash.
   const handleLoadedData = () => {
@@ -361,15 +364,18 @@ function SidePanel({
           x-webkit-airplay="deny"
           disableRemotePlayback
           loop
-          preload="none"
+          preload={active ? "auto" : "metadata"}
           disablePictureInPicture
           controls={false}
+          muted={!active}
+          poster={poster || undefined}
           onLoadStart={onReady}
           onLoadedMetadata={onReady}
           onLoadedData={handleLoadedData}
           onCanPlay={onReady}
           onCanPlayThrough={onReady}
           onPlaying={onStarted}
+          onError={() => setLoadError(true)}
         />
       ) : (
         <img
@@ -385,8 +391,28 @@ function SidePanel({
       {/* Only show a spinner before metadata exists; playback starts as soon as the browser can decode. */}
       {loading && active && !poster && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/30">
-          <div className={`w-8 h-8 rounded-full border-2 ${side.color === 'red' ? 'border-red-500/40 border-t-red-500' : 'border-blue-500/40 border-t-blue-500'} animate-spin`} />
+          <div className="flex flex-col items-center gap-2">
+            <div className={`w-8 h-8 rounded-full border-2 ${side.color === 'red' ? 'border-red-500/40 border-t-red-500' : 'border-blue-500/40 border-t-blue-500'} animate-spin`} />
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/50" style={teko}>buffering</span>
+          </div>
         </div>
+      )}
+
+      {loadError && active && (
+        <button
+          type="button"
+          onClick={() => {
+            const v = videoRef.current;
+            if (!v) return;
+            setLoadError(false);
+            v.load();
+            v.play().catch(() => {});
+          }}
+          className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/80"
+        >
+          <span className="text-xs font-black uppercase tracking-[0.18em] text-foreground" style={teko}>Tap to reload</span>
+          <span className="text-[10px] text-muted-foreground">Network dropped this edit</span>
+        </button>
       )}
 
       {/* Progress bar — only on active */}
