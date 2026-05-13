@@ -1519,58 +1519,8 @@ export default function CompetitionLobbyPage() {
         </div>
       </div>
 
-      {/* ═══ VOTING MODAL — opens after the showcase ends. 3-minute window. ═══ */}
-      <AnimatePresence>
-        {isVoting && submissions.length > 0 && votingStartedAt && (() => {
-          if (!votingWindowOpen) return null;
-          return (
-            <motion.div
-              key="vote-modal"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[9998] bg-black/95 backdrop-blur-md flex flex-col"
-            >
-              {/* Header */}
-              <div
-                className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-white/[0.06]"
-                style={{ paddingTop: "calc(env(safe-area-inset-top) + 12px)" }}
-              >
-                <div className="flex flex-col">
-                  <span className="text-[9px] font-extrabold uppercase tracking-[0.3em] text-amber-400" style={teko}>
-                    Voting Open
-                  </span>
-                  <span className="text-[11px] text-foreground/50">Pick the best edit</span>
-                </div>
-                {votingDeadline && (
-                  <div className="flex flex-col items-end">
-                    <span className="text-[9px] font-extrabold uppercase tracking-[0.25em] text-foreground/40" style={teko}>
-                      Time Left
-                    </span>
-                    <div className="text-2xl leading-none">
-                      <VoteWindowCountdown deadline={votingDeadline} />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Body */}
-              <div className="flex-1 overflow-y-auto px-4 py-4">
-                <CompetitionVoting
-                  submissions={submissions}
-                  myUserId={user?.id}
-                  myVoteSubmissionId={myVoteSubmissionId}
-                  onVote={castVote}
-                  votingStartedAt={votingStartedAt}
-                />
-                <p className="mt-4 text-center text-[10px] uppercase tracking-[0.2em] text-foreground/40" style={teko}>
-                  Winner reveals when everyone votes or timer hits 0
-                </p>
-              </div>
-            </motion.div>
-          );
-        })()}
-      </AnimatePresence>
+      {/* ═══ FULL-SCREEN SHOWCASE STAGE — owns showcase / vote / tally ═══ */}
+      <AnimatePresence>{showcaseStage}</AnimatePresence>
 
       {/* ═══ JOIN CODE MODAL ═══ */}
       {joinCodeModal}
