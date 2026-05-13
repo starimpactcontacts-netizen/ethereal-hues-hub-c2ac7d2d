@@ -7,6 +7,8 @@ import { useBattleAudioUnlock } from "@/hooks/useBattleAudioUnlock";
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
 const PRELOAD_LEAD_SECONDS = 2.5;
+const HAVE_NOTHING = 0;
+const HAVE_CURRENT_DATA = 2;
 
 type Side = {
   userId: string;
@@ -14,6 +16,7 @@ type Side = {
   avatarUrl: string | null;
   url: string;
   color: "red" | "blue";
+  posterUrl?: string | null;
 };
 
 interface Props {
@@ -37,6 +40,7 @@ function isImageFile(url: string) {
  */
 export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }: Props) {
   const videoKey = useMemo(() => sides.map((side) => side.url).join("|"), [sides]);
+  const posterKey = useMemo(() => sides.map((side) => side.posterUrl || "").join("|"), [sides]);
   const audioUnlocked = useBattleAudioUnlock();
   const startMs = showcaseStartedAt ? new Date(showcaseStartedAt).getTime() : null;
   const totalMs = sides.length * PER_EDIT_SECONDS * 1000;
@@ -59,13 +63,29 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   const [paused, setPaused] = useState(false);
   const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
   const completedFiredRef = useRef(false);
+  const bufferHoldStartedAtRef = useRef<number | null>(null);
+  const holdOffsetMsRef = useRef(0);
   const [posters, setPosters] = useState<Record<number, string>>({});
   const [started, setStarted] = useState<Record<number, boolean>>({});
+  const [ready, setReady] = useState<Record<number, boolean>>({});
+  const [loadErrors, setLoadErrors] = useState<Record<number, boolean>>({});
 
   const current = sides[currentIdx];
 
-  // Serial preload — only the active video opens a connection. Inactive sides wake up
-  // ~2.5s before swap so their first frames are warm without fighting for bandwidth.
+  useEffect(() => {
+    setReady({});
+    setStarted({});
+    setPosters(sides.reduce<Record<number, string>>((acc, side, index) => {
+      if (side.posterUrl) acc[index] = side.posterUrl;
+      return acc;
+    }, {}));
+    setLoadErrors({});
+    bufferHoldStartedAtRef.current = null;
+    holdOffsetMsRef.current = 0;
+  }, [posterKey, videoKey]);
+
+  // Keep inactive videos at metadata so mobile Safari can grab a first frame cheaply.
+  // Active video uses auto; the next side warms up near the swap without both full-buffering forever.
   useEffect(() => {
     videoRefs.current.forEach((v, i) => {
       if (!v) return;
@@ -73,10 +93,12 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
       v.defaultMuted = false;
       const isActive = i === currentIdx;
       const shouldWarm = !isActive && secondsLeft <= PRELOAD_LEAD_SECONDS;
-      const desired = isActive || shouldWarm ? "auto" : "none";
+      const desired = isActive || shouldWarm ? "auto" : "metadata";
       if (v.preload !== desired) {
         v.preload = desired;
-        if (desired === "auto") v.load();
+        if (desired === "auto" || v.readyState === HAVE_NOTHING) v.load();
+      } else if (v.readyState === HAVE_NOTHING) {
+        v.load();
       }
     });
   }, [currentIdx, secondsLeft, videoKey]);
@@ -105,7 +127,27 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   useEffect(() => {
     if (!startMs) return;
     const tick = () => {
-      const { idx, left, completedOnce } = compute();
+      const activeSide = sides[currentIdx];
+      const activeVideo = videoRefs.current[currentIdx];
+      const waitingForFirstFrame = isDirectVideo(activeSide.url) && !activeVideo?.error && (!activeVideo || activeVideo.readyState < HAVE_CURRENT_DATA);
+
+      if (waitingForFirstFrame) {
+        if (!bufferHoldStartedAtRef.current) bufferHoldStartedAtRef.current = Date.now();
+        return;
+      }
+
+      const now = Date.now();
+      if (bufferHoldStartedAtRef.current) {
+        holdOffsetMsRef.current += now - bufferHoldStartedAtRef.current;
+        bufferHoldStartedAtRef.current = null;
+      }
+      const adjustedStartMs = startMs + holdOffsetMsRef.current;
+      const elapsed = Math.max(0, now - adjustedStartMs);
+      const completedOnce = elapsed >= totalMs;
+      const looped = elapsed % totalMs;
+      const idx = Math.min(sides.length - 1, Math.floor(looped / (PER_EDIT_SECONDS * 1000)));
+      const intoEdit = looped - idx * PER_EDIT_SECONDS * 1000;
+      const left = Math.max(0, Math.ceil((PER_EDIT_SECONDS * 1000 - intoEdit) / 1000));
       setCurrentIdx(prev => (prev !== idx ? idx : prev));
       setSecondsLeft(left);
       if (completedOnce && !completedFiredRef.current) {
@@ -116,7 +158,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     tick();
     const id = setInterval(tick, 250);
     return () => clearInterval(id);
-  }, [compute, startMs, sides.length, onComplete]);
+  }, [currentIdx, onComplete, ready, sides, startMs, totalMs]);
 
   const progressPct = ((PER_EDIT_SECONDS - secondsLeft) / PER_EDIT_SECONDS) * 100;
   const ringColor = current.color === "red" ? "ring-red-500/40" : "ring-blue-500/40";
@@ -208,12 +250,42 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
                       className={`relative w-full h-full object-contain bg-black transition-opacity duration-200 ${poster && !hasStarted ? "opacity-0" : "opacity-100"}`}
                       playsInline
                       loop
-                      preload="none"
+                      preload={active ? "auto" : "metadata"}
                       controls={false}
                       disablePictureInPicture
-                      onLoadedData={() => capturePoster(index)}
+                      muted={!active}
+                      poster={poster || undefined}
+                      onLoadedMetadata={() => setReady((prev) => (prev[index] ? prev : { ...prev, [index]: true }))}
+                      onLoadedData={() => {
+                        setReady((prev) => (prev[index] ? prev : { ...prev, [index]: true }));
+                        capturePoster(index);
+                      }}
+                      onCanPlay={() => setReady((prev) => (prev[index] ? prev : { ...prev, [index]: true }))}
                       onPlaying={() => setStarted((prev) => (prev[index] ? prev : { ...prev, [index]: true }))}
+                      onError={() => setLoadErrors((prev) => ({ ...prev, [index]: true }))}
                     />
+                    {active && !ready[index] && !poster && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/35">
+                        <div className={`w-8 h-8 rounded-full border-2 ${side.color === "red" ? "border-red-500/40 border-t-red-500" : "border-blue-500/40 border-t-blue-500"} animate-spin`} />
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/50" style={teko}>buffering</span>
+                      </div>
+                    )}
+                    {active && loadErrors[index] && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const v = videoRefs.current[index];
+                          if (!v) return;
+                          setLoadErrors((prev) => ({ ...prev, [index]: false }));
+                          v.load();
+                          v.play().catch(() => {});
+                        }}
+                        className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/80"
+                      >
+                        <span className="text-xs font-black uppercase tracking-[0.18em] text-foreground" style={teko}>Tap to reload</span>
+                        <span className="text-[10px] text-muted-foreground">Network dropped this edit</span>
+                      </button>
+                    )}
                   </>
                 ) : sideImage ? (
                   <img src={side.url} alt={`${side.username} edit`} className="w-full h-full object-contain bg-black" loading="eager" decoding="async" />

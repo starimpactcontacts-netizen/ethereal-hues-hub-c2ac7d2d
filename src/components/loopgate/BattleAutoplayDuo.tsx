@@ -3,6 +3,8 @@ import { useBattleAudioUnlock } from "@/hooks/useBattleAudioUnlock";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
+const HAVE_NOTHING = 0;
+const HAVE_CURRENT_DATA = 2;
 // Both sides keep `preload="metadata"` always (cheap — first frame + headers) so
 // neither shows a black screen on swap. The active side is bumped to `auto`.
 
@@ -12,6 +14,7 @@ type Side = {
   url: string;
   color: "red" | "blue";
   avatarUrl?: string | null;
+  posterUrl?: string | null;
 };
 
 interface Props {
@@ -54,15 +57,26 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
   const [secondsLeft, setSecondsLeft] = useState(initial.left);
   const tickEnabled = !paused;
   const mountedPausedRef = useRef(paused);
+  const bufferHoldStartedAtRef = useRef<number | null>(null);
 
   const redVideoRef = useRef<HTMLVideoElement>(null);
   const blueVideoRef = useRef<HTMLVideoElement>(null);
   const redPanelRef = useRef<HTMLDivElement>(null);
   const bluePanelRef = useRef<HTMLDivElement>(null);
-  const [redPoster, setRedPoster] = useState<string | null>(null);
-  const [bluePoster, setBluePoster] = useState<string | null>(null);
+  const [redPoster, setRedPoster] = useState<string | null>(red.posterUrl || null);
+  const [bluePoster, setBluePoster] = useState<string | null>(blue.posterUrl || null);
   const [redStarted, setRedStarted] = useState(false);
   const [blueStarted, setBlueStarted] = useState(false);
+
+  useEffect(() => {
+    setRedReady(!isVideo(red.url));
+    setBlueReady(!isVideo(blue.url));
+    setRedStarted(false);
+    setBlueStarted(false);
+    setRedPoster(red.posterUrl || null);
+    setBluePoster(blue.posterUrl || null);
+    bufferHoldStartedAtRef.current = null;
+  }, [red.url, blue.url, red.posterUrl, blue.posterUrl]);
 
   // If the battle mounted behind the 3-2-1 overlay, start the filmed showcase from RED at 15s.
   useEffect(() => {
@@ -77,6 +91,20 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
   useEffect(() => {
     if (!tickEnabled) return;
     const tick = () => {
+      const activeSide = sides[activeIdx];
+      const activeVideo = activeIdx === 0 ? redVideoRef.current : blueVideoRef.current;
+      const waitingForFirstFrame = isVideo(activeSide.url) && !activeVideo?.error && (!activeVideo || activeVideo.readyState < HAVE_CURRENT_DATA);
+
+      if (waitingForFirstFrame) {
+        if (!bufferHoldStartedAtRef.current) bufferHoldStartedAtRef.current = Date.now();
+        return;
+      }
+
+      if (bufferHoldStartedAtRef.current) {
+        startMsRef.current += Date.now() - bufferHoldStartedAtRef.current;
+        bufferHoldStartedAtRef.current = null;
+      }
+
       const { idx, left } = compute();
       setActiveIdx((prev) => (prev !== idx ? idx : prev));
       setSecondsLeft(left);
@@ -84,7 +112,7 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
     tick();
     const id = setInterval(tick, 250);
     return () => clearInterval(id);
-  }, [compute, tickEnabled]);
+  }, [activeIdx, blueReady, compute, redReady, sides, tickEnabled]);
 
   // Serial preload: only the active side opens a connection. Inactive side waits until
   // Keep BOTH videos at `metadata` preload at all times so the first frame is always
@@ -97,6 +125,8 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
       const desired: "auto" | "metadata" = isActive ? "auto" : "metadata";
       if (v.preload !== desired) {
         v.preload = desired;
+        if (desired === "auto" || v.readyState === HAVE_NOTHING) v.load();
+      } else if (v.readyState === HAVE_NOTHING) {
         v.load();
       }
     });
@@ -276,9 +306,12 @@ function SidePanel({
   fill?: boolean;
 }) {
   const isVid = isVideo(side.url);
+  const [loadError, setLoadError] = useState(false);
   const accent = side.color === "red" ? "bg-red-500" : "bg-blue-500";
   const accentText = side.color === "red" ? "text-red-400" : "text-blue-400";
   const ring = side.color === "red" ? "ring-red-500/60" : "ring-blue-500/60";
+
+  useEffect(() => setLoadError(false), [side.url]);
 
   // Capture first frame to use as instant poster — eliminates the "black freeze" flash.
   const handleLoadedData = () => {
@@ -333,15 +366,18 @@ function SidePanel({
           x-webkit-airplay="deny"
           disableRemotePlayback
           loop
-          preload="none"
+          preload={active ? "auto" : "metadata"}
           disablePictureInPicture
           controls={false}
+          muted={!active}
+          poster={poster || undefined}
           onLoadStart={onReady}
           onLoadedMetadata={onReady}
           onLoadedData={handleLoadedData}
           onCanPlay={onReady}
           onCanPlayThrough={onReady}
           onPlaying={onStarted}
+          onError={() => setLoadError(true)}
         />
       ) : (
         <img
@@ -357,8 +393,28 @@ function SidePanel({
       {/* Only show a spinner before metadata exists; playback starts as soon as the browser can decode. */}
       {loading && active && !poster && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/30">
-          <div className={`w-8 h-8 rounded-full border-2 ${side.color === 'red' ? 'border-red-500/40 border-t-red-500' : 'border-blue-500/40 border-t-blue-500'} animate-spin`} />
+          <div className="flex flex-col items-center gap-2">
+            <div className={`w-8 h-8 rounded-full border-2 ${side.color === 'red' ? 'border-red-500/40 border-t-red-500' : 'border-blue-500/40 border-t-blue-500'} animate-spin`} />
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/50" style={teko}>buffering</span>
+          </div>
         </div>
+      )}
+
+      {loadError && active && (
+        <button
+          type="button"
+          onClick={() => {
+            const v = videoRef.current;
+            if (!v) return;
+            setLoadError(false);
+            v.load();
+            v.play().catch(() => {});
+          }}
+          className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/80"
+        >
+          <span className="text-xs font-black uppercase tracking-[0.18em] text-foreground" style={teko}>Tap to reload</span>
+          <span className="text-[10px] text-muted-foreground">Network dropped this edit</span>
+        </button>
       )}
 
       {/* Progress bar — only on active */}

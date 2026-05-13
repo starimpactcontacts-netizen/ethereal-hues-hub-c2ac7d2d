@@ -35,7 +35,7 @@ export async function extractVideoFrames(
       // Spread frames across 5%-95% of video duration
       const timestamps: number[] = [];
       for (let i = 0; i < frameCount; i++) {
-        timestamps.push(duration * (0.05 + (0.9 * i) / (frameCount - 1)));
+        timestamps.push(frameCount === 1 ? Math.min(duration * 0.1, 0.5) : duration * (0.05 + (0.9 * i) / (frameCount - 1)));
       }
 
       for (const t of timestamps) {
