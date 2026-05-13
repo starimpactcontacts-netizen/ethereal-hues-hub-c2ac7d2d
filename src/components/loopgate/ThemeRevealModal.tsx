@@ -55,17 +55,7 @@ export default function ThemeRevealModal({
               <X className="w-4 h-4" />
             </button>
 
-            {/* Header — room name as small chip */}
-            <div className="relative px-5 pt-7 pb-1 flex justify-center">
-              {competitionName && (
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/10">
-                  <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
-                  <p className="text-[10px] tracking-[0.18em] text-white/70 uppercase font-bold truncate max-w-[200px]">
-                    {competitionName}
-                  </p>
-                </div>
-              )}
-            </div>
+            <div className="pt-5" />
 
             {/* Theme reveal */}
             <div className="relative px-5 pb-5">
