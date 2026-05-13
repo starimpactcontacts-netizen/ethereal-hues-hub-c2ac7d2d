@@ -135,8 +135,54 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
   const progressPct = ((PER_EDIT_SECONDS - secondsLeft) / PER_EDIT_SECONDS) * 100;
 
   return (
-    <div className="space-y-0 select-none -mx-4 md:flex md:items-stretch md:gap-0 md:-mx-0">
-      {/* RED — top (mobile) / left (desktop) */}
+    <div className="select-none -mx-4 md:-mx-0">
+      {/* ── MOBILE: single 4:3 stage, only active side visible (other stays mounted for preload) ── */}
+      <div className="md:hidden relative w-full aspect-[4/3] bg-black overflow-hidden">
+        <div className={`absolute inset-0 transition-opacity duration-200 ${activeIdx === 0 ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+          <SidePanel
+            side={red}
+            videoRef={redVideoRef}
+            panelRef={redPanelRef}
+            active={activeIdx === 0}
+            progressPct={activeIdx === 0 ? progressPct : activeIdx > 0 ? 100 : 0}
+            secondsLeft={secondsLeft}
+            onReady={() => setRedReady(true)}
+            loading={!redReady}
+            poster={redPoster}
+            onPoster={setRedPoster}
+            started={redStarted}
+            onStarted={() => setRedStarted(true)}
+            fill
+          />
+        </div>
+        <div className={`absolute inset-0 transition-opacity duration-200 ${activeIdx === 1 ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+          <SidePanel
+            side={blue}
+            videoRef={blueVideoRef}
+            panelRef={bluePanelRef}
+            active={activeIdx === 1}
+            progressPct={activeIdx === 1 ? progressPct : 0}
+            secondsLeft={secondsLeft}
+            onReady={() => setBlueReady(true)}
+            loading={!blueReady}
+            poster={bluePoster}
+            onPoster={setBluePoster}
+            started={blueStarted}
+            onStarted={() => setBlueStarted(true)}
+            fill
+          />
+        </div>
+        {/* Up-next peek pill */}
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/10 flex items-center gap-1.5 z-30">
+          <span className={`w-1.5 h-1.5 rounded-full ${activeIdx === 0 ? "bg-blue-400" : "bg-red-400"}`} />
+          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/80" style={teko}>
+            Next: @{activeIdx === 0 ? blue.username : red.username}
+          </span>
+        </div>
+      </div>
+
+      {/* ── DESKTOP: side-by-side as before ── */}
+      <div className="hidden md:flex md:items-stretch md:gap-0">
       <div className="md:flex-1 md:min-w-0">
       <SidePanel
         side={red}
@@ -154,10 +200,10 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
       />
       </div>
 
-      {/* Slim VS divider — horizontal on mobile, vertical on desktop */}
-      <div className="relative h-0 md:h-auto md:w-0 flex items-center justify-center bg-black z-20">
+      {/* Slim vertical VS divider (desktop only) */}
+      <div className="relative md:h-auto md:w-0 flex items-center justify-center bg-black z-20">
         <div
-          className="absolute inset-x-0 top-1/2 h-[2px] md:inset-y-0 md:left-1/2 md:top-0 md:h-auto md:w-[2px]"
+          className="absolute md:inset-y-0 md:left-1/2 md:top-0 md:h-auto md:w-[2px]"
           style={{
             background:
               'linear-gradient(90deg, transparent 0%, rgba(239,68,68,0.9) 30%, #fff 50%, rgba(59,130,246,0.9) 70%, transparent 100%)',
@@ -198,6 +244,7 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
         onStarted={() => setBlueStarted(true)}
       />
       </div>
+      </div>
 
       <p className="pt-2 px-4 text-[10px] text-center text-foreground/40 uppercase tracking-[0.2em] md:hidden" style={teko}>
         15s per edit · auto-rotating
@@ -220,6 +267,7 @@ function SidePanel({
   onPoster,
   started,
   onStarted,
+  fill = false,
 }: {
   side: Side;
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -233,6 +281,7 @@ function SidePanel({
   onPoster: (dataUrl: string) => void;
   started: boolean;
   onStarted: () => void;
+  fill?: boolean;
 }) {
   const isVid = isVideo(side.url);
   const accent = side.color === "red" ? "bg-red-500" : "bg-blue-500";
@@ -265,7 +314,7 @@ function SidePanel({
   return (
     <div
       ref={panelRef}
-      className={`relative aspect-square w-full overflow-hidden bg-black ${active ? `ring-2 ${ring} ring-inset` : "opacity-50"}`}
+      className={`relative ${fill ? "w-full h-full" : "aspect-square w-full"} overflow-hidden bg-black ${active ? `ring-2 ${ring} ring-inset` : fill ? "" : "opacity-50"}`}
       style={{
         boxShadow: active
           ? side.color === 'red'
