@@ -7,6 +7,8 @@ import { useBattleAudioUnlock } from "@/hooks/useBattleAudioUnlock";
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
 const PRELOAD_LEAD_SECONDS = 2.5;
+const HAVE_NOTHING = 0;
+const HAVE_CURRENT_DATA = 2;
 
 type Side = {
   userId: string;
@@ -94,8 +96,8 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
       const desired = isActive || shouldWarm ? "auto" : "metadata";
       if (v.preload !== desired) {
         v.preload = desired;
-        if (desired === "auto" || v.readyState === HTMLMediaElement.HAVE_NOTHING) v.load();
-      } else if (v.readyState === HTMLMediaElement.HAVE_NOTHING) {
+        if (desired === "auto" || v.readyState === HAVE_NOTHING) v.load();
+      } else if (v.readyState === HAVE_NOTHING) {
         v.load();
       }
     });
@@ -127,7 +129,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     const tick = () => {
       const activeSide = sides[currentIdx];
       const activeVideo = videoRefs.current[currentIdx];
-      const waitingForFirstFrame = isDirectVideo(activeSide.url) && !activeVideo?.error && (!activeVideo || activeVideo.readyState < HTMLMediaElement.HAVE_CURRENT_DATA);
+      const waitingForFirstFrame = isDirectVideo(activeSide.url) && !activeVideo?.error && (!activeVideo || activeVideo.readyState < HAVE_CURRENT_DATA);
 
       if (waitingForFirstFrame) {
         if (!bufferHoldStartedAtRef.current) bufferHoldStartedAtRef.current = Date.now();
