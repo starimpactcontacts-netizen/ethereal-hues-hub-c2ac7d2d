@@ -1290,18 +1290,11 @@ export default function CompetitionLobbyPage() {
         {/* ═══ LIVE EDITING ACTIONS — file-first submission flow ═══ */}
         {isLive && hasJoined && (
           <RobloxLiveCanvas
-            theme={competition.theme}
-            deadline={competition.deadline}
             isSubmitting={isSubmitting}
             hasSubmitted={hasSubmitted}
             submittedCount={submittedEditorCount}
             totalCount={totalEditorCount}
-            chatMessageCount={chatMessageCount}
             onUpload={uploadSubmissionFile}
-            onOpenChat={() => {
-              setLobbyTab("chat");
-              setTimeout(() => chatRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
-            }}
           />
         )}
 
