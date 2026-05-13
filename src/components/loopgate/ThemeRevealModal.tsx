@@ -41,51 +41,63 @@ export default function ThemeRevealModal({
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: "spring", damping: 18, stiffness: 240 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-[#0b0b0d] overflow-hidden"
+            className="relative w-full max-w-sm rounded-3xl border border-white/10 bg-gradient-to-b from-[#15131c] via-[#0b0b0d] to-[#0b0b0d] overflow-hidden shadow-[0_30px_80px_-20px_rgba(139,92,246,0.35)]"
           >
+            {/* Glow accent */}
+            <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-72 h-72 rounded-full bg-violet-500/30 blur-3xl" />
+
             {/* Close */}
             <button
               onClick={onClose}
-              className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition"
+              className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition"
               aria-label="Close"
             >
               <X className="w-4 h-4" />
             </button>
 
-            {/* Header */}
-            <div className="px-5 pt-8 pb-2">
-              <p className="text-center text-[10px] tracking-[0.3em] text-white/40 uppercase font-bold">
-                Theme
-              </p>
+            {/* Header — room name as small chip */}
+            <div className="relative px-5 pt-7 pb-1 flex justify-center">
               {competitionName && (
-                <p className="text-center text-white/50 text-xs mt-1 truncate">
-                  {competitionName}
-                </p>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/10">
+                  <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
+                  <p className="text-[10px] tracking-[0.18em] text-white/70 uppercase font-bold truncate max-w-[200px]">
+                    {competitionName}
+                  </p>
+                </div>
               )}
             </div>
 
             {/* Theme reveal */}
-            <div className="px-5 pb-5">
+            <div className="relative px-5 pb-5">
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.35 }}
-                className="text-center"
+                className="text-center mt-5"
               >
+                <p
+                  className="text-[11px] tracking-[0.4em] text-violet-400/90 uppercase font-black mb-2"
+                  style={teko}
+                >
+                  ▸ Theme
+                </p>
                 <h2
-                  className="text-5xl text-white leading-none tracking-wide uppercase mt-3"
+                  className="text-6xl bg-gradient-to-b from-white to-white/70 bg-clip-text text-transparent leading-[0.9] tracking-wide uppercase"
                   style={teko}
                 >
                   {theme}
                 </h2>
+                <p className="text-[10px] tracking-[0.25em] text-white/40 uppercase font-bold mt-3">
+                  Round starts now · make it viral
+                </p>
               </motion.div>
 
               <button
                 onClick={onClose}
-                className="mt-8 w-full h-12 rounded-xl bg-white hover:bg-white/90 text-black font-bold tracking-wider uppercase text-sm transition active:scale-[0.98]"
+                className="mt-7 w-full h-12 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-900 font-black tracking-[0.18em] uppercase text-base transition active:scale-[0.98] shadow-[0_10px_30px_-8px_rgba(16,185,129,0.55)]"
                 style={teko}
               >
-                Let's Go
+                Let's Cook
               </button>
             </div>
           </motion.div>
