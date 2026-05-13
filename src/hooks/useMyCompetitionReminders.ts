@@ -116,7 +116,11 @@ export function useMyCompetitionReminders() {
     };
 
     fetchMine();
-    const poll = window.setInterval(fetchMine, 5000);
+    // Realtime + visibility refetch handle live updates; this is just a safety net.
+    const poll = window.setInterval(fetchMine, 60000);
+    // Refetch the moment the tab becomes visible again — covers the dropped-WS case.
+    const onVisible = () => { if (document.visibilityState === "visible") fetchMine(); };
+    document.addEventListener("visibilitychange", onVisible);
 
     const channel = supabase
       .channel(`my-competition-reminders-${user.id}`)
@@ -128,6 +132,7 @@ export function useMyCompetitionReminders() {
 
     return () => {
       window.clearInterval(poll);
+      document.removeEventListener("visibilitychange", onVisible);
       supabase.removeChannel(channel);
     };
   }, [user?.id]);
