@@ -1053,8 +1053,8 @@ export default function CompetitionLobbyPage() {
                   <span className="text-[8px] font-extrabold uppercase tracking-[0.2em] leading-none text-zinc-400" style={teko}>
                     Length
                   </span>
-                  <div className="leading-none mt-0.5 text-sky-500 text-base font-black tracking-wider" style={teko}>
-                    <LiveCountdown deadline={competition.deadline} />
+                  <div className="leading-none mt-0.5">
+                    <LiveCountdownSky deadline={competition.deadline} />
                   </div>
                 </div>
               )}
