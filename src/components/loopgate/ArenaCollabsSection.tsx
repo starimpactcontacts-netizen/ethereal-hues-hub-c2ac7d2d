@@ -102,7 +102,7 @@ function CardShell({
   );
 }
 
-function BattleCard({ battle }: { battle: CollabBattle }) {
+export function BattleCard({ battle }: { battle: CollabBattle }) {
   const cd = useCountdown(battle.ends_at);
   const blue = battle.reactions_a;
   const red = battle.reactions_b;
