@@ -3,6 +3,8 @@ import { useBattleAudioUnlock } from "@/hooks/useBattleAudioUnlock";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
+const HAVE_NOTHING = 0;
+const HAVE_CURRENT_DATA = 2;
 // Both sides keep `preload="metadata"` always (cheap — first frame + headers) so
 // neither shows a black screen on swap. The active side is bumped to `auto`.
 
@@ -91,7 +93,7 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
     const tick = () => {
       const activeSide = sides[activeIdx];
       const activeVideo = activeIdx === 0 ? redVideoRef.current : blueVideoRef.current;
-      const waitingForFirstFrame = isVideo(activeSide.url) && !activeVideo?.error && (!activeVideo || activeVideo.readyState < HTMLMediaElement.HAVE_CURRENT_DATA);
+      const waitingForFirstFrame = isVideo(activeSide.url) && !activeVideo?.error && (!activeVideo || activeVideo.readyState < HAVE_CURRENT_DATA);
 
       if (waitingForFirstFrame) {
         if (!bufferHoldStartedAtRef.current) bufferHoldStartedAtRef.current = Date.now();
@@ -123,8 +125,8 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
       const desired: "auto" | "metadata" = isActive ? "auto" : "metadata";
       if (v.preload !== desired) {
         v.preload = desired;
-        if (desired === "auto" || v.readyState === HTMLMediaElement.HAVE_NOTHING) v.load();
-      } else if (v.readyState === HTMLMediaElement.HAVE_NOTHING) {
+        if (desired === "auto" || v.readyState === HAVE_NOTHING) v.load();
+      } else if (v.readyState === HAVE_NOTHING) {
         v.load();
       }
     });
