@@ -343,7 +343,7 @@ export default function CompetitionLobbyPage() {
     <CompetitionShowcaseStage
       competitionId={competition.id}
       competitionName={competition.name}
-      theme={competition.theme}
+      theme={resolvedTheme.theme}
       submissions={submissions}
       myUserId={user?.id}
       myVoteSubmissionId={myVoteSubmissionId}
