@@ -3,7 +3,8 @@ import { useBattleAudioUnlock } from "@/hooks/useBattleAudioUnlock";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
-const PRELOAD_LEAD_SECONDS = 2.5; // start fetching the inactive side this many seconds before swap
+// Both sides keep `preload="metadata"` always (cheap — first frame + headers) so
+// neither shows a black screen on swap. The active side is bumped to `auto`.
 
 type Side = {
   userId: string;
@@ -86,22 +87,20 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
   }, [compute, tickEnabled]);
 
   // Serial preload: only the active side opens a connection. Inactive side waits until
-  // ~2.5s before its turn so its first frames are warm by swap time. This prevents two
-  // streams from fighting for mobile bandwidth.
+  // Keep BOTH videos at `metadata` preload at all times so the first frame is always
+  // decoded and we never show a black panel. Bump the active side to `auto` for full buffering.
   useEffect(() => {
     const refs = [redVideoRef.current, blueVideoRef.current];
     refs.forEach((v, i) => {
       if (!v) return;
       const isActive = i === activeIdx;
-      // Wake the inactive side when we're close to the swap.
-      const shouldWarm = !isActive && secondsLeft <= PRELOAD_LEAD_SECONDS;
-      const desired = isActive || shouldWarm ? "auto" : "none";
+      const desired: "auto" | "metadata" = isActive ? "auto" : "metadata";
       if (v.preload !== desired) {
         v.preload = desired;
-        if (desired === "auto") v.load();
+        v.load();
       }
     });
-  }, [activeIdx, secondsLeft, red.url, blue.url]);
+  }, [activeIdx, red.url, blue.url]);
 
   // Drive playback without seeking/resetting; seeking on mobile was causing black frames and stutter.
   useEffect(() => {
@@ -136,9 +135,9 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
 
   return (
     <div className="select-none -mx-4 md:-mx-0">
-      {/* ── MOBILE: single 4:3 stage, only active side visible (other stays mounted for preload) ── */}
-      <div className="md:hidden relative w-full aspect-[4/3] bg-black overflow-hidden">
-        <div className={`absolute inset-0 transition-opacity duration-200 ${activeIdx === 0 ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+      {/* ── MOBILE: stacked RED on top / BLUE on bottom — both always visible, no scroll ── */}
+      <div className="md:hidden flex flex-col w-full bg-black">
+        <div className="relative w-full aspect-[16/10] border-b border-white/10">
           <SidePanel
             side={red}
             videoRef={redVideoRef}
@@ -155,7 +154,7 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
             fill
           />
         </div>
-        <div className={`absolute inset-0 transition-opacity duration-200 ${activeIdx === 1 ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+        <div className="relative w-full aspect-[16/10]">
           <SidePanel
             side={blue}
             videoRef={blueVideoRef}
@@ -171,13 +170,6 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
             onStarted={() => setBlueStarted(true)}
             fill
           />
-        </div>
-        {/* Up-next peek pill */}
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/10 flex items-center gap-1.5 z-30">
-          <span className={`w-1.5 h-1.5 rounded-full ${activeIdx === 0 ? "bg-blue-400" : "bg-red-400"}`} />
-          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/80" style={teko}>
-            Next: @{activeIdx === 0 ? blue.username : red.username}
-          </span>
         </div>
       </div>
 
@@ -314,7 +306,7 @@ function SidePanel({
   return (
     <div
       ref={panelRef}
-      className={`relative ${fill ? "w-full h-full" : "aspect-square w-full"} overflow-hidden bg-black ${active ? `ring-2 ${ring} ring-inset` : fill ? "" : "opacity-50"}`}
+      className={`relative ${fill ? "w-full h-full" : "aspect-square w-full"} overflow-hidden bg-black transition-opacity ${active ? `ring-2 ${ring} ring-inset` : fill ? "opacity-60" : "opacity-50"}`}
       style={{
         boxShadow: active
           ? side.color === 'red'
