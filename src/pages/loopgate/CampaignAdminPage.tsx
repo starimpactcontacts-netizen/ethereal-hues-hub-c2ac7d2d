@@ -194,10 +194,9 @@ export default function CampaignAdminPage() {
     // Live duplicate detection + auto-fetch metrics
     if (!url.trim()) { setUrlStatus({ kind: 'idle' }); return; }
 
-    const normalize = (u: string) => u.trim().toLowerCase().replace(/\?.*$/, '').replace(/\/$/, '');
-    const target = normalize(url);
+    const target = normalizeVideoUrl(url);
     const existing = getEditsForCampaign(campaignId).find(
-      e => e.video_url && normalize(e.video_url) === target
+      e => e.video_url && normalizeVideoUrl(e.video_url) === target
     );
     if (existing) {
       setUrlStatus({ kind: 'duplicate', message: existing.title || 'Already added' });
@@ -236,20 +235,9 @@ export default function CampaignAdminPage() {
     try {
       // Duplicate detection — same video URL already linked to this campaign
       if (newEdit.video_url && newEdit.video_url.trim()) {
-        const normalize = (u: string) => {
-          const cleaned = u.trim().toLowerCase().replace(/\?.*$/, '').replace(/#.*$/, '').replace(/\/$/, '');
-          // Extract canonical video IDs so different URL shapes still dedupe
-          const tt = cleaned.match(/tiktok\.com\/.*\/video\/(\d+)/) || cleaned.match(/tiktok\.com\/v\/(\d+)/);
-          if (tt) return `tiktok:${tt[1]}`;
-          const yt = cleaned.match(/(?:youtube\.com\/(?:watch\/?\?v=|shorts\/|embed\/|v\/)|youtu\.be\/)([\w-]{11})/);
-          if (yt) return `youtube:${yt[1]}`;
-          const ig = cleaned.match(/instagram\.com\/(?:reel|p|tv)\/([\w-]+)/);
-          if (ig) return `instagram:${ig[1]}`;
-          return cleaned;
-        };
-        const target = normalize(newEdit.video_url);
+        const target = normalizeVideoUrl(newEdit.video_url);
         const existing = getEditsForCampaign(campaignId).find(
-          e => e.video_url && normalize(e.video_url) === target
+          e => e.video_url && normalizeVideoUrl(e.video_url) === target
         );
         if (existing) {
           toast.error('This post has already been added', {
