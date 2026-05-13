@@ -335,6 +335,12 @@ export default function CompetitionLobbyPage() {
   const isVoting = competition.status === "voting";
   const isCompleted = competition.status === "completed";
 
+  // Resolve theme for the reveal modal — fall back to auto-generated if host left it blank.
+  const hostTheme = (competition.theme || "").trim();
+  const resolvedTheme = hostTheme
+    ? { theme: hostTheme, info: competition.description || "Show what you got. Make every frame count.", auto: false }
+    : { ...pickAutoTheme(competition.id), auto: true };
+
   // ═══ Full-screen Showcase Stage — owns the entire voting flow ═══
   // Renders showcase → vote → live tally as an immersive overlay so the lobby
   // page is no longer a stack-of-everything. Mount as early as possible (before
@@ -354,11 +360,6 @@ export default function CompetitionLobbyPage() {
     />
   ) : null;
 
-  // Resolve theme for the reveal modal — fall back to auto-generated if host left it blank.
-  const hostTheme = (competition.theme || "").trim();
-  const resolvedTheme = hostTheme
-    ? { theme: hostTheme, info: competition.description || "Show what you got. Make every frame count.", auto: false }
-    : { ...pickAutoTheme(competition.id), auto: true };
   const deadlinePassed = competition.deadline ? isPast(new Date(competition.deadline)) : false;
   const canSubmit = isLive && !deadlinePassed && hasJoined && !hasSubmitted;
   const submittedEditorCount = submissions.length;
