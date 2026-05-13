@@ -327,7 +327,7 @@ export default function QuickFightPage() {
       )}
       {/* ════════ ARCADE HUD ════════ */}
       {/* Top bar: back + status pill */}
-      <div className="sticky top-0 z-40 bg-black/80 backdrop-blur-xl border-b border-white/5">
+      <div className="relative z-30 bg-black/80 backdrop-blur-xl border-b border-white/5">
         <div className="px-4 py-2.5 flex items-center justify-between">
           <button
             onClick={() => navigate('/hub')}
