@@ -23,6 +23,7 @@ import CompetitionVoiceChat from "@/components/loopgate/CompetitionVoiceChat";
 import CompetitionSpeedLeaderboard from "@/components/loopgate/CompetitionSpeedLeaderboard";
 import RobloxLiveCanvas from "@/components/loopgate/RobloxLiveCanvas";
 import CompetitionShowcaseStage from "@/components/loopgate/CompetitionShowcaseStage";
+import SpectatorLiveView from "@/components/loopgate/SpectatorLiveView";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 
