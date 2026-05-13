@@ -244,6 +244,19 @@ serve(async (req) => {
         share_count, comment_count, editor_username, published_at } = params;
       if (!campaign_id || !title) return jsonRes({ error: "campaign_id and title required" }, 400);
 
+      // Prevent duplicate clip URLs within the same campaign
+      if (video_url) {
+        const { data: existing } = await supabase
+          .from("artist_campaign_edits")
+          .select("id")
+          .eq("campaign_id", campaign_id)
+          .eq("video_url", video_url)
+          .maybeSingle();
+        if (existing) {
+          return jsonRes({ error: "This clip is already added to this campaign." }, 409);
+        }
+      }
+
       const { data, error } = await supabase
         .from("artist_campaign_edits")
         .insert({ 
