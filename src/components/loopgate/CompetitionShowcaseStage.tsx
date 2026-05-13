@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Play, Pause, Check, Loader2, Crown, Trophy } from "lucide-react";
+import { ArrowLeft, Play, Pause, Check, Loader2, Crown, Trophy, MessageCircle, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { CompetitionSubmission } from "@/hooks/useCompetitions";
 import { useUnifiedThumbnail } from "@/lib/thumbnail";
 import { useBattleAudioUnlock } from "@/hooks/useBattleAudioUnlock";
 import { supabase } from "@/integrations/supabase/client";
 import { CompetitionVoiceChat } from "@/components/loopgate/CompetitionVoiceChat";
+import CompetitionChat from "@/components/loopgate/CompetitionChat";
 import { toast } from "sonner";
 
 const teko = { fontFamily: "Teko, sans-serif" };
@@ -100,6 +101,22 @@ export default function CompetitionShowcaseStage({
   const [paused, setPaused] = useState(false);
   const [castingId, setCastingId] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Chat overlay
+  const [chatOpen, setChatOpen] = useState(false);
+  const [unread, setUnread] = useState(0);
+  useEffect(() => {
+    const ch = supabase
+      .channel(`comp-chat-unread-${competitionId}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "competition_messages", filter: `competition_id=eq.${competitionId}` }, (payload: any) => {
+        if (chatOpen) return;
+        if (payload?.new?.user_id && payload.new.user_id === myUserId) return;
+        setUnread(c => Math.min(99, c + 1));
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [competitionId, chatOpen, myUserId]);
+  useEffect(() => { if (chatOpen) setUnread(0); }, [chatOpen]);
 
   // Floating reactions (broadcast over realtime)
   const [floats, setFloats] = useState<FloatingReaction[]>([]);
@@ -221,6 +238,18 @@ export default function CompetitionShowcaseStage({
               </span>
             </div>
           )}
+          <button
+            onClick={() => setChatOpen(true)}
+            className="relative w-9 h-9 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center active:scale-95"
+            aria-label="Open chat"
+          >
+            <MessageCircle className="w-4 h-4 text-white/80" />
+            {unread > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-amber-400 text-black text-[9px] font-black flex items-center justify-center tabular-nums" style={teko}>
+                {unread}
+              </span>
+            )}
+          </button>
         </div>
         {/* Segmented progress */}
         {phase === "watching" && (
@@ -431,6 +460,38 @@ export default function CompetitionShowcaseStage({
           );
         })()}
       </main>
+
+      {/* Chat slide-up sheet — keep talking shit / say GGs while showcase plays */}
+      <AnimatePresence>
+        {chatOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 z-[10]"
+              onClick={() => setChatOpen(false)}
+            />
+            <motion.div
+              initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 32, stiffness: 320 }}
+              className="absolute inset-x-0 bottom-0 z-[11] flex flex-col bg-[#0A0A0A] border-t border-white/[0.08] rounded-t-2xl overflow-hidden"
+              style={{ height: "78%" }}
+            >
+              <div className="shrink-0 flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="w-4 h-4 text-amber-400" />
+                  <span className="text-[13px] font-black uppercase tracking-[0.2em] text-white" style={teko}>Lobby Chat</span>
+                </div>
+                <button onClick={() => setChatOpen(false)} className="w-8 h-8 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center active:scale-95">
+                  <X className="w-4 h-4 text-white/80" />
+                </button>
+              </div>
+              <div className="flex-1 min-h-0">
+                <CompetitionChat competitionId={competitionId} embedded />
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
