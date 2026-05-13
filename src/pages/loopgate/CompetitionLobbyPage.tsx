@@ -20,7 +20,7 @@ import { setLobbyMusicActive, useLobbyMusicMute } from "@/components/loopgate/Lo
 import ThemeRevealModal, { pickAutoTheme } from "@/components/loopgate/ThemeRevealModal";
 import { LobbyDefaultCover } from "@/components/loopgate/LobbyDefaultCover";
 import CompetitionVoiceChat from "@/components/loopgate/CompetitionVoiceChat";
-import CompetitionEditsGrid from "@/components/loopgate/CompetitionEditsGrid";
+import CompetitionSpeedLeaderboard from "@/components/loopgate/CompetitionSpeedLeaderboard";
 import RobloxLiveCanvas from "@/components/loopgate/RobloxLiveCanvas";
 
 const teko = { fontFamily: "Teko, sans-serif" };
@@ -1077,15 +1077,13 @@ export default function CompetitionLobbyPage() {
             <CompetitionVoiceChat competitionId={competition.id} compact />
           </div>
 
-          {/* Submitted edits — Roblox-style 3x3 grid */}
-          {submissions.length > 0 && (
-            <CompetitionEditsGrid
-              submissions={submissions}
-              currentUserId={user?.id ?? null}
-              autoTrimSubmissionId={autoTrimId}
-              onAutoTrimConsumed={() => setAutoTrimId(null)}
-            />
-          )}
+          {/* Speed leaderboard — fastest submitters */}
+          <CompetitionSpeedLeaderboard
+            submissions={submissions}
+            startedAt={competition.started_at}
+            currentUserId={user?.id ?? null}
+            totalEditors={totalEditorCount}
+          />
 
           {/* Live chat */}
           <div ref={chatRef} className="rounded-xl border border-white/[0.06] overflow-hidden bg-[#101015]">
@@ -1398,13 +1396,13 @@ export default function CompetitionLobbyPage() {
           </div>
         )}
 
-        {/* ═══ ROBLOX-STYLE DROPS GRID — visible from first submission onward ═══ */}
+        {/* ═══ SPEED LEADERBOARD — fastest submitters ═══ */}
         {(isLive || isVoting || isCompleted) && submissions.length > 0 && (
-          <CompetitionEditsGrid
+          <CompetitionSpeedLeaderboard
             submissions={submissions}
+            startedAt={competition.started_at}
             currentUserId={user?.id ?? null}
-            autoTrimSubmissionId={autoTrimId}
-            onAutoTrimConsumed={() => setAutoTrimId(null)}
+            totalEditors={totalEditorCount}
           />
         )}
 
