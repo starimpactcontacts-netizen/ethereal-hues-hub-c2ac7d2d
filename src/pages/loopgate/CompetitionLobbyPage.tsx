@@ -58,6 +58,22 @@ function LiveCountdown({ deadline }: { deadline: string }) {
   );
 }
 
+function LiveCountdownSky({ deadline }: { deadline: string }) {
+  const [remaining, setRemaining] = useState(() => Math.max(0, differenceInSeconds(new Date(deadline), new Date())));
+  useEffect(() => {
+    const i = setInterval(() => setRemaining(Math.max(0, differenceInSeconds(new Date(deadline), new Date()))), 1000);
+    return () => clearInterval(i);
+  }, [deadline]);
+  if (remaining <= 0) return <span className="text-red-500 text-sm font-black tracking-wider" style={teko}>0:00</span>;
+  const h = Math.floor(remaining / 3600);
+  const m = Math.floor((remaining % 3600) / 60);
+  const s = remaining % 60;
+  const txt = h > 0
+    ? `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+    : `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return <span className="text-sky-500 text-base font-black tracking-wider tabular-nums" style={teko}>{txt}</span>;
+}
+
 function VoteWindowCountdown({ deadline }: { deadline: string }) {
   const [remaining, setRemaining] = useState(() => Math.max(0, differenceInSeconds(new Date(deadline), new Date())));
   useEffect(() => {
