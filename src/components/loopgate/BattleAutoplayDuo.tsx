@@ -90,8 +90,7 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
     const tick = () => {
       const activeSide = sides[activeIdx];
       const activeVideo = activeIdx === 0 ? redVideoRef.current : blueVideoRef.current;
-      const activeReady = activeIdx === 0 ? redReady : blueReady;
-      const waitingForFirstFrame = isVideo(activeSide.url) && !activeReady && (!activeVideo || activeVideo.readyState < HTMLMediaElement.HAVE_CURRENT_DATA);
+      const waitingForFirstFrame = isVideo(activeSide.url) && !activeVideo?.error && (!activeVideo || activeVideo.readyState < HTMLMediaElement.HAVE_CURRENT_DATA);
 
       if (waitingForFirstFrame) {
         if (!bufferHoldStartedAtRef.current) bufferHoldStartedAtRef.current = Date.now();
