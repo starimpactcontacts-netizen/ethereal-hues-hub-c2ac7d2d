@@ -1022,6 +1022,28 @@ export default function CompetitionLobbyPage() {
   // ═══════════════════════════════════════════════════════════════
   // LIVE / SCORED — original full-detail page
   // ═══════════════════════════════════════════════════════════════
+  // ── SPECTATOR PATH — non-participants once we leave the lobby ──
+  // Private rooms hard-block, public rooms get a countdown → showcase →
+  // voting gate → auto-kick after winner reveal. The shared showcaseStage
+  // overlay still mounts on top during the actual showcase phase.
+  if (!hasJoined && !isCreator && (isLive || isVoting || isCompleted)) {
+    const isShowcasePhase = isVoting && !!votingStartedAt && submissions.length > 0 && !showcaseDone;
+    return (
+      <>
+        <SpectatorLiveView
+          status={isLive ? "live" : isVoting ? "voting" : "completed"}
+          isPrivate={!!competition.is_private}
+          isShowcasePhase={isShowcasePhase}
+          competitionName={competition.name}
+          competitionDeadline={competition.deadline}
+          participantsCount={participants.length || competition.current_players}
+          submittedCount={submissions.length}
+        />
+        <AnimatePresence>{showcaseStage}</AnimatePresence>
+      </>
+    );
+  }
+
   // ── FOCUSED LIVE ARENA — gaming HUD, no clutter ─────────────
   if (isLive && (hasJoined || isCreator)) {
     return (
