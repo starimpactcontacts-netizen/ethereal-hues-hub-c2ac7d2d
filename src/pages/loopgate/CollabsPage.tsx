@@ -999,17 +999,14 @@ export default function CollabsPage() {
                 </button>
               </div>
             ) : liveBattles.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex flex-wrap gap-3 justify-center sm:justify-start">
                 {liveBattles.map((b) => (
                   <motion.div
                     key={b.id}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="w-full"
                   >
-                    <div className="w-full" style={{ minHeight: 220 }}>
-                      <DuoBattleMiniCard battle={b} />
-                    </div>
+                    <DuoBattleMiniCard battle={b} />
                   </motion.div>
                 ))}
               </div>
