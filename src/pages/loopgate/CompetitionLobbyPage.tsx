@@ -998,35 +998,51 @@ export default function CompetitionLobbyPage() {
         />
         {/* Slim top HUD */}
         <div
-          className="sticky top-0 z-40 bg-[#07070a]/95 backdrop-blur-md border-b border-white/[0.06]"
+          className="sticky top-0 z-40"
           style={{ paddingTop: "calc(env(safe-area-inset-top) + 8px)" }}
         >
           <div className="px-3 pb-2 flex items-center gap-2">
             <button
               onClick={() => navigate(-1)}
-              className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center active:scale-95"
+              className="shrink-0 w-10 h-10 rounded-full bg-[#0e0e14] border border-white/10 flex items-center justify-center active:scale-95 shadow-lg"
               aria-label="Back"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-4 h-4 text-white" />
             </button>
-            <div className="min-w-0 flex-1">
-              <p className="text-[8px] font-extrabold uppercase tracking-[0.25em] text-violet-400 leading-none" style={teko}>
-                Theme
-              </p>
-              <p className="text-base font-black uppercase tracking-tight text-white truncate leading-tight" style={teko}>
-                {competition.theme || competition.name}
-              </p>
-            </div>
-            {competition.deadline && !deadlinePassed && (
-              <div className="flex flex-col items-end shrink-0 px-2.5 py-1 rounded-lg bg-sky-500/10 border border-sky-500/20">
-                <span className="text-[8px] font-extrabold uppercase tracking-[0.2em] text-sky-400/70 leading-none" style={teko}>
-                  Time
-                </span>
-                <div className="leading-none mt-0.5">
-                  <LiveCountdown deadline={competition.deadline} />
-                </div>
+
+            {/* White pill bar */}
+            <div className="flex-1 min-w-0 flex items-center gap-3 bg-white rounded-2xl pl-4 pr-2 py-2 shadow-[0_8px_24px_-12px_rgba(139,92,246,0.45)]">
+              <div className="min-w-0 flex-1">
+                <p className="text-[9px] font-extrabold uppercase tracking-[0.25em] text-zinc-400 leading-none" style={teko}>
+                  Theme:
+                </p>
+                <p className="text-lg font-black uppercase tracking-tight text-violet-600 truncate leading-tight mt-0.5" style={teko}>
+                  {competition.theme || competition.name}
+                </p>
               </div>
-            )}
+
+              {/* Status pill */}
+              <div className="shrink-0 flex flex-col items-center px-2.5 py-1 rounded-xl bg-violet-500 text-white shadow-[0_4px_10px_-2px_rgba(139,92,246,0.6)]">
+                <span className="text-[8px] font-extrabold uppercase tracking-[0.2em] leading-none opacity-80" style={teko}>
+                  Status
+                </span>
+                <span className="text-sm font-black uppercase tracking-wider leading-none mt-0.5" style={teko}>
+                  Live
+                </span>
+              </div>
+
+              {/* Timer */}
+              {competition.deadline && !deadlinePassed && (
+                <div className="shrink-0 flex flex-col items-center pr-1">
+                  <span className="text-[8px] font-extrabold uppercase tracking-[0.2em] leading-none text-zinc-400" style={teko}>
+                    Length
+                  </span>
+                  <div className="leading-none mt-0.5 text-sky-500 text-base font-black tracking-wider" style={teko}>
+                    <LiveCountdown deadline={competition.deadline} />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
