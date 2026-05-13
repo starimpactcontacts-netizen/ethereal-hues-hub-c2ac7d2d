@@ -236,7 +236,17 @@ export default function CampaignAdminPage() {
     try {
       // Duplicate detection — same video URL already linked to this campaign
       if (newEdit.video_url && newEdit.video_url.trim()) {
-        const normalize = (u: string) => u.trim().toLowerCase().replace(/\?.*$/, '').replace(/\/$/, '');
+        const normalize = (u: string) => {
+          const cleaned = u.trim().toLowerCase().replace(/\?.*$/, '').replace(/#.*$/, '').replace(/\/$/, '');
+          // Extract canonical video IDs so different URL shapes still dedupe
+          const tt = cleaned.match(/tiktok\.com\/.*\/video\/(\d+)/) || cleaned.match(/tiktok\.com\/v\/(\d+)/);
+          if (tt) return `tiktok:${tt[1]}`;
+          const yt = cleaned.match(/(?:youtube\.com\/(?:watch\/?\?v=|shorts\/|embed\/|v\/)|youtu\.be\/)([\w-]{11})/);
+          if (yt) return `youtube:${yt[1]}`;
+          const ig = cleaned.match(/instagram\.com\/(?:reel|p|tv)\/([\w-]+)/);
+          if (ig) return `instagram:${ig[1]}`;
+          return cleaned;
+        };
         const target = normalize(newEdit.video_url);
         const existing = getEditsForCampaign(campaignId).find(
           e => e.video_url && normalize(e.video_url) === target
