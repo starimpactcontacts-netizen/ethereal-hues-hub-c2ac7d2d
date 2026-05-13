@@ -122,7 +122,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     const tick = () => {
       const activeSide = sides[currentIdx];
       const activeVideo = videoRefs.current[currentIdx];
-      const waitingForFirstFrame = isDirectVideo(activeSide.url) && !ready[currentIdx] && (!activeVideo || activeVideo.readyState < HTMLMediaElement.HAVE_CURRENT_DATA);
+      const waitingForFirstFrame = isDirectVideo(activeSide.url) && !activeVideo?.error && (!activeVideo || activeVideo.readyState < HTMLMediaElement.HAVE_CURRENT_DATA);
 
       if (waitingForFirstFrame) {
         if (!bufferHoldStartedAtRef.current) bufferHoldStartedAtRef.current = Date.now();
