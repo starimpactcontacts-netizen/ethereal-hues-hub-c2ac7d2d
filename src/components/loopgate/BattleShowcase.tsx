@@ -243,12 +243,42 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
                       className={`relative w-full h-full object-contain bg-black transition-opacity duration-200 ${poster && !hasStarted ? "opacity-0" : "opacity-100"}`}
                       playsInline
                       loop
-                      preload="none"
+                      preload={active ? "auto" : "metadata"}
                       controls={false}
                       disablePictureInPicture
-                      onLoadedData={() => capturePoster(index)}
+                      muted={!active}
+                      poster={poster || undefined}
+                      onLoadedMetadata={() => setReady((prev) => (prev[index] ? prev : { ...prev, [index]: true }))}
+                      onLoadedData={() => {
+                        setReady((prev) => (prev[index] ? prev : { ...prev, [index]: true }));
+                        capturePoster(index);
+                      }}
+                      onCanPlay={() => setReady((prev) => (prev[index] ? prev : { ...prev, [index]: true }))}
                       onPlaying={() => setStarted((prev) => (prev[index] ? prev : { ...prev, [index]: true }))}
+                      onError={() => setLoadErrors((prev) => ({ ...prev, [index]: true }))}
                     />
+                    {active && !ready[index] && !poster && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/35">
+                        <div className={`w-8 h-8 rounded-full border-2 ${side.color === "red" ? "border-red-500/40 border-t-red-500" : "border-blue-500/40 border-t-blue-500"} animate-spin`} />
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/50" style={teko}>buffering</span>
+                      </div>
+                    )}
+                    {active && loadErrors[index] && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const v = videoRefs.current[index];
+                          if (!v) return;
+                          setLoadErrors((prev) => ({ ...prev, [index]: false }));
+                          v.load();
+                          v.play().catch(() => {});
+                        }}
+                        className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/80"
+                      >
+                        <span className="text-xs font-black uppercase tracking-[0.18em] text-foreground" style={teko}>Tap to reload</span>
+                        <span className="text-[10px] text-muted-foreground">Network dropped this edit</span>
+                      </button>
+                    )}
                   </>
                 ) : sideImage ? (
                   <img src={side.url} alt={`${side.username} edit`} className="w-full h-full object-contain bg-black" loading="eager" decoding="async" />
