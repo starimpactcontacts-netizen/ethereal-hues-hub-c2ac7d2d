@@ -306,7 +306,7 @@ function SidePanel({
   return (
     <div
       ref={panelRef}
-      className={`relative ${fill ? "w-full h-full" : "aspect-square w-full"} overflow-hidden bg-black ${active ? `ring-2 ${ring} ring-inset` : fill ? "" : "opacity-50"}`}
+      className={`relative ${fill ? "w-full h-full" : "aspect-square w-full"} overflow-hidden bg-black transition-opacity ${active ? `ring-2 ${ring} ring-inset` : fill ? "opacity-60" : "opacity-50"}`}
       style={{
         boxShadow: active
           ? side.color === 'red'
