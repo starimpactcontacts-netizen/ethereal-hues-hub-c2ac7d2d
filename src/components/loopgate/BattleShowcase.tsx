@@ -14,6 +14,7 @@ type Side = {
   avatarUrl: string | null;
   url: string;
   color: "red" | "blue";
+  posterUrl?: string | null;
 };
 
 interface Props {
@@ -71,11 +72,14 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   useEffect(() => {
     setReady({});
     setStarted({});
-    setPosters({});
+    setPosters(sides.reduce<Record<number, string>>((acc, side, index) => {
+      if (side.posterUrl) acc[index] = side.posterUrl;
+      return acc;
+    }, {}));
     setLoadErrors({});
     bufferHoldStartedAtRef.current = null;
     holdOffsetMsRef.current = 0;
-  }, [videoKey]);
+  }, [videoKey, sides]);
 
   // Keep inactive videos at metadata so mobile Safari can grab a first frame cheaply.
   // Active video uses auto; the next side warms up near the swap without both full-buffering forever.
