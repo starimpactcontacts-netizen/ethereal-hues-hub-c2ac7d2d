@@ -155,9 +155,10 @@ export function useCompetition(idOrSlug: string | undefined) {
       .on("postgres_changes", { event: "*", schema: "public", table: "competition_submissions" }, () => fetchAll())
       .on("postgres_changes", { event: "*", schema: "public", table: "competition_votes" }, () => fetchAll())
       .subscribe();
-    // Fallback polling — realtime can drop on mobile/background tabs and
-    // users get stuck on the "Awaiting Start" screen when the host already kicked off.
-    const poll = window.setInterval(fetchAll, 4000);
+    // Fallback polling — realtime carries live updates; this is just a safety net
+    // for dropped websockets on mobile/background tabs. Visibility refetch covers
+    // the common case (returning to tab), so 30s is plenty.
+    const poll = window.setInterval(fetchAll, 30000);
     // Also refetch the moment the tab becomes visible again
     const onVisible = () => { if (document.visibilityState === "visible") fetchAll(); };
     document.addEventListener("visibilitychange", onVisible);
