@@ -12,6 +12,7 @@ type Side = {
   url: string;
   color: "red" | "blue";
   avatarUrl?: string | null;
+  posterUrl?: string | null;
 };
 
 interface Props {
@@ -60,8 +61,8 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
   const blueVideoRef = useRef<HTMLVideoElement>(null);
   const redPanelRef = useRef<HTMLDivElement>(null);
   const bluePanelRef = useRef<HTMLDivElement>(null);
-  const [redPoster, setRedPoster] = useState<string | null>(null);
-  const [bluePoster, setBluePoster] = useState<string | null>(null);
+  const [redPoster, setRedPoster] = useState<string | null>(red.posterUrl || null);
+  const [bluePoster, setBluePoster] = useState<string | null>(blue.posterUrl || null);
   const [redStarted, setRedStarted] = useState(false);
   const [blueStarted, setBlueStarted] = useState(false);
 
@@ -70,10 +71,10 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
     setBlueReady(!isVideo(blue.url));
     setRedStarted(false);
     setBlueStarted(false);
-    setRedPoster(null);
-    setBluePoster(null);
+    setRedPoster(red.posterUrl || null);
+    setBluePoster(blue.posterUrl || null);
     bufferHoldStartedAtRef.current = null;
-  }, [red.url, blue.url]);
+  }, [red.url, blue.url, red.posterUrl, blue.posterUrl]);
 
   // If the battle mounted behind the 3-2-1 overlay, start the filmed showcase from RED at 15s.
   useEffect(() => {
