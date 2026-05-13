@@ -557,10 +557,16 @@ export function useEventStats(eventId: string | null) {
   useEffect(() => {
     fetchStats();
 
-    // Refresh every 30 seconds
-    const interval = setInterval(fetchStats, 30000);
-
-    return () => clearInterval(interval);
+    // Refresh every 3 minutes (was 30s — that fired 4 COUNT queries per user
+    // per 30s and was the top DB burner). Stats don't move meaningfully faster.
+    // Also refetch immediately when tab becomes visible so it still feels live.
+    const interval = setInterval(fetchStats, 180000);
+    const onVis = () => { if (document.visibilityState === 'visible') fetchStats(); };
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVis);
+    };
   }, [fetchStats]);
 
   return { stats, loading, refetch: fetchStats };
@@ -708,8 +714,16 @@ export function useGlobalStats() {
 
   useEffect(() => {
     fetchStats();
-    const interval = setInterval(fetchStats, 30000);
-    return () => clearInterval(interval);
+    // Was 30s × 10 parallel COUNTs per user — single biggest cloud cost.
+    // 5 min interval + visibility-driven refresh keeps the Hub feeling live
+    // without grinding the DB. Realtime channels still update entry counts.
+    const interval = setInterval(fetchStats, 300000);
+    const onVis = () => { if (document.visibilityState === 'visible') fetchStats(); };
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVis);
+    };
   }, [fetchStats]);
 
   return { stats, loading, refetch: fetchStats };
@@ -734,9 +748,17 @@ export function useActiveSession() {
     };
 
     const updateSession = async () => {
+      // Skip the heartbeat entirely while the tab is hidden — no point marking
+      // someone "active" when their browser is backgrounded.
+      if (document.visibilityState === 'hidden') return;
       // Use existing RPC to update/create session
       await supabase.rpc('update_active_session');
-      // Then update device info on matching row
+    };
+
+    // Device info never changes mid-session — write it once on mount, not
+    // every 5 minutes (was doubling the write count on this table).
+    const writeDeviceInfo = async () => {
+      await supabase.rpc('update_active_session');
       await supabase
         .from('active_sessions')
         .update({
@@ -745,8 +767,7 @@ export function useActiveSession() {
         } as any)
         .eq('user_id', user.id);
     };
-
-    updateSession();
+    writeDeviceInfo();
     const interval = setInterval(updateSession, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [user]);
