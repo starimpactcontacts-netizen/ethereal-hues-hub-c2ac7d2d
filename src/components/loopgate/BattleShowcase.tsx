@@ -60,6 +60,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
   const completedFiredRef = useRef(false);
   const bufferHoldStartedAtRef = useRef<number | null>(null);
+  const holdOffsetMsRef = useRef(0);
   const [posters, setPosters] = useState<Record<number, string>>({});
   const [started, setStarted] = useState<Record<number, boolean>>({});
   const [ready, setReady] = useState<Record<number, boolean>>({});
@@ -73,6 +74,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     setPosters({});
     setLoadErrors({});
     bufferHoldStartedAtRef.current = null;
+    holdOffsetMsRef.current = 0;
   }, [videoKey]);
 
   // Keep inactive videos at metadata so mobile Safari can grab a first frame cheaply.
@@ -128,8 +130,11 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
       }
 
       const now = Date.now();
-      const adjustedStartMs = bufferHoldStartedAtRef.current ? startMs + (now - bufferHoldStartedAtRef.current) : startMs;
-      if (bufferHoldStartedAtRef.current) bufferHoldStartedAtRef.current = null;
+      if (bufferHoldStartedAtRef.current) {
+        holdOffsetMsRef.current += now - bufferHoldStartedAtRef.current;
+        bufferHoldStartedAtRef.current = null;
+      }
+      const adjustedStartMs = startMs + holdOffsetMsRef.current;
       const elapsed = Math.max(0, now - adjustedStartMs);
       const completedOnce = elapsed >= totalMs;
       const looped = elapsed % totalMs;
