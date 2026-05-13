@@ -22,6 +22,7 @@ import { LobbyDefaultCover } from "@/components/loopgate/LobbyDefaultCover";
 import CompetitionVoiceChat from "@/components/loopgate/CompetitionVoiceChat";
 import CompetitionSpeedLeaderboard from "@/components/loopgate/CompetitionSpeedLeaderboard";
 import RobloxLiveCanvas from "@/components/loopgate/RobloxLiveCanvas";
+import CompetitionShowcaseStage from "@/components/loopgate/CompetitionShowcaseStage";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 
