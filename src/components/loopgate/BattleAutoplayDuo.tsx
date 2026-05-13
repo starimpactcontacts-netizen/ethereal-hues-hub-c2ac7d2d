@@ -54,6 +54,7 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
   const [secondsLeft, setSecondsLeft] = useState(initial.left);
   const tickEnabled = !paused;
   const mountedPausedRef = useRef(paused);
+  const bufferHoldStartedAtRef = useRef<number | null>(null);
 
   const redVideoRef = useRef<HTMLVideoElement>(null);
   const blueVideoRef = useRef<HTMLVideoElement>(null);
@@ -63,6 +64,16 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
   const [bluePoster, setBluePoster] = useState<string | null>(null);
   const [redStarted, setRedStarted] = useState(false);
   const [blueStarted, setBlueStarted] = useState(false);
+
+  useEffect(() => {
+    setRedReady(!isVideo(red.url));
+    setBlueReady(!isVideo(blue.url));
+    setRedStarted(false);
+    setBlueStarted(false);
+    setRedPoster(null);
+    setBluePoster(null);
+    bufferHoldStartedAtRef.current = null;
+  }, [red.url, blue.url]);
 
   // If the battle mounted behind the 3-2-1 overlay, start the filmed showcase from RED at 15s.
   useEffect(() => {
@@ -77,6 +88,21 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
   useEffect(() => {
     if (!tickEnabled) return;
     const tick = () => {
+      const activeSide = sides[activeIdx];
+      const activeVideo = activeIdx === 0 ? redVideoRef.current : blueVideoRef.current;
+      const activeReady = activeIdx === 0 ? redReady : blueReady;
+      const waitingForFirstFrame = isVideo(activeSide.url) && !activeReady && (!activeVideo || activeVideo.readyState < HTMLMediaElement.HAVE_CURRENT_DATA);
+
+      if (waitingForFirstFrame) {
+        if (!bufferHoldStartedAtRef.current) bufferHoldStartedAtRef.current = Date.now();
+        return;
+      }
+
+      if (bufferHoldStartedAtRef.current) {
+        startMsRef.current += Date.now() - bufferHoldStartedAtRef.current;
+        bufferHoldStartedAtRef.current = null;
+      }
+
       const { idx, left } = compute();
       setActiveIdx((prev) => (prev !== idx ? idx : prev));
       setSecondsLeft(left);
@@ -84,7 +110,7 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
     tick();
     const id = setInterval(tick, 250);
     return () => clearInterval(id);
-  }, [compute, tickEnabled]);
+  }, [activeIdx, blueReady, compute, redReady, sides, tickEnabled]);
 
   // Serial preload: only the active side opens a connection. Inactive side waits until
   // Keep BOTH videos at `metadata` preload at all times so the first frame is always
@@ -97,6 +123,8 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
       const desired: "auto" | "metadata" = isActive ? "auto" : "metadata";
       if (v.preload !== desired) {
         v.preload = desired;
+        if (desired === "auto" || v.readyState === HTMLMediaElement.HAVE_NOTHING) v.load();
+      } else if (v.readyState === HTMLMediaElement.HAVE_NOTHING) {
         v.load();
       }
     });
