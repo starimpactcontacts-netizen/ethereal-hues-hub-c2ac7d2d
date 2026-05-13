@@ -1053,7 +1053,7 @@ export default function CompetitionLobbyPage() {
                   Theme:
                 </p>
                 <p className="text-lg font-black uppercase tracking-tight text-violet-600 truncate leading-tight mt-0.5" style={teko}>
-                  {competition.theme || competition.name}
+                  {resolvedTheme.theme}
                 </p>
               </div>
 
