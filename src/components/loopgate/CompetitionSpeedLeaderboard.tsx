@@ -43,7 +43,7 @@ export default function CompetitionSpeedLeaderboard({
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/[0.06]">
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <h3 className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-white">
+          <h3 className="text-[11px] font-extrabold uppercase tracking-tight text-white">
             Speed Leaderboard
           </h3>
         </div>
@@ -85,10 +85,10 @@ export default function CompetitionSpeedLeaderboard({
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-white truncate">
+                <p className="text-sm font-bold text-white truncate tracking-tight">
                   {row.username}
                   {isMe && (
-                    <span className="ml-1.5 text-[9px] font-mono uppercase tracking-wider text-emerald-400">
+                    <span className="ml-1.5 text-[9px] font-mono uppercase tracking-tight text-emerald-400">
                       you
                     </span>
                   )}
