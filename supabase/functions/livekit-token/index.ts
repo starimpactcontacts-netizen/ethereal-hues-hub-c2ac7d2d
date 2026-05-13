@@ -1,5 +1,5 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
-import { AccessToken } from 'https://esm.sh/livekit-server-sdk@2.9.7?target=deno';
+import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+import { AccessToken } from 'npm:livekit-server-sdk@2.9.7';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
