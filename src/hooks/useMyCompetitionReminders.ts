@@ -116,7 +116,8 @@ export function useMyCompetitionReminders() {
     };
 
     fetchMine();
-    const poll = window.setInterval(fetchMine, 5000);
+    // Realtime + visibility refetch handle live updates; this is just a safety net.
+    const poll = window.setInterval(fetchMine, 60000);
 
     const channel = supabase
       .channel(`my-competition-reminders-${user.id}`)
