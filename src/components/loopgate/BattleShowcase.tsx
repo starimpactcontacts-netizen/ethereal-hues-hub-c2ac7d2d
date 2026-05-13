@@ -38,6 +38,7 @@ function isImageFile(url: string) {
  */
 export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }: Props) {
   const videoKey = useMemo(() => sides.map((side) => side.url).join("|"), [sides]);
+  const posterKey = useMemo(() => sides.map((side) => side.posterUrl || "").join("|"), [sides]);
   const audioUnlocked = useBattleAudioUnlock();
   const startMs = showcaseStartedAt ? new Date(showcaseStartedAt).getTime() : null;
   const totalMs = sides.length * PER_EDIT_SECONDS * 1000;
@@ -79,7 +80,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     setLoadErrors({});
     bufferHoldStartedAtRef.current = null;
     holdOffsetMsRef.current = 0;
-  }, [videoKey, sides]);
+  }, [posterKey, videoKey]);
 
   // Keep inactive videos at metadata so mobile Safari can grab a first frame cheaply.
   // Active video uses auto; the next side warms up near the swap without both full-buffering forever.
