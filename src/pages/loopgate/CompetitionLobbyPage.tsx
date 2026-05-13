@@ -21,6 +21,7 @@ import ThemeRevealModal, { pickAutoTheme } from "@/components/loopgate/ThemeReve
 import { LobbyDefaultCover } from "@/components/loopgate/LobbyDefaultCover";
 import CompetitionVoiceChat from "@/components/loopgate/CompetitionVoiceChat";
 import CompetitionEditsGrid from "@/components/loopgate/CompetitionEditsGrid";
+import RobloxLiveCanvas from "@/components/loopgate/RobloxLiveCanvas";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 
@@ -1206,73 +1207,21 @@ export default function CompetitionLobbyPage() {
         )}
 
         {/* ═══ LIVE EDITING ACTIONS — file-first submission flow ═══ */}
-        {isLive && hasJoined && !hasSubmitted && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-3"
-          >
-            {/* Cinematic urgency strip — big countdown, live dot, submissions */}
-            <div className="relative overflow-hidden rounded-2xl border border-destructive/30 bg-gradient-to-br from-destructive/[0.18] via-card to-card p-4">
-              <div className="pointer-events-none absolute -top-16 -right-16 w-48 h-48 rounded-full bg-destructive/30 blur-3xl" />
-              <div className="relative flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-destructive animate-pulse" />
-                    <span className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-destructive" style={teko}>Time Left</span>
-                  </div>
-                  <div className="mt-1 text-3xl font-black text-white leading-none tabular-nums" style={teko}>
-                    {competition.deadline ? <LiveCountdown deadline={competition.deadline} /> : <span>LIVE</span>}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground" style={teko}>Edits In</p>
-                  <p className="mt-1 text-3xl font-black tabular-nums text-white leading-none" style={teko}>
-                    {submittedEditorCount}<span className="text-white/30">/{totalEditorCount}</span>
-                  </p>
-                </div>
-              </div>
-              <p className="relative mt-3 text-[10px] font-bold uppercase tracking-[0.15em] text-white/60" style={teko}>
-                {submittedEditorCount === 0 ? "Be the first to drop your edit" : `${totalEditorCount - submittedEditorCount} editor${totalEditorCount - submittedEditorCount === 1 ? "" : "s"} left to submit`}
-              </p>
-            </div>
-
-            <input
-              ref={submitFileInputRef}
-              type="file"
-              accept="video/mp4,video/webm,video/quicktime,video/x-m4v,image/jpeg,image/png,image/webp"
-              onChange={handleSubmissionFile}
-              className="hidden"
-            />
-
-            <div className="grid grid-cols-[1.15fr_1fr] gap-2.5">
-              <button
-                onClick={() => {
-                  const params = new URLSearchParams();
-                  if (competition.theme) params.set("theme", competition.theme);
-                  if (competition.description) params.set("instructions", competition.description);
-                  if (competition.id) params.set("comp_id", competition.id);
-                  navigate(`/studio?${params.toString()}`);
-                }}
-                className="relative overflow-hidden h-[68px] rounded-2xl border border-destructive/40 bg-destructive text-destructive-foreground flex items-center justify-center gap-2.5 transition active:scale-[0.98] shadow-[0_10px_30px_-10px_hsl(var(--destructive)/0.6)]"
-                style={teko}
-              >
-                <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/30" />
-                <Pencil className="w-5 h-5" strokeWidth={2.5} />
-                <span className="text-[19px] font-extrabold uppercase tracking-[0.16em] leading-none">Edit</span>
-              </button>
-              <button
-                onClick={() => submitFileInputRef.current?.click()}
-                disabled={isSubmitting}
-                className="relative overflow-hidden h-[68px] rounded-2xl border border-status-live/40 bg-status-live text-primary-foreground flex items-center justify-center gap-2.5 transition active:scale-[0.98] disabled:opacity-50 shadow-[0_10px_30px_-10px_hsl(var(--status-live)/0.6)]"
-                style={teko}
-              >
-                <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/30" />
-                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload className="w-5 h-5" strokeWidth={2.5} />}
-                <span className="text-[19px] font-extrabold uppercase tracking-[0.16em] leading-none">Upload</span>
-              </button>
-            </div>
-          </motion.div>
+        {isLive && hasJoined && (
+          <RobloxLiveCanvas
+            theme={competition.theme}
+            deadline={competition.deadline}
+            isSubmitting={isSubmitting}
+            hasSubmitted={hasSubmitted}
+            submittedCount={submittedEditorCount}
+            totalCount={totalEditorCount}
+            chatMessageCount={chatMessageCount}
+            onUpload={uploadSubmissionFile}
+            onOpenChat={() => {
+              setLobbyTab("chat");
+              setTimeout(() => chatRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+            }}
+          />
         )}
 
         {/* ═══ READY UP — lobby state, both joined editors can ready ═══ */}
