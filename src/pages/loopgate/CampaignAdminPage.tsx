@@ -35,6 +35,20 @@ function formatNumber(n: number): string {
   return n.toLocaleString();
 }
 
+// Canonicalize a video URL to a stable key so different shapes of the same
+// post (query params, trailing slashes, mobile vs desktop hosts) dedupe.
+function normalizeVideoUrl(u: string): string {
+  if (!u) return '';
+  const cleaned = u.trim().toLowerCase().replace(/\?.*$/, '').replace(/#.*$/, '').replace(/\/$/, '');
+  const tt = cleaned.match(/tiktok\.com\/.*\/video\/(\d+)/) || cleaned.match(/tiktok\.com\/v\/(\d+)/);
+  if (tt) return `tiktok:${tt[1]}`;
+  const yt = cleaned.match(/(?:youtube\.com\/(?:watch\/?\?v=|shorts\/|embed\/|v\/)|youtu\.be\/)([\w-]{11})/);
+  if (yt) return `youtube:${yt[1]}`;
+  const ig = cleaned.match(/instagram\.com\/(?:reel|reels|p|tv)\/([\w-]+)/);
+  if (ig) return `instagram:${ig[1]}`;
+  return cleaned;
+}
+
 // Format raw number with thin spaces every 3 digits for readability in inputs.
 // e.g. 49928828 -> "49 928 828"
 function formatNumberInput(n: number | string): string {
@@ -194,10 +208,9 @@ export default function CampaignAdminPage() {
     // Live duplicate detection + auto-fetch metrics
     if (!url.trim()) { setUrlStatus({ kind: 'idle' }); return; }
 
-    const normalize = (u: string) => u.trim().toLowerCase().replace(/\?.*$/, '').replace(/\/$/, '');
-    const target = normalize(url);
+    const target = normalizeVideoUrl(url);
     const existing = getEditsForCampaign(campaignId).find(
-      e => e.video_url && normalize(e.video_url) === target
+      e => e.video_url && normalizeVideoUrl(e.video_url) === target
     );
     if (existing) {
       setUrlStatus({ kind: 'duplicate', message: existing.title || 'Already added' });
@@ -236,10 +249,9 @@ export default function CampaignAdminPage() {
     try {
       // Duplicate detection — same video URL already linked to this campaign
       if (newEdit.video_url && newEdit.video_url.trim()) {
-        const normalize = (u: string) => u.trim().toLowerCase().replace(/\?.*$/, '').replace(/\/$/, '');
-        const target = normalize(newEdit.video_url);
+        const target = normalizeVideoUrl(newEdit.video_url);
         const existing = getEditsForCampaign(campaignId).find(
-          e => e.video_url && normalize(e.video_url) === target
+          e => e.video_url && normalizeVideoUrl(e.video_url) === target
         );
         if (existing) {
           toast.error('This post has already been added', {
