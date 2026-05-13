@@ -59,13 +59,24 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   const [paused, setPaused] = useState(false);
   const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
   const completedFiredRef = useRef(false);
+  const bufferHoldStartedAtRef = useRef<number | null>(null);
   const [posters, setPosters] = useState<Record<number, string>>({});
   const [started, setStarted] = useState<Record<number, boolean>>({});
+  const [ready, setReady] = useState<Record<number, boolean>>({});
+  const [loadErrors, setLoadErrors] = useState<Record<number, boolean>>({});
 
   const current = sides[currentIdx];
 
-  // Serial preload — only the active video opens a connection. Inactive sides wake up
-  // ~2.5s before swap so their first frames are warm without fighting for bandwidth.
+  useEffect(() => {
+    setReady({});
+    setStarted({});
+    setPosters({});
+    setLoadErrors({});
+    bufferHoldStartedAtRef.current = null;
+  }, [videoKey]);
+
+  // Keep inactive videos at metadata so mobile Safari can grab a first frame cheaply.
+  // Active video uses auto; the next side warms up near the swap without both full-buffering forever.
   useEffect(() => {
     videoRefs.current.forEach((v, i) => {
       if (!v) return;
@@ -73,10 +84,12 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
       v.defaultMuted = false;
       const isActive = i === currentIdx;
       const shouldWarm = !isActive && secondsLeft <= PRELOAD_LEAD_SECONDS;
-      const desired = isActive || shouldWarm ? "auto" : "none";
+      const desired = isActive || shouldWarm ? "auto" : "metadata";
       if (v.preload !== desired) {
         v.preload = desired;
-        if (desired === "auto") v.load();
+        if (desired === "auto" || v.readyState === HTMLMediaElement.HAVE_NOTHING) v.load();
+      } else if (v.readyState === HTMLMediaElement.HAVE_NOTHING) {
+        v.load();
       }
     });
   }, [currentIdx, secondsLeft, videoKey]);
@@ -105,7 +118,24 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   useEffect(() => {
     if (!startMs) return;
     const tick = () => {
-      const { idx, left, completedOnce } = compute();
+      const activeSide = sides[currentIdx];
+      const activeVideo = videoRefs.current[currentIdx];
+      const waitingForFirstFrame = isDirectVideo(activeSide.url) && !ready[currentIdx] && (!activeVideo || activeVideo.readyState < HTMLMediaElement.HAVE_CURRENT_DATA);
+
+      if (waitingForFirstFrame) {
+        if (!bufferHoldStartedAtRef.current) bufferHoldStartedAtRef.current = Date.now();
+        return;
+      }
+
+      const now = Date.now();
+      const adjustedStartMs = bufferHoldStartedAtRef.current ? startMs + (now - bufferHoldStartedAtRef.current) : startMs;
+      if (bufferHoldStartedAtRef.current) bufferHoldStartedAtRef.current = null;
+      const elapsed = Math.max(0, now - adjustedStartMs);
+      const completedOnce = elapsed >= totalMs;
+      const looped = elapsed % totalMs;
+      const idx = Math.min(sides.length - 1, Math.floor(looped / (PER_EDIT_SECONDS * 1000)));
+      const intoEdit = looped - idx * PER_EDIT_SECONDS * 1000;
+      const left = Math.max(0, Math.ceil((PER_EDIT_SECONDS * 1000 - intoEdit) / 1000));
       setCurrentIdx(prev => (prev !== idx ? idx : prev));
       setSecondsLeft(left);
       if (completedOnce && !completedFiredRef.current) {
@@ -116,7 +146,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     tick();
     const id = setInterval(tick, 250);
     return () => clearInterval(id);
-  }, [compute, startMs, sides.length, onComplete]);
+  }, [currentIdx, onComplete, ready, sides, startMs, totalMs]);
 
   const progressPct = ((PER_EDIT_SECONDS - secondsLeft) / PER_EDIT_SECONDS) * 100;
   const ringColor = current.color === "red" ? "ring-red-500/40" : "ring-blue-500/40";
