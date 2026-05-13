@@ -335,6 +335,25 @@ export default function CompetitionLobbyPage() {
   const isVoting = competition.status === "voting";
   const isCompleted = competition.status === "completed";
 
+  // ═══ Full-screen Showcase Stage — owns the entire voting flow ═══
+  // Renders showcase → vote → live tally as an immersive overlay so the lobby
+  // page is no longer a stack-of-everything. Mount as early as possible (before
+  // the lobby/live early-returns can hide it).
+  const showcaseStage = isVoting && submissions.length > 0 && votingStartedAt ? (
+    <CompetitionShowcaseStage
+      competitionId={competition.id}
+      competitionName={competition.name}
+      theme={competition.theme}
+      submissions={submissions}
+      myUserId={user?.id}
+      myVoteSubmissionId={myVoteSubmissionId}
+      votingStartedAt={votingStartedAt}
+      votingDeadline={votingDeadline}
+      onVote={castVote}
+      onClose={() => navigate("/arena")}
+    />
+  ) : null;
+
   // Resolve theme for the reveal modal — fall back to auto-generated if host left it blank.
   const hostTheme = (competition.theme || "").trim();
   const resolvedTheme = hostTheme
