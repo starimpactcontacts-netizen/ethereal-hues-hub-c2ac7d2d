@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Clock, MapPin, Zap, Eye, Users, Send, CheckCircle2, XCircle, Target, Trophy, ExternalLink, Flame, Music2, Crown, Medal, Gem, Sparkles } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Zap, Eye, Users, Send, CheckCircle2, XCircle, Target, Trophy, ExternalLink, Flame, Music2, Crown, Medal, Gem, Sparkles, Swords, ChevronRight } from "lucide-react";
 import GateIcon from '@/components/loopgate/GateIcon';
 import RingsCoin from '@/components/loopgate/RingsCoin';
 import { useRealEvents, useEventRankings, useEventStats, useActiveSession, getEventSlug } from "@/hooks/useRealData";
@@ -117,61 +117,70 @@ export default function EventDetailPage() {
         </div>
       </div>
 
-      {/* Hero stat ribbon */}
-      <div className="px-4 -mt-5 relative z-10">
-        <div className="rounded-2xl bg-gradient-to-br from-amber-500/[0.18] via-black to-red-500/[0.15] border border-white/10 p-px shadow-[0_20px_60px_-20px_rgba(245,158,11,0.35)]">
-          <div className="rounded-2xl bg-[#0a0a0a]/95 backdrop-blur p-3.5">
-            <div className="flex items-stretch divide-x divide-white/[0.08]">
-              <div className="flex-1 pr-3">
-                <div className="flex items-center gap-1 text-amber-300/80 text-[9px] font-black uppercase tracking-[0.2em] mb-1">
-                  <Trophy size={10} /> Prize Pool
+      {/* ═══ COMMAND HUD — gamified scoreboard ═══ */}
+      <div className="px-3 -mt-6 relative z-10">
+        {/* Live HUD ticker */}
+        {isLive && (
+          <div className="mb-2 flex items-center gap-3 px-3 py-1.5 rounded-md bg-black border border-emerald-400/20 shadow-[0_0_28px_-10px_rgba(16,185,129,0.6)] font-mono text-[10px] tabular-nums overflow-hidden">
+            <span className="flex items-center gap-1 text-emerald-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="font-black tracking-[0.18em]">LIVE</span>
+            </span>
+            <span className="text-white/30">|</span>
+            <span className="text-white/80"><span className="text-emerald-300 font-black">{stats.entries}</span> EDITS</span>
+            <span className="text-white/30">|</span>
+            <span className="text-white/80"><span className="text-amber-300 font-black">{stats.activeUsers}</span> ONLINE</span>
+            <span className="text-white/30 ml-auto">|</span>
+            <span className="text-red-400 font-black tracking-wider">CLOSES MAY 24</span>
+          </div>
+        )}
+
+        {/* Prize Pool Command Center */}
+        <div className="relative rounded-2xl overflow-hidden bg-black border border-white/[0.08] shadow-[0_30px_70px_-30px_rgba(245,158,11,0.45),0_0_60px_-30px_rgba(239,68,68,0.4)]">
+          {/* Texture */}
+          <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #fff 0 1px, transparent 1px 8px)' }} />
+          <div className="absolute -top-12 -right-10 w-40 h-40 rounded-full bg-amber-500/20 blur-3xl" />
+          <div className="absolute -bottom-12 -left-10 w-40 h-40 rounded-full bg-red-500/20 blur-3xl" />
+
+          <div className="relative p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.24em] text-white/45">
+                <Trophy size={10} className="text-amber-300" /> Prize Pool
+              </div>
+              <CountdownTimer
+                endDate={isLive ? event.end_date : event.start_date}
+                label={isLive ? "ENDS" : "STARTS"}
+              />
+            </div>
+
+            <div className="flex items-end justify-between gap-3">
+              <div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-[14px] font-black text-emerald-400 leading-none">$</span>
+                  <span className="text-[44px] font-black text-white leading-[0.85] tracking-tight tabular-nums" style={{ fontFamily: 'Teko, Inter, sans-serif' }}>150</span>
+                  <span className="text-[10px] font-black text-white/40 ml-1">USD</span>
                 </div>
-                <div className="text-[18px] font-black text-amber-300 leading-none" style={{ fontFamily: 'Teko, Inter, sans-serif' }}>
-                  $150 USD
-                </div>
-                <div className="flex items-center gap-1 mt-1">
-                  <RingsCoin size={13} />
-                  <span className="text-[11px] font-bold text-white/80 leading-none tabular-nums">1,000,000</span>
+                <div className="flex items-center gap-1.5 mt-1.5">
+                  <RingsCoin size={14} />
+                  <span className="text-[18px] font-black text-amber-300 leading-none tabular-nums" style={{ fontFamily: 'Teko, Inter, sans-serif' }}>1,000,000</span>
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-200/60">Rings</span>
                 </div>
               </div>
-              <div className="flex-1 pl-3">
-                <div className="flex items-center gap-1 text-red-300/80 text-[9px] font-black uppercase tracking-[0.2em] mb-1">
-                  <Clock size={10} /> Deadline
+
+              {/* Mini podium */}
+              <div className="flex items-end gap-1">
+                <div className="w-10 h-10 rounded-md bg-gradient-to-b from-zinc-300/20 to-zinc-300/5 border border-zinc-300/30 flex flex-col items-center justify-center">
+                  <Medal size={11} className="text-zinc-200" />
+                  <span className="text-[8px] font-black text-zinc-200 tabular-nums">$60</span>
                 </div>
-                <div className="text-[18px] font-black text-red-300 leading-none" style={{ fontFamily: 'Teko, Inter, sans-serif' }}>
-                  MAY 24
+                <div className="w-12 h-14 rounded-md bg-gradient-to-b from-amber-400/30 to-amber-400/5 border border-amber-400/40 flex flex-col items-center justify-center shadow-[0_0_18px_rgba(245,158,11,0.35)]">
+                  <Crown size={13} className="text-amber-300" />
+                  <span className="text-[10px] font-black text-amber-300 tabular-nums">$90</span>
                 </div>
-                <div className="text-[11px] font-bold text-white/70 leading-none mt-1">2026 · 11:59 PM</div>
               </div>
             </div>
           </div>
         </div>
-
-        {/* Live activity strip */}
-        {isLive && (
-          <div className="mt-2 flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-            <div className="flex items-center gap-1.5">
-              <Flame size={11} className="text-emerald-400" />
-              <span className="text-[11px] text-foreground font-bold tabular-nums">{stats.entries}</span>
-              <span className="text-[10px] text-muted-foreground">edits</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Users size={11} className="text-foreground/70" />
-              <span className="text-[11px] text-foreground font-bold tabular-nums">{stats.activeUsers}</span>
-              <span className="text-[10px] text-muted-foreground">online</span>
-            </div>
-          </div>
-        )}
-
-        {/* Live countdown */}
-        {!isClosed && (!isOpenArena || !activeRound) && (
-          <div className="mt-2 px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-            <CountdownTimer
-              endDate={isLive ? event.end_date : event.start_date}
-              label={isLive ? "Closes In" : "Starts In"}
-            />
-          </div>
-        )}
       </div>
 
       {/* Event Info */}
