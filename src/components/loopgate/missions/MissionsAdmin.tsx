@@ -5,6 +5,7 @@ import {
   Upload, Image as ImageIcon, BadgeCheck, Download, Film, Link as LinkIcon,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { uploadToBunny } from '@/lib/bunnyUpload';
 import { useAuth } from '@/hooks/useAuth';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
