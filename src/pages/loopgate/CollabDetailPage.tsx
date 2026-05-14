@@ -20,6 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadToBunny } from "@/lib/bunnyUpload";
 import {
   useCollabSlot,
   joinCollabSlot,
@@ -95,14 +96,8 @@ export default function CollabDetailPage() {
     }
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop() || "mp4";
-      const path = `${user.id}/collabs/${slot.id}-${Date.now()}.${ext}`;
-      const { error } = await supabase.storage
-        .from("loop-media")
-        .upload(path, file, { cacheControl: "3600", upsert: false });
-      if (error) throw error;
-      const { data: urlData } = supabase.storage.from("loop-media").getPublicUrl(path);
-      setUploadedUrl(urlData.publicUrl);
+      const { url: cdnUrl } = await uploadToBunny(file, { folder: `collabs/${slot.id}` });
+      setUploadedUrl(cdnUrl);
       toast.success("Video uploaded — submit to lock it in");
     } catch (err: any) {
       toast.error(err?.message || "Upload failed");
