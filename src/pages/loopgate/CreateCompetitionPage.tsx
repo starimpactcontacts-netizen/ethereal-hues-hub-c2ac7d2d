@@ -264,12 +264,8 @@ export default function CreateCompetitionPage() {
               if (file.size > 10 * 1024 * 1024) { toast.error("Image must be under 10MB"); return; }
               setUploadingCover(true);
               try {
-                const ext = file.name.split('.').pop() || 'jpg';
-                const path = `competitions/${user.id}/${Date.now()}.${ext}`;
-                const { error } = await supabase.storage.from('loop-media').upload(path, file, { cacheControl: '3600', upsert: false });
-                if (error) throw error;
-                const { data: urlData } = supabase.storage.from('loop-media').getPublicUrl(path);
-                setCoverUrl(urlData.publicUrl);
+                const { url: cdnUrl } = await uploadToBunny(file, { folder: 'competitions/covers' });
+                setCoverUrl(cdnUrl);
               } catch (err: any) {
                 toast.error(err?.message || "Upload failed");
               } finally {
