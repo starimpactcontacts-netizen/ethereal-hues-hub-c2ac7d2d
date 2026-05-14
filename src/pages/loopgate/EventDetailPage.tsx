@@ -365,7 +365,9 @@ export default function EventDetailPage() {
 
         {event.description && <p className="px-1 text-[12px] leading-relaxed text-arena-muted whitespace-pre-wrap">{event.description}</p>}
 
-        <p className="text-center text-[10px] font-semibold uppercase tracking-[0.13em] text-arena-muted">Submissions are TikTok links only.</p>
+        <p className="text-center text-[10px] font-semibold uppercase tracking-[0.13em] text-arena-muted">
+          Submit as many edits as you want — only your highest QOI score counts. TikTok links only.
+        </p>
       </main>
 
       {isLive && !(isOpenArena && advancementStatus === "eliminated") && (
@@ -378,7 +380,6 @@ export default function EventDetailPage() {
             <span className="relative inline-flex items-center gap-2">
               <Send size={14} strokeWidth={3} />
               {isOpenArena && activeRound ? `Submit · Round ${activeRound.round_number}` : "Enter Event"}
-              <span className="ml-1 inline-flex items-center gap-1 text-[10px] opacity-80"><RingsCoin size={12} /> 1M</span>
             </span>
           </button>
         </div>
