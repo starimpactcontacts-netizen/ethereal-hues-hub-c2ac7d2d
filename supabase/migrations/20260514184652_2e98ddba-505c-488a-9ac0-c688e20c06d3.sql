@@ -1,0 +1,2 @@
+ALTER TABLE public.event_participations ADD COLUMN IF NOT EXISTS is_showcase BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE public.round_participations ADD COLUMN IF NOT EXISTS is_showcase BOOLEAN NOT NULL DEFAULT false;
