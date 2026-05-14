@@ -152,11 +152,6 @@ export default function EventDetailPage() {
               <span className="text-[10px] text-muted-foreground">edits</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <Eye size={11} className="text-gold" />
-              <span className="text-[11px] text-foreground font-bold tabular-nums">{stats.judges}</span>
-              <span className="text-[10px] text-muted-foreground">judges</span>
-            </div>
-            <div className="flex items-center gap-1.5">
               <Users size={11} className="text-foreground/70" />
               <span className="text-[11px] text-foreground font-bold tabular-nums">{stats.activeUsers}</span>
               <span className="text-[10px] text-muted-foreground">online</span>
