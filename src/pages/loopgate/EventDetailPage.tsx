@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Clock, MapPin, Zap, Eye, Users, Send, CheckCircle2, XCircle, Target, Trophy, ExternalLink, Flame, Music2, Crown, Medal, Gem, Sparkles } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Zap, Eye, Users, Send, CheckCircle2, XCircle, Target, Trophy, ExternalLink, Flame, Music2, Crown, Medal, Gem, Sparkles, Swords, ChevronRight } from "lucide-react";
 import GateIcon from '@/components/loopgate/GateIcon';
 import RingsCoin from '@/components/loopgate/RingsCoin';
 import { useRealEvents, useEventRankings, useEventStats, useActiveSession, getEventSlug } from "@/hooks/useRealData";
@@ -117,61 +117,70 @@ export default function EventDetailPage() {
         </div>
       </div>
 
-      {/* Hero stat ribbon */}
-      <div className="px-4 -mt-5 relative z-10">
-        <div className="rounded-2xl bg-gradient-to-br from-amber-500/[0.18] via-black to-red-500/[0.15] border border-white/10 p-px shadow-[0_20px_60px_-20px_rgba(245,158,11,0.35)]">
-          <div className="rounded-2xl bg-[#0a0a0a]/95 backdrop-blur p-3.5">
-            <div className="flex items-stretch divide-x divide-white/[0.08]">
-              <div className="flex-1 pr-3">
-                <div className="flex items-center gap-1 text-amber-300/80 text-[9px] font-black uppercase tracking-[0.2em] mb-1">
-                  <Trophy size={10} /> Prize Pool
+      {/* ═══ COMMAND HUD — gamified scoreboard ═══ */}
+      <div className="px-3 -mt-6 relative z-10">
+        {/* Live HUD ticker */}
+        {isLive && (
+          <div className="mb-2 flex items-center gap-3 px-3 py-1.5 rounded-md bg-black border border-emerald-400/20 shadow-[0_0_28px_-10px_rgba(16,185,129,0.6)] font-mono text-[10px] tabular-nums overflow-hidden">
+            <span className="flex items-center gap-1 text-emerald-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="font-black tracking-[0.18em]">LIVE</span>
+            </span>
+            <span className="text-white/30">|</span>
+            <span className="text-white/80"><span className="text-emerald-300 font-black">{stats.entries}</span> EDITS</span>
+            <span className="text-white/30">|</span>
+            <span className="text-white/80"><span className="text-amber-300 font-black">{stats.activeUsers}</span> ONLINE</span>
+            <span className="text-white/30 ml-auto">|</span>
+            <span className="text-red-400 font-black tracking-wider">CLOSES MAY 24</span>
+          </div>
+        )}
+
+        {/* Prize Pool Command Center */}
+        <div className="relative rounded-2xl overflow-hidden bg-black border border-white/[0.08] shadow-[0_30px_70px_-30px_rgba(245,158,11,0.45),0_0_60px_-30px_rgba(239,68,68,0.4)]">
+          {/* Texture */}
+          <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #fff 0 1px, transparent 1px 8px)' }} />
+          <div className="absolute -top-12 -right-10 w-40 h-40 rounded-full bg-amber-500/20 blur-3xl" />
+          <div className="absolute -bottom-12 -left-10 w-40 h-40 rounded-full bg-red-500/20 blur-3xl" />
+
+          <div className="relative p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.24em] text-white/45">
+                <Trophy size={10} className="text-amber-300" /> Prize Pool
+              </div>
+              <CountdownTimer
+                endDate={isLive ? event.end_date : event.start_date}
+                label={isLive ? "ENDS" : "STARTS"}
+              />
+            </div>
+
+            <div className="flex items-end justify-between gap-3">
+              <div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-[14px] font-black text-emerald-400 leading-none">$</span>
+                  <span className="text-[44px] font-black text-white leading-[0.85] tracking-tight tabular-nums" style={{ fontFamily: 'Teko, Inter, sans-serif' }}>150</span>
+                  <span className="text-[10px] font-black text-white/40 ml-1">USD</span>
                 </div>
-                <div className="text-[18px] font-black text-amber-300 leading-none" style={{ fontFamily: 'Teko, Inter, sans-serif' }}>
-                  $150 USD
-                </div>
-                <div className="flex items-center gap-1 mt-1">
-                  <RingsCoin size={13} />
-                  <span className="text-[11px] font-bold text-white/80 leading-none tabular-nums">1,000,000</span>
+                <div className="flex items-center gap-1.5 mt-1.5">
+                  <RingsCoin size={14} />
+                  <span className="text-[18px] font-black text-amber-300 leading-none tabular-nums" style={{ fontFamily: 'Teko, Inter, sans-serif' }}>1,000,000</span>
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-200/60">Rings</span>
                 </div>
               </div>
-              <div className="flex-1 pl-3">
-                <div className="flex items-center gap-1 text-red-300/80 text-[9px] font-black uppercase tracking-[0.2em] mb-1">
-                  <Clock size={10} /> Deadline
+
+              {/* Mini podium */}
+              <div className="flex items-end gap-1">
+                <div className="w-10 h-10 rounded-md bg-gradient-to-b from-zinc-300/20 to-zinc-300/5 border border-zinc-300/30 flex flex-col items-center justify-center">
+                  <Medal size={11} className="text-zinc-200" />
+                  <span className="text-[8px] font-black text-zinc-200 tabular-nums">$60</span>
                 </div>
-                <div className="text-[18px] font-black text-red-300 leading-none" style={{ fontFamily: 'Teko, Inter, sans-serif' }}>
-                  MAY 24
+                <div className="w-12 h-14 rounded-md bg-gradient-to-b from-amber-400/30 to-amber-400/5 border border-amber-400/40 flex flex-col items-center justify-center shadow-[0_0_18px_rgba(245,158,11,0.35)]">
+                  <Crown size={13} className="text-amber-300" />
+                  <span className="text-[10px] font-black text-amber-300 tabular-nums">$90</span>
                 </div>
-                <div className="text-[11px] font-bold text-white/70 leading-none mt-1">2026 · 11:59 PM</div>
               </div>
             </div>
           </div>
         </div>
-
-        {/* Live activity strip */}
-        {isLive && (
-          <div className="mt-2 flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-            <div className="flex items-center gap-1.5">
-              <Flame size={11} className="text-emerald-400" />
-              <span className="text-[11px] text-foreground font-bold tabular-nums">{stats.entries}</span>
-              <span className="text-[10px] text-muted-foreground">edits</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Users size={11} className="text-foreground/70" />
-              <span className="text-[11px] text-foreground font-bold tabular-nums">{stats.activeUsers}</span>
-              <span className="text-[10px] text-muted-foreground">online</span>
-            </div>
-          </div>
-        )}
-
-        {/* Live countdown */}
-        {!isClosed && (!isOpenArena || !activeRound) && (
-          <div className="mt-2 px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-            <CountdownTimer
-              endDate={isLive ? event.end_date : event.start_date}
-              label={isLive ? "Closes In" : "Starts In"}
-            />
-          </div>
-        )}
       </div>
 
       {/* Event Info */}
@@ -264,16 +273,6 @@ export default function EventDetailPage() {
             </div>
           </section>
         )}
-
-        <div className="flex items-center justify-between text-[11px]">
-          <div className="flex items-center gap-1.5 text-muted-foreground">
-            <MapPin size={12} />
-            <span>{event.location}</span>
-          </div>
-          <span className="text-gold uppercase tracking-[0.18em] text-[10px] font-black">
-            {event.league} League
-          </span>
-        </div>
 
         {/* Open Arena Info Button */}
         {isOpenArena && (
@@ -425,31 +424,32 @@ export default function EventDetailPage() {
           </div>
         )}
 
-        {/* Description */}
-        {event.description && (
-          <section className="bg-card border border-border rounded-lg p-4">
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
-              About This Event
-            </h3>
-            <p className="text-sm whitespace-pre-wrap">{event.description}</p>
+        {/* Mission Briefing — gamified rules */}
+        {event.rules && event.rules.length > 0 && (
+          <section className="rounded-2xl overflow-hidden bg-black border border-white/[0.06]">
+            <div className="px-4 py-2.5 bg-gradient-to-r from-red-500/[0.12] via-transparent to-transparent border-b border-white/[0.05] flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <Swords size={12} className="text-red-400" />
+                <h3 className="text-[10px] font-black uppercase tracking-[0.24em] text-white/70">Mission Briefing</h3>
+              </div>
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30">{event.rules.length} OBJECTIVES</span>
+            </div>
+            <ol className="divide-y divide-white/[0.05]">
+              {event.rules.map((rule, index) => (
+                <li key={index} className="flex items-start gap-3 px-4 py-2.5">
+                  <span className="shrink-0 w-5 h-5 rounded-md bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-[9px] font-black text-white/60 tabular-nums">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <span className="text-[12px] text-white/85 leading-snug">{rule}</span>
+                </li>
+              ))}
+            </ol>
           </section>
         )}
 
-        {/* Rules */}
-        {event.rules && event.rules.length > 0 && (
-          <section className="bg-card border border-border rounded-lg p-4">
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
-              Rules
-            </h3>
-            <ul className="space-y-2">
-              {event.rules.map((rule, index) => (
-                <li key={index} className="flex items-start gap-2 text-sm">
-                  <span className="text-gold mt-0.5">•</span>
-                  <span>{rule}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
+        {/* About — collapsed footer style */}
+        {event.description && (
+          <p className="text-[12px] text-white/55 leading-relaxed px-1 whitespace-pre-wrap">{event.description}</p>
         )}
 
         {/* Open Arena Round Leaderboard */}
@@ -468,55 +468,67 @@ export default function EventDetailPage() {
           </section>
         )}
 
-        {/* Standard Live Rankings Preview - For non-Open Arena events */}
+        {/* Ranked Leaderboard — osu! style */}
         {!isOpenArena && isLive && (
-          <section className="bg-card border border-border rounded-lg p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                Live Rankings
-              </h3>
-              <span className="text-[10px] text-green-500 font-medium flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                Updating
+          <section className="rounded-2xl overflow-hidden bg-black border border-white/[0.06]">
+            <div className="px-4 py-2.5 bg-gradient-to-r from-amber-500/[0.12] via-transparent to-transparent border-b border-white/[0.05] flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <Trophy size={12} className="text-amber-300" />
+                <h3 className="text-[10px] font-black uppercase tracking-[0.24em] text-white/70">Ranked Leaderboard</h3>
+              </div>
+              <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-[0.2em] text-emerald-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> LIVE
               </span>
             </div>
             {rankings.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No rankings yet</p>
+              <div className="px-4 py-8 text-center">
+                <Swords size={24} className="mx-auto text-white/15 mb-2" />
+                <p className="text-[12px] text-white/45 font-bold">First blood awaits.</p>
+                <p className="text-[10px] text-white/30 mt-1">No edits ranked yet — drop yours and seize #1.</p>
+              </div>
             ) : (
-              <div className="space-y-2">
-                {rankings.slice(0, 5).map((r, index) => (
-                  <div key={r.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                    <div className="flex items-center gap-3">
-                      <span className="w-6 text-center font-bold text-gold">{r.final_rank || index + 1}</span>
-                      <span className="font-semibold text-sm">{r.profile?.username || 'Unknown'}</span>
-                      <ReportUserButton
-                        userId={r.user_id}
-                        username={r.profile?.username}
-                        context="competition"
-                        contextId={event.id}
-                      />
+              <div className="divide-y divide-white/[0.04]">
+                {rankings.slice(0, 5).map((r, index) => {
+                  const rank = r.final_rank || index + 1;
+                  const qoi = r.qoi_score || 0;
+                  const grade = qoi >= 90 ? 'S' : qoi >= 80 ? 'A' : qoi >= 70 ? 'B' : qoi >= 60 ? 'C' : 'D';
+                  const gradeColor = grade === 'S' ? 'text-amber-300 bg-amber-300/15 border-amber-300/40' :
+                                     grade === 'A' ? 'text-emerald-300 bg-emerald-300/15 border-emerald-300/40' :
+                                     grade === 'B' ? 'text-cyan-300 bg-cyan-300/15 border-cyan-300/40' :
+                                     'text-white/60 bg-white/[0.06] border-white/[0.08]';
+                  const rankColor = rank === 1 ? 'text-amber-300' : rank === 2 ? 'text-zinc-200' : rank === 3 ? 'text-orange-400' : 'text-white/40';
+                  return (
+                    <div key={r.id} className="flex items-center gap-3 px-3 py-2.5">
+                      <div className={`w-7 text-center font-black tabular-nums leading-none ${rankColor}`} style={{ fontFamily: 'Teko, Inter, sans-serif', fontSize: rank <= 3 ? '22px' : '18px' }}>
+                        #{rank}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[13px] font-black text-white truncate">{r.profile?.username || 'Unknown'}</div>
+                        <div className="flex items-center gap-2 mt-0.5 text-[9px] font-mono text-white/40 tabular-nums">
+                          <span>Q {r.quality_score || '—'}</span>
+                          <span>O {r.originality_score || '—'}</span>
+                          <span>I {r.impact_score || '—'}</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-[18px] font-black text-white leading-none tabular-nums" style={{ fontFamily: 'Teko, Inter, sans-serif' }}>
+                          {qoi ? qoi.toFixed(1) : '—'}
+                        </div>
+                        <div className="text-[8px] font-black uppercase tracking-[0.2em] text-white/35">QOI</div>
+                      </div>
+                      <div className={`w-8 h-8 rounded-md border flex items-center justify-center font-black text-[14px] ${gradeColor}`} style={{ fontFamily: 'Teko, Inter, sans-serif' }}>
+                        {grade}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-4 text-xs">
-                      <div className="text-muted-foreground">
-                        Q<span className="text-foreground ml-1">{r.quality_score || '—'}</span>
-                      </div>
-                      <div className="text-muted-foreground">
-                        O<span className="text-foreground ml-1">{r.originality_score || '—'}</span>
-                      </div>
-                      <div className="text-muted-foreground">
-                        I<span className="text-foreground ml-1">{r.impact_score || '—'}</span>
-                      </div>
-                      <span className="font-bold text-gold w-12 text-right">{r.qoi_score?.toFixed(1) || '—'}</span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
-            <Link 
+            <Link
               to={`/rankings?event=${event.id}`}
-              className="block text-center text-xs text-gold font-semibold mt-4 py-2"
+              className="flex items-center justify-center gap-1 py-2.5 text-[10px] font-black uppercase tracking-[0.22em] text-white/60 hover:text-white border-t border-white/[0.04] active:bg-white/[0.03] transition"
             >
-              View Full Rankings →
+              View Full Ladder <ChevronRight size={11} />
             </Link>
           </section>
         )}
@@ -562,15 +574,18 @@ export default function EventDetailPage() {
 
       {/* Sticky ENTER bar — addiction CTA */}
       {isLive && !(isOpenArena && advancementStatus === 'eliminated') && (
-        <div className="fixed bottom-0 inset-x-0 z-50 px-3 pt-2 pb-[max(env(safe-area-inset-bottom,0px),8px)] bg-gradient-to-t from-black via-black/95 to-transparent">
+        <div className="fixed bottom-0 inset-x-0 z-50 px-3 pt-3 pb-[max(env(safe-area-inset-bottom,0px),10px)] bg-gradient-to-t from-black via-black/95 to-transparent">
           <button
             onClick={() => setShowSubmitModal(true)}
-            className="w-full relative overflow-hidden rounded-xl py-3.5 bg-emerald-500 text-black font-black text-[14px] uppercase tracking-[0.2em] active:scale-[0.99] transition-transform"
+            className="w-full relative overflow-hidden rounded-xl py-3.5 bg-emerald-400 text-black font-black text-[13px] uppercase tracking-[0.24em] active:scale-[0.99] transition-transform shadow-[0_0_36px_rgba(16,185,129,0.55),0_-2px_0_rgba(255,255,255,0.25)_inset]"
             style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
           >
+            {/* Sweep shine */}
+            <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent animate-shimmer" />
             <span className="relative inline-flex items-center gap-2">
-              <Send size={15} />
-              {isOpenArena && activeRound ? `Submit · Round ${activeRound.round_number}` : 'Enter Competition'}
+              <Send size={14} strokeWidth={3} />
+              {isOpenArena && activeRound ? `Submit · Round ${activeRound.round_number}` : 'Enter The Hunt'}
+              <span className="ml-1 text-[10px] font-black opacity-70 tracking-[0.18em]">$150 + 1M</span>
             </span>
           </button>
         </div>
