@@ -434,7 +434,7 @@ function ShowcaseDrop({ edit, rank }: { edit: any; rank: number }) {
   const thumb = edit.thumbnail_url;
   return (
     <a href={edit.submission_url} target="_blank" rel="noopener noreferrer" className="relative aspect-[3/4] overflow-hidden rounded-lg bg-arena-strong shadow-[0_0_0_1px_hsl(var(--arena-line)/0.24)] active:scale-[0.98] transition">
-      {thumb ? <img src={thumb} alt={edit.custom_title || "Submitted edit"} className="h-full w-full object-cover" loading="lazy" /> : <div className="h-full w-full bg-[linear-gradient(135deg,hsl(var(--arena-strong)),hsl(var(--arena-bg)))]" />}
+      {thumb ? <img src={thumb} alt={edit.custom_title || "Submitted edit"} className="h-full w-full object-cover" loading="lazy" /> : <div className="h-full w-full bg-[linear-gradient(135deg,hsl(var(--arena-panel-strong)),hsl(var(--arena-bg)))]" />}
       <div className="absolute inset-0 bg-[linear-gradient(180deg,hsl(var(--arena-bg)/0.08),hsl(var(--arena-bg)/0.8))]" />
       <div className="absolute left-1.5 top-1.5 rounded bg-arena-amber px-1.5 py-0.5 text-[9px] font-black text-primary-foreground">#{rank}</div>
       <Play size={18} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-primary drop-shadow" fill="currentColor" />
