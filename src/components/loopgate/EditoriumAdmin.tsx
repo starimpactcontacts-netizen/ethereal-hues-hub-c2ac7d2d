@@ -556,15 +556,8 @@ export default function EditoriumAdmin() {
     }
     setUploadingVideo(true);
     try {
-      const ext = file.name.split('.').pop() || 'mp4';
-      const path = `editorium-picks/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-      const { error: upErr } = await supabase.storage.from('loop-media').upload(path, file, {
-        contentType: file.type,
-        upsert: false,
-      });
-      if (upErr) throw upErr;
-      const { data: pub } = supabase.storage.from('loop-media').getPublicUrl(path);
-      setManualForm(f => ({ ...f, video_url: pub.publicUrl, video_storage_path: path }));
+      const { url: cdnUrl, path } = await uploadToBunny(file, { folder: 'editorium-picks' });
+      setManualForm(f => ({ ...f, video_url: cdnUrl, video_storage_path: path }));
       toast.success('Video uploaded ✓');
     } catch (err: any) {
       toast.error('Upload failed: ' + (err.message || 'Unknown error'));
