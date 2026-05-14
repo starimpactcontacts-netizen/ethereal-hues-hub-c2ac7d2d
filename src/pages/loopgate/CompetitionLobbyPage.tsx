@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { isPast, differenceInSeconds } from "date-fns";
 import { useAutoplayVideo } from "@/hooks/useAutoplayVideo";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadToBunny } from "@/lib/bunnyUpload";
 import CompetitionChat from "@/components/loopgate/CompetitionChat";
 import CompetitionLeaderboard from "@/components/loopgate/CompetitionLeaderboard";
 import CompetitionVoting from "@/components/loopgate/CompetitionVoting";
