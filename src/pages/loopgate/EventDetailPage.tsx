@@ -28,6 +28,7 @@ import OpenArenaRoundLeaderboard from "@/components/loopgate/OpenArenaRoundLeade
 import OpenArenaGuide, { OpenArenaInfoButton } from "@/components/loopgate/OpenArenaGuide";
 import { Badge } from "@/components/ui/badge";
 import lightYagamiPoster from "@/assets/light_yagami_poster.jpg";
+import fixMySoulCover from "@/assets/fix_my_soul_cover.jpg";
 
 const displayFont = { fontFamily: "Teko, Inter, system-ui, sans-serif" };
 const bodyFont = { fontFamily: "Inter, system-ui, sans-serif" };
@@ -88,6 +89,7 @@ export default function EventDetailPage() {
   const displayPoster = isLightYagami ? lightYagamiPoster : event.poster_url;
   const featuredEdits = rankings.filter((r) => r.submission_url).slice(0, 6);
   const ladderRows = rankings.slice(0, ladderLimit);
+  const isShowcaseAdmin = user?.email?.toLowerCase() === "aminhoopz@gmail.com";
 
   const getUserAdvancementStatus = () => {
     if (!user || !activeRound) return null;
@@ -200,18 +202,26 @@ export default function EventDetailPage() {
               <h2 className="text-[24px] font-black uppercase leading-none text-arena-ink" style={displayFont}>Edit Showcase</h2>
               <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-arena-muted">Inspo canvas + ranked drops</p>
             </div>
-            <button
-              onClick={() => setShowSubmitModal(true)}
-              className="rounded-lg bg-arena-emerald px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-primary shadow-[0_10px_24px_hsl(var(--arena-emerald)/0.28)] active:scale-95 transition"
-            >
-              Upload
-            </button>
+            {isShowcaseAdmin && (
+              <button
+                onClick={() => setShowSubmitModal(true)}
+                className="rounded-lg bg-arena-emerald px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-primary shadow-[0_10px_24px_hsl(var(--arena-emerald)/0.28)] active:scale-95 transition"
+              >
+                Upload
+              </button>
+            )}
           </div>
 
-          <div className="grid grid-cols-3 gap-1.5">
-            <InspoTile poster={displayPoster || lightYagamiPoster} label="Cover" />
-            <InspoTile poster={displayPoster || lightYagamiPoster} label="Eyes" crop="50% 14%" />
-            <InspoTile poster={displayPoster || lightYagamiPoster} label="Mood" crop="50% 72%" />
+          <div className="relative aspect-[16/9] overflow-hidden rounded-lg bg-arena-strong shadow-[0_0_0_1px_hsl(var(--arena-line)/0.25)]">
+            <img src={fixMySoulCover} alt="Fix My Soul official cover" className="h-full w-full object-cover" loading="lazy" />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_55%,hsl(var(--arena-bg)/0.85)_100%)]" />
+            <div className="absolute bottom-2 left-2 right-2 flex items-end justify-between gap-2">
+              <div>
+                <p className="text-[8px] font-black uppercase tracking-[0.2em] text-arena-amber">Official Cover</p>
+                <p className="text-[14px] font-black uppercase leading-none text-arena-ink" style={displayFont}>Fix My Soul</p>
+              </div>
+              <span className="rounded bg-arena-bg/80 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-arena-ink">Inspo</span>
+            </div>
           </div>
 
           <div className="mt-3 grid grid-cols-3 gap-1.5">
