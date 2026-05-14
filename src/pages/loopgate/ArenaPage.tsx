@@ -1207,53 +1207,59 @@ export default function ArenaPage() {
           {liveEvents.length > 0 && (
             <Link
               to={`/event/${(liveEvents[0] as any).slug || liveEvents[0].id}`}
-              className="relative block mb-3 rounded-2xl overflow-hidden bg-black border border-white/[0.08] active:scale-[0.99] transition-transform"
+              className="relative block mb-3 -mx-4 active:scale-[0.995] transition-transform"
             >
-              {/* Cinematic poster strip */}
-              <div className="relative h-[104px] w-full overflow-hidden">
+              {/* Edge-to-edge slim cinematic strip */}
+              <div className="relative h-[78px] w-full overflow-hidden bg-black shadow-[0_18px_40px_-20px_rgba(239,68,68,0.55),0_0_60px_-30px_rgba(16,185,129,0.45)]">
                 {liveEvents[0].poster_url && (
                   <img
                     src={liveEvents[0].poster_url}
                     alt={liveEvents[0].title}
-                    className="absolute inset-0 w-full h-full object-cover scale-110"
-                    style={{ objectPosition: '50% 22%' }}
+                    className="absolute inset-0 w-full h-full object-cover scale-[1.15]"
+                    style={{ objectPosition: '38% 20%' }}
                     loading="eager"
                   />
                 )}
-                {/* Side-to-side gradient so right half stays readable */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/50 to-black" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
+                {/* Cinematic gradients — bleed left poster into right text */}
+                <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-black/55 to-black" />
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_85%_50%,rgba(239,68,68,0.18),transparent_55%)]" />
 
-                {/* Live pulse */}
-                <div className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-[2px] rounded-full bg-red-500/95 backdrop-blur shadow-[0_4px_14px_-2px_rgba(239,68,68,0.6)]">
+                {/* Scanline texture for "broadcast" feel */}
+                <div className="absolute inset-0 opacity-[0.08] pointer-events-none mix-blend-overlay" style={{ backgroundImage: 'repeating-linear-gradient(0deg, #fff 0 1px, transparent 1px 3px)' }} />
+
+                {/* LIVE pill */}
+                <div className="absolute top-2 left-3 flex items-center gap-1 px-1.5 py-[2px] rounded-sm bg-red-500 shadow-[0_0_18px_rgba(239,68,68,0.7)]">
                   <span className="w-1 h-1 rounded-full bg-white animate-pulse" />
-                  <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white">Live</span>
+                  <span className="text-[8px] font-black uppercase tracking-[0.22em] text-white">Live Comp</span>
                 </div>
 
-                {/* Right column: title + CTA */}
-                <div className="absolute inset-y-0 right-0 w-[62%] flex flex-col justify-center px-3 gap-1.5">
-                  <div>
-                    <div className="text-[8px] font-black uppercase tracking-[0.22em] text-amber-300/90 mb-0.5 truncate">
-                      {liveEvents[0].prize_pool || 'Cash + Rings'}
-                    </div>
+                {/* Right content */}
+                <div className="absolute inset-y-0 right-0 left-[42%] flex items-center pr-3 pl-2">
+                  <div className="flex-1 min-w-0">
                     <h3
-                      className="text-[17px] leading-[0.92] font-black text-white tracking-tight line-clamp-2"
+                      className="text-[19px] leading-[0.9] font-black text-white tracking-tight line-clamp-2 drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]"
                       style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}
                     >
                       {liveEvents[0].title.toUpperCase()}
                     </h3>
-                    <p className="text-[9.5px] text-white/55 truncate mt-0.5">
-                      Deadline {new Date(liveEvents[0].end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="flex items-center gap-0.5 text-[10px] font-black text-emerald-400 tabular-nums">
+                        <span className="text-emerald-400/90">$</span>150
+                      </div>
+                      <span className="w-[2px] h-[2px] rounded-full bg-white/30" />
+                      <div className="flex items-center gap-0.5 text-[10px] font-black text-white tabular-nums">
+                        <RingsCoin size={10} /> 1M
+                      </div>
+                      <span className="w-[2px] h-[2px] rounded-full bg-white/30" />
+                      <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-white/55">May 24</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1 self-start px-2.5 py-1 rounded-md bg-emerald-500 text-black text-[10px] font-black uppercase tracking-[0.18em] shadow-[0_8px_22px_-6px_rgba(16,185,129,0.55)]">
-                    Enter Now
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                  <div className="flex items-center gap-1 ml-2 px-2.5 py-1.5 rounded-sm bg-emerald-400 text-black text-[10px] font-black uppercase tracking-[0.2em] shadow-[0_0_22px_rgba(16,185,129,0.55)]">
+                    Enter
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
                   </div>
                 </div>
               </div>
-              {/* Bottom emerald glow line */}
-              <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-emerald-400/70 to-transparent" />
             </Link>
           )}
 
