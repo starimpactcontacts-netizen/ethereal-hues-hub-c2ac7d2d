@@ -1209,44 +1209,45 @@ export default function ArenaPage() {
               className="relative block mb-3 rounded-2xl overflow-hidden bg-black border border-white/[0.08] active:scale-[0.99] transition-transform"
             >
               {/* Cinematic poster strip */}
-              <div className="relative h-[132px] w-full overflow-hidden">
+              <div className="relative h-[104px] w-full overflow-hidden">
                 {liveEvents[0].poster_url && (
                   <img
                     src={liveEvents[0].poster_url}
                     alt={liveEvents[0].title}
-                    className="absolute inset-0 w-full h-full object-cover scale-105"
+                    className="absolute inset-0 w-full h-full object-cover scale-110"
+                    style={{ objectPosition: '50% 22%' }}
                     loading="eager"
                   />
                 )}
                 {/* Side-to-side gradient so right half stays readable */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/55 to-black" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/50 to-black" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
 
                 {/* Live pulse */}
-                <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 px-2 py-[3px] rounded-full bg-red-500/95 backdrop-blur shadow-[0_4px_14px_-2px_rgba(239,68,68,0.6)]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                  <span className="text-[8.5px] font-black uppercase tracking-[0.2em] text-white">Live</span>
+                <div className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-[2px] rounded-full bg-red-500/95 backdrop-blur shadow-[0_4px_14px_-2px_rgba(239,68,68,0.6)]">
+                  <span className="w-1 h-1 rounded-full bg-white animate-pulse" />
+                  <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white">Live</span>
                 </div>
 
                 {/* Right column: title + CTA */}
-                <div className="absolute inset-y-0 right-0 w-[60%] flex flex-col justify-center px-3.5 gap-2">
+                <div className="absolute inset-y-0 right-0 w-[62%] flex flex-col justify-center px-3 gap-1.5">
                   <div>
-                    <div className="text-[8.5px] font-black uppercase tracking-[0.22em] text-amber-300/90 mb-1 truncate">
+                    <div className="text-[8px] font-black uppercase tracking-[0.22em] text-amber-300/90 mb-0.5 truncate">
                       {liveEvents[0].prize_pool || 'Cash + Rings'}
                     </div>
                     <h3
-                      className="text-[20px] leading-[0.95] font-black text-white tracking-tight line-clamp-2"
+                      className="text-[17px] leading-[0.92] font-black text-white tracking-tight line-clamp-2"
                       style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}
                     >
                       {liveEvents[0].title.toUpperCase()}
                     </h3>
-                    <p className="text-[10px] text-white/55 truncate mt-1">
+                    <p className="text-[9.5px] text-white/55 truncate mt-0.5">
                       Deadline {new Date(liveEvents[0].end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </p>
                   </div>
-                  <div className="flex items-center gap-1.5 self-start mt-0.5 px-3 py-1.5 rounded-lg bg-emerald-500 text-black text-[10.5px] font-black uppercase tracking-[0.18em] shadow-[0_8px_22px_-6px_rgba(16,185,129,0.55)]">
+                  <div className="flex items-center gap-1 self-start px-2.5 py-1 rounded-md bg-emerald-500 text-black text-[10px] font-black uppercase tracking-[0.18em] shadow-[0_8px_22px_-6px_rgba(16,185,129,0.55)]">
                     Enter Now
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
                   </div>
                 </div>
               </div>
