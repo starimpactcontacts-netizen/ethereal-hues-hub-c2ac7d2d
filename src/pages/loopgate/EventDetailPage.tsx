@@ -331,47 +331,6 @@ export default function EventDetailPage() {
           </div>
         )}
 
-        {/* Live Activity Indicators - Real Data */}
-        {isLive && (
-          <section className="bg-surface-1 rounded-lg p-4 border border-border space-y-3">
-            <div className="flex items-center gap-3 text-sm">
-              <div className="w-7 h-7 rounded-full bg-green-500/10 flex items-center justify-center">
-                <Zap size={12} className="text-green-500" />
-              </div>
-              <span className="text-muted-foreground">
-                <span className="text-foreground font-semibold">{stats.entries}</span> edits submitted
-              </span>
-            </div>
-            <div className="flex items-center gap-3 text-sm">
-              <div className="w-7 h-7 rounded-full bg-gold/10 flex items-center justify-center">
-                <Eye size={12} className="text-gold" />
-              </div>
-              <span className="text-muted-foreground">
-                <span className="text-gold font-semibold">{stats.judges}</span> judges active
-              </span>
-            </div>
-            <div className="flex items-center gap-3 text-sm">
-              <div className="w-7 h-7 rounded-full bg-foreground/10 flex items-center justify-center">
-                <Users size={12} />
-              </div>
-              <span className="text-muted-foreground">
-                <span className="text-foreground font-semibold">{stats.activeUsers}</span> editors online now
-              </span>
-            </div>
-          </section>
-        )}
-
-        {/* Countdown (Live/Upcoming) - Only for non-Open Arena or when no active round */}
-        {!isClosed && (!isOpenArena || !activeRound) && (
-          <section className="bg-surface-1 border border-border rounded-lg p-4">
-            <CountdownTimer 
-              endDate={isLive ? event.end_date : event.start_date} 
-              label={isLive ? "Event Ends" : "Event Starts"}
-              large
-            />
-          </section>
-        )}
-
         {/* Timeline */}
         <section className="bg-card border border-border rounded-lg p-4">
           <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
