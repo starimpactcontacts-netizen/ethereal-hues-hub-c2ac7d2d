@@ -34,10 +34,17 @@ Deno.serve(async (req) => {
       });
     }
 
-    const fileName = req.headers.get('x-file-name') || 'file.bin';
+    const rawName = req.headers.get('x-file-name') || 'file.bin';
     const fileType = req.headers.get('x-file-type') || 'application/octet-stream';
-    const ext = fileName.includes('.') ? fileName.split('.').pop() : 'bin';
-    const path = `${user.id}/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
+
+    // x-file-name may contain a folder prefix like "battle-edits/clip.mp4"
+    const lastSlash = rawName.lastIndexOf('/');
+    const folder = lastSlash >= 0 ? rawName.slice(0, lastSlash).replace(/^\/+|\/+$/g, '') : '';
+    const justName = lastSlash >= 0 ? rawName.slice(lastSlash + 1) : rawName;
+    const ext = justName.includes('.') ? justName.split('.').pop() : 'bin';
+    const safeFolder = folder.replace(/[^a-zA-Z0-9/_-]/g, '');
+    const folderPart = safeFolder ? `${safeFolder}/` : '';
+    const path = `${folderPart}${user.id}/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
 
     const url = `https://${STORAGE_HOST}/${STORAGE_ZONE}/${path}`;
     const bunnyRes = await fetch(url, {
