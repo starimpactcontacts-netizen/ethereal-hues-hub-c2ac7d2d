@@ -158,14 +158,14 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle, 
 
   return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-arena-bg/85 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-arena-panel rounded-lg overflow-hidden shadow-[0_24px_70px_hsl(var(--arena-bg)/0.55)]">
+        <div className="w-full max-w-md bg-arena-panel rounded-lg overflow-hidden shadow-[0_24px_70px_hsl(var(--arena-bg)/0.55)]">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border">
+        <div className="flex items-center justify-between p-4 border-b border-arena-line/40">
           <div>
-            <h2 className="font-bold">Submit Edit</h2>
-            <p className="text-xs text-muted-foreground">{eventTitle}</p>
+            <h2 className="font-bold text-arena-ink">Submit TikTok Edit</h2>
+            <p className="text-xs text-arena-muted">{eventTitle}</p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-surface-1 rounded-lg">
+          <button onClick={onClose} className="p-2 hover:bg-arena-strong rounded-lg text-arena-ink">
             <X size={20} />
           </button>
         </div>
@@ -174,10 +174,10 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle, 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           {/* Submitting as (read-only) */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+            <label className="block text-xs font-semibold uppercase tracking-widest text-arena-muted mb-2">
               Submitting as
             </label>
-            <div className="w-full bg-surface-1 border border-border rounded-lg px-4 py-3 text-sm text-foreground">
+            <div className="w-full bg-arena-strong rounded-lg px-4 py-3 text-sm text-arena-ink shadow-[0_0_0_1px_hsl(var(--arena-line)/0.25)]">
               {profile?.username || 'Unknown'}
             </div>
           </div>
@@ -194,7 +194,7 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle, 
 
           {/* Platform Link */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+            <label className="block text-xs font-semibold uppercase tracking-widest text-arena-muted mb-2">
               Edit Link
             </label>
             <div className="relative">
@@ -206,18 +206,18 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle, 
                   setUrlError("");
                 }}
                 placeholder={getPlatformUrlPlaceholder(platform)}
-                className={`w-full bg-surface-1 border rounded-lg px-4 py-3 pr-10 text-sm focus:outline-none focus:border-gold ${
+                className={`w-full bg-arena-strong rounded-lg px-4 py-3 pr-10 text-sm text-arena-ink placeholder:text-arena-muted/60 focus:outline-none shadow-[0_0_0_1px_hsl(var(--arena-line)/0.25)] focus:shadow-[0_0_0_1px_hsl(var(--arena-amber))] ${
                   urlError ? "border-destructive" : "border-border"
                 }`}
                 required
               />
-              <ExternalLink size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <ExternalLink size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-arena-muted" />
             </div>
             {urlError && (
               <p className="text-destructive text-xs mt-1">{urlError}</p>
             )}
-            <p className="text-[10px] text-muted-foreground mt-2">
-              Direct link to your published edit
+            <p className="text-[10px] text-arena-muted mt-2">
+              Paste the direct link to your published TikTok edit.
             </p>
           </div>
 
@@ -225,9 +225,9 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle, 
           <input type="hidden" value={eventId} />
 
           {/* Rules reminder */}
-          <div className="bg-surface-1 rounded-lg p-3">
-            <p className="text-[10px] text-muted-foreground">
-              By submitting, you confirm your edit follows all event rules and is original work.
+          <div className="bg-arena-strong rounded-lg p-3">
+            <p className="text-[10px] text-arena-muted">
+              By submitting, you confirm your edit follows all event rules and is original work. TikTok links only.
             </p>
           </div>
 
@@ -235,7 +235,7 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle, 
           <button
             type="submit"
             disabled={isSubmitting || !platformLink}
-            className="w-full py-4 bg-gold text-black font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full py-4 bg-arena-emerald text-primary font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-[0_12px_30px_hsl(var(--arena-emerald)/0.28)]"
           >
             {isSubmitting ? (
               <>
