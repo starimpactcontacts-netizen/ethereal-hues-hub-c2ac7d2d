@@ -574,15 +574,18 @@ export default function EventDetailPage() {
 
       {/* Sticky ENTER bar — addiction CTA */}
       {isLive && !(isOpenArena && advancementStatus === 'eliminated') && (
-        <div className="fixed bottom-0 inset-x-0 z-50 px-3 pt-2 pb-[max(env(safe-area-inset-bottom,0px),8px)] bg-gradient-to-t from-black via-black/95 to-transparent">
+        <div className="fixed bottom-0 inset-x-0 z-50 px-3 pt-3 pb-[max(env(safe-area-inset-bottom,0px),10px)] bg-gradient-to-t from-black via-black/95 to-transparent">
           <button
             onClick={() => setShowSubmitModal(true)}
-            className="w-full relative overflow-hidden rounded-xl py-3.5 bg-emerald-500 text-black font-black text-[14px] uppercase tracking-[0.2em] active:scale-[0.99] transition-transform"
+            className="w-full relative overflow-hidden rounded-xl py-3.5 bg-emerald-400 text-black font-black text-[13px] uppercase tracking-[0.24em] active:scale-[0.99] transition-transform shadow-[0_0_36px_rgba(16,185,129,0.55),0_-2px_0_rgba(255,255,255,0.25)_inset]"
             style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
           >
+            {/* Sweep shine */}
+            <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent animate-shimmer" />
             <span className="relative inline-flex items-center gap-2">
-              <Send size={15} />
-              {isOpenArena && activeRound ? `Submit · Round ${activeRound.round_number}` : 'Enter Competition'}
+              <Send size={14} strokeWidth={3} />
+              {isOpenArena && activeRound ? `Submit · Round ${activeRound.round_number}` : 'Enter The Hunt'}
+              <span className="ml-1 text-[10px] font-black opacity-70 tracking-[0.18em]">$150 + 1M</span>
             </span>
           </button>
         </div>
