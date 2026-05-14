@@ -365,7 +365,9 @@ export default function EventDetailPage() {
 
         {event.description && <p className="px-1 text-[12px] leading-relaxed text-arena-muted whitespace-pre-wrap">{event.description}</p>}
 
-        <p className="text-center text-[10px] font-semibold uppercase tracking-[0.13em] text-arena-muted">Submissions are TikTok links only.</p>
+        <p className="text-center text-[10px] font-semibold uppercase tracking-[0.13em] text-arena-muted">
+          Submit as many edits as you want — only your highest QOI score counts. TikTok links only.
+        </p>
       </main>
 
       {isLive && !(isOpenArena && advancementStatus === "eliminated") && (
