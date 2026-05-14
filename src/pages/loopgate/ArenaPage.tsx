@@ -30,6 +30,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import FeaturedDropCard from "@/components/loopgate/FeaturedDropCard";
 import { useFeaturedDrops } from "@/hooks/useFeaturedDrops";
+import RingsCoin from "@/components/loopgate/RingsCoin";
 import { useSoloMode } from "@/hooks/useSoloMode";
 import { useMyQuickFights } from "@/hooks/useQuickFight";
 import { formatDistanceToNow } from "date-fns";
