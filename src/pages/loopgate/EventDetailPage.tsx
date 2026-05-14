@@ -11,7 +11,6 @@ import {
   Medal,
   Play,
   Send,
-  Sparkles,
   Swords,
   Target,
   Trophy,
