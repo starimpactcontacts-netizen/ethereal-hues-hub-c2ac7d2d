@@ -137,22 +137,22 @@ export default function EventDetailPage() {
                 </span>
               )}
               {isOpenArena && <OpenArenaInfoButton onClick={() => setShowGuide(true)} />}
+              <button
+                onClick={() => setShowChat(true)}
+                aria-label="Open event chat"
+                className="relative w-9 h-9 rounded-lg bg-arena-panel/85 shadow-[0_10px_26px_hsl(var(--arena-bg)/0.45)] flex items-center justify-center active:scale-95 transition"
+              >
+                <MessageCircle size={18} />
+                {chatUnread > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center ring-2 ring-arena-bg animate-pulse">
+                    {chatUnread > 99 ? "99+" : chatUnread}
+                  </span>
+                )}
+              </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-[86px_minmax(0,1fr)] gap-4 items-end">
-            <div className="relative h-[122px] rounded-lg overflow-hidden shadow-[0_18px_36px_hsl(var(--arena-bg)/0.5),0_0_0_1px_hsl(var(--arena-line)/0.55)] bg-arena-panel">
-              <img
-                src={fixMySoulCover}
-                alt="Fix My Soul cover"
-                className="h-full w-full object-cover"
-              />
-              <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,transparent,hsl(var(--arena-bg)/0.86))] p-2">
-                <p className="text-[9px] font-black uppercase tracking-[0.16em] text-arena-amber">Fix My Soul</p>
-              </div>
-            </div>
-
-            <div className="min-w-0 pb-1">
+          <div className="min-w-0 pb-1">
               <div className="mb-2 flex flex-wrap items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.18em] text-arena-muted">
                 <span className="rounded bg-arena-panel/90 px-2 py-1 shadow-[0_4px_16px_hsl(var(--arena-bg)/0.3)]">Ranked Event</span>
                 <span className="rounded bg-arena-panel/90 px-2 py-1 shadow-[0_4px_16px_hsl(var(--arena-bg)/0.3)]">TikTok Only</span>
@@ -161,7 +161,6 @@ export default function EventDetailPage() {
                 {event.title}
               </h1>
               {event.subtitle && <p className="mt-2 text-[12px] font-semibold uppercase tracking-[0.12em] text-arena-muted">{event.subtitle}</p>}
-            </div>
           </div>
 
           <div className="mt-5 grid grid-cols-2 gap-2">
@@ -181,8 +180,13 @@ export default function EventDetailPage() {
 
       <main className="px-4 space-y-4">
         <section className="-mt-1 rounded-lg bg-arena-strong p-3 shadow-[0_18px_38px_hsl(var(--arena-bg)/0.35)]">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
+          <div className="flex items-center gap-3">
+            <img
+              src={fixMySoulCover}
+              alt="Fix My Soul cover"
+              className="h-14 w-14 shrink-0 rounded-md object-cover shadow-[0_8px_18px_hsl(var(--arena-bg)/0.5),0_0_0_1px_hsl(var(--arena-line)/0.55)]"
+            />
+            <div className="min-w-0 flex-1">
               <p className="text-[9px] font-black uppercase tracking-[0.22em] text-arena-muted">Official Sound</p>
               <p className="mt-0.5 text-[20px] font-black uppercase leading-none text-arena-ink" style={displayFont}>Fix My Soul</p>
             </div>
@@ -407,21 +411,6 @@ export default function EventDetailPage() {
       />
 
       <OpenArenaGuide isOpen={showGuide} onClose={() => setShowGuide(false)} />
-
-      {/* Floating Chat FAB with unread badge — sits above the sticky Enter Event CTA */}
-      <button
-        onClick={() => setShowChat(true)}
-        aria-label="Open event chat"
-        className="fixed right-3 z-40 w-14 h-14 rounded-full bg-arena-panel border border-arena-line/50 text-arena-ink shadow-[0_14px_34px_rgba(0,0,0,0.55)] active:scale-95 transition flex items-center justify-center"
-        style={{ bottom: `calc(env(safe-area-inset-bottom, 0px) + ${isLive ? 88 : 24}px)` }}
-      >
-        <MessageCircle size={22} strokeWidth={2.4} />
-        {chatUnread > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center shadow-[0_2px_8px_rgba(239,68,68,0.6)] ring-2 ring-arena-bg animate-pulse">
-            {chatUnread > 99 ? "99+" : chatUnread}
-          </span>
-        )}
-      </button>
 
       <EventChatSheet
         open={showChat}
