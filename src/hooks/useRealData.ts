@@ -425,6 +425,7 @@ export function useEventRankings(eventId: string | null) {
         custom_title: p.custom_title,
         author_username: p.author_username,
         view_count: p.view_count,
+        is_showcase: (p as any).is_showcase ?? false,
       })),
       ...(roundData || []).map(p => ({
         id: p.id,
@@ -443,6 +444,7 @@ export function useEventRankings(eventId: string | null) {
         custom_title: p.custom_title,
         author_username: p.author_username,
         view_count: p.view_count,
+        is_showcase: (p as any).is_showcase ?? false,
       })),
     ];
 
