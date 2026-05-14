@@ -20,7 +20,7 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle, 
   const { user, profile } = useAuth();
   const { isGuest } = useGuestMode();
   const { checkSubmissionBonus } = useInviteSubmissionBonus();
-  const [platform, setPlatform] = useState<PlatformType>("tiktok");
+  const platform: PlatformType = "tiktok";
   const [platformLink, setPlatformLink] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -31,8 +31,8 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle, 
   // Block guest users
   if (isGuest) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-        <div className="w-full max-w-md bg-card border border-border rounded-lg p-6 text-center">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-arena-bg/85 backdrop-blur-sm">
+        <div className="w-full max-w-md bg-arena-panel rounded-lg p-6 text-center shadow-[0_24px_70px_hsl(var(--arena-bg)/0.55)]">
           <h2 className="text-xl font-bold mb-2">Sign In Required</h2>
           <p className="text-muted-foreground text-sm mb-4">
             You're browsing as a guest. Sign in to submit your edit.
@@ -116,23 +116,23 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle, 
 
   if (submitted) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-        <div className="w-full max-w-md bg-card border border-border rounded-lg p-6 text-center">
-          <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-arena-bg/85 backdrop-blur-sm">
+        <div className="w-full max-w-md bg-arena-panel rounded-lg p-6 text-center shadow-[0_24px_70px_hsl(var(--arena-bg)/0.55)]">
+          <div className="w-16 h-16 rounded-lg bg-arena-emerald/20 flex items-center justify-center mx-auto mb-4">
             <span className="text-3xl">✓</span>
           </div>
           <h2 className="text-xl font-bold mb-2">Submission Received</h2>
           <p className="text-muted-foreground text-sm mb-4">
             Your edit has been indexed and is pending review by judges.
           </p>
-          <div className="bg-surface-1 rounded-lg p-4 mb-6">
+          <div className="bg-arena-strong rounded-lg p-4 mb-6">
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Status</p>
             <p className="text-gold font-bold">PENDING REVIEW</p>
           </div>
 
           {/* One-time thumbnail tip */}
           {!hasSeenThumbnailTip && (
-            <div className="bg-gold/10 border border-gold/20 rounded-lg p-3 mb-4 text-left">
+            <div className="bg-arena-strong rounded-lg p-3 mb-4 text-left">
               <p className="text-xs text-gold font-semibold mb-1">💡 Pro tip</p>
               <p className="text-[11px] text-muted-foreground leading-relaxed">
                 Add a custom thumbnail to your submission from your profile — it helps your edit stand out in the feed.
@@ -157,8 +157,8 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle, 
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-card border border-border rounded-lg overflow-hidden">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-arena-bg/85 backdrop-blur-sm">
+      <div className="w-full max-w-md bg-arena-panel rounded-lg overflow-hidden shadow-[0_24px_70px_hsl(var(--arena-bg)/0.55)]">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div>
