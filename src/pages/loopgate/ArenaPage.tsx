@@ -1202,6 +1202,44 @@ export default function ArenaPage() {
 
           {/* KotH submit billboard removed per user request */}
 
+          {/* ═══ FEATURED EVENT AD — top of arena ═══ */}
+          {liveEvents.length > 0 && (
+            <Link to={`/event/${(liveEvents[0] as any).slug || liveEvents[0].id}`} className="block mb-3 group">
+              <div
+                className="relative overflow-hidden rounded-2xl border border-white/10 active:scale-[0.99] transition-transform"
+                style={{ aspectRatio: '16 / 9', background: '#0a0a0a' }}
+              >
+                {liveEvents[0].poster_url && (
+                  <img
+                    src={liveEvents[0].poster_url}
+                    alt={liveEvents[0].title}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    loading="eager"
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                <div className="absolute top-2 left-2 flex items-center gap-1.5">
+                  <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-500/90 text-white text-[9px] font-black uppercase tracking-[0.15em]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> Live Event
+                  </span>
+                </div>
+                {liveEvents[0].prize_pool && (
+                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-sm border border-gold/40">
+                    <span className="text-[10px] font-black text-gold">{liveEvents[0].prize_pool}</span>
+                  </div>
+                )}
+                <div className="absolute bottom-0 left-0 right-0 p-3">
+                  <h3 className="text-[15px] font-black text-white tracking-tight leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                    {liveEvents[0].title}
+                  </h3>
+                  {(liveEvents[0] as any).subtitle && (
+                    <p className="text-[11px] text-white/70 truncate mt-0.5">{(liveEvents[0] as any).subtitle}</p>
+                  )}
+                </div>
+              </div>
+            </Link>
+          )}
+
           {/* ═══ FILTER PILLS — moved to top ═══ */}
           <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide pb-2 mb-3 px-4 -mx-4">
             {filters.map(f => {
