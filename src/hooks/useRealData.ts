@@ -88,6 +88,10 @@ export interface EventParticipation {
   qoi_score: number | null;
   final_rank: number | null;
   submitted_at: string;
+  thumbnail_url?: string | null;
+  custom_title?: string | null;
+  author_username?: string | null;
+  view_count?: number | null;
   profile?: {
     username: string;
   };
