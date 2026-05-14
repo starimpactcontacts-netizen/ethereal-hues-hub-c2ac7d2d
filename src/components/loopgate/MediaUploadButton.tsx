@@ -33,20 +33,27 @@ export default function MediaUploadButton({ onUpload, uploadedUrl, onClear }: Me
 
     setUploading(true);
     try {
-      const ext = file.name.split('.').pop() || 'jpg';
-      const path = `${user.id}/${Date.now()}.${ext}`;
-      
-      const { error } = await supabase.storage
-        .from('loop-media')
-        .upload(path, file, { cacheControl: '3600', upsert: false });
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) throw new Error('Not signed in');
 
-      if (error) throw error;
-
-      const { data: urlData } = supabase.storage
-        .from('loop-media')
-        .getPublicUrl(path);
-
-      onUpload(urlData.publicUrl, isVideo ? 'video' : 'image');
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bunny-upload`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'x-file-name': file.name,
+          'x-file-type': file.type,
+          'Content-Type': file.type,
+        },
+        body: file,
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText || `Upload failed (${res.status})`);
+      }
+      const { url: cdnUrl } = await res.json();
+      onUpload(cdnUrl, isVideo ? 'video' : 'image');
     } catch (err: any) {
       console.error('Upload error:', err);
       toast.error(err?.message || 'Upload failed — try again');
