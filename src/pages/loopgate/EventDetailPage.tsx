@@ -180,8 +180,13 @@ export default function EventDetailPage() {
 
       <main className="px-4 space-y-4">
         <section className="-mt-1 rounded-lg bg-arena-strong p-3 shadow-[0_18px_38px_hsl(var(--arena-bg)/0.35)]">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
+          <div className="flex items-center gap-3">
+            <img
+              src={fixMySoulCover}
+              alt="Fix My Soul cover"
+              className="h-14 w-14 shrink-0 rounded-md object-cover shadow-[0_8px_18px_hsl(var(--arena-bg)/0.5),0_0_0_1px_hsl(var(--arena-line)/0.55)]"
+            />
+            <div className="min-w-0 flex-1">
               <p className="text-[9px] font-black uppercase tracking-[0.22em] text-arena-muted">Official Sound</p>
               <p className="mt-0.5 text-[20px] font-black uppercase leading-none text-arena-ink" style={displayFont}>Fix My Soul</p>
             </div>
