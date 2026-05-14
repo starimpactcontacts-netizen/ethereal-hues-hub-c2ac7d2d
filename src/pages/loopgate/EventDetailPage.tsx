@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   ArrowLeft,
@@ -130,7 +130,7 @@ export default function EventDetailPage() {
                   <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" /> Live
                 </span>
               )}
-              <OpenArenaInfoButton onClick={() => setShowGuide(true)} />
+              {isOpenArena && <OpenArenaInfoButton onClick={() => setShowGuide(true)} />}
             </div>
           </div>
 
@@ -313,7 +313,7 @@ export default function EventDetailPage() {
           <section className="rounded-lg bg-arena-panel p-3 shadow-[0_18px_38px_hsl(var(--arena-bg)/0.24)]">
             <h2 className="mb-3 text-[24px] font-black uppercase leading-none text-arena-ink" style={displayFont}>Round Rankings</h2>
             <OpenArenaRoundLeaderboard
-              eventId={id || ""}
+              eventId={event.id}
               rounds={rounds}
               showEliminated={(event as any).show_eliminated ?? true}
               currentUserId={user?.id}
@@ -456,7 +456,7 @@ function EmptyDrop({ index }: { index: number }) {
   );
 }
 
-function PrizePill({ icon, title, cash, rings, tone }: { icon: React.ReactNode; title: string; cash: string; rings: string; tone?: "gold" }) {
+function PrizePill({ icon, title, cash, rings, tone }: { icon: ReactNode; title: string; cash: string; rings: string; tone?: "gold" }) {
   return (
     <div className="rounded-lg bg-arena-strong p-3">
       <div className={`mb-2 inline-flex h-7 w-7 items-center justify-center rounded ${tone === "gold" ? "bg-arena-amber text-primary-foreground" : "bg-arena-panel text-arena-ink"}`}>{icon}</div>
