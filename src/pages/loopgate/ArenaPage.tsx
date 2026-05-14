@@ -1216,7 +1216,7 @@ export default function ArenaPage() {
                     src={liveEvents[0].poster_url}
                     alt={liveEvents[0].title}
                     className="absolute inset-0 w-full h-full object-cover scale-[1.15]"
-                    style={{ objectPosition: '38% 20%' }}
+                    style={{ objectPosition: '38% 32%' }}
                     loading="eager"
                   />
                 )}
