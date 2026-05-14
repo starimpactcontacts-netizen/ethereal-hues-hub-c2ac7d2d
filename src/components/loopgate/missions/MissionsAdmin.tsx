@@ -736,14 +736,8 @@ function MissionLauncher({
     if (file.size > 20 * 1024 * 1024) return toast.error('Cover must be under 20MB');
     setUploadingCover(true);
     try {
-      const ext = file.name.split('.').pop() || 'jpg';
-      const path = `${userId}/missions/${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from('loop-media').upload(path, file, {
-        cacheControl: '3600', upsert: false,
-      });
-      if (error) throw error;
-      const { data: pub } = supabase.storage.from('loop-media').getPublicUrl(path);
-      setCoverUrl(pub.publicUrl);
+      const { url: cdnUrl } = await uploadToBunny(file, { folder: 'missions/covers' });
+      setCoverUrl(cdnUrl);
       toast.success('Cover uploaded');
     } catch (e: any) {
       toast.error(e?.message || 'Upload failed');
@@ -767,16 +761,8 @@ function MissionLauncher({
     }
     setUploadingInspoIdx(i);
     try {
-      const ext = file.name.split('.').pop() || 'mp4';
-      const path = `${userId}/missions/inspo-${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from('loop-media').upload(path, file, {
-        cacheControl: '3600', upsert: false,
-      });
-      if (error) throw error;
-      const { data: pub } = supabase.storage.from('loop-media').getPublicUrl(path);
-      patchInspo(i, {
-        video_url: pub.publicUrl,
-      });
+      const { url: cdnUrl } = await uploadToBunny(file, { folder: 'missions/inspo' });
+      patchInspo(i, { video_url: cdnUrl });
       toast.success('Inspo uploaded');
     } catch (e: any) {
       toast.error(e?.message || 'Upload failed');
@@ -793,14 +779,8 @@ function MissionLauncher({
     if (file.size > 5 * 1024 * 1024) return toast.error('Avatar must be under 5MB');
     setUploadingInspoAvatarIdx(i);
     try {
-      const ext = file.name.split('.').pop() || 'jpg';
-      const path = `${userId}/missions/inspo-avatar-${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from('loop-media').upload(path, file, {
-        cacheControl: '3600', upsert: false,
-      });
-      if (error) throw error;
-      const { data: pub } = supabase.storage.from('loop-media').getPublicUrl(path);
-      patchInspo(i, { avatar_url: pub.publicUrl });
+      const { url: cdnUrl } = await uploadToBunny(file, { folder: 'missions/inspo-avatars' });
+      patchInspo(i, { avatar_url: cdnUrl });
     } catch (e: any) {
       toast.error(e?.message || 'Upload failed');
     } finally {
