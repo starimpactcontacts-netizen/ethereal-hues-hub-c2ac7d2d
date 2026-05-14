@@ -378,7 +378,6 @@ export default function EventDetailPage() {
             <span className="relative inline-flex items-center gap-2">
               <Send size={14} strokeWidth={3} />
               {isOpenArena && activeRound ? `Submit · Round ${activeRound.round_number}` : "Enter Event"}
-              <span className="ml-1 inline-flex items-center gap-1 text-[10px] opacity-80"><RingsCoin size={12} /> 1M</span>
             </span>
           </button>
         </div>
