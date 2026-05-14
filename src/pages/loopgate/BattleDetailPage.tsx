@@ -838,14 +838,8 @@ export default function BattleDetailPage() {
                     if (file.size > 209715200) { toast.error('File too big — 200 MB max'); return; }
                     setSubmitting(true);
                     try {
-                      const ext = file.name.split('.').pop() || 'mp4';
-                      const path = `${battle.id}/${user.id}-${Date.now()}.${ext}`;
-                      const { error: upErr } = await supabase.storage
-                        .from('battle-edits')
-                        .upload(path, file, { contentType: file.type, upsert: false });
-                      if (upErr) throw upErr;
-                      const { data: pub } = supabase.storage.from('battle-edits').getPublicUrl(path);
-                      const success = await submitToBattle(battle.id, user.id, isChallenger, pub.publicUrl, 'upload');
+                       const { url: cdnUrl } = await uploadToBunny(file, { folder: `battle-edits/${battle.id}` });
+                       const success = await submitToBattle(battle.id, user.id, isChallenger, cdnUrl, 'upload');
                       if (!success) throw new Error('submit failed');
                       if (hasSongPicked && user?.id) {
                         try {
