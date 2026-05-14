@@ -64,6 +64,17 @@
   --surface-1: 0 0% 7%;
   --surface-2: 0 0% 10%;
   --surface-3: 0 0% 13%;
+
+  /* Event Arena — warmer ranked surface, easier on eyes than pure black */
+  --arena-bg: 28 12% 13%;
+  --arena-panel: 28 12% 17%;
+  --arena-panel-strong: 28 14% 21%;
+  --arena-line: 32 15% 31%;
+  --arena-ink: 43 25% 91%;
+  --arena-red: 358 68% 46%;
+  --arena-emerald: 154 58% 47%;
+  --arena-amber: 42 80% 58%;
+  --arena-muted: 34 13% 62%;
   
   --radius: 0.5rem;
   

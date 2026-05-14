@@ -66,6 +66,17 @@ export default {
           muted: "hsl(var(--gold-muted))",
           foreground: "hsl(var(--gold-foreground))",
         },
+        arena: {
+          bg: "hsl(var(--arena-bg))",
+          panel: "hsl(var(--arena-panel))",
+          strong: "hsl(var(--arena-panel-strong))",
+          line: "hsl(var(--arena-line))",
+          ink: "hsl(var(--arena-ink))",
+          red: "hsl(var(--arena-red))",
+          emerald: "hsl(var(--arena-emerald))",
+          amber: "hsl(var(--arena-amber))",
+          muted: "hsl(var(--arena-muted))",
+        },
         status: {
           live: "hsl(var(--status-live))",
           pending: "hsl(var(--status-pending))",

@@ -88,6 +88,10 @@ export interface EventParticipation {
   qoi_score: number | null;
   final_rank: number | null;
   submitted_at: string;
+  thumbnail_url?: string | null;
+  custom_title?: string | null;
+  author_username?: string | null;
+  view_count?: number | null;
   profile?: {
     username: string;
   };
@@ -417,6 +421,10 @@ export function useEventRankings(eventId: string | null) {
         qoi_score: p.qoi_score,
         final_rank: p.final_rank,
         submitted_at: p.submitted_at,
+        thumbnail_url: p.thumbnail_url,
+        custom_title: p.custom_title,
+        author_username: p.author_username,
+        view_count: p.view_count,
       })),
       ...(roundData || []).map(p => ({
         id: p.id,
@@ -431,6 +439,10 @@ export function useEventRankings(eventId: string | null) {
         qoi_score: p.qoi_score,
         final_rank: null,
         submitted_at: p.submitted_at || p.created_at,
+        thumbnail_url: p.thumbnail_url,
+        custom_title: p.custom_title,
+        author_username: p.author_username,
+        view_count: p.view_count,
       })),
     ];
 
