@@ -1,466 +1,319 @@
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Clock, MapPin, Zap, Eye, Users, Send, CheckCircle2, XCircle, Target, Trophy, ExternalLink, Flame, Music2, Crown, Medal, Gem, Sparkles, Swords, ChevronRight } from "lucide-react";
-import GateIcon from '@/components/loopgate/GateIcon';
-import RingsCoin from '@/components/loopgate/RingsCoin';
-import { useRealEvents, useEventRankings, useEventStats, useActiveSession, getEventSlug } from "@/hooks/useRealData";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  ChevronDown,
+  Clock,
+  Crown,
+  ExternalLink,
+  Flame,
+  Medal,
+  Play,
+  Send,
+  Sparkles,
+  Swords,
+  Target,
+  Trophy,
+  XCircle,
+  Zap,
+} from "lucide-react";
+import GateIcon from "@/components/loopgate/GateIcon";
+import RingsCoin from "@/components/loopgate/RingsCoin";
+import { useRealEvents, useEventRankings, useEventStats, useActiveSession } from "@/hooks/useRealData";
 import { useEventRounds, useUserRoundStatus } from "@/hooks/useOpenArenaData";
 import { useAuth } from "@/hooks/useAuth";
-import StatusBadge from "@/components/loopgate/StatusBadge";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
 import SubmissionModal from "@/components/loopgate/SubmissionModal";
 import OpenArenaRoundLeaderboard from "@/components/loopgate/OpenArenaRoundLeaderboard";
 import OpenArenaGuide, { OpenArenaInfoButton } from "@/components/loopgate/OpenArenaGuide";
-import ReportUserButton from "@/components/loopgate/ReportUserButton";
 import { Badge } from "@/components/ui/badge";
+import lightYagamiPoster from "@/assets/light_yagami_poster.jpg";
+
+const displayFont = { fontFamily: "Teko, Inter, system-ui, sans-serif" };
+const bodyFont = { fontFamily: "Inter, system-ui, sans-serif" };
+const LIGHT_YAGAMI_SLUG = "light-yagami-edit-competition";
 
 export default function EventDetailPage() {
   const { id } = useParams();
   const { user } = useAuth();
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
+  const [ladderLimit, setLadderLimit] = useState(8);
+  const ladderRef = useRef<HTMLDivElement | null>(null);
 
-  // Keep session active
   useActiveSession();
 
-  // Fetch real data
   const { events, loading: eventsLoading } = useRealEvents();
-  
-  // Find event by slug or UUID
   const event = events.find((e) => e.slug === id || e.id === id);
   const eventId = event?.id || null;
 
-  const { rankings, loading: rankingsLoading } = useEventRankings(eventId);
+  const { rankings } = useEventRankings(eventId);
   const { stats } = useEventStats(eventId);
-  
-  // Open Arena data
-  const { rounds, loading: roundsLoading } = useEventRounds(eventId);
+  const { rounds } = useEventRounds(eventId);
   const { statuses: userRoundStatuses } = useUserRoundStatus(eventId);
 
-  const isOpenArena = (event as any)?.event_mode === 'open_arena';
-  const activeRound = rounds.find(r => r.status === 'active');
-  const currentUserStatus = userRoundStatuses.find(s => s.round_number === activeRound?.round_number);
+  const isOpenArena = (event as any)?.event_mode === "open_arena";
+  const activeRound = rounds.find((r) => r.status === "active");
+  const currentUserStatus = userRoundStatuses.find((s) => s.round_number === activeRound?.round_number);
 
-  // Check if user should see the Open Arena guide
   useEffect(() => {
     if (isOpenArena && event) {
-      const hasSeenGuide = localStorage.getItem('loopgate-guide-open-arena-v1');
-      // Auto-show guide for first-time viewers of Open Arena events
+      const hasSeenGuide = localStorage.getItem("loopgate-guide-open-arena-v1");
       if (!hasSeenGuide) {
         setShowGuide(true);
-        localStorage.setItem('loopgate-guide-open-arena-v1', 'true');
+        localStorage.setItem("loopgate-guide-open-arena-v1", "true");
       }
     }
   }, [isOpenArena, event]);
 
   if (eventsLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-arena-bg">
+        <div className="w-8 h-8 border-2 border-arena-amber border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   if (!event) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Event not found.</p>
+      <div className="min-h-screen flex items-center justify-center bg-arena-bg">
+        <p className="text-arena-muted">Event not found.</p>
       </div>
     );
   }
 
   const isLive = event.status === "live";
   const isClosed = event.status === "closed";
+  const isLightYagami = event.slug === LIGHT_YAGAMI_SLUG;
+  const displayPoster = isLightYagami ? lightYagamiPoster : event.poster_url;
+  const featuredEdits = rankings.filter((r) => r.submission_url).slice(0, 6);
+  const ladderRows = rankings.slice(0, ladderLimit);
 
   const getUserAdvancementStatus = () => {
     if (!user || !activeRound) return null;
-    const status = userRoundStatuses.find(s => s.round_number === activeRound.round_number);
-    if (!status) return 'not_entered';
+    const status = userRoundStatuses.find((s) => s.round_number === activeRound.round_number);
+    if (!status) return "not_entered";
     return status.status;
   };
 
   const advancementStatus = getUserAdvancementStatus();
 
+  const scrollToLadder = () => {
+    ladderRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setLadderLimit((current) => Math.max(current, 16));
+  };
+
   return (
-    <div className="min-h-screen pb-28 bg-[#0a0a0a]">
-      {/* Cinematic Poster Hero */}
-      <div className="relative">
-        <Link to="/arena" className="absolute top-3 left-3 z-30 w-9 h-9 rounded-full bg-black/60 backdrop-blur-md border border-white/15 flex items-center justify-center active:scale-95 transition">
-          <ArrowLeft size={18} className="text-white" />
-        </Link>
-        {isLive && (
-          <div className="absolute top-3 right-3 z-30 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500 text-white text-[10px] font-black uppercase tracking-[0.18em]">
-            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> Live
+    <div className="min-h-screen pb-28 bg-arena-bg text-arena-ink" style={bodyFont}>
+      <div className="relative overflow-hidden bg-arena-bg">
+        <img
+          src={displayPoster || lightYagamiPoster}
+          alt={event.title}
+          className="absolute inset-0 w-full h-full object-cover opacity-45 blur-[1px] scale-105"
+          style={{ objectPosition: isLightYagami ? "50% 18%" : "50% 35%" }}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,hsl(var(--arena-bg)/0.52)_0%,hsl(var(--arena-bg)/0.78)_46%,hsl(var(--arena-bg))_100%)]" />
+
+        <div className="relative px-4 pt-[max(env(safe-area-inset-top),14px)] pb-5">
+          <div className="flex items-center justify-between mb-4">
+            <Link
+              to="/arena"
+              className="w-9 h-9 rounded-lg bg-arena-panel/85 shadow-[0_10px_26px_hsl(var(--arena-bg)/0.45)] flex items-center justify-center active:scale-95 transition"
+              aria-label="Back to arena"
+            >
+              <ArrowLeft size={18} />
+            </Link>
+            <div className="flex items-center gap-2">
+              {isLive && (
+                <span className="inline-flex items-center gap-1.5 rounded-lg bg-arena-red px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-primary">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" /> Live
+                </span>
+              )}
+              <OpenArenaInfoButton onClick={() => setShowGuide(true)} />
+            </div>
           </div>
-        )}
 
-        <div className="relative w-full" style={{ aspectRatio: '3 / 4', maxHeight: '58vh' }}>
-          {event.poster_url ? (
-            <img src={event.poster_url} alt={event.title} className="absolute inset-0 w-full h-full object-cover" />
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-red-950/40 to-black" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 p-5 pb-5">
-            {(event as any).editor_category && (
-              <span className="inline-block mb-2 px-2 py-0.5 rounded-full bg-white/10 backdrop-blur text-[9px] font-black uppercase tracking-[0.18em] text-white/80">
-                {(event as any).editor_category}
-              </span>
-            )}
-            <h1 className="text-[34px] leading-[0.92] font-black text-white tracking-tight" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
-              {event.title.toUpperCase()}
-            </h1>
-            {event.subtitle && (
-              <p className="text-[12px] text-white/60 mt-1.5 uppercase tracking-[0.15em]">{event.subtitle}</p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* ═══ COMMAND HUD — gamified scoreboard ═══ */}
-      <div className="px-3 -mt-6 relative z-10">
-        {/* Live HUD ticker */}
-        {isLive && (
-          <div className="mb-2 flex items-center gap-3 px-3 py-1.5 rounded-md bg-black border border-emerald-400/20 shadow-[0_0_28px_-10px_rgba(16,185,129,0.6)] font-mono text-[10px] tabular-nums overflow-hidden">
-            <span className="flex items-center gap-1 text-emerald-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="font-black tracking-[0.18em]">LIVE</span>
-            </span>
-            <span className="text-white/30">|</span>
-            <span className="text-white/80"><span className="text-emerald-300 font-black">{stats.entries}</span> EDITS</span>
-            <span className="text-white/30">|</span>
-            <span className="text-white/80"><span className="text-amber-300 font-black">{stats.activeUsers}</span> ONLINE</span>
-            <span className="text-white/30 ml-auto">|</span>
-            <span className="text-red-400 font-black tracking-wider">CLOSES MAY 24</span>
-          </div>
-        )}
-
-        {/* Prize Pool Command Center */}
-        <div className="relative rounded-2xl overflow-hidden bg-black border border-white/[0.08] shadow-[0_30px_70px_-30px_rgba(245,158,11,0.45),0_0_60px_-30px_rgba(239,68,68,0.4)]">
-          {/* Texture */}
-          <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #fff 0 1px, transparent 1px 8px)' }} />
-          <div className="absolute -top-12 -right-10 w-40 h-40 rounded-full bg-amber-500/20 blur-3xl" />
-          <div className="absolute -bottom-12 -left-10 w-40 h-40 rounded-full bg-red-500/20 blur-3xl" />
-
-          <div className="relative p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.24em] text-white/45">
-                <Trophy size={10} className="text-amber-300" /> Prize Pool
-              </div>
-              <CountdownTimer
-                endDate={isLive ? event.end_date : event.start_date}
-                label={isLive ? "ENDS" : "STARTS"}
+          <div className="grid grid-cols-[86px_minmax(0,1fr)] gap-4 items-end">
+            <div className="relative h-[122px] rounded-lg overflow-hidden shadow-[0_18px_36px_hsl(var(--arena-bg)/0.5),0_0_0_1px_hsl(var(--arena-line)/0.55)] bg-arena-panel">
+              <img
+                src={displayPoster || lightYagamiPoster}
+                alt="Fix My Soul cover"
+                className="h-full w-full object-cover"
+                style={{ objectPosition: isLightYagami ? "50% 22%" : "50% 35%" }}
               />
+              <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,transparent,hsl(var(--arena-bg)/0.86))] p-2">
+                <p className="text-[9px] font-black uppercase tracking-[0.16em] text-arena-amber">Fix My Soul</p>
+              </div>
             </div>
 
-            <div className="flex items-end justify-between gap-3">
-              <div>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-[14px] font-black text-emerald-400 leading-none">$</span>
-                  <span className="text-[44px] font-black text-white leading-[0.85] tracking-tight tabular-nums" style={{ fontFamily: 'Teko, Inter, sans-serif' }}>150</span>
-                  <span className="text-[10px] font-black text-white/40 ml-1">USD</span>
-                </div>
-                <div className="flex items-center gap-1.5 mt-1.5">
-                  <RingsCoin size={14} />
-                  <span className="text-[18px] font-black text-amber-300 leading-none tabular-nums" style={{ fontFamily: 'Teko, Inter, sans-serif' }}>1,000,000</span>
-                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-200/60">Rings</span>
-                </div>
+            <div className="min-w-0 pb-1">
+              <div className="mb-2 flex flex-wrap items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.18em] text-arena-muted">
+                <span className="rounded bg-arena-panel/90 px-2 py-1 shadow-[0_4px_16px_hsl(var(--arena-bg)/0.3)]">Ranked Event</span>
+                <span className="rounded bg-arena-panel/90 px-2 py-1 shadow-[0_4px_16px_hsl(var(--arena-bg)/0.3)]">TikTok Only</span>
               </div>
+              <h1 className="text-[42px] leading-[0.86] font-black uppercase text-arena-ink" style={displayFont}>
+                {event.title}
+              </h1>
+              {event.subtitle && <p className="mt-2 text-[12px] font-semibold uppercase tracking-[0.12em] text-arena-muted">{event.subtitle}</p>}
+            </div>
+          </div>
 
-              {/* Mini podium */}
-              <div className="flex items-end gap-1">
-                <div className="w-10 h-10 rounded-md bg-gradient-to-b from-zinc-300/20 to-zinc-300/5 border border-zinc-300/30 flex flex-col items-center justify-center">
-                  <Medal size={11} className="text-zinc-200" />
-                  <span className="text-[8px] font-black text-zinc-200 tabular-nums">$60</span>
-                </div>
-                <div className="w-12 h-14 rounded-md bg-gradient-to-b from-amber-400/30 to-amber-400/5 border border-amber-400/40 flex flex-col items-center justify-center shadow-[0_0_18px_rgba(245,158,11,0.35)]">
-                  <Crown size={13} className="text-amber-300" />
-                  <span className="text-[10px] font-black text-amber-300 tabular-nums">$90</span>
-                </div>
+          <div className="mt-5 grid grid-cols-3 gap-2">
+            <MetricTile label="Edits" value={stats.entries || featuredEdits.length} />
+            <MetricTile label="Online" value={stats.activeUsers} accent="emerald" />
+            <div className="rounded-lg bg-arena-panel/90 p-3 shadow-[0_10px_24px_hsl(var(--arena-bg)/0.32)]">
+              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-arena-muted">Prize</p>
+              <div className="mt-1 flex items-end gap-1">
+                <span className="text-[26px] font-black leading-none text-arena-ink" style={displayFont}>$150</span>
+              </div>
+              <div className="mt-1 flex items-center gap-1 text-[10px] font-black text-arena-amber">
+                <RingsCoin size={12} /> 1M
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Event Info */}
-      <div className="px-4 pt-4 pb-6 space-y-4">
-        {/* Official Sound CTA */}
-        {(event as any).materials_url && (
-          <a
-            href={(event as any).materials_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-r from-fuchsia-500/[0.12] via-black to-cyan-400/[0.10] active:scale-[0.99] transition"
-          >
-            <div className="flex items-center gap-3 p-3.5">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-fuchsia-500 to-cyan-400 flex items-center justify-center shadow-[0_8px_24px_-6px_rgba(217,70,239,0.6)]">
-                <Music2 size={20} className="text-black" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-[9px] font-black uppercase tracking-[0.22em] text-fuchsia-300/80">Official Sound</div>
-                <div className="text-[14px] font-black text-white leading-tight truncate" style={{ fontFamily: 'Teko, Inter, sans-serif' }}>
-                  FIX MY SOUL · TIKTOK
-                </div>
-                <div className="text-[10px] text-white/50 truncate">Tap to use this sound on your edit</div>
-              </div>
-              <div className="flex items-center gap-1 px-3 py-2 rounded-lg bg-white text-black text-[10px] font-black uppercase tracking-[0.18em]">
-                Use <ExternalLink size={11} />
-              </div>
+      <main className="px-4 space-y-4">
+        <section className="-mt-1 rounded-lg bg-arena-strong p-3 shadow-[0_18px_38px_hsl(var(--arena-bg)/0.35)]">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-arena-muted">Official Sound</p>
+              <p className="mt-0.5 text-[20px] font-black uppercase leading-none text-arena-ink" style={displayFont}>Fix My Soul</p>
             </div>
-          </a>
-        )}
+            {event.materials_url && (
+              <a
+                href={event.materials_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-primary px-3 text-[10px] font-black uppercase tracking-[0.16em] text-primary-foreground shadow-[0_10px_24px_hsl(var(--arena-bg)/0.35)] active:scale-95 transition"
+              >
+                Use <ExternalLink size={12} />
+              </a>
+            )}
+          </div>
+        </section>
 
-        {/* Prize Breakdown */}
-        {event.slug === 'light-yagami-edit-competition' && (
-          <section className="rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.03] to-transparent p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.22em] text-white/60 flex items-center gap-1.5">
-                <Sparkles size={11} className="text-amber-300" /> Prize Breakdown
-              </h3>
-              <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-[0.2em] text-amber-300/80">
-                $150 + <RingsCoin size={11} /> 1M
-              </span>
+        <section className="rounded-lg bg-arena-panel p-3 shadow-[0_18px_38px_hsl(var(--arena-bg)/0.28)]">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-[24px] font-black uppercase leading-none text-arena-ink" style={displayFont}>Edit Showcase</h2>
+              <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-arena-muted">Inspo canvas + ranked drops</p>
             </div>
+            <button
+              onClick={() => setShowSubmitModal(true)}
+              className="rounded-lg bg-arena-emerald px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-primary shadow-[0_10px_24px_hsl(var(--arena-emerald)/0.28)] active:scale-95 transition"
+            >
+              Upload
+            </button>
+          </div>
 
-            {/* Cash podium */}
-            <div className="grid grid-cols-2 gap-2 mb-3">
-              <div className="relative rounded-xl border border-amber-400/30 bg-gradient-to-br from-amber-400/[0.18] to-amber-700/[0.05] p-3 overflow-hidden">
-                <Crown size={56} className="absolute -right-3 -bottom-3 text-amber-300/10" />
-                <div className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-200/80">1st · Best Edit</div>
-                <div className="text-[26px] font-black text-amber-300 leading-none mt-1" style={{ fontFamily: 'Teko, Inter, sans-serif' }}>$90</div>
-                <div className="flex items-center gap-1 mt-1">
-                  <RingsCoin size={11} />
-                  <span className="text-[10px] text-amber-100/80 font-bold tabular-nums">120,000</span>
-                </div>
-              </div>
-              <div className="relative rounded-xl border border-zinc-300/20 bg-gradient-to-br from-zinc-300/[0.12] to-zinc-500/[0.04] p-3 overflow-hidden">
-                <Medal size={56} className="absolute -right-3 -bottom-3 text-zinc-200/10" />
-                <div className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-200/80">2nd · Most Viral</div>
-                <div className="text-[26px] font-black text-zinc-100 leading-none mt-1" style={{ fontFamily: 'Teko, Inter, sans-serif' }}>$60</div>
-                <div className="flex items-center gap-1 mt-1">
-                  <RingsCoin size={11} />
-                  <span className="text-[10px] text-zinc-200/80 font-bold tabular-nums">100,000</span>
-                </div>
-              </div>
+          <div className="grid grid-cols-3 gap-1.5">
+            <InspoTile poster={displayPoster || lightYagamiPoster} label="Cover" />
+            <InspoTile poster={displayPoster || lightYagamiPoster} label="Eyes" crop="50% 14%" />
+            <InspoTile poster={displayPoster || lightYagamiPoster} label="Mood" crop="50% 72%" />
+          </div>
+
+          <div className="mt-3 grid grid-cols-3 gap-1.5">
+            {featuredEdits.length === 0 ? (
+              <>
+                <EmptyDrop index={1} />
+                <EmptyDrop index={2} />
+                <EmptyDrop index={3} />
+              </>
+            ) : (
+              featuredEdits.map((edit, index) => <ShowcaseDrop key={edit.id} edit={edit} rank={index + 1} />)
+            )}
+          </div>
+        </section>
+
+        {isLightYagami && (
+          <section className="rounded-lg bg-arena-panel p-3 shadow-[0_18px_38px_hsl(var(--arena-bg)/0.26)]">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-[24px] font-black uppercase leading-none text-arena-ink" style={displayFont}>Rewards</h2>
+              <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.14em] text-arena-amber"><RingsCoin size={12} /> 1,000,000 Rings</span>
             </div>
-
-            {/* Rings tiers */}
-            <div className="rounded-xl border border-white/10 overflow-hidden divide-y divide-white/[0.06]">
-              <div className="px-3 py-2 bg-white/[0.02] flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.22em] text-emerald-300/90">
-                  <RingsCoin size={11} /> Season Top 50 · 1,000,000 Pool
-                </div>
-              </div>
-              {[
-                { tier: 'Tier 1', range: 'Ranks 1–5', rings: '400K', detail: '120K · 100K · 80K · 60K · 40K', accent: 'text-amber-300' },
-                { tier: 'Tier 2', range: 'Ranks 6–15', rings: '300K', detail: '~30K each', accent: 'text-zinc-100' },
-                { tier: 'Tier 3', range: 'Ranks 16–30', rings: '200K', detail: '~13K each', accent: 'text-orange-300' },
-                { tier: 'Tier 4', range: 'Ranks 31–50', rings: '100K', detail: '~5K each', accent: 'text-emerald-300' },
-              ].map((t) => (
-                <div key={t.tier} className="px-3 py-2.5 flex items-center gap-3">
-                  <div className="w-[58px]">
-                    <div className={`text-[11px] font-black ${t.accent}`} style={{ fontFamily: 'Teko, Inter, sans-serif' }}>{t.tier.toUpperCase()}</div>
-                    <div className="text-[9px] text-white/40 font-bold uppercase tracking-wider">{t.range}</div>
-                  </div>
-                  <div className="flex-1 text-[10px] text-white/55 truncate">{t.detail}</div>
-                  <div className="flex items-center gap-1">
-                    <RingsCoin size={12} />
-                    <div className={`text-[14px] font-black ${t.accent} tabular-nums`} style={{ fontFamily: 'Teko, Inter, sans-serif' }}>{t.rings}</div>
-                  </div>
+            <div className="grid grid-cols-2 gap-2">
+              <PrizePill icon={<Crown size={14} />} title="1st Best Edit" cash="$90" rings="120K" tone="gold" />
+              <PrizePill icon={<Medal size={14} />} title="2nd Most Viral" cash="$60" rings="100K" />
+            </div>
+            <div className="mt-2 grid grid-cols-4 gap-1.5 text-center">
+              {["1–5", "6–15", "16–30", "31–50"].map((range, index) => (
+                <div key={range} className="rounded bg-arena-strong px-1.5 py-2">
+                  <p className="text-[9px] font-black uppercase tracking-[0.12em] text-arena-muted">Rank {range}</p>
+                  <p className="mt-1 text-[14px] font-black text-arena-amber" style={displayFont}>{["400K", "300K", "200K", "100K"][index]}</p>
                 </div>
               ))}
             </div>
           </section>
         )}
 
-        {/* Open Arena Info Button */}
-        {isOpenArena && (
-          <div className="flex items-center justify-between">
-            <OpenArenaInfoButton onClick={() => setShowGuide(true)} />
-            {rounds.length > 0 && (
-              <span className="text-xs text-muted-foreground">
-                {rounds.length} Round{rounds.length > 1 ? 's' : ''} • {activeRound ? `R${activeRound.round_number} Active` : 'Awaiting Start'}
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* Open Arena Round Progress */}
         {isOpenArena && rounds.length > 0 && (
-          <section className="bg-surface-1 rounded-lg border border-border overflow-hidden">
-            {/* Round Tabs */}
-            <div className="flex border-b border-border">
+          <section className="rounded-lg bg-arena-panel p-3 shadow-[0_18px_38px_hsl(var(--arena-bg)/0.26)]">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-[24px] font-black uppercase leading-none text-arena-ink" style={displayFont}>Round Flow</h2>
+              <span className="text-[10px] font-black uppercase tracking-[0.14em] text-arena-muted">
+                {activeRound ? `R${activeRound.round_number} Live` : `${rounds.length} Rounds`}
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-1.5">
               {rounds.map((round) => {
-                const userStatus = userRoundStatuses.find(s => s.round_number === round.round_number);
+                const userStatus = userRoundStatuses.find((s) => s.round_number === round.round_number);
                 return (
-                  <div
-                    key={round.round_number}
-                    className={`flex-1 px-3 py-3 text-center relative ${
-                      round.status === 'active' ? 'bg-gold/10' : ''
-                    }`}
-                  >
-                    <div className="text-xs font-bold">R{round.round_number}</div>
-                    <div className={`text-[9px] uppercase tracking-wider mt-0.5 ${
-                      round.status === 'active' ? 'text-green-400' :
-                      round.status === 'completed' ? 'text-muted-foreground' :
-                      'text-muted-foreground/50'
-                    }`}>
-                      {round.status === 'active' ? 'Live' : round.status === 'completed' ? 'Done' : 'Soon'}
-                    </div>
-                    {userStatus && (
-                      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2">
-                        {userStatus.status === 'advanced' ? (
-                          <CheckCircle2 size={12} className="text-green-400" />
-                        ) : userStatus.status === 'eliminated' ? (
-                          <XCircle size={12} className="text-red-400" />
-                        ) : null}
-                      </div>
-                    )}
-                    {round.status === 'active' && (
-                      <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                    )}
+                  <div key={round.round_number} className={`relative rounded-lg bg-arena-strong p-2 ${round.status === "active" ? "shadow-[0_0_0_1px_hsl(var(--arena-emerald))]" : ""}`}>
+                    <p className="text-[20px] font-black leading-none" style={displayFont}>R{round.round_number}</p>
+                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-arena-muted">{round.status === "active" ? "Live" : round.status === "completed" ? "Done" : "Soon"}</p>
+                    {userStatus?.status === "advanced" && <CheckCircle2 size={12} className="absolute right-2 top-2 text-arena-emerald" />}
+                    {userStatus?.status === "eliminated" && <XCircle size={12} className="absolute right-2 top-2 text-arena-red" />}
                   </div>
                 );
               })}
             </div>
-
-            {/* Active Round Details */}
             {activeRound && (
-              <div className="p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Badge className={`text-[10px] ${
-                      activeRound.round_type === 'open' ? 'bg-green-500/20 text-green-400' :
-                      activeRound.round_type === 'elimination' ? 'bg-orange-500/20 text-orange-400' :
-                      'bg-purple-500/20 text-purple-400'
-                    }`}>
-                      {activeRound.round_type === 'open' ? 'Open' : 
-                       activeRound.round_type === 'elimination' ? 'Elimination' : 'Threshold'}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      Round {activeRound.round_number} of {rounds.length}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-gold">
-                    <GateIcon size={12} />
-                    <span>{activeRound.index_reward} INDEX</span>
-                  </div>
+              <div className="mt-3 rounded-lg bg-arena-strong p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <Badge className="bg-arena-emerald text-primary text-[10px]">{activeRound.round_type.toUpperCase()}</Badge>
+                  <div className="flex items-center gap-1 text-[11px] font-black text-arena-amber"><GateIcon size={12} /> {activeRound.index_reward} INDEX</div>
                 </div>
-
-                {/* Advancement Info */}
-                {activeRound.round_type !== 'open' && (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground p-2 bg-background rounded border border-border">
-                    <Target size={14} className="text-orange-400" />
-                    <span>
-                      {activeRound.round_type === 'elimination' 
-                        ? activeRound.advancement_type === 'top_x'
-                          ? `Top ${activeRound.advancement_value} editors advance`
-                          : `Top ${activeRound.advancement_value}% advance`
-                        : `QOI ≥ ${activeRound.threshold_qoi} to advance`
-                      }
-                    </span>
-                  </div>
+                {activeRound.round_type !== "open" && (
+                  <p className="mt-2 flex items-center gap-2 text-[11px] font-semibold text-arena-muted">
+                    <Target size={13} className="text-arena-red" />
+                    {activeRound.round_type === "elimination"
+                      ? activeRound.advancement_type === "top_x"
+                        ? `Top ${activeRound.advancement_value} editors advance`
+                        : `Top ${activeRound.advancement_value}% advance`
+                      : `QOI ≥ ${activeRound.threshold_qoi} to advance`}
+                  </p>
                 )}
-
-                {/* User's Current Status */}
-                {user && advancementStatus && advancementStatus !== 'not_entered' && (
-                  <div className={`p-3 rounded-lg border ${
-                    advancementStatus === 'advanced' ? 'bg-green-500/10 border-green-500/30' :
-                    advancementStatus === 'eliminated' ? 'bg-red-500/10 border-red-500/30' :
-                    'bg-gold/10 border-gold/30'
-                  }`}>
-                    <div className="flex items-center gap-2">
-                      {advancementStatus === 'advanced' ? (
-                        <>
-                          <CheckCircle2 size={16} className="text-green-400" />
-                          <span className="text-sm font-semibold text-green-400">You Advanced!</span>
-                        </>
-                      ) : advancementStatus === 'eliminated' ? (
-                        <>
-                          <XCircle size={16} className="text-red-400" />
-                          <span className="text-sm font-semibold text-red-400">Eliminated</span>
-                        </>
-                      ) : (
-                        <>
-                          <Zap size={16} className="text-gold" />
-                          <span className="text-sm font-semibold text-gold">Competing</span>
-                        </>
-                      )}
-                    </div>
-                    {currentUserStatus?.qoi_score !== null && currentUserStatus?.qoi_score !== undefined && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Your QOI: <span className="text-foreground font-medium">{currentUserStatus.qoi_score}</span>
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {/* Round Countdown or Status */}
-                {activeRound.ends_at ? (
-                  <CountdownTimer 
-                    endDate={activeRound.ends_at} 
-                    label="Round Ends"
-                    expiredLabel="Awaiting results..."
-                  />
-                ) : (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock size={14} className="text-gold" />
-                    <span>Round timing pending</span>
-                  </div>
-                )}
+                {activeRound.ends_at ? <div className="mt-2"><CountdownTimer endDate={activeRound.ends_at} label="Round Ends" expiredLabel="Awaiting results..." /></div> : null}
               </div>
             )}
           </section>
         )}
 
-        {/* Editor Category */}
-        {(event as any).editor_category && (
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">Category:</span>
-            <span className="px-2 py-0.5 bg-gold/10 border border-gold/30 text-gold text-xs font-semibold uppercase tracking-wider rounded-full">
-              {(event as any).editor_category.replace('-', ' / ').replace('_', ' ')}
-            </span>
-          </div>
-        )}
-
-        {/* Mission Briefing — gamified rules */}
         {event.rules && event.rules.length > 0 && (
-          <section className="rounded-2xl overflow-hidden bg-black border border-white/[0.06]">
-            <div className="px-4 py-2.5 bg-gradient-to-r from-red-500/[0.12] via-transparent to-transparent border-b border-white/[0.05] flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <Swords size={12} className="text-red-400" />
-                <h3 className="text-[10px] font-black uppercase tracking-[0.24em] text-white/70">Mission Briefing</h3>
-              </div>
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30">{event.rules.length} OBJECTIVES</span>
+          <section className="rounded-lg bg-arena-panel p-3 shadow-[0_18px_38px_hsl(var(--arena-bg)/0.24)]">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-[24px] font-black uppercase leading-none text-arena-ink" style={displayFont}>Rules</h2>
+              <Swords size={16} className="text-arena-red" />
             </div>
-            <ol className="divide-y divide-white/[0.05]">
+            <ol className="space-y-1.5">
               {event.rules.map((rule, index) => (
-                <li key={index} className="flex items-start gap-3 px-4 py-2.5">
-                  <span className="shrink-0 w-5 h-5 rounded-md bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-[9px] font-black text-white/60 tabular-nums">
-                    {String(index + 1).padStart(2, '0')}
-                  </span>
-                  <span className="text-[12px] text-white/85 leading-snug">{rule}</span>
+                <li key={index} className="flex items-start gap-2 rounded bg-arena-strong px-3 py-2">
+                  <span className="mt-0.5 text-[12px] font-black tabular-nums text-arena-amber" style={displayFont}>{String(index + 1).padStart(2, "0")}</span>
+                  <span className="text-[12px] font-semibold leading-snug text-arena-ink/90">{forceTikTokRule(rule)}</span>
                 </li>
               ))}
             </ol>
           </section>
         )}
 
-        {/* About — collapsed footer style */}
-        {event.description && (
-          <p className="text-[12px] text-white/55 leading-relaxed px-1 whitespace-pre-wrap">{event.description}</p>
-        )}
-
-        {/* Open Arena Round Leaderboard */}
         {isOpenArena && rounds.length > 0 && isLive && (
-          <section>
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
-              <Trophy size={14} className="text-gold" />
-              Round Rankings
-            </h3>
+          <section className="rounded-lg bg-arena-panel p-3 shadow-[0_18px_38px_hsl(var(--arena-bg)/0.24)]">
+            <h2 className="mb-3 text-[24px] font-black uppercase leading-none text-arena-ink" style={displayFont}>Round Rankings</h2>
             <OpenArenaRoundLeaderboard
-              eventId={id || ''}
+              eventId={id || ""}
               rounds={rounds}
               showEliminated={(event as any).show_eliminated ?? true}
               currentUserId={user?.id}
@@ -468,137 +321,82 @@ export default function EventDetailPage() {
           </section>
         )}
 
-        {/* Ranked Leaderboard — osu! style */}
-        {!isOpenArena && isLive && (
-          <section className="rounded-2xl overflow-hidden bg-black border border-white/[0.06]">
-            <div className="px-4 py-2.5 bg-gradient-to-r from-amber-500/[0.12] via-transparent to-transparent border-b border-white/[0.05] flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <Trophy size={12} className="text-amber-300" />
-                <h3 className="text-[10px] font-black uppercase tracking-[0.24em] text-white/70">Ranked Leaderboard</h3>
-              </div>
-              <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-[0.2em] text-emerald-400">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> LIVE
-              </span>
+        <section ref={ladderRef} className="rounded-lg bg-arena-panel p-3 shadow-[0_18px_38px_hsl(var(--arena-bg)/0.24)] scroll-mt-4">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-[24px] font-black uppercase leading-none text-arena-ink" style={displayFont}>Full Ladder</h2>
+              <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-arena-muted">Scroll stays inside this event</p>
             </div>
-            {rankings.length === 0 ? (
-              <div className="px-4 py-8 text-center">
-                <Swords size={24} className="mx-auto text-white/15 mb-2" />
-                <p className="text-[12px] text-white/45 font-bold">First blood awaits.</p>
-                <p className="text-[10px] text-white/30 mt-1">No edits ranked yet — drop yours and seize #1.</p>
-              </div>
-            ) : (
-              <div className="divide-y divide-white/[0.04]">
-                {rankings.slice(0, 5).map((r, index) => {
-                  const rank = r.final_rank || index + 1;
-                  const qoi = r.qoi_score || 0;
-                  const grade = qoi >= 90 ? 'S' : qoi >= 80 ? 'A' : qoi >= 70 ? 'B' : qoi >= 60 ? 'C' : 'D';
-                  const gradeColor = grade === 'S' ? 'text-amber-300 bg-amber-300/15 border-amber-300/40' :
-                                     grade === 'A' ? 'text-emerald-300 bg-emerald-300/15 border-emerald-300/40' :
-                                     grade === 'B' ? 'text-cyan-300 bg-cyan-300/15 border-cyan-300/40' :
-                                     'text-white/60 bg-white/[0.06] border-white/[0.08]';
-                  const rankColor = rank === 1 ? 'text-amber-300' : rank === 2 ? 'text-zinc-200' : rank === 3 ? 'text-orange-400' : 'text-white/40';
-                  return (
-                    <div key={r.id} className="flex items-center gap-3 px-3 py-2.5">
-                      <div className={`w-7 text-center font-black tabular-nums leading-none ${rankColor}`} style={{ fontFamily: 'Teko, Inter, sans-serif', fontSize: rank <= 3 ? '22px' : '18px' }}>
-                        #{rank}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-[13px] font-black text-white truncate">{r.profile?.username || 'Unknown'}</div>
-                        <div className="flex items-center gap-2 mt-0.5 text-[9px] font-mono text-white/40 tabular-nums">
-                          <span>Q {r.quality_score || '—'}</span>
-                          <span>O {r.originality_score || '—'}</span>
-                          <span>I {r.impact_score || '—'}</span>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-[18px] font-black text-white leading-none tabular-nums" style={{ fontFamily: 'Teko, Inter, sans-serif' }}>
-                          {qoi ? qoi.toFixed(1) : '—'}
-                        </div>
-                        <div className="text-[8px] font-black uppercase tracking-[0.2em] text-white/35">QOI</div>
-                      </div>
-                      <div className={`w-8 h-8 rounded-md border flex items-center justify-center font-black text-[14px] ${gradeColor}`} style={{ fontFamily: 'Teko, Inter, sans-serif' }}>
-                        {grade}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-            <Link
-              to={`/rankings?event=${event.id}`}
-              className="flex items-center justify-center gap-1 py-2.5 text-[10px] font-black uppercase tracking-[0.22em] text-white/60 hover:text-white border-t border-white/[0.04] active:bg-white/[0.03] transition"
-            >
-              View Full Ladder <ChevronRight size={11} />
-            </Link>
-          </section>
-        )}
-
-        {/* Closed Event - Final Results */}
-        {isClosed && (
-          <section className="bg-card border border-border rounded-lg p-4">
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
-              Final Results
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              This event has concluded. Rankings are locked and scores have been integrated into the Global Index.
-            </p>
-            <Link 
-              to={`/rankings?event=${event.id}`}
-              className="block text-center text-xs text-gold font-semibold mt-4 py-2"
-            >
-              View Final Rankings →
-            </Link>
-          </section>
-        )}
-
-        {/* Submit Button (Live only) - Check if user can submit to active round */}
-        {/* Inline submit removed — sticky CTA bar handles it */}
-
-        {/* Pending Status */}
-        {event.status === "pending" && (
-          <div className="bg-surface-1 border border-border rounded-lg p-4 text-center">
-            <Clock size={24} className="mx-auto text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">
-              Submissions open when the event goes live.
-            </p>
+            <button onClick={scrollToLadder} className="rounded-lg bg-arena-strong px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-arena-ink active:scale-95 transition">
+              Expand
+            </button>
           </div>
+
+          {rankings.length === 0 ? (
+            <div className="rounded-lg bg-arena-strong px-4 py-8 text-center">
+              <Flame size={26} className="mx-auto mb-2 text-arena-red" />
+              <p className="text-[13px] font-black text-arena-ink">First ranked edit takes the board.</p>
+              <p className="mt-1 text-[11px] font-semibold text-arena-muted">Upload a TikTok edit and lock your spot.</p>
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              {ladderRows.map((r, index) => <LadderRow key={r.id} row={r} rank={r.final_rank || index + 1} />)}
+            </div>
+          )}
+
+          {rankings.length > ladderLimit && (
+            <button
+              onClick={() => setLadderLimit((current) => current + 12)}
+              className="mt-3 flex w-full items-center justify-center gap-1 rounded-lg bg-arena-strong py-3 text-[10px] font-black uppercase tracking-[0.18em] text-arena-ink active:scale-[0.99] transition"
+            >
+              Show More <ChevronDown size={13} />
+            </button>
+          )}
+        </section>
+
+        {isClosed && (
+          <section className="rounded-lg bg-arena-panel p-4 text-center shadow-[0_18px_38px_hsl(var(--arena-bg)/0.24)]">
+            <Trophy size={22} className="mx-auto mb-2 text-arena-amber" />
+            <p className="text-sm font-bold text-arena-ink">This event has concluded. Rankings are locked.</p>
+          </section>
         )}
 
-        {/* Indexing Note */}
-        <p className="text-[10px] text-center text-muted-foreground">
-          Submissions are indexed from TikTok, Instagram, and YouTube.
-          <br />
-          Loopgate does not host uploads.
-        </p>
-      </div>
+        {event.status === "pending" && (
+          <section className="rounded-lg bg-arena-panel p-4 text-center shadow-[0_18px_38px_hsl(var(--arena-bg)/0.24)]">
+            <Clock size={22} className="mx-auto mb-2 text-arena-muted" />
+            <p className="text-sm font-bold text-arena-muted">Submissions open when the event goes live.</p>
+          </section>
+        )}
 
-      {/* Sticky ENTER bar — addiction CTA */}
-      {isLive && !(isOpenArena && advancementStatus === 'eliminated') && (
-        <div className="fixed bottom-0 inset-x-0 z-50 px-3 pt-3 pb-[max(env(safe-area-inset-bottom,0px),10px)] bg-gradient-to-t from-black via-black/95 to-transparent">
+        {event.description && <p className="px-1 text-[12px] leading-relaxed text-arena-muted whitespace-pre-wrap">{event.description}</p>}
+
+        <p className="text-center text-[10px] font-semibold uppercase tracking-[0.13em] text-arena-muted">Submissions are TikTok links only.</p>
+      </main>
+
+      {isLive && !(isOpenArena && advancementStatus === "eliminated") && (
+        <div className="fixed bottom-0 inset-x-0 z-50 px-3 pt-3 pb-[max(env(safe-area-inset-bottom,0px),10px)] bg-[linear-gradient(180deg,transparent,hsl(var(--arena-bg)/0.94)_24%,hsl(var(--arena-bg))_100%)]">
           <button
             onClick={() => setShowSubmitModal(true)}
-            className="w-full relative overflow-hidden rounded-xl py-3.5 bg-emerald-400 text-black font-black text-[13px] uppercase tracking-[0.24em] active:scale-[0.99] transition-transform shadow-[0_0_36px_rgba(16,185,129,0.55),0_-2px_0_rgba(255,255,255,0.25)_inset]"
-            style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+            className="w-full relative overflow-hidden rounded-lg py-3.5 bg-arena-emerald text-primary font-black text-[13px] uppercase tracking-[0.22em] active:scale-[0.99] transition-transform shadow-[0_0_34px_hsl(var(--arena-emerald)/0.34),0_-2px_0_hsl(var(--primary)/0.24)_inset]"
           >
-            {/* Sweep shine */}
-            <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent animate-shimmer" />
+            <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-primary/35 to-transparent animate-shimmer" />
             <span className="relative inline-flex items-center gap-2">
               <Send size={14} strokeWidth={3} />
-              {isOpenArena && activeRound ? `Submit · Round ${activeRound.round_number}` : 'Enter The Hunt'}
-              <span className="ml-1 text-[10px] font-black opacity-70 tracking-[0.18em]">$150 + 1M</span>
+              {isOpenArena && activeRound ? `Submit · Round ${activeRound.round_number}` : "Enter Event"}
+              <span className="ml-1 inline-flex items-center gap-1 text-[10px] opacity-80"><RingsCoin size={12} /> 1M</span>
             </span>
           </button>
         </div>
       )}
-      {isLive && isOpenArena && advancementStatus === 'eliminated' && (
-        <div className="fixed bottom-0 inset-x-0 z-50 px-3 pt-2 pb-[max(env(safe-area-inset-bottom,0px),8px)] bg-gradient-to-t from-black to-transparent">
-          <div className="w-full text-center py-3.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-muted-foreground text-[12px] font-bold">
+
+      {isLive && isOpenArena && advancementStatus === "eliminated" && (
+        <div className="fixed bottom-0 inset-x-0 z-50 px-3 pt-2 pb-[max(env(safe-area-inset-bottom,0px),8px)] bg-[linear-gradient(180deg,transparent,hsl(var(--arena-bg)))]">
+          <div className="w-full text-center py-3.5 rounded-lg bg-arena-panel text-arena-muted text-[12px] font-bold shadow-[0_12px_30px_hsl(var(--arena-bg)/0.36)]">
             Eliminated in a previous round
           </div>
         </div>
       )}
 
-      {/* Submit Modal */}
       <SubmissionModal
         isOpen={showSubmitModal}
         onClose={() => setShowSubmitModal(false)}
@@ -607,11 +405,90 @@ export default function EventDetailPage() {
         roundNumber={isOpenArena ? activeRound?.round_number : undefined}
       />
 
-      {/* Open Arena Guide Modal */}
-      <OpenArenaGuide
-        isOpen={showGuide}
-        onClose={() => setShowGuide(false)}
-      />
+      <OpenArenaGuide isOpen={showGuide} onClose={() => setShowGuide(false)} />
     </div>
   );
+}
+
+function MetricTile({ label, value, accent = "ink" }: { label: string; value: number | string; accent?: "ink" | "emerald" }) {
+  return (
+    <div className="rounded-lg bg-arena-panel/90 p-3 shadow-[0_10px_24px_hsl(var(--arena-bg)/0.32)]">
+      <p className="text-[9px] font-black uppercase tracking-[0.18em] text-arena-muted">{label}</p>
+      <p className={`mt-1 text-[28px] font-black leading-none tabular-nums ${accent === "emerald" ? "text-arena-emerald" : "text-arena-ink"}`} style={displayFont}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function InspoTile({ poster, label, crop = "50% 22%" }: { poster: string; label: string; crop?: string }) {
+  return (
+    <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-arena-strong shadow-[0_0_0_1px_hsl(var(--arena-line)/0.25)]">
+      <img src={poster} alt={`${label} inspiration`} className="h-full w-full object-cover" style={{ objectPosition: crop }} loading="lazy" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_48%,hsl(var(--arena-bg)/0.82)_100%)]" />
+      <span className="absolute bottom-1.5 left-1.5 rounded bg-arena-bg/80 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-[0.13em] text-arena-ink">{label}</span>
+    </div>
+  );
+}
+
+function ShowcaseDrop({ edit, rank }: { edit: any; rank: number }) {
+  const thumb = edit.thumbnail_url;
+  return (
+    <a href={edit.submission_url} target="_blank" rel="noopener noreferrer" className="relative aspect-[3/4] overflow-hidden rounded-lg bg-arena-strong shadow-[0_0_0_1px_hsl(var(--arena-line)/0.24)] active:scale-[0.98] transition">
+      {thumb ? <img src={thumb} alt={edit.custom_title || "Submitted edit"} className="h-full w-full object-cover" loading="lazy" /> : <div className="h-full w-full bg-[linear-gradient(135deg,hsl(var(--arena-strong)),hsl(var(--arena-bg)))]" />}
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,hsl(var(--arena-bg)/0.08),hsl(var(--arena-bg)/0.8))]" />
+      <div className="absolute left-1.5 top-1.5 rounded bg-arena-amber px-1.5 py-0.5 text-[9px] font-black text-primary-foreground">#{rank}</div>
+      <Play size={18} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-primary drop-shadow" fill="currentColor" />
+      <p className="absolute inset-x-1.5 bottom-1.5 truncate text-[9px] font-black text-primary">{edit.profile?.username || edit.author_username || "Editor"}</p>
+    </a>
+  );
+}
+
+function EmptyDrop({ index }: { index: number }) {
+  return (
+    <div className="aspect-[3/4] rounded-lg bg-arena-strong p-2 shadow-[0_0_0_1px_hsl(var(--arena-line)/0.24)] flex flex-col justify-between">
+      <span className="text-[9px] font-black text-arena-muted" style={displayFont}>SLOT {index}</span>
+      <div>
+        <Zap size={16} className="mb-1 text-arena-amber" />
+        <p className="text-[9px] font-black uppercase tracking-[0.1em] text-arena-muted">Awaiting drop</p>
+      </div>
+    </div>
+  );
+}
+
+function PrizePill({ icon, title, cash, rings, tone }: { icon: React.ReactNode; title: string; cash: string; rings: string; tone?: "gold" }) {
+  return (
+    <div className="rounded-lg bg-arena-strong p-3">
+      <div className={`mb-2 inline-flex h-7 w-7 items-center justify-center rounded ${tone === "gold" ? "bg-arena-amber text-primary-foreground" : "bg-arena-panel text-arena-ink"}`}>{icon}</div>
+      <p className="text-[9px] font-black uppercase tracking-[0.14em] text-arena-muted">{title}</p>
+      <p className="mt-1 text-[25px] font-black leading-none text-arena-ink" style={displayFont}>{cash}</p>
+      <p className="mt-1 inline-flex items-center gap-1 text-[10px] font-black text-arena-amber"><RingsCoin size={11} /> {rings}</p>
+    </div>
+  );
+}
+
+function LadderRow({ row, rank }: { row: any; rank: number }) {
+  const qoi = row.qoi_score || 0;
+  const grade = qoi >= 90 ? "S" : qoi >= 80 ? "A" : qoi >= 70 ? "B" : qoi >= 60 ? "C" : "—";
+  const rankTone = rank === 1 ? "text-arena-amber" : rank === 2 ? "text-arena-ink" : rank === 3 ? "text-arena-red" : "text-arena-muted";
+
+  return (
+    <a href={row.submission_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg bg-arena-strong px-3 py-2.5 active:scale-[0.99] transition">
+      <div className={`w-9 text-center text-[24px] font-black leading-none tabular-nums ${rankTone}`} style={displayFont}>#{rank}</div>
+      <div className="flex-1 min-w-0">
+        <p className="truncate text-[13px] font-black text-arena-ink">{row.profile?.username || row.author_username || "Unknown"}</p>
+        <p className="mt-0.5 truncate text-[9px] font-bold uppercase tracking-[0.12em] text-arena-muted">TikTok · {row.view_count ? `${row.view_count.toLocaleString()} views` : "Submitted"}</p>
+      </div>
+      <div className="text-right">
+        <p className="text-[22px] font-black leading-none tabular-nums text-arena-ink" style={displayFont}>{qoi ? qoi.toFixed(1) : "—"}</p>
+        <p className="text-[8px] font-black uppercase tracking-[0.14em] text-arena-muted">QOI</p>
+      </div>
+      <div className="flex h-8 w-8 items-center justify-center rounded bg-arena-panel text-[17px] font-black text-arena-amber" style={displayFont}>{grade}</div>
+    </a>
+  );
+}
+
+function forceTikTokRule(rule: string) {
+  if (/instagram|youtube|platform|submit/i.test(rule)) return "Submit a published TikTok edit link only.";
+  return rule;
 }
