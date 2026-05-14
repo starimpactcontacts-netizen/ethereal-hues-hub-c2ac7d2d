@@ -138,10 +138,9 @@ export default function EventDetailPage() {
           <div className="grid grid-cols-[86px_minmax(0,1fr)] gap-4 items-end">
             <div className="relative h-[122px] rounded-lg overflow-hidden shadow-[0_18px_36px_hsl(var(--arena-bg)/0.5),0_0_0_1px_hsl(var(--arena-line)/0.55)] bg-arena-panel">
               <img
-                src={displayPoster || lightYagamiPoster}
+                src={fixMySoulCover}
                 alt="Fix My Soul cover"
                 className="h-full w-full object-cover"
-                style={{ objectPosition: isLightYagami ? "50% 22%" : "50% 35%" }}
               />
               <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,transparent,hsl(var(--arena-bg)/0.86))] p-2">
                 <p className="text-[9px] font-black uppercase tracking-[0.16em] text-arena-amber">Fix My Soul</p>
@@ -160,9 +159,8 @@ export default function EventDetailPage() {
             </div>
           </div>
 
-          <div className="mt-5 grid grid-cols-3 gap-2">
+          <div className="mt-5 grid grid-cols-2 gap-2">
             <MetricTile label="Edits" value={stats.entries || featuredEdits.length} />
-            <MetricTile label="Online" value={stats.activeUsers} accent="emerald" />
             <div className="rounded-lg bg-arena-panel/90 p-3 shadow-[0_10px_24px_hsl(var(--arena-bg)/0.32)]">
               <p className="text-[9px] font-black uppercase tracking-[0.18em] text-arena-muted">Prize</p>
               <div className="mt-1 flex items-end gap-1">
@@ -212,19 +210,7 @@ export default function EventDetailPage() {
             )}
           </div>
 
-          <div className="relative aspect-[16/9] overflow-hidden rounded-lg bg-arena-strong shadow-[0_0_0_1px_hsl(var(--arena-line)/0.25)]">
-            <img src={fixMySoulCover} alt="Fix My Soul official cover" className="h-full w-full object-cover" loading="lazy" />
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_55%,hsl(var(--arena-bg)/0.85)_100%)]" />
-            <div className="absolute bottom-2 left-2 right-2 flex items-end justify-between gap-2">
-              <div>
-                <p className="text-[8px] font-black uppercase tracking-[0.2em] text-arena-amber">Official Cover</p>
-                <p className="text-[14px] font-black uppercase leading-none text-arena-ink" style={displayFont}>Fix My Soul</p>
-              </div>
-              <span className="rounded bg-arena-bg/80 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-arena-ink">Inspo</span>
-            </div>
-          </div>
-
-          <div className="mt-3 grid grid-cols-3 gap-1.5">
+          <div className="grid grid-cols-3 gap-1.5">
             {featuredEdits.length === 0 ? (
               <>
                 <EmptyDrop index={1} />
