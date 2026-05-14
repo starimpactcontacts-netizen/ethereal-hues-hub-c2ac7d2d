@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { uploadToBunny } from "@/lib/bunnyUpload";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Swords, Clock, Eye, Trophy, ArrowLeft, 
