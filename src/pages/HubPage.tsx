@@ -15,7 +15,7 @@ import {
 import { useActiveBattles } from '@/hooks/useActiveBattles';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
-import { useRealEvents, useGlobalStats, useActiveSession, useRealRankings } from '@/hooks/useRealData';
+import { useRealEvents, useGlobalStats, useActiveSession, useRealRankings, getEventSlug } from '@/hooks/useRealData';
 import { useUserActivityStats } from '@/hooks/useUserActivityStats';
 import { useTempProfile } from '@/hooks/useTempProfile';
 import { useGuestMode } from '@/hooks/useGuestMode';
