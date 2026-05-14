@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Clock, MapPin, Zap, Eye, Users, Send, CheckCircle2, XCircle, Target, Trophy, ExternalLink, Flame, Music2, Crown, Medal, Gem, Sparkles } from "lucide-react";
 import GateIcon from '@/components/loopgate/GateIcon';
+import RingsCoin from '@/components/loopgate/RingsCoin';
 import { useRealEvents, useEventRankings, useEventStats, useActiveSession, getEventSlug } from "@/hooks/useRealData";
 import { useEventRounds, useUserRoundStatus } from "@/hooks/useOpenArenaData";
 import { useAuth } from "@/hooks/useAuth";
@@ -128,7 +129,10 @@ export default function EventDetailPage() {
                 <div className="text-[18px] font-black text-amber-300 leading-none" style={{ fontFamily: 'Teko, Inter, sans-serif' }}>
                   $150 USD
                 </div>
-                <div className="text-[11px] font-bold text-white/70 leading-none mt-1">+ 1,000,000 RINGS</div>
+                <div className="flex items-center gap-1 mt-1">
+                  <RingsCoin size={13} />
+                  <span className="text-[11px] font-bold text-white/80 leading-none tabular-nums">1,000,000</span>
+                </div>
               </div>
               <div className="flex-1 pl-3">
                 <div className="flex items-center gap-1 text-red-300/80 text-[9px] font-black uppercase tracking-[0.2em] mb-1">
@@ -205,7 +209,9 @@ export default function EventDetailPage() {
               <h3 className="text-[10px] font-black uppercase tracking-[0.22em] text-white/60 flex items-center gap-1.5">
                 <Sparkles size={11} className="text-amber-300" /> Prize Breakdown
               </h3>
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-300/80">$150 + 1M Rings</span>
+              <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-[0.2em] text-amber-300/80">
+                $150 + <RingsCoin size={11} /> 1M
+              </span>
             </div>
 
             {/* Cash podium */}
@@ -214,13 +220,19 @@ export default function EventDetailPage() {
                 <Crown size={56} className="absolute -right-3 -bottom-3 text-amber-300/10" />
                 <div className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-200/80">1st · Best Edit</div>
                 <div className="text-[26px] font-black text-amber-300 leading-none mt-1" style={{ fontFamily: 'Teko, Inter, sans-serif' }}>$90</div>
-                <div className="text-[10px] text-amber-100/70 mt-0.5 font-bold">+ 120K Rings</div>
+                <div className="flex items-center gap-1 mt-1">
+                  <RingsCoin size={11} />
+                  <span className="text-[10px] text-amber-100/80 font-bold tabular-nums">120,000</span>
+                </div>
               </div>
               <div className="relative rounded-xl border border-zinc-300/20 bg-gradient-to-br from-zinc-300/[0.12] to-zinc-500/[0.04] p-3 overflow-hidden">
                 <Medal size={56} className="absolute -right-3 -bottom-3 text-zinc-200/10" />
                 <div className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-200/80">2nd · Most Viral</div>
                 <div className="text-[26px] font-black text-zinc-100 leading-none mt-1" style={{ fontFamily: 'Teko, Inter, sans-serif' }}>$60</div>
-                <div className="text-[10px] text-zinc-200/70 mt-0.5 font-bold">+ 100K Rings</div>
+                <div className="flex items-center gap-1 mt-1">
+                  <RingsCoin size={11} />
+                  <span className="text-[10px] text-zinc-200/80 font-bold tabular-nums">100,000</span>
+                </div>
               </div>
             </div>
 
@@ -228,7 +240,7 @@ export default function EventDetailPage() {
             <div className="rounded-xl border border-white/10 overflow-hidden divide-y divide-white/[0.06]">
               <div className="px-3 py-2 bg-white/[0.02] flex items-center justify-between">
                 <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.22em] text-emerald-300/90">
-                  <Gem size={10} /> Season Leaderboard · Top 50 share 1,000,000 Rings
+                  <RingsCoin size={11} /> Season Top 50 · 1,000,000 Pool
                 </div>
               </div>
               {[
@@ -243,7 +255,10 @@ export default function EventDetailPage() {
                     <div className="text-[9px] text-white/40 font-bold uppercase tracking-wider">{t.range}</div>
                   </div>
                   <div className="flex-1 text-[10px] text-white/55 truncate">{t.detail}</div>
-                  <div className={`text-[14px] font-black ${t.accent} tabular-nums`} style={{ fontFamily: 'Teko, Inter, sans-serif' }}>{t.rings}</div>
+                  <div className="flex items-center gap-1">
+                    <RingsCoin size={12} />
+                    <div className={`text-[14px] font-black ${t.accent} tabular-nums`} style={{ fontFamily: 'Teko, Inter, sans-serif' }}>{t.rings}</div>
+                  </div>
                 </div>
               ))}
             </div>
