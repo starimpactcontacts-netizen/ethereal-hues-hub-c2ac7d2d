@@ -415,35 +415,6 @@ export default function EventDetailPage() {
           </div>
         )}
 
-        {/* Timeline */}
-        <section className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
-            Timeline
-          </h3>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Start</span>
-              <span className="font-medium">
-                {new Date(event.start_date).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">End</span>
-              <span className="font-medium">
-                {new Date(event.end_date).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </span>
-            </div>
-          </div>
-        </section>
-
         {/* Description */}
         {event.description && (
           <section className="bg-card border border-border rounded-lg p-4">
@@ -468,28 +439,6 @@ export default function EventDetailPage() {
                 </li>
               ))}
             </ul>
-          </section>
-        )}
-
-        {/* Materials / Assets Link */}
-        {(event as any).materials_url && (
-          <section className="bg-card border border-gold/30 rounded-lg p-4">
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
-              <ExternalLink size={14} className="text-gold" />
-              Event Materials
-            </h3>
-            <a 
-              href={(event as any).materials_url} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-gold hover:underline text-sm font-medium"
-            >
-              <span>Access Sounds & Assets</span>
-              <ExternalLink size={14} />
-            </a>
-            <p className="text-[10px] text-muted-foreground mt-2">
-              Download or access the official materials for this event
-            </p>
           </section>
         )}
 
