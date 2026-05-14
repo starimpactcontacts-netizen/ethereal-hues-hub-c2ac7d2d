@@ -15,7 +15,7 @@ import {
 import { useActiveBattles } from '@/hooks/useActiveBattles';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
-import { useRealEvents, useGlobalStats, useActiveSession, useRealRankings } from '@/hooks/useRealData';
+import { useRealEvents, useGlobalStats, useActiveSession, useRealRankings, getEventSlug } from '@/hooks/useRealData';
 import { useUserActivityStats } from '@/hooks/useUserActivityStats';
 import { useTempProfile } from '@/hooks/useTempProfile';
 import { useGuestMode } from '@/hooks/useGuestMode';
@@ -1125,6 +1125,58 @@ export default function HubPage() {
       </div>
 
       {/* Arena banner removed — Arena access consolidated into quick-access grid */}
+
+      {/* ═══ FEATURED EVENT AD — slim cinematic strip under quick action ═══ */}
+      {liveEvents.length > 0 && (
+        <Link
+          to={`/event/${getEventSlug(liveEvents[0])}`}
+          className="relative block mt-3 -mx-4 active:scale-[0.995] transition-transform"
+        >
+          <div className="relative h-[68px] w-full overflow-hidden bg-black shadow-[0_18px_40px_-20px_rgba(239,68,68,0.55),0_0_60px_-30px_rgba(16,185,129,0.45)]">
+            {liveEvents[0].poster_url && (
+              <img
+                src={liveEvents[0].poster_url}
+                alt={liveEvents[0].title}
+                className="absolute inset-0 w-full h-full object-cover scale-[1.15]"
+                style={{ objectPosition: '38% 32%' }}
+                loading="eager"
+              />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-black/55 to-black" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_85%_50%,rgba(239,68,68,0.18),transparent_55%)]" />
+            <div className="absolute inset-0 opacity-[0.08] pointer-events-none mix-blend-overlay" style={{ backgroundImage: 'repeating-linear-gradient(0deg, #fff 0 1px, transparent 1px 3px)' }} />
+
+            <div className="absolute top-1.5 left-3 flex items-center gap-1 px-1.5 py-[2px] rounded-sm bg-red-500 shadow-[0_0_18px_rgba(239,68,68,0.7)]">
+              <span className="w-1 h-1 rounded-full bg-white animate-pulse" />
+              <span className="text-[8px] font-black uppercase tracking-[0.22em] text-white">Live Comp</span>
+            </div>
+
+            <div className="absolute inset-y-0 right-0 left-[42%] flex items-center pr-3 pl-2">
+              <div className="flex-1 min-w-0">
+                <h3
+                  className="text-[17px] leading-[0.9] font-black text-white tracking-tight line-clamp-1 drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]"
+                  style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}
+                >
+                  {liveEvents[0].title.toUpperCase()}
+                </h3>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <div className="flex items-center gap-0.5 text-[10px] font-black text-emerald-400 tabular-nums">
+                    <span className="text-emerald-400/90">$</span>150
+                  </div>
+                  <span className="w-[2px] h-[2px] rounded-full bg-white/30" />
+                  <div className="flex items-center gap-0.5 text-[10px] font-black text-white tabular-nums">
+                    <RingsCoin size={10} /> 1M
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 ml-2 px-2.5 py-1.5 rounded-sm bg-emerald-400 text-black text-[10px] font-black uppercase tracking-[0.2em] shadow-[0_0_22px_rgba(16,185,129,0.55)]">
+                Enter
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+              </div>
+            </div>
+          </div>
+        </Link>
+      )}
 
       {/* ═══════════════════════════════════════════════════════════════════
           🎵 FEATURED DROPS — All drops carousel
