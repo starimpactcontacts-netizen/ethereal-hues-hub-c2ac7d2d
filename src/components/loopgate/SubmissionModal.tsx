@@ -184,27 +184,11 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle, 
 
           {/* Platform Selection */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+            <label className="block text-xs font-semibold uppercase tracking-widest text-arena-muted mb-2">
               Platform
             </label>
-            <div className="flex gap-2">
-              {(["tiktok", "instagram", "youtube"] as const).map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => {
-                    setPlatform(p);
-                    setUrlError("");
-                  }}
-                  className={`flex-1 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors ${
-                    platform === p
-                      ? "bg-gold text-black"
-                      : "bg-surface-1 border border-border text-muted-foreground"
-                  }`}
-                >
-                  {p === "tiktok" ? "TikTok" : p === "instagram" ? "IG" : "YT"}
-                </button>
-              ))}
+            <div className="rounded-lg bg-arena-strong px-4 py-3 text-sm font-black uppercase tracking-[0.18em] text-arena-ink shadow-[0_0_0_1px_hsl(var(--arena-line)/0.25)]">
+              TikTok Only
             </div>
           </div>
 
