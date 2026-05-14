@@ -123,14 +123,8 @@ export default function SubmitTicketModal({ open, onOpenChange }: SubmitTicketMo
     }
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop() || "jpg";
-      const path = `tickets/${user.id}/${Date.now()}.${ext}`;
-      const { error } = await supabase.storage
-        .from("loop-media")
-        .upload(path, file, { cacheControl: "3600", upsert: false });
-      if (error) throw error;
-      const { data: urlData } = supabase.storage.from("loop-media").getPublicUrl(path);
-      setImageUrl(urlData.publicUrl);
+      const { url: cdnUrl } = await uploadToBunny(file, { folder: 'tickets' });
+      setImageUrl(cdnUrl);
     } catch {
       toast.error("Upload failed");
     } finally {
