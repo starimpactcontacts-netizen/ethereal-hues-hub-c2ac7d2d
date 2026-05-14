@@ -9,6 +9,7 @@ import {
   ExternalLink,
   Flame,
   Medal,
+  MessageCircle,
   Play,
   Send,
   Swords,
@@ -27,6 +28,8 @@ import SubmissionModal from "@/components/loopgate/SubmissionModal";
 import OpenArenaRoundLeaderboard from "@/components/loopgate/OpenArenaRoundLeaderboard";
 import OpenArenaGuide, { OpenArenaInfoButton } from "@/components/loopgate/OpenArenaGuide";
 import { Badge } from "@/components/ui/badge";
+import EventChatSheet from "@/components/loopgate/EventChatSheet";
+import { useEventChatUnread } from "@/hooks/useEventChatUnread";
 import lightYagamiPoster from "@/assets/light_yagami_poster.jpg";
 import fixMySoulCover from "@/assets/fix_my_soul_cover.jpg";
 
@@ -39,6 +42,7 @@ export default function EventDetailPage() {
   const { user } = useAuth();
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const [ladderLimit, setLadderLimit] = useState(8);
   const ladderRef = useRef<HTMLDivElement | null>(null);
 
