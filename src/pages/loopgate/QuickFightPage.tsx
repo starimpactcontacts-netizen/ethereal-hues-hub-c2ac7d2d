@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { uploadToBunny } from '@/lib/bunnyUpload';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Video, Music, Upload, EyeOff, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -548,14 +549,8 @@ export default function QuickFightPage() {
                     }
                     setSubmitting(true);
                     try {
-                      const ext = file.name.split('.').pop() || 'mp4';
-                      const path = `${fight.id}/${user.id}-${Date.now()}.${ext}`;
-                      const { error: upErr } = await supabase.storage
-                        .from('battle-edits')
-                        .upload(path, file, { contentType: file.type, upsert: false });
-                      if (upErr) throw upErr;
-                      const { data: pub } = supabase.storage.from('battle-edits').getPublicUrl(path);
-                      const success = await submitQuickFight(fight.id, user.id, pub.publicUrl);
+                       const { url: cdnUrl } = await uploadToBunny(file, { folder: `battle-edits/${fight.id}` });
+                       const success = await submitQuickFight(fight.id, user.id, cdnUrl);
                       if (!success) throw new Error('submit failed');
                       if (hasSongPicked) {
                         try {

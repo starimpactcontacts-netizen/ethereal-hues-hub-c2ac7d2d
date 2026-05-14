@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Plus, Pencil, Trash2, Eye, EyeOff, Star, Image as ImageIcon, Newspaper, Flame, Crown, Megaphone, Users2, Film, Music, Gamepad2, ChevronDown, ChevronUp, Upload, Wand2, Loader2, TrendingUp, Video, ExternalLink, Search } from 'lucide-react';
 import GateIcon from '@/components/loopgate/GateIcon';
 import { supabase } from '@/integrations/supabase/client';
+import { uploadToBunny } from '@/lib/bunnyUpload';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -556,15 +557,8 @@ export default function EditoriumAdmin() {
     }
     setUploadingVideo(true);
     try {
-      const ext = file.name.split('.').pop() || 'mp4';
-      const path = `editorium-picks/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-      const { error: upErr } = await supabase.storage.from('loop-media').upload(path, file, {
-        contentType: file.type,
-        upsert: false,
-      });
-      if (upErr) throw upErr;
-      const { data: pub } = supabase.storage.from('loop-media').getPublicUrl(path);
-      setManualForm(f => ({ ...f, video_url: pub.publicUrl, video_storage_path: path }));
+      const { url: cdnUrl, path } = await uploadToBunny(file, { folder: 'editorium-picks' });
+      setManualForm(f => ({ ...f, video_url: cdnUrl, video_storage_path: path }));
       toast.success('Video uploaded ✓');
     } catch (err: any) {
       toast.error('Upload failed: ' + (err.message || 'Unknown error'));

@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { isPast, differenceInSeconds } from "date-fns";
 import { useAutoplayVideo } from "@/hooks/useAutoplayVideo";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadToBunny } from "@/lib/bunnyUpload";
 import CompetitionChat from "@/components/loopgate/CompetitionChat";
 import CompetitionLeaderboard from "@/components/loopgate/CompetitionLeaderboard";
 import CompetitionVoting from "@/components/loopgate/CompetitionVoting";
@@ -448,16 +449,8 @@ export default function CompetitionLobbyPage() {
 
     setIsSubmitting(true);
     try {
-      const rawExt = file.name.split(".").pop()?.toLowerCase();
-      const ext = rawExt || (isVideo ? "mp4" : "jpg");
-      const path = `${user.id}/competition-submissions/${competition.id}-${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage
-        .from("loop-media")
-        .upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type });
-      if (upErr) throw upErr;
-
-      const { data: urlData } = supabase.storage.from("loop-media").getPublicUrl(path);
-      const newId = await submit(urlData.publicUrl, isVideo ? "upload" : "image");
+      const { url: cdnUrl } = await uploadToBunny(file, { folder: `competition-submissions/${competition.id}` });
+      const newId = await submit(cdnUrl, isVideo ? "upload" : "image");
       if (newId) {
         toast.success("Edit uploaded!");
         if (isVideo) setAutoTrimId(newId);
@@ -600,31 +593,22 @@ export default function CompetitionLobbyPage() {
 
     setSavingInspo(true);
     try {
-      const ext = file.name.split(".").pop() || (isVideo ? "mp4" : "jpg");
-      const path = `${user.id}/inspo-${competition.id}-${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage
-        .from("loop-media")
-        .upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type });
-      if (upErr) throw upErr;
-      const { data: urlData } = supabase.storage.from("loop-media").getPublicUrl(path);
+      const { url: cdnUrl } = await uploadToBunny(file, { folder: `competition-inspo/${competition.id}` });
 
       // Auto-thumbnail for videos
       let thumbUrl: string | null = null;
       if (isVideo) {
         const thumb = await generateVideoThumb(file);
         if (thumb) {
-          const thumbPath = `${user.id}/inspo-${competition.id}-${Date.now()}.jpg`;
-          const { error: thumbErr } = await supabase.storage
-            .from("loop-media")
-            .upload(thumbPath, thumb, { contentType: "image/jpeg", upsert: false });
-          if (!thumbErr) {
-            thumbUrl = supabase.storage.from("loop-media").getPublicUrl(thumbPath).data.publicUrl;
-          }
+          try {
+            const { url: tUrl } = await uploadToBunny(thumb, { folder: `competition-inspo/${competition.id}/thumbs`, fileName: `thumb-${Date.now()}.jpg` });
+            thumbUrl = tUrl;
+          } catch {}
         }
       }
 
       const ok = await updateInspo({
-        url: urlData.publicUrl,
+        url: cdnUrl,
         platform: isVideo ? "upload" : "image",
         thumbnail_url: thumbUrl,
       });

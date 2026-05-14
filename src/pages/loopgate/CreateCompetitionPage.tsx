@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Trophy, ArrowLeft, ImagePlus, Loader2, X, Users, Clock, Hash, Vote, Lock, Globe, Copy, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadToBunny } from "@/lib/bunnyUpload";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
@@ -264,12 +265,8 @@ export default function CreateCompetitionPage() {
               if (file.size > 10 * 1024 * 1024) { toast.error("Image must be under 10MB"); return; }
               setUploadingCover(true);
               try {
-                const ext = file.name.split('.').pop() || 'jpg';
-                const path = `competitions/${user.id}/${Date.now()}.${ext}`;
-                const { error } = await supabase.storage.from('loop-media').upload(path, file, { cacheControl: '3600', upsert: false });
-                if (error) throw error;
-                const { data: urlData } = supabase.storage.from('loop-media').getPublicUrl(path);
-                setCoverUrl(urlData.publicUrl);
+                const { url: cdnUrl } = await uploadToBunny(file, { folder: 'competitions/covers' });
+                setCoverUrl(cdnUrl);
               } catch (err: any) {
                 toast.error(err?.message || "Upload failed");
               } finally {
