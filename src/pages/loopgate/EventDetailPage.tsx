@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Clock, MapPin, Zap, Eye, Users, Send, CheckCircle2, XCircle, Target, Trophy, ExternalLink, Flame } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Zap, Eye, Users, Send, CheckCircle2, XCircle, Target, Trophy, ExternalLink, Flame, Music2, Crown, Medal, Gem, Sparkles } from "lucide-react";
 import GateIcon from '@/components/loopgate/GateIcon';
 import { useRealEvents, useEventRankings, useEventStats, useActiveSession, getEventSlug } from "@/hooks/useRealData";
 import { useEventRounds, useUserRoundStatus } from "@/hooks/useOpenArenaData";
@@ -93,46 +93,52 @@ export default function EventDetailPage() {
           </div>
         )}
 
-        <div className="relative w-full" style={{ aspectRatio: '4 / 5', maxHeight: '70vh' }}>
+        <div className="relative w-full" style={{ aspectRatio: '3 / 4', maxHeight: '58vh' }}>
           {event.poster_url ? (
             <img src={event.poster_url} alt={event.title} className="absolute inset-0 w-full h-full object-cover" />
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-red-950/40 to-black" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/30 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 p-5 pb-6">
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 p-5 pb-5">
             {(event as any).editor_category && (
               <span className="inline-block mb-2 px-2 py-0.5 rounded-full bg-white/10 backdrop-blur text-[9px] font-black uppercase tracking-[0.18em] text-white/80">
                 {(event as any).editor_category}
               </span>
             )}
-            <h1 className="text-[32px] leading-[0.95] font-black text-white tracking-tight" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+            <h1 className="text-[34px] leading-[0.92] font-black text-white tracking-tight" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
               {event.title.toUpperCase()}
             </h1>
             {event.subtitle && (
-              <p className="text-[13px] text-white/70 mt-1.5">{event.subtitle}</p>
+              <p className="text-[12px] text-white/60 mt-1.5 uppercase tracking-[0.15em]">{event.subtitle}</p>
             )}
           </div>
         </div>
       </div>
 
-      {/* Prize + Deadline tiles */}
-      <div className="px-4 -mt-4 relative z-10">
-        <div className="grid grid-cols-2 gap-2">
-          <div className="rounded-xl bg-gradient-to-br from-amber-500/15 to-amber-500/5 border border-amber-500/30 p-3">
-            <div className="flex items-center gap-1 text-amber-300/80 text-[9px] font-black uppercase tracking-[0.18em] mb-1">
-              <Trophy size={10} /> Prize Pool
-            </div>
-            <div className="text-[15px] font-black text-amber-300 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-              {event.prize_pool || '—'}
-            </div>
-          </div>
-          <div className="rounded-xl bg-gradient-to-br from-red-500/15 to-red-500/5 border border-red-500/30 p-3">
-            <div className="flex items-center gap-1 text-red-300/80 text-[9px] font-black uppercase tracking-[0.18em] mb-1">
-              <Clock size={10} /> Deadline
-            </div>
-            <div className="text-[15px] font-black text-red-300 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-              {new Date(event.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+      {/* Hero stat ribbon */}
+      <div className="px-4 -mt-5 relative z-10">
+        <div className="rounded-2xl bg-gradient-to-br from-amber-500/[0.18] via-black to-red-500/[0.15] border border-white/10 p-px shadow-[0_20px_60px_-20px_rgba(245,158,11,0.35)]">
+          <div className="rounded-2xl bg-[#0a0a0a]/95 backdrop-blur p-3.5">
+            <div className="flex items-stretch divide-x divide-white/[0.08]">
+              <div className="flex-1 pr-3">
+                <div className="flex items-center gap-1 text-amber-300/80 text-[9px] font-black uppercase tracking-[0.2em] mb-1">
+                  <Trophy size={10} /> Prize Pool
+                </div>
+                <div className="text-[18px] font-black text-amber-300 leading-none" style={{ fontFamily: 'Teko, Inter, sans-serif' }}>
+                  $150 USD
+                </div>
+                <div className="text-[11px] font-bold text-white/70 leading-none mt-1">+ 1,000,000 RINGS</div>
+              </div>
+              <div className="flex-1 pl-3">
+                <div className="flex items-center gap-1 text-red-300/80 text-[9px] font-black uppercase tracking-[0.2em] mb-1">
+                  <Clock size={10} /> Deadline
+                </div>
+                <div className="text-[18px] font-black text-red-300 leading-none" style={{ fontFamily: 'Teko, Inter, sans-serif' }}>
+                  MAY 24
+                </div>
+                <div className="text-[11px] font-bold text-white/70 leading-none mt-1">2026 · 11:59 PM</div>
+              </div>
             </div>
           </div>
         </div>
@@ -171,6 +177,84 @@ export default function EventDetailPage() {
 
       {/* Event Info */}
       <div className="px-4 pt-4 pb-6 space-y-4">
+        {/* Official Sound CTA */}
+        {(event as any).materials_url && (
+          <a
+            href={(event as any).materials_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-r from-fuchsia-500/[0.12] via-black to-cyan-400/[0.10] active:scale-[0.99] transition"
+          >
+            <div className="flex items-center gap-3 p-3.5">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-fuchsia-500 to-cyan-400 flex items-center justify-center shadow-[0_8px_24px_-6px_rgba(217,70,239,0.6)]">
+                <Music2 size={20} className="text-black" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[9px] font-black uppercase tracking-[0.22em] text-fuchsia-300/80">Official Sound</div>
+                <div className="text-[14px] font-black text-white leading-tight truncate" style={{ fontFamily: 'Teko, Inter, sans-serif' }}>
+                  FIX MY SOUL · TIKTOK
+                </div>
+                <div className="text-[10px] text-white/50 truncate">Tap to use this sound on your edit</div>
+              </div>
+              <div className="flex items-center gap-1 px-3 py-2 rounded-lg bg-white text-black text-[10px] font-black uppercase tracking-[0.18em]">
+                Use <ExternalLink size={11} />
+              </div>
+            </div>
+          </a>
+        )}
+
+        {/* Prize Breakdown */}
+        {event.slug === 'light-yagami-edit-competition' && (
+          <section className="rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.03] to-transparent p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.22em] text-white/60 flex items-center gap-1.5">
+                <Sparkles size={11} className="text-amber-300" /> Prize Breakdown
+              </h3>
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-300/80">$150 + 1M Rings</span>
+            </div>
+
+            {/* Cash podium */}
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <div className="relative rounded-xl border border-amber-400/30 bg-gradient-to-br from-amber-400/[0.18] to-amber-700/[0.05] p-3 overflow-hidden">
+                <Crown size={56} className="absolute -right-3 -bottom-3 text-amber-300/10" />
+                <div className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-200/80">1st · Best Edit</div>
+                <div className="text-[26px] font-black text-amber-300 leading-none mt-1" style={{ fontFamily: 'Teko, Inter, sans-serif' }}>$90</div>
+                <div className="text-[10px] text-amber-100/70 mt-0.5 font-bold">+ 120K Rings</div>
+              </div>
+              <div className="relative rounded-xl border border-zinc-300/20 bg-gradient-to-br from-zinc-300/[0.12] to-zinc-500/[0.04] p-3 overflow-hidden">
+                <Medal size={56} className="absolute -right-3 -bottom-3 text-zinc-200/10" />
+                <div className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-200/80">2nd · Most Viral</div>
+                <div className="text-[26px] font-black text-zinc-100 leading-none mt-1" style={{ fontFamily: 'Teko, Inter, sans-serif' }}>$60</div>
+                <div className="text-[10px] text-zinc-200/70 mt-0.5 font-bold">+ 100K Rings</div>
+              </div>
+            </div>
+
+            {/* Rings tiers */}
+            <div className="rounded-xl border border-white/10 overflow-hidden divide-y divide-white/[0.06]">
+              <div className="px-3 py-2 bg-white/[0.02] flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.22em] text-emerald-300/90">
+                  <Gem size={10} /> Season Leaderboard · Top 50 share 1,000,000 Rings
+                </div>
+              </div>
+              {[
+                { tier: 'Tier 1', range: 'Ranks 1–5', rings: '400K', detail: '120K · 100K · 80K · 60K · 40K', accent: 'text-amber-300' },
+                { tier: 'Tier 2', range: 'Ranks 6–15', rings: '300K', detail: '~30K each', accent: 'text-zinc-100' },
+                { tier: 'Tier 3', range: 'Ranks 16–30', rings: '200K', detail: '~13K each', accent: 'text-orange-300' },
+                { tier: 'Tier 4', range: 'Ranks 31–50', rings: '100K', detail: '~5K each', accent: 'text-emerald-300' },
+              ].map((t) => (
+                <div key={t.tier} className="px-3 py-2.5 flex items-center gap-3">
+                  <div className="w-[58px]">
+                    <div className={`text-[11px] font-black ${t.accent}`} style={{ fontFamily: 'Teko, Inter, sans-serif' }}>{t.tier.toUpperCase()}</div>
+                    <div className="text-[9px] text-white/40 font-bold uppercase tracking-wider">{t.range}</div>
+                  </div>
+                  <div className="flex-1 text-[10px] text-white/55 truncate">{t.detail}</div>
+                  <div className={`text-[14px] font-black ${t.accent} tabular-nums`} style={{ fontFamily: 'Teko, Inter, sans-serif' }}>{t.rings}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         <div className="flex items-center justify-between text-[11px]">
           <div className="flex items-center gap-1.5 text-muted-foreground">
             <MapPin size={12} />
