@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Clock, MapPin, Zap, Eye, Users, Send, CheckCircle2, XCircle, Target, Trophy, ExternalLink } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Zap, Eye, Users, Send, CheckCircle2, XCircle, Target, Trophy, ExternalLink, Flame, DollarSign } from "lucide-react";
 import GateIcon from '@/components/loopgate/GateIcon';
 import { useRealEvents, useEventRankings, useEventStats, useActiveSession, getEventSlug } from "@/hooks/useRealData";
 import { useEventRounds, useUserRoundStatus } from "@/hooks/useOpenArenaData";
@@ -81,56 +81,102 @@ export default function EventDetailPage() {
   const advancementStatus = getUserAdvancementStatus();
 
   return (
-    <div className="min-h-screen pb-20">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="px-4 py-3 flex items-center gap-3">
-          <Link to="/arena" className="p-1 -ml-1">
-            <ArrowLeft size={20} />
-          </Link>
-          <div className="flex-1">
-            <h1 className="text-base font-bold">{event.title}</h1>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
-              {isOpenArena ? 'Open Arena' : 'Arena'}
-            </p>
-          </div>
-          <StatusBadge status={event.status} />
-        </div>
-      </header>
-
-      {/* Event Banner with Poster */}
+    <div className="min-h-screen pb-28 bg-[#0a0a0a]">
+      {/* Cinematic Poster Hero */}
       <div className="relative">
-        {event.poster_url && (
-          <div 
-            className="h-48 bg-cover bg-center"
-            style={{ backgroundImage: `url(${event.poster_url})` }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
+        <Link to="/arena" className="absolute top-3 left-3 z-30 w-9 h-9 rounded-full bg-black/60 backdrop-blur-md border border-white/15 flex items-center justify-center active:scale-95 transition">
+          <ArrowLeft size={18} className="text-white" />
+        </Link>
+        {isLive && (
+          <div className="absolute top-3 right-3 z-30 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500 text-white text-[10px] font-black uppercase tracking-[0.18em]">
+            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> Live
           </div>
         )}
-        <div className="absolute bottom-0 left-0 right-0 p-4">
-          <div className="flex items-center gap-2 mb-2">
-            {isOpenArena && (
-              <Badge className="bg-gold/20 text-gold text-[10px] gap-1">
-                <Zap size={10} />
-                OPEN ARENA
-              </Badge>
+
+        <div className="relative w-full" style={{ aspectRatio: '4 / 5', maxHeight: '70vh' }}>
+          {event.poster_url ? (
+            <img src={event.poster_url} alt={event.title} className="absolute inset-0 w-full h-full object-cover" />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-red-950/40 to-black" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/30 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 p-5 pb-6">
+            {(event as any).editor_category && (
+              <span className="inline-block mb-2 px-2 py-0.5 rounded-full bg-white/10 backdrop-blur text-[9px] font-black uppercase tracking-[0.18em] text-white/80">
+                {(event as any).editor_category}
+              </span>
+            )}
+            <h1 className="text-[32px] leading-[0.95] font-black text-white tracking-tight" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+              {event.title.toUpperCase()}
+            </h1>
+            {event.subtitle && (
+              <p className="text-[13px] text-white/70 mt-1.5">{event.subtitle}</p>
             )}
           </div>
-          <h2 className="text-3xl font-black tracking-tight">{event.title}</h2>
-          {event.subtitle && <p className="text-sm text-muted-foreground mt-1">{event.subtitle}</p>}
         </div>
       </div>
 
+      {/* Prize + Deadline tiles */}
+      <div className="px-4 -mt-4 relative z-10">
+        <div className="grid grid-cols-2 gap-2">
+          <div className="rounded-xl bg-gradient-to-br from-amber-500/15 to-amber-500/5 border border-amber-500/30 p-3">
+            <div className="flex items-center gap-1 text-amber-300/80 text-[9px] font-black uppercase tracking-[0.18em] mb-1">
+              <Trophy size={10} /> Prize Pool
+            </div>
+            <div className="text-[15px] font-black text-amber-300 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+              {event.prize_pool || '—'}
+            </div>
+          </div>
+          <div className="rounded-xl bg-gradient-to-br from-red-500/15 to-red-500/5 border border-red-500/30 p-3">
+            <div className="flex items-center gap-1 text-red-300/80 text-[9px] font-black uppercase tracking-[0.18em] mb-1">
+              <Clock size={10} /> Deadline
+            </div>
+            <div className="text-[15px] font-black text-red-300 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+              {new Date(event.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            </div>
+          </div>
+        </div>
+
+        {/* Live activity strip */}
+        {isLive && (
+          <div className="mt-2 flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+            <div className="flex items-center gap-1.5">
+              <Flame size={11} className="text-emerald-400" />
+              <span className="text-[11px] text-foreground font-bold tabular-nums">{stats.entries}</span>
+              <span className="text-[10px] text-muted-foreground">edits</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Eye size={11} className="text-gold" />
+              <span className="text-[11px] text-foreground font-bold tabular-nums">{stats.judges}</span>
+              <span className="text-[10px] text-muted-foreground">judges</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Users size={11} className="text-foreground/70" />
+              <span className="text-[11px] text-foreground font-bold tabular-nums">{stats.activeUsers}</span>
+              <span className="text-[10px] text-muted-foreground">online</span>
+            </div>
+          </div>
+        )}
+
+        {/* Live countdown */}
+        {!isClosed && (!isOpenArena || !activeRound) && (
+          <div className="mt-2 px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+            <CountdownTimer
+              endDate={isLive ? event.end_date : event.start_date}
+              label={isLive ? "Closes In" : "Starts In"}
+            />
+          </div>
+        )}
+      </div>
+
       {/* Event Info */}
-      <div className="px-4 py-6 space-y-4">
-        {/* Status & Meta */}
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <MapPin size={14} />
+      <div className="px-4 pt-4 pb-6 space-y-4">
+        <div className="flex items-center justify-between text-[11px]">
+          <div className="flex items-center gap-1.5 text-muted-foreground">
+            <MapPin size={12} />
             <span>{event.location}</span>
           </div>
-          <span className="text-gold uppercase tracking-wider text-xs font-semibold">
+          <span className="text-gold uppercase tracking-[0.18em] text-[10px] font-black">
             {event.league} League
           </span>
         </div>
@@ -326,16 +372,6 @@ export default function EventDetailPage() {
           </section>
         )}
 
-        {/* Prize Pool */}
-        {event.prize_pool && (
-          <section className="bg-card border border-gold/30 rounded-lg p-5 text-center">
-            <p className="text-3xl font-black text-gold">{event.prize_pool}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1">
-              Prize Pool
-            </p>
-          </section>
-        )}
-
         {/* Timeline */}
         <section className="bg-card border border-border rounded-lg p-4">
           <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
@@ -502,23 +538,7 @@ export default function EventDetailPage() {
         )}
 
         {/* Submit Button (Live only) - Check if user can submit to active round */}
-        {isLive && (
-          <>
-            {isOpenArena && advancementStatus === 'eliminated' ? (
-              <div className="w-full bg-surface-1 border border-border text-muted-foreground font-medium py-4 rounded-lg text-center">
-                You were eliminated in a previous round
-              </div>
-            ) : (
-              <button 
-                onClick={() => setShowSubmitModal(true)}
-                className="w-full bg-gold text-black font-bold py-4 rounded-lg flex items-center justify-center gap-2"
-              >
-                <Send size={18} />
-                {isOpenArena && activeRound ? `Submit to Round ${activeRound.round_number}` : 'Submit Edit'}
-              </button>
-            )}
-          </>
-        )}
+        {/* Inline submit removed — sticky CTA bar handles it */}
 
         {/* Pending Status */}
         {event.status === "pending" && (
@@ -537,6 +557,29 @@ export default function EventDetailPage() {
           Loopgate does not host uploads.
         </p>
       </div>
+
+      {/* Sticky ENTER bar — addiction CTA */}
+      {isLive && !(isOpenArena && advancementStatus === 'eliminated') && (
+        <div className="fixed bottom-0 inset-x-0 z-50 px-3 pt-2 pb-[max(env(safe-area-inset-bottom,0px),8px)] bg-gradient-to-t from-black via-black/95 to-transparent">
+          <button
+            onClick={() => setShowSubmitModal(true)}
+            className="w-full relative overflow-hidden rounded-xl py-3.5 bg-emerald-500 text-black font-black text-[14px] uppercase tracking-[0.2em] active:scale-[0.99] transition-transform"
+            style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+          >
+            <span className="relative inline-flex items-center gap-2">
+              <Send size={15} />
+              {isOpenArena && activeRound ? `Submit · Round ${activeRound.round_number}` : 'Enter Competition'}
+            </span>
+          </button>
+        </div>
+      )}
+      {isLive && isOpenArena && advancementStatus === 'eliminated' && (
+        <div className="fixed bottom-0 inset-x-0 z-50 px-3 pt-2 pb-[max(env(safe-area-inset-bottom,0px),8px)] bg-gradient-to-t from-black to-transparent">
+          <div className="w-full text-center py-3.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-muted-foreground text-[12px] font-bold">
+            Eliminated in a previous round
+          </div>
+        </div>
+      )}
 
       {/* Submit Modal */}
       <SubmissionModal
