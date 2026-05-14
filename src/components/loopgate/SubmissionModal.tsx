@@ -14,9 +14,10 @@ interface SubmissionModalProps {
   eventId: string;
   eventTitle: string;
   roundNumber?: number; // For Open Arena events
+  isShowcase?: boolean; // Admin-only: flag this submission as an Edit Showcase inspo entry
 }
 
-export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle, roundNumber }: SubmissionModalProps) {
+export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle, roundNumber, isShowcase }: SubmissionModalProps) {
   const { user, profile } = useAuth();
   const { isGuest } = useGuestMode();
   const { checkSubmissionBonus } = useInviteSubmissionBonus();
@@ -77,6 +78,7 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle, 
           submission_url: platformLink,
           status: 'active',
           submitted_at: new Date().toISOString(),
+          is_showcase: !!isShowcase,
         }).select('id').single();
         if (error) throw error;
         // Fire-and-forget: enrich with oEmbed metadata (thumbnail, title, author)
@@ -91,6 +93,7 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle, 
           platform: platform,
           submission_url: platformLink,
           status: 'pending',
+          is_showcase: !!isShowcase,
         }).select('id').single();
         if (error) throw error;
         // Fire-and-forget: enrich with oEmbed metadata
