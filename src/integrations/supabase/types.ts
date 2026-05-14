@@ -3816,6 +3816,77 @@ export type Database = {
         }
         Relationships: []
       }
+      event_chat_reads: {
+        Row: {
+          event_id: string
+          last_read_at: string
+          user_id: string
+        }
+        Insert: {
+          event_id: string
+          last_read_at?: string
+          user_id: string
+        }
+        Update: {
+          event_id?: string
+          last_read_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      event_messages: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          event_id: string
+          id: string
+          media_url: string | null
+          message_text: string | null
+          message_type: string
+          reply_to_id: string | null
+          reply_to_text: string | null
+          reply_to_username: string | null
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          event_id: string
+          id?: string
+          media_url?: string | null
+          message_text?: string | null
+          message_type?: string
+          reply_to_id?: string | null
+          reply_to_text?: string | null
+          reply_to_username?: string | null
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          event_id?: string
+          id?: string
+          media_url?: string | null
+          message_text?: string | null
+          message_type?: string
+          reply_to_id?: string | null
+          reply_to_text?: string | null
+          reply_to_username?: string | null
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "event_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_participations: {
         Row: {
           author_username: string | null
