@@ -1204,38 +1204,35 @@ export default function ArenaPage() {
 
           {/* ═══ FEATURED EVENT AD — top of arena ═══ */}
           {liveEvents.length > 0 && (
-            <Link to={`/event/${(liveEvents[0] as any).slug || liveEvents[0].id}`} className="block mb-3 group">
-              <div
-                className="relative overflow-hidden rounded-2xl border border-white/10 active:scale-[0.99] transition-transform"
-                style={{ aspectRatio: '16 / 9', background: '#0a0a0a' }}
-              >
+            <Link
+              to={`/event/${(liveEvents[0] as any).slug || liveEvents[0].id}`}
+              className="relative flex items-stretch gap-2.5 mb-3 p-2 rounded-xl bg-[#0e0e10] border border-white/[0.06] active:scale-[0.99] transition-transform overflow-hidden"
+            >
+              <div className="relative w-[68px] h-[68px] shrink-0 rounded-lg overflow-hidden bg-black">
                 {liveEvents[0].poster_url && (
-                  <img
-                    src={liveEvents[0].poster_url}
-                    alt={liveEvents[0].title}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    loading="eager"
-                  />
+                  <img src={liveEvents[0].poster_url} alt={liveEvents[0].title} className="absolute inset-0 w-full h-full object-cover" loading="eager" />
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-                <div className="absolute top-2 left-2 flex items-center gap-1.5">
-                  <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-500/90 text-white text-[9px] font-black uppercase tracking-[0.15em]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> Live Event
-                  </span>
-                </div>
-                {liveEvents[0].prize_pool && (
-                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-sm border border-gold/40">
-                    <span className="text-[10px] font-black text-gold">{liveEvents[0].prize_pool}</span>
-                  </div>
-                )}
-                <div className="absolute bottom-0 left-0 right-0 p-3">
-                  <h3 className="text-[15px] font-black text-white tracking-tight leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-                    {liveEvents[0].title}
-                  </h3>
-                  {(liveEvents[0] as any).subtitle && (
-                    <p className="text-[11px] text-white/70 truncate mt-0.5">{(liveEvents[0] as any).subtitle}</p>
+                <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-lg" />
+              </div>
+              <div className="flex-1 min-w-0 flex flex-col justify-center py-0.5">
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                  <span className="text-[8.5px] font-black uppercase tracking-[0.18em] text-red-400">Live Event</span>
+                  {liveEvents[0].prize_pool && (
+                    <span className="text-[8.5px] font-black uppercase tracking-[0.14em] text-gold ml-auto truncate max-w-[140px]">{liveEvents[0].prize_pool}</span>
                   )}
                 </div>
+                <h3 className="text-[13px] font-black text-foreground leading-tight truncate" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                  {liveEvents[0].title}
+                </h3>
+                <p className="text-[10px] text-muted-foreground truncate mt-0.5">
+                  Deadline {new Date(liveEvents[0].end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · Tap to enter
+                </p>
+              </div>
+              <div className="shrink-0 flex items-center">
+                <span className="px-3 py-2 rounded-lg bg-emerald-500 text-black text-[11px] font-black uppercase tracking-[0.16em]">
+                  Enter
+                </span>
               </div>
             </Link>
           )}
