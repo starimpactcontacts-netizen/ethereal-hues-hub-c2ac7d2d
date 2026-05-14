@@ -56,6 +56,7 @@ export default function EventDetailPage() {
   const { stats } = useEventStats(eventId);
   const { rounds } = useEventRounds(eventId);
   const { statuses: userRoundStatuses } = useUserRoundStatus(eventId);
+  const { unread: chatUnread } = useEventChatUnread(eventId || undefined);
 
   const isOpenArena = (event as any)?.event_mode === "open_arena";
   const activeRound = rounds.find((r) => r.status === "active");
