@@ -407,6 +407,28 @@ export default function EventDetailPage() {
       />
 
       <OpenArenaGuide isOpen={showGuide} onClose={() => setShowGuide(false)} />
+
+      {/* Floating Chat FAB with unread badge — sits above the sticky Enter Event CTA */}
+      <button
+        onClick={() => setShowChat(true)}
+        aria-label="Open event chat"
+        className="fixed right-3 z-40 w-14 h-14 rounded-full bg-arena-panel border border-arena-line/50 text-arena-ink shadow-[0_14px_34px_rgba(0,0,0,0.55)] active:scale-95 transition flex items-center justify-center"
+        style={{ bottom: `calc(env(safe-area-inset-bottom, 0px) + ${isLive ? 88 : 24}px)` }}
+      >
+        <MessageCircle size={22} strokeWidth={2.4} />
+        {chatUnread > 0 && (
+          <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center shadow-[0_2px_8px_rgba(239,68,68,0.6)] ring-2 ring-arena-bg animate-pulse">
+            {chatUnread > 99 ? "99+" : chatUnread}
+          </span>
+        )}
+      </button>
+
+      <EventChatSheet
+        open={showChat}
+        onClose={() => setShowChat(false)}
+        eventId={event.id}
+        eventTitle={event.title}
+      />
     </div>
   );
 }
