@@ -9,6 +9,7 @@ import {
   ExternalLink,
   Flame,
   Medal,
+  MessageCircle,
   Play,
   Send,
   Swords,
@@ -27,6 +28,8 @@ import SubmissionModal from "@/components/loopgate/SubmissionModal";
 import OpenArenaRoundLeaderboard from "@/components/loopgate/OpenArenaRoundLeaderboard";
 import OpenArenaGuide, { OpenArenaInfoButton } from "@/components/loopgate/OpenArenaGuide";
 import { Badge } from "@/components/ui/badge";
+import EventChatSheet from "@/components/loopgate/EventChatSheet";
+import { useEventChatUnread } from "@/hooks/useEventChatUnread";
 import lightYagamiPoster from "@/assets/light_yagami_poster.jpg";
 import fixMySoulCover from "@/assets/fix_my_soul_cover.jpg";
 
@@ -39,6 +42,7 @@ export default function EventDetailPage() {
   const { user } = useAuth();
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const [ladderLimit, setLadderLimit] = useState(8);
   const ladderRef = useRef<HTMLDivElement | null>(null);
 
@@ -52,6 +56,7 @@ export default function EventDetailPage() {
   const { stats } = useEventStats(eventId);
   const { rounds } = useEventRounds(eventId);
   const { statuses: userRoundStatuses } = useUserRoundStatus(eventId);
+  const { unread: chatUnread } = useEventChatUnread(eventId || undefined);
 
   const isOpenArena = (event as any)?.event_mode === "open_arena";
   const activeRound = rounds.find((r) => r.status === "active");
@@ -402,6 +407,28 @@ export default function EventDetailPage() {
       />
 
       <OpenArenaGuide isOpen={showGuide} onClose={() => setShowGuide(false)} />
+
+      {/* Floating Chat FAB with unread badge — sits above the sticky Enter Event CTA */}
+      <button
+        onClick={() => setShowChat(true)}
+        aria-label="Open event chat"
+        className="fixed right-3 z-40 w-14 h-14 rounded-full bg-arena-panel border border-arena-line/50 text-arena-ink shadow-[0_14px_34px_rgba(0,0,0,0.55)] active:scale-95 transition flex items-center justify-center"
+        style={{ bottom: `calc(env(safe-area-inset-bottom, 0px) + ${isLive ? 88 : 24}px)` }}
+      >
+        <MessageCircle size={22} strokeWidth={2.4} />
+        {chatUnread > 0 && (
+          <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center shadow-[0_2px_8px_rgba(239,68,68,0.6)] ring-2 ring-arena-bg animate-pulse">
+            {chatUnread > 99 ? "99+" : chatUnread}
+          </span>
+        )}
+      </button>
+
+      <EventChatSheet
+        open={showChat}
+        onClose={() => setShowChat(false)}
+        eventId={event.id}
+        eventTitle={event.title}
+      />
     </div>
   );
 }
