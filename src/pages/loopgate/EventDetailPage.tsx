@@ -92,7 +92,7 @@ export default function EventDetailPage() {
   const isClosed = event.status === "closed";
   const isLightYagami = event.slug === LIGHT_YAGAMI_SLUG;
   const displayPoster = isLightYagami ? lightYagamiPoster : event.poster_url;
-  const featuredEdits = rankings.filter((r) => r.submission_url).slice(0, 6);
+  const featuredEdits = rankings.filter((r) => r.submission_url && (r as any).is_showcase).slice(0, 6);
   const ladderRows = rankings.slice(0, ladderLimit);
   const isShowcaseAdmin = user?.email?.toLowerCase() === "aminhoopz@gmail.com";
 
@@ -408,6 +408,7 @@ export default function EventDetailPage() {
         eventId={event.id}
         eventTitle={event.title}
         roundNumber={isOpenArena ? activeRound?.round_number : undefined}
+        isShowcase={isShowcaseAdmin}
       />
 
       <OpenArenaGuide isOpen={showGuide} onClose={() => setShowGuide(false)} />

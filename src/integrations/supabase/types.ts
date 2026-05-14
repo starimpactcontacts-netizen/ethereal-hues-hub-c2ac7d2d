@@ -3896,6 +3896,7 @@ export type Database = {
           final_rank: number | null
           id: string
           impact_score: number | null
+          is_showcase: boolean
           judge_id: string | null
           judged_at: string | null
           originality_score: number | null
@@ -3918,6 +3919,7 @@ export type Database = {
           final_rank?: number | null
           id?: string
           impact_score?: number | null
+          is_showcase?: boolean
           judge_id?: string | null
           judged_at?: string | null
           originality_score?: number | null
@@ -3940,6 +3942,7 @@ export type Database = {
           final_rank?: number | null
           id?: string
           impact_score?: number | null
+          is_showcase?: boolean
           judge_id?: string | null
           judged_at?: string | null
           originality_score?: number | null
@@ -7828,6 +7831,7 @@ export type Database = {
           event_id: string
           id: string
           impact_score: number | null
+          is_showcase: boolean
           judge_id: string | null
           judged_at: string | null
           originality_score: number | null
@@ -7853,6 +7857,7 @@ export type Database = {
           event_id: string
           id?: string
           impact_score?: number | null
+          is_showcase?: boolean
           judge_id?: string | null
           judged_at?: string | null
           originality_score?: number | null
@@ -7878,6 +7883,7 @@ export type Database = {
           event_id?: string
           id?: string
           impact_score?: number | null
+          is_showcase?: boolean
           judge_id?: string | null
           judged_at?: string | null
           originality_score?: number | null
