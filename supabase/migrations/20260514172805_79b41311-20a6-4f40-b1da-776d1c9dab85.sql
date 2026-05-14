@@ -1,0 +1,1 @@
+DELETE FROM public.event_participations WHERE id = '69c7d555-e910-4a88-89ee-ce42559664e1';
