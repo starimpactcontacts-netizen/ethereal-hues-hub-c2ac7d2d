@@ -1206,34 +1206,52 @@ export default function ArenaPage() {
           {liveEvents.length > 0 && (
             <Link
               to={`/event/${(liveEvents[0] as any).slug || liveEvents[0].id}`}
-              className="relative flex items-stretch gap-2.5 mb-3 p-2 rounded-xl bg-[#0e0e10] border border-white/[0.06] active:scale-[0.99] transition-transform overflow-hidden"
+              className="relative block mb-3 rounded-2xl overflow-hidden bg-black border border-white/[0.08] active:scale-[0.99] transition-transform"
             >
-              <div className="relative w-[68px] h-[68px] shrink-0 rounded-lg overflow-hidden bg-black">
+              {/* Cinematic poster strip */}
+              <div className="relative h-[132px] w-full overflow-hidden">
                 {liveEvents[0].poster_url && (
-                  <img src={liveEvents[0].poster_url} alt={liveEvents[0].title} className="absolute inset-0 w-full h-full object-cover" loading="eager" />
+                  <img
+                    src={liveEvents[0].poster_url}
+                    alt={liveEvents[0].title}
+                    className="absolute inset-0 w-full h-full object-cover scale-105"
+                    loading="eager"
+                  />
                 )}
-                <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-lg" />
-              </div>
-              <div className="flex-1 min-w-0 flex flex-col justify-center py-0.5">
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                  <span className="text-[8.5px] font-black uppercase tracking-[0.18em] text-red-400">Live Event</span>
-                  {liveEvents[0].prize_pool && (
-                    <span className="text-[8.5px] font-black uppercase tracking-[0.14em] text-gold ml-auto truncate max-w-[140px]">{liveEvents[0].prize_pool}</span>
-                  )}
+                {/* Side-to-side gradient so right half stays readable */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/55 to-black" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+
+                {/* Live pulse */}
+                <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 px-2 py-[3px] rounded-full bg-red-500/95 backdrop-blur shadow-[0_4px_14px_-2px_rgba(239,68,68,0.6)]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                  <span className="text-[8.5px] font-black uppercase tracking-[0.2em] text-white">Live</span>
                 </div>
-                <h3 className="text-[13px] font-black text-foreground leading-tight truncate" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-                  {liveEvents[0].title}
-                </h3>
-                <p className="text-[10px] text-muted-foreground truncate mt-0.5">
-                  Deadline {new Date(liveEvents[0].end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · Tap to enter
-                </p>
+
+                {/* Right column: title + CTA */}
+                <div className="absolute inset-y-0 right-0 w-[60%] flex flex-col justify-center px-3.5 gap-2">
+                  <div>
+                    <div className="text-[8.5px] font-black uppercase tracking-[0.22em] text-amber-300/90 mb-1 truncate">
+                      {liveEvents[0].prize_pool || 'Cash + Rings'}
+                    </div>
+                    <h3
+                      className="text-[20px] leading-[0.95] font-black text-white tracking-tight line-clamp-2"
+                      style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}
+                    >
+                      {liveEvents[0].title.toUpperCase()}
+                    </h3>
+                    <p className="text-[10px] text-white/55 truncate mt-1">
+                      Deadline {new Date(liveEvents[0].end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5 self-start mt-0.5 px-3 py-1.5 rounded-lg bg-emerald-500 text-black text-[10.5px] font-black uppercase tracking-[0.18em] shadow-[0_8px_22px_-6px_rgba(16,185,129,0.55)]">
+                    Enter Now
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                  </div>
+                </div>
               </div>
-              <div className="shrink-0 flex items-center">
-                <span className="px-3 py-2 rounded-lg bg-emerald-500 text-black text-[11px] font-black uppercase tracking-[0.16em]">
-                  Enter
-                </span>
-              </div>
+              {/* Bottom emerald glow line */}
+              <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-emerald-400/70 to-transparent" />
             </Link>
           )}
 
