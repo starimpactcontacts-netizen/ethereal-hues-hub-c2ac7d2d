@@ -4,6 +4,7 @@ import { Play, Pause } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useBattleAudioUnlock } from "@/hooks/useBattleAudioUnlock";
 import { getBunnyPlaybackUrl, isBunnyVideoUrl } from "@/lib/bunnyPlayback";
+import { attachHlsSource } from "@/lib/attachHlsSource";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
@@ -99,6 +100,17 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     bufferHoldStartedAtRef.current = null;
     holdOffsetMsRef.current = 0;
   }, [posterKey, videoKey]);
+
+  // Attach HLS (or native src) for each side. Required for Bunny Stream .m3u8.
+  useEffect(() => {
+    const detachers: Array<() => void> = [];
+    playableSides.forEach((side, i) => {
+      const v = videoRefs.current[i];
+      if (!v || !isDirectVideo(side.url)) return;
+      detachers.push(attachHlsSource(v, side.url));
+    });
+    return () => { detachers.forEach((d) => d()); };
+  }, [playableSides, videoKey]);
 
   // Keep inactive videos at metadata so mobile Safari can grab a first frame cheaply.
   // Active video uses auto; the next side warms up near the swap without both full-buffering forever.
@@ -286,7 +298,6 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
                     <video
                       key={side.url}
                       ref={(node) => { videoRefs.current[index] = node; }}
-                      src={side.url}
                       className={`relative w-full h-full object-contain bg-black transition-opacity duration-200 ${poster && !hasStarted ? "opacity-0" : "opacity-100"}`}
                       playsInline
                       autoPlay={active}
@@ -311,9 +322,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
                           advanceToNext();
                         }
                       }}
-                    >
-                      <source src={side.url} type="video/mp4" />
-                    </video>
+                    />
                     {active && !ready[index] && !poster && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/35">
                         <div className={`w-8 h-8 rounded-full border-2 ${side.color === "red" ? "border-red-500/40 border-t-red-500" : "border-blue-500/40 border-t-blue-500"} animate-spin`} />

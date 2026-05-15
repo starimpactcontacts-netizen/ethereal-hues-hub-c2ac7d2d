@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useBattleAudioUnlock } from "@/hooks/useBattleAudioUnlock";
 import { getBunnyPlaybackUrl, isBunnyVideoUrl } from "@/lib/bunnyPlayback";
 import { supabase } from "@/integrations/supabase/client";
+import { attachHlsSource } from "@/lib/attachHlsSource";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
@@ -443,6 +444,14 @@ function SidePanel({
 
   useEffect(() => setLoadError(false), [side.url]);
 
+  // Attach HLS (or native src) — required for Bunny Stream .m3u8 outside Safari.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v || !isVid) return;
+    const detach = attachHlsSource(v, side.url);
+    return detach;
+  }, [isVid, side.url, videoRef]);
+
   // Capture first frame to use as instant poster — eliminates the "black freeze" flash.
   const handleLoadedData = () => {
     onReady();
@@ -490,7 +499,6 @@ function SidePanel({
         <video
           key={side.url}
           ref={videoRef}
-          src={side.url}
           className={`relative w-full h-full object-contain transition-opacity duration-200 ${poster && !started ? "opacity-0" : "opacity-100"}`}
           playsInline
           autoPlay={active}
@@ -511,9 +519,7 @@ function SidePanel({
           onCanPlayThrough={onReady}
           onPlaying={onStarted}
           onError={() => setLoadError(true)}
-        >
-          <source src={side.url} type="video/mp4" />
-        </video>
+        />
       ) : (
         <img
           src={side.url}

@@ -26,7 +26,7 @@ import QuickFightChat from '@/components/loopgate/QuickFightChat';
 import QuickFightResultCard from '@/components/loopgate/QuickFightResultCard';
 import BattleSubmissionCard from '@/components/loopgate/BattleSubmissionCard';
 import BattleAutoplayDuo from '@/components/loopgate/BattleAutoplayDuo';
-import { getBunnyPlaybackUrl } from '@/lib/bunnyPlayback';
+import { getBunnyPlaybackUrl, isHlsUrl } from '@/lib/bunnyPlayback';
 import FNFVoteScoreboard from '@/components/loopgate/FNFVoteScoreboard';
 import QuickFightPublicVote from '@/components/loopgate/QuickFightPublicVote';
 import BattleDecidedOverlay from '@/components/loopgate/BattleDecidedOverlay';
@@ -96,11 +96,20 @@ export default function QuickFightPage() {
   // Runs during voting/intro so the showcase has a warm buffer before "3 2 1 GO".
   useEffect(() => {
     const urls = [fight?.player_1_submission_url, fight?.player_2_submission_url]
-      .filter((u): u is string => !!u && /\.(mp4|webm|mov|m4v)(\?|$)/i.test(u))
+      .filter((u): u is string => !!u && /\.(mp4|webm|mov|m4v|m3u8)(\?|$)/i.test(u))
       .map((u) => getBunnyPlaybackUrl(u));
     if (urls.length === 0) return;
     const nodes: HTMLElement[] = [];
+    const aborts: AbortController[] = [];
     urls.forEach((src) => {
+      // For HLS playlists: just fetch the manifest so DNS + TCP + first segment
+      // are warm. <video preload> on .m3u8 confuses some browsers.
+      if (isHlsUrl(src)) {
+        const ac = new AbortController();
+        fetch(src, { signal: ac.signal, mode: 'cors', credentials: 'omit' }).catch(() => {});
+        aborts.push(ac);
+        return;
+      }
       // <link rel="preload" as="video"> — kicks off byte-range fetch immediately.
       const link = document.createElement('link');
       link.rel = 'preload';
@@ -123,7 +132,10 @@ export default function QuickFightPage() {
       v.load();
       nodes.push(v);
     });
-    return () => { nodes.forEach((n) => n.remove()); };
+    return () => {
+      nodes.forEach((n) => n.remove());
+      aborts.forEach((a) => a.abort());
+    };
   }, [fight?.player_1_submission_url, fight?.player_2_submission_url]);
 
   // Fetch my vote
