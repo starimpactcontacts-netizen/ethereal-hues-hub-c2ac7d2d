@@ -8,8 +8,6 @@ const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
 const HAVE_NOTHING = 0;
 const HAVE_CURRENT_DATA = 2;
-// Both sides keep `preload="metadata"` always (cheap — first frame + headers) so
-// neither shows a black screen on swap. The active side is bumped to `auto`.
 
 type Side = {
   userId: string;
@@ -84,6 +82,7 @@ export default function BattleAutoplayDuo({ red, blue, fightId, startedAt, pause
   const [bluePoster, setBluePoster] = useState<string | null>(blue.posterUrl || null);
   const [redStarted, setRedStarted] = useState(false);
   const [blueStarted, setBlueStarted] = useState(false);
+  const primedUrlsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     setRedReady(!isVideo(red.url));
@@ -110,7 +109,7 @@ export default function BattleAutoplayDuo({ red, blue, fightId, startedAt, pause
     const tick = () => {
       const activeSide = sides[activeIdx];
       const activeVideo = activeIdx === 0 ? redVideoRef.current : blueVideoRef.current;
-      const waitingForFirstFrame = isVideo(activeSide.url) && !activeVideo?.error && !activeVideo?.paused && (!activeVideo || activeVideo.readyState < HAVE_CURRENT_DATA);
+      const waitingForFirstFrame = isVideo(activeSide.url) && !activeVideo?.error && (!activeVideo || activeVideo.readyState < HAVE_CURRENT_DATA);
 
       if (waitingForFirstFrame) {
         if (!bufferHoldStartedAtRef.current) bufferHoldStartedAtRef.current = Date.now();
