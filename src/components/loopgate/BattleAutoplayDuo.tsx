@@ -436,7 +436,7 @@ function SidePanel({
       <div className="absolute inset-x-0 top-0 bg-gradient-to-b from-black/70 to-transparent p-2 flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <span className={`flex items-center gap-1 text-[9px] font-black uppercase tracking-[0.2em] ${accentText}`} style={teko}>
-            <span className={`w-1.5 h-1.5 rounded-full ${accent} ${active ? "animate-pulse" : ""}`} />
+            <span className={`w-1.5 h-1.5 rounded-full ${accent}`} />
             {side.color}
           </span>
           <span className="text-[11px] font-bold text-white">@{side.username}</span>
