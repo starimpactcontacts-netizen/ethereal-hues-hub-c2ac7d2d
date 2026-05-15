@@ -47,13 +47,23 @@ Deno.serve(async (req) => {
     const path = `${folderPart}${user.id}/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
 
     const url = `https://${STORAGE_HOST}/${STORAGE_ZONE}/${path}`;
+    const contentLength = req.headers.get('content-length') || undefined;
+    const bunnyHeaders: Record<string, string> = {
+      AccessKey: STORAGE_PASSWORD,
+      'Content-Type': fileType,
+    };
+    if (contentLength) bunnyHeaders['Content-Length'] = contentLength;
+
+    // Stream the body straight through. `duplex: 'half'` is REQUIRED in Deno
+    // when forwarding a ReadableStream as a fetch body — without it the
+    // request silently aborts on large uploads (which is why the client sees
+    // "100% then nothing").
     const bunnyRes = await fetch(url, {
       method: 'PUT',
-      headers: {
-        AccessKey: STORAGE_PASSWORD,
-        'Content-Type': fileType,
-      },
+      headers: bunnyHeaders,
       body: req.body,
+      // @ts-ignore — duplex is valid in Deno's fetch but missing from lib.dom
+      duplex: 'half',
     });
 
     if (!bunnyRes.ok) {
