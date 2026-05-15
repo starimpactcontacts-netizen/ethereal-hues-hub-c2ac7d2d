@@ -232,7 +232,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
           <span className={`flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.2em] ${accentText}`} style={teko}>
-            <span className={`w-1.5 h-1.5 rounded-full ${accent} animate-pulse`} />
+            <span className={`w-1.5 h-1.5 rounded-full ${accent}`} />
             Showcase
           </span>
           <span className="text-foreground/30 text-[10px]">·</span>
