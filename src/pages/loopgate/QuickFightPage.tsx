@@ -28,7 +28,6 @@ import BattleSubmissionCard from '@/components/loopgate/BattleSubmissionCard';
 import BattleAutoplayDuo from '@/components/loopgate/BattleAutoplayDuo';
 import FNFVoteScoreboard from '@/components/loopgate/FNFVoteScoreboard';
 import QuickFightPublicVote from '@/components/loopgate/QuickFightPublicVote';
-import BattleDecidedOverlay from '@/components/loopgate/BattleDecidedOverlay';
 import { setLobbyMusicActive } from '@/components/loopgate/LobbyMusicPlayer';
 import CustomEditBattleLobby from '@/components/loopgate/CustomEditBattleLobby';
 
@@ -61,8 +60,6 @@ export default function QuickFightPage() {
   const [voting, setVoting] = useState(false);
   const [hideConfirmOpen, setHideConfirmOpen] = useState(false);
   const [hiding, setHiding] = useState(false);
-  const [decidedActive, setDecidedActive] = useState(false);
-  const [decidedShown, setDecidedShown] = useState(false);
 
 
   // Auto-resolve expired fights on page load
@@ -273,29 +270,6 @@ export default function QuickFightPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Cinematic winner reveal — fires once both edits have looped */}
-      {fight.status === 'completed' && fight.winner_id && (
-        <BattleDecidedOverlay
-          active={decidedActive}
-          winnerUsername={
-            fight.winner_id === fight.player_1_id
-              ? fight.player_1_username
-              : (fight.player_2_username || '???')
-          }
-          winnerAvatarUrl={
-            fight.winner_id === fight.player_1_id
-              ? fight.player_1_avatar_url
-              : fight.player_2_avatar_url
-          }
-          winnerColor={fight.winner_id === fight.player_1_id ? 'red' : 'blue'}
-          loserUsername={
-            fight.winner_id === fight.player_1_id
-              ? (fight.player_2_username || undefined)
-              : fight.player_1_username
-          }
-          onDismiss={() => setDecidedActive(false)}
-        />
-      )}
       {/* ════════ ARCADE HUD ════════ */}
       {/* Top bar: back + status pill */}
       <div className="relative z-30 bg-black/80 backdrop-blur-xl border-b border-white/5">
@@ -399,7 +373,6 @@ export default function QuickFightPage() {
           {fight.player_1_submission_url && fight.player_2_submission_url && fight.player_2_id ? (
             // BOTH UPLOADED → clean tap-to-play native video slots
             <BattleAutoplayDuo
-              fightId={fight.id}
               red={{
                 userId: fight.player_1_id,
                 username: fight.player_1_username,
