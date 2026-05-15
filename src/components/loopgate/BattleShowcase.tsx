@@ -8,8 +8,7 @@ import { attachHlsSource } from "@/lib/attachHlsSource";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
-const PRELOAD_LEAD_SECONDS = 2.5;
-const STALL_BAIL_MS = 5000; // if active video can't get a frame in this window, auto-skip
+const STALL_BAIL_MS = 2000; // fail visibly instead of black-screening forever
 const HAVE_NOTHING = 0;
 const HAVE_CURRENT_DATA = 2;
 
@@ -107,27 +106,27 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     playableSides.forEach((side, i) => {
       const v = videoRefs.current[i];
       if (!v || !isDirectVideo(side.url)) return;
-      detachers.push(attachHlsSource(v, side.url));
+      detachers.push(attachHlsSource(v, side.url, {
+        onReady: () => setReady((prev) => (prev[i] ? prev : { ...prev, [i]: true })),
+        onError: () => setLoadErrors((prev) => ({ ...prev, [i]: true })),
+      }));
     });
     return () => { detachers.forEach((d) => d()); };
   }, [playableSides, videoKey]);
 
-  // Keep inactive videos at metadata so mobile Safari can grab a first frame cheaply.
-  // Active video uses auto; the next side warms up near the swap without both full-buffering forever.
+  // Keep BOTH edits hot from the start. Battle videos are short; forcing auto preload
+  // beats metadata-only black screens when the turn flips.
   useEffect(() => {
     videoRefs.current.forEach((v, i) => {
       if (!v) return;
       v.muted = true;
       v.defaultMuted = false;
-      const isActive = i === currentIdx;
-      // Always full-preload the active side; warm the next side ahead of the swap.
-      // Avoid the metadata→auto thrash that aborts in-flight loads on iOS Safari.
-      const shouldWarm = !isActive && secondsLeft <= PRELOAD_LEAD_SECONDS;
-      const desired = isActive || shouldWarm ? "auto" : "metadata";
-      if (v.preload !== desired) v.preload = desired;
+      v.playsInline = true;
+      v.crossOrigin = "anonymous";
+      if (v.preload !== "auto") v.preload = "auto";
       if (v.readyState === HAVE_NOTHING) v.load();
     });
-  }, [currentIdx, secondsLeft, videoKey]);
+  }, [videoKey]);
 
   // Auto-skip the active side if it can't produce a frame within STALL_BAIL_MS.
   useEffect(() => {
