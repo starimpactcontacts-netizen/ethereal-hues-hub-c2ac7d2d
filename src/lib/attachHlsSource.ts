@@ -1,6 +1,11 @@
 import Hls from "hls.js";
 import { isHlsUrl } from "@/lib/bunnyPlayback";
 
+export type HlsAttachHandlers = {
+  onReady?: () => void;
+  onError?: (message: string) => void;
+};
+
 /**
  * Attach a video URL to a <video> element with HLS support.
  *
@@ -11,13 +16,19 @@ import { isHlsUrl } from "@/lib/bunnyPlayback";
  *
  * Returns a cleanup function that detaches hls.js (call on unmount / src change).
  */
-export function attachHlsSource(video: HTMLVideoElement, url: string): () => void {
+export function attachHlsSource(video: HTMLVideoElement, url: string, handlers: HlsAttachHandlers = {}): () => void {
   if (!url) return () => {};
+
+  video.preload = "auto";
+  video.crossOrigin = "anonymous";
+  video.playsInline = true;
+  console.info('[Bunny Video] Requesting CDN URL:', url);
 
   // Native HLS (Safari + iOS) — let the browser do it.
   const canNative = video.canPlayType("application/vnd.apple.mpegurl") !== "";
   if (!isHlsUrl(url) || canNative) {
     if (video.src !== url) video.src = url;
+    video.load();
     return () => {};
   }
 
@@ -36,6 +47,19 @@ export function attachHlsSource(video: HTMLVideoElement, url: string): () => voi
     startLevel: -1, // auto bitrate
     // ABR aggressiveness — pick lower bitrate fast on weak connections.
     abrEwmaDefaultEstimate: 1_000_000,
+  });
+  hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
+    console.info('[Bunny Video] HLS manifest loaded:', url, `levels=${data.levels.length}`);
+    handlers.onReady?.();
+  });
+  hls.on(Hls.Events.LEVEL_LOADED, (_, data) => {
+    console.info('[Bunny Video] HLS level ready:', url, `level=${data.level}`);
+    handlers.onReady?.();
+  });
+  hls.on(Hls.Events.ERROR, (_, data) => {
+    const message = `${data.type}:${data.details}${data.fatal ? ':fatal' : ''}`;
+    console.error('[Bunny Video] HLS error:', message, url);
+    if (data.fatal) handlers.onError?.(message);
   });
   hls.loadSource(url);
   hls.attachMedia(video);
