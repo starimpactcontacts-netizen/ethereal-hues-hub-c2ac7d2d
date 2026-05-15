@@ -130,23 +130,38 @@ export default function BattleAutoplayDuo({ red, blue, fightId, startedAt, pause
     return () => clearInterval(id);
   }, [activeIdx, blueReady, compute, redReady, sides, tickEnabled]);
 
-  // Serial preload: only the active side opens a connection. Inactive side waits until
-  // Keep BOTH videos at `metadata` preload at all times so the first frame is always
-  // decoded and we never show a black panel. Bump the active side to `auto` for full buffering.
+  // Keep BOTH Bunny videos hot. Mobile Safari often refuses to fully buffer with
+  // metadata-only, so force `auto`, call `load()`, then silently prime playback once.
   useEffect(() => {
     const refs = [redVideoRef.current, blueVideoRef.current];
     refs.forEach((v, i) => {
       if (!v) return;
-      const isActive = i === activeIdx;
-      const desired: "auto" | "metadata" = isActive ? "auto" : "metadata";
-      if (v.preload !== desired) {
-        v.preload = desired;
-        if (desired === "auto" || v.readyState === HAVE_NOTHING) v.load();
-      } else if (v.readyState === HAVE_NOTHING) {
+      v.preload = "auto";
+      v.playsInline = true;
+      if (v.readyState === HAVE_NOTHING) {
         v.load();
       }
+
+      const key = v.currentSrc || v.src;
+      if (!primedUrlsRef.current.has(key)) {
+        primedUrlsRef.current.add(key);
+        const wasMuted = v.muted;
+        v.muted = true;
+        v.defaultMuted = true;
+        v.play()
+          .then(() => {
+            if (i !== activeIdx || paused) {
+              v.pause();
+              try { v.currentTime = 0; } catch { /* ignore */ }
+            }
+            v.muted = wasMuted || !(audioUnlocked && i === activeIdx);
+          })
+          .catch(() => {
+            v.muted = wasMuted || !(audioUnlocked && i === activeIdx);
+          });
+      }
     });
-  }, [activeIdx, red.url, blue.url]);
+  }, [activeIdx, audioUnlocked, paused, red.url, blue.url]);
 
   // Drive playback without seeking/resetting; seeking on mobile was causing black frames and stutter.
   useEffect(() => {
