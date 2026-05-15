@@ -46,6 +46,7 @@ export default function BattleDetailPage() {
   const { battle, loading, setBattle, refetch } = useBattle(battleId);
   const [submissionUrl, setSubmissionUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [uploadPct, setUploadPct] = useState(0);
   const [accepting, setAccepting] = useState(false);
   const [myVote, setMyVote] = useState<string | null>(null);
   const [voting, setVoting] = useState(false);
