@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Play, Pause } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useBattleAudioUnlock } from "@/hooks/useBattleAudioUnlock";
-import { getBunnyPlaybackUrl } from "@/lib/bunnyPlayback";
+import { getBunnyPlaybackUrl, isBunnyVideoUrl } from "@/lib/bunnyPlayback";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
@@ -29,7 +29,7 @@ interface Props {
 }
 
 function isDirectVideo(url: string) {
-  return /\.(mp4|webm|mov|m4v)(\?|$)/i.test(url);
+  return isBunnyVideoUrl(url);
 }
 function isImageFile(url: string) {
   return /\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(url);
@@ -168,7 +168,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     const tick = () => {
       const activeSide = playableSides[currentIdx];
       const activeVideo = videoRefs.current[currentIdx];
-      const waitingForFirstFrame = isDirectVideo(activeSide.url) && !activeVideo?.error && (!activeVideo || activeVideo.readyState < HAVE_CURRENT_DATA);
+      const waitingForFirstFrame = isDirectVideo(activeSide.url) && !activeVideo?.error && !activeVideo?.paused && (!activeVideo || activeVideo.readyState < HAVE_CURRENT_DATA);
 
       if (waitingForFirstFrame) {
         if (!bufferHoldStartedAtRef.current) bufferHoldStartedAtRef.current = Date.now();
@@ -284,10 +284,12 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
                       />
                     )}
                     <video
+                      key={side.url}
                       ref={(node) => { videoRefs.current[index] = node; }}
                       src={side.url}
                       className={`relative w-full h-full object-contain bg-black transition-opacity duration-200 ${poster && !hasStarted ? "opacity-0" : "opacity-100"}`}
                       playsInline
+                      autoPlay={active}
                       loop
                       preload={active ? "auto" : "metadata"}
                       controls={false}
@@ -309,7 +311,9 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
                           advanceToNext();
                         }
                       }}
-                    />
+                    >
+                      <source src={side.url} type="video/mp4" />
+                    </video>
                     {active && !ready[index] && !poster && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/35">
                         <div className={`w-8 h-8 rounded-full border-2 ${side.color === "red" ? "border-red-500/40 border-t-red-500" : "border-blue-500/40 border-t-blue-500"} animate-spin`} />

@@ -1,5 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import { getBunnyPlaybackUrl } from "@/lib/bunnyPlayback";
 
 export interface UploadOpts {
   folder?: string;
@@ -61,7 +60,7 @@ export async function uploadToBunny(
           const json = JSON.parse(xhr.responseText);
           if (!json.url) return reject(new Error(json.error || "Upload failed"));
           opts?.onProgress?.(1);
-          resolve({ url: getBunnyPlaybackUrl(json.url), path: json.path });
+          resolve({ url: json.url, path: json.path });
         } catch (e) {
           reject(new Error("Bad upload response"));
         }

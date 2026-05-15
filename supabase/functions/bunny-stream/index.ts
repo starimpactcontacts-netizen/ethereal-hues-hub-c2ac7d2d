@@ -35,10 +35,12 @@ function normalizeStorageConfig(hostValue: string, zoneValue: string) {
 
 function normalizeStoragePath(input: string) {
   const url = new URL(input);
-  if (url.hostname !== 'storage.bunnycdn.com') throw new Error('Unsupported video host');
-  const path = url.pathname.split('/').filter(Boolean).join('/');
-  if (!path) throw new Error('Missing video path');
   const storage = normalizeStorageConfig(STORAGE_HOST, STORAGE_ZONE);
+  const cdnHost = (Deno.env.get('BUNNY_CDN_HOSTNAME') || '').replace(/^https?:\/\//i, '').replace(/\/.*$/g, '');
+  if (![storage.host, 'storage.bunnycdn.com', cdnHost].filter(Boolean).includes(url.hostname)) throw new Error('Unsupported video host');
+  const parts = url.pathname.split('/').filter(Boolean);
+  const path = url.hostname === storage.host && parts[0] === storage.zone ? parts.slice(1).join('/') : parts.join('/');
+  if (!path) throw new Error('Missing video path');
   return `https://${storage.host}/${storage.zone}/${path}`;
 }
 
