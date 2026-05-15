@@ -117,7 +117,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   // Keep BOTH edits hot from the start. Battle videos are short; forcing auto preload
   // beats metadata-only black screens when the turn flips.
   useEffect(() => {
-    videoRefs.current.forEach((v, i) => {
+    videoRefs.current.forEach((v) => {
       if (!v) return;
       v.muted = true;
       v.defaultMuted = false;
@@ -141,6 +141,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     stallTimerRef.current = window.setTimeout(() => {
       const v = videoRefs.current[currentIdx];
       if (!v || v.readyState >= HAVE_CURRENT_DATA) return;
+      console.error('[Bunny Video] Active edit failed to load within 2s:', activeSide.url);
       skippedRef.current[currentIdx] = true;
       setLoadErrors((prev) => ({ ...prev, [currentIdx]: true }));
       advanceToNext();
@@ -301,7 +302,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
                       playsInline
                       autoPlay={active}
                       loop
-                      preload={active ? "auto" : "metadata"}
+                      preload="auto"
                       controls={false}
                       disablePictureInPicture
                       muted={!active}
@@ -315,6 +316,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
                       onCanPlay={() => setReady((prev) => (prev[index] ? prev : { ...prev, [index]: true }))}
                       onPlaying={() => setStarted((prev) => (prev[index] ? prev : { ...prev, [index]: true }))}
                       onError={() => {
+                        console.error('[Bunny Video] Video element error:', side.url);
                         setLoadErrors((prev) => ({ ...prev, [index]: true }));
                         if (index === currentIdx && !skippedRef.current[index]) {
                           skippedRef.current[index] = true;
