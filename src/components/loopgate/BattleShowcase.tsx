@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Play, Pause } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useBattleAudioUnlock } from "@/hooks/useBattleAudioUnlock";
+import { getBunnyPlaybackUrl } from "@/lib/bunnyPlayback";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
@@ -40,11 +41,15 @@ function isImageFile(url: string) {
  * after the first full pass.
  */
 export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }: Props) {
-  const videoKey = useMemo(() => sides.map((side) => side.url).join("|"), [sides]);
-  const posterKey = useMemo(() => sides.map((side) => side.posterUrl || "").join("|"), [sides]);
+  const playableSides = useMemo<[Side, Side]>(() => sides.map((side) => ({
+    ...side,
+    url: getBunnyPlaybackUrl(side.url),
+  })) as [Side, Side], [sides]);
+  const videoKey = useMemo(() => playableSides.map((side) => side.url).join("|"), [playableSides]);
+  const posterKey = useMemo(() => playableSides.map((side) => side.posterUrl || "").join("|"), [playableSides]);
   const audioUnlocked = useBattleAudioUnlock();
   const startMs = showcaseStartedAt ? new Date(showcaseStartedAt).getTime() : null;
-  const totalMs = sides.length * PER_EDIT_SECONDS * 1000;
+  const totalMs = playableSides.length * PER_EDIT_SECONDS * 1000;
 
   const compute = useCallback(() => {
     if (!startMs) return { idx: 0, left: PER_EDIT_SECONDS, completedOnce: false };
@@ -52,11 +57,11 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     const completedOnce = elapsed >= totalMs;
     // Loop after the first pass so latecomers always see something playing
     const looped = elapsed % totalMs;
-    const idx = Math.min(sides.length - 1, Math.floor(looped / (PER_EDIT_SECONDS * 1000)));
+    const idx = Math.min(playableSides.length - 1, Math.floor(looped / (PER_EDIT_SECONDS * 1000)));
     const intoEdit = looped - idx * PER_EDIT_SECONDS * 1000;
     const left = Math.max(0, Math.ceil((PER_EDIT_SECONDS * 1000 - intoEdit) / 1000));
     return { idx, left, completedOnce };
-  }, [sides.length, startMs, totalMs]);
+  }, [playableSides.length, startMs, totalMs]);
 
   const initial = compute();
   const [currentIdx, setCurrentIdx] = useState(initial.idx);
@@ -73,19 +78,19 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   const skippedRef = useRef<Record<number, boolean>>({});
   const stallTimerRef = useRef<number | null>(null);
 
-  const current = sides[currentIdx];
+  const current = playableSides[currentIdx];
 
   const advanceToNext = useCallback(() => {
-    if (sides.length <= 1) return;
-    const next = (currentIdx + 1) % sides.length;
+    if (playableSides.length <= 1) return;
+    const next = (currentIdx + 1) % playableSides.length;
     setCurrentIdx(next);
     setSecondsLeft(PER_EDIT_SECONDS);
-  }, [currentIdx, sides.length]);
+  }, [currentIdx, playableSides.length]);
 
   useEffect(() => {
     setReady({});
     setStarted({});
-    setPosters(sides.reduce<Record<number, string>>((acc, side, index) => {
+    setPosters(playableSides.reduce<Record<number, string>>((acc, side, index) => {
       if (side.posterUrl) acc[index] = side.posterUrl;
       return acc;
     }, {}));
@@ -118,7 +123,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
       window.clearTimeout(stallTimerRef.current);
       stallTimerRef.current = null;
     }
-    const activeSide = sides[currentIdx];
+    const activeSide = playableSides[currentIdx];
     if (!isDirectVideo(activeSide.url)) return;
     if (skippedRef.current[currentIdx]) return;
     if (started[currentIdx] || ready[currentIdx]) return;
@@ -135,7 +140,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
         stallTimerRef.current = null;
       }
     };
-  }, [advanceToNext, currentIdx, ready, sides, started]);
+  }, [advanceToNext, currentIdx, playableSides, ready, started]);
 
   useEffect(() => {
     videoRefs.current.forEach((v, index) => {
@@ -161,7 +166,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   useEffect(() => {
     if (!startMs) return;
     const tick = () => {
-      const activeSide = sides[currentIdx];
+      const activeSide = playableSides[currentIdx];
       const activeVideo = videoRefs.current[currentIdx];
       const waitingForFirstFrame = isDirectVideo(activeSide.url) && !activeVideo?.error && (!activeVideo || activeVideo.readyState < HAVE_CURRENT_DATA);
 
@@ -179,7 +184,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
       const elapsed = Math.max(0, now - adjustedStartMs);
       const completedOnce = elapsed >= totalMs;
       const looped = elapsed % totalMs;
-      const idx = Math.min(sides.length - 1, Math.floor(looped / (PER_EDIT_SECONDS * 1000)));
+      const idx = Math.min(playableSides.length - 1, Math.floor(looped / (PER_EDIT_SECONDS * 1000)));
       const intoEdit = looped - idx * PER_EDIT_SECONDS * 1000;
       const left = Math.max(0, Math.ceil((PER_EDIT_SECONDS * 1000 - intoEdit) / 1000));
       setCurrentIdx(prev => (prev !== idx ? idx : prev));
@@ -192,7 +197,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     tick();
     const id = setInterval(tick, 250);
     return () => clearInterval(id);
-  }, [currentIdx, onComplete, ready, sides, startMs, totalMs]);
+  }, [currentIdx, onComplete, ready, playableSides, startMs, totalMs]);
 
   const progressPct = ((PER_EDIT_SECONDS - secondsLeft) / PER_EDIT_SECONDS) * 100;
   const ringColor = current.color === "red" ? "ring-red-500/40" : "ring-blue-500/40";
@@ -232,7 +237,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
           </span>
           <span className="text-foreground/30 text-[10px]">·</span>
           <span className="text-[10px] font-bold tabular-nums text-foreground/60" style={teko}>
-            {currentIdx + 1}/{sides.length}
+            {currentIdx + 1}/{playableSides.length}
           </span>
         </div>
         <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-foreground/40" style={teko}>
@@ -242,7 +247,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
 
       {/* Two-segment progress */}
       <div className="flex gap-1">
-        {sides.map((_, i) => (
+        {playableSides.map((_, i) => (
           <div key={i} className="flex-1 h-1 rounded-full bg-white/[0.06] overflow-hidden">
             <div
               className={`h-full ${i === 0 ? "bg-red-500" : "bg-blue-500"} transition-all`}
@@ -259,7 +264,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
       <motion.div
         className={`relative aspect-[9/16] max-h-[78vh] w-full max-w-[min(100%,calc(78vh*9/16))] mx-auto rounded-2xl overflow-hidden bg-black border border-white/[0.06] ring-2 ${ringColor}`}
       >
-          {sides.map((side, index) => {
+          {playableSides.map((side, index) => {
             const sideDirect = isDirectVideo(side.url);
             const sideImage = isImageFile(side.url);
             const active = index === currentIdx;
