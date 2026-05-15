@@ -12,18 +12,37 @@ export interface UploadOpts {
 export const MAX_EDIT_UPLOAD_BYTES = 1024 * 1024 * 1024;
 export const MAX_EDIT_UPLOAD_LABEL = "1GB";
 
+export interface BunnyUploadResult {
+  /** Canonical playback URL — HLS playlist for Stream uploads, CDN MP4 for legacy. */
+  url: string;
+  /** Stream guid (only present for Stream uploads). */
+  guid?: string;
+  /** Direct MP4 fallback URL (Stream only). */
+  mp4Url?: string;
+  /** Auto-generated thumbnail (Stream only). */
+  thumbnailUrl?: string;
+  /** Animated preview webp (Stream only). */
+  previewUrl?: string;
+  /** Storage path for legacy Storage uploads. Empty string for Stream uploads. */
+  path: string;
+}
+
 /**
- * Upload to Bunny via the `bunny-upload` edge function proxy.
+ * Upload a video to **Bunny Stream** via the `bunny-stream-upload` edge function.
  *
- * NOTE: We can't PUT directly to storage.bunnycdn.com from the browser —
- * Bunny Storage does not return CORS headers, so the preflight blows up.
- * Instead we stream the file body to our edge function which forwards it to
- * Bunny server-side. We use XHR so we still get real upload progress.
+ * Bunny Stream gives us:
+ *   - Adaptive bitrate HLS playback (instant start, scales to network)
+ *   - Auto thumbnails + preview animations
+ *   - Proper CDN distribution (no edge-function proxy on every play)
+ *
+ * Returned `url` is the HLS `.m3u8` playlist — use the `HlsVideo` component or
+ * `getBunnyPlaybackUrl()` helper to play it (Safari plays HLS natively, other
+ * browsers go through `hls.js`).
  */
 export async function uploadToBunny(
   file: File | Blob,
   opts?: UploadOpts,
-): Promise<{ url: string; path: string }> {
+): Promise<BunnyUploadResult> {
   const maxBytes = opts?.maxBytes ?? MAX_EDIT_UPLOAD_BYTES;
   if (file.size > maxBytes) {
     throw new Error(`File too big — ${MAX_EDIT_UPLOAD_LABEL} max`);
@@ -40,7 +59,7 @@ export async function uploadToBunny(
   const folder = (opts?.folder || "").replace(/^\/+|\/+$/g, "");
   const xFileName = folder ? `${folder}/${inferredName}` : inferredName;
 
-  const endpoint = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bunny-upload`;
+  const endpoint = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bunny-stream-upload`;
 
   return await new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -60,7 +79,14 @@ export async function uploadToBunny(
           const json = JSON.parse(xhr.responseText);
           if (!json.url) return reject(new Error(json.error || "Upload failed"));
           opts?.onProgress?.(1);
-          resolve({ url: json.url, path: json.path });
+          resolve({
+            url: json.url,
+            guid: json.guid,
+            mp4Url: json.mp4Url,
+            thumbnailUrl: json.thumbnailUrl,
+            previewUrl: json.previewUrl,
+            path: json.path || "",
+          });
         } catch (e) {
           reject(new Error("Bad upload response"));
         }
