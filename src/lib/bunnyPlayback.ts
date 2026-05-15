@@ -30,6 +30,49 @@ export function getBunnyStreamMp4Url(url: string | null | undefined): string {
   return source;
 }
 
+export function getBunnyPlaybackCandidates(url: string | null | undefined): string[] {
+  const source = getBunnySourceUrl(url);
+  if (!source) return [];
+
+  const urls = new Set<string>();
+  const add = (candidate: string) => {
+    if (candidate) urls.add(candidate);
+  };
+
+  add(source);
+
+  try {
+    const parsed = new URL(source);
+    if (parsed.hostname.endsWith('.b-cdn.net')) {
+      const base = new URL(source);
+      if (/\/playlist\.m3u8$/i.test(base.pathname)) {
+        for (const quality of ['720', '480', '360', '240']) {
+          const mp4 = new URL(source);
+          mp4.pathname = mp4.pathname.replace(/\/playlist\.m3u8$/i, `/play_${quality}p.mp4`);
+          mp4.search = '';
+          add(mp4.toString());
+        }
+      }
+      if (/\/play_\d+p\.mp4$/i.test(base.pathname)) {
+        const playlist = new URL(source);
+        playlist.pathname = playlist.pathname.replace(/\/play_\d+p\.mp4$/i, '/playlist.m3u8');
+        playlist.search = '';
+        add(playlist.toString());
+        for (const quality of ['720', '480', '360', '240']) {
+          const mp4 = new URL(source);
+          mp4.pathname = mp4.pathname.replace(/\/play_\d+p\.mp4$/i, `/play_${quality}p.mp4`);
+          mp4.search = '';
+          add(mp4.toString());
+        }
+      }
+    }
+  } catch {
+    return Array.from(urls);
+  }
+
+  return Array.from(urls);
+}
+
 export function getBunnyStreamHlsUrl(url: string | null | undefined): string {
   const source = getBunnySourceUrl(url);
   if (!source) return "";
@@ -68,7 +111,7 @@ export function getBunnyPlaybackUrl(url: string | null | undefined): string {
     const parsed = new URL(source);
     // Bunny Stream HLS / MP4 fallbacks are served straight from Bunny CDN.
     // Do NOT route video playback through Lovable Cloud; that would burn backend bandwidth.
-    if (parsed.hostname.endsWith('.b-cdn.net')) return getBunnyStreamMp4Url(source);
+    if (parsed.hostname.endsWith('.b-cdn.net')) return source;
     if (parsed.hostname === "storage.bunnycdn.com") {
       console.warn('[Bunny Video] Legacy Bunny Storage URL detected; refusing Lovable proxy playback:', source);
       return source;
