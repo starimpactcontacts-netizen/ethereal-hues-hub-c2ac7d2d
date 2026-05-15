@@ -9,15 +9,37 @@ const corsHeaders = {
 
 const STORAGE_PASSWORD = Deno.env.get('BUNNY_STORAGE_PASSWORD')!;
 const STORAGE_ZONE = Deno.env.get('BUNNY_STORAGE_ZONE') || 'loop-media';
+const STORAGE_HOST = Deno.env.get('BUNNY_STORAGE_HOST') || 'storage.bunnycdn.com';
+
+function normalizeStorageConfig(hostValue: string, zoneValue: string) {
+  const rawHost = String(hostValue || '').trim();
+  const rawZone = String(zoneValue || '').trim();
+
+  if (/^https?:\/\//i.test(rawZone)) {
+    const url = new URL(rawZone);
+    const zone = url.pathname.split('/').filter(Boolean)[0] || rawHost || 'loop-media';
+    return { host: url.hostname, zone };
+  }
+
+  if (/^https?:\/\//i.test(rawHost)) {
+    const url = new URL(rawHost);
+    const hostZone = url.pathname.split('/').filter(Boolean)[0];
+    return { host: url.hostname, zone: rawZone || hostZone || 'loop-media' };
+  }
+
+  return {
+    host: rawHost.includes('.') ? rawHost : 'storage.bunnycdn.com',
+    zone: rawZone || rawHost || 'loop-media',
+  };
+}
 
 function normalizeStoragePath(input: string) {
   const url = new URL(input);
   if (url.hostname !== 'storage.bunnycdn.com') throw new Error('Unsupported video host');
-  const parts = url.pathname.split('/').filter(Boolean);
-  const zone = parts[0] === STORAGE_ZONE ? parts[0] : STORAGE_ZONE;
-  const path = (parts[0] === STORAGE_ZONE ? parts.slice(1) : parts).join('/');
+  const path = url.pathname.split('/').filter(Boolean).join('/');
   if (!path) throw new Error('Missing video path');
-  return `https://storage.bunnycdn.com/${zone}/${path}`;
+  const storage = normalizeStorageConfig(STORAGE_HOST, STORAGE_ZONE);
+  return `https://${storage.host}/${storage.zone}/${path}`;
 }
 
 Deno.serve(async (req) => {
