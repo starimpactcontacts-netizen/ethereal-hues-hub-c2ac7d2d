@@ -90,7 +90,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   useEffect(() => {
     setReady({});
     setStarted({});
-    setPosters(sides.reduce<Record<number, string>>((acc, side, index) => {
+    setPosters(playableSides.reduce<Record<number, string>>((acc, side, index) => {
       if (side.posterUrl) acc[index] = side.posterUrl;
       return acc;
     }, {}));
@@ -123,7 +123,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
       window.clearTimeout(stallTimerRef.current);
       stallTimerRef.current = null;
     }
-    const activeSide = sides[currentIdx];
+    const activeSide = playableSides[currentIdx];
     if (!isDirectVideo(activeSide.url)) return;
     if (skippedRef.current[currentIdx]) return;
     if (started[currentIdx] || ready[currentIdx]) return;
@@ -140,7 +140,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
         stallTimerRef.current = null;
       }
     };
-  }, [advanceToNext, currentIdx, ready, sides, started]);
+  }, [advanceToNext, currentIdx, playableSides, ready, started]);
 
   useEffect(() => {
     videoRefs.current.forEach((v, index) => {
@@ -166,7 +166,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   useEffect(() => {
     if (!startMs) return;
     const tick = () => {
-      const activeSide = sides[currentIdx];
+      const activeSide = playableSides[currentIdx];
       const activeVideo = videoRefs.current[currentIdx];
       const waitingForFirstFrame = isDirectVideo(activeSide.url) && !activeVideo?.error && (!activeVideo || activeVideo.readyState < HAVE_CURRENT_DATA);
 
@@ -184,7 +184,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
       const elapsed = Math.max(0, now - adjustedStartMs);
       const completedOnce = elapsed >= totalMs;
       const looped = elapsed % totalMs;
-      const idx = Math.min(sides.length - 1, Math.floor(looped / (PER_EDIT_SECONDS * 1000)));
+      const idx = Math.min(playableSides.length - 1, Math.floor(looped / (PER_EDIT_SECONDS * 1000)));
       const intoEdit = looped - idx * PER_EDIT_SECONDS * 1000;
       const left = Math.max(0, Math.ceil((PER_EDIT_SECONDS * 1000 - intoEdit) / 1000));
       setCurrentIdx(prev => (prev !== idx ? idx : prev));
@@ -197,7 +197,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     tick();
     const id = setInterval(tick, 250);
     return () => clearInterval(id);
-  }, [currentIdx, onComplete, ready, sides, startMs, totalMs]);
+  }, [currentIdx, onComplete, ready, playableSides, startMs, totalMs]);
 
   const progressPct = ((PER_EDIT_SECONDS - secondsLeft) / PER_EDIT_SECONDS) * 100;
   const ringColor = current.color === "red" ? "ring-red-500/40" : "ring-blue-500/40";
