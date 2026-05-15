@@ -10,6 +10,15 @@ const STORAGE_HOST = Deno.env.get('BUNNY_STORAGE_HOST') || 'storage.bunnycdn.com
 const STORAGE_ZONE = Deno.env.get('BUNNY_STORAGE_ZONE')!;
 const STORAGE_PASSWORD = Deno.env.get('BUNNY_STORAGE_PASSWORD')!;
 const CDN_HOSTNAME = Deno.env.get('BUNNY_CDN_HOSTNAME')!;
+const MAX_UPLOAD_BYTES = 1024 * 1024 * 1024;
+
+function normalizeStorageHost(value: string) {
+  return value.replace(/^https?:\/\//i, '').replace(/\/.*$/g, '') || 'storage.bunnycdn.com';
+}
+
+function normalizeCdnHost(value: string) {
+  return value.replace(/^https?:\/\//i, '').replace(/\/.*$/g, '');
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
@@ -36,6 +45,13 @@ Deno.serve(async (req) => {
 
     const rawName = req.headers.get('x-file-name') || 'file.bin';
     const fileType = req.headers.get('x-file-type') || 'application/octet-stream';
+    const contentLength = req.headers.get('content-length') || undefined;
+    const byteLength = contentLength ? Number(contentLength) : 0;
+    if (byteLength && byteLength > MAX_UPLOAD_BYTES) {
+      return new Response(JSON.stringify({ error: 'File too big — 1GB max' }), {
+        status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // x-file-name may contain a folder prefix like "battle-edits/clip.mp4"
     const lastSlash = rawName.lastIndexOf('/');
@@ -46,8 +62,8 @@ Deno.serve(async (req) => {
     const folderPart = safeFolder ? `${safeFolder}/` : '';
     const path = `${folderPart}${user.id}/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
 
-    const url = `https://${STORAGE_HOST}/${STORAGE_ZONE}/${path}`;
-    const contentLength = req.headers.get('content-length') || undefined;
+    const storageHost = normalizeStorageHost(STORAGE_HOST);
+    const url = `https://${storageHost}/${STORAGE_ZONE}/${path}`;
     const bunnyHeaders: Record<string, string> = {
       AccessKey: STORAGE_PASSWORD,
       'Content-Type': fileType,
@@ -74,7 +90,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const cdnUrl = `https://${CDN_HOSTNAME}/${path}`;
+    const cdnUrl = `https://${normalizeCdnHost(CDN_HOSTNAME)}/${path}`;
     return new Response(JSON.stringify({ url: cdnUrl, path }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
