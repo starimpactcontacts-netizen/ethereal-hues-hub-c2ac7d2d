@@ -95,6 +95,7 @@ export default function QuickFightPage() {
   // Aggressively prefetch BOTH edits the moment we know the URLs.
   // Runs during voting/intro so the showcase has a warm buffer before "3 2 1 GO".
   useEffect(() => {
+    if (introDone) return;
     const urls = [fight?.player_1_submission_url, fight?.player_2_submission_url]
       .filter((u): u is string => !!u && /\.(mp4|webm|mov|m4v|m3u8)(\?|$)/i.test(u))
       .map((u) => getBunnyPlaybackUrl(u));
@@ -124,7 +125,7 @@ export default function QuickFightPage() {
         video.remove();
       });
     };
-  }, [fight?.player_1_submission_url, fight?.player_2_submission_url]);
+  }, [fight?.player_1_submission_url, fight?.player_2_submission_url, introDone]);
 
   // Fetch my vote
   useEffect(() => {
