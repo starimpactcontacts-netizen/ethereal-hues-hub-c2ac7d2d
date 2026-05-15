@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useBattleAudioUnlock } from "@/hooks/useBattleAudioUnlock";
-import { getBunnyPlaybackUrl } from "@/lib/bunnyPlayback";
+import { getBunnyPlaybackUrl, isBunnyVideoUrl } from "@/lib/bunnyPlayback";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
@@ -28,7 +28,7 @@ interface Props {
 }
 
 function isVideo(url: string) {
-  return /\.(mp4|webm|mov|m4v)(\?|$)/i.test(url);
+  return isBunnyVideoUrl(url);
 }
 
 /**
@@ -97,7 +97,7 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
     const tick = () => {
       const activeSide = sides[activeIdx];
       const activeVideo = activeIdx === 0 ? redVideoRef.current : blueVideoRef.current;
-      const waitingForFirstFrame = isVideo(activeSide.url) && !activeVideo?.error && (!activeVideo || activeVideo.readyState < HAVE_CURRENT_DATA);
+      const waitingForFirstFrame = isVideo(activeSide.url) && !activeVideo?.error && !activeVideo?.paused && (!activeVideo || activeVideo.readyState < HAVE_CURRENT_DATA);
 
       if (waitingForFirstFrame) {
         if (!bufferHoldStartedAtRef.current) bufferHoldStartedAtRef.current = Date.now();
