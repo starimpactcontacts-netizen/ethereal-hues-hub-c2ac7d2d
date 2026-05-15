@@ -26,19 +26,20 @@ export function isHlsUrl(url: string | null | undefined): boolean {
 
 export function getBunnyPlaybackUrl(url: string | null | undefined): string {
   if (!url) return "";
+  const source = getBunnySourceUrl(url);
 
   try {
-    const parsed = new URL(url);
+    const parsed = new URL(source);
     // Bunny Stream HLS / MP4 fallbacks are served straight from Bunny CDN.
     // Do NOT route video playback through Lovable Cloud; that would burn backend bandwidth.
-    if (parsed.hostname.endsWith('.b-cdn.net')) return url;
+    if (parsed.hostname.endsWith('.b-cdn.net')) return source;
     if (parsed.hostname === "storage.bunnycdn.com") {
-      console.warn('[Bunny Video] Legacy Bunny Storage URL detected; refusing Lovable proxy playback:', url);
-      return url;
+      console.warn('[Bunny Video] Legacy Bunny Storage URL detected; refusing Lovable proxy playback:', source);
+      return source;
     }
   } catch {
-    return url;
+    return source;
   }
 
-  return url;
+  return source;
 }
