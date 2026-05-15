@@ -315,7 +315,6 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
                           onClick={() => {
                             const v = videoRefs.current[index];
                             setLoadErrors((prev) => ({ ...prev, [index]: false }));
-                            skippedRef.current[index] = false;
                             if (v) { v.load(); v.play().catch(() => {}); }
                           }}
                           className="text-[10px] uppercase tracking-[0.18em] text-foreground/50 underline-offset-4 hover:underline"
