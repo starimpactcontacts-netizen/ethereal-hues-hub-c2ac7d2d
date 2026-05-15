@@ -143,7 +143,6 @@ export default function BattleDetailPage() {
   const isCompleted = battle.status === 'completed';
   const isJudging = battle.status === 'judging';
   const bothSubmitted = !!battle.challenger_submission_url && !!battle.opponent_submission_url;
-  const showcaseStartedAt = (battle as any).showcase_started_at as string | null;
   const judgingDeadline = (battle as any).judging_deadline as string | null;
   const publicVoteStartedAt = (battle as any).public_vote_started_at as string | null;
   const publicVoteDeadline = (battle as any).public_vote_deadline as string | null;
@@ -590,10 +589,9 @@ export default function BattleDetailPage() {
         {/* Submissions Display */}
         {(battle.challenger_submission_url || battle.opponent_submission_url) && (
           <div className="space-y-3">
-            {/* ═══ AUTO-SHOWCASE — both submitted, judging phase ═══ */}
-            {isJudging && bothSubmitted && showcaseStartedAt && battle.opponent_id && (
+            {/* ═══ SHOWCASE — both submitted, tap-to-play native video slots ═══ */}
+            {isJudging && bothSubmitted && battle.opponent_id && (
               <BattleShowcase
-                showcaseStartedAt={showcaseStartedAt}
                 sides={[
                   {
                     userId: battle.challenger_id,
