@@ -237,7 +237,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
           </span>
           <span className="text-foreground/30 text-[10px]">·</span>
           <span className="text-[10px] font-bold tabular-nums text-foreground/60" style={teko}>
-            {currentIdx + 1}/{sides.length}
+            {currentIdx + 1}/{playableSides.length}
           </span>
         </div>
         <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-foreground/40" style={teko}>
@@ -247,7 +247,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
 
       {/* Two-segment progress */}
       <div className="flex gap-1">
-        {sides.map((_, i) => (
+        {playableSides.map((_, i) => (
           <div key={i} className="flex-1 h-1 rounded-full bg-white/[0.06] overflow-hidden">
             <div
               className={`h-full ${i === 0 ? "bg-red-500" : "bg-blue-500"} transition-all`}
@@ -264,7 +264,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
       <motion.div
         className={`relative aspect-[9/16] max-h-[78vh] w-full max-w-[min(100%,calc(78vh*9/16))] mx-auto rounded-2xl overflow-hidden bg-black border border-white/[0.06] ring-2 ${ringColor}`}
       >
-          {sides.map((side, index) => {
+          {playableSides.map((side, index) => {
             const sideDirect = isDirectVideo(side.url);
             const sideImage = isImageFile(side.url);
             const active = index === currentIdx;
