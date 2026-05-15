@@ -80,13 +80,6 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
 
   const current = playableSides[currentIdx];
 
-  const advanceToNext = useCallback(() => {
-    if (playableSides.length <= 1) return;
-    const next = (currentIdx + 1) % playableSides.length;
-    setCurrentIdx(next);
-    setSecondsLeft(PER_EDIT_SECONDS);
-  }, [currentIdx, playableSides.length]);
-
   useEffect(() => {
     setReady({});
     setStarted({});
@@ -151,7 +144,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
         stallTimerRef.current = null;
       }
     };
-  }, [advanceToNext, currentIdx, playableSides, ready, started]);
+  }, [currentIdx, playableSides, ready, started]);
 
   useEffect(() => {
     videoRefs.current.forEach((v, index) => {
