@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useBattleAudioUnlock } from "@/hooks/useBattleAudioUnlock";
+import { getBunnyPlaybackUrl } from "@/lib/bunnyPlayback";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
@@ -36,7 +37,10 @@ function isVideo(url: string) {
  * Synced for all viewers using `startedAt` timestamp.
  */
 export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false }: Props) {
-  const sides = useMemo<[Side, Side]>(() => [red, blue], [red, blue]);
+  const sides = useMemo<[Side, Side]>(() => [
+    { ...red, url: getBunnyPlaybackUrl(red.url) },
+    { ...blue, url: getBunnyPlaybackUrl(blue.url) },
+  ], [red, blue]);
   const startMsRef = useRef<number>(startedAt ? new Date(startedAt).getTime() : Date.now());
   const totalMs = sides.length * PER_EDIT_SECONDS * 1000;
   const [redReady, setRedReady] = useState(false);
