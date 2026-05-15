@@ -146,6 +146,7 @@ export default function BattleAutoplayDuo({ red, blue, fightId, startedAt, pause
       const key = v.currentSrc || v.src;
       if (!primedUrlsRef.current.has(key)) {
         primedUrlsRef.current.add(key);
+        console.info('[Bunny Video] Priming battle edit buffer:', key);
         const wasMuted = v.muted;
         v.muted = true;
         v.defaultMuted = true;
@@ -448,9 +449,22 @@ function SidePanel({
   useEffect(() => {
     const v = videoRef.current;
     if (!v || !isVid) return;
-    const detach = attachHlsSource(v, side.url);
+    const detach = attachHlsSource(v, side.url, {
+      onError: () => setLoadError(true),
+    });
     return detach;
   }, [isVid, side.url, videoRef]);
+
+  useEffect(() => {
+    if (!active || !isVid || !loading) return;
+    const timer = window.setTimeout(() => {
+      const v = videoRef.current;
+      if (!v || v.readyState >= HAVE_CURRENT_DATA) return;
+      console.error('[Bunny Video] Active edit failed to load within 2s:', side.url);
+      setLoadError(true);
+    }, 2_000);
+    return () => window.clearTimeout(timer);
+  }, [active, isVid, loading, side.url, videoRef]);
 
   // Capture first frame to use as instant poster — eliminates the "black freeze" flash.
   const handleLoadedData = () => {
@@ -512,13 +526,14 @@ function SidePanel({
           muted={!active}
           poster={poster || undefined}
           crossOrigin="anonymous"
-          onLoadStart={onReady}
-          onLoadedMetadata={onReady}
           onLoadedData={handleLoadedData}
           onCanPlay={onReady}
           onCanPlayThrough={onReady}
           onPlaying={onStarted}
-          onError={() => setLoadError(true)}
+          onError={() => {
+            console.error('[Bunny Video] Video element error:', side.url);
+            setLoadError(true);
+          }}
         />
       ) : (
         <img
