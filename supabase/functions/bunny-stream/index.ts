@@ -14,8 +14,8 @@ function normalizeStoragePath(input: string) {
   const url = new URL(input);
   if (url.hostname !== 'storage.bunnycdn.com') throw new Error('Unsupported video host');
   const parts = url.pathname.split('/').filter(Boolean);
-  const zone = parts[0] || STORAGE_ZONE;
-  const path = parts.slice(1).join('/');
+  const zone = parts[0] === STORAGE_ZONE ? parts[0] : STORAGE_ZONE;
+  const path = (parts[0] === STORAGE_ZONE ? parts.slice(1) : parts).join('/');
   if (!path) throw new Error('Missing video path');
   return `https://storage.bunnycdn.com/${zone}/${path}`;
 }
