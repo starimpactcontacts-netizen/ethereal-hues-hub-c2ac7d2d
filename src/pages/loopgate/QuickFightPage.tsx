@@ -92,6 +92,40 @@ export default function QuickFightPage() {
     supabase.rpc('resolve_expired_quick_fights').then(() => {});
   }, [fightId]);
 
+  // Aggressively prefetch BOTH edits the moment we know the URLs.
+  // Runs during voting/intro so the showcase has a warm buffer before "3 2 1 GO".
+  useEffect(() => {
+    const urls = [fight?.player_1_submission_url, fight?.player_2_submission_url]
+      .filter((u): u is string => !!u && /\.(mp4|webm|mov|m4v)(\?|$)/i.test(u))
+      .map((u) => getBunnyPlaybackUrl(u));
+    if (urls.length === 0) return;
+    const nodes: HTMLElement[] = [];
+    urls.forEach((src) => {
+      // <link rel="preload" as="video"> — kicks off byte-range fetch immediately.
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'video';
+      link.href = src;
+      link.crossOrigin = 'anonymous';
+      document.head.appendChild(link);
+      nodes.push(link);
+      // Hidden <video preload="auto"> — forces a real decode-ready buffer on iOS Safari
+      // which sometimes ignores <link preload as=video>.
+      const v = document.createElement('video');
+      v.src = src;
+      v.preload = 'auto';
+      v.muted = true;
+      v.playsInline = true;
+      v.crossOrigin = 'anonymous';
+      v.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;';
+      document.body.appendChild(v);
+      // Trigger an actual GET so the browser starts buffering, not just metadata.
+      v.load();
+      nodes.push(v);
+    });
+    return () => { nodes.forEach((n) => n.remove()); };
+  }, [fight?.player_1_submission_url, fight?.player_2_submission_url]);
+
   // Fetch my vote
   useEffect(() => {
     if (!fightId || !user?.id) return;
