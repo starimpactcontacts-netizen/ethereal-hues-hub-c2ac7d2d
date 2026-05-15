@@ -521,8 +521,7 @@ function SidePanel({
           onCanPlayThrough={onReady}
           onPlaying={onStarted}
           onError={() => {
-            console.error('[Bunny Video] Video element error:', side.url);
-            setLoadError(true);
+            console.warn('[Bunny Video] Video element retry/error observed:', side.url);
           }}
         />
       ) : (

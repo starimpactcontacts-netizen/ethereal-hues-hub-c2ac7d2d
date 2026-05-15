@@ -286,8 +286,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
                         setStarted((prev) => (prev[index] ? prev : { ...prev, [index]: true }));
                       }}
                       onError={() => {
-                        console.error('[Bunny Video] Video element error:', side.url);
-                        setLoadErrors((prev) => ({ ...prev, [index]: true }));
+                        console.warn('[Bunny Video] Video element retry/error observed:', side.url);
                       }}
                     />
                     {active && !ready[index] && !poster && (
