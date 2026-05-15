@@ -173,7 +173,7 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
       <div className="md:hidden flex flex-col w-full bg-black">
         <div className="relative w-full aspect-[16/10] border-b border-white/10">
           <SidePanel
-            side={red}
+            side={sides[0]}
             videoRef={redVideoRef}
             panelRef={redPanelRef}
             active={activeIdx === 0}
@@ -190,7 +190,7 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
         </div>
         <div className="relative w-full aspect-[16/10]">
           <SidePanel
-            side={blue}
+            side={sides[1]}
             videoRef={blueVideoRef}
             panelRef={bluePanelRef}
             active={activeIdx === 1}
@@ -211,7 +211,7 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
       <div className="hidden md:flex md:items-stretch md:gap-0">
       <div className="md:flex-1 md:min-w-0">
       <SidePanel
-        side={red}
+        side={sides[0]}
         videoRef={redVideoRef}
         panelRef={redPanelRef}
         active={activeIdx === 0}
@@ -256,7 +256,7 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
       {/* BLUE — bottom (mobile) / right (desktop) */}
       <div className="md:flex-1 md:min-w-0">
       <SidePanel
-        side={blue}
+        side={sides[1]}
         videoRef={blueVideoRef}
         panelRef={bluePanelRef}
         active={activeIdx === 1}
@@ -375,6 +375,7 @@ function SidePanel({
           controls={false}
           muted={!active}
           poster={poster || undefined}
+          crossOrigin="anonymous"
           onLoadStart={onReady}
           onLoadedMetadata={onReady}
           onLoadedData={handleLoadedData}
