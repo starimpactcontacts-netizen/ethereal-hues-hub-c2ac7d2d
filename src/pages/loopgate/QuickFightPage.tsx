@@ -26,13 +26,10 @@ import QuickFightChat from '@/components/loopgate/QuickFightChat';
 import QuickFightResultCard from '@/components/loopgate/QuickFightResultCard';
 import BattleSubmissionCard from '@/components/loopgate/BattleSubmissionCard';
 import BattleAutoplayDuo from '@/components/loopgate/BattleAutoplayDuo';
-import { getBunnyPlaybackUrl } from '@/lib/bunnyPlayback';
 import FNFVoteScoreboard from '@/components/loopgate/FNFVoteScoreboard';
 import QuickFightPublicVote from '@/components/loopgate/QuickFightPublicVote';
-import BattleDecidedOverlay from '@/components/loopgate/BattleDecidedOverlay';
 import { setLobbyMusicActive } from '@/components/loopgate/LobbyMusicPlayer';
 import CustomEditBattleLobby from '@/components/loopgate/CustomEditBattleLobby';
-import BattleIntroOverlay from '@/components/loopgate/BattleIntroOverlay';
 
 /** Detect platform from URL */
 function detectPlatform(url: string): string {
@@ -63,68 +60,12 @@ export default function QuickFightPage() {
   const [voting, setVoting] = useState(false);
   const [hideConfirmOpen, setHideConfirmOpen] = useState(false);
   const [hiding, setHiding] = useState(false);
-  const introKey = fightId ? `battle-intro-played:${fightId}` : null;
-  const [introDone, setIntroDone] = useState(() => (introKey ? sessionStorage.getItem(introKey) === '1' : true));
-  const [decidedActive, setDecidedActive] = useState(false);
-  const [decidedShown, setDecidedShown] = useState(false);
 
-  useEffect(() => {
-    if (!introKey) return;
-    setIntroDone(sessionStorage.getItem(introKey) === '1');
-  }, [introKey]);
 
-  // Once intro is done AND fight is decided, wait one full rotation
-  // (both edits shown = 20s) then trigger the cinematic verdict reveal.
-  useEffect(() => {
-    if (!introDone) return;
-    if (decidedShown) return;
-    if (!fight) return;
-    if (fight.status !== 'completed' || !fight.winner_id) return;
-    if (!fight.player_1_submission_url || !fight.player_2_submission_url) return;
-    const t = setTimeout(() => {
-      setDecidedActive(true);
-      setDecidedShown(true);
-    }, 20_000);
-    return () => clearTimeout(t);
-  }, [introDone, decidedShown, fight?.status, fight?.winner_id, fight?.player_1_submission_url, fight?.player_2_submission_url]);
   // Auto-resolve expired fights on page load
   useEffect(() => {
     supabase.rpc('resolve_expired_quick_fights').then(() => {});
   }, [fightId]);
-
-  // Aggressively prefetch BOTH edits the moment we know the URLs.
-  // Runs during voting/intro so the showcase has a warm buffer before "3 2 1 GO".
-  useEffect(() => {
-    const urls = [fight?.player_1_submission_url, fight?.player_2_submission_url]
-      .filter((u): u is string => !!u && /\.(mp4|webm|mov|m4v|m3u8)(\?|$)/i.test(u))
-      .map((u) => getBunnyPlaybackUrl(u));
-    if (urls.length === 0) return;
-    const preloads: HTMLVideoElement[] = [];
-    urls.forEach((src) => {
-      const video = document.createElement('video');
-      video.src = src;
-      video.muted = true;
-      video.playsInline = true;
-      video.preload = 'auto';
-      video.style.cssText = 'position:fixed;left:-2px;top:-2px;width:1px;height:1px;opacity:0;pointer-events:none;z-index:-1;';
-      video.addEventListener('canplay', () => console.info('[Bunny Video] Battle preload canplay:', src), { once: true });
-      document.body.appendChild(video);
-      video.load();
-      video.play().then(() => {
-        video.pause();
-        try { video.currentTime = 0; } catch {}
-      }).catch(() => {});
-      preloads.push(video);
-    });
-    return () => {
-      preloads.forEach((video) => {
-        video.pause();
-        video.removeAttribute('src');
-        video.load();
-        video.remove();
-      });
-    };
-  }, [fight?.player_1_submission_url, fight?.player_2_submission_url]);
 
   // Fetch my vote
   useEffect(() => {
@@ -329,39 +270,6 @@ export default function QuickFightPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Cinematic winner reveal — fires once both edits have looped */}
-      {fight.status === 'completed' && fight.winner_id && (
-        <BattleDecidedOverlay
-          active={decidedActive}
-          winnerUsername={
-            fight.winner_id === fight.player_1_id
-              ? fight.player_1_username
-              : (fight.player_2_username || '???')
-          }
-          winnerAvatarUrl={
-            fight.winner_id === fight.player_1_id
-              ? fight.player_1_avatar_url
-              : fight.player_2_avatar_url
-          }
-          winnerColor={fight.winner_id === fight.player_1_id ? 'red' : 'blue'}
-          loserUsername={
-            fight.winner_id === fight.player_1_id
-              ? (fight.player_2_username || undefined)
-              : fight.player_1_username
-          }
-          onDismiss={() => setDecidedActive(false)}
-        />
-      )}
-      {fight.player_1_submission_url && fight.player_2_submission_url && fight.player_2_id && !introDone && (
-        <BattleIntroOverlay
-          fightId={fight.id}
-          active
-          onComplete={() => {
-            if (introKey) sessionStorage.setItem(introKey, '1');
-            setIntroDone(true);
-          }}
-        />
-      )}
       {/* ════════ ARCADE HUD ════════ */}
       {/* Top bar: back + status pill */}
       <div className="relative z-30 bg-black/80 backdrop-blur-xl border-b border-white/5">
@@ -463,9 +371,8 @@ export default function QuickFightPage() {
         {/* SCREEN VS SCREEN — stacked vertical, RED on top, VS divider, BLUE on bottom */}
         <div className="space-y-0">
           {fight.player_1_submission_url && fight.player_2_submission_url && fight.player_2_id ? (
-            // BOTH UPLOADED → autoplay loop, 10s each, screen-record-ready
+            // BOTH UPLOADED → clean tap-to-play native video slots
             <BattleAutoplayDuo
-              fightId={fight.id}
               red={{
                 userId: fight.player_1_id,
                 username: fight.player_1_username,
@@ -480,17 +387,6 @@ export default function QuickFightPage() {
                 color: 'blue',
                 avatarUrl: fight.player_2_avatar_url,
               }}
-              startedAt={
-                fight.player_1_submitted_at && fight.player_2_submitted_at
-                  ? new Date(
-                      Math.max(
-                        new Date(fight.player_1_submitted_at).getTime(),
-                        new Date(fight.player_2_submitted_at).getTime(),
-                      ),
-                    ).toISOString()
-                  : null
-              }
-              paused={!introDone || decidedActive}
             />
           ) : (
             // Pre-upload state — placeholders stacked with VS divider
