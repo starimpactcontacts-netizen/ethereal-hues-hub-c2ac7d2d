@@ -29,7 +29,7 @@ export interface BunnyUploadResult {
 }
 
 /**
- * Upload a video to **Bunny Stream** via the `bunny-stream-upload` edge function.
+ * Upload a video to **Bunny Stream** with direct browser → Bunny TUS transfer.
  *
  * Bunny Stream gives us:
  *   - Adaptive bitrate HLS playback (instant start, scales to network)
@@ -77,6 +77,7 @@ export async function uploadToBunny(
   }
   const meta = await createRes.json();
   if (!meta?.guid || !meta?.signature) throw new Error(meta?.error || "Bunny create failed");
+  console.info('[Bunny Video] Created Stream video. CDN playback URL:', meta.url);
 
   // 2) Upload bytes DIRECTLY to video.bunnycdn.com via TUS. Resumable, parallel
   //    chunks, zero Lovable bandwidth.
@@ -95,7 +96,10 @@ export async function uploadToBunny(
         filetype: fileType,
         title: inferredName,
       },
-      onError: (err) => reject(err),
+      onError: (err) => {
+        console.error('[Bunny Video] Direct TUS upload failed:', err);
+        reject(err);
+      },
       onProgress: (sent, total) => {
         if (opts?.onProgress && total) {
           opts.onProgress(Math.min(0.99, sent / total));
@@ -103,6 +107,8 @@ export async function uploadToBunny(
       },
       onSuccess: () => {
         opts?.onProgress?.(1);
+        console.info('[Bunny Video] Direct TUS upload complete. Browser uploaded to:', meta.tusEndpoint);
+        console.info('[Bunny Video] HLS playback will request:', meta.url);
         resolve();
       },
     });
