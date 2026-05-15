@@ -20,6 +20,43 @@ function prepareVideo(video: HTMLVideoElement) {
   video.setAttribute("webkit-playsinline", "true");
 }
 
+function attachHlsManifest(video: HTMLVideoElement, url: string, handlers: HlsAttachHandlers = {}): () => void {
+  const canNative = video.canPlayType("application/vnd.apple.mpegurl") !== "";
+  if (!isHlsUrl(url) || canNative || !Hls.isSupported()) {
+    if (video.src !== url) video.src = url;
+    video.load();
+    return () => {};
+  }
+
+  const hls = new Hls({
+    enableWorker: true,
+    lowLatencyMode: false,
+    maxBufferLength: 30,
+    backBufferLength: 10,
+    startLevel: -1,
+    abrEwmaDefaultEstimate: 1_000_000,
+  });
+  hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
+    console.info('[Bunny Video] HLS manifest loaded:', url, `levels=${data.levels.length}`);
+    handlers.onReady?.();
+  });
+  hls.on(Hls.Events.LEVEL_LOADED, (_, data) => {
+    console.info('[Bunny Video] HLS level ready:', url, `level=${data.level}`);
+    handlers.onReady?.();
+  });
+  hls.on(Hls.Events.ERROR, (_, data) => {
+    const message = `${data.type}:${data.details}${data.fatal ? ':fatal' : ''}`;
+    console.error('[Bunny Video] HLS error:', message, url);
+    if (data.fatal) handlers.onError?.(message);
+  });
+  hls.loadSource(url);
+  hls.attachMedia(video);
+
+  return () => {
+    try { hls.destroy(); } catch { /* noop */ }
+  };
+}
+
 /**
  * Attach a video URL to a <video> element with HLS support.
  *
@@ -49,7 +86,7 @@ export function attachHlsSource(video: HTMLVideoElement, url: string, handlers: 
         return;
       }
       console.warn('[Bunny Video] MP4 failed, falling back to HLS:', hlsUrl);
-      attachHlsSource(video, hlsUrl, handlers);
+      attachHlsManifest(video, hlsUrl, handlers);
     };
     video.addEventListener("loadeddata", () => handlers.onReady?.(), { once: true });
     video.addEventListener("canplay", () => handlers.onReady?.(), { once: true });
@@ -60,49 +97,7 @@ export function attachHlsSource(video: HTMLVideoElement, url: string, handlers: 
     };
   }
 
-  // Native HLS (Safari + iOS) — let the browser do it.
-  const canNative = video.canPlayType("application/vnd.apple.mpegurl") !== "";
-  if (!isHlsUrl(url) || canNative) {
-    if (video.src !== url) video.src = url;
-    video.load();
-    return () => {};
-  }
-
-  if (!Hls.isSupported()) {
-    // Last resort — try setting the src and hope.
-    if (video.src !== url) video.src = url;
-    return () => {};
-  }
-
-  const hls = new Hls({
-    // Low-latency-ish tuning: start playing as soon as the first segment arrives.
-    enableWorker: true,
-    lowLatencyMode: false,
-    maxBufferLength: 30,
-    backBufferLength: 10,
-    startLevel: -1, // auto bitrate
-    // ABR aggressiveness — pick lower bitrate fast on weak connections.
-    abrEwmaDefaultEstimate: 1_000_000,
-  });
-  hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
-    console.info('[Bunny Video] HLS manifest loaded:', url, `levels=${data.levels.length}`);
-    handlers.onReady?.();
-  });
-  hls.on(Hls.Events.LEVEL_LOADED, (_, data) => {
-    console.info('[Bunny Video] HLS level ready:', url, `level=${data.level}`);
-    handlers.onReady?.();
-  });
-  hls.on(Hls.Events.ERROR, (_, data) => {
-    const message = `${data.type}:${data.details}${data.fatal ? ':fatal' : ''}`;
-    console.error('[Bunny Video] HLS error:', message, url);
-    if (data.fatal) handlers.onError?.(message);
-  });
-  hls.loadSource(url);
-  hls.attachMedia(video);
-
-  return () => {
-    try { hls.destroy(); } catch { /* noop */ }
-  };
+  return attachHlsManifest(video, url, handlers);
 }
 
 export function preloadBunnyVideo(url: string, timeoutMs = 2_000): PreloadedBunnyVideo {
