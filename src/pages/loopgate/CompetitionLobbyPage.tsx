@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { isPast, differenceInSeconds } from "date-fns";
 import { useAutoplayVideo } from "@/hooks/useAutoplayVideo";
 import { supabase } from "@/integrations/supabase/client";
-import { uploadToBunny } from "@/lib/bunnyUpload";
+import { MAX_EDIT_UPLOAD_BYTES, MAX_EDIT_UPLOAD_LABEL, uploadToBunny } from "@/lib/bunnyUpload";
 import CompetitionChat from "@/components/loopgate/CompetitionChat";
 import CompetitionLeaderboard from "@/components/loopgate/CompetitionLeaderboard";
 import CompetitionVoting from "@/components/loopgate/CompetitionVoting";
@@ -442,7 +442,7 @@ export default function CompetitionLobbyPage() {
   const uploadSubmissionFile = async (file: File) => {
     if (!user || !profile || !competition) { navigate("/start"); return; }
     if (!canSubmit) return;
-    if (file.size > 500 * 1024 * 1024) { toast.error("Keep uploads under 500MB"); return; }
+    if (file.size > MAX_EDIT_UPLOAD_BYTES) { toast.error(`Keep uploads under ${MAX_EDIT_UPLOAD_LABEL}`); return; }
     const isVideo = file.type.startsWith("video/");
     const isImage = file.type.startsWith("image/");
     if (!isVideo && !isImage) { toast.error("Upload a video or photo edit"); return; }
