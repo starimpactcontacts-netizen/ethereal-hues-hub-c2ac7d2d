@@ -1,5 +1,3 @@
-const FUNCTIONS_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
-
 export function getBunnySourceUrl(url: string | null | undefined): string {
   if (!url) return "";
 
@@ -28,17 +26,20 @@ export function isHlsUrl(url: string | null | undefined): boolean {
 
 export function getBunnyPlaybackUrl(url: string | null | undefined): string {
   if (!url) return "";
+  const source = getBunnySourceUrl(url);
 
   try {
-    const parsed = new URL(url);
-    // Bunny Stream HLS / MP4 fallbacks are served straight from the CDN — no proxy needed.
-    if (parsed.hostname.endsWith('.b-cdn.net')) return url;
+    const parsed = new URL(source);
+    // Bunny Stream HLS / MP4 fallbacks are served straight from Bunny CDN.
+    // Do NOT route video playback through Lovable Cloud; that would burn backend bandwidth.
+    if (parsed.hostname.endsWith('.b-cdn.net')) return source;
     if (parsed.hostname === "storage.bunnycdn.com") {
-      return `${FUNCTIONS_BASE}/bunny-stream?url=${encodeURIComponent(url)}`;
+      console.warn('[Bunny Video] Legacy Bunny Storage URL detected; refusing Lovable proxy playback:', source);
+      return source;
     }
   } catch {
-    return url;
+    return source;
   }
 
-  return url;
+  return source;
 }

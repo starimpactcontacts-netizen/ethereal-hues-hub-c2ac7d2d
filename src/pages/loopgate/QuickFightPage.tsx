@@ -26,13 +26,14 @@ import QuickFightChat from '@/components/loopgate/QuickFightChat';
 import QuickFightResultCard from '@/components/loopgate/QuickFightResultCard';
 import BattleSubmissionCard from '@/components/loopgate/BattleSubmissionCard';
 import BattleAutoplayDuo from '@/components/loopgate/BattleAutoplayDuo';
-import { getBunnyPlaybackUrl, isHlsUrl } from '@/lib/bunnyPlayback';
+import { getBunnyPlaybackUrl } from '@/lib/bunnyPlayback';
 import FNFVoteScoreboard from '@/components/loopgate/FNFVoteScoreboard';
 import QuickFightPublicVote from '@/components/loopgate/QuickFightPublicVote';
 import BattleDecidedOverlay from '@/components/loopgate/BattleDecidedOverlay';
 import { setLobbyMusicActive } from '@/components/loopgate/LobbyMusicPlayer';
 import CustomEditBattleLobby from '@/components/loopgate/CustomEditBattleLobby';
 import BattleIntroOverlay from '@/components/loopgate/BattleIntroOverlay';
+import { preloadBunnyVideo } from '@/lib/attachHlsSource';
 
 /** Detect platform from URL */
 function detectPlatform(url: string): string {
@@ -99,42 +100,12 @@ export default function QuickFightPage() {
       .filter((u): u is string => !!u && /\.(mp4|webm|mov|m4v|m3u8)(\?|$)/i.test(u))
       .map((u) => getBunnyPlaybackUrl(u));
     if (urls.length === 0) return;
-    const nodes: HTMLElement[] = [];
-    const aborts: AbortController[] = [];
+    const preloads: Array<ReturnType<typeof preloadBunnyVideo>> = [];
     urls.forEach((src) => {
-      // For HLS playlists: just fetch the manifest so DNS + TCP + first segment
-      // are warm. <video preload> on .m3u8 confuses some browsers.
-      if (isHlsUrl(src)) {
-        const ac = new AbortController();
-        fetch(src, { signal: ac.signal, mode: 'cors', credentials: 'omit' }).catch(() => {});
-        aborts.push(ac);
-        return;
-      }
-      // <link rel="preload" as="video"> — kicks off byte-range fetch immediately.
-      const link = document.createElement('link');
-      link.rel = 'preload';
-      link.as = 'video';
-      link.href = src;
-      link.crossOrigin = 'anonymous';
-      document.head.appendChild(link);
-      nodes.push(link);
-      // Hidden <video preload="auto"> — forces a real decode-ready buffer on iOS Safari
-      // which sometimes ignores <link preload as=video>.
-      const v = document.createElement('video');
-      v.src = src;
-      v.preload = 'auto';
-      v.muted = true;
-      v.playsInline = true;
-      v.crossOrigin = 'anonymous';
-      v.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;';
-      document.body.appendChild(v);
-      // Trigger an actual GET so the browser starts buffering, not just metadata.
-      v.load();
-      nodes.push(v);
+      preloads.push(preloadBunnyVideo(src, 2_000));
     });
     return () => {
-      nodes.forEach((n) => n.remove());
-      aborts.forEach((a) => a.abort());
+      preloads.forEach((preload) => preload.dispose());
     };
   }, [fight?.player_1_submission_url, fight?.player_2_submission_url]);
 

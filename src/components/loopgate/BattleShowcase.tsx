@@ -8,8 +8,7 @@ import { attachHlsSource } from "@/lib/attachHlsSource";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
-const PRELOAD_LEAD_SECONDS = 2.5;
-const STALL_BAIL_MS = 5000; // if active video can't get a frame in this window, auto-skip
+const STALL_BAIL_MS = 2000; // fail visibly instead of black-screening forever
 const HAVE_NOTHING = 0;
 const HAVE_CURRENT_DATA = 2;
 
@@ -81,13 +80,6 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
 
   const current = playableSides[currentIdx];
 
-  const advanceToNext = useCallback(() => {
-    if (playableSides.length <= 1) return;
-    const next = (currentIdx + 1) % playableSides.length;
-    setCurrentIdx(next);
-    setSecondsLeft(PER_EDIT_SECONDS);
-  }, [currentIdx, playableSides.length]);
-
   useEffect(() => {
     setReady({});
     setStarted({});
@@ -107,27 +99,27 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     playableSides.forEach((side, i) => {
       const v = videoRefs.current[i];
       if (!v || !isDirectVideo(side.url)) return;
-      detachers.push(attachHlsSource(v, side.url));
+      detachers.push(attachHlsSource(v, side.url, {
+        onReady: () => setReady((prev) => (prev[i] ? prev : { ...prev, [i]: true })),
+        onError: () => setLoadErrors((prev) => ({ ...prev, [i]: true })),
+      }));
     });
     return () => { detachers.forEach((d) => d()); };
   }, [playableSides, videoKey]);
 
-  // Keep inactive videos at metadata so mobile Safari can grab a first frame cheaply.
-  // Active video uses auto; the next side warms up near the swap without both full-buffering forever.
+  // Keep BOTH edits hot from the start. Battle videos are short; forcing auto preload
+  // beats metadata-only black screens when the turn flips.
   useEffect(() => {
-    videoRefs.current.forEach((v, i) => {
+    videoRefs.current.forEach((v) => {
       if (!v) return;
       v.muted = true;
       v.defaultMuted = false;
-      const isActive = i === currentIdx;
-      // Always full-preload the active side; warm the next side ahead of the swap.
-      // Avoid the metadata→auto thrash that aborts in-flight loads on iOS Safari.
-      const shouldWarm = !isActive && secondsLeft <= PRELOAD_LEAD_SECONDS;
-      const desired = isActive || shouldWarm ? "auto" : "metadata";
-      if (v.preload !== desired) v.preload = desired;
+      v.playsInline = true;
+      v.crossOrigin = "anonymous";
+      if (v.preload !== "auto") v.preload = "auto";
       if (v.readyState === HAVE_NOTHING) v.load();
     });
-  }, [currentIdx, secondsLeft, videoKey]);
+  }, [videoKey]);
 
   // Auto-skip the active side if it can't produce a frame within STALL_BAIL_MS.
   useEffect(() => {
@@ -142,9 +134,9 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     stallTimerRef.current = window.setTimeout(() => {
       const v = videoRefs.current[currentIdx];
       if (!v || v.readyState >= HAVE_CURRENT_DATA) return;
+      console.error('[Bunny Video] Active edit failed to load within 2s:', activeSide.url);
       skippedRef.current[currentIdx] = true;
       setLoadErrors((prev) => ({ ...prev, [currentIdx]: true }));
-      advanceToNext();
     }, STALL_BAIL_MS);
     return () => {
       if (stallTimerRef.current) {
@@ -152,7 +144,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
         stallTimerRef.current = null;
       }
     };
-  }, [advanceToNext, currentIdx, playableSides, ready, started]);
+  }, [currentIdx, playableSides, ready, started]);
 
   useEffect(() => {
     videoRefs.current.forEach((v, index) => {
@@ -302,7 +294,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
                       playsInline
                       autoPlay={active}
                       loop
-                      preload={active ? "auto" : "metadata"}
+                      preload="auto"
                       controls={false}
                       disablePictureInPicture
                       muted={!active}
@@ -310,17 +302,21 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
                       crossOrigin="anonymous"
                       onLoadedMetadata={() => setReady((prev) => (prev[index] ? prev : { ...prev, [index]: true }))}
                       onLoadedData={() => {
+                        console.info('[Bunny Video] Video loadeddata:', side.url);
                         setReady((prev) => (prev[index] ? prev : { ...prev, [index]: true }));
                         capturePoster(index);
                       }}
-                      onCanPlay={() => setReady((prev) => (prev[index] ? prev : { ...prev, [index]: true }))}
-                      onPlaying={() => setStarted((prev) => (prev[index] ? prev : { ...prev, [index]: true }))}
+                      onCanPlay={() => {
+                        console.info('[Bunny Video] Video canplay:', side.url);
+                        setReady((prev) => (prev[index] ? prev : { ...prev, [index]: true }));
+                      }}
+                      onPlaying={() => {
+                        console.info('[Bunny Video] Video playing:', side.url);
+                        setStarted((prev) => (prev[index] ? prev : { ...prev, [index]: true }));
+                      }}
                       onError={() => {
+                        console.error('[Bunny Video] Video element error:', side.url);
                         setLoadErrors((prev) => ({ ...prev, [index]: true }));
-                        if (index === currentIdx && !skippedRef.current[index]) {
-                          skippedRef.current[index] = true;
-                          advanceToNext();
-                        }
                       }}
                     />
                     {active && !ready[index] && !poster && (
