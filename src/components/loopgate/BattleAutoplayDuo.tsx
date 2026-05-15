@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Play, Pause, Volume2, VolumeX } from "lucide-react";
-import { getBunnyPlaybackUrl, isBunnyVideoUrl } from "@/lib/bunnyPlayback";
+import { getBunnyPlaybackCandidates, getBunnyPlaybackUrl, isBunnyVideoUrl } from "@/lib/bunnyPlayback";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 
@@ -75,7 +75,10 @@ function BattleVideoSlot({ side, fill = false }: { side: Side; fill?: boolean })
   const [isPlaying, setIsPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
   const [loadError, setLoadError] = useState(false);
+  const [sourceIndex, setSourceIndex] = useState(0);
   const isVid = isVideo(side.url);
+  const sources = useMemo(() => getBunnyPlaybackCandidates(side.url), [side.url]);
+  const activeSrc = sources[sourceIndex] || side.url;
   const accent = side.color === "red" ? "bg-red-500" : "bg-blue-500";
   const accentText = side.color === "red" ? "text-red-400" : "text-blue-400";
   const label = side.color === "red" ? "RED" : "BLUE";
@@ -84,6 +87,7 @@ function BattleVideoSlot({ side, fill = false }: { side: Side; fill?: boolean })
     const video = videoRef.current;
     setIsPlaying(false);
     setLoadError(false);
+    setSourceIndex(0);
     if (!video) return;
     video.pause();
     video.currentTime = 0;
@@ -99,7 +103,7 @@ function BattleVideoSlot({ side, fill = false }: { side: Side; fill?: boolean })
         video.volume = 1;
         await video.play();
         setIsPlaying(true);
-        console.info("[Bunny Video] Battle playing direct Bunny CDN:", side.url);
+        console.info("[Bunny Video] Battle playing direct Bunny CDN:", activeSrc);
       } else {
         video.pause();
         setIsPlaying(false);
@@ -107,6 +111,20 @@ function BattleVideoSlot({ side, fill = false }: { side: Side; fill?: boolean })
     } catch (error) {
       console.warn("[Bunny Video] Battle tap-to-play blocked:", side.url, error);
     }
+  };
+
+  const handleVideoError = () => {
+    console.warn("[Bunny Video] Battle direct video error:", activeSrc, videoRef.current?.error?.code || "unknown");
+    setIsPlaying(false);
+    setSourceIndex((current) => {
+      const next = current + 1;
+      if (next < sources.length) {
+        console.info("[Bunny Video] Battle trying fallback source:", sources[next]);
+        return next;
+      }
+      setLoadError(true);
+      return current;
+    });
   };
 
   const toggleMute = () => {
@@ -121,23 +139,21 @@ function BattleVideoSlot({ side, fill = false }: { side: Side; fill?: boolean })
       {isVid ? (
         <video
           ref={videoRef}
-          src={side.url}
-          poster={side.posterUrl || `${side.url}#t=0.1`}
+          src={activeSrc}
+          poster={side.posterUrl || `${activeSrc}#t=0.1`}
           className="w-full h-full object-cover bg-background"
           controls
           muted={muted}
           playsInline
           loop
           preload="none"
+          crossOrigin="anonymous"
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           onEnded={() => setIsPlaying(false)}
-          onLoadedData={() => console.info("[Bunny Video] Battle loadeddata:", side.url)}
-          onCanPlay={() => console.info("[Bunny Video] Battle canplay:", side.url)}
-          onError={() => {
-            console.warn("[Bunny Video] Battle direct video error:", side.url, videoRef.current?.error?.code || "unknown");
-            setLoadError(true);
-          }}
+          onLoadedData={() => console.info("[Bunny Video] Battle loadeddata:", activeSrc)}
+          onCanPlay={() => console.info("[Bunny Video] Battle canplay:", activeSrc)}
+          onError={handleVideoError}
         />
       ) : (
         <img
@@ -191,6 +207,7 @@ function BattleVideoSlot({ side, fill = false }: { side: Side; fill?: boolean })
             const video = videoRef.current;
             if (!video) return;
             setLoadError(false);
+            setSourceIndex(0);
             video.load();
           }}
           className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-2 bg-background/85"
