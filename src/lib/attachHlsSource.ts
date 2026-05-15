@@ -99,6 +99,7 @@ export function preloadBunnyVideo(url: string, timeoutMs = 2_000): PreloadedBunn
     };
     const markSlow = () => {
       if (settled) return;
+      settled = true;
       console.error('[Bunny Video] Preload exceeded 2s:', url);
       resolve();
     };
