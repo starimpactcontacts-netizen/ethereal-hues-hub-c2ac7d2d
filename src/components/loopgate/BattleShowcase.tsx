@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Play, Pause } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useBattleAudioUnlock } from "@/hooks/useBattleAudioUnlock";
+import { getBunnyPlaybackUrl } from "@/lib/bunnyPlayback";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
@@ -40,8 +41,12 @@ function isImageFile(url: string) {
  * after the first full pass.
  */
 export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }: Props) {
-  const videoKey = useMemo(() => sides.map((side) => side.url).join("|"), [sides]);
-  const posterKey = useMemo(() => sides.map((side) => side.posterUrl || "").join("|"), [sides]);
+  const playableSides = useMemo<[Side, Side]>(() => sides.map((side) => ({
+    ...side,
+    url: getBunnyPlaybackUrl(side.url),
+  })) as [Side, Side], [sides]);
+  const videoKey = useMemo(() => playableSides.map((side) => side.url).join("|"), [playableSides]);
+  const posterKey = useMemo(() => playableSides.map((side) => side.posterUrl || "").join("|"), [playableSides]);
   const audioUnlocked = useBattleAudioUnlock();
   const startMs = showcaseStartedAt ? new Date(showcaseStartedAt).getTime() : null;
   const totalMs = sides.length * PER_EDIT_SECONDS * 1000;
@@ -77,10 +82,10 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
 
   const advanceToNext = useCallback(() => {
     if (sides.length <= 1) return;
-    const next = (currentIdx + 1) % sides.length;
+    const next = (currentIdx + 1) % playableSides.length;
     setCurrentIdx(next);
     setSecondsLeft(PER_EDIT_SECONDS);
-  }, [currentIdx, sides.length]);
+  }, [currentIdx, playableSides.length]);
 
   useEffect(() => {
     setReady({});
