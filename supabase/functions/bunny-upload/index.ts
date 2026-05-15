@@ -12,12 +12,30 @@ const STORAGE_PASSWORD = Deno.env.get('BUNNY_STORAGE_PASSWORD')!;
 const CDN_HOSTNAME = Deno.env.get('BUNNY_CDN_HOSTNAME')!;
 const MAX_UPLOAD_BYTES = 1024 * 1024 * 1024;
 
-function normalizeStorageHost(value: string) {
-  return value.replace(/^https?:\/\//i, '').replace(/\/.*$/g, '') || 'storage.bunnycdn.com';
-}
-
 function normalizeCdnHost(value: string) {
   return value.replace(/^https?:\/\//i, '').replace(/\/.*$/g, '');
+}
+
+function normalizeStorageConfig(hostValue: string, zoneValue: string) {
+  const rawHost = String(hostValue || '').trim();
+  const rawZone = String(zoneValue || '').trim();
+
+  if (/^https?:\/\//i.test(rawZone)) {
+    const url = new URL(rawZone);
+    const zone = url.pathname.split('/').filter(Boolean)[0] || rawHost || 'loop-media';
+    return { host: url.hostname, zone };
+  }
+
+  if (/^https?:\/\//i.test(rawHost)) {
+    const url = new URL(rawHost);
+    const hostZone = url.pathname.split('/').filter(Boolean)[0];
+    return { host: url.hostname, zone: rawZone || hostZone || 'loop-media' };
+  }
+
+  return {
+    host: rawHost.includes('.') ? rawHost : 'storage.bunnycdn.com',
+    zone: rawZone || rawHost || 'loop-media',
+  };
 }
 
 Deno.serve(async (req) => {
@@ -62,8 +80,8 @@ Deno.serve(async (req) => {
     const folderPart = safeFolder ? `${safeFolder}/` : '';
     const path = `${folderPart}${user.id}/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
 
-    const storageHost = normalizeStorageHost(STORAGE_HOST);
-    const url = `https://${storageHost}/${STORAGE_ZONE}/${path}`;
+    const storage = normalizeStorageConfig(STORAGE_HOST, STORAGE_ZONE);
+    const url = `https://${storage.host}/${storage.zone}/${path}`;
     const bunnyHeaders: Record<string, string> = {
       AccessKey: STORAGE_PASSWORD,
       'Content-Type': fileType,
