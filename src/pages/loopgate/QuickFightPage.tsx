@@ -26,6 +26,7 @@ import QuickFightChat from '@/components/loopgate/QuickFightChat';
 import QuickFightResultCard from '@/components/loopgate/QuickFightResultCard';
 import BattleSubmissionCard from '@/components/loopgate/BattleSubmissionCard';
 import BattleAutoplayDuo from '@/components/loopgate/BattleAutoplayDuo';
+import { getBunnyPlaybackUrl } from '@/lib/bunnyPlayback';
 import FNFVoteScoreboard from '@/components/loopgate/FNFVoteScoreboard';
 import QuickFightPublicVote from '@/components/loopgate/QuickFightPublicVote';
 import BattleDecidedOverlay from '@/components/loopgate/BattleDecidedOverlay';
