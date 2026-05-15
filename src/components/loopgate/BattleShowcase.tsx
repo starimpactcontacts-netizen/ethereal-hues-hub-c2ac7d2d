@@ -8,7 +8,6 @@ import { attachHlsSource } from "@/lib/attachHlsSource";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
-const STALL_BAIL_MS = 2000; // fail visibly instead of black-screening forever
 const HAVE_NOTHING = 0;
 const HAVE_CURRENT_DATA = 2;
 
@@ -75,8 +74,6 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   const [started, setStarted] = useState<Record<number, boolean>>({});
   const [ready, setReady] = useState<Record<number, boolean>>({});
   const [loadErrors, setLoadErrors] = useState<Record<number, boolean>>({});
-  const skippedRef = useRef<Record<number, boolean>>({});
-  const stallTimerRef = useRef<number | null>(null);
 
   const current = playableSides[currentIdx];
 
@@ -88,7 +85,6 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
       return acc;
     }, {}));
     setLoadErrors({});
-    skippedRef.current = {};
     bufferHoldStartedAtRef.current = null;
     holdOffsetMsRef.current = 0;
   }, [posterKey, videoKey]);
@@ -120,31 +116,6 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
       if (v.readyState === HAVE_NOTHING) v.load();
     });
   }, [videoKey]);
-
-  // Auto-skip the active side if it can't produce a frame within STALL_BAIL_MS.
-  useEffect(() => {
-    if (stallTimerRef.current) {
-      window.clearTimeout(stallTimerRef.current);
-      stallTimerRef.current = null;
-    }
-    const activeSide = playableSides[currentIdx];
-    if (!isDirectVideo(activeSide.url)) return;
-    if (skippedRef.current[currentIdx]) return;
-    if (started[currentIdx] || ready[currentIdx]) return;
-    stallTimerRef.current = window.setTimeout(() => {
-      const v = videoRefs.current[currentIdx];
-      if (!v || v.readyState >= HAVE_CURRENT_DATA) return;
-      console.error('[Bunny Video] Active edit failed to load within 2s:', activeSide.url);
-      skippedRef.current[currentIdx] = true;
-      setLoadErrors((prev) => ({ ...prev, [currentIdx]: true }));
-    }, STALL_BAIL_MS);
-    return () => {
-      if (stallTimerRef.current) {
-        window.clearTimeout(stallTimerRef.current);
-        stallTimerRef.current = null;
-      }
-    };
-  }, [currentIdx, playableSides, ready, started]);
 
   useEffect(() => {
     videoRefs.current.forEach((v, index) => {
