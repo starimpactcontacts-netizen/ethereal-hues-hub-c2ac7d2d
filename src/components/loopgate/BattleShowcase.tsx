@@ -4,7 +4,6 @@ import { Play, Pause } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useBattleAudioUnlock } from "@/hooks/useBattleAudioUnlock";
 import { getBunnyPlaybackUrl, isBunnyVideoUrl } from "@/lib/bunnyPlayback";
-import { attachHlsSource } from "@/lib/attachHlsSource";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
@@ -88,20 +87,6 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     bufferHoldStartedAtRef.current = null;
     holdOffsetMsRef.current = 0;
   }, [posterKey, videoKey]);
-
-  // Attach HLS (or native src) for each side. Required for Bunny Stream .m3u8.
-  useEffect(() => {
-    const detachers: Array<() => void> = [];
-    playableSides.forEach((side, i) => {
-      const v = videoRefs.current[i];
-      if (!v || !isDirectVideo(side.url)) return;
-      detachers.push(attachHlsSource(v, side.url, {
-        onReady: () => setReady((prev) => (prev[i] ? prev : { ...prev, [i]: true })),
-        onError: () => setLoadErrors((prev) => ({ ...prev, [i]: true })),
-      }));
-    });
-    return () => { detachers.forEach((d) => d()); };
-  }, [playableSides, videoKey]);
 
   // Keep BOTH edits hot from the start. Battle videos are short; forcing auto preload
   // beats metadata-only black screens when the turn flips.
@@ -261,6 +246,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
                     <video
                       key={side.url}
                       ref={(node) => { videoRefs.current[index] = node; }}
+                      src={side.url}
                       className={`relative w-full h-full object-contain bg-black transition-opacity duration-200 ${poster && !hasStarted ? "opacity-0" : "opacity-100"}`}
                       playsInline
                       autoPlay={active}
@@ -269,24 +255,24 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
                       controls={false}
                       disablePictureInPicture
                       muted={!active}
-                      poster={poster || undefined}
-                      crossOrigin="anonymous"
+                      poster={poster || `${side.url}#t=0.1`}
                       onLoadedMetadata={() => setReady((prev) => (prev[index] ? prev : { ...prev, [index]: true }))}
                       onLoadedData={() => {
-                        console.info('[Bunny Video] Video loadeddata:', side.url);
+                        console.info('[Bunny Video] Battle loadeddata:', side.url);
                         setReady((prev) => (prev[index] ? prev : { ...prev, [index]: true }));
                         capturePoster(index);
                       }}
                       onCanPlay={() => {
-                        console.info('[Bunny Video] Video canplay:', side.url);
+                        console.info('[Bunny Video] Battle canplay:', side.url);
                         setReady((prev) => (prev[index] ? prev : { ...prev, [index]: true }));
                       }}
                       onPlaying={() => {
-                        console.info('[Bunny Video] Video playing:', side.url);
+                        console.info('[Bunny Video] Battle playing direct Bunny CDN:', side.url);
                         setStarted((prev) => (prev[index] ? prev : { ...prev, [index]: true }));
                       }}
                       onError={() => {
-                        console.warn('[Bunny Video] Video element retry/error observed:', side.url);
+                        console.warn('[Bunny Video] Battle direct video error:', side.url, videoRefs.current[index]?.error?.code || 'unknown');
+                        setLoadErrors((prev) => ({ ...prev, [index]: true }));
                       }}
                     />
                     {active && !ready[index] && !poster && (

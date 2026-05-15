@@ -33,7 +33,6 @@ import BattleDecidedOverlay from '@/components/loopgate/BattleDecidedOverlay';
 import { setLobbyMusicActive } from '@/components/loopgate/LobbyMusicPlayer';
 import CustomEditBattleLobby from '@/components/loopgate/CustomEditBattleLobby';
 import BattleIntroOverlay from '@/components/loopgate/BattleIntroOverlay';
-import { preloadBunnyVideo } from '@/lib/attachHlsSource';
 
 /** Detect platform from URL */
 function detectPlatform(url: string): string {
@@ -100,12 +99,30 @@ export default function QuickFightPage() {
       .filter((u): u is string => !!u && /\.(mp4|webm|mov|m4v|m3u8)(\?|$)/i.test(u))
       .map((u) => getBunnyPlaybackUrl(u));
     if (urls.length === 0) return;
-    const preloads: Array<ReturnType<typeof preloadBunnyVideo>> = [];
+    const preloads: HTMLVideoElement[] = [];
     urls.forEach((src) => {
-      preloads.push(preloadBunnyVideo(src, 2_000));
+      const video = document.createElement('video');
+      video.src = src;
+      video.muted = true;
+      video.playsInline = true;
+      video.preload = 'auto';
+      video.style.cssText = 'position:fixed;left:-2px;top:-2px;width:1px;height:1px;opacity:0;pointer-events:none;z-index:-1;';
+      video.addEventListener('canplay', () => console.info('[Bunny Video] Battle preload canplay:', src), { once: true });
+      document.body.appendChild(video);
+      video.load();
+      video.play().then(() => {
+        video.pause();
+        try { video.currentTime = 0; } catch {}
+      }).catch(() => {});
+      preloads.push(video);
     });
     return () => {
-      preloads.forEach((preload) => preload.dispose());
+      preloads.forEach((video) => {
+        video.pause();
+        video.removeAttribute('src');
+        video.load();
+        video.remove();
+      });
     };
   }, [fight?.player_1_submission_url, fight?.player_2_submission_url]);
 

@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useBattleAudioUnlock } from "@/hooks/useBattleAudioUnlock";
 import { getBunnyPlaybackUrl, isBunnyVideoUrl } from "@/lib/bunnyPlayback";
 import { supabase } from "@/integrations/supabase/client";
-import { attachHlsSource } from "@/lib/attachHlsSource";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
@@ -446,18 +445,9 @@ function SidePanel({
 
   useEffect(() => setLoadError(false), [side.url]);
 
-  // Attach HLS (or native src) — required for Bunny Stream .m3u8 outside Safari.
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v || !isVid) return;
-    const detach = attachHlsSource(v, side.url, {
-      onError: () => setLoadError(true),
-    });
-    return detach;
-  }, [isVid, side.url, videoRef]);
-
   // Capture first frame to use as instant poster — eliminates the "black freeze" flash.
   const handleLoadedData = () => {
+    console.info('[Bunny Video] Battle loadeddata:', side.url);
     onReady();
     const v = videoRef.current;
     if (!v || poster) return;
@@ -503,6 +493,7 @@ function SidePanel({
         <video
           key={side.url}
           ref={videoRef}
+          src={side.url}
           className={`relative w-full h-full object-contain transition-opacity duration-200 ${active || !poster ? "opacity-100" : "opacity-0"}`}
           playsInline
           autoPlay={active}
@@ -514,14 +505,20 @@ function SidePanel({
           disablePictureInPicture
           controls={false}
           muted={!active}
-          poster={poster || undefined}
-          crossOrigin="anonymous"
+          poster={poster || `${side.url}#t=0.1`}
           onLoadedData={handleLoadedData}
-          onCanPlay={onReady}
+          onCanPlay={() => {
+            console.info('[Bunny Video] Battle canplay:', side.url);
+            onReady();
+          }}
           onCanPlayThrough={onReady}
-          onPlaying={onStarted}
+          onPlaying={() => {
+            console.info('[Bunny Video] Battle playing direct Bunny CDN:', side.url);
+            onStarted();
+          }}
           onError={() => {
-            console.warn('[Bunny Video] Video element retry/error observed:', side.url);
+            console.warn('[Bunny Video] Battle direct video error:', side.url, videoRef.current?.error?.code || 'unknown');
+            setLoadError(true);
           }}
         />
       ) : (
