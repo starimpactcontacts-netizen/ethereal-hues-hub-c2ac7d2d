@@ -284,10 +284,12 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
                       />
                     )}
                     <video
+                      key={side.url}
                       ref={(node) => { videoRefs.current[index] = node; }}
                       src={side.url}
                       className={`relative w-full h-full object-contain bg-black transition-opacity duration-200 ${poster && !hasStarted ? "opacity-0" : "opacity-100"}`}
                       playsInline
+                      autoPlay={active}
                       loop
                       preload={active ? "auto" : "metadata"}
                       controls={false}
@@ -309,7 +311,9 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
                           advanceToNext();
                         }
                       }}
-                    />
+                    >
+                      <source src={side.url} type="video/mp4" />
+                    </video>
                     {active && !ready[index] && !poster && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/35">
                         <div className={`w-8 h-8 rounded-full border-2 ${side.color === "red" ? "border-red-500/40 border-t-red-500" : "border-blue-500/40 border-t-blue-500"} animate-spin`} />
