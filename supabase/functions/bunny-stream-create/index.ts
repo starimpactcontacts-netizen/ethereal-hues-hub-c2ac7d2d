@@ -88,13 +88,19 @@ Deno.serve(async (req) => {
     const signature = await sha256Hex(`${STREAM_LIBRARY_ID}${STREAM_API_KEY}${expirationTime}${guid}`);
 
     const cdn = normalizeCdnHost(STREAM_CDN_HOSTNAME);
+    const uploadParams = new URLSearchParams({
+      jitEnabled: 'true',
+      enabledResolutions: '240p,360p,480p,720p,1080p',
+      enabledOutputCodecs: 'x264',
+    });
+
     return new Response(
       JSON.stringify({
         guid,
         libraryId: STREAM_LIBRARY_ID,
         signature,
         expirationTime,
-        tusEndpoint: 'https://video.bunnycdn.com/tusupload',
+        tusEndpoint: `https://video.bunnycdn.com/tusupload?${uploadParams.toString()}`,
         url: `https://${cdn}/${guid}/playlist.m3u8`,
         hlsUrl: `https://${cdn}/${guid}/playlist.m3u8`,
         mp4Url: `https://${cdn}/${guid}/play_720p.mp4`,
