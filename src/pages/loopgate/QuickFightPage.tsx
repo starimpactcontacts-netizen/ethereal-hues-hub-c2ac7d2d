@@ -143,7 +143,7 @@ export default function QuickFightPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Swords className="w-8 h-8 text-red-400 animate-pulse" />
+        <Swords className="w-8 h-8 text-red-400/70" />
       </div>
     );
   }
@@ -430,6 +430,7 @@ export default function QuickFightPage() {
           {fight.player_1_submission_url && fight.player_2_submission_url && fight.player_2_id ? (
             // BOTH UPLOADED → autoplay loop, 10s each, screen-record-ready
             <BattleAutoplayDuo
+              fightId={fight.id}
               red={{
                 userId: fight.player_1_id,
                 username: fight.player_1_username,
