@@ -19,7 +19,7 @@ export function getBunnyStreamMp4Url(url: string | null | undefined): string {
   try {
     const parsed = new URL(source);
     if (parsed.hostname.endsWith('.b-cdn.net') && /\/playlist\.m3u8$/i.test(parsed.pathname)) {
-      parsed.pathname = parsed.pathname.replace(/\/playlist\.m3u8$/i, '/play_720p.mp4');
+      parsed.pathname = parsed.pathname.replace(/\/playlist\.m3u8$/i, '/play_480p.mp4');
       parsed.search = '';
       return parsed.toString();
     }
