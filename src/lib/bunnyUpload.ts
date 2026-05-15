@@ -3,9 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 export interface UploadOpts {
   folder?: string;
   fileName?: string;
+  /** Defaults to 1GB for edit uploads. */
+  maxBytes?: number;
   /** 0..1 progress callback fired during the PUT to Bunny */
   onProgress?: (pct: number) => void;
 }
+
+export const MAX_EDIT_UPLOAD_BYTES = 1024 * 1024 * 1024;
+export const MAX_EDIT_UPLOAD_LABEL = "1GB";
 
 /**
  * Upload to Bunny via the `bunny-upload` edge function proxy.
@@ -19,6 +24,11 @@ export async function uploadToBunny(
   file: File | Blob,
   opts?: UploadOpts,
 ): Promise<{ url: string; path: string }> {
+  const maxBytes = opts?.maxBytes ?? MAX_EDIT_UPLOAD_BYTES;
+  if (file.size > maxBytes) {
+    throw new Error(`File too big — ${MAX_EDIT_UPLOAD_LABEL} max`);
+  }
+
   const { data: sessionData } = await supabase.auth.getSession();
   const token = sessionData.session?.access_token;
   if (!token) throw new Error("Not signed in");
@@ -41,7 +51,7 @@ export async function uploadToBunny(
     xhr.setRequestHeader("x-file-type", fileType);
     if (opts?.onProgress) {
       xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) opts.onProgress!(e.loaded / e.total);
+        if (e.lengthComputable) opts.onProgress!(Math.min(0.98, e.loaded / e.total));
       };
     }
     xhr.onload = () => {
@@ -49,12 +59,15 @@ export async function uploadToBunny(
         try {
           const json = JSON.parse(xhr.responseText);
           if (!json.url) return reject(new Error(json.error || "Upload failed"));
+          opts?.onProgress?.(1);
           resolve({ url: json.url, path: json.path });
         } catch (e) {
           reject(new Error("Bad upload response"));
         }
       } else {
-        reject(new Error(`Upload ${xhr.status}: ${xhr.responseText || xhr.statusText}`));
+        let message = xhr.responseText || xhr.statusText;
+        try { message = JSON.parse(xhr.responseText)?.error || message; } catch {}
+        reject(new Error(`Upload ${xhr.status}: ${message}`));
       }
     };
     xhr.onerror = () => reject(new Error("Network error during upload"));

@@ -20,7 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { uploadToBunny } from "@/lib/bunnyUpload";
+import { MAX_EDIT_UPLOAD_BYTES, MAX_EDIT_UPLOAD_LABEL, uploadToBunny } from "@/lib/bunnyUpload";
 import {
   useCollabSlot,
   joinCollabSlot,
@@ -90,8 +90,8 @@ export default function CollabDetailPage() {
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
-    if (file.size > 200 * 1024 * 1024) {
-      toast.error("Video must be under 200MB");
+    if (file.size > MAX_EDIT_UPLOAD_BYTES) {
+      toast.error(`Video must be under ${MAX_EDIT_UPLOAD_LABEL}`);
       return;
     }
     setUploading(true);
@@ -348,7 +348,7 @@ export default function CollabDetailPage() {
                 {uploading ? (
                   <><Loader2 className="w-4 h-4 animate-spin" /> Uploading…</>
                 ) : (
-                  <><Upload className="w-4 h-4" /> Tap to upload video (mp4 / mov, ≤200MB)</>
+                  <><Upload className="w-4 h-4" /> Tap to upload video (mp4 / mov, ≤{MAX_EDIT_UPLOAD_LABEL})</>
                 )}
               </button>
             )}

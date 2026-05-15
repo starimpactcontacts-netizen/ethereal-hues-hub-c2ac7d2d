@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { uploadToBunny } from '@/lib/bunnyUpload';
+import { MAX_EDIT_UPLOAD_BYTES, MAX_EDIT_UPLOAD_LABEL, uploadToBunny } from '@/lib/bunnyUpload';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Video, Music, Upload, EyeOff, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -531,7 +531,7 @@ export default function QuickFightPage() {
               <div className="flex items-center gap-2 mb-2">
                 <Upload className="w-3.5 h-3.5 text-gold" />
                 <span className="text-[10px] font-bold text-foreground uppercase tracking-wider">Drop Your Edit</span>
-                <span className="text-[9px] text-muted-foreground">MP4 · MOV · max 200 MB</span>
+                <span className="text-[9px] text-muted-foreground">MP4 · MOV · max {MAX_EDIT_UPLOAD_LABEL}</span>
               </div>
               <label
                 className={`flex items-center justify-center gap-2 h-12 w-full bg-gold text-background font-display uppercase tracking-wider cursor-pointer active:scale-[0.99] transition ${submitting ? 'opacity-60 pointer-events-none' : 'hover:bg-gold/90'}`}
@@ -544,8 +544,8 @@ export default function QuickFightPage() {
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (!file || !user) return;
-                    if (file.size > 209715200) {
-                      toast.error('File too big — 200 MB max');
+                    if (file.size > MAX_EDIT_UPLOAD_BYTES) {
+                      toast.error(`File too big — ${MAX_EDIT_UPLOAD_LABEL} max`);
                       return;
                     }
                     setSubmitting(true);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { uploadToBunny } from "@/lib/bunnyUpload";
+import { MAX_EDIT_UPLOAD_BYTES, MAX_EDIT_UPLOAD_LABEL, uploadToBunny } from "@/lib/bunnyUpload";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Swords, Clock, Eye, Trophy, ArrowLeft, 
@@ -824,7 +824,7 @@ export default function BattleDetailPage() {
               <div className="flex items-center gap-2 mb-3">
                 <Upload className="w-3.5 h-3.5 text-amber-400" />
                 <span className="text-[10px] font-bold text-amber-400 uppercase tracking-[0.15em]">SUBMIT YOUR EDIT</span>
-                <span className="text-[9px] text-zinc-500">MP4 · MOV · max 200 MB</span>
+                <span className="text-[9px] text-zinc-500">MP4 · MOV · max {MAX_EDIT_UPLOAD_LABEL}</span>
               </div>
               <label
                 className={`flex items-center justify-center gap-2 h-12 w-full rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-black font-bold uppercase tracking-[0.15em] cursor-pointer active:scale-[0.99] transition ${submitting ? 'opacity-60 pointer-events-none' : 'hover:from-amber-400 hover:to-amber-500'}`}
@@ -837,7 +837,7 @@ export default function BattleDetailPage() {
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (!file || !user) return;
-                    if (file.size > 209715200) { toast.error('File too big — 200 MB max'); return; }
+                    if (file.size > MAX_EDIT_UPLOAD_BYTES) { toast.error(`File too big — ${MAX_EDIT_UPLOAD_LABEL} max`); return; }
                     setSubmitting(true);
                     setUploadPct(0);
                     try {
