@@ -8,15 +8,12 @@ export interface UploadOpts {
 }
 
 /**
- * Direct-to-Bunny upload.
+ * Upload to Bunny via the `bunny-upload` edge function proxy.
  *
- * Step 1: Edge function `bunny-sign-upload` issues a short-lived PUT target
- *         (auth-gated — only signed-in users get one).
- * Step 2: Browser PUTs the file straight to storage.bunnycdn.com via XHR
- *         so we get real upload progress and skip the proxy hop.
- *
- * Returns the cached CDN URL like https://loop-media.b-cdn.net/<path>.
- * Use for all video uploads. Tiny avatars/logos can stay on Cloud storage.
+ * NOTE: We can't PUT directly to storage.bunnycdn.com from the browser —
+ * Bunny Storage does not return CORS headers, so the preflight blows up.
+ * Instead we stream the file body to our edge function which forwards it to
+ * Bunny server-side. We use XHR so we still get real upload progress.
  */
 export async function uploadToBunny(
   file: File | Blob,
@@ -30,44 +27,38 @@ export async function uploadToBunny(
     opts?.fileName ||
     (file instanceof File ? file.name : `upload-${Date.now()}.bin`);
   const fileType = (file as File).type || "application/octet-stream";
+  const folder = (opts?.folder || "").replace(/^\/+|\/+$/g, "");
+  const xFileName = folder ? `${folder}/${inferredName}` : inferredName;
 
-  // 1) Get signed PUT target
-  const signRes = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bunny-sign-upload`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ fileName: inferredName, folder: opts?.folder || "" }),
-    },
-  );
-  if (!signRes.ok) {
-    const errText = await signRes.text();
-    throw new Error(errText || `Sign failed (${signRes.status})`);
-  }
-  const { uploadUrl, accessKey, cdnUrl, path } = await signRes.json();
+  const endpoint = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bunny-upload`;
 
-  // 2) Direct PUT to Bunny with progress
-  await new Promise<void>((resolve, reject) => {
+  return await new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    xhr.open("PUT", uploadUrl, true);
-    xhr.setRequestHeader("AccessKey", accessKey);
+    xhr.open("POST", endpoint, true);
+    xhr.setRequestHeader("Authorization", `Bearer ${token}`);
     xhr.setRequestHeader("Content-Type", fileType);
+    xhr.setRequestHeader("x-file-name", xFileName);
+    xhr.setRequestHeader("x-file-type", fileType);
     if (opts?.onProgress) {
       xhr.upload.onprogress = (e) => {
         if (e.lengthComputable) opts.onProgress!(e.loaded / e.total);
       };
     }
     xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) resolve();
-      else reject(new Error(`Bunny ${xhr.status}: ${xhr.responseText || xhr.statusText}`));
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const json = JSON.parse(xhr.responseText);
+          if (!json.url) return reject(new Error(json.error || "Upload failed"));
+          resolve({ url: json.url, path: json.path });
+        } catch (e) {
+          reject(new Error("Bad upload response"));
+        }
+      } else {
+        reject(new Error(`Upload ${xhr.status}: ${xhr.responseText || xhr.statusText}`));
+      }
     };
     xhr.onerror = () => reject(new Error("Network error during upload"));
     xhr.onabort = () => reject(new Error("Upload aborted"));
     xhr.send(file);
   });
-
-  return { url: cdnUrl, path };
 }
