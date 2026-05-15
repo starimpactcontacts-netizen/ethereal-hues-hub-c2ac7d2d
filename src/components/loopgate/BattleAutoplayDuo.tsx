@@ -215,7 +215,7 @@ export default function BattleAutoplayDuo({ red, blue, fightId, startedAt, pause
     if (!fightId) return;
     const channel = supabase.channel(`fight-reactions-${fightId}`, { config: { broadcast: { self: true } } });
     channelRef.current = channel;
-    channel.on("broadcast", { event: "reaction" }, (payload: any) => {
+    channel.on("broadcast", { event: "reaction" }, (payload: { payload?: { id?: unknown; idx?: unknown } }) => {
       const { id, idx } = payload?.payload || {};
       if (typeof id !== "string" || idx !== activeIdx) return;
       const def = REACTIONS.find(r => r.id === id);
