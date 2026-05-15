@@ -103,7 +103,7 @@ Deno.serve(async (req) => {
         tusEndpoint: `https://video.bunnycdn.com/tusupload?${uploadParams.toString()}`,
         url: `https://${cdn}/${guid}/playlist.m3u8`,
         hlsUrl: `https://${cdn}/${guid}/playlist.m3u8`,
-        mp4Url: `https://${cdn}/${guid}/play_720p.mp4`,
+        mp4Url: `https://${cdn}/${guid}/play_480p.mp4`,
         thumbnailUrl: `https://${cdn}/${guid}/thumbnail.jpg`,
         previewUrl: `https://${cdn}/${guid}/preview.webp`,
       }),
