@@ -185,6 +185,9 @@ export default function BattleAutoplayDuo({ red, blue, fightId, startedAt, pause
         try { v.currentTime = 0; } catch { /* ignore */ }
         return;
       }
+      if (v.readyState < HAVE_CURRENT_DATA) {
+        v.load();
+      }
       v.play().catch(() => {
         if (!audioUnlocked) {
           v.muted = true;
