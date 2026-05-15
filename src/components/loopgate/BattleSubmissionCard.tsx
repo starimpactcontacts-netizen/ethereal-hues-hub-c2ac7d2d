@@ -1,6 +1,7 @@
 import { ExternalLink, Play, Trophy, ThumbsUp } from "lucide-react";
 import { useThumbnail } from "@/hooks/useThumbnail";
 import loopgateLogo from "@/assets/loopgate-logo.png";
+import { getBunnyPlaybackUrl } from "@/lib/bunnyPlayback";
 
 function detectPlatform(url: string): string {
   if (!url) return "unknown";
@@ -55,8 +56,9 @@ export default function BattleSubmissionCard({
   url, username, color, customThumbnailUrl,
   score, isWinner, votes, onVote, hasVoted, canVote, aspectClass = 'aspect-[9/16]',
 }: BattleSubmissionCardProps) {
-  const platform = detectPlatform(url);
-  const { thumbnail, loading: thumbLoading } = useThumbnail(url, platform);
+  const playbackUrl = getBunnyPlaybackUrl(url);
+  const platform = detectPlatform(playbackUrl);
+  const { thumbnail, loading: thumbLoading } = useThumbnail(playbackUrl, platform);
   const platformLabel = platform === "tiktok" ? "TIKTOK" : platform === "youtube" ? "YOUTUBE" : platform === "instagram" ? "INSTAGRAM" : platform.toUpperCase();
   const borderColor = color === "red" ? "border-red-500/40" : "border-blue-500/40";
   const hoverBorder = color === "red" ? "hover:border-red-500/70" : "hover:border-blue-500/70";
@@ -66,7 +68,7 @@ export default function BattleSubmissionCard({
   return (
     <div className={`bg-surface-1 border ${borderColor} ${hoverBorder} transition-all overflow-hidden ${isWinner ? "ring-2 ring-gold/50" : ""}`}>
       {/* Tall 9:16 — the EDIT is the entire card. Minimal overlay only. */}
-      <a href={url} target="_blank" rel="noopener noreferrer" className={`block relative ${aspectClass} bg-surface-2 overflow-hidden group`}>
+      <a href={playbackUrl} target="_blank" rel="noopener noreferrer" className={`block relative ${aspectClass} bg-surface-2 overflow-hidden group`}>
         {displayThumb ? (
           <img src={displayThumb} alt={`${username}'s edit`} className="w-full h-full object-contain bg-black" loading="eager" decoding="async" />
         ) : thumbLoading ? (
