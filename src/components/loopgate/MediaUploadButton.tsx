@@ -1,8 +1,9 @@
 import { useState, useRef } from "react";
-import { ImagePlus, X, Loader2, Film } from "lucide-react";
+import { ImagePlus, X, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { uploadToBunny } from "@/lib/bunnyUpload";
 
 interface MediaUploadButtonProps {
   onUpload: (url: string, type: 'image' | 'video') => void;
@@ -33,27 +34,21 @@ export default function MediaUploadButton({ onUpload, uploadedUrl, onClear }: Me
 
     setUploading(true);
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData.session?.access_token;
-      if (!token) throw new Error('Not signed in');
-
-      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bunny-upload`;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'x-file-name': file.name,
-          'x-file-type': file.type,
-          'Content-Type': file.type,
-        },
-        body: file,
-      });
-      if (!res.ok) {
-        const errText = await res.text();
-        throw new Error(errText || `Upload failed (${res.status})`);
+      if (isVideo) {
+        // Direct-to-Bunny Stream via TUS (no Lovable bandwidth)
+        const { url } = await uploadToBunny(file, { folder: 'chat-media' });
+        onUpload(url, 'video');
+      } else {
+        // Images go to Supabase Storage (tiny, free tier) — no CDN bandwidth cost.
+        const ext = file.name.split('.').pop() || 'bin';
+        const path = `${user.id}/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
+        const { error: upErr } = await supabase.storage
+          .from('loop-media')
+          .upload(path, file, { contentType: file.type, upsert: false });
+        if (upErr) throw upErr;
+        const { data: pub } = supabase.storage.from('loop-media').getPublicUrl(path);
+        onUpload(pub.publicUrl, 'image');
       }
-      const { url: cdnUrl } = await res.json();
-      onUpload(cdnUrl, isVideo ? 'video' : 'image');
     } catch (err: any) {
       console.error('Upload error:', err);
       toast.error(err?.message || 'Upload failed — try again');
