@@ -498,7 +498,7 @@ function SidePanel({
           x-webkit-airplay="deny"
           disableRemotePlayback
           loop
-          preload={active ? "auto" : "metadata"}
+          preload="auto"
           disablePictureInPicture
           controls={false}
           muted={!active}
