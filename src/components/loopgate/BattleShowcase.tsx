@@ -2,13 +2,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Play, Pause } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useBattleAudioUnlock } from "@/hooks/useBattleAudioUnlock";
 import { getBunnyPlaybackUrl, isBunnyVideoUrl } from "@/lib/bunnyPlayback";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
-const HAVE_NOTHING = 0;
-const HAVE_CURRENT_DATA = 2;
 
 type Side = {
   userId: string;
@@ -45,7 +42,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   })) as [Side, Side], [sides]);
   const videoKey = useMemo(() => playableSides.map((side) => side.url).join("|"), [playableSides]);
   const posterKey = useMemo(() => playableSides.map((side) => side.posterUrl || "").join("|"), [playableSides]);
-  const audioUnlocked = useBattleAudioUnlock();
+  const [userStarted, setUserStarted] = useState(false);
   const startMs = showcaseStartedAt ? new Date(showcaseStartedAt).getTime() : null;
   const totalMs = playableSides.length * PER_EDIT_SECONDS * 1000;
 
@@ -67,8 +64,6 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   const [paused, setPaused] = useState(false);
   const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
   const completedFiredRef = useRef(false);
-  const bufferHoldStartedAtRef = useRef<number | null>(null);
-  const holdOffsetMsRef = useRef(0);
   const [posters, setPosters] = useState<Record<number, string>>({});
   const [started, setStarted] = useState<Record<number, boolean>>({});
   const [ready, setReady] = useState<Record<number, boolean>>({});
@@ -84,64 +79,55 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
       return acc;
     }, {}));
     setLoadErrors({});
-    bufferHoldStartedAtRef.current = null;
-    holdOffsetMsRef.current = 0;
+    setUserStarted(false);
   }, [posterKey, videoKey]);
 
-  // Keep BOTH edits hot from the start. Battle videos are short; forcing auto preload
-  // beats metadata-only black screens when the turn flips.
+  // Same native browser video path as Loop feed: direct src, native preload, no HLS wrapper.
   useEffect(() => {
     videoRefs.current.forEach((v) => {
       if (!v) return;
-      v.muted = true;
-      v.defaultMuted = false;
+      v.preload = "auto";
       v.playsInline = true;
       v.crossOrigin = "anonymous";
-      if (v.preload !== "auto") v.preload = "auto";
-      if (v.readyState === HAVE_NOTHING) v.load();
+      v.load();
     });
   }, [videoKey]);
+
+  const playCurrent = useCallback(() => {
+    const activeVideo = videoRefs.current[currentIdx];
+    if (!activeVideo) return;
+    setUserStarted(true);
+    activeVideo.muted = false;
+    activeVideo.volume = 1;
+    activeVideo.play().then(() => {
+      console.info('[Bunny Video] Battle tap-to-play direct Bunny CDN:', playableSides[currentIdx].url);
+    }).catch((error) => {
+      console.warn('[Bunny Video] Battle tap-to-play blocked:', playableSides[currentIdx].url, error);
+    });
+  }, [currentIdx, playableSides]);
 
   useEffect(() => {
     videoRefs.current.forEach((v, index) => {
       if (!v) return;
       const active = index === currentIdx;
-      v.muted = !(audioUnlocked && active);
-      v.defaultMuted = false;
       v.volume = active ? 1 : 0;
-      if (paused || !active) {
+      v.muted = !active;
+      if (paused || !userStarted || !active) {
         v.pause();
         return;
       }
-      v.play().catch(() => {
-        if (!audioUnlocked) {
-          v.muted = true;
-          v.play().catch((error) => { void error; });
-        }
+      v.play().catch((error) => {
+        console.warn('[Bunny Video] Battle native play failed:', playableSides[index].url, error);
       });
     });
-  }, [audioUnlocked, currentIdx, paused]);
+  }, [currentIdx, paused, playableSides, userStarted]);
 
-  // Server-synced ticker
+  // Server-synced ticker starts only after the viewer taps play.
   useEffect(() => {
-    if (!startMs) return;
+    if (!startMs || !userStarted || paused) return;
     const tick = () => {
-      const activeSide = playableSides[currentIdx];
-      const activeVideo = videoRefs.current[currentIdx];
-      const waitingForFirstFrame = isDirectVideo(activeSide.url) && !activeVideo?.error && !activeVideo?.paused && (!activeVideo || activeVideo.readyState < HAVE_CURRENT_DATA);
-
-      if (waitingForFirstFrame) {
-        if (!bufferHoldStartedAtRef.current) bufferHoldStartedAtRef.current = Date.now();
-        return;
-      }
-
       const now = Date.now();
-      if (bufferHoldStartedAtRef.current) {
-        holdOffsetMsRef.current += now - bufferHoldStartedAtRef.current;
-        bufferHoldStartedAtRef.current = null;
-      }
-      const adjustedStartMs = startMs + holdOffsetMsRef.current;
-      const elapsed = Math.max(0, now - adjustedStartMs);
+      const elapsed = Math.max(0, now - startMs);
       const completedOnce = elapsed >= totalMs;
       const looped = elapsed % totalMs;
       const idx = Math.min(playableSides.length - 1, Math.floor(looped / (PER_EDIT_SECONDS * 1000)));
@@ -157,7 +143,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     tick();
     const id = setInterval(tick, 250);
     return () => clearInterval(id);
-  }, [currentIdx, onComplete, ready, playableSides, startMs, totalMs]);
+  }, [onComplete, paused, playableSides.length, startMs, totalMs, userStarted]);
 
   const progressPct = ((PER_EDIT_SECONDS - secondsLeft) / PER_EDIT_SECONDS) * 100;
   const ringColor = current.color === "red" ? "ring-red-500/40" : "ring-blue-500/40";
@@ -249,10 +235,9 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
                       src={side.url}
                       className={`relative w-full h-full object-contain bg-black transition-opacity duration-200 ${poster && !hasStarted ? "opacity-0" : "opacity-100"}`}
                       playsInline
-                      autoPlay={active}
                       loop
                       preload="auto"
-                      controls={false}
+                      controls={userStarted}
                       disablePictureInPicture
                       muted={!active}
                       poster={poster || `${side.url}#t=0.1`}
@@ -275,11 +260,17 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
                         setLoadErrors((prev) => ({ ...prev, [index]: true }));
                       }}
                     />
-                    {active && !ready[index] && !poster && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/35">
-                        <div className={`w-8 h-8 rounded-full border-2 ${side.color === "red" ? "border-red-500/40 border-t-red-500" : "border-blue-500/40 border-t-blue-500"} animate-spin`} />
-                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/50" style={teko}>buffering</span>
-                      </div>
+                    {active && !userStarted && (
+                      <button
+                        type="button"
+                        onClick={playCurrent}
+                        className="absolute inset-0 z-20 flex items-center justify-center bg-background/10 active:scale-[0.99] transition-transform"
+                        aria-label={`Play ${side.username}'s edit`}
+                      >
+                        <span className="w-20 h-20 rounded-full bg-black/65 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-2xl shadow-black/50">
+                          <Play className="w-8 h-8 text-white fill-white ml-1" />
+                        </span>
+                      </button>
                     )}
                     {active && loadErrors[index] && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/85 px-6 text-center">
@@ -355,17 +346,17 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
 
           {/* Pause toggle */}
           <button
-            onClick={() => setPaused(p => !p)}
+            onClick={() => userStarted ? setPaused(p => !p) : playCurrent()}
             className="absolute bottom-3 left-3 w-10 h-10 rounded-full bg-black/60 backdrop-blur-md border border-white/10 flex items-center justify-center active:scale-95"
             aria-label={paused ? "Resume" : "Pause"}
           >
-            {paused ? <Play className="w-4 h-4 text-white ml-0.5" /> : <Pause className="w-4 h-4 text-white" />}
+            {paused || !userStarted ? <Play className="w-4 h-4 text-white ml-0.5" /> : <Pause className="w-4 h-4 text-white" />}
           </button>
 
       </motion.div>
 
       <p className="text-[10px] text-center text-foreground/40 uppercase tracking-[0.2em]" style={teko}>
-        {PER_EDIT_SECONDS}s per edit · auto-rotating
+        {userStarted ? `${PER_EDIT_SECONDS}s per edit · tap controls enabled` : "tap to play · direct Bunny CDN"}
       </p>
     </div>
   );
