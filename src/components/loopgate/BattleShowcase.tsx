@@ -144,7 +144,6 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
       console.error('[Bunny Video] Active edit failed to load within 2s:', activeSide.url);
       skippedRef.current[currentIdx] = true;
       setLoadErrors((prev) => ({ ...prev, [currentIdx]: true }));
-      advanceToNext();
     }, STALL_BAIL_MS);
     return () => {
       if (stallTimerRef.current) {
@@ -310,18 +309,21 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
                       crossOrigin="anonymous"
                       onLoadedMetadata={() => setReady((prev) => (prev[index] ? prev : { ...prev, [index]: true }))}
                       onLoadedData={() => {
+                        console.info('[Bunny Video] Video loadeddata:', side.url);
                         setReady((prev) => (prev[index] ? prev : { ...prev, [index]: true }));
                         capturePoster(index);
                       }}
-                      onCanPlay={() => setReady((prev) => (prev[index] ? prev : { ...prev, [index]: true }))}
-                      onPlaying={() => setStarted((prev) => (prev[index] ? prev : { ...prev, [index]: true }))}
+                      onCanPlay={() => {
+                        console.info('[Bunny Video] Video canplay:', side.url);
+                        setReady((prev) => (prev[index] ? prev : { ...prev, [index]: true }));
+                      }}
+                      onPlaying={() => {
+                        console.info('[Bunny Video] Video playing:', side.url);
+                        setStarted((prev) => (prev[index] ? prev : { ...prev, [index]: true }));
+                      }}
                       onError={() => {
                         console.error('[Bunny Video] Video element error:', side.url);
                         setLoadErrors((prev) => ({ ...prev, [index]: true }));
-                        if (index === currentIdx && !skippedRef.current[index]) {
-                          skippedRef.current[index] = true;
-                          advanceToNext();
-                        }
                       }}
                     />
                     {active && !ready[index] && !poster && (
