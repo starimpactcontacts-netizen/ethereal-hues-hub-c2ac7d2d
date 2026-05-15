@@ -8,8 +8,6 @@ const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
 const HAVE_NOTHING = 0;
 const HAVE_CURRENT_DATA = 2;
-// Both sides keep `preload="metadata"` always (cheap — first frame + headers) so
-// neither shows a black screen on swap. The active side is bumped to `auto`.
 
 type Side = {
   userId: string;
@@ -84,6 +82,7 @@ export default function BattleAutoplayDuo({ red, blue, fightId, startedAt, pause
   const [bluePoster, setBluePoster] = useState<string | null>(blue.posterUrl || null);
   const [redStarted, setRedStarted] = useState(false);
   const [blueStarted, setBlueStarted] = useState(false);
+  const primedUrlsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     setRedReady(!isVideo(red.url));
@@ -110,7 +109,7 @@ export default function BattleAutoplayDuo({ red, blue, fightId, startedAt, pause
     const tick = () => {
       const activeSide = sides[activeIdx];
       const activeVideo = activeIdx === 0 ? redVideoRef.current : blueVideoRef.current;
-      const waitingForFirstFrame = isVideo(activeSide.url) && !activeVideo?.error && !activeVideo?.paused && (!activeVideo || activeVideo.readyState < HAVE_CURRENT_DATA);
+      const waitingForFirstFrame = isVideo(activeSide.url) && !activeVideo?.error && (!activeVideo || activeVideo.readyState < HAVE_CURRENT_DATA);
 
       if (waitingForFirstFrame) {
         if (!bufferHoldStartedAtRef.current) bufferHoldStartedAtRef.current = Date.now();
@@ -131,23 +130,38 @@ export default function BattleAutoplayDuo({ red, blue, fightId, startedAt, pause
     return () => clearInterval(id);
   }, [activeIdx, blueReady, compute, redReady, sides, tickEnabled]);
 
-  // Serial preload: only the active side opens a connection. Inactive side waits until
-  // Keep BOTH videos at `metadata` preload at all times so the first frame is always
-  // decoded and we never show a black panel. Bump the active side to `auto` for full buffering.
+  // Keep BOTH Bunny videos hot. Mobile Safari often refuses to fully buffer with
+  // metadata-only, so force `auto`, call `load()`, then silently prime playback once.
   useEffect(() => {
     const refs = [redVideoRef.current, blueVideoRef.current];
     refs.forEach((v, i) => {
       if (!v) return;
-      const isActive = i === activeIdx;
-      const desired: "auto" | "metadata" = isActive ? "auto" : "metadata";
-      if (v.preload !== desired) {
-        v.preload = desired;
-        if (desired === "auto" || v.readyState === HAVE_NOTHING) v.load();
-      } else if (v.readyState === HAVE_NOTHING) {
+      v.preload = "auto";
+      v.playsInline = true;
+      if (v.readyState === HAVE_NOTHING) {
         v.load();
       }
+
+      const key = v.currentSrc || v.src;
+      if (!primedUrlsRef.current.has(key)) {
+        primedUrlsRef.current.add(key);
+        const wasMuted = v.muted;
+        v.muted = true;
+        v.defaultMuted = true;
+        v.play()
+          .then(() => {
+            if (i !== activeIdx || paused) {
+              v.pause();
+              try { v.currentTime = 0; } catch { /* ignore */ }
+            }
+            v.muted = wasMuted || !(audioUnlocked && i === activeIdx);
+          })
+          .catch(() => {
+            v.muted = wasMuted || !(audioUnlocked && i === activeIdx);
+          });
+      }
     });
-  }, [activeIdx, red.url, blue.url]);
+  }, [activeIdx, audioUnlocked, paused, red.url, blue.url]);
 
   // Drive playback without seeking/resetting; seeking on mobile was causing black frames and stutter.
   useEffect(() => {
@@ -170,6 +184,9 @@ export default function BattleAutoplayDuo({ red, blue, fightId, startedAt, pause
         // Hard reset inactive side so it can't bleed audio/frames into the other turn.
         try { v.currentTime = 0; } catch { /* ignore */ }
         return;
+      }
+      if (v.readyState < HAVE_CURRENT_DATA) {
+        v.load();
       }
       v.play().catch(() => {
         if (!audioUnlocked) {
@@ -198,7 +215,7 @@ export default function BattleAutoplayDuo({ red, blue, fightId, startedAt, pause
     if (!fightId) return;
     const channel = supabase.channel(`fight-reactions-${fightId}`, { config: { broadcast: { self: true } } });
     channelRef.current = channel;
-    channel.on("broadcast", { event: "reaction" }, (payload: any) => {
+    channel.on("broadcast", { event: "reaction" }, (payload: { payload?: { id?: unknown; idx?: unknown } }) => {
       const { id, idx } = payload?.payload || {};
       if (typeof id !== "string" || idx !== activeIdx) return;
       const def = REACTIONS.find(r => r.id === id);
@@ -481,7 +498,7 @@ function SidePanel({
           x-webkit-airplay="deny"
           disableRemotePlayback
           loop
-          preload={active ? "auto" : "metadata"}
+          preload="auto"
           disablePictureInPicture
           controls={false}
           muted={!active}
