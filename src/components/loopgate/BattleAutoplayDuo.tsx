@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useBattleAudioUnlock } from "@/hooks/useBattleAudioUnlock";
 import { getBunnyPlaybackUrl, isBunnyVideoUrl } from "@/lib/bunnyPlayback";
+import { supabase } from "@/integrations/supabase/client";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
@@ -21,6 +23,8 @@ type Side = {
 interface Props {
   red: Side;
   blue: Side;
+  /** Stable id used to scope realtime reaction broadcasts. */
+  fightId?: string | null;
   /** ISO timestamp the showcase started (for cross-viewer sync). Defaults to mount time. */
   startedAt?: string | null;
   /** When true, hold playback (e.g. while intro overlay is running) */
@@ -36,7 +40,16 @@ function isVideo(url: string) {
  * Auto-plays one for 10s, then the other for 10s, on infinite loop.
  * Synced for all viewers using `startedAt` timestamp.
  */
-export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false }: Props) {
+const REACTIONS = [
+  { id: "fire",   emoji: "🔥", label: "FIRE"   },
+  { id: "goat",   emoji: "🐐", label: "GOAT"   },
+  { id: "rotten", emoji: "🍅", label: "ROTTEN" },
+  { id: "dead",   emoji: "💀", label: "DEAD"   },
+] as const;
+type ReactionId = typeof REACTIONS[number]["id"];
+interface FloatingReaction { key: number; emoji: string; x: number; }
+
+export default function BattleAutoplayDuo({ red, blue, fightId, startedAt, paused = false }: Props) {
   const sides = useMemo<[Side, Side]>(() => [
     { ...red, url: getBunnyPlaybackUrl(red.url) },
     { ...blue, url: getBunnyPlaybackUrl(blue.url) },
@@ -169,40 +182,59 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
 
   const progressPct = ((PER_EDIT_SECONDS - secondsLeft) / PER_EDIT_SECONDS) * 100;
 
+  // ── Floating emoji reactions broadcast over realtime (no DB) ──
+  const [floats, setFloats] = useState<FloatingReaction[]>([]);
+  const [counts, setCounts] = useState<Record<ReactionId, number>>({ fire: 0, goat: 0, rotten: 0, dead: 0 });
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const floatKey = useRef(0);
+
+  // Reset counts when the active side flips
+  useEffect(() => {
+    setCounts({ fire: 0, goat: 0, rotten: 0, dead: 0 });
+    setFloats([]);
+  }, [activeIdx]);
+
+  useEffect(() => {
+    if (!fightId) return;
+    const channel = supabase.channel(`fight-reactions-${fightId}`, { config: { broadcast: { self: true } } });
+    channelRef.current = channel;
+    channel.on("broadcast", { event: "reaction" }, (payload: any) => {
+      const { id, idx } = payload?.payload || {};
+      if (typeof id !== "string" || idx !== activeIdx) return;
+      const def = REACTIONS.find(r => r.id === id);
+      if (!def) return;
+      setCounts(c => ({ ...c, [id]: c[id as ReactionId] + 1 }));
+      const k = ++floatKey.current;
+      setFloats(f => [...f, { key: k, emoji: def.emoji, x: 20 + Math.random() * 60 }]);
+      setTimeout(() => setFloats(f2 => f2.filter(it => it.key !== k)), 2200);
+    });
+    channel.subscribe();
+    return () => { supabase.removeChannel(channel); channelRef.current = null; };
+  }, [fightId, activeIdx]);
+
+  const fireReaction = (id: ReactionId) => {
+    channelRef.current?.send({ type: "broadcast", event: "reaction", payload: { id, idx: activeIdx } });
+  };
+
+  const activeColor = sides[activeIdx].color;
+
   return (
     <div className="select-none -mx-4 md:-mx-0">
-      {/* ── GAMIFIED HUD: round + score + turn banner ── */}
+      {/* ── HUD strip: round + clean turn label ── */}
       <div className="md:hidden flex items-center justify-between gap-2 px-3 pt-2 pb-1.5 bg-black border-b border-white/5">
-        <div className="flex items-center gap-1.5">
-          <span className="text-[9px] font-black uppercase tracking-[0.22em] text-foreground/40" style={teko}>Round</span>
-          <span className="text-[12px] font-black tabular-nums text-white" style={teko}>{activeIdx + 1}/{sides.length}</span>
-        </div>
-        <div
-          className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${
-            sides[activeIdx].color === 'red'
-              ? 'border-red-500/50 bg-red-500/10'
-              : 'border-blue-500/50 bg-blue-500/10'
-          }`}
+        <span className="text-[10px] font-black uppercase tracking-[0.22em] text-foreground/40" style={teko}>
+          Round <span className="text-white tabular-nums">{activeIdx + 1}</span>
+          <span className="text-foreground/30">/{sides.length}</span>
+        </span>
+        <span
+          className={`text-[11px] font-black uppercase tracking-[0.28em] ${activeColor === 'red' ? 'text-red-400' : 'text-blue-400'}`}
+          style={teko}
         >
-          <span
-            className={`w-1.5 h-1.5 rounded-full ${
-              sides[activeIdx].color === 'red' ? 'bg-red-500' : 'bg-blue-500'
-            }`}
-          />
-          <span
-            className={`text-[10px] font-black uppercase tracking-[0.22em] ${
-              sides[activeIdx].color === 'red' ? 'text-red-300' : 'text-blue-300'
-            }`}
-            style={teko}
-          >
-            {sides[activeIdx].color}'s turn
-          </span>
-        </div>
-        <div className="flex items-center gap-1 text-[10px] font-black tabular-nums" style={teko}>
-          <span className="text-red-400">@{sides[0].username}</span>
-          <span className="text-foreground/30">vs</span>
-          <span className="text-blue-400">@{sides[1].username}</span>
-        </div>
+          {activeColor}&nbsp;·&nbsp;ON STAGE
+        </span>
+        <span className="text-[10px] font-black uppercase tracking-[0.18em] text-foreground/40 tabular-nums" style={teko}>
+          @{sides[0].username}<span className="text-foreground/25"> vs </span>@{sides[1].username}
+        </span>
       </div>
 
       {/* ── MOBILE: stacked RED on top / BLUE on bottom — both always visible, no scroll ── */}
@@ -311,6 +343,47 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
       <p className="pt-2 px-4 text-[10px] text-center text-foreground/40 uppercase tracking-[0.2em] md:hidden" style={teko}>
         15s per edit · auto-rotating
       </p>
+
+      {/* ── Quick-tap emoji reactions (mobile) ── */}
+      {fightId && (
+        <div className="md:hidden relative px-3 pb-3 pt-1">
+          {/* Floating burst layer */}
+          <div className="pointer-events-none absolute inset-x-0 -top-24 h-24 overflow-hidden">
+            <AnimatePresence>
+              {floats.map(f => (
+                <motion.div
+                  key={f.key}
+                  initial={{ y: 0, opacity: 0, scale: 0.6 }}
+                  animate={{ y: -90, opacity: [0, 1, 1, 0], scale: [0.6, 1.3, 1.1, 1] }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 2.2, ease: "easeOut" }}
+                  className="absolute bottom-0 text-3xl"
+                  style={{ left: `${f.x}%` }}
+                >
+                  {f.emoji}
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+          <div className="grid grid-cols-4 gap-2">
+            {REACTIONS.map(r => (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => fireReaction(r.id)}
+                className="relative flex items-center justify-center gap-1.5 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] active:scale-95 active:bg-white/[0.07] transition-transform"
+              >
+                <span className="text-xl leading-none">{r.emoji}</span>
+                {counts[r.id] > 0 && (
+                  <span className="text-[11px] font-black tabular-nums text-white/85 leading-none" style={teko}>
+                    {counts[r.id]}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
     </div>
   );
