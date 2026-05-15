@@ -77,7 +77,7 @@ export async function uploadToBunny(
   }
   const meta = await createRes.json();
   if (!meta?.guid || !meta?.signature) throw new Error(meta?.error || "Bunny create failed");
-  console.info('[Bunny Video] Created Stream video. CDN playback URL:', meta.url);
+  console.info('[Bunny Video] Created Stream video. Direct CDN MP4 URL:', meta.mp4Url || meta.url);
 
   // 2) Upload bytes DIRECTLY to video.bunnycdn.com via TUS. Resumable, parallel
   //    chunks, zero Lovable bandwidth.
@@ -108,7 +108,7 @@ export async function uploadToBunny(
       onSuccess: () => {
         opts?.onProgress?.(1);
         console.info('[Bunny Video] Direct TUS upload complete. Browser uploaded to:', meta.tusEndpoint);
-        console.info('[Bunny Video] HLS playback will request:', meta.url);
+        console.info('[Bunny Video] Playback will request direct Bunny CDN:', meta.mp4Url || meta.url);
         resolve();
       },
     });
@@ -116,7 +116,7 @@ export async function uploadToBunny(
   });
 
   return {
-    url: meta.url,
+    url: meta.mp4Url || meta.url,
     guid: meta.guid,
     mp4Url: meta.mp4Url,
     thumbnailUrl: meta.thumbnailUrl,

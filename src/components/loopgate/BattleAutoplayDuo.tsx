@@ -144,6 +144,7 @@ export default function BattleAutoplayDuo({ red, blue, fightId, startedAt, pause
       }
 
       const key = v.currentSrc || v.src;
+      if (!key) return;
       if (!primedUrlsRef.current.has(key)) {
         primedUrlsRef.current.add(key);
         console.info('[Bunny Video] Priming battle edit buffer:', key);
@@ -455,17 +456,6 @@ function SidePanel({
     return detach;
   }, [isVid, side.url, videoRef]);
 
-  useEffect(() => {
-    if (!active || !isVid || !loading) return;
-    const timer = window.setTimeout(() => {
-      const v = videoRef.current;
-      if (!v || v.readyState >= HAVE_CURRENT_DATA) return;
-      console.error('[Bunny Video] Active edit failed to load within 2s:', side.url);
-      setLoadError(true);
-    }, 2_000);
-    return () => window.clearTimeout(timer);
-  }, [active, isVid, loading, side.url, videoRef]);
-
   // Capture first frame to use as instant poster — eliminates the "black freeze" flash.
   const handleLoadedData = () => {
     onReady();
@@ -506,14 +496,14 @@ function SidePanel({
           src={poster}
           alt=""
           aria-hidden
-          className={`absolute inset-0 w-full h-full object-contain bg-black pointer-events-none transition-opacity duration-200 ${started && active ? "opacity-0" : "opacity-100"}`}
+          className={`absolute inset-0 w-full h-full object-contain bg-black pointer-events-none transition-opacity duration-200 ${active && !loading ? "opacity-0" : "opacity-100"}`}
         />
       )}
       {isVid ? (
         <video
           key={side.url}
           ref={videoRef}
-          className={`relative w-full h-full object-contain transition-opacity duration-200 ${poster && !started ? "opacity-0" : "opacity-100"}`}
+          className={`relative w-full h-full object-contain transition-opacity duration-200 ${active || !poster ? "opacity-100" : "opacity-0"}`}
           playsInline
           autoPlay={active}
           webkit-playsinline="true"
@@ -531,8 +521,7 @@ function SidePanel({
           onCanPlayThrough={onReady}
           onPlaying={onStarted}
           onError={() => {
-            console.error('[Bunny Video] Video element error:', side.url);
-            setLoadError(true);
+            console.warn('[Bunny Video] Video element retry/error observed:', side.url);
           }}
         />
       ) : (
