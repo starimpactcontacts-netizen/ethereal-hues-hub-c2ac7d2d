@@ -12,6 +12,42 @@ export function getBunnySourceUrl(url: string | null | undefined): string {
   return url;
 }
 
+export function getBunnyStreamMp4Url(url: string | null | undefined): string {
+  const source = getBunnySourceUrl(url);
+  if (!source) return "";
+
+  try {
+    const parsed = new URL(source);
+    if (parsed.hostname.endsWith('.b-cdn.net') && /\/playlist\.m3u8$/i.test(parsed.pathname)) {
+      parsed.pathname = parsed.pathname.replace(/\/playlist\.m3u8$/i, '/play_720p.mp4');
+      parsed.search = '';
+      return parsed.toString();
+    }
+  } catch {
+    return source;
+  }
+
+  return source;
+}
+
+export function getBunnyStreamHlsUrl(url: string | null | undefined): string {
+  const source = getBunnySourceUrl(url);
+  if (!source) return "";
+
+  try {
+    const parsed = new URL(source);
+    if (parsed.hostname.endsWith('.b-cdn.net') && /\/play_\d+p\.mp4$/i.test(parsed.pathname)) {
+      parsed.pathname = parsed.pathname.replace(/\/play_\d+p\.mp4$/i, '/playlist.m3u8');
+      parsed.search = '';
+      return parsed.toString();
+    }
+  } catch {
+    return source;
+  }
+
+  return source;
+}
+
 /** True for any URL we can play in our <video> / HLS pipeline. */
 export function isBunnyVideoUrl(url: string | null | undefined): boolean {
   const source = getBunnySourceUrl(url);
@@ -32,7 +68,7 @@ export function getBunnyPlaybackUrl(url: string | null | undefined): string {
     const parsed = new URL(source);
     // Bunny Stream HLS / MP4 fallbacks are served straight from Bunny CDN.
     // Do NOT route video playback through Lovable Cloud; that would burn backend bandwidth.
-    if (parsed.hostname.endsWith('.b-cdn.net')) return source;
+    if (parsed.hostname.endsWith('.b-cdn.net')) return getBunnyStreamMp4Url(source);
     if (parsed.hostname === "storage.bunnycdn.com") {
       console.warn('[Bunny Video] Legacy Bunny Storage URL detected; refusing Lovable proxy playback:', source);
       return source;
