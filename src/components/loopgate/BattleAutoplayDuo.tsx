@@ -451,7 +451,7 @@ function SidePanel({
           src={poster}
           alt=""
           aria-hidden
-          className={`absolute inset-0 w-full h-full object-contain bg-black pointer-events-none transition-opacity duration-200 ${active && !loading ? "opacity-0" : "opacity-100"}`}
+          className={`absolute inset-0 w-full h-full object-cover bg-black pointer-events-none transition-opacity duration-200 ${active && !loading ? "opacity-0" : "opacity-100"}`}
         />
       )}
       {isVid ? (
@@ -461,6 +461,7 @@ function SidePanel({
           src={side.url}
           className={`relative w-full h-full object-cover transition-opacity duration-200 ${active || !poster ? "opacity-100" : "opacity-0"}`}
           playsInline
+          crossOrigin="anonymous"
           webkit-playsinline="true"
           x-webkit-airplay="deny"
           disableRemotePlayback

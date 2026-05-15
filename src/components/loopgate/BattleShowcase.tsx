@@ -226,15 +226,16 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
                         src={poster}
                         alt=""
                         aria-hidden
-                        className={`absolute inset-0 w-full h-full object-contain bg-black pointer-events-none transition-opacity duration-200 ${hasStarted && active ? "opacity-0" : "opacity-100"}`}
+                        className={`absolute inset-0 w-full h-full object-cover bg-black pointer-events-none transition-opacity duration-200 ${hasStarted && active ? "opacity-0" : "opacity-100"}`}
                       />
                     )}
                     <video
                       key={side.url}
                       ref={(node) => { videoRefs.current[index] = node; }}
                       src={side.url}
-                      className={`relative w-full h-full object-contain bg-black transition-opacity duration-200 ${poster && !hasStarted ? "opacity-0" : "opacity-100"}`}
+                      className={`relative w-full h-full object-cover bg-black transition-opacity duration-200 ${poster && !hasStarted ? "opacity-0" : "opacity-100"}`}
                       playsInline
+                      crossOrigin="anonymous"
                       loop
                       preload="auto"
                       controls={userStarted}
