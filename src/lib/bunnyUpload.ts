@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import * as tus from "tus-js-client";
 
 export interface UploadOpts {
   folder?: string;
@@ -59,45 +60,61 @@ export async function uploadToBunny(
   const folder = (opts?.folder || "").replace(/^\/+|\/+$/g, "");
   const xFileName = folder ? `${folder}/${inferredName}` : inferredName;
 
-  const endpoint = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bunny-stream-upload`;
-
-  return await new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", endpoint, true);
-    xhr.setRequestHeader("Authorization", `Bearer ${token}`);
-    xhr.setRequestHeader("Content-Type", fileType);
-    xhr.setRequestHeader("x-file-name", xFileName);
-    xhr.setRequestHeader("x-file-type", fileType);
-    if (opts?.onProgress) {
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) opts.onProgress!(Math.min(0.98, e.loaded / e.total));
-      };
-    }
-    xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          const json = JSON.parse(xhr.responseText);
-          if (!json.url) return reject(new Error(json.error || "Upload failed"));
-          opts?.onProgress?.(1);
-          resolve({
-            url: json.url,
-            guid: json.guid,
-            mp4Url: json.mp4Url,
-            thumbnailUrl: json.thumbnailUrl,
-            previewUrl: json.previewUrl,
-            path: json.path || "",
-          });
-        } catch (e) {
-          reject(new Error("Bad upload response"));
-        }
-      } else {
-        let message = xhr.responseText || xhr.statusText;
-        try { message = JSON.parse(xhr.responseText)?.error || message; } catch {}
-        reject(new Error(`Upload ${xhr.status}: ${message}`));
-      }
-    };
-    xhr.onerror = () => reject(new Error("Network error during upload"));
-    xhr.onabort = () => reject(new Error("Upload aborted"));
-    xhr.send(file);
+  // 1) Ask edge function for a Bunny Stream video slot + TUS signature.
+  //    NO bytes flow through Lovable here — only ~1KB metadata.
+  const createEndpoint = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bunny-stream-create`;
+  const createRes = await fetch(createEndpoint, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ fileName: xFileName }),
   });
+  if (!createRes.ok) {
+    const text = await createRes.text();
+    throw new Error(`Bunny create ${createRes.status}: ${text}`);
+  }
+  const meta = await createRes.json();
+  if (!meta?.guid || !meta?.signature) throw new Error(meta?.error || "Bunny create failed");
+
+  // 2) Upload bytes DIRECTLY to video.bunnycdn.com via TUS. Resumable, parallel
+  //    chunks, zero Lovable bandwidth.
+  await new Promise<void>((resolve, reject) => {
+    const upload = new tus.Upload(file as File, {
+      endpoint: meta.tusEndpoint,
+      retryDelays: [0, 1000, 3000, 5000, 10000],
+      chunkSize: 50 * 1024 * 1024, // 50MB chunks
+      headers: {
+        AuthorizationSignature: meta.signature,
+        AuthorizationExpire: String(meta.expirationTime),
+        VideoId: meta.guid,
+        LibraryId: String(meta.libraryId),
+      },
+      metadata: {
+        filetype: fileType,
+        title: inferredName,
+      },
+      onError: (err) => reject(err),
+      onProgress: (sent, total) => {
+        if (opts?.onProgress && total) {
+          opts.onProgress(Math.min(0.99, sent / total));
+        }
+      },
+      onSuccess: () => {
+        opts?.onProgress?.(1);
+        resolve();
+      },
+    });
+    upload.start();
+  });
+
+  return {
+    url: meta.url,
+    guid: meta.guid,
+    mp4Url: meta.mp4Url,
+    thumbnailUrl: meta.thumbnailUrl,
+    previewUrl: meta.previewUrl,
+    path: "",
+  };
 }
