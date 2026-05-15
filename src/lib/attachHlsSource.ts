@@ -1,5 +1,5 @@
 import Hls from "hls.js";
-import { isHlsUrl } from "@/lib/bunnyPlayback";
+import { getBunnyStreamHlsUrl, getBunnyStreamMp4Url, isHlsUrl } from "@/lib/bunnyPlayback";
 
 export type HlsAttachHandlers = {
   onReady?: () => void;
@@ -11,6 +11,14 @@ export type PreloadedBunnyVideo = {
   ready: Promise<void>;
   dispose: () => void;
 };
+
+function prepareVideo(video: HTMLVideoElement) {
+  video.preload = "auto";
+  video.crossOrigin = "anonymous";
+  video.playsInline = true;
+  video.setAttribute("playsinline", "true");
+  video.setAttribute("webkit-playsinline", "true");
+}
 
 /**
  * Attach a video URL to a <video> element with HLS support.
@@ -25,10 +33,32 @@ export type PreloadedBunnyVideo = {
 export function attachHlsSource(video: HTMLVideoElement, url: string, handlers: HlsAttachHandlers = {}): () => void {
   if (!url) return () => {};
 
-  video.preload = "auto";
-  video.crossOrigin = "anonymous";
-  video.playsInline = true;
-  console.info('[Bunny Video] Requesting CDN URL:', url);
+  const directUrl = getBunnyStreamMp4Url(url);
+  prepareVideo(video);
+  console.info('[Bunny Video] Requesting direct Bunny CDN file:', directUrl);
+
+  // Battle clips are 15s. Direct MP4 playback is more stable than MSE/HLS on iOS
+  // webviews where audio can continue while video frames freeze. Keep HLS only as
+  // a fallback if the direct MP4 file errors.
+  if (directUrl && !isHlsUrl(directUrl)) {
+    if (video.src !== directUrl) video.src = directUrl;
+    const retryHls = () => {
+      const hlsUrl = getBunnyStreamHlsUrl(url);
+      if (!isHlsUrl(hlsUrl) || hlsUrl === directUrl) {
+        handlers.onError?.(video.error?.message || String(video.error?.code || 'video-error'));
+        return;
+      }
+      console.warn('[Bunny Video] MP4 failed, falling back to HLS:', hlsUrl);
+      attachHlsSource(video, hlsUrl, handlers);
+    };
+    video.addEventListener("loadeddata", () => handlers.onReady?.(), { once: true });
+    video.addEventListener("canplay", () => handlers.onReady?.(), { once: true });
+    video.addEventListener("error", retryHls, { once: true });
+    video.load();
+    return () => {
+      video.removeEventListener("error", retryHls);
+    };
+  }
 
   // Native HLS (Safari + iOS) — let the browser do it.
   const canNative = video.canPlayType("application/vnd.apple.mpegurl") !== "";
@@ -77,12 +107,9 @@ export function attachHlsSource(video: HTMLVideoElement, url: string, handlers: 
 
 export function preloadBunnyVideo(url: string, timeoutMs = 2_000): PreloadedBunnyVideo {
   const video = document.createElement("video");
-  video.preload = "auto";
+  prepareVideo(video);
   video.muted = true;
   video.defaultMuted = true;
-  video.playsInline = true;
-  video.crossOrigin = "anonymous";
-  video.setAttribute("webkit-playsinline", "true");
   video.style.cssText = "position:fixed;left:-2px;top:-2px;width:1px;height:1px;opacity:0;pointer-events:none;z-index:-1;";
   document.body.appendChild(video);
 
