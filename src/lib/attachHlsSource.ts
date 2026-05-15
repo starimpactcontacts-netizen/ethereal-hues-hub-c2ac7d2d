@@ -79,6 +79,7 @@ export function attachHlsSource(video: HTMLVideoElement, url: string, handlers: 
   // a fallback if the direct MP4 file errors.
   if (directUrl && !isHlsUrl(directUrl)) {
     if (video.src !== directUrl) video.src = directUrl;
+    let hlsCleanup = () => {};
     const retryHls = () => {
       const hlsUrl = getBunnyStreamHlsUrl(url);
       if (!isHlsUrl(hlsUrl) || hlsUrl === directUrl) {
@@ -86,7 +87,7 @@ export function attachHlsSource(video: HTMLVideoElement, url: string, handlers: 
         return;
       }
       console.warn('[Bunny Video] MP4 failed, falling back to HLS:', hlsUrl);
-      attachHlsManifest(video, hlsUrl, handlers);
+      hlsCleanup = attachHlsManifest(video, hlsUrl, handlers);
     };
     video.addEventListener("loadeddata", () => handlers.onReady?.(), { once: true });
     video.addEventListener("canplay", () => handlers.onReady?.(), { once: true });
@@ -94,6 +95,7 @@ export function attachHlsSource(video: HTMLVideoElement, url: string, handlers: 
     video.load();
     return () => {
       video.removeEventListener("error", retryHls);
+      hlsCleanup();
     };
   }
 
