@@ -49,7 +49,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   const posterKey = useMemo(() => playableSides.map((side) => side.posterUrl || "").join("|"), [playableSides]);
   const audioUnlocked = useBattleAudioUnlock();
   const startMs = showcaseStartedAt ? new Date(showcaseStartedAt).getTime() : null;
-  const totalMs = sides.length * PER_EDIT_SECONDS * 1000;
+  const totalMs = playableSides.length * PER_EDIT_SECONDS * 1000;
 
   const compute = useCallback(() => {
     if (!startMs) return { idx: 0, left: PER_EDIT_SECONDS, completedOnce: false };
@@ -57,11 +57,11 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
     const completedOnce = elapsed >= totalMs;
     // Loop after the first pass so latecomers always see something playing
     const looped = elapsed % totalMs;
-    const idx = Math.min(sides.length - 1, Math.floor(looped / (PER_EDIT_SECONDS * 1000)));
+    const idx = Math.min(playableSides.length - 1, Math.floor(looped / (PER_EDIT_SECONDS * 1000)));
     const intoEdit = looped - idx * PER_EDIT_SECONDS * 1000;
     const left = Math.max(0, Math.ceil((PER_EDIT_SECONDS * 1000 - intoEdit) / 1000));
     return { idx, left, completedOnce };
-  }, [sides.length, startMs, totalMs]);
+  }, [playableSides.length, startMs, totalMs]);
 
   const initial = compute();
   const [currentIdx, setCurrentIdx] = useState(initial.idx);
@@ -78,10 +78,10 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   const skippedRef = useRef<Record<number, boolean>>({});
   const stallTimerRef = useRef<number | null>(null);
 
-  const current = sides[currentIdx];
+  const current = playableSides[currentIdx];
 
   const advanceToNext = useCallback(() => {
-    if (sides.length <= 1) return;
+    if (playableSides.length <= 1) return;
     const next = (currentIdx + 1) % playableSides.length;
     setCurrentIdx(next);
     setSecondsLeft(PER_EDIT_SECONDS);
