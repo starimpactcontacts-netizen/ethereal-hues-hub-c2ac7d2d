@@ -1,13 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useBattleAudioUnlock } from "@/hooks/useBattleAudioUnlock";
 import { getBunnyPlaybackUrl, isBunnyVideoUrl } from "@/lib/bunnyPlayback";
 import { supabase } from "@/integrations/supabase/client";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
-const HAVE_NOTHING = 0;
-const HAVE_CURRENT_DATA = 2;
 
 type Side = {
   userId: string;
@@ -56,7 +53,7 @@ export default function BattleAutoplayDuo({ red, blue, fightId, startedAt, pause
   const totalMs = sides.length * PER_EDIT_SECONDS * 1000;
   const [redReady, setRedReady] = useState(false);
   const [blueReady, setBlueReady] = useState(false);
-  const audioUnlocked = useBattleAudioUnlock();
+  const [userStarted, setUserStarted] = useState(false);
 
   const compute = useCallback(() => {
     const elapsed = Math.max(0, Date.now() - startMsRef.current);
@@ -72,7 +69,6 @@ export default function BattleAutoplayDuo({ red, blue, fightId, startedAt, pause
   const [secondsLeft, setSecondsLeft] = useState(initial.left);
   const tickEnabled = !paused;
   const mountedPausedRef = useRef(paused);
-  const bufferHoldStartedAtRef = useRef<number | null>(null);
 
   const redVideoRef = useRef<HTMLVideoElement>(null);
   const blueVideoRef = useRef<HTMLVideoElement>(null);
@@ -82,7 +78,6 @@ export default function BattleAutoplayDuo({ red, blue, fightId, startedAt, pause
   const [bluePoster, setBluePoster] = useState<string | null>(blue.posterUrl || null);
   const [redStarted, setRedStarted] = useState(false);
   const [blueStarted, setBlueStarted] = useState(false);
-  const primedUrlsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     setRedReady(!isVideo(red.url));
@@ -91,7 +86,7 @@ export default function BattleAutoplayDuo({ red, blue, fightId, startedAt, pause
     setBlueStarted(false);
     setRedPoster(red.posterUrl || null);
     setBluePoster(blue.posterUrl || null);
-    bufferHoldStartedAtRef.current = null;
+    setUserStarted(false);
   }, [red.url, blue.url, red.posterUrl, blue.posterUrl]);
 
   // If the battle mounted behind the 3-2-1 overlay, start the filmed showcase from RED at 15s.
@@ -103,24 +98,10 @@ export default function BattleAutoplayDuo({ red, blue, fightId, startedAt, pause
     setSecondsLeft(PER_EDIT_SECONDS);
   }, [paused]);
 
-  // Tick immediately instead of waiting for both videos to fully buffer.
+  // Tick only after the viewer taps play; this avoids autoplay/buffering deadlocks.
   useEffect(() => {
-    if (!tickEnabled) return;
+    if (!tickEnabled || !userStarted) return;
     const tick = () => {
-      const activeSide = sides[activeIdx];
-      const activeVideo = activeIdx === 0 ? redVideoRef.current : blueVideoRef.current;
-      const waitingForFirstFrame = isVideo(activeSide.url) && !activeVideo?.error && (!activeVideo || activeVideo.readyState < HAVE_CURRENT_DATA);
-
-      if (waitingForFirstFrame) {
-        if (!bufferHoldStartedAtRef.current) bufferHoldStartedAtRef.current = Date.now();
-        return;
-      }
-
-      if (bufferHoldStartedAtRef.current) {
-        startMsRef.current += Date.now() - bufferHoldStartedAtRef.current;
-        bufferHoldStartedAtRef.current = null;
-      }
-
       const { idx, left } = compute();
       setActiveIdx((prev) => (prev !== idx ? idx : prev));
       setSecondsLeft(left);
@@ -128,76 +109,48 @@ export default function BattleAutoplayDuo({ red, blue, fightId, startedAt, pause
     tick();
     const id = setInterval(tick, 250);
     return () => clearInterval(id);
-  }, [activeIdx, blueReady, compute, redReady, sides, tickEnabled]);
+  }, [compute, tickEnabled, userStarted]);
 
-  // Keep BOTH Bunny videos hot. Mobile Safari often refuses to fully buffer with
-  // metadata-only, so force `auto`, call `load()`, then silently prime playback once.
+  // Same native browser video path as Loop feed: direct src, native preload, no HLS wrapper.
   useEffect(() => {
-    const refs = [redVideoRef.current, blueVideoRef.current];
-    refs.forEach((v, i) => {
+    [redVideoRef.current, blueVideoRef.current].forEach((v) => {
       if (!v) return;
       v.preload = "auto";
       v.playsInline = true;
-      if (v.readyState === HAVE_NOTHING) {
-        v.load();
-      }
-
-      const key = v.currentSrc || v.src;
-      if (!key) return;
-      if (!primedUrlsRef.current.has(key)) {
-        primedUrlsRef.current.add(key);
-        console.info('[Bunny Video] Priming battle edit buffer:', key);
-        const wasMuted = v.muted;
-        v.muted = true;
-        v.defaultMuted = true;
-        v.play()
-          .then(() => {
-            if (i !== activeIdx || paused) {
-              v.pause();
-              try { v.currentTime = 0; } catch { /* ignore */ }
-            }
-            v.muted = wasMuted || !(audioUnlocked && i === activeIdx);
-          })
-          .catch(() => {
-            v.muted = wasMuted || !(audioUnlocked && i === activeIdx);
-          });
-      }
+      v.crossOrigin = "anonymous";
+      v.load();
     });
-  }, [activeIdx, audioUnlocked, paused, red.url, blue.url]);
+  }, [red.url, blue.url]);
 
-  // Drive playback without seeking/resetting; seeking on mobile was causing black frames and stutter.
+  const playActive = useCallback(() => {
+    const activeVideo = activeIdx === 0 ? redVideoRef.current : blueVideoRef.current;
+    const activeUrl = sides[activeIdx].url;
+    if (!activeVideo) return;
+    setUserStarted(true);
+    activeVideo.muted = false;
+    activeVideo.volume = 1;
+    activeVideo.play().then(() => {
+      console.info('[Bunny Video] Battle tap-to-play direct Bunny CDN:', activeUrl);
+    }).catch((error) => {
+      console.warn('[Bunny Video] Battle tap-to-play blocked:', activeUrl, error);
+    });
+  }, [activeIdx, sides]);
+
   useEffect(() => {
-    if (paused) {
-      [redVideoRef.current, blueVideoRef.current].forEach((v) => {
-        if (!v) return;
-        v.pause();
-      });
-      return;
-    }
-    const refs = [redVideoRef.current, blueVideoRef.current];
-    refs.forEach((v, i) => {
+    [redVideoRef.current, blueVideoRef.current].forEach((v, i) => {
       if (!v) return;
       const active = i === activeIdx;
-      v.muted = !(audioUnlocked && active);
-      v.defaultMuted = false;
       v.volume = active ? 1 : 0;
-      if (!active) {
+      v.muted = !active;
+      if (paused || !userStarted || !active) {
         v.pause();
-        // Hard reset inactive side so it can't bleed audio/frames into the other turn.
-        try { v.currentTime = 0; } catch { /* ignore */ }
         return;
       }
-      if (v.readyState < HAVE_CURRENT_DATA) {
-        v.load();
-      }
-      v.play().catch(() => {
-        if (!audioUnlocked) {
-          v.muted = true;
-          v.play().catch((error) => { void error; });
-        }
+      v.play().catch((error) => {
+        console.warn('[Bunny Video] Battle native play failed:', sides[i].url, error);
       });
     });
-  }, [activeIdx, audioUnlocked, paused]);
+  }, [activeIdx, paused, sides, userStarted]);
 
   const progressPct = ((PER_EDIT_SECONDS - secondsLeft) / PER_EDIT_SECONDS) * 100;
 
@@ -272,6 +225,8 @@ export default function BattleAutoplayDuo({ red, blue, fightId, startedAt, pause
             onPoster={setRedPoster}
             started={redStarted}
             onStarted={() => setRedStarted(true)}
+            userStarted={userStarted}
+            onPlay={playActive}
             fill
           />
         </div>
@@ -289,6 +244,8 @@ export default function BattleAutoplayDuo({ red, blue, fightId, startedAt, pause
             onPoster={setBluePoster}
             started={blueStarted}
             onStarted={() => setBlueStarted(true)}
+            userStarted={userStarted}
+            onPlay={playActive}
             fill
           />
         </div>
@@ -310,6 +267,8 @@ export default function BattleAutoplayDuo({ red, blue, fightId, startedAt, pause
         onPoster={setRedPoster}
         started={redStarted}
         onStarted={() => setRedStarted(true)}
+        userStarted={userStarted}
+        onPlay={playActive}
       />
       </div>
 
@@ -355,12 +314,14 @@ export default function BattleAutoplayDuo({ red, blue, fightId, startedAt, pause
         onPoster={setBluePoster}
         started={blueStarted}
         onStarted={() => setBlueStarted(true)}
+        userStarted={userStarted}
+        onPlay={playActive}
       />
       </div>
       </div>
 
       <p className="pt-2 px-4 text-[10px] text-center text-foreground/40 uppercase tracking-[0.2em] md:hidden" style={teko}>
-        15s per edit · auto-rotating
+        {userStarted ? "15s per edit · tap controls enabled" : "tap to play · direct Bunny CDN"}
       </p>
 
       {/* ── Quick-tap emoji reactions (mobile) ── */}
@@ -421,6 +382,8 @@ function SidePanel({
   onPoster,
   started,
   onStarted,
+  userStarted,
+  onPlay,
   fill = false,
 }: {
   side: Side;
@@ -435,6 +398,8 @@ function SidePanel({
   onPoster: (dataUrl: string) => void;
   started: boolean;
   onStarted: () => void;
+  userStarted: boolean;
+  onPlay: () => void;
   fill?: boolean;
 }) {
   const isVid = isVideo(side.url);
@@ -486,7 +451,7 @@ function SidePanel({
           src={poster}
           alt=""
           aria-hidden
-          className={`absolute inset-0 w-full h-full object-contain bg-black pointer-events-none transition-opacity duration-200 ${active && !loading ? "opacity-0" : "opacity-100"}`}
+          className={`absolute inset-0 w-full h-full object-cover bg-black pointer-events-none transition-opacity duration-200 ${active && !loading ? "opacity-0" : "opacity-100"}`}
         />
       )}
       {isVid ? (
@@ -494,16 +459,16 @@ function SidePanel({
           key={side.url}
           ref={videoRef}
           src={side.url}
-          className={`relative w-full h-full object-contain transition-opacity duration-200 ${active || !poster ? "opacity-100" : "opacity-0"}`}
+          className={`relative w-full h-full object-cover transition-opacity duration-200 ${active || !poster ? "opacity-100" : "opacity-0"}`}
           playsInline
-          autoPlay={active}
+          crossOrigin="anonymous"
           webkit-playsinline="true"
           x-webkit-airplay="deny"
           disableRemotePlayback
           loop
           preload="auto"
           disablePictureInPicture
-          controls={false}
+          controls={userStarted}
           muted={!active}
           poster={poster || `${side.url}#t=0.1`}
           onLoadedData={handleLoadedData}
@@ -532,14 +497,19 @@ function SidePanel({
         />
       )}
 
-      {/* Only show a spinner before metadata exists; playback starts as soon as the browser can decode. */}
-      {loading && active && !poster && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background/30">
-          <div className="flex flex-col items-center gap-2">
-            <div className={`w-8 h-8 rounded-full border-2 ${side.color === 'red' ? 'border-red-500/40 border-t-red-500' : 'border-blue-500/40 border-t-blue-500'} animate-spin`} />
-            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/50" style={teko}>buffering</span>
-          </div>
-        </div>
+      {isVid && active && !userStarted && (
+        <button
+          type="button"
+          onClick={onPlay}
+          className="absolute inset-0 z-20 flex items-center justify-center bg-background/10 active:scale-[0.99] transition-transform"
+          aria-label={`Play ${side.username}'s edit`}
+        >
+          <span className="w-16 h-16 rounded-full bg-black/65 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-2xl shadow-black/50">
+            <svg viewBox="0 0 24 24" className="w-7 h-7 text-white fill-current ml-1" aria-hidden="true">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </span>
+        </button>
       )}
 
       {loadError && active && (
