@@ -362,10 +362,12 @@ function SidePanel({
       )}
       {isVid ? (
         <video
+          key={side.url}
           ref={videoRef}
           src={side.url}
           className={`relative w-full h-full object-contain transition-opacity duration-200 ${poster && !started ? "opacity-0" : "opacity-100"}`}
           playsInline
+          autoPlay={active}
           webkit-playsinline="true"
           x-webkit-airplay="deny"
           disableRemotePlayback
@@ -383,7 +385,9 @@ function SidePanel({
           onCanPlayThrough={onReady}
           onPlaying={onStarted}
           onError={() => setLoadError(true)}
-        />
+        >
+          <source src={side.url} type="video/mp4" />
+        </video>
       ) : (
         <img
           src={side.url}
