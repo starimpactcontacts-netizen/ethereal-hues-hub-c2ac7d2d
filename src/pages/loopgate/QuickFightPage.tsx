@@ -52,6 +52,7 @@ export default function QuickFightPage() {
   const { isJudge, isAnyJudge, isAdmin, isDev } = useUserRoles(user?.id);
   const [submissionUrl, setSubmissionUrl] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [uploadPct, setUploadPct] = useState(0);
   const [judgeScore1, setJudgeScore1] = useState('');
   const [judgeScore2, setJudgeScore2] = useState('');
   const [judgeNotes, setJudgeNotes] = useState('');
@@ -548,8 +549,12 @@ export default function QuickFightPage() {
                       return;
                     }
                     setSubmitting(true);
+                    setUploadPct(0);
                     try {
-                       const { url: cdnUrl } = await uploadToBunny(file, { folder: `battle-edits/${fight.id}` });
+                       const { url: cdnUrl } = await uploadToBunny(file, {
+                         folder: `battle-edits/${fight.id}`,
+                         onProgress: (p) => setUploadPct(p),
+                       });
                        const success = await submitQuickFight(fight.id, user.id, cdnUrl);
                       if (!success) throw new Error('submit failed');
                       if (hasSongPicked) {
@@ -572,12 +577,13 @@ export default function QuickFightPage() {
                       toast.error('Upload failed — try again');
                     } finally {
                       setSubmitting(false);
+                      setUploadPct(0);
                       e.target.value = '';
                     }
                   }}
                 />
                 {submitting ? (
-                  <span className="text-sm">UPLOADING…</span>
+                  <span className="text-sm">UPLOADING {Math.round(uploadPct * 100)}%</span>
                 ) : (
                   <>
                     <Upload className="w-4 h-4" />

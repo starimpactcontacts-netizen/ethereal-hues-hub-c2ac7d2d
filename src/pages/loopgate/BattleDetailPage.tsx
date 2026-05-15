@@ -46,6 +46,7 @@ export default function BattleDetailPage() {
   const { battle, loading, setBattle, refetch } = useBattle(battleId);
   const [submissionUrl, setSubmissionUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [uploadPct, setUploadPct] = useState(0);
   const [accepting, setAccepting] = useState(false);
   const [myVote, setMyVote] = useState<string | null>(null);
   const [voting, setVoting] = useState(false);
@@ -838,8 +839,12 @@ export default function BattleDetailPage() {
                     if (!file || !user) return;
                     if (file.size > 209715200) { toast.error('File too big — 200 MB max'); return; }
                     setSubmitting(true);
+                    setUploadPct(0);
                     try {
-                       const { url: cdnUrl } = await uploadToBunny(file, { folder: `battle-edits/${battle.id}` });
+                       const { url: cdnUrl } = await uploadToBunny(file, {
+                         folder: `battle-edits/${battle.id}`,
+                         onProgress: (p) => setUploadPct(p),
+                       });
                        const success = await submitToBattle(battle.id, user.id, isChallenger, cdnUrl, 'upload');
                       if (!success) throw new Error('submit failed');
                       if (hasSongPicked && user?.id) {
@@ -861,12 +866,13 @@ export default function BattleDetailPage() {
                       toast.error('Upload failed — try again');
                     } finally {
                       setSubmitting(false);
+                      setUploadPct(0);
                       e.target.value = '';
                     }
                   }}
                 />
                 {submitting ? (
-                  <span>UPLOADING…</span>
+                  <span>UPLOADING {Math.round(uploadPct * 100)}%</span>
                 ) : (
                   <><Upload className="w-4 h-4" /> <span>UPLOAD EDIT</span></>
                 )}
