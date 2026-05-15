@@ -154,6 +154,8 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
       v.volume = active ? 1 : 0;
       if (!active) {
         v.pause();
+        // Hard reset inactive side so it can't bleed audio/frames into the other turn.
+        try { v.currentTime = 0; } catch { /* ignore */ }
         return;
       }
       v.play().catch(() => {
@@ -169,6 +171,40 @@ export default function BattleAutoplayDuo({ red, blue, startedAt, paused = false
 
   return (
     <div className="select-none -mx-4 md:-mx-0">
+      {/* ── GAMIFIED HUD: round + score + turn banner ── */}
+      <div className="md:hidden flex items-center justify-between gap-2 px-3 pt-2 pb-1.5 bg-black border-b border-white/5">
+        <div className="flex items-center gap-1.5">
+          <span className="text-[9px] font-black uppercase tracking-[0.22em] text-foreground/40" style={teko}>Round</span>
+          <span className="text-[12px] font-black tabular-nums text-white" style={teko}>{activeIdx + 1}/{sides.length}</span>
+        </div>
+        <div
+          className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${
+            sides[activeIdx].color === 'red'
+              ? 'border-red-500/50 bg-red-500/10'
+              : 'border-blue-500/50 bg-blue-500/10'
+          }`}
+        >
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${
+              sides[activeIdx].color === 'red' ? 'bg-red-500' : 'bg-blue-500'
+            }`}
+          />
+          <span
+            className={`text-[10px] font-black uppercase tracking-[0.22em] ${
+              sides[activeIdx].color === 'red' ? 'text-red-300' : 'text-blue-300'
+            }`}
+            style={teko}
+          >
+            {sides[activeIdx].color}'s turn
+          </span>
+        </div>
+        <div className="flex items-center gap-1 text-[10px] font-black tabular-nums" style={teko}>
+          <span className="text-red-400">@{sides[0].username}</span>
+          <span className="text-foreground/30">vs</span>
+          <span className="text-blue-400">@{sides[1].username}</span>
+        </div>
+      </div>
+
       {/* ── MOBILE: stacked RED on top / BLUE on bottom — both always visible, no scroll ── */}
       <div className="md:hidden flex flex-col w-full bg-black">
         <div className="relative w-full aspect-[16/10] border-b border-white/10">
