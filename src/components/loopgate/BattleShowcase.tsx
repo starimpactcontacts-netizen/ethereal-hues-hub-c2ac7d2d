@@ -7,6 +7,7 @@ import { useBattleAudioUnlock } from "@/hooks/useBattleAudioUnlock";
 const teko = { fontFamily: "Teko, sans-serif" };
 const PER_EDIT_SECONDS = 15;
 const PRELOAD_LEAD_SECONDS = 2.5;
+const STALL_BAIL_MS = 5000; // if active video can't get a frame in this window, auto-skip
 const HAVE_NOTHING = 0;
 const HAVE_CURRENT_DATA = 2;
 
@@ -69,8 +70,17 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
   const [started, setStarted] = useState<Record<number, boolean>>({});
   const [ready, setReady] = useState<Record<number, boolean>>({});
   const [loadErrors, setLoadErrors] = useState<Record<number, boolean>>({});
+  const skippedRef = useRef<Record<number, boolean>>({});
+  const stallTimerRef = useRef<number | null>(null);
 
   const current = sides[currentIdx];
+
+  const advanceToNext = useCallback(() => {
+    if (sides.length <= 1) return;
+    const next = (currentIdx + 1) % sides.length;
+    setCurrentIdx(next);
+    setSecondsLeft(PER_EDIT_SECONDS);
+  }, [currentIdx, sides.length]);
 
   useEffect(() => {
     setReady({});
@@ -80,6 +90,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
       return acc;
     }, {}));
     setLoadErrors({});
+    skippedRef.current = {};
     bufferHoldStartedAtRef.current = null;
     holdOffsetMsRef.current = 0;
   }, [posterKey, videoKey]);
@@ -92,16 +103,39 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
       v.muted = true;
       v.defaultMuted = false;
       const isActive = i === currentIdx;
+      // Always full-preload the active side; warm the next side ahead of the swap.
+      // Avoid the metadata→auto thrash that aborts in-flight loads on iOS Safari.
       const shouldWarm = !isActive && secondsLeft <= PRELOAD_LEAD_SECONDS;
       const desired = isActive || shouldWarm ? "auto" : "metadata";
-      if (v.preload !== desired) {
-        v.preload = desired;
-        if (desired === "auto" || v.readyState === HAVE_NOTHING) v.load();
-      } else if (v.readyState === HAVE_NOTHING) {
-        v.load();
-      }
+      if (v.preload !== desired) v.preload = desired;
+      if (v.readyState === HAVE_NOTHING) v.load();
     });
   }, [currentIdx, secondsLeft, videoKey]);
+
+  // Auto-skip the active side if it can't produce a frame within STALL_BAIL_MS.
+  useEffect(() => {
+    if (stallTimerRef.current) {
+      window.clearTimeout(stallTimerRef.current);
+      stallTimerRef.current = null;
+    }
+    const activeSide = sides[currentIdx];
+    if (!isDirectVideo(activeSide.url)) return;
+    if (skippedRef.current[currentIdx]) return;
+    if (started[currentIdx] || ready[currentIdx]) return;
+    stallTimerRef.current = window.setTimeout(() => {
+      const v = videoRefs.current[currentIdx];
+      if (!v || v.readyState >= HAVE_CURRENT_DATA) return;
+      skippedRef.current[currentIdx] = true;
+      setLoadErrors((prev) => ({ ...prev, [currentIdx]: true }));
+      advanceToNext();
+    }, STALL_BAIL_MS);
+    return () => {
+      if (stallTimerRef.current) {
+        window.clearTimeout(stallTimerRef.current);
+        stallTimerRef.current = null;
+      }
+    };
+  }, [advanceToNext, currentIdx, ready, sides, started]);
 
   useEffect(() => {
     videoRefs.current.forEach((v, index) => {
@@ -255,6 +289,7 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
                       disablePictureInPicture
                       muted={!active}
                       poster={poster || undefined}
+                      crossOrigin="anonymous"
                       onLoadedMetadata={() => setReady((prev) => (prev[index] ? prev : { ...prev, [index]: true }))}
                       onLoadedData={() => {
                         setReady((prev) => (prev[index] ? prev : { ...prev, [index]: true }));
@@ -262,7 +297,13 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
                       }}
                       onCanPlay={() => setReady((prev) => (prev[index] ? prev : { ...prev, [index]: true }))}
                       onPlaying={() => setStarted((prev) => (prev[index] ? prev : { ...prev, [index]: true }))}
-                      onError={() => setLoadErrors((prev) => ({ ...prev, [index]: true }))}
+                      onError={() => {
+                        setLoadErrors((prev) => ({ ...prev, [index]: true }));
+                        if (index === currentIdx && !skippedRef.current[index]) {
+                          skippedRef.current[index] = true;
+                          advanceToNext();
+                        }
+                      }}
                     />
                     {active && !ready[index] && !poster && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/35">
@@ -271,20 +312,32 @@ export default function BattleShowcase({ sides, showcaseStartedAt, onComplete }:
                       </div>
                     )}
                     {active && loadErrors[index] && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const v = videoRefs.current[index];
-                          if (!v) return;
-                          setLoadErrors((prev) => ({ ...prev, [index]: false }));
-                          v.load();
-                          v.play().catch(() => {});
-                        }}
-                        className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/80"
-                      >
-                        <span className="text-xs font-black uppercase tracking-[0.18em] text-foreground" style={teko}>Tap to reload</span>
-                        <span className="text-[10px] text-muted-foreground">Network dropped this edit</span>
-                      </button>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/85 px-6 text-center">
+                        <span className="text-[10px] font-black uppercase tracking-[0.22em] text-foreground/60" style={teko}>
+                          Edit unavailable
+                        </span>
+                        <a
+                          href={side.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1.5 rounded-md bg-white/10 border border-white/15 text-[11px] font-bold uppercase tracking-[0.18em] text-foreground"
+                          style={teko}
+                        >
+                          Open in new tab
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const v = videoRefs.current[index];
+                            setLoadErrors((prev) => ({ ...prev, [index]: false }));
+                            skippedRef.current[index] = false;
+                            if (v) { v.load(); v.play().catch(() => {}); }
+                          }}
+                          className="text-[10px] uppercase tracking-[0.18em] text-foreground/50 underline-offset-4 hover:underline"
+                        >
+                          Try again
+                        </button>
+                      </div>
                     )}
                   </>
                 ) : sideImage ? (
