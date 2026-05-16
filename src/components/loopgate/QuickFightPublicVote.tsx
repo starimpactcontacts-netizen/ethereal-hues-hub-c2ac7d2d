@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, Check, Zap } from 'lucide-react';
+import { Trophy, Check, Crown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -17,7 +17,7 @@ interface Props {
   officialWinnerId?: string | null;
 }
 
-const teko = { fontFamily: 'Teko, sans-serif' };
+// Clean modern sans — no Teko condensed display font on this card.
 
 /**
  * Public spectator vote — "Which edit won?"
