@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Play, Pause, Volume2, VolumeX, Maximize2 } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { getBunnyPlaybackCandidates, getBunnyPlaybackUrl, isBunnyVideoUrl } from "@/lib/bunnyPlayback";
 
 const teko = { fontFamily: "Teko, sans-serif" };
@@ -32,46 +32,49 @@ export default function BattleAutoplayDuo({ red, blue }: Props) {
   ], [red, blue]);
 
   return (
-    <div className="select-none -mx-4 md:-mx-0 bg-black">
-      <div className="md:flex md:items-stretch md:gap-0 relative">
-        <div className="md:flex-1 md:min-w-0">
-          <BattleVideoSlot side={sides[0]} fill />
+    <div className="select-none -mx-4 md:-mx-0 bg-black rounded-md overflow-hidden">
+      {/* Mobile: stacked, fills remaining viewport — no scroll. Desktop: side-by-side. */}
+      <div className="relative flex flex-col md:flex-row md:items-stretch h-[calc(100svh-260px)] min-h-[360px] max-h-[720px] md:h-[520px]">
+        <div className="flex-1 min-h-0 md:min-w-0 relative">
+          <BattleVideoSlot side={sides[0]} />
         </div>
 
-        {/* Center VS chip — game HUD style */}
-        <div className="relative h-0 md:h-auto md:w-0 flex items-center justify-center z-30">
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+        {/* VS divider — thin neon bar with center chip */}
+        <div className="relative h-px md:h-auto md:w-px shrink-0">
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent, rgba(239,68,68,0.9), #fff, rgba(59,130,246,0.9), transparent)",
+            }}
+          />
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none">
             <div className="relative">
               <div
-                className="absolute inset-0 rounded-full blur-md opacity-80"
+                className="absolute inset-0 rounded-full blur-md opacity-70"
                 style={{ background: "radial-gradient(circle, rgba(239,68,68,0.6), rgba(59,130,246,0.6))" }}
               />
               <div
-                className="relative w-9 h-9 rounded-full flex items-center justify-center border border-white/30 shadow-[0_0_20px_rgba(255,255,255,0.25)]"
-                style={{ background: "linear-gradient(135deg, #ef4444 0%, #1a1a1a 50%, #3b82f6 100%)" }}
+                className="relative w-7 h-7 rounded-full flex items-center justify-center border border-white/30 shadow-[0_0_14px_rgba(255,255,255,0.25)]"
+                style={{ background: "linear-gradient(135deg, #ef4444 0%, #0a0a0a 50%, #3b82f6 100%)" }}
               >
-                <span className="text-[11px] font-black tracking-[0.15em] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]" style={teko}>
+                <span className="text-[9px] font-black tracking-[0.18em] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]" style={teko}>
                   VS
                 </span>
               </div>
             </div>
           </div>
-          {/* Hairline divider */}
-          <div
-            className="absolute inset-x-0 top-0 h-px md:inset-y-0 md:left-1/2 md:top-0 md:h-auto md:w-px"
-            style={{ background: "linear-gradient(90deg, transparent, rgba(239,68,68,0.9), #fff, rgba(59,130,246,0.9), transparent)" }}
-          />
         </div>
 
-        <div className="md:flex-1 md:min-w-0">
-          <BattleVideoSlot side={sides[1]} fill />
+        <div className="flex-1 min-h-0 md:min-w-0 relative">
+          <BattleVideoSlot side={sides[1]} />
         </div>
       </div>
     </div>
   );
 }
 
-function BattleVideoSlot({ side, fill = false }: { side: Side; fill?: boolean }) {
+function BattleVideoSlot({ side }: { side: Side }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
@@ -166,7 +169,7 @@ function BattleVideoSlot({ side, fill = false }: { side: Side; fill?: boolean })
 
   return (
     <div
-      className={`relative ${fill ? "w-full aspect-[9/12] md:aspect-square" : "aspect-square w-full"} overflow-hidden bg-black group`}
+      className="relative w-full h-full overflow-hidden bg-black group"
       onClick={() => setShowControls((s) => !s)}
     >
       {isVid ? (
@@ -198,7 +201,7 @@ function BattleVideoSlot({ side, fill = false }: { side: Side; fill?: boolean })
         />
       )}
 
-      {/* Initial play tap target — minimal game icon */}
+      {/* Initial play tap target — minimal game icon, small */}
       {isVid && !isPlaying && !loadError && (
         <button
           type="button"
@@ -207,15 +210,15 @@ function BattleVideoSlot({ side, fill = false }: { side: Side; fill?: boolean })
           aria-label={`Play ${side.username}'s edit`}
         >
           <span
-            className="relative w-12 h-12 rounded-md flex items-center justify-center"
+            className="relative w-10 h-10 rounded-md flex items-center justify-center"
             style={{
               background: "rgba(0,0,0,0.55)",
               backdropFilter: "blur(8px)",
               border: `1px solid ${accentHex}`,
-              boxShadow: `0 0 18px ${accentGlow}, inset 0 0 0 1px rgba(255,255,255,0.08)`,
+              boxShadow: `0 0 12px ${accentGlow}, inset 0 0 0 1px rgba(255,255,255,0.08)`,
             }}
           >
-            <Play className="w-5 h-5 text-white fill-white ml-0.5" />
+            <Play className="w-4 h-4 text-white fill-white ml-0.5" />
           </span>
         </button>
       )}
@@ -223,27 +226,27 @@ function BattleVideoSlot({ side, fill = false }: { side: Side; fill?: boolean })
       {/* Tiny game-icon HUD — shows briefly on tap */}
       {isVid && isPlaying && (
         <div
-          className={`absolute bottom-2 left-2 right-2 z-20 flex items-end justify-between gap-2 transition-opacity duration-300 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+          className={`absolute bottom-1.5 left-1.5 right-1.5 z-20 flex items-end justify-between gap-2 transition-opacity duration-300 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"}`}
           onClick={(e) => e.stopPropagation()}
         >
           <button
             type="button"
             onClick={togglePlay}
-            className="w-7 h-7 rounded-md bg-black/60 backdrop-blur-md border border-white/15 flex items-center justify-center active:scale-90"
+            className="w-6 h-6 rounded-md bg-black/60 backdrop-blur-md border border-white/15 flex items-center justify-center active:scale-90"
             style={{ boxShadow: `0 0 8px ${accentGlow}` }}
             aria-label="Pause"
           >
-            <Pause className="w-3 h-3 text-white fill-white" />
+            <Pause className="w-2.5 h-2.5 text-white fill-white" />
           </button>
 
           <button
             type="button"
             onClick={toggleMute}
-            className="w-7 h-7 rounded-md bg-black/60 backdrop-blur-md border border-white/15 flex items-center justify-center active:scale-90"
+            className="w-6 h-6 rounded-md bg-black/60 backdrop-blur-md border border-white/15 flex items-center justify-center active:scale-90"
             style={{ boxShadow: `0 0 8px ${accentGlow}` }}
             aria-label={muted ? "Unmute" : "Mute"}
           >
-            {muted ? <VolumeX className="w-3 h-3 text-white" /> : <Volume2 className="w-3 h-3 text-white" />}
+            {muted ? <VolumeX className="w-2.5 h-2.5 text-white" /> : <Volume2 className="w-2.5 h-2.5 text-white" />}
           </button>
         </div>
       )}
@@ -253,10 +256,10 @@ function BattleVideoSlot({ side, fill = false }: { side: Side; fill?: boolean })
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); toggleMute(); }}
-          className="absolute top-2 right-2 z-20 w-6 h-6 rounded-md bg-black/55 backdrop-blur-md border border-white/15 flex items-center justify-center active:scale-90"
+          className="absolute top-1.5 right-1.5 z-20 w-5 h-5 rounded-md bg-black/55 backdrop-blur-md border border-white/15 flex items-center justify-center active:scale-90"
           aria-label={muted ? "Unmute" : "Mute"}
         >
-          {muted ? <VolumeX className="w-3 h-3 text-white/90" /> : <Volume2 className="w-3 h-3 text-white/90" />}
+          {muted ? <VolumeX className="w-2.5 h-2.5 text-white/90" /> : <Volume2 className="w-2.5 h-2.5 text-white/90" />}
         </button>
       )}
 
@@ -296,9 +299,9 @@ function BattleVideoSlot({ side, fill = false }: { side: Side; fill?: boolean })
       )}
 
       {/* Top corner game-tag — minimal, doesn't cover edit */}
-      <div className="absolute top-2 left-2 z-10 flex items-center gap-1.5 pointer-events-none">
+      <div className="absolute top-1.5 left-1.5 z-10 flex items-center gap-1.5 pointer-events-none">
         <span
-          className="flex items-center gap-1 px-1.5 py-0.5 rounded-sm text-[9px] font-black uppercase tracking-[0.22em] text-white"
+          className="flex items-center gap-1 px-1.5 py-[1px] rounded-sm text-[8px] font-black uppercase tracking-[0.22em] text-white"
           style={{
             background: "rgba(0,0,0,0.5)",
             backdropFilter: "blur(6px)",
@@ -308,12 +311,12 @@ function BattleVideoSlot({ side, fill = false }: { side: Side; fill?: boolean })
           }}
         >
           <span
-            className="w-1.5 h-1.5 rounded-full animate-pulse"
+            className="w-1 h-1 rounded-full animate-pulse"
             style={{ background: accentHex, boxShadow: `0 0 6px ${accentHex}` }}
           />
           {label}
         </span>
-        <span className="text-[10px] font-bold text-white/90 truncate drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+        <span className="text-[9px] font-bold text-white/90 truncate drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
           @{side.username}
         </span>
       </div>
