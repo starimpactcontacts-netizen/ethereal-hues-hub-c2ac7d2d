@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, Check, Zap } from 'lucide-react';
+import { Trophy, Check, Crown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -17,7 +17,7 @@ interface Props {
   officialWinnerId?: string | null;
 }
 
-const teko = { fontFamily: 'Teko, sans-serif' };
+// Clean modern sans — no Teko condensed display font on this card.
 
 /**
  * Public spectator vote — "Which edit won?"
@@ -154,32 +154,32 @@ export default function QuickFightPublicVote({
           />
         )}
 
-        <div className="relative px-3 py-4 flex flex-col items-center justify-center gap-1 min-h-[120px]">
+        <div className="relative px-3 py-4 flex flex-col items-center justify-center gap-1.5 min-h-[124px]">
           {/* Top tag row */}
-          <div className="flex items-center gap-1.5 mb-1">
-            <span className={`text-[9px] font-black uppercase tracking-[0.25em] ${isRed ? 'text-red-400' : 'text-blue-400'}`} style={teko}>
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <span className={`text-[10px] font-semibold tracking-[0.18em] ${isRed ? 'text-red-400/90' : 'text-blue-400/90'}`}>
               {side.toUpperCase()}
             </span>
             {isOfficial && (
-              <span className="text-[8px] font-black uppercase tracking-wider text-amber-400 flex items-center gap-0.5">
+              <span className="text-[9px] font-semibold tracking-wider text-amber-400 flex items-center gap-0.5">
                 <Trophy className="w-2.5 h-2.5" /> WINNER
               </span>
             )}
           </div>
 
-          {/* Massive percentage */}
+          {/* Percentage — modern sans, not condensed */}
           <p
-            className="text-5xl font-black text-white tabular-nums leading-none"
-            style={{ ...teko, textShadow: isRed ? '0 0 20px rgba(239,68,68,0.5)' : '0 0 20px rgba(59,130,246,0.5)' }}
+            className="text-[44px] font-semibold text-white tabular-nums leading-none tracking-tight"
+            style={{ textShadow: isRed ? '0 0 24px rgba(239,68,68,0.35)' : '0 0 24px rgba(59,130,246,0.35)' }}
           >
-            {pct}<span className="text-2xl text-white/60">%</span>
+            {pct}<span className="text-[22px] text-white/50 font-medium">%</span>
           </p>
 
           {/* Username */}
-          <p className="text-[12px] font-bold text-white truncate max-w-full px-2">@{username}</p>
+          <p className="text-[13px] font-medium text-white/95 truncate max-w-full px-2">@{username}</p>
 
           {/* Vote count */}
-          <p className="text-[9px] text-zinc-400 tabular-nums uppercase tracking-wider">
+          <p className="text-[10px] text-zinc-500 tabular-nums tracking-wide">
             {count} {count === 1 ? 'vote' : 'votes'}
           </p>
 
@@ -211,19 +211,19 @@ export default function QuickFightPublicVote({
   return (
     <div className="relative bg-black border border-white/10 overflow-hidden">
       {/* Header */}
-      <div className="relative px-3 py-2.5 border-b border-white/10 bg-gradient-to-r from-red-500/10 via-amber-500/5 to-blue-500/10 flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <Zap className="w-3.5 h-3.5 text-amber-400" fill="currentColor" />
-          <span className="text-[12px] font-black text-white uppercase tracking-[0.25em]" style={teko}>
+      <div className="relative px-3.5 py-2.5 border-b border-white/10 bg-white/[0.02] flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Crown className="w-3.5 h-3.5 text-white/70" strokeWidth={2.2} />
+          <span className="text-[12px] font-semibold text-white/95 tracking-[0.12em]">
             WHO WON?
           </span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="relative flex w-1.5 h-1.5">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75 animate-ping" />
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-400" />
+            <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60 animate-ping" />
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
           </span>
-          <span className="text-[9px] text-zinc-400 uppercase tracking-wider tabular-nums">
+          <span className="text-[10px] text-zinc-400 tracking-wide tabular-nums">
             {total} {total === 1 ? 'vote' : 'votes'}
           </span>
         </div>
@@ -238,15 +238,15 @@ export default function QuickFightPublicVote({
 
         {/* Center VS chip overlapping the two sides */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10">
-          <div className="w-9 h-9 rounded-full bg-black border border-white/20 flex items-center justify-center shadow-[0_0_20px_rgba(0,0,0,0.8)]">
-            <span className="text-[12px] font-black text-white tracking-wider" style={teko}>VS</span>
+          <div className="w-9 h-9 rounded-full bg-black border border-white/15 flex items-center justify-center shadow-[0_0_20px_rgba(0,0,0,0.8)]">
+            <span className="text-[10px] font-semibold text-white/90 tracking-[0.1em]">VS</span>
           </div>
         </div>
       </div>
 
       {/* CTA bar */}
-      <div className={`px-3 py-2 border-t border-white/10 text-center ${myVote ? 'bg-emerald-500/10' : 'bg-black'}`}>
-        <p className={`text-[10px] font-black uppercase tracking-[0.3em] ${myVote ? 'text-emerald-400' : 'text-zinc-500'}`} style={teko}>
+      <div className={`px-3 py-2.5 border-t border-white/10 text-center ${myVote ? 'bg-emerald-500/10' : 'bg-white/[0.015]'}`}>
+        <p className={`text-[11px] font-medium tracking-[0.14em] ${myVote ? 'text-emerald-400' : 'text-zinc-500'}`}>
           {ctaText}
         </p>
       </div>
