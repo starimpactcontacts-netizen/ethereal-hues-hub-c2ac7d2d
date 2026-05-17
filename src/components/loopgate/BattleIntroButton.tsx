@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import countdownSfx from '@/assets/sounds/battle-countdown.m4a';
 
 interface Props {
   player1Username: string;
@@ -17,24 +18,30 @@ interface Props {
 
 const SIZE = 1080;
 const FPS = 30;
-const INTRO_FRAMES = 60;
-const PER_MSG_FRAMES = 20;
-const OUTRO_FRAMES = 20;
-const MAX_MESSAGES = 6;
 
-interface Msg { user_id: string; username: string; avatar_url: string | null; message_text: string; }
+// Phase frames
+const VS_FRAMES = 45;          // 1.5s
+const MSG_COUNT = 4;
+const PER_MSG_FRAMES = 18;     // 0.6s each = 2.4s
+const HOLD_AFTER_CHAT = 12;    // 0.4s
+const COUNTDOWN_FRAMES = 90;   // 3.0s synced to audio
 
-async function loadFonts(): Promise<void> {
+const RED = '#ef4444';
+const BLUE = '#3b82f6';
+
+interface Msg { user_id: string; username: string; message_text: string; }
+
+async function loadFonts() {
   try {
     // @ts-ignore
     if (document.fonts) {
       await Promise.all([
-        document.fonts.load('700 220px Teko'),
-        document.fonts.load('700 140px Teko'),
-        document.fonts.load('700 96px Teko'),
-        document.fonts.load('500 36px Teko'),
-        document.fonts.load('400 34px Inter'),
-        document.fonts.load('600 30px Inter'),
+        document.fonts.load('900 320px Teko'),
+        document.fonts.load('900 200px Teko'),
+        document.fonts.load('900 110px Teko'),
+        document.fonts.load('700 64px Teko'),
+        document.fonts.load('700 42px Inter'),
+        document.fonts.load('600 38px Inter'),
       ]);
     }
   } catch {}
@@ -53,6 +60,9 @@ async function loadAvatar(url: string | null | undefined): Promise<HTMLImageElem
   });
 }
 
+function clamp01(x: number) { return Math.max(0, Math.min(1, x)); }
+function easeOut(t: number) { return 1 - Math.pow(1 - t, 3); }
+
 function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -63,133 +73,122 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
   ctx.closePath();
 }
 
-function drawAvatarCircle(ctx: CanvasRenderingContext2D, img: HTMLImageElement | null, cx: number, cy: number, r: number, color: string, initial: string) {
+function drawAvatar(ctx: CanvasRenderingContext2D, img: HTMLImageElement | null, cx: number, cy: number, r: number, color: string, initial: string) {
   ctx.save();
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
   ctx.closePath();
   ctx.clip();
   if (img) {
-    ctx.drawImage(img, cx - r, cy - r, r * 2, r * 2);
+    // cover crop
+    const ar = img.width / img.height;
+    let dw = r * 2, dh = r * 2;
+    if (ar > 1) { dw = r * 2 * ar; } else { dh = (r * 2) / ar; }
+    ctx.drawImage(img, cx - dw / 2, cy - dh / 2, dw, dh);
   } else {
-    ctx.fillStyle = '#1a1a1a';
+    ctx.fillStyle = '#222';
     ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
     ctx.fillStyle = '#fff';
-    ctx.font = `700 ${r}px Teko, Impact, sans-serif`;
+    ctx.font = `900 ${Math.floor(r * 1.1)}px Teko, Impact, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(initial.toUpperCase(), cx, cy + 2);
+    ctx.fillText(initial.toUpperCase(), cx, cy + 4);
   }
   ctx.restore();
-  ctx.lineWidth = 4;
+  ctx.lineWidth = 8;
   ctx.strokeStyle = color;
-  ctx.shadowColor = color;
-  ctx.shadowBlur = 16;
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
   ctx.stroke();
-  ctx.shadowBlur = 0;
 }
 
-function easeOut(t: number) { return 1 - Math.pow(1 - t, 3); }
-function clamp01(x: number) { return Math.max(0, Math.min(1, x)); }
-
-function drawBackground(ctx: CanvasRenderingContext2D, frame: number) {
-  ctx.fillStyle = '#000';
-  ctx.fillRect(0, 0, SIZE, SIZE);
-  const pulse = 0.85 + Math.sin(frame * 0.18) * 0.15;
-  const rg = ctx.createRadialGradient(80, SIZE / 2, 40, 80, SIZE / 2, 900);
-  rg.addColorStop(0, `rgba(239,68,68,${0.35 * pulse})`);
-  rg.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = rg;
-  ctx.fillRect(0, 0, SIZE, SIZE);
-  const bg = ctx.createRadialGradient(SIZE - 80, SIZE / 2, 40, SIZE - 80, SIZE / 2, 900);
-  bg.addColorStop(0, `rgba(59,130,246,${0.35 * pulse})`);
-  bg.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, SIZE, SIZE);
-  ctx.fillStyle = 'rgba(255,255,255,0.025)';
-  for (let y = 0; y < SIZE; y += 4) ctx.fillRect(0, y, SIZE, 1);
-  ctx.save();
-  ctx.translate(SIZE / 2, SIZE / 2);
-  ctx.rotate(Math.PI / 2);
-  const grad = ctx.createLinearGradient(-SIZE / 2, 0, SIZE / 2, 0);
-  grad.addColorStop(0, 'rgba(239,68,68,0.6)');
-  grad.addColorStop(0.5, 'rgba(255,255,255,0.9)');
-  grad.addColorStop(1, 'rgba(59,130,246,0.6)');
-  ctx.fillStyle = grad;
-  ctx.fillRect(-SIZE / 2, -1, SIZE, 2);
-  ctx.restore();
+// FLAT split background — solid red left, solid blue right, hard divider
+function drawSplitBG(ctx: CanvasRenderingContext2D) {
+  ctx.fillStyle = RED;
+  ctx.fillRect(0, 0, SIZE / 2, SIZE);
+  ctx.fillStyle = BLUE;
+  ctx.fillRect(SIZE / 2, 0, SIZE / 2, SIZE);
+  // hard white divider
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(SIZE / 2 - 4, 0, 8, SIZE);
 }
 
-function drawWatermark(ctx: CanvasRenderingContext2D) {
+function drawFlatBG(ctx: CanvasRenderingContext2D, color: string) {
+  ctx.fillStyle = color;
+  ctx.fillRect(0, 0, SIZE, SIZE);
+}
+
+function drawWatermark(ctx: CanvasRenderingContext2D, color = 'rgba(255,255,255,0.85)') {
   ctx.save();
   ctx.textAlign = 'right';
   ctx.textBaseline = 'bottom';
-  ctx.font = '700 36px Teko, Impact, sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.65)';
-  ctx.fillText('LOOPGATE.IO', SIZE - 36, SIZE - 28);
+  ctx.font = '900 32px Teko, Impact, sans-serif';
+  ctx.fillStyle = color;
+  ctx.fillText('LOOPGATE.IO', SIZE - 40, SIZE - 36);
   ctx.restore();
 }
 
-function drawIntro(ctx: CanvasRenderingContext2D, frame: number, p1: string, p2: string, p1Avatar: HTMLImageElement | null, p2Avatar: HTMLImageElement | null) {
-  drawBackground(ctx, frame);
-  const t = clamp01(frame / INTRO_FRAMES);
+function drawVS(ctx: CanvasRenderingContext2D, frame: number, p1: string, p2: string, p1A: HTMLImageElement | null, p2A: HTMLImageElement | null) {
+  drawSplitBG(ctx);
+
+  const t = clamp01(frame / 18);
   const e = easeOut(t);
-  const shake = frame < 12 ? (Math.random() - 0.5) * 10 : 0;
-  const slideLeft = -200 + e * 200;
-  const slideRight = 200 - e * 200;
+  const slide = (1 - e) * 300;
 
+  // Title
   ctx.save();
-  ctx.translate(SIZE * 0.25 + slideLeft + shake, SIZE / 2);
-  drawAvatarCircle(ctx, p1Avatar, 0, -60, 110, '#ef4444', (p1[0] || 'R'));
+  ctx.globalAlpha = clamp01((frame - 4) / 12);
   ctx.fillStyle = '#fff';
-  ctx.font = '700 64px Teko, Impact, sans-serif';
   ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('@' + p1.slice(0, 14), 0, 100);
-  ctx.fillStyle = '#ef4444';
-  ctx.font = '700 38px Teko, Impact, sans-serif';
-  ctx.fillText('RED', 0, 160);
+  ctx.font = '900 90px Teko, Impact, sans-serif';
+  ctx.fillText('EDIT BATTLE', SIZE / 2, 160);
+  ctx.font = '700 36px Inter, system-ui, sans-serif';
+  ctx.fillText('LIVE ON LOOPGATE.IO', SIZE / 2, 215);
   ctx.restore();
 
+  // Left avatar (red) — slides from left
   ctx.save();
-  ctx.translate(SIZE * 0.75 + slideRight - shake, SIZE / 2);
-  drawAvatarCircle(ctx, p2Avatar, 0, -60, 110, '#3b82f6', (p2[0] || 'B'));
+  ctx.translate(-slide, 0);
+  const lcx = SIZE * 0.27;
+  const lcy = SIZE * 0.52;
+  drawAvatar(ctx, p1A, lcx, lcy, 150, '#fff', p1[0] || 'R');
   ctx.fillStyle = '#fff';
-  ctx.font = '700 64px Teko, Impact, sans-serif';
   ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('@' + p2.slice(0, 14), 0, 100);
-  ctx.fillStyle = '#3b82f6';
-  ctx.font = '700 38px Teko, Impact, sans-serif';
-  ctx.fillText('BLUE', 0, 160);
+  ctx.font = '900 64px Teko, Impact, sans-serif';
+  ctx.fillText('@' + p1.slice(0, 12), lcx, lcy + 220);
+  ctx.font = '900 44px Teko, Impact, sans-serif';
+  ctx.fillText('RED', lcx, lcy + 275);
   ctx.restore();
 
-  const vsScale = 0.4 + easeOut(clamp01((frame - 10) / 30)) * 0.8;
-  const vsOpacity = clamp01((frame - 10) / 20);
+  // Right avatar (blue) — slides from right
   ctx.save();
-  ctx.globalAlpha = vsOpacity;
-  ctx.translate(SIZE / 2 + shake * 0.5, SIZE / 2 - 50);
+  ctx.translate(slide, 0);
+  const rcx = SIZE * 0.73;
+  const rcy = SIZE * 0.52;
+  drawAvatar(ctx, p2A, rcx, rcy, 150, '#fff', p2[0] || 'B');
+  ctx.fillStyle = '#fff';
+  ctx.textAlign = 'center';
+  ctx.font = '900 64px Teko, Impact, sans-serif';
+  ctx.fillText('@' + p2.slice(0, 12), rcx, rcy + 220);
+  ctx.font = '900 44px Teko, Impact, sans-serif';
+  ctx.fillText('BLUE', rcx, rcy + 275);
+  ctx.restore();
+
+  // VS — pops in
+  const vsT = clamp01((frame - 8) / 14);
+  const vsScale = 0.6 + easeOut(vsT) * 0.8;
+  ctx.save();
+  ctx.globalAlpha = vsT;
+  ctx.translate(SIZE / 2, SIZE * 0.52);
   ctx.scale(vsScale, vsScale);
-  ctx.shadowColor = '#fff';
-  ctx.shadowBlur = 30;
   ctx.fillStyle = '#fff';
-  ctx.font = '700 240px Teko, Impact, sans-serif';
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 14;
+  ctx.font = '900 260px Teko, Impact, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
+  ctx.strokeText('VS', 0, 0);
   ctx.fillText('VS', 0, 0);
-  ctx.restore();
-
-  ctx.save();
-  ctx.globalAlpha = clamp01((frame - 20) / 20);
-  ctx.fillStyle = 'rgba(255,255,255,0.85)';
-  ctx.font = '700 56px Teko, Impact, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('EDIT BATTLE', SIZE / 2, 110);
-  ctx.fillStyle = 'rgba(255,255,255,0.45)';
-  ctx.font = '500 30px Teko, Impact, sans-serif';
-  ctx.fillText('LIVE ON LOOPGATE.IO', SIZE / 2, 160);
   ctx.restore();
 
   drawWatermark(ctx);
@@ -205,93 +204,122 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
     else cur = test;
   }
   if (cur) lines.push(cur);
-  return lines.slice(0, 3);
+  return lines.slice(0, 2);
 }
 
-function drawChat(ctx: CanvasRenderingContext2D, frame: number, messages: Msg[], p1Id: string, p1Avatar: HTMLImageElement | null, p2Avatar: HTMLImageElement | null) {
-  drawBackground(ctx, frame);
-  ctx.save();
-  ctx.fillStyle = 'rgba(255,255,255,0.85)';
-  ctx.font = '700 60px Teko, Impact, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('TRASH TALK', SIZE / 2, 100);
-  ctx.fillStyle = 'rgba(255,255,255,0.4)';
-  ctx.font = '500 28px Teko, Impact, sans-serif';
-  ctx.fillText('PRE-FIGHT — BATTLE CHAT', SIZE / 2, 145);
-  ctx.restore();
+function drawChat(ctx: CanvasRenderingContext2D, localFrame: number, messages: Msg[], p1Id: string, p1A: HTMLImageElement | null, p2A: HTMLImageElement | null, p1Name: string, p2Name: string) {
+  drawFlatBG(ctx, '#0a0a0a');
 
-  const chatStart = INTRO_FRAMES;
-  const relFrame = frame - chatStart;
-  const startY = 220;
-  const slotH = 110;
+  // header
+  ctx.fillStyle = '#fff';
+  ctx.textAlign = 'center';
+  ctx.font = '900 80px Teko, Impact, sans-serif';
+  ctx.fillText('TRASH TALK', SIZE / 2, 130);
+  ctx.fillStyle = '#888';
+  ctx.font = '700 30px Inter, system-ui, sans-serif';
+  ctx.fillText('PRE-FIGHT', SIZE / 2, 175);
+
+  const startY = 240;
+  const slotH = 175;
 
   for (let i = 0; i < messages.length; i++) {
-    const msgFrame = relFrame - i * PER_MSG_FRAMES;
-    if (msgFrame < 0) break;
-    const t = clamp01(msgFrame / 12);
+    const mf = localFrame - i * PER_MSG_FRAMES;
+    if (mf < 0) break;
+    const t = clamp01(mf / 8);
     const e = easeOut(t);
     const m = messages[i];
     const isRed = m.user_id === p1Id;
-    const baseColor = isRed ? [239, 68, 68] : [59, 130, 246];
+    const color = isRed ? RED : BLUE;
+    const slide = (isRed ? -1 : 1) * 200 * (1 - e);
     const y = startY + i * slotH;
-    const slideFrom = isRed ? -300 : 300;
-    const slide = slideFrom * (1 - e);
-    const alpha = e;
 
     ctx.save();
-    ctx.globalAlpha = alpha;
+    ctx.globalAlpha = e;
     ctx.translate(slide, 0);
-    const avatarR = 38;
-    const avatarCX = isRed ? 80 + avatarR : SIZE - 80 - avatarR;
-    const avatarCY = y + 48;
-    drawAvatarCircle(ctx, isRed ? p1Avatar : p2Avatar, avatarCX, avatarCY, avatarR, `rgb(${baseColor.join(',')})`, m.username[0] || (isRed ? 'R' : 'B'));
 
-    const bubbleMaxW = SIZE - 80 - 80 - avatarR * 2 - 28 - 40;
-    const padX = 22, padY = 14;
-    ctx.font = '500 32px Inter, system-ui, sans-serif';
+    const avR = 50;
+    const margin = 60;
+    const avCx = isRed ? margin + avR : SIZE - margin - avR;
+    const avCy = y + 70;
+    drawAvatar(ctx, isRed ? p1A : p2A, avCx, avCy, avR, color, m.username[0] || (isRed ? 'R' : 'B'));
+
+    // bubble
+    const bubbleMaxW = SIZE - margin * 2 - avR * 2 - 40 - 60;
+    const padX = 28, padY = 20;
+    ctx.font = '700 38px Inter, system-ui, sans-serif';
     const lines = wrapText(ctx, m.message_text, bubbleMaxW);
-    const lineH = 40;
-    const textW = Math.min(bubbleMaxW, Math.max(...lines.map(l => ctx.measureText(l).width)));
-    const bubbleW = textW + padX * 2;
-    const bubbleH = lines.length * lineH + padY * 2 + 28;
-    const bx = isRed ? avatarCX + avatarR + 18 : avatarCX - avatarR - 18 - bubbleW;
+    const lineH = 46;
+    const textW = Math.max(180, Math.min(bubbleMaxW, Math.max(...lines.map(l => ctx.measureText(l).width))));
+    const nameW = ctx.measureText('@' + m.username.slice(0, 14)).width;
+    const innerW = Math.max(textW, nameW);
+    const bubbleW = innerW + padX * 2;
+    const bubbleH = lines.length * lineH + padY * 2 + 38;
+    const bx = isRed ? avCx + avR + 20 : avCx - avR - 20 - bubbleW;
     const by = y;
 
-    const grad = ctx.createLinearGradient(bx, by, bx, by + bubbleH);
-    grad.addColorStop(0, `rgba(${baseColor.join(',')},0.35)`);
-    grad.addColorStop(1, `rgba(${baseColor.join(',')},0.12)`);
-    roundRect(ctx, bx, by, bubbleW, bubbleH, 18);
-    ctx.fillStyle = grad;
+    // flat fill, no gradient
+    roundRect(ctx, bx, by, bubbleW, bubbleH, 14);
+    ctx.fillStyle = color;
     ctx.fill();
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = `rgba(${baseColor.join(',')},0.9)`;
-    ctx.shadowColor = `rgba(${baseColor.join(',')},0.6)`;
-    ctx.shadowBlur = 18;
-    ctx.stroke();
-    ctx.shadowBlur = 0;
 
-    ctx.fillStyle = `rgb(${baseColor.join(',')})`;
-    ctx.font = '700 26px Teko, Impact, sans-serif';
+    // name
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.font = '900 26px Teko, Impact, sans-serif';
     ctx.textAlign = isRed ? 'left' : 'right';
     ctx.textBaseline = 'top';
     ctx.fillText('@' + m.username.slice(0, 14), isRed ? bx + padX : bx + bubbleW - padX, by + padY - 4);
 
+    // text
     ctx.fillStyle = '#fff';
-    ctx.font = '500 32px Inter, system-ui, sans-serif';
+    ctx.font = '700 38px Inter, system-ui, sans-serif';
     lines.forEach((ln, idx) => {
-      ctx.fillText(ln, isRed ? bx + padX : bx + bubbleW - padX, by + padY + 28 + idx * lineH);
+      ctx.fillText(ln, isRed ? bx + padX : bx + bubbleW - padX, by + padY + 32 + idx * lineH);
     });
     ctx.restore();
   }
-  drawWatermark(ctx);
+  drawWatermark(ctx, 'rgba(255,255,255,0.55)');
+}
+
+function drawCountdown(ctx: CanvasRenderingContext2D, localFrame: number) {
+  // 0-30: "3", 30-60: "2", 60-80: "1", 80-90: "GO!"
+  let label = '3', color = RED, segStart = 0, segLen = 30;
+  if (localFrame >= 80) { label = 'GO!'; color = '#22c55e'; segStart = 80; segLen = 10; }
+  else if (localFrame >= 60) { label = '1'; color = BLUE; segStart = 60; segLen = 20; }
+  else if (localFrame >= 30) { label = '2'; color = '#f59e0b'; segStart = 30; segLen = 30; }
+
+  // flash background on GO
+  if (label === 'GO!') {
+    drawFlatBG(ctx, '#fff');
+  } else {
+    drawSplitBG(ctx);
+  }
+
+  const localT = (localFrame - segStart) / segLen;
+  const pop = easeOut(clamp01(localT * 2));
+  const scale = 0.5 + pop * (label === 'GO!' ? 1.4 : 0.9);
+
+  ctx.save();
+  ctx.translate(SIZE / 2, SIZE / 2);
+  ctx.scale(scale, scale);
+  ctx.fillStyle = label === 'GO!' ? color : '#fff';
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = label === 'GO!' ? 24 : 18;
+  ctx.font = `900 ${label === 'GO!' ? 480 : 600}px Teko, Impact, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.strokeText(label, 0, 0);
+  ctx.fillText(label, 0, 0);
+  ctx.restore();
+
+  drawWatermark(ctx, label === 'GO!' ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.85)');
 }
 
 function pickMimeType(): { mime: string; ext: string } {
-  const candidates: { mime: string; ext: string }[] = [
-    { mime: 'video/mp4;codecs=avc1.42E01E', ext: 'mp4' },
+  const candidates = [
+    { mime: 'video/mp4;codecs=avc1.42E01E,mp4a.40.2', ext: 'mp4' },
     { mime: 'video/mp4', ext: 'mp4' },
-    { mime: 'video/webm;codecs=vp9', ext: 'webm' },
-    { mime: 'video/webm;codecs=vp8', ext: 'webm' },
+    { mime: 'video/webm;codecs=vp9,opus', ext: 'webm' },
+    { mime: 'video/webm;codecs=vp8,opus', ext: 'webm' },
     { mime: 'video/webm', ext: 'webm' },
   ];
   for (const c of candidates) {
@@ -316,51 +344,67 @@ export default function BattleIntroButton({
     setGenerating(true);
     try {
       await loadFonts();
+
+      // Fetch chat messages
       const { data: rawMsgs } = await supabase
         .from('quick_fight_messages')
-        .select('user_id, username, avatar_url, message_text, is_system, created_at')
+        .select('user_id, username, message_text, is_system, created_at')
         .eq('fight_id', fightId)
         .eq('is_system', false)
         .in('user_id', [player1Id, player2Id].filter(Boolean))
         .order('created_at', { ascending: false })
-        .limit(MAX_MESSAGES);
+        .limit(MSG_COUNT);
 
       const messages: Msg[] = ((rawMsgs || []) as any[])
         .reverse()
         .map(m => ({
           user_id: m.user_id,
           username: m.username || (m.user_id === player1Id ? player1Username : player2Username),
-          avatar_url: m.avatar_url,
-          message_text: (m.message_text || '').slice(0, 120),
+          message_text: (m.message_text || '').slice(0, 80),
         }));
 
       if (messages.length === 0) {
         messages.push(
-          { user_id: player1Id, username: player1Username, avatar_url: player1Avatar || null, message_text: 'You ready?' },
-          { user_id: player2Id, username: player2Username, avatar_url: player2Avatar || null, message_text: "Let's go." },
+          { user_id: player1Id, username: player1Username, message_text: "you're cooked" },
+          { user_id: player2Id, username: player2Username, message_text: 'we\'ll see' },
+          { user_id: player1Id, username: player1Username, message_text: 'easy W' },
+          { user_id: player2Id, username: player2Username, message_text: 'bet' },
         );
       }
+      while (messages.length < MSG_COUNT) {
+        messages.push({ ...messages[messages.length - 1] });
+      }
 
-      const uniqAvatars = new Map<string, string | null>();
-      uniqAvatars.set(player1Id, player1Avatar || null);
-      uniqAvatars.set(player2Id, player2Avatar || null);
-      for (const m of messages) if (!uniqAvatars.has(m.user_id)) uniqAvatars.set(m.user_id, m.avatar_url);
-      const avatarMap = new Map<string, HTMLImageElement | null>();
-      await Promise.all([...uniqAvatars.entries()].map(async ([id, url]) => {
-        avatarMap.set(id, await loadAvatar(url));
-      }));
-      const p1A = avatarMap.get(player1Id) || null;
-      const p2A = avatarMap.get(player2Id) || null;
+      // Avatars
+      const [p1A, p2A] = await Promise.all([loadAvatar(player1Avatar), loadAvatar(player2Avatar)]);
 
+      // Canvas
       const canvas = document.createElement('canvas');
       canvas.width = SIZE;
       canvas.height = SIZE;
       const ctx = canvas.getContext('2d');
       if (!ctx) throw new Error('Canvas 2D unavailable');
 
-      const stream = (canvas as any).captureStream(FPS) as MediaStream;
+      // Audio setup — decode and route to MediaStreamDestination
+      const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
+      const audioCtx: AudioContext = new AC();
+      const audioDest = audioCtx.createMediaStreamDestination();
+      let audioBuffer: AudioBuffer | null = null;
+      try {
+        const res = await fetch(countdownSfx);
+        const ab = await res.arrayBuffer();
+        audioBuffer = await audioCtx.decodeAudioData(ab.slice(0));
+      } catch (e) {
+        console.warn('audio decode failed', e);
+      }
+
+      // Combined stream
+      const videoStream = (canvas as any).captureStream(FPS) as MediaStream;
+      const tracks = [...videoStream.getVideoTracks(), ...audioDest.stream.getAudioTracks()];
+      const combined = new MediaStream(tracks);
+
       const { mime, ext } = pickMimeType();
-      const recorder = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 5_000_000 } : undefined);
+      const recorder = new MediaRecorder(combined, mime ? { mimeType: mime, videoBitsPerSecond: 6_000_000, audioBitsPerSecond: 128_000 } : undefined);
       const chunks: Blob[] = [];
       recorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) chunks.push(e.data); };
       const done = new Promise<Blob>((resolve) => {
@@ -368,19 +412,40 @@ export default function BattleIntroButton({
       });
       recorder.start();
 
-      const totalFrames = INTRO_FRAMES + messages.length * PER_MSG_FRAMES + OUTRO_FRAMES;
+      const chatFrames = MSG_COUNT * PER_MSG_FRAMES + HOLD_AFTER_CHAT;
+      const totalFrames = VS_FRAMES + chatFrames + COUNTDOWN_FRAMES;
       const frameMs = 1000 / FPS;
       const startedAt = performance.now();
+
+      // Schedule audio at start of countdown phase
+      const countdownStartMs = (VS_FRAMES + chatFrames) * frameMs;
+      if (audioBuffer) {
+        const src = audioCtx.createBufferSource();
+        src.buffer = audioBuffer;
+        const gain = audioCtx.createGain();
+        gain.gain.value = 1.0;
+        src.connect(gain).connect(audioDest);
+        // also play out loud so user hears it
+        src.connect(audioCtx.destination);
+        src.start(audioCtx.currentTime + countdownStartMs / 1000);
+      }
+
       for (let f = 0; f < totalFrames; f++) {
-        if (f < INTRO_FRAMES) drawIntro(ctx, f, player1Username, player2Username, p1A, p2A);
-        else drawChat(ctx, f, messages, player1Id, p1A, p2A);
-        const targetT = startedAt + (f + 1) * frameMs;
-        const wait = targetT - performance.now();
+        if (f < VS_FRAMES) {
+          drawVS(ctx, f, player1Username, player2Username, p1A, p2A);
+        } else if (f < VS_FRAMES + chatFrames) {
+          drawChat(ctx, f - VS_FRAMES, messages, player1Id, p1A, p2A, player1Username, player2Username);
+        } else {
+          drawCountdown(ctx, f - VS_FRAMES - chatFrames);
+        }
+        const target = startedAt + (f + 1) * frameMs;
+        const wait = target - performance.now();
         if (wait > 0) await new Promise(r => setTimeout(r, wait));
       }
-      await new Promise(r => setTimeout(r, 120));
+      await new Promise(r => setTimeout(r, 200));
       recorder.stop();
       const blob = await done;
+      try { audioCtx.close(); } catch {}
 
       const url = URL.createObjectURL(blob);
       setLastUrl(url);
@@ -393,7 +458,7 @@ export default function BattleIntroButton({
       a.click();
       a.remove();
 
-      toast.success('Battle intro saved — drop it on your post 🔥');
+      toast.success('Intro saved — splice it on the start 🔥');
       setOpen(true);
     } catch (e: any) {
       console.error(e);
@@ -423,13 +488,13 @@ export default function BattleIntroButton({
           <DialogHeader>
             <DialogTitle className="font-display uppercase tracking-wider">Intro ready</DialogTitle>
             <DialogDescription className="text-white/60 text-xs">
-              Splice it onto the start of your edit. Square 1080×1080 — works on IG, TikTok, YouTube, X.
+              VS → trash talk → 3·2·1·GO. Splice on the start of your edit.
             </DialogDescription>
           </DialogHeader>
 
           {lastUrl && (
             <div className="mx-auto" style={{ maxWidth: 280 }}>
-              <video src={lastUrl} autoPlay loop muted playsInline className="w-full rounded-lg border border-white/10 bg-black aspect-square object-contain" />
+              <video src={lastUrl} autoPlay loop controls playsInline className="w-full rounded-lg border border-white/10 bg-black aspect-square object-contain" />
             </div>
           )}
 
@@ -437,8 +502,8 @@ export default function BattleIntroButton({
             <Info className="w-3.5 h-3.5 shrink-0 text-white/50 mt-0.5" />
             <div>
               {lastExt === 'mp4'
-                ? <>Saved as MP4. If it didn't save, long-press the preview and choose <span className="text-white">Save Video</span>.</>
-                : <>Saved as WebM. Most editors (CapCut, Premiere, DaVinci) import WebM directly.</>}
+                ? <>Saved as MP4 with audio. If it didn't save, long-press the preview and choose <span className="text-white">Save Video</span>.</>
+                : <>Saved as WebM with audio. CapCut / Premiere / DaVinci import WebM directly.</>}
             </div>
           </div>
 
