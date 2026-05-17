@@ -112,8 +112,19 @@ export default function QuickFightChat({ fightId, player1Id, player2Id, player1U
   };
 
   const tagFor = (uid: string) =>
-    uid === player1Id ? { label: 'RED', cls: 'bg-red-500/15 text-red-400 border-red-500/30' } :
-    uid === player2Id ? { label: 'BLUE', cls: 'bg-blue-500/15 text-blue-400 border-blue-500/30' } : null;
+    uid === player1Id
+      ? {
+          label: 'RED',
+          cls: 'text-red-100 border-red-400/70 bg-gradient-to-b from-red-500/40 to-red-700/40 shadow-[0_0_8px_rgba(239,68,68,0.6),inset_0_1px_0_rgba(255,255,255,0.25)]',
+          dot: 'bg-red-400 shadow-[0_0_6px_rgba(239,68,68,0.9)]',
+        }
+      : uid === player2Id
+      ? {
+          label: 'BLUE',
+          cls: 'text-blue-100 border-blue-400/70 bg-gradient-to-b from-blue-500/40 to-blue-700/40 shadow-[0_0_8px_rgba(59,130,246,0.6),inset_0_1px_0_rgba(255,255,255,0.25)]',
+          dot: 'bg-blue-400 shadow-[0_0_6px_rgba(59,130,246,0.9)]',
+        }
+      : null;
 
   const isMe = (userId: string) => userId === user?.id;
 
@@ -171,8 +182,9 @@ export default function QuickFightChat({ fightId, player1Id, player2Id, player1U
             return (
             <motion.div
               key={msg.id}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 8, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 26 }}
               className={`flex gap-2 ${msg.is_system ? 'justify-center' : isMe(msg.user_id) ? 'justify-end' : ''}`}
             >
               {msg.is_system ? (
@@ -181,7 +193,13 @@ export default function QuickFightChat({ fightId, player1Id, player2Id, player1U
                 </span>
               ) : isMe(msg.user_id) ? (
                 <div className="max-w-[75%]">
-                  <div className={`${tag ? (user?.id === player1Id ? 'bg-red-500/20 border-red-500/40' : 'bg-blue-500/20 border-blue-500/40') : 'bg-emerald-500/15 border-emerald-500/30'} border px-3 py-1.5 rounded-2xl rounded-tr-sm`}>
+                  <div className={`${
+                    tag
+                      ? user?.id === player1Id
+                        ? 'bg-gradient-to-br from-red-500/30 to-red-700/20 border-red-500/50 shadow-[0_0_12px_rgba(239,68,68,0.25),inset_0_1px_0_rgba(255,255,255,0.08)]'
+                        : 'bg-gradient-to-br from-blue-500/30 to-blue-700/20 border-blue-500/50 shadow-[0_0_12px_rgba(59,130,246,0.25),inset_0_1px_0_rgba(255,255,255,0.08)]'
+                      : 'bg-emerald-500/15 border-emerald-500/30'
+                  } border px-3 py-1.5 rounded-2xl rounded-tr-sm`}>
                     {isGifUrl(msg.message_text) ? (
                       <img src={msg.message_text} alt="GIF" className="w-[240px] max-w-full rounded-md" loading="lazy" />
                     ) : (
@@ -194,9 +212,16 @@ export default function QuickFightChat({ fightId, player1Id, player2Id, player1U
                 </div>
               ) : (
                 <div className="flex gap-2 max-w-[75%]">
-                  <Avatar className={`w-6 h-6 shrink-0 border ${getBorderColor(msg.user_id)}`}>
+                  <Avatar className={`w-7 h-7 shrink-0 border-2 ${getBorderColor(msg.user_id)} ${
+                    msg.user_id === player1Id ? 'shadow-[0_0_8px_rgba(239,68,68,0.6)]' :
+                    msg.user_id === player2Id ? 'shadow-[0_0_8px_rgba(59,130,246,0.6)]' : ''
+                  }`}>
                     <AvatarImage src={msg.avatar_url || ''} />
-                    <AvatarFallback className="text-[8px] bg-white/5 text-zinc-300">
+                    <AvatarFallback className={`text-[9px] font-black ${
+                      msg.user_id === player1Id ? 'bg-red-500/20 text-red-200' :
+                      msg.user_id === player2Id ? 'bg-blue-500/20 text-blue-200' :
+                      'bg-white/5 text-zinc-300'
+                    }`}>
                       {msg.username.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
@@ -204,12 +229,19 @@ export default function QuickFightChat({ fightId, player1Id, player2Id, player1U
                     <div className="flex items-center gap-1.5">
                       <span className={`text-[10px] font-bold ${getColor(msg.user_id)}`}>@{msg.username}</span>
                       {tag && (
-                        <span className={`text-[7px] font-black uppercase tracking-[0.15em] px-1 py-px border ${tag.cls}`}>
+                        <span className={`inline-flex items-center gap-1 text-[8px] font-black uppercase tracking-[0.2em] px-1.5 py-[2px] border rounded-[3px] ${tag.cls}`} style={{ fontFamily: 'Teko, sans-serif' }}>
+                          <span className={`w-1 h-1 rounded-full ${tag.dot}`} />
                           {tag.label}
                         </span>
                       )}
                     </div>
-                    <div className={`${tag ? (msg.user_id === player1Id ? 'bg-red-500/10 border-red-500/25' : 'bg-blue-500/10 border-blue-500/25') : 'bg-white/5 border-white/10'} border px-3 py-1.5 mt-0.5 rounded-2xl rounded-tl-sm`}>
+                    <div className={`${
+                      tag
+                        ? msg.user_id === player1Id
+                          ? 'bg-gradient-to-br from-red-500/20 to-red-700/10 border-red-500/40 shadow-[0_0_10px_rgba(239,68,68,0.2),inset_0_1px_0_rgba(255,255,255,0.06)]'
+                          : 'bg-gradient-to-br from-blue-500/20 to-blue-700/10 border-blue-500/40 shadow-[0_0_10px_rgba(59,130,246,0.2),inset_0_1px_0_rgba(255,255,255,0.06)]'
+                        : 'bg-white/5 border-white/10'
+                    } border px-3 py-1.5 mt-0.5 rounded-2xl rounded-tl-sm`}>
                       {isGifUrl(msg.message_text) ? (
                         <img src={msg.message_text} alt="GIF" className="w-[240px] max-w-full rounded-md" loading="lazy" />
                       ) : (
