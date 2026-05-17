@@ -362,11 +362,20 @@ export default function BattleIntroButton({
 
       const messages: Msg[] = ((rawMsgs || []) as any[])
         .reverse()
-        .map(m => ({
-          user_id: m.user_id,
-          username: m.username || (m.user_id === player1Id ? player1Username : player2Username),
-          message_text: (m.message_text || '').slice(0, 80),
-        }));
+        .map(m => {
+          // Strip URLs (tenor links, http(s), www., bare domains)
+          const cleaned = (m.message_text || '')
+            .replace(/https?:\/\/\S+/gi, '')
+            .replace(/\b(?:www\.|\S+\.(?:com|gg|io|gif|png|jpg|mp4|net|org))\S*/gi, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+          return {
+            user_id: m.user_id,
+            username: m.username || (m.user_id === player1Id ? player1Username : player2Username),
+            message_text: (cleaned || '🔥').slice(0, 70),
+          };
+        })
+        .filter(m => m.message_text && m.message_text !== '🔥' ? true : true);
 
       if (messages.length === 0) {
         messages.push(
@@ -415,7 +424,9 @@ export default function BattleIntroButton({
       const done = new Promise<Blob>((resolve) => {
         recorder.onstop = () => resolve(new Blob(chunks, { type: mime || 'video/webm' }));
       });
-      recorder.start();
+      // timeslice produces chunks with timestamps -> proper duration metadata,
+      // fixes the "1994 hours" bug some players show for webm/mp4 with missing duration.
+      recorder.start(100);
 
       const chatFrames = MSG_COUNT * PER_MSG_FRAMES + HOLD_AFTER_CHAT;
       const totalFrames = VS_FRAMES + chatFrames + COUNTDOWN_FRAMES;
