@@ -67,8 +67,9 @@ export default function QuickFightChat({ fightId, player1Id, player2Id, player1U
 
   const isParticipant = !!user && (user.id === player1Id || user.id === player2Id);
 
+  // Battle Chat: only red vs blue (+ system). Live Chat: everyone, including red/blue.
   const battleMessages = messages.filter(m => m.is_system || m.user_id === player1Id || m.user_id === player2Id);
-  const liveMessages = messages.filter(m => !m.is_system && m.user_id !== player1Id && m.user_id !== player2Id);
+  const liveMessages = messages.filter(m => !m.is_system);
   const visibleMessages = chatTab === 'battle' ? battleMessages : liveMessages;
   const battleCount = battleMessages.filter(m => !m.is_system).length;
   const liveCount = liveMessages.length;
