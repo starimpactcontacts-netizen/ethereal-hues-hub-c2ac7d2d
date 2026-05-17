@@ -400,7 +400,7 @@ export default function BattleIntroButton({
       const canvas = document.createElement('canvas');
       canvas.width = SIZE;
       canvas.height = SIZE;
-      const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true } as any);
+      const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true } as any) as CanvasRenderingContext2D | null;
       if (!ctx) throw new Error('Canvas 2D unavailable');
       // Hint smoothing for crisp scaled avatars
       (ctx as any).imageSmoothingQuality = 'high';
@@ -409,7 +409,7 @@ export default function BattleIntroButton({
       const prevCanvas = document.createElement('canvas');
       prevCanvas.width = SIZE;
       prevCanvas.height = SIZE;
-      const prevCtx = prevCanvas.getContext('2d', { alpha: false } as any)!;
+      const prevCtx = prevCanvas.getContext('2d', { alpha: false } as any) as CanvasRenderingContext2D;
       let lastPhase = -1;
 
       // Audio setup — decode and route to MediaStreamDestination
