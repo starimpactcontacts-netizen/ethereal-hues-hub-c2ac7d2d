@@ -349,9 +349,13 @@ export default function BattleIntroButton({
   const [open, setOpen] = useState(false);
   const [lastUrl, setLastUrl] = useState<string | null>(null);
   const [lastExt, setLastExt] = useState<string>('mp4');
+  const [formatOpen, setFormatOpen] = useState(false);
+  const [lastFormat, setLastFormat] = useState<'square' | 'youtube'>('square');
 
-  const handleGenerate = async () => {
+  const handleGenerate = async (format: 'square' | 'youtube' = 'square') => {
     if (generating) return;
+    setFormatOpen(false);
+    setLastFormat(format);
     setGenerating(true);
     try {
       await loadFonts();
@@ -399,14 +403,43 @@ export default function BattleIntroButton({
       // Avatars
       const [p1A, p2A] = await Promise.all([loadAvatar(player1Avatar), loadAvatar(player2Avatar)]);
 
-      // Canvas
-      const canvas = document.createElement('canvas');
-      canvas.width = SIZE;
-      canvas.height = SIZE;
-      const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true } as any) as CanvasRenderingContext2D | null;
+      // Inner canvas — all draw functions render into this 1080×1080 buffer.
+      const inner = document.createElement('canvas');
+      inner.width = SIZE;
+      inner.height = SIZE;
+      const ctx = inner.getContext('2d', { alpha: false, desynchronized: true } as any) as CanvasRenderingContext2D | null;
       if (!ctx) throw new Error('Canvas 2D unavailable');
-      // Hint smoothing for crisp scaled avatars
       (ctx as any).imageSmoothingQuality = 'high';
+
+      // Output canvas — square just mirrors inner; 4:3 composites inner centered onto a wider bg.
+      const outW = format === 'youtube' ? 1440 : SIZE;
+      const outH = SIZE;
+      const canvas = document.createElement('canvas');
+      canvas.width = outW;
+      canvas.height = outH;
+      const octx = canvas.getContext('2d', { alpha: false, desynchronized: true } as any) as CanvasRenderingContext2D;
+      (octx as any).imageSmoothingQuality = 'high';
+      const innerOffsetX = Math.round((outW - SIZE) / 2);
+
+      const composite = (phase: number) => {
+        if (format === 'youtube') {
+          if (phase === 2) {
+            // Countdown: pure black full-frame (inner is already black in youtube mode)
+            octx.fillStyle = '#000';
+            octx.fillRect(0, 0, outW, outH);
+          } else {
+            // VS / Chat: extend the red/blue split across the full 1440 width so the
+            // inner 1080 sits seamlessly inside it. Divider lands at output x=720.
+            octx.fillStyle = RED;
+            octx.fillRect(0, 0, outW / 2, outH);
+            octx.fillStyle = BLUE;
+            octx.fillRect(outW / 2, 0, outW / 2, outH);
+            octx.fillStyle = '#fff';
+            octx.fillRect(outW / 2 - 4, 0, 8, outH);
+          }
+        }
+        octx.drawImage(inner, innerOffsetX, 0);
+      };
 
       // Offscreen buffer for crossfade between phases
       const prevCanvas = document.createElement('canvas');
@@ -428,7 +461,7 @@ export default function BattleIntroButton({
         console.warn('audio decode failed', e);
       }
 
-      // Combined stream
+      // Combined stream — capture from the OUTPUT canvas (square or 4:3)
       const videoStream = (canvas as any).captureStream(FPS) as MediaStream;
       const tracks = [...videoStream.getVideoTracks(), ...audioDest.stream.getAudioTracks()];
       const combined = new MediaStream(tracks);
@@ -470,13 +503,13 @@ export default function BattleIntroButton({
 
         // On phase change, snapshot the previous final frame for crossfade
         if (phase !== lastPhase && lastPhase !== -1) {
-          prevCtx.drawImage(canvas, 0, 0);
+          prevCtx.drawImage(inner, 0, 0);
         }
 
         // Draw current phase
         if (phase === 0) drawVS(ctx, localF, player1Username, player2Username, p1A, p2A);
         else if (phase === 1) drawChat(ctx, localF, messages, player1Id, p1A, p2A, player1Username, player2Username);
-        else drawCountdown(ctx, localF);
+        else drawCountdown(ctx, localF, format === 'youtube');
 
         // Crossfade overlay for first FADE_FRAMES of a new phase
         if (phase !== lastPhase && lastPhase !== -1 && localF < FADE_FRAMES) {
@@ -491,6 +524,9 @@ export default function BattleIntroButton({
         }
         if (localF >= FADE_FRAMES) lastPhase = phase;
         else if (lastPhase === -1) lastPhase = phase;
+
+        // Composite inner → output for this frame
+        composite(phase);
 
         // Drift-corrected pacing — yield to compositor without busy waiting
         const target = startedAt + (f + 1) * frameMs;
@@ -513,7 +549,7 @@ export default function BattleIntroButton({
 
       const a = document.createElement('a');
       a.href = url;
-      a.download = `loopgate-battle-intro.${ext}`;
+      a.download = `loopgate-battle-intro-${format === 'youtube' ? '1440x1080' : '1080x1080'}.${ext}`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -531,7 +567,7 @@ export default function BattleIntroButton({
   return (
     <>
       <Button
-        onClick={handleGenerate}
+        onClick={() => setFormatOpen(true)}
         disabled={generating}
         size="sm"
         className="w-full bg-white text-black hover:bg-white/90 font-display uppercase tracking-wider text-xs"
@@ -543,6 +579,39 @@ export default function BattleIntroButton({
         )}
       </Button>
 
+      <Dialog open={formatOpen} onOpenChange={setFormatOpen}>
+        <DialogContent className="bg-black border border-white/10 text-white max-w-xs">
+          <DialogHeader>
+            <DialogTitle className="font-display uppercase tracking-wider">Choose format</DialogTitle>
+            <DialogDescription className="text-white/60 text-xs">
+              Pick where you're posting — we'll render the right dimensions.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => handleGenerate('square')}
+              className="flex flex-col items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/[0.03] hover:bg-white/10 transition p-3"
+            >
+              <div className="w-12 h-12 bg-white/10 rounded" />
+              <div className="text-xs font-display uppercase tracking-wider">Square 1:1</div>
+              <div className="text-[10px] text-white/50">IG · Twitter · TikTok</div>
+            </button>
+            <button
+              onClick={() => handleGenerate('youtube')}
+              className="flex flex-col items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/[0.03] hover:bg-white/10 transition p-3"
+            >
+              <div className="w-14 h-[42px] bg-white/10 rounded" />
+              <div className="text-xs font-display uppercase tracking-wider">YouTube 4:3</div>
+              <div className="text-[10px] text-white/50">Horizontal · overlay</div>
+            </button>
+          </div>
+          <div className="text-[10px] text-white/40 leading-relaxed">
+            YouTube mode renders the 3·2·1·GO countdown on pure black so you can
+            blend / screen it over your footage.
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="bg-black border border-white/10 text-white max-w-xs">
           <DialogHeader>
@@ -553,23 +622,31 @@ export default function BattleIntroButton({
           </DialogHeader>
 
           {lastUrl && (
-            <div className="mx-auto" style={{ maxWidth: 280 }}>
-              <video src={lastUrl} autoPlay loop controls playsInline className="w-full rounded-lg border border-white/10 bg-black aspect-square object-contain" />
+            <div className="mx-auto" style={{ maxWidth: 320 }}>
+              <video
+                src={lastUrl}
+                autoPlay
+                loop
+                controls
+                playsInline
+                className={`w-full rounded-lg border border-white/10 bg-black object-contain ${lastFormat === 'youtube' ? 'aspect-[4/3]' : 'aspect-square'}`}
+              />
             </div>
           )}
 
           <div className="rounded-lg border border-white/10 bg-white/[0.03] p-2.5 text-[11px] text-white/70 flex gap-2">
             <Info className="w-3.5 h-3.5 shrink-0 text-white/50 mt-0.5" />
             <div>
+              {lastFormat === 'youtube' ? '1440×1080 ' : '1080×1080 '}
               {lastExt === 'mp4'
-                ? <>Saved as MP4 with audio. If it didn't save, long-press the preview and choose <span className="text-white">Save Video</span>.</>
-                : <>Saved as WebM with audio. CapCut / Premiere / DaVinci import WebM directly.</>}
+                ? <>MP4 with audio. If it didn't save, long-press the preview and choose <span className="text-white">Save Video</span>.</>
+                : <>WebM with audio. CapCut / Premiere / DaVinci import WebM directly.</>}
             </div>
           </div>
 
           <div className="flex gap-2">
             {lastUrl && (
-              <a href={lastUrl} download={`loopgate-battle-intro.${lastExt}`} className="flex-1 inline-flex items-center justify-center bg-white text-black hover:bg-white/90 font-display uppercase tracking-wider text-xs h-9 rounded-md">
+              <a href={lastUrl} download={`loopgate-battle-intro-${lastFormat === 'youtube' ? '1440x1080' : '1080x1080'}.${lastExt}`} className="flex-1 inline-flex items-center justify-center bg-white text-black hover:bg-white/90 font-display uppercase tracking-wider text-xs h-9 rounded-md">
                 <Download className="w-3.5 h-3.5 mr-2" /> Save again
               </a>
             )}
