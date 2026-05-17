@@ -22,8 +22,8 @@ const FPS = 30;
 // Phase frames
 const VS_FRAMES = 45;          // 1.5s
 const MSG_COUNT = 4;
-const PER_MSG_FRAMES = 18;     // 0.6s each = 2.4s
-const HOLD_AFTER_CHAT = 12;    // 0.4s
+const PER_MSG_FRAMES = 21;     // 0.7s each = 2.8s
+const HOLD_AFTER_CHAT = 9;     // 0.3s
 const COUNTDOWN_FRAMES = 90;   // 3.0s synced to audio
 
 const RED = '#ef4444';
@@ -207,76 +207,81 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
   return lines.slice(0, 2);
 }
 
-function drawChat(ctx: CanvasRenderingContext2D, localFrame: number, messages: Msg[], p1Id: string, p1A: HTMLImageElement | null, p2A: HTMLImageElement | null, p1Name: string, p2Name: string) {
+function drawChat(ctx: CanvasRenderingContext2D, localFrame: number, messages: Msg[], p1Id: string, p1A: HTMLImageElement | null, p2A: HTMLImageElement | null, _p1Name: string, _p2Name: string) {
   drawFlatBG(ctx, '#0a0a0a');
 
-  // header
+  // Determine which message we're on (one-at-a-time, alternating side)
+  const idx = Math.min(messages.length - 1, Math.floor(localFrame / PER_MSG_FRAMES));
+  const m = messages[idx];
+  if (!m) { drawWatermark(ctx, 'rgba(255,255,255,0.55)'); return; }
+  const mf = localFrame - idx * PER_MSG_FRAMES;
+
+  const isRed = m.user_id === p1Id;
+  const color = isRed ? RED : BLUE;
+
+  // Smooth ease in (0->6) and ease out (last 6)
+  const inT = clamp01(mf / 6);
+  const outT = clamp01((PER_MSG_FRAMES - mf) / 6);
+  const eIn = easeOut(inT);
+  const eOut = easeOut(outT);
+  const alpha = Math.min(eIn, eOut);
+  // gentle zoom: starts at 0.92, peaks at 1.0, ends at 1.04
+  const lifeT = clamp01(mf / PER_MSG_FRAMES);
+  const zoom = 0.94 + lifeT * 0.08;
+  // horizontal drift from side
+  const sideDriftStart = (isRed ? -1 : 1) * 80 * (1 - eIn);
+  const sideDriftEnd = (isRed ? -1 : 1) * -40 * (1 - eOut);
+  const dx = sideDriftStart + sideDriftEnd;
+
+  // BIG zoomed-in bubble centered vertically, anchored to red/blue side
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(SIZE / 2 + dx, SIZE / 2);
+  ctx.scale(zoom, zoom);
+  ctx.translate(-SIZE / 2, -SIZE / 2);
+
+  const avR = 95;
+  const margin = 70;
+  const avCx = isRed ? margin + avR : SIZE - margin - avR;
+  const avCy = SIZE / 2;
+  drawAvatar(ctx, isRed ? p1A : p2A, avCx, avCy, avR, '#fff', m.username[0] || (isRed ? 'R' : 'B'));
+
+  // bubble — much bigger so it dominates the frame
+  const bubbleMaxW = SIZE - margin * 2 - avR * 2 - 50;
+  const padX = 44, padY = 32;
+  ctx.font = '800 64px Inter, system-ui, sans-serif';
+  const lines = wrapText(ctx, m.message_text, bubbleMaxW - padX * 2);
+  const lineH = 76;
+  const widths = lines.map(l => ctx.measureText(l).width);
+  const textW = Math.max(280, Math.min(bubbleMaxW - padX * 2, Math.max(...widths, 0)));
+  ctx.font = '900 36px Teko, Impact, sans-serif';
+  const nameW = ctx.measureText('@' + m.username.slice(0, 14)).width;
+  const innerW = Math.max(textW, nameW);
+  const bubbleW = innerW + padX * 2;
+  const bubbleH = lines.length * lineH + padY * 2 + 50;
+  const bx = isRed ? avCx + avR + 28 : avCx - avR - 28 - bubbleW;
+  const by = avCy - bubbleH / 2;
+
+  // flat fill
+  roundRect(ctx, bx, by, bubbleW, bubbleH, 22);
+  ctx.fillStyle = color;
+  ctx.fill();
+
+  // name
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.font = '900 36px Teko, Impact, sans-serif';
+  ctx.textAlign = isRed ? 'left' : 'right';
+  ctx.textBaseline = 'top';
+  ctx.fillText('@' + m.username.slice(0, 14), isRed ? bx + padX : bx + bubbleW - padX, by + padY - 6);
+
+  // text
   ctx.fillStyle = '#fff';
-  ctx.textAlign = 'center';
-  ctx.font = '900 80px Teko, Impact, sans-serif';
-  ctx.fillText('TRASH TALK', SIZE / 2, 130);
-  ctx.fillStyle = '#888';
-  ctx.font = '700 30px Inter, system-ui, sans-serif';
-  ctx.fillText('PRE-FIGHT', SIZE / 2, 175);
+  ctx.font = '800 64px Inter, system-ui, sans-serif';
+  lines.forEach((ln, i) => {
+    ctx.fillText(ln, isRed ? bx + padX : bx + bubbleW - padX, by + padY + 44 + i * lineH);
+  });
+  ctx.restore();
 
-  const startY = 240;
-  const slotH = 175;
-
-  for (let i = 0; i < messages.length; i++) {
-    const mf = localFrame - i * PER_MSG_FRAMES;
-    if (mf < 0) break;
-    const t = clamp01(mf / 8);
-    const e = easeOut(t);
-    const m = messages[i];
-    const isRed = m.user_id === p1Id;
-    const color = isRed ? RED : BLUE;
-    const slide = (isRed ? -1 : 1) * 200 * (1 - e);
-    const y = startY + i * slotH;
-
-    ctx.save();
-    ctx.globalAlpha = e;
-    ctx.translate(slide, 0);
-
-    const avR = 50;
-    const margin = 60;
-    const avCx = isRed ? margin + avR : SIZE - margin - avR;
-    const avCy = y + 70;
-    drawAvatar(ctx, isRed ? p1A : p2A, avCx, avCy, avR, color, m.username[0] || (isRed ? 'R' : 'B'));
-
-    // bubble
-    const bubbleMaxW = SIZE - margin * 2 - avR * 2 - 40 - 60;
-    const padX = 28, padY = 20;
-    ctx.font = '700 38px Inter, system-ui, sans-serif';
-    const lines = wrapText(ctx, m.message_text, bubbleMaxW);
-    const lineH = 46;
-    const textW = Math.max(180, Math.min(bubbleMaxW, Math.max(...lines.map(l => ctx.measureText(l).width))));
-    const nameW = ctx.measureText('@' + m.username.slice(0, 14)).width;
-    const innerW = Math.max(textW, nameW);
-    const bubbleW = innerW + padX * 2;
-    const bubbleH = lines.length * lineH + padY * 2 + 38;
-    const bx = isRed ? avCx + avR + 20 : avCx - avR - 20 - bubbleW;
-    const by = y;
-
-    // flat fill, no gradient
-    roundRect(ctx, bx, by, bubbleW, bubbleH, 14);
-    ctx.fillStyle = color;
-    ctx.fill();
-
-    // name
-    ctx.fillStyle = 'rgba(255,255,255,0.85)';
-    ctx.font = '900 26px Teko, Impact, sans-serif';
-    ctx.textAlign = isRed ? 'left' : 'right';
-    ctx.textBaseline = 'top';
-    ctx.fillText('@' + m.username.slice(0, 14), isRed ? bx + padX : bx + bubbleW - padX, by + padY - 4);
-
-    // text
-    ctx.fillStyle = '#fff';
-    ctx.font = '700 38px Inter, system-ui, sans-serif';
-    lines.forEach((ln, idx) => {
-      ctx.fillText(ln, isRed ? bx + padX : bx + bubbleW - padX, by + padY + 32 + idx * lineH);
-    });
-    ctx.restore();
-  }
   drawWatermark(ctx, 'rgba(255,255,255,0.55)');
 }
 
