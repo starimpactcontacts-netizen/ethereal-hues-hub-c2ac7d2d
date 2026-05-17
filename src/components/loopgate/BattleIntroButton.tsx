@@ -360,6 +360,7 @@ export default function BattleIntroButton({
         .select('user_id, username, message_text, is_system, created_at')
         .eq('fight_id', fightId)
         .eq('is_system', false)
+        .eq('channel', 'battle')
         .in('user_id', [player1Id, player2Id].filter(Boolean))
         .order('created_at', { ascending: false })
         .limit(MSG_COUNT);
