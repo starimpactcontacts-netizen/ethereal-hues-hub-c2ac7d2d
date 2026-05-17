@@ -401,7 +401,7 @@ function QuickFightCarouselCard({ fight, isMine }: { fight: QuickFight; isMine: 
           ? 'linear-gradient(160deg, hsl(var(--surface-2)) 0%, hsl(var(--surface-0)) 100%)'
           : 'linear-gradient(160deg, hsl(var(--surface-2)) 0%, hsl(var(--background)) 100%)',
         boxShadow: isWaiting
-          ? '0 0 0 1px hsl(var(--status-live) / 0.28), 0 16px 34px -22px hsl(var(--status-live) / 0.55), inset 0 1px 0 hsl(var(--foreground) / 0.04)'
+          ? '0 0 0 1px hsl(var(--foreground) / 0.10), 0 16px 34px -22px hsl(var(--background) / 0.8), inset 0 1px 0 hsl(var(--foreground) / 0.04)'
           : isLive
           ? '0 0 24px hsl(var(--destructive) / 0.15), 0 8px 32px hsl(var(--background) / 0.5), inset 0 1px 0 hsl(var(--foreground) / 0.04)'
           : '0 8px 32px hsl(var(--background) / 0.5), inset 0 1px 0 hsl(var(--foreground) / 0.04)',
@@ -409,12 +409,12 @@ function QuickFightCarouselCard({ fight, isMine }: { fight: QuickFight; isMine: 
     >
       <div className="absolute top-0 left-0 right-0 h-[1px] bg-[linear-gradient(90deg,transparent,hsl(var(--foreground)/0.08),transparent)]" />
       <div className="absolute inset-x-0 top-0 h-[2px] bg-[linear-gradient(90deg,hsl(217_91%_60%),transparent_44%,transparent_56%,hsl(0_72%_51%))]" />
-      {isWaiting && <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,hsl(var(--status-live)/0.10),transparent_48%)]" />}
+      {isWaiting && <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,hsl(var(--foreground)/0.04),transparent_48%)]" />}
 
       <div className="relative flex items-center justify-between px-2.5 pt-2 pb-0.5">
         <div className="flex items-center gap-1 min-w-0">
-          {(isLive || isWaiting) && <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${isWaiting ? 'bg-status-live' : 'bg-destructive'}`} />}
-          <span className={`text-[9px] font-bold uppercase tracking-[0.12em] ${isWaiting ? 'text-emerald-400' : isLive ? 'text-red-400' : isCompleted ? 'text-muted-foreground' : 'text-blue-400'}`} style={{ fontFamily: 'Teko, sans-serif' }}>
+          {(isLive || isWaiting) && <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${isWaiting ? 'bg-foreground/70' : 'bg-destructive'}`} />}
+          <span className={`text-[9px] font-bold uppercase tracking-[0.12em] ${isWaiting ? 'text-foreground/80' : isLive ? 'text-red-400' : isCompleted ? 'text-muted-foreground' : 'text-blue-400'}`} style={{ fontFamily: 'Teko, sans-serif' }}>
             {statusText}
           </span>
           {fight.is_private && (
@@ -459,11 +459,11 @@ function QuickFightCarouselCard({ fight, isMine }: { fight: QuickFight; isMine: 
                 </AvatarFallback>
               </Avatar>
             ) : (
-              <div className="w-10 h-10 rounded-full border-2 border-dashed border-emerald-500/35 flex items-center justify-center bg-background/60">
-                <span className="text-sm text-emerald-400/70 font-bold">?</span>
+              <div className="w-10 h-10 rounded-full border-2 border-dashed border-foreground/20 flex items-center justify-center bg-background/60">
+                <span className="text-sm text-foreground/50 font-bold">?</span>
               </div>
             )}
-            <span className={`text-[9px] font-bold truncate max-w-[55px] uppercase ${fight.player_2_id ? 'text-foreground' : 'text-emerald-400'}`} style={{ fontFamily: 'Teko, sans-serif' }}>
+            <span className={`text-[9px] font-bold truncate max-w-[55px] uppercase ${fight.player_2_id ? 'text-foreground' : 'text-foreground/60'}`} style={{ fontFamily: 'Teko, sans-serif' }}>
               {fight.player_2_username || 'Open'}
             </span>
           </div>
@@ -479,7 +479,7 @@ function QuickFightCarouselCard({ fight, isMine }: { fight: QuickFight; isMine: 
         />
         {(isWaiting || isMine) && (
           <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-[0.12em]">
-            {isWaiting && <span className="text-emerald-400">Tap to enter lobby</span>}
+            {isWaiting && <span className="text-foreground/70">Tap to enter lobby</span>}
             {isMine && <span className="text-muted-foreground ml-auto">Yours</span>}
           </div>
         )}
