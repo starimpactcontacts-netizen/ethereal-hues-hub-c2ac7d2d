@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Swords, Image as ImageIcon, Flame } from 'lucide-react';
+import { Send, Swords, Image as ImageIcon, Flame, MessageSquare } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
@@ -62,13 +62,20 @@ export default function QuickFightChat({ fightId, player1Id, player2Id, player1U
   const [sending, setSending] = useState(false);
   const [autoTextTab, setAutoTextTab] = useState<'trash' | 'theme' | 'judge'>('trash');
   const [showGifPicker, setShowGifPicker] = useState(false);
+  const [chatTab, setChatTab] = useState<'battle' | 'live'>('battle');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const isParticipant = !!user && (user.id === player1Id || user.id === player2Id);
 
+  const battleMessages = messages.filter(m => m.is_system || m.user_id === player1Id || m.user_id === player2Id);
+  const liveMessages = messages.filter(m => !m.is_system && m.user_id !== player1Id && m.user_id !== player2Id);
+  const visibleMessages = chatTab === 'battle' ? battleMessages : liveMessages;
+  const battleCount = battleMessages.filter(m => !m.is_system).length;
+  const liveCount = liveMessages.length;
+
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, chatTab]);
 
   const sendMessage = async (text: string, isAutoText = false) => {
     if (!text.trim() || !profile || sending) return;
@@ -112,29 +119,53 @@ export default function QuickFightChat({ fightId, player1Id, player2Id, player1U
   return (
     <div className="bg-black border border-white/10 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-white/10 bg-gradient-to-r from-red-500/10 via-transparent to-blue-500/10">
-        <div className="flex items-center gap-1.5">
-          <Flame className="w-3.5 h-3.5 text-amber-400" />
-          <span className="text-[11px] font-black text-white uppercase tracking-[0.2em]" style={{ fontFamily: 'Teko, sans-serif' }}>
-            LIVE CHAT
+      <div className="flex border-b border-white/10 bg-gradient-to-r from-red-500/10 via-transparent to-blue-500/10">
+        <button
+          onClick={() => setChatTab('battle')}
+          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 transition-colors ${
+            chatTab === 'battle' ? 'bg-white/5 border-b-2 border-amber-400 text-white' : 'text-zinc-500 hover:text-zinc-300 border-b-2 border-transparent'
+          }`}
+        >
+          <Flame className={`w-3.5 h-3.5 ${chatTab === 'battle' ? 'text-amber-400' : ''}`} />
+          <span className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ fontFamily: 'Teko, sans-serif' }}>
+            Battle Chat
           </span>
-        </div>
-        <span className="text-[9px] text-zinc-500 uppercase tracking-wider">
-          {messages.filter(m => !m.is_system).length} {messages.filter(m => !m.is_system).length === 1 ? 'msg' : 'msgs'}
-        </span>
+          <span className="text-[9px] text-zinc-500">{battleCount}</span>
+        </button>
+        <button
+          onClick={() => setChatTab('live')}
+          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 transition-colors ${
+            chatTab === 'live' ? 'bg-white/5 border-b-2 border-amber-400 text-white' : 'text-zinc-500 hover:text-zinc-300 border-b-2 border-transparent'
+          }`}
+        >
+          <MessageSquare className={`w-3.5 h-3.5 ${chatTab === 'live' ? 'text-amber-400' : ''}`} />
+          <span className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ fontFamily: 'Teko, sans-serif' }}>
+            Live Chat
+          </span>
+          <span className="text-[9px] text-zinc-500">{liveCount}</span>
+        </button>
       </div>
 
       {/* Messages */}
       <div ref={scrollRef} className="h-[420px] sm:h-[480px] overflow-y-auto p-3 space-y-1.5 bg-[#0a0a0a]">
-        {messages.length === 0 && (
+        {visibleMessages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-zinc-600">
-            <Swords className="w-7 h-7 mb-2 opacity-40" />
-            <span className="text-[10px] uppercase tracking-[0.2em]">Be the first to talk smack</span>
+            {chatTab === 'battle' ? (
+              <>
+                <Swords className="w-7 h-7 mb-2 opacity-40" />
+                <span className="text-[10px] uppercase tracking-[0.2em]">Red vs Blue — no smack yet</span>
+              </>
+            ) : (
+              <>
+                <MessageSquare className="w-7 h-7 mb-2 opacity-40" />
+                <span className="text-[10px] uppercase tracking-[0.2em]">Be the first to hype this battle</span>
+              </>
+            )}
           </div>
         )}
 
         <AnimatePresence initial={false}>
-          {messages.map((msg) => {
+          {visibleMessages.map((msg) => {
             const tag = tagFor(msg.user_id);
             return (
             <motion.div
