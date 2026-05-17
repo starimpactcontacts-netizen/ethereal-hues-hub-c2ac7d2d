@@ -1,9 +1,7 @@
 import { useRef } from 'react';
-import { Trophy, Share2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
-import html2canvas from 'html2canvas';
+import { Trophy } from 'lucide-react';
 import type { QuickFight } from '@/hooks/useQuickFight';
+import BattleOutroButton from './BattleOutroButton';
 
 interface QuickFightResultCardProps {
   fight: QuickFight;
@@ -19,34 +17,6 @@ export default function QuickFightResultCard({ fight }: QuickFightResultCardProp
   const winnerAvatar = isP1Winner ? fight.player_1_avatar_url : fight.player_2_avatar_url;
   const loserUsername = isP1Winner ? fight.player_2_username : fight.player_1_username;
   const loserAvatar = isP1Winner ? fight.player_2_avatar_url : fight.player_1_avatar_url;
-
-  const handleShare = async () => {
-    if (!cardRef.current) return;
-    try {
-      const canvas = await html2canvas(cardRef.current, {
-        backgroundColor: '#000',
-        scale: 2,
-        useCORS: true,
-      });
-      canvas.toBlob((blob) => {
-        if (!blob) return;
-        if (navigator.share && navigator.canShare) {
-          const file = new File([blob], 'loopgate-result.png', { type: 'image/png' });
-          navigator.share({ files: [file], title: `${winnerUsername} won on Loopgate!` }).catch(() => {});
-        } else {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'loopgate-result.png';
-          a.click();
-          URL.revokeObjectURL(url);
-          toast.success('Screenshot saved!');
-        }
-      });
-    } catch {
-      toast.error('Failed to capture screenshot');
-    }
-  };
 
   return (
     <div className="space-y-3 max-w-[360px] mx-auto">
@@ -121,15 +91,12 @@ export default function QuickFightResultCard({ fight }: QuickFightResultCardProp
         </div>
       </div>
 
-      {/* Share Button */}
-      <Button
-        onClick={handleShare}
-        size="sm"
-        className="w-full bg-white text-black hover:bg-white/90 font-display uppercase tracking-wider text-xs"
-      >
-        <Share2 className="w-3.5 h-3.5 mr-2" />
-        Share Result
-      </Button>
+      {/* Battle Outro — 3s promo clip editors can splice onto their post */}
+      <BattleOutroButton
+        player1Username={fight.player_1_username || 'red'}
+        player2Username={fight.player_2_username || 'blue'}
+        fightId={fight.id}
+      />
     </div>
   );
 }
