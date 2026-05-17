@@ -24,7 +24,8 @@ const VS_FRAMES = 45;          // 1.5s
 const MSG_COUNT = 4;
 const PER_MSG_FRAMES = 21;     // 0.7s each = 2.8s
 const HOLD_AFTER_CHAT = 9;     // 0.3s
-const COUNTDOWN_FRAMES = 80;   // 3,2,1,GO — 2/1/GO sped up 1.2x to sync audio
+const COUNTDOWN_FRAMES = 70;   // 3,2,1,GO — sped ~1.15x for tighter sync
+const FADE_FRAMES = 5;          // ~0.17s crossfade between phases
 
 const RED = '#ef4444';
 const BLUE = '#3b82f6';
@@ -287,11 +288,11 @@ function drawChat(ctx: CanvasRenderingContext2D, localFrame: number, messages: M
 }
 
 function drawCountdown(ctx: CanvasRenderingContext2D, localFrame: number) {
-  // 3: 30f (1.0s, unchanged), 2: 25f, 1: 17f, GO!: 8f — sped 1.2x to sync audio
-  let label = '3', color = RED, segStart = 0, segLen = 30;
-  if (localFrame >= 72) { label = 'GO!'; color = '#22c55e'; segStart = 72; segLen = 8; }
-  else if (localFrame >= 55) { label = '1'; color = BLUE; segStart = 55; segLen = 17; }
-  else if (localFrame >= 30) { label = '2'; color = '#f59e0b'; segStart = 30; segLen = 25; }
+  // Sped ~1.15x: 3=26f, 2=22f, 1=15f, GO=7f → 70f total
+  let label = '3', color = RED, segStart = 0, segLen = 26;
+  if (localFrame >= 63) { label = 'GO!'; color = '#22c55e'; segStart = 63; segLen = 7; }
+  else if (localFrame >= 48) { label = '1'; color = BLUE; segStart = 48; segLen = 15; }
+  else if (localFrame >= 26) { label = '2'; color = '#f59e0b'; segStart = 26; segLen = 22; }
 
   // flash background on GO
   if (label === 'GO!') {
@@ -399,8 +400,17 @@ export default function BattleIntroButton({
       const canvas = document.createElement('canvas');
       canvas.width = SIZE;
       canvas.height = SIZE;
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true } as any) as CanvasRenderingContext2D | null;
       if (!ctx) throw new Error('Canvas 2D unavailable');
+      // Hint smoothing for crisp scaled avatars
+      (ctx as any).imageSmoothingQuality = 'high';
+
+      // Offscreen buffer for crossfade between phases
+      const prevCanvas = document.createElement('canvas');
+      prevCanvas.width = SIZE;
+      prevCanvas.height = SIZE;
+      const prevCtx = prevCanvas.getContext('2d', { alpha: false } as any) as CanvasRenderingContext2D;
+      let lastPhase = -1;
 
       // Audio setup — decode and route to MediaStreamDestination
       const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
@@ -450,16 +460,44 @@ export default function BattleIntroButton({
       }
 
       for (let f = 0; f < totalFrames; f++) {
-        if (f < VS_FRAMES) {
-          drawVS(ctx, f, player1Username, player2Username, p1A, p2A);
-        } else if (f < VS_FRAMES + chatFrames) {
-          drawChat(ctx, f - VS_FRAMES, messages, player1Id, p1A, p2A, player1Username, player2Username);
-        } else {
-          drawCountdown(ctx, f - VS_FRAMES - chatFrames);
+        // Determine phase + local frame
+        let phase = 0, localF = f;
+        if (f >= VS_FRAMES + chatFrames) { phase = 2; localF = f - VS_FRAMES - chatFrames; }
+        else if (f >= VS_FRAMES) { phase = 1; localF = f - VS_FRAMES; }
+
+        // On phase change, snapshot the previous final frame for crossfade
+        if (phase !== lastPhase && lastPhase !== -1) {
+          prevCtx.drawImage(canvas, 0, 0);
         }
+
+        // Draw current phase
+        if (phase === 0) drawVS(ctx, localF, player1Username, player2Username, p1A, p2A);
+        else if (phase === 1) drawChat(ctx, localF, messages, player1Id, p1A, p2A, player1Username, player2Username);
+        else drawCountdown(ctx, localF);
+
+        // Crossfade overlay for first FADE_FRAMES of a new phase
+        if (phase !== lastPhase && lastPhase !== -1 && localF < FADE_FRAMES) {
+          // already drew new frame; we want prev fading out on top
+          const t = localF / FADE_FRAMES;
+          // ease-in-out
+          const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+          ctx.save();
+          ctx.globalAlpha = 1 - eased;
+          ctx.drawImage(prevCanvas, 0, 0);
+          ctx.restore();
+        }
+        if (localF >= FADE_FRAMES) lastPhase = phase;
+        else if (lastPhase === -1) lastPhase = phase;
+
+        // Drift-corrected pacing — yield to compositor without busy waiting
         const target = startedAt + (f + 1) * frameMs;
-        const wait = target - performance.now();
-        if (wait > 0) await new Promise(r => setTimeout(r, wait));
+        let wait = target - performance.now();
+        if (wait > 4) {
+          await new Promise(r => setTimeout(r, wait - 2));
+        } else if (wait > 0) {
+          await new Promise(r => requestAnimationFrame(() => r(null)));
+        }
+        // If we're behind, don't sleep — let the next frame catch up naturally
       }
       await new Promise(r => setTimeout(r, 200));
       recorder.stop();
