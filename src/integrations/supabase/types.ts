@@ -7238,6 +7238,7 @@ export type Database = {
       quick_fight_messages: {
         Row: {
           avatar_url: string | null
+          channel: string
           created_at: string
           fight_id: string
           id: string
@@ -7249,6 +7250,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          channel?: string
           created_at?: string
           fight_id: string
           id?: string
@@ -7260,6 +7262,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          channel?: string
           created_at?: string
           fight_id?: string
           id?: string

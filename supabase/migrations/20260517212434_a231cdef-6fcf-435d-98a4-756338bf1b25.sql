@@ -1,0 +1,2 @@
+ALTER TABLE public.quick_fight_messages ADD COLUMN IF NOT EXISTS channel text NOT NULL DEFAULT 'battle';
+CREATE INDEX IF NOT EXISTS idx_quick_fight_messages_fight_channel ON public.quick_fight_messages(fight_id, channel);
