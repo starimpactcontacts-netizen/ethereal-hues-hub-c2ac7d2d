@@ -504,78 +504,7 @@ export default function QuickFightPage() {
             </div>
           )}
 
-          {/* Inline submit bar — always visible to participants while active */}
-          {canSubmit && (
-            <motion.div
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-gradient-to-r from-red-500/10 via-surface-1 to-blue-500/10 border border-gold/40 p-3"
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <Upload className="w-3.5 h-3.5 text-gold" />
-                <span className="text-[10px] font-bold text-foreground uppercase tracking-wider">Drop Your Edit</span>
-                <span className="text-[9px] text-muted-foreground">MP4 · MOV · max {MAX_EDIT_UPLOAD_LABEL}</span>
-              </div>
-              <label
-                className={`flex items-center justify-center gap-2 h-12 w-full bg-gold text-background font-display uppercase tracking-wider cursor-pointer active:scale-[0.99] transition ${submitting ? 'opacity-60 pointer-events-none' : 'hover:bg-gold/90'}`}
-              >
-                <input
-                  type="file"
-                  accept="video/*,image/*"
-                  className="hidden"
-                  disabled={submitting}
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file || !user) return;
-                    if (file.size > MAX_EDIT_UPLOAD_BYTES) {
-                      toast.error(`File too big — ${MAX_EDIT_UPLOAD_LABEL} max`);
-                      return;
-                    }
-                    setSubmitting(true);
-                    setUploadPct(0);
-                    try {
-                       const { url: cdnUrl } = await uploadToBunny(file, {
-                         folder: `battle-edits/${fight.id}`,
-                         onProgress: (p) => setUploadPct(p),
-                       });
-                       const success = await submitQuickFight(fight.id, user.id, cdnUrl);
-                      if (!success) throw new Error('submit failed');
-                      if (hasSongPicked) {
-                        try {
-                          await supabase.rpc('award_xp', {
-                            p_user_id: user.id,
-                            p_amount: 50,
-                            p_action: 'song_pick_bonus',
-                            p_description: 'Picked a library song for Quick 1v1',
-                          });
-                          toast.success('🔥 Edit uploaded! +50 XP song bonus');
-                        } catch {
-                          toast.success('🔥 Edit uploaded!');
-                        }
-                      } else {
-                        toast.success('🔥 Edit uploaded!');
-                      }
-                    } catch (err) {
-                      console.error('upload failed', err);
-                      toast.error('Upload failed — try again');
-                    } finally {
-                      setSubmitting(false);
-                      setUploadPct(0);
-                      e.target.value = '';
-                    }
-                  }}
-                />
-                {submitting ? (
-                  <span className="text-sm">UPLOADING {Math.round(uploadPct * 100)}%</span>
-                ) : (
-                  <>
-                    <Upload className="w-4 h-4" />
-                    <span className="text-sm">UPLOAD EDIT</span>
-                  </>
-                )}
-              </label>
-            </motion.div>
-          )}
+          {/* Upload now lives inline inside the player's empty slot */}
         </div>
 
         {/* Judge Video Review */}
