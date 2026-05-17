@@ -1356,12 +1356,7 @@ export default function ArenaPage() {
             </div>
           )}
 
-          {/* ═══ COLLABS — duo edits ═══ */}
-          {activeFilter === "all" && (
-            <div className="mb-5">
-              <ArenaCollabsSection onCreateClick={() => navigate(profile ? '/collabs/create' : '/start')} />
-            </div>
-          )}
+          {/* Collabs / duo battles hidden for now — low activity */}
 
           {/* ═══ TOP QOI (Loopgate elite leaderboard) ═══ */}
           <ArenaQOITop />
