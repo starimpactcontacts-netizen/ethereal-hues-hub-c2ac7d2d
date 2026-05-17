@@ -287,15 +287,17 @@ function drawChat(ctx: CanvasRenderingContext2D, localFrame: number, messages: M
   drawWatermark(ctx, 'rgba(255,255,255,0.55)');
 }
 
-function drawCountdown(ctx: CanvasRenderingContext2D, localFrame: number) {
+function drawCountdown(ctx: CanvasRenderingContext2D, localFrame: number, youtube = false) {
   // Sped ~1.15x: 3=26f, 2=22f, 1=15f, GO=7f → 70f total
   let label = '3', color = RED, segStart = 0, segLen = 26;
   if (localFrame >= 63) { label = 'GO!'; color = '#22c55e'; segStart = 63; segLen = 7; }
   else if (localFrame >= 48) { label = '1'; color = BLUE; segStart = 48; segLen = 15; }
   else if (localFrame >= 26) { label = '2'; color = '#f59e0b'; segStart = 26; segLen = 22; }
 
-  // flash background on GO
-  if (label === 'GO!') {
+  // YouTube mode: pure black so editors can blend / overlay on footage.
+  if (youtube) {
+    drawFlatBG(ctx, '#000');
+  } else if (label === 'GO!') {
     drawFlatBG(ctx, '#fff');
   } else {
     drawSplitBG(ctx);
@@ -310,7 +312,7 @@ function drawCountdown(ctx: CanvasRenderingContext2D, localFrame: number) {
   ctx.save();
   ctx.translate(SIZE / 2, SIZE / 2);
   ctx.scale(scale, scale);
-  ctx.fillStyle = label === 'GO!' ? color : '#fff';
+  ctx.fillStyle = (!youtube && label === 'GO!') ? color : '#fff';
   ctx.strokeStyle = '#000';
   ctx.lineWidth = label === 'GO!' ? 24 : 18;
   ctx.font = `900 ${label === 'GO!' ? 480 : 600}px Teko, Impact, sans-serif`;
@@ -320,7 +322,7 @@ function drawCountdown(ctx: CanvasRenderingContext2D, localFrame: number) {
   ctx.fillText(label, 0, 0);
   ctx.restore();
 
-  drawWatermark(ctx, label === 'GO!' ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.85)');
+  drawWatermark(ctx, (!youtube && label === 'GO!') ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.85)');
 }
 
 function pickMimeType(): { mime: string; ext: string } {
