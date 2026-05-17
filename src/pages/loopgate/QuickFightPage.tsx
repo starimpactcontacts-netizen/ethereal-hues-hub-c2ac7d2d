@@ -441,14 +441,20 @@ export default function QuickFightPage() {
                     customThumbnailUrl={(fight as any).player_1_thumbnail_url}
                   />
                 ) : (
-                  <EmptyEditSlot
-                    color="red"
-                    username={fight.player_1_username}
-                    avatarUrl={fight.player_1_avatar_url}
-                    isYou={isP1}
-                    isLive={fight.status === 'active'}
-                    aspectClass="aspect-square"
-                  />
+                  isP1 && canSubmit ? (
+                    <UploadEditSlot
+                      color="red"
+                      submitting={submitting}
+                      uploadPct={uploadPct}
+                      onUpload={handleUploadEdit}
+                    />
+                  ) : (
+                    <WaitingSlot
+                      color="red"
+                      username={fight.player_1_username}
+                      submitted={!!fight.player_1_submitted_at}
+                    />
+                  )
                 )}
               </div>
 
@@ -479,14 +485,20 @@ export default function QuickFightPage() {
                     customThumbnailUrl={(fight as any).player_2_thumbnail_url}
                   />
                 ) : (
-                  <EmptyEditSlot
-                    color="blue"
-                    username={fight.player_2_username || 'Waiting…'}
-                    avatarUrl={fight.player_2_avatar_url}
-                    isYou={isP2}
-                    isLive={fight.status === 'active'}
-                    aspectClass="aspect-square"
-                  />
+                  isP2 && canSubmit ? (
+                    <UploadEditSlot
+                      color="blue"
+                      submitting={submitting}
+                      uploadPct={uploadPct}
+                      onUpload={handleUploadEdit}
+                    />
+                  ) : (
+                    <WaitingSlot
+                      color="blue"
+                      username={fight.player_2_username || 'Waiting…'}
+                      submitted={!!fight.player_2_submitted_at}
+                    />
+                  )
                 )}
               </div>
             </div>
