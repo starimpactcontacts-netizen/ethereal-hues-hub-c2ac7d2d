@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Clock, Copy, Eye, Lock, Share2, Swords, UserPlus, Users, Zap } from "lucide-react";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import OsuManiaMiniGame from "@/components/loopgate/OsuManiaMiniGame";
+import QuickFightChat from "@/components/loopgate/QuickFightChat";
 import type { OpenQueueEntry, QuickFight } from "@/hooks/useQuickFight";
 import { toast } from "sonner";
 
@@ -196,7 +196,13 @@ export default function CustomEditBattleLobby({
         )}
 
         <div className="mt-4 space-y-3">
-          <OsuManiaMiniGame />
+          <QuickFightChat
+            fightId={fight.id}
+            player1Id={fight.player_1_id}
+            player2Id={fight.player_2_id || ''}
+            player1Username={fight.player_1_username}
+            player2Username={fight.player_2_username || ''}
+          />
 
           <div className="rounded-2xl border border-border/70 bg-surface-1/50 p-3">
             <div className="flex items-center justify-between gap-3">
