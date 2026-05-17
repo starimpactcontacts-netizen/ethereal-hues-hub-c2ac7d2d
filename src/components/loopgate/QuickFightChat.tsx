@@ -88,6 +88,7 @@ export default function QuickFightChat({ fightId, player1Id, player2Id, player1U
       avatar_url: profile.avatar_url,
       message_text: text.trim(),
       is_auto_text: isAutoText,
+      channel: chatTab,
     });
     if (error) toast.error('Failed to send');
     else setInput('');
