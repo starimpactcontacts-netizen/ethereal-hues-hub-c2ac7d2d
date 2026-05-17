@@ -144,6 +144,45 @@ export default function QuickFightPage() {
 
   const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/fight/${fight.id}` : '';
 
+  const handleUploadEdit = async (file: File) => {
+    if (!user || !fight) return;
+    if (file.size > MAX_EDIT_UPLOAD_BYTES) {
+      toast.error(`File too big — ${MAX_EDIT_UPLOAD_LABEL} max`);
+      return;
+    }
+    setSubmitting(true);
+    setUploadPct(0);
+    try {
+      const { url: cdnUrl } = await uploadToBunny(file, {
+        folder: `battle-edits/${fight.id}`,
+        onProgress: (p) => setUploadPct(p),
+      });
+      const success = await submitQuickFight(fight.id, user.id, cdnUrl);
+      if (!success) throw new Error('submit failed');
+      if (hasSongPicked) {
+        try {
+          await supabase.rpc('award_xp', {
+            p_user_id: user.id,
+            p_amount: 50,
+            p_action: 'song_pick_bonus',
+            p_description: 'Picked a library song for Quick 1v1',
+          });
+          toast.success('🔥 Edit uploaded! +50 XP song bonus');
+        } catch {
+          toast.success('🔥 Edit uploaded!');
+        }
+      } else {
+        toast.success('🔥 Edit uploaded!');
+      }
+    } catch (err) {
+      console.error('upload failed', err);
+      toast.error('Upload failed — try again');
+    } finally {
+      setSubmitting(false);
+      setUploadPct(0);
+    }
+  };
+
   const handleCopyLobby = async () => {
     try {
       await navigator.clipboard.writeText(`⚔️ Join my custom Loopgate edit battle: ${shareUrl}`);
