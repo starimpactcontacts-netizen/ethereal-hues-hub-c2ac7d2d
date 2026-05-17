@@ -24,7 +24,7 @@ const VS_FRAMES = 45;          // 1.5s
 const MSG_COUNT = 4;
 const PER_MSG_FRAMES = 21;     // 0.7s each = 2.8s
 const HOLD_AFTER_CHAT = 9;     // 0.3s
-const COUNTDOWN_FRAMES = 90;   // 3.0s synced to audio
+const COUNTDOWN_FRAMES = 80;   // 3,2,1,GO — 2/1/GO sped up 1.2x to sync audio
 
 const RED = '#ef4444';
 const BLUE = '#3b82f6';
@@ -151,13 +151,13 @@ function drawVS(ctx: CanvasRenderingContext2D, frame: number, p1: string, p2: st
   ctx.translate(-slide, 0);
   const lcx = SIZE * 0.27;
   const lcy = SIZE * 0.52;
-  drawAvatar(ctx, p1A, lcx, lcy, 150, '#fff', p1[0] || 'R');
+  drawAvatar(ctx, p1A, lcx, lcy, 105, '#fff', p1[0] || 'R');
   ctx.fillStyle = '#fff';
   ctx.textAlign = 'center';
-  ctx.font = '900 64px Teko, Impact, sans-serif';
-  ctx.fillText('@' + p1.slice(0, 12), lcx, lcy + 220);
-  ctx.font = '900 44px Teko, Impact, sans-serif';
-  ctx.fillText('RED', lcx, lcy + 275);
+  ctx.font = '900 56px Teko, Impact, sans-serif';
+  ctx.fillText('@' + p1.slice(0, 12), lcx, lcy + 165);
+  ctx.font = '900 38px Teko, Impact, sans-serif';
+  ctx.fillText('RED', lcx, lcy + 210);
   ctx.restore();
 
   // Right avatar (blue) — slides from right
@@ -165,18 +165,19 @@ function drawVS(ctx: CanvasRenderingContext2D, frame: number, p1: string, p2: st
   ctx.translate(slide, 0);
   const rcx = SIZE * 0.73;
   const rcy = SIZE * 0.52;
-  drawAvatar(ctx, p2A, rcx, rcy, 150, '#fff', p2[0] || 'B');
+  drawAvatar(ctx, p2A, rcx, rcy, 105, '#fff', p2[0] || 'B');
   ctx.fillStyle = '#fff';
   ctx.textAlign = 'center';
-  ctx.font = '900 64px Teko, Impact, sans-serif';
-  ctx.fillText('@' + p2.slice(0, 12), rcx, rcy + 220);
-  ctx.font = '900 44px Teko, Impact, sans-serif';
-  ctx.fillText('BLUE', rcx, rcy + 275);
+  ctx.font = '900 56px Teko, Impact, sans-serif';
+  ctx.fillText('@' + p2.slice(0, 12), rcx, rcy + 165);
+  ctx.font = '900 38px Teko, Impact, sans-serif';
+  ctx.fillText('BLUE', rcx, rcy + 210);
   ctx.restore();
 
   // VS — pops in
   const vsT = clamp01((frame - 8) / 14);
-  const vsScale = 0.6 + easeOut(vsT) * 0.8;
+  // 30% smaller VS overall
+  const vsScale = (0.6 + easeOut(vsT) * 0.8) * 0.7;
   ctx.save();
   ctx.globalAlpha = vsT;
   ctx.translate(SIZE / 2, SIZE * 0.52);
@@ -286,11 +287,11 @@ function drawChat(ctx: CanvasRenderingContext2D, localFrame: number, messages: M
 }
 
 function drawCountdown(ctx: CanvasRenderingContext2D, localFrame: number) {
-  // 0-30: "3", 30-60: "2", 60-80: "1", 80-90: "GO!"
+  // 3: 30f (1.0s, unchanged), 2: 25f, 1: 17f, GO!: 8f — sped 1.2x to sync audio
   let label = '3', color = RED, segStart = 0, segLen = 30;
-  if (localFrame >= 80) { label = 'GO!'; color = '#22c55e'; segStart = 80; segLen = 10; }
-  else if (localFrame >= 60) { label = '1'; color = BLUE; segStart = 60; segLen = 20; }
-  else if (localFrame >= 30) { label = '2'; color = '#f59e0b'; segStart = 30; segLen = 30; }
+  if (localFrame >= 72) { label = 'GO!'; color = '#22c55e'; segStart = 72; segLen = 8; }
+  else if (localFrame >= 55) { label = '1'; color = BLUE; segStart = 55; segLen = 17; }
+  else if (localFrame >= 30) { label = '2'; color = '#f59e0b'; segStart = 30; segLen = 25; }
 
   // flash background on GO
   if (label === 'GO!') {
@@ -301,7 +302,9 @@ function drawCountdown(ctx: CanvasRenderingContext2D, localFrame: number) {
 
   const localT = (localFrame - segStart) / segLen;
   const pop = easeOut(clamp01(localT * 2));
-  const scale = 0.5 + pop * (label === 'GO!' ? 1.4 : 0.9);
+  // 3/2/1 reduced 30%, GO! reduced 20%
+  const baseScale = 0.5 + pop * (label === 'GO!' ? 1.4 : 0.9);
+  const scale = baseScale * (label === 'GO!' ? 0.8 : 0.7);
 
   ctx.save();
   ctx.translate(SIZE / 2, SIZE / 2);
