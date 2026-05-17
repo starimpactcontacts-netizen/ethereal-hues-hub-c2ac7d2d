@@ -144,6 +144,45 @@ export default function QuickFightPage() {
 
   const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/fight/${fight.id}` : '';
 
+  const handleUploadEdit = async (file: File) => {
+    if (!user || !fight) return;
+    if (file.size > MAX_EDIT_UPLOAD_BYTES) {
+      toast.error(`File too big — ${MAX_EDIT_UPLOAD_LABEL} max`);
+      return;
+    }
+    setSubmitting(true);
+    setUploadPct(0);
+    try {
+      const { url: cdnUrl } = await uploadToBunny(file, {
+        folder: `battle-edits/${fight.id}`,
+        onProgress: (p) => setUploadPct(p),
+      });
+      const success = await submitQuickFight(fight.id, user.id, cdnUrl);
+      if (!success) throw new Error('submit failed');
+      if (hasSongPicked) {
+        try {
+          await supabase.rpc('award_xp', {
+            p_user_id: user.id,
+            p_amount: 50,
+            p_action: 'song_pick_bonus',
+            p_description: 'Picked a library song for Quick 1v1',
+          });
+          toast.success('🔥 Edit uploaded! +50 XP song bonus');
+        } catch {
+          toast.success('🔥 Edit uploaded!');
+        }
+      } else {
+        toast.success('🔥 Edit uploaded!');
+      }
+    } catch (err) {
+      console.error('upload failed', err);
+      toast.error('Upload failed — try again');
+    } finally {
+      setSubmitting(false);
+      setUploadPct(0);
+    }
+  };
+
   const handleCopyLobby = async () => {
     try {
       await navigator.clipboard.writeText(`⚔️ Join my custom Loopgate edit battle: ${shareUrl}`);
@@ -402,14 +441,20 @@ export default function QuickFightPage() {
                     customThumbnailUrl={(fight as any).player_1_thumbnail_url}
                   />
                 ) : (
-                  <EmptyEditSlot
-                    color="red"
-                    username={fight.player_1_username}
-                    avatarUrl={fight.player_1_avatar_url}
-                    isYou={isP1}
-                    isLive={fight.status === 'active'}
-                    aspectClass="aspect-square"
-                  />
+                  isP1 && canSubmit ? (
+                    <UploadEditSlot
+                      color="red"
+                      submitting={submitting}
+                      uploadPct={uploadPct}
+                      onUpload={handleUploadEdit}
+                    />
+                  ) : (
+                    <WaitingSlot
+                      color="red"
+                      username={fight.player_1_username}
+                      submitted={!!fight.player_1_submitted_at}
+                    />
+                  )
                 )}
               </div>
 
@@ -440,91 +485,26 @@ export default function QuickFightPage() {
                     customThumbnailUrl={(fight as any).player_2_thumbnail_url}
                   />
                 ) : (
-                  <EmptyEditSlot
-                    color="blue"
-                    username={fight.player_2_username || 'Waiting…'}
-                    avatarUrl={fight.player_2_avatar_url}
-                    isYou={isP2}
-                    isLive={fight.status === 'active'}
-                    aspectClass="aspect-square"
-                  />
+                  isP2 && canSubmit ? (
+                    <UploadEditSlot
+                      color="blue"
+                      submitting={submitting}
+                      uploadPct={uploadPct}
+                      onUpload={handleUploadEdit}
+                    />
+                  ) : (
+                    <WaitingSlot
+                      color="blue"
+                      username={fight.player_2_username || 'Waiting…'}
+                      submitted={!!fight.player_2_submitted_at}
+                    />
+                  )
                 )}
               </div>
             </div>
           )}
 
-          {/* Inline submit bar — always visible to participants while active */}
-          {canSubmit && (
-            <motion.div
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-gradient-to-r from-red-500/10 via-surface-1 to-blue-500/10 border border-gold/40 p-3"
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <Upload className="w-3.5 h-3.5 text-gold" />
-                <span className="text-[10px] font-bold text-foreground uppercase tracking-wider">Drop Your Edit</span>
-                <span className="text-[9px] text-muted-foreground">MP4 · MOV · max {MAX_EDIT_UPLOAD_LABEL}</span>
-              </div>
-              <label
-                className={`flex items-center justify-center gap-2 h-12 w-full bg-gold text-background font-display uppercase tracking-wider cursor-pointer active:scale-[0.99] transition ${submitting ? 'opacity-60 pointer-events-none' : 'hover:bg-gold/90'}`}
-              >
-                <input
-                  type="file"
-                  accept="video/*,image/*"
-                  className="hidden"
-                  disabled={submitting}
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file || !user) return;
-                    if (file.size > MAX_EDIT_UPLOAD_BYTES) {
-                      toast.error(`File too big — ${MAX_EDIT_UPLOAD_LABEL} max`);
-                      return;
-                    }
-                    setSubmitting(true);
-                    setUploadPct(0);
-                    try {
-                       const { url: cdnUrl } = await uploadToBunny(file, {
-                         folder: `battle-edits/${fight.id}`,
-                         onProgress: (p) => setUploadPct(p),
-                       });
-                       const success = await submitQuickFight(fight.id, user.id, cdnUrl);
-                      if (!success) throw new Error('submit failed');
-                      if (hasSongPicked) {
-                        try {
-                          await supabase.rpc('award_xp', {
-                            p_user_id: user.id,
-                            p_amount: 50,
-                            p_action: 'song_pick_bonus',
-                            p_description: 'Picked a library song for Quick 1v1',
-                          });
-                          toast.success('🔥 Edit uploaded! +50 XP song bonus');
-                        } catch {
-                          toast.success('🔥 Edit uploaded!');
-                        }
-                      } else {
-                        toast.success('🔥 Edit uploaded!');
-                      }
-                    } catch (err) {
-                      console.error('upload failed', err);
-                      toast.error('Upload failed — try again');
-                    } finally {
-                      setSubmitting(false);
-                      setUploadPct(0);
-                      e.target.value = '';
-                    }
-                  }}
-                />
-                {submitting ? (
-                  <span className="text-sm">UPLOADING {Math.round(uploadPct * 100)}%</span>
-                ) : (
-                  <>
-                    <Upload className="w-4 h-4" />
-                    <span className="text-sm">UPLOAD EDIT</span>
-                  </>
-                )}
-              </label>
-            </motion.div>
-          )}
+          {/* Upload now lives inline inside the player's empty slot */}
         </div>
 
         {/* Judge Video Review */}
@@ -694,77 +674,207 @@ export default function QuickFightPage() {
   );
 }
 
-/** Empty edit slot — shown before a player submits. Side-by-side viral preview. */
-function EmptyEditSlot({
+/** Compact slot shown to the OPPONENT side (or when not your turn). No dead space. */
+function WaitingSlot({
   color,
   username,
-  avatarUrl,
-  isYou,
-  isLive,
-  waitingFor,
-  aspectClass = 'aspect-[9/16]',
+  submitted,
 }: {
   color: 'red' | 'blue';
   username: string;
-  avatarUrl?: string | null;
-  isYou: boolean;
-  isLive: boolean;
-  waitingFor?: string;
-  aspectClass?: string;
+  submitted: boolean;
 }) {
-  const borderColor = color === 'red' ? 'border-red-500/40' : 'border-blue-500/40';
-  const gradientFrom = color === 'red' ? 'from-red-950/60' : 'from-blue-950/60';
-  const gradientTo = color === 'red' ? 'to-red-900/20' : 'to-blue-900/20';
-  const accentText = color === 'red' ? 'text-red-400' : 'text-blue-400';
-  const accentBg = color === 'red' ? 'bg-red-500/20' : 'bg-blue-500/20';
-  const ringColor = color === 'red' ? 'ring-red-500/30' : 'ring-blue-500/30';
+  const isRed = color === 'red';
+  const accentHex = isRed ? '#ef4444' : '#3b82f6';
+  const borderColor = isRed ? 'border-red-500/40' : 'border-blue-500/40';
+  const accentText = isRed ? 'text-red-400' : 'text-blue-400';
+  const label = isRed ? 'RED' : 'BLUE';
 
   return (
-    <div className={`bg-surface-1 border ${borderColor} overflow-hidden ${isYou ? `ring-2 ${ringColor}` : ''}`}>
-      {/* Tall 9:16 placeholder — minimal, no big avatar. Matches the live edit card height. */}
-      <div className={`relative ${aspectClass} bg-gradient-to-br ${gradientFrom} ${gradientTo} flex flex-col items-center justify-center overflow-hidden`}>
-        <div
-          className="absolute inset-0 opacity-[0.08]"
-          style={{
-            backgroundImage: `radial-gradient(circle at 30% 50%, currentColor 1px, transparent 1px), radial-gradient(circle at 70% 30%, currentColor 1px, transparent 1px)`,
-            backgroundSize: '50px 50px, 40px 40px',
-          }}
+    <div className={`relative bg-surface-1 border ${borderColor} overflow-hidden h-[120px] md:h-[200px] flex items-center justify-between gap-3 px-3`}>
+      <div className="flex items-center gap-2 min-w-0">
+        <span
+          className="w-1.5 h-1.5 rounded-full shrink-0 animate-pulse"
+          style={{ background: accentHex, boxShadow: `0 0 8px ${accentHex}` }}
         />
-
-        {isLive && (
-          <div className="absolute top-1.5 left-1.5 flex items-center gap-1 bg-black/60 backdrop-blur-sm px-1.5 py-0.5">
-            <span className={`w-1.5 h-1.5 rounded-full ${color === 'red' ? 'bg-red-500' : 'bg-blue-500'} animate-pulse`} />
-            <span className="text-[8px] font-bold text-white uppercase tracking-wider">Live</span>
-          </div>
-        )}
-
-        {isYou && (
-          <div className="absolute top-1.5 right-1.5 bg-gold px-1.5 py-0.5">
-            <span className="text-[8px] font-bold text-black uppercase tracking-wider">You</span>
-          </div>
-        )}
-
-        {/* Center: just the upload chip */}
-        <div className={`flex items-center gap-1.5 px-2.5 py-1 bg-black/50 backdrop-blur-sm border ${borderColor} z-10`}>
-          <Upload className={`w-3 h-3 ${accentText}`} />
-          <span className={`text-[9px] font-bold ${accentText} uppercase tracking-[0.15em]`}>
-            {waitingFor === 'both'
-              ? 'Both edits pending'
-              : waitingFor
-              ? `Waiting on @${waitingFor}`
-              : isYou
-              ? 'Drop Edit'
-              : 'Awaiting Drop'}
-          </span>
-        </div>
-
-        {/* Username overlay at bottom — matches submitted card layout */}
-        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
-        <div className="absolute inset-x-0 bottom-0 px-2 py-1.5 flex items-center justify-between gap-1">
-          <span className="text-[10px] font-bold text-white truncate drop-shadow">@{username}</span>
-          <span className={`text-[8px] font-bold ${accentText} uppercase tracking-wider shrink-0`}>{color}</span>
+        <div className="min-w-0">
+          <p className={`text-[9px] font-black uppercase tracking-[0.22em] ${accentText}`} style={{ fontFamily: 'Teko, sans-serif' }}>
+            {label}
+          </p>
+          <p className="text-[13px] font-bold text-white truncate" style={{ fontFamily: 'Teko, sans-serif' }}>
+            @{username}
+          </p>
         </div>
       </div>
+      {submitted ? (
+        <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-500/15 border border-emerald-400/40">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300" style={{ fontFamily: 'Teko, sans-serif' }}>
+            Submitted
+          </span>
+        </div>
+      ) : (
+        <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground" style={{ fontFamily: 'Teko, sans-serif' }}>
+          Waiting…
+        </span>
+      )}
+    </div>
+  );
+}
+
+/** Inline uploader shown in the player's OWN side — pick file, preview, re-pick, submit, progress. */
+function UploadEditSlot({
+  color,
+  submitting,
+  uploadPct,
+  onUpload,
+}: {
+  color: 'red' | 'blue';
+  submitting: boolean;
+  uploadPct: number;
+  onUpload: (file: File) => Promise<void> | void;
+}) {
+  const isRed = color === 'red';
+  const accentHex = isRed ? '#ef4444' : '#3b82f6';
+  const borderColor = isRed ? 'border-red-500/50' : 'border-blue-500/50';
+  const accentText = isRed ? 'text-red-400' : 'text-blue-400';
+  const label = isRed ? 'RED' : 'BLUE';
+
+  const [picked, setPicked] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!picked) { setPreviewUrl(null); return; }
+    const url = URL.createObjectURL(picked);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [picked]);
+
+  const isVideo = picked?.type.startsWith('video/');
+
+  const handlePick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    e.target.value = '';
+    if (!f) return;
+    if (f.size > MAX_EDIT_UPLOAD_BYTES) {
+      toast.error(`File too big — ${MAX_EDIT_UPLOAD_LABEL} max`);
+      return;
+    }
+    setPicked(f);
+  };
+
+  const handleSubmit = async () => {
+    if (!picked) return;
+    await onUpload(picked);
+    setPicked(null);
+  };
+
+  return (
+    <div
+      className={`relative bg-surface-1 border ${borderColor} overflow-hidden`}
+      style={{ boxShadow: `0 0 16px ${accentHex}30 inset` }}
+    >
+      {/* Header strip */}
+      <div className="flex items-center justify-between px-2.5 py-1 bg-black/60">
+        <div className="flex items-center gap-1.5">
+          <span
+            className="w-1.5 h-1.5 rounded-full animate-pulse"
+            style={{ background: accentHex, boxShadow: `0 0 8px ${accentHex}` }}
+          />
+          <span className={`text-[9px] font-black uppercase tracking-[0.22em] ${accentText}`} style={{ fontFamily: 'Teko, sans-serif' }}>
+            {label} · You
+          </span>
+        </div>
+        <span className="text-[8px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+          MP4 · MOV · {MAX_EDIT_UPLOAD_LABEL}
+        </span>
+      </div>
+
+      <div className="relative h-[180px] md:h-[220px] bg-black flex items-center justify-center overflow-hidden">
+        {picked && previewUrl ? (
+          <>
+            {isVideo ? (
+              <video
+                src={previewUrl}
+                className="w-full h-full object-contain bg-black"
+                muted
+                playsInline
+                autoPlay
+                loop
+              />
+            ) : (
+              <img src={previewUrl} alt="Preview" className="w-full h-full object-contain bg-black" />
+            )}
+            {!submitting && (
+              <button
+                type="button"
+                onClick={() => setPicked(null)}
+                className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/75 backdrop-blur-sm border border-white/15 flex items-center justify-center active:scale-90"
+                aria-label="Remove and re-upload"
+              >
+                <span className="text-white text-base leading-none">×</span>
+              </button>
+            )}
+            {submitting && (
+              <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center gap-2">
+                <Loader2 className="w-5 h-5 text-white animate-spin" />
+                <span className="text-[11px] font-black uppercase tracking-[0.22em] text-white" style={{ fontFamily: 'Teko, sans-serif' }}>
+                  Uploading {Math.round(uploadPct * 100)}%
+                </span>
+                <div className="w-32 h-1 bg-white/15 overflow-hidden">
+                  <div
+                    className="h-full transition-[width] duration-150"
+                    style={{ width: `${Math.round(uploadPct * 100)}%`, background: accentHex, boxShadow: `0 0 8px ${accentHex}` }}
+                  />
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <label
+            className="absolute inset-0 flex flex-col items-center justify-center gap-2 cursor-pointer active:scale-[0.99] transition"
+          >
+            <input type="file" accept="video/*,image/*" className="hidden" onChange={handlePick} />
+            <div
+              className="w-11 h-11 rounded-md flex items-center justify-center"
+              style={{
+                background: 'rgba(0,0,0,0.55)',
+                border: `1px solid ${accentHex}`,
+                boxShadow: `0 0 14px ${accentHex}80`,
+              }}
+            >
+              <Upload className="w-5 h-5 text-white" strokeWidth={2.5} />
+            </div>
+            <span className="text-[14px] font-black uppercase tracking-[0.16em] text-white" style={{ fontFamily: 'Teko, sans-serif' }}>
+              Upload Your Edit
+            </span>
+            <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+              Tap to choose file
+            </span>
+          </label>
+        )}
+      </div>
+
+      {picked && (
+        <div className="flex gap-1.5 p-1.5 bg-black/40">
+          <label
+            className={`flex-1 h-9 flex items-center justify-center text-[11px] font-black uppercase tracking-[0.18em] text-white/80 border border-white/15 cursor-pointer active:scale-[0.99] ${submitting ? 'opacity-40 pointer-events-none' : 'hover:bg-white/5'}`}
+            style={{ fontFamily: 'Teko, sans-serif' }}
+          >
+            <input type="file" accept="video/*,image/*" className="hidden" onChange={handlePick} disabled={submitting} />
+            Re-pick
+          </label>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={submitting}
+            className="flex-[2] h-9 bg-gold text-background text-[12px] font-black uppercase tracking-[0.2em] active:scale-[0.99] disabled:opacity-50"
+            style={{ fontFamily: 'Teko, sans-serif' }}
+          >
+            {submitting ? `Uploading ${Math.round(uploadPct * 100)}%` : 'Submit Edit'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

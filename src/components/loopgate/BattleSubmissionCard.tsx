@@ -89,10 +89,12 @@ export default function BattleSubmissionCard({
           </div>
         </div>
 
-        {/* Platform badge */}
-        <div className="absolute top-1.5 right-1.5 bg-black/60 backdrop-blur-sm px-1.5 py-0.5">
-          <span className="text-[8px] font-bold text-white uppercase tracking-wider">{platformLabel}</span>
-        </div>
+        {/* Platform badge — hide for direct uploads (no meaningful platform) */}
+        {platform !== "unknown" && (
+          <div className="absolute top-1.5 right-1.5 bg-black/60 backdrop-blur-sm px-1.5 py-0.5">
+            <span className="text-[8px] font-bold text-white uppercase tracking-wider">{platformLabel}</span>
+          </div>
+        )}
 
         {/* Score badge */}
         {score != null && (
