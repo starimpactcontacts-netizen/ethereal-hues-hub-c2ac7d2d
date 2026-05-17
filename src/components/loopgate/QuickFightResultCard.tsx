@@ -14,6 +14,10 @@ export default function QuickFightResultCard({ fight }: QuickFightResultCardProp
       <BattleOutroButton
         player1Username={fight.player_1_username || 'red'}
         player2Username={fight.player_2_username || 'blue'}
+        player1Id={fight.player_1_id}
+        player2Id={fight.player_2_id || ''}
+        player1Avatar={fight.player_1_avatar_url}
+        player2Avatar={fight.player_2_avatar_url}
         fightId={fight.id}
       />
     </div>
