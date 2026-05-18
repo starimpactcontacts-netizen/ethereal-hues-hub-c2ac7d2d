@@ -45,8 +45,10 @@ export function getBunnyPlaybackCandidates(url: string | null | undefined): stri
     const parsed = new URL(source);
     if (parsed.hostname.endsWith('.b-cdn.net')) {
       const base = new URL(source);
+      // Prefer highest-quality MP4 first so battle playback isn't stuck at 480p.
+      const QUALITIES = ['1080', '720', '480', '360', '240'];
       if (/\/playlist\.m3u8$/i.test(base.pathname)) {
-        for (const quality of ['720', '480', '360', '240']) {
+        for (const quality of QUALITIES) {
           const mp4 = new URL(source);
           mp4.pathname = mp4.pathname.replace(/\/playlist\.m3u8$/i, `/play_${quality}p.mp4`);
           mp4.search = '';
@@ -54,16 +56,16 @@ export function getBunnyPlaybackCandidates(url: string | null | undefined): stri
         }
       }
       if (/\/play_\d+p\.mp4$/i.test(base.pathname)) {
-        const playlist = new URL(source);
-        playlist.pathname = playlist.pathname.replace(/\/play_\d+p\.mp4$/i, '/playlist.m3u8');
-        playlist.search = '';
-        add(playlist.toString());
-        for (const quality of ['720', '480', '360', '240']) {
+        for (const quality of QUALITIES) {
           const mp4 = new URL(source);
           mp4.pathname = mp4.pathname.replace(/\/play_\d+p\.mp4$/i, `/play_${quality}p.mp4`);
           mp4.search = '';
           add(mp4.toString());
         }
+        const playlist = new URL(source);
+        playlist.pathname = playlist.pathname.replace(/\/play_\d+p\.mp4$/i, '/playlist.m3u8');
+        playlist.search = '';
+        add(playlist.toString());
       }
     }
   } catch {
