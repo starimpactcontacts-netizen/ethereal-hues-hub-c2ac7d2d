@@ -39,35 +39,36 @@ export default function BattleAutoplayDuo({ red, blue }: Props) {
           <BattleVideoSlot side={sides[0]} />
         </div>
 
-        {/* VS divider — real gap so the chip sits between videos, not over them */}
-        <div className="relative h-10 md:h-auto md:w-10 shrink-0 bg-black">
-          <div
-            className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-px md:h-auto md:w-px md:left-1/2 md:top-0 md:bottom-0 md:-translate-x-1/2 md:translate-y-0"
-            style={{
-              background:
-                "linear-gradient(90deg, transparent, rgba(239,68,68,0.9), #fff, rgba(59,130,246,0.9), transparent)",
-            }}
-          />
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none">
-            <div className="relative">
-              <div
-                className="absolute inset-0 rounded-full blur-md opacity-70"
-                style={{ background: "radial-gradient(circle, rgba(239,68,68,0.6), rgba(59,130,246,0.6))" }}
-              />
-              <div
-                className="relative w-8 h-8 rounded-full flex items-center justify-center border border-white/30 shadow-[0_0_14px_rgba(255,255,255,0.25)]"
-                style={{ background: "linear-gradient(135deg, #ef4444 0%, #0a0a0a 50%, #3b82f6 100%)" }}
-              >
-                <span className="text-[10px] font-black tracking-[0.18em] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]" style={teko}>
-                  VS
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div className="flex-1 min-h-0 md:min-w-0 relative bg-black">
           <BattleVideoSlot side={sides[1]} />
+        </div>
+
+        {/* VS badge — sits on the dividing seam, slight overlap, premium fighting-game medallion */}
+        <div
+          className="absolute z-40 pointer-events-none left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:left-1/2 md:top-1/2"
+          style={{}}
+        >
+          <div className="relative">
+            <div
+              className="absolute inset-0 rounded-full blur-lg opacity-80"
+              style={{ background: "radial-gradient(circle, rgba(239,68,68,0.7), rgba(59,130,246,0.7) 60%, transparent 75%)" }}
+            />
+            <div
+              className="relative w-6 h-6 rounded-full flex items-center justify-center border border-white/40"
+              style={{
+                background: "linear-gradient(135deg, #ef4444 0%, #0a0a0a 50%, #3b82f6 100%)",
+                boxShadow:
+                  "0 0 10px rgba(255,255,255,0.35), 0 0 18px rgba(239,68,68,0.45), 0 0 18px rgba(59,130,246,0.45), inset 0 0 0 1px rgba(255,255,255,0.15)",
+              }}
+            >
+              <span
+                className="text-[8px] font-black tracking-[0.18em] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]"
+                style={teko}
+              >
+                VS
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
