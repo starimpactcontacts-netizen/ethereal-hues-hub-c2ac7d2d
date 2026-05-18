@@ -33,16 +33,16 @@ export default function BattleAutoplayDuo({ red, blue }: Props) {
 
   return (
     <div className="select-none -mx-4 md:-mx-0 bg-black rounded-md overflow-hidden">
-      {/* Mobile: stacked, fills remaining viewport — no scroll. Desktop: side-by-side. */}
-      <div className="relative flex flex-col md:flex-row md:items-stretch h-[calc(100svh-260px)] min-h-[360px] max-h-[720px] md:h-[520px]">
-        <div className="flex-1 min-h-0 md:min-w-0 relative">
+      {/* Mobile: stacked w/ 4:3-ish frame so square edits aren't clipped. Desktop: side-by-side. */}
+      <div className="relative flex flex-col md:flex-row md:items-stretch h-[calc(100svh-220px)] min-h-[420px] max-h-[820px] md:h-[560px]">
+        <div className="flex-1 min-h-0 md:min-w-0 relative bg-black">
           <BattleVideoSlot side={sides[0]} />
         </div>
 
-        {/* VS divider — thin neon bar with center chip */}
-        <div className="relative h-px md:h-auto md:w-px shrink-0">
+        {/* VS divider — real gap so the chip sits between videos, not over them */}
+        <div className="relative h-10 md:h-auto md:w-10 shrink-0 bg-black">
           <div
-            className="absolute inset-0"
+            className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-px md:h-auto md:w-px md:left-1/2 md:top-0 md:bottom-0 md:-translate-x-1/2 md:translate-y-0"
             style={{
               background:
                 "linear-gradient(90deg, transparent, rgba(239,68,68,0.9), #fff, rgba(59,130,246,0.9), transparent)",
@@ -55,10 +55,10 @@ export default function BattleAutoplayDuo({ red, blue }: Props) {
                 style={{ background: "radial-gradient(circle, rgba(239,68,68,0.6), rgba(59,130,246,0.6))" }}
               />
               <div
-                className="relative w-7 h-7 rounded-full flex items-center justify-center border border-white/30 shadow-[0_0_14px_rgba(255,255,255,0.25)]"
+                className="relative w-8 h-8 rounded-full flex items-center justify-center border border-white/30 shadow-[0_0_14px_rgba(255,255,255,0.25)]"
                 style={{ background: "linear-gradient(135deg, #ef4444 0%, #0a0a0a 50%, #3b82f6 100%)" }}
               >
-                <span className="text-[9px] font-black tracking-[0.18em] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]" style={teko}>
+                <span className="text-[10px] font-black tracking-[0.18em] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]" style={teko}>
                   VS
                 </span>
               </div>
@@ -66,7 +66,7 @@ export default function BattleAutoplayDuo({ red, blue }: Props) {
           </div>
         </div>
 
-        <div className="flex-1 min-h-0 md:min-w-0 relative">
+        <div className="flex-1 min-h-0 md:min-w-0 relative bg-black">
           <BattleVideoSlot side={sides[1]} />
         </div>
       </div>
@@ -177,7 +177,7 @@ function BattleVideoSlot({ side }: { side: Side }) {
           ref={videoRef}
           src={activeSrc}
           poster={side.posterUrl || `${activeSrc}#t=0.1`}
-          className="w-full h-full object-cover bg-black"
+          className="w-full h-full object-contain bg-black"
           muted={muted}
           playsInline
           loop
@@ -195,7 +195,7 @@ function BattleVideoSlot({ side }: { side: Side }) {
         <img
           src={side.url}
           alt={`${side.username} edit`}
-          className="w-full h-full object-cover bg-black"
+          className="w-full h-full object-contain bg-black"
           loading="eager"
           decoding="async"
         />
