@@ -39,8 +39,7 @@ export function getBunnyPlaybackCandidates(url: string | null | undefined): stri
     if (candidate) urls.add(candidate);
   };
 
-  add(source);
-
+  let addedSource = false;
   try {
     const parsed = new URL(source);
     if (parsed.hostname.endsWith('.b-cdn.net')) {
@@ -54,6 +53,8 @@ export function getBunnyPlaybackCandidates(url: string | null | undefined): stri
           mp4.search = '';
           add(mp4.toString());
         }
+        add(source);
+        addedSource = true;
       }
       if (/\/play_\d+p\.mp4$/i.test(base.pathname)) {
         for (const quality of QUALITIES) {
@@ -66,11 +67,14 @@ export function getBunnyPlaybackCandidates(url: string | null | undefined): stri
         playlist.pathname = playlist.pathname.replace(/\/play_\d+p\.mp4$/i, '/playlist.m3u8');
         playlist.search = '';
         add(playlist.toString());
+        addedSource = true;
       }
     }
   } catch {
+    add(source);
     return Array.from(urls);
   }
+  if (!addedSource) add(source);
 
   return Array.from(urls);
 }
