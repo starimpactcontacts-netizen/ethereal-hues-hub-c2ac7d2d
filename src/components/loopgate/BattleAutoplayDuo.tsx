@@ -177,7 +177,7 @@ function BattleVideoSlot({ side }: { side: Side }) {
           ref={videoRef}
           src={activeSrc}
           poster={side.posterUrl || `${activeSrc}#t=0.1`}
-          className="w-full h-full object-cover bg-black"
+          className="w-full h-full object-contain bg-black"
           muted={muted}
           playsInline
           loop
@@ -195,7 +195,7 @@ function BattleVideoSlot({ side }: { side: Side }) {
         <img
           src={side.url}
           alt={`${side.username} edit`}
-          className="w-full h-full object-cover bg-black"
+          className="w-full h-full object-contain bg-black"
           loading="eager"
           decoding="async"
         />
