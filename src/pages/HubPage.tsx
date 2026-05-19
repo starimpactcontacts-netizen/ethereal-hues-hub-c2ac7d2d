@@ -684,11 +684,11 @@ export default function HubPage() {
                   </button>
 
                   <button
-                    onClick={() => { setPlayExpanded(false); navigate('/arena'); }}
+                    onClick={() => { setPlayExpanded(false); handleMultiplayer(); }}
                     className="w-full py-4 bg-surface-1 border border-[#FF3B3B]/50 hover:bg-surface-2 active:scale-[0.99] transition flex flex-col items-center justify-center"
                   >
-                    <span className="font-display text-[26px] text-foreground tracking-normal uppercase leading-none">Ranked</span>
-                    <span className="font-display text-[12px] text-muted-foreground uppercase tracking-normal mt-1.5">Play A Ranked Match</span>
+                    <span className="font-display text-[26px] text-foreground tracking-normal uppercase leading-none">Multiplayer</span>
+                    <span className="font-display text-[12px] text-muted-foreground uppercase tracking-normal mt-1.5">Join An Open Lobby</span>
                   </button>
 
                   <button
