@@ -53,7 +53,6 @@ import RingsModal from '@/components/loopgate/RingsModal';
 import { useEquippedBadges } from '@/hooks/useEquippedBadges';
 import WalletDrawer from '@/components/loopgate/WalletDrawer';
 import LoopyWelcomeModal from '@/components/loopgate/LoopyWelcomeModal';
-import { startQuickMatch } from '@/lib/startQuickMatch';
 import { useMyCashBattles, useMyCashBattleApplication } from '@/hooks/useCashBattles';
 import { useMyCompetitionReminders } from '@/hooks/useMyCompetitionReminders';
 import LiveBattleReminders, { type LiveBattleReminderItem } from '@/components/loopgate/LiveBattleReminder';
