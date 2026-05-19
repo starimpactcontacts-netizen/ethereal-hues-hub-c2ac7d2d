@@ -769,17 +769,17 @@ export default function HubPage() {
       {liveEvents.length > 0 && (
         <Link
           to={`/event/${getEventSlug(liveEvents[0])}`}
-          className="relative block mt-3 mx-auto w-[calc(100%-2rem)] max-w-[430px] sm:max-w-[520px] active:scale-[0.99] transition-transform"
+          className="relative block mt-3 mx-auto w-[calc(100%-4rem)] max-w-[360px] sm:max-w-[400px] active:scale-[0.99] transition-transform"
         >
           <div
-            className="relative h-[76px] w-full overflow-hidden bg-black/80 flex items-center border-2 border-[#FF3B3B]/60"
+            className="relative h-[72px] w-full overflow-hidden bg-black/90 flex items-center"
             style={{
               boxShadow:
-                'inset 0 0 0 1px hsl(0 0% 100% / 0.04), 0 0 18px hsl(0 100% 55% / 0.2)',
+                'inset 0 0 0 1px hsl(0 0% 100% / 0.08), 0 10px 24px hsl(0 0% 0% / 0.45)',
             }}
           >
             {/* Poster sliver on the left */}
-            <div className="relative h-full w-[86px] shrink-0 overflow-hidden">
+            <div className="relative h-full w-[74px] shrink-0 overflow-hidden">
               {liveEvents[0].poster_url ? (
                 <img
                   src={liveEvents[0].poster_url}
@@ -795,7 +795,7 @@ export default function HubPage() {
             </div>
 
             {/* Center text */}
-            <div className="flex-1 min-w-0 px-3">
+            <div className="flex-1 min-w-0 px-2.5">
               <div className="flex items-center gap-1.5 overflow-hidden">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.9)]" />
                 <span className="font-display text-[12px] uppercase tracking-normal text-red-400 leading-none shrink-0">Live Comp</span>
@@ -805,15 +805,13 @@ export default function HubPage() {
                   </span>
                 )}
               </div>
-              <h3
-                className="font-display text-[20px] leading-[1] text-white tracking-normal line-clamp-2 mt-1"
-              >
+              <h3 className="font-display text-[18px] leading-[0.95] text-white tracking-normal line-clamp-2 mt-1">
                 {liveEvents[0].title.toUpperCase()}
               </h3>
             </div>
 
             {/* Enter pill */}
-            <div className="flex items-center gap-1 mr-2 px-3 h-[36px] bg-emerald-400 text-black font-display text-[16px] uppercase tracking-normal leading-none shadow-[0_0_18px_rgba(16,185,129,0.55)] shrink-0">
+            <div className="flex items-center gap-1 mr-2 px-2.5 h-[32px] bg-emerald-400 text-black font-display text-[15px] uppercase tracking-normal leading-none shadow-[0_0_18px_rgba(16,185,129,0.45)] shrink-0">
               <span className="pt-[2px]">Enter</span>
               <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
             </div>
