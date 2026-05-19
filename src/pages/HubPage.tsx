@@ -21,7 +21,7 @@ import { useUserActivityStats } from '@/hooks/useUserActivityStats';
 import { useTempProfile } from '@/hooks/useTempProfile';
 import { useGuestMode } from '@/hooks/useGuestMode';
 import { useSanctionedTournaments } from '@/hooks/useSanctionedTournaments';
-import { useBattles } from '@/hooks/useBattles';
+import { useBattles, acceptBattle, createBattle } from '@/hooks/useBattles';
 import FeaturedEditBattlesSection from '@/components/loopgate/FeaturedEditBattlesSection';
 
 import { useLiveActivity, type LiveActivityItem } from '@/hooks/useLiveActivity';
@@ -335,27 +335,46 @@ export default function HubPage() {
 
   const handleQuickFight = async () => {
     if (!user || !profile) { openAccountPrompt('send_message', () => {}); return; }
-    if (qfActiveFight) { navigate(`/fight/${qfActiveFight.id}`); return; }
     setQfSearching(true);
     try {
-      const result = await startQuickMatch({
-        userId: user.id,
-        username: profile.username,
-        avatarUrl: profile.avatar_url,
-      });
+      // Same flow as Edit Battles in Arena:
+      // 1) Try to accept the oldest open battle
+      // 2) Otherwise create our own open battle lobby (shows in Arena rail)
+      const { data: openBattles } = await supabase
+        .from('battles')
+        .select('id')
+        .eq('status', 'pending')
+        .eq('challenge_type', 'open')
+        .is('opponent_id', null)
+        .neq('challenger_id', user.id)
+        .order('created_at', { ascending: true })
+        .limit(5);
 
-      if (result.type === 'battle') {
-        toast.success('⚔️ Opponent found!');
-        navigate(`/battle/${result.id}`);
-        setQfSearching(false);
-      } else if (result.type === 'fight') {
-        toast.success('⚔️ Match found!');
-        navigate(`/fight/${result.id}`);
-        supabase.functions.invoke('notify-quick-fight-match', { body: { fight_id: result.id } }).catch(() => {});
-        setQfSearching(false);
-      } else {
-        toast('🔍 In queue — we\'ll notify you when matched!', { duration: 4000 });
+      for (const b of openBattles ?? []) {
+        const ok = await acceptBattle(b.id, user.id, profile.username, profile.avatar_url);
+        if (ok) {
+          toast.success('⚔️ Opponent found!');
+          navigate(`/battle/${b.id}`);
+          setQfSearching(false);
+          return;
+        }
       }
+
+      const created = await createBattle(
+        user.id,
+        profile.username,
+        profile.avatar_url,
+        (profile?.league?.toLowerCase() || 'open'),
+        1,
+        'open'
+      );
+      if (created.success && created.battleId) {
+        toast('🔍 Lobby created — waiting for opponent', { duration: 3000 });
+        navigate(`/battle/${created.battleId}`);
+      } else {
+        toast.error(created.error || 'Could not create battle');
+      }
+      setQfSearching(false);
     } catch {
       toast.error('Matchmaking failed');
       setQfSearching(false);
