@@ -880,6 +880,7 @@ export default function CashBattlesSection({
       </ArenaRail>}
 
       <CashBattleInfoModal open={infoOpen} onClose={() => setInfoOpen(false)} />
+      <JoinByCodeModal open={codeOpen} onOpenChange={setCodeOpen} scope="battle" />
     </div>
   );
 }
