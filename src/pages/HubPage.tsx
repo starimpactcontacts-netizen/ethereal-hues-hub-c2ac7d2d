@@ -37,7 +37,6 @@ import InviteModal from '@/components/loopgate/InviteModal';
 import CountdownTimer from '@/components/loopgate/CountdownTimer';
 import JudgeReviewsFeed from '@/components/loopgate/JudgeReviewsFeed';
 import ArenaCompetitionsSection from '@/components/loopgate/ArenaCompetitionsSection';
-import EditoriumPicks from '@/components/loopgate/EditoriumPicks';
 import JudgeClassBadge from '@/components/loopgate/JudgeClassBadge';
 import XPProgressBar from '@/components/loopgate/XPProgressBar';
 import { supabase } from '@/integrations/supabase/client';
