@@ -1059,6 +1059,15 @@ export default function HubPage() {
         onClose={() => setRingsOpen(false)}
         amount={(profile as any)?.rings || 0}
       />
+      {instantMatch && (
+        <InstantMatchModal
+          open={!!instantMatch}
+          you={instantMatch.you}
+          opponent={instantMatch.opponent}
+          onCancel={() => setInstantMatch(null)}
+          onConfirm={confirmInstantMatch}
+        />
+      )}
     </div>
   );
 }
