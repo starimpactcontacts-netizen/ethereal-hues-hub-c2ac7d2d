@@ -684,9 +684,9 @@ export default function HubPage() {
                   >
                     <span className="font-display text-[26px] text-white tracking-normal uppercase leading-none flex items-center gap-2">
                       {qfIsSearching && <Loader2 className="w-4 h-4 animate-spin" />}
-                      Quick Battle
+                      Edit Battles
                     </span>
-                    <span className="font-display text-[12px] text-white/80 uppercase tracking-normal mt-1.5">Matchmake Instantly</span>
+                    <span className="font-display text-[12px] text-white/80 uppercase tracking-normal mt-1.5">Enter 1v1 Lobby</span>
                   </button>
 
                   <button
