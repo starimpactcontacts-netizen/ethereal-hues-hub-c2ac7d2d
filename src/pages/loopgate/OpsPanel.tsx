@@ -23,6 +23,7 @@ import { useRecoverBodyScroll } from "@/hooks/useRecoverBodyScroll";
 
 import { awardReviewXP } from "@/hooks/useJudgeXP";
 import BattleAdminPanel from "@/components/loopgate/BattleAdminPanel";
+import QuickFightFeaturedAdmin from "@/components/loopgate/QuickFightFeaturedAdmin";
 import FeaturedArtistAdmin from "@/components/loopgate/FeaturedArtistAdmin";
 import EditoriumAdmin from "@/components/loopgate/EditoriumAdmin";
 import RadioAdmin from "@/components/loopgate/RadioAdmin";
