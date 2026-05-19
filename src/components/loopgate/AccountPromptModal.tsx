@@ -6,6 +6,7 @@ import { useTempProfile } from '@/hooks/useTempProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 interface AccountPromptModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ interface AccountPromptModalProps {
 
 export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess }: AccountPromptModalProps) {
   const { profile: tempProfile, clearProfile } = useTempProfile();
+  const navigate = useNavigate();
   const [identifier, setIdentifier] = useState(''); // username for signup, email/username for login
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -423,7 +425,14 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
               )}
 
               <button
-                onClick={() => setMode(mode === 'signup' ? 'login' : 'signup')}
+                onClick={() => {
+                  if (mode === 'signup') {
+                    onClose();
+                    navigate('/login');
+                  } else {
+                    setMode('signup');
+                  }
+                }}
                 className="w-full h-11 text-[14px] text-[#8E8E93] active:opacity-60"
               >
                 {mode === 'signup' ? (
