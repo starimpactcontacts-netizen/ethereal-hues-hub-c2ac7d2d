@@ -30,7 +30,8 @@ import FeaturedDropCard from '@/components/loopgate/FeaturedDropCard';
 import FeaturedCarousel from '@/components/loopgate/FeaturedCarousel';
 import LoopMonster from '@/components/loopgate/LoopMonster';
 import QuickFightButton from '@/components/loopgate/QuickFightButton';
-import { useMyQuickFights, createQuickFightLobby, leaveQueue } from '@/hooks/useQuickFight';
+import { useMyQuickFights, createQuickFightLobby, leaveQueue, joinWaitingQuickFight } from '@/hooks/useQuickFight';
+import InstantMatchModal from '@/components/loopgate/InstantMatchModal';
 import { useSoloMode } from '@/hooks/useSoloMode';
 import { useAccountPrompt } from '@/hooks/useAccountPrompt';
 import GlitchEdge from '@/components/loopgate/GlitchEdge';
@@ -206,6 +207,12 @@ export default function HubPage() {
   const [qfElapsed, setQfElapsed] = useState(0);
   const [qfTipIdx, setQfTipIdx] = useState(0);
   const qfTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [instantMatch, setInstantMatch] = useState<null | {
+    fightId: string;
+    cancelled: boolean;
+    you: { username: string; avatarUrl: string | null; level: number };
+    opponent: { username: string; avatarUrl: string | null; level: number };
+  }>(null);
   const { inQueue: qfInQueue, fights: qfFights } = useMyQuickFights();
   const { competitions: myLiveCompetitions } = useMyCompetitionReminders();
   const featuredScrollRef = useRef<HTMLDivElement>(null);
@@ -339,6 +346,40 @@ export default function HubPage() {
     if (existingWaiting) { navigate(`/fight/${existingWaiting.id}`); return; }
     setQfSearching(true);
     try {
+      // 1) Try to instantly match into an open public waiting lobby
+      const { data: openLobbies } = await supabase
+        .from('quick_fights')
+        .select('id, player_1_id, player_1_username, player_1_avatar_url')
+        .eq('status', 'waiting')
+        .is('player_2_id', null)
+        .or('is_private.is.null,is_private.eq.false')
+        .neq('player_1_id', user.id)
+        .is('hidden_at' as any, null)
+        .order('created_at', { ascending: true })
+        .limit(5);
+
+      const candidate = (openLobbies || [])[0] as any;
+      if (candidate) {
+        const { data: opp } = await supabase
+          .from('profiles')
+          .select('level')
+          .eq('id', candidate.player_1_id)
+          .maybeSingle();
+        setInstantMatch({
+          fightId: candidate.id,
+          cancelled: false,
+          you: { username: profile.username, avatarUrl: profile.avatar_url, level: (profile as any).level || 1 },
+          opponent: {
+            username: candidate.player_1_username,
+            avatarUrl: candidate.player_1_avatar_url,
+            level: (opp as any)?.level || 1,
+          },
+        });
+        setQfSearching(false);
+        return;
+      }
+
+      // 2) No open lobby → create a new one
       const lobby = await createQuickFightLobby(user.id, profile.username, profile.avatar_url, { isPrivate: false, durationMinutes: 60 });
       if (!lobby) throw new Error('create lobby failed');
       await leaveQueue(user.id);
@@ -348,6 +389,21 @@ export default function HubPage() {
       toast.error("Couldn't create Edit Battle");
     } finally {
       setQfSearching(false);
+    }
+  };
+
+  const confirmInstantMatch = async () => {
+    if (!instantMatch || !user || !profile) return;
+    const match = instantMatch;
+    setInstantMatch(null);
+    const { ok, error } = await joinWaitingQuickFight(
+      match.fightId, user.id, profile.username, profile.avatar_url, null
+    );
+    if (ok) {
+      toast.success('⚔️ Match locked in!');
+      navigate(`/fight/${match.fightId}`);
+    } else {
+      toast.error(error || 'Lobby already taken — try again');
     }
   };
 
