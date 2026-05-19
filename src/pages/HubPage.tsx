@@ -772,7 +772,7 @@ export default function HubPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.18 }}
-        className="px-4 mt-6"
+        className="px-4 mt-2"
       >
         <Link
           to="/rankings"
