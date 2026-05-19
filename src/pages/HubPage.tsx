@@ -333,7 +333,7 @@ export default function HubPage() {
   }, [qfFights, qfIsSearching]);
 
   const handleQuickFight = async () => {
-    if (!user || !profile) { openAccountPrompt('send_message', () => {}); return; }
+    if (!user || !profile) { openAccountPrompt('enter_battle', () => {}); return; }
     if (qfActiveFight) { navigate(`/fight/${qfActiveFight.id}`); return; }
     const existingWaiting = qfFights.find(f => f.status === 'waiting' && f.player_1_id === user.id);
     if (existingWaiting) { navigate(`/fight/${existingWaiting.id}`); return; }
@@ -630,27 +630,15 @@ export default function HubPage() {
                     onClick={() => setPlayExpanded(true)}
                     className="group relative w-full max-w-[340px] active:scale-[0.98] transition-transform"
                   >
-                    {/* Outer red glow halo */}
-                    <div
-                      className="pointer-events-none absolute -inset-3 -z-10 opacity-70 animate-pulse-subtle"
-                      style={{ background: 'radial-gradient(ellipse at center, hsl(0 100% 55% / 0.55), transparent 70%)' }}
-                    />
-                    {/* Solid red body */}
+                    {/* Solid red body — clean even glow */}
                     <div
                       className="relative flex items-center justify-center gap-3 py-6 bg-[#FF3B3B]"
                       style={{
                         boxShadow:
-                          'inset 0 0 0 2px hsl(0 100% 80% / 0.45), inset 0 -6px 0 hsl(0 80% 35% / 0.55), 0 0 32px hsl(0 100% 55% / 0.55), 0 0 70px hsl(0 100% 50% / 0.25)',
+                          'inset 0 1px 0 hsl(0 100% 82% / 0.5), inset 0 -3px 0 hsl(0 80% 32% / 0.5), 0 0 24px hsl(0 100% 55% / 0.45)',
                       }}
                     >
-                      {/* Scanline overlay */}
-                      <div
-                        className="pointer-events-none absolute inset-0 opacity-30 mix-blend-overlay"
-                        style={{
-                          backgroundImage: 'repeating-linear-gradient(0deg, rgba(0,0,0,0.5) 0px, rgba(0,0,0,0.5) 1px, transparent 1px, transparent 3px)',
-                        }}
-                      />
-                      <Play className="relative w-6 h-6 fill-white text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.7)]" strokeWidth={3} />
+                      <Play className="relative w-6 h-6 fill-white text-white" strokeWidth={3} />
                       <span
                         className="relative font-display text-white leading-none uppercase"
                         style={{
