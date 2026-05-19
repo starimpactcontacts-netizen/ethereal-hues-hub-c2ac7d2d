@@ -582,89 +582,63 @@ export default function HubPage() {
           </motion.div>
 
           {/* PLAY — single primary CTA that expands into Edit Battle / Multiplayer */}
-          <div className="relative mt-5 mb-4 flex items-center justify-center min-h-[112px]">
+          <div className="relative mt-5 mb-4">
             <AnimatePresence mode="wait" initial={false}>
               {!playExpanded ? (
-                <motion.button
+                <motion.div
                   key="play"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.2 }}
-                  onClick={() => setPlayExpanded(true)}
-                  className="relative group flex items-center justify-center gap-3 px-12 py-5 rounded-2xl overflow-hidden active:scale-[0.97] transition-transform"
-                  style={{
-                    background: 'linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(0 0% 92%) 100%)',
-                    boxShadow: '0 20px 60px hsl(0 0% 100% / 0.18), 0 8px 24px hsl(0 0% 0% / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.9)',
-                  }}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.18 }}
+                  className="flex items-center justify-center"
                 >
-                  <Play className="w-6 h-6 text-black fill-black" strokeWidth={2.5} />
-                  <span className="font-display text-3xl text-black tracking-[0.15em] uppercase leading-none">PLAY</span>
-                </motion.button>
+                  <button
+                    onClick={() => setPlayExpanded(true)}
+                    className="flex items-center justify-center gap-3 px-14 py-4 bg-white text-black rounded-md active:scale-[0.97] transition-transform"
+                  >
+                    <Play className="w-5 h-5 fill-black" strokeWidth={2.5} />
+                    <span className="font-display text-2xl tracking-[0.18em] uppercase leading-none">PLAY</span>
+                  </button>
+                </motion.div>
               ) : (
                 <motion.div
                   key="options"
-                  initial={{ opacity: 0, y: 8 }}
+                  initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  transition={{ duration: 0.22 }}
-                  className="w-full flex flex-col gap-2.5"
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.18 }}
+                  className="w-full flex flex-col gap-2"
                 >
-                  {/* EDIT BATTLE */}
+                  {/* QUICK BATTLE — flat solid */}
                   <button
                     onClick={() => { setPlayExpanded(false); handleQuickFight(); }}
                     disabled={qfIsSearching}
-                    className="relative w-full rounded-2xl overflow-hidden active:scale-[0.98] transition-transform text-left"
-                    style={{
-                      background: 'linear-gradient(135deg, hsl(0 85% 45%) 0%, hsl(0 80% 35%) 100%)',
-                      boxShadow: '0 12px 36px hsl(0 85% 40% / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.18)',
-                    }}
+                    className="w-full py-4 rounded-md bg-red-600 hover:bg-red-500 active:scale-[0.99] transition disabled:opacity-60 flex flex-col items-center justify-center"
                   >
-                    <div className="flex items-center gap-4 px-5 py-4">
-                      <div className="w-12 h-12 rounded-xl bg-black/25 flex items-center justify-center shrink-0">
-                        <Swords className="w-6 h-6 text-white" strokeWidth={2.4} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-display text-2xl text-white tracking-[0.08em] uppercase leading-none">Edit Battle</div>
-                        <div className="text-[10px] text-white/70 font-semibold uppercase tracking-[0.18em] mt-1.5">1v1 · Match Instantly</div>
-                      </div>
-                      {qfIsSearching ? (
-                        <Loader2 className="w-5 h-5 text-white animate-spin" />
-                      ) : (
-                        <ArrowRight className="w-5 h-5 text-white/80" />
-                      )}
-                    </div>
+                    <span className="font-display text-2xl text-white tracking-[0.14em] uppercase leading-none flex items-center gap-2">
+                      {qfIsSearching && <Loader2 className="w-4 h-4 animate-spin" />}
+                      Quick Battle
+                    </span>
+                    <span className="text-[10px] text-white/70 font-bold uppercase tracking-[0.22em] mt-1.5">Matchmake Instantly</span>
                   </button>
 
-                  {/* MULTIPLAYER */}
+                  {/* RANKED */}
                   <button
                     onClick={() => { setPlayExpanded(false); navigate('/arena'); }}
-                    className="relative w-full rounded-2xl overflow-hidden active:scale-[0.98] transition-transform text-left"
-                    style={{
-                      background: 'linear-gradient(135deg, hsl(220 18% 16%) 0%, hsl(220 18% 10%) 100%)',
-                      border: '1px solid hsl(0 0% 100% / 0.08)',
-                      boxShadow: '0 12px 36px hsl(0 0% 0% / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.06)',
-                    }}
+                    className="w-full py-4 rounded-md bg-surface-1 border border-red-600/40 hover:bg-surface-2 active:scale-[0.99] transition flex flex-col items-center justify-center"
                   >
-                    <div className="flex items-center gap-4 px-5 py-4">
-                      <div className="w-12 h-12 rounded-xl bg-white/8 flex items-center justify-center shrink-0">
-                        <Trophy className="w-6 h-6 text-gold" strokeWidth={2.4} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-display text-2xl text-foreground tracking-[0.08em] uppercase leading-none">Multiplayer</div>
-                        <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-[0.18em] mt-1.5">Ranked Competitions</div>
-                      </div>
-                      <ArrowRight className="w-5 h-5 text-muted-foreground" />
-                    </div>
+                    <span className="font-display text-2xl text-foreground tracking-[0.14em] uppercase leading-none">Ranked</span>
+                    <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.22em] mt-1.5">Play A Ranked Match</span>
                   </button>
 
-                  {/* Back */}
+                  {/* BACK */}
                   <button
                     onClick={() => setPlayExpanded(false)}
-                    className="self-center mt-1 flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground transition-colors"
+                    className="w-full py-3 rounded-md bg-surface-1/60 border border-border hover:bg-surface-1 active:scale-[0.99] transition flex flex-col items-center justify-center"
                   >
-                    <ArrowLeft className="w-3.5 h-3.5" />
-                    Back
+                    <span className="font-display text-xl text-foreground/90 tracking-[0.14em] uppercase leading-none">Back</span>
+                    <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-[0.22em] mt-1">Return To Main Menu</span>
                   </button>
                 </motion.div>
               )}
