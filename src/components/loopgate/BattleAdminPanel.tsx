@@ -10,7 +10,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Swords, Trophy, Clock, Eye, ExternalLink, Crown, Gavel,
   CheckCircle, XCircle, Play, Square, SkipForward, AlertTriangle,
-  ChevronDown, ChevronUp, Search, RefreshCw
+  ChevronDown, ChevronUp, Search, RefreshCw, Flame
 } from "lucide-react";
 
 interface AdminBattle {
@@ -46,6 +46,7 @@ interface AdminBattle {
   winner_index_awarded: number | null;
   loser_index_penalty: number | null;
   created_at: string;
+  is_featured?: boolean | null;
 }
 
 const STATUS_MAP: Record<string, { label: string; color: string }> = {
@@ -122,6 +123,16 @@ export default function BattleAdminPanel() {
     } finally {
       setActionLoading(null);
     }
+
+  async function toggleFeatured(battleId: string, current: boolean) {
+    setActionLoading(battleId);
+    const { error } = await (supabase.from("battles") as any)
+      .update({ is_featured: !current })
+      .eq("id", battleId);
+    if (error) toast.error(`Failed: ${error.message}`);
+    else toast.success(!current ? "Pinned to Hub ⭐" : "Unpinned from Hub");
+    setActionLoading(null);
+  }
   }
 
   async function declareWinner(battleId: string, winnerId: string, winnerUsername: string) {
@@ -366,6 +377,7 @@ export default function BattleAdminPanel() {
           {/* Status + expand */}
           <Badge className={`text-[9px] border ${status.color}`}>{status.label}</Badge>
           {battle.winner_id && <Crown className="w-4 h-4 text-gold" />}
+          {battle.is_featured && <Flame className="w-4 h-4 text-[#FF3B3B]" />}
           {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
         </button>
 
@@ -485,6 +497,22 @@ export default function BattleAdminPanel() {
 
             {/* ── Action Buttons ── */}
             <div className="flex flex-wrap gap-2">
+              {/* Featured toggle — for completed battles */}
+              {battle.status === "completed" && (
+                <button
+                  onClick={() => toggleFeatured(battle.id, !!battle.is_featured)}
+                  disabled={isLoading}
+                  className={`flex items-center gap-1.5 px-3 py-2 border rounded text-[11px] font-semibold transition-colors disabled:opacity-50 ${
+                    battle.is_featured
+                      ? "bg-[#FF3B3B]/20 border-[#FF3B3B]/50 text-[#FF3B3B] hover:bg-[#FF3B3B]/30"
+                      : "bg-surface-1 border-border text-muted-foreground hover:bg-surface-2"
+                  }`}
+                >
+                  <Flame className="w-3.5 h-3.5" />
+                  {battle.is_featured ? "Featured on Hub" : "Feature on Hub"}
+                </button>
+              )}
+
               {/* Score/Judge */}
               {battle.status !== "completed" && battle.status !== "cancelled" && battle.opponent_id && (
                 <button
