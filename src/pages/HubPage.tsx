@@ -769,7 +769,7 @@ export default function HubPage() {
       {liveEvents.length > 0 && (
         <Link
           to={`/event/${getEventSlug(liveEvents[0])}`}
-          className="relative block mt-3 active:scale-[0.99] transition-transform"
+          className="relative block mt-3 mx-auto max-w-[640px] active:scale-[0.99] transition-transform"
         >
           <div
             className="relative h-[58px] w-full overflow-hidden bg-black/80 flex items-center border-2 border-[#FF3B3B]/60"
@@ -799,6 +799,11 @@ export default function HubPage() {
               <div className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.9)]" />
                 <span className="font-display text-[12px] uppercase tracking-normal text-red-400 leading-none">Live Comp</span>
+                {liveEvents[0].prize_pool && (
+                  <span className="font-display text-[12px] uppercase tracking-normal text-emerald-400 leading-none px-1.5 py-0.5 bg-emerald-500/15 border border-emerald-500/40">
+                    {liveEvents[0].prize_pool} Prize
+                  </span>
+                )}
               </div>
               <h3
                 className="font-display text-[18px] leading-[1] text-white tracking-normal line-clamp-1 mt-1"
