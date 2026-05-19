@@ -445,6 +445,20 @@ export default function HubPage() {
     <div className="min-h-screen bg-background pb-16 overflow-x-hidden relative">
       {/* Gate lattice — subtle geometric texture */}
       <GatePattern opacity={1.5} tileSize={48} className="z-0" />
+
+      {/* Arcade grid texture overlay — beat-battle.net style */}
+      <div
+        className="pointer-events-none absolute inset-0 z-0 opacity-[0.18]"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, hsl(0 80% 50% / 0.18) 1px, transparent 1px),
+            linear-gradient(to bottom, hsl(0 80% 50% / 0.18) 1px, transparent 1px)
+          `,
+          backgroundSize: '28px 28px',
+          maskImage: 'radial-gradient(ellipse at center, black 30%, transparent 80%)',
+          WebkitMaskImage: 'radial-gradient(ellipse at center, black 30%, transparent 80%)',
+        }}
+      />
       
       <LoopyWelcomeModal />
       
@@ -579,8 +593,8 @@ export default function HubPage() {
             </div>
           </motion.div>
 
-          {/* PLAY — single primary CTA that expands into Edit Battle / Multiplayer */}
-          <div className="relative mt-5 mb-4">
+          {/* PLAY — aggressive arena CTA (red, angular, retro) */}
+          <div className="relative mt-10 mb-8">
             <AnimatePresence mode="wait" initial={false}>
               {!playExpanded ? (
                 <motion.div
@@ -593,10 +607,47 @@ export default function HubPage() {
                 >
                   <button
                     onClick={() => setPlayExpanded(true)}
-                    className="flex items-center justify-center gap-3 px-14 py-4 bg-white text-black rounded-md active:scale-[0.97] transition-transform"
+                    className="group relative w-full max-w-[340px] active:scale-[0.98] transition-transform"
+                    style={{
+                      clipPath: 'polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0 calc(100% - 14px), 0 14px)',
+                    }}
                   >
-                    <Play className="w-5 h-5 fill-black" strokeWidth={2.5} />
-                    <span className="font-display text-2xl tracking-[0.18em] uppercase leading-none">PLAY</span>
+                    {/* Outer red glow halo */}
+                    <div
+                      className="pointer-events-none absolute -inset-3 -z-10 opacity-70 animate-pulse-subtle"
+                      style={{ background: 'radial-gradient(ellipse at center, hsl(0 100% 55% / 0.55), transparent 70%)' }}
+                    />
+                    {/* Solid red body */}
+                    <div
+                      className="relative flex items-center justify-center gap-3 py-6 bg-[#FF3B3B]"
+                      style={{
+                        boxShadow:
+                          'inset 0 0 0 2px hsl(0 100% 80% / 0.45), inset 0 -6px 0 hsl(0 80% 35% / 0.55), 0 0 32px hsl(0 100% 55% / 0.55), 0 0 70px hsl(0 100% 50% / 0.25)',
+                      }}
+                    >
+                      {/* Scanline overlay */}
+                      <div
+                        className="pointer-events-none absolute inset-0 opacity-30 mix-blend-overlay"
+                        style={{
+                          backgroundImage: 'repeating-linear-gradient(0deg, rgba(0,0,0,0.5) 0px, rgba(0,0,0,0.5) 1px, transparent 1px, transparent 3px)',
+                        }}
+                      />
+                      <Play className="relative w-6 h-6 fill-white text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.7)]" strokeWidth={3} />
+                      <span
+                        className="relative text-white leading-none uppercase"
+                        style={{
+                          fontFamily: 'Teko, "Bebas Neue", monospace',
+                          fontSize: '38px',
+                          fontWeight: 700,
+                          letterSpacing: '0.28em',
+                          paddingLeft: '0.28em',
+                          textShadow:
+                            '0 0 1px rgba(0,0,0,0.8), 2px 2px 0 rgba(0,0,0,0.55), 0 0 12px rgba(255,255,255,0.45)',
+                        }}
+                      >
+                        PLAY
+                      </span>
+                    </div>
                   </button>
                 </motion.div>
               ) : (
@@ -606,13 +657,14 @@ export default function HubPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.18 }}
-                  className="w-full flex flex-col gap-2"
+                  className="w-full flex flex-col gap-2 max-w-[340px] mx-auto"
                 >
                   {/* QUICK BATTLE — flat solid */}
                   <button
                     onClick={() => { setPlayExpanded(false); handleQuickFight(); }}
                     disabled={qfIsSearching}
-                    className="w-full py-4 rounded-md bg-red-600 hover:bg-red-500 active:scale-[0.99] transition disabled:opacity-60 flex flex-col items-center justify-center"
+                    className="w-full py-4 bg-[#FF3B3B] hover:brightness-110 active:scale-[0.99] transition disabled:opacity-60 flex flex-col items-center justify-center"
+                    style={{ boxShadow: 'inset 0 0 0 2px hsl(0 100% 80% / 0.4), 0 0 24px hsl(0 100% 55% / 0.4)' }}
                   >
                     <span className="font-display text-2xl text-white tracking-[0.14em] uppercase leading-none flex items-center gap-2">
                       {qfIsSearching && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -624,7 +676,7 @@ export default function HubPage() {
                   {/* RANKED */}
                   <button
                     onClick={() => { setPlayExpanded(false); navigate('/arena'); }}
-                    className="w-full py-4 rounded-md bg-surface-1 border border-red-600/40 hover:bg-surface-2 active:scale-[0.99] transition flex flex-col items-center justify-center"
+                    className="w-full py-4 bg-surface-1 border border-[#FF3B3B]/50 hover:bg-surface-2 active:scale-[0.99] transition flex flex-col items-center justify-center"
                   >
                     <span className="font-display text-2xl text-foreground tracking-[0.14em] uppercase leading-none">Ranked</span>
                     <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.22em] mt-1.5">Play A Ranked Match</span>
@@ -633,7 +685,7 @@ export default function HubPage() {
                   {/* BACK */}
                   <button
                     onClick={() => setPlayExpanded(false)}
-                    className="w-full py-3 rounded-md bg-surface-1/60 border border-border hover:bg-surface-1 active:scale-[0.99] transition flex flex-col items-center justify-center"
+                    className="w-full py-3 bg-surface-1/60 border border-border hover:bg-surface-1 active:scale-[0.99] transition flex flex-col items-center justify-center"
                   >
                     <span className="font-display text-xl text-foreground/90 tracking-[0.14em] uppercase leading-none">Back</span>
                     <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-[0.22em] mt-1">Return To Main Menu</span>
