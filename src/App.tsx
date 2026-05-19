@@ -17,7 +17,6 @@ import GlobalAccountPrompt from "./components/loopgate/GlobalAccountPrompt";
 import GlobalGuestConversionModal from "./components/loopgate/GlobalGuestConversionModal";
 import GuestNicknameModal from "./components/loopgate/GuestNicknameModal";
 import { isNativeApp } from "./lib/native";
-import ClippersLayoutRoute from "./components/clippers/ClippersLayoutRoute";
 
 // Lazy-loaded pages — code-split per route
 const LoginPage = lazy(() => import("./pages/LoginPage"));
@@ -109,16 +108,6 @@ const CompetitionsListPage = lazy(() => import("./pages/loopgate/CompetitionsLis
 const LoopyRatePage = lazy(() => import("./pages/loopgate/LoopyRatePage"));
 const StandaloneLinkPage = lazy(() => import("./pages/loopgate/StandaloneLinkPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
-const ClippersOnboardingPage = lazy(() => import("./pages/loopgate/ClippersOnboardingPage"));
-const ClippersPortalPage = lazy(() => import("./pages/loopgate/ClippersPortalPage"));
-const ClippersCampaignsPage = lazy(() => import("./pages/loopgate/clippers/ClippersCampaignsPage"));
-const MissionSubmitPage = lazy(() => import("./pages/loopgate/clippers/MissionSubmitPage"));
-const ClippersSubmissionsPage = lazy(() => import("./pages/loopgate/clippers/ClippersSubmissionsPage"));
-const ClippersAccountsPage = lazy(() => import("./pages/loopgate/clippers/ClippersAccountsPage"));
-const ClippersWithdrawalsPage = lazy(() => import("./pages/loopgate/clippers/ClippersWithdrawalsPage"));
-const ClippersPolicyPage = lazy(() => import("./pages/loopgate/clippers/ClippersPolicyPage"));
-const ClippersSettingsPage = lazy(() => import("./pages/loopgate/clippers/ClippersSettingsPage"));
-const ClippersCommunityPage = lazy(() => import("./pages/loopgate/clippers/ClippersCommunityPage"));
 
 // GLOBAL DEV MODE DETECTION - runs BEFORE React
 const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
@@ -431,26 +420,11 @@ export default function App() {
             {/* Public campaign portal - password protected */}
             <Route path="/campaign/:slug" element={<CampaignPortalPage />} />
 
-            {/* Missions Portal - public mission feed + separate onboarding */}
-            <Route path="/missions/join" element={<ClippersOnboardingPage />} />
-            <Route path="/missions/portal" element={<Navigate to="/missions" replace />} />
-            <Route element={<ClippersLayoutRoute />}>
-              <Route path="/missions" element={<ClippersCampaignsPage />} />
-              <Route path="/missions/submit" element={<MissionSubmitPage />} />
-              <Route path="/missions/submissions" element={<ClippersSubmissionsPage />} />
-              <Route path="/missions/accounts" element={<ClippersAccountsPage />} />
-              <Route path="/missions/withdrawals" element={<ClippersWithdrawalsPage />} />
-              <Route path="/missions/policy" element={<ClippersPolicyPage />} />
-              <Route path="/missions/settings" element={<ClippersSettingsPage />} />
-              <Route path="/missions/community" element={<ClippersCommunityPage />} />
-            </Route>
-            <Route path="/missions/legacy" element={<ClippersPortalPage />} />
-            {/* Legacy /clippers redirects → /missions */}
-            <Route path="/clippers" element={<Navigate to="/missions" replace />} />
-            <Route path="/clippers/portal" element={<Navigate to="/missions/portal" replace />} />
-            <Route path="/clippers/submissions" element={<Navigate to="/missions/submissions" replace />} />
-            <Route path="/clippers/accounts" element={<Navigate to="/missions/accounts" replace />} />
-            <Route path="/clippers/withdrawals" element={<Navigate to="/missions/withdrawals" replace />} />
+            {/* /missions purged — all routes redirect to /hub */}
+            <Route path="/missions" element={<Navigate to="/hub" replace />} />
+            <Route path="/missions/*" element={<Navigate to="/hub" replace />} />
+            <Route path="/clippers" element={<Navigate to="/hub" replace />} />
+            <Route path="/clippers/*" element={<Navigate to="/hub" replace />} />
             
             {/* Legacy /crews redirects → /units */}
             <Route path="/crews" element={<Navigate to="/units" replace />} />
