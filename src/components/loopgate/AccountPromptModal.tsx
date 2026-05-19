@@ -122,7 +122,7 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
     }
     if (mode === 'signup' && !agreed) {
       setAgreeError(true);
-      toast.error('Please confirm you’re 18+ and have read the terms');
+      toast.error('Please confirm you’re 13+ and have read the terms');
       return;
     }
     if (mode === 'signup' && isFastPassword && !savedAck) {
@@ -411,7 +411,7 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
                     )}
                   </span>
                   <span className={`text-[12px] leading-snug ${agreeError ? 'text-red-400/90' : 'text-[#8E8E93]'}`}>
-                    I’m 18+ and have read the{' '}
+                    I’m 13+ and have read the{' '}
                     <Link
                       to="/rules"
                       onClick={(e) => e.stopPropagation()}
