@@ -19,7 +19,7 @@
 
 :root {
   --font-size: 16px;
-  --font-display: 'Anton', 'Bebas Neue', sans-serif;
+  --font-display: 'Teko', 'Bebas Neue', sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
   
   /* Loopgate Dark Authority Theme - Pure Black */
@@ -204,8 +204,8 @@
   }
 
   /* ═══════════════════════════════════════════════════════════════════
-     LOOPGATE TYPOGRAPHY SYSTEM - Bold, Aggressive, Unique
-     Using Bebas Neue for that ANTON-style condensed uppercase energy
+     LOOPGATE TYPOGRAPHY SYSTEM - Fortnite-style condensed arena energy
+     Teko Bold keeps Hub labels tight and battle-ready
   ═══════════════════════════════════════════════════════════════════ */
   
   h1, .font-display {
@@ -213,7 +213,7 @@
     font-size: 3rem;
     font-weight: 600;
     line-height: 0.95;
-    letter-spacing: 0.02em;
+    letter-spacing: 0;
     text-transform: uppercase;
   }
 
