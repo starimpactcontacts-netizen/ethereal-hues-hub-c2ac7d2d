@@ -4,7 +4,7 @@ import "./index.css";
 import { initializeNativeApp, disableZoom } from "./lib/native";
 
 // ── CACHE VERSION — bump this string to force a full wipe on all devices ──
-const CACHE_VERSION = "v2026-04-02a";
+const CACHE_VERSION = "v2026-05-19a";
 
 const didWipe = localStorage.getItem("lg_cache_version");
 if (didWipe !== CACHE_VERSION) {
