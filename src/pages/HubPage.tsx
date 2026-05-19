@@ -935,10 +935,9 @@ export default function HubPage() {
           >
             <Trophy className="w-4 h-4 text-[#FF3B3B]" strokeWidth={2.5} />
             <span
-              className="text-white uppercase leading-none"
+              className="font-display text-white uppercase leading-none"
               style={{
-                fontFamily: 'Teko, "Bebas Neue", monospace',
-                fontSize: '22px',
+                fontSize: '24px',
                 fontWeight: 600,
                 letterSpacing: '0.28em',
                 paddingLeft: '0.28em',
@@ -947,7 +946,7 @@ export default function HubPage() {
               Rankings
             </span>
           </div>
-          <p className="text-center text-[9px] text-muted-foreground font-bold uppercase tracking-[0.22em] mt-2">
+          <p className="text-center font-display text-[12px] text-muted-foreground uppercase tracking-[0.28em] mt-2">
             Climb The Leaderboard
           </p>
         </Link>
