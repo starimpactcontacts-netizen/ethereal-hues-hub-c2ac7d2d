@@ -801,7 +801,7 @@ export default function HubPage() {
                 <span className="font-display text-[12px] uppercase tracking-normal text-red-400 leading-none">Live Comp</span>
               </div>
               <h3
-                className="font-display text-[18px] leading-[1] text-white tracking-[0.04em] line-clamp-1 mt-1"
+                className="font-display text-[18px] leading-[1] text-white tracking-normal line-clamp-1 mt-1"
               >
                 {liveEvents[0].title.toUpperCase()}
               </h3>
@@ -938,8 +938,7 @@ export default function HubPage() {
               style={{
                 fontSize: '24px',
                 fontWeight: 600,
-                letterSpacing: '0.28em',
-                paddingLeft: '0.28em',
+                letterSpacing: '0',
               }}
             >
               Rankings
