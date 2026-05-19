@@ -220,6 +220,22 @@ export default function HubPage() {
   const { joinPool: hubJoinPool } = useMyCashBattleApplication();
   const [dismissedBanners, setDismissedBanners] = useState<{ battles?: boolean; solo?: boolean }>({});
   const [missionDrops, setMissionDrops] = useState<Array<{ id: string; song_name: string; poster_url: string | null; artist_name: string | null; max_pay: number }>>([]);
+  const [liveOnline, setLiveOnline] = useState(0);
+
+  // Real "online right now" = active_sessions in the last 5 minutes
+  useEffect(() => {
+    const fetchOnline = async () => {
+      const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const { count } = await supabase
+        .from('active_sessions')
+        .select('*', { count: 'exact', head: true })
+        .gte('last_seen', fiveMinAgo);
+      setLiveOnline(count || 0);
+    };
+    fetchOnline();
+    const iv = setInterval(fetchOnline, 60000);
+    return () => clearInterval(iv);
+  }, []);
 
   // Fetch live missions for featured drops billboard
   useEffect(() => {
@@ -1004,7 +1020,7 @@ export default function HubPage() {
             <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
           </span>
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            {(stats?.activeUsers ?? 0).toLocaleString()} online on Loopgate
+            {liveOnline.toLocaleString()} online on Loopgate
           </span>
         </div>
       </div>
