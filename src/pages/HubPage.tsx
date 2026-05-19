@@ -609,9 +609,6 @@ export default function HubPage() {
                   <button
                     onClick={() => setPlayExpanded(true)}
                     className="group relative w-full max-w-[340px] active:scale-[0.98] transition-transform"
-                    style={{
-                      clipPath: 'polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0 calc(100% - 14px), 0 14px)',
-                    }}
                   >
                     {/* Outer red glow halo */}
                     <div
@@ -635,9 +632,8 @@ export default function HubPage() {
                       />
                       <Play className="relative w-6 h-6 fill-white text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.7)]" strokeWidth={3} />
                       <span
-                        className="relative text-white leading-none uppercase"
+                        className="relative font-display text-white leading-none uppercase"
                         style={{
-                          fontFamily: 'Teko, "Bebas Neue", monospace',
                           fontSize: '38px',
                           fontWeight: 700,
                           letterSpacing: '0.28em',
@@ -660,36 +656,33 @@ export default function HubPage() {
                   transition={{ duration: 0.18 }}
                   className="w-full flex flex-col gap-2 max-w-[340px] mx-auto"
                 >
-                  {/* QUICK BATTLE — flat solid */}
                   <button
                     onClick={() => { setPlayExpanded(false); handleQuickFight(); }}
                     disabled={qfIsSearching}
                     className="w-full py-4 bg-[#FF3B3B] hover:brightness-110 active:scale-[0.99] transition disabled:opacity-60 flex flex-col items-center justify-center"
                     style={{ boxShadow: 'inset 0 0 0 2px hsl(0 100% 80% / 0.4), 0 0 24px hsl(0 100% 55% / 0.4)' }}
                   >
-                    <span className="font-display text-2xl text-white tracking-[0.14em] uppercase leading-none flex items-center gap-2">
+                    <span className="font-display text-[26px] text-white tracking-[0.22em] uppercase leading-none flex items-center gap-2">
                       {qfIsSearching && <Loader2 className="w-4 h-4 animate-spin" />}
                       Quick Battle
                     </span>
-                    <span className="text-[10px] text-white/70 font-bold uppercase tracking-[0.22em] mt-1.5">Matchmake Instantly</span>
+                    <span className="font-display text-[12px] text-white/80 uppercase tracking-[0.28em] mt-1.5">Matchmake Instantly</span>
                   </button>
 
-                  {/* RANKED */}
                   <button
                     onClick={() => { setPlayExpanded(false); navigate('/arena'); }}
                     className="w-full py-4 bg-surface-1 border border-[#FF3B3B]/50 hover:bg-surface-2 active:scale-[0.99] transition flex flex-col items-center justify-center"
                   >
-                    <span className="font-display text-2xl text-foreground tracking-[0.14em] uppercase leading-none">Ranked</span>
-                    <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.22em] mt-1.5">Play A Ranked Match</span>
+                    <span className="font-display text-[26px] text-foreground tracking-[0.22em] uppercase leading-none">Ranked</span>
+                    <span className="font-display text-[12px] text-muted-foreground uppercase tracking-[0.28em] mt-1.5">Play A Ranked Match</span>
                   </button>
 
-                  {/* BACK */}
                   <button
                     onClick={() => setPlayExpanded(false)}
                     className="w-full py-3 bg-surface-1/60 border border-border hover:bg-surface-1 active:scale-[0.99] transition flex flex-col items-center justify-center"
                   >
-                    <span className="font-display text-xl text-foreground/90 tracking-[0.14em] uppercase leading-none">Back</span>
-                    <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-[0.22em] mt-1">Return To Main Menu</span>
+                    <span className="font-display text-[22px] text-foreground/90 tracking-[0.22em] uppercase leading-none">Back</span>
+                    <span className="font-display text-[11px] text-muted-foreground uppercase tracking-[0.28em] mt-1">Return To Main Menu</span>
                   </button>
                 </motion.div>
               )}
