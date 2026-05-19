@@ -59,7 +59,7 @@ export const requiresAccount = (action: ProtectedAction): string => {
     save_score: 'Create an account to save your progress',
     redeem_shop: 'Create an account to redeem items',
     send_message: 'Create an account to send messages',
-    enter_battle: 'Create an account to enter Cash Battles',
+    enter_battle: 'Create an account to enter Edit Battles',
   };
   return messages[action];
 };
