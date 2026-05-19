@@ -313,6 +313,7 @@ export default function ArenaCompetitionsSection({ onCreateClick, hideHeader = f
           </motion.div>
         )}
       </AnimatePresence>
+      <JoinByCodeModal open={codeOpen} onOpenChange={setCodeOpen} scope="competition" />
     </motion.section>
   );
 }
