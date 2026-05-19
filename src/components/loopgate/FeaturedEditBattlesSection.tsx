@@ -1,11 +1,37 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Flame, ChevronRight } from 'lucide-react';
+import { Flame, ChevronRight, ChevronLeft } from 'lucide-react';
+import { useRef, useState, useEffect } from 'react';
 import { useFeaturedBattles } from '@/hooks/useFeaturedBattles';
 import { QuickFightCarouselCard } from '@/components/loopgate/CashBattlesSection';
 
 export default function FeaturedEditBattlesSection() {
-  const { featuredBattles, loading } = useFeaturedBattles(3);
+  const { featuredBattles, loading } = useFeaturedBattles(6);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [canLeft, setCanLeft] = useState(false);
+  const [canRight, setCanRight] = useState(false);
+
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const update = () => {
+      setCanLeft(el.scrollLeft > 4);
+      setCanRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+    };
+    update();
+    el.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    return () => {
+      el.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
+  }, [featuredBattles.length]);
+
+  const scrollBy = (dir: 1 | -1) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: 'smooth' });
+  };
 
   if (loading || featuredBattles.length === 0) return null;
 
@@ -39,13 +65,44 @@ export default function FeaturedEditBattlesSection() {
         </Link>
       </div>
 
-      {/* Cards grid (matches Arena card sizing) */}
-      <div className="grid grid-cols-2 gap-3 max-w-[640px] mx-auto">
-        {featuredBattles.slice(0, 2).map((fight) => (
-          <div key={fight.id} className="aspect-[3/4]">
-            <QuickFightCarouselCard fight={fight} isMine={false} />
-          </div>
-        ))}
+      {/* Horizontal carousel */}
+      <div className="relative max-w-[640px] mx-auto">
+        <div
+          ref={scrollerRef}
+          className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none -mx-4 px-4 pb-1"
+          style={{ scrollbarWidth: 'none' }}
+        >
+          {featuredBattles.map((fight) => (
+            <div
+              key={fight.id}
+              className="snap-start shrink-0 w-[calc(50%-6px)] aspect-[3/4]"
+            >
+              <QuickFightCarouselCard fight={fight} isMine={false} />
+            </div>
+          ))}
+        </div>
+
+        {/* Side indicators */}
+        {canLeft && (
+          <button
+            type="button"
+            onClick={() => scrollBy(-1)}
+            aria-label="Scroll left"
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/70 border border-white/20 backdrop-blur-md flex items-center justify-center text-white shadow-lg active:scale-95 transition"
+          >
+            <ChevronLeft className="w-5 h-5" strokeWidth={2.5} />
+          </button>
+        )}
+        {canRight && (
+          <button
+            type="button"
+            onClick={() => scrollBy(1)}
+            aria-label="Scroll right"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/70 border border-white/20 backdrop-blur-md flex items-center justify-center text-white shadow-lg active:scale-95 transition animate-pulse"
+          >
+            <ChevronRight className="w-5 h-5" strokeWidth={2.5} />
+          </button>
+        )}
       </div>
     </motion.section>
   );
