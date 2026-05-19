@@ -7390,6 +7390,7 @@ export type Database = {
           hidden_at: string | null
           hidden_by: string | null
           id: string
+          is_featured: boolean
           is_private: boolean
           join_code: string | null
           judge_id: string | null
@@ -7439,6 +7440,7 @@ export type Database = {
           hidden_at?: string | null
           hidden_by?: string | null
           id?: string
+          is_featured?: boolean
           is_private?: boolean
           join_code?: string | null
           judge_id?: string | null
@@ -7488,6 +7490,7 @@ export type Database = {
           hidden_at?: string | null
           hidden_by?: string | null
           id?: string
+          is_featured?: boolean
           is_private?: boolean
           join_code?: string | null
           judge_id?: string | null
