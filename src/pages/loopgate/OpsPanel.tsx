@@ -2440,7 +2440,10 @@ export default function OpsPanel() {
           <EditAnalyzerAdmin />
         </div>
 
-        {/* 1v1 Battle Admin */}
+        {/* Featured Edit Battles (quick fights) — pinned to Hub */}
+        <QuickFightFeaturedAdmin />
+
+        {/* 1v1 Battle Admin (legacy idx battles) */}
         <BattleAdminPanel />
 
         {/* ═══ MISSION ADMIN ═══ */}
