@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Flame, RefreshCw, Search, Swords } from "lucide-react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ export default function QuickFightFeaturedAdmin() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [q, setQ] = useState("");
+  const navigate = useNavigate();
 
   async function load() {
     setLoading(true);
@@ -81,7 +83,12 @@ export default function QuickFightFeaturedAdmin() {
           <div className="text-center py-6 text-[11px] text-muted-foreground">No edit battles found.</div>
         )}
         {filtered.map((f) => (
-          <div key={f.id} className="flex items-center gap-2 p-2 rounded border border-border bg-surface-1">
+          <button
+            key={f.id}
+            type="button"
+            onClick={() => window.open(`/fight/${f.id}`, "_blank", "noopener")}
+            className="w-full flex items-center gap-2 p-2 rounded border border-border bg-surface-1 hover:bg-surface-2 hover:border-foreground/20 transition-colors text-left"
+          >
             <Avatar className="w-7 h-7 border border-blue-500/40 shrink-0">
               <AvatarImage src={f.player_1_avatar_url || ""} />
               <AvatarFallback className="text-[9px] bg-surface-2">{f.player_1_username?.[0]?.toUpperCase() || "?"}</AvatarFallback>
@@ -101,7 +108,7 @@ export default function QuickFightFeaturedAdmin() {
               </div>
             </div>
             <button
-              onClick={() => toggle(f.id, !!f.is_featured)}
+              onClick={(e) => { e.stopPropagation(); toggle(f.id, !!f.is_featured); }}
               disabled={busy === f.id}
               className={`flex items-center gap-1 px-2.5 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider border transition-colors disabled:opacity-50 ${
                 f.is_featured
@@ -112,7 +119,7 @@ export default function QuickFightFeaturedAdmin() {
               <Flame className="w-3 h-3" />
               {f.is_featured ? "Featured" : "Feature"}
             </button>
-          </div>
+          </button>
         ))}
       </div>
     </div>
