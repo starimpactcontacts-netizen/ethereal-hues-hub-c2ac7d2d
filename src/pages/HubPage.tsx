@@ -22,8 +22,6 @@ import { useTempProfile } from '@/hooks/useTempProfile';
 import { useGuestMode } from '@/hooks/useGuestMode';
 import { useSanctionedTournaments } from '@/hooks/useSanctionedTournaments';
 import { useBattles } from '@/hooks/useBattles';
-import { useFeaturedBattles } from '@/hooks/useFeaturedBattles';
-import BattleCard from '@/components/loopgate/BattleCard';
 import FeaturedEditBattlesSection from '@/components/loopgate/FeaturedEditBattlesSection';
 
 import { useLiveActivity, type LiveActivityItem } from '@/hooks/useLiveActivity';
