@@ -615,7 +615,7 @@ export default function HubPage() {
           </motion.div>
 
           {/* PLAY — aggressive arena CTA (red, angular, retro) */}
-          <div className="relative mt-3 mb-8">
+          <div className="relative mt-8 mb-3">
             <AnimatePresence mode="wait" initial={false}>
               {!playExpanded ? (
                 <motion.div
