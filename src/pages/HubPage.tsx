@@ -609,9 +609,6 @@ export default function HubPage() {
                   <button
                     onClick={() => setPlayExpanded(true)}
                     className="group relative w-full max-w-[340px] active:scale-[0.98] transition-transform"
-                    style={{
-                      clipPath: 'polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0 calc(100% - 14px), 0 14px)',
-                    }}
                   >
                     {/* Outer red glow halo */}
                     <div
@@ -635,9 +632,8 @@ export default function HubPage() {
                       />
                       <Play className="relative w-6 h-6 fill-white text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.7)]" strokeWidth={3} />
                       <span
-                        className="relative text-white leading-none uppercase"
+                        className="relative font-display text-white leading-none uppercase"
                         style={{
-                          fontFamily: 'Teko, "Bebas Neue", monospace',
                           fontSize: '38px',
                           fontWeight: 700,
                           letterSpacing: '0.28em',
@@ -660,36 +656,33 @@ export default function HubPage() {
                   transition={{ duration: 0.18 }}
                   className="w-full flex flex-col gap-2 max-w-[340px] mx-auto"
                 >
-                  {/* QUICK BATTLE — flat solid */}
                   <button
                     onClick={() => { setPlayExpanded(false); handleQuickFight(); }}
                     disabled={qfIsSearching}
                     className="w-full py-4 bg-[#FF3B3B] hover:brightness-110 active:scale-[0.99] transition disabled:opacity-60 flex flex-col items-center justify-center"
                     style={{ boxShadow: 'inset 0 0 0 2px hsl(0 100% 80% / 0.4), 0 0 24px hsl(0 100% 55% / 0.4)' }}
                   >
-                    <span className="font-display text-2xl text-white tracking-[0.14em] uppercase leading-none flex items-center gap-2">
+                    <span className="font-display text-[26px] text-white tracking-[0.22em] uppercase leading-none flex items-center gap-2">
                       {qfIsSearching && <Loader2 className="w-4 h-4 animate-spin" />}
                       Quick Battle
                     </span>
-                    <span className="text-[10px] text-white/70 font-bold uppercase tracking-[0.22em] mt-1.5">Matchmake Instantly</span>
+                    <span className="font-display text-[12px] text-white/80 uppercase tracking-[0.28em] mt-1.5">Matchmake Instantly</span>
                   </button>
 
-                  {/* RANKED */}
                   <button
                     onClick={() => { setPlayExpanded(false); navigate('/arena'); }}
                     className="w-full py-4 bg-surface-1 border border-[#FF3B3B]/50 hover:bg-surface-2 active:scale-[0.99] transition flex flex-col items-center justify-center"
                   >
-                    <span className="font-display text-2xl text-foreground tracking-[0.14em] uppercase leading-none">Ranked</span>
-                    <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.22em] mt-1.5">Play A Ranked Match</span>
+                    <span className="font-display text-[26px] text-foreground tracking-[0.22em] uppercase leading-none">Ranked</span>
+                    <span className="font-display text-[12px] text-muted-foreground uppercase tracking-[0.28em] mt-1.5">Play A Ranked Match</span>
                   </button>
 
-                  {/* BACK */}
                   <button
                     onClick={() => setPlayExpanded(false)}
                     className="w-full py-3 bg-surface-1/60 border border-border hover:bg-surface-1 active:scale-[0.99] transition flex flex-col items-center justify-center"
                   >
-                    <span className="font-display text-xl text-foreground/90 tracking-[0.14em] uppercase leading-none">Back</span>
-                    <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-[0.22em] mt-1">Return To Main Menu</span>
+                    <span className="font-display text-[22px] text-foreground/90 tracking-[0.22em] uppercase leading-none">Back</span>
+                    <span className="font-display text-[11px] text-muted-foreground uppercase tracking-[0.28em] mt-1">Return To Main Menu</span>
                   </button>
                 </motion.div>
               )}
@@ -780,10 +773,10 @@ export default function HubPage() {
           className="relative block mt-3 active:scale-[0.99] transition-transform"
         >
           <div
-            className="relative h-[52px] w-full overflow-hidden rounded-lg bg-black flex items-center"
+            className="relative h-[58px] w-full overflow-hidden bg-black/80 flex items-center border-2 border-[#FF3B3B]/60"
             style={{
               boxShadow:
-                '0 0 0 1px rgba(255,255,255,0.06) inset, 0 10px 28px -16px rgba(239,68,68,0.55), 0 0 40px -22px rgba(16,185,129,0.5)',
+                'inset 0 0 0 1px hsl(0 0% 100% / 0.04), 0 0 18px hsl(0 100% 55% / 0.2)',
             }}
           >
             {/* Poster sliver on the left */}
@@ -806,19 +799,18 @@ export default function HubPage() {
             <div className="flex-1 min-w-0 px-3">
               <div className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.9)]" />
-                <span className="text-[8.5px] font-black uppercase tracking-[0.22em] text-red-400">Live Comp</span>
+                <span className="font-display text-[12px] uppercase tracking-[0.28em] text-red-400 leading-none">Live Comp</span>
               </div>
               <h3
-                className="text-[15px] leading-[1] font-black text-white tracking-tight line-clamp-1 mt-0.5"
-                style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}
+                className="font-display text-[18px] leading-[1] text-white tracking-[0.04em] line-clamp-1 mt-1"
               >
                 {liveEvents[0].title.toUpperCase()}
               </h3>
             </div>
 
             {/* Enter pill */}
-            <div className="flex items-center gap-1 mr-2 px-2.5 h-[30px] rounded-md bg-emerald-400 text-black text-[10px] font-black uppercase tracking-[0.18em] shadow-[0_0_18px_rgba(16,185,129,0.55)]">
-              Enter
+            <div className="flex items-center gap-1 mr-2 px-3 h-[32px] bg-emerald-400 text-black font-display text-[16px] uppercase tracking-[0.22em] leading-none shadow-[0_0_18px_rgba(16,185,129,0.55)]">
+              <span className="pt-[2px]">Enter</span>
               <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
             </div>
           </div>
@@ -943,10 +935,9 @@ export default function HubPage() {
           >
             <Trophy className="w-4 h-4 text-[#FF3B3B]" strokeWidth={2.5} />
             <span
-              className="text-white uppercase leading-none"
+              className="font-display text-white uppercase leading-none"
               style={{
-                fontFamily: 'Teko, "Bebas Neue", monospace',
-                fontSize: '22px',
+                fontSize: '24px',
                 fontWeight: 600,
                 letterSpacing: '0.28em',
                 paddingLeft: '0.28em',
@@ -955,7 +946,7 @@ export default function HubPage() {
               Rankings
             </span>
           </div>
-          <p className="text-center text-[9px] text-muted-foreground font-bold uppercase tracking-[0.22em] mt-2">
+          <p className="text-center font-display text-[12px] text-muted-foreground uppercase tracking-[0.28em] mt-2">
             Climb The Leaderboard
           </p>
         </Link>
