@@ -958,6 +958,13 @@ export default function HubPage() {
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════
+          COMP LOBBIES — open competition rooms
+      ═══════════════════════════════════════════════════════════════════ */}
+      <div className="mt-8">
+        <ArenaCompetitionsSection onCreateClick={() => navigate(profile ? '/competition/create' : '/start')} />
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════════════════
           FEATURED EDIT BATTLES — admin-curated decided matchups
       ═══════════════════════════════════════════════════════════════════ */}
       <FeaturedEditBattlesSection />
