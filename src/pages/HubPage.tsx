@@ -22,6 +22,7 @@ import { useTempProfile } from '@/hooks/useTempProfile';
 import { useGuestMode } from '@/hooks/useGuestMode';
 import { useSanctionedTournaments } from '@/hooks/useSanctionedTournaments';
 import { useBattles } from '@/hooks/useBattles';
+import FeaturedEditBattlesSection from '@/components/loopgate/FeaturedEditBattlesSection';
 
 import { useLiveActivity, type LiveActivityItem } from '@/hooks/useLiveActivity';
 import { useFeaturedDrops } from '@/hooks/useFeaturedDrops';
@@ -959,6 +960,11 @@ export default function HubPage() {
           </p>
         </Link>
       </motion.div>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          FEATURED EDIT BATTLES — admin-curated decided matchups
+      ═══════════════════════════════════════════════════════════════════ */}
+      <FeaturedEditBattlesSection />
 
       <InviteModal open={inviteModalOpen} onOpenChange={setInviteModalOpen} />
       <WalletDrawer open={walletOpen} onClose={() => setWalletOpen(false)} />

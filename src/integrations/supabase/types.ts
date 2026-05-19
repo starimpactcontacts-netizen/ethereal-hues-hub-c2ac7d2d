@@ -522,6 +522,7 @@ export type Database = {
           hidden_at: string | null
           hidden_by: string | null
           id: string
+          is_featured: boolean
           is_private: boolean
           is_rapid: boolean | null
           judge_claimed_at: string | null
@@ -589,6 +590,7 @@ export type Database = {
           hidden_at?: string | null
           hidden_by?: string | null
           id?: string
+          is_featured?: boolean
           is_private?: boolean
           is_rapid?: boolean | null
           judge_claimed_at?: string | null
@@ -656,6 +658,7 @@ export type Database = {
           hidden_at?: string | null
           hidden_by?: string | null
           id?: string
+          is_featured?: boolean
           is_private?: boolean
           is_rapid?: boolean | null
           judge_claimed_at?: string | null
