@@ -17,7 +17,6 @@ import GlobalAccountPrompt from "./components/loopgate/GlobalAccountPrompt";
 import GlobalGuestConversionModal from "./components/loopgate/GlobalGuestConversionModal";
 import GuestNicknameModal from "./components/loopgate/GuestNicknameModal";
 import { isNativeApp } from "./lib/native";
-import ClippersLayoutRoute from "./components/clippers/ClippersLayoutRoute";
 
 // Lazy-loaded pages — code-split per route
 const LoginPage = lazy(() => import("./pages/LoginPage"));
@@ -109,16 +108,6 @@ const CompetitionsListPage = lazy(() => import("./pages/loopgate/CompetitionsLis
 const LoopyRatePage = lazy(() => import("./pages/loopgate/LoopyRatePage"));
 const StandaloneLinkPage = lazy(() => import("./pages/loopgate/StandaloneLinkPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
-const ClippersOnboardingPage = lazy(() => import("./pages/loopgate/ClippersOnboardingPage"));
-const ClippersPortalPage = lazy(() => import("./pages/loopgate/ClippersPortalPage"));
-const ClippersCampaignsPage = lazy(() => import("./pages/loopgate/clippers/ClippersCampaignsPage"));
-const MissionSubmitPage = lazy(() => import("./pages/loopgate/clippers/MissionSubmitPage"));
-const ClippersSubmissionsPage = lazy(() => import("./pages/loopgate/clippers/ClippersSubmissionsPage"));
-const ClippersAccountsPage = lazy(() => import("./pages/loopgate/clippers/ClippersAccountsPage"));
-const ClippersWithdrawalsPage = lazy(() => import("./pages/loopgate/clippers/ClippersWithdrawalsPage"));
-const ClippersPolicyPage = lazy(() => import("./pages/loopgate/clippers/ClippersPolicyPage"));
-const ClippersSettingsPage = lazy(() => import("./pages/loopgate/clippers/ClippersSettingsPage"));
-const ClippersCommunityPage = lazy(() => import("./pages/loopgate/clippers/ClippersCommunityPage"));
 
 // GLOBAL DEV MODE DETECTION - runs BEFORE React
 const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
