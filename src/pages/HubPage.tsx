@@ -583,18 +583,6 @@ export default function HubPage() {
 
                   {/* Earnings + Index — top right */}
                   <div className="flex flex-col gap-1.5 shrink-0 items-end">
-                    {/* Earnings — prominent real money display */}
-                    <button onClick={() => setWalletOpen(true)} className="flex flex-col items-end group">
-                      <div className="flex items-center gap-1">
-                        <DollarSign className="w-4 h-4 text-emerald-400" />
-                        <span className="font-display text-xl tabular-nums font-bold text-foreground leading-none">
-                          {(Math.max(0, ((profile as any)?.earnings_cents || 0) - ((profile as any)?.pending_withdrawal_cents || 0) - ((profile as any)?.withdrawn_cents || 0)) / 100).toFixed(2)}
-                        </span>
-                      </div>
-                      <span className="text-[8px] text-muted-foreground/60 font-semibold uppercase tracking-wider mt-0.5">
-                        <span className="text-emerald-400">$</span>{(((profile as any)?.earnings_cents || 0) / 100).toFixed(2)} LIFETIME
-                      </span>
-                    </button>
                     {/* Rings — Loopgate's spendable currency (V-Bucks style) */}
                     <button
                       onClick={() => setRingsOpen(true)}
