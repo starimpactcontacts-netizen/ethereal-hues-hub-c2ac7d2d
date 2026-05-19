@@ -1,0 +1,1 @@
+UPDATE public.competitions SET status='lobby', updated_at=now() WHERE id='32a65d02-2b69-4836-a8d7-ae6f2c525ea5';
