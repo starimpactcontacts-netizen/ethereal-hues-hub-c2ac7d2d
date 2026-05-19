@@ -773,10 +773,10 @@ export default function HubPage() {
           className="relative block mt-3 active:scale-[0.99] transition-transform"
         >
           <div
-            className="relative h-[52px] w-full overflow-hidden rounded-lg bg-black flex items-center"
+            className="relative h-[58px] w-full overflow-hidden bg-black/80 flex items-center border-2 border-[#FF3B3B]/60"
             style={{
               boxShadow:
-                '0 0 0 1px rgba(255,255,255,0.06) inset, 0 10px 28px -16px rgba(239,68,68,0.55), 0 0 40px -22px rgba(16,185,129,0.5)',
+                'inset 0 0 0 1px hsl(0 0% 100% / 0.04), 0 0 18px hsl(0 100% 55% / 0.2)',
             }}
           >
             {/* Poster sliver on the left */}
@@ -799,19 +799,18 @@ export default function HubPage() {
             <div className="flex-1 min-w-0 px-3">
               <div className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.9)]" />
-                <span className="text-[8.5px] font-black uppercase tracking-[0.22em] text-red-400">Live Comp</span>
+                <span className="font-display text-[12px] uppercase tracking-[0.28em] text-red-400 leading-none">Live Comp</span>
               </div>
               <h3
-                className="text-[15px] leading-[1] font-black text-white tracking-tight line-clamp-1 mt-0.5"
-                style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}
+                className="font-display text-[18px] leading-[1] text-white tracking-[0.04em] line-clamp-1 mt-1"
               >
                 {liveEvents[0].title.toUpperCase()}
               </h3>
             </div>
 
             {/* Enter pill */}
-            <div className="flex items-center gap-1 mr-2 px-2.5 h-[30px] rounded-md bg-emerald-400 text-black text-[10px] font-black uppercase tracking-[0.18em] shadow-[0_0_18px_rgba(16,185,129,0.55)]">
-              Enter
+            <div className="flex items-center gap-1 mr-2 px-3 h-[32px] bg-emerald-400 text-black font-display text-[16px] uppercase tracking-[0.22em] leading-none shadow-[0_0_18px_rgba(16,185,129,0.55)]">
+              <span className="pt-[2px]">Enter</span>
               <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
             </div>
           </div>
