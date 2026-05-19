@@ -25,8 +25,7 @@ export default function FeaturedEditBattlesSection() {
             style={{
               fontSize: '24px',
               fontWeight: 600,
-              letterSpacing: '0.28em',
-              paddingLeft: '0.28em',
+              letterSpacing: '0',
             }}
           >
             Featured Edit Battles
@@ -34,7 +33,7 @@ export default function FeaturedEditBattlesSection() {
         </div>
         <Link
           to="/arena"
-          className="flex items-center gap-0.5 font-display text-[14px] uppercase tracking-[0.22em] text-muted-foreground hover:text-white transition-colors"
+          className="flex items-center gap-0.5 font-display text-[14px] uppercase tracking-normal text-muted-foreground hover:text-white transition-colors"
         >
           View All <ChevronRight className="w-3 h-3" />
         </Link>
