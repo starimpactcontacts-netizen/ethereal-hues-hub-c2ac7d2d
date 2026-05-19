@@ -21,7 +21,7 @@ import { useUserActivityStats } from '@/hooks/useUserActivityStats';
 import { useTempProfile } from '@/hooks/useTempProfile';
 import { useGuestMode } from '@/hooks/useGuestMode';
 import { useSanctionedTournaments } from '@/hooks/useSanctionedTournaments';
-import { useBattles, acceptBattle, createBattle } from '@/hooks/useBattles';
+import { useBattles } from '@/hooks/useBattles';
 import FeaturedEditBattlesSection from '@/components/loopgate/FeaturedEditBattlesSection';
 
 import { useLiveActivity, type LiveActivityItem } from '@/hooks/useLiveActivity';
@@ -30,7 +30,7 @@ import FeaturedDropCard from '@/components/loopgate/FeaturedDropCard';
 import FeaturedCarousel from '@/components/loopgate/FeaturedCarousel';
 import LoopMonster from '@/components/loopgate/LoopMonster';
 import QuickFightButton from '@/components/loopgate/QuickFightButton';
-import { useMyQuickFights, leaveQueue } from '@/hooks/useQuickFight';
+import { useMyQuickFights, createQuickFightLobby, leaveQueue } from '@/hooks/useQuickFight';
 import { useSoloMode } from '@/hooks/useSoloMode';
 import { useAccountPrompt } from '@/hooks/useAccountPrompt';
 import GlitchEdge from '@/components/loopgate/GlitchEdge';
