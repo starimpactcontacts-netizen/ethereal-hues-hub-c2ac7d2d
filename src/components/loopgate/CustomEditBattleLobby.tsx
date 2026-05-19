@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ArrowLeft, Clock, Copy, Eye, Lock, Share2, Swords, UserPlus, Users, Zap } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import QuickFightChat from "@/components/loopgate/QuickFightChat";
 import type { OpenQueueEntry, QuickFight } from "@/hooks/useQuickFight";
@@ -43,6 +44,11 @@ export default function CustomEditBattleLobby({
   const otherEditors = openQueue.filter((entry) => entry.user_id !== fight.player_1_id && entry.user_id !== viewerId).slice(0, 5);
   const isPrivate = !!fight.is_private;
   const [codeInput, setCodeInput] = useState("");
+  const [searchParams] = useSearchParams();
+  useEffect(() => {
+    const q = searchParams.get("code");
+    if (q && isPrivate) setCodeInput(q.toUpperCase().slice(0, 6));
+  }, [searchParams, isPrivate]);
 
   const handleCopyCode = async () => {
     if (!fight.join_code) return;

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Trophy, Users, Clock, Play, Loader2,
@@ -116,6 +116,14 @@ export default function CompetitionLobbyPage() {
   const [showJoinCode, setShowJoinCode] = useState(false);
   const [joinCodeInput, setJoinCodeInput] = useState("");
   const [joinCodeError, setJoinCodeError] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+  useEffect(() => {
+    const q = searchParams.get("code");
+    if (q) {
+      setJoinCodeInput(q.toUpperCase().slice(0, 6));
+      setShowJoinCode(true);
+    }
+  }, [searchParams]);
   const [musicMuted, toggleMusicMuted] = useLobbyMusicMute();
   const [lobbyTab, setLobbyTab] = useState<"members" | "chat">("members");
   const [chatMessageCount, setChatMessageCount] = useState(0);

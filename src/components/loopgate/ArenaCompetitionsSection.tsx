@@ -1,13 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Plus, Share2, Users, Info, X, Gavel, Hourglass, Radio, Timer, Vote, Lock } from "lucide-react";
+import { Trophy, Plus, Share2, Users, Info, X, Gavel, Hourglass, Radio, Timer, Vote, Lock, Key } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCompetitionsList, type Competition } from "@/hooks/useCompetitions";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ArenaRail, ArenaRailSkeleton } from "@/components/loopgate/ArenaCarouselSystem";
 import { LobbyDefaultCover } from "@/components/loopgate/LobbyDefaultCover";
+import JoinByCodeModal from "@/components/loopgate/JoinByCodeModal";
 
 const CARD_W = 160;
 const CARD_H = 220;
@@ -113,6 +114,7 @@ export default function ArenaCompetitionsSection({ onCreateClick, hideHeader = f
   const navigate = useNavigate();
   const { competitions: comps, loading } = useCompetitionsList();
   const [showInfo, setShowInfo] = useState(false);
+  const [codeOpen, setCodeOpen] = useState(false);
 
   const handleJoin = async (compId: string) => {
     if (!user || !profile) { navigate("/start"); return; }
@@ -163,6 +165,14 @@ export default function ArenaCompetitionsSection({ onCreateClick, hideHeader = f
             </button>
           </div>
           <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setCodeOpen(true)}
+              className="flex items-center gap-1 px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-amber-300 border border-amber-400/30 hover:bg-amber-400/10 rounded transition-colors whitespace-nowrap"
+              aria-label="Join competition with code"
+            >
+              <Key className="w-3 h-3" strokeWidth={2.5} /> Code
+            </button>
             <button
               onClick={() => navigate('/competitions')}
               className="flex items-center text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors px-1 whitespace-nowrap"
@@ -303,6 +313,7 @@ export default function ArenaCompetitionsSection({ onCreateClick, hideHeader = f
           </motion.div>
         )}
       </AnimatePresence>
+      <JoinByCodeModal open={codeOpen} onOpenChange={setCodeOpen} scope="competition" />
     </motion.section>
   );
 }
