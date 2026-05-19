@@ -352,6 +352,21 @@ export default function HubPage() {
     setQfSearching(false);
     toast('Search cancelled', { duration: 2000 });
   };
+
+  const handleMultiplayer = async () => {
+    const { data } = await supabase
+      .from('competitions')
+      .select('id, slug')
+      .eq('status', 'lobby')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (data) {
+      navigate(`/competition/${(data as any).slug || (data as any).id}`);
+    } else {
+      navigate('/competitions');
+    }
+  };
   
   useActiveSession();
   
@@ -669,11 +684,11 @@ export default function HubPage() {
                   </button>
 
                   <button
-                    onClick={() => { setPlayExpanded(false); navigate('/arena'); }}
+                    onClick={() => { setPlayExpanded(false); handleMultiplayer(); }}
                     className="w-full py-4 bg-surface-1 border border-[#FF3B3B]/50 hover:bg-surface-2 active:scale-[0.99] transition flex flex-col items-center justify-center"
                   >
-                    <span className="font-display text-[26px] text-foreground tracking-normal uppercase leading-none">Ranked</span>
-                    <span className="font-display text-[12px] text-muted-foreground uppercase tracking-normal mt-1.5">Play A Ranked Match</span>
+                    <span className="font-display text-[26px] text-foreground tracking-normal uppercase leading-none">Multiplayer</span>
+                    <span className="font-display text-[12px] text-muted-foreground uppercase tracking-normal mt-1.5">Join An Open Lobby</span>
                   </button>
 
                   <button
@@ -980,6 +995,19 @@ export default function HubPage() {
           </span>
         </a>
       </motion.div>
+
+      {/* Online now — transparent footer counter */}
+      <div className="px-4 mb-8 flex items-center justify-center">
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-transparent">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60 animate-ping" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+          </span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            {(stats?.activeUsers ?? 0).toLocaleString()} online on Loopgate
+          </span>
+        </div>
+      </div>
 
       <InviteModal open={inviteModalOpen} onOpenChange={setInviteModalOpen} />
       <WalletDrawer open={walletOpen} onClose={() => setWalletOpen(false)} />
