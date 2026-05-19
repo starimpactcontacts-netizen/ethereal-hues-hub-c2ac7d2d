@@ -701,6 +701,15 @@ export default function CashBattlesSection({
           </button>
         </div>
         <div className="flex items-center gap-1 shrink-0">
+          <button
+            type="button"
+            onClick={() => setCodeOpen(true)}
+            className="flex items-center gap-1 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-amber-300 border border-amber-400/30 hover:bg-amber-400/10 rounded-md whitespace-nowrap active:scale-[0.97] transition-all"
+            aria-label="Join with code"
+          >
+            <Key className="w-3 h-3" strokeWidth={3} />
+            Code
+          </button>
           {onChallenge && (
             <button
               type="button"
