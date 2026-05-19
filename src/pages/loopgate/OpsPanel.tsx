@@ -23,6 +23,7 @@ import { useRecoverBodyScroll } from "@/hooks/useRecoverBodyScroll";
 
 import { awardReviewXP } from "@/hooks/useJudgeXP";
 import BattleAdminPanel from "@/components/loopgate/BattleAdminPanel";
+import QuickFightFeaturedAdmin from "@/components/loopgate/QuickFightFeaturedAdmin";
 import FeaturedArtistAdmin from "@/components/loopgate/FeaturedArtistAdmin";
 import EditoriumAdmin from "@/components/loopgate/EditoriumAdmin";
 import RadioAdmin from "@/components/loopgate/RadioAdmin";
@@ -2439,7 +2440,10 @@ export default function OpsPanel() {
           <EditAnalyzerAdmin />
         </div>
 
-        {/* 1v1 Battle Admin */}
+        {/* Featured Edit Battles (quick fights) — pinned to Hub */}
+        <QuickFightFeaturedAdmin />
+
+        {/* 1v1 Battle Admin (legacy idx battles) */}
         <BattleAdminPanel />
 
         {/* ═══ MISSION ADMIN ═══ */}

@@ -1,0 +1,2 @@
+ALTER TABLE public.quick_fights ADD COLUMN IF NOT EXISTS is_featured boolean NOT NULL DEFAULT false;
+CREATE INDEX IF NOT EXISTS idx_quick_fights_featured ON public.quick_fights (is_featured, status) WHERE is_featured = true;

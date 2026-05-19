@@ -1,23 +1,26 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import type { Battle } from './useBattles';
+import type { QuickFight } from './useQuickFight';
 
+/**
+ * Featured Edit Battles = quick_fights flagged is_featured by admin.
+ * Pulls live/waiting/judging/completed so Hub shows real recent matchups.
+ */
 export function useFeaturedBattles(limit = 3) {
-  const [battles, setBattles] = useState<Battle[]>([]);
+  const [fights, setFights] = useState<QuickFight[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
 
     async function fetchFeatured() {
-      const { data } = await (supabase.from('battles') as any)
+      const { data } = await (supabase.from('quick_fights') as any)
         .select('*')
         .eq('is_featured', true)
-        .eq('status', 'completed')
-        .order('judged_at', { ascending: false })
+        .order('created_at', { ascending: false })
         .limit(limit);
       if (mounted) {
-        setBattles((data as Battle[]) || []);
+        setFights((data as QuickFight[]) || []);
         setLoading(false);
       }
     }
@@ -25,8 +28,8 @@ export function useFeaturedBattles(limit = 3) {
     fetchFeatured();
 
     const channel = supabase
-      .channel('featured_battles')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'battles' }, () => fetchFeatured())
+      .channel('featured_quick_fights')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'quick_fights' }, () => fetchFeatured())
       .subscribe();
 
     return () => {
@@ -35,5 +38,5 @@ export function useFeaturedBattles(limit = 3) {
     };
   }, [limit]);
 
-  return { featuredBattles: battles, loading };
+  return { featuredBattles: fights, loading };
 }

@@ -1,12 +1,11 @@
 import { motion } from 'framer-motion';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Flame, ChevronRight } from 'lucide-react';
 import { useFeaturedBattles } from '@/hooks/useFeaturedBattles';
-import BattleCard from '@/components/loopgate/BattleCard';
+import { QuickFightCarouselCard } from '@/components/loopgate/CashBattlesSection';
 
 export default function FeaturedEditBattlesSection() {
   const { featuredBattles, loading } = useFeaturedBattles(3);
-  const navigate = useNavigate();
 
   if (loading || featuredBattles.length === 0) return null;
 
@@ -44,9 +43,9 @@ export default function FeaturedEditBattlesSection() {
 
       {/* Cards grid (matches Arena card sizing) */}
       <div className="grid grid-cols-2 gap-3 max-w-[640px] mx-auto">
-        {featuredBattles.slice(0, 2).map((b) => (
-          <div key={b.id} className="aspect-[3/4]">
-            <BattleCard battle={b as any} onClick={() => navigate(`/battle/${b.id}`)} />
+        {featuredBattles.slice(0, 2).map((fight) => (
+          <div key={fight.id} className="aspect-[3/4]">
+            <QuickFightCarouselCard fight={fight} isMine={false} />
           </div>
         ))}
       </div>
