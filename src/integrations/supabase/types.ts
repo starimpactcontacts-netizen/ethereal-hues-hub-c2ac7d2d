@@ -9257,26 +9257,16 @@ export type Database = {
         Args: { p_code: string; p_competition_id: string }
         Returns: Json
       }
-      join_waiting_quick_fight:
-        | {
-            Args: {
-              p_avatar_url?: string
-              p_fight_id: string
-              p_user_id: string
-              p_username: string
-            }
-            Returns: string
-          }
-        | {
-            Args: {
-              p_avatar_url?: string
-              p_fight_id: string
-              p_join_code?: string
-              p_user_id: string
-              p_username: string
-            }
-            Returns: string
-          }
+      join_waiting_quick_fight: {
+        Args: {
+          p_avatar_url?: string
+          p_fight_id: string
+          p_join_code?: string
+          p_user_id: string
+          p_username: string
+        }
+        Returns: string
+      }
       mark_account_converted: { Args: never; Returns: undefined }
       mark_conversation_read: {
         Args: { p_conversation_id: string; p_user_id: string }
