@@ -358,7 +358,7 @@ interface EditBattlesSectionProps {
   onOpenLobby?: () => void;
 }
 
-function QuickFightCarouselCard({ fight, isMine }: { fight: QuickFight; isMine: boolean }) {
+export function QuickFightCarouselCard({ fight, isMine }: { fight: QuickFight; isMine: boolean }) {
   const navigate = useNavigate();
   const isLive = fight.status === 'active' || fight.status === 'submitted' || fight.status === 'judging';
   const isWaiting = fight.status === 'waiting' && !fight.player_2_id;
