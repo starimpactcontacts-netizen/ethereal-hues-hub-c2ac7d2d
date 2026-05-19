@@ -201,6 +201,7 @@ export default function HubPage() {
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [walletOpen, setWalletOpen] = useState(false);
   const [ringsOpen, setRingsOpen] = useState(false);
+  const [playExpanded, setPlayExpanded] = useState(false);
   const [judgeReviewCount, setJudgeReviewCount] = useState(0);
   const [userCrew, setUserCrew] = useState<UserCrew | null>(null);
   const [quickAction, setQuickAction] = useState<'edit_battle' | 'mission' | 'solo' | 'multiplayer'>('edit_battle');
