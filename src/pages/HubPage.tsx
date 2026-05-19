@@ -21,7 +21,7 @@ import { useUserActivityStats } from '@/hooks/useUserActivityStats';
 import { useTempProfile } from '@/hooks/useTempProfile';
 import { useGuestMode } from '@/hooks/useGuestMode';
 import { useSanctionedTournaments } from '@/hooks/useSanctionedTournaments';
-import { useBattles, acceptBattle, createBattle } from '@/hooks/useBattles';
+import { useBattles } from '@/hooks/useBattles';
 import FeaturedEditBattlesSection from '@/components/loopgate/FeaturedEditBattlesSection';
 
 import { useLiveActivity, type LiveActivityItem } from '@/hooks/useLiveActivity';
@@ -30,7 +30,7 @@ import FeaturedDropCard from '@/components/loopgate/FeaturedDropCard';
 import FeaturedCarousel from '@/components/loopgate/FeaturedCarousel';
 import LoopMonster from '@/components/loopgate/LoopMonster';
 import QuickFightButton from '@/components/loopgate/QuickFightButton';
-import { useMyQuickFights, leaveQueue } from '@/hooks/useQuickFight';
+import { useMyQuickFights, createQuickFightLobby, leaveQueue } from '@/hooks/useQuickFight';
 import { useSoloMode } from '@/hooks/useSoloMode';
 import { useAccountPrompt } from '@/hooks/useAccountPrompt';
 import GlitchEdge from '@/components/loopgate/GlitchEdge';
@@ -53,7 +53,6 @@ import RingsModal from '@/components/loopgate/RingsModal';
 import { useEquippedBadges } from '@/hooks/useEquippedBadges';
 import WalletDrawer from '@/components/loopgate/WalletDrawer';
 import LoopyWelcomeModal from '@/components/loopgate/LoopyWelcomeModal';
-import { startQuickMatch } from '@/lib/startQuickMatch';
 import { useMyCashBattles, useMyCashBattleApplication } from '@/hooks/useCashBattles';
 import { useMyCompetitionReminders } from '@/hooks/useMyCompetitionReminders';
 import LiveBattleReminders, { type LiveBattleReminderItem } from '@/components/loopgate/LiveBattleReminder';
@@ -335,48 +334,19 @@ export default function HubPage() {
 
   const handleQuickFight = async () => {
     if (!user || !profile) { openAccountPrompt('send_message', () => {}); return; }
+    if (qfActiveFight) { navigate(`/fight/${qfActiveFight.id}`); return; }
+    const existingWaiting = qfFights.find(f => f.status === 'waiting' && f.player_1_id === user.id);
+    if (existingWaiting) { navigate(`/fight/${existingWaiting.id}`); return; }
     setQfSearching(true);
     try {
-      // Same flow as Edit Battles in Arena:
-      // 1) Try to accept the oldest open battle
-      // 2) Otherwise create our own open battle lobby (shows in Arena rail)
-      const { data: openBattles } = await supabase
-        .from('battles')
-        .select('id')
-        .eq('status', 'pending')
-        .eq('challenge_type', 'open')
-        .is('opponent_id', null)
-        .neq('challenger_id', user.id)
-        .order('created_at', { ascending: true })
-        .limit(5);
-
-      for (const b of openBattles ?? []) {
-        const ok = await acceptBattle(b.id, user.id, profile.username, profile.avatar_url);
-        if (ok) {
-          toast.success('⚔️ Opponent found!');
-          navigate(`/battle/${b.id}`);
-          setQfSearching(false);
-          return;
-        }
-      }
-
-      const created = await createBattle(
-        user.id,
-        profile.username,
-        profile.avatar_url,
-        (profile?.league?.toLowerCase() || 'open'),
-        1,
-        'open'
-      );
-      if (created.success && created.battleId) {
-        toast('🔍 Lobby created — waiting for opponent', { duration: 3000 });
-        navigate(`/battle/${created.battleId}`);
-      } else {
-        toast.error(created.error || 'Could not create battle');
-      }
-      setQfSearching(false);
+      const lobby = await createQuickFightLobby(user.id, profile.username, profile.avatar_url, { isPrivate: false, durationMinutes: 60 });
+      if (!lobby) throw new Error('create lobby failed');
+      await leaveQueue(user.id);
+      toast.success('Edit Battle lobby created');
+      navigate(`/fight/${lobby.id}`);
     } catch {
-      toast.error('Matchmaking failed');
+      toast.error("Couldn't create Edit Battle");
+    } finally {
       setQfSearching(false);
     }
   };
@@ -713,9 +683,9 @@ export default function HubPage() {
                   >
                     <span className="font-display text-[26px] text-white tracking-normal uppercase leading-none flex items-center gap-2">
                       {qfIsSearching && <Loader2 className="w-4 h-4 animate-spin" />}
-                      Quick Battle
+                      Edit Battles
                     </span>
-                    <span className="font-display text-[12px] text-white/80 uppercase tracking-normal mt-1.5">Matchmake Instantly</span>
+                    <span className="font-display text-[12px] text-white/80 uppercase tracking-normal mt-1.5">Enter 1v1 Lobby</span>
                   </button>
 
                   <button
