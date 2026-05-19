@@ -608,158 +608,94 @@ export default function HubPage() {
             </div>
           </motion.div>
 
-          {/* Quick Access — Rolls Royce Starlight dock */}
-          <div className="relative mt-4 mb-3">
-            {/* ─── Bow arch — edge lines + heavy inward blur arch ─── */}
-            <div className="pointer-events-none absolute inset-x-0 -top-20 h-[190px] z-0 overflow-visible">
-              {/* Left edge line */}
-              <div className="absolute left-0 top-0 h-full w-px bg-gradient-to-b from-foreground/10 via-foreground/5 to-transparent" />
-              {/* Right edge line */}
-              <div className="absolute right-0 top-0 h-full w-px bg-gradient-to-b from-foreground/10 via-foreground/5 to-transparent" />
-              {/* Left inward blur — subtle */}
-              <div
-                className="absolute left-0 top-0 h-full w-[60px]"
-                style={{
-                  background: 'linear-gradient(to right, hsl(var(--surface-1) / 0.3) 0%, transparent 100%)',
-                  maskImage: 'linear-gradient(to bottom, black 0%, black 40%, transparent 100%)',
-                  WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 40%, transparent 100%)',
-                  filter: 'blur(18px)',
-                }}
-              />
-              {/* Right inward blur — subtle */}
-              <div
-                className="absolute right-0 top-0 h-full w-[60px]"
-                style={{
-                  background: 'linear-gradient(to left, hsl(var(--surface-1) / 0.3) 0%, transparent 100%)',
-                  maskImage: 'linear-gradient(to bottom, black 0%, black 40%, transparent 100%)',
-                  WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 40%, transparent 100%)',
-                  filter: 'blur(18px)',
-                }}
-              />
-              {/* Main arch — heavy blur mass connecting the legs */}
-              <div
-                className="absolute inset-x-0 top-0 h-full"
-                style={{
-                  background: 'radial-gradient(ellipse 88% 70% at 50% -10%, hsl(var(--surface-1) / 0.32) 0%, hsl(var(--surface-1) / 0.14) 40%, transparent 72%)',
-                  filter: 'blur(30px)',
-                }}
-              />
-            </div>
-            {/* ─── BELT — horizontal band cutting through icons ─── */}
-            <div className="absolute top-1/2 z-0 pointer-events-none" style={{ marginTop: '-8px', width: '100vw', left: '50%', transform: 'translateX(-50%) translateY(-50%)' }}>
-              <div className="h-[18px] w-full" style={{
-                background: 'linear-gradient(180deg, hsl(0 0% 0% / 0) 0%, hsl(0 0% 8% / 0.9) 20%, hsl(0 0% 12% / 1) 40%, hsl(0 0% 12% / 1) 60%, hsl(0 0% 8% / 0.9) 80%, hsl(0 0% 0% / 0) 100%)',
-                borderTop: '1px solid hsl(0 0% 100% / 0.08)',
-                borderBottom: '1px solid hsl(0 0% 100% / 0.06)',
-              }} />
-            </div>
-
-            <div className="relative z-10 flex items-center justify-center gap-6">
-            {/* MISSIONS — Portal */}
-            <Link to="/missions/portal" className="group flex flex-col items-center gap-3">
-              <div className="relative w-[68px] h-[68px] rounded-[22px] overflow-hidden"
-                style={{
-                  background: 'linear-gradient(145deg, hsl(0 0% 4%) 0%, hsl(0 0% 6%) 50%, hsl(0 0% 3%) 100%)',
-                  border: '1px solid hsl(0 0% 100% / 0.05)',
-                  boxShadow: '0 8px 32px hsl(0 0% 0% / 0.8), inset 0 1px 0 hsl(0 0% 100% / 0.03)',
-                }}>
-                <div className="absolute w-[1px] h-[1px] rounded-full bg-white/20 top-3 left-5" style={{ boxShadow: '0 0 2px hsl(0 0% 100% / 0.15)' }} />
-                <div className="absolute w-[1px] h-[1px] rounded-full bg-white/25 bottom-5 right-4" style={{ boxShadow: '0 0 2px hsl(0 0% 100% / 0.2)' }} />
-                <div className="absolute inset-[6px] rounded-[16px]" style={{ border: '1px solid hsl(0 0% 100% / 0.03)' }} />
-                <div className="relative z-10 flex h-full w-full items-center justify-center">
-                  <DollarSign className="w-7 h-7" strokeWidth={2.6} style={{ color: 'hsl(0 0% 92%)' }} />
-                </div>
-              </div>
-              <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'hsl(0 0% 100% / 0.5)' }}>Missions</span>
-            </Link>
-
-            {/* CENTER — Studio or Judge Panel */}
-            {isJudge ? (
-              <Link to="/judge-panel" className="group flex flex-col items-center gap-3">
-                <div className="relative w-[80px] h-[80px] rounded-[26px] overflow-hidden"
+          {/* PLAY — single primary CTA that expands into Edit Battle / Multiplayer */}
+          <div className="relative mt-5 mb-4 flex items-center justify-center min-h-[112px]">
+            <AnimatePresence mode="wait" initial={false}>
+              {!playExpanded ? (
+                <motion.button
+                  key="play"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.2 }}
+                  onClick={() => setPlayExpanded(true)}
+                  className="relative group flex items-center justify-center gap-3 px-12 py-5 rounded-2xl overflow-hidden active:scale-[0.97] transition-transform"
                   style={{
-                    background: 'linear-gradient(145deg, hsl(0 0% 4%) 0%, hsl(0 0% 6%) 50%, hsl(0 0% 3%) 100%)',
-                    border: '1px solid hsl(0 0% 100% / 0.07)',
-                    boxShadow: '0 12px 40px hsl(0 0% 0% / 0.85), inset 0 1px 0 hsl(0 0% 100% / 0.04), 0 0 20px hsl(0 0% 100% / 0.04), 0 0 1px hsl(0 0% 100% / 0.15)',
-                  }}>
-                  <div className="absolute inset-0 overflow-hidden rounded-[26px]">
-                    <div className="absolute w-[2px] h-[2px] rounded-full bg-white/70 top-3 left-5" style={{ boxShadow: '0 0 4px hsl(0 0% 100% / 0.7)' }} />
-                    <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-white/50 top-6 right-4" style={{ boxShadow: '0 0 3px hsl(0 0% 100% / 0.5)' }} />
-                    <div className="absolute w-[1px] h-[1px] rounded-full bg-white/40 bottom-5 left-4" style={{ boxShadow: '0 0 2px hsl(0 0% 100% / 0.4)' }} />
-                    <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-white/55 bottom-3 right-6" style={{ boxShadow: '0 0 3px hsl(0 0% 100% / 0.5)' }} />
-                    <div className="absolute w-[1px] h-[1px] rounded-full bg-white/35 top-10 left-6" style={{ boxShadow: '0 0 2px hsl(0 0% 100% / 0.3)' }} />
-                    <div className="absolute w-[2px] h-[2px] rounded-full bg-white/60 top-4 right-7" style={{ boxShadow: '0 0 4px hsl(0 0% 100% / 0.6)' }} />
-                  </div>
-                  <div className="absolute inset-[6px] rounded-[20px]" style={{ border: '1px solid hsl(0 0% 100% / 0.05)', background: 'linear-gradient(160deg, hsl(0 0% 100% / 0.03) 0%, transparent 60%)' }} />
-                  <div className="relative z-10 flex h-full w-full items-center justify-center">
-                    <Gavel className="w-9 h-9" strokeWidth={2.4} style={{ color: 'hsl(0 0% 98%)' }} />
-                  </div>
-                </div>
-                <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'hsl(0 0% 100% / 0.5)' }}>Panel</span>
-              </Link>
-            ) : (
-              <Link to="/studio" className="group flex flex-col items-center gap-3">
-                <div className="relative w-[80px] h-[80px] rounded-[26px] overflow-hidden"
-                  style={{
-                    background: 'linear-gradient(145deg, hsl(0 0% 4%) 0%, hsl(0 0% 6%) 50%, hsl(0 0% 3%) 100%)',
-                    border: '1px solid hsl(0 0% 100% / 0.07)',
-                    boxShadow: '0 12px 40px hsl(0 0% 0% / 0.85), inset 0 1px 0 hsl(0 0% 100% / 0.05), 0 0 20px hsl(0 0% 100% / 0.04), 0 0 1px hsl(0 0% 100% / 0.15)',
-                  }}>
-                  <div className="absolute inset-0 overflow-hidden rounded-[26px]">
-                    <div className="absolute w-[2px] h-[2px] rounded-full bg-white/70 top-3 left-5" style={{ boxShadow: '0 0 4px hsl(0 0% 100% / 0.8)' }} />
-                    <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-white/55 top-5 right-4" style={{ boxShadow: '0 0 3px hsl(0 0% 100% / 0.6)' }} />
-                    <div className="absolute w-[1px] h-[1px] rounded-full bg-white/40 bottom-5 left-4" style={{ boxShadow: '0 0 2px hsl(0 0% 100% / 0.4)' }} />
-                    <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-white/60 bottom-3 right-5" style={{ boxShadow: '0 0 3px hsl(0 0% 100% / 0.6)' }} />
-                    <div className="absolute w-[1px] h-[1px] rounded-full bg-white/35 top-9 left-3" style={{ boxShadow: '0 0 2px hsl(0 0% 100% / 0.3)' }} />
-                    <div className="absolute w-[2px] h-[2px] rounded-full bg-white/65 top-4 right-7" style={{ boxShadow: '0 0 4px hsl(0 0% 100% / 0.7)' }} />
-                    <div className="absolute w-[1px] h-[1px] rounded-full bg-white/30 bottom-6 left-7" style={{ boxShadow: '0 0 2px hsl(0 0% 100% / 0.3)' }} />
-                  </div>
-                  <div className="absolute inset-[6px] rounded-[20px]" style={{ border: '1px solid hsl(0 0% 100% / 0.05)', background: 'linear-gradient(160deg, hsl(0 0% 100% / 0.03) 0%, transparent 60%)' }} />
-                  <div className="relative z-10 flex h-full w-full items-center justify-center">
-                    <Clapperboard className="w-9 h-9" strokeWidth={2.4} style={{ color: 'hsl(0 0% 98%)' }} />
-                  </div>
-                </div>
-                <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'hsl(0 0% 100% / 0.5)' }}>Studio</span>
-              </Link>
-            )}
+                    background: 'linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(0 0% 92%) 100%)',
+                    boxShadow: '0 20px 60px hsl(0 0% 100% / 0.18), 0 8px 24px hsl(0 0% 0% / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.9)',
+                  }}
+                >
+                  <Play className="w-6 h-6 text-black fill-black" strokeWidth={2.5} />
+                  <span className="font-display text-3xl text-black tracking-[0.15em] uppercase leading-none">PLAY</span>
+                </motion.button>
+              ) : (
+                <motion.div
+                  key="options"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
+                  transition={{ duration: 0.22 }}
+                  className="w-full flex flex-col gap-2.5"
+                >
+                  {/* EDIT BATTLE */}
+                  <button
+                    onClick={() => { setPlayExpanded(false); handleQuickFight(); }}
+                    disabled={qfIsSearching}
+                    className="relative w-full rounded-2xl overflow-hidden active:scale-[0.98] transition-transform text-left"
+                    style={{
+                      background: 'linear-gradient(135deg, hsl(0 85% 45%) 0%, hsl(0 80% 35%) 100%)',
+                      boxShadow: '0 12px 36px hsl(0 85% 40% / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.18)',
+                    }}
+                  >
+                    <div className="flex items-center gap-4 px-5 py-4">
+                      <div className="w-12 h-12 rounded-xl bg-black/25 flex items-center justify-center shrink-0">
+                        <Swords className="w-6 h-6 text-white" strokeWidth={2.4} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-display text-2xl text-white tracking-[0.08em] uppercase leading-none">Edit Battle</div>
+                        <div className="text-[10px] text-white/70 font-semibold uppercase tracking-[0.18em] mt-1.5">1v1 · Match Instantly</div>
+                      </div>
+                      {qfIsSearching ? (
+                        <Loader2 className="w-5 h-5 text-white animate-spin" />
+                      ) : (
+                        <ArrowRight className="w-5 h-5 text-white/80" />
+                      )}
+                    </div>
+                  </button>
 
-            {/* My Arena — replaced by Campaign Manager for admins */}
-            {isAdmin ? (
-            <Link to="/ops-panel/a7c92ff31b/campaigns" className="group flex flex-col items-center gap-3">
-              <div className="relative w-[68px] h-[68px] rounded-[22px] overflow-hidden"
-                style={{
-                  background: 'linear-gradient(145deg, hsl(45 100% 8%) 0%, hsl(45 90% 12%) 50%, hsl(45 100% 6%) 100%)',
-                  border: '1px solid hsl(45 100% 50% / 0.25)',
-                  boxShadow: '0 8px 32px hsl(0 0% 0% / 0.8), inset 0 1px 0 hsl(45 100% 50% / 0.12), 0 0 16px hsl(45 100% 50% / 0.1)',
-                }}>
-                <div className="absolute w-[1px] h-[1px] rounded-full bg-amber-300/40 top-3 left-5" style={{ boxShadow: '0 0 2px hsl(45 100% 60% / 0.4)' }} />
-                <div className="absolute w-[1px] h-[1px] rounded-full bg-amber-300/50 bottom-5 right-4" style={{ boxShadow: '0 0 2px hsl(45 100% 60% / 0.4)' }} />
-                <div className="absolute inset-[6px] rounded-[16px]" style={{ border: '1px solid hsl(45 100% 50% / 0.08)' }} />
-                <div className="relative z-10 flex h-full w-full items-center justify-center">
-                  <BarChart3 className="w-7 h-7" style={{ color: 'hsl(45 100% 65%)' }} />
-                </div>
-              </div>
-              <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'hsl(45 100% 65%)' }}>Campaigns</span>
-            </Link>
-            ) : (
-            <Link to="/arena?tab=my" className="group flex flex-col items-center gap-3">
-              <div className="relative w-[68px] h-[68px] rounded-[22px] overflow-hidden"
-                style={{
-                  background: 'linear-gradient(145deg, hsl(0 0% 4%) 0%, hsl(0 0% 6%) 50%, hsl(0 0% 3%) 100%)',
-                  border: '1px solid hsl(0 0% 100% / 0.05)',
-                  boxShadow: '0 8px 32px hsl(0 0% 0% / 0.8), inset 0 1px 0 hsl(0 0% 100% / 0.03)',
-                }}>
-                <div className="absolute w-[1px] h-[1px] rounded-full bg-white/20 top-3 left-5" style={{ boxShadow: '0 0 2px hsl(0 0% 100% / 0.15)' }} />
-                <div className="absolute w-[1px] h-[1px] rounded-full bg-white/25 bottom-5 right-4" style={{ boxShadow: '0 0 2px hsl(0 0% 100% / 0.2)' }} />
-                <div className="absolute inset-[6px] rounded-[16px]" style={{ border: '1px solid hsl(0 0% 100% / 0.03)' }} />
-                <div className="relative z-10 flex h-full w-full items-center justify-center">
-                  <Swords className="w-7 h-7" strokeWidth={2.4} style={{ color: 'hsl(0 0% 92%)' }} />
-                </div>
-              </div>
-              <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'hsl(0 0% 100% / 0.5)' }}>My Arena</span>
-            </Link>
-            )}
-            </div>
+                  {/* MULTIPLAYER */}
+                  <button
+                    onClick={() => { setPlayExpanded(false); navigate('/arena'); }}
+                    className="relative w-full rounded-2xl overflow-hidden active:scale-[0.98] transition-transform text-left"
+                    style={{
+                      background: 'linear-gradient(135deg, hsl(220 18% 16%) 0%, hsl(220 18% 10%) 100%)',
+                      border: '1px solid hsl(0 0% 100% / 0.08)',
+                      boxShadow: '0 12px 36px hsl(0 0% 0% / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.06)',
+                    }}
+                  >
+                    <div className="flex items-center gap-4 px-5 py-4">
+                      <div className="w-12 h-12 rounded-xl bg-white/8 flex items-center justify-center shrink-0">
+                        <Trophy className="w-6 h-6 text-gold" strokeWidth={2.4} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-display text-2xl text-foreground tracking-[0.08em] uppercase leading-none">Multiplayer</div>
+                        <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-[0.18em] mt-1.5">Ranked Competitions</div>
+                      </div>
+                      <ArrowRight className="w-5 h-5 text-muted-foreground" />
+                    </div>
+                  </button>
+
+                  {/* Back */}
+                  <button
+                    onClick={() => setPlayExpanded(false)}
+                    className="self-center mt-1 flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    Back
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>
