@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { DollarSign, Swords, Clock, Info, X, Loader2, Building2, ChevronRight, Plus, Lock } from "lucide-react";
+import { DollarSign, Swords, Clock, Info, X, Loader2, Building2, ChevronRight, Plus, Lock, Key } from "lucide-react";
 import CashBattleVoteBar from "@/components/loopgate/CashBattleVoteBar";
 import BattleVoteBarCompact from "@/components/loopgate/BattleVoteBarCompact";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,6 +13,7 @@ import { useAccountPrompt } from "@/hooks/useAccountPrompt";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { ArenaRail, ArenaRailCard, ArenaRailSkeleton } from "@/components/loopgate/ArenaCarouselSystem";
+import JoinByCodeModal from "@/components/loopgate/JoinByCodeModal";
 
 function formatPrize(cents: number): string {
   return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
@@ -610,6 +611,7 @@ export default function CashBattlesSection({
   const { joinPool } = useMyCashBattleApplication();
   const { user } = useAuth();
   const [infoOpen, setInfoOpen] = useState(false);
+  const [codeOpen, setCodeOpen] = useState(false);
   const { isGuest } = useGuestMode();
   const accountPrompt = useAccountPrompt();
   const [pendingApps, setPendingApps] = useState<CashBattleApplication[]>([]);
