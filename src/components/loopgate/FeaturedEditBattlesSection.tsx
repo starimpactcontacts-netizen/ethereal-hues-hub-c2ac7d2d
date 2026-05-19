@@ -43,7 +43,7 @@ export default function FeaturedEditBattlesSection() {
       className="px-4 mt-8"
     >
       {/* Header */}
-      <div className="flex items-end justify-between mb-3 max-w-[340px] mx-auto">
+      <div className="flex items-end justify-between mb-3 max-w-[640px] mx-auto">
         <div className="flex items-center gap-2">
           <Flame className="w-4 h-4 text-[#FF3B3B]" strokeWidth={2.5} />
           <h2
@@ -65,30 +65,19 @@ export default function FeaturedEditBattlesSection() {
         </Link>
       </div>
 
-      {/* Horizontal carousel — single card, Rankings-tile width */}
-      <div className="relative max-w-[340px] mx-auto">
+      {/* Horizontal carousel */}
+      <div className="relative max-w-[640px] mx-auto">
         <div
           ref={scrollerRef}
-          className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-1"
+          className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none -mx-4 px-4 pb-1"
           style={{ scrollbarWidth: 'none' }}
         >
           {featuredBattles.map((fight) => (
             <div
               key={fight.id}
-              className="snap-center shrink-0 w-full aspect-[4/3] relative"
+              className="snap-start shrink-0 w-[calc(50%-6px)] aspect-[3/4]"
             >
               <QuickFightCarouselCard fight={fight} isMine={false} />
-              {/* Prize badge — featured battles award $150 to the winner */}
-              <div
-                className="absolute top-2 right-2 z-20 pointer-events-none flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-500/95 border border-emerald-300/60 shadow-[0_4px_12px_rgba(16,185,129,0.45)]"
-              >
-                <span
-                  className="font-display text-black uppercase leading-none"
-                  style={{ fontSize: '14px', fontWeight: 700, letterSpacing: '0' }}
-                >
-                  $150 Prize
-                </span>
-              </div>
             </div>
           ))}
         </div>
