@@ -450,32 +450,6 @@ export default function HubPage() {
       
       <LoopyWelcomeModal />
       
-      {/* Concentric Rings Pattern - Portal effect */}
-      <div className="absolute inset-x-0 -top-20 h-[550px] pointer-events-none overflow-hidden z-0 flex items-center justify-center">
-        {/* Loop rings image with subtle expansion */}
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.15, 1],
-          }}
-          transition={{ 
-            duration: 12, 
-            repeat: Infinity, 
-            ease: "easeInOut",
-          }}
-          className="w-[1300px] h-[1300px] opacity-[0.07]"
-        >
-          <img 
-            src={loopRingsPattern} 
-            alt="" 
-            className="w-full h-full object-cover"
-            style={{
-              maskImage: 'radial-gradient(ellipse 90% 80% at 50% 50%, white 0%, transparent 75%)',
-              WebkitMaskImage: 'radial-gradient(ellipse 90% 80% at 50% 50%, white 0%, transparent 75%)',
-            }}
-          />
-        </motion.div>
-      </div>
-      
       {/* ═══════════════════════════════════════════════════════════════════
           HERO LAYER - Profile Card with Dimensional Gate Background
       ═══════════════════════════════════════════════════════════════════ */}
