@@ -1316,23 +1316,6 @@ export default function HubPage() {
         transition={{ delay: 0.25 }}
         className="mt-3 space-y-4"
       >
-        {/* Editorium Picks — autoplay video showcase */}
-        <div>
-          <div className="px-4 mb-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-1 h-5 bg-red-500 rounded-full" />
-                <h2 className="font-display text-lg text-foreground">EDITOR'S PICKS</h2>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              </div>
-              <Link to="/editorium" className="text-[9px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
-                EDITORIUM <ArrowRight size={10} />
-              </Link>
-            </div>
-          </div>
-          <EditoriumPicks limit={8} />
-        </div>
-
         {/* Signal Feed — collapsible live activity */}
         <div className="mx-4 bg-surface-1/30 border border-border/20 px-3 py-1">
           <HubLiveFeed />
@@ -1343,21 +1326,55 @@ export default function HubPage() {
           INVITE FRIENDS - Subtle inline CTA
       ═══════════════════════════════════════════════════════════════════ */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="mt-3 px-4"
+        className="mt-5 px-4"
       >
         <button
           onClick={() => setInviteModalOpen(true)}
-          className="w-full bg-surface-1/40 border border-border/30 hover:border-gold/40 transition-colors p-3 flex items-center justify-between group"
+          className="relative w-full rounded-2xl overflow-hidden active:scale-[0.99] transition-transform text-left group"
+          style={{
+            background: 'linear-gradient(135deg, hsl(0 0% 7%) 0%, hsl(0 0% 4%) 100%)',
+            border: '1px solid hsl(45 100% 55% / 0.18)',
+            boxShadow: '0 16px 48px hsl(0 0% 0% / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.04)',
+          }}
         >
-          <div className="flex items-center gap-2.5">
-            <Star className="w-4 h-4 text-gold" />
-            <span className="text-sm text-foreground">Invite Friends</span>
-            <span className="text-[9px] text-muted-foreground">+170 XP</span>
+          {/* Soft gold glow */}
+          <div className="pointer-events-none absolute -top-12 -right-12 w-44 h-44 rounded-full" style={{ background: 'radial-gradient(circle, hsl(45 100% 55% / 0.18) 0%, transparent 70%)' }} />
+          <div className="pointer-events-none absolute -bottom-16 -left-16 w-40 h-40 rounded-full" style={{ background: 'radial-gradient(circle, hsl(45 100% 55% / 0.08) 0%, transparent 70%)' }} />
+
+          <div className="relative flex items-center gap-4 p-5">
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0"
+              style={{
+                background: 'linear-gradient(145deg, hsl(45 100% 58%) 0%, hsl(38 95% 48%) 100%)',
+                boxShadow: '0 8px 24px hsl(45 100% 50% / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.4)',
+              }}
+            >
+              <UserPlus className="w-7 h-7 text-black" strokeWidth={2.4} />
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="font-display text-xl text-foreground tracking-[0.06em] uppercase leading-none">Invite Friends</span>
+                <Sparkles className="w-3.5 h-3.5 text-gold" />
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-1.5 leading-snug">
+                Bring a friend to the arena
+              </p>
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-[9px] font-bold uppercase tracking-[0.18em] px-2 py-0.5 rounded-full bg-gold/15 text-gold border border-gold/25">
+                  +170 XP
+                </span>
+                <span className="text-[9px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+                  per invite
+                </span>
+              </div>
+            </div>
+
+            <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-gold group-hover:translate-x-1 transition-all shrink-0" />
           </div>
-          <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-gold group-hover:translate-x-0.5 transition-all" />
         </button>
       </motion.div>
 
