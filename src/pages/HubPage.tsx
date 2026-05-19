@@ -42,7 +42,6 @@ import XPProgressBar from '@/components/loopgate/XPProgressBar';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
-import loopRingsPattern from '@/assets/loop-rings-pattern.jpg';
 import lvMonogram from '@/assets/lv-monogram.png';
 import GatePattern from '@/components/loopgate/GatePattern';
 import { getRankFromScore, getRankFromLevel, getEffectiveRank } from '@/data/gqtConfig';
@@ -51,7 +50,6 @@ import FoundingBadge from '@/components/loopgate/FoundingBadge';
 import RingsCoin from '@/components/loopgate/RingsCoin';
 import RingsModal from '@/components/loopgate/RingsModal';
 import { useEquippedBadges } from '@/hooks/useEquippedBadges';
-import CommissionsSection from '@/components/loopgate/CommissionsSection';
 import WalletDrawer from '@/components/loopgate/WalletDrawer';
 import LoopyWelcomeModal from '@/components/loopgate/LoopyWelcomeModal';
 import { startQuickMatch } from '@/lib/startQuickMatch';
@@ -450,32 +448,6 @@ export default function HubPage() {
       
       <LoopyWelcomeModal />
       
-      {/* Concentric Rings Pattern - Portal effect */}
-      <div className="absolute inset-x-0 -top-20 h-[550px] pointer-events-none overflow-hidden z-0 flex items-center justify-center">
-        {/* Loop rings image with subtle expansion */}
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.15, 1],
-          }}
-          transition={{ 
-            duration: 12, 
-            repeat: Infinity, 
-            ease: "easeInOut",
-          }}
-          className="w-[1300px] h-[1300px] opacity-[0.07]"
-        >
-          <img 
-            src={loopRingsPattern} 
-            alt="" 
-            className="w-full h-full object-cover"
-            style={{
-              maskImage: 'radial-gradient(ellipse 90% 80% at 50% 50%, white 0%, transparent 75%)',
-              WebkitMaskImage: 'radial-gradient(ellipse 90% 80% at 50% 50%, white 0%, transparent 75%)',
-            }}
-          />
-        </motion.div>
-      </div>
-      
       {/* ═══════════════════════════════════════════════════════════════════
           HERO LAYER - Profile Card with Dimensional Gate Background
       ═══════════════════════════════════════════════════════════════════ */}
@@ -608,89 +580,63 @@ export default function HubPage() {
           </motion.div>
 
           {/* PLAY — single primary CTA that expands into Edit Battle / Multiplayer */}
-          <div className="relative mt-5 mb-4 flex items-center justify-center min-h-[112px]">
+          <div className="relative mt-5 mb-4">
             <AnimatePresence mode="wait" initial={false}>
               {!playExpanded ? (
-                <motion.button
+                <motion.div
                   key="play"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.2 }}
-                  onClick={() => setPlayExpanded(true)}
-                  className="relative group flex items-center justify-center gap-3 px-12 py-5 rounded-2xl overflow-hidden active:scale-[0.97] transition-transform"
-                  style={{
-                    background: 'linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(0 0% 92%) 100%)',
-                    boxShadow: '0 20px 60px hsl(0 0% 100% / 0.18), 0 8px 24px hsl(0 0% 0% / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.9)',
-                  }}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.18 }}
+                  className="flex items-center justify-center"
                 >
-                  <Play className="w-6 h-6 text-black fill-black" strokeWidth={2.5} />
-                  <span className="font-display text-3xl text-black tracking-[0.15em] uppercase leading-none">PLAY</span>
-                </motion.button>
+                  <button
+                    onClick={() => setPlayExpanded(true)}
+                    className="flex items-center justify-center gap-3 px-14 py-4 bg-white text-black rounded-md active:scale-[0.97] transition-transform"
+                  >
+                    <Play className="w-5 h-5 fill-black" strokeWidth={2.5} />
+                    <span className="font-display text-2xl tracking-[0.18em] uppercase leading-none">PLAY</span>
+                  </button>
+                </motion.div>
               ) : (
                 <motion.div
                   key="options"
-                  initial={{ opacity: 0, y: 8 }}
+                  initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  transition={{ duration: 0.22 }}
-                  className="w-full flex flex-col gap-2.5"
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.18 }}
+                  className="w-full flex flex-col gap-2"
                 >
-                  {/* EDIT BATTLE */}
+                  {/* QUICK BATTLE — flat solid */}
                   <button
                     onClick={() => { setPlayExpanded(false); handleQuickFight(); }}
                     disabled={qfIsSearching}
-                    className="relative w-full rounded-2xl overflow-hidden active:scale-[0.98] transition-transform text-left"
-                    style={{
-                      background: 'linear-gradient(135deg, hsl(0 85% 45%) 0%, hsl(0 80% 35%) 100%)',
-                      boxShadow: '0 12px 36px hsl(0 85% 40% / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.18)',
-                    }}
+                    className="w-full py-4 rounded-md bg-red-600 hover:bg-red-500 active:scale-[0.99] transition disabled:opacity-60 flex flex-col items-center justify-center"
                   >
-                    <div className="flex items-center gap-4 px-5 py-4">
-                      <div className="w-12 h-12 rounded-xl bg-black/25 flex items-center justify-center shrink-0">
-                        <Swords className="w-6 h-6 text-white" strokeWidth={2.4} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-display text-2xl text-white tracking-[0.08em] uppercase leading-none">Edit Battle</div>
-                        <div className="text-[10px] text-white/70 font-semibold uppercase tracking-[0.18em] mt-1.5">1v1 · Match Instantly</div>
-                      </div>
-                      {qfIsSearching ? (
-                        <Loader2 className="w-5 h-5 text-white animate-spin" />
-                      ) : (
-                        <ArrowRight className="w-5 h-5 text-white/80" />
-                      )}
-                    </div>
+                    <span className="font-display text-2xl text-white tracking-[0.14em] uppercase leading-none flex items-center gap-2">
+                      {qfIsSearching && <Loader2 className="w-4 h-4 animate-spin" />}
+                      Quick Battle
+                    </span>
+                    <span className="text-[10px] text-white/70 font-bold uppercase tracking-[0.22em] mt-1.5">Matchmake Instantly</span>
                   </button>
 
-                  {/* MULTIPLAYER */}
+                  {/* RANKED */}
                   <button
                     onClick={() => { setPlayExpanded(false); navigate('/arena'); }}
-                    className="relative w-full rounded-2xl overflow-hidden active:scale-[0.98] transition-transform text-left"
-                    style={{
-                      background: 'linear-gradient(135deg, hsl(220 18% 16%) 0%, hsl(220 18% 10%) 100%)',
-                      border: '1px solid hsl(0 0% 100% / 0.08)',
-                      boxShadow: '0 12px 36px hsl(0 0% 0% / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.06)',
-                    }}
+                    className="w-full py-4 rounded-md bg-surface-1 border border-red-600/40 hover:bg-surface-2 active:scale-[0.99] transition flex flex-col items-center justify-center"
                   >
-                    <div className="flex items-center gap-4 px-5 py-4">
-                      <div className="w-12 h-12 rounded-xl bg-white/8 flex items-center justify-center shrink-0">
-                        <Trophy className="w-6 h-6 text-gold" strokeWidth={2.4} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-display text-2xl text-foreground tracking-[0.08em] uppercase leading-none">Multiplayer</div>
-                        <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-[0.18em] mt-1.5">Ranked Competitions</div>
-                      </div>
-                      <ArrowRight className="w-5 h-5 text-muted-foreground" />
-                    </div>
+                    <span className="font-display text-2xl text-foreground tracking-[0.14em] uppercase leading-none">Ranked</span>
+                    <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.22em] mt-1.5">Play A Ranked Match</span>
                   </button>
 
-                  {/* Back */}
+                  {/* BACK */}
                   <button
                     onClick={() => setPlayExpanded(false)}
-                    className="self-center mt-1 flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground transition-colors"
+                    className="w-full py-3 rounded-md bg-surface-1/60 border border-border hover:bg-surface-1 active:scale-[0.99] transition flex flex-col items-center justify-center"
                   >
-                    <ArrowLeft className="w-3.5 h-3.5" />
-                    Back
+                    <span className="font-display text-xl text-foreground/90 tracking-[0.14em] uppercase leading-none">Back</span>
+                    <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-[0.22em] mt-1">Return To Main Menu</span>
                   </button>
                 </motion.div>
               )}
@@ -771,283 +717,6 @@ export default function HubPage() {
         </div>
       )}
 
-      {/* ⚔️ QUICK ACTION CTA — Premium cinematic button */}
-      <div className="px-4 mt-1.5">
-        <div className="flex flex-col gap-0">
-          {/* Seamless action container — iPhone-grade glass with subtle accent */}
-          {(() => {
-            // Single accent color per action — no rainbow, no chaos
-            const accent = quickAction === 'edit_battle'
-              ? '59,130,246'   // blue
-              : quickAction === 'mission'
-                ? '16,185,129' // emerald
-                : quickAction === 'solo'
-                  ? '245,158,11' // amber/gold
-                  : quickAction === 'multiplayer'
-                    ? '168,85,247' // purple
-                    : '239,68,68'; // red
-            return (
-          <div className="relative rounded-[20px]">
-            {/* Subtle ambient glow — soft, not aggressive */}
-            <motion.div
-              aria-hidden
-              className="absolute -inset-2 rounded-[28px] pointer-events-none blur-2xl"
-              style={{
-                background: `radial-gradient(70% 90% at 50% 60%, rgba(${accent},0.35), rgba(${accent},0) 75%)`,
-              }}
-              animate={{ opacity: [0.45, 0.7, 0.45] }}
-              transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
-            />
-            {/* Hairline gradient border (1.5px) — clean, seamless */}
-            <div
-              className="relative rounded-[20px] p-[1.5px] overflow-hidden"
-              style={{
-                background: `linear-gradient(135deg, rgba(${accent},0.95) 0%, rgba(255,255,255,0.18) 45%, rgba(${accent},0.55) 100%)`,
-              }}
-            >
-              {/* Inner content row */}
-              <div
-                className="relative flex overflow-hidden rounded-[18.5px] bg-black"
-                style={{
-                  boxShadow:
-                    `0 1px 0 rgba(255,255,255,0.08) inset, 0 0 0 1px rgba(0,0,0,0.6) inset, 0 20px 60px -10px rgba(0,0,0,0.85), 0 0 40px -8px rgba(${accent},0.35)`,
-                }}
-              >
-            <motion.button
-              whileTap={{ scale: 0.96 }}
-              whileHover={{ scale: 1.01 }}
-              disabled={(quickAction === 'edit_battle' && (qfIsSearching || myCashBattlesLoading))}
-              onClick={async () => {
-                if (!profile) { navigate('/start'); return; }
-                if (quickAction === 'edit_battle') {
-                  // Pure instant matchmaking — joins existing open quick fight or opens one for the next user
-                  if (qfActiveFight) {
-                    navigate(`/fight/${qfActiveFight.id}`);
-                  } else {
-                    handleQuickFight();
-                  }
-                  return;
-                } else if (quickAction === 'mission') {
-                  navigate('/commissions/414605a8-ac2f-4ab5-9955-15339ba4633c');
-                } else if (quickAction === 'solo') {
-                  navigate('/arena?mode=solo&auto=1');
-                } else if (quickAction === 'multiplayer') {
-                  // Find an open lobby that isn't full and drop the user straight in.
-                  const { data: openLobbies } = await supabase
-                    .from('competitions')
-                    .select('id, slug, current_players, max_players')
-                    .eq('status', 'lobby')
-                    .order('current_players', { ascending: false })
-                    .limit(20);
-                  const joinable = (openLobbies || []).find(
-                    (c: any) => (c.current_players ?? 0) < (c.max_players ?? 0)
-                  );
-                  if (joinable) {
-                    navigate(`/competition/${joinable.slug || joinable.id}`);
-                  } else {
-                    navigate('/competitions');
-                  }
-                }
-              }}
-              className={cn(
-                "flex-1 relative overflow-hidden flex items-center justify-center gap-3 px-6 py-5 transition-all duration-300 touch-manipulation select-none",
-                quickAction === 'edit_battle'
-                  ? ""
-                  : quickAction === 'mission'
-                    ? ""
-                    : quickAction === 'solo'
-                      ? ""
-                      : quickAction === 'multiplayer'
-                        ? ""
-                        : "bg-gradient-to-r from-red-600 via-red-500 to-red-600"
-              )}
-              style={quickAction === 'edit_battle' ? {
-                background: 'radial-gradient(120% 140% at 0% 0%, rgba(59,130,246,0.18) 0%, rgba(0,0,0,0) 55%), linear-gradient(180deg, #0a0a0c 0%, #050507 100%)',
-              } : quickAction === 'mission' ? {
-                background: 'radial-gradient(120% 140% at 0% 0%, rgba(16,185,129,0.18) 0%, rgba(0,0,0,0) 55%), linear-gradient(180deg, #0a0a0c 0%, #050507 100%)',
-              } : quickAction === 'solo' ? {
-                background: 'radial-gradient(120% 140% at 0% 0%, rgba(245,158,11,0.18) 0%, rgba(0,0,0,0) 55%), linear-gradient(180deg, #0a0a0c 0%, #050507 100%)',
-              } : quickAction === 'multiplayer' ? {
-                background: 'radial-gradient(120% 140% at 0% 0%, rgba(168,85,247,0.20) 0%, rgba(0,0,0,0) 55%), linear-gradient(180deg, #0a0a0c 0%, #050507 100%)',
-              } : undefined}
-            >
-               {/* Subtle shine sweep — seamless, slow */}
-               <motion.div
-                 className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.08] to-transparent -skew-x-12 pointer-events-none"
-                 animate={{ x: ['-150%', '250%'] }}
-                 transition={{ repeat: Infinity, duration: 4.5, ease: 'easeInOut', repeatDelay: 3 }}
-               />
-               {/* Soft top gloss */}
-               <div className="absolute top-0 left-0 right-0 h-[50%] bg-gradient-to-b from-white/[0.06] to-transparent pointer-events-none" />
-              
-              {quickAction === 'edit_battle' ? (
-                <>
-                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-white/30 to-white/10 flex items-center justify-center relative z-10 border border-white/40 shadow-lg shadow-black/20">
-                     <Swords className="w-4.5 h-4.5 text-white drop-shadow-lg" />
-                  </div>
-                  <div className="flex flex-col relative z-10">
-                    <span className="text-[28px] font-bold text-white uppercase tracking-wider leading-none drop-shadow-lg" style={{ fontFamily: 'Teko, sans-serif' }}>
-                       Edit Battle
-                    </span>
-                     <span className="text-[9px] text-white/70 font-bold tracking-wider">1V1 · MATCH INSTANTLY</span>
-                  </div>
-                </>
-              ) : quickAction === 'mission' ? (
-                <>
-                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-white/30 to-white/10 flex items-center justify-center relative z-10 border border-white/40 shadow-lg shadow-black/20">
-                     <Crosshair className="w-4.5 h-4.5 text-white drop-shadow-lg" />
-                  </div>
-                  <div className="flex flex-col relative z-10">
-                    <span className="text-[28px] font-bold text-white uppercase tracking-wider leading-none drop-shadow-lg" style={{ fontFamily: 'Teko, sans-serif' }}>
-                      Mission Edit
-                    </span>
-                    <span className="text-[9px] text-white/60 font-bold tracking-wider">GET PAID PER EDIT</span>
-                  </div>
-                </>
-              ) : quickAction === 'solo' ? (
-                <>
-                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-white/30 to-white/10 flex items-center justify-center relative z-10 border border-white/40 shadow-lg shadow-black/20">
-                     <UserRound className="w-4.5 h-4.5 text-white drop-shadow-lg" />
-                  </div>
-                  <div className="flex flex-col relative z-10">
-                    <span className="text-[28px] font-bold text-white uppercase tracking-wider leading-none drop-shadow-lg" style={{ fontFamily: 'Teko, sans-serif' }}>
-                      Solo Edit
-                    </span>
-                      <span className="text-[9px] text-white/60 font-bold tracking-wider">EARN UP TO 10K INDEX</span>
-                  </div>
-                </>
-              ) : quickAction === 'multiplayer' ? (
-                <>
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-white/30 to-white/10 flex items-center justify-center relative z-10 border border-white/40 shadow-lg shadow-black/20">
-                    <Users className="w-4.5 h-4.5 text-white drop-shadow-lg" />
-                  </div>
-                  <div className="flex flex-col relative z-10">
-                    <span className="text-[28px] font-bold text-white uppercase tracking-wider leading-none drop-shadow-lg" style={{ fontFamily: 'Teko, sans-serif' }}>
-                      Multiplayer
-                    </span>
-                    <span className="text-[9px] text-white/70 font-bold tracking-wider">JUMP INTO OPEN LOBBY</span>
-                  </div>
-                </>
-              ) : qfIsSearching ? (
-                <>
-                  <Loader2 className="w-5 h-5 text-white animate-spin relative z-10" />
-                  <span className="text-[26px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
-                    Searching...
-                  </span>
-                  <span className="flex items-center gap-1 text-xs text-white/70 font-mono relative z-10">
-                    <Clock className="w-3 h-3" />
-                    {Math.floor(qfElapsed / 60)}:{(qfElapsed % 60).toString().padStart(2, '0')}
-                  </span>
-                </>
-              ) : qfActiveFight ? (
-                <>
-                  <Swords className="w-5 h-5 text-white relative z-10" />
-                  <span className="text-[26px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
-                    Return to Fight
-                  </span>
-                </>
-              ) : (
-                <>
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-white/25 to-white/5 flex items-center justify-center relative z-10 border border-white/30 shadow-lg shadow-red-900/30">
-                    <Zap className="w-4.5 h-4.5 text-white drop-shadow-lg" />
-                  </div>
-                  <div className="flex flex-col relative z-10">
-                    <span className="text-[28px] font-bold text-white uppercase tracking-wider leading-none drop-shadow-lg" style={{ fontFamily: 'Teko, sans-serif' }}>
-                      Quick Edit Battle
-                    </span>
-                    <span className="text-[9px] text-white/60 font-bold tracking-wider">WIN +20 INDEX</span>
-                  </div>
-                </>
-              )}
-            </motion.button>
-
-            {/* Dropdown toggle */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button 
-                  className={cn(
-                    "relative overflow-hidden flex items-center justify-center px-5 py-5 transition-colors touch-manipulation select-none border-l",
-                    quickAction === 'edit_battle'
-                      ? "hover:brightness-110 border-white/10"
-                      : quickAction === 'mission'
-                        ? "hover:brightness-110 border-white/10"
-                        : quickAction === 'solo'
-                          ? "hover:brightness-110 border-white/10"
-                          : quickAction === 'multiplayer'
-                            ? "hover:brightness-110 border-white/10"
-                            : "bg-red-700/80 hover:bg-red-600/80 border-red-900/40"
-                  )}
-                  style={quickAction === 'edit_battle' ? { background: '#050507' } : quickAction === 'mission' ? { background: '#050507' } : quickAction === 'solo' ? { background: '#050507' } : quickAction === 'multiplayer' ? { background: '#050507' } : undefined}
-                >
-                   <ChevronDown className="w-5 h-5 text-white/90 relative z-10" />
-                 </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52 bg-surface-1 border-border">
-                <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">Quick Action</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setQuickAction('edit_battle')} className="flex items-center gap-2 cursor-pointer">
-                  <Swords className="w-4 h-4 text-red-400" />
-                  <div className="flex-1">
-                    <span className="text-sm font-semibold">Edit Battle</span>
-                    <span className="text-[10px] text-red-400 ml-1.5">1v1 · MATCH NOW</span>
-                  </div>
-                  {quickAction === 'edit_battle' && <Check className="w-3.5 h-3.5 text-red-400" />}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setQuickAction('multiplayer')} className="flex items-center gap-2 cursor-pointer">
-                  <Users className="w-4 h-4 text-purple-400" />
-                  <div className="flex-1">
-                    <span className="text-sm font-semibold">Multiplayer</span>
-                    <span className="text-[10px] text-purple-400 ml-1.5">OPEN LOBBY</span>
-                  </div>
-                  {quickAction === 'multiplayer' && <Check className="w-3.5 h-3.5 text-purple-400" />}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-              </div>
-            </div>
-            );
-          })()}
-
-
-          {/* Queue status bar — when searching for an Edit Battle opponent */}
-          <AnimatePresence>
-            {quickAction === 'edit_battle' && qfIsSearching && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="flex flex-col gap-1.5 mt-1.5"
-              >
-                <div className="bg-surface-1 border border-border px-3 py-2">
-                  <div className="flex items-start gap-2">
-                    <Info className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                    <AnimatePresence mode="wait">
-                      <motion.p
-                        key={qfTipIdx}
-                        initial={{ opacity: 0, y: 4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -4 }}
-                        transition={{ duration: 0.25 }}
-                        className="text-[11px] text-muted-foreground leading-snug"
-                      >
-                        {QF_TIPS[qfTipIdx]}
-                      </motion.p>
-                    </AnimatePresence>
-                  </div>
-                </div>
-                <button
-                  onClick={handleCancelQueue}
-                  className="flex items-center justify-center gap-1.5 px-4 py-2 text-xs border border-border bg-surface-1 text-muted-foreground font-bold uppercase tracking-wider hover:text-foreground hover:border-foreground/30 transition-colors touch-manipulation select-none"
-                >
-                  <X className="w-3.5 h-3.5" />
-                  Cancel
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
 
       {/* Arena banner removed — Arena access consolidated into quick-access grid */}
 
@@ -1250,11 +919,6 @@ export default function HubPage() {
         </div>
       </motion.div>
 
-
-      {/* ═══════════════════════════════════════════════════════════════════
-          💰 GET PAID — Commissions Section
-      ═══════════════════════════════════════════════════════════════════ */}
-      <CommissionsSection />
 
       {/* ═══════════════════════════════════════════════════════════════════
           QUICK MENU - Soft rounded white pills
