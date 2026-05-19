@@ -67,6 +67,7 @@ export function useCompetitionsList() {
       .from("competitions")
       .select("*")
       .in("status", ["lobby", "live"])
+      .or("is_private.is.null,is_private.eq.false")
       .order("created_at", { ascending: false })
       .limit(20);
     if (data) setCompetitions(data as any as Competition[]);
