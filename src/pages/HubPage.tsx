@@ -23,6 +23,7 @@ import { useGuestMode } from '@/hooks/useGuestMode';
 import { useSanctionedTournaments } from '@/hooks/useSanctionedTournaments';
 import { useBattles } from '@/hooks/useBattles';
 import FeaturedEditBattlesSection from '@/components/loopgate/FeaturedEditBattlesSection';
+import ArenaCompetitionsSection from '@/components/loopgate/ArenaCompetitionsSection';
 
 import { useLiveActivity, type LiveActivityItem } from '@/hooks/useLiveActivity';
 import { useFeaturedDrops } from '@/hooks/useFeaturedDrops';
