@@ -1020,7 +1020,7 @@ export default function HubPage() {
             <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
           </span>
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            {(stats?.activeUsers ?? 0).toLocaleString()} online on Loopgate
+            {liveOnline.toLocaleString()} online on Loopgate
           </span>
         </div>
       </div>
