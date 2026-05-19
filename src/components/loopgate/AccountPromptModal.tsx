@@ -120,7 +120,7 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
     }
     if (mode === 'signup' && !agreed) {
       setAgreeError(true);
-      toast.error('Please confirm you’re 18+ and have read the mission policy');
+      toast.error('Please confirm you’re 18+ and have read the terms');
       return;
     }
     if (mode === 'signup' && isFastPassword && !savedAck) {
@@ -411,11 +411,11 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
                   <span className={`text-[12px] leading-snug ${agreeError ? 'text-red-400/90' : 'text-[#8E8E93]'}`}>
                     I’m 18+ and have read the{' '}
                     <Link
-                      to="/missions/policy"
+                      to="/rules"
                       onClick={(e) => e.stopPropagation()}
                       className="text-[#0A84FF] hover:underline"
                     >
-                      mission policy
+                      Loopgate terms
                     </Link>
                     .
                   </span>
