@@ -352,6 +352,21 @@ export default function HubPage() {
     setQfSearching(false);
     toast('Search cancelled', { duration: 2000 });
   };
+
+  const handleMultiplayer = async () => {
+    const { data } = await supabase
+      .from('competitions')
+      .select('id, slug')
+      .eq('status', 'lobby')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (data) {
+      navigate(`/competition/${(data as any).slug || (data as any).id}`);
+    } else {
+      navigate('/competitions');
+    }
+  };
   
   useActiveSession();
   
