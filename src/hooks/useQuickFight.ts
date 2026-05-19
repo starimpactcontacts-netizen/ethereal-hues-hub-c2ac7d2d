@@ -322,6 +322,7 @@ export function useRecentQuickFights(limit = 20) {
         .select('*')
         .in('status', ['waiting', 'active', 'submitted', 'judging', 'completed'])
         .is('hidden_at' as any, null)
+        .or('is_private.is.null,is_private.eq.false')
         .order('created_at', { ascending: false })
         .limit(limit);
       setFights((data as unknown as QuickFight[]) || []);
