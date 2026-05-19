@@ -996,6 +996,19 @@ export default function HubPage() {
         </a>
       </motion.div>
 
+      {/* Online now — transparent footer counter */}
+      <div className="px-4 mb-8 flex items-center justify-center">
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-transparent">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60 animate-ping" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+          </span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            {(stats?.activeUsers ?? 0).toLocaleString()} online on Loopgate
+          </span>
+        </div>
+      </div>
+
       <InviteModal open={inviteModalOpen} onOpenChange={setInviteModalOpen} />
       <WalletDrawer open={walletOpen} onClose={() => setWalletOpen(false)} />
       <RingsModal
