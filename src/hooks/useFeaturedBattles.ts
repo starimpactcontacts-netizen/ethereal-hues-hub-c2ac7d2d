@@ -10,10 +10,9 @@ export function useFeaturedBattles(limit = 3) {
     let mounted = true;
 
     async function fetchFeatured() {
-      const { data } = await supabase
-        .from('battles')
+      const { data } = await (supabase.from('battles') as any)
         .select('*')
-        .eq('is_featured' as any, true)
+        .eq('is_featured', true)
         .eq('status', 'completed')
         .order('judged_at', { ascending: false })
         .limit(limit);
