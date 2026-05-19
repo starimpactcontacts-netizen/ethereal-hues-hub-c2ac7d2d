@@ -445,6 +445,20 @@ export default function HubPage() {
     <div className="min-h-screen bg-background pb-16 overflow-x-hidden relative">
       {/* Gate lattice — subtle geometric texture */}
       <GatePattern opacity={1.5} tileSize={48} className="z-0" />
+
+      {/* Arcade grid texture overlay — beat-battle.net style */}
+      <div
+        className="pointer-events-none absolute inset-0 z-0 opacity-[0.18]"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, hsl(0 80% 50% / 0.18) 1px, transparent 1px),
+            linear-gradient(to bottom, hsl(0 80% 50% / 0.18) 1px, transparent 1px)
+          `,
+          backgroundSize: '28px 28px',
+          maskImage: 'radial-gradient(ellipse at center, black 30%, transparent 80%)',
+          WebkitMaskImage: 'radial-gradient(ellipse at center, black 30%, transparent 80%)',
+        }}
+      />
       
       <LoopyWelcomeModal />
       
@@ -579,8 +593,8 @@ export default function HubPage() {
             </div>
           </motion.div>
 
-          {/* PLAY — single primary CTA that expands into Edit Battle / Multiplayer */}
-          <div className="relative mt-5 mb-4">
+          {/* PLAY — aggressive arena CTA (red, angular, retro) */}
+          <div className="relative mt-10 mb-8">
             <AnimatePresence mode="wait" initial={false}>
               {!playExpanded ? (
                 <motion.div
@@ -593,10 +607,47 @@ export default function HubPage() {
                 >
                   <button
                     onClick={() => setPlayExpanded(true)}
-                    className="flex items-center justify-center gap-3 px-14 py-4 bg-white text-black rounded-md active:scale-[0.97] transition-transform"
+                    className="group relative w-full max-w-[340px] active:scale-[0.98] transition-transform"
+                    style={{
+                      clipPath: 'polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0 calc(100% - 14px), 0 14px)',
+                    }}
                   >
-                    <Play className="w-5 h-5 fill-black" strokeWidth={2.5} />
-                    <span className="font-display text-2xl tracking-[0.18em] uppercase leading-none">PLAY</span>
+                    {/* Outer red glow halo */}
+                    <div
+                      className="pointer-events-none absolute -inset-3 -z-10 opacity-70 animate-pulse-subtle"
+                      style={{ background: 'radial-gradient(ellipse at center, hsl(0 100% 55% / 0.55), transparent 70%)' }}
+                    />
+                    {/* Solid red body */}
+                    <div
+                      className="relative flex items-center justify-center gap-3 py-6 bg-[#FF3B3B]"
+                      style={{
+                        boxShadow:
+                          'inset 0 0 0 2px hsl(0 100% 80% / 0.45), inset 0 -6px 0 hsl(0 80% 35% / 0.55), 0 0 32px hsl(0 100% 55% / 0.55), 0 0 70px hsl(0 100% 50% / 0.25)',
+                      }}
+                    >
+                      {/* Scanline overlay */}
+                      <div
+                        className="pointer-events-none absolute inset-0 opacity-30 mix-blend-overlay"
+                        style={{
+                          backgroundImage: 'repeating-linear-gradient(0deg, rgba(0,0,0,0.5) 0px, rgba(0,0,0,0.5) 1px, transparent 1px, transparent 3px)',
+                        }}
+                      />
+                      <Play className="relative w-6 h-6 fill-white text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.7)]" strokeWidth={3} />
+                      <span
+                        className="relative text-white leading-none uppercase"
+                        style={{
+                          fontFamily: 'Teko, "Bebas Neue", monospace',
+                          fontSize: '38px',
+                          fontWeight: 700,
+                          letterSpacing: '0.28em',
+                          paddingLeft: '0.28em',
+                          textShadow:
+                            '0 0 1px rgba(0,0,0,0.8), 2px 2px 0 rgba(0,0,0,0.55), 0 0 12px rgba(255,255,255,0.45)',
+                        }}
+                      >
+                        PLAY
+                      </span>
+                    </div>
                   </button>
                 </motion.div>
               ) : (
@@ -606,13 +657,14 @@ export default function HubPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.18 }}
-                  className="w-full flex flex-col gap-2"
+                  className="w-full flex flex-col gap-2 max-w-[340px] mx-auto"
                 >
                   {/* QUICK BATTLE — flat solid */}
                   <button
                     onClick={() => { setPlayExpanded(false); handleQuickFight(); }}
                     disabled={qfIsSearching}
-                    className="w-full py-4 rounded-md bg-red-600 hover:bg-red-500 active:scale-[0.99] transition disabled:opacity-60 flex flex-col items-center justify-center"
+                    className="w-full py-4 bg-[#FF3B3B] hover:brightness-110 active:scale-[0.99] transition disabled:opacity-60 flex flex-col items-center justify-center"
+                    style={{ boxShadow: 'inset 0 0 0 2px hsl(0 100% 80% / 0.4), 0 0 24px hsl(0 100% 55% / 0.4)' }}
                   >
                     <span className="font-display text-2xl text-white tracking-[0.14em] uppercase leading-none flex items-center gap-2">
                       {qfIsSearching && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -624,7 +676,7 @@ export default function HubPage() {
                   {/* RANKED */}
                   <button
                     onClick={() => { setPlayExpanded(false); navigate('/arena'); }}
-                    className="w-full py-4 rounded-md bg-surface-1 border border-red-600/40 hover:bg-surface-2 active:scale-[0.99] transition flex flex-col items-center justify-center"
+                    className="w-full py-4 bg-surface-1 border border-[#FF3B3B]/50 hover:bg-surface-2 active:scale-[0.99] transition flex flex-col items-center justify-center"
                   >
                     <span className="font-display text-2xl text-foreground tracking-[0.14em] uppercase leading-none">Ranked</span>
                     <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.22em] mt-1.5">Play A Ranked Match</span>
@@ -633,7 +685,7 @@ export default function HubPage() {
                   {/* BACK */}
                   <button
                     onClick={() => setPlayExpanded(false)}
-                    className="w-full py-3 rounded-md bg-surface-1/60 border border-border hover:bg-surface-1 active:scale-[0.99] transition flex flex-col items-center justify-center"
+                    className="w-full py-3 bg-surface-1/60 border border-border hover:bg-surface-1 active:scale-[0.99] transition flex flex-col items-center justify-center"
                   >
                     <span className="font-display text-xl text-foreground/90 tracking-[0.14em] uppercase leading-none">Back</span>
                     <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-[0.22em] mt-1">Return To Main Menu</span>
@@ -872,173 +924,40 @@ export default function HubPage() {
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════
-          🏆 FEATURED — Competitions carousel (paired with FEATURED DROPS, Roblox-style stack)
-      ═══════════════════════════════════════════════════════════════════ */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.1 }}
-        className="mt-3 relative"
-      >
-        {/* Top decorative border line */}
-        <div className="relative h-[1px] pointer-events-none overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-foreground/15 to-transparent" />
-        </div>
-
-        {/* Dubai-style diamond pattern background */}
-        <div className="absolute inset-y-0 left-0 right-0 top-[3px] overflow-hidden pointer-events-none">
-          <div
-            className="absolute inset-0 opacity-[0.04]"
-            style={{
-              backgroundImage: `
-                radial-gradient(circle at 20px 20px, hsl(var(--foreground)) 1px, transparent 1px),
-                radial-gradient(circle at 0px 0px, hsl(var(--foreground)) 1px, transparent 1px),
-                linear-gradient(45deg, transparent 48%, hsl(var(--foreground)) 49%, hsl(var(--foreground)) 51%, transparent 52%),
-                linear-gradient(-45deg, transparent 48%, hsl(var(--foreground)) 49%, hsl(var(--foreground)) 51%, transparent 52%)
-              `,
-              backgroundSize: '40px 40px'
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-gold/5 via-transparent to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
-        </div>
-
-        <div className="relative px-4 pt-2.5 mb-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-1 h-5 bg-gold rounded-full" />
-              <h2 className="font-display text-lg text-foreground">COMPETITIONS</h2>
-            </div>
-            <Link to="/competitions" className="text-[9px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
-              VIEW ALL <ArrowRight size={10} />
-            </Link>
-          </div>
-        </div>
-        <div className="relative">
-          <ArenaCompetitionsSection onCreateClick={() => navigate(profile ? '/competition/create' : '/start')} hideHeader />
-        </div>
-      </motion.div>
-
-
-      {/* ═══════════════════════════════════════════════════════════════════
-          QUICK MENU - Soft rounded white pills
+          QUICK MENU — single arcade-style Rankings tile (beat-battle vibe)
       ═══════════════════════════════════════════════════════════════════ */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.18 }}
-        className="px-4 mt-2"
+        className="px-4 mt-6"
       >
-        <div className="bg-surface-1/40 backdrop-blur-sm rounded-2xl p-2 border border-white/5">
-          <div className="grid grid-cols-4 gap-1.5">
-            <Link to="/rankings" className="group">
-              <div className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl hover:bg-white/5 transition-colors">
-                <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white/15 transition-colors">
-                  <Trophy className="w-5 h-5 text-foreground/80 group-hover:text-foreground transition-colors" />
-                </div>
-                <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">Rankings</span>
-              </div>
-            </Link>
-            
-            <Link to="/league" className="group">
-              <div className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl hover:bg-white/5 transition-colors">
-                <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white/15 transition-colors">
-                  <Shield className="w-5 h-5 text-foreground/80 group-hover:text-foreground transition-colors" />
-                </div>
-                <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">League</span>
-              </div>
-            </Link>
-            
-            <Link to="/units" className="group">
-              <div className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl hover:bg-white/5 transition-colors">
-                <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white/15 transition-colors">
-                  <Users2 className="w-5 h-5 text-foreground/80 group-hover:text-foreground transition-colors" />
-                </div>
-                <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">Units</span>
-              </div>
-            </Link>
-            
-            <Link to="/shop" className="group">
-              <div className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl hover:bg-white/5 transition-colors">
-                <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white/15 transition-colors">
-                  <Gift className="w-5 h-5 text-foreground/80 group-hover:text-foreground transition-colors" />
-                </div>
-                <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">Shop</span>
-              </div>
-            </Link>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* ═══════════════════════════════════════════════════════════════════
-          EXPLORE GRID - IG-style visual collage
-      ═══════════════════════════════════════════════════════════════════ */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.25 }}
-        className="mt-3 space-y-4"
-      >
-        {/* Signal Feed — collapsible live activity */}
-        <div className="mx-4 bg-surface-1/30 border border-border/20 px-3 py-1">
-          <HubLiveFeed />
-        </div>
-      </motion.div>
-
-      {/* ═══════════════════════════════════════════════════════════════════
-          INVITE FRIENDS - Subtle inline CTA
-      ═══════════════════════════════════════════════════════════════════ */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="mt-5 px-4"
-      >
-        <button
-          onClick={() => setInviteModalOpen(true)}
-          className="relative w-full rounded-2xl overflow-hidden active:scale-[0.99] transition-transform text-left group"
-          style={{
-            background: 'linear-gradient(135deg, hsl(0 0% 7%) 0%, hsl(0 0% 4%) 100%)',
-            border: '1px solid hsl(45 100% 55% / 0.18)',
-            boxShadow: '0 16px 48px hsl(0 0% 0% / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.04)',
-          }}
+        <Link
+          to="/rankings"
+          className="group block w-full max-w-[340px] mx-auto active:scale-[0.99] transition-transform"
         >
-          {/* Soft gold glow */}
-          <div className="pointer-events-none absolute -top-12 -right-12 w-44 h-44 rounded-full" style={{ background: 'radial-gradient(circle, hsl(45 100% 55% / 0.18) 0%, transparent 70%)' }} />
-          <div className="pointer-events-none absolute -bottom-16 -left-16 w-40 h-40 rounded-full" style={{ background: 'radial-gradient(circle, hsl(45 100% 55% / 0.08) 0%, transparent 70%)' }} />
-
-          <div className="relative flex items-center gap-4 p-5">
-            <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0"
+          <div
+            className="relative flex items-center justify-center gap-3 py-3.5 bg-black/60 border-2 border-[#FF3B3B]/60 hover:border-[#FF3B3B] transition-colors"
+            style={{ boxShadow: 'inset 0 0 0 1px hsl(0 0% 100% / 0.04), 0 0 18px hsl(0 100% 55% / 0.18)' }}
+          >
+            <Trophy className="w-4 h-4 text-[#FF3B3B]" strokeWidth={2.5} />
+            <span
+              className="text-white uppercase leading-none"
               style={{
-                background: 'linear-gradient(145deg, hsl(45 100% 58%) 0%, hsl(38 95% 48%) 100%)',
-                boxShadow: '0 8px 24px hsl(45 100% 50% / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.4)',
+                fontFamily: 'Teko, "Bebas Neue", monospace',
+                fontSize: '22px',
+                fontWeight: 600,
+                letterSpacing: '0.28em',
+                paddingLeft: '0.28em',
               }}
             >
-              <UserPlus className="w-7 h-7 text-black" strokeWidth={2.4} />
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="font-display text-xl text-foreground tracking-[0.06em] uppercase leading-none">Invite Friends</span>
-                <Sparkles className="w-3.5 h-3.5 text-gold" />
-              </div>
-              <p className="text-[11px] text-muted-foreground mt-1.5 leading-snug">
-                Bring a friend to the arena
-              </p>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="text-[9px] font-bold uppercase tracking-[0.18em] px-2 py-0.5 rounded-full bg-gold/15 text-gold border border-gold/25">
-                  +170 XP
-                </span>
-                <span className="text-[9px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-                  per invite
-                </span>
-              </div>
-            </div>
-
-            <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-gold group-hover:translate-x-1 transition-all shrink-0" />
+              Rankings
+            </span>
           </div>
-        </button>
+          <p className="text-center text-[9px] text-muted-foreground font-bold uppercase tracking-[0.22em] mt-2">
+            Climb The Leaderboard
+          </p>
+        </Link>
       </motion.div>
 
       <InviteModal open={inviteModalOpen} onOpenChange={setInviteModalOpen} />
