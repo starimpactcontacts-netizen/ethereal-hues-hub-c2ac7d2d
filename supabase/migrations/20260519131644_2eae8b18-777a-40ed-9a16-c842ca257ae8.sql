@@ -1,0 +1,2 @@
+ALTER TABLE public.battles ADD COLUMN IF NOT EXISTS is_featured boolean NOT NULL DEFAULT false;
+CREATE INDEX IF NOT EXISTS idx_battles_featured_completed ON public.battles (is_featured, status) WHERE is_featured = true;
