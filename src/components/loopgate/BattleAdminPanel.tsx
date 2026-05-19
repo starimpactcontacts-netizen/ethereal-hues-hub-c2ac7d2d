@@ -123,6 +123,7 @@ export default function BattleAdminPanel() {
     } finally {
       setActionLoading(null);
     }
+  }
 
   async function toggleFeatured(battleId: string, current: boolean) {
     setActionLoading(battleId);
@@ -132,7 +133,6 @@ export default function BattleAdminPanel() {
     if (error) toast.error(`Failed: ${error.message}`);
     else toast.success(!current ? "Pinned to Hub ⭐" : "Unpinned from Hub");
     setActionLoading(null);
-  }
   }
 
   async function declareWinner(battleId: string, winnerId: string, winnerUsername: string) {
