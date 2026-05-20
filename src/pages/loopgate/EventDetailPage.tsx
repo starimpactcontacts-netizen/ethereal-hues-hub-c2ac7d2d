@@ -274,7 +274,7 @@ export default function EventDetailPage() {
           </div>
         </section>
 
-        <section className="rounded-lg bg-arena-panel p-3 shadow-[0_18px_38px_hsl(var(--arena-bg)/0.28)]">
+        <section className="rounded-lg bg-black ring-1 ring-white/[0.06] p-3 shadow-[0_18px_38px_hsl(var(--arena-bg)/0.28)]">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <h2 className="text-[24px] font-black uppercase leading-none text-arena-ink" style={displayFont}>Edit Showcase</h2>
@@ -381,7 +381,7 @@ export default function EventDetailPage() {
         )}
 
         {event.rules && event.rules.length > 0 && (
-          <section className="rounded-lg bg-arena-panel p-3 shadow-[0_18px_38px_hsl(var(--arena-bg)/0.24)]">
+          <section className="rounded-lg bg-black ring-1 ring-white/[0.06] p-3 shadow-[0_18px_38px_hsl(var(--arena-bg)/0.24)]">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-[24px] font-black uppercase leading-none text-arena-ink" style={displayFont}>Rules</h2>
               <Swords size={16} className="text-arena-red" />
@@ -409,7 +409,7 @@ export default function EventDetailPage() {
           </section>
         )}
 
-        <section ref={ladderRef} className="rounded-lg bg-arena-panel p-3 shadow-[0_18px_38px_hsl(var(--arena-bg)/0.24)] scroll-mt-4">
+        <section ref={ladderRef} className="rounded-lg bg-black ring-1 ring-white/[0.06] p-3 shadow-[0_18px_38px_hsl(var(--arena-bg)/0.24)] scroll-mt-4">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <h2 className="text-[24px] font-black uppercase leading-none text-arena-ink" style={displayFont}>Full Ladder</h2>
