@@ -304,20 +304,33 @@ export default function EventDetailPage() {
         </section>
 
         {isLightYagami && (
-          <section className="rounded-lg bg-arena-panel p-3 shadow-[0_18px_38px_hsl(var(--arena-bg)/0.26)]">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-[24px] font-black uppercase leading-none text-arena-ink" style={displayFont}>Rewards</h2>
-              <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.14em] text-arena-amber"><RingsCoin size={12} /> 1,000,000 Rings</span>
+          <section className="relative overflow-hidden rounded-lg bg-[#06070a] p-4 shadow-[0_18px_42px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.04)]">
+            {/* EWC diagonal stripe backdrop */}
+            <div className="pointer-events-none absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "repeating-linear-gradient(115deg, #ffffff 0 1px, transparent 1px 14px)" }} />
+            <div className="pointer-events-none absolute -top-16 -right-10 h-44 w-44 rounded-full bg-arena-amber/25 blur-[80px]" />
+            <div className="pointer-events-none absolute -bottom-16 -left-10 h-44 w-44 rounded-full bg-arena-emerald/15 blur-[80px]" />
+
+            <div className="relative mb-4 flex items-end justify-between">
+              <div>
+                <p className="text-[9px] font-black uppercase tracking-[0.42em] text-white/40">Prize Pool</p>
+                <h2 className="mt-0.5 text-[30px] font-black uppercase leading-none text-white" style={{ ...displayFont, transform: "skewX(-6deg)" }}>Rewards</h2>
+              </div>
+              <div className="inline-flex items-center gap-1.5 rounded-sm bg-black/70 px-2.5 py-1.5 ring-1 ring-arena-amber/45">
+                <RingsCoin size={13} />
+                <span className="text-[11px] font-black uppercase tracking-[0.18em] text-arena-amber" style={displayFont}>1,000,000 Rings</span>
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <PrizePill icon={<Crown size={14} />} title="1st Best Edit" cash="$90" rings="120K" tone="gold" />
-              <PrizePill icon={<Medal size={14} />} title="2nd Most Viral" cash="$60" rings="100K" />
+
+            <div className="relative grid grid-cols-2 gap-2.5">
+              <PrizeSlab rank="01" title="Best Edit" cash="$90" rings="120K" tone="gold" />
+              <PrizeSlab rank="02" title="Most Viral" cash="$60" rings="100K" />
             </div>
-            <div className="mt-2 grid grid-cols-4 gap-1.5 text-center">
+
+            <div className="relative mt-2.5 grid grid-cols-4 gap-1.5 text-center">
               {["1–5", "6–15", "16–30", "31–50"].map((range, index) => (
-                <div key={range} className="rounded bg-arena-strong px-1.5 py-2">
-                  <p className="text-[9px] font-black uppercase tracking-[0.12em] text-arena-muted">Rank {range}</p>
-                  <p className="mt-1 text-[14px] font-black text-arena-amber" style={displayFont}>{["400K", "300K", "200K", "100K"][index]}</p>
+                <div key={range} className="relative overflow-hidden bg-black/55 px-1.5 py-2 ring-1 ring-white/[0.06]" style={{ clipPath: "polygon(0 0, 100% 0, calc(100% - 6px) 100%, 0 100%)" }}>
+                  <p className="text-[8px] font-black uppercase tracking-[0.16em] text-white/45">Rank {range}</p>
+                  <p className="mt-1 text-[15px] font-black text-arena-amber tabular-nums" style={displayFont}>{["400K", "300K", "200K", "100K"][index]}</p>
                 </div>
               ))}
             </div>
