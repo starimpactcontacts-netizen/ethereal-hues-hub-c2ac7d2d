@@ -15,6 +15,7 @@ import {
   Swords,
   Target,
   Trophy,
+  X,
   XCircle,
   Zap,
 } from "lucide-react";
@@ -578,16 +579,56 @@ function InspoTile({ poster, label, crop = "50% 22%" }: { poster: string; label:
 
 function ShowcaseDrop({ edit }: { edit: any }) {
   const thumb = edit.thumbnail_url;
+  const [open, setOpen] = useState(false);
+  const url: string = edit.submission_url;
+  const isVideoFile = /\.(mp4|webm|mov|m4v)(\?|$)/i.test(url || "");
+  const isExternal = /tiktok\.com|instagram\.com|youtube\.com|youtu\.be/i.test(url || "");
   return (
-    <a href={edit.submission_url} target="_blank" rel="noopener noreferrer" className="relative aspect-[3/4] overflow-hidden rounded-lg bg-arena-strong shadow-[0_0_0_1px_hsl(var(--arena-line)/0.24)] active:scale-[0.98] transition">
-      {thumb ? <img src={thumb} alt={edit.custom_title || "Submitted edit"} className="h-full w-full object-cover" loading="lazy" /> : <div className="h-full w-full bg-[linear-gradient(135deg,hsl(var(--arena-panel-strong)),hsl(var(--arena-bg)))]" />}
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,hsl(var(--arena-bg)/0.08),hsl(var(--arena-bg)/0.8))]" />
-      <div className="absolute left-1.5 top-1.5 rounded bg-arena-panel/80 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-arena-ink">INSPO</div>
-      <Play size={18} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-primary drop-shadow" fill="currentColor" />
-      {edit.custom_title && (
-        <p className="absolute inset-x-1.5 bottom-1.5 truncate text-[9px] font-black text-primary">{edit.custom_title}</p>
+    <>
+      <button
+        type="button"
+        onClick={() => {
+          if (isExternal && !isVideoFile) {
+            window.open(url, "_blank", "noopener,noreferrer");
+          } else {
+            setOpen(true);
+          }
+        }}
+        className="relative aspect-[3/4] overflow-hidden rounded-lg bg-arena-strong shadow-[0_0_0_1px_hsl(var(--arena-line)/0.24)] active:scale-[0.98] transition text-left"
+      >
+        {thumb ? <img src={thumb} alt={edit.custom_title || "Submitted edit"} className="h-full w-full object-cover" loading="lazy" /> : <div className="h-full w-full bg-[linear-gradient(135deg,hsl(var(--arena-panel-strong)),hsl(var(--arena-bg)))]" />}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,hsl(var(--arena-bg)/0.08),hsl(var(--arena-bg)/0.8))]" />
+        <div className="absolute left-1.5 top-1.5 rounded bg-arena-panel/80 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-arena-ink">INSPO</div>
+        <Play size={18} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-primary drop-shadow" fill="currentColor" />
+        {edit.custom_title && (
+          <p className="absolute inset-x-1.5 bottom-1.5 truncate text-[9px] font-black text-primary">{edit.custom_title}</p>
+        )}
+      </button>
+      {open && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/95 p-4"
+          onClick={() => setOpen(false)}
+        >
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setOpen(false); }}
+            className="absolute right-4 top-[max(env(safe-area-inset-top,0px),16px)] z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/20 backdrop-blur"
+            aria-label="Close inspo"
+          >
+            <X size={18} className="text-white" />
+          </button>
+          <video
+            src={url}
+            poster={thumb || undefined}
+            controls
+            autoPlay
+            playsInline
+            onClick={(e) => e.stopPropagation()}
+            className="max-h-[88vh] w-auto max-w-full rounded-lg bg-black"
+          />
+        </div>
       )}
-    </a>
+    </>
   );
 }
 
