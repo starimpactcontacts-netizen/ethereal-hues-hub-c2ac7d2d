@@ -304,20 +304,33 @@ export default function EventDetailPage() {
         </section>
 
         {isLightYagami && (
-          <section className="rounded-lg bg-arena-panel p-3 shadow-[0_18px_38px_hsl(var(--arena-bg)/0.26)]">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-[24px] font-black uppercase leading-none text-arena-ink" style={displayFont}>Rewards</h2>
-              <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.14em] text-arena-amber"><RingsCoin size={12} /> 1,000,000 Rings</span>
+          <section className="relative overflow-hidden rounded-lg bg-[#06070a] p-4 shadow-[0_18px_42px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.04)]">
+            {/* EWC diagonal stripe backdrop */}
+            <div className="pointer-events-none absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "repeating-linear-gradient(115deg, #ffffff 0 1px, transparent 1px 14px)" }} />
+            <div className="pointer-events-none absolute -top-16 -right-10 h-44 w-44 rounded-full bg-arena-amber/25 blur-[80px]" />
+            <div className="pointer-events-none absolute -bottom-16 -left-10 h-44 w-44 rounded-full bg-arena-emerald/15 blur-[80px]" />
+
+            <div className="relative mb-4 flex items-end justify-between">
+              <div>
+                <p className="text-[9px] font-black uppercase tracking-[0.42em] text-white/40">Prize Pool</p>
+                <h2 className="mt-0.5 text-[30px] font-black uppercase leading-none text-white" style={{ ...displayFont, transform: "skewX(-6deg)" }}>Rewards</h2>
+              </div>
+              <div className="inline-flex items-center gap-1.5 rounded-sm bg-black/70 px-2.5 py-1.5 ring-1 ring-arena-amber/45">
+                <RingsCoin size={13} />
+                <span className="text-[11px] font-black uppercase tracking-[0.18em] text-arena-amber" style={displayFont}>1,000,000 Rings</span>
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <PrizePill icon={<Crown size={14} />} title="1st Best Edit" cash="$90" rings="120K" tone="gold" />
-              <PrizePill icon={<Medal size={14} />} title="2nd Most Viral" cash="$60" rings="100K" />
+
+            <div className="relative grid grid-cols-2 gap-2.5">
+              <PrizeSlab rank="01" title="Best Edit" cash="$90" rings="120K" tone="gold" />
+              <PrizeSlab rank="02" title="Most Viral" cash="$60" rings="100K" />
             </div>
-            <div className="mt-2 grid grid-cols-4 gap-1.5 text-center">
+
+            <div className="relative mt-2.5 grid grid-cols-4 gap-1.5 text-center">
               {["1–5", "6–15", "16–30", "31–50"].map((range, index) => (
-                <div key={range} className="rounded bg-arena-strong px-1.5 py-2">
-                  <p className="text-[9px] font-black uppercase tracking-[0.12em] text-arena-muted">Rank {range}</p>
-                  <p className="mt-1 text-[14px] font-black text-arena-amber" style={displayFont}>{["400K", "300K", "200K", "100K"][index]}</p>
+                <div key={range} className="relative overflow-hidden bg-black/55 px-1.5 py-2 ring-1 ring-white/[0.06]" style={{ clipPath: "polygon(0 0, 100% 0, calc(100% - 6px) 100%, 0 100%)" }}>
+                  <p className="text-[8px] font-black uppercase tracking-[0.16em] text-white/45">Rank {range}</p>
+                  <p className="mt-1 text-[15px] font-black text-arena-amber tabular-nums" style={displayFont}>{["400K", "300K", "200K", "100K"][index]}</p>
                 </div>
               ))}
             </div>
@@ -601,23 +614,68 @@ function PrizePill({ icon, title, cash, rings, tone }: { icon: ReactNode; title:
   );
 }
 
+function PrizeSlab({ rank, title, cash, rings, tone }: { rank: string; title: string; cash: string; rings: string; tone?: "gold" }) {
+  const isGold = tone === "gold";
+  return (
+    <div
+      className={`relative overflow-hidden p-3 pl-4 ring-1 ${isGold ? "ring-arena-amber/55" : "ring-white/[0.08]"}`}
+      style={{
+        clipPath: "polygon(0 0, 100% 0, calc(100% - 14px) 100%, 0 100%)",
+        background: isGold
+          ? "linear-gradient(135deg, #1a1305 0%, #0a0a0a 75%)"
+          : "linear-gradient(135deg, #0d0e12 0%, #050608 80%)",
+      }}
+    >
+      {isGold && <span className="absolute inset-y-0 left-0 w-[3px] bg-arena-amber shadow-[0_0_18px_hsl(var(--arena-amber))]" />}
+      <div className="flex items-center gap-2">
+        <span className={`text-[11px] font-black tabular-nums tracking-[0.1em] ${isGold ? "text-arena-amber" : "text-white/45"}`} style={displayFont}>{rank}</span>
+        <span className="text-[9px] font-black uppercase tracking-[0.18em] text-white/60">{title}</span>
+      </div>
+      <p className={`mt-2 text-[34px] font-black leading-none tabular-nums ${isGold ? "text-white drop-shadow-[0_0_18px_rgba(255,184,28,0.35)]" : "text-white"}`} style={{ ...displayFont, transform: "skewX(-5deg)" }}>{cash}</p>
+      <div className="mt-2 inline-flex items-center gap-1 rounded-sm bg-black/55 px-1.5 py-0.5 ring-1 ring-arena-amber/30">
+        <RingsCoin size={11} />
+        <span className="text-[10px] font-black tabular-nums text-arena-amber" style={displayFont}>{rings}</span>
+      </div>
+    </div>
+  );
+}
+
 function LadderRow({ row, rank }: { row: any; rank: number }) {
   const qoi = row.qoi_score || 0;
   const grade = qoi >= 90 ? "S" : qoi >= 80 ? "A" : qoi >= 70 ? "B" : qoi >= 60 ? "C" : "—";
-  const rankTone = rank === 1 ? "text-arena-amber" : rank === 2 ? "text-arena-ink" : rank === 3 ? "text-arena-red" : "text-arena-muted";
+  const isTop1 = rank === 1;
+  const isTop3 = rank <= 3;
+  const rankTone = isTop1 ? "text-arena-amber" : rank === 2 ? "text-white" : rank === 3 ? "text-arena-red" : "text-white/35";
+  const accent = isTop1 ? "hsl(var(--arena-amber))" : rank === 2 ? "#cfd3dc" : rank === 3 ? "hsl(var(--arena-red))" : "rgba(255,255,255,0.12)";
 
   return (
-    <a href={row.submission_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg bg-arena-strong px-3 py-2.5 active:scale-[0.99] transition">
-      <div className={`w-9 text-center text-[24px] font-black leading-none tabular-nums ${rankTone}`} style={displayFont}>#{rank}</div>
+    <a
+      href={row.submission_url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group relative flex items-center gap-3 overflow-hidden bg-[#0a0b0f] pl-4 pr-3 py-2.5 ring-1 ring-white/[0.05] active:scale-[0.99] transition"
+      style={{ clipPath: "polygon(0 0, 100% 0, calc(100% - 12px) 100%, 0 100%)" }}
+    >
+      <span className="absolute inset-y-0 left-0 w-[3px]" style={{ background: accent, boxShadow: isTop3 ? `0 0 16px ${accent}` : undefined }} />
+      {isTop1 && <span className="pointer-events-none absolute -right-8 top-0 bottom-0 w-24 bg-gradient-to-l from-arena-amber/15 to-transparent" />}
+
+      <div className={`w-11 text-center text-[26px] font-black leading-none tabular-nums ${rankTone}`} style={{ ...displayFont, transform: "skewX(-6deg)" }}>
+        #{rank}
+      </div>
       <div className="flex-1 min-w-0">
-        <p className="truncate text-[13px] font-black text-arena-ink">{row.profile?.username || row.author_username || "Unknown"}</p>
-        <p className="mt-0.5 truncate text-[9px] font-bold uppercase tracking-[0.12em] text-arena-muted">TikTok · {row.view_count ? `${row.view_count.toLocaleString()} views` : "Submitted"}</p>
+        <p className="truncate text-[13px] font-black text-white">{row.profile?.username || row.author_username || "Unknown"}</p>
+        <p className="mt-0.5 truncate text-[9px] font-bold uppercase tracking-[0.18em] text-white/40">TikTok · {row.view_count ? `${row.view_count.toLocaleString()} views` : "Submitted"}</p>
       </div>
       <div className="text-right">
-        <p className="text-[22px] font-black leading-none tabular-nums text-arena-ink" style={displayFont}>{qoi ? qoi.toFixed(1) : "—"}</p>
-        <p className="text-[8px] font-black uppercase tracking-[0.14em] text-arena-muted">QOI</p>
+        <p className="text-[22px] font-black leading-none tabular-nums text-white" style={displayFont}>{qoi ? qoi.toFixed(1) : "—"}</p>
+        <p className="text-[8px] font-black uppercase tracking-[0.22em] text-white/40">QOI</p>
       </div>
-      <div className="flex h-8 w-8 items-center justify-center rounded bg-arena-panel text-[17px] font-black text-arena-amber" style={displayFont}>{grade}</div>
+      <div
+        className={`flex h-9 w-9 items-center justify-center text-[18px] font-black ${isTop3 ? "text-arena-amber" : "text-white/55"}`}
+        style={{ ...displayFont, background: "#000", clipPath: "polygon(10% 0, 100% 0, 90% 100%, 0 100%)" }}
+      >
+        {grade}
+      </div>
     </a>
   );
 }
