@@ -407,7 +407,7 @@ export default function HubPage() {
     );
     if (ok) {
       toast.success('⚔️ Match locked in!');
-      navigate(`/fight/${match.fightId}`);
+      setBattleSelect({ fightId: match.fightId, you: match.you, opponent: match.opponent });
     } else {
       toast.error(error || 'Lobby already taken — try again');
     }
