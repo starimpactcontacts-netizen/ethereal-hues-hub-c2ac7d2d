@@ -166,14 +166,14 @@ export default function EventDetailPage() {
           </div>
 
           {(event as any).end_date && (
-            <div className="mt-5 border-2 border-arena-amber bg-black p-3">
+            <div className="mt-5 border-2 border-arena-amber bg-black p-3 shadow-[6px_6px_0_#000]">
               <div className="flex items-center justify-between">
-                <p className="text-[9px] font-black uppercase tracking-[0.28em] text-arena-amber">Time Left to Enter</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.28em] text-arena-amber">Time Left to Enter</p>
                 <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-[0.2em] text-arena-red">
                   <span className="h-1.5 w-1.5 bg-arena-red animate-pulse" /> Act Fast
                 </span>
               </div>
-              <div className="mt-2"><CountdownTimer endDate={(event as any).end_date} large /></div>
+              <BigCountdown endDate={(event as any).end_date} />
             </div>
           )}
 
