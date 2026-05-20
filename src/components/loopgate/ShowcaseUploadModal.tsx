@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { X, Upload, Loader2, Film, Image as ImageIcon } from "lucide-react";
+import { X, Upload, Loader2, Film, Image as ImageIcon, Music } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadToBunny } from "@/lib/bunnyUpload";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,8 +14,9 @@ interface Props {
   onUploaded?: () => void;
 }
 
-const ACCEPT = "video/mp4,video/webm,video/quicktime,image/jpeg,image/png,image/webp,image/gif";
+const ACCEPT = "video/mp4,video/webm,video/quicktime,image/jpeg,image/png,image/webp,image/gif,audio/mpeg,audio/mp4,audio/wav,audio/x-m4a,audio/aac,audio/ogg";
 const MAX_IMAGE_MB = 25;
+const MAX_AUDIO_MB = 50;
 
 /**
  * Admin-only modal for adding inspiration drops to the Edit Showcase.
@@ -35,6 +36,7 @@ export default function ShowcaseUploadModal({ isOpen, onClose, eventId, eventTit
 
   const isVideo = !!file && file.type.startsWith("video/");
   const isImage = !!file && file.type.startsWith("image/");
+  const isAudio = !!file && file.type.startsWith("audio/");
   const previewUrl = file ? URL.createObjectURL(file) : null;
 
   const handlePick = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,6 +44,10 @@ export default function ShowcaseUploadModal({ isOpen, onClose, eventId, eventTit
     if (!f) return;
     if (f.type.startsWith("image/") && f.size > MAX_IMAGE_MB * 1024 * 1024) {
       toast.error(`Image must be under ${MAX_IMAGE_MB}MB`);
+      return;
+    }
+    if (f.type.startsWith("audio/") && f.size > MAX_AUDIO_MB * 1024 * 1024) {
+      toast.error(`Audio must be under ${MAX_AUDIO_MB}MB`);
       return;
     }
     setFile(f);
@@ -71,7 +77,7 @@ export default function ShowcaseUploadModal({ isOpen, onClose, eventId, eventTit
         if (upErr) throw upErr;
         const { data: pub } = supabase.storage.from("loop-media").getPublicUrl(path);
         url = pub.publicUrl;
-        thumbnailUrl = pub.publicUrl;
+        thumbnailUrl = isImage ? pub.publicUrl : null;
         setProgress(100);
       }
 
@@ -135,8 +141,8 @@ export default function ShowcaseUploadModal({ isOpen, onClose, eventId, eventTit
               className="w-full aspect-[3/4] rounded-lg bg-arena-strong border-2 border-dashed border-arena-line/50 flex flex-col items-center justify-center gap-2 text-arena-muted hover:text-arena-ink hover:border-arena-amber transition"
             >
               <Upload size={28} />
-              <span className="text-[12px] font-black uppercase tracking-[0.16em]">Pick video or photo</span>
-              <span className="text-[10px] text-arena-muted/80">MP4 · MOV · WEBM · JPG · PNG · GIF</span>
+              <span className="text-[12px] font-black uppercase tracking-[0.16em]">Pick video, photo, or audio</span>
+              <span className="text-[10px] text-arena-muted/80">MP4 · MOV · WEBM · JPG · PNG · GIF · MP3 · WAV · M4A</span>
             </button>
           ) : (
             <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-black">
@@ -146,9 +152,15 @@ export default function ShowcaseUploadModal({ isOpen, onClose, eventId, eventTit
               {isImage && previewUrl && (
                 <img src={previewUrl} alt="Preview" className="w-full h-full object-contain" />
               )}
+              {isAudio && previewUrl && (
+                <div className="w-full h-full flex flex-col items-center justify-center gap-3 px-4">
+                  <Music size={48} className="text-arena-amber" />
+                  <audio src={previewUrl} controls className="w-full" />
+                </div>
+              )}
               <div className="absolute top-2 left-2 inline-flex items-center gap-1 rounded bg-arena-bg/80 px-2 py-1 text-[10px] font-black uppercase tracking-widest text-arena-ink">
-                {isVideo ? <Film size={11} /> : <ImageIcon size={11} />}
-                {isVideo ? "Video" : "Image"}
+                {isVideo ? <Film size={11} /> : isAudio ? <Music size={11} /> : <ImageIcon size={11} />}
+                {isVideo ? "Video" : isAudio ? "Audio" : "Image"}
               </div>
               {!busy && (
                 <button
