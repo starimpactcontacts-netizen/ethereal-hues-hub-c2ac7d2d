@@ -57,6 +57,8 @@ export default function BattleSelectFlow({ open, you, opponent, onComplete, onCa
   const [oppPack, setOppPack] = useState<Scenepack | null>(null);
   const [mySong, setMySong] = useState<Song | null>(null);
   const [oppSong, setOppSong] = useState<Song | null>(null);
+  const [syncPack, setSyncPack] = useState(false);
+  const [syncSong, setSyncSong] = useState(false);
 
   const [intro, setIntro] = useState({ pct: 0, count: 3 });
 
@@ -242,12 +244,10 @@ export default function BattleSelectFlow({ open, you, opponent, onComplete, onCa
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {SCENEPACKS.map((p) => {
                   const mine = myPack?.id === p.id;
-                  const opp = oppPack?.id === p.id;
                   return (
                     <button key={p.id} onClick={() => setMyPack(p)}
                       className={`relative rounded-xl overflow-hidden border-2 transition-all active:scale-[0.97]
                         ${mine ? 'border-red-500 shadow-[0_0_24px_rgba(239,68,68,0.55)]' :
-                          opp ? 'border-blue-500 shadow-[0_0_24px_rgba(59,130,246,0.45)]' :
                           'border-white/10 hover:border-white/30'}`}>
                       <div className="aspect-[2/3] w-full bg-surface-2">
                         <img src={p.poster} alt={p.name} className="w-full h-full object-cover" />
@@ -261,17 +261,20 @@ export default function BattleSelectFlow({ open, you, opponent, onComplete, onCa
                           <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
                         </div>
                       )}
-                      {opp && (
-                        <div className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center shadow-lg">
-                          <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
-                        </div>
-                      )}
                     </button>
                   );
                 })}
               </div>
             </div>
-            <BottomControls onRandom={pickRandomPack} disabledSync />
+            <BottomControls
+              onRandom={pickRandomPack}
+              syncOn={syncPack}
+              onToggleSync={() => {
+                const next = !syncPack;
+                setSyncPack(next);
+                if (next && oppPack) setMyPack(oppPack);
+              }}
+            />
           </motion.div>
         )}
 
@@ -286,12 +289,10 @@ export default function BattleSelectFlow({ open, you, opponent, onComplete, onCa
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {songs.map((s) => {
                   const mine = mySong?.id === s.id;
-                  const opp = oppSong?.id === s.id;
                   const playing = previewingId === s.id;
                   return (
                     <div key={s.id} className={`relative rounded-xl overflow-hidden border-2 transition-all
                         ${mine ? 'border-red-500 shadow-[0_0_24px_rgba(239,68,68,0.55)]' :
-                          opp ? 'border-blue-500 shadow-[0_0_24px_rgba(59,130,246,0.45)]' :
                           'border-white/10'}`}>
                       <button onClick={() => setMySong(s)} className="w-full text-left">
                         <div className="aspect-square w-full bg-surface-2 flex items-center justify-center">
@@ -319,7 +320,15 @@ export default function BattleSelectFlow({ open, you, opponent, onComplete, onCa
                 })}
               </div>
             </div>
-            <BottomControls onRandom={pickRandomSong} disabledSync />
+            <BottomControls
+              onRandom={pickRandomSong}
+              syncOn={syncSong}
+              onToggleSync={() => {
+                const next = !syncSong;
+                setSyncSong(next);
+                if (next && oppSong) setMySong(oppSong);
+              }}
+            />
           </motion.div>
         )}
 
@@ -378,7 +387,7 @@ function PlayerChip({ player, color, ready, align = 'left' }: { player: Player; 
   );
 }
 
-function BottomControls({ onRandom, disabledSync }: { onRandom: () => void; disabledSync?: boolean }) {
+function BottomControls({ onRandom, syncOn, onToggleSync }: { onRandom: () => void; syncOn?: boolean; onToggleSync?: () => void }) {
   return (
     <div className="absolute bottom-0 left-0 right-0 z-10 px-3 pt-3 pb-[max(env(safe-area-inset-bottom),12px)] bg-gradient-to-t from-black via-black/90 to-transparent">
       <div className="flex items-center gap-2">
@@ -390,11 +399,22 @@ function BottomControls({ onRandom, disabledSync }: { onRandom: () => void; disa
           className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-white/20 text-white/70 font-bold uppercase tracking-wider text-xs opacity-60">
           <Upload className="w-4 h-4" /> Custom
         </button>
-        <button disabled={disabledSync}
-          className="flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl border border-white/20 text-white/70 font-bold uppercase tracking-wider text-[10px] opacity-60">
+        <button
+          onClick={onToggleSync}
+          aria-pressed={!!syncOn}
+          className={`flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl border font-bold uppercase tracking-wider text-[10px] transition active:scale-[0.97] ${
+            syncOn
+              ? 'bg-emerald-500/20 border-emerald-400/60 text-emerald-300 shadow-[0_0_14px_rgba(16,185,129,0.35)]'
+              : 'border-white/20 text-white/70'
+          }`}>
           <Users className="w-3.5 h-3.5" /> Sync
         </button>
       </div>
+      {syncOn !== undefined && (
+        <p className="text-center text-[9px] uppercase tracking-[0.22em] text-muted-foreground mt-2">
+          {syncOn ? 'Will copy opponent pick when revealed' : 'Selections hidden until lock-in'}
+        </p>
+      )}
     </div>
   );
 }
