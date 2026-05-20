@@ -9492,7 +9492,7 @@ export type Database = {
       house_type: "public" | "prestige"
       league_tier: "open" | "pro" | "elite"
       participant_status: "active" | "advanced" | "eliminated" | "pending"
-      platform_type: "tiktok" | "instagram" | "youtube"
+      platform_type: "tiktok" | "instagram" | "youtube" | "upload"
       redemption_status: "pending" | "approved" | "fulfilled" | "rejected"
       report_context:
         | "battle"
@@ -9676,7 +9676,7 @@ export const Constants = {
       house_type: ["public", "prestige"],
       league_tier: ["open", "pro", "elite"],
       participant_status: ["active", "advanced", "eliminated", "pending"],
-      platform_type: ["tiktok", "instagram", "youtube"],
+      platform_type: ["tiktok", "instagram", "youtube", "upload"],
       redemption_status: ["pending", "approved", "fulfilled", "rejected"],
       report_context: [
         "battle",
