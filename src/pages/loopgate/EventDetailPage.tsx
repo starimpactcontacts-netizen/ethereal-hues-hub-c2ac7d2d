@@ -113,15 +113,15 @@ export default function EventDetailPage() {
   };
 
   return (
-    <div className="min-h-screen pb-28 bg-arena-bg text-arena-ink" style={bodyFont}>
-      <div className="relative overflow-hidden bg-arena-bg">
+    <div className="min-h-screen pb-28 bg-black text-arena-ink" style={bodyFont}>
+      <div className="relative overflow-hidden bg-black">
         <img
           src={displayPoster || lightYagamiPoster}
           alt={event.title}
-          className="absolute inset-0 w-full h-full object-cover opacity-45 blur-[1px] scale-105"
+          className="absolute inset-0 w-full h-full object-cover opacity-30 blur-[2px] scale-105"
           style={{ objectPosition: isLightYagami ? "50% 18%" : "50% 35%" }}
         />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,hsl(var(--arena-bg)/0.52)_0%,hsl(var(--arena-bg)/0.78)_46%,hsl(var(--arena-bg))_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.72)_0%,rgba(0,0,0,0.88)_46%,#000_100%)]" />
 
         <div className="relative px-4 pt-[max(env(safe-area-inset-top),14px)] pb-5">
           <div className="flex items-center justify-between mb-4">
@@ -165,23 +165,39 @@ export default function EventDetailPage() {
               {event.subtitle && <p className="mt-2 text-[12px] font-semibold uppercase tracking-[0.12em] text-arena-muted">{event.subtitle}</p>}
           </div>
 
-          <div className="mt-5 grid grid-cols-2 gap-2">
-            <MetricTile label="Edits" value={stats.entries || featuredEdits.length} />
-            <div className="rounded-lg bg-arena-panel/90 p-3 shadow-[0_10px_24px_hsl(var(--arena-bg)/0.32)]">
-              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-arena-muted">Prize</p>
-              <div className="mt-1 flex items-end gap-1">
-                <span className="text-[26px] font-black leading-none text-arena-ink" style={displayFont}>$150</span>
+          <div className="mt-5 space-y-2">
+            <div className="relative overflow-hidden rounded-xl p-4 bg-[linear-gradient(135deg,#0a0a0a_0%,#141414_55%,#1a1207_100%)] shadow-[0_24px_60px_rgba(0,0,0,0.55),0_0_0_1px_hsl(var(--arena-amber)/0.45),inset_0_1px_0_hsl(var(--arena-amber)/0.18)]">
+              <div className="pointer-events-none absolute -top-12 -right-10 h-32 w-32 rounded-full bg-arena-amber/20 blur-3xl" />
+              <div className="pointer-events-none absolute -bottom-10 -left-10 h-28 w-28 rounded-full bg-arena-emerald/15 blur-3xl" />
+              <div className="relative grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-[9px] font-black uppercase tracking-[0.22em] text-arena-amber/90">Cash Prize</p>
+                  <div className="mt-1 flex items-baseline gap-1">
+                    <span className="text-[14px] font-black leading-none text-arena-emerald" style={displayFont}>$</span>
+                    <span className="text-[44px] font-black leading-none text-arena-ink drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]" style={displayFont}>150</span>
+                  </div>
+                  <p className="mt-1 text-[9px] font-black uppercase tracking-[0.16em] text-arena-emerald">Real Money · Paid Out</p>
+                </div>
+                <div className="border-l border-arena-amber/25 pl-3">
+                  <p className="text-[9px] font-black uppercase tracking-[0.22em] text-arena-amber/90">Rings Pot</p>
+                  <div className="mt-1 flex items-center gap-1.5">
+                    <RingsCoin size={20} className="text-arena-amber drop-shadow-[0_0_8px_hsl(var(--arena-amber)/0.6)]" />
+                    <span className="text-[40px] font-black leading-none text-arena-amber" style={displayFont}>1M</span>
+                  </div>
+                  <p className="mt-1 text-[9px] font-black uppercase tracking-[0.16em] text-arena-amber/80">Top 50 Split</p>
+                </div>
               </div>
-              <div className="mt-1 flex items-center gap-1 text-[10px] font-black text-arena-amber">
-                <RingsCoin size={12} /> 1M
-              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <MetricTile label="Edits" value={stats.entries || featuredEdits.length} />
+              <MetricTile label="Status" value={isLive ? "LIVE" : "OPEN"} />
             </div>
           </div>
         </div>
       </div>
 
-      <main className="px-4 space-y-4">
-        <section className="-mt-1 rounded-lg bg-arena-strong p-3 shadow-[0_18px_38px_hsl(var(--arena-bg)/0.35)]">
+      <main className="px-4 space-y-4 bg-black">
+        <section className="-mt-1 rounded-lg bg-[#0d0d0d] p-3 shadow-[0_18px_38px_rgba(0,0,0,0.55),inset_0_1px_0_hsl(var(--arena-line)/0.18)]">
           <div className="flex items-center gap-3">
             <img
               src={fixMySoulCover}
