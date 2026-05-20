@@ -141,8 +141,8 @@ export default function ShowcaseUploadModal({ isOpen, onClose, eventId, eventTit
               className="w-full aspect-[3/4] rounded-lg bg-arena-strong border-2 border-dashed border-arena-line/50 flex flex-col items-center justify-center gap-2 text-arena-muted hover:text-arena-ink hover:border-arena-amber transition"
             >
               <Upload size={28} />
-              <span className="text-[12px] font-black uppercase tracking-[0.16em]">Pick video or photo</span>
-              <span className="text-[10px] text-arena-muted/80">MP4 · MOV · WEBM · JPG · PNG · GIF</span>
+              <span className="text-[12px] font-black uppercase tracking-[0.16em]">Pick video, photo, or audio</span>
+              <span className="text-[10px] text-arena-muted/80">MP4 · MOV · WEBM · JPG · PNG · GIF · MP3 · WAV · M4A</span>
             </button>
           ) : (
             <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-black">
@@ -152,9 +152,15 @@ export default function ShowcaseUploadModal({ isOpen, onClose, eventId, eventTit
               {isImage && previewUrl && (
                 <img src={previewUrl} alt="Preview" className="w-full h-full object-contain" />
               )}
+              {isAudio && previewUrl && (
+                <div className="w-full h-full flex flex-col items-center justify-center gap-3 px-4">
+                  <Music size={48} className="text-arena-amber" />
+                  <audio src={previewUrl} controls className="w-full" />
+                </div>
+              )}
               <div className="absolute top-2 left-2 inline-flex items-center gap-1 rounded bg-arena-bg/80 px-2 py-1 text-[10px] font-black uppercase tracking-widest text-arena-ink">
-                {isVideo ? <Film size={11} /> : <ImageIcon size={11} />}
-                {isVideo ? "Video" : "Image"}
+                {isVideo ? <Film size={11} /> : isAudio ? <Music size={11} /> : <ImageIcon size={11} />}
+                {isVideo ? "Video" : isAudio ? "Audio" : "Image"}
               </div>
               {!busy && (
                 <button
