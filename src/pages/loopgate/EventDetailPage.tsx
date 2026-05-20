@@ -513,7 +513,7 @@ function MetricTile({ label, value, accent = "ink" }: { label: string; value: nu
   );
 }
 
-function BigCountdown({ endDate }: { endDate: string }) {
+function GlassyCountdown({ endDate }: { endDate: string }) {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
@@ -526,19 +526,29 @@ function BigCountdown({ endDate }: { endDate: string }) {
   const s = Math.floor((diff / 1000) % 60);
   const pad = (n: number) => String(n).padStart(2, "0");
   const urgent = diff > 0 && diff < 60 * 60 * 1000;
-  const tone = diff === 0 ? "text-arena-red" : urgent ? "text-arena-red" : "text-arena-ink";
   const Cell = ({ v, l }: { v: string; l: string }) => (
-    <div className="flex-1 border border-arena-line/40 bg-[#0a0a0a] py-2 text-center">
-      <p className={`text-[40px] leading-none font-black tabular-nums ${tone} ${urgent ? "animate-pulse" : ""}`} style={displayFont}>{v}</p>
-      <p className="mt-1 text-[8px] font-black uppercase tracking-[0.22em] text-arena-muted">{l}</p>
+    <div className="flex-1 flex flex-col items-center justify-center py-2.5 px-1">
+      <p
+        className={`text-[34px] leading-none font-black tabular-nums text-white ${urgent ? "animate-pulse text-arena-amber" : ""}`}
+        style={displayFont}
+      >
+        {v}
+      </p>
+      <p className="mt-1 text-[8px] font-black uppercase tracking-[0.32em] text-white/55">{l}</p>
     </div>
   );
+  const Colon = () => (
+    <span className="self-center pb-3 text-[26px] font-black text-white/35 select-none" style={displayFont}>:</span>
+  );
   return (
-    <div className="mt-2 flex items-stretch gap-1">
-      {d > 0 && <Cell v={pad(d)} l="Days" />}
-      <Cell v={pad(h)} l="Hrs" />
-      <Cell v={pad(m)} l="Min" />
-      <Cell v={pad(s)} l="Sec" />
+    <div className="inline-flex w-full max-w-md items-stretch rounded-2xl bg-black/55 backdrop-blur-xl ring-1 ring-white/10 shadow-[0_18px_60px_rgba(0,0,0,0.55)] px-2">
+      <Cell v={pad(d)} l="Days" />
+      <Colon />
+      <Cell v={pad(h)} l="Hours" />
+      <Colon />
+      <Cell v={pad(m)} l="Minutes" />
+      <Colon />
+      <Cell v={pad(s)} l="Seconds" />
     </div>
   );
 }
