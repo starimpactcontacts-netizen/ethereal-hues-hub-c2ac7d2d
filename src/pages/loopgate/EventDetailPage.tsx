@@ -643,20 +643,39 @@ function PrizeSlab({ rank, title, cash, rings, tone }: { rank: string; title: st
 function LadderRow({ row, rank }: { row: any; rank: number }) {
   const qoi = row.qoi_score || 0;
   const grade = qoi >= 90 ? "S" : qoi >= 80 ? "A" : qoi >= 70 ? "B" : qoi >= 60 ? "C" : "—";
-  const rankTone = rank === 1 ? "text-arena-amber" : rank === 2 ? "text-arena-ink" : rank === 3 ? "text-arena-red" : "text-arena-muted";
+  const isTop1 = rank === 1;
+  const isTop3 = rank <= 3;
+  const rankTone = isTop1 ? "text-arena-amber" : rank === 2 ? "text-white" : rank === 3 ? "text-arena-red" : "text-white/35";
+  const accent = isTop1 ? "hsl(var(--arena-amber))" : rank === 2 ? "#cfd3dc" : rank === 3 ? "hsl(var(--arena-red))" : "rgba(255,255,255,0.12)";
 
   return (
-    <a href={row.submission_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-lg bg-arena-strong px-3 py-2.5 active:scale-[0.99] transition">
-      <div className={`w-9 text-center text-[24px] font-black leading-none tabular-nums ${rankTone}`} style={displayFont}>#{rank}</div>
+    <a
+      href={row.submission_url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group relative flex items-center gap-3 overflow-hidden bg-[#0a0b0f] pl-4 pr-3 py-2.5 ring-1 ring-white/[0.05] active:scale-[0.99] transition"
+      style={{ clipPath: "polygon(0 0, 100% 0, calc(100% - 12px) 100%, 0 100%)" }}
+    >
+      <span className="absolute inset-y-0 left-0 w-[3px]" style={{ background: accent, boxShadow: isTop3 ? `0 0 16px ${accent}` : undefined }} />
+      {isTop1 && <span className="pointer-events-none absolute -right-8 top-0 bottom-0 w-24 bg-gradient-to-l from-arena-amber/15 to-transparent" />}
+
+      <div className={`w-11 text-center text-[26px] font-black leading-none tabular-nums ${rankTone}`} style={{ ...displayFont, transform: "skewX(-6deg)" }}>
+        #{rank}
+      </div>
       <div className="flex-1 min-w-0">
-        <p className="truncate text-[13px] font-black text-arena-ink">{row.profile?.username || row.author_username || "Unknown"}</p>
-        <p className="mt-0.5 truncate text-[9px] font-bold uppercase tracking-[0.12em] text-arena-muted">TikTok · {row.view_count ? `${row.view_count.toLocaleString()} views` : "Submitted"}</p>
+        <p className="truncate text-[13px] font-black text-white">{row.profile?.username || row.author_username || "Unknown"}</p>
+        <p className="mt-0.5 truncate text-[9px] font-bold uppercase tracking-[0.18em] text-white/40">TikTok · {row.view_count ? `${row.view_count.toLocaleString()} views` : "Submitted"}</p>
       </div>
       <div className="text-right">
-        <p className="text-[22px] font-black leading-none tabular-nums text-arena-ink" style={displayFont}>{qoi ? qoi.toFixed(1) : "—"}</p>
-        <p className="text-[8px] font-black uppercase tracking-[0.14em] text-arena-muted">QOI</p>
+        <p className="text-[22px] font-black leading-none tabular-nums text-white" style={displayFont}>{qoi ? qoi.toFixed(1) : "—"}</p>
+        <p className="text-[8px] font-black uppercase tracking-[0.22em] text-white/40">QOI</p>
       </div>
-      <div className="flex h-8 w-8 items-center justify-center rounded bg-arena-panel text-[17px] font-black text-arena-amber" style={displayFont}>{grade}</div>
+      <div
+        className={`flex h-9 w-9 items-center justify-center text-[18px] font-black ${isTop3 ? "text-arena-amber" : "text-white/55"}`}
+        style={{ ...displayFont, background: "#000", clipPath: "polygon(10% 0, 100% 0, 90% 100%, 0 100%)" }}
+      >
+        {grade}
+      </div>
     </a>
   );
 }
