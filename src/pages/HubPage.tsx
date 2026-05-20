@@ -1074,6 +1074,23 @@ export default function HubPage() {
           onConfirm={confirmInstantMatch}
         />
       )}
+      {battleSelect && (
+        <BattleSelectFlow
+          open={!!battleSelect}
+          you={battleSelect.you}
+          opponent={battleSelect.opponent}
+          onComplete={() => {
+            const id = battleSelect.fightId;
+            setBattleSelect(null);
+            navigate(`/fight/${id}`);
+          }}
+          onCancel={() => {
+            const id = battleSelect.fightId;
+            setBattleSelect(null);
+            navigate(`/fight/${id}`);
+          }}
+        />
+      )}
     </div>
   );
 }
