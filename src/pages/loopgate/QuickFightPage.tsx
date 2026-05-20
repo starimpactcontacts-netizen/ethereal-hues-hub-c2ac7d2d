@@ -212,7 +212,8 @@ export default function QuickFightPage() {
   const handleJoinLobby = async (code?: string) => {
     if (!user || !profile) { navigate('/start'); return; }
     if (isP1) return;
-    const result = await joinWaitingQuickFight(fight.id, user.id, profile.username, profile.avatar_url || null, code);
+    const normalizedCode = code ? code.trim().toUpperCase() : undefined;
+    const result = await joinWaitingQuickFight(fight.id, user.id, profile.username, profile.avatar_url || null, normalizedCode);
     if (result.ok) toast.success('⚔️ Battle started');
     else toast.error(result.error?.includes('Invalid join code') ? 'Wrong code' : "Couldn't join lobby");
   };

@@ -114,7 +114,7 @@ export async function joinWaitingQuickFight(
     p_user_id: userId,
     p_username: username,
     p_avatar_url: avatarUrl,
-    p_join_code: joinCode || null,
+    p_join_code: joinCode ? joinCode.trim().toUpperCase() : null,
   } as any);
   if (error) {
     console.error('Custom lobby join error:', error);

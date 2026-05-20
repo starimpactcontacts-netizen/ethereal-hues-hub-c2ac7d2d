@@ -37,7 +37,7 @@ export default function JoinByCodeModal({ open, onOpenChange, scope = "both" }: 
         const { data: fight } = await supabase
           .from("quick_fights")
           .select("id, status")
-          .eq("join_code", normalized)
+          .ilike("join_code", normalized)
           .eq("is_private", true)
           .in("status", ["waiting", "active"])
           .maybeSingle();
@@ -54,7 +54,7 @@ export default function JoinByCodeModal({ open, onOpenChange, scope = "both" }: 
         const { data: comp } = await supabase
           .from("competitions")
           .select("id, slug, status")
-          .eq("join_code", normalized)
+          .ilike("join_code", normalized)
           .eq("is_private", true)
           .in("status", ["lobby", "live"])
           .maybeSingle();
