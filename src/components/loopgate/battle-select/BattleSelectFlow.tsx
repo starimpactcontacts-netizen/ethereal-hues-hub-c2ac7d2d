@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, Shuffle, Upload, Users, Swords, Music, Play, Pause, ChevronRight, Loader2 } from 'lucide-react';
+import { Check, Shuffle, Upload, Users, Swords, Music, Play, Pause, ChevronRight, Loader2, X } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import { SCENEPACKS, type Scenepack } from './scenepacks';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -201,14 +202,25 @@ export default function BattleSelectFlow({ open, you, opponent, onComplete, onCa
   const ss = String(timeLeft % 60).padStart(2, '0');
   const lowTime = timeLeft <= 30;
 
-  return (
-    <div className="fixed inset-0 z-[300] bg-black text-foreground overflow-hidden" style={{
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] bg-black text-foreground overflow-hidden" style={{
       backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(239,68,68,0.10), transparent 60%), linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)',
       backgroundSize: 'auto, 28px 28px, 28px 28px',
     }}>
+      {/* Exit button — top left */}
+      {phase !== 'intro' && onCancel && (
+        <button
+          onClick={onCancel}
+          aria-label="Exit"
+          className="absolute z-30 top-[max(env(safe-area-inset-top),12px)] left-3 w-9 h-9 rounded-full bg-black/70 backdrop-blur border border-white/15 flex items-center justify-center active:scale-90 transition"
+        >
+          <X className="w-4 h-4 text-white" />
+        </button>
+      )}
+
       {/* Top bar: players + timer */}
       {phase !== 'intro' && (
-        <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-3 pt-[max(env(safe-area-inset-top),12px)] pb-2 bg-gradient-to-b from-black/90 to-transparent">
+        <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between pl-14 pr-3 pt-[max(env(safe-area-inset-top),12px)] pb-2 bg-gradient-to-b from-black/90 to-transparent">
           <PlayerChip color="red"  player={you}      ready={phase === 'scenepack' ? !!myPack : !!mySong} />
           <div className="text-center px-2">
             <p className="text-[9px] uppercase tracking-[0.22em] text-muted-foreground font-bold">Time Remaining</p>
@@ -341,7 +353,8 @@ export default function BattleSelectFlow({ open, you, opponent, onComplete, onCa
           Forfeit Match
         </button>
       )}
-    </div>
+    </div>,
+    document.body,
   );
 }
 
