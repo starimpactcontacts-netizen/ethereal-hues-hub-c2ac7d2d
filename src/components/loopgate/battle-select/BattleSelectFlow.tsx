@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, Shuffle, Upload, Users, Swords, Music, Play, Pause, ChevronRight, Loader2, X } from 'lucide-react';
+import { Check, Shuffle, Upload, Users, Swords, Music, Play, Pause, X, Film } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { SCENEPACKS, type Scenepack } from './scenepacks';
 import { supabase } from '@/integrations/supabase/client';
@@ -47,22 +47,30 @@ const FALLBACK_SONGS: Song[] = [
   { id: 'fb-5', title: 'The Visitor', artist: 'SIENNA SPIRO',      cover: null, preview: null },
 ];
 
-type Phase = 'scenepack' | 'song' | 'intro';
+type Phase = 'select' | 'intro';
 type PlayerSide = 'red' | 'blue';
-type SideSelections<T> = Record<PlayerSide, T | null>;
-type SideReady = Record<PlayerSide, boolean>;
+type Tab = 'scenepack' | 'song';
+
+interface PlayerPicks {
+  pack: Scenepack | null;
+  song: Song | null;
+  ready: boolean;
+}
+const EMPTY_PICKS: PlayerPicks = { pack: null, song: null, ready: false };
 
 export default function BattleSelectFlow({ open, you, opponent, youSide = 'red', onComplete, onCancel }: Props) {
-  const [phase, setPhase] = useState<Phase>('scenepack');
+  const [phase, setPhase] = useState<Phase>('select');
+  const [tab, setTab] = useState<Tab>('scenepack');
   const [timeLeft, setTimeLeft] = useState(PHASE_TIMER_SEC);
   const [songs, setSongs] = useState<Song[]>(FALLBACK_SONGS);
 
-  const [packSelections, setPackSelections] = useState<SideSelections<Scenepack>>({ red: null, blue: null });
-  const [songSelections, setSongSelections] = useState<SideSelections<Song>>({ red: null, blue: null });
-  const [packReady, setPackReady] = useState<SideReady>({ red: false, blue: false });
-  const [songReady, setSongReady] = useState<SideReady>({ red: false, blue: false });
-  const [syncPack, setSyncPack] = useState<SideReady>({ red: false, blue: false });
-  const [syncSong, setSyncSong] = useState<SideReady>({ red: false, blue: false });
+  // STRICT ISOLATION: each player's picks live in their own object.
+  // The local user only ever mutates `mine`. The opponent's full picks are
+  // computed locally (simulated) but ONLY revealed in the intro phase.
+  const [mine, setMine] = useState<PlayerPicks>(EMPTY_PICKS);
+  const [opp, setOpp] = useState<PlayerPicks>(EMPTY_PICKS);
+  const [syncPack, setSyncPack] = useState(false);
+  const [syncSong, setSyncSong] = useState(false);
 
   const [intro, setIntro] = useState({ pct: 0, count: 3 });
 
@@ -71,33 +79,24 @@ export default function BattleSelectFlow({ open, you, opponent, youSide = 'red',
 
   const mySide: PlayerSide = youSide;
   const opponentSide: PlayerSide = mySide === 'red' ? 'blue' : 'red';
+  const redPicks = mySide === 'red' ? mine : opp;
+  const bluePicks = mySide === 'blue' ? mine : opp;
   const redPlayer = mySide === 'red' ? you : opponent;
   const bluePlayer = mySide === 'blue' ? you : opponent;
-  const myPack = packSelections[mySide];
-  const opponentPack = packSelections[opponentSide];
-  const mySong = songSelections[mySide];
-  const opponentSong = songSelections[opponentSide];
+
+  const canReady = !!mine.pack && !!mine.song;
 
   const setMyPack = (pack: Scenepack) => {
-    if (packReady[mySide]) return;
-    setPackSelections(prev => ({ ...prev, [mySide]: pack }));
-    setPackReady(prev => ({ ...prev, [mySide]: false }));
+    if (mine.ready) return;
+    setMine(prev => ({ ...prev, pack }));
   };
-
-  const setOpponentPack = (pack: Scenepack) => {
-    setPackSelections(prev => ({ ...prev, [opponentSide]: pack }));
-    setPackReady(prev => ({ ...prev, [opponentSide]: true }));
-  };
-
   const setMySong = (song: Song) => {
-    if (songReady[mySide]) return;
-    setSongSelections(prev => ({ ...prev, [mySide]: song }));
-    setSongReady(prev => ({ ...prev, [mySide]: false }));
+    if (mine.ready) return;
+    setMine(prev => ({ ...prev, song }));
   };
-
-  const setOpponentSong = (song: Song) => {
-    setSongSelections(prev => ({ ...prev, [opponentSide]: song }));
-    setSongReady(prev => ({ ...prev, [opponentSide]: true }));
+  const lockInReady = () => {
+    if (!canReady || mine.ready) return;
+    setMine(prev => ({ ...prev, ready: true }));
   };
 
   // Load songs from radio_tracks
@@ -119,37 +118,34 @@ export default function BattleSelectFlow({ open, you, opponent, youSide = 'red',
   // Reset when opened
   useEffect(() => {
     if (!open) return;
-    setPhase('scenepack');
+    setPhase('select');
+    setTab('scenepack');
     setTimeLeft(PHASE_TIMER_SEC);
-    setPackSelections({ red: null, blue: null });
-    setSongSelections({ red: null, blue: null });
-    setPackReady({ red: false, blue: false });
-    setSongReady({ red: false, blue: false });
-    setSyncPack({ red: false, blue: false });
-    setSyncSong({ red: false, blue: false });
+    setMine(EMPTY_PICKS);
+    setOpp(EMPTY_PICKS);
+    setSyncPack(false);
+    setSyncSong(false);
     setIntro({ pct: 0, count: 3 });
   }, [open]);
 
-  // Simulated opponent picks
+  // Simulated opponent — picks privately, then flips to READY.
+  // Their picks are NEVER shown to the local user until the intro phase.
   useEffect(() => {
-    if (!open) return;
-    if (phase === 'scenepack' && !opponentPack) {
-      const t = setTimeout(() => {
-        setOpponentPack(SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)]);
-      }, 3500 + Math.random() * 4000);
-      return () => clearTimeout(t);
-    }
-    if (phase === 'song' && !opponentSong) {
-      const t = setTimeout(() => {
-        setOpponentSong(songs[Math.floor(Math.random() * songs.length)] || FALLBACK_SONGS[0]);
-      }, 3500 + Math.random() * 4000);
-      return () => clearTimeout(t);
-    }
-  }, [open, phase, opponentPack, opponentSong, songs]);
+    if (!open || phase !== 'select' || opp.ready) return;
+    const t = setTimeout(() => {
+      const pool = songs.length ? songs : FALLBACK_SONGS;
+      setOpp({
+        pack: SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)],
+        song: pool[Math.floor(Math.random() * pool.length)],
+        ready: true,
+      });
+    }, 6000 + Math.random() * 6000);
+    return () => clearTimeout(t);
+  }, [open, phase, opp.ready, songs]);
 
-  // Phase timer
+  // Phase timer — counts down once, fills missing local picks on timeout.
   useEffect(() => {
-    if (!open || phase === 'intro') return;
+    if (!open || phase !== 'select') return;
     setTimeLeft(PHASE_TIMER_SEC);
     const iv = setInterval(() => {
       setTimeLeft(t => {
@@ -161,18 +157,14 @@ export default function BattleSelectFlow({ open, you, opponent, youSide = 'red',
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, phase]);
 
-  // Auto-advance when both ready
+  // Advance to intro when BOTH players are ready
   useEffect(() => {
-    if (!open) return;
-    if (phase === 'scenepack' && packReady.red && packReady.blue) {
-      const t = setTimeout(() => setPhase('song'), 600);
+    if (!open || phase !== 'select') return;
+    if (mine.ready && opp.ready) {
+      const t = setTimeout(() => setPhase('intro'), 700);
       return () => clearTimeout(t);
     }
-    if (phase === 'song' && songReady.red && songReady.blue) {
-      const t = setTimeout(() => setPhase('intro'), 600);
-      return () => clearTimeout(t);
-    }
-  }, [open, phase, packReady.red, packReady.blue, songReady.red, songReady.blue]);
+  }, [open, phase, mine.ready, opp.ready]);
 
   // Intro animation
   useEffect(() => {
@@ -202,20 +194,19 @@ export default function BattleSelectFlow({ open, you, opponent, youSide = 'red',
   }, [phase]);
 
   function handleTimeout() {
-    if (phase === 'scenepack') {
-      setPackSelections(prev => ({
-        red: prev.red || SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)],
-        blue: prev.blue || SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)],
-      }));
-      setPackReady({ red: true, blue: true });
-    } else if (phase === 'song') {
-      const pool = songs.length ? songs : FALLBACK_SONGS;
-      setSongSelections(prev => ({
-        red: prev.red || pool[Math.floor(Math.random() * pool.length)],
-        blue: prev.blue || pool[Math.floor(Math.random() * pool.length)],
-      }));
-      setSongReady({ red: true, blue: true });
-    }
+    const pool = songs.length ? songs : FALLBACK_SONGS;
+    // Auto-fill ONLY the local player's missing picks.
+    setMine(prev => ({
+      pack: prev.pack || SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)],
+      song: prev.song || pool[Math.floor(Math.random() * pool.length)],
+      ready: true,
+    }));
+    // Opponent is handled independently by their own client / simulator.
+    setOpp(prev => prev.ready ? prev : {
+      pack: prev.pack || SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)],
+      song: prev.song || pool[Math.floor(Math.random() * pool.length)],
+      ready: true,
+    });
   }
 
   function pickRandomPack() {
@@ -266,119 +257,115 @@ export default function BattleSelectFlow({ open, you, opponent, youSide = 'red',
         </button>
       )}
 
-      {/* Top bar: players + timer */}
+      {/* Top bar: you + timer + opponent status. NEVER shows opponent picks. */}
       {phase !== 'intro' && (
         <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between pl-14 pr-3 pt-[max(env(safe-area-inset-top),12px)] pb-2 bg-gradient-to-b from-black/90 to-transparent">
-          <PlayerChip color="red"  player={redPlayer}  ready={phase === 'scenepack' ? packReady.red : songReady.red} />
+          <PlayerChip color={mySide} player={you} ready={mine.ready} label="You" />
           <div className="text-center px-2">
-            <p className="text-[9px] uppercase tracking-[0.22em] text-muted-foreground font-bold">Time Remaining</p>
+            <p className="text-[9px] uppercase tracking-[0.22em] text-muted-foreground font-bold">Time Left</p>
             <p className={`font-display text-2xl tabular-nums leading-none ${lowTime ? 'text-red-500 animate-pulse' : 'text-foreground'}`}>{mm}:{ss}</p>
           </div>
-          <PlayerChip color="blue" player={bluePlayer} ready={phase === 'scenepack' ? packReady.blue : songReady.blue} align="right" />
+          <PlayerChip color={opponentSide} player={opponent} ready={opp.ready} label="Opponent" align="right" />
         </div>
       )}
 
       <AnimatePresence mode="wait">
-        {phase === 'scenepack' && (
-          <motion.div key="scenepack" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="absolute inset-0 flex flex-col pt-[88px] pb-[110px]">
-            <div className="px-4 mb-3 text-center">
-              <p className="text-[10px] uppercase tracking-[0.3em] text-red-500 font-bold">Phase 1 of 2</p>
-              <h2 className="font-display text-2xl">Select Your Scenepack</h2>
-            </div>
-            <div className="flex-1 overflow-y-auto px-3">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {SCENEPACKS.map((p) => {
-                  const mine = myPack?.id === p.id;
-                  return (
-                    <button key={p.id} onClick={() => setMyPack(p)}
-                      className={`relative rounded-xl overflow-hidden border-2 transition-all active:scale-[0.97]
-                        ${mine ? (mySide === 'red' ? 'border-red-500 shadow-[0_0_24px_rgba(239,68,68,0.55)]' : 'border-blue-500 shadow-[0_0_24px_rgba(59,130,246,0.55)]') :
-                          'border-white/10 hover:border-white/30'}`}>
-                      <div className="aspect-[2/3] w-full bg-surface-2">
-                        <img src={p.poster} alt={p.name} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="px-2 py-1.5 bg-black/85 text-left">
-                        <p className="text-[11px] font-bold truncate">{p.name}</p>
-                        <p className="text-[9px] text-muted-foreground">{p.packCount} scenepacks</p>
-                      </div>
-                      {mine && (
-                        <div className={`absolute top-1.5 left-1.5 w-6 h-6 rounded-full ${mySide === 'red' ? 'bg-red-500' : 'bg-blue-500'} flex items-center justify-center shadow-lg`}>
-                          <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
+        {phase === 'select' && (
+          <motion.div key="select" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="absolute inset-0 flex flex-col pt-[78px] pb-[120px]">
+            {/* Tabs */}
+            <div className="px-3 mb-2">
+              <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-white/5 border border-white/10">
+                <TabBtn active={tab === 'scenepack'} done={!!mine.pack} onClick={() => setTab('scenepack')} icon={<Film className="w-3.5 h-3.5" />} label="Scenepack" />
+                <TabBtn active={tab === 'song'} done={!!mine.song} onClick={() => setTab('song')} icon={<Music className="w-3.5 h-3.5" />} label="Song" />
               </div>
             </div>
-            <BottomControls
-              onRandom={pickRandomPack}
-              canReady={!!myPack}
-              ready={packReady[mySide]}
-              onReady={() => setPackReady(prev => ({ ...prev, [mySide]: true }))}
-              syncOn={syncPack[mySide]}
-              onToggleSync={() => {
-                const next = !syncPack[mySide];
-                setSyncPack(prev => ({ ...prev, [mySide]: next }));
-                if (next && opponentPack) setMyPack(opponentPack);
-              }}
-            />
-          </motion.div>
-        )}
 
-        {phase === 'song' && (
-          <motion.div key="song" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="absolute inset-0 flex flex-col pt-[88px] pb-[110px]">
-            <div className="px-4 mb-3 text-center">
-              <p className="text-[10px] uppercase tracking-[0.3em] text-red-500 font-bold">Phase 2 of 2</p>
-              <h2 className="font-display text-2xl">Select Your Song</h2>
-            </div>
-            <div className="flex-1 overflow-y-auto px-3">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {songs.map((s) => {
-                  const mine = mySong?.id === s.id;
-                  const playing = previewingId === s.id;
-                  return (
-                    <div key={s.id} className={`relative rounded-xl overflow-hidden border-2 transition-all
-                        ${mine ? (mySide === 'red' ? 'border-red-500 shadow-[0_0_24px_rgba(239,68,68,0.55)]' : 'border-blue-500 shadow-[0_0_24px_rgba(59,130,246,0.55)]') :
-                          'border-white/10'}`}>
-                      <button onClick={() => setMySong(s)} className="w-full text-left">
-                        <div className="aspect-square w-full bg-surface-2 flex items-center justify-center">
-                          {s.cover
-                            ? <img src={s.cover} alt={s.title} className="w-full h-full object-cover" />
-                            : <Music className="w-8 h-8 text-muted-foreground/40" />}
+            {tab === 'scenepack' && (
+              <div className="flex-1 overflow-y-auto px-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {SCENEPACKS.map((p) => {
+                    const picked = mine.pack?.id === p.id;
+                    return (
+                      <button key={p.id} onClick={() => setMyPack(p)} disabled={mine.ready}
+                        className={`relative rounded-xl overflow-hidden border-2 transition-all active:scale-[0.97] disabled:opacity-70
+                          ${picked ? (mySide === 'red' ? 'border-red-500 shadow-[0_0_24px_rgba(239,68,68,0.55)]' : 'border-blue-500 shadow-[0_0_24px_rgba(59,130,246,0.55)]') :
+                            'border-white/10 hover:border-white/30'}`}>
+                        <div className="aspect-[2/3] w-full bg-surface-2">
+                          <img src={p.poster} alt={p.name} className="w-full h-full object-cover" />
                         </div>
-                        <div className="px-2 py-1.5 bg-black/85">
-                          <p className="text-[11px] font-bold truncate">{s.title}</p>
-                          <p className="text-[9px] text-muted-foreground truncate">{s.artist}</p>
+                        <div className="px-2 py-1.5 bg-black/85 text-left">
+                          <p className="text-[11px] font-bold truncate">{p.name}</p>
+                          <p className="text-[9px] text-muted-foreground">{p.packCount} scenepacks</p>
                         </div>
+                        {picked && (
+                          <div className={`absolute top-1.5 left-1.5 w-6 h-6 rounded-full ${mySide === 'red' ? 'bg-red-500' : 'bg-blue-500'} flex items-center justify-center shadow-lg`}>
+                            <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                          </div>
+                        )}
                       </button>
-                      {s.preview && (
-                        <button onClick={() => togglePreview(s)} className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/80 backdrop-blur flex items-center justify-center border border-white/20 active:scale-90">
-                          {playing ? <Pause className="w-3 h-3 text-white" /> : <Play className="w-3 h-3 text-white ml-0.5" />}
-                        </button>
-                      )}
-                      {mine && (
-                        <div className={`absolute top-1.5 left-1.5 w-6 h-6 rounded-full ${mySide === 'red' ? 'bg-red-500' : 'bg-blue-500'} flex items-center justify-center shadow-lg`}>
-                          <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            )}
+
+            {tab === 'song' && (
+              <div className="flex-1 overflow-y-auto px-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {songs.map((s) => {
+                    const picked = mine.song?.id === s.id;
+                    const playing = previewingId === s.id;
+                    return (
+                      <div key={s.id} className={`relative rounded-xl overflow-hidden border-2 transition-all
+                          ${picked ? (mySide === 'red' ? 'border-red-500 shadow-[0_0_24px_rgba(239,68,68,0.55)]' : 'border-blue-500 shadow-[0_0_24px_rgba(59,130,246,0.55)]') :
+                            'border-white/10'}`}>
+                        <button onClick={() => setMySong(s)} disabled={mine.ready} className="w-full text-left disabled:opacity-70">
+                          <div className="aspect-square w-full bg-surface-2 flex items-center justify-center">
+                            {s.cover
+                              ? <img src={s.cover} alt={s.title} className="w-full h-full object-cover" />
+                              : <Music className="w-8 h-8 text-muted-foreground/40" />}
+                          </div>
+                          <div className="px-2 py-1.5 bg-black/85">
+                            <p className="text-[11px] font-bold truncate">{s.title}</p>
+                            <p className="text-[9px] text-muted-foreground truncate">{s.artist}</p>
+                          </div>
+                        </button>
+                        {s.preview && (
+                          <button onClick={() => togglePreview(s)} className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/80 backdrop-blur flex items-center justify-center border border-white/20 active:scale-90">
+                            {playing ? <Pause className="w-3 h-3 text-white" /> : <Play className="w-3 h-3 text-white ml-0.5" />}
+                          </button>
+                        )}
+                        {picked && (
+                          <div className={`absolute top-1.5 left-1.5 w-6 h-6 rounded-full ${mySide === 'red' ? 'bg-red-500' : 'bg-blue-500'} flex items-center justify-center shadow-lg`}>
+                            <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <BottomControls
-              onRandom={pickRandomSong}
-              canReady={!!mySong}
-              ready={songReady[mySide]}
-              onReady={() => setSongReady(prev => ({ ...prev, [mySide]: true }))}
-              syncOn={syncSong[mySide]}
+              onRandom={() => tab === 'scenepack' ? pickRandomPack() : pickRandomSong()}
+              canReady={canReady}
+              ready={mine.ready}
+              onReady={lockInReady}
+              syncOn={tab === 'scenepack' ? syncPack : syncSong}
+              canSync={opp.ready && !mine.ready}
               onToggleSync={() => {
-                const next = !syncSong[mySide];
-                setSyncSong(prev => ({ ...prev, [mySide]: next }));
-                if (next && opponentSong) setMySong(opponentSong);
+                if (mine.ready || !opp.ready) return;
+                if (tab === 'scenepack') {
+                  const next = !syncPack;
+                  setSyncPack(next);
+                  if (next && opp.pack) setMyPack(opp.pack);
+                } else {
+                  const next = !syncSong;
+                  setSyncSong(next);
+                  if (next && opp.song) setMySong(opp.song);
+                }
               }}
             />
           </motion.div>
@@ -387,7 +374,7 @@ export default function BattleSelectFlow({ open, you, opponent, youSide = 'red',
         {phase === 'intro' && (
           <motion.div key="intro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="absolute inset-0 flex">
-            <IntroSide color="red"  player={redPlayer}  pack={packSelections.red}  song={songSelections.red}  pct={intro.pct} />
+            <IntroSide color="red"  player={redPlayer}  pack={redPicks.pack}  song={redPicks.song}  pct={intro.pct} />
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="text-center">
                 <motion.div animate={{ scale: [1, 1.15, 1] }} transition={{ duration: 0.9, repeat: Infinity }}>
@@ -403,7 +390,7 @@ export default function BattleSelectFlow({ open, you, opponent, youSide = 'red',
                 )}
               </div>
             </div>
-            <IntroSide color="blue" player={bluePlayer} pack={packSelections.blue} song={songSelections.blue} pct={intro.pct} mirrored />
+            <IntroSide color="blue" player={bluePlayer} pack={bluePicks.pack} song={bluePicks.song} pct={intro.pct} mirrored />
           </motion.div>
         )}
       </AnimatePresence>
@@ -419,7 +406,7 @@ export default function BattleSelectFlow({ open, you, opponent, youSide = 'red',
   );
 }
 
-function PlayerChip({ player, color, ready, align = 'left' }: { player: Player; color: 'red' | 'blue'; ready: boolean; align?: 'left' | 'right' }) {
+function PlayerChip({ player, color, ready, label, align = 'left' }: { player: Player; color: 'red' | 'blue'; ready: boolean; label?: string; align?: 'left' | 'right' }) {
   const ring = color === 'red' ? 'border-red-500/70 shadow-[0_0_14px_rgba(239,68,68,0.5)]' : 'border-blue-500/70 shadow-[0_0_14px_rgba(59,130,246,0.5)]';
   const tint = color === 'red' ? 'text-red-400' : 'text-blue-400';
   return (
@@ -430,12 +417,26 @@ function PlayerChip({ player, color, ready, align = 'left' }: { player: Player; 
           : <span className="text-sm font-bold">{player.username[0]?.toUpperCase()}</span>}
       </div>
       <div className="min-w-0">
-        <p className="text-[11px] font-bold truncate max-w-[90px]">{player.username}</p>
+        <p className="text-[11px] font-bold truncate max-w-[90px]">
+          {label && <span className="text-muted-foreground font-medium mr-1">{label}:</span>}
+          {player.username}
+        </p>
         <p className={`text-[8px] font-bold uppercase tracking-[0.18em] ${ready ? 'text-emerald-400' : tint}`}>
           {ready ? '✓ Ready' : 'Selecting…'}
         </p>
       </div>
     </div>
+  );
+}
+
+function TabBtn({ active, done, onClick, icon, label }: { active: boolean; done: boolean; onClick: () => void; icon: React.ReactNode; label: string }) {
+  return (
+    <button onClick={onClick}
+      className={`flex items-center justify-center gap-1.5 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wider transition
+        ${active ? 'bg-white text-black' : 'text-white/70 hover:text-white'}`}>
+      {done ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : icon}
+      {label}
+    </button>
   );
 }
 
@@ -445,6 +446,7 @@ function BottomControls({
   ready,
   onReady,
   syncOn,
+  canSync,
   onToggleSync,
 }: {
   onRandom: () => void;
@@ -452,6 +454,7 @@ function BottomControls({
   ready: boolean;
   onReady: () => void;
   syncOn?: boolean;
+  canSync?: boolean;
   onToggleSync?: () => void;
 }) {
   return (
@@ -467,12 +470,13 @@ function BottomControls({
         </button>
         <button
           onClick={onToggleSync}
-          disabled={ready}
+          disabled={ready || !canSync}
           aria-pressed={!!syncOn}
+          title={canSync ? 'Copy opponent pick' : 'Waiting for opponent to lock in'}
           className={`flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl border font-bold uppercase tracking-wider text-[10px] transition active:scale-[0.97] ${
             syncOn
               ? 'bg-emerald-500/20 border-emerald-400/60 text-emerald-300 shadow-[0_0_14px_rgba(16,185,129,0.35)]'
-              : 'border-white/20 text-white/70 disabled:opacity-40'
+              : 'border-white/20 text-white/70 disabled:opacity-30'
           }`}>
           <Users className="w-3.5 h-3.5" /> Sync
         </button>
@@ -487,11 +491,6 @@ function BottomControls({
           <Check className="w-3.5 h-3.5" /> {ready ? 'Locked' : 'Ready'}
         </button>
       </div>
-      {syncOn !== undefined && (
-        <p className="text-center text-[9px] uppercase tracking-[0.22em] text-muted-foreground mt-2">
-          {syncOn ? 'Will copy opponent pick when revealed' : 'Selections hidden until lock-in'}
-        </p>
-      )}
     </div>
   );
 }
