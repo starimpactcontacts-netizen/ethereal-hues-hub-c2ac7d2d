@@ -32,6 +32,7 @@ import { setLobbyMusicActive } from '@/components/loopgate/LobbyMusicPlayer';
 import CustomEditBattleLobby from '@/components/loopgate/CustomEditBattleLobby';
 import BattleSelectFlow from '@/components/loopgate/battle-select/BattleSelectFlow';
 import BattleSelectionsBanner from '@/components/loopgate/BattleSelectionsBanner';
+import BattleRevealScreen from '@/components/loopgate/BattleRevealScreen';
 
 /** Detect platform from URL */
 function detectPlatform(url: string): string {
@@ -62,6 +63,10 @@ export default function QuickFightPage() {
   const [voting, setVoting] = useState(false);
   const [hideConfirmOpen, setHideConfirmOpen] = useState(false);
   const [hiding, setHiding] = useState(false);
+  const [revealDone, setRevealDone] = useState<boolean>(() => {
+    if (typeof window === 'undefined' || !fightId) return false;
+    return sessionStorage.getItem(`qf_reveal_done_${fightId}`) === '1';
+  });
 
 
   // Auto-resolve expired fights on page load
@@ -327,6 +332,28 @@ export default function QuickFightPage() {
         selectionDeadline={(fight as any).selection_deadline || null}
         onComplete={() => {}}
         onCancel={() => navigate('/hub')}
+      />
+    );
+  }
+
+  // Mandatory pre-battle reveal — shown once per session when the match becomes active.
+  if (
+    fight.status === 'active' &&
+    !revealDone &&
+    fight.player_2_id &&
+    fight.player_2_username
+  ) {
+    return (
+      <BattleRevealScreen
+        fightId={fight.id}
+        red={{ username: fight.player_1_username, avatarUrl: fight.player_1_avatar_url }}
+        blue={{ username: fight.player_2_username, avatarUrl: fight.player_2_avatar_url }}
+        mySide={isP1 ? 'red' : isP2 ? 'blue' : null}
+        durationMs={5000}
+        onComplete={() => {
+          if (typeof window !== 'undefined') sessionStorage.setItem(`qf_reveal_done_${fight.id}`, '1');
+          setRevealDone(true);
+        }}
       />
     );
   }
