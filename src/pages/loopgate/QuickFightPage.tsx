@@ -30,6 +30,7 @@ import FNFVoteScoreboard from '@/components/loopgate/FNFVoteScoreboard';
 import QuickFightPublicVote from '@/components/loopgate/QuickFightPublicVote';
 import { setLobbyMusicActive } from '@/components/loopgate/LobbyMusicPlayer';
 import CustomEditBattleLobby from '@/components/loopgate/CustomEditBattleLobby';
+import BattleSelectFlow from '@/components/loopgate/battle-select/BattleSelectFlow';
 
 /** Detect platform from URL */
 function detectPlatform(url: string): string {
@@ -137,6 +138,12 @@ export default function QuickFightPage() {
   const isP1 = user?.id === fight.player_1_id;
   const isP2 = user?.id === fight.player_2_id;
   const isParticipant = isP1 || isP2;
+  const myPlayer = isP1
+    ? { username: fight.player_1_username, avatarUrl: fight.player_1_avatar_url, level: (profile as any)?.level || 1 }
+    : { username: fight.player_2_username || profile?.username || 'You', avatarUrl: fight.player_2_avatar_url || profile?.avatar_url || null, level: (profile as any)?.level || 1 };
+  const opponentPlayer = isP1
+    ? { username: fight.player_2_username || 'Opponent', avatarUrl: fight.player_2_avatar_url, level: 1 }
+    : { username: fight.player_1_username, avatarUrl: fight.player_1_avatar_url, level: 1 };
   const canSubmit = fight.status === 'active' && isParticipant && (
     (isP1 && !fight.player_1_submitted_at) || (isP2 && !fight.player_2_submitted_at)
   );
@@ -303,6 +310,21 @@ export default function QuickFightPage() {
           toast('Lobby closed', { duration: 1500 });
           navigate('/arena');
         }}
+      />
+    );
+  }
+
+  if (fight.status === 'selecting' && isParticipant) {
+    return (
+      <BattleSelectFlow
+        open
+        fightId={fight.id}
+        you={myPlayer}
+        opponent={opponentPlayer}
+        youSide={isP1 ? 'red' : 'blue'}
+        selectionDeadline={(fight as any).selection_deadline || null}
+        onComplete={() => {}}
+        onCancel={() => navigate('/hub')}
       />
     );
   }
