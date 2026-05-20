@@ -462,6 +462,36 @@ function MetricTile({ label, value, accent = "ink" }: { label: string; value: nu
   );
 }
 
+function BigCountdown({ endDate }: { endDate: string }) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const diff = Math.max(0, new Date(endDate).getTime() - now);
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff / 3600000) % 24);
+  const m = Math.floor((diff / 60000) % 60);
+  const s = Math.floor((diff / 1000) % 60);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const urgent = diff > 0 && diff < 60 * 60 * 1000;
+  const tone = diff === 0 ? "text-arena-red" : urgent ? "text-arena-red" : "text-arena-ink";
+  const Cell = ({ v, l }: { v: string; l: string }) => (
+    <div className="flex-1 border border-arena-line/40 bg-[#0a0a0a] py-2 text-center">
+      <p className={`text-[40px] leading-none font-black tabular-nums ${tone} ${urgent ? "animate-pulse" : ""}`} style={displayFont}>{v}</p>
+      <p className="mt-1 text-[8px] font-black uppercase tracking-[0.22em] text-arena-muted">{l}</p>
+    </div>
+  );
+  return (
+    <div className="mt-2 flex items-stretch gap-1">
+      {d > 0 && <Cell v={pad(d)} l="Days" />}
+      <Cell v={pad(h)} l="Hrs" />
+      <Cell v={pad(m)} l="Min" />
+      <Cell v={pad(s)} l="Sec" />
+    </div>
+  );
+}
+
 function InspoTile({ poster, label, crop = "50% 22%" }: { poster: string; label: string; crop?: string }) {
   return (
     <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-arena-strong shadow-[0_0_0_1px_hsl(var(--arena-line)/0.25)]">
