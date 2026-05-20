@@ -94,6 +94,22 @@ export default function EventDetailPage() {
   const isClosed = event.status === "closed";
   const isLightYagami = event.slug === LIGHT_YAGAMI_SLUG;
   const displayPoster = isLightYagami ? lightYagamiPoster : event.poster_url;
+  const formatHeroDate = (iso?: string) => {
+    if (!iso) return null;
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return null;
+    return `${d.getDate().toString().padStart(2, "0")} ${d.toLocaleString("en-US", { month: "long" }).toUpperCase()}`;
+  };
+  const heroStart = formatHeroDate((event as any).start_date);
+  const heroEnd = formatHeroDate((event as any).end_date);
+  const heroDateRange = heroEnd
+    ? heroStart && heroStart !== heroEnd
+      ? `${heroStart} — ${heroEnd}`
+      : heroEnd
+    : null;
+  const titleWords = event.title.trim().split(/\s+/);
+  const titleHead = titleWords.slice(0, -1).join(" ");
+  const titleTail = titleWords[titleWords.length - 1];
   const featuredEdits = rankings.filter((r) => r.submission_url && (r as any).is_showcase).slice(0, 6);
   const ladderRows = rankings.filter((r) => !(r as any).is_showcase).slice(0, ladderLimit);
   const isShowcaseAdmin = user?.email?.toLowerCase() === "aminhoopz@gmail.com";
@@ -114,39 +130,46 @@ export default function EventDetailPage() {
 
   return (
     <div className="min-h-screen pb-28 bg-black text-arena-ink" style={bodyFont}>
-      <div className="relative overflow-hidden bg-black">
+      {/* CINEMATIC HERO — EWC × Fortnite */}
+      <div className="relative overflow-hidden bg-black min-h-[78vh]">
         <img
           src={displayPoster || lightYagamiPoster}
           alt={event.title}
-          className="absolute inset-0 w-full h-full object-cover opacity-30 blur-[2px] scale-105"
-          style={{ objectPosition: isLightYagami ? "50% 18%" : "50% 35%" }}
+          className="absolute inset-0 w-full h-full object-cover scale-110"
+          style={{ objectPosition: isLightYagami ? "50% 22%" : "50% 35%" }}
         />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.72)_0%,rgba(0,0,0,0.88)_46%,#000_100%)]" />
+        {/* cinematic vignette: clear up top, deep black down low */}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.55)_0%,rgba(0,0,0,0.15)_28%,rgba(0,0,0,0.45)_62%,rgba(0,0,0,0.95)_92%,#000_100%)]" />
+        {/* side darken for legibility */}
+        <div className="absolute inset-y-0 left-0 w-1/3 bg-[linear-gradient(90deg,rgba(0,0,0,0.55),transparent)]" />
+        {/* amber rim flare like EWC stage lights */}
+        <div className="pointer-events-none absolute -top-24 -right-24 w-80 h-80 rounded-full bg-arena-amber/20 blur-3xl" />
+        <div className="pointer-events-none absolute bottom-1/3 -left-32 w-96 h-96 rounded-full bg-arena-red/20 blur-3xl" />
 
-        <div className="relative px-4 pt-[max(env(safe-area-inset-top),14px)] pb-5">
+        <div className="relative flex flex-col min-h-[78vh] px-4 pt-[max(env(safe-area-inset-top),14px)] pb-5">
           <div className="flex items-center justify-between mb-4">
             <Link
               to="/arena"
-              className="w-9 h-9 rounded-lg bg-arena-panel/85 shadow-[0_10px_26px_hsl(var(--arena-bg)/0.45)] flex items-center justify-center active:scale-95 transition"
+              className="w-9 h-9 rounded-lg bg-black/60 backdrop-blur-md ring-1 ring-white/10 flex items-center justify-center active:scale-95 transition"
               aria-label="Back to arena"
             >
               <ArrowLeft size={18} />
             </Link>
             <div className="flex items-center gap-2">
               {isLive && (
-                <span className="inline-flex items-center gap-1.5 rounded-lg bg-arena-red px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-primary">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" /> Live
+                <span className="inline-flex items-center gap-1.5 rounded-md bg-arena-red px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.22em] text-white shadow-[0_0_18px_hsl(var(--arena-red)/0.6)]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" /> Live
                 </span>
               )}
               {isOpenArena && <OpenArenaInfoButton onClick={() => setShowGuide(true)} />}
               <button
                 onClick={() => setShowChat(true)}
                 aria-label="Open event chat"
-                className="relative w-9 h-9 rounded-lg bg-arena-panel/85 shadow-[0_10px_26px_hsl(var(--arena-bg)/0.45)] flex items-center justify-center active:scale-95 transition"
+                className="relative w-9 h-9 rounded-lg bg-black/60 backdrop-blur-md ring-1 ring-white/10 flex items-center justify-center active:scale-95 transition"
               >
                 <MessageCircle size={18} />
                 {chatUnread > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center ring-2 ring-arena-bg animate-pulse">
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center ring-2 ring-black animate-pulse">
                     {chatUnread > 99 ? "99+" : chatUnread}
                   </span>
                 )}
@@ -154,45 +177,73 @@ export default function EventDetailPage() {
             </div>
           </div>
 
-          <div className="min-w-0 pb-1">
-              <div className="mb-2 flex flex-wrap items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.18em] text-arena-muted">
-                <span className="rounded bg-arena-panel/90 px-2 py-1 shadow-[0_4px_16px_hsl(var(--arena-bg)/0.3)]">Ranked Event</span>
-                <span className="rounded bg-arena-panel/90 px-2 py-1 shadow-[0_4px_16px_hsl(var(--arena-bg)/0.3)]">TikTok Only</span>
-              </div>
-              <h1 className="text-[42px] leading-[0.86] font-black uppercase text-arena-ink" style={displayFont}>
-                {event.title}
-              </h1>
-              {event.subtitle && <p className="mt-2 text-[12px] font-semibold uppercase tracking-[0.12em] text-arena-muted">{event.subtitle}</p>}
-          </div>
+          {/* Spacer pushes title block toward bottom of hero */}
+          <div className="flex-1 min-h-[28vh]" />
 
-          {(event as any).end_date && (
-            <div className="mt-5 border-2 border-arena-amber bg-black p-3 shadow-[6px_6px_0_#000]">
-              <div className="flex items-center justify-between">
-                <p className="text-[10px] font-black uppercase tracking-[0.28em] text-arena-amber">Time Left to Enter</p>
-                <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-[0.2em] text-arena-red">
-                  <span className="h-1.5 w-1.5 bg-arena-red animate-pulse" /> Act Fast
-                </span>
-              </div>
-              <BigCountdown endDate={(event as any).end_date} />
+          {/* Date pill — EWC style */}
+          {heroDateRange && (
+            <div className="inline-flex w-max items-center gap-2 rounded-md bg-black/55 backdrop-blur-md ring-1 ring-white/15 px-3 py-1.5 mb-3">
+              <span className="h-1.5 w-1.5 rounded-full bg-arena-amber shadow-[0_0_8px_hsl(var(--arena-amber))]" />
+              <span className="text-[11px] font-black uppercase tracking-[0.28em] text-white">{heroDateRange}</span>
             </div>
           )}
 
-          <div className="mt-3 grid grid-cols-2 gap-0 border-2 border-arena-ink bg-black">
-            <div className="border-r-2 border-arena-ink p-3">
-              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-arena-emerald">Cash Prize</p>
-              <div className="mt-1 flex items-baseline gap-0.5">
-                <span className="text-[20px] font-black leading-none text-arena-emerald" style={displayFont}>$</span>
-                <span className="text-[48px] font-black leading-none text-arena-ink tabular-nums" style={displayFont}>150</span>
-              </div>
-              <p className="mt-0.5 text-[9px] font-black uppercase tracking-[0.16em] text-arena-emerald">Real Money</p>
+          {/* MASSIVE slanted title — white + amber gradient outline on last word */}
+          <h1
+            className="font-black uppercase leading-[0.82] text-white drop-shadow-[0_6px_22px_rgba(0,0,0,0.85)]"
+            style={{ ...displayFont, fontSize: "clamp(64px, 18vw, 108px)", letterSpacing: "-0.01em", transform: "skewX(-6deg)" }}
+          >
+            {titleHead && <span className="block">{titleHead}</span>}
+            <span
+              className="block bg-clip-text text-transparent"
+              style={{
+                backgroundImage:
+                  "linear-gradient(180deg, #ffd76a 0%, #f5a623 45%, #b8731a 100%)",
+                WebkitTextStroke: "1px rgba(0,0,0,0.25)",
+              }}
+            >
+              {titleTail}
+            </span>
+          </h1>
+
+          {event.subtitle && (
+            <p className="mt-3 max-w-[88%] text-[12px] font-black uppercase tracking-[0.18em] leading-[1.45] text-white/85">
+              {event.subtitle}
+            </p>
+          )}
+
+          {/* GLASSY COUNTDOWN — EWC ribbon */}
+          {(event as any).end_date && (
+            <div className="mt-5">
+              <GlassyCountdown endDate={(event as any).end_date} />
             </div>
-            <div className="bg-arena-amber p-3 text-black">
-              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-black/80">Rings Pot</p>
-              <div className="mt-1 flex items-center gap-1.5">
-                <RingsCoin size={22} className="text-black" />
-                <span className="text-[48px] font-black leading-none text-black tabular-nums" style={displayFont}>1M</span>
-              </div>
-              <p className="mt-0.5 text-[9px] font-black uppercase tracking-[0.16em] text-black/80">Top 50 Split</p>
+          )}
+        </div>
+      </div>
+
+      {/* SLANTED PRIZE BANNER — Fortnite "Answer The Call" style */}
+      <div className="relative -mt-1 bg-black px-4 pt-4 pb-2">
+        <div className="relative flex items-stretch h-[78px]">
+          {/* CASH slab — white background, black text */}
+          <div
+            className="relative flex-1 flex items-center justify-center bg-white text-black overflow-hidden"
+            style={{ clipPath: "polygon(0 0, 100% 0, calc(100% - 14px) 100%, 0 100%)" }}
+          >
+            <div className="flex items-baseline gap-0.5 px-3" style={displayFont}>
+              <span className="text-[26px] font-black leading-none text-arena-emerald">$</span>
+              <span className="text-[54px] font-black leading-none tabular-nums tracking-tight">150</span>
+              <span className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-black/60 self-center">Cash<br/>Real $</span>
+            </div>
+          </div>
+          {/* RINGS slab — amber, slanted */}
+          <div
+            className="relative -ml-3 flex-1 flex items-center justify-center bg-arena-amber text-black overflow-hidden shadow-[0_0_28px_hsl(var(--arena-amber)/0.35)]"
+            style={{ clipPath: "polygon(14px 0, 100% 0, 100% 100%, 0 100%)" }}
+          >
+            <div className="flex items-center gap-2 pl-4 pr-3" style={displayFont}>
+              <RingsCoin size={26} className="text-black" />
+              <span className="text-[54px] font-black leading-none tabular-nums tracking-tight">1M</span>
+              <span className="ml-1 text-[10px] font-black uppercase tracking-[0.2em] text-black/70 self-center">Rings<br/>Top 50</span>
             </div>
           </div>
         </div>
@@ -462,7 +513,7 @@ function MetricTile({ label, value, accent = "ink" }: { label: string; value: nu
   );
 }
 
-function BigCountdown({ endDate }: { endDate: string }) {
+function GlassyCountdown({ endDate }: { endDate: string }) {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
@@ -475,19 +526,29 @@ function BigCountdown({ endDate }: { endDate: string }) {
   const s = Math.floor((diff / 1000) % 60);
   const pad = (n: number) => String(n).padStart(2, "0");
   const urgent = diff > 0 && diff < 60 * 60 * 1000;
-  const tone = diff === 0 ? "text-arena-red" : urgent ? "text-arena-red" : "text-arena-ink";
   const Cell = ({ v, l }: { v: string; l: string }) => (
-    <div className="flex-1 border border-arena-line/40 bg-[#0a0a0a] py-2 text-center">
-      <p className={`text-[40px] leading-none font-black tabular-nums ${tone} ${urgent ? "animate-pulse" : ""}`} style={displayFont}>{v}</p>
-      <p className="mt-1 text-[8px] font-black uppercase tracking-[0.22em] text-arena-muted">{l}</p>
+    <div className="flex-1 flex flex-col items-center justify-center py-2.5 px-1">
+      <p
+        className={`text-[34px] leading-none font-black tabular-nums text-white ${urgent ? "animate-pulse text-arena-amber" : ""}`}
+        style={displayFont}
+      >
+        {v}
+      </p>
+      <p className="mt-1 text-[8px] font-black uppercase tracking-[0.32em] text-white/55">{l}</p>
     </div>
   );
+  const Colon = () => (
+    <span className="self-center pb-3 text-[26px] font-black text-white/35 select-none" style={displayFont}>:</span>
+  );
   return (
-    <div className="mt-2 flex items-stretch gap-1">
-      {d > 0 && <Cell v={pad(d)} l="Days" />}
-      <Cell v={pad(h)} l="Hrs" />
-      <Cell v={pad(m)} l="Min" />
-      <Cell v={pad(s)} l="Sec" />
+    <div className="inline-flex w-full max-w-md items-stretch rounded-2xl bg-black/55 backdrop-blur-xl ring-1 ring-white/10 shadow-[0_18px_60px_rgba(0,0,0,0.55)] px-2">
+      <Cell v={pad(d)} l="Days" />
+      <Colon />
+      <Cell v={pad(h)} l="Hours" />
+      <Colon />
+      <Cell v={pad(m)} l="Minutes" />
+      <Colon />
+      <Cell v={pad(s)} l="Seconds" />
     </div>
   );
 }
