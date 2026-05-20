@@ -32,6 +32,7 @@ import LoopMonster from '@/components/loopgate/LoopMonster';
 import QuickFightButton from '@/components/loopgate/QuickFightButton';
 import { useMyQuickFights, createQuickFightLobby, leaveQueue, joinWaitingQuickFight } from '@/hooks/useQuickFight';
 import InstantMatchModal from '@/components/loopgate/InstantMatchModal';
+import BattleSelectFlow from '@/components/loopgate/battle-select/BattleSelectFlow';
 import { useSoloMode } from '@/hooks/useSoloMode';
 import { useAccountPrompt } from '@/hooks/useAccountPrompt';
 import GlitchEdge from '@/components/loopgate/GlitchEdge';
@@ -210,6 +211,11 @@ export default function HubPage() {
   const [instantMatch, setInstantMatch] = useState<null | {
     fightId: string;
     cancelled: boolean;
+    you: { username: string; avatarUrl: string | null; level: number };
+    opponent: { username: string; avatarUrl: string | null; level: number };
+  }>(null);
+  const [battleSelect, setBattleSelect] = useState<null | {
+    fightId: string;
     you: { username: string; avatarUrl: string | null; level: number };
     opponent: { username: string; avatarUrl: string | null; level: number };
   }>(null);
@@ -401,7 +407,7 @@ export default function HubPage() {
     );
     if (ok) {
       toast.success('⚔️ Match locked in!');
-      navigate(`/fight/${match.fightId}`);
+      setBattleSelect({ fightId: match.fightId, you: match.you, opponent: match.opponent });
     } else {
       toast.error(error || 'Lobby already taken — try again');
     }
@@ -1066,6 +1072,23 @@ export default function HubPage() {
           opponent={instantMatch.opponent}
           onCancel={() => setInstantMatch(null)}
           onConfirm={confirmInstantMatch}
+        />
+      )}
+      {battleSelect && (
+        <BattleSelectFlow
+          open={!!battleSelect}
+          you={battleSelect.you}
+          opponent={battleSelect.opponent}
+          onComplete={() => {
+            const id = battleSelect.fightId;
+            setBattleSelect(null);
+            navigate(`/fight/${id}`);
+          }}
+          onCancel={() => {
+            const id = battleSelect.fightId;
+            setBattleSelect(null);
+            navigate(`/fight/${id}`);
+          }}
         />
       )}
     </div>
