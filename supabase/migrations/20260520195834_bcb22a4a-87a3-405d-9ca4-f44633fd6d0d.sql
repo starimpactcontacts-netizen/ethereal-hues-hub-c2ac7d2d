@@ -1,0 +1,1 @@
+DELETE FROM public.event_participations WHERE id = 'd55a28df-4861-403a-ac40-3e3d8615fa48' AND is_showcase = true;
