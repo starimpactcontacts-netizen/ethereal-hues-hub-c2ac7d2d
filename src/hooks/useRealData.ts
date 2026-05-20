@@ -139,23 +139,35 @@ export function useRealEvents() {
 // Hook for fetching real rankings from profiles
 export function useRealRankings() {
   const [rankings, setRankings] = useState<RealEditor[]>([]);
+  const [totalEditors, setTotalEditors] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchRankings = useCallback(async () => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select(`
-        id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, crew_id, house_id, xp, level, best_gatekeeper_qoi, is_founding_member, created_at, connection_count,
-        crews:crew_id (id, name, emblem, avatar_url),
-        houses:house_id (id, name, symbol, primary_color, secondary_color)
-      `)
-      .eq('is_hidden', false)
-      .order('global_index_score', { ascending: false })
-      .order('best_gatekeeper_qoi', { ascending: false, nullsFirst: false })
-      .order('level', { ascending: false })
-      .order('xp', { ascending: false })
-      .range(0, 49999);
+    const [rankingsResult, countResult] = await Promise.all([
+      supabase
+        .from('profiles')
+        .select(`
+          id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, crew_id, house_id, xp, level, best_gatekeeper_qoi, is_founding_member, created_at, connection_count,
+          crews:crew_id (id, name, emblem, avatar_url),
+          houses:house_id (id, name, symbol, primary_color, secondary_color)
+        `)
+        .eq('is_hidden', false)
+        .order('global_index_score', { ascending: false })
+        .order('best_gatekeeper_qoi', { ascending: false, nullsFirst: false })
+        .order('level', { ascending: false })
+        .order('xp', { ascending: false })
+        .range(0, 49999),
+      supabase
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('is_hidden', false),
+    ]);
+
+    const { data, error } = rankingsResult;
+    if (!countResult.error) {
+      setTotalEditors(countResult.count ?? (data || []).length);
+    }
 
     if (error) {
       setError(error.message);
@@ -369,7 +381,7 @@ export function useRealRankings() {
     };
   }, [fetchRankings]);
 
-  return { rankings, loading, error, refetch: fetchRankings };
+  return { rankings, totalEditors, loading, error, refetch: fetchRankings };
 }
 
 // Hook for event-specific rankings (supports both standard and Open Arena events)

@@ -246,7 +246,7 @@ export default function IndexPage() {
 
   useActiveSession();
 
-  const { rankings, loading, error } = useRealRankings();
+  const { rankings, totalEditors, loading, error } = useRealRankings();
   const { events, loading: eventsLoading } = useRealEvents();
   const { rankings: eventRankings, loading: eventRankingsLoading } = useEventRankings(selectedEventId);
   const { users: xpUsers, loading: xpLoading } = useXPUserLeaderboard(50);
@@ -555,7 +555,7 @@ export default function IndexPage() {
               <div className="w-2 h-2 bg-gold rounded-full" />
               <div className="absolute inset-0 w-2 h-2 bg-gold rounded-full animate-ping opacity-40" />
             </div>
-            <span className="text-[13px] font-bold text-foreground tabular-nums">{rankings.length}</span>
+            <span className="text-[13px] font-bold text-foreground tabular-nums">{totalEditors.toLocaleString()}</span>
             <span className="text-[11px] text-muted-foreground/70 tracking-wide">editors indexed</span>
           </div>
         </header>
