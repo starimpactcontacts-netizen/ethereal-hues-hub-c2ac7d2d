@@ -192,48 +192,63 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
     setTimeLeft(PHASE_TIMER_SEC);
     setMine(EMPTY_PICKS);
     setOpp(EMPTY_PICKS);
+    setOpponentReady(false);
+    setBothReady(false);
+    setRevealSelections(false);
+    setDeadlineIso(selectionDeadline || null);
+    timeoutHandledRef.current = false;
+    startingRef.current = false;
     setSyncPack(false);
     setSyncSong(false);
     setIntro({ pct: 0, count: 3 });
-  }, [open]);
+  }, [open, selectionDeadline]);
 
-  // Simulated opponent — picks privately, then flips to READY.
-  // Their picks are NEVER shown to the local user until the intro phase.
+  // Read sanitized lobby state; opponent picks stay hidden until reveal.
   useEffect(() => {
-    if (!open || phase !== 'select' || opp.ready) return;
-    const t = setTimeout(() => {
-      const pool = songs.length ? songs : FALLBACK_SONGS;
-      setOpp({
-        pack: SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)],
-        song: pool[Math.floor(Math.random() * pool.length)],
-        ready: true,
-      });
-    }, 6000 + Math.random() * 6000);
-    return () => clearTimeout(t);
-  }, [open, phase, opp.ready, songs]);
+    if (!open || !fightId || phase !== 'select') return;
+    let cancelled = false;
+    const fetchState = async () => {
+      const { data } = await supabase.rpc('get_quick_fight_selection_state' as any, { p_fight_id: fightId } as any);
+      if (!cancelled) applySelectionState(data);
+      if (!cancelled && (data as any)?.status === 'active') setPhase('intro');
+    };
+    fetchState();
+    const iv = setInterval(fetchState, 2000);
+    const channel = supabase
+      .channel(`quick_fight_selection_${fightId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'quick_fights', filter: `id=eq.${fightId}` }, fetchState)
+      .subscribe();
+    return () => {
+      cancelled = true;
+      clearInterval(iv);
+      supabase.removeChannel(channel);
+    };
+  }, [applySelectionState, fightId, open, phase]);
 
-  // Phase timer — counts down once, fills missing local picks on timeout.
+  // Phase timer — lobby countdown. It does not start the battle until 0:00.
   useEffect(() => {
     if (!open || phase !== 'select') return;
-    setTimeLeft(PHASE_TIMER_SEC);
     const iv = setInterval(() => {
-      setTimeLeft(t => {
-        if (t <= 1) { clearInterval(iv); handleTimeout(); return 0; }
-        return t - 1;
-      });
-    }, 1000);
+      const remaining = deadlineIso
+        ? Math.max(0, Math.ceil((new Date(deadlineIso).getTime() - Date.now()) / 1000))
+        : Math.max(0, timeLeft - 1);
+      setTimeLeft(remaining);
+      if (remaining <= 0 && !timeoutHandledRef.current) {
+        timeoutHandledRef.current = true;
+        handleTimeout();
+      }
+    }, 500);
     return () => clearInterval(iv);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, phase]);
+  }, [open, phase, deadlineIso, mine.pack, mine.song, mine.ready, songs]);
 
-  // Advance to intro when BOTH players are ready
+  // Advance only when backend confirms both ready / reveal condition.
   useEffect(() => {
     if (!open || phase !== 'select') return;
-    if (mine.ready && opp.ready) {
-      const t = setTimeout(() => setPhase('intro'), 700);
-      return () => clearTimeout(t);
+    if (bothReady && revealSelections) {
+      startFromSelection().catch(() => {});
     }
-  }, [open, phase, mine.ready, opp.ready]);
+  }, [bothReady, revealSelections, open, phase, startFromSelection]);
 
   // Intro animation
   useEffect(() => {
