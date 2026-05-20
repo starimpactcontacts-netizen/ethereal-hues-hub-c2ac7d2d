@@ -282,8 +282,8 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
     // Timer expiry auto-fills ONLY this player's missing picks, then asks backend to start.
     const next = {
       ...mine,
-      pack: prev.pack || SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)],
-      song: prev.song || pool[Math.floor(Math.random() * pool.length)],
+      pack: mine.pack || SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)],
+      song: mine.song || pool[Math.floor(Math.random() * pool.length)],
       ready: true,
     } as PlayerPicks;
     setMine(next);
