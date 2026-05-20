@@ -31,6 +31,7 @@ import QuickFightPublicVote from '@/components/loopgate/QuickFightPublicVote';
 import { setLobbyMusicActive } from '@/components/loopgate/LobbyMusicPlayer';
 import CustomEditBattleLobby from '@/components/loopgate/CustomEditBattleLobby';
 import BattleSelectFlow from '@/components/loopgate/battle-select/BattleSelectFlow';
+import BattleSelectionsBanner from '@/components/loopgate/BattleSelectionsBanner';
 
 /** Detect platform from URL */
 function detectPlatform(url: string): string {
@@ -432,6 +433,16 @@ export default function QuickFightPage() {
 
         {/* SCREEN VS SCREEN — stacked vertical, RED on top, VS divider, BLUE on bottom */}
         <div className="space-y-0">
+          {isParticipant && fight.player_2_id && ['active','submitted','judging','completed'].includes(fight.status) && (
+            <div className="mb-2">
+              <BattleSelectionsBanner
+                fightId={fight.id}
+                mySide={isP1 ? 'red' : 'blue'}
+                redUsername={fight.player_1_username}
+                blueUsername={fight.player_2_username || '???'}
+              />
+            </div>
+          )}
           {fight.player_1_submission_url && fight.player_2_submission_url && fight.player_2_id ? (
             // BOTH UPLOADED → clean tap-to-play native video slots
             <BattleAutoplayDuo
