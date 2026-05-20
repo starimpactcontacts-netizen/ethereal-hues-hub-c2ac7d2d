@@ -7350,6 +7350,68 @@ export type Database = {
         }
         Relationships: []
       }
+      quick_fight_selections: {
+        Row: {
+          fight_id: string
+          player_id: string
+          ready: boolean
+          ready_at: string | null
+          scenepack_count: number | null
+          scenepack_id: string | null
+          scenepack_name: string | null
+          scenepack_poster: string | null
+          side: string
+          song_artist: string | null
+          song_cover: string | null
+          song_id: string | null
+          song_preview: string | null
+          song_title: string | null
+          updated_at: string
+        }
+        Insert: {
+          fight_id: string
+          player_id: string
+          ready?: boolean
+          ready_at?: string | null
+          scenepack_count?: number | null
+          scenepack_id?: string | null
+          scenepack_name?: string | null
+          scenepack_poster?: string | null
+          side: string
+          song_artist?: string | null
+          song_cover?: string | null
+          song_id?: string | null
+          song_preview?: string | null
+          song_title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          fight_id?: string
+          player_id?: string
+          ready?: boolean
+          ready_at?: string | null
+          scenepack_count?: number | null
+          scenepack_id?: string | null
+          scenepack_name?: string | null
+          scenepack_poster?: string | null
+          side?: string
+          song_artist?: string | null
+          song_cover?: string | null
+          song_id?: string | null
+          song_preview?: string | null
+          song_title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quick_fight_selections_fight_id_fkey"
+            columns: ["fight_id"]
+            isOneToOne: false
+            referencedRelation: "quick_fights"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quick_fight_votes: {
         Row: {
           created_at: string
@@ -7403,6 +7465,7 @@ export type Database = {
           player_1_avatar_url: string | null
           player_1_id: string
           player_1_scenepack_vote: string | null
+          player_1_selection_ready: boolean
           player_1_submission_url: string | null
           player_1_submitted_at: string | null
           player_1_thumbnail_url: string | null
@@ -7411,6 +7474,7 @@ export type Database = {
           player_2_avatar_url: string | null
           player_2_id: string | null
           player_2_scenepack_vote: string | null
+          player_2_selection_ready: boolean
           player_2_submission_url: string | null
           player_2_submitted_at: string | null
           player_2_thumbnail_url: string | null
@@ -7423,6 +7487,8 @@ export type Database = {
           scenepack_vote_deadline: string | null
           scenepack_vote_started_at: string | null
           scenepack_youtube_url: string | null
+          selection_deadline: string | null
+          selection_started_at: string | null
           starts_at: string | null
           status: string
           theme_drop_id: string | null
@@ -7453,6 +7519,7 @@ export type Database = {
           player_1_avatar_url?: string | null
           player_1_id: string
           player_1_scenepack_vote?: string | null
+          player_1_selection_ready?: boolean
           player_1_submission_url?: string | null
           player_1_submitted_at?: string | null
           player_1_thumbnail_url?: string | null
@@ -7461,6 +7528,7 @@ export type Database = {
           player_2_avatar_url?: string | null
           player_2_id?: string | null
           player_2_scenepack_vote?: string | null
+          player_2_selection_ready?: boolean
           player_2_submission_url?: string | null
           player_2_submitted_at?: string | null
           player_2_thumbnail_url?: string | null
@@ -7473,6 +7541,8 @@ export type Database = {
           scenepack_vote_deadline?: string | null
           scenepack_vote_started_at?: string | null
           scenepack_youtube_url?: string | null
+          selection_deadline?: string | null
+          selection_started_at?: string | null
           starts_at?: string | null
           status?: string
           theme_drop_id?: string | null
@@ -7503,6 +7573,7 @@ export type Database = {
           player_1_avatar_url?: string | null
           player_1_id?: string
           player_1_scenepack_vote?: string | null
+          player_1_selection_ready?: boolean
           player_1_submission_url?: string | null
           player_1_submitted_at?: string | null
           player_1_thumbnail_url?: string | null
@@ -7511,6 +7582,7 @@ export type Database = {
           player_2_avatar_url?: string | null
           player_2_id?: string | null
           player_2_scenepack_vote?: string | null
+          player_2_selection_ready?: boolean
           player_2_submission_url?: string | null
           player_2_submitted_at?: string | null
           player_2_thumbnail_url?: string | null
@@ -7523,6 +7595,8 @@ export type Database = {
           scenepack_vote_deadline?: string | null
           scenepack_vote_started_at?: string | null
           scenepack_youtube_url?: string | null
+          selection_deadline?: string | null
+          selection_started_at?: string | null
           starts_at?: string | null
           status?: string
           theme_drop_id?: string | null
@@ -9218,6 +9292,10 @@ export type Database = {
         Args: { p_user_1: string; p_user_2: string }
         Returns: string
       }
+      get_quick_fight_selection_state: {
+        Args: { p_fight_id: string }
+        Returns: Json
+      }
       get_skill_tier: { Args: { qoi_score: number }; Returns: string }
       get_user_global_rank: {
         Args: { p_user_id: string }
@@ -9358,6 +9436,10 @@ export type Database = {
         Args: { p_event_id: string; p_round_number: number }
         Returns: boolean
       }
+      start_quick_fight_from_selection: {
+        Args: { p_fight_id: string }
+        Returns: boolean
+      }
       toggle_battle_hidden: {
         Args: { p_battle_id: string; p_hide: boolean }
         Returns: undefined
@@ -9367,6 +9449,15 @@ export type Database = {
         Returns: undefined
       }
       update_active_session: { Args: never; Returns: undefined }
+      upsert_quick_fight_selection: {
+        Args: {
+          p_fight_id: string
+          p_ready?: boolean
+          p_scenepack?: Json
+          p_song?: Json
+        }
+        Returns: Json
+      }
     }
     Enums: {
       advancement_type: "top_x" | "percentage" | "manual" | "none"
