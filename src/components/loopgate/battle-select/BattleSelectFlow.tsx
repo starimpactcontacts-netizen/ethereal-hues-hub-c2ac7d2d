@@ -439,12 +439,26 @@ function PlayerChip({ player, color, ready, align = 'left' }: { player: Player; 
   );
 }
 
-function BottomControls({ onRandom, syncOn, onToggleSync }: { onRandom: () => void; syncOn?: boolean; onToggleSync?: () => void }) {
+function BottomControls({
+  onRandom,
+  canReady,
+  ready,
+  onReady,
+  syncOn,
+  onToggleSync,
+}: {
+  onRandom: () => void;
+  canReady: boolean;
+  ready: boolean;
+  onReady: () => void;
+  syncOn?: boolean;
+  onToggleSync?: () => void;
+}) {
   return (
     <div className="absolute bottom-0 left-0 right-0 z-10 px-3 pt-3 pb-[max(env(safe-area-inset-bottom),12px)] bg-gradient-to-t from-black via-black/90 to-transparent">
       <div className="flex items-center gap-2">
-        <button onClick={onRandom}
-          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold uppercase tracking-wider text-xs active:scale-[0.98] transition shadow-lg shadow-red-600/30">
+        <button onClick={onRandom} disabled={ready}
+          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-40 text-white font-bold uppercase tracking-wider text-xs active:scale-[0.98] transition shadow-lg shadow-red-600/30">
           <Shuffle className="w-4 h-4" /> Random
         </button>
         <button disabled
@@ -453,13 +467,24 @@ function BottomControls({ onRandom, syncOn, onToggleSync }: { onRandom: () => vo
         </button>
         <button
           onClick={onToggleSync}
+          disabled={ready}
           aria-pressed={!!syncOn}
           className={`flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl border font-bold uppercase tracking-wider text-[10px] transition active:scale-[0.97] ${
             syncOn
               ? 'bg-emerald-500/20 border-emerald-400/60 text-emerald-300 shadow-[0_0_14px_rgba(16,185,129,0.35)]'
-              : 'border-white/20 text-white/70'
+              : 'border-white/20 text-white/70 disabled:opacity-40'
           }`}>
           <Users className="w-3.5 h-3.5" /> Sync
+        </button>
+        <button onClick={onReady} disabled={!canReady || ready}
+          className={`flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl border font-bold uppercase tracking-wider text-[10px] transition active:scale-[0.97] ${
+            ready
+              ? 'bg-emerald-500/20 border-emerald-400/60 text-emerald-300'
+              : canReady
+                ? 'bg-emerald-600 border-emerald-400/70 text-white shadow-lg shadow-emerald-600/25'
+                : 'border-white/15 text-white/40'
+          }`}>
+          <Check className="w-3.5 h-3.5" /> {ready ? 'Locked' : 'Ready'}
         </button>
       </div>
       {syncOn !== undefined && (
