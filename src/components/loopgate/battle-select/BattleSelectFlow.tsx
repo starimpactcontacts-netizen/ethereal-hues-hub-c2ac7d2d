@@ -120,26 +120,31 @@ export default function BattleSelectFlow({ open, you, opponent, youSide = 'red',
     if (!open) return;
     setPhase('scenepack');
     setTimeLeft(PHASE_TIMER_SEC);
-    setMyPack(null); setOppPack(null); setMySong(null); setOppSong(null);
+    setPackSelections({ red: null, blue: null });
+    setSongSelections({ red: null, blue: null });
+    setPackReady({ red: false, blue: false });
+    setSongReady({ red: false, blue: false });
+    setSyncPack({ red: false, blue: false });
+    setSyncSong({ red: false, blue: false });
     setIntro({ pct: 0, count: 3 });
   }, [open]);
 
   // Simulated opponent picks
   useEffect(() => {
     if (!open) return;
-    if (phase === 'scenepack' && !oppPack) {
+    if (phase === 'scenepack' && !opponentPack) {
       const t = setTimeout(() => {
-        setOppPack(SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)]);
+        setOpponentPack(SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)]);
       }, 3500 + Math.random() * 4000);
       return () => clearTimeout(t);
     }
-    if (phase === 'song' && !oppSong) {
+    if (phase === 'song' && !opponentSong) {
       const t = setTimeout(() => {
-        setOppSong(songs[Math.floor(Math.random() * songs.length)] || FALLBACK_SONGS[0]);
+        setOpponentSong(songs[Math.floor(Math.random() * songs.length)] || FALLBACK_SONGS[0]);
       }, 3500 + Math.random() * 4000);
       return () => clearTimeout(t);
     }
-  }, [open, phase, oppPack, oppSong, songs]);
+  }, [open, phase, opponentPack, opponentSong, songs]);
 
   // Phase timer
   useEffect(() => {
@@ -158,15 +163,15 @@ export default function BattleSelectFlow({ open, you, opponent, youSide = 'red',
   // Auto-advance when both ready
   useEffect(() => {
     if (!open) return;
-    if (phase === 'scenepack' && myPack && oppPack) {
+    if (phase === 'scenepack' && packReady.red && packReady.blue) {
       const t = setTimeout(() => setPhase('song'), 600);
       return () => clearTimeout(t);
     }
-    if (phase === 'song' && mySong && oppSong) {
+    if (phase === 'song' && songReady.red && songReady.blue) {
       const t = setTimeout(() => setPhase('intro'), 600);
       return () => clearTimeout(t);
     }
-  }, [open, phase, myPack, oppPack, mySong, oppSong]);
+  }, [open, phase, packReady.red, packReady.blue, songReady.red, songReady.blue]);
 
   // Intro animation
   useEffect(() => {
