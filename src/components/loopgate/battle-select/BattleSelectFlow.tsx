@@ -111,17 +111,61 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
 
   const canReady = !!mine.pack && !!mine.song;
 
+  const applySelectionState = useCallback((state: any) => {
+    if (!state) return;
+    setOpponentReady(!!state.opponentReady);
+    setBothReady(!!state.bothReady);
+    setRevealSelections(!!state.reveal);
+    if (state.selectionDeadline) setDeadlineIso(state.selectionDeadline);
+    if (state.mine) {
+      setMine(prev => ({
+        pack: cleanPack(state.mine.pack) || prev.pack,
+        song: cleanSong(state.mine.song) || prev.song,
+        ready: !!state.myReady || prev.ready,
+      }));
+    }
+    if (state.reveal && state.opponent) {
+      setOpp({ pack: cleanPack(state.opponent.pack), song: cleanSong(state.opponent.song), ready: !!state.opponent.ready });
+    } else {
+      setOpp(prev => ({ ...prev, ready: !!state.opponentReady }));
+    }
+  }, []);
+
+  const saveSelection = useCallback(async (next: PlayerPicks) => {
+    const { data } = await supabase.rpc('upsert_quick_fight_selection' as any, {
+      p_fight_id: fightId,
+      p_scenepack: serializePack(next.pack),
+      p_song: serializeSong(next.song),
+      p_ready: next.ready,
+    } as any);
+    applySelectionState(data);
+    return data as any;
+  }, [applySelectionState, fightId]);
+
+  const startFromSelection = useCallback(async () => {
+    if (startingRef.current) return;
+    startingRef.current = true;
+    await supabase.rpc('start_quick_fight_from_selection' as any, { p_fight_id: fightId } as any);
+  }, [fightId]);
+
   const setMyPack = (pack: Scenepack) => {
     if (mine.ready) return;
-    setMine(prev => ({ ...prev, pack }));
+    const next = { ...mine, pack };
+    setMine(next);
+    saveSelection(next).catch(() => {});
   };
   const setMySong = (song: Song) => {
     if (mine.ready) return;
-    setMine(prev => ({ ...prev, song }));
+    const next = { ...mine, song };
+    setMine(next);
+    saveSelection(next).catch(() => {});
   };
-  const lockInReady = () => {
+  const lockInReady = async () => {
     if (!canReady || mine.ready) return;
-    setMine(prev => ({ ...prev, ready: true }));
+    const next = { ...mine, ready: true };
+    setMine(next);
+    const state = await saveSelection(next);
+    if (state?.bothReady || state?.reveal) await startFromSelection();
   };
 
   // Load songs from radio_tracks
