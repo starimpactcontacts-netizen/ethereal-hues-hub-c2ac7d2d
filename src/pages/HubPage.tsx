@@ -218,6 +218,7 @@ export default function HubPage() {
     fightId: string;
     you: { username: string; avatarUrl: string | null; level: number };
     opponent: { username: string; avatarUrl: string | null; level: number };
+    youSide: 'red' | 'blue';
   }>(null);
   const { inQueue: qfInQueue, fights: qfFights } = useMyQuickFights();
   const { competitions: myLiveCompetitions } = useMyCompetitionReminders();
@@ -407,7 +408,7 @@ export default function HubPage() {
     );
     if (ok) {
       toast.success('⚔️ Match locked in!');
-      setBattleSelect({ fightId: match.fightId, you: match.you, opponent: match.opponent });
+      setBattleSelect({ fightId: match.fightId, you: match.you, opponent: match.opponent, youSide: 'blue' });
     } else {
       toast.error(error || 'Lobby already taken — try again');
     }
@@ -1079,6 +1080,7 @@ export default function HubPage() {
           open={!!battleSelect}
           you={battleSelect.you}
           opponent={battleSelect.opponent}
+          youSide={battleSelect.youSide}
           onComplete={() => {
             const id = battleSelect.fightId;
             setBattleSelect(null);

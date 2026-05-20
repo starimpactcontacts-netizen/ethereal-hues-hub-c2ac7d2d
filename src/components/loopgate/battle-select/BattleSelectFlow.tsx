@@ -15,6 +15,7 @@ interface Props {
   open: boolean;
   you: Player;
   opponent: Player;
+  youSide?: PlayerSide;
   onComplete: () => void;
   onCancel?: () => void;
 }
@@ -47,23 +48,57 @@ const FALLBACK_SONGS: Song[] = [
 ];
 
 type Phase = 'scenepack' | 'song' | 'intro';
+type PlayerSide = 'red' | 'blue';
+type SideSelections<T> = Record<PlayerSide, T | null>;
+type SideReady = Record<PlayerSide, boolean>;
 
-export default function BattleSelectFlow({ open, you, opponent, onComplete, onCancel }: Props) {
+export default function BattleSelectFlow({ open, you, opponent, youSide = 'red', onComplete, onCancel }: Props) {
   const [phase, setPhase] = useState<Phase>('scenepack');
   const [timeLeft, setTimeLeft] = useState(PHASE_TIMER_SEC);
   const [songs, setSongs] = useState<Song[]>(FALLBACK_SONGS);
 
-  const [myPack, setMyPack] = useState<Scenepack | null>(null);
-  const [oppPack, setOppPack] = useState<Scenepack | null>(null);
-  const [mySong, setMySong] = useState<Song | null>(null);
-  const [oppSong, setOppSong] = useState<Song | null>(null);
-  const [syncPack, setSyncPack] = useState(false);
-  const [syncSong, setSyncSong] = useState(false);
+  const [packSelections, setPackSelections] = useState<SideSelections<Scenepack>>({ red: null, blue: null });
+  const [songSelections, setSongSelections] = useState<SideSelections<Song>>({ red: null, blue: null });
+  const [packReady, setPackReady] = useState<SideReady>({ red: false, blue: false });
+  const [songReady, setSongReady] = useState<SideReady>({ red: false, blue: false });
+  const [syncPack, setSyncPack] = useState<SideReady>({ red: false, blue: false });
+  const [syncSong, setSyncSong] = useState<SideReady>({ red: false, blue: false });
 
   const [intro, setIntro] = useState({ pct: 0, count: 3 });
 
   const previewRef = useRef<HTMLAudioElement | null>(null);
   const [previewingId, setPreviewingId] = useState<string | null>(null);
+
+  const mySide: PlayerSide = youSide;
+  const opponentSide: PlayerSide = mySide === 'red' ? 'blue' : 'red';
+  const redPlayer = mySide === 'red' ? you : opponent;
+  const bluePlayer = mySide === 'blue' ? you : opponent;
+  const myPack = packSelections[mySide];
+  const opponentPack = packSelections[opponentSide];
+  const mySong = songSelections[mySide];
+  const opponentSong = songSelections[opponentSide];
+
+  const setMyPack = (pack: Scenepack) => {
+    if (packReady[mySide]) return;
+    setPackSelections(prev => ({ ...prev, [mySide]: pack }));
+    setPackReady(prev => ({ ...prev, [mySide]: false }));
+  };
+
+  const setOpponentPack = (pack: Scenepack) => {
+    setPackSelections(prev => ({ ...prev, [opponentSide]: pack }));
+    setPackReady(prev => ({ ...prev, [opponentSide]: true }));
+  };
+
+  const setMySong = (song: Song) => {
+    if (songReady[mySide]) return;
+    setSongSelections(prev => ({ ...prev, [mySide]: song }));
+    setSongReady(prev => ({ ...prev, [mySide]: false }));
+  };
+
+  const setOpponentSong = (song: Song) => {
+    setSongSelections(prev => ({ ...prev, [opponentSide]: song }));
+    setSongReady(prev => ({ ...prev, [opponentSide]: true }));
+  };
 
   // Load songs from radio_tracks
   useEffect(() => {
@@ -86,26 +121,31 @@ export default function BattleSelectFlow({ open, you, opponent, onComplete, onCa
     if (!open) return;
     setPhase('scenepack');
     setTimeLeft(PHASE_TIMER_SEC);
-    setMyPack(null); setOppPack(null); setMySong(null); setOppSong(null);
+    setPackSelections({ red: null, blue: null });
+    setSongSelections({ red: null, blue: null });
+    setPackReady({ red: false, blue: false });
+    setSongReady({ red: false, blue: false });
+    setSyncPack({ red: false, blue: false });
+    setSyncSong({ red: false, blue: false });
     setIntro({ pct: 0, count: 3 });
   }, [open]);
 
   // Simulated opponent picks
   useEffect(() => {
     if (!open) return;
-    if (phase === 'scenepack' && !oppPack) {
+    if (phase === 'scenepack' && !opponentPack) {
       const t = setTimeout(() => {
-        setOppPack(SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)]);
+        setOpponentPack(SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)]);
       }, 3500 + Math.random() * 4000);
       return () => clearTimeout(t);
     }
-    if (phase === 'song' && !oppSong) {
+    if (phase === 'song' && !opponentSong) {
       const t = setTimeout(() => {
-        setOppSong(songs[Math.floor(Math.random() * songs.length)] || FALLBACK_SONGS[0]);
+        setOpponentSong(songs[Math.floor(Math.random() * songs.length)] || FALLBACK_SONGS[0]);
       }, 3500 + Math.random() * 4000);
       return () => clearTimeout(t);
     }
-  }, [open, phase, oppPack, oppSong, songs]);
+  }, [open, phase, opponentPack, opponentSong, songs]);
 
   // Phase timer
   useEffect(() => {
@@ -124,15 +164,15 @@ export default function BattleSelectFlow({ open, you, opponent, onComplete, onCa
   // Auto-advance when both ready
   useEffect(() => {
     if (!open) return;
-    if (phase === 'scenepack' && myPack && oppPack) {
+    if (phase === 'scenepack' && packReady.red && packReady.blue) {
       const t = setTimeout(() => setPhase('song'), 600);
       return () => clearTimeout(t);
     }
-    if (phase === 'song' && mySong && oppSong) {
+    if (phase === 'song' && songReady.red && songReady.blue) {
       const t = setTimeout(() => setPhase('intro'), 600);
       return () => clearTimeout(t);
     }
-  }, [open, phase, myPack, oppPack, mySong, oppSong]);
+  }, [open, phase, packReady.red, packReady.blue, songReady.red, songReady.blue]);
 
   // Intro animation
   useEffect(() => {
@@ -163,12 +203,18 @@ export default function BattleSelectFlow({ open, you, opponent, onComplete, onCa
 
   function handleTimeout() {
     if (phase === 'scenepack') {
-      setMyPack(p => p || SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)]);
-      setOppPack(p => p || SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)]);
+      setPackSelections(prev => ({
+        red: prev.red || SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)],
+        blue: prev.blue || SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)],
+      }));
+      setPackReady({ red: true, blue: true });
     } else if (phase === 'song') {
       const pool = songs.length ? songs : FALLBACK_SONGS;
-      setMySong(p => p || pool[Math.floor(Math.random() * pool.length)]);
-      setOppSong(p => p || pool[Math.floor(Math.random() * pool.length)]);
+      setSongSelections(prev => ({
+        red: prev.red || pool[Math.floor(Math.random() * pool.length)],
+        blue: prev.blue || pool[Math.floor(Math.random() * pool.length)],
+      }));
+      setSongReady({ red: true, blue: true });
     }
   }
 
@@ -223,12 +269,12 @@ export default function BattleSelectFlow({ open, you, opponent, onComplete, onCa
       {/* Top bar: players + timer */}
       {phase !== 'intro' && (
         <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between pl-14 pr-3 pt-[max(env(safe-area-inset-top),12px)] pb-2 bg-gradient-to-b from-black/90 to-transparent">
-          <PlayerChip color="red"  player={you}      ready={phase === 'scenepack' ? !!myPack : !!mySong} />
+          <PlayerChip color="red"  player={redPlayer}  ready={phase === 'scenepack' ? packReady.red : songReady.red} />
           <div className="text-center px-2">
             <p className="text-[9px] uppercase tracking-[0.22em] text-muted-foreground font-bold">Time Remaining</p>
             <p className={`font-display text-2xl tabular-nums leading-none ${lowTime ? 'text-red-500 animate-pulse' : 'text-foreground'}`}>{mm}:{ss}</p>
           </div>
-          <PlayerChip color="blue" player={opponent} ready={phase === 'scenepack' ? !!oppPack : !!oppSong} align="right" />
+          <PlayerChip color="blue" player={bluePlayer} ready={phase === 'scenepack' ? packReady.blue : songReady.blue} align="right" />
         </div>
       )}
 
@@ -247,7 +293,7 @@ export default function BattleSelectFlow({ open, you, opponent, onComplete, onCa
                   return (
                     <button key={p.id} onClick={() => setMyPack(p)}
                       className={`relative rounded-xl overflow-hidden border-2 transition-all active:scale-[0.97]
-                        ${mine ? 'border-red-500 shadow-[0_0_24px_rgba(239,68,68,0.55)]' :
+                        ${mine ? (mySide === 'red' ? 'border-red-500 shadow-[0_0_24px_rgba(239,68,68,0.55)]' : 'border-blue-500 shadow-[0_0_24px_rgba(59,130,246,0.55)]') :
                           'border-white/10 hover:border-white/30'}`}>
                       <div className="aspect-[2/3] w-full bg-surface-2">
                         <img src={p.poster} alt={p.name} className="w-full h-full object-cover" />
@@ -257,7 +303,7 @@ export default function BattleSelectFlow({ open, you, opponent, onComplete, onCa
                         <p className="text-[9px] text-muted-foreground">{p.packCount} scenepacks</p>
                       </div>
                       {mine && (
-                        <div className="absolute top-1.5 left-1.5 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center shadow-lg">
+                        <div className={`absolute top-1.5 left-1.5 w-6 h-6 rounded-full ${mySide === 'red' ? 'bg-red-500' : 'bg-blue-500'} flex items-center justify-center shadow-lg`}>
                           <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
                         </div>
                       )}
@@ -268,11 +314,14 @@ export default function BattleSelectFlow({ open, you, opponent, onComplete, onCa
             </div>
             <BottomControls
               onRandom={pickRandomPack}
-              syncOn={syncPack}
+              canReady={!!myPack}
+              ready={packReady[mySide]}
+              onReady={() => setPackReady(prev => ({ ...prev, [mySide]: true }))}
+              syncOn={syncPack[mySide]}
               onToggleSync={() => {
-                const next = !syncPack;
-                setSyncPack(next);
-                if (next && oppPack) setMyPack(oppPack);
+                const next = !syncPack[mySide];
+                setSyncPack(prev => ({ ...prev, [mySide]: next }));
+                if (next && opponentPack) setMyPack(opponentPack);
               }}
             />
           </motion.div>
@@ -292,7 +341,7 @@ export default function BattleSelectFlow({ open, you, opponent, onComplete, onCa
                   const playing = previewingId === s.id;
                   return (
                     <div key={s.id} className={`relative rounded-xl overflow-hidden border-2 transition-all
-                        ${mine ? 'border-red-500 shadow-[0_0_24px_rgba(239,68,68,0.55)]' :
+                        ${mine ? (mySide === 'red' ? 'border-red-500 shadow-[0_0_24px_rgba(239,68,68,0.55)]' : 'border-blue-500 shadow-[0_0_24px_rgba(59,130,246,0.55)]') :
                           'border-white/10'}`}>
                       <button onClick={() => setMySong(s)} className="w-full text-left">
                         <div className="aspect-square w-full bg-surface-2 flex items-center justify-center">
@@ -311,7 +360,7 @@ export default function BattleSelectFlow({ open, you, opponent, onComplete, onCa
                         </button>
                       )}
                       {mine && (
-                        <div className="absolute top-1.5 left-1.5 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center shadow-lg">
+                        <div className={`absolute top-1.5 left-1.5 w-6 h-6 rounded-full ${mySide === 'red' ? 'bg-red-500' : 'bg-blue-500'} flex items-center justify-center shadow-lg`}>
                           <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
                         </div>
                       )}
@@ -322,11 +371,14 @@ export default function BattleSelectFlow({ open, you, opponent, onComplete, onCa
             </div>
             <BottomControls
               onRandom={pickRandomSong}
-              syncOn={syncSong}
+              canReady={!!mySong}
+              ready={songReady[mySide]}
+              onReady={() => setSongReady(prev => ({ ...prev, [mySide]: true }))}
+              syncOn={syncSong[mySide]}
               onToggleSync={() => {
-                const next = !syncSong;
-                setSyncSong(next);
-                if (next && oppSong) setMySong(oppSong);
+                const next = !syncSong[mySide];
+                setSyncSong(prev => ({ ...prev, [mySide]: next }));
+                if (next && opponentSong) setMySong(opponentSong);
               }}
             />
           </motion.div>
@@ -335,7 +387,7 @@ export default function BattleSelectFlow({ open, you, opponent, onComplete, onCa
         {phase === 'intro' && (
           <motion.div key="intro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="absolute inset-0 flex">
-            <IntroSide color="red"  player={you}      pack={myPack}  song={mySong}  pct={intro.pct} />
+            <IntroSide color="red"  player={redPlayer}  pack={packSelections.red}  song={songSelections.red}  pct={intro.pct} />
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="text-center">
                 <motion.div animate={{ scale: [1, 1.15, 1] }} transition={{ duration: 0.9, repeat: Infinity }}>
@@ -351,7 +403,7 @@ export default function BattleSelectFlow({ open, you, opponent, onComplete, onCa
                 )}
               </div>
             </div>
-            <IntroSide color="blue" player={opponent} pack={oppPack} song={oppSong} pct={intro.pct} mirrored />
+            <IntroSide color="blue" player={bluePlayer} pack={packSelections.blue} song={songSelections.blue} pct={intro.pct} mirrored />
           </motion.div>
         )}
       </AnimatePresence>
@@ -387,12 +439,26 @@ function PlayerChip({ player, color, ready, align = 'left' }: { player: Player; 
   );
 }
 
-function BottomControls({ onRandom, syncOn, onToggleSync }: { onRandom: () => void; syncOn?: boolean; onToggleSync?: () => void }) {
+function BottomControls({
+  onRandom,
+  canReady,
+  ready,
+  onReady,
+  syncOn,
+  onToggleSync,
+}: {
+  onRandom: () => void;
+  canReady: boolean;
+  ready: boolean;
+  onReady: () => void;
+  syncOn?: boolean;
+  onToggleSync?: () => void;
+}) {
   return (
     <div className="absolute bottom-0 left-0 right-0 z-10 px-3 pt-3 pb-[max(env(safe-area-inset-bottom),12px)] bg-gradient-to-t from-black via-black/90 to-transparent">
       <div className="flex items-center gap-2">
-        <button onClick={onRandom}
-          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold uppercase tracking-wider text-xs active:scale-[0.98] transition shadow-lg shadow-red-600/30">
+        <button onClick={onRandom} disabled={ready}
+          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-40 text-white font-bold uppercase tracking-wider text-xs active:scale-[0.98] transition shadow-lg shadow-red-600/30">
           <Shuffle className="w-4 h-4" /> Random
         </button>
         <button disabled
@@ -401,13 +467,24 @@ function BottomControls({ onRandom, syncOn, onToggleSync }: { onRandom: () => vo
         </button>
         <button
           onClick={onToggleSync}
+          disabled={ready}
           aria-pressed={!!syncOn}
           className={`flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl border font-bold uppercase tracking-wider text-[10px] transition active:scale-[0.97] ${
             syncOn
               ? 'bg-emerald-500/20 border-emerald-400/60 text-emerald-300 shadow-[0_0_14px_rgba(16,185,129,0.35)]'
-              : 'border-white/20 text-white/70'
+              : 'border-white/20 text-white/70 disabled:opacity-40'
           }`}>
           <Users className="w-3.5 h-3.5" /> Sync
+        </button>
+        <button onClick={onReady} disabled={!canReady || ready}
+          className={`flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl border font-bold uppercase tracking-wider text-[10px] transition active:scale-[0.97] ${
+            ready
+              ? 'bg-emerald-500/20 border-emerald-400/60 text-emerald-300'
+              : canReady
+                ? 'bg-emerald-600 border-emerald-400/70 text-white shadow-lg shadow-emerald-600/25'
+                : 'border-white/15 text-white/40'
+          }`}>
+          <Check className="w-3.5 h-3.5" /> {ready ? 'Locked' : 'Ready'}
         </button>
       </div>
       {syncOn !== undefined && (
