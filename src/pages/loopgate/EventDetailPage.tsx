@@ -95,7 +95,7 @@ export default function EventDetailPage() {
   const isLightYagami = event.slug === LIGHT_YAGAMI_SLUG;
   const displayPoster = isLightYagami ? lightYagamiPoster : event.poster_url;
   const featuredEdits = rankings.filter((r) => r.submission_url && (r as any).is_showcase).slice(0, 6);
-  const ladderRows = rankings.slice(0, ladderLimit);
+  const ladderRows = rankings.filter((r) => !(r as any).is_showcase).slice(0, ladderLimit);
   const isShowcaseAdmin = user?.email?.toLowerCase() === "aminhoopz@gmail.com";
 
   const getUserAdvancementStatus = () => {
@@ -229,7 +229,7 @@ export default function EventDetailPage() {
                 <EmptyDrop index={3} />
               </>
             ) : (
-              featuredEdits.map((edit, index) => <ShowcaseDrop key={edit.id} edit={edit} rank={index + 1} />)
+              featuredEdits.map((edit) => <ShowcaseDrop key={edit.id} edit={edit} />)
             )}
           </div>
         </section>
