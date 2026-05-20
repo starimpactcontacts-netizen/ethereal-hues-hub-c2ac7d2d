@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check, Shuffle, Upload, Users, Swords, Music, Play, Pause, X, Film } from 'lucide-react';
 import { createPortal } from 'react-dom';
@@ -13,9 +13,11 @@ interface Player {
 
 interface Props {
   open: boolean;
+  fightId: string;
   you: Player;
   opponent: Player;
   youSide?: PlayerSide;
+  selectionDeadline?: string | null;
   onComplete: () => void;
   onCancel?: () => void;
 }
@@ -58,23 +60,46 @@ interface PlayerPicks {
 }
 const EMPTY_PICKS: PlayerPicks = { pack: null, song: null, ready: false };
 
-export default function BattleSelectFlow({ open, you, opponent, youSide = 'red', onComplete, onCancel }: Props) {
+function serializePack(pack: Scenepack | null) {
+  return pack ? { id: pack.id, name: pack.name, poster: pack.poster, packCount: pack.packCount } : null;
+}
+
+function serializeSong(song: Song | null) {
+  return song ? { id: song.id, title: song.title, artist: song.artist, cover: song.cover, preview: song.preview } : null;
+}
+
+function cleanPack(pack: any): Scenepack | null {
+  if (!pack?.id) return null;
+  return { id: pack.id, name: pack.name || 'Unknown', poster: pack.poster || '', packCount: Number(pack.packCount || 0) };
+}
+
+function cleanSong(song: any): Song | null {
+  if (!song?.id) return null;
+  return { id: song.id, title: song.title || 'Unknown', artist: song.artist || '', cover: song.cover || null, preview: song.preview || null };
+}
+
+export default function BattleSelectFlow({ open, fightId, you, opponent, youSide = 'red', selectionDeadline, onComplete, onCancel }: Props) {
   const [phase, setPhase] = useState<Phase>('select');
   const [tab, setTab] = useState<Tab>('scenepack');
   const [timeLeft, setTimeLeft] = useState(PHASE_TIMER_SEC);
   const [songs, setSongs] = useState<Song[]>(FALLBACK_SONGS);
 
-  // STRICT ISOLATION: each player's picks live in their own object.
-  // The local user only ever mutates `mine`. The opponent's full picks are
-  // computed locally (simulated) but ONLY revealed in the intro phase.
+  // STRICT ISOLATION: local actions only mutate `mine`; opponent picks are
+  // fetched from the backend only after both players are locked or timer expires.
   const [mine, setMine] = useState<PlayerPicks>(EMPTY_PICKS);
   const [opp, setOpp] = useState<PlayerPicks>(EMPTY_PICKS);
+  const [opponentReady, setOpponentReady] = useState(false);
+  const [bothReady, setBothReady] = useState(false);
+  const [revealSelections, setRevealSelections] = useState(false);
+  const [deadlineIso, setDeadlineIso] = useState<string | null>(selectionDeadline || null);
   const [syncPack, setSyncPack] = useState(false);
   const [syncSong, setSyncSong] = useState(false);
 
   const [intro, setIntro] = useState({ pct: 0, count: 3 });
 
   const previewRef = useRef<HTMLAudioElement | null>(null);
+  const timeoutHandledRef = useRef(false);
+  const startingRef = useRef(false);
   const [previewingId, setPreviewingId] = useState<string | null>(null);
 
   const mySide: PlayerSide = youSide;
