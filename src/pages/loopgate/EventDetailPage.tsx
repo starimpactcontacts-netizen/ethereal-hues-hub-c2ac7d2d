@@ -614,6 +614,32 @@ function PrizePill({ icon, title, cash, rings, tone }: { icon: ReactNode; title:
   );
 }
 
+function PrizeSlab({ rank, title, cash, rings, tone }: { rank: string; title: string; cash: string; rings: string; tone?: "gold" }) {
+  const isGold = tone === "gold";
+  return (
+    <div
+      className={`relative overflow-hidden p-3 pl-4 ring-1 ${isGold ? "ring-arena-amber/55" : "ring-white/[0.08]"}`}
+      style={{
+        clipPath: "polygon(0 0, 100% 0, calc(100% - 14px) 100%, 0 100%)",
+        background: isGold
+          ? "linear-gradient(135deg, #1a1305 0%, #0a0a0a 75%)"
+          : "linear-gradient(135deg, #0d0e12 0%, #050608 80%)",
+      }}
+    >
+      {isGold && <span className="absolute inset-y-0 left-0 w-[3px] bg-arena-amber shadow-[0_0_18px_hsl(var(--arena-amber))]" />}
+      <div className="flex items-center gap-2">
+        <span className={`text-[11px] font-black tabular-nums tracking-[0.1em] ${isGold ? "text-arena-amber" : "text-white/45"}`} style={displayFont}>{rank}</span>
+        <span className="text-[9px] font-black uppercase tracking-[0.18em] text-white/60">{title}</span>
+      </div>
+      <p className={`mt-2 text-[34px] font-black leading-none tabular-nums ${isGold ? "text-white drop-shadow-[0_0_18px_rgba(255,184,28,0.35)]" : "text-white"}`} style={{ ...displayFont, transform: "skewX(-5deg)" }}>{cash}</p>
+      <div className="mt-2 inline-flex items-center gap-1 rounded-sm bg-black/55 px-1.5 py-0.5 ring-1 ring-arena-amber/30">
+        <RingsCoin size={11} />
+        <span className="text-[10px] font-black tabular-nums text-arena-amber" style={displayFont}>{rings}</span>
+      </div>
+    </div>
+  );
+}
+
 function LadderRow({ row, rank }: { row: any; rank: number }) {
   const qoi = row.qoi_score || 0;
   const grade = qoi >= 90 ? "S" : qoi >= 80 ? "A" : qoi >= 70 ? "B" : qoi >= 60 ? "C" : "—";
