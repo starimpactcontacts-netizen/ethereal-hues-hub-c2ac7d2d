@@ -202,12 +202,18 @@ export default function BattleSelectFlow({ open, you, opponent, youSide = 'red',
 
   function handleTimeout() {
     if (phase === 'scenepack') {
-      setMyPack(p => p || SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)]);
-      setOppPack(p => p || SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)]);
+      setPackSelections(prev => ({
+        red: prev.red || SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)],
+        blue: prev.blue || SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)],
+      }));
+      setPackReady({ red: true, blue: true });
     } else if (phase === 'song') {
       const pool = songs.length ? songs : FALLBACK_SONGS;
-      setMySong(p => p || pool[Math.floor(Math.random() * pool.length)]);
-      setOppSong(p => p || pool[Math.floor(Math.random() * pool.length)]);
+      setSongSelections(prev => ({
+        red: prev.red || pool[Math.floor(Math.random() * pool.length)],
+        blue: prev.blue || pool[Math.floor(Math.random() * pool.length)],
+      }));
+      setSongReady({ red: true, blue: true });
     }
   }
 
@@ -262,12 +268,12 @@ export default function BattleSelectFlow({ open, you, opponent, youSide = 'red',
       {/* Top bar: players + timer */}
       {phase !== 'intro' && (
         <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between pl-14 pr-3 pt-[max(env(safe-area-inset-top),12px)] pb-2 bg-gradient-to-b from-black/90 to-transparent">
-          <PlayerChip color="red"  player={you}      ready={phase === 'scenepack' ? !!myPack : !!mySong} />
+          <PlayerChip color="red"  player={redPlayer}  ready={phase === 'scenepack' ? packReady.red : songReady.red} />
           <div className="text-center px-2">
             <p className="text-[9px] uppercase tracking-[0.22em] text-muted-foreground font-bold">Time Remaining</p>
             <p className={`font-display text-2xl tabular-nums leading-none ${lowTime ? 'text-red-500 animate-pulse' : 'text-foreground'}`}>{mm}:{ss}</p>
           </div>
-          <PlayerChip color="blue" player={opponent} ready={phase === 'scenepack' ? !!oppPack : !!oppSong} align="right" />
+          <PlayerChip color="blue" player={bluePlayer} ready={phase === 'scenepack' ? packReady.blue : songReady.blue} align="right" />
         </div>
       )}
 
@@ -307,11 +313,14 @@ export default function BattleSelectFlow({ open, you, opponent, youSide = 'red',
             </div>
             <BottomControls
               onRandom={pickRandomPack}
-              syncOn={syncPack}
+              canReady={!!myPack}
+              ready={packReady[mySide]}
+              onReady={() => setPackReady(prev => ({ ...prev, [mySide]: true }))}
+              syncOn={syncPack[mySide]}
               onToggleSync={() => {
-                const next = !syncPack;
-                setSyncPack(next);
-                if (next && oppPack) setMyPack(oppPack);
+                const next = !syncPack[mySide];
+                setSyncPack(prev => ({ ...prev, [mySide]: next }));
+                if (next && opponentPack) setMyPack(opponentPack);
               }}
             />
           </motion.div>
@@ -361,11 +370,14 @@ export default function BattleSelectFlow({ open, you, opponent, youSide = 'red',
             </div>
             <BottomControls
               onRandom={pickRandomSong}
-              syncOn={syncSong}
+              canReady={!!mySong}
+              ready={songReady[mySide]}
+              onReady={() => setSongReady(prev => ({ ...prev, [mySide]: true }))}
+              syncOn={syncSong[mySide]}
               onToggleSync={() => {
-                const next = !syncSong;
-                setSyncSong(next);
-                if (next && oppSong) setMySong(oppSong);
+                const next = !syncSong[mySide];
+                setSyncSong(prev => ({ ...prev, [mySide]: next }));
+                if (next && opponentSong) setMySong(opponentSong);
               }}
             />
           </motion.div>
@@ -374,7 +386,7 @@ export default function BattleSelectFlow({ open, you, opponent, youSide = 'red',
         {phase === 'intro' && (
           <motion.div key="intro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="absolute inset-0 flex">
-            <IntroSide color="red"  player={you}      pack={myPack}  song={mySong}  pct={intro.pct} />
+            <IntroSide color="red"  player={redPlayer}  pack={packSelections.red}  song={songSelections.red}  pct={intro.pct} />
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="text-center">
                 <motion.div animate={{ scale: [1, 1.15, 1] }} transition={{ duration: 0.9, repeat: Infinity }}>
@@ -390,7 +402,7 @@ export default function BattleSelectFlow({ open, you, opponent, youSide = 'red',
                 )}
               </div>
             </div>
-            <IntroSide color="blue" player={opponent} pack={oppPack} song={oppSong} pct={intro.pct} mirrored />
+            <IntroSide color="blue" player={bluePlayer} pack={packSelections.blue} song={songSelections.blue} pct={intro.pct} mirrored />
           </motion.div>
         )}
       </AnimatePresence>
