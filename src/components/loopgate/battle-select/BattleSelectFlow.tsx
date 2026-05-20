@@ -279,18 +279,15 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
 
   function handleTimeout() {
     const pool = songs.length ? songs : FALLBACK_SONGS;
-    // Auto-fill ONLY the local player's missing picks.
-    setMine(prev => ({
+    // Timer expiry auto-fills ONLY this player's missing picks, then asks backend to start.
+    const next = {
+      ...mine,
       pack: prev.pack || SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)],
       song: prev.song || pool[Math.floor(Math.random() * pool.length)],
       ready: true,
-    }));
-    // Opponent is handled independently by their own client / simulator.
-    setOpp(prev => prev.ready ? prev : {
-      pack: prev.pack || SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)],
-      song: prev.song || pool[Math.floor(Math.random() * pool.length)],
-      ready: true,
-    });
+    } as PlayerPicks;
+    setMine(next);
+    saveSelection(next).finally(() => startFromSelection()).catch(() => {});
   }
 
   function pickRandomPack() {
