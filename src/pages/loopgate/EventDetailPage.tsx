@@ -165,32 +165,34 @@ export default function EventDetailPage() {
               {event.subtitle && <p className="mt-2 text-[12px] font-semibold uppercase tracking-[0.12em] text-arena-muted">{event.subtitle}</p>}
           </div>
 
-          <div className="mt-5 space-y-2">
-            <div className="relative overflow-hidden rounded-xl p-4 bg-[linear-gradient(135deg,#0a0a0a_0%,#141414_55%,#1a1207_100%)] shadow-[0_24px_60px_rgba(0,0,0,0.55),0_0_0_1px_hsl(var(--arena-amber)/0.45),inset_0_1px_0_hsl(var(--arena-amber)/0.18)]">
-              <div className="pointer-events-none absolute -top-12 -right-10 h-32 w-32 rounded-full bg-arena-amber/20 blur-3xl" />
-              <div className="pointer-events-none absolute -bottom-10 -left-10 h-28 w-28 rounded-full bg-arena-emerald/15 blur-3xl" />
-              <div className="relative grid grid-cols-2 gap-3">
-                <div>
-                  <p className="text-[9px] font-black uppercase tracking-[0.22em] text-arena-amber/90">Cash Prize</p>
-                  <div className="mt-1 flex items-baseline gap-1">
-                    <span className="text-[14px] font-black leading-none text-arena-emerald" style={displayFont}>$</span>
-                    <span className="text-[44px] font-black leading-none text-arena-ink drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]" style={displayFont}>150</span>
-                  </div>
-                  <p className="mt-1 text-[9px] font-black uppercase tracking-[0.16em] text-arena-emerald">Real Money · Paid Out</p>
-                </div>
-                <div className="border-l border-arena-amber/25 pl-3">
-                  <p className="text-[9px] font-black uppercase tracking-[0.22em] text-arena-amber/90">Rings Pot</p>
-                  <div className="mt-1 flex items-center gap-1.5">
-                    <RingsCoin size={20} className="text-arena-amber drop-shadow-[0_0_8px_hsl(var(--arena-amber)/0.6)]" />
-                    <span className="text-[40px] font-black leading-none text-arena-amber" style={displayFont}>1M</span>
-                  </div>
-                  <p className="mt-1 text-[9px] font-black uppercase tracking-[0.16em] text-arena-amber/80">Top 50 Split</p>
-                </div>
+          {(event as any).end_date && (
+            <div className="mt-5 border-2 border-arena-amber bg-black p-3">
+              <div className="flex items-center justify-between">
+                <p className="text-[9px] font-black uppercase tracking-[0.28em] text-arena-amber">Time Left to Enter</p>
+                <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-[0.2em] text-arena-red">
+                  <span className="h-1.5 w-1.5 bg-arena-red animate-pulse" /> Act Fast
+                </span>
               </div>
+              <div className="mt-2"><CountdownTimer endDate={(event as any).end_date} large /></div>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <MetricTile label="Edits" value={stats.entries || featuredEdits.length} />
-              <MetricTile label="Status" value={isLive ? "LIVE" : "OPEN"} />
+          )}
+
+          <div className="mt-3 grid grid-cols-2 gap-0 border-2 border-arena-ink bg-black">
+            <div className="border-r-2 border-arena-ink p-3">
+              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-arena-emerald">Cash Prize</p>
+              <div className="mt-1 flex items-baseline gap-0.5">
+                <span className="text-[20px] font-black leading-none text-arena-emerald" style={displayFont}>$</span>
+                <span className="text-[48px] font-black leading-none text-arena-ink tabular-nums" style={displayFont}>150</span>
+              </div>
+              <p className="mt-0.5 text-[9px] font-black uppercase tracking-[0.16em] text-arena-emerald">Real Money</p>
+            </div>
+            <div className="bg-arena-amber p-3 text-black">
+              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-black/80">Rings Pot</p>
+              <div className="mt-1 flex items-center gap-1.5">
+                <RingsCoin size={22} className="text-black" />
+                <span className="text-[48px] font-black leading-none text-black tabular-nums" style={displayFont}>1M</span>
+              </div>
+              <p className="mt-0.5 text-[9px] font-black uppercase tracking-[0.16em] text-black/80">Top 50 Split</p>
             </div>
           </div>
         </div>
