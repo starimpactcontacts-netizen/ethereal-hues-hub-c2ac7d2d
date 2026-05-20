@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check, Shuffle, Upload, Users, Swords, Music, Play, Pause, X, Film } from 'lucide-react';
 import { createPortal } from 'react-dom';
@@ -13,9 +13,11 @@ interface Player {
 
 interface Props {
   open: boolean;
+  fightId: string;
   you: Player;
   opponent: Player;
   youSide?: PlayerSide;
+  selectionDeadline?: string | null;
   onComplete: () => void;
   onCancel?: () => void;
 }
@@ -58,23 +60,46 @@ interface PlayerPicks {
 }
 const EMPTY_PICKS: PlayerPicks = { pack: null, song: null, ready: false };
 
-export default function BattleSelectFlow({ open, you, opponent, youSide = 'red', onComplete, onCancel }: Props) {
+function serializePack(pack: Scenepack | null) {
+  return pack ? { id: pack.id, name: pack.name, poster: pack.poster, packCount: pack.packCount } : null;
+}
+
+function serializeSong(song: Song | null) {
+  return song ? { id: song.id, title: song.title, artist: song.artist, cover: song.cover, preview: song.preview } : null;
+}
+
+function cleanPack(pack: any): Scenepack | null {
+  if (!pack?.id) return null;
+  return { id: pack.id, name: pack.name || 'Unknown', poster: pack.poster || '', packCount: Number(pack.packCount || 0) };
+}
+
+function cleanSong(song: any): Song | null {
+  if (!song?.id) return null;
+  return { id: song.id, title: song.title || 'Unknown', artist: song.artist || '', cover: song.cover || null, preview: song.preview || null };
+}
+
+export default function BattleSelectFlow({ open, fightId, you, opponent, youSide = 'red', selectionDeadline, onComplete, onCancel }: Props) {
   const [phase, setPhase] = useState<Phase>('select');
   const [tab, setTab] = useState<Tab>('scenepack');
   const [timeLeft, setTimeLeft] = useState(PHASE_TIMER_SEC);
   const [songs, setSongs] = useState<Song[]>(FALLBACK_SONGS);
 
-  // STRICT ISOLATION: each player's picks live in their own object.
-  // The local user only ever mutates `mine`. The opponent's full picks are
-  // computed locally (simulated) but ONLY revealed in the intro phase.
+  // STRICT ISOLATION: local actions only mutate `mine`; opponent picks are
+  // fetched from the backend only after both players are locked or timer expires.
   const [mine, setMine] = useState<PlayerPicks>(EMPTY_PICKS);
   const [opp, setOpp] = useState<PlayerPicks>(EMPTY_PICKS);
+  const [opponentReady, setOpponentReady] = useState(false);
+  const [bothReady, setBothReady] = useState(false);
+  const [revealSelections, setRevealSelections] = useState(false);
+  const [deadlineIso, setDeadlineIso] = useState<string | null>(selectionDeadline || null);
   const [syncPack, setSyncPack] = useState(false);
   const [syncSong, setSyncSong] = useState(false);
 
   const [intro, setIntro] = useState({ pct: 0, count: 3 });
 
   const previewRef = useRef<HTMLAudioElement | null>(null);
+  const timeoutHandledRef = useRef(false);
+  const startingRef = useRef(false);
   const [previewingId, setPreviewingId] = useState<string | null>(null);
 
   const mySide: PlayerSide = youSide;
@@ -86,17 +111,61 @@ export default function BattleSelectFlow({ open, you, opponent, youSide = 'red',
 
   const canReady = !!mine.pack && !!mine.song;
 
+  const applySelectionState = useCallback((state: any) => {
+    if (!state) return;
+    setOpponentReady(!!state.opponentReady);
+    setBothReady(!!state.bothReady);
+    setRevealSelections(!!state.reveal);
+    if (state.selectionDeadline) setDeadlineIso(state.selectionDeadline);
+    if (state.mine) {
+      setMine(prev => ({
+        pack: cleanPack(state.mine.pack) || prev.pack,
+        song: cleanSong(state.mine.song) || prev.song,
+        ready: !!state.myReady || prev.ready,
+      }));
+    }
+    if (state.reveal && state.opponent) {
+      setOpp({ pack: cleanPack(state.opponent.pack), song: cleanSong(state.opponent.song), ready: !!state.opponent.ready });
+    } else {
+      setOpp(prev => ({ ...prev, ready: !!state.opponentReady }));
+    }
+  }, []);
+
+  const saveSelection = useCallback(async (next: PlayerPicks) => {
+    const { data } = await supabase.rpc('upsert_quick_fight_selection' as any, {
+      p_fight_id: fightId,
+      p_scenepack: serializePack(next.pack),
+      p_song: serializeSong(next.song),
+      p_ready: next.ready,
+    } as any);
+    applySelectionState(data);
+    return data as any;
+  }, [applySelectionState, fightId]);
+
+  const startFromSelection = useCallback(async () => {
+    if (startingRef.current) return;
+    startingRef.current = true;
+    await supabase.rpc('start_quick_fight_from_selection' as any, { p_fight_id: fightId } as any);
+  }, [fightId]);
+
   const setMyPack = (pack: Scenepack) => {
     if (mine.ready) return;
-    setMine(prev => ({ ...prev, pack }));
+    const next = { ...mine, pack };
+    setMine(next);
+    saveSelection(next).catch(() => {});
   };
   const setMySong = (song: Song) => {
     if (mine.ready) return;
-    setMine(prev => ({ ...prev, song }));
+    const next = { ...mine, song };
+    setMine(next);
+    saveSelection(next).catch(() => {});
   };
-  const lockInReady = () => {
+  const lockInReady = async () => {
     if (!canReady || mine.ready) return;
-    setMine(prev => ({ ...prev, ready: true }));
+    const next = { ...mine, ready: true };
+    setMine(next);
+    const state = await saveSelection(next);
+    if (state?.bothReady || state?.reveal) await startFromSelection();
   };
 
   // Load songs from radio_tracks
@@ -123,48 +192,63 @@ export default function BattleSelectFlow({ open, you, opponent, youSide = 'red',
     setTimeLeft(PHASE_TIMER_SEC);
     setMine(EMPTY_PICKS);
     setOpp(EMPTY_PICKS);
+    setOpponentReady(false);
+    setBothReady(false);
+    setRevealSelections(false);
+    setDeadlineIso(selectionDeadline || null);
+    timeoutHandledRef.current = false;
+    startingRef.current = false;
     setSyncPack(false);
     setSyncSong(false);
     setIntro({ pct: 0, count: 3 });
-  }, [open]);
+  }, [open, selectionDeadline]);
 
-  // Simulated opponent — picks privately, then flips to READY.
-  // Their picks are NEVER shown to the local user until the intro phase.
+  // Read sanitized lobby state; opponent picks stay hidden until reveal.
   useEffect(() => {
-    if (!open || phase !== 'select' || opp.ready) return;
-    const t = setTimeout(() => {
-      const pool = songs.length ? songs : FALLBACK_SONGS;
-      setOpp({
-        pack: SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)],
-        song: pool[Math.floor(Math.random() * pool.length)],
-        ready: true,
-      });
-    }, 6000 + Math.random() * 6000);
-    return () => clearTimeout(t);
-  }, [open, phase, opp.ready, songs]);
+    if (!open || !fightId || phase !== 'select') return;
+    let cancelled = false;
+    const fetchState = async () => {
+      const { data } = await supabase.rpc('get_quick_fight_selection_state' as any, { p_fight_id: fightId } as any);
+      if (!cancelled) applySelectionState(data);
+      if (!cancelled && (data as any)?.status === 'active') setPhase('intro');
+    };
+    fetchState();
+    const iv = setInterval(fetchState, 2000);
+    const channel = supabase
+      .channel(`quick_fight_selection_${fightId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'quick_fights', filter: `id=eq.${fightId}` }, fetchState)
+      .subscribe();
+    return () => {
+      cancelled = true;
+      clearInterval(iv);
+      supabase.removeChannel(channel);
+    };
+  }, [applySelectionState, fightId, open, phase]);
 
-  // Phase timer — counts down once, fills missing local picks on timeout.
+  // Phase timer — lobby countdown. It does not start the battle until 0:00.
   useEffect(() => {
     if (!open || phase !== 'select') return;
-    setTimeLeft(PHASE_TIMER_SEC);
     const iv = setInterval(() => {
-      setTimeLeft(t => {
-        if (t <= 1) { clearInterval(iv); handleTimeout(); return 0; }
-        return t - 1;
-      });
-    }, 1000);
+      const remaining = deadlineIso
+        ? Math.max(0, Math.ceil((new Date(deadlineIso).getTime() - Date.now()) / 1000))
+        : Math.max(0, timeLeft - 1);
+      setTimeLeft(remaining);
+      if (remaining <= 0 && !timeoutHandledRef.current) {
+        timeoutHandledRef.current = true;
+        handleTimeout();
+      }
+    }, 500);
     return () => clearInterval(iv);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, phase]);
+  }, [open, phase, deadlineIso, mine.pack, mine.song, mine.ready, songs]);
 
-  // Advance to intro when BOTH players are ready
+  // Advance only when backend confirms both ready / reveal condition.
   useEffect(() => {
     if (!open || phase !== 'select') return;
-    if (mine.ready && opp.ready) {
-      const t = setTimeout(() => setPhase('intro'), 700);
-      return () => clearTimeout(t);
+    if (bothReady && revealSelections) {
+      startFromSelection().catch(() => {});
     }
-  }, [open, phase, mine.ready, opp.ready]);
+  }, [bothReady, revealSelections, open, phase, startFromSelection]);
 
   // Intro animation
   useEffect(() => {
@@ -195,18 +279,15 @@ export default function BattleSelectFlow({ open, you, opponent, youSide = 'red',
 
   function handleTimeout() {
     const pool = songs.length ? songs : FALLBACK_SONGS;
-    // Auto-fill ONLY the local player's missing picks.
-    setMine(prev => ({
-      pack: prev.pack || SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)],
-      song: prev.song || pool[Math.floor(Math.random() * pool.length)],
+    // Timer expiry auto-fills ONLY this player's missing picks, then asks backend to start.
+    const next = {
+      ...mine,
+      pack: mine.pack || SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)],
+      song: mine.song || pool[Math.floor(Math.random() * pool.length)],
       ready: true,
-    }));
-    // Opponent is handled independently by their own client / simulator.
-    setOpp(prev => prev.ready ? prev : {
-      pack: prev.pack || SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)],
-      song: prev.song || pool[Math.floor(Math.random() * pool.length)],
-      ready: true,
-    });
+    } as PlayerPicks;
+    setMine(next);
+    saveSelection(next).finally(() => startFromSelection()).catch(() => {});
   }
 
   function pickRandomPack() {

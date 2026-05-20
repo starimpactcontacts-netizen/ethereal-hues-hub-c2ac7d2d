@@ -10,7 +10,7 @@ export interface QuickFight {
   player_2_id: string | null;
   player_2_username: string | null;
   player_2_avatar_url: string | null;
-  status: 'waiting' | 'active' | 'submitted' | 'judging' | 'completed' | 'forfeited' | 'cancelled';
+  status: 'waiting' | 'selecting' | 'active' | 'submitted' | 'judging' | 'completed' | 'forfeited' | 'cancelled';
   player_1_submission_url: string | null;
   player_1_submitted_at: string | null;
   player_1_votes?: number;
@@ -26,6 +26,10 @@ export interface QuickFight {
   judged_at: string | null;
   duration_minutes: number;
   matched_at: string | null;
+  selection_started_at?: string | null;
+  selection_deadline?: string | null;
+  player_1_selection_ready?: boolean;
+  player_2_selection_ready?: boolean;
   starts_at: string | null;
   ends_at: string | null;
   view_count: number;
@@ -186,7 +190,7 @@ export function useMyQuickFights() {
         .from('quick_fights')
         .select('*')
         .or(`player_1_id.eq.${user.id},player_2_id.eq.${user.id}`)
-        .in('status', ['active', 'submitted', 'judging', 'waiting'])
+        .in('status', ['selecting', 'active', 'submitted', 'judging', 'waiting'])
         .order('created_at', { ascending: false });
       setFights((fightData as unknown as QuickFight[]) || []);
 

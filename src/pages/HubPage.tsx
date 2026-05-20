@@ -295,7 +295,7 @@ export default function HubPage() {
   }, [liveDrops.map(d => d.id).join(',')]);
 
   const { open: openAccountPrompt } = useAccountPrompt();
-  const qfActiveFight = qfFights.find(f => f.status === 'active' || f.status === 'judging');
+  const qfActiveFight = qfFights.find(f => f.status === 'selecting' || f.status === 'active' || f.status === 'judging');
   const qfIsSearching = qfSearching || qfInQueue;
 
   const QF_TIPS = [
@@ -337,7 +337,7 @@ export default function HubPage() {
 
   useEffect(() => {
     if (!qfIsSearching) return;
-    const matched = qfFights.find(f => f.status === 'active');
+    const matched = qfFights.find(f => f.status === 'selecting' || f.status === 'active');
     if (matched) {
       toast.success('⚔️ Match found!');
       navigate(`/fight/${matched.id}`);
@@ -1078,6 +1078,7 @@ export default function HubPage() {
       {battleSelect && (
         <BattleSelectFlow
           open={!!battleSelect}
+          fightId={battleSelect.fightId}
           you={battleSelect.you}
           opponent={battleSelect.opponent}
           youSide={battleSelect.youSide}
