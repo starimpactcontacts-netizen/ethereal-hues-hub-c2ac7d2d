@@ -214,6 +214,11 @@ export default function HubPage() {
     you: { username: string; avatarUrl: string | null; level: number };
     opponent: { username: string; avatarUrl: string | null; level: number };
   }>(null);
+  const [battleSelect, setBattleSelect] = useState<null | {
+    fightId: string;
+    you: { username: string; avatarUrl: string | null; level: number };
+    opponent: { username: string; avatarUrl: string | null; level: number };
+  }>(null);
   const { inQueue: qfInQueue, fights: qfFights } = useMyQuickFights();
   const { competitions: myLiveCompetitions } = useMyCompetitionReminders();
   const featuredScrollRef = useRef<HTMLDivElement>(null);
