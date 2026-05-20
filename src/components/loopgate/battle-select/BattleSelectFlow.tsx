@@ -77,6 +77,27 @@ export default function BattleSelectFlow({ open, you, opponent, youSide = 'red',
   const opponentPack = packSelections[opponentSide];
   const mySong = songSelections[mySide];
   const opponentSong = songSelections[opponentSide];
+  const myTint = mySide === 'red' ? 'red' : 'blue';
+
+  const setMyPack = (pack: Scenepack) => {
+    setPackSelections(prev => ({ ...prev, [mySide]: pack }));
+    setPackReady(prev => ({ ...prev, [mySide]: false }));
+  };
+
+  const setOpponentPack = (pack: Scenepack) => {
+    setPackSelections(prev => ({ ...prev, [opponentSide]: pack }));
+    setPackReady(prev => ({ ...prev, [opponentSide]: true }));
+  };
+
+  const setMySong = (song: Song) => {
+    setSongSelections(prev => ({ ...prev, [mySide]: song }));
+    setSongReady(prev => ({ ...prev, [mySide]: false }));
+  };
+
+  const setOpponentSong = (song: Song) => {
+    setSongSelections(prev => ({ ...prev, [opponentSide]: song }));
+    setSongReady(prev => ({ ...prev, [opponentSide]: true }));
+  };
 
   // Load songs from radio_tracks
   useEffect(() => {
