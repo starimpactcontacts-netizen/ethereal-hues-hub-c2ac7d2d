@@ -15,6 +15,7 @@ interface Props {
   open: boolean;
   you: Player;
   opponent: Player;
+  youSide?: PlayerSide;
   onComplete: () => void;
   onCancel?: () => void;
 }
@@ -47,23 +48,35 @@ const FALLBACK_SONGS: Song[] = [
 ];
 
 type Phase = 'scenepack' | 'song' | 'intro';
+type PlayerSide = 'red' | 'blue';
+type SideSelections<T> = Record<PlayerSide, T | null>;
+type SideReady = Record<PlayerSide, boolean>;
 
-export default function BattleSelectFlow({ open, you, opponent, onComplete, onCancel }: Props) {
+export default function BattleSelectFlow({ open, you, opponent, youSide = 'red', onComplete, onCancel }: Props) {
   const [phase, setPhase] = useState<Phase>('scenepack');
   const [timeLeft, setTimeLeft] = useState(PHASE_TIMER_SEC);
   const [songs, setSongs] = useState<Song[]>(FALLBACK_SONGS);
 
-  const [myPack, setMyPack] = useState<Scenepack | null>(null);
-  const [oppPack, setOppPack] = useState<Scenepack | null>(null);
-  const [mySong, setMySong] = useState<Song | null>(null);
-  const [oppSong, setOppSong] = useState<Song | null>(null);
-  const [syncPack, setSyncPack] = useState(false);
-  const [syncSong, setSyncSong] = useState(false);
+  const [packSelections, setPackSelections] = useState<SideSelections<Scenepack>>({ red: null, blue: null });
+  const [songSelections, setSongSelections] = useState<SideSelections<Song>>({ red: null, blue: null });
+  const [packReady, setPackReady] = useState<SideReady>({ red: false, blue: false });
+  const [songReady, setSongReady] = useState<SideReady>({ red: false, blue: false });
+  const [syncPack, setSyncPack] = useState<SideReady>({ red: false, blue: false });
+  const [syncSong, setSyncSong] = useState<SideReady>({ red: false, blue: false });
 
   const [intro, setIntro] = useState({ pct: 0, count: 3 });
 
   const previewRef = useRef<HTMLAudioElement | null>(null);
   const [previewingId, setPreviewingId] = useState<string | null>(null);
+
+  const mySide: PlayerSide = youSide;
+  const opponentSide: PlayerSide = mySide === 'red' ? 'blue' : 'red';
+  const redPlayer = mySide === 'red' ? you : opponent;
+  const bluePlayer = mySide === 'blue' ? you : opponent;
+  const myPack = packSelections[mySide];
+  const opponentPack = packSelections[opponentSide];
+  const mySong = songSelections[mySide];
+  const opponentSong = songSelections[opponentSide];
 
   // Load songs from radio_tracks
   useEffect(() => {
