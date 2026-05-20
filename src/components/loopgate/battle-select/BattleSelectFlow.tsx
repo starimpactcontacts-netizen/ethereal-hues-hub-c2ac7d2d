@@ -77,9 +77,9 @@ export default function BattleSelectFlow({ open, you, opponent, youSide = 'red',
   const opponentPack = packSelections[opponentSide];
   const mySong = songSelections[mySide];
   const opponentSong = songSelections[opponentSide];
-  const myTint = mySide === 'red' ? 'red' : 'blue';
 
   const setMyPack = (pack: Scenepack) => {
+    if (packReady[mySide]) return;
     setPackSelections(prev => ({ ...prev, [mySide]: pack }));
     setPackReady(prev => ({ ...prev, [mySide]: false }));
   };
@@ -90,6 +90,7 @@ export default function BattleSelectFlow({ open, you, opponent, youSide = 'red',
   };
 
   const setMySong = (song: Song) => {
+    if (songReady[mySide]) return;
     setSongSelections(prev => ({ ...prev, [mySide]: song }));
     setSongReady(prev => ({ ...prev, [mySide]: false }));
   };
