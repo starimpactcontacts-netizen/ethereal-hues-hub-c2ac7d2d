@@ -25,6 +25,7 @@ import { useEventRounds, useUserRoundStatus } from "@/hooks/useOpenArenaData";
 import { useAuth } from "@/hooks/useAuth";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
 import SubmissionModal from "@/components/loopgate/SubmissionModal";
+import ShowcaseUploadModal from "@/components/loopgate/ShowcaseUploadModal";
 import OpenArenaRoundLeaderboard from "@/components/loopgate/OpenArenaRoundLeaderboard";
 import OpenArenaGuide, { OpenArenaInfoButton } from "@/components/loopgate/OpenArenaGuide";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +42,7 @@ export default function EventDetailPage() {
   const { id } = useParams();
   const { user } = useAuth();
   const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [showShowcaseUpload, setShowShowcaseUpload] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [ladderLimit, setLadderLimit] = useState(8);
@@ -211,7 +213,7 @@ export default function EventDetailPage() {
             </div>
             {isShowcaseAdmin && (
               <button
-                onClick={() => setShowSubmitModal(true)}
+                onClick={() => setShowShowcaseUpload(true)}
                 className="rounded-lg bg-arena-emerald px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-primary shadow-[0_10px_24px_hsl(var(--arena-emerald)/0.28)] active:scale-95 transition"
               >
                 Upload
@@ -408,7 +410,15 @@ export default function EventDetailPage() {
         eventId={event.id}
         eventTitle={event.title}
         roundNumber={isOpenArena ? activeRound?.round_number : undefined}
-        isShowcase={isShowcaseAdmin}
+        isShowcase={false}
+      />
+
+      <ShowcaseUploadModal
+        isOpen={showShowcaseUpload}
+        onClose={() => setShowShowcaseUpload(false)}
+        eventId={event.id}
+        eventTitle={event.title}
+        roundNumber={isOpenArena ? activeRound?.round_number : undefined}
       />
 
       <OpenArenaGuide isOpen={showGuide} onClose={() => setShowGuide(false)} />
