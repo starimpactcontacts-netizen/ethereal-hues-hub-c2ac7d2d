@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { X, Upload, Loader2, Film, Image as ImageIcon } from "lucide-react";
+import { X, Upload, Loader2, Film, Image as ImageIcon, Music } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadToBunny } from "@/lib/bunnyUpload";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,8 +14,9 @@ interface Props {
   onUploaded?: () => void;
 }
 
-const ACCEPT = "video/mp4,video/webm,video/quicktime,image/jpeg,image/png,image/webp,image/gif";
+const ACCEPT = "video/mp4,video/webm,video/quicktime,image/jpeg,image/png,image/webp,image/gif,audio/mpeg,audio/mp4,audio/wav,audio/x-m4a,audio/aac,audio/ogg";
 const MAX_IMAGE_MB = 25;
+const MAX_AUDIO_MB = 50;
 
 /**
  * Admin-only modal for adding inspiration drops to the Edit Showcase.
@@ -35,6 +36,7 @@ export default function ShowcaseUploadModal({ isOpen, onClose, eventId, eventTit
 
   const isVideo = !!file && file.type.startsWith("video/");
   const isImage = !!file && file.type.startsWith("image/");
+  const isAudio = !!file && file.type.startsWith("audio/");
   const previewUrl = file ? URL.createObjectURL(file) : null;
 
   const handlePick = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,6 +44,10 @@ export default function ShowcaseUploadModal({ isOpen, onClose, eventId, eventTit
     if (!f) return;
     if (f.type.startsWith("image/") && f.size > MAX_IMAGE_MB * 1024 * 1024) {
       toast.error(`Image must be under ${MAX_IMAGE_MB}MB`);
+      return;
+    }
+    if (f.type.startsWith("audio/") && f.size > MAX_AUDIO_MB * 1024 * 1024) {
+      toast.error(`Audio must be under ${MAX_AUDIO_MB}MB`);
       return;
     }
     setFile(f);
@@ -71,7 +77,7 @@ export default function ShowcaseUploadModal({ isOpen, onClose, eventId, eventTit
         if (upErr) throw upErr;
         const { data: pub } = supabase.storage.from("loop-media").getPublicUrl(path);
         url = pub.publicUrl;
-        thumbnailUrl = pub.publicUrl;
+        thumbnailUrl = isImage ? pub.publicUrl : null;
         setProgress(100);
       }
 
