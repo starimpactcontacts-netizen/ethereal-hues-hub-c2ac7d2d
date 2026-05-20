@@ -293,7 +293,7 @@ export default function BattleSelectFlow({ open, you, opponent, youSide = 'red',
                   return (
                     <button key={p.id} onClick={() => setMyPack(p)}
                       className={`relative rounded-xl overflow-hidden border-2 transition-all active:scale-[0.97]
-                        ${mine ? 'border-red-500 shadow-[0_0_24px_rgba(239,68,68,0.55)]' :
+                        ${mine ? (mySide === 'red' ? 'border-red-500 shadow-[0_0_24px_rgba(239,68,68,0.55)]' : 'border-blue-500 shadow-[0_0_24px_rgba(59,130,246,0.55)]') :
                           'border-white/10 hover:border-white/30'}`}>
                       <div className="aspect-[2/3] w-full bg-surface-2">
                         <img src={p.poster} alt={p.name} className="w-full h-full object-cover" />
@@ -303,7 +303,7 @@ export default function BattleSelectFlow({ open, you, opponent, youSide = 'red',
                         <p className="text-[9px] text-muted-foreground">{p.packCount} scenepacks</p>
                       </div>
                       {mine && (
-                        <div className="absolute top-1.5 left-1.5 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center shadow-lg">
+                        <div className={`absolute top-1.5 left-1.5 w-6 h-6 rounded-full ${mySide === 'red' ? 'bg-red-500' : 'bg-blue-500'} flex items-center justify-center shadow-lg`}>
                           <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
                         </div>
                       )}
@@ -341,7 +341,7 @@ export default function BattleSelectFlow({ open, you, opponent, youSide = 'red',
                   const playing = previewingId === s.id;
                   return (
                     <div key={s.id} className={`relative rounded-xl overflow-hidden border-2 transition-all
-                        ${mine ? 'border-red-500 shadow-[0_0_24px_rgba(239,68,68,0.55)]' :
+                        ${mine ? (mySide === 'red' ? 'border-red-500 shadow-[0_0_24px_rgba(239,68,68,0.55)]' : 'border-blue-500 shadow-[0_0_24px_rgba(59,130,246,0.55)]') :
                           'border-white/10'}`}>
                       <button onClick={() => setMySong(s)} className="w-full text-left">
                         <div className="aspect-square w-full bg-surface-2 flex items-center justify-center">
@@ -360,7 +360,7 @@ export default function BattleSelectFlow({ open, you, opponent, youSide = 'red',
                         </button>
                       )}
                       {mine && (
-                        <div className="absolute top-1.5 left-1.5 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center shadow-lg">
+                        <div className={`absolute top-1.5 left-1.5 w-6 h-6 rounded-full ${mySide === 'red' ? 'bg-red-500' : 'bg-blue-500'} flex items-center justify-center shadow-lg`}>
                           <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
                         </div>
                       )}
