@@ -154,7 +154,8 @@ export function useRealRankings() {
       .order('global_index_score', { ascending: false })
       .order('best_gatekeeper_qoi', { ascending: false, nullsFirst: false })
       .order('level', { ascending: false })
-      .order('xp', { ascending: false });
+      .order('xp', { ascending: false })
+      .range(0, 49999);
 
     if (error) {
       setError(error.message);
@@ -448,15 +449,18 @@ export function useEventRankings(eventId: string | null) {
       })),
     ];
 
-    // Deduplicate by user_id (keep highest qoi_score)
+    // Deduplicate ranked entries by user_id (keep highest qoi_score),
+    // but KEEP every showcase row — admins can upload multiple inspo drops per event.
+    const showcaseRows = allData.filter(p => (p as any).is_showcase);
+    const rankedRows = allData.filter(p => !(p as any).is_showcase);
     const userMap = new Map<string, typeof allData[0]>();
-    allData.forEach(p => {
+    rankedRows.forEach(p => {
       const existing = userMap.get(p.user_id);
       if (!existing || (p.qoi_score || 0) > (existing.qoi_score || 0)) {
         userMap.set(p.user_id, p);
       }
     });
-    const dedupedData = Array.from(userMap.values());
+    const dedupedData = [...Array.from(userMap.values()), ...showcaseRows];
 
     // Sort by qoi_score descending
     dedupedData.sort((a, b) => (b.qoi_score || 0) - (a.qoi_score || 0));
