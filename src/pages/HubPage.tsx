@@ -32,6 +32,7 @@ import LoopMonster from '@/components/loopgate/LoopMonster';
 import QuickFightButton from '@/components/loopgate/QuickFightButton';
 import { useMyQuickFights, createQuickFightLobby, leaveQueue, joinWaitingQuickFight } from '@/hooks/useQuickFight';
 import InstantMatchModal from '@/components/loopgate/InstantMatchModal';
+import BattleSelectFlow from '@/components/loopgate/battle-select/BattleSelectFlow';
 import { useSoloMode } from '@/hooks/useSoloMode';
 import { useAccountPrompt } from '@/hooks/useAccountPrompt';
 import GlitchEdge from '@/components/loopgate/GlitchEdge';
