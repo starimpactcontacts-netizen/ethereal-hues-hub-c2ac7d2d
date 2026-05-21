@@ -207,7 +207,7 @@ export default function EventDetailPage() {
           </div>
 
           {/* Spacer pushes title block toward bottom of hero */}
-          <div className="flex-1 min-h-[28vh]" />
+          <div className="flex-1 min-h-[10vh]" />
 
           {/* Date pill — EWC style */}
           {heroDateRange && (
@@ -217,10 +217,10 @@ export default function EventDetailPage() {
             </div>
           )}
 
-          {/* MASSIVE slanted title — white + amber gradient outline on last word */}
+          {/* Slanted title — tighter so prize banner sits in view */}
           <h1
             className="font-black uppercase leading-[0.82] text-white drop-shadow-[0_6px_22px_rgba(0,0,0,0.85)]"
-            style={{ ...displayFont, fontSize: "clamp(64px, 18vw, 108px)", letterSpacing: "-0.01em", transform: "skewX(-6deg)" }}
+            style={{ ...displayFont, fontSize: "clamp(40px, 11vw, 72px)", letterSpacing: "-0.01em", transform: "skewX(-6deg)" }}
           >
             {titleHead && <span className="block">{titleHead}</span>}
             <span
@@ -236,7 +236,7 @@ export default function EventDetailPage() {
           </h1>
 
           {event.subtitle && (
-            <p className="mt-3 max-w-[88%] text-[12px] font-black uppercase tracking-[0.18em] leading-[1.45] text-white/85">
+            <p className="mt-2 max-w-[88%] text-[10px] font-black uppercase tracking-[0.18em] leading-[1.4] text-white/80">
               {event.subtitle}
             </p>
           )}
@@ -460,7 +460,7 @@ export default function EventDetailPage() {
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <h2 className="text-[24px] font-black uppercase leading-none text-arena-ink" style={displayFont}>Full Ladder</h2>
-              <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-arena-muted">Scroll stays inside this event</p>
+              <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-arena-muted">Tap any row to view submission</p>
             </div>
             <button onClick={() => setLadderLimit(ladderLimit >= 50 ? 10 : 50)} className="rounded-lg bg-arena-strong px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-arena-ink active:scale-95 transition">
               {ladderLimit >= 50 ? "Collapse" : "Top 50"}
@@ -877,12 +877,23 @@ function LadderRow({ row, rank, prize }: { row: any; rank: number; prize: Return
         </p>
         <p className="text-[8px] font-black uppercase tracking-[0.22em] text-white/35">{prize.cash ? "cash · index" : "index"}</p>
       </div>
-      <div
-        className={`flex h-9 w-9 items-center justify-center text-[18px] font-black ${isTop3 ? "text-arena-amber" : "text-white/40"}`}
-        style={{ ...displayFont, background: "#000", clipPath: "polygon(10% 0, 100% 0, 90% 100%, 0 100%)" }}
-      >
-        {isEmpty ? "—" : grade}
-      </div>
+      {isEmpty ? (
+        <div
+          className="flex h-10 w-10 items-center justify-center text-[16px] font-black text-white/30"
+          style={{ ...displayFont, background: "#000", clipPath: "polygon(10% 0, 100% 0, 90% 100%, 0 100%)" }}
+        >
+          —
+        </div>
+      ) : (
+        <div
+          className={`relative flex h-10 min-w-[44px] flex-col items-center justify-center gap-0.5 px-2 transition group-active:scale-95 ${isTop3 ? "bg-arena-amber text-black" : "bg-white text-black"}`}
+          style={{ clipPath: "polygon(10% 0, 100% 0, 90% 100%, 0 100%)" }}
+          title="Tap to view submission"
+        >
+          <Play size={12} className="fill-current" strokeWidth={0} />
+          <span className="text-[7px] font-black uppercase tracking-[0.18em] leading-none" style={displayFont}>View</span>
+        </div>
+      )}
     </Wrapper>
   );
 }
