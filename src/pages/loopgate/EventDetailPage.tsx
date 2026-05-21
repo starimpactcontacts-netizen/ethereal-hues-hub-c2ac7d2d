@@ -174,6 +174,13 @@ export default function EventDetailPage() {
               )}
               {isOpenArena && <OpenArenaInfoButton onClick={() => setShowGuide(true)} />}
               <button
+                onClick={scrollToLadder}
+                aria-label="Jump to leaderboard"
+                className="w-9 h-9 rounded-lg bg-black/60 backdrop-blur-md ring-1 ring-arena-amber/40 flex items-center justify-center active:scale-95 transition text-arena-amber"
+              >
+                <ListOrdered size={17} />
+              </button>
+              <button
                 onClick={() => setShowShare(true)}
                 aria-label="Share competition"
                 className="w-9 h-9 rounded-lg bg-black/60 backdrop-blur-md ring-1 ring-white/10 flex items-center justify-center active:scale-95 transition"
@@ -236,17 +243,6 @@ export default function EventDetailPage() {
               <GlassyCountdown endDate={(event as any).end_date} />
             </div>
           )}
-
-          {/* LEADERBOARD JUMP PILL */}
-          <button
-            onClick={scrollToLadder}
-            className="mt-3 inline-flex w-max items-center gap-2 rounded-md bg-arena-amber/15 ring-1 ring-arena-amber/45 px-3 py-2 backdrop-blur-md active:scale-[0.98] transition"
-            style={displayFont}
-          >
-            <ListOrdered size={14} className="text-arena-amber" />
-            <span className="text-[11px] font-black uppercase tracking-[0.28em] text-arena-amber">View Leaderboard</span>
-            <ChevronDown size={13} className="text-arena-amber" />
-          </button>
         </div>
       </div>
 
