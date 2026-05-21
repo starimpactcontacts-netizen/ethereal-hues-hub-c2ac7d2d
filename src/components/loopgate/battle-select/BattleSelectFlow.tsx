@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, Shuffle, Upload, Users, Swords, Music, Play, Pause, X, Film, Search, Loader2, Plus } from 'lucide-react';
+import { Check, Shuffle, Upload, Users, Swords, Music, Play, Pause, X, Film, Search, Loader2 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { SCENEPACKS, type Scenepack } from './scenepacks';
 import { supabase } from '@/integrations/supabase/client';
