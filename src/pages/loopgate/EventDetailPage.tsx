@@ -145,8 +145,8 @@ export default function EventDetailPage() {
 
   return (
     <div className="min-h-screen pb-28 bg-black text-arena-ink" style={bodyFont}>
-      {/* CINEMATIC HERO — EWC × Fortnite */}
-      <div className="relative overflow-hidden bg-black min-h-[78vh]">
+      {/* CINEMATIC HERO — background only, content owns the height */}
+      <div className="relative overflow-hidden bg-black">
         <img
           src={displayPoster || lightYagamiPoster}
           alt={event.title}
@@ -161,8 +161,8 @@ export default function EventDetailPage() {
         <div className="pointer-events-none absolute -top-24 -right-24 w-80 h-80 rounded-full bg-arena-amber/20 blur-3xl" />
         <div className="pointer-events-none absolute bottom-1/3 -left-32 w-96 h-96 rounded-full bg-arena-red/20 blur-3xl" />
 
-        <div className="relative flex flex-col min-h-[42vh] px-4 pt-[max(env(safe-area-inset-top),14px)] pb-3">
-          <div className="flex items-center justify-between mb-4">
+        <div className="relative flex flex-col px-4 pt-[max(env(safe-area-inset-top),14px)] pb-2">
+          <div className="flex items-center justify-between mb-2">
             <Link
               to="/arena"
               className="w-9 h-9 rounded-lg bg-black/60 backdrop-blur-md ring-1 ring-white/10 flex items-center justify-center active:scale-95 transition"
@@ -206,12 +206,9 @@ export default function EventDetailPage() {
             </div>
           </div>
 
-          {/* Small spacer — keep title near top so prize is visible without scroll */}
-          <div className="h-3" />
-
           {/* Date pill — EWC style */}
           {heroDateRange && (
-            <div className="inline-flex w-max items-center gap-2 rounded-md bg-black/55 backdrop-blur-md ring-1 ring-white/15 px-3 py-1.5 mb-3">
+            <div className="inline-flex w-max items-center gap-2 rounded-md bg-black/55 backdrop-blur-md ring-1 ring-white/15 px-3 py-1.5 mb-2">
               <span className="h-1.5 w-1.5 rounded-full bg-arena-amber shadow-[0_0_8px_hsl(var(--arena-amber))]" />
               <span className="text-[11px] font-black uppercase tracking-[0.28em] text-white">{heroDateRange}</span>
             </div>
@@ -244,7 +241,7 @@ export default function EventDetailPage() {
       </div>
 
       {/* MASSIVE PRIZE BANNER — first thing after title, impossible to miss */}
-      <div className="relative -mt-2 bg-black px-3 pt-3 pb-1">
+       <div className="relative bg-black px-3 pt-2 pb-1">
         <p className="mb-2 text-center text-[9px] font-black uppercase tracking-[0.42em] text-white/40" style={displayFont}>
           Prize Pool
         </p>
