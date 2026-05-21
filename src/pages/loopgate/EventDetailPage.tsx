@@ -870,7 +870,7 @@ function LadderRow({ row, rank, prize }: { row: any; rank: number; prize: Return
               }`}
               style={displayFont}
             >
-              QOI {qoi.toFixed(0)} · {grade}
+              QOI {qoi.toFixed(0)}
             </span>
           )}
           <p className="truncate text-[9px] font-bold uppercase tracking-[0.18em] text-white/40">
