@@ -161,7 +161,7 @@ export default function EventDetailPage() {
         <div className="pointer-events-none absolute -top-24 -right-24 w-80 h-80 rounded-full bg-arena-amber/20 blur-3xl" />
         <div className="pointer-events-none absolute bottom-1/3 -left-32 w-96 h-96 rounded-full bg-arena-red/20 blur-3xl" />
 
-        <div className="relative flex flex-col min-h-[78vh] px-4 pt-[max(env(safe-area-inset-top),14px)] pb-5">
+        <div className="relative flex flex-col min-h-[42vh] px-4 pt-[max(env(safe-area-inset-top),14px)] pb-3">
           <div className="flex items-center justify-between mb-4">
             <Link
               to="/arena"
@@ -206,8 +206,8 @@ export default function EventDetailPage() {
             </div>
           </div>
 
-          {/* Spacer pushes title block toward bottom of hero */}
-          <div className="flex-1 min-h-[10vh]" />
+          {/* Small spacer — keep title near top so prize is visible without scroll */}
+          <div className="h-3" />
 
           {/* Date pill — EWC style */}
           {heroDateRange && (
