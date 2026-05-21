@@ -859,9 +859,24 @@ function LadderRow({ row, rank, prize }: { row: any; rank: number; prize: Return
         <p className="truncate text-[13px] font-black text-white">
           {isEmpty ? <span className="text-white/30">Open slot</span> : (row.profile?.username || row.author_username || "Unknown")}
         </p>
-        <p className="mt-0.5 truncate text-[9px] font-bold uppercase tracking-[0.18em] text-white/40">
-          {isEmpty ? "Claim this rank" : `TikTok · ${row.view_count ? `${row.view_count.toLocaleString()} views` : "Submitted"}`}
-        </p>
+        <div className="mt-0.5 flex items-center gap-1.5">
+          {!isEmpty && qoi > 0 && (
+            <span
+              className={`inline-flex items-center gap-1 px-1.5 py-[2px] text-[9px] font-black uppercase tracking-[0.14em] tabular-nums ${
+                grade === "S" ? "bg-arena-amber/20 text-arena-amber ring-1 ring-arena-amber/40" :
+                grade === "A" ? "bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-400/40" :
+                grade === "B" ? "bg-sky-500/15 text-sky-300 ring-1 ring-sky-400/40" :
+                "bg-white/10 text-white/70 ring-1 ring-white/15"
+              }`}
+              style={displayFont}
+            >
+              QOI {qoi.toFixed(0)} · {grade}
+            </span>
+          )}
+          <p className="truncate text-[9px] font-bold uppercase tracking-[0.18em] text-white/40">
+            {isEmpty ? "Claim this rank" : (qoi > 0 ? (row.view_count ? `${row.view_count.toLocaleString()} views` : "TikTok") : `TikTok · ${row.view_count ? `${row.view_count.toLocaleString()} views` : "Submitted"}`)}
+          </p>
+        </div>
       </div>
       <div className="text-right shrink-0">
         {prize.cash && (
