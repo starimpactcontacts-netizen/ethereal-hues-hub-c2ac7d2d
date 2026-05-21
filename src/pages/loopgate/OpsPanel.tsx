@@ -2317,7 +2317,7 @@ export default function OpsPanel() {
     s.status === 'approved' || 
     ((s as any).source === 'open_arena' && s.status === 'active' && !s.qoi_score)
   );
-  const declinedSubmissions = filteredSubmissions.filter(s => s.status === 'declined' || s.status === 'eliminated');
+  const declinedSubmissions = filteredSubmissions.filter(s => s.status === 'declined' || s.status === 'eliminated' || s.status === 'rejected');
   // For rated: 'scored' for standard events, or Open Arena 'active' WITH qoi_score
   const ratedSubmissions = filteredSubmissions.filter(s => 
     s.status === 'scored' || 
