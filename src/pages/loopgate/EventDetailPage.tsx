@@ -445,31 +445,30 @@ export default function EventDetailPage() {
               <h2 className="text-[24px] font-black uppercase leading-none text-arena-ink" style={displayFont}>Full Ladder</h2>
               <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-arena-muted">Scroll stays inside this event</p>
             </div>
-            <button onClick={scrollToLadder} className="rounded-lg bg-arena-strong px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-arena-ink active:scale-95 transition">
-              Expand
+            <button onClick={() => setLadderLimit(ladderLimit >= 50 ? 10 : 50)} className="rounded-lg bg-arena-strong px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-arena-ink active:scale-95 transition">
+              {ladderLimit >= 50 ? "Collapse" : "Top 50"}
             </button>
           </div>
 
-          {rankings.length === 0 ? (
-            <div className="rounded-lg bg-arena-strong px-4 py-8 text-center">
-              <Flame size={26} className="mx-auto mb-2 text-arena-red" />
-              <p className="text-[13px] font-black text-arena-ink">First ranked edit takes the board.</p>
-              <p className="mt-1 text-[11px] font-semibold text-arena-muted">Upload a TikTok edit and lock your spot.</p>
-            </div>
-          ) : (
-            <div className="space-y-1.5">
-              {ladderRows.map((r, index) => <LadderRow key={r.id} row={r} rank={r.final_rank || index + 1} />)}
-            </div>
-          )}
+          <div className="space-y-1.5">
+            {ladderRows.map((r, index) => {
+              const rank = (r as any).final_rank || index + 1;
+              return <LadderRow key={r.id} row={r} rank={rank} prize={getPrizeForRank(rank)} />;
+            })}
+          </div>
 
-          {rankings.length > ladderLimit && (
+          {ladderLimit < 50 && (
             <button
-              onClick={() => setLadderLimit((current) => current + 12)}
+              onClick={() => setLadderLimit((current) => Math.min(50, current + 10))}
               className="mt-3 flex w-full items-center justify-center gap-1 rounded-lg bg-arena-strong py-3 text-[10px] font-black uppercase tracking-[0.18em] text-arena-ink active:scale-[0.99] transition"
             >
-              Show More <ChevronDown size={13} />
+              Show More Prizes <ChevronDown size={13} />
             </button>
           )}
+
+          <p className="mt-3 text-center text-[9px] font-black uppercase tracking-[0.22em] text-white/35">
+            $150 cash split top 5 · 1,000,000 index split top 50
+          </p>
         </section>
 
         {isClosed && (
