@@ -111,7 +111,13 @@ export default function EventDetailPage() {
   const titleWords = event.title.trim().split(/\s+/);
   const titleHead = titleWords.slice(0, -1).join(" ");
   const titleTail = titleWords[titleWords.length - 1];
-  const featuredEdits = rankings.filter((r) => r.submission_url && (r as any).is_showcase).slice(0, 6);
+  const showcaseEdits = rankings.filter((r) => r.submission_url && (r as any).is_showcase).slice(0, 3);
+  const topRanked = rankings
+    .filter((r) => r.submission_url && !(r as any).is_showcase)
+    .slice(0, 3);
+  // Prefer real top-ranked submissions; fall back to admin showcase drops, then empty slots.
+  const featuredEdits = topRanked.length > 0 ? topRanked : showcaseEdits;
+  const emptySlotCount = Math.max(0, 3 - featuredEdits.length);
   const ladderRows = rankings.filter((r) => !(r as any).is_showcase).slice(0, ladderLimit);
   const isShowcaseAdmin = user?.email?.toLowerCase() === "aminhoopz@gmail.com";
 
@@ -292,15 +298,16 @@ export default function EventDetailPage() {
           </div>
 
           <div className="grid grid-cols-3 gap-1.5">
-            {featuredEdits.length === 0 ? (
-              <>
-                <EmptyDrop index={1} />
-                <EmptyDrop index={2} />
-                <EmptyDrop index={3} />
-              </>
-            ) : (
-              featuredEdits.map((edit) => <ShowcaseDrop key={edit.id} edit={edit} />)
-            )}
+            {featuredEdits.map((edit, i) => (
+              <RankedDrop
+                key={edit.id}
+                edit={edit}
+                rank={(edit as any).is_showcase ? null : (edit.final_rank || i + 1)}
+              />
+            ))}
+            {Array.from({ length: emptySlotCount }).map((_, i) => (
+              <EmptyDrop key={`empty-${i}`} index={featuredEdits.length + i + 1} />
+            ))}
           </div>
         </section>
 
