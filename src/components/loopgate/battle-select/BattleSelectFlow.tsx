@@ -432,8 +432,39 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
 
             {tab === 'song' && (
               <div className="flex-1 overflow-y-auto px-3">
+                {/* Deezer global search */}
+                <div className="mb-3">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
+                    <input
+                      value={deezerQuery}
+                      onChange={(e) => setDeezerQuery(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') runDeezerSearch(deezerQuery); }}
+                      placeholder="Search any song globally…"
+                      disabled={mine.ready}
+                      className="w-full pl-8 pr-9 py-2.5 rounded-xl bg-white/[0.05] border border-white/10 text-white text-xs placeholder:text-white/30 focus:outline-none focus:border-white/30"
+                    />
+                    {deezerLoading ? (
+                      <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40 animate-spin" />
+                    ) : deezerQuery.trim() ? (
+                      <button
+                        onClick={() => { setDeezerQuery(''); setDeezerResults([]); }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center"
+                        aria-label="Clear"
+                      >
+                        <X className="w-3 h-3 text-white/70" />
+                      </button>
+                    ) : null}
+                  </div>
+                  {deezerResults.length > 0 && (
+                    <p className="text-[9px] uppercase tracking-wider text-white/40 mt-2 px-1">
+                      Deezer · {deezerResults.length} results · 30s previews
+                    </p>
+                  )}
+                </div>
+
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {songs.map((s) => {
+                  {(deezerResults.length > 0 ? deezerResults : songs).map((s) => {
                     const picked = mine.song?.id === s.id;
                     const playing = previewingId === s.id;
                     return (
