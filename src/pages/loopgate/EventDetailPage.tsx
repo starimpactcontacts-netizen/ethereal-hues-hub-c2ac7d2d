@@ -50,7 +50,7 @@ export default function EventDetailPage() {
   const [showGuide, setShowGuide] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [showShare, setShowShare] = useState(false);
-  const [ladderLimit, setLadderLimit] = useState(8);
+  const [ladderLimit, setLadderLimit] = useState(10);
   const ladderRef = useRef<HTMLDivElement | null>(null);
 
   useActiveSession();
