@@ -402,6 +402,7 @@ export function useEventRankings(eventId: string | null) {
       .from('event_participations')
       .select('*')
       .eq('event_id', eventId)
+      .not('status', 'in', '(rejected,declined,eliminated)')
       .order('qoi_score', { ascending: false, nullsFirst: false });
 
     // Fetch Open Arena round participations
@@ -410,6 +411,7 @@ export function useEventRankings(eventId: string | null) {
       .select('*')
       .eq('event_id', eventId)
       .not('submission_url', 'is', null)
+      .not('status', 'in', '(eliminated,rejected,declined)')
       .order('qoi_score', { ascending: false, nullsFirst: false });
 
     if (standardError) {
