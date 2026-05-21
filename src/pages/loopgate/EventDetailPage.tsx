@@ -321,7 +321,7 @@ export default function EventDetailPage() {
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <h2 className="text-[24px] font-black uppercase leading-none text-arena-ink" style={displayFont}>Edit Showcase</h2>
-              <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-arena-muted">Inspo canvas + ranked drops</p>
+              <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-arena-muted">Inspo canvas</p>
             </div>
             {isShowcaseAdmin && (
               <button
