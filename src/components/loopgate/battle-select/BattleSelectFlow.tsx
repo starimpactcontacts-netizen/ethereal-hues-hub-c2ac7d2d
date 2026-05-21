@@ -102,6 +102,39 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
   const startingRef = useRef(false);
   const [previewingId, setPreviewingId] = useState<string | null>(null);
 
+  // Deezer global song search
+  const [deezerQuery, setDeezerQuery] = useState('');
+  const [deezerLoading, setDeezerLoading] = useState(false);
+  const [deezerResults, setDeezerResults] = useState<Song[]>([]);
+
+  const runDeezerSearch = useCallback(async (q: string) => {
+    const text = q.trim();
+    if (!text) { setDeezerResults([]); return; }
+    setDeezerLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('deezer-search', {
+        body: { query: text, limit: 24 },
+      });
+      if (error) throw error;
+      const tracks: any[] = Array.isArray((data as any)?.data) ? (data as any).data : [];
+      setDeezerResults(
+        tracks
+          .filter((t) => t?.preview)
+          .map((t: any) => ({
+            id: `dz:${t.id}`,
+            title: t.title,
+            artist: t?.artist?.name || 'Unknown',
+            cover: t?.album?.cover_medium || t?.album?.cover_small || null,
+            preview: t.preview,
+          })),
+      );
+    } catch {
+      setDeezerResults([]);
+    } finally {
+      setDeezerLoading(false);
+    }
+  }, []);
+
   const mySide: PlayerSide = youSide;
   const opponentSide: PlayerSide = mySide === 'red' ? 'blue' : 'red';
   const redPicks = mySide === 'red' ? mine : opp;
