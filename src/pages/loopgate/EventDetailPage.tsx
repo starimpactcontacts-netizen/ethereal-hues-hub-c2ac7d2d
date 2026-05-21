@@ -115,12 +115,8 @@ export default function EventDetailPage() {
   const titleWords = event.title.trim().split(/\s+/);
   const titleHead = titleWords.slice(0, -1).join(" ");
   const titleTail = titleWords[titleWords.length - 1];
-  const showcaseEdits = rankings.filter((r) => r.submission_url && (r as any).is_showcase).slice(0, 3);
-  const topRanked = rankings
-    .filter((r) => r.submission_url && !(r as any).is_showcase)
-    .slice(0, 3);
-  // Prefer real top-ranked submissions; fall back to admin showcase drops, then empty slots.
-  const featuredEdits = topRanked.length > 0 ? topRanked : showcaseEdits;
+  // Edit Showcase = ONLY admin-uploaded inspo drops (is_showcase=true). Never ranked submissions.
+  const featuredEdits = rankings.filter((r) => r.submission_url && (r as any).is_showcase).slice(0, 3);
   const emptySlotCount = Math.max(0, 3 - featuredEdits.length);
   const ladderRows = rankings.filter((r) => !(r as any).is_showcase).slice(0, ladderLimit);
   const isShowcaseAdmin = user?.email?.toLowerCase() === "aminhoopz@gmail.com";
