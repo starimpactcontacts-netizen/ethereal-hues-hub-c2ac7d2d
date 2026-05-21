@@ -49,8 +49,6 @@ export default function EventSharePoster({
   const [busy, setBusy] = useState(false);
   const t = useCountdown(endDate);
 
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=0&bgcolor=000000&color=FFFFFF&qzone=1&data=${encodeURIComponent(shareUrl)}`;
-
   const captureBlob = async (): Promise<Blob | null> => {
     if (!cardRef.current) return null;
     try { await (document as any).fonts?.ready; } catch {}
@@ -211,7 +209,7 @@ export default function EventSharePoster({
               </div>
             </div>
 
-            {/* SONG + COUNTDOWN + QR */}
+            {/* SONG + COUNTDOWN */}
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 {(songTitle || themeLabel) && (
@@ -232,9 +230,6 @@ export default function EventSharePoster({
                 {t?.expired && (
                   <p style={{ ...display, fontSize: 14, fontWeight: 900, letterSpacing: "0.2em", color: "#e11d2a", margin: "4px 0 0" }}>ENDED</p>
                 )}
-              </div>
-              <div style={{ width: 56, height: 56, padding: 4, background: "#fff", borderRadius: 4, flexShrink: 0 }}>
-                <img src={qrUrl} crossOrigin="anonymous" alt="QR" style={{ width: "100%", height: "100%", display: "block" }} />
               </div>
             </div>
           </div>
