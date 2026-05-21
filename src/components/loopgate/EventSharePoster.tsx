@@ -155,13 +155,13 @@ export default function EventSharePoster({
           </div>
 
           {/* TITLE BLOCK */}
-          <div style={{ position: "absolute", left: 14, right: 14, bottom: 14, zIndex: 5, display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ position: "absolute", left: 14, right: 14, bottom: 18, zIndex: 5, display: "flex", flexDirection: "column", gap: 10 }}>
             <div>
               <p style={{ ...display, fontSize: 9, fontWeight: 900, letterSpacing: "0.42em", color: "rgba(255,255,255,0.55)", margin: 0 }}>EDIT COMPETITION</p>
               <h1
                 style={{
                   ...display,
-                  fontSize: 30,
+                  fontSize: 26,
                   fontWeight: 900,
                   lineHeight: 0.88,
                   color: "#fff",
