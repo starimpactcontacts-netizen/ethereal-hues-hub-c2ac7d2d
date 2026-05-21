@@ -118,7 +118,15 @@ export default function EventDetailPage() {
   // Edit Showcase = ONLY admin-uploaded inspo drops (is_showcase=true). Never ranked submissions.
   const featuredEdits = rankings.filter((r) => r.submission_url && (r as any).is_showcase).slice(0, 3);
   const emptySlotCount = Math.max(0, 3 - featuredEdits.length);
-  const ladderRows = rankings.filter((r) => !(r as any).is_showcase).slice(0, ladderLimit);
+  const realLadder = rankings.filter((r) => !(r as any).is_showcase);
+  const paddedLadder: any[] = [
+    ...realLadder,
+    ...Array.from({ length: Math.max(0, 50 - realLadder.length) }, (_, i) => ({
+      id: `empty-${i}`,
+      __empty: true,
+    })),
+  ].slice(0, 50);
+  const ladderRows = paddedLadder.slice(0, ladderLimit);
   const isShowcaseAdmin = user?.email?.toLowerCase() === "aminhoopz@gmail.com";
 
   const getUserAdvancementStatus = () => {
