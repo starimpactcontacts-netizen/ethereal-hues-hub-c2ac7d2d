@@ -34,7 +34,7 @@ export default function BattleRevealScreen({ fightId, red, blue, mySide, duratio
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+    const load = async () => {
       const { data } = await supabase.rpc('get_quick_fight_selection_state' as any, { p_fight_id: fightId } as any);
       if (cancelled || !data) return;
       const d = data as any;
@@ -43,8 +43,13 @@ export default function BattleRevealScreen({ fightId, red, blue, mySide, duratio
       if (mySide === 'red') { setRedPick(mine); setBluePick(opp); }
       else if (mySide === 'blue') { setBluePick(mine); setRedPick(opp); }
       else { setRedPick(mine); setBluePick(opp); }
-    })();
-    return () => { cancelled = true; };
+    };
+    load();
+    const ch = supabase
+      .channel(`qf_reveal_${fightId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'quick_fight_selections', filter: `fight_id=eq.${fightId}` }, () => load())
+      .subscribe();
+    return () => { cancelled = true; supabase.removeChannel(ch); };
   }, [fightId, mySide]);
 
   useEffect(() => {
