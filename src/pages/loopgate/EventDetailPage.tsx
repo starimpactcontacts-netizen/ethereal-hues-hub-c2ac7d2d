@@ -207,7 +207,7 @@ export default function EventDetailPage() {
           </div>
 
           {/* Spacer pushes title block toward bottom of hero */}
-          <div className="flex-1 min-h-[28vh]" />
+          <div className="flex-1 min-h-[10vh]" />
 
           {/* Date pill — EWC style */}
           {heroDateRange && (
@@ -217,10 +217,10 @@ export default function EventDetailPage() {
             </div>
           )}
 
-          {/* MASSIVE slanted title — white + amber gradient outline on last word */}
+          {/* Slanted title — tighter so prize banner sits in view */}
           <h1
             className="font-black uppercase leading-[0.82] text-white drop-shadow-[0_6px_22px_rgba(0,0,0,0.85)]"
-            style={{ ...displayFont, fontSize: "clamp(64px, 18vw, 108px)", letterSpacing: "-0.01em", transform: "skewX(-6deg)" }}
+            style={{ ...displayFont, fontSize: "clamp(40px, 11vw, 72px)", letterSpacing: "-0.01em", transform: "skewX(-6deg)" }}
           >
             {titleHead && <span className="block">{titleHead}</span>}
             <span
@@ -236,7 +236,7 @@ export default function EventDetailPage() {
           </h1>
 
           {event.subtitle && (
-            <p className="mt-3 max-w-[88%] text-[12px] font-black uppercase tracking-[0.18em] leading-[1.45] text-white/85">
+            <p className="mt-2 max-w-[88%] text-[10px] font-black uppercase tracking-[0.18em] leading-[1.4] text-white/80">
               {event.subtitle}
             </p>
           )}
