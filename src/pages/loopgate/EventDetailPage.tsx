@@ -798,20 +798,41 @@ function PrizeSlab({ rank, title, cash, rings, tone }: { rank: string; title: st
   );
 }
 
-function LadderRow({ row, rank }: { row: any; rank: number }) {
+function getPrizeForRank(rank: number): { cash?: string; index: string; tone: "gold" | "silver" | "bronze" | "blue" | "muted" } {
+  if (rank === 1) return { cash: "$60", index: "250K", tone: "gold" };
+  if (rank === 2) return { cash: "$40", index: "175K", tone: "silver" };
+  if (rank === 3) return { cash: "$25", index: "100K", tone: "bronze" };
+  if (rank === 4) return { cash: "$15", index: "75K", tone: "blue" };
+  if (rank === 5) return { cash: "$10", index: "50K", tone: "blue" };
+  if (rank <= 10) return { index: "35K", tone: "blue" };
+  if (rank <= 25) return { index: "15K", tone: "muted" };
+  return { index: "5K", tone: "muted" };
+}
+
+function LadderRow({ row, rank, prize }: { row: any; rank: number; prize: ReturnType<typeof getPrizeForRank> }) {
+  const isEmpty = !!row.__empty;
   const qoi = row.qoi_score || 0;
   const grade = qoi >= 90 ? "S" : qoi >= 80 ? "A" : qoi >= 70 ? "B" : qoi >= 60 ? "C" : "—";
   const isTop1 = rank === 1;
   const isTop3 = rank <= 3;
   const rankTone = isTop1 ? "text-arena-amber" : rank === 2 ? "text-white" : rank === 3 ? "text-arena-red" : "text-white/35";
   const accent = isTop1 ? "hsl(var(--arena-amber))" : rank === 2 ? "#cfd3dc" : rank === 3 ? "hsl(var(--arena-red))" : "rgba(255,255,255,0.12)";
+  const prizeColor =
+    prize.tone === "gold" ? "text-arena-amber" :
+    prize.tone === "silver" ? "text-white" :
+    prize.tone === "bronze" ? "text-arena-red" :
+    prize.tone === "blue" ? "text-sky-300" :
+    "text-white/40";
+
+  const Wrapper: any = isEmpty ? "div" : "a";
+  const wrapperProps: any = isEmpty
+    ? {}
+    : { href: row.submission_url, target: "_blank", rel: "noopener noreferrer" };
 
   return (
-    <a
-      href={row.submission_url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group relative flex items-center gap-3 overflow-hidden bg-[#0a0b0f] pl-4 pr-3 py-2.5 ring-1 ring-white/[0.05] active:scale-[0.99] transition"
+    <Wrapper
+      {...wrapperProps}
+      className={`group relative flex items-center gap-3 overflow-hidden bg-[#0a0b0f] pl-4 pr-3 py-2.5 ring-1 ring-white/[0.05] transition ${isEmpty ? "opacity-60" : "active:scale-[0.99]"}`}
       style={{ clipPath: "polygon(0 0, 100% 0, calc(100% - 12px) 100%, 0 100%)" }}
     >
       <span className="absolute inset-y-0 left-0 w-[3px]" style={{ background: accent, boxShadow: isTop3 ? `0 0 16px ${accent}` : undefined }} />
@@ -821,20 +842,31 @@ function LadderRow({ row, rank }: { row: any; rank: number }) {
         #{rank}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="truncate text-[13px] font-black text-white">{row.profile?.username || row.author_username || "Unknown"}</p>
-        <p className="mt-0.5 truncate text-[9px] font-bold uppercase tracking-[0.18em] text-white/40">TikTok · {row.view_count ? `${row.view_count.toLocaleString()} views` : "Submitted"}</p>
+        <p className="truncate text-[13px] font-black text-white">
+          {isEmpty ? <span className="text-white/30">Open slot</span> : (row.profile?.username || row.author_username || "Unknown")}
+        </p>
+        <p className="mt-0.5 truncate text-[9px] font-bold uppercase tracking-[0.18em] text-white/40">
+          {isEmpty ? "Claim this rank" : `TikTok · ${row.view_count ? `${row.view_count.toLocaleString()} views` : "Submitted"}`}
+        </p>
       </div>
-      <div className="text-right">
-        <p className="text-[22px] font-black leading-none tabular-nums text-white" style={displayFont}>{qoi ? qoi.toFixed(1) : "—"}</p>
-        <p className="text-[8px] font-black uppercase tracking-[0.22em] text-white/40">QOI</p>
+      <div className="text-right shrink-0">
+        {prize.cash && (
+          <p className={`text-[20px] font-black leading-none tabular-nums ${prizeColor}`} style={{ ...displayFont, transform: "skewX(-5deg)" }}>
+            {prize.cash}
+          </p>
+        )}
+        <p className={`${prize.cash ? "mt-0.5" : ""} text-[12px] font-black tabular-nums ${prize.cash ? "text-white/70" : prizeColor}`} style={displayFont}>
+          +{prize.index}
+        </p>
+        <p className="text-[8px] font-black uppercase tracking-[0.22em] text-white/35">{prize.cash ? "cash · index" : "index"}</p>
       </div>
       <div
-        className={`flex h-9 w-9 items-center justify-center text-[18px] font-black ${isTop3 ? "text-arena-amber" : "text-white/55"}`}
+        className={`flex h-9 w-9 items-center justify-center text-[18px] font-black ${isTop3 ? "text-arena-amber" : "text-white/40"}`}
         style={{ ...displayFont, background: "#000", clipPath: "polygon(10% 0, 100% 0, 90% 100%, 0 100%)" }}
       >
-        {grade}
+        {isEmpty ? "—" : grade}
       </div>
-    </a>
+    </Wrapper>
   );
 }
 
