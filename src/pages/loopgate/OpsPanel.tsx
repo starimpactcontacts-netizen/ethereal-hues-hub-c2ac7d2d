@@ -1425,7 +1425,7 @@ export default function OpsPanel() {
       // only supports: 'active' | 'advanced' | 'eliminated' | 'pending'
       // For standard events (event_participations), use 'scored' status
       if (submission.source === 'open_arena') {
-        const { error } = await supabase
+        const { data: updated, error } = await supabase
           .from('round_participations')
           .update({
             quality_score: scores.quality,
@@ -1437,9 +1437,13 @@ export default function OpsPanel() {
             judged_at: new Date().toISOString(),
             judge_id: user?.id,
           })
-          .eq('id', submission.id);
+          .eq('id', submission.id)
+          .select('id');
         
         if (error) throw error;
+        if (!updated || updated.length === 0) {
+          throw new Error('No row updated — check admin permissions / session');
+        }
         
         // Award XP if not already awarded for this submission
         if (previouslyAwarded === 0) {
@@ -1460,7 +1464,7 @@ export default function OpsPanel() {
           toast.success('Score saved');
         }
       } else {
-        const { error } = await supabase
+        const { data: updated, error } = await supabase
           .from('event_participations')
           .update({
             quality_score: scores.quality,
@@ -1471,18 +1475,22 @@ export default function OpsPanel() {
             judged_at: new Date().toISOString(),
             judge_id: user?.id,
           })
-          .eq('id', submission.id);
+          .eq('id', submission.id)
+          .select('id');
         
         if (error) throw error;
+        if (!updated || updated.length === 0) {
+          throw new Error('No row updated — check admin permissions / session');
+        }
         toast.success('Score saved');
       }
       
       setScoringSubmission(null);
       setScores({ quality: 80, originality: 80, impact: 80 });
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error scoring submission:', error);
-      toast.error('Failed to save score');
+      toast.error(error?.message || 'Failed to save score');
     } finally {
       setSaving(false);
     }
@@ -1550,19 +1558,32 @@ export default function OpsPanel() {
     try {
       const previouslyAwarded = submission.xp_awarded || 0;
 
-      // Determine which table to update based on source
-      const tableName = submission.source === 'open_arena' ? 'round_participations' : 'event_participations';
+      // Open Arena uses the participant_status enum (active|advanced|eliminated|pending)
+      // Standard events use a text status with CHECK (pending|approved|rejected|scored)
+      // Decline = "didn't follow competition rules" → eliminated / rejected
+      if (submission.source === 'open_arena') {
+        const { data: updated, error: updateError } = await supabase
+          .from('round_participations')
+          .update({ status: 'eliminated' })
+          .eq('id', submission.id)
+          .select('id');
 
-      // Update submission status to declined
-      const { error: updateError } = await supabase
-        .from(tableName)
-        .update({
-          status: 'declined',
-          ...(tableName === 'event_participations' ? { xp_awarded: 0 } : {}),
-        })
-        .eq('id', submission.id);
+        if (updateError) throw updateError;
+        if (!updated || updated.length === 0) {
+          throw new Error('No row updated — check admin permissions / session');
+        }
+      } else {
+        const { data: updated, error: updateError } = await supabase
+          .from('event_participations')
+          .update({ status: 'rejected', xp_awarded: 0 })
+          .eq('id', submission.id)
+          .select('id');
 
-      if (updateError) throw updateError;
+        if (updateError) throw updateError;
+        if (!updated || updated.length === 0) {
+          throw new Error('No row updated — check admin permissions / session');
+        }
+      }
 
       // If XP was previously awarded, revoke it
       if (previouslyAwarded > 0) {
@@ -1578,9 +1599,9 @@ export default function OpsPanel() {
       }
       
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error declining submission:', error);
-      toast.error('Failed to decline submission');
+      toast.error(error?.message || 'Failed to decline submission');
     } finally {
       setActionLoading(false);
     }
@@ -2296,7 +2317,7 @@ export default function OpsPanel() {
     s.status === 'approved' || 
     ((s as any).source === 'open_arena' && s.status === 'active' && !s.qoi_score)
   );
-  const declinedSubmissions = filteredSubmissions.filter(s => s.status === 'declined' || s.status === 'eliminated');
+  const declinedSubmissions = filteredSubmissions.filter(s => s.status === 'declined' || s.status === 'eliminated' || s.status === 'rejected');
   // For rated: 'scored' for standard events, or Open Arena 'active' WITH qoi_score
   const ratedSubmissions = filteredSubmissions.filter(s => 
     s.status === 'scored' || 
