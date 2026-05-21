@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, Shuffle, Upload, Users, Swords, Music, Play, Pause, X, Film } from 'lucide-react';
+import { Check, Shuffle, Upload, Users, Swords, Music, Play, Pause, X, Film, Search, Loader2, Plus } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { SCENEPACKS, type Scenepack } from './scenepacks';
 import { supabase } from '@/integrations/supabase/client';
@@ -173,12 +173,18 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
     if (!open) return;
     supabase
       .from('radio_tracks' as any)
-      .select('id, song_name, artist_name, cover_url, preview_url')
-      .limit(40)
+      .select('id, song_name, artist_name, cover_url, preview_url, audio_url, is_priority, is_featured')
+      .eq('is_featured', true)
+      .order('is_priority', { ascending: false })
+      .limit(60)
       .then(({ data }) => {
         if (Array.isArray(data) && data.length > 0) {
           setSongs(data.map((t: any) => ({
-            id: t.id, title: t.song_name, artist: t.artist_name, cover: t.cover_url, preview: t.preview_url,
+            id: t.id,
+            title: t.song_name,
+            artist: t.artist_name,
+            cover: t.cover_url,
+            preview: t.preview_url || t.audio_url,
           })));
         }
       });
