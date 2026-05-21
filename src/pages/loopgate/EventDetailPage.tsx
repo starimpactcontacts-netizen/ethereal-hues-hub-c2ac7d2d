@@ -877,12 +877,23 @@ function LadderRow({ row, rank, prize }: { row: any; rank: number; prize: Return
         </p>
         <p className="text-[8px] font-black uppercase tracking-[0.22em] text-white/35">{prize.cash ? "cash · index" : "index"}</p>
       </div>
-      <div
-        className={`flex h-9 w-9 items-center justify-center text-[18px] font-black ${isTop3 ? "text-arena-amber" : "text-white/40"}`}
-        style={{ ...displayFont, background: "#000", clipPath: "polygon(10% 0, 100% 0, 90% 100%, 0 100%)" }}
-      >
-        {isEmpty ? "—" : grade}
-      </div>
+      {isEmpty ? (
+        <div
+          className="flex h-10 w-10 items-center justify-center text-[16px] font-black text-white/30"
+          style={{ ...displayFont, background: "#000", clipPath: "polygon(10% 0, 100% 0, 90% 100%, 0 100%)" }}
+        >
+          —
+        </div>
+      ) : (
+        <div
+          className={`relative flex h-10 min-w-[44px] flex-col items-center justify-center gap-0.5 px-2 transition group-active:scale-95 ${isTop3 ? "bg-arena-amber text-black" : "bg-white text-black"}`}
+          style={{ clipPath: "polygon(10% 0, 100% 0, 90% 100%, 0 100%)" }}
+          title="Tap to view submission"
+        >
+          <Play size={12} className="fill-current" strokeWidth={0} />
+          <span className="text-[7px] font-black uppercase tracking-[0.18em] leading-none" style={displayFont}>View</span>
+        </div>
+      )}
     </Wrapper>
   );
 }
