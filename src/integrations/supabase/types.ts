@@ -7660,8 +7660,11 @@ export type Database = {
           audio_url: string
           cover_url: string | null
           created_at: string
+          deezer_id: number | null
           id: string
+          is_featured: boolean
           is_priority: boolean
+          preview_url: string | null
           song_name: string
           track_order: number
         }
@@ -7671,8 +7674,11 @@ export type Database = {
           audio_url: string
           cover_url?: string | null
           created_at?: string
+          deezer_id?: number | null
           id?: string
+          is_featured?: boolean
           is_priority?: boolean
+          preview_url?: string | null
           song_name: string
           track_order?: number
         }
@@ -7682,8 +7688,11 @@ export type Database = {
           audio_url?: string
           cover_url?: string | null
           created_at?: string
+          deezer_id?: number | null
           id?: string
+          is_featured?: boolean
           is_priority?: boolean
+          preview_url?: string | null
           song_name?: string
           track_order?: number
         }

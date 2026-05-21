@@ -16,6 +16,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import JudgeManagementSection from "@/components/loopgate/JudgeManagementSection";
 import JudgeApplicationsSection from "@/components/loopgate/JudgeApplicationsSection";
+import LibraryManagementSection from "@/components/loopgate/LibraryManagementSection";
 import SanctionedTournamentManagement from "@/components/loopgate/SanctionedTournamentManagement";
 import LeagueApplicationsAdmin from "@/components/loopgate/LeagueApplicationsAdmin";
 import CashBattleAdminPanel from "@/components/loopgate/CashBattleAdminPanel";
@@ -4019,6 +4020,8 @@ export default function OpsPanel() {
             CSV export for payout processing
           </p>
         </section>
+
+        <LibraryManagementSection />
       </div>
 
       {/* Create Event Dialog */}
