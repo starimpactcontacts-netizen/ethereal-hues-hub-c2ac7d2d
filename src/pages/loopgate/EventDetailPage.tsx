@@ -317,7 +317,7 @@ export default function EventDetailPage() {
           </div>
         </section>
 
-        <section className="rounded-lg bg-black ring-1 ring-white/[0.06] p-3 shadow-[0_18px_38px_hsl(var(--arena-bg)/0.28)]">
+        <section className="rounded-lg bg-black p-3 shadow-[0_18px_38px_hsl(var(--arena-bg)/0.28)]">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <h2 className="text-[24px] font-black uppercase leading-none text-arena-ink" style={displayFont}>Edit Showcase</h2>
@@ -425,7 +425,7 @@ export default function EventDetailPage() {
         )}
 
         {event.rules && event.rules.length > 0 && (
-          <section className="rounded-lg bg-black ring-1 ring-white/[0.06] p-3 shadow-[0_18px_38px_hsl(var(--arena-bg)/0.24)]">
+          <section className="rounded-lg bg-black p-3 shadow-[0_18px_38px_hsl(var(--arena-bg)/0.24)]">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-[24px] font-black uppercase leading-none text-arena-ink" style={displayFont}>Rules</h2>
               <Swords size={16} className="text-arena-red" />
@@ -610,7 +610,7 @@ function GlassyCountdown({ endDate }: { endDate: string }) {
     <span className="self-center pb-3 text-[26px] font-black text-white/35 select-none" style={displayFont}>:</span>
   );
   return (
-    <div className="inline-flex w-full max-w-md items-stretch rounded-2xl bg-black/55 backdrop-blur-xl ring-1 ring-white/10 shadow-[0_18px_60px_rgba(0,0,0,0.55)] px-2">
+    <div className="inline-flex w-full max-w-md items-stretch rounded-2xl px-2">
       <Cell v={pad(d)} l="Days" />
       <Colon />
       <Cell v={pad(h)} l="Hours" />
