@@ -1,5 +1,5 @@
 import { Link, useNavigate, Navigate } from 'react-router-dom';
-import { Swords, Users, Film } from 'lucide-react';
+import { Swords, Users, Film, Trophy, Clock, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import LandingHeader from '@/components/loopgate/LandingHeader';
 import IOSAppBanner from '@/components/loopgate/iOSAppBanner';
@@ -11,6 +11,7 @@ import { useGuestMode } from '@/hooks/useGuestMode';
 import { useAuth } from '@/hooks/useAuth';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 import loopgateHeroCinematic from '@/assets/hero-collage.jpeg';
+import lightYagamiPoster from '@/assets/light_yagami_poster.jpg';
 import { useState, useEffect } from 'react';
 
 export default function LandingPage() {
