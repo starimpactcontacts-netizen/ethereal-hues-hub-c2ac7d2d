@@ -149,7 +149,9 @@ export default function EventSharePoster({
             <span style={{ ...display, fontSize: 11, fontWeight: 900, letterSpacing: "0.32em", color: "#fff", background: "#e11d2a", padding: "4px 8px", borderRadius: 3, boxShadow: "0 0 14px rgba(225,29,42,0.55)" }}>
               ● LIVE
             </span>
-            <span style={{ ...display, fontSize: 12, fontWeight: 900, letterSpacing: "0.28em", color: "#fff" }}>LOOPGATE.IO</span>
+            <span style={{ ...display, fontSize: 17, fontWeight: 900, letterSpacing: "0.18em", color: "#fff" }}>
+              LOOPGATE.IO <span style={{ color: "#f5a623" }}>/</span>
+            </span>
           </div>
 
           {/* TITLE BLOCK */}
