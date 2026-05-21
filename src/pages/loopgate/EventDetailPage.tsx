@@ -240,42 +240,59 @@ export default function EventDetailPage() {
               {event.subtitle}
             </p>
           )}
-
-          {/* GLASSY COUNTDOWN — EWC ribbon */}
-          {(event as any).end_date && (
-            <div className="mt-5">
-              <GlassyCountdown endDate={(event as any).end_date} />
-            </div>
-          )}
         </div>
       </div>
 
-      {/* SLANTED PRIZE BANNER — Fortnite "Answer The Call" style */}
-      <div className="relative -mt-1 bg-black px-4 pt-4 pb-2">
-        <div className="relative flex items-stretch h-[78px]">
-          {/* CASH slab — white background, black text */}
+      {/* MASSIVE PRIZE BANNER — first thing after title, impossible to miss */}
+      <div className="relative -mt-2 bg-black px-3 pt-3 pb-1">
+        <p className="mb-2 text-center text-[9px] font-black uppercase tracking-[0.42em] text-white/40" style={displayFont}>
+          Prize Pool
+        </p>
+        <div
+          className="relative flex items-stretch h-[104px]"
+          style={{ filter: "drop-shadow(0 12px 32px rgba(0,0,0,0.6))" }}
+        >
+          {/* CASH slab — bright emerald gradient, black text */}
           <div
-            className="relative flex-1 flex items-center justify-center bg-white text-black overflow-hidden"
-            style={{ clipPath: "polygon(0 0, 100% 0, calc(100% - 14px) 100%, 0 100%)" }}
+            className="relative flex-1 flex items-center justify-center overflow-hidden"
+            style={{
+              clipPath: "polygon(0 0, 100% 0, calc(100% - 18px) 100%, 0 100%)",
+              background: "linear-gradient(180deg, #ffffff 0%, #f4fff8 100%)",
+              boxShadow: "inset 0 0 0 2px rgba(16,185,129,0.35), inset 0 -6px 0 rgba(16,185,129,0.18)",
+            }}
           >
-            <div className="flex items-baseline gap-0.5 px-3" style={displayFont}>
-              <span className="text-[26px] font-black leading-none text-arena-emerald">$</span>
-              <span className="text-[54px] font-black leading-none tabular-nums tracking-tight">150</span>
-              <span className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-black/60 self-center">Cash<br/>Real $</span>
+            <div className="flex items-baseline gap-1 px-3 text-black" style={displayFont}>
+              <span className="text-[40px] font-black leading-none" style={{ color: "#00E676", textShadow: "0 0 18px rgba(0,230,118,0.55)" }}>$</span>
+              <span className="text-[72px] font-black leading-none tabular-nums tracking-[-0.02em]">150</span>
+              <span className="ml-2 text-[11px] font-black uppercase tracking-[0.22em] text-black/70 self-center leading-[1.05]">Cash<br/>Real $</span>
             </div>
           </div>
-          {/* RINGS slab — amber, slanted */}
+          {/* RINGS slab — bright gold gradient */}
           <div
-            className="relative -ml-3 flex-1 flex items-center justify-center bg-arena-amber text-black overflow-hidden shadow-[0_0_28px_hsl(var(--arena-amber)/0.35)]"
-            style={{ clipPath: "polygon(14px 0, 100% 0, 100% 100%, 0 100%)" }}
+            className="relative -ml-4 flex-1 flex items-center justify-center overflow-hidden"
+            style={{
+              clipPath: "polygon(18px 0, 100% 0, 100% 100%, 0 100%)",
+              background: "linear-gradient(180deg, #FFE14A 0%, #FFC107 55%, #F59E0B 100%)",
+              boxShadow: "0 0 38px rgba(255,193,7,0.5), inset 0 0 0 2px rgba(255,255,255,0.35)",
+            }}
           >
-            <div className="flex items-center gap-2 pl-4 pr-3" style={displayFont}>
-              <RingsCoin size={26} className="text-black" />
-              <span className="text-[54px] font-black leading-none tabular-nums tracking-tight">1M</span>
-              <span className="ml-1 text-[10px] font-black uppercase tracking-[0.2em] text-black/70 self-center">Rings<br/>Top 50</span>
+            <div className="flex items-center gap-2 pl-5 pr-3 text-black" style={displayFont}>
+              <RingsCoin size={32} className="text-black" />
+              <span className="text-[72px] font-black leading-none tabular-nums tracking-[-0.02em]">1M</span>
+              <span className="ml-1 text-[11px] font-black uppercase tracking-[0.22em] text-black/80 self-center leading-[1.05]">Rings<br/>Top 50</span>
             </div>
           </div>
         </div>
+        <p className="mt-2 text-center text-[10px] font-black uppercase tracking-[0.28em] text-white/55" style={displayFont}>
+          $150 <span className="text-emerald-400">cash</span> · top 5 · 1M <span className="text-amber-400">rings</span> · top 50
+        </p>
+
+        {/* COUNTDOWN — under prize banner */}
+        {(event as any).end_date && (
+          <div className="mt-3">
+            <GlassyCountdown endDate={(event as any).end_date} />
+          </div>
+        )}
       </div>
 
       <main className="px-4 space-y-4 bg-black">
