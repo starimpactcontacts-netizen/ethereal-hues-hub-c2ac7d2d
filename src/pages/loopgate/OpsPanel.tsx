@@ -4020,6 +4020,8 @@ export default function OpsPanel() {
             CSV export for payout processing
           </p>
         </section>
+
+        <LibraryManagementSection />
       </div>
 
       {/* Create Event Dialog */}
