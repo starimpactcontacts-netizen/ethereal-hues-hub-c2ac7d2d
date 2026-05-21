@@ -140,7 +140,7 @@ export default function EventDetailPage() {
 
   const scrollToLadder = () => {
     ladderRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    setLadderLimit((current) => Math.max(current, 16));
+    setLadderLimit(50);
   };
 
   return (
