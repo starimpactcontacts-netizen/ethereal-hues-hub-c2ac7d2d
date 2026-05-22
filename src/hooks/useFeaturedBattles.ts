@@ -21,7 +21,14 @@ export function useFeaturedBattles(limit = 3) {
         .order('created_at', { ascending: false })
         .limit(limit);
       if (mounted) {
-        setFights((data as QuickFight[]) || []);
+        const rows = (data as QuickFight[]) || [];
+        // Hide implicit forfeits: decided/completed battles missing a submission on either side
+        const filtered = rows.filter((f: any) => {
+          const decided = ['decided', 'completed', 'judging'].includes(f.status);
+          if (!decided) return true;
+          return !!f.player_1_submission_url && !!f.player_2_submission_url;
+        });
+        setFights(filtered);
         setLoading(false);
       }
     }
