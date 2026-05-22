@@ -298,7 +298,14 @@ export function usePendingJudgeFights() {
         .eq('status', 'judging')
         .is('judge_id', null)
         .order('created_at', { ascending: true });
-      setFights((data as unknown as QuickFight[]) || []);
+      const rows = (data as unknown as QuickFight[]) || [];
+      // Hide implicit forfeits: completed/judging fights missing a submission on either side
+      const filtered = rows.filter((f: any) => {
+        const decided = ['completed', 'judging', 'submitted'].includes(f.status);
+        if (!decided) return true;
+        return !!f.player_1_submission_url && !!f.player_2_submission_url;
+      });
+      setFights(filtered);
       setLoading(false);
     };
     fetch();
