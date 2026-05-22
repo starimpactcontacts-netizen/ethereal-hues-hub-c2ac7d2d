@@ -52,6 +52,12 @@ export interface QuickFightMessage {
   created_at: string;
 }
 
+export const hasBothQuickFightSubmissions = (fight: Pick<QuickFight, 'player_1_submission_url' | 'player_2_submission_url'>) =>
+  !!fight.player_1_submission_url && !!fight.player_2_submission_url;
+
+export const isPublicDecidedQuickFight = (fight: Pick<QuickFight, 'status' | 'player_1_submission_url' | 'player_2_submission_url'>) =>
+  fight.status === 'completed' && hasBothQuickFightSubmissions(fight);
+
 // Instant matchmaking
 export async function findQuickFight(userId: string, username: string, avatarUrl: string | null): Promise<string | null> {
   const { data, error } = await supabase.rpc('quick_fight_match', {
@@ -331,12 +337,14 @@ export function useRecentQuickFights(limit = 20) {
       const { data } = await supabase
         .from('quick_fights')
         .select('*')
-        .in('status', ['waiting', 'active', 'submitted', 'judging', 'completed'])
+        .eq('status', 'completed')
+        .not('player_1_submission_url', 'is', null)
+        .not('player_2_submission_url', 'is', null)
         .is('hidden_at' as any, null)
         .or('is_private.is.null,is_private.eq.false')
         .order('created_at', { ascending: false })
         .limit(limit);
-      setFights((data as unknown as QuickFight[]) || []);
+      setFights(((data as unknown as QuickFight[]) || []).filter(isPublicDecidedQuickFight));
       setLoading(false);
     };
     fetch();
