@@ -47,9 +47,11 @@ export function useJudgeVotingQueue() {
         .limit(50),
       supabase
         .from('quick_fights')
-        .select('id, player_1_username, player_2_username, player_1_avatar_url, player_2_avatar_url, created_at, status, judge_id')
+        .select('id, player_1_username, player_2_username, player_1_avatar_url, player_2_avatar_url, created_at, status, judge_id, player_1_submission_url, player_2_submission_url')
         .eq('status', 'judging')
         .is('judge_id', null)
+        .not('player_1_submission_url', 'is', null)
+        .not('player_2_submission_url', 'is', null)
         .order('created_at', { ascending: true })
         .limit(50),
       supabase

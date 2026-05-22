@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { hasBothQuickFightSubmissions } from '@/hooks/useQuickFight';
 
 export interface LiveActivityItem {
   id: string;
@@ -130,8 +131,10 @@ export function useLiveActivity(limit = 8) {
         // Quick fights
         supabase
           .from('quick_fights')
-          .select('id, player_1_id, player_1_username, player_1_avatar_url, player_2_id, player_2_username, player_2_avatar_url, status, winner_id, winner_score, updated_at')
-          .in('status', ['matched', 'active', 'judging', 'completed'])
+          .select('id, player_1_id, player_1_username, player_1_avatar_url, player_2_id, player_2_username, player_2_avatar_url, status, winner_id, winner_score, player_1_submission_url, player_2_submission_url, updated_at')
+          .eq('status', 'completed')
+          .not('player_1_submission_url', 'is', null)
+          .not('player_2_submission_url', 'is', null)
           .is('hidden_at' as any, null)
           .order('updated_at', { ascending: false })
           .limit(limit),
@@ -360,7 +363,7 @@ export function useLiveActivity(limit = 8) {
       });
 
       // Quick fights
-      quickFightData.forEach(qf => {
+      quickFightData.filter(hasBothQuickFightSubmissions).forEach(qf => {
         const action = qf.status === 'completed'
           ? (qf.winner_id === qf.player_1_id ? pick(quickFightWonVerbs) : pick(quickFightWonVerbs))
           : qf.status === 'judging'

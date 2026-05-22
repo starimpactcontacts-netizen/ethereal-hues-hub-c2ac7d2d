@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import type { QuickFight } from './useQuickFight';
+import { isPublicDecidedQuickFight, type QuickFight } from './useQuickFight';
 
 /**
  * Featured Edit Battles = quick_fights flagged is_featured by admin.
@@ -17,17 +17,14 @@ export function useFeaturedBattles(limit = 3) {
       const { data } = await (supabase.from('quick_fights') as any)
         .select('*')
         .eq('is_featured', true)
-        .not('status', 'in', '(forfeited,cancelled)')
+        .eq('status', 'completed')
+        .not('player_1_submission_url', 'is', null)
+        .not('player_2_submission_url', 'is', null)
         .order('created_at', { ascending: false })
         .limit(limit);
       if (mounted) {
         const rows = (data as QuickFight[]) || [];
-        // Hide implicit forfeits: decided/completed battles missing a submission on either side
-        const filtered = rows.filter((f: any) => {
-          const decided = ['decided', 'completed', 'judging'].includes(f.status);
-          if (!decided) return true;
-          return !!f.player_1_submission_url && !!f.player_2_submission_url;
-        });
+        const filtered = rows.filter(isPublicDecidedQuickFight);
         setFights(filtered);
         setLoading(false);
       }
