@@ -17,6 +17,7 @@ export function useFeaturedBattles(limit = 3) {
       const { data } = await (supabase.from('quick_fights') as any)
         .select('*')
         .eq('is_featured', true)
+        .not('status', 'in', '(forfeited,cancelled)')
         .order('created_at', { ascending: false })
         .limit(limit);
       if (mounted) {
