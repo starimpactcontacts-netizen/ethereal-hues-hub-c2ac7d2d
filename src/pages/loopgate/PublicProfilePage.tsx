@@ -18,6 +18,7 @@ import { getRankFromScore, getEffectiveRank, rankConfigs } from "@/data/gqtConfi
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SiTiktok, SiInstagram, SiYoutube, SiX } from "@icons-pack/react-simple-icons";
 import ConnectButton from "@/components/loopgate/ConnectButton";
+import ReportUserButton from "@/components/loopgate/ReportUserButton";
 import { Users } from "lucide-react";
 import StatsRadarChart from "@/components/loopgate/StatsRadarChart";
 // IndexEarnBadge removed — Index is NOT money
@@ -411,6 +412,15 @@ export default function PublicProfilePage() {
               {(hasEquippedOG || profile.is_founding_member) && <FoundingBadge size="sm" />}
             </div>
             <p className="text-[11px] text-muted-foreground/60 mb-3">@{profile.username}</p>
+            <div className="-mt-2 mb-3">
+              <ReportUserButton
+                userId={profile.id}
+                username={profile.username}
+                context="profile"
+                contextId={profile.id}
+                variant="text"
+              />
+            </div>
 
             {/* TikTok stats row */}
             <div className="flex items-center justify-center mb-3 w-full max-w-[280px]">
