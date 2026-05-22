@@ -183,7 +183,6 @@ function BattleVideoSlot({ side }: { side: Side }) {
           playsInline
           loop
           preload="none"
-          crossOrigin="anonymous"
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           onEnded={() => setIsPlaying(false)}
