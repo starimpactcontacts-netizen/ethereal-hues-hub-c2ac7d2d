@@ -11,7 +11,6 @@ import { useGuestMode } from '@/hooks/useGuestMode';
 import { useAuth } from '@/hooks/useAuth';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 import loopgateHeroCinematic from '@/assets/hero-collage.jpeg';
-import lightYagamiPoster from '@/assets/light_yagami_poster.jpg';
 import { useState, useEffect } from 'react';
 
 export default function LandingPage() {
@@ -40,48 +39,6 @@ export default function LandingPage() {
       >
         <SEO {...pageSEO.home} />
         <LandingHeader bannerVisible={bannerVisible} />
-
-        {/* ═══════════════ FEATURED COMP BANNER — SLIM, TAPPABLE ═══════════════ */}
-        <section className="relative px-3 sm:px-6 pt-3 sm:pt-4">
-          <div className="max-w-5xl mx-auto">
-            <Link
-              to="/event/light-yagami-edit-competition"
-              className="group relative flex items-center gap-3 h-16 sm:h-20 rounded-xl overflow-hidden ring-1 ring-white/10 bg-black active:scale-[0.99] transition-transform"
-              style={{ boxShadow: '0 8px 30px -10px rgba(232,72,72,0.35)' }}
-            >
-              <img
-                src={lightYagamiPoster}
-                alt=""
-                className="absolute inset-0 w-full h-full object-cover"
-                style={{ objectPosition: '60% 25%' }}
-              />
-              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.92)_0%,rgba(0,0,0,0.65)_55%,rgba(0,0,0,0.35)_100%)]" />
-              <div className="relative z-10 flex items-center gap-2.5 pl-3 sm:pl-4 flex-1 min-w-0">
-                <span className="inline-flex items-center gap-1 rounded bg-red-600 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-[0.2em] text-white shrink-0">
-                  <span className="h-1 w-1 rounded-full bg-white animate-pulse" /> Live
-                </span>
-                <div className="min-w-0">
-                  <p className="text-white font-black uppercase leading-none text-[15px] sm:text-[18px] tracking-[0.02em] truncate" style={{ fontFamily: 'Teko, Bebas Neue, sans-serif' }}>
-                    Light Yagami <span className="text-amber-400">Edit Comp</span>
-                  </p>
-                  <p className="text-white/60 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.18em] mt-0.5 truncate">
-                    Fix My Soul · TikTok Only
-                  </p>
-                </div>
-              </div>
-              <div className="relative z-10 flex items-center gap-2 pr-3 sm:pr-4 shrink-0">
-                <span className="hidden sm:inline-flex items-center rounded-md px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-black"
-                      style={{ background: 'linear-gradient(180deg,#E8C84A,#C49A2C)', fontFamily: 'Teko, Bebas Neue, sans-serif' }}>
-                  $150 USD
-                </span>
-                <span className="inline-flex items-center justify-center rounded-md px-3 py-1.5 text-[12px] sm:text-[13px] font-black uppercase tracking-[0.16em] text-black"
-                      style={{ background: 'linear-gradient(180deg,#E8C84A,#C49A2C)', fontFamily: 'Teko, Bebas Neue, sans-serif' }}>
-                  Enter →
-                </span>
-              </div>
-            </Link>
-          </div>
-        </section>
 
         {/* ═══════════════ HERO — CINEMATIC, DIRECT ENTRY ═══════════════ */}
         <section className="relative min-h-[70vh] sm:min-h-[75vh] flex flex-col overflow-hidden">
