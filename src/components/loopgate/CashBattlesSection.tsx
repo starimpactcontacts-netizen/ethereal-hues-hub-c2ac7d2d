@@ -6,7 +6,7 @@ import CashBattleVoteBar from "@/components/loopgate/CashBattleVoteBar";
 import BattleVoteBarCompact from "@/components/loopgate/BattleVoteBarCompact";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCashBattles, useMyCashBattles, useMyCashBattleApplication, CashBattleApplication } from "@/hooks/useCashBattles";
-import { useOpenQuickFightQueue, leaveQueue, isPublicDecidedQuickFight, type OpenQueueEntry, type QuickFight } from "@/hooks/useQuickFight";
+import { useOpenQuickFightQueue, usePublicOpenLobbies, leaveQueue, isPublicDecidedQuickFight, isPublicOpenLobby, type OpenQueueEntry, type QuickFight } from "@/hooks/useQuickFight";
 import { toast } from "sonner";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useAccountPrompt } from "@/hooks/useAccountPrompt";
@@ -617,6 +617,7 @@ export default function CashBattlesSection({
   const [pendingApps, setPendingApps] = useState<CashBattleApplication[]>([]);
   const removedPendingAppIds = useRef(new Set<string>());
   const { entries: openQueue, loading: openQueueLoading } = useOpenQuickFightQueue();
+  const { lobbies: openLobbies, loading: openLobbiesLoading } = usePublicOpenLobbies();
   const endedBattleStatuses = new Set(['completed', 'forfeited', 'ended']);
 
   // Fetch pending applications with realtime subscription for instant updates
@@ -751,7 +752,7 @@ export default function CashBattlesSection({
       )}
 
       {/* Horizontal scroll — open matchups first, then existing battles */}
-      {(loading || idxBattlesLoading || quickFightsLoading || openQueueLoading) ? <ArenaRailSkeleton count={3} /> : <ArenaRail key={`queue-first-${openQueue.map((entry) => entry.id).join('-')}`}>
+      {(loading || idxBattlesLoading || quickFightsLoading || openQueueLoading || openLobbiesLoading) ? <ArenaRailSkeleton count={3} /> : <ArenaRail key={`queue-first-${openQueue.map((entry) => entry.id).join('-')}`}>
         {/* Your own queue card — pinned to the FRONT of the rail while searching */}
         {user?.id && openQueue
           .filter((entry) => entry.user_id === user.id)
@@ -792,9 +793,9 @@ export default function CashBattlesSection({
 
         {/* Edit Battle cards — live ones first, ended ones DEPRIORITIZED to the right (still visible). */}
         {/* Quick-Fight battles — from the "Edit Battle · Match Instantly" button */}
-        {[...myQuickFights, ...quickFights]
+        {[...myQuickFights, ...quickFights, ...openLobbies]
           .filter((fight, index, all) =>
-            isPublicDecidedQuickFight(fight) &&
+            (isPublicDecidedQuickFight(fight) || isPublicOpenLobby(fight)) &&
             all.findIndex((item) => item.id === fight.id) === index
           )
           .sort((a, b) => {
