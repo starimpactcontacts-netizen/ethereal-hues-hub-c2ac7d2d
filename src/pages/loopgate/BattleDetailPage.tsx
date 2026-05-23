@@ -3,8 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { MAX_EDIT_UPLOAD_BYTES, MAX_EDIT_UPLOAD_LABEL, uploadToBunny } from "@/lib/bunnyUpload";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Swords, Clock, Eye, Trophy, ArrowLeft, 
-  CheckCircle, XCircle, Send, Share2, Users, Gavel, Zap, Play, Music, Flag, Upload, EyeOff
+  Swords, Clock, Eye, Trophy, ArrowLeft,
+  CheckCircle, XCircle, Send, Share2, Users, Gavel, Zap, Play, Music, Flag, Upload, EyeOff, RotateCcw
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -216,6 +216,20 @@ export default function BattleDetailPage() {
         toast.success("Submission recorded!");
       }
     } else toast.error("Failed to submit");
+  };
+
+  const handleClearBattleSubmission = async () => {
+    const confirmed = window.confirm('Remove your edit?\n\nYou can re-upload a new one while the battle is still active.');
+    if (!confirmed) return;
+    const update = isChallenger
+      ? { challenger_submission_url: null, challenger_submitted_at: null }
+      : { opponent_submission_url: null, opponent_submitted_at: null };
+    const { error } = await supabase.from('battles').update(update as any).eq('id', battle.id);
+    if (error) toast.error("Couldn't remove edit. Try again.");
+    else {
+      toast.info('Edit removed — upload a new one before time runs out.');
+      refetch();
+    }
   };
 
   const handleVote = async (votedForId: string) => {
@@ -875,6 +889,27 @@ export default function BattleDetailPage() {
                   <><Upload className="w-4 h-4" /> <span>UPLOAD EDIT</span></>
                 )}
               </label>
+            </div>
+          )}
+
+          {/* Change Edit — visible when already submitted but battle still active */}
+          {isLive && isParticipant && (
+            (isChallenger && !!battle.challenger_submitted_at) ||
+            (isOpponent && !!battle.opponent_submitted_at)
+          ) && (
+            <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span className="text-[11px] font-bold text-emerald-300">Edit submitted</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleClearBattleSubmission}
+                className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.18em] text-white/40 hover:text-amber-300 transition-colors"
+              >
+                <RotateCcw className="w-2.5 h-2.5" />
+                Change Edit
+              </button>
             </div>
           )}
 

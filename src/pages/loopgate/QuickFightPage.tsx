@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MAX_EDIT_UPLOAD_BYTES, MAX_EDIT_UPLOAD_LABEL, uploadToBunny } from '@/lib/bunnyUpload';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Video, Music, Upload, EyeOff, Loader2 } from 'lucide-react';
+import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Video, Music, Upload, EyeOff, Loader2, RotateCcw } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -194,6 +194,17 @@ export default function QuickFightPage() {
       setSubmitting(false);
       setUploadPct(0);
     }
+  };
+
+  const handleClearSubmission = async (player: 'player_1' | 'player_2') => {
+    const confirmed = window.confirm('Remove your edit?\n\nYou can re-upload a new one while the battle is still active.');
+    if (!confirmed) return;
+    const update = player === 'player_1'
+      ? { player_1_submission_url: null, player_1_submitted_at: null, player_1_thumbnail_url: null }
+      : { player_2_submission_url: null, player_2_submitted_at: null, player_2_thumbnail_url: null };
+    const { error } = await supabase.from('quick_fights').update(update as any).eq('id', fight.id);
+    if (error) toast.error("Couldn't remove edit. Try again.");
+    else toast.info('Edit removed — upload a new one before time runs out.');
   };
 
   const handleCopyLobby = async () => {
@@ -493,14 +504,27 @@ export default function QuickFightPage() {
             <div className="md:flex md:items-stretch md:gap-0 -mx-4 md:-mx-0">
               <div className="md:flex-1 md:min-w-0">
                 {fight.player_1_submission_url ? (
-                  <BattleSubmissionCard
-                    url={fight.player_1_submission_url}
-                    username={fight.player_1_username}
-                    color="red"
-                    aspectClass="aspect-square"
-                    avatarUrl={fight.player_1_avatar_url}
-                    customThumbnailUrl={(fight as any).player_1_thumbnail_url}
-                  />
+                  <div>
+                    <BattleSubmissionCard
+                      url={fight.player_1_submission_url}
+                      username={fight.player_1_username}
+                      color="red"
+                      aspectClass="aspect-square"
+                      avatarUrl={fight.player_1_avatar_url}
+                      customThumbnailUrl={(fight as any).player_1_thumbnail_url}
+                    />
+                    {isP1 && fight.status === 'active' && (
+                      <button
+                        type="button"
+                        onClick={() => handleClearSubmission('player_1')}
+                        className="w-full flex items-center justify-center gap-1.5 py-2 bg-black/70 border-x border-b border-red-500/25 text-[9px] font-bold uppercase tracking-[0.2em] text-white/40 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                        style={{ fontFamily: 'Teko, sans-serif' }}
+                      >
+                        <RotateCcw className="w-2.5 h-2.5" />
+                        Change Edit
+                      </button>
+                    )}
+                  </div>
                 ) : (
                   isP1 && canSubmit ? (
                     <UploadEditSlot
@@ -537,14 +561,27 @@ export default function QuickFightPage() {
 
               <div className="md:flex-1 md:min-w-0">
                 {fight.player_2_submission_url ? (
-                  <BattleSubmissionCard
-                    url={fight.player_2_submission_url}
-                    username={fight.player_2_username || '???'}
-                    color="blue"
-                    aspectClass="aspect-square"
-                    avatarUrl={fight.player_2_avatar_url}
-                    customThumbnailUrl={(fight as any).player_2_thumbnail_url}
-                  />
+                  <div>
+                    <BattleSubmissionCard
+                      url={fight.player_2_submission_url}
+                      username={fight.player_2_username || '???'}
+                      color="blue"
+                      aspectClass="aspect-square"
+                      avatarUrl={fight.player_2_avatar_url}
+                      customThumbnailUrl={(fight as any).player_2_thumbnail_url}
+                    />
+                    {isP2 && fight.status === 'active' && (
+                      <button
+                        type="button"
+                        onClick={() => handleClearSubmission('player_2')}
+                        className="w-full flex items-center justify-center gap-1.5 py-2 bg-black/70 border-x border-b border-blue-500/25 text-[9px] font-bold uppercase tracking-[0.2em] text-white/40 hover:text-blue-300 hover:bg-blue-500/10 transition-colors"
+                        style={{ fontFamily: 'Teko, sans-serif' }}
+                      >
+                        <RotateCcw className="w-2.5 h-2.5" />
+                        Change Edit
+                      </button>
+                    )}
+                  </div>
                 ) : (
                   isP2 && canSubmit ? (
                     <UploadEditSlot
