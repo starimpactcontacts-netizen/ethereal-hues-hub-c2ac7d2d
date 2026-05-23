@@ -387,6 +387,13 @@ export default function PublicProfilePage() {
               <button onClick={handleShare} className="p-1.5 text-muted-foreground hover:text-foreground transition-colors">
                 <Share2 size={16} />
               </button>
+              <ReportUserButton
+                userId={profile.id}
+                username={profile.username}
+                context="profile"
+                contextId={profile.id}
+                variant="icon"
+              />
             </div>
           </div>
 
@@ -412,15 +419,6 @@ export default function PublicProfilePage() {
               {(hasEquippedOG || profile.is_founding_member) && <FoundingBadge size="sm" />}
             </div>
             <p className="text-[11px] text-muted-foreground/60 mb-3">@{profile.username}</p>
-            <div className="-mt-2 mb-3">
-              <ReportUserButton
-                userId={profile.id}
-                username={profile.username}
-                context="profile"
-                contextId={profile.id}
-                variant="text"
-              />
-            </div>
 
             {/* TikTok stats row */}
             <div className="flex items-center justify-center mb-3 w-full max-w-[280px]">
