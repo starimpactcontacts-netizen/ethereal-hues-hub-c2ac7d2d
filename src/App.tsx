@@ -94,7 +94,6 @@ const FeaturedDropDetailPage = lazy(() => import("./pages/loopgate/FeaturedDropD
 const EditoriumPage = lazy(() => import("./pages/loopgate/EditoriumPage"));
 const EditoriumArticlePage = lazy(() => import("./pages/loopgate/EditoriumArticlePage"));
 
-const StudioPage = lazy(() => import("./pages/loopgate/StudioPage"));
 const SoloDetailPage = lazy(() => import("./pages/loopgate/SoloDetailPage"));
 const PlaylistsPage = lazy(() => import("./pages/loopgate/PlaylistsPage"));
 const CommissionsPage = lazy(() => import("./pages/loopgate/CommissionsPage"));
@@ -362,7 +361,7 @@ export default function App() {
               <Route path="/mission/:id" element={<MissionLobbyPage />} />
               <Route path="/loopy" element={<LoopyPage />} />
               <Route path="/loopy/rate" element={<LoopyRatePage />} />
-              <Route path="/studio" element={<StudioPage />} />
+
             </Route>
 
             {/* Protected routes - auth required */}
