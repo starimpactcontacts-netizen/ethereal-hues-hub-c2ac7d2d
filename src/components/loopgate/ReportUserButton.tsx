@@ -90,15 +90,16 @@ export default function ReportUserButton({ userId, username, context, contextId,
 
       {open && (
         <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 p-4"
           onClick={close}
         >
           <div
-            className="relative w-full max-w-sm rounded-2xl bg-[#0c0c0c] border border-white/10 shadow-2xl flex flex-col max-h-[90vh]"
+            className="relative w-full max-w-sm rounded-2xl bg-[#0c0c0c] border border-white/10 shadow-2xl flex flex-col"
+            style={{ maxHeight: '80vh' }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
-            <div className="flex items-center justify-between px-5 pt-5 pb-3 shrink-0">
+            {/* Header — never scrolls */}
+            <div className="flex items-center justify-between px-5 pt-5 pb-2 shrink-0">
               <div className="flex items-center gap-2">
                 <Flag size={15} className="text-red-400" />
                 <h2 className="text-[16px] font-black uppercase tracking-wide text-white leading-none">
@@ -118,39 +119,35 @@ export default function ReportUserButton({ userId, username, context, contextId,
               Reports go directly to moderation. False reports will be sanctioned.
             </p>
 
-            {/* Scrollable body */}
-            <div className="overflow-y-auto flex-1 px-5 pb-5 space-y-3">
-              {/* Reason selector */}
-              <div className="space-y-1.5">
-                {REASONS.map((r) => (
-                  <button
-                    key={r.value}
-                    onClick={() => setReason(r.value)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border text-left transition-all ${
-                      reason === r.value
-                        ? "bg-red-500/15 border-red-500/40"
-                        : "bg-white/[0.03] border-white/8 hover:bg-white/[0.06] hover:border-white/15"
-                    }`}
-                  >
-                    <div className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
-                      reason === r.value ? "border-red-400" : "border-white/25"
-                    }`}>
-                      {reason === r.value && (
-                        <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <p className={`text-[13px] font-bold leading-none ${reason === r.value ? "text-white" : "text-white/70"}`}>
-                        {r.label}
-                      </p>
-                      <p className="text-[10px] text-white/35 mt-0.5 leading-tight">{r.hint}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
+            {/* Scrollable reasons + textarea — min-h-0 is required for flex overflow to work */}
+            <div className="overflow-y-auto min-h-0 flex-1 px-5 space-y-1.5">
+              {REASONS.map((r) => (
+                <button
+                  key={r.value}
+                  onClick={() => setReason(r.value)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border text-left transition-all ${
+                    reason === r.value
+                      ? "bg-red-500/15 border-red-500/40"
+                      : "bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.06] hover:border-white/20"
+                  }`}
+                >
+                  <div className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+                    reason === r.value ? "border-red-400" : "border-white/25"
+                  }`}>
+                    {reason === r.value && (
+                      <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className={`text-[13px] font-bold leading-none ${reason === r.value ? "text-white" : "text-white/70"}`}>
+                      {r.label}
+                    </p>
+                    <p className="text-[10px] text-white/35 mt-0.5 leading-tight">{r.hint}</p>
+                  </div>
+                </button>
+              ))}
 
-              {/* Details textarea */}
-              <div>
+              <div className="pt-1 pb-1">
                 <textarea
                   value={details}
                   onChange={(e) => setDetails(e.target.value)}
@@ -159,25 +156,25 @@ export default function ReportUserButton({ userId, username, context, contextId,
                   placeholder="Add context (optional) — what happened, links, screenshots…"
                   className="w-full bg-black/50 border border-white/10 rounded-xl px-3 py-2.5 text-[13px] text-white placeholder:text-white/25 resize-none focus:outline-none focus:border-white/25 transition-colors"
                 />
-                <p className="text-[10px] text-white/25 text-right mt-1">{details.length}/2000</p>
+                <p className="text-[10px] text-white/25 text-right mt-0.5">{details.length}/2000</p>
               </div>
+            </div>
 
-              {/* Actions */}
-              <div className="flex gap-2 pt-1">
-                <button
-                  onClick={close}
-                  className="flex-1 h-11 rounded-xl border border-white/10 text-[12px] font-bold uppercase tracking-wide text-white/50 hover:text-white hover:border-white/20 transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={submit}
-                  disabled={submitting}
-                  className="flex-1 h-11 rounded-xl bg-red-500 text-white text-[12px] font-black uppercase tracking-wide hover:bg-red-400 active:scale-[0.98] transition disabled:opacity-50"
-                >
-                  {submitting ? "Sending…" : "Submit"}
-                </button>
-              </div>
+            {/* Footer — always visible, never scrolls */}
+            <div className="flex gap-2 px-5 pt-3 pb-5 shrink-0">
+              <button
+                onClick={close}
+                className="flex-1 h-11 rounded-xl border border-white/10 text-[12px] font-bold uppercase tracking-wide text-white/50 hover:text-white hover:border-white/20 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submit}
+                disabled={submitting}
+                className="flex-1 h-11 rounded-xl bg-red-500 text-white text-[12px] font-black uppercase tracking-wide hover:bg-red-400 active:scale-[0.98] transition disabled:opacity-50"
+              >
+                {submitting ? "Sending…" : "Submit"}
+              </button>
             </div>
           </div>
         </div>
