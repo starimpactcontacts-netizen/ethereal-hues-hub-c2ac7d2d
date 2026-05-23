@@ -578,6 +578,13 @@ export default function EventDetailPage() {
         cashPrize="$150"
         ringsPrize="1M"
       />
+
+      <MyEventSubmissionsSheet
+        open={showMySubs}
+        onClose={() => setShowMySubs(false)}
+        eventId={event.id}
+        eventTitle={event.title}
+      />
     </div>
   );
 }
