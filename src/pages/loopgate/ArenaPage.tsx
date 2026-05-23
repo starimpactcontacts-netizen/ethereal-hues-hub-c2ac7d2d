@@ -35,7 +35,6 @@ import { useSoloMode } from "@/hooks/useSoloMode";
 import { useMyQuickFights } from "@/hooks/useQuickFight";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
-import EmailNotificationSettings from "@/components/loopgate/EmailNotificationSettings";
 import LiveWinnersTicker from "@/components/loopgate/LiveWinnersTicker";
 import ArenaCompetitionsSection from "@/components/loopgate/ArenaCompetitionsSection";
 import ArenaCollabsSection from "@/components/loopgate/ArenaCollabsSection";
@@ -554,8 +553,8 @@ export default function ArenaPage() {
   const { competitions: myLiveCompetitions } = useMyCompetitionReminders();
   const { battles: myCashBattles, acceptBattle: acceptCashBattle } = useMyCashBattles();
   const [arenaView, setArenaView] = useState<'arena' | 'my'>(() => (searchParams.get('tab') === 'my' || searchParams.get('view') === 'my') ? 'my' : 'arena');
-  const [emailInput, setEmailInput] = useState("");
-  const [savingEmail, setSavingEmail] = useState(false);
+  type HistoryItem = { kind: 'battle' | 'quick'; id: string; opponent: string; result: 'win' | 'loss'; date: string; href: string };
+  const [recentHistory, setRecentHistory] = useState<HistoryItem[]>([]);
 
   const qfActiveFight = useMemo(() => myQuickFights.find(f => f.status === 'active' || f.status === 'judging'), [myQuickFights]);
   const isQfSearching = qfSearching || qfInQueue;
@@ -632,6 +631,41 @@ export default function ArenaPage() {
       ]);
       const totalEvents = (epRes.count || 0) + (stRes.count || 0) + (rpRes.count || 0) + allMatches.length;
       setUserStats({ wins, losses, streak, events: totalEvents });
+
+      const [battlesHistRes, quickHistRes] = await Promise.all([
+        supabase.from('battles')
+          .select('id, challenger_id, opponent_id, challenger_username, opponent_username, winner_id, ends_at, created_at')
+          .or(`challenger_id.eq.${user.id},opponent_id.eq.${user.id}`)
+          .eq('status', 'completed')
+          .order('created_at', { ascending: false })
+          .limit(15),
+        supabase.from('quick_fights')
+          .select('id, player_1_id, player_2_id, player_1_username, player_2_username, winner_id, ends_at, created_at')
+          .or(`player_1_id.eq.${user.id},player_2_id.eq.${user.id}`)
+          .eq('status', 'completed')
+          .order('created_at', { ascending: false })
+          .limit(15),
+      ]);
+      const histBattles: HistoryItem[] = (battlesHistRes.data || []).map((b: any) => ({
+        kind: 'battle' as const,
+        id: b.id,
+        opponent: b.challenger_id === user.id ? (b.opponent_username || '???') : b.challenger_username,
+        result: b.winner_id === user.id ? 'win' as const : 'loss' as const,
+        date: b.ends_at || b.created_at,
+        href: `/battle/${b.id}`,
+      }));
+      const histFights: HistoryItem[] = (quickHistRes.data || []).map((f: any) => ({
+        kind: 'quick' as const,
+        id: f.id,
+        opponent: f.player_1_id === user.id ? (f.player_2_username || '???') : f.player_1_username,
+        result: f.winner_id === user.id ? 'win' as const : 'loss' as const,
+        date: f.ends_at || f.created_at,
+        href: `/fight/${f.id}`,
+      }));
+      const combined = [...histBattles, ...histFights]
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 10);
+      setRecentHistory(combined);
     };
     fetchStats();
   }, [user]);
@@ -676,15 +710,6 @@ export default function ArenaPage() {
   const myCompletedQuickFights = useMemo(() => myQuickFights.filter(f => 
     f.status === 'completed'
   ), [myQuickFights]);
-
-  const handleSaveEmail = async () => {
-    if (!emailInput.trim() || !user) return;
-    setSavingEmail(true);
-    await supabase.auth.updateUser({ email: emailInput.trim() });
-    toast.success("Email saved! You'll get notified about battles & drops.");
-    setSavingEmail(false);
-    setEmailInput("");
-  };
 
 
 
@@ -838,74 +863,67 @@ export default function ArenaPage() {
 
           {arenaView === 'my' ? (
             /* ═══════════════════════════════════════════════════
-               MY ARENA — Personal dashboard
+               MY ARENA — War Room
             ═══════════════════════════════════════════════════ */
-            <div className="space-y-4 pb-4">
-              {/* Profile Card — iPhone 17 glass + Roblox vibrancy */}
+            <div className="space-y-5 pb-6">
+              {/* ── WAR ROOM STATS ── */}
               {profile && (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
-                  <Link to="/profile" className="block group">
-                    <div
-                      className="relative overflow-hidden rounded-3xl p-[1px] transition-all active:scale-[0.99]"
-                      style={{
-                        background: 'linear-gradient(135deg, rgba(255,200,80,0.55) 0%, rgba(255,255,255,0.06) 35%, rgba(124,58,237,0.35) 70%, rgba(239,68,68,0.45) 100%)',
-                        boxShadow: '0 18px 40px -18px rgba(255,180,60,0.35), 0 8px 24px -12px rgba(0,0,0,0.6)',
-                      }}
-                    >
-                      <div
-                        className="relative rounded-[22px] p-4 flex items-center gap-4 overflow-hidden"
-                        style={{
-                          background: 'linear-gradient(160deg, hsl(0 0% 11%) 0%, hsl(0 0% 7%) 100%)',
-                        }}
-                      >
-                        <div className="absolute -top-12 -right-10 w-40 h-40 rounded-full opacity-40 blur-3xl" style={{ background: 'radial-gradient(circle, rgba(255,180,60,0.45), transparent 70%)' }} />
-                        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+                  <div
+                    className="relative overflow-hidden rounded-2xl border border-white/[0.07]"
+                    style={{ background: 'linear-gradient(160deg, hsl(0 0% 10%) 0%, hsl(0 0% 6%) 100%)' }}
+                  >
+                    {/* Top glow line */}
+                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-red-500/40 to-transparent" />
+                    <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-40 h-32 opacity-20 pointer-events-none blur-3xl rounded-full" style={{ background: 'radial-gradient(circle, rgba(239,68,68,0.9), transparent 70%)' }} />
 
-                        <div className="relative shrink-0">
-                          <div className="absolute -inset-1 rounded-full opacity-70 blur-md" style={{ background: 'conic-gradient(from 0deg, #f59e0b, #ef4444, #7c3aed, #3b82f6, #f59e0b)' }} />
-                          <Avatar className="relative w-14 h-14 ring-2 ring-black">
-                            <AvatarImage src={profile.avatar_url || ''} />
-                            <AvatarFallback className="bg-gold/10 text-gold text-lg font-bold">
-                              {profile.username?.charAt(0).toUpperCase() || '?'}
-                            </AvatarFallback>
-                          </Avatar>
-                        </div>
-
-                        <div className="relative flex-1 min-w-0">
-                          <p className="text-[15px] font-black text-foreground truncate tracking-tight">
-                            {profile.display_name || profile.username}
-                          </p>
-                          <p className="text-[11px] text-muted-foreground">@{profile.username}</p>
-                          <div className="flex items-center gap-1.5 mt-2">
-                            {userStats && (
-                              <>
-                                <span className="px-2 py-0.5 rounded-full text-[10px] font-black tabular-nums bg-emerald-500/15 text-emerald-300 border border-emerald-500/25">{userStats.wins}W</span>
-                                <span className="px-2 py-0.5 rounded-full text-[10px] font-black tabular-nums bg-red-500/15 text-red-300 border border-red-500/25">{userStats.losses}L</span>
-                                {userStats.streak > 0 && (
-                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black tabular-nums bg-amber-500/15 text-amber-300 border border-amber-500/25 flex items-center gap-0.5">
-                                    <Flame className="w-2.5 h-2.5" />{userStats.streak}
-                                  </span>
-                                )}
-                                <span className="text-[10px] text-muted-foreground/80 ml-0.5">{userStats.events} events</span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="relative shrink-0 flex flex-col items-end gap-1">
-                          <span
-                            className="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.15em] text-amber-200 border border-amber-400/30"
-                            style={{ background: 'linear-gradient(135deg, rgba(245,158,11,0.18), rgba(239,68,68,0.12))' }}
-                          >
-                            {(profile as any).league || 'Open'}
-                          </span>
-                          <span className="text-[11px] text-foreground/80 font-bold tabular-nums">
-                            Lv.{(profile as any).level || 1}
-                          </span>
-                        </div>
+                    {/* Fighter identity */}
+                    <div className="relative flex items-center gap-3 px-4 pt-4 pb-3 border-b border-white/[0.05]">
+                      <Avatar className="w-10 h-10 ring-2 ring-black shrink-0">
+                        <AvatarImage src={profile.avatar_url || ''} />
+                        <AvatarFallback className="bg-white/5 text-white font-bold">{profile.username?.charAt(0).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[14px] font-black text-white truncate leading-tight">{profile.display_name || profile.username}</p>
+                        <p className="text-[10px] text-white/35">@{profile.username}</p>
                       </div>
+                      <Link
+                        to="/profile"
+                        className="shrink-0 px-2.5 py-1 rounded-lg border border-white/[0.08] text-[9px] font-bold uppercase tracking-wider text-white/40 hover:text-white/70 hover:border-white/15 transition-colors"
+                      >
+                        Profile →
+                      </Link>
                     </div>
-                  </Link>
+
+                    {/* Stats grid */}
+                    <div className="relative grid grid-cols-4 divide-x divide-white/[0.05]">
+                      {[
+                        { label: 'Wins',    value: userStats?.wins   ?? '—', color: 'text-emerald-400', bg: 'radial-gradient(ellipse at 50% 120%, rgba(16,185,129,0.13), transparent 70%)' },
+                        { label: 'Losses',  value: userStats?.losses ?? '—', color: 'text-red-400',     bg: 'radial-gradient(ellipse at 50% 120%, rgba(239,68,68,0.10), transparent 70%)' },
+                        {
+                          label: 'Win %',
+                          value: userStats
+                            ? (userStats.wins + userStats.losses === 0 ? '—' : `${Math.round(userStats.wins / (userStats.wins + userStats.losses) * 100)}%`)
+                            : '—',
+                          color: 'text-amber-400',
+                          bg: 'radial-gradient(ellipse at 50% 120%, rgba(245,158,11,0.10), transparent 70%)',
+                        },
+                        {
+                          label: 'Streak',
+                          value: (userStats?.streak ?? 0) > 0 ? `${userStats!.streak}🔥` : '—',
+                          color: 'text-white',
+                          bg: 'radial-gradient(ellipse at 50% 120%, rgba(255,255,255,0.04), transparent 70%)',
+                        },
+                      ].map((stat) => (
+                        <div key={stat.label} className="flex flex-col items-center py-4 gap-0.5" style={{ background: stat.bg }}>
+                          <span className={`text-[28px] font-black leading-none tabular-nums ${stat.color}`} style={{ fontFamily: 'Teko, sans-serif' }}>
+                            {stat.value}
+                          </span>
+                          <span className="text-[7px] font-bold uppercase tracking-[0.18em] text-white/30">{stat.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </motion.div>
               )}
 
@@ -1081,74 +1099,18 @@ export default function ArenaPage() {
                 </motion.div>
               )}
 
-              {/* Quick Actions — Multiplayer + Edit Battle Instantly */}
-              <motion.div
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 }}
-                className="grid grid-cols-2 gap-2"
-              >
-                <button
-                  onClick={() => profile ? setShowCreateBattle(true) : navigate('/start')}
-                  className="relative overflow-hidden rounded-2xl p-[1px] transition-all active:scale-[0.98] text-left"
-                  style={{
-                    background: 'linear-gradient(135deg, rgba(59,130,246,0.55) 0%, rgba(255,255,255,0.06) 50%, rgba(124,58,237,0.45) 100%)',
-                    boxShadow: '0 14px 32px -16px rgba(59,130,246,0.45)',
-                  }}
-                >
-                  <div
-                    className="relative rounded-[14px] p-3.5 flex flex-col gap-2 h-full overflow-hidden"
-                    style={{ background: 'linear-gradient(160deg, hsl(0 0% 11%) 0%, hsl(0 0% 7%) 100%)' }}
-                  >
-                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-                    <div
-                      className="w-10 h-10 rounded-2xl flex items-center justify-center border border-white/10"
-                      style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.25), rgba(124,58,237,0.18))' }}
-                    >
-                      <Users className="w-5 h-5 text-blue-300" />
-                    </div>
-                    <div>
-                      <p className="text-[14px] font-black text-foreground tracking-tight" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>MULTIPLAYER</p>
-                      <p className="text-[10px] text-muted-foreground leading-tight">Invite a friend · 1v1</p>
-                    </div>
-                  </div>
-                </button>
-
-                <button
-                  onClick={handleQuickFight}
-                  className="relative overflow-hidden rounded-2xl p-[1px] transition-all active:scale-[0.98] text-left"
-                  style={{
-                    background: 'linear-gradient(135deg, rgba(239,68,68,0.55) 0%, rgba(255,255,255,0.06) 50%, rgba(245,158,11,0.45) 100%)',
-                    boxShadow: '0 14px 32px -16px rgba(239,68,68,0.45)',
-                  }}
-                >
-                  <div
-                    className="relative rounded-[14px] p-3.5 flex flex-col gap-2 h-full overflow-hidden"
-                    style={{ background: 'linear-gradient(160deg, hsl(0 0% 11%) 0%, hsl(0 0% 7%) 100%)' }}
-                  >
-                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-                    <div
-                      className="w-10 h-10 rounded-2xl flex items-center justify-center border border-white/10"
-                      style={{ background: 'linear-gradient(135deg, rgba(239,68,68,0.25), rgba(245,158,11,0.18))' }}
-                    >
-                      <Zap className="w-5 h-5 text-red-300" />
-                    </div>
-                    <div>
-                      <p className="text-[14px] font-black text-foreground tracking-tight" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>EDIT BATTLE INSTANTLY</p>
-                      <p className="text-[10px] text-muted-foreground leading-tight">Quick match · auto opponent</p>
-                    </div>
-                  </div>
-                </button>
-              </motion.div>
-
-              {/* Active Battles — countdown + forfeit */}
+              {/* ── ACTIVE BATTLES & COMPETITIONS ── */}
               {(() => {
-                const reminderItems: LiveBattleReminderItem[] = [
-                  ...myBattles.filter(b => b.status !== 'completed' && b.status !== 'cancelled' && b.status !== 'forfeited').map(b => {
+                const needsAction: LiveBattleReminderItem[] = [];
+                const alreadySubmitted: LiveBattleReminderItem[] = [];
+
+                myBattles
+                  .filter(b => b.status !== 'completed' && b.status !== 'cancelled' && b.status !== 'forfeited')
+                  .forEach(b => {
                     const isChallenger = b.challenger_id === user?.id;
                     const submitted = isChallenger ? !!(b as any).challenger_submission_url : !!(b as any).opponent_submission_url;
-                    return {
-                      kind: 'battle' as const,
+                    const item: LiveBattleReminderItem = {
+                      kind: 'battle',
                       id: b.id,
                       title: `${b.challenger_username} vs ${b.opponent_username || '???'}`,
                       status: b.status,
@@ -1156,22 +1118,28 @@ export default function ArenaPage() {
                       hasSubmitted: submitted,
                       href: `/battle/${b.id}`,
                     };
-                  }),
-                  ...myActiveQuickFights.map(f => {
-                    const isP1 = f.player_1_id === user?.id;
-                    const submitted = isP1 ? !!f.player_1_submission_url : !!f.player_2_submission_url;
-                    return {
-                      kind: 'quick' as const,
-                      id: f.id,
-                      title: `${f.player_1_username} vs ${f.player_2_username || '???'}`,
-                      status: f.status,
-                      endsAt: f.ends_at,
-                      hasSubmitted: submitted,
-                      href: `/fight/${f.id}`,
-                    };
-                  }),
-                  ...myLiveCompetitions.map(comp => ({
-                    kind: 'competition' as const,
+                    (submitted ? alreadySubmitted : needsAction).push(item);
+                  });
+
+                myActiveQuickFights.forEach(f => {
+                  const isP1 = f.player_1_id === user?.id;
+                  const submitted = isP1 ? !!f.player_1_submission_url : !!f.player_2_submission_url;
+                  const item: LiveBattleReminderItem = {
+                    kind: 'quick',
+                    id: f.id,
+                    title: `${f.player_1_username} vs ${f.player_2_username || '???'}`,
+                    status: f.status,
+                    endsAt: f.ends_at,
+                    hasSubmitted: submitted,
+                    href: `/fight/${f.id}`,
+                  };
+                  (submitted ? alreadySubmitted : needsAction).push(item);
+                });
+
+                myLiveCompetitions.forEach(comp => {
+                  const done = comp.hasSubmitted || comp.hasVoted;
+                  const item: LiveBattleReminderItem = {
+                    kind: 'competition',
                     id: comp.id,
                     title: comp.name,
                     status: comp.status,
@@ -1179,22 +1147,84 @@ export default function ArenaPage() {
                     hasSubmitted: comp.hasSubmitted,
                     hasVoted: comp.hasVoted,
                     href: `/competition/${comp.slug || comp.id}`,
-                  })),
-                ];
-                return reminderItems.length > 0 ? (
-                  <div>
-                    <div className="flex items-center gap-2 mb-2 px-1">
-                      <Swords className="w-3.5 h-3.5 text-red-400" />
-                      <span className="text-[11px] font-black text-foreground/90 uppercase tracking-[0.15em]">Active Now</span>
-                      <span className="ml-auto text-[10px] text-red-300 font-black px-1.5 py-0.5 rounded-full bg-red-500/15 border border-red-500/25">{reminderItems.length}</span>
-                    </div>
-                    <LiveBattleReminders items={reminderItems} />
+                  };
+                  (done ? alreadySubmitted : needsAction).push(item);
+                });
+
+                if (needsAction.length === 0 && alreadySubmitted.length === 0) return null;
+
+                return (
+                  <div className="space-y-4">
+                    {needsAction.length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-2 px-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                          <span className="text-[9px] font-black uppercase tracking-[0.25em] text-red-400">Submit Required</span>
+                          <span className="ml-auto px-1.5 py-0.5 rounded-full bg-red-500/15 border border-red-500/25 text-[9px] font-black text-red-300">{needsAction.length}</span>
+                        </div>
+                        <LiveBattleReminders items={needsAction} />
+                      </div>
+                    )}
+                    {alreadySubmitted.length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-2 px-1">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                          <span className="text-[9px] font-black uppercase tracking-[0.25em] text-emerald-400/70">Submitted · Awaiting Result</span>
+                        </div>
+                        <LiveBattleReminders items={alreadySubmitted} compact />
+                      </div>
+                    )}
                   </div>
-                ) : null;
+                );
               })()}
 
-              {/* Email Notification Settings */}
-              <EmailNotificationSettings />
+              {/* ── BATTLE HISTORY ── */}
+              <div>
+                <div className="flex items-center gap-2 mb-3 px-1">
+                  <History className="w-3.5 h-3.5 text-white/30" />
+                  <span className="text-[9px] font-black uppercase tracking-[0.25em] text-white/40">Battle History</span>
+                  {recentHistory.length > 0 && (
+                    <span className="ml-auto text-[9px] text-white/25 font-medium">Last {recentHistory.length}</span>
+                  )}
+                </div>
+                {recentHistory.length === 0 ? (
+                  <div className="flex flex-col items-center gap-3 py-10 rounded-2xl border border-dashed border-white/[0.07]">
+                    <div className="w-10 h-10 rounded-full bg-white/[0.03] border border-white/[0.07] flex items-center justify-center">
+                      <Swords className="w-5 h-5 text-white/20" />
+                    </div>
+                    <p className="text-[11px] text-white/30 font-medium">No battles yet — go fight someone</p>
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    {recentHistory.map(h => (
+                      <Link
+                        key={`${h.kind}-${h.id}`}
+                        to={h.href}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-white/[0.05] hover:border-white/[0.09] transition-colors group"
+                        style={{ background: 'rgba(255,255,255,0.02)' }}
+                      >
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${h.result === 'win' ? 'bg-emerald-500/15' : 'bg-red-500/10'}`}>
+                          <span
+                            className={`text-[15px] font-black leading-none ${h.result === 'win' ? 'text-emerald-400' : 'text-red-400'}`}
+                            style={{ fontFamily: 'Teko, sans-serif' }}
+                          >
+                            {h.result === 'win' ? 'W' : 'L'}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[12px] font-semibold text-white/75 truncate group-hover:text-white/90 transition-colors">
+                            vs {h.opponent}
+                          </p>
+                          <p className="text-[9px] text-white/25 mt-0.5">
+                            {h.kind === 'quick' ? 'Quick 1v1' : 'Battle'} · {formatDistanceToNow(new Date(h.date), { addSuffix: true })}
+                          </p>
+                        </div>
+                        <ChevronRight className="w-3.5 h-3.5 text-white/15 shrink-0 group-hover:text-white/30 transition-colors" />
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
           <>
