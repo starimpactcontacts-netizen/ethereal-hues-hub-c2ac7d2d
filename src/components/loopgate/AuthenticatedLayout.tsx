@@ -6,6 +6,7 @@ import LoadingScreen from './LoadingScreen';
 import TicketFAB from './TicketFAB';
 import LobbyMusicPlayer from './LobbyMusicPlayer';
 import GlobalWinCelebration from './GlobalWinCelebration';
+import CompCancelledModal from './CompCancelledModal';
 import { useGlobalNotifications } from '@/hooks/useGlobalNotifications';
 import { useGlobalTapSound } from '@/hooks/useGlobalTapSound';
 import { useRecoverBodyScroll } from '@/hooks/useRecoverBodyScroll';
@@ -55,6 +56,7 @@ export default function AuthenticatedLayout() {
       <TicketFAB />
       <LobbyMusicPlayer />
       <GlobalWinCelebration />
+      <CompCancelledModal />
     </div>
   );
 }
