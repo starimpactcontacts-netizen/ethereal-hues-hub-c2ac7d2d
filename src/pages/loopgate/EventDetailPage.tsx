@@ -34,6 +34,7 @@ import OpenArenaGuide, { OpenArenaInfoButton } from "@/components/loopgate/OpenA
 import { Badge } from "@/components/ui/badge";
 import EventChatSheet from "@/components/loopgate/EventChatSheet";
 import EventSharePoster from "@/components/loopgate/EventSharePoster";
+import MyEventSubmissionsSheet from "@/components/loopgate/MyEventSubmissionsSheet";
 import { useEventChatUnread } from "@/hooks/useEventChatUnread";
 import lightYagamiPoster from "@/assets/light_yagami_poster.jpg";
 import fixMySoulCover from "@/assets/fix_my_soul_cover.jpg";
@@ -50,6 +51,7 @@ export default function EventDetailPage() {
   const [showGuide, setShowGuide] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [showShare, setShowShare] = useState(false);
+  const [showMySubs, setShowMySubs] = useState(false);
   const [ladderLimit, setLadderLimit] = useState(10);
   const ladderRef = useRef<HTMLDivElement | null>(null);
 
@@ -518,6 +520,15 @@ export default function EventDetailPage() {
               {isOpenArena && activeRound ? `Submit · Round ${activeRound.round_number}` : "Enter Event"}
             </span>
           </button>
+          {user && (
+            <button
+              onClick={() => setShowMySubs(true)}
+              className="mt-2 w-full rounded-lg py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-foreground/80 font-bold text-[11px] uppercase tracking-[0.22em] active:scale-[0.99] transition inline-flex items-center justify-center gap-2"
+            >
+              <CheckCircle2 size={13} strokeWidth={2.5} />
+              View My Submissions
+            </button>
+          )}
         </div>
       )}
 
@@ -566,6 +577,13 @@ export default function EventDetailPage() {
         shareUrl={`${window.location.origin}/event/${event.slug || event.id}`}
         cashPrize="$150"
         ringsPrize="1M"
+      />
+
+      <MyEventSubmissionsSheet
+        open={showMySubs}
+        onClose={() => setShowMySubs(false)}
+        eventId={event.id}
+        eventTitle={event.title}
       />
     </div>
   );
