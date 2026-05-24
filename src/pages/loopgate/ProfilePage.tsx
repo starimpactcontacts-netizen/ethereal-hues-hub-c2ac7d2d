@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Camera, Lock, ArrowRight, Share2, BarChart3, Grid3X3, Gavel, Video, Users, Link2, Package, Settings, ShoppingBag, DollarSign, Pencil, Check, X } from "lucide-react";
+import { Camera, Lock, ArrowRight, Share2, BarChart3, Grid3X3, Gavel, Video, Package, Settings, ShoppingBag, DollarSign, Pencil, Check, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTempProfile } from "@/hooks/useTempProfile";
@@ -21,7 +21,6 @@ import MyRatingVideos from "@/components/loopgate/MyRatingVideos";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
-import LinkTreeEditor from "@/components/loopgate/LinkTreeEditor";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -32,7 +31,7 @@ export default function ProfilePage() {
   const { videos: judgeVideos } = useJudgeRatingVideos();
   const { isAnyJudge } = useUserRoles(profile?.id);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<'edits' | 'reviews' | 'videos' | 'links'>('edits');
+  const [activeTab, setActiveTab] = useState<'edits' | 'reviews' | 'videos'>('edits');
   const [editingBio, setEditingBio] = useState(false);
   const [bioDraft, setBioDraft] = useState("");
   const [savingBio, setSavingBio] = useState(false);
@@ -259,7 +258,6 @@ export default function ProfilePage() {
             { id: 'edits' as const, icon: Grid3X3, label: 'Edits', show: true },
             { id: 'reviews' as const, icon: Gavel, label: 'Reviews', show: isAnyJudge },
             { id: 'videos' as const, icon: Video, label: 'Videos', show: isAnyJudge },
-            { id: 'links' as const, icon: Link2, label: 'Links', show: true },
           ].filter(t => t.show).map((tab) => (
             <button
               key={tab.id}
@@ -282,8 +280,6 @@ export default function ProfilePage() {
       {activeTab === 'edits' && <SubmissionGrid />}
       {activeTab === 'reviews' && <div className="px-4"><MyJudgeReviews /></div>}
       {activeTab === 'videos' && isAnyJudge && <div className="px-4"><MyRatingVideos /></div>}
-      {activeTab === 'links' && <div className="px-4 pt-3"><LinkTreeEditor /></div>}
-
       {/* ═══ AVATAR MODAL ═══ */}
       {showAvatarModal && (
         <AvatarUploadModal
