@@ -44,7 +44,7 @@ function CashBattleCard({ battle, currentUserId }: { battle: any; currentUserId?
       onClick={() => navigate(`/cash-battle/${battle.id}`)}
       className="w-full h-full rounded-2xl overflow-hidden cursor-pointer group relative flex flex-col border border-white/[0.08]"
       style={{
-        background: "linear-gradient(180deg, rgba(38,38,42,0.95) 0%, rgba(28,28,32,0.95) 100%)",
+        background: "linear-gradient(180deg, #26262a 0%, #1c1c20 100%)",
         boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 24px -12px rgba(0,0,0,0.5)",
         filter: isCompleted ? "grayscale(60%)" : "none",
         opacity: isCompleted ? 0.55 : 1,
@@ -198,7 +198,7 @@ function OpenMatchupCard({ app, onJoin, onRemoved, currentUserId }: { app: CashB
       onClick={isOwnApp ? undefined : onJoin}
       className="w-full h-full rounded-2xl overflow-hidden cursor-pointer relative flex flex-col border border-white/[0.08]"
       style={{
-        background: "linear-gradient(180deg, rgba(38,38,42,0.95) 0%, rgba(28,28,32,0.95) 100%)",
+        background: "linear-gradient(180deg, #26262a 0%, #1c1c20 100%)",
         boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 24px -12px rgba(0,0,0,0.5)",
       }}
     >
@@ -511,7 +511,7 @@ function OpenQueueCard({
       onClick={isOwn ? onOpenLobby : onAccept}
       className="w-full h-full rounded-2xl overflow-hidden cursor-pointer relative flex flex-col border border-white/[0.08]"
       style={{
-        background: "linear-gradient(180deg, rgba(38,38,42,0.95) 0%, rgba(28,28,32,0.95) 100%)",
+        background: "linear-gradient(180deg, #26262a 0%, #1c1c20 100%)",
         boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 24px -12px rgba(0,0,0,0.5)",
       }}
     >
