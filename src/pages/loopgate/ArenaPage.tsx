@@ -428,8 +428,8 @@ function Quick1v1Row({ fight, onClick }: { fight: any; onClick: () => void }) {
       onClick={onClick}
       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all touch-manipulation text-left group"
       style={{
-        background: 'linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))',
-        border: '1px solid rgba(255,255,255,0.04)',
+        background: '#111111',
+        border: '1px solid rgba(255,255,255,0.07)',
       }}
     >
       <Avatar className="w-7 h-7 shrink-0" style={{ border: '1.5px solid rgba(255,255,255,0.08)' }}>
@@ -842,7 +842,7 @@ export default function ArenaPage() {
           </AnimatePresence>
 
           {/* Arena / My Arena toggle — slim segmented pill with sliding indicator */}
-          <div className="relative grid grid-cols-2 mb-3 p-1 rounded-full border border-white/[0.08] bg-white/[0.03] backdrop-blur-md shadow-inner">
+          <div className="relative grid grid-cols-2 mb-3 p-1 rounded-full border border-white/[0.08] shadow-inner" style={{ background: '#111' }}>
             {/* Sliding active pill */}
             <div
               className={`absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-full transition-transform duration-300 ease-out ${
@@ -965,79 +965,97 @@ export default function ArenaPage() {
                         return (
                           <div
                             key={lobby.id}
-                            className="relative overflow-hidden border border-amber-500/30"
-                            style={{ background: '#0d0d0d' }}
+                            className="overflow-hidden border border-white/[0.08]"
+                            style={{ background: '#111111' }}
                           >
-                            {/* Gold top bar */}
-                            <div className="h-[3px] w-full bg-amber-500/70" />
-
-                            <div className="px-4 pt-3 pb-4">
-                              {/* Badge row */}
-                              <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-1.5 border border-amber-500/30 bg-amber-500/10 px-2 py-0.5">
-                                  {isPrivate
-                                    ? <Lock className="w-2.5 h-2.5 text-amber-400" />
-                                    : <Globe className="w-2.5 h-2.5 text-amber-400" />}
-                                  <span className="text-[9px] font-black uppercase tracking-[0.22em] text-amber-400">
-                                    {isPrivate ? 'Private' : 'Public'}
-                                  </span>
-                                </div>
-                                <span className="text-[10px] text-white/30 tabular-nums">
-                                  {lobby.duration_minutes}min · {formatDistanceToNow(new Date(lobby.created_at), { addSuffix: true })}
+                            {/* Thumbnail strip — game tile style */}
+                            <div className="relative h-[88px]" style={{ background: '#0a0a0a' }}>
+                              {/* PRIVATE / PUBLIC tag — top left like a Roblox badge */}
+                              <div className="absolute top-2 left-2 z-10 flex items-center gap-1.5 px-2 py-1 border border-amber-500/40" style={{ background: '#111' }}>
+                                {isPrivate
+                                  ? <Lock className="w-2.5 h-2.5 text-amber-400" />
+                                  : <Globe className="w-2.5 h-2.5 text-amber-400" />}
+                                <span className="text-[8px] font-black uppercase tracking-[0.2em] text-amber-400">
+                                  {isPrivate ? 'Private' : 'Public'}
                                 </span>
                               </div>
-
-                              {/* Waiting status */}
-                              <div className="flex items-center gap-2 mb-4">
+                              {/* Duration — top right */}
+                              <div className="absolute top-2 right-2 z-10 px-2 py-1" style={{ background: '#111' }}>
+                                <span className="text-[8px] font-black uppercase tracking-wider text-white/40">
+                                  {lobby.duration_minutes}MIN
+                                </span>
+                              </div>
+                              {/* Big background word — flavor */}
+                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+                                <span
+                                  className="text-[64px] font-black text-white/[0.04] leading-none"
+                                  style={{ fontFamily: 'Teko, sans-serif' }}
+                                >
+                                  BATTLE
+                                </span>
+                              </div>
+                              {/* Waiting pulse row bottom of thumbnail */}
+                              <div className="absolute bottom-2 left-2 flex items-center gap-1.5">
                                 <motion.span
                                   animate={{ opacity: [1, 0.2, 1] }}
-                                  transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
-                                  className="w-2 h-2 rounded-full bg-amber-400 shrink-0"
+                                  transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut' }}
+                                  className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"
                                 />
-                                <span className="text-[11px] font-black uppercase tracking-[0.22em] text-amber-400">
+                                <span className="text-[8px] font-black uppercase tracking-[0.2em] text-amber-400">
                                   Waiting for Opponent
                                 </span>
                               </div>
+                            </div>
 
-                              {/* Code — large, prominent */}
+                            <div className="px-3 pt-3 pb-3">
+                              {/* Lobby title — big Teko */}
+                              <p
+                                className="text-[24px] font-black uppercase leading-none text-white mb-1"
+                                style={{ fontFamily: 'Teko, sans-serif' }}
+                              >
+                                Custom Edit Battle
+                              </p>
+
+                              {/* Code pill */}
                               {isPrivate && lobby.join_code && (
                                 <button
                                   onClick={copyCode}
-                                  className="w-full flex items-center justify-between px-4 py-3 mb-3 border border-amber-500/20 bg-black hover:bg-amber-500/5 transition-colors group"
+                                  className="flex items-center gap-2 mb-3 px-3 py-1.5 border border-white/[0.08] hover:border-amber-500/30 transition-colors group"
+                                  style={{ background: '#0a0a0a' }}
                                 >
-                                  <div className="flex items-center gap-3">
-                                    <span className="text-[8px] font-black uppercase tracking-[0.22em] text-amber-400/50">Code</span>
-                                    <span
-                                      className="text-[26px] font-black text-white tracking-[0.35em] leading-none"
-                                      style={{ fontFamily: 'Teko, monospace' }}
-                                    >
-                                      {lobby.join_code}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-amber-400/50 group-hover:text-amber-300 transition-colors">
-                                    <Copy className="w-3 h-3" />
-                                    Copy
-                                  </div>
+                                  <span className="text-[8px] font-black uppercase tracking-widest text-white/30">Code</span>
+                                  <span
+                                    className="text-[16px] font-black text-white tracking-[0.3em] leading-none"
+                                    style={{ fontFamily: 'Teko, monospace' }}
+                                  >
+                                    {lobby.join_code}
+                                  </span>
+                                  <Copy className="w-2.5 h-2.5 text-white/20 group-hover:text-amber-400 transition-colors ml-1" />
                                 </button>
                               )}
 
-                              {/* Actions */}
-                              <div className="flex gap-2">
+                              {/* JOIN button — full width, gold, Roblox play button */}
+                              <button
+                                onClick={() => navigate(`/fight/${lobby.id}`)}
+                                className="w-full flex items-center justify-center gap-2 py-3 mb-2 text-[18px] font-black uppercase tracking-[0.1em] text-black active:scale-[0.98] transition-transform"
+                                style={{ background: '#f59e0b', fontFamily: 'Teko, sans-serif' }}
+                              >
+                                <Play className="w-4 h-4 fill-current" />
+                                Join Lobby
+                              </button>
+
+                              {/* Bottom row — copy link + time */}
+                              <div className="flex items-center justify-between">
                                 <button
                                   onClick={copyLink}
-                                  className="flex items-center gap-1.5 px-3.5 py-2.5 border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] transition-colors text-[10px] font-bold uppercase tracking-wider text-white/40 hover:text-white/60"
+                                  className="flex items-center gap-1 text-[9px] font-bold text-white/25 hover:text-white/50 transition-colors"
                                 >
-                                  <Link2 className="w-3 h-3" />
+                                  <Link2 className="w-2.5 h-2.5" />
                                   Copy Link
                                 </button>
-                                <button
-                                  onClick={() => navigate(`/fight/${lobby.id}`)}
-                                  className="flex-1 flex items-center justify-center gap-2 py-2.5 text-[14px] font-black uppercase tracking-[0.15em] text-black transition-all active:scale-[0.98]"
-                                  style={{ background: '#f59e0b', fontFamily: 'Teko, sans-serif' }}
-                                >
-                                  View Lobby
-                                  <ChevronRight className="w-4 h-4" />
-                                </button>
+                                <span className="text-[9px] text-white/25 tabular-nums">
+                                  {formatDistanceToNow(new Date(lobby.created_at), { addSuffix: true })}
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -1322,7 +1340,7 @@ export default function ArenaPage() {
                         key={`${h.kind}-${h.id}`}
                         to={h.href}
                         className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-white/[0.05] hover:border-white/[0.09] transition-colors group"
-                        style={{ background: 'rgba(255,255,255,0.02)' }}
+                        style={{ background: '#111111' }}
                       >
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${h.result === 'win' ? 'bg-emerald-500/15' : 'bg-red-500/10'}`}>
                           <span
