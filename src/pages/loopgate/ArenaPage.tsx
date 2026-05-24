@@ -913,43 +913,30 @@ export default function ArenaPage() {
                       const winPct = total === 0 ? null : Math.round(wins / total * 100);
                       const streak = userStats?.streak ?? 0;
                       return (
-                        <div className="px-4 py-3 space-y-3">
-                          {/* W / L pill row */}
-                          <div className="flex items-stretch gap-2">
-                            <div className="flex-1 flex flex-col items-center justify-center py-2.5 rounded-lg bg-emerald-500/[0.07] border border-emerald-500/20">
-                              <span className="text-[32px] font-black leading-none tabular-nums text-emerald-400" style={{ fontFamily: 'Teko, sans-serif' }}>
-                                {userStats ? wins : '—'}
-                              </span>
-                              <span className="text-[8px] font-bold uppercase tracking-[0.22em] text-emerald-400/50 mt-0.5">Wins</span>
-                            </div>
-                            <div className="flex-1 flex flex-col items-center justify-center py-2.5 rounded-lg bg-red-500/[0.07] border border-red-500/20">
-                              <span className="text-[32px] font-black leading-none tabular-nums text-red-400" style={{ fontFamily: 'Teko, sans-serif' }}>
-                                {userStats ? losses : '—'}
-                              </span>
-                              <span className="text-[8px] font-bold uppercase tracking-[0.22em] text-red-400/50 mt-0.5">Losses</span>
-                            </div>
-                          </div>
-                          {/* Win % bar */}
-                          <div className="space-y-1.5">
-                            <div className="flex items-center justify-between">
-                              <span className="text-[8px] font-bold uppercase tracking-[0.22em] text-white/30">Win Rate</span>
-                              <span className="text-[13px] font-black tabular-nums text-white/80" style={{ fontFamily: 'Teko, sans-serif' }}>
-                                {winPct !== null ? `${winPct}%` : '—'}
-                              </span>
-                            </div>
-                            <div className="h-[3px] rounded-full bg-white/[0.06] overflow-hidden">
-                              <div
-                                className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-700"
-                                style={{ width: winPct !== null ? `${winPct}%` : '0%' }}
-                              />
-                            </div>
-                          </div>
-                          {/* Streak */}
-                          <div className="flex items-center justify-between pt-0.5 border-t border-white/[0.04]">
-                            <span className="text-[8px] font-bold uppercase tracking-[0.22em] text-white/30">Streak</span>
-                            <span className={`text-[13px] font-black tabular-nums ${streak > 0 ? 'text-amber-400' : 'text-white/30'}`} style={{ fontFamily: 'Teko, sans-serif' }}>
-                              {streak > 0 ? `${streak} WIN${streak > 1 ? 'S' : ''}` : streak < 0 ? `${Math.abs(streak)} LOSS${Math.abs(streak) > 1 ? 'ES' : ''}` : '—'}
+                        <div className="grid grid-cols-4 divide-x divide-white/[0.06]">
+                          <div className="flex flex-col items-center py-3.5 gap-1">
+                            <span className="text-[26px] font-black leading-none tabular-nums text-emerald-400" style={{ fontFamily: 'Teko, sans-serif' }}>
+                              {userStats ? wins : '—'}
                             </span>
+                            <span className="text-[8px] font-bold uppercase tracking-[0.18em] text-white/25">Wins</span>
+                          </div>
+                          <div className="flex flex-col items-center py-3.5 gap-1">
+                            <span className="text-[26px] font-black leading-none tabular-nums text-red-400" style={{ fontFamily: 'Teko, sans-serif' }}>
+                              {userStats ? losses : '—'}
+                            </span>
+                            <span className="text-[8px] font-bold uppercase tracking-[0.18em] text-white/25">Losses</span>
+                          </div>
+                          <div className="flex flex-col items-center py-3.5 gap-1">
+                            <span className="text-[26px] font-black leading-none tabular-nums text-white/80" style={{ fontFamily: 'Teko, sans-serif' }}>
+                              {winPct !== null ? `${winPct}%` : '—'}
+                            </span>
+                            <span className="text-[8px] font-bold uppercase tracking-[0.18em] text-white/25">Win %</span>
+                          </div>
+                          <div className="flex flex-col items-center py-3.5 gap-1">
+                            <span className={`text-[26px] font-black leading-none tabular-nums ${streak > 0 ? 'text-amber-400' : 'text-white/80'}`} style={{ fontFamily: 'Teko, sans-serif' }}>
+                              {streak !== 0 ? Math.abs(streak) : '—'}
+                            </span>
+                            <span className="text-[8px] font-bold uppercase tracking-[0.18em] text-white/25">Streak</span>
                           </div>
                         </div>
                       );
