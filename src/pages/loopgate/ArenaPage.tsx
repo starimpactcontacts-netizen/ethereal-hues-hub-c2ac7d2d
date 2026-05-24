@@ -771,11 +771,7 @@ export default function ArenaPage() {
       <LoopMonster />
 
       {/* ═══ HERO ═══ */}
-      <div className="relative overflow-hidden border-b border-white/[0.06]" style={{
-        background: '#000',
-        backgroundImage: 'linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)',
-        backgroundSize: '32px 32px',
-      }}>
+      <div className="relative overflow-hidden border-b border-white/[0.06]" style={{ background: '#000' }}>
 
         <div className="relative px-4 sm:px-6 lg:px-8 pt-3 pb-1 max-w-2xl mx-auto">
           {/* Title row — merged with stats */}
@@ -872,11 +868,7 @@ export default function ArenaPage() {
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
                   <div
                     className="relative overflow-hidden rounded-2xl border border-white/[0.1]"
-                    style={{
-                      background: '#000',
-                      backgroundImage: 'linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)',
-                      backgroundSize: '28px 28px',
-                    }}
+                    style={{ background: '#0a0a0a' }}
                   >
 
                     {/* Fighter identity */}
