@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Plus, Share2, Users, Info, X, Gavel, Hourglass, Radio, Timer, Vote, Lock, Key } from "lucide-react";
+import { Trophy, Plus, Share2, Users, Info, X, Gavel, Hourglass, Radio, Timer, Vote, Lock, Key, ChevronRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCompetitionsList, type Competition } from "@/hooks/useCompetitions";
 import { toast } from "sonner";
@@ -156,35 +156,36 @@ export default function ArenaCompetitionsSection({ onCreateClick, hideHeader = f
             <span className="text-[15px] font-extrabold text-foreground tracking-tight" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
               Competitions
             </span>
+          </div>
+          <div className="flex items-center gap-1">
             <button
               onClick={() => setShowInfo(true)}
-              className="flex items-center justify-center w-5 h-5 rounded-full bg-gold/10 border border-gold/30 hover:bg-gold/20 active:scale-90 transition-all touch-manipulation"
+              className="w-7 h-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-white/[0.06] active:scale-90 transition-all"
               aria-label="How Competitions work"
             >
-              <Info className="w-3 h-3 text-gold" strokeWidth={2.5} />
+              <Info className="w-3.5 h-3.5" strokeWidth={2} />
             </button>
-          </div>
-          <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={() => setCodeOpen(true)}
-              className="flex items-center gap-1 px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-amber-300 border border-amber-400/30 hover:bg-amber-400/10 rounded transition-colors whitespace-nowrap"
-              aria-label="Join competition with code"
+              className="w-7 h-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-white/[0.06] active:scale-90 transition-all"
+              aria-label="Join with code"
             >
-              <Key className="w-3 h-3" strokeWidth={2.5} /> Code
-            </button>
-            <button
-              onClick={() => navigate('/competitions')}
-              className="flex items-center text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors px-1 whitespace-nowrap"
-              aria-label="View all competitions"
-            >
-              View All
+              <Key className="w-3.5 h-3.5" strokeWidth={2} />
             </button>
             <button
               onClick={onCreateClick}
-              className="flex items-center gap-1 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-gold border border-gold/20 hover:bg-gold/10 rounded transition-colors"
+              className="w-7 h-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-white/[0.06] active:scale-90 transition-all"
+              aria-label="Create competition"
             >
-              <Plus className="w-3 h-3" /> Create
+              <Plus className="w-3.5 h-3.5" strokeWidth={2} />
+            </button>
+            <button
+              onClick={() => navigate('/competitions')}
+              className="w-7 h-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-white/[0.06] active:scale-90 transition-all"
+              aria-label="View all competitions"
+            >
+              <ChevronRight className="w-3.5 h-3.5" strokeWidth={2} />
             </button>
           </div>
         </div>
