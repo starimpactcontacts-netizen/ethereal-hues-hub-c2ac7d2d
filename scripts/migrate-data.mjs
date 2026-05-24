@@ -31,36 +31,10 @@ if (!OLD_SERVICE_KEY || !NEW_DB_URL) {
   process.exit(1);
 }
 
-// ── Tables to migrate (in FK-safe order) ────────────────────────────────────
-// Adjust or reorder if you hit FK violations.
-const TABLES = [
-  'profiles',
-  'user_roles',
-  'connected_platforms',
-  'houses',
-  'crews',
-  'crew_members',
-  'events',
-  'event_participations',
-  'event_rounds',
-  'event_messages',
-  'battles',
-  'battle_submissions',
-  'tournaments',
-  'tournament_participants',
-  'notifications',
-  'activity_feed',
-  'judge_inbox',
-  'review_requests',
-  'messages',
-  'message_threads',
-  'thread_participants',
-  'drops',
-  'drop_entries',
-  'shop_items',
-  'purchases',
-  'tickets',
-];
+// ── Tables to migrate ───────────────────────────────────────────────────────
+// Auto-discovered from new project's public schema (FK checks disabled during import).
+// Override by setting TABLES env var to a comma-separated list.
+const TABLES_OVERRIDE = process.env.TABLES?.split(',').map(s => s.trim()).filter(Boolean);
 
 // ── REST API helper ──────────────────────────────────────────────────────────
 async function fetchPage(table, offset) {
@@ -141,10 +115,23 @@ async function run() {
   // Disable triggers/FK checks for the duration of the import
   await client.query('SET session_replication_role = replica;');
 
+  // Discover tables from the new project's public schema
+  let tables = TABLES_OVERRIDE;
+  if (!tables) {
+    const { rows } = await client.query(
+      `SELECT tablename FROM pg_tables
+       WHERE schemaname = 'public'
+         AND tablename NOT LIKE '\\_%' ESCAPE '\\'
+       ORDER BY tablename`
+    );
+    tables = rows.map(r => r.tablename);
+  }
+  console.log(`📋  Migrating ${tables.length} tables.\n`);
+
   let total_rows = 0;
   const errors = [];
 
-  for (const table of TABLES) {
+  for (const table of tables) {
     process.stdout.write(`  ▶  ${table} … `);
     try {
       const rows = await fetchAllRows(table);

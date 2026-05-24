@@ -1,108 +1,59 @@
 
-# Collabs Mode — Arena Feature Launch
+# Migrate to your own Supabase project
 
-A new Arena mode where 2 editors team up, split a track between them (e.g. 10s + 10s = 20s), upload one combined edit with both approving, and the community fires emoji reactions. Top collabs each day get massive XP + Index payouts to drive daily collab habit.
+Goal: move backend from the Lovable-managed Supabase project (`tmfnqnmyxxydrxwjkaiq`) to a new project in `starimpactcontacts-netizen's Org` under `starimpactcontacts@gmail.com`, with full dashboard access, preserving auth users with password hashes intact. A short maintenance window is acceptable.
 
-## How It Works (User Story)
+## What you do (manual, in browser)
 
-1. **Create or Join** — Editor opens Arena → Collabs tab. Either:
-   - Browse the **open lobby** of unfilled collab slots (someone posted "looking for partner")
-   - Create a new collab slot (pick song, total duration, your half's character/scene/timing)
-   - Send a **direct invite** to a connection
-2. **Lock the brief** — Once paired, both editors see the shared brief: song, total duration, who edits which half (character/scene + timing window: 0–10s vs 10–20s).
-3. **Edit + Upload** — Either partner uploads the final stitched edit (one of them assembles both halves). Status flips to "Pending co-approval".
-4. **Co-approval gate** — The other partner gets a notification, reviews, hits **Approve** or **Request Changes**. Only when both approve does it go live.
-5. **Community fire** — Live collabs appear in the Collabs feed. Anyone can fire emoji reactions (🔥 ⚡ 💎 👑 🎬). Each emoji = weighted reaction score.
-6. **Daily Top Collabs** — Leaderboard resets every 24h (UTC). Top 3 collabs by reaction score win:
-   - **#1**: 7× normal XP + 7× Index Power to BOTH editors
-   - **#2**: 5× to both
-   - **#3**: 3× to both
-   - All others get 1.5× participation bonus
+1. In `starimpactcontacts-netizen's Org` → **New project**. Region = same as current (likely `us-east-1`). Save the DB password.
+2. In the OLD project dashboard (`tmfnqnmyxxydrxwjkaiq`) → Settings → API → copy the **service_role** key. This is the key we've been blocked on — it's required for auth user export.
+3. Save both connection strings (Settings → Database → URI). Note: use the **Session pooler** URI for migrations, not the direct one.
 
-## Database
+## What I do (in repo)
 
-New tables (all under `public`, RLS enabled):
+### Phase 1 — Schema + data (no downtime)
+1. Run `scripts/migrate-schema.mjs` against the new project with `DB_URL=<new>` — applies every file in `supabase/migrations/` in order.
+2. Extend `scripts/migrate-data.mjs`:
+   - Add missing tables to the `TABLES` array (audit current schema first — there are likely tables beyond the 26 listed).
+   - Add a second pass for `auth.users` using the **OLD service_role key** against `/auth/v1/admin/users` to export with `encrypted_password`, then bulk-insert directly into `auth.users` on the new project via psql (bypasses the REST API which strips password hashes).
+   - Add `auth.identities` migration so OAuth/Google links survive.
+3. Run data migration. Verify row counts match per table.
 
-- **`collab_slots`** — open lobby + active collabs
-  - `creator_id`, `creator_username`, `creator_avatar_url`
-  - `partner_id` (nullable until filled), `partner_username`, `partner_avatar_url`
-  - `song_title`, `song_artist`, `song_url` (optional Deezer/Spotify ref)
-  - `total_duration_seconds` (10–60), `creator_segment` (e.g. "0-10s, character: Goku"), `partner_segment`
-  - `status`: `open` | `paired` | `editing` | `pending_approval` | `live` | `rejected` | `expired`
-  - `final_video_url` (nullable), `uploaded_by` (nullable)
-  - `creator_approved`, `partner_approved` (booleans)
-  - `created_at`, `paired_at`, `uploaded_at`, `live_at`, `expires_at` (open slots auto-expire after 7 days)
+### Phase 2 — Storage buckets
+4. New script `scripts/migrate-storage.mjs`: list every bucket on old project, recreate on new (with same public/private + policies), then stream every object across using signed URLs + upload.
 
-- **`collab_invites`** — direct invites to connections
-  - `slot_id`, `from_user_id`, `to_user_id`, `status` (`pending` | `accepted` | `declined`), `created_at`
+### Phase 3 — Edge functions + secrets
+5. Edge function code is already in `supabase/functions/` — will auto-deploy to new project once it's connected.
+6. Re-add all runtime secrets on the new project (Lovable Cloud secrets don't carry across): I'll list every secret name currently used (LOVABLE_API_KEY, RESEND_API_KEY, STRIPE_*, BUNNY_*, PAYPAL_*, etc.) and you re-enter values in the new dashboard.
 
-- **`collab_reactions`** — emoji fire reactions
-  - `slot_id`, `user_id`, `emoji` (constrained to fire/zap/diamond/crown/clapper)
-  - unique on `(slot_id, user_id, emoji)` — one of each emoji per user per collab
-  - trigger increments cached `reaction_score` on `collab_slots`
+### Phase 4 — Cutover (the maintenance window)
+7. Put up a maintenance banner in the app.
+8. Run a final incremental sync of any rows changed since Phase 1 (using `updated_at > <phase1-timestamp>` per table).
+9. Disconnect Lovable Cloud from this project and connect the native Supabase integration pointing at the new project. This auto-updates:
+   - `.env` (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`)
+   - `src/integrations/supabase/client.ts` + `types.ts`
+10. Reconfigure custom domain `loopgate.gg` / `www.loopgate.gg` redirect URLs in new project's Auth settings.
+11. Re-enable Google OAuth in new project (Authentication → Providers → Google). Lovable's managed Google OAuth goes away — you'll need to create your own Google Cloud OAuth client OR Supabase's built-in. Same for Discord if you still want it.
+12. Re-enable realtime publications on tables that need it (already in migrations, but verify).
+13. Publish the app. Remove maintenance banner.
 
-- **`collab_daily_winners`** — archived daily top 3 (for prestige history)
-  - `date`, `place` (1–3), `slot_id`, `xp_awarded`, `index_awarded`
+### Phase 5 — Verification
+14. Smoke test: sign in with existing account (password must work), check feed loads, submit an edit, verify storage URLs resolve, trigger one edge function, check realtime channels.
 
-Triggers:
-- Auto-set `paired_at` when `partner_id` fills.
-- Auto-set `live_at` when both `*_approved` flip true.
-- Auto-expire open slots via cron (`pg_cron` daily sweep).
-- Daily 00:00 UTC cron job → compute top 3 by reaction_score from past 24h, insert winners, dispatch XP/Index payouts via existing economy functions.
+## Important warnings
 
-## Frontend
+- **Auth migration is the riskiest step.** Inserting into `auth.users` directly is supported but undocumented — Supabase recommends it for self-host migrations. If a row fails, that user can't log in until reset. Backup plan: keep old project read-only for 30 days so we can re-run anything.
+- **OAuth redirect URLs change.** Any user mid-flow during cutover gets bounced. Schedule for low-traffic window.
+- **Edge function secrets must be re-entered manually** — Lovable Cloud doesn't export secret values.
+- **Stripe/PayPal webhooks** point at the old project's edge function URLs. You'll need to update webhook endpoints in Stripe/PayPal dashboards to the new project's URL.
+- **Billing resets.** New project starts on Supabase Free tier. If usage exceeds free limits, upgrade to Pro ($25/mo).
+- **Lovable Cloud features go away.** `lovable.auth.signInWithOAuth` (managed Google) won't work anymore — code will fall back to raw `supabase.auth.signInWithOAuth`, which already exists in `useAuth.tsx`. Also: managed email (`send-notification-email` via Lovable's Resend wrapper) — you'll need your own Resend key.
 
-New files:
-- `src/hooks/useCollabs.ts` — fetch open lobby, my collabs, live feed, daily leaderboard. Realtime subscription on `collab_slots` + `collab_reactions`.
-- `src/pages/loopgate/CollabsPage.tsx` — 3 tabs: **Lobby** (open slots), **Live** (community feed), **Top Today** (leaderboard).
-- `src/pages/loopgate/CollabDetailPage.tsx` — slot detail: brief, partners, video player, emoji rail, approval buttons (only visible to the two editors).
-- `src/pages/loopgate/CreateCollabPage.tsx` — form: song picker (reuse Deezer search), duration slider, your half brief (timing + character/scene text).
-- `src/components/loopgate/collabs/CollabSlotCard.tsx` — card style: split avatar (creator left, partner right or empty silhouette with "JOIN" CTA), song title, duration, status pill.
-- `src/components/loopgate/collabs/CollabEmojiRail.tsx` — 5 emoji buttons with counters, haptic + sound on tap.
-- `src/components/loopgate/collabs/CollabApprovalGate.tsx` — shown to editors when status = `pending_approval`.
-- `src/components/loopgate/collabs/DailyCollabsLeaderboard.tsx` — top 3 podium, both editors shown side by side.
+## What I need from you to start
 
-Wiring:
-- Add `/collabs`, `/collabs/create`, `/collab/:id` routes in `App.tsx`.
-- Add **Collabs** entry to Arena's main grid (`ArenaPage.tsx`) — purple/violet themed card to differentiate from solo/battles, with "NEW" badge.
-- Add notification routes (reuse existing notification system): pair-found, upload-ready-for-approval, you-won-daily.
+1. The **OLD service_role key** (from old project dashboard → Settings → API).
+2. The **NEW project's** DB connection string + service_role key + URL + anon key (after you create the project).
+3. Confirmation of your preferred maintenance window (I'd suggest 30–60 min, ideally late night your timezone).
+4. Whether you want to **keep the old project running read-only for 30 days as a safety net** (recommended) or shut it down immediately after cutover.
 
-## Visual Direction
-
-Following the Director Design Sys + Cinematic Atmosphere memory:
-- Pure black bg, glassmorphic cards.
-- Collabs accent color: **violet** (`hsl(270 80% 60%)`) — unused elsewhere, makes Collabs visually distinct from amber battles, emerald arena, red cash battles.
-- Slot cards: split-avatar layout (two faces stitched diagonally) to immediately read as "duo".
-- Daily leaderboard podium uses Teko font for the "TOP COLLABS TODAY" header.
-- Status pills: OPEN (violet outline), PAIRED (violet solid), EDITING (amber pulse), LIVE (green LIVE dot), TOP 3 (gold).
-
-## Rewards Logic
-
-Hooked into existing XP + Index economy:
-- Base reward on going live: 50 XP + 25 Index per editor (1× baseline).
-- Daily winners get multipliers applied to their base + a bonus pool:
-  - #1: +500 XP + 250 Index each
-  - #2: +300 XP + 150 Index each
-  - #3: +150 XP + 75 Index each
-- All non-winning live collabs that day: +25 XP "participation" bonus.
-- Streak bonus: 3 days in a row collabing → +100 Index "Collab Streak" badge unlock (deferred to v2, mention in roadmap).
-
-## Out of Scope (v1)
-
-- Auto-stitching two separate halves server-side (keeping it simple: one editor stitches & uploads).
-- Live co-editing in Studio (just async coordination).
-- 3+ person collabs (locked to pairs for now).
-- Collab-only crew leaderboards (deferred).
-
-## Build Order
-
-1. **DB migration** — all 4 tables + triggers + RLS + cron job.
-2. **`useCollabs` hook** — data layer.
-3. **Collabs landing page** with 3 tabs + slot cards.
-4. **Create flow** + lobby joining.
-5. **Detail page** with approval gate + emoji rail.
-6. **Daily leaderboard cron + payout edge function**.
-7. **Arena entry card** + notifications wiring.
-8. **NDA / activity-optics check** — hide zero metrics, no unannounced partner refs.
-
-Approve and I'll start with the migration, then build the UI in passes so you can preview as it lands.
+Once you confirm and approve this plan, I'll switch to build mode and start with Phase 1.
