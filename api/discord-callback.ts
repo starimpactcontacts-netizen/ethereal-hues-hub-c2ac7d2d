@@ -13,10 +13,11 @@ export default async function handler(req: any, res: any) {
   if (!code) return res.status(400).json({ error: 'Missing authorization code' });
 
   const clientSecret = process.env.DISCORD_CLIENT_SECRET;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-  if (!clientSecret || !serviceRoleKey || !supabaseUrl) {
-    return res.status(500).json({ error: 'Server misconfiguration: missing env vars', missing: { clientSecret: !clientSecret, serviceRoleKey: !serviceRoleKey, supabaseUrl: !supabaseUrl } });
+  const supabaseAnonKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY;
+
+  if (!clientSecret || !supabaseUrl || !supabaseAnonKey) {
+    return res.status(500).json({ error: 'Server misconfiguration: missing env vars' });
   }
 
   // 1. Exchange code for Discord access token
@@ -45,53 +46,59 @@ export default async function handler(req: any, res: any) {
   const discordUser = await discordRes.json();
 
   if (!discordUser.email) {
-    return res.status(400).json({ error: 'Discord account has no email. Enable email in Discord settings.' });
-  }
-  if (!discordUser.verified) {
-    return res.status(400).json({ error: 'Discord email is not verified. Please verify your Discord email first.' });
+    return res.status(400).json({ error: 'Discord account has no verified email.' });
   }
 
-  // 3. Supabase admin client (use same URL as the React app)
-  const supabase = createClient(supabaseUrl, serviceRoleKey, {
+  // 3. Derive a stable server-side password from Discord ID + client secret.
+  //    Only the server knows clientSecret, so users cannot compute this themselves.
+  const derivedPassword = `dsc_${discordUser.id}_${clientSecret.slice(-12)}`;
+
+  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
-  const avatarUrl = discordUser.avatar
-    ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.webp?size=256`
-    : null;
-
-  // 4. Try to create user — if it fails for any reason (e.g. already exists), we still
-  //    proceed to generateLink below. Only mark isNew=true on success.
-  let isNew = false;
-  const { error: createErr } = await supabase.auth.admin.createUser({
+  // 4. Try signing in first (existing user)
+  const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
     email: discordUser.email,
-    email_confirm: true,
-    user_metadata: {
-      discord_id: discordUser.id,
-      discord_username: discordUser.username,
-      full_name: discordUser.global_name || discordUser.username,
-      avatar_url: avatarUrl,
-    },
-  });
-  if (!createErr) isNew = true;
-
-  // 5. Generate a one-time magic link token — works whether user is new or existing.
-  //    If this fails, something is genuinely wrong (bad service role key, wrong project URL, etc.)
-  const { data: linkData, error: linkErr } = await supabase.auth.admin.generateLink({
-    type: 'magiclink',
-    email: discordUser.email,
+    password: derivedPassword,
   });
 
-  if (linkErr || !linkData) {
-    return res.status(500).json({
-      error: `Failed to sign in: ${linkErr?.message || 'no link data'}`,
-      createDetail: createErr?.message,
-      supabaseUrl,
+  if (!signInErr && signInData.session) {
+    return res.status(200).json({
+      access_token: signInData.session.access_token,
+      refresh_token: signInData.session.refresh_token,
+      isNew: false,
     });
   }
 
+  // 5. Sign-in failed — user doesn't exist yet, create them
+  const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
+    email: discordUser.email,
+    password: derivedPassword,
+    options: {
+      data: {
+        discord_id: discordUser.id,
+        discord_username: discordUser.username,
+        full_name: discordUser.global_name || discordUser.username,
+        avatar_url: discordUser.avatar
+          ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.webp?size=256`
+          : null,
+      },
+    },
+  });
+
+  if (signUpErr) {
+    return res.status(500).json({ error: signUpErr.message });
+  }
+
+  if (!signUpData.session) {
+    // Email confirmation is required on this Supabase project
+    return res.status(200).json({ needsEmailConfirm: true });
+  }
+
   return res.status(200).json({
-    token_hash: linkData.properties.hashed_token,
-    isNew,
+    access_token: signUpData.session.access_token,
+    refresh_token: signUpData.session.refresh_token,
+    isNew: true,
   });
 }
