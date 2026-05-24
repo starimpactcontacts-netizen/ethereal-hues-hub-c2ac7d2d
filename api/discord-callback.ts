@@ -45,12 +45,9 @@ export default async function handler(req: any, res: any) {
   });
   const discordUser = await discordRes.json();
 
-  if (!discordUser.email) {
-    return res.status(400).json({ error: 'Discord account has no verified email.' });
-  }
-
-  // 3. Derive a stable server-side password from Discord ID + client secret.
-  //    Only the server knows clientSecret, so users cannot compute this themselves.
+  // 3. Use a synthetic email keyed to Discord ID so Discord accounts never
+  //    collide with existing Google/email accounts on the same email address.
+  const syntheticEmail = `discord_${discordUser.id}@auth.loopgate.io`;
   const derivedPassword = `dsc_${discordUser.id}_${clientSecret.slice(-12)}`;
 
   const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -59,7 +56,7 @@ export default async function handler(req: any, res: any) {
 
   // 4. Try signing in first (existing user)
   const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
-    email: discordUser.email,
+    email: syntheticEmail,
     password: derivedPassword,
   });
 
@@ -73,12 +70,13 @@ export default async function handler(req: any, res: any) {
 
   // 5. Sign-in failed — user doesn't exist yet, create them
   const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
-    email: discordUser.email,
+    email: syntheticEmail,
     password: derivedPassword,
     options: {
       data: {
         discord_id: discordUser.id,
         discord_username: discordUser.username,
+        discord_email: discordUser.email,
         full_name: discordUser.global_name || discordUser.username,
         avatar_url: discordUser.avatar
           ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.webp?size=256`
