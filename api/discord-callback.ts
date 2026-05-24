@@ -56,12 +56,13 @@ export default async function handler(req: any, res: any) {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
-  // 4. Try to create user (fails gracefully if already exists)
-  let isNew = false;
   const avatarUrl = discordUser.avatar
     ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.webp?size=256`
     : null;
 
+  // 4. Try to create user — if it fails for any reason (e.g. already exists), we still
+  //    proceed to generateLink below. Only mark isNew=true on success.
+  let isNew = false;
   const { error: createErr } = await supabase.auth.admin.createUser({
     email: discordUser.email,
     email_confirm: true,
@@ -72,28 +73,21 @@ export default async function handler(req: any, res: any) {
       avatar_url: avatarUrl,
     },
   });
+  if (!createErr) isNew = true;
 
-  if (createErr) {
-    const alreadyExists =
-      createErr.message?.toLowerCase().includes('already') ||
-      createErr.message?.toLowerCase().includes('registered') ||
-      (createErr as any).status === 422;
-    if (!alreadyExists) {
-      return res.status(500).json({ error: 'Failed to create account', detail: createErr.message });
-    }
-    isNew = false;
-  } else {
-    isNew = true;
-  }
-
-  // 5. Generate a one-time magic link token for sign-in
+  // 5. Generate a one-time magic link token — works whether user is new or existing.
+  //    If this fails, something is genuinely wrong (bad service role key, wrong project URL, etc.)
   const { data: linkData, error: linkErr } = await supabase.auth.admin.generateLink({
     type: 'magiclink',
     email: discordUser.email,
   });
 
   if (linkErr || !linkData) {
-    return res.status(500).json({ error: 'Failed to generate sign-in link', detail: linkErr?.message });
+    return res.status(500).json({
+      error: 'Failed to sign in',
+      detail: linkErr?.message,
+      createDetail: createErr?.message,
+    });
   }
 
   return res.status(200).json({
