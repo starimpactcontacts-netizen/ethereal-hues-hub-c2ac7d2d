@@ -1,13 +1,14 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Infinity as InfinityIcon, ChevronRight, Users, Trophy, 
+import {
+  Infinity as InfinityIcon, ChevronRight, Users, Trophy,
   Flame, Calendar, Target, Shield, Swords,
   Search, X, TrendingUp, Plus, HelpCircle, CheckCircle2, Info,
   Clock, Award, UserPlus, Eye, Globe, Crown, Zap, UserRound,
   Sparkles, Star, Music, Mail, ArrowRight, History, Play, Loader2,
-  Clapperboard, ChevronDown, Crosshair, DollarSign, Shuffle
+  Clapperboard, ChevronDown, Crosshair, DollarSign, Shuffle,
+  Link2, Copy, Lock
 } from "lucide-react";
 import { InfinityLoop } from "@/components/loopgate/InfinityLoop";
 import { supabase } from "@/integrations/supabase/client";
@@ -926,6 +927,110 @@ export default function ArenaPage() {
                   </div>
                 </motion.div>
               )}
+
+              {/* ── YOUR OPEN LOBBIES ── */}
+              {(() => {
+                const openLobbies = myQuickFights.filter(f => f.status === 'waiting');
+                if (openLobbies.length === 0) return null;
+                return (
+                  <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
+                    <div className="flex items-center gap-2 mb-2 px-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                      <span className="text-[9px] font-black uppercase tracking-[0.25em] text-amber-400">Your Open Lobbies</span>
+                      <span className="ml-auto px-1.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/25 text-[9px] font-black text-amber-300">{openLobbies.length}</span>
+                    </div>
+                    <div className="space-y-2">
+                      {openLobbies.map(lobby => {
+                        const isPrivate = !!lobby.is_private;
+                        const lobbyUrl = `${window.location.origin}/fight/${lobby.id}`;
+                        const copyLink = () => {
+                          navigator.clipboard.writeText(lobbyUrl);
+                          toast.success('Link copied!');
+                        };
+                        const copyCode = () => {
+                          if (lobby.join_code) {
+                            navigator.clipboard.writeText(lobby.join_code);
+                            toast.success('Join code copied!');
+                          }
+                        };
+                        return (
+                          <div
+                            key={lobby.id}
+                            className="relative overflow-hidden rounded-2xl border border-amber-500/25"
+                            style={{ background: 'linear-gradient(160deg, hsl(0 0% 11%) 0%, hsl(0 0% 7%) 100%)' }}
+                          >
+                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-transparent" />
+
+                            <div className="px-4 pt-3.5 pb-3">
+                              {/* Status row */}
+                              <div className="flex items-center gap-2 mb-3">
+                                <div className="w-7 h-7 rounded-lg bg-amber-500/15 flex items-center justify-center shrink-0">
+                                  {isPrivate
+                                    ? <Lock className="w-3.5 h-3.5 text-amber-400" />
+                                    : <Globe className="w-3.5 h-3.5 text-amber-400" />}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="w-1 h-1 rounded-full bg-amber-400 animate-pulse" />
+                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-400">
+                                      {isPrivate ? 'Private' : 'Public'} · Waiting for opponent
+                                    </span>
+                                  </div>
+                                  <p className="text-[11px] text-white/40 mt-0.5">
+                                    {lobby.duration_minutes}min · created {formatDistanceToNow(new Date(lobby.created_at), { addSuffix: true })}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Join code — shown for private lobbies */}
+                              {isPrivate && lobby.join_code && (
+                                <button
+                                  onClick={copyCode}
+                                  className="w-full flex items-center justify-between px-3 py-2 mb-3 rounded-xl border border-amber-500/20 bg-amber-500/5 hover:bg-amber-500/10 transition-colors group"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-amber-400/60">Code</span>
+                                    <span className="text-[18px] font-black text-amber-300 tracking-[0.25em] leading-none" style={{ fontFamily: 'Teko, monospace' }}>
+                                      {lobby.join_code}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1 text-[9px] font-bold text-amber-400/50 group-hover:text-amber-300 transition-colors">
+                                    <Copy className="w-3 h-3" />
+                                    Copy code
+                                  </div>
+                                </button>
+                              )}
+
+                              {/* Actions */}
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={copyLink}
+                                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06] transition-colors text-[10px] font-bold text-white/50 hover:text-white/70"
+                                >
+                                  <Link2 className="w-3 h-3" />
+                                  Copy Link
+                                </button>
+                                <button
+                                  onClick={() => navigate(`/fight/${lobby.id}`)}
+                                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-black uppercase tracking-[0.15em] text-black transition-all active:scale-[0.98]"
+                                  style={{
+                                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                                    boxShadow: '0 6px 20px -6px rgba(245,158,11,0.45)',
+                                    fontFamily: 'Teko, sans-serif',
+                                  }}
+                                >
+                                  View Lobby
+                                  <ChevronRight className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                );
+              })()}
 
               {/* ⚖️ Judging Assignments */}
               {myJudgingBattles.length > 0 && (
