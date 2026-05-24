@@ -1,7 +1,77 @@
+import { useMemo } from "react";
 import { ExternalLink, Play, Trophy, ThumbsUp } from "lucide-react";
 import { useThumbnail } from "@/hooks/useThumbnail";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 import { getBunnyPlaybackUrl } from "@/lib/bunnyPlayback";
+
+const SALTY_MESSAGES = [
+  "Bro went to sleep 💀",
+  "Bro said nah 🚶",
+  "Couldn't handle the pressure",
+  "Ghosted the battle",
+  "Controller disconnected",
+  "No-show. No respect.",
+  "Ran from the smoke",
+  "Bro forfeited his dignity",
+];
+
+export function ForfeitSlot({
+  username,
+  color,
+  aspectClass = "aspect-[9/16]",
+}: {
+  username: string;
+  color: "red" | "blue";
+  aspectClass?: string;
+}) {
+  const msg = useMemo(() => SALTY_MESSAGES[Math.floor(Math.random() * SALTY_MESSAGES.length)], []);
+  const borderColor = color === "red" ? "border-red-500/15" : "border-blue-500/15";
+
+  return (
+    <div className={`bg-black border ${borderColor} overflow-hidden`}>
+      <div
+        className={`relative ${aspectClass} flex flex-col items-center justify-center gap-4 px-5`}
+        style={{ background: "linear-gradient(180deg, #080808 0%, #030303 100%)" }}
+      >
+        {/* Diagonal stripe texture */}
+        <div
+          className="absolute inset-0 opacity-[0.025]"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(45deg, #fff 0 1px, transparent 1px 18px)",
+          }}
+        />
+
+        {/* White-flag icon */}
+        <div className="relative z-10 w-14 h-14 rounded-2xl border border-white/[0.07] bg-white/[0.03] flex items-center justify-center">
+          <span className="text-3xl select-none">🏳️</span>
+        </div>
+
+        {/* Salty message */}
+        <div className="relative z-10 text-center px-2">
+          <p
+            className="text-[18px] font-black text-white/25 leading-snug"
+            style={{ fontFamily: "Teko, sans-serif", letterSpacing: "0.03em" }}
+          >
+            {msg}
+          </p>
+        </div>
+
+        {/* Bottom overlay */}
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/95 to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 bottom-0 px-2.5 py-2 flex items-center justify-between">
+          <span className="text-[10px] font-bold text-white/25 truncate">@{username}</span>
+          <span
+            className="text-[8px] font-black uppercase tracking-[0.2em] text-red-400/60 shrink-0"
+            style={{ fontFamily: "Teko, sans-serif" }}
+          >
+            FORFEIT
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function detectPlatform(url: string): string {
   if (!url) return "unknown";

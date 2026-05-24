@@ -19,7 +19,7 @@ import BattleInviteModal from "@/components/loopgate/BattleInviteModal";
 import BattleJudgingPanel from "@/components/loopgate/BattleJudgingPanel";
 import BattleChat from "@/components/loopgate/BattleChat";
 import BattleSongPicker from "@/components/loopgate/BattleSongPicker";
-import BattleSubmissionCard from "@/components/loopgate/BattleSubmissionCard";
+import BattleSubmissionCard, { ForfeitSlot } from "@/components/loopgate/BattleSubmissionCard";
 import BattleShowcase from "@/components/loopgate/BattleShowcase";
 import ReportUserButton from "@/components/loopgate/ReportUserButton";
 import {
@@ -662,7 +662,7 @@ export default function BattleDetailPage() {
               </span>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              {battle.challenger_submission_url && (
+              {battle.challenger_submission_url ? (
                 <BattleSubmissionCard
                   url={battle.challenger_submission_url}
                   username={battle.challenger_username}
@@ -676,8 +676,10 @@ export default function BattleDetailPage() {
                   hasVoted={myVote === battle.challenger_id}
                   onVote={() => handleVote(battle.challenger_id)}
                 />
-              )}
-              {battle.opponent_submission_url && (
+              ) : (isCompleted && battle.winner_id) ? (
+                <ForfeitSlot username={battle.challenger_username} color="red" />
+              ) : null}
+              {battle.opponent_submission_url ? (
                 <BattleSubmissionCard
                   url={battle.opponent_submission_url}
                   username={battle.opponent_username || '???'}
@@ -691,7 +693,9 @@ export default function BattleDetailPage() {
                   hasVoted={myVote === battle.opponent_id}
                   onVote={() => handleVote(battle.opponent_id!)}
                 />
-              )}
+              ) : (isCompleted && battle.winner_id && battle.opponent_username) ? (
+                <ForfeitSlot username={battle.opponent_username} color="blue" />
+              ) : null}
             </div>
 
             {/* Vote Bar */}

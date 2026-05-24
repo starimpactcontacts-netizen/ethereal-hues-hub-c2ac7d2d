@@ -24,7 +24,7 @@ import { toast } from 'sonner';
 import CountdownTimer from '@/components/loopgate/CountdownTimer';
 import QuickFightChat from '@/components/loopgate/QuickFightChat';
 import QuickFightResultCard from '@/components/loopgate/QuickFightResultCard';
-import BattleSubmissionCard from '@/components/loopgate/BattleSubmissionCard';
+import BattleSubmissionCard, { ForfeitSlot } from '@/components/loopgate/BattleSubmissionCard';
 import BattleAutoplayDuo from '@/components/loopgate/BattleAutoplayDuo';
 import FNFVoteScoreboard from '@/components/loopgate/FNFVoteScoreboard';
 import QuickFightPublicVote from '@/components/loopgate/QuickFightPublicVote';
@@ -525,6 +525,8 @@ export default function QuickFightPage() {
                       </button>
                     )}
                   </div>
+                ) : (fight.status === 'completed' && fight.winner_id) ? (
+                  <ForfeitSlot username={fight.player_1_username} color="red" aspectClass="aspect-square" />
                 ) : (
                   isP1 && canSubmit ? (
                     <UploadEditSlot
@@ -582,6 +584,8 @@ export default function QuickFightPage() {
                       </button>
                     )}
                   </div>
+                ) : (fight.status === 'completed' && fight.winner_id) ? (
+                  <ForfeitSlot username={fight.player_2_username || '???'} color="blue" aspectClass="aspect-square" />
                 ) : (
                   isP2 && canSubmit ? (
                     <UploadEditSlot
@@ -704,15 +708,6 @@ export default function QuickFightPage() {
           </div>
         )}
 
-        {/* Forfeit Result */}
-        {fight.status === 'completed' && fight.judge_notes?.includes('forfeit') && (
-          <div className="bg-muted border border-destructive/30 p-4 text-center">
-            <p className="text-sm font-display text-foreground uppercase tracking-wider">🏳️ Won by Forfeit</p>
-            <p className="text-[10px] text-muted-foreground mt-1">
-              Opponent did not submit. Winner receives <span className="text-gold font-bold">+20 IDX</span>, forfeiter penalized <span className="text-destructive font-bold">-10 IDX</span>
-            </p>
-          </div>
-        )}
         </div>
 
         {/* ── BELOW-VIDEO RAIL (vote + chat) — stacked on mobile, side-by-side on desktop ── */}
