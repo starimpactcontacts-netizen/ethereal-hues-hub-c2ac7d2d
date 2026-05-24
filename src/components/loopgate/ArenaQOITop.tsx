@@ -130,118 +130,101 @@ export default function ArenaQOITop() {
   return (
     <div className="mb-5">
       <div className="flex items-center justify-between px-4 mb-3 gap-2">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <div className="w-4 h-4 rounded-[5px] flex items-center justify-center shrink-0 bg-gradient-to-br from-amber-400 to-orange-500">
-            <Trophy className="w-2.5 h-2.5 text-black" strokeWidth={3} />
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-5 h-5 rounded-[6px] flex items-center justify-center shrink-0 bg-gradient-to-br from-amber-400 to-orange-500">
+            <Trophy className="w-3 h-3 text-black" strokeWidth={3} />
           </div>
-          <h2
-            className="text-[15px] font-extrabold tracking-tight text-foreground whitespace-nowrap"
-            style={{ fontFamily: "Inter, system-ui, sans-serif" }}
-          >
+          <h2 className="text-[15px] font-black tracking-tight text-foreground uppercase whitespace-nowrap">
             Top Editors
           </h2>
         </div>
         <Link
           to="/rankings"
-          className="flex items-center gap-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors shrink-0"
+          className="flex items-center gap-0.5 text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/60 hover:text-foreground transition-colors shrink-0"
         >
           View All <ChevronRight className="w-3 h-3" />
         </Link>
       </div>
 
-      <div className="mx-4 rounded-2xl border border-white/[0.06] bg-gradient-to-br from-amber-500/[0.04] via-white/[0.02] to-transparent overflow-hidden">
+      <div className="space-y-2 px-4">
         {loading ? (
-          <div className="p-4 space-y-2">
-            {[0,1,2].map(i => <div key={i} className="h-9 rounded-lg bg-white/[0.03] animate-pulse" />)}
-          </div>
+          <>
+            {[0,1,2].map(i => <div key={i} className="h-[72px] rounded-xl bg-white/[0.03] animate-pulse" />)}
+          </>
         ) : (
-          <div className="divide-y divide-white/[0.04]">
-            {rows.map((row, i) => {
-              const rank = i + 1;
-              const accent = rank === 1 ? "text-amber-300" : rank === 2 ? "text-zinc-300" : rank === 3 ? "text-orange-400" : "text-muted-foreground";
-              const idx = Number(row.global_index_score || 0);
-              const idxLabel = idx >= 1000 ? `${(idx / 1000).toFixed(idx >= 10000 ? 0 : 1)}K` : idx.toFixed(0);
-              return (
-                <Link
-                  key={row.id}
-                  to={`/u/${row.username}`}
-                  className="flex items-center gap-3 px-3 py-2.5 hover:bg-white/[0.03] active:bg-white/[0.05] transition-colors"
-                >
-                  <div className="w-6 flex items-center justify-center shrink-0">
-                    {rank <= 3 ? (
-                      <PodiumMark rank={rank as 1 | 2 | 3} />
-                    ) : (
-                      <span className={`text-[11px] font-black tabular-nums ${accent}`}>{rank}</span>
-                    )}
-                  </div>
-                  <Avatar className="w-7 h-7 shrink-0 border border-white/10">
-                    <AvatarImage src={row.avatar_url || ''} />
-                    <AvatarFallback className="bg-amber-500/15 text-amber-300 text-[10px] font-bold">
+          rows.map((row, i) => {
+            const rank = i + 1;
+            const idx = Number(row.global_index_score || 0);
+            const idxLabel = idx >= 1000 ? `${(idx / 1000).toFixed(idx >= 10000 ? 0 : 1)}K` : idx.toFixed(0);
+            const rankBadgeBg = rank === 1 ? 'bg-[#D4A857] text-black' : rank === 2 ? 'bg-zinc-400 text-black' : rank === 3 ? 'bg-amber-700 text-white' : 'bg-black/60 text-white/70';
+            const scoreColor = rank === 1 ? 'text-[#D4A857]' : rank <= 3 ? 'text-foreground' : 'text-foreground/80';
+            const cardBg = rank === 1 ? 'bg-gradient-to-r from-[#D4A857]/[0.08] to-white/[0.02] border-[#D4A857]/20' : 'bg-white/[0.03] border-white/[0.06]';
+
+            return (
+              <Link
+                key={row.id}
+                to={`/u/${row.username}`}
+                className={`flex items-center gap-3 p-3 rounded-xl border ${cardBg} active:opacity-70 transition-opacity`}
+              >
+                {/* Avatar with rank badge overlaid */}
+                <div className="relative shrink-0">
+                  <Avatar className="w-[52px] h-[52px] rounded-xl border border-white/10">
+                    <AvatarImage src={row.avatar_url || ''} className="object-cover" />
+                    <AvatarFallback className="bg-white/[0.06] text-foreground text-base font-black rounded-xl">
                       {row.username?.[0]?.toUpperCase() || '?'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[12.5px] font-semibold text-foreground truncate">{row.username}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      {row.level ? (
-                        <span className="text-[9px] text-muted-foreground tabular-nums">Lvl {row.level}</span>
-                      ) : null}
-                      {(() => {
-                        const prev = prevRanks[row.id];
-                        // No prior week snapshot → render nothing (no "NEW" tag).
-                        if (!prev) return null;
-                        const delta = prev - rank; // positive = climbed
-                        if (delta > 0) {
-                          const blazing = delta >= 5;
-                          return (
-                            <span
-                              className={`inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-md text-[9px] font-black tabular-nums border ${
-                                blazing
-                                  ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300 animate-pulse'
-                                  : 'bg-emerald-500/10 border-emerald-400/30 text-emerald-300'
-                              }`}
-                            >
-                              {blazing ? (
-                                <Flame className="w-2.5 h-2.5" strokeWidth={2.75} fill="currentColor" />
-                              ) : (
-                                <ArrowUp className="w-2.5 h-2.5" strokeWidth={3} />
-                              )}
-                              +{delta}
-                            </span>
-                          );
-                        }
-                        if (delta < 0) {
-                          return (
-                            <span className="inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-md bg-red-500/10 border border-red-400/30 text-[9px] font-black tabular-nums text-red-300">
-                              <ArrowDown className="w-2.5 h-2.5" strokeWidth={3} />
-                              {delta}
-                            </span>
-                          );
-                        }
+                  <div className={`absolute -top-1.5 -left-1.5 w-5 h-5 rounded-md flex items-center justify-center ${rankBadgeBg} shadow-lg`}>
+                    {rank <= 3 ? (
+                      rank === 1 ? <PodiumMark rank={1} /> : <span className="text-[10px] font-black">{rank}</span>
+                    ) : (
+                      <span className="text-[9px] font-black">{rank}</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Name + meta */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-[14px] font-bold text-foreground truncate leading-tight">{row.username}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    {row.level ? <span className="text-[10px] text-muted-foreground/60">Lvl {row.level}</span> : null}
+                    {(() => {
+                      const prev = prevRanks[row.id];
+                      if (!prev) return null;
+                      const delta = prev - rank;
+                      if (delta > 0) {
                         return (
-                          <span className="inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-md bg-white/[0.04] border border-white/10 text-[8.5px] font-bold uppercase tracking-wider text-muted-foreground/70">
-                            <Minus className="w-2.5 h-2.5" strokeWidth={3} />
+                          <span className={`inline-flex items-center gap-0.5 px-1 py-px rounded text-[9px] font-black border ${delta >= 5 ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300' : 'bg-emerald-500/10 border-emerald-400/30 text-emerald-300'}`}>
+                            {delta >= 5 ? <Flame className="w-2.5 h-2.5" strokeWidth={2.75} fill="currentColor" /> : <ArrowUp className="w-2.5 h-2.5" strokeWidth={3} />}
+                            +{delta}
                           </span>
                         );
-                      })()}
-                      {row.best_gatekeeper_qoi ? (
-                        <span className="text-[9px] text-purple-300/80 font-semibold tabular-nums">QOI {Number(row.best_gatekeeper_qoi).toFixed(1)}</span>
-                      ) : null}
-                    </div>
+                      }
+                      if (delta < 0) {
+                        return (
+                          <span className="inline-flex items-center gap-0.5 px-1 py-px rounded bg-red-500/10 border border-red-400/30 text-[9px] font-black text-red-300">
+                            <ArrowDown className="w-2.5 h-2.5" strokeWidth={3} />{delta}
+                          </span>
+                        );
+                      }
+                      return <Minus className="w-2.5 h-2.5 text-muted-foreground/30" strokeWidth={3} />;
+                    })()}
+                    {row.best_gatekeeper_qoi ? (
+                      <span className="text-[9px] text-purple-300/70 font-semibold">QOI {Number(row.best_gatekeeper_qoi).toFixed(1)}</span>
+                    ) : null}
                   </div>
-                  <div className="text-right shrink-0">
-                    <span
-                      className="font-display text-lg text-amber-300 tabular-nums leading-none"
-                      style={{ fontFamily: "Teko, sans-serif", letterSpacing: "0.02em" }}
-                    >
-                      {idxLabel}
-                    </span>
-                    <span className="block text-[8px] text-muted-foreground uppercase tracking-wider">IDX</span>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
+                </div>
+
+                {/* Score */}
+                <div className="text-right shrink-0">
+                  <span className={`font-black text-[22px] tabular-nums leading-none ${scoreColor}`} style={{ fontFamily: "Teko, sans-serif", letterSpacing: "0.02em" }}>
+                    {idxLabel}
+                  </span>
+                  <span className="block text-[8px] text-muted-foreground/40 uppercase tracking-widest font-bold">IDX</span>
+                </div>
+              </Link>
+            );
+          })
         )}
       </div>
     </div>
