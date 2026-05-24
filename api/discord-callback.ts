@@ -2,7 +2,6 @@ import { createClient } from '@supabase/supabase-js';
 
 const DISCORD_CLIENT_ID = '1508087834555187291';
 const DISCORD_REDIRECT_URI = 'https://loopgate.io/auth/discord/callback';
-const SUPABASE_URL = 'https://tmfnqnmyxxydrxwjkaiq.supabase.co';
 
 export default async function handler(req: any, res: any) {
   res.setHeader('Access-Control-Allow-Origin', 'https://loopgate.io');
@@ -15,8 +14,9 @@ export default async function handler(req: any, res: any) {
 
   const clientSecret = process.env.DISCORD_CLIENT_SECRET;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!clientSecret || !serviceRoleKey) {
-    return res.status(500).json({ error: 'Server misconfiguration: missing env vars' });
+  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+  if (!clientSecret || !serviceRoleKey || !supabaseUrl) {
+    return res.status(500).json({ error: 'Server misconfiguration: missing env vars', missing: { clientSecret: !clientSecret, serviceRoleKey: !serviceRoleKey, supabaseUrl: !supabaseUrl } });
   }
 
   // 1. Exchange code for Discord access token
@@ -51,8 +51,8 @@ export default async function handler(req: any, res: any) {
     return res.status(400).json({ error: 'Discord email is not verified. Please verify your Discord email first.' });
   }
 
-  // 3. Supabase admin client
-  const supabase = createClient(SUPABASE_URL, serviceRoleKey, {
+  // 3. Supabase admin client (use same URL as the React app)
+  const supabase = createClient(supabaseUrl, serviceRoleKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
@@ -84,9 +84,9 @@ export default async function handler(req: any, res: any) {
 
   if (linkErr || !linkData) {
     return res.status(500).json({
-      error: 'Failed to sign in',
-      detail: linkErr?.message,
+      error: `Failed to sign in: ${linkErr?.message || 'no link data'}`,
       createDetail: createErr?.message,
+      supabaseUrl,
     });
   }
 
