@@ -767,11 +767,27 @@ export default function ArenaPage() {
   };
 
   return (
-    <div className="min-h-screen pb-4" style={{ background: '#0A0A0A' }}>
+    <div
+      className="relative min-h-screen pb-4"
+      style={{
+        background: '#0A0A0A',
+        backgroundImage:
+          'linear-gradient(rgba(255,255,255,0.032) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.032) 1px, transparent 1px)',
+        backgroundSize: '44px 44px',
+      }}
+    >
+      {/* Radial depth pull — center top */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-0"
+        style={{
+          background: 'radial-gradient(ellipse 70% 40% at 50% 0%, rgba(255,255,255,0.022) 0%, transparent 100%)',
+        }}
+      />
       <LoopMonster />
 
       {/* ═══ HERO ═══ */}
-      <div className="relative overflow-hidden border-b border-white/[0.06]" style={{ background: '#000' }}>
+      <div className="relative z-[1] overflow-hidden border-b border-white/[0.06]">
 
         <div className="relative px-4 sm:px-6 lg:px-8 pt-3 pb-1 max-w-2xl mx-auto">
           {/* Title row — merged with stats */}
@@ -949,47 +965,58 @@ export default function ArenaPage() {
                         return (
                           <div
                             key={lobby.id}
-                            className="relative overflow-hidden rounded-2xl border border-amber-500/25"
-                            style={{ background: 'linear-gradient(160deg, hsl(0 0% 11%) 0%, hsl(0 0% 7%) 100%)' }}
+                            className="relative overflow-hidden border border-amber-500/30"
+                            style={{ background: '#0d0d0d' }}
                           >
-                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-transparent" />
+                            {/* Gold top bar */}
+                            <div className="h-[3px] w-full bg-amber-500/70" />
 
-                            <div className="px-4 pt-3.5 pb-3">
-                              {/* Status row */}
-                              <div className="flex items-center gap-2 mb-3">
-                                <div className="w-7 h-7 rounded-lg bg-amber-500/15 flex items-center justify-center shrink-0">
+                            <div className="px-4 pt-3 pb-4">
+                              {/* Badge row */}
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-1.5 border border-amber-500/30 bg-amber-500/10 px-2 py-0.5">
                                   {isPrivate
-                                    ? <Lock className="w-3.5 h-3.5 text-amber-400" />
-                                    : <Globe className="w-3.5 h-3.5 text-amber-400" />}
+                                    ? <Lock className="w-2.5 h-2.5 text-amber-400" />
+                                    : <Globe className="w-2.5 h-2.5 text-amber-400" />}
+                                  <span className="text-[9px] font-black uppercase tracking-[0.22em] text-amber-400">
+                                    {isPrivate ? 'Private' : 'Public'}
+                                  </span>
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="w-1 h-1 rounded-full bg-amber-400 animate-pulse" />
-                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-400">
-                                      {isPrivate ? 'Private' : 'Public'} · Waiting for opponent
-                                    </span>
-                                  </div>
-                                  <p className="text-[11px] text-white/40 mt-0.5">
-                                    {lobby.duration_minutes}min · created {formatDistanceToNow(new Date(lobby.created_at), { addSuffix: true })}
-                                  </p>
-                                </div>
+                                <span className="text-[10px] text-white/30 tabular-nums">
+                                  {lobby.duration_minutes}min · {formatDistanceToNow(new Date(lobby.created_at), { addSuffix: true })}
+                                </span>
                               </div>
 
-                              {/* Join code — shown for private lobbies */}
+                              {/* Waiting status */}
+                              <div className="flex items-center gap-2 mb-4">
+                                <motion.span
+                                  animate={{ opacity: [1, 0.2, 1] }}
+                                  transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+                                  className="w-2 h-2 rounded-full bg-amber-400 shrink-0"
+                                />
+                                <span className="text-[11px] font-black uppercase tracking-[0.22em] text-amber-400">
+                                  Waiting for Opponent
+                                </span>
+                              </div>
+
+                              {/* Code — large, prominent */}
                               {isPrivate && lobby.join_code && (
                                 <button
                                   onClick={copyCode}
-                                  className="w-full flex items-center justify-between px-3 py-2 mb-3 rounded-xl border border-amber-500/20 bg-amber-500/5 hover:bg-amber-500/10 transition-colors group"
+                                  className="w-full flex items-center justify-between px-4 py-3 mb-3 border border-amber-500/20 bg-black hover:bg-amber-500/5 transition-colors group"
                                 >
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-amber-400/60">Code</span>
-                                    <span className="text-[18px] font-black text-amber-300 tracking-[0.25em] leading-none" style={{ fontFamily: 'Teko, monospace' }}>
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-[8px] font-black uppercase tracking-[0.22em] text-amber-400/50">Code</span>
+                                    <span
+                                      className="text-[26px] font-black text-white tracking-[0.35em] leading-none"
+                                      style={{ fontFamily: 'Teko, monospace' }}
+                                    >
                                       {lobby.join_code}
                                     </span>
                                   </div>
-                                  <div className="flex items-center gap-1 text-[9px] font-bold text-amber-400/50 group-hover:text-amber-300 transition-colors">
+                                  <div className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-amber-400/50 group-hover:text-amber-300 transition-colors">
                                     <Copy className="w-3 h-3" />
-                                    Copy code
+                                    Copy
                                   </div>
                                 </button>
                               )}
@@ -998,22 +1025,18 @@ export default function ArenaPage() {
                               <div className="flex gap-2">
                                 <button
                                   onClick={copyLink}
-                                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06] transition-colors text-[10px] font-bold text-white/50 hover:text-white/70"
+                                  className="flex items-center gap-1.5 px-3.5 py-2.5 border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] transition-colors text-[10px] font-bold uppercase tracking-wider text-white/40 hover:text-white/60"
                                 >
                                   <Link2 className="w-3 h-3" />
                                   Copy Link
                                 </button>
                                 <button
                                   onClick={() => navigate(`/fight/${lobby.id}`)}
-                                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-black uppercase tracking-[0.15em] text-black transition-all active:scale-[0.98]"
-                                  style={{
-                                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                                    boxShadow: '0 6px 20px -6px rgba(245,158,11,0.45)',
-                                    fontFamily: 'Teko, sans-serif',
-                                  }}
+                                  className="flex-1 flex items-center justify-center gap-2 py-2.5 text-[14px] font-black uppercase tracking-[0.15em] text-black transition-all active:scale-[0.98]"
+                                  style={{ background: '#f59e0b', fontFamily: 'Teko, sans-serif' }}
                                 >
                                   View Lobby
-                                  <ChevronRight className="w-3.5 h-3.5" />
+                                  <ChevronRight className="w-4 h-4" />
                                 </button>
                               </div>
                             </div>
