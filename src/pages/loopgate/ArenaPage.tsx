@@ -944,9 +944,9 @@ export default function ArenaPage() {
                 return (
                   <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
                     <div className="flex items-center gap-2 mb-2 px-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                      <span className="text-[9px] font-black uppercase tracking-[0.25em] text-amber-400">Your Open Lobbies</span>
-                      <span className="ml-auto px-1.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/25 text-[9px] font-black text-amber-300">{openLobbies.length}</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse" />
+                      <span className="text-[14px] font-black uppercase text-white/70" style={{ fontFamily: 'Teko, sans-serif' }}>Your Open Lobbies</span>
+                      <span className="ml-auto px-1.5 py-0.5 border border-white/15 text-[10px] font-black text-white/50" style={{ fontFamily: 'Teko, sans-serif' }}>{openLobbies.length}</span>
                     </div>
                     <div className="space-y-2">
                       {openLobbies.map(lobby => {
@@ -999,9 +999,9 @@ export default function ArenaPage() {
                                 <motion.span
                                   animate={{ opacity: [1, 0.2, 1] }}
                                   transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut' }}
-                                  className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"
+                                  className="w-1.5 h-1.5 rounded-full bg-white/50 shrink-0"
                                 />
-                                <span className="text-[8px] font-black uppercase tracking-[0.2em] text-amber-400">
+                                <span className="text-[13px] font-black uppercase text-white/60" style={{ fontFamily: 'Teko, sans-serif' }}>
                                   Waiting for Opponent
                                 </span>
                               </div>
