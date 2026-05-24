@@ -867,8 +867,8 @@ export default function ArenaPage() {
               {profile && (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
                   <div
-                    className="relative overflow-hidden rounded-2xl border border-white/[0.1]"
-                    style={{ background: '#0a0a0a' }}
+                    className="relative overflow-hidden rounded-2xl border border-white/[0.07]"
+                    style={{ background: '#000' }}
                   >
 
                     {/* Fighter identity */}
