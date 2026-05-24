@@ -701,33 +701,24 @@ export default function CashBattlesSection({
             <Info className="w-3 h-3" />
           </button>
         </div>
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
             type="button"
             onClick={() => setCodeOpen(true)}
-            className="flex items-center gap-1 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-amber-300 border border-amber-400/30 hover:bg-amber-400/10 rounded-md whitespace-nowrap active:scale-[0.97] transition-all"
+            className="flex items-center gap-1 px-2 py-1 rounded-md bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-muted-foreground hover:text-foreground active:scale-[0.97] transition-all"
             aria-label="Join with code"
           >
-            <Key className="w-3 h-3" strokeWidth={3} />
-            Code
+            <Key className="w-3 h-3" strokeWidth={2.5} />
+            <span className="text-[10px] font-semibold uppercase tracking-wide">Code</span>
           </button>
           {onChallenge && (
             <button
               type="button"
               onClick={onChallenge}
-              className="group relative flex items-center gap-1.5 pl-2 pr-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-white whitespace-nowrap rounded-md overflow-hidden active:scale-[0.97] transition-transform"
-              style={{
-                background: 'linear-gradient(135deg, #ef4444 0%, #f59e0b 100%)',
-                boxShadow: '0 0 16px -4px rgba(239,68,68,0.6), inset 0 1px 0 rgba(255,255,255,0.25)',
-              }}
+              className="flex items-center gap-1 px-2 py-1 rounded-md bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-muted-foreground hover:text-foreground active:scale-[0.97] transition-all"
             >
-              <Plus className="w-3 h-3" strokeWidth={3} />
-              Custom Lobby
-              <span
-                aria-hidden
-                className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{ background: 'linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.25) 50%, transparent 70%)' }}
-              />
+              <Plus className="w-3 h-3" strokeWidth={2.5} />
+              <span className="text-[10px] font-semibold uppercase tracking-wide">Lobby</span>
             </button>
           )}
         </div>
