@@ -31,36 +31,10 @@ if (!OLD_SERVICE_KEY || !NEW_DB_URL) {
   process.exit(1);
 }
 
-// ── Tables to migrate (in FK-safe order) ────────────────────────────────────
-// Adjust or reorder if you hit FK violations.
-const TABLES = [
-  'profiles',
-  'user_roles',
-  'connected_platforms',
-  'houses',
-  'crews',
-  'crew_members',
-  'events',
-  'event_participations',
-  'event_rounds',
-  'event_messages',
-  'battles',
-  'battle_submissions',
-  'tournaments',
-  'tournament_participants',
-  'notifications',
-  'activity_feed',
-  'judge_inbox',
-  'review_requests',
-  'messages',
-  'message_threads',
-  'thread_participants',
-  'drops',
-  'drop_entries',
-  'shop_items',
-  'purchases',
-  'tickets',
-];
+// ── Tables to migrate ───────────────────────────────────────────────────────
+// Auto-discovered from new project's public schema (FK checks disabled during import).
+// Override by setting TABLES env var to a comma-separated list.
+const TABLES_OVERRIDE = process.env.TABLES?.split(',').map(s => s.trim()).filter(Boolean);
 
 // ── REST API helper ──────────────────────────────────────────────────────────
 async function fetchPage(table, offset) {
