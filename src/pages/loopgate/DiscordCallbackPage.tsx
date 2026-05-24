@@ -45,7 +45,7 @@ export default function DiscordCallbackPage() {
           return;
         }
 
-        navigate(json.isNew ? '/onboarding' : '/hub', { replace: true });
+        navigate('/hub', { replace: true });
       } catch {
         setErr('Something went wrong. Please try again.');
       }
