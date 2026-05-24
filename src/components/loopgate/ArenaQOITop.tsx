@@ -55,6 +55,7 @@ export default function ArenaQOITop() {
   const [rows, setRows] = useState<EditorRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [prevRanks, setPrevRanks] = useState<Record<string, number>>({});
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -152,7 +153,7 @@ export default function ArenaQOITop() {
             {[0,1,2].map(i => <div key={i} className="h-[72px] rounded-xl bg-white/[0.03] animate-pulse" />)}
           </>
         ) : (
-          rows.map((row, i) => {
+          (showAll ? rows : rows.slice(0, 4)).map((row, i) => {
             const rank = i + 1;
             const idx = Number(row.global_index_score || 0);
             const idxLabel = idx >= 1000 ? `${(idx / 1000).toFixed(idx >= 10000 ? 0 : 1)}K` : idx.toFixed(0);
@@ -227,6 +228,19 @@ export default function ArenaQOITop() {
           })
         )}
       </div>
+
+      {!loading && rows.length > 4 && (
+        <button
+          onClick={() => setShowAll(v => !v)}
+          className="w-full mt-2 px-4 py-2.5 flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+        >
+          {showAll ? (
+            <>Show Less <ChevronRight className="w-3 h-3 rotate-[-90deg]" /></>
+          ) : (
+            <>{rows.length - 4} More <ChevronRight className="w-3 h-3 rotate-90" /></>
+          )}
+        </button>
+      )}
     </div>
   );
 }
