@@ -12,7 +12,7 @@ export default function DiscordCallbackPage() {
     const code = params.get('code');
 
     if (errorParam) {
-      setErr('Discord authorization was cancelled or denied.');
+      setErr('Discord authorization was cancelled.');
       return;
     }
     if (!code) {
@@ -30,13 +30,18 @@ export default function DiscordCallbackPage() {
           return;
         }
 
-        const { error: verifyErr } = await supabase.auth.verifyOtp({
-          token_hash: json.token_hash,
-          type: 'magiclink',
+        if (json.needsEmailConfirm) {
+          setErr('Check your email — we sent a confirmation link to complete sign-up.');
+          return;
+        }
+
+        const { error: sessionErr } = await supabase.auth.setSession({
+          access_token: json.access_token,
+          refresh_token: json.refresh_token,
         });
 
-        if (verifyErr) {
-          setErr(verifyErr.message);
+        if (sessionErr) {
+          setErr(sessionErr.message);
           return;
         }
 
