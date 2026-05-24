@@ -115,10 +115,23 @@ async function run() {
   // Disable triggers/FK checks for the duration of the import
   await client.query('SET session_replication_role = replica;');
 
+  // Discover tables from the new project's public schema
+  let tables = TABLES_OVERRIDE;
+  if (!tables) {
+    const { rows } = await client.query(
+      `SELECT tablename FROM pg_tables
+       WHERE schemaname = 'public'
+         AND tablename NOT LIKE '\\_%' ESCAPE '\\'
+       ORDER BY tablename`
+    );
+    tables = rows.map(r => r.tablename);
+  }
+  console.log(`📋  Migrating ${tables.length} tables.\n`);
+
   let total_rows = 0;
   const errors = [];
 
-  for (const table of TABLES) {
+  for (const table of tables) {
     process.stdout.write(`  ▶  ${table} … `);
     try {
       const rows = await fetchAllRows(table);
