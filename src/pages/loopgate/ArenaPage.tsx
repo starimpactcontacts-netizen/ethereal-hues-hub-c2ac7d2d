@@ -787,7 +787,7 @@ export default function ArenaPage() {
       <LoopMonster />
 
       {/* ═══ HERO ═══ */}
-      <div className="relative z-[1] overflow-hidden border-b border-white/[0.06]">
+      <div className="relative z-[1] overflow-hidden border-b border-white/[0.06]" style={{ background: '#0a0a0a' }}>
 
         <div className="relative px-4 sm:px-6 lg:px-8 pt-3 pb-1 max-w-2xl mx-auto">
           {/* Title row — merged with stats */}
