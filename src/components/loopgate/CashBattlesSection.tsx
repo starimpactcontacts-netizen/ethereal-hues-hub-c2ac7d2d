@@ -705,20 +705,19 @@ export default function CashBattlesSection({
           <button
             type="button"
             onClick={() => setCodeOpen(true)}
-            className="flex items-center gap-1 px-2 py-1 rounded-md bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-muted-foreground hover:text-foreground active:scale-[0.97] transition-all"
+            className="w-7 h-7 rounded-md flex items-center justify-center bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-muted-foreground hover:text-foreground active:scale-[0.97] transition-all"
             aria-label="Join with code"
           >
-            <Key className="w-3 h-3" strokeWidth={2.5} />
-            <span className="text-[10px] font-semibold uppercase tracking-wide">Code</span>
+            <Key className="w-3.5 h-3.5" strokeWidth={2.5} />
           </button>
           {onChallenge && (
             <button
               type="button"
               onClick={onChallenge}
-              className="flex items-center gap-1 px-2 py-1 rounded-md bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-muted-foreground hover:text-foreground active:scale-[0.97] transition-all"
+              className="w-7 h-7 rounded-md flex items-center justify-center bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-muted-foreground hover:text-foreground active:scale-[0.97] transition-all"
+              aria-label="Create lobby"
             >
-              <Plus className="w-3 h-3" strokeWidth={2.5} />
-              <span className="text-[10px] font-semibold uppercase tracking-wide">Lobby</span>
+              <Plus className="w-3.5 h-3.5" strokeWidth={2.5} />
             </button>
           )}
         </div>
