@@ -64,6 +64,8 @@ export default async function handler(req: any, res: any) {
     return res.status(200).json({
       access_token: signInData.session.access_token,
       refresh_token: signInData.session.refresh_token,
+      discord_username: discordUser.username,
+      discord_global_name: discordUser.global_name || null,
       isNew: false,
     });
   }
@@ -97,6 +99,8 @@ export default async function handler(req: any, res: any) {
   return res.status(200).json({
     access_token: signUpData.session.access_token,
     refresh_token: signUpData.session.refresh_token,
+    discord_username: discordUser.username,
+    discord_global_name: discordUser.global_name || null,
     isNew: true,
   });
 }

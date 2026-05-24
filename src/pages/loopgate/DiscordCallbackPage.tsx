@@ -35,7 +35,7 @@ export default function DiscordCallbackPage() {
           return;
         }
 
-        const { error: sessionErr } = await supabase.auth.setSession({
+        const { data: sessionData, error: sessionErr } = await supabase.auth.setSession({
           access_token: json.access_token,
           refresh_token: json.refresh_token,
         });
@@ -43,6 +43,26 @@ export default function DiscordCallbackPage() {
         if (sessionErr) {
           setErr(sessionErr.message);
           return;
+        }
+
+        // For new Discord users, overwrite the trigger-generated username with their Discord username
+        if (json.isNew && sessionData?.user && json.discord_username) {
+          const base = (json.discord_username as string)
+            .toLowerCase()
+            .replace(/[^a-z0-9_]/g, '_')
+            .slice(0, 20);
+          // Try base name, then base_2, base_3, etc. until one is free
+          let candidate = base;
+          let suffix = 2;
+          while (suffix <= 10) {
+            const { error: upErr } = await supabase
+              .from('profiles')
+              .update({ username: candidate, display_name: json.discord_global_name || json.discord_username })
+              .eq('id', sessionData.user.id);
+            if (!upErr) break;
+            candidate = `${base.slice(0, 17)}_${suffix}`;
+            suffix++;
+          }
         }
 
         navigate('/hub', { replace: true });
