@@ -548,7 +548,7 @@ export default function HubPage() {
       {/* ═══════════════════════════════════════════════════════════════════
           HERO LAYER - Profile Card with Dimensional Gate Background
       ═══════════════════════════════════════════════════════════════════ */}
-      <div className="relative z-10 min-h-[100dvh] overflow-hidden" style={{ background: '#0a0a0a' }}>
+      <div className="relative z-10 overflow-hidden" style={{ background: '#0a0a0a' }}>
 
         <div className="relative px-4 pt-5 pb-0">
           <motion.div
