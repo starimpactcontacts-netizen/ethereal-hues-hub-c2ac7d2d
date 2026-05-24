@@ -84,6 +84,7 @@ const AppPage = lazy(() => import("./pages/AppPage"));
 const HowItWorksPage = lazy(() => import("./pages/HowItWorksPage"));
 const FAQPage = lazy(() => import("./pages/FAQPage"));
 const StartPage = lazy(() => import("./pages/StartPage"));
+const DiscordCallbackPage = lazy(() => import("./pages/loopgate/DiscordCallbackPage"));
 const MessagesPage = lazy(() => import("./pages/loopgate/MessagesPage"));
 const DirectMessagePage = lazy(() => import("./pages/loopgate/DirectMessagePage"));
 const CompetitionLobbyPage = lazy(() => import("./pages/loopgate/CompetitionLobbyPage"));
@@ -308,6 +309,7 @@ export default function App() {
             <Route path="/join/:crewSlug" element={<JoinCrewPage />} />
             <Route path="/u/:username" element={<UsernameLookupPage />} />
             <Route path="/start" element={<StartPage />} />
+            <Route path="/auth/discord/callback" element={<DiscordCallbackPage />} />
             
             {/* Guest-accessible routes (can browse, need login to participate) */}
             <Route element={

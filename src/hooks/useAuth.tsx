@@ -372,12 +372,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       return { error: null };
     }
-    const redirectUrl = `${window.location.origin}/`;
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'discord',
-      options: { redirectTo: redirectUrl },
+    // Web: bypass Supabase Discord provider, use our own OAuth flow
+    const discordParams = new URLSearchParams({
+      client_id: '1508087834555187291',
+      redirect_uri: 'https://loopgate.io/auth/discord/callback',
+      response_type: 'code',
+      scope: 'identify email',
     });
-    return { error };
+    window.location.href = `https://discord.com/oauth2/authorize?${discordParams}`;
+    return { error: null };
   };
 
   const signInWithMagicLink = async (email: string) => {
