@@ -905,34 +905,55 @@ export default function ArenaPage() {
                       </Link>
                     </div>
 
-                    {/* Stats grid */}
-                    <div className="relative grid grid-cols-4 divide-x divide-white/[0.05]">
-                      {[
-                        { label: 'Wins',    value: userStats?.wins   ?? '—', color: 'text-emerald-400', bg: 'radial-gradient(ellipse at 50% 120%, rgba(16,185,129,0.13), transparent 70%)' },
-                        { label: 'Losses',  value: userStats?.losses ?? '—', color: 'text-red-400',     bg: 'radial-gradient(ellipse at 50% 120%, rgba(239,68,68,0.10), transparent 70%)' },
-                        {
-                          label: 'Win %',
-                          value: userStats
-                            ? (userStats.wins + userStats.losses === 0 ? '—' : `${Math.round(userStats.wins / (userStats.wins + userStats.losses) * 100)}%`)
-                            : '—',
-                          color: 'text-amber-400',
-                          bg: 'radial-gradient(ellipse at 50% 120%, rgba(245,158,11,0.10), transparent 70%)',
-                        },
-                        {
-                          label: 'Streak',
-                          value: (userStats?.streak ?? 0) > 0 ? `${userStats!.streak}🔥` : '—',
-                          color: 'text-white',
-                          bg: 'radial-gradient(ellipse at 50% 120%, rgba(255,255,255,0.04), transparent 70%)',
-                        },
-                      ].map((stat) => (
-                        <div key={stat.label} className="flex flex-col items-center py-4 gap-0.5" style={{ background: stat.bg }}>
-                          <span className={`text-[28px] font-black leading-none tabular-nums ${stat.color}`} style={{ fontFamily: 'Teko, sans-serif' }}>
-                            {stat.value}
-                          </span>
-                          <span className="text-[7px] font-bold uppercase tracking-[0.18em] text-white/30">{stat.label}</span>
+                    {/* Stats bar */}
+                    {(() => {
+                      const wins = userStats?.wins ?? 0;
+                      const losses = userStats?.losses ?? 0;
+                      const total = wins + losses;
+                      const winPct = total === 0 ? null : Math.round(wins / total * 100);
+                      const streak = userStats?.streak ?? 0;
+                      return (
+                        <div className="px-4 py-3 space-y-3">
+                          {/* W / L pill row */}
+                          <div className="flex items-stretch gap-2">
+                            <div className="flex-1 flex flex-col items-center justify-center py-2.5 rounded-lg bg-emerald-500/[0.07] border border-emerald-500/20">
+                              <span className="text-[32px] font-black leading-none tabular-nums text-emerald-400" style={{ fontFamily: 'Teko, sans-serif' }}>
+                                {userStats ? wins : '—'}
+                              </span>
+                              <span className="text-[8px] font-bold uppercase tracking-[0.22em] text-emerald-400/50 mt-0.5">Wins</span>
+                            </div>
+                            <div className="flex-1 flex flex-col items-center justify-center py-2.5 rounded-lg bg-red-500/[0.07] border border-red-500/20">
+                              <span className="text-[32px] font-black leading-none tabular-nums text-red-400" style={{ fontFamily: 'Teko, sans-serif' }}>
+                                {userStats ? losses : '—'}
+                              </span>
+                              <span className="text-[8px] font-bold uppercase tracking-[0.22em] text-red-400/50 mt-0.5">Losses</span>
+                            </div>
+                          </div>
+                          {/* Win % bar */}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[8px] font-bold uppercase tracking-[0.22em] text-white/30">Win Rate</span>
+                              <span className="text-[13px] font-black tabular-nums text-white/80" style={{ fontFamily: 'Teko, sans-serif' }}>
+                                {winPct !== null ? `${winPct}%` : '—'}
+                              </span>
+                            </div>
+                            <div className="h-[3px] rounded-full bg-white/[0.06] overflow-hidden">
+                              <div
+                                className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-700"
+                                style={{ width: winPct !== null ? `${winPct}%` : '0%' }}
+                              />
+                            </div>
+                          </div>
+                          {/* Streak */}
+                          <div className="flex items-center justify-between pt-0.5 border-t border-white/[0.04]">
+                            <span className="text-[8px] font-bold uppercase tracking-[0.22em] text-white/30">Streak</span>
+                            <span className={`text-[13px] font-black tabular-nums ${streak > 0 ? 'text-amber-400' : 'text-white/30'}`} style={{ fontFamily: 'Teko, sans-serif' }}>
+                              {streak > 0 ? `${streak} WIN${streak > 1 ? 'S' : ''}` : streak < 0 ? `${Math.abs(streak)} LOSS${Math.abs(streak) > 1 ? 'ES' : ''}` : '—'}
+                            </span>
+                          </div>
                         </div>
-                      ))}
-                    </div>
+                      );
+                    })()}
                   </div>
                 </motion.div>
               )}
