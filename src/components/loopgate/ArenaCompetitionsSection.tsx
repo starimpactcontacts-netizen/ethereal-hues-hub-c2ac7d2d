@@ -20,7 +20,6 @@ function formatCount(n: number): string {
 }
 
 function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: string) => void }) {
-  const navigate = useNavigate();
   const spotsLeft = comp.max_players - comp.current_players;
   const isLive = comp.status === "live";
   const isFull = spotsLeft <= 0;
@@ -51,7 +50,7 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
     <div className="shrink-0 snap-start" style={{ width: CARD_W, height: CARD_H }}>
       <motion.div
         whileTap={{ scale: 0.97 }}
-        onClick={() => navigate(`/competition/${comp.slug || comp.id}`)}
+        onClick={() => onJoin(comp.id)}
         className="relative w-full h-full bg-surface-1 border border-white/[0.06] overflow-hidden rounded-2xl cursor-pointer flex flex-col"
       >
         {/* Cover — fills most of the square */}
