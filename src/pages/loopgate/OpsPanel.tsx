@@ -2467,7 +2467,7 @@ export default function OpsPanel() {
         </CollapsibleSection>
 
         {/* Event Control */}
-        <CollapsibleSection title="Events" icon={<Calendar size={13} className="text-gold" />} badge={events.length || null} defaultOpen>
+        <CollapsibleSection title="Events" icon={<Calendar size={13} className="text-gold" />} badge={events.length || null}>
         <section>
           
           {events.length === 0 ? (
@@ -2718,7 +2718,6 @@ export default function OpsPanel() {
           icon={<ThumbsUp size={13} className="text-orange-400" />}
           badge={pendingSubmissions.length || null}
           badgeColor="text-orange-400"
-          defaultOpen={pendingSubmissions.length > 0}
         >
         <section>
 
@@ -3068,7 +3067,6 @@ export default function OpsPanel() {
           title="Verification Requests"
           icon={<ShieldCheck size={13} className="text-gold" />}
           badge={verificationRequests.length || null}
-          defaultOpen={verificationRequests.length > 0}
         >
         <section>
 
@@ -3136,7 +3134,6 @@ export default function OpsPanel() {
           title="Global QOI Test (GQT)"
           icon={<GateIcon size={13} className="text-gold" />}
           badge={gqtSubmissions.filter(s => s.status === 'pending').length || null}
-          defaultOpen={gqtSubmissions.filter(s => s.status === 'pending').length > 0}
         >
         <section>
 
@@ -3433,7 +3430,6 @@ export default function OpsPanel() {
           icon={<Send size={13} className="text-purple-400" />}
           badge={reviewRequests.filter(r => r.status === 'pending').length || null}
           badgeColor="text-purple-400"
-          defaultOpen={reviewRequests.filter(r => r.status === 'pending').length > 0}
         >
         <section>
 
