@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { DollarSign, Swords, Clock, Info, X, Loader2, Building2, ChevronRight, Plus, Lock, Key } from "lucide-react";
+import { DollarSign, Swords, Clock, Info, X, Loader2, Building2, ChevronRight, Plus, Lock, Key, UserPlus, Trophy } from "lucide-react";
 import CashBattleVoteBar from "@/components/loopgate/CashBattleVoteBar";
 import BattleVoteBarCompact from "@/components/loopgate/BattleVoteBarCompact";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -308,36 +308,42 @@ function OpenMatchupCard({ app, onJoin, onRemoved, currentUserId }: { app: CashB
 function CashBattleInfoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-5" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
       <motion.div
-        initial={{ y: 100, opacity: 0 }}
+        initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 100, opacity: 0 }}
+        exit={{ y: 20, opacity: 0 }}
         onClick={e => e.stopPropagation()}
-        className="relative w-full max-w-md mx-4 mb-4 sm:mb-0 rounded-2xl overflow-hidden"
-        style={{ background: "#141416", border: "1px solid rgba(255,255,255,0.08)" }}
+        className="relative w-full max-w-sm rounded-2xl bg-[#0f0f11] border border-white/[0.07] overflow-hidden"
       >
         <div className="p-5">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #3b82f6, #ef4444)' }}>
-                <Swords className="w-4 h-4 text-white" />
-              </div>
-              <h3 className="text-lg font-black text-white uppercase tracking-wider" style={{ fontFamily: "Teko, sans-serif" }}>
-                What are Edit Battles?
-              </h3>
-            </div>
-            <button onClick={onClose} className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
-              <X className="w-4 h-4 text-zinc-400" />
+            <h3 className="text-[1.6rem] font-black text-white uppercase leading-none" style={{ fontFamily: "Teko, sans-serif" }}>
+              Edit Battles
+            </h3>
+            <button onClick={onClose} className="w-7 h-7 rounded-full bg-white/[0.06] hover:bg-white/[0.12] flex items-center justify-center transition-colors">
+              <X className="w-3.5 h-3.5 text-white/50" />
             </button>
           </div>
-          <div className="space-y-3 text-[13px] text-zinc-300 leading-relaxed">
-            <p><span className="text-white font-bold">Edit Battles</span> are 1v1 head-to-head edit competitions. Two editors go in, one walks out the winner — judged by community vote or our official judges.</p>
-            <p>⚔️ Tap <span className="text-white font-semibold">Challenge</span> to call out a specific editor for a ranked 1v1, or jump into any open matchup instantly.</p>
-            <p className="pt-2 border-t border-white/10"><span className="text-white font-bold">💰 Cash Battles</span> are the sponsored tier of Edit Battles — winner takes the entire cash prize.</p>
-            <p>🎬 Both editors use the same provided scenepack from a sponsor campaign and submit before the timer runs out.</p>
-            <p>⚡ Hit <span className="text-blue-400 font-semibold">Cash</span> above to enter the cash queue, or tap any open <span className="text-amber-400 font-semibold">$$$</span> matchup to accept the fight instantly.</p>
+          <div className="space-y-3">
+            {[
+              { n: '01', icon: Swords,    title: '1v1 head-to-head',       desc: 'Two editors go in, one walks out the winner — judged by community vote or official judges.' },
+              { n: '02', icon: UserPlus,  title: 'Challenge or queue',     desc: 'Tap Challenge to call out a specific editor, or queue up and get matched with the next available opponent.' },
+              { n: '03', icon: Clock,     title: 'Submit your edit',       desc: 'Both editors get the same time window. Drop your edit link before the timer runs out.' },
+              { n: '04', icon: Trophy,    title: 'Win INDEX points',       desc: 'Beat your opponent and earn INDEX points that push you up the global leaderboard.' },
+            ].map(({ n, icon: Icon, title, desc }) => (
+              <div key={n} className="flex items-start gap-3">
+                <span className="text-[11px] font-black text-white/20 w-5 shrink-0 mt-0.5 tabular-nums">{n}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <Icon className="w-3 h-3 text-white/40 shrink-0" strokeWidth={2.5} />
+                    <p className="text-[12px] font-bold text-white/80 leading-none">{title}</p>
+                  </div>
+                  <p className="text-[11px] text-white/35 leading-snug">{desc}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </motion.div>
