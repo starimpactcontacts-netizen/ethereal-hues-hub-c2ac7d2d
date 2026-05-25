@@ -28,6 +28,7 @@ interface Song {
   artist: string;
   cover: string | null;
   preview: string | null;
+  difficulty?: string | null;
 }
 
 const PHASE_TIMER_SEC = 180;
@@ -201,12 +202,12 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
     if (state?.bothReady || state?.reveal) await startFromSelection();
   };
 
-  // Load songs from radio_tracks
+  // Load songs from battle_songs
   useEffect(() => {
     if (!open) return;
     supabase
-      .from('radio_tracks' as any)
-      .select('id, song_name, artist_name, cover_url, preview_url, audio_url, is_priority, is_featured')
+      .from('battle_songs' as any)
+      .select('id, song_name, artist_name, cover_url, preview_url, audio_url, is_priority, is_featured, difficulty')
       .eq('is_featured', true)
       .order('is_priority', { ascending: false })
       .limit(60)
@@ -218,6 +219,7 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
             artist: t.artist_name,
             cover: t.cover_url,
             preview: t.preview_url || t.audio_url,
+            difficulty: t.difficulty || null,
           })));
         }
       });

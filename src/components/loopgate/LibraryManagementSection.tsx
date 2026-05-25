@@ -17,7 +17,7 @@ const DIFF: Record<Difficulty, { label: string; cls: string }> = {
 };
 const DIFFICULTIES: Difficulty[] = ['easy', 'normal', 'hard', 'nightmare'];
 
-interface RadioTrack {
+interface BattleSong {
   id: string;
   song_name: string;
   artist_name: string | null;
@@ -108,7 +108,7 @@ export default function LibraryManagementSection() {
 
 /* ============================ SONGS ============================ */
 function SongsManager() {
-  const [tracks, setTracks] = useState<RadioTrack[]>([]);
+  const [tracks, setTracks] = useState<BattleSong[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
@@ -121,12 +121,12 @@ function SongsManager() {
   const load = async () => {
     setLoading(true);
     const { data } = await supabase
-      .from("radio_tracks")
+      .from("battle_songs" as any)
       .select("*")
       .order("is_priority", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(500);
-    setTracks((data as any as RadioTrack[]) || []);
+    setTracks((data as any as BattleSong[]) || []);
     setLoading(false);
   };
 
@@ -172,7 +172,7 @@ function SongsManager() {
     setAddingId(t.id);
     try {
       const cover = t.album?.cover_medium || t.album?.cover_small || null;
-      const { error } = await supabase.from("radio_tracks").insert({
+      const { error } = await supabase.from("battle_songs" as any).insert({
         song_name: t.title,
         artist_name: t.artist?.name || "Unknown",
         audio_url: t.preview,
@@ -180,7 +180,7 @@ function SongsManager() {
         cover_url: cover,
         deezer_id: t.id,
         is_featured: true,
-      } as any);
+      });
       if (error) throw error;
       toast.success(`Added "${t.title}"`);
       load();
@@ -197,28 +197,28 @@ function SongsManager() {
 
   const removeTrack = async (id: string) => {
     if (!confirm("Remove this song from the library?")) return;
-    const { error } = await supabase.from("radio_tracks").delete().eq("id", id);
+    const { error } = await supabase.from("battle_songs" as any).delete().eq("id", id);
     if (error) return toast.error(error.message);
     toast.success("Removed");
     setTracks((t) => t.filter((x) => x.id !== id));
   };
 
-  const togglePriority = async (t: RadioTrack) => {
+  const togglePriority = async (t: BattleSong) => {
     const next = !t.is_priority;
-    const { error } = await supabase.from("radio_tracks").update({ is_priority: next }).eq("id", t.id);
+    const { error } = await supabase.from("battle_songs" as any).update({ is_priority: next }).eq("id", t.id);
     if (error) return toast.error(error.message);
     setTracks((arr) => arr.map((x) => (x.id === t.id ? { ...x, is_priority: next } : x)));
   };
 
-  const toggleFeatured = async (t: RadioTrack) => {
+  const toggleFeatured = async (t: BattleSong) => {
     const next = !t.is_featured;
-    const { error } = await supabase.from("radio_tracks").update({ is_featured: next }).eq("id", t.id);
+    const { error } = await supabase.from("battle_songs" as any).update({ is_featured: next }).eq("id", t.id);
     if (error) return toast.error(error.message);
     setTracks((arr) => arr.map((x) => (x.id === t.id ? { ...x, is_featured: next } : x)));
   };
 
   const setDifficulty = async (id: string, diff: Difficulty | null) => {
-    const { error } = await supabase.from("radio_tracks").update({ difficulty: diff } as any).eq("id", id);
+    const { error } = await supabase.from("battle_songs" as any).update({ difficulty: diff }).eq("id", id);
     if (error) return toast.error(error.message);
     setTracks((arr) => arr.map((x) => (x.id === id ? { ...x, difficulty: diff } : x)));
   };
@@ -421,7 +421,7 @@ function ManualUploadForm({ onAdded }: { onAdded: () => void }) {
       }
 
       setProgress("Saving to library…");
-      const { error } = await supabase.from("radio_tracks").insert({
+      const { error } = await supabase.from("battle_songs" as any).insert({
         song_name: songName.trim(),
         artist_name: artistName.trim() || null,
         audio_url: audioUrl,
@@ -430,7 +430,7 @@ function ManualUploadForm({ onAdded }: { onAdded: () => void }) {
         deezer_id: null,
         is_featured: true,
         difficulty: difficulty || null,
-      } as any);
+      });
       if (error) throw error;
 
       toast.success(`"${songName.trim()}" added to library`);
