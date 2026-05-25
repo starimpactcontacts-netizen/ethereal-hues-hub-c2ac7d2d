@@ -1,6 +1,6 @@
 import type { QuickFight } from '@/hooks/useQuickFight';
-import BattleOutroButton from './BattleOutroButton';
-import BattleIntroButton from './BattleIntroButton';
+import { Share2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface QuickFightResultCardProps {
   fight: QuickFight;
@@ -9,25 +9,27 @@ interface QuickFightResultCardProps {
 export default function QuickFightResultCard({ fight }: QuickFightResultCardProps) {
   if (!fight.winner_id || fight.status !== 'completed') return null;
 
-  return (
-    <div className="space-y-3 max-w-[360px] mx-auto">
-      {/* Battle Intro — VS + trash-talk clip to splice onto the START of the edit */}
-      <BattleIntroButton
-        player1Username={fight.player_1_username || 'red'}
-        player2Username={fight.player_2_username || 'blue'}
-        player1Id={fight.player_1_id}
-        player2Id={fight.player_2_id || ''}
-        player1Avatar={fight.player_1_avatar_url}
-        player2Avatar={fight.player_2_avatar_url}
-        fightId={fight.id}
-      />
+  const battleUrl = `${window.location.origin}/fight/${fight.id}`;
 
-      {/* Battle Outro — "Vote for me" promo clip to splice onto the END */}
-      <BattleOutroButton
-        player1Username={fight.player_1_username || 'red'}
-        player2Username={fight.player_2_username || 'blue'}
-        fightId={fight.id}
-      />
-    </div>
+  const handleShare = async () => {
+    const text = `🔥 Edit battle just went down on Loopgate — who won?\n${battleUrl}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ text, url: battleUrl });
+      } else {
+        await navigator.clipboard.writeText(text);
+        toast.success('Copied to clipboard — paste it anywhere!');
+      }
+    } catch {}
+  };
+
+  return (
+    <button
+      onClick={handleShare}
+      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-white/10 bg-white/[0.04] text-white/60 text-[13px] font-semibold hover:bg-white/[0.07] active:scale-[0.98] transition-all"
+    >
+      <Share2 className="w-4 h-4" />
+      Share this edit battle
+    </button>
   );
 }
