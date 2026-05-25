@@ -545,7 +545,7 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
           <motion.div key="intro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="absolute inset-0 flex">
             <IntroSide color="red"  player={redPlayer}  pack={redPicks.pack}  song={redPicks.song} />
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
               <div className="flex flex-col items-center">
                 <motion.div animate={{ scale: [1, 1.12, 1] }} transition={{ duration: 0.9, repeat: Infinity }} className="flex flex-col items-center">
                   <Swords className="w-8 h-8 text-amber-400 mb-1" style={{ filter: 'drop-shadow(0 0 8px rgba(245,158,11,0.6))' }} />

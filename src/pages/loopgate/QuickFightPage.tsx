@@ -341,7 +341,10 @@ export default function QuickFightPage() {
         opponent={opponentPlayer}
         youSide={isP1 ? 'red' : 'blue'}
         selectionDeadline={(fight as any).selection_deadline || null}
-        onComplete={() => {}}
+        onComplete={() => {
+          if (typeof window !== 'undefined') sessionStorage.setItem(`qf_reveal_done_${fight.id}`, '1');
+          setRevealDone(true);
+        }}
         onCancel={() => navigate('/hub')}
       />
     );
