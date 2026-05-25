@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { ChevronRight, Lock, ArrowLeft, Zap, Users, Trophy, Target } from "lucide-react";
+import { ChevronRight, Lock, ArrowLeft, Users, Trophy, BarChart2, Star, Crosshair } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRealEvents, useRealRankings, useEventRankings, useActiveSession } from "@/hooks/useRealData";
 import { useXPUserLeaderboard, useXPCrewLeaderboard } from "@/hooks/useXPLeaderboard";
@@ -10,7 +11,7 @@ import CrewBadge from "@/components/loopgate/CrewBadge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import SEO, { pageSEO } from "@/components/SEO";
 
-type TabType = "index" | "xp" | "crews" | "events";
+type TabType = "index" | "xp" | "crews" | "skill" | "events";
 
 const getRankStyle = (rank: number) => {
   if (rank === 1) return {
@@ -69,9 +70,10 @@ export default function RankingsPage() {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(eventIdFromUrl);
 
   const tabs: { id: TabType; label: string; icon: React.ElementType }[] = [
-    { id: "index", label: "INDEX", icon: Target },
-    { id: "xp", label: "XP", icon: Zap },
+    { id: "index", label: "INDEX", icon: BarChart2 },
+    { id: "xp", label: "XP", icon: Star },
     { id: "crews", label: "UNITS", icon: Users },
+    { id: "skill", label: "SKILL", icon: Crosshair },
   ];
 
   useActiveSession();
@@ -81,6 +83,13 @@ export default function RankingsPage() {
   const { rankings: eventRankings, loading: eventRankingsLoading } = useEventRankings(selectedEventId);
   const { users: xpUsers, loading: xpLoading } = useXPUserLeaderboard(50);
   const { crews: xpCrews, loading: crewsLoading } = useXPCrewLeaderboard(20);
+  const [skillRankings, setSkillRankings] = useState<{ id: string; username: string; avatar_url: string | null; best_gatekeeper_qoi: number; level: number | null }[]>([]);
+  useEffect(() => {
+    supabase.from('profiles').select('id, username, avatar_url, best_gatekeeper_qoi, level')
+      .eq('is_hidden', false).not('best_gatekeeper_qoi', 'is', null)
+      .order('best_gatekeeper_qoi', { ascending: false }).limit(50)
+      .then(({ data }) => setSkillRankings((data as any[]) || []));
+  }, []);
 
   const selectedEvent = events.find((e) => e.id === selectedEventId);
   const isLiveEvent = selectedEvent?.status === "live";
@@ -194,9 +203,8 @@ export default function RankingsPage() {
       
       {/* Header */}
       <header className="px-4 pt-5 pb-4 border-b border-white/[0.07]">
-        <span className="text-[9px] text-muted-foreground/40 uppercase tracking-[0.4em] font-bold">Global Leaderboard</span>
-        <h1 className="font-display text-[42px] tracking-[0.05em] text-foreground leading-none font-black mt-1">
-          RANKINGS
+        <h1 className="font-display text-[38px] tracking-[0.06em] text-foreground leading-none font-black" style={{ fontFamily: 'Teko, sans-serif' }}>
+          GLOBAL LEADERBOARD
         </h1>
       </header>
 
@@ -462,6 +470,79 @@ export default function RankingsPage() {
                             {xpLabel}
                           </span>
                           <p className="text-[8px] text-muted-foreground/30 uppercase tracking-wider font-bold">XP</p>
+                        </div>
+                      </motion.button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* Skill Tab */}
+        {activeTab === "skill" && (
+          <motion.div
+            key="skill"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="px-0 pt-2"
+          >
+            {skillRankings.length === 0 ? (
+              <EmptyState icon={Crosshair} message="No skill rankings yet" />
+            ) : (
+              <div>
+                {skillRankings.map((user, index) => {
+                  const rank = index + 1;
+                  const style = getRankStyle(rank);
+                  const qoi = Number(user.best_gatekeeper_qoi).toFixed(2);
+                  return (
+                    <div key={user.id}>
+                      {rank === 4 && (
+                        <div className="flex items-center gap-2 px-4 py-2 mt-1">
+                          <div className="flex-1 h-px bg-white/[0.06]" />
+                          <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-muted-foreground/30">Top 10</span>
+                          <div className="flex-1 h-px bg-white/[0.06]" />
+                        </div>
+                      )}
+                      {rank === 11 && (
+                        <div className="flex items-center gap-2 px-4 py-2">
+                          <div className="flex-1 h-px bg-white/[0.04]" />
+                          <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-muted-foreground/20">Rankings</span>
+                          <div className="flex-1 h-px bg-white/[0.04]" />
+                        </div>
+                      )}
+                      <motion.button
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.01 }}
+                        onClick={() => navigate(`/editor/${user.id}`)}
+                        className={`w-full ${style.py} flex items-center gap-3 text-left active:opacity-60 transition-opacity border-b border-white/[0.04] last:border-0`}
+                      >
+                        <div className="w-8 shrink-0 flex items-center justify-center">
+                          {style.rankBadge ? (
+                            <span className={`w-6 h-6 rounded flex items-center justify-center text-[11px] font-black ${style.rankBadge}`} style={{ fontFamily: 'Teko, sans-serif' }}>{rank}</span>
+                          ) : (
+                            <span className={`font-black tabular-nums ${rank <= 10 ? 'text-base text-white/50' : 'text-sm text-white/25'}`} style={{ fontFamily: 'Teko, sans-serif' }}>{rank}</span>
+                          )}
+                        </div>
+                        <Avatar className={`${style.avatarSize} border ${style.avatarBorder} shrink-0`}>
+                          <AvatarImage src={user.avatar_url || undefined} />
+                          <AvatarFallback className="bg-surface-1 text-[10px] font-bold">
+                            {user.username[0]?.toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <span className={`font-bold ${style.nameSize} truncate text-foreground block`}>{user.username}</span>
+                          {user.level && <LevelBadge level={user.level} size="sm" className="mt-0.5" />}
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className={`font-display font-black tabular-nums ${style.scoreSize} ${style.scoreColor}`}>
+                            {qoi}
+                          </span>
+                          <p className="text-[8px] text-muted-foreground/30 uppercase tracking-wider font-bold">QOI</p>
                         </div>
                       </motion.button>
                     </div>
