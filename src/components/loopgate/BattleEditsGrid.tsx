@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { Trophy, Clock, Swords, Users, ArrowRight, EyeOff, X, Play } from "lucide-react";
+import { createPortal } from "react-dom";
+import { Trophy, Clock, Swords, Users, ArrowRight, EyeOff, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,26 +23,126 @@ interface BattleEditsGridProps {
   isOwner?: boolean;
 }
 
-// ── thumbnail helpers ────────────────────────────────────────────────────────
+// ── Thumbnail card — uses a muted video to show the actual first frame ────────
 
-function extractYoutubeThumbnail(url: string): string | null {
-  try {
-    const u = new URL(url);
-    let id: string | null = null;
-    if (u.hostname === "youtu.be") {
-      id = u.pathname.slice(1).split("?")[0];
-    } else if (u.hostname.includes("youtube.com")) {
-      id = u.searchParams.get("v");
-      if (!id) {
-        const m = u.pathname.match(/\/shorts\/([^/?]+)/);
-        if (m) id = m[1];
-      }
-    }
-    return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : null;
-  } catch {
-    return null;
+function VideoThumbnail({ src, stored }: { src: string | null; stored: string | null }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Seek to 1s when metadata is ready so we get a real frame
+  const handleMeta = () => {
+    if (videoRef.current) videoRef.current.currentTime = 1;
+  };
+  const handleSeeked = () => {
+    if (videoRef.current) videoRef.current.pause();
+  };
+
+  if (!src) {
+    return stored
+      ? <img src={stored} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+      : null;
   }
+
+  const isCDN = src.includes("b-cdn.net") || src.includes("bunnycdn") || src.includes("bunny.net");
+
+  if (isCDN) {
+    return (
+      <video
+        ref={videoRef}
+        src={src}
+        muted
+        playsInline
+        preload="metadata"
+        onLoadedMetadata={handleMeta}
+        onSeeked={handleSeeked}
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+      />
+    );
+  }
+
+  // For YouTube/TikTok fallback to stored thumbnail or nothing
+  return stored
+    ? <img src={stored} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+    : null;
 }
+
+// ── Full-screen video modal (portal, above everything) ────────────────────────
+
+function VideoModal({ edit, onClose }: { edit: EditEntry; onClose: () => void }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    // Prevent body scroll while open
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, []);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  const isCDN = edit.submissionUrl?.includes("b-cdn.net") ||
+    edit.submissionUrl?.includes("bunnycdn") ||
+    edit.submissionUrl?.includes("bunny.net");
+  const isYT = edit.submissionUrl?.includes("youtube.com") || edit.submissionUrl?.includes("youtu.be");
+  const isTikTok = edit.submissionUrl?.includes("tiktok.com");
+
+  const modal = (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[9999] bg-black flex items-center justify-center"
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+    >
+      {/* Close button — floating top-right */}
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center"
+        style={{ top: "max(16px, env(safe-area-inset-top))" }}
+      >
+        <X className="w-4 h-4 text-white/80" />
+      </button>
+
+      {isCDN ? (
+        <video
+          ref={videoRef}
+          src={edit.submissionUrl!}
+          autoPlay
+          controls
+          playsInline
+          className="w-full h-full object-contain"
+        />
+      ) : (isYT || isTikTok) ? (
+        <div className="flex flex-col items-center gap-4 px-8 text-center">
+          <p className="text-sm text-white/50">Hosted on {isYT ? "YouTube" : "TikTok"}</p>
+          <a
+            href={edit.submissionUrl!}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-5 py-2.5 bg-white text-black font-bold text-sm rounded-xl"
+          >
+            Open to watch
+          </a>
+        </div>
+      ) : (
+        <video
+          ref={videoRef}
+          src={edit.submissionUrl!}
+          autoPlay
+          controls
+          playsInline
+          className="w-full h-full object-contain"
+        />
+      )}
+    </motion.div>
+  );
+
+  return createPortal(modal, document.body);
+}
+
+// ── helpers ───────────────────────────────────────────────────────────────────
 
 async function fetchTikTokThumbnail(url: string): Promise<string | null> {
   try {
@@ -54,102 +155,23 @@ async function fetchTikTokThumbnail(url: string): Promise<string | null> {
   }
 }
 
-async function resolveThumbnail(submissionUrl: string | null, stored: string | null): Promise<string | null> {
-  if (stored) return stored;
-  if (!submissionUrl) return null;
-  const yt = extractYoutubeThumbnail(submissionUrl);
-  if (yt) return yt;
-  if (submissionUrl.includes("tiktok.com")) return fetchTikTokThumbnail(submissionUrl);
-  return null;
-}
-
-// ── In-app video player modal ────────────────────────────────────────────────
-
-function VideoModal({ edit, onClose }: { edit: EditEntry; onClose: () => void }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [onClose]);
-
-  const isCDN = edit.submissionUrl?.includes("b-cdn.net") || edit.submissionUrl?.includes("bunny");
-  const isYT = edit.submissionUrl?.includes("youtube.com") || edit.submissionUrl?.includes("youtu.be");
-  const isTikTok = edit.submissionUrl?.includes("tiktok.com");
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[9999] bg-black flex flex-col"
-      onClick={onClose}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0" onClick={(e) => e.stopPropagation()}>
-        <div>
-          <p className="text-[11px] text-white/40 uppercase tracking-wider">{edit.label}</p>
-          <p className="text-[10px] text-white/25 mt-0.5">
-            {edit.result === "win" ? "🏆 Win" : edit.result === "loss" ? "Loss" : "Pending"}
-          </p>
-        </div>
-        <button
-          onClick={onClose}
-          className="w-8 h-8 rounded-full bg-white/[0.08] flex items-center justify-center"
-        >
-          <X className="w-4 h-4 text-white/60" />
-        </button>
-      </div>
-
-      {/* Video area */}
-      <div className="flex-1 flex items-center justify-center overflow-hidden" onClick={(e) => e.stopPropagation()}>
-        {isCDN ? (
-          <video
-            ref={videoRef}
-            src={edit.submissionUrl!}
-            autoPlay
-            controls
-            playsInline
-            className="max-h-full max-w-full object-contain"
-            style={{ maxHeight: "calc(100vh - 120px)" }}
-          />
-        ) : isYT || isTikTok ? (
-          /* For YouTube/TikTok, open externally — referrer isn't the issue there */
-          <div className="flex flex-col items-center gap-4 px-8 text-center">
-            <Play className="w-12 h-12 text-white/20" />
-            <p className="text-sm text-white/50">This edit is hosted on {isYT ? "YouTube" : "TikTok"}</p>
-            <a
-              href={edit.submissionUrl!}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-5 py-2.5 bg-white text-black font-bold text-sm rounded-xl"
-            >
-              Open to watch
-            </a>
-          </div>
-        ) : (
-          /* Fallback: try video tag anyway */
-          <video
-            ref={videoRef}
-            src={edit.submissionUrl!}
-            autoPlay
-            controls
-            playsInline
-            className="max-h-full max-w-full object-contain"
-            style={{ maxHeight: "calc(100vh - 120px)" }}
-          />
-        )}
-      </div>
-    </motion.div>
-  );
+function extractYoutubeThumbnail(url: string): string | null {
+  try {
+    const u = new URL(url);
+    let id: string | null = null;
+    if (u.hostname === "youtu.be") id = u.pathname.slice(1).split("?")[0];
+    else if (u.hostname.includes("youtube.com")) {
+      id = u.searchParams.get("v");
+      if (!id) { const m = u.pathname.match(/\/shorts\/([^/?]+)/); if (m) id = m[1]; }
+    }
+    return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : null;
+  } catch { return null; }
 }
 
 // ────────────────────────────────────────────────────────────────────────────
 
 export default function BattleEditsGrid({ userId, isOwner = false }: BattleEditsGridProps) {
   const [edits, setEdits] = useState<EditEntry[]>([]);
-  const [thumbnails, setThumbnails] = useState<Record<string, string | null>>({});
   const [loading, setLoading] = useState(true);
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [playing, setPlaying] = useState<EditEntry | null>(null);
@@ -210,11 +232,19 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
         if (hidden.has(c.id)) continue;
         if (!c.submission_url) continue;
         const comp = c.hosted_competitions as any;
+        // For non-CDN: try to resolve stored thumb or YouTube/TikTok
+        let thumb = c.thumbnail_url || null;
+        if (!thumb) {
+          thumb = extractYoutubeThumbnail(c.submission_url);
+          if (!thumb && c.submission_url.includes("tiktok.com")) {
+            thumb = await fetchTikTokThumbnail(c.submission_url);
+          }
+        }
         entries.push({
           id: c.id,
           type: "competition",
           submissionUrl: c.submission_url,
-          thumbnailUrl: c.thumbnail_url || null,
+          thumbnailUrl: thumb,
           label: comp?.title || "Competition",
           result: c.winner_place === 1 ? "win" : c.winner_place ? "loss" : "pending",
           rank: c.winner_place || null,
@@ -226,12 +256,6 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
       entries.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       setEdits(entries);
       setLoading(false);
-
-      // Resolve thumbnails asynchronously — fade in as they arrive
-      entries.forEach(async (entry) => {
-        const thumb = await resolveThumbnail(entry.submissionUrl, entry.thumbnailUrl);
-        if (thumb) setThumbnails((prev) => ({ ...prev, [entry.id]: thumb }));
-      });
     };
     load();
   }, [userId]);
@@ -252,13 +276,9 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
   const hideEdit = async (edit: EditEntry) => {
     setMenuFor(null);
     setEdits((prev) => prev.filter((e) => e.id !== edit.id));
-
     const { error } = await supabase.from("hidden_edits").insert({
-      user_id: userId,
-      source: edit.type,
-      source_id: edit.id,
+      user_id: userId, source: edit.type, source_id: edit.id,
     });
-
     if (error) {
       setEdits((prev) =>
         [...prev, edit].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -312,100 +332,85 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
   return (
     <>
       <div className="grid grid-cols-3 gap-0.5">
-        {edits.map((edit, i) => {
-          const thumb = thumbnails[edit.id] ?? edit.thumbnailUrl;
-          return (
-            <motion.div
-              key={edit.id}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: i * 0.04 }}
-              onClick={() => { if (!menuFor) setPlaying(edit); }}
-              className="relative aspect-[9/16] overflow-hidden bg-[#111] cursor-pointer"
-            >
-              <AnimatePresence>
-                {thumb && (
-                  <motion.img
-                    key={thumb}
-                    src={thumb}
-                    alt={edit.label}
-                    loading="lazy"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                )}
-              </AnimatePresence>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+        {edits.map((edit, i) => (
+          <motion.div
+            key={edit.id}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: i * 0.04 }}
+            onClick={() => { if (!menuFor) setPlaying(edit); }}
+            className="relative aspect-[9/16] overflow-hidden bg-[#111] cursor-pointer"
+          >
+            {/* Thumbnail / first-frame preview */}
+            <VideoThumbnail src={edit.submissionUrl} stored={edit.thumbnailUrl} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
 
-              {/* Type icon */}
-              <div className="absolute top-2 left-2">
-                {edit.type === "battle"
-                  ? <Swords className="w-3.5 h-3.5 text-white/60" strokeWidth={2} />
-                  : <Users className="w-3.5 h-3.5 text-white/60" strokeWidth={2} />}
-              </div>
+            {/* Type icon */}
+            <div className="absolute top-2 left-2">
+              {edit.type === "battle"
+                ? <Swords className="w-3.5 h-3.5 text-white/60" strokeWidth={2} />
+                : <Users className="w-3.5 h-3.5 text-white/60" strokeWidth={2} />}
+            </div>
 
-              {/* Result badge */}
-              <div className={`absolute top-2 ${isOwner ? "right-7" : "right-2"}`}>
-                {edit.result === "win" ? (
-                  <div className="flex items-center gap-0.5 bg-gold/90 rounded px-1.5 py-0.5">
-                    <Trophy className="w-2.5 h-2.5 text-black" />
-                    <span className="text-[9px] font-black text-black">W</span>
-                  </div>
-                ) : edit.result === "loss" ? (
-                  <span className="text-[9px] font-black text-white/40 bg-white/10 rounded px-1.5 py-0.5">L</span>
-                ) : (
-                  <div className="flex items-center gap-0.5 bg-black/60 rounded px-1.5 py-0.5">
-                    <Clock className="w-2.5 h-2.5 text-white/50" />
-                  </div>
-                )}
-              </div>
-
-              {/* Owner ⋯ */}
-              {isOwner && (
-                <button
-                  onClick={(e) => { e.stopPropagation(); setMenuFor(menuFor === edit.id ? null : edit.id); }}
-                  className="absolute top-1.5 right-1.5 z-20 w-5 h-5 flex items-center justify-center rounded text-white/50 hover:text-white/90 hover:bg-white/10 transition-colors"
-                >
-                  <span className="text-[11px] leading-none font-bold tracking-tighter">···</span>
-                </button>
-              )}
-
-              <AnimatePresence>
-                {menuFor === edit.id && (
-                  <motion.div
-                    ref={menuRef}
-                    initial={{ opacity: 0, scale: 0.92, y: -4 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.92, y: -4 }}
-                    transition={{ duration: 0.12 }}
-                    className="absolute top-7 right-1.5 z-30 bg-[#1a1a1c] border border-white/[0.1] rounded-lg shadow-xl overflow-hidden min-w-[130px]"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <button
-                      onClick={() => hideEdit(edit)}
-                      className="flex items-center gap-2 w-full px-3 py-2.5 text-[11px] font-semibold text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
-                    >
-                      <EyeOff className="w-3 h-3 shrink-0" />
-                      Hide from profile
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {edit.rank && (
-                <div className="absolute bottom-7 left-2">
-                  <span className="text-[10px] font-black text-gold">#{edit.rank}</span>
+            {/* Result badge */}
+            <div className={`absolute top-2 ${isOwner ? "right-7" : "right-2"}`}>
+              {edit.result === "win" ? (
+                <div className="flex items-center gap-0.5 bg-gold/90 rounded px-1.5 py-0.5">
+                  <Trophy className="w-2.5 h-2.5 text-black" />
+                  <span className="text-[9px] font-black text-black">W</span>
+                </div>
+              ) : edit.result === "loss" ? (
+                <span className="text-[9px] font-black text-white/40 bg-white/10 rounded px-1.5 py-0.5">L</span>
+              ) : (
+                <div className="flex items-center gap-0.5 bg-black/60 rounded px-1.5 py-0.5">
+                  <Clock className="w-2.5 h-2.5 text-white/50" />
                 </div>
               )}
+            </div>
 
-              <div className="absolute bottom-0 left-0 right-0 px-2 py-1.5">
-                <p className="text-[9px] text-white/50 truncate">{edit.label}</p>
+            {/* Owner ⋯ */}
+            {isOwner && (
+              <button
+                onClick={(e) => { e.stopPropagation(); setMenuFor(menuFor === edit.id ? null : edit.id); }}
+                className="absolute top-1.5 right-1.5 z-20 w-5 h-5 flex items-center justify-center rounded text-white/50 hover:text-white/90 hover:bg-white/10 transition-colors"
+              >
+                <span className="text-[11px] leading-none font-bold tracking-tighter">···</span>
+              </button>
+            )}
+
+            <AnimatePresence>
+              {menuFor === edit.id && (
+                <motion.div
+                  ref={menuRef}
+                  initial={{ opacity: 0, scale: 0.92, y: -4 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.92, y: -4 }}
+                  transition={{ duration: 0.12 }}
+                  className="absolute top-7 right-1.5 z-30 bg-[#1a1a1c] border border-white/[0.1] rounded-lg shadow-xl overflow-hidden min-w-[130px]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    onClick={() => hideEdit(edit)}
+                    className="flex items-center gap-2 w-full px-3 py-2.5 text-[11px] font-semibold text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+                  >
+                    <EyeOff className="w-3 h-3 shrink-0" />
+                    Hide from profile
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {edit.rank && (
+              <div className="absolute bottom-7 left-2">
+                <span className="text-[10px] font-black text-gold">#{edit.rank}</span>
               </div>
-            </motion.div>
-          );
-        })}
+            )}
+
+            <div className="absolute bottom-0 left-0 right-0 px-2 py-1.5">
+              <p className="text-[9px] text-white/50 truncate">{edit.label}</p>
+            </div>
+          </motion.div>
+        ))}
       </div>
 
       <AnimatePresence>
