@@ -338,6 +338,7 @@ export default function CrewDetailPage() {
   const [mobileView, setMobileView] = useState<"channels" | "chat">("channels");
   const [permissionsChannel, setPermissionsChannel] = useState<CrewChannel | null>(null);
   const [crewLevel, setCrewLevel] = useState(1);
+  const [totalIndexScore, setTotalIndexScore] = useState(0);
   const [showCreateChannel, setShowCreateChannel] = useState(false);
   const [createChannelCategory, setCreateChannelCategory] = useState("General");
   const [showEarnings, setShowEarnings] = useState(false);
@@ -388,6 +389,8 @@ export default function CrewDetailPage() {
 
         const totalXP = profiles?.reduce((sum, p) => sum + (p.xp || 0), 0) || 0;
         setCrewLevel(calculateCrewLevel(totalXP));
+        const totalIdx = profiles?.reduce((sum, p) => sum + (p.global_index_score || 0), 0) || 0;
+        setTotalIndexScore(totalIdx);
 
         if (user) {
           const myMembership = membersData.find((m) => m.user_id === user.id);
@@ -520,7 +523,11 @@ export default function CrewDetailPage() {
 
           <div className="flex items-center gap-3 text-[10px] text-muted-foreground/50">
             <span className="flex items-center gap-1">
-              <CrewLevelBadge level={crewLevel} size="xs" />
+              <Zap className="w-3 h-3 text-primary/70" />
+              <span className="font-black text-foreground/70 tabular-nums" style={teko}>
+                {totalIndexScore >= 1000 ? `${(totalIndexScore / 1000).toFixed(1)}K` : totalIndexScore}
+              </span>
+              <span className="text-[8px] uppercase tracking-widest text-muted-foreground/30">idx</span>
             </span>
             <span className="flex items-center gap-1">
               <Users className="w-3 h-3" />
