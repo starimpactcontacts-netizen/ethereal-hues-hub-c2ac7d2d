@@ -519,19 +519,6 @@ export default function IndexPage() {
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent z-[1]" />
         
         <header className="relative z-10 px-5 pt-0 pb-3">
-          {/* Shuffle button — top right */}
-          <div className="flex items-center justify-end mb-4">
-            {viewMode === "editors" && (
-              <button onClick={() => {
-                setShuffleKey(k => k + 1);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }} className="flex items-center gap-1.5 px-3 py-1.5 bg-foreground/5 hover:bg-foreground/10 border border-foreground/10 rounded-full transition-all text-foreground/60 hover:text-foreground group active:scale-95">
-                <RefreshCw className="w-3 h-3 group-hover:rotate-180 transition-transform duration-500" />
-                <span className="text-[10px] uppercase tracking-wider font-medium">Shuffle</span>
-              </button>
-            )}
-          </div>
-          
           {/* 3D cinematic arch title — Seedance-style perspective */}
           <div className="relative" style={{ perspective: '400px', perspectiveOrigin: '50% 100%' }}>
             <h1 
@@ -732,9 +719,7 @@ export default function IndexPage() {
                 <div className="pt-5">
                   <div className="flex items-center justify-between px-4 mb-1">
                     <div className="flex items-center gap-2">
-                      <Target className="w-4 h-4 text-muted-foreground" />
                       <h2 className="font-display text-xl tracking-wide text-foreground">ALL EDITORS</h2>
-                      <span className="text-[10px] text-muted-foreground bg-surface-1 px-1.5 py-0.5">{rankings.length}</span>
                     </div>
                     <div className="flex gap-2">
                       <FilterSelect value={leagueFilter} onChange={(v) => setLeagueFilter(v as LeagueFilter)} options={[["all","All"],["elite","Elite"],["pro","Pro"],["open","Open"]]} />
