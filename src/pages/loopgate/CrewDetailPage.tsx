@@ -3,7 +3,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft, Settings, Shield, Crown, Users, Star, Zap, Share2, LogOut,
   Hash, Megaphone, BookOpen, Lock, ChevronRight, Trophy, Plus, MessageCircle,
-  DollarSign, Eye, UserPlus
+  DollarSign, Eye, UserPlus, ExternalLink
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -425,17 +425,6 @@ export default function CrewDetailPage() {
     return updateChannel(channelId, updates);
   }, [updateChannel]);
 
-  const handleSaveBotSettings = useCallback(async (name: string, avatarUrl: string) => {
-    if (!crewId) return;
-    const { error } = await supabase
-      .from("crews")
-      .update({ bot_name: name, bot_avatar_url: avatarUrl || null })
-      .eq("id", crewId);
-    if (!error) {
-      setCrew((prev) => prev ? { ...prev, bot_name: name, bot_avatar_url: avatarUrl || null } : prev);
-    }
-  }, [crewId]);
-
   const handleLeaveCrew = async () => {
     if (!user || !crewId) return;
     await supabase.from("crew_members").delete().eq("crew_id", crewId).eq("user_id", user.id);
@@ -563,7 +552,19 @@ export default function CrewDetailPage() {
                 <Settings className="w-3.5 h-3.5" />
               </button>
             )}
-            
+            {crew.discord_url && (
+              <a
+                href={crew.discord_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 px-2 py-1 rounded-md bg-[#5865F2]/10 text-[#5865F2] text-[10px] font-bold hover:bg-[#5865F2]/20 transition-colors"
+                title="Join Discord"
+              >
+                <ExternalLink className="w-3 h-3" />
+                Discord
+              </a>
+            )}
+
             <div className="flex-1" />
             {isMember && myRole !== "owner" && (
               <AlertDialog>
@@ -760,9 +761,6 @@ export default function CrewDetailPage() {
               onClose={() => setPermissionsChannel(null)}
               onSave={handleSavePermissions}
               tiers={tiers}
-              botName={crew.bot_name || "Unit Bot"}
-              botAvatarUrl={crew.bot_avatar_url || ""}
-              onSaveBotSettings={handleSaveBotSettings}
             />
           )}
         </AnimatePresence>
@@ -792,7 +790,7 @@ export default function CrewDetailPage() {
       className="fixed inset-0 bg-background flex z-50"
       style={{
         paddingTop: "env(safe-area-inset-top)",
-        paddingBottom: "calc(56px + env(safe-area-inset-bottom))",
+        paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
       {/* Sidebar */}
@@ -885,9 +883,6 @@ export default function CrewDetailPage() {
             onClose={() => setPermissionsChannel(null)}
             onSave={handleSavePermissions}
             tiers={tiers}
-            botName={crew.bot_name || "Unit Bot"}
-            botAvatarUrl={crew.bot_avatar_url || ""}
-            onSaveBotSettings={handleSaveBotSettings}
           />
         )}
       </AnimatePresence>
