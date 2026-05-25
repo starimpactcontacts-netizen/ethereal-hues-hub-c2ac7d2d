@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import QuickFightChat from "@/components/loopgate/QuickFightChat";
+import { useLobbyMusicMute } from "@/components/loopgate/LobbyMusicPlayer";
 import type { OpenQueueEntry, QuickFight } from "@/hooks/useQuickFight";
 import { toast } from "sonner";
 
@@ -61,19 +62,12 @@ export default function CustomEditBattleLobby({
   const isPrivate = !!fight.is_private;
   const [codeInput, setCodeInput] = useState("");
   const [searchParams] = useSearchParams();
-  const [muted, setMuted] = useState(() => localStorage.getItem("lobby_muted") === "1");
+  const [muted, toggleMuted] = useLobbyMusicMute();
 
   useEffect(() => {
     const q = searchParams.get("code");
     if (q && isPrivate) setCodeInput(q.toUpperCase().slice(0, 6));
   }, [searchParams, isPrivate]);
-
-  useEffect(() => {
-    localStorage.setItem("lobby_muted", muted ? "1" : "0");
-    document.querySelectorAll<HTMLMediaElement>("audio, video").forEach((el) => {
-      el.muted = muted;
-    });
-  }, [muted]);
 
   const handleCopyCode = async () => {
     if (!fight.join_code) return;
@@ -105,7 +99,7 @@ export default function CustomEditBattleLobby({
               {fight.view_count || 1}
             </div>
             <button
-              onClick={() => setMuted((m) => !m)}
+              onClick={toggleMuted}
               className="h-8 w-8 grid place-items-center border border-white/15 bg-white/[0.04] active:scale-95 transition-transform"
               aria-label={muted ? "Unmute" : "Mute"}
             >
