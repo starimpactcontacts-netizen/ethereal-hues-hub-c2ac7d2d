@@ -131,12 +131,16 @@ export default function ChannelChatView({
   const [cursorPosition, setCursorPosition] = useState(0);
   const [showPinned, setShowPinned] = useState(false);
   const [replyingTo, setReplyingTo] = useState<ChannelMessage | null>(null);
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Filter out optimistically deleted messages
+  const visibleMessages = messages.filter((m) => !deletedIds.has(m.id));
+
   // Count pinned messages
-  const pinnedCount = messages.filter((m) => m.is_pinned).length;
+  const pinnedCount = visibleMessages.filter((m) => m.is_pinned).length;
 
   // Auto-scroll on new messages
   useEffect(() => {
@@ -234,11 +238,11 @@ export default function ChannelChatView({
   };
 
   const handleDeleteMessage = async (messageId: string) => {
+    setDeletedIds((prev) => new Set([...prev, messageId]));
     const { error } = await supabase.from("crew_channel_messages").delete().eq("id", messageId);
     if (error) {
+      setDeletedIds((prev) => { const next = new Set(prev); next.delete(messageId); return next; });
       toast.error("Failed to delete message");
-    } else {
-      toast.success("Message deleted");
     }
   };
 
@@ -260,7 +264,7 @@ export default function ChannelChatView({
     // Panel will refetch on its own
   };
 
-  const messageGroups = groupMessages(messages);
+  const messageGroups = groupMessages(visibleMessages);
 
   const messagesByDate = messageGroups.reduce(
     (acc, group) => {
@@ -372,7 +376,7 @@ export default function ChannelChatView({
 
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto relative">
-        {messages.length === 0 ? (
+        {visibleMessages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 py-12 px-4 text-center">
             <div className="w-14 h-14 rounded-full bg-muted/20 flex items-center justify-center mb-4">
               {channelIcon}

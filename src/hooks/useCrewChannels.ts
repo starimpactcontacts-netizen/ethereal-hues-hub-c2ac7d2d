@@ -214,7 +214,6 @@ export function useChannelMessages(channelId: string | undefined) {
           event: "DELETE",
           schema: "public",
           table: "crew_channel_messages",
-          filter: `channel_id=eq.${channelId}`,
         },
         (payload) => {
           setMessages((prev) => prev.filter((m) => m.id !== payload.old.id));
