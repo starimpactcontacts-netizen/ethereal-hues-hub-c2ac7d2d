@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { ChevronRight, Lock, ArrowLeft, Zap, Users, Trophy, Crown, Medal, Target, TrendingUp } from "lucide-react";
+import { ChevronRight, Lock, ArrowLeft, Zap, Users, Trophy, Target } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRealEvents, useRealRankings, useEventRankings, useActiveSession } from "@/hooks/useRealData";
 import { useXPUserLeaderboard, useXPCrewLeaderboard } from "@/hooks/useXPLeaderboard";
@@ -14,69 +14,49 @@ type TabType = "index" | "xp" | "crews" | "events";
 
 const getRankStyle = (rank: number) => {
   if (rank === 1) return {
-    rowBg: "bg-gradient-to-r from-[#D4A857]/[0.12] to-transparent",
-    border: "border-l-[3px] border-[#D4A857]",
-    rankColor: "text-[#D4A857]",
+    rankBadge: "bg-[#D4A857] text-black",
     scoreColor: "text-[#D4A857]",
     scoreSize: "text-2xl",
     nameSize: "text-[15px]",
-    icon: Crown,
-    shimmer: true,
     avatarSize: "w-11 h-11",
-    avatarBorder: "border-[#D4A857]/50",
-    py: "py-4 px-4",
+    avatarBorder: "border-[#D4A857]/40",
+    py: "py-3.5 px-4",
   };
   if (rank === 2) return {
-    rowBg: "bg-gradient-to-r from-white/[0.05] to-transparent",
-    border: "border-l-[3px] border-white/25",
-    rankColor: "text-white/60",
-    scoreColor: "text-white/90",
+    rankBadge: "bg-zinc-500 text-white",
+    scoreColor: "text-zinc-300",
     scoreSize: "text-xl",
     nameSize: "text-sm",
-    icon: Medal,
-    shimmer: false,
     avatarSize: "w-10 h-10",
-    avatarBorder: "border-white/20",
-    py: "py-3.5 px-4",
+    avatarBorder: "border-zinc-500/30",
+    py: "py-3 px-4",
   };
   if (rank === 3) return {
-    rowBg: "bg-gradient-to-r from-amber-900/[0.10] to-transparent",
-    border: "border-l-[3px] border-amber-700/50",
-    rankColor: "text-amber-600/80",
-    scoreColor: "text-amber-500/80",
+    rankBadge: "bg-amber-800 text-white",
+    scoreColor: "text-amber-600",
     scoreSize: "text-xl",
     nameSize: "text-sm",
-    icon: Medal,
-    shimmer: false,
     avatarSize: "w-10 h-10",
-    avatarBorder: "border-amber-700/30",
-    py: "py-3.5 px-4",
+    avatarBorder: "border-amber-800/30",
+    py: "py-3 px-4",
   };
   if (rank <= 10) return {
-    rowBg: "bg-white/[0.02]",
-    border: "border-l-2 border-red-500/20",
-    rankColor: "text-red-400/60",
+    rankBadge: null,
     scoreColor: "text-foreground",
     scoreSize: "text-lg",
     nameSize: "text-sm",
-    icon: null,
-    shimmer: false,
     avatarSize: "w-9 h-9",
     avatarBorder: "border-border/40",
-    py: "py-3 px-4",
+    py: "py-2.5 px-4",
   };
   return {
-    rowBg: "",
-    border: "border-l border-white/[0.06]",
-    rankColor: "text-muted-foreground/35",
-    scoreColor: "text-muted-foreground",
+    rankBadge: null,
+    scoreColor: "text-muted-foreground/70",
     scoreSize: "text-base",
     nameSize: "text-sm",
-    icon: null,
-    shimmer: false,
     avatarSize: "w-8 h-8",
     avatarBorder: "border-border/20",
-    py: "py-2.5 px-4",
+    py: "py-2 px-4",
   };
 };
 
@@ -213,26 +193,11 @@ export default function RankingsPage() {
       <SEO {...pageSEO.rankings} />
       
       {/* Header */}
-      <header className="px-4 pt-5 pb-4 border-b border-white/[0.07]" style={{ background: 'linear-gradient(180deg, rgba(212,168,87,0.05) 0%, transparent 100%)' }}>
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Trophy className="w-3.5 h-3.5 text-[#D4A857]/70" />
-            <span className="text-[9px] text-[#D4A857]/60 uppercase tracking-[0.4em] font-bold">Global Leaderboard</span>
-          </div>
-          <div className="flex items-center gap-1.5 bg-red-500/10 border border-red-500/20 rounded-full px-2 py-0.5">
-            <div className="relative flex items-center">
-              <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-              <div className="absolute inset-0 w-1.5 h-1.5 rounded-full bg-red-500 animate-ping opacity-60" />
-            </div>
-            <span className="text-[8px] font-bold uppercase tracking-widest text-red-400">Live</span>
-          </div>
-        </div>
-        <h1 className="font-display text-[42px] tracking-[0.05em] text-foreground leading-none font-black">
+      <header className="px-4 pt-5 pb-4 border-b border-white/[0.07]">
+        <span className="text-[9px] text-muted-foreground/40 uppercase tracking-[0.4em] font-bold">Global Leaderboard</span>
+        <h1 className="font-display text-[42px] tracking-[0.05em] text-foreground leading-none font-black mt-1">
           RANKINGS
         </h1>
-        <p className="text-[10px] text-muted-foreground/40 uppercase tracking-[0.25em] mt-1.5 font-medium">
-          Compete. Climb. Dominate.
-        </p>
       </header>
 
       {/* Tab Nav */}
@@ -279,7 +244,6 @@ export default function RankingsPage() {
                 {globalRankings.slice(0, 50).map((editor, index) => {
                   const rank = editor.rank || index + 1;
                   const style = getRankStyle(rank);
-                  const IconComponent = style.icon;
                   const score = editor.global_index_score;
                   const scoreLabel = score ? (score >= 1000 ? `${(score / 1000).toFixed(1)}K` : score.toFixed(1)) : '—';
 
@@ -304,20 +268,14 @@ export default function RankingsPage() {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.01, duration: 0.22 }}
                         onClick={() => navigate(`/editor/${editor.id}`)}
-                        className={`w-full relative overflow-hidden ${style.rowBg} ${style.border} ${style.py} flex items-center gap-3 text-left active:opacity-70 transition-opacity`}
+                        className={`w-full ${style.py} flex items-center gap-3 text-left active:opacity-60 transition-opacity border-b border-white/[0.04] last:border-0`}
                       >
-                        {style.shimmer && (
-                          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                            <div className="absolute -inset-full animate-shimmer bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
-                          </div>
-                        )}
-
                         {/* Rank */}
                         <div className="w-8 shrink-0 flex items-center justify-center">
-                          {IconComponent ? (
-                            <IconComponent className={`${rank === 1 ? 'w-5 h-5' : 'w-4 h-4'} ${style.rankColor}`} />
+                          {style.rankBadge ? (
+                            <span className={`w-6 h-6 rounded flex items-center justify-center text-[11px] font-black ${style.rankBadge}`} style={{ fontFamily: 'Teko, sans-serif' }}>{rank}</span>
                           ) : (
-                            <span className={`font-display font-black tabular-nums ${rank <= 10 ? 'text-lg' : 'text-base'} ${style.rankColor}`}>{rank}</span>
+                            <span className={`font-black tabular-nums ${rank <= 10 ? 'text-base text-white/50' : 'text-sm text-white/25'}`} style={{ fontFamily: 'Teko, sans-serif' }}>{rank}</span>
                           )}
                         </div>
 
@@ -384,7 +342,6 @@ export default function RankingsPage() {
                 {xpUsers.map((user, index) => {
                   const rank = user.rank || index + 1;
                   const style = getRankStyle(rank);
-                  const IconComponent = style.icon;
                   const xpLabel = user.xp >= 1000 ? `${(user.xp / 1000).toFixed(1)}K` : user.xp.toLocaleString();
 
                   return (
@@ -408,18 +365,13 @@ export default function RankingsPage() {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.01 }}
                         onClick={() => navigate(`/editor/${user.id}`)}
-                        className={`w-full relative overflow-hidden ${style.rowBg} ${style.border} ${style.py} flex items-center gap-3 text-left active:opacity-70 transition-opacity`}
+                        className={`w-full ${style.py} flex items-center gap-3 text-left active:opacity-60 transition-opacity border-b border-white/[0.04] last:border-0`}
                       >
-                        {style.shimmer && (
-                          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                            <div className="absolute -inset-full animate-shimmer bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
-                          </div>
-                        )}
                         <div className="w-8 shrink-0 flex items-center justify-center">
-                          {IconComponent ? (
-                            <IconComponent className={`${rank === 1 ? 'w-5 h-5' : 'w-4 h-4'} ${style.rankColor}`} />
+                          {style.rankBadge ? (
+                            <span className={`w-6 h-6 rounded flex items-center justify-center text-[11px] font-black ${style.rankBadge}`} style={{ fontFamily: 'Teko, sans-serif' }}>{rank}</span>
                           ) : (
-                            <span className={`font-display font-black tabular-nums ${rank <= 10 ? 'text-lg' : 'text-base'} ${style.rankColor}`}>{rank}</span>
+                            <span className={`font-black tabular-nums ${rank <= 10 ? 'text-base text-white/50' : 'text-sm text-white/25'}`} style={{ fontFamily: 'Teko, sans-serif' }}>{rank}</span>
                           )}
                         </div>
                         <Avatar className={`${style.avatarSize} border ${style.avatarBorder} shrink-0`}>
@@ -466,7 +418,6 @@ export default function RankingsPage() {
                 {xpCrews.map((crew, index) => {
                   const rank = crew.rank || index + 1;
                   const style = getRankStyle(rank);
-                  const IconComponent = style.icon;
                   const xpLabel = crew.totalXP >= 1000 ? `${(crew.totalXP / 1000).toFixed(1)}K` : crew.totalXP.toLocaleString();
 
                   return (
@@ -483,18 +434,13 @@ export default function RankingsPage() {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.01 }}
                         onClick={() => navigate(`/units/${crew.id}`)}
-                        className={`w-full relative overflow-hidden ${style.rowBg} ${style.border} ${style.py} flex items-center gap-3 text-left active:opacity-70 transition-opacity`}
+                        className={`w-full ${style.py} flex items-center gap-3 text-left active:opacity-60 transition-opacity border-b border-white/[0.04] last:border-0`}
                       >
-                        {style.shimmer && (
-                          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                            <div className="absolute -inset-full animate-shimmer bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
-                          </div>
-                        )}
                         <div className="w-8 shrink-0 flex items-center justify-center">
-                          {IconComponent ? (
-                            <IconComponent className={`${rank === 1 ? 'w-5 h-5' : 'w-4 h-4'} ${style.rankColor}`} />
+                          {style.rankBadge ? (
+                            <span className={`w-6 h-6 rounded flex items-center justify-center text-[11px] font-black ${style.rankBadge}`} style={{ fontFamily: 'Teko, sans-serif' }}>{rank}</span>
                           ) : (
-                            <span className={`font-display font-black tabular-nums ${rank <= 10 ? 'text-lg' : 'text-base'} ${style.rankColor}`}>{rank}</span>
+                            <span className={`font-black tabular-nums ${rank <= 10 ? 'text-base text-white/50' : 'text-sm text-white/25'}`} style={{ fontFamily: 'Teko, sans-serif' }}>{rank}</span>
                           )}
                         </div>
                         <Avatar className={`${style.avatarSize} border ${style.avatarBorder} shrink-0`}>
