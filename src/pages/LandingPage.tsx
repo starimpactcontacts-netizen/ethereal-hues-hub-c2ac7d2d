@@ -173,7 +173,6 @@ export default function LandingPage() {
                 <h4 className="text-[10px] font-bold tracking-[0.25em] uppercase text-foreground mb-4">Company</h4>
                 <div className="space-y-2.5">
                   <Link to="/about" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">About</Link>
-                  <Link to="/enterprise" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Enterprise</Link>
                   <Link to="/support" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Support</Link>
                 </div>
               </div>
@@ -188,7 +187,6 @@ export default function LandingPage() {
                 <h4 className="text-[10px] font-bold tracking-[0.25em] uppercase text-foreground mb-4">Community</h4>
                 <div className="space-y-2.5">
                   <button onClick={handleGuestExplore} className="block text-sm text-muted-foreground hover:text-foreground transition-colors text-left">Explore</button>
-                  <Link to="/loopy" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Rate My Edit</Link>
                   <Link to="/gqt" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">QOI Test</Link>
                   <a
                     href="https://discord.gg/loopgate"
