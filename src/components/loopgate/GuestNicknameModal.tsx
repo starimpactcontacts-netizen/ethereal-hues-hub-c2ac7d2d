@@ -48,7 +48,7 @@ export default function GuestNicknameModal() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-end justify-center p-4 sm:items-center"
+        className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-6"
         onClick={close}
       >
         <motion.div
@@ -71,7 +71,7 @@ export default function GuestNicknameModal() {
             {reason || "Pick a name"}
           </h2>
           <p className="text-[12px] text-white/40 leading-relaxed">
-            Jump in instantly. Set a password later to keep your XP.
+            You can set a password later in settings.
           </p>
 
           <div className="mt-5">
@@ -99,7 +99,7 @@ export default function GuestNicknameModal() {
             onClick={() => { close(); navigate("/start?full=1"); }}
             className="mt-3 w-full text-[11px] text-white/30 hover:text-white/60 transition"
           >
-            Already have an account? Sign in
+            Want a proper account? <span className="underline underline-offset-2">Sign up here</span>
           </button>
         </motion.div>
       </motion.div>
