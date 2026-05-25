@@ -399,7 +399,7 @@ export default function IndexPage() {
   const { editsByUser: judgePinnedEdits } = useBatchPinnedEdits(judgeIds);
 
   const tabs: { id: ViewMode; label: string; icon: React.ElementType; navigateTo?: string }[] = [
-    { id: "editors", label: "INDEX", icon: Target },
+    { id: "editors", label: "INDEX", icon: Search },
     { id: "crews", label: "UNITS", icon: Users, navigateTo: "/units" },
     { id: "rankings", label: "RANKINGS", icon: Trophy },
     { id: "judges", label: "JUDGES", icon: Gavel },
@@ -518,7 +518,7 @@ export default function IndexPage() {
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/25 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent z-[1]" />
         
-        <header className="relative z-10 px-5 pt-0 pb-3">
+        <header className="relative z-10 px-5 pt-5 pb-3">
           {/* 3D cinematic arch title — Seedance-style perspective */}
           <div className="relative" style={{ perspective: '400px', perspectiveOrigin: '50% 100%' }}>
             <h1 
