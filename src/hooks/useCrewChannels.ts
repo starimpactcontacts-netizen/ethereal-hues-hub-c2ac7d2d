@@ -208,6 +208,31 @@ export function useChannelMessages(channelId: string | undefined) {
           setMessages((prev) => [...prev, newMessage]);
         }
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "crew_channel_messages",
+          filter: `channel_id=eq.${channelId}`,
+        },
+        (payload) => {
+          setMessages((prev) => prev.filter((m) => m.id !== payload.old.id));
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "crew_channel_messages",
+          filter: `channel_id=eq.${channelId}`,
+        },
+        (payload) => {
+          const updated = payload.new as ChannelMessage;
+          setMessages((prev) => prev.map((m) => m.id === updated.id ? updated : m));
+        }
+      )
       .subscribe();
 
     return () => {
