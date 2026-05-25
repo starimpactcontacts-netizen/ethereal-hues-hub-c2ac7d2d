@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Eye, Lock, Vote, Trophy, Clock, Film, Music, Play, ChevronRight } from "lucide-react";
+import { ArrowLeft, Eye, Lock, Vote, Trophy, Clock, ChevronRight } from "lucide-react";
 import { differenceInSeconds } from "date-fns";
 
 const teko = { fontFamily: "Teko, sans-serif" };
@@ -137,10 +137,9 @@ export default function SpectatorLiveView({
     );
   }
 
-  // ─── live — waiting for showcase to start ───
+  // ─── live — no edits submitted yet, waiting for first drop ───
   return (
     <div className="fixed inset-0 flex flex-col bg-black overflow-hidden">
-      {/* Header */}
       <header className="shrink-0 px-4 pt-[env(safe-area-inset-top)] border-b border-white/[0.06]">
         <div className="flex items-center gap-2 py-3">
           <button onClick={() => navigate(-1)} className="p-1.5 -ml-1.5 rounded-lg active:scale-95">
@@ -156,17 +155,13 @@ export default function SpectatorLiveView({
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto px-5 pb-[max(env(safe-area-inset-bottom),24px)]">
-
-        {/* Live pulse + countdown */}
+      <main className="flex-1 flex flex-col items-center justify-center px-6 text-center gap-5">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="pt-7 flex flex-col items-center text-center"
+          className="flex flex-col items-center gap-4 w-full max-w-xs"
         >
-          {/* Live indicator */}
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2">
             <span className="relative flex w-2 h-2">
               <span className="absolute inline-flex w-full h-full rounded-full bg-red-500 opacity-70 animate-ping" />
               <span className="relative inline-flex w-2 h-2 rounded-full bg-red-500" />
@@ -174,15 +169,20 @@ export default function SpectatorLiveView({
             <span className="text-[9px] font-black uppercase tracking-[0.35em] text-red-400/90">Editing In Progress</span>
           </div>
 
-          {/* Countdown */}
           {competitionDeadline ? (
             <Countdown target={competitionDeadline} label="Showcase Drops In" />
           ) : (
-            <p className="text-[14px] text-white/60">Showcase starts soon</p>
+            <div className="flex items-center gap-2 text-white/40">
+              <Clock className="w-5 h-5" />
+              <span className="text-sm">Showcase starts soon</span>
+            </div>
           )}
 
-          {/* Submitted pill */}
-          <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.04]">
+          <p className="text-[12px] text-white/35 leading-relaxed">
+            Edits will appear here the moment the first editor submits — stay on this screen.
+          </p>
+
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.04]">
             <span className="relative flex w-1.5 h-1.5">
               <span className="absolute inline-flex w-full h-full rounded-full bg-emerald-500 opacity-60 animate-ping" />
               <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -191,80 +191,7 @@ export default function SpectatorLiveView({
               {submittedCount}/{participantsCount} Submitted
             </span>
           </div>
-        </motion.div>
 
-        {/* Divider */}
-        <div className="my-7 flex items-center gap-3">
-          <div className="flex-1 h-px bg-white/[0.07]" />
-          <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/25">How It Works</span>
-          <div className="flex-1 h-px bg-white/[0.07]" />
-        </div>
-
-        {/* Steps */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-          className="space-y-0 border border-white/[0.07] overflow-hidden rounded-2xl"
-        >
-          {[
-            {
-              n: "01",
-              icon: Film,
-              title: "Editors pick their loadout",
-              body: "Each competitor chooses a scenepack and a song before the timer locks. No peeking at what others picked.",
-              color: "text-blue-400",
-            },
-            {
-              n: "02",
-              icon: Clock,
-              title: "They edit on the clock",
-              body: "Everyone races against the same deadline — 15 to 60 minutes depending on the room. Any software goes.",
-              color: "text-amber-400",
-            },
-            {
-              n: "03",
-              icon: Play,
-              title: "Showcase plays back here",
-              body: "When that timer hits zero, every submitted edit plays back in sequence — right on this screen.",
-              color: "text-emerald-400",
-            },
-            {
-              n: "04",
-              icon: Vote,
-              title: "You vote for the best",
-              body: "Spectators and participants vote after each clip. Most votes wins. Simple as that.",
-              color: "text-fuchsia-400",
-            },
-          ].map(({ n, icon: Icon, title, body, color }, i) => (
-            <motion.div
-              key={n}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.35, delay: 0.15 + i * 0.07 }}
-              className="flex items-start gap-3.5 p-4 border-b border-white/[0.06] last:border-b-0 bg-white/[0.015]"
-            >
-              <div className={`shrink-0 w-7 h-7 rounded-lg bg-white/[0.05] border border-white/[0.08] flex items-center justify-center mt-0.5`}>
-                <Icon className={`w-3.5 h-3.5 ${color}`} strokeWidth={2} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-baseline gap-2 mb-0.5">
-                  <span className="text-[9px] font-black text-white/20 tabular-nums">{n}</span>
-                  <p className="text-[13px] font-bold text-white/85 leading-none" style={teko}>{title}</p>
-                </div>
-                <p className="text-[11px] text-white/35 leading-snug">{body}</p>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
-
-        {/* CTA */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4, delay: 0.5 }}
-          className="mt-5 space-y-2"
-        >
           <button
             onClick={() => navigate("/arena")}
             className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-white text-black text-[13px] font-black uppercase tracking-wide active:scale-[0.98] transition-transform"
@@ -272,13 +199,6 @@ export default function SpectatorLiveView({
           >
             <span>Join Next Round</span>
             <ChevronRight className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => navigate(-1)}
-            className="w-full py-3 rounded-xl border border-white/[0.08] text-white/35 text-[11px] font-black uppercase tracking-[0.2em] active:scale-[0.98] transition-transform"
-            style={teko}
-          >
-            Back
           </button>
         </motion.div>
       </main>
