@@ -233,12 +233,6 @@ export default function ChannelChatView({
     }
   };
 
-  const canDeleteOwnMessage = (createdAt: string) => {
-    const messageTime = new Date(createdAt).getTime();
-    const now = Date.now();
-    return now - messageTime < 5 * 60 * 1000;
-  };
-
   const handleDeleteMessage = async (messageId: string) => {
     const { error } = await supabase.from("crew_channel_messages").delete().eq("id", messageId);
     if (error) {
@@ -453,7 +447,7 @@ export default function ChannelChatView({
 
                         {group.messages.map((message) => {
                           const isOwn = message.user_id === user?.id;
-                          const canDelete = canModerate || (isOwn && canDeleteOwnMessage(message.created_at));
+                          const canDelete = canModerate || isOwn;
                           const isPinned = message.is_pinned;
 
                           return (
