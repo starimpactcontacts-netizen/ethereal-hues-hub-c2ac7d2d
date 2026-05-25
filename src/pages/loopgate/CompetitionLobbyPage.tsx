@@ -125,6 +125,14 @@ export default function CompetitionLobbyPage() {
     }
   }, [searchParams]);
   const [musicMuted, toggleMusicMuted] = useLobbyMusicMute();
+  // Stores the moment the first submission arrives so the live-preview
+  // showcase cycles through all edits from that point forward.
+  const liveShowcaseStart = useRef<string | null>(null);
+  useEffect(() => {
+    if (isLive && submissions.length > 0 && !liveShowcaseStart.current) {
+      liveShowcaseStart.current = new Date().toISOString();
+    }
+  });
   const [lobbyTab, setLobbyTab] = useState<"members" | "chat">("members");
   const [chatMessageCount, setChatMessageCount] = useState(0);
   const [chatUnread, setChatUnread] = useState(0);
@@ -1030,8 +1038,9 @@ export default function CompetitionLobbyPage() {
         submissions={submissions}
         myUserId={user?.id}
         myVoteSubmissionId={myVoteSubmissionId}
-        votingStartedAt={isVoting ? (votingStartedAt ?? null) : null}
+        votingStartedAt={isVoting ? (votingStartedAt ?? null) : liveShowcaseStart.current}
         votingDeadline={isVoting ? votingDeadline : null}
+        loop={isLive}
         onVote={castVote}
         onClose={() => navigate("/arena")}
       />
