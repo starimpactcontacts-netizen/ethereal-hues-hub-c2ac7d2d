@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Hash, Megaphone, Send, MoreVertical, Trash2, Pin, BookOpen, Lock, Users, Settings, ChevronLeft } from "lucide-react";
+import { Hash, Megaphone, Send, MoreVertical, Trash2, Pin, BookOpen, Lock, Users, Settings, ChevronLeft, CornerUpLeft, X } from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -16,7 +16,6 @@ import CrewTypingIndicator from "@/components/loopgate/CrewTypingIndicator";
 import MessageReactions from "@/components/loopgate/MessageReactions";
 import PinnedMessagesPanel from "@/components/loopgate/PinnedMessagesPanel";
 import BotMessageBadge from "@/components/loopgate/BotMessageBadge";
-import UnitBotCommandMenu from "@/components/loopgate/UnitBotCommandMenu";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -131,6 +130,7 @@ export default function ChannelChatView({
   const [mentionQuery, setMentionQuery] = useState("");
   const [cursorPosition, setCursorPosition] = useState(0);
   const [showPinned, setShowPinned] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<ChannelMessage | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -149,7 +149,7 @@ export default function ChannelChatView({
   }, [channel.id, onMarkAsRead]);
 
   const handleSendMessage = async (messageText?: string) => {
-    const text = messageText || newMessage;
+    let text = messageText || newMessage;
 
     if (isGuest) {
       toast.error("Sign in to send messages");
@@ -161,6 +161,13 @@ export default function ChannelChatView({
     if (channel.is_locked && !isOfficer) {
       toast.error("Only officers can post in this channel");
       return;
+    }
+
+    if (replyingTo && !messageText) {
+      const author = replyingTo.display_name || replyingTo.username;
+      const preview = replyingTo.message_text.substring(0, 100);
+      text = `> **@${author}:** ${preview}\n${text}`;
+      setReplyingTo(null);
     }
 
     setSending(true);
@@ -277,6 +284,13 @@ export default function ChannelChatView({
   // Mobile message action drawer content
   const MobileMessageActions = ({ message, isPinned, canDelete }: { message: ChannelMessage; isPinned: boolean; canDelete: boolean }) => (
     <div className="p-4 space-y-1">
+      <button
+        onClick={() => setReplyingTo(message)}
+        className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-muted/30 transition-colors text-sm"
+      >
+        <CornerUpLeft className="w-4 h-4 text-muted-foreground" />
+        Reply
+      </button>
       {canModerate && (
         <button
           onClick={() => handlePinMessage(message.id, isPinned)}
@@ -455,7 +469,7 @@ export default function ChannelChatView({
                                 </div>
                                 
                                 {/* Desktop: hover actions */}
-                                {!isMobile && (canDelete || canModerate) && (
+                                {!isMobile && (
                                   <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                       <button className="opacity-0 group-hover/msg:opacity-100 p-1 rounded hover:bg-muted/50 shrink-0 transition-opacity">
@@ -463,6 +477,13 @@ export default function ChannelChatView({
                                       </button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-36">
+                                      <DropdownMenuItem
+                                        onClick={() => setReplyingTo(message)}
+                                        className="text-xs"
+                                      >
+                                        <CornerUpLeft className="w-3.5 h-3.5 mr-2 text-muted-foreground" />
+                                        Reply
+                                      </DropdownMenuItem>
                                       {canModerate && (
                                         <DropdownMenuItem
                                           onClick={() => handlePinMessage(message.id, !!isPinned)}
@@ -485,8 +506,8 @@ export default function ChannelChatView({
                                   </DropdownMenu>
                                 )}
 
-                                {/* Mobile: long-press via drawer */}
-                                {isMobile && (canDelete || canModerate) && (
+                                {/* Mobile: tap ⋮ for actions */}
+                                {isMobile && (
                                   <Drawer>
                                     <DrawerTrigger asChild>
                                       <button className="p-1 rounded hover:bg-muted/50 shrink-0 touch-manipulation">
@@ -536,6 +557,20 @@ export default function ChannelChatView({
 
       {/* Typing Indicator */}
       <CrewTypingIndicator typingUsers={typingUsers} />
+
+      {/* Reply strip */}
+      {replyingTo && (
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/20 border-t border-border/20 shrink-0">
+          <CornerUpLeft className="w-3 h-3 text-primary/60 shrink-0" />
+          <span className="text-[11px] text-muted-foreground/60 truncate flex-1">
+            Replying to <span className="font-semibold text-foreground/60">{replyingTo.display_name || replyingTo.username}</span>
+            {" — "}{replyingTo.message_text.substring(0, 60)}
+          </span>
+          <button onClick={() => setReplyingTo(null)} className="p-0.5 text-muted-foreground/40 hover:text-muted-foreground shrink-0">
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* Input Area */}
       <div className="bg-background border-t border-border/30 px-3 py-2.5 shrink-0 relative">
