@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { Play, Trophy, Clock, Swords, Users, ExternalLink, ArrowRight, EyeOff, X } from "lucide-react";
+import { Trophy, Clock, Swords, Users, ExternalLink, ArrowRight, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
@@ -20,13 +20,12 @@ interface EditEntry {
 interface BattleEditsGridProps {
   userId: string;
   isOwner?: boolean;
-  viewerUserId?: string;
 }
 
 export default function BattleEditsGrid({ userId, isOwner = false }: BattleEditsGridProps) {
+  const navigate = useNavigate();
   const [edits, setEdits] = useState<EditEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -38,7 +37,7 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
       const [fightsRes, compsRes, hiddenRes] = await Promise.all([
         supabase
           .from("quick_fights")
-          .select("id, player_1_id, player_2_id, player_1_submission_url, player_2_submission_url, winner_id, status, created_at")
+          .select("id, player_1_id, player_2_id, player_1_submission_url, player_2_submission_url, player_1_thumbnail_url, player_2_thumbnail_url, winner_id, status, created_at")
           .or(`player_1_id.eq.${userId},player_2_id.eq.${userId}`)
           .in("status", ["completed", "judging", "submitted", "active"])
           .order("created_at", { ascending: false })
@@ -56,7 +55,6 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
       ]);
 
       const hidden = new Set((hiddenRes.data || []).map((h) => h.source_id));
-      setHiddenIds(hidden);
 
       const entries: EditEntry[] = [];
 
@@ -65,6 +63,7 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
         const isP1 = f.player_1_id === userId;
         const subUrl = isP1 ? f.player_1_submission_url : f.player_2_submission_url;
         if (!subUrl) continue;
+        const thumbUrl = isP1 ? f.player_1_thumbnail_url : f.player_2_thumbnail_url;
         const result =
           f.status === "completed"
             ? f.winner_id === userId
@@ -75,7 +74,7 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
           id: f.id,
           type: "battle",
           submissionUrl: subUrl,
-          thumbnailUrl: null,
+          thumbnailUrl: thumbUrl || extractYoutubeThumbnail(subUrl),
           label: "Edit Battle",
           result,
           rank: null,
@@ -92,7 +91,7 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
           id: c.id,
           type: "competition",
           submissionUrl: c.submission_url,
-          thumbnailUrl: c.thumbnail_url || null,
+          thumbnailUrl: c.thumbnail_url || extractYoutubeThumbnail(c.submission_url),
           label: comp?.title || "Competition",
           result: c.winner_place === 1 ? "win" : c.winner_place ? "loss" : "pending",
           rank: c.winner_place || null,
@@ -126,9 +125,7 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
 
   const hideEdit = async (edit: EditEntry) => {
     setMenuFor(null);
-    // Optimistic removal
     setEdits((prev) => prev.filter((e) => e.id !== edit.id));
-    setHiddenIds((prev) => new Set([...prev, edit.id]));
 
     const { error } = await supabase.from("hidden_edits").insert({
       user_id: userId,
@@ -137,40 +134,19 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
     });
 
     if (error) {
-      // Rollback
-      setEdits((prev) => {
-        const restored = [...prev, edit].sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        return restored;
-      });
-      setHiddenIds((prev) => {
-        const next = new Set(prev);
-        next.delete(edit.id);
-        return next;
-      });
+      setEdits((prev) =>
+        [...prev, edit].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      );
       toast.error("Couldn't hide edit");
     } else {
       toast.success("Hidden from your profile", {
         action: {
           label: "Undo",
           onClick: async () => {
-            await supabase
-              .from("hidden_edits")
-              .delete()
-              .eq("user_id", userId)
-              .eq("source_id", edit.id);
-            setEdits((prev) => {
-              const restored = [...prev, edit].sort(
-                (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-              );
-              return restored;
-            });
-            setHiddenIds((prev) => {
-              const next = new Set(prev);
-              next.delete(edit.id);
-              return next;
-            });
+            await supabase.from("hidden_edits").delete().eq("user_id", userId).eq("source_id", edit.id);
+            setEdits((prev) =>
+              [...prev, edit].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            );
           },
         },
       });
@@ -215,15 +191,21 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: i * 0.04 }}
-          className="relative aspect-[9/16] overflow-hidden bg-muted/20"
+          onClick={() => { if (!menuFor) navigate(edit.linkTo); }}
+          className="relative aspect-[9/16] overflow-hidden bg-muted/20 cursor-pointer"
         >
-          {/* Background */}
+          {/* Thumbnail */}
           {edit.thumbnailUrl ? (
-            <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${edit.thumbnailUrl})` }} />
+            <img
+              src={edit.thumbnailUrl}
+              alt={edit.label}
+              loading="lazy"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
           ) : (
             <div className="absolute inset-0 bg-[#111]" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
 
           {/* Type badge top-left */}
           <div className="absolute top-2 left-2">
@@ -234,7 +216,7 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
             )}
           </div>
 
-          {/* Result badge top-right — shift left if owner (space for ⋯) */}
+          {/* Result badge — shift left if owner (space for ⋯) */}
           <div className={`absolute top-2 ${isOwner ? "right-7" : "right-2"}`}>
             {edit.result === "win" ? (
               <div className="flex items-center gap-0.5 bg-gold/90 rounded px-1.5 py-0.5">
@@ -253,7 +235,7 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
           {/* Owner-only ⋯ button */}
           {isOwner && (
             <button
-              onClick={(e) => { e.stopPropagation(); e.preventDefault(); setMenuFor(menuFor === edit.id ? null : edit.id); }}
+              onClick={(e) => { e.stopPropagation(); setMenuFor(menuFor === edit.id ? null : edit.id); }}
               className="absolute top-1.5 right-1.5 z-20 w-5 h-5 flex items-center justify-center rounded text-white/50 hover:text-white/90 hover:bg-white/10 transition-colors"
               aria-label="Edit options"
             >
@@ -291,25 +273,39 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
             </div>
           )}
 
-          {/* Label + link */}
+          {/* Label + external submission link */}
           <div className="absolute bottom-0 left-0 right-0 px-2 py-1.5 flex items-center justify-between">
             <p className="text-[9px] text-white/50 truncate flex-1">{edit.label}</p>
-            <Link to={edit.linkTo} onClick={(e) => e.stopPropagation()}>
+            <a
+              href={edit.submissionUrl || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+            >
               <ExternalLink className="w-3 h-3 text-white/30 hover:text-white/70 shrink-0" />
-            </Link>
+            </a>
           </div>
-
-          {/* Full tap overlay to open submission */}
-          <a
-            href={edit.submissionUrl || "#"}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 bg-black/30 transition-opacity"
-          >
-            <Play className="w-7 h-7 text-white fill-white" />
-          </a>
         </motion.div>
       ))}
     </div>
   );
+}
+
+function extractYoutubeThumbnail(url: string): string | null {
+  try {
+    const u = new URL(url);
+    let videoId: string | null = null;
+    if (u.hostname === "youtu.be") {
+      videoId = u.pathname.slice(1).split("?")[0];
+    } else if (u.hostname.includes("youtube.com")) {
+      videoId = u.searchParams.get("v");
+      if (!videoId) {
+        const shorts = u.pathname.match(/\/shorts\/([^/?]+)/);
+        if (shorts) videoId = shorts[1];
+      }
+    }
+    return videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null;
+  } catch {
+    return null;
+  }
 }
