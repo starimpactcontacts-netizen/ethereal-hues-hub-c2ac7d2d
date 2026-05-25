@@ -670,7 +670,7 @@ export default function CrewDetailPage() {
         className="fixed inset-0 bg-background flex flex-col z-50"
         style={{
           paddingTop: "env(safe-area-inset-top)",
-          paddingBottom: "calc(56px + env(safe-area-inset-bottom))",
+          paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
         <AnimatePresence mode="wait" initial={false}>
@@ -693,10 +693,6 @@ export default function CrewDetailPage() {
                 </button>
                 <div className="flex-1 min-w-0">
                   <h2 className="font-bold text-[15px] truncate" style={teko}>{crew.name}</h2>
-                </div>
-                <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                  <span>{onlineCount}</span>
                 </div>
               </div>
 
