@@ -110,7 +110,15 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
   const startingRef = useRef(false);
   const [previewingId, setPreviewingId] = useState<string | null>(null);
 
-  // Deezer global song search
+  // Single persistent audio element — reusing it keeps mobile browser user-gesture context intact
+  useEffect(() => {
+    const a = new Audio();
+    a.volume = 0.5;
+    a.preload = 'none';
+    previewRef.current = a;
+    return () => { a.pause(); a.src = ''; };
+  }, []);
+
   const [deezerQuery, setDeezerQuery] = useState('');
   const [deezerLoading, setDeezerLoading] = useState(false);
   const [deezerResults, setDeezerResults] = useState<Song[]>([]);
@@ -360,21 +368,25 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
 
   function togglePreview(s: Song) {
     if (!s.preview) return;
+    const a = previewRef.current;
+    if (!a) return;
+
     if (previewingId === s.id) {
-      previewRef.current?.pause();
+      a.pause();
       setPreviewingId(null);
       return;
     }
-    if (previewRef.current) previewRef.current.pause();
-    const a = new Audio(s.preview);
-    a.volume = 0.5;
-    a.play().catch(() => {});
-    previewRef.current = a;
-    setPreviewingId(s.id);
-    setTimeout(() => { a.pause(); setPreviewingId(p => p === s.id ? null : p); }, 5000);
-  }
 
-  useEffect(() => () => { previewRef.current?.pause(); }, []);
+    a.pause();
+    a.src = s.preview;
+    a.currentTime = 0;
+    a.onended = () => setPreviewingId(p => p === s.id ? null : p);
+    setPreviewingId(s.id);
+    a.play().catch(() => {
+      // Play failed — reset so button goes back to play icon
+      setPreviewingId(null);
+    });
+  }
 
   if (!open) return null;
 
