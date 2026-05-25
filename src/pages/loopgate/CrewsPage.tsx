@@ -81,6 +81,18 @@ const UnitCard = ({
 }) => {
   const onlineCount = Math.max(1, Math.floor(crew.member_count * 0.25));
   const teko = { fontFamily: 'Teko, sans-serif' };
+  const fallbackColors = [
+    'linear-gradient(135deg,#1a1a2e,#16213e)',
+    'linear-gradient(135deg,#1a0a0a,#2d1515)',
+    'linear-gradient(135deg,#0a1a0a,#152d15)',
+    'linear-gradient(135deg,#0d0d1a,#1a1a3a)',
+    'linear-gradient(135deg,#1a100a,#2d1f0a)',
+    'linear-gradient(135deg,#0a1a1a,#0a2d2d)',
+    'linear-gradient(135deg,#1a0a1a,#2d152d)',
+    'linear-gradient(135deg,#101010,#1e1e1e)',
+  ];
+  const colorIdx = crew.id.charCodeAt(0) % fallbackColors.length;
+  const bannerFallback = fallbackColors[colorIdx];
   
   return (
     <motion.div
@@ -96,7 +108,7 @@ const UnitCard = ({
           {crew.banner_url ? (
             <img src={crew.banner_url} alt="" className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-muted/30 via-muted/10 to-background" />
+            <div className="w-full h-full" style={{ background: bannerFallback }} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
         </div>
@@ -371,7 +383,6 @@ export default function CrewsPage() {
 
   const categories = [
     { id: "all" as const, label: "All" },
-    { id: "featured" as const, label: "Featured" },
     { id: "top" as const, label: "Top" },
   ];
 
