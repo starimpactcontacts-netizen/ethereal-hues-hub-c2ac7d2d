@@ -118,8 +118,21 @@ export default function ArenaCompetitionsSection({ onCreateClick, hideHeader = f
   const handleJoin = async (compId: string) => {
     if (!user || !profile) { navigate("/start"); return; }
 
-    // Private rooms — go to lobby and let user enter code there
     const target = comps.find(c => c.id === compId);
+
+    // Live — spectate only, no joining
+    if (target?.status === 'live') {
+      navigate(`/competition/${target.slug || compId}`);
+      return;
+    }
+
+    // Full lobby — block entry
+    if (target && target.current_players >= target.max_players) {
+      toast.error("Lobby is full");
+      return;
+    }
+
+    // Private rooms — go to lobby so user can enter the code
     if (target?.is_private && target.creator_id !== user.id) {
       navigate(`/competition/${target.slug || compId}`);
       return;
