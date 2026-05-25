@@ -401,7 +401,7 @@ export default function IndexPage() {
   const tabs: { id: ViewMode; label: string; icon: React.ElementType; navigateTo?: string }[] = [
     { id: "editors", label: "INDEX", icon: Search },
     { id: "crews", label: "UNITS", icon: Users, navigateTo: "/units" },
-    { id: "rankings", label: "RANKINGS", icon: Trophy },
+    { id: "rankings", label: "RANKINGS", icon: Trophy, navigateTo: "/rankings" },
     { id: "judges", label: "JUDGES", icon: Gavel },
   ];
 
