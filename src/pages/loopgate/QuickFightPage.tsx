@@ -695,11 +695,6 @@ export default function QuickFightPage() {
           </div>
         )}
 
-        {/* Result Card (shareable) */}
-        {fight.status === 'completed' && fight.winner_id && (
-          <QuickFightResultCard fight={fight} />
-        )}
-
         {/* Cancelled Banner */}
         {fight.status === 'cancelled' && (
           <div className="bg-muted border border-border p-4 text-center">
@@ -736,6 +731,13 @@ export default function QuickFightPage() {
           />
         )}
         </aside>
+
+        {/* Share — below voting so people share after seeing the result */}
+        {fight.status === 'completed' && fight.winner_id && (
+          <div className="mt-4">
+            <QuickFightResultCard fight={fight} />
+          </div>
+        )}
       </div>
 
       <AlertDialog open={hideConfirmOpen} onOpenChange={setHideConfirmOpen}>
