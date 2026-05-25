@@ -1030,7 +1030,7 @@ export default function CompetitionLobbyPage() {
         submissions={submissions}
         myUserId={user?.id}
         myVoteSubmissionId={myVoteSubmissionId}
-        votingStartedAt={votingStartedAt || (competition as any).started_at || null}
+        votingStartedAt={isVoting ? (votingStartedAt ?? null) : null}
         votingDeadline={isVoting ? votingDeadline : null}
         onVote={castVote}
         onClose={() => navigate("/arena")}
