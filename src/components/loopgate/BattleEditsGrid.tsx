@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Trophy, Clock, Swords, Users, ExternalLink, ArrowRight, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
@@ -22,9 +22,54 @@ interface BattleEditsGridProps {
   isOwner?: boolean;
 }
 
+// ── thumbnail helpers ────────────────────────────────────────────────────────
+
+function extractYoutubeThumbnail(url: string): string | null {
+  try {
+    const u = new URL(url);
+    let id: string | null = null;
+    if (u.hostname === "youtu.be") {
+      id = u.pathname.slice(1).split("?")[0];
+    } else if (u.hostname.includes("youtube.com")) {
+      id = u.searchParams.get("v");
+      if (!id) {
+        const m = u.pathname.match(/\/shorts\/([^/?]+)/);
+        if (m) id = m[1];
+      }
+    }
+    return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : null;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchTikTokThumbnail(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.thumbnail_url || null;
+  } catch {
+    return null;
+  }
+}
+
+async function resolveThumbnail(submissionUrl: string | null, stored: string | null): Promise<string | null> {
+  if (stored) return stored;
+  if (!submissionUrl) return null;
+  const yt = extractYoutubeThumbnail(submissionUrl);
+  if (yt) return yt;
+  if (submissionUrl.includes("tiktok.com")) {
+    return fetchTikTokThumbnail(submissionUrl);
+  }
+  return null;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+
 export default function BattleEditsGrid({ userId, isOwner = false }: BattleEditsGridProps) {
-  const navigate = useNavigate();
   const [edits, setEdits] = useState<EditEntry[]>([]);
+  const [thumbnails, setThumbnails] = useState<Record<string, string | null>>({});
   const [loading, setLoading] = useState(true);
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -55,7 +100,6 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
       ]);
 
       const hidden = new Set((hiddenRes.data || []).map((h) => h.source_id));
-
       const entries: EditEntry[] = [];
 
       for (const f of fightsRes.data || []) {
@@ -63,18 +107,16 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
         const isP1 = f.player_1_id === userId;
         const subUrl = isP1 ? f.player_1_submission_url : f.player_2_submission_url;
         if (!subUrl) continue;
-        const thumbUrl = isP1 ? f.player_1_thumbnail_url : f.player_2_thumbnail_url;
+        const storedThumb = (isP1 ? f.player_1_thumbnail_url : f.player_2_thumbnail_url) || null;
         const result =
           f.status === "completed"
-            ? f.winner_id === userId
-              ? "win"
-              : "loss"
+            ? f.winner_id === userId ? "win" : "loss"
             : "pending";
         entries.push({
           id: f.id,
           type: "battle",
           submissionUrl: subUrl,
-          thumbnailUrl: thumbUrl || extractYoutubeThumbnail(subUrl),
+          thumbnailUrl: storedThumb,
           label: "Edit Battle",
           result,
           rank: null,
@@ -91,7 +133,7 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
           id: c.id,
           type: "competition",
           submissionUrl: c.submission_url,
-          thumbnailUrl: c.thumbnail_url || extractYoutubeThumbnail(c.submission_url),
+          thumbnailUrl: c.thumbnail_url || null,
           label: comp?.title || "Competition",
           result: c.winner_place === 1 ? "win" : c.winner_place ? "loss" : "pending",
           rank: c.winner_place || null,
@@ -103,6 +145,14 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
       entries.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       setEdits(entries);
       setLoading(false);
+
+      // Resolve thumbnails asynchronously — no spinner, they pop in as they arrive
+      entries.forEach(async (entry) => {
+        const thumb = await resolveThumbnail(entry.submissionUrl, entry.thumbnailUrl);
+        if (thumb) {
+          setThumbnails((prev) => ({ ...prev, [entry.id]: thumb }));
+        }
+      });
     };
     load();
   }, [userId]);
@@ -185,127 +235,126 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
 
   return (
     <div className="grid grid-cols-3 gap-0.5">
-      {edits.map((edit, i) => (
-        <motion.div
-          key={edit.id}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: i * 0.04 }}
-          onClick={() => { if (!menuFor) navigate(edit.linkTo); }}
-          className="relative aspect-[9/16] overflow-hidden bg-muted/20 cursor-pointer"
-        >
-          {/* Thumbnail */}
-          {edit.thumbnailUrl ? (
-            <img
-              src={edit.thumbnailUrl}
-              alt={edit.label}
-              loading="lazy"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-          ) : (
-            <div className="absolute inset-0 bg-[#111]" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+      {edits.map((edit, i) => {
+        const thumb = thumbnails[edit.id] ?? edit.thumbnailUrl;
+        return (
+          <motion.div
+            key={edit.id}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: i * 0.04 }}
+            className="relative aspect-[9/16] overflow-hidden bg-[#111] cursor-pointer"
+          >
+            {/* Thumbnail — pops in when resolved */}
+            <AnimatePresence>
+              {thumb && (
+                <motion.img
+                  key={thumb}
+                  src={thumb}
+                  alt={edit.label}
+                  loading="lazy"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              )}
+            </AnimatePresence>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
 
-          {/* Type badge top-left */}
-          <div className="absolute top-2 left-2">
-            {edit.type === "battle" ? (
-              <Swords className="w-3.5 h-3.5 text-white/60" strokeWidth={2} />
-            ) : (
-              <Users className="w-3.5 h-3.5 text-white/60" strokeWidth={2} />
-            )}
-          </div>
-
-          {/* Result badge — shift left if owner (space for ⋯) */}
-          <div className={`absolute top-2 ${isOwner ? "right-7" : "right-2"}`}>
-            {edit.result === "win" ? (
-              <div className="flex items-center gap-0.5 bg-gold/90 rounded px-1.5 py-0.5">
-                <Trophy className="w-2.5 h-2.5 text-black" />
-                <span className="text-[9px] font-black text-black">W</span>
-              </div>
-            ) : edit.result === "loss" ? (
-              <span className="text-[9px] font-black text-white/40 bg-white/10 rounded px-1.5 py-0.5">L</span>
-            ) : (
-              <div className="flex items-center gap-0.5 bg-black/60 rounded px-1.5 py-0.5">
-                <Clock className="w-2.5 h-2.5 text-white/50" />
-              </div>
-            )}
-          </div>
-
-          {/* Owner-only ⋯ button */}
-          {isOwner && (
-            <button
-              onClick={(e) => { e.stopPropagation(); setMenuFor(menuFor === edit.id ? null : edit.id); }}
-              className="absolute top-1.5 right-1.5 z-20 w-5 h-5 flex items-center justify-center rounded text-white/50 hover:text-white/90 hover:bg-white/10 transition-colors"
-              aria-label="Edit options"
-            >
-              <span className="text-[11px] leading-none font-bold tracking-tighter">···</span>
-            </button>
-          )}
-
-          {/* Hide menu */}
-          <AnimatePresence>
-            {menuFor === edit.id && (
-              <motion.div
-                ref={menuRef}
-                initial={{ opacity: 0, scale: 0.92, y: -4 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.92, y: -4 }}
-                transition={{ duration: 0.12 }}
-                className="absolute top-7 right-1.5 z-30 bg-[#1a1a1c] border border-white/[0.1] rounded-lg shadow-xl overflow-hidden min-w-[130px]"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <button
-                  onClick={() => hideEdit(edit)}
-                  className="flex items-center gap-2 w-full px-3 py-2.5 text-[11px] font-semibold text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
-                >
-                  <EyeOff className="w-3 h-3 shrink-0" />
-                  Hide from profile
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Rank */}
-          {edit.rank && (
-            <div className="absolute bottom-7 left-2">
-              <span className="text-[10px] font-black text-gold">#{edit.rank}</span>
+            {/* Type badge top-left */}
+            <div className="absolute top-2 left-2">
+              {edit.type === "battle" ? (
+                <Swords className="w-3.5 h-3.5 text-white/60" strokeWidth={2} />
+              ) : (
+                <Users className="w-3.5 h-3.5 text-white/60" strokeWidth={2} />
+              )}
             </div>
-          )}
 
-          {/* Label + external submission link */}
-          <div className="absolute bottom-0 left-0 right-0 px-2 py-1.5 flex items-center justify-between">
-            <p className="text-[9px] text-white/50 truncate flex-1">{edit.label}</p>
+            {/* Result badge */}
+            <div className={`absolute top-2 ${isOwner ? "right-7" : "right-2"}`}>
+              {edit.result === "win" ? (
+                <div className="flex items-center gap-0.5 bg-gold/90 rounded px-1.5 py-0.5">
+                  <Trophy className="w-2.5 h-2.5 text-black" />
+                  <span className="text-[9px] font-black text-black">W</span>
+                </div>
+              ) : edit.result === "loss" ? (
+                <span className="text-[9px] font-black text-white/40 bg-white/10 rounded px-1.5 py-0.5">L</span>
+              ) : (
+                <div className="flex items-center gap-0.5 bg-black/60 rounded px-1.5 py-0.5">
+                  <Clock className="w-2.5 h-2.5 text-white/50" />
+                </div>
+              )}
+            </div>
+
+            {/* Owner ⋯ button */}
+            {isOwner && (
+              <button
+                onClick={(e) => { e.stopPropagation(); setMenuFor(menuFor === edit.id ? null : edit.id); }}
+                className="absolute top-1.5 right-1.5 z-20 w-5 h-5 flex items-center justify-center rounded text-white/50 hover:text-white/90 hover:bg-white/10 transition-colors"
+              >
+                <span className="text-[11px] leading-none font-bold tracking-tighter">···</span>
+              </button>
+            )}
+
+            {/* Hide menu */}
+            <AnimatePresence>
+              {menuFor === edit.id && (
+                <motion.div
+                  ref={menuRef}
+                  initial={{ opacity: 0, scale: 0.92, y: -4 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.92, y: -4 }}
+                  transition={{ duration: 0.12 }}
+                  className="absolute top-7 right-1.5 z-30 bg-[#1a1a1c] border border-white/[0.1] rounded-lg shadow-xl overflow-hidden min-w-[130px]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    onClick={() => hideEdit(edit)}
+                    className="flex items-center gap-2 w-full px-3 py-2.5 text-[11px] font-semibold text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+                  >
+                    <EyeOff className="w-3 h-3 shrink-0" />
+                    Hide from profile
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Rank */}
+            {edit.rank && (
+              <div className="absolute bottom-7 left-2">
+                <span className="text-[10px] font-black text-gold">#{edit.rank}</span>
+              </div>
+            )}
+
+            {/* Label + open edit + open battle */}
+            <div className="absolute bottom-0 left-0 right-0 px-2 py-1.5 flex items-center justify-between">
+              <p className="text-[9px] text-white/50 truncate flex-1">{edit.label}</p>
+              <div className="flex items-center gap-2 shrink-0">
+                {/* Open raw submission */}
+                <a
+                  href={edit.submissionUrl || "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  aria-label="Watch edit"
+                >
+                  <ExternalLink className="w-3 h-3 text-white/30 hover:text-white/70" />
+                </a>
+              </div>
+            </div>
+
+            {/* Full-card tap → open submission video */}
             <a
               href={edit.submissionUrl || "#"}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <ExternalLink className="w-3 h-3 text-white/30 hover:text-white/70 shrink-0" />
-            </a>
-          </div>
-        </motion.div>
-      ))}
+              className="absolute inset-0"
+              onClick={(e) => { if (menuFor) e.preventDefault(); }}
+            />
+          </motion.div>
+        );
+      })}
     </div>
   );
-}
-
-function extractYoutubeThumbnail(url: string): string | null {
-  try {
-    const u = new URL(url);
-    let videoId: string | null = null;
-    if (u.hostname === "youtu.be") {
-      videoId = u.pathname.slice(1).split("?")[0];
-    } else if (u.hostname.includes("youtube.com")) {
-      videoId = u.searchParams.get("v");
-      if (!videoId) {
-        const shorts = u.pathname.match(/\/shorts\/([^/?]+)/);
-        if (shorts) videoId = shorts[1];
-      }
-    }
-    return videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null;
-  } catch {
-    return null;
-  }
 }
