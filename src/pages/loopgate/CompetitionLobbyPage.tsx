@@ -125,11 +125,9 @@ export default function CompetitionLobbyPage() {
     }
   }, [searchParams]);
   const [musicMuted, toggleMusicMuted] = useLobbyMusicMute();
-  // Stores the moment the first submission arrives so the live-preview
-  // showcase cycles through all edits from that point forward.
   const liveShowcaseStart = useRef<string | null>(null);
   useEffect(() => {
-    if (isLive && submissions.length > 0 && !liveShowcaseStart.current) {
+    if (competition?.status === "live" && submissions.length > 0 && !liveShowcaseStart.current) {
       liveShowcaseStart.current = new Date().toISOString();
     }
   });
