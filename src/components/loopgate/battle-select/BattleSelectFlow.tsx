@@ -5,6 +5,13 @@ import { createPortal } from 'react-dom';
 import { SCENEPACKS, type Scenepack } from './scenepacks';
 import { supabase } from '@/integrations/supabase/client';
 
+const DIFF_BADGE: Record<string, string> = {
+  easy:      'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30',
+  normal:    'bg-blue-500/20 text-blue-300 border border-blue-500/30',
+  hard:      'bg-orange-500/20 text-orange-300 border border-orange-500/30',
+  nightmare: 'bg-red-500/20 text-red-300 border border-red-500/30',
+};
+
 interface Player {
   username: string;
   avatarUrl: string | null;
@@ -493,7 +500,14 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
                           </div>
                           <div className="px-2 py-1.5 bg-black/85">
                             <p className="text-[11px] font-bold truncate">{s.title}</p>
-                            <p className="text-[9px] text-muted-foreground truncate">{s.artist}</p>
+                            <div className="flex items-center justify-between gap-1 mt-0.5">
+                              <p className="text-[9px] text-muted-foreground truncate">{s.artist}</p>
+                              {s.difficulty && (
+                                <span className={`shrink-0 text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full ${DIFF_BADGE[s.difficulty] ?? ''}`}>
+                                  {s.difficulty === 'nightmare' ? '☠ NM' : s.difficulty}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </button>
                         {s.preview && (
