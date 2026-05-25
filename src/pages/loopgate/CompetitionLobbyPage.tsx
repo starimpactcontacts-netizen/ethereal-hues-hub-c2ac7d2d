@@ -1027,9 +1027,9 @@ export default function CompetitionLobbyPage() {
   // edit drops, then the full showcase stage takes over (reactions + voting).
   if (!hasJoined && !isCreator && (isLive || isVoting || isCompleted)) {
     const isShowcasePhase = isVoting && !!votingStartedAt && submissions.length > 0 && !showcaseDone;
-    // Show the real showcase as soon as any submission exists — spectators
-    // get to watch, react, and vote just like participants.
-    const hasContent = submissions.length > 0;
+    // Only show the showcase stage during live/voting — completed always
+    // uses SpectatorLiveView so the auto-kick + winner card fire correctly.
+    const hasContent = !isCompleted && submissions.length > 0;
     const spectatorShowcaseStage = hasContent ? (
       <CompetitionShowcaseStage
         competitionId={competition.id}
@@ -1047,7 +1047,7 @@ export default function CompetitionLobbyPage() {
     ) : null;
     return (
       <>
-        {/* Fallback while no submissions yet — minimal countdown */}
+        {/* Fallback: no submissions yet, or competition is completed */}
         {!hasContent && (
           <SpectatorLiveView
             status={isLive ? "live" : isVoting ? "voting" : "completed"}
