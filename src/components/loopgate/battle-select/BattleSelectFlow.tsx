@@ -316,6 +316,18 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
+  // Force-reveal both players' picks when intro starts (poll stopped at this point)
+  useEffect(() => {
+    if (phase !== 'intro') return;
+    let cancelled = false;
+    supabase.rpc('get_quick_fight_selection_state' as any, { p_fight_id: fightId } as any)
+      .then(({ data }) => {
+        if (cancelled || !data) return;
+        applySelectionState(data as any);
+      });
+    return () => { cancelled = true; };
+  }, [phase, fightId, applySelectionState]);
+
   function handleTimeout() {
     const pool = songs.length ? songs : FALLBACK_SONGS;
     // Timer expiry auto-fills ONLY this player's missing picks, then asks backend to start.
@@ -516,23 +528,45 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
         {phase === 'intro' && (
           <motion.div key="intro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="absolute inset-0 flex">
-            <IntroSide color="red"  player={redPlayer}  pack={redPicks.pack}  song={redPicks.song}  pct={intro.pct} />
+            <IntroSide color="red"  player={redPlayer}  pack={redPicks.pack}  song={redPicks.song} />
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="text-center">
-                <motion.div animate={{ scale: [1, 1.15, 1] }} transition={{ duration: 0.9, repeat: Infinity }}>
-                  <Swords className="w-12 h-12 mx-auto text-gold mb-2" />
-                  <p className="font-display text-6xl text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]">VS</p>
+              <div className="flex flex-col items-center">
+                <motion.div animate={{ scale: [1, 1.12, 1] }} transition={{ duration: 0.9, repeat: Infinity }} className="flex flex-col items-center">
+                  <Swords className="w-8 h-8 text-amber-400 mb-1" style={{ filter: 'drop-shadow(0 0 8px rgba(245,158,11,0.6))' }} />
+                  <p
+                    className="text-[72px] leading-none font-black text-white"
+                    style={{ fontFamily: 'Teko, sans-serif', WebkitTextStroke: '3px #000', textShadow: '4px 4px 0 #000', letterSpacing: '0.02em' }}
+                  >
+                    VS
+                  </p>
                 </motion.div>
-                <p className="mt-3 text-[10px] uppercase tracking-[0.3em] text-white/80 font-bold">Fight Starting</p>
-                {intro.count > 0 && intro.pct >= 100 && (
-                  <p className="mt-2 font-display text-4xl text-red-500 tabular-nums">{intro.count}</p>
+                <p className="mt-1 text-[8px] uppercase tracking-[0.4em] text-white/50 font-black">Fight Starting</p>
+                {intro.pct >= 100 && intro.count > 0 && (
+                  <motion.p
+                    key={intro.count}
+                    initial={{ scale: 0.6, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: 'spring', stiffness: 380, damping: 18 }}
+                    className="mt-1 text-[48px] leading-none font-black text-red-500"
+                    style={{ fontFamily: 'Teko, sans-serif', WebkitTextStroke: '2px #000', textShadow: '3px 3px 0 #000' }}
+                  >
+                    {intro.count}
+                  </motion.p>
                 )}
-                {intro.count === 0 && intro.pct >= 100 && (
-                  <p className="mt-2 font-display text-4xl text-emerald-400">START!</p>
+                {intro.pct >= 100 && intro.count === 0 && (
+                  <motion.p
+                    initial={{ scale: 0.6, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: 'spring', stiffness: 380, damping: 18 }}
+                    className="mt-1 text-[48px] leading-none font-black text-emerald-400"
+                    style={{ fontFamily: 'Teko, sans-serif', WebkitTextStroke: '2px #000', textShadow: '3px 3px 0 #000' }}
+                  >
+                    GO!
+                  </motion.p>
                 )}
               </div>
             </div>
-            <IntroSide color="blue" player={bluePlayer} pack={bluePicks.pack} song={bluePicks.song} pct={intro.pct} mirrored />
+            <IntroSide color="blue" player={bluePlayer} pack={bluePicks.pack} song={bluePicks.song} mirrored />
           </motion.div>
         )}
       </AnimatePresence>
@@ -657,36 +691,62 @@ function BottomControls({
   );
 }
 
-function IntroSide({ color, player, pack, song, pct, mirrored }: { color: 'red' | 'blue'; player: Player; pack: Scenepack | null; song: Song | null; pct: number; mirrored?: boolean }) {
-  const bg = color === 'red'
-    ? 'linear-gradient(135deg, rgba(239,68,68,0.35), rgba(0,0,0,0.95) 70%)'
-    : 'linear-gradient(225deg, rgba(59,130,246,0.35), rgba(0,0,0,0.95) 70%)';
-  const tint = color === 'red' ? 'text-red-400' : 'text-blue-400';
+function IntroSide({ color, player, pack, song, mirrored }: { color: 'red' | 'blue'; player: Player; pack: Scenepack | null; song: Song | null; mirrored?: boolean }) {
+  const isRed = color === 'red';
+  const borderColor = isRed ? '#ef4444' : '#3b82f6';
+  const accent = isRed ? 'text-red-400' : 'text-blue-400';
+  const grad = isRed
+    ? 'linear-gradient(180deg, rgba(239,68,68,0.25) 0%, rgba(0,0,0,0.98) 100%)'
+    : 'linear-gradient(180deg, rgba(59,130,246,0.25) 0%, rgba(0,0,0,0.98) 100%)';
   return (
-    <motion.div initial={{ x: mirrored ? 60 : -60, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.5 }}
-      className={`flex-1 relative overflow-hidden ${mirrored ? 'text-right items-end' : 'text-left items-start'} flex flex-col justify-center p-5`}
-      style={{ background: bg }}>
-      {pack && (
-        <img src={pack.poster} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" />
+    <motion.div
+      initial={{ x: mirrored ? 50 : -50, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      transition={{ duration: 0.45 }}
+      className="flex-1 relative overflow-hidden flex flex-col items-center justify-center px-4 py-6"
+      style={{ background: grad }}
+    >
+      {pack?.poster && (
+        <img src={pack.poster} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.12]" />
       )}
-      <div className={`relative z-10 ${mirrored ? 'ml-auto' : ''}`}>
-        <motion.div initial={{ scale: 0.85 }} animate={{ scale: 1 }} transition={{ duration: 0.6 }}
-          className={`w-24 h-24 rounded-full overflow-hidden border-4 ${color === 'red' ? 'border-red-500' : 'border-blue-500'} bg-surface-2 mb-3 ${mirrored ? 'ml-auto' : ''}`}>
+      <div className="relative z-10 flex flex-col items-center text-center w-full">
+        <motion.div
+          initial={{ scale: 0.8 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="w-24 h-24 rounded-full overflow-hidden border-4 bg-black mb-2.5"
+          style={{ borderColor }}
+        >
           {player.avatarUrl
             ? <img src={player.avatarUrl} alt={player.username} className="w-full h-full object-cover" />
-            : <div className="w-full h-full flex items-center justify-center text-3xl font-bold">{player.username[0]?.toUpperCase()}</div>}
+            : <div className="w-full h-full flex items-center justify-center text-3xl font-black" style={{ fontFamily: 'Teko, sans-serif', color: borderColor }}>
+                {player.username[0]?.toUpperCase()}
+              </div>}
         </motion.div>
-        <p className={`text-[9px] uppercase tracking-[0.22em] font-bold ${tint}`}>{classFromLevel(player.level)} · LV {player.level}</p>
-        <p className="font-display text-xl text-white truncate max-w-[160px]">{player.username}</p>
-        <div className="mt-3 space-y-1">
-          <p className="text-[9px] uppercase tracking-wider text-white/50">Scenepack</p>
-          <p className="text-[12px] font-bold text-white truncate max-w-[180px]">{pack?.name || '—'}</p>
-          <p className="text-[9px] uppercase tracking-wider text-white/50 mt-1.5">Song</p>
-          <p className="text-[12px] font-bold text-white truncate max-w-[180px]">{song?.title || '—'}</p>
-        </div>
-        <p className={`mt-4 font-mono text-[10px] ${tint} tabular-nums`}>{pct.toFixed(1)}%</p>
-        <div className={`mt-1 h-[2px] w-32 bg-white/10 rounded overflow-hidden ${mirrored ? 'ml-auto' : ''}`}>
-          <div className={`h-full ${color === 'red' ? 'bg-red-500' : 'bg-blue-500'}`} style={{ width: `${pct}%` }} />
+
+        <p className={`text-[8px] font-black uppercase tracking-[0.3em] ${accent}`} style={{ fontFamily: 'Teko, sans-serif' }}>
+          {color.toUpperCase()}
+        </p>
+        <p
+          className="text-[22px] font-black text-white uppercase leading-tight w-full max-w-[140px] truncate"
+          style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.02em' }}
+        >
+          {player.username}
+        </p>
+
+        <div className="mt-4 w-full max-w-[140px] space-y-2.5 text-left">
+          <div>
+            <p className="text-[8px] uppercase tracking-[0.2em] text-white/40 font-bold mb-0.5">Scenepack</p>
+            <p className="text-[15px] font-black text-white leading-tight truncate" style={{ fontFamily: 'Teko, sans-serif' }}>
+              {pack?.name || '—'}
+            </p>
+          </div>
+          <div>
+            <p className="text-[8px] uppercase tracking-[0.2em] text-white/40 font-bold mb-0.5">Song</p>
+            <p className="text-[15px] font-black text-white leading-tight truncate" style={{ fontFamily: 'Teko, sans-serif' }}>
+              {song?.title || '—'}
+            </p>
+          </div>
         </div>
       </div>
     </motion.div>
