@@ -4,8 +4,18 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Music, Film, Search, Play, Pause, Plus, Trash2, Star, StarOff, Loader2, ExternalLink, Check } from "lucide-react";
+import { Music, Film, Search, Play, Pause, Plus, Trash2, Star, StarOff, Loader2, ExternalLink, Check, Upload, ChevronDown, ChevronUp, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
+
+type Difficulty = 'easy' | 'normal' | 'hard' | 'nightmare';
+
+const DIFF: Record<Difficulty, { label: string; cls: string }> = {
+  easy:      { label: 'Easy',      cls: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/25' },
+  normal:    { label: 'Normal',    cls: 'text-blue-400 bg-blue-500/10 border-blue-500/25' },
+  hard:      { label: 'Hard',      cls: 'text-orange-400 bg-orange-500/10 border-orange-500/25' },
+  nightmare: { label: 'Nightmare', cls: 'text-red-400 bg-red-500/10 border-red-500/25' },
+};
+const DIFFICULTIES: Difficulty[] = ['easy', 'normal', 'hard', 'nightmare'];
 
 interface RadioTrack {
   id: string;
@@ -19,6 +29,7 @@ interface RadioTrack {
   is_priority: boolean;
   track_order: number;
   created_at: string;
+  difficulty: Difficulty | null;
 }
 
 interface ScenepackRow {
@@ -43,10 +54,33 @@ interface DeezerTrack {
   link?: string;
 }
 
+async function uploadFileToBunny(file: File, folder: string): Promise<string> {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData.session?.access_token;
+  if (!token) throw new Error("Not signed in");
+
+  const res = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bunny-sign-upload`,
+    {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ fileName: file.name, folder }),
+    }
+  );
+  if (!res.ok) throw new Error(`Bunny sign failed: ${res.status}`);
+  const { uploadUrl, accessKey, cdnUrl } = await res.json();
+
+  const put = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: { AccessKey: accessKey },
+    body: file,
+  });
+  if (!put.ok) throw new Error(`Upload failed: ${put.status}`);
+  return cdnUrl;
+}
+
 /* =========================================================================
    Library Management — Songs + Scenepacks
-   Lets admins add Deezer-sourced songs, manage previews & covers, and CRUD
-   scenepacks. Powers the BattleSelectFlow / SongPicker library.
    ========================================================================= */
 export default function LibraryManagementSection() {
   return (
@@ -81,6 +115,7 @@ function SongsManager() {
   const [results, setResults] = useState<DeezerTrack[]>([]);
   const [adding, setAddingId] = useState<number | null>(null);
   const [playingUrl, setPlayingUrl] = useState<string | null>(null);
+  const [showManual, setShowManual] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const load = async () => {
@@ -140,7 +175,7 @@ function SongsManager() {
       const { error } = await supabase.from("radio_tracks").insert({
         song_name: t.title,
         artist_name: t.artist?.name || "Unknown",
-        audio_url: t.preview, // 30s preview also used as audio
+        audio_url: t.preview,
         preview_url: t.preview,
         cover_url: cover,
         deezer_id: t.id,
@@ -180,6 +215,12 @@ function SongsManager() {
     const { error } = await supabase.from("radio_tracks").update({ is_featured: next }).eq("id", t.id);
     if (error) return toast.error(error.message);
     setTracks((arr) => arr.map((x) => (x.id === t.id ? { ...x, is_featured: next } : x)));
+  };
+
+  const setDifficulty = async (id: string, diff: Difficulty | null) => {
+    const { error } = await supabase.from("radio_tracks").update({ difficulty: diff } as any).eq("id", id);
+    if (error) return toast.error(error.message);
+    setTracks((arr) => arr.map((x) => (x.id === id ? { ...x, difficulty: diff } : x)));
   };
 
   const existingIds = new Set(tracks.map((t) => t.deezer_id).filter(Boolean) as number[]);
@@ -252,6 +293,22 @@ function SongsManager() {
         )}
       </div>
 
+      {/* Manual upload toggle */}
+      <div>
+        <button
+          onClick={() => setShowManual((v) => !v)}
+          className="w-full flex items-center justify-between px-3 py-2 rounded-lg border border-dashed border-border hover:border-border/80 text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <span className="flex items-center gap-1.5">
+            <Upload size={11} /> Manual Upload (Underground / No Deezer)
+          </span>
+          {showManual ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+        </button>
+        {showManual && (
+          <ManualUploadForm onAdded={() => { load(); setShowManual(false); }} />
+        )}
+      </div>
+
       {/* Existing library */}
       <div>
         <div className="flex items-center justify-between mb-2">
@@ -271,6 +328,7 @@ function SongsManager() {
             {tracks.map((t) => {
               const url = t.preview_url || t.audio_url;
               const isPlaying = playingUrl === url;
+              const diff = t.difficulty;
               return (
                 <div key={t.id} className="flex items-center gap-2 p-2">
                   <button
@@ -293,6 +351,18 @@ function SongsManager() {
                     </p>
                     <p className="text-[10px] text-muted-foreground truncate">{t.artist_name || "Unknown"}</p>
                   </div>
+                  {/* Difficulty selector */}
+                  <select
+                    value={diff || ""}
+                    onChange={(e) => setDifficulty(t.id, (e.target.value as Difficulty) || null)}
+                    className={`text-[9px] h-6 rounded border px-1 bg-background/50 cursor-pointer outline-none ${diff ? DIFF[diff].cls : "border-border text-muted-foreground"}`}
+                    title="Set difficulty"
+                  >
+                    <option value="">— diff</option>
+                    {DIFFICULTIES.map((d) => (
+                      <option key={d} value={d}>{DIFF[d].label}</option>
+                    ))}
+                  </select>
                   <button
                     onClick={() => togglePriority(t)}
                     title={t.is_priority ? "Unfeature" : "Feature"}
@@ -319,6 +389,169 @@ function SongsManager() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+/* ============================ MANUAL UPLOAD ============================ */
+function ManualUploadForm({ onAdded }: { onAdded: () => void }) {
+  const [songName, setSongName] = useState("");
+  const [artistName, setArtistName] = useState("");
+  const [difficulty, setDifficulty] = useState<Difficulty | "">("");
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState("");
+  const audioInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+
+  const handleSubmit = async () => {
+    if (!songName.trim()) return toast.error("Song name is required");
+    if (!audioFile) return toast.error("Audio file is required");
+
+    setUploading(true);
+    try {
+      setProgress("Uploading audio…");
+      const audioUrl = await uploadFileToBunny(audioFile, "radio-tracks/audio");
+
+      let coverUrl: string | null = null;
+      if (coverFile) {
+        setProgress("Uploading cover…");
+        coverUrl = await uploadFileToBunny(coverFile, "radio-tracks/covers");
+      }
+
+      setProgress("Saving to library…");
+      const { error } = await supabase.from("radio_tracks").insert({
+        song_name: songName.trim(),
+        artist_name: artistName.trim() || null,
+        audio_url: audioUrl,
+        preview_url: audioUrl,
+        cover_url: coverUrl,
+        deezer_id: null,
+        is_featured: true,
+        difficulty: difficulty || null,
+      } as any);
+      if (error) throw error;
+
+      toast.success(`"${songName.trim()}" added to library`);
+      onAdded();
+    } catch (e: any) {
+      toast.error(e?.message || "Upload failed");
+    } finally {
+      setUploading(false);
+      setProgress("");
+    }
+  };
+
+  return (
+    <div className="mt-2 rounded-lg border border-border p-3 space-y-2 bg-background/30">
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <Label className="text-[9px] uppercase tracking-widest text-muted-foreground">Song Name *</Label>
+          <Input
+            value={songName}
+            onChange={(e) => setSongName(e.target.value)}
+            placeholder="e.g. Deep Frequency"
+            className="h-8 text-xs mt-0.5"
+            disabled={uploading}
+          />
+        </div>
+        <div>
+          <Label className="text-[9px] uppercase tracking-widest text-muted-foreground">Artist</Label>
+          <Input
+            value={artistName}
+            onChange={(e) => setArtistName(e.target.value)}
+            placeholder="Optional"
+            className="h-8 text-xs mt-0.5"
+            disabled={uploading}
+          />
+        </div>
+      </div>
+
+      {/* Difficulty */}
+      <div>
+        <Label className="text-[9px] uppercase tracking-widest text-muted-foreground">Difficulty</Label>
+        <div className="flex gap-1.5 mt-1">
+          {DIFFICULTIES.map((d) => (
+            <button
+              key={d}
+              type="button"
+              disabled={uploading}
+              onClick={() => setDifficulty(difficulty === d ? "" : d)}
+              className={`flex-1 text-[9px] font-semibold py-1 rounded border transition-all ${
+                difficulty === d
+                  ? DIFF[d].cls
+                  : "border-border text-muted-foreground hover:border-border/60"
+              }`}
+            >
+              {DIFF[d].label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Audio file */}
+      <div>
+        <Label className="text-[9px] uppercase tracking-widest text-muted-foreground">Audio File * (mp3, wav, m4a)</Label>
+        <input
+          ref={audioInputRef}
+          type="file"
+          accept="audio/*"
+          className="hidden"
+          onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
+        />
+        <button
+          type="button"
+          disabled={uploading}
+          onClick={() => audioInputRef.current?.click()}
+          className={`mt-0.5 w-full h-9 rounded-md border border-dashed text-[10px] flex items-center justify-center gap-1.5 transition-colors ${
+            audioFile
+              ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/5"
+              : "border-border text-muted-foreground hover:border-border/60"
+          }`}
+        >
+          <Music size={12} />
+          {audioFile ? audioFile.name : "Choose audio file"}
+        </button>
+      </div>
+
+      {/* Cover image */}
+      <div>
+        <Label className="text-[9px] uppercase tracking-widest text-muted-foreground">Cover Image (jpg, png, webp)</Label>
+        <input
+          ref={coverInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => setCoverFile(e.target.files?.[0] || null)}
+        />
+        <button
+          type="button"
+          disabled={uploading}
+          onClick={() => coverInputRef.current?.click()}
+          className={`mt-0.5 w-full h-9 rounded-md border border-dashed text-[10px] flex items-center justify-center gap-1.5 transition-colors ${
+            coverFile
+              ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/5"
+              : "border-border text-muted-foreground hover:border-border/60"
+          }`}
+        >
+          <ImageIcon size={12} />
+          {coverFile ? coverFile.name : "Choose cover image (optional)"}
+        </button>
+      </div>
+
+      <Button
+        size="sm"
+        onClick={handleSubmit}
+        disabled={uploading || !songName.trim() || !audioFile}
+        className="w-full"
+      >
+        {uploading ? (
+          <><Loader2 size={13} className="animate-spin mr-1.5" />{progress || "Uploading…"}</>
+        ) : (
+          <><Upload size={13} className="mr-1.5" />Upload Song</>
+        )}
+      </Button>
     </div>
   );
 }
