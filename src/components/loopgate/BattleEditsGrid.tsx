@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { getBunnySourceUrl } from "@/lib/bunnyPlayback";
 
 interface EditEntry {
   id: string;
@@ -23,139 +24,10 @@ interface BattleEditsGridProps {
   isOwner?: boolean;
 }
 
-// ── Thumbnail card — uses a muted video to show the actual first frame ────────
-
-function VideoThumbnail({ src, stored }: { src: string | null; stored: string | null }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  // Seek to 1s when metadata is ready so we get a real frame
-  const handleMeta = () => {
-    if (videoRef.current) videoRef.current.currentTime = 1;
-  };
-  const handleSeeked = () => {
-    if (videoRef.current) videoRef.current.pause();
-  };
-
-  if (!src) {
-    return stored
-      ? <img src={stored} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
-      : null;
-  }
-
-  const isCDN = src.includes("b-cdn.net") || src.includes("bunnycdn") || src.includes("bunny.net");
-
-  if (isCDN) {
-    return (
-      <video
-        ref={videoRef}
-        src={src}
-        muted
-        playsInline
-        preload="metadata"
-        onLoadedMetadata={handleMeta}
-        onSeeked={handleSeeked}
-        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-      />
-    );
-  }
-
-  // For YouTube/TikTok fallback to stored thumbnail or nothing
-  return stored
-    ? <img src={stored} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
-    : null;
-}
-
-// ── Full-screen video modal (portal, above everything) ────────────────────────
-
-function VideoModal({ edit, onClose }: { edit: EditEntry; onClose: () => void }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    // Prevent body scroll while open
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; };
-  }, []);
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [onClose]);
-
-  const isCDN = edit.submissionUrl?.includes("b-cdn.net") ||
-    edit.submissionUrl?.includes("bunnycdn") ||
-    edit.submissionUrl?.includes("bunny.net");
-  const isYT = edit.submissionUrl?.includes("youtube.com") || edit.submissionUrl?.includes("youtu.be");
-  const isTikTok = edit.submissionUrl?.includes("tiktok.com");
-
-  const modal = (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[9999] bg-black flex items-center justify-center"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-    >
-      {/* Close button — floating top-right */}
-      <button
-        onClick={onClose}
-        className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center"
-        style={{ top: "max(16px, env(safe-area-inset-top))" }}
-      >
-        <X className="w-4 h-4 text-white/80" />
-      </button>
-
-      {isCDN ? (
-        <video
-          ref={videoRef}
-          src={edit.submissionUrl!}
-          autoPlay
-          controls
-          playsInline
-          className="w-full h-full object-contain"
-        />
-      ) : (isYT || isTikTok) ? (
-        <div className="flex flex-col items-center gap-4 px-8 text-center">
-          <p className="text-sm text-white/50">Hosted on {isYT ? "YouTube" : "TikTok"}</p>
-          <a
-            href={edit.submissionUrl!}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-5 py-2.5 bg-white text-black font-bold text-sm rounded-xl"
-          >
-            Open to watch
-          </a>
-        </div>
-      ) : (
-        <video
-          ref={videoRef}
-          src={edit.submissionUrl!}
-          autoPlay
-          controls
-          playsInline
-          className="w-full h-full object-contain"
-        />
-      )}
-    </motion.div>
-  );
-
-  return createPortal(modal, document.body);
-}
-
 // ── helpers ───────────────────────────────────────────────────────────────────
 
-async function fetchTikTokThumbnail(url: string): Promise<string | null> {
-  try {
-    const res = await fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`);
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.thumbnail_url || null;
-  } catch {
-    return null;
-  }
-}
-
-function extractYoutubeThumbnail(url: string): string | null {
+function extractYoutubeThumbnail(url: string | null): string | null {
+  if (!url) return null;
   try {
     const u = new URL(url);
     let id: string | null = null;
@@ -166,6 +38,118 @@ function extractYoutubeThumbnail(url: string): string | null {
     }
     return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : null;
   } catch { return null; }
+}
+
+async function fetchTikTokThumbnail(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.thumbnail_url || null;
+  } catch { return null; }
+}
+
+// Bunny Stream layout: /{guid}/playlist.m3u8 or /{guid}/play_XXXp.mp4
+// Thumbnail is always at /{guid}/thumbnail.jpg on the same pull-zone.
+function getBunnyThumbnailUrl(url: string | null): string | null {
+  if (!url) return null;
+  try {
+    const source = getBunnySourceUrl(url);
+    const parsed = new URL(source);
+    if (!parsed.hostname.endsWith(".b-cdn.net")) return null;
+    const thumbPath = parsed.pathname.replace(
+      /\/(playlist\.m3u8|play_\d+p\.mp4)$/i,
+      "/thumbnail.jpg"
+    );
+    if (thumbPath === parsed.pathname) return null;
+    parsed.pathname = thumbPath;
+    parsed.search = "";
+    return parsed.toString();
+  } catch { return null; }
+}
+
+function resolveThumbnail(submissionUrl: string | null, stored: string | null): string | null {
+  if (stored) return stored;
+  return getBunnyThumbnailUrl(submissionUrl) || extractYoutubeThumbnail(submissionUrl);
+}
+
+// ── Thumbnail img ─────────────────────────────────────────────────────────────
+
+function EditThumbnail({ submissionUrl, stored }: { submissionUrl: string | null; stored: string | null }) {
+  const thumb = resolveThumbnail(submissionUrl, stored);
+  if (!thumb) return null;
+  return (
+    <img
+      src={thumb}
+      alt=""
+      loading="lazy"
+      className="absolute inset-0 w-full h-full object-cover"
+    />
+  );
+}
+
+// ── Full-screen video modal (portal, above everything) ────────────────────────
+
+function VideoModal({ edit, onClose }: { edit: EditEntry; onClose: () => void }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, []);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  const src = edit.submissionUrl;
+  const isBunny = src?.includes("b-cdn.net");
+  const isYT = src?.includes("youtube.com") || src?.includes("youtu.be");
+  const isTikTok = src?.includes("tiktok.com");
+
+  const modal = (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[9999] bg-black flex items-center justify-center"
+    >
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center"
+        style={{ top: "max(16px, env(safe-area-inset-top))" }}
+      >
+        <X className="w-4 h-4 text-white/80" />
+      </button>
+
+      {isBunny || (!isYT && !isTikTok && src) ? (
+        <video
+          ref={videoRef}
+          src={src!}
+          autoPlay
+          controls
+          playsInline
+          className="w-full h-full object-contain"
+        />
+      ) : (
+        <div className="flex flex-col items-center gap-4 px-8 text-center">
+          <p className="text-sm text-white/50">Hosted on {isYT ? "YouTube" : "TikTok"}</p>
+          <a
+            href={src!}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-5 py-2.5 bg-white text-black font-bold text-sm rounded-xl"
+          >
+            Open to watch
+          </a>
+        </div>
+      )}
+    </motion.div>
+  );
+
+  return createPortal(modal, document.body);
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -232,13 +216,9 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
         if (hidden.has(c.id)) continue;
         if (!c.submission_url) continue;
         const comp = c.hosted_competitions as any;
-        // For non-CDN: try to resolve stored thumb or YouTube/TikTok
         let thumb = c.thumbnail_url || null;
-        if (!thumb) {
-          thumb = extractYoutubeThumbnail(c.submission_url);
-          if (!thumb && c.submission_url.includes("tiktok.com")) {
-            thumb = await fetchTikTokThumbnail(c.submission_url);
-          }
+        if (!thumb && c.submission_url.includes("tiktok.com")) {
+          thumb = await fetchTikTokThumbnail(c.submission_url);
         }
         entries.push({
           id: c.id,
@@ -341,8 +321,7 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
             onClick={() => { if (!menuFor) setPlaying(edit); }}
             className="relative aspect-[9/16] overflow-hidden bg-[#111] cursor-pointer"
           >
-            {/* Thumbnail / first-frame preview */}
-            <VideoThumbnail src={edit.submissionUrl} stored={edit.thumbnailUrl} />
+            <EditThumbnail submissionUrl={edit.submissionUrl} stored={edit.thumbnailUrl} />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
 
             {/* Type icon */}
