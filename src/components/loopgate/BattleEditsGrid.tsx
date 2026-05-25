@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { getBunnySourceUrl } from "@/lib/bunnyPlayback";
+import { useThumbnail } from "@/hooks/useThumbnail";
 
 interface EditEntry {
   id: string;
@@ -24,63 +24,15 @@ interface BattleEditsGridProps {
   isOwner?: boolean;
 }
 
-// ── helpers ───────────────────────────────────────────────────────────────────
-
-function extractYoutubeThumbnail(url: string | null): string | null {
-  if (!url) return null;
-  try {
-    const u = new URL(url);
-    let id: string | null = null;
-    if (u.hostname === "youtu.be") id = u.pathname.slice(1).split("?")[0];
-    else if (u.hostname.includes("youtube.com")) {
-      id = u.searchParams.get("v");
-      if (!id) { const m = u.pathname.match(/\/shorts\/([^/?]+)/); if (m) id = m[1]; }
-    }
-    return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : null;
-  } catch { return null; }
-}
-
-async function fetchTikTokThumbnail(url: string): Promise<string | null> {
-  try {
-    const res = await fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`);
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.thumbnail_url || null;
-  } catch { return null; }
-}
-
-// Bunny Stream layout: /{guid}/playlist.m3u8 or /{guid}/play_XXXp.mp4
-// Thumbnail is always at /{guid}/thumbnail.jpg on the same pull-zone.
-function getBunnyThumbnailUrl(url: string | null): string | null {
-  if (!url) return null;
-  try {
-    const source = getBunnySourceUrl(url);
-    const parsed = new URL(source);
-    if (!parsed.hostname.endsWith(".b-cdn.net")) return null;
-    const thumbPath = parsed.pathname.replace(
-      /\/(playlist\.m3u8|play_\d+p\.mp4)$/i,
-      "/thumbnail.jpg"
-    );
-    if (thumbPath === parsed.pathname) return null;
-    parsed.pathname = thumbPath;
-    parsed.search = "";
-    return parsed.toString();
-  } catch { return null; }
-}
-
-function resolveThumbnail(submissionUrl: string | null, stored: string | null): string | null {
-  if (stored) return stored;
-  return getBunnyThumbnailUrl(submissionUrl) || extractYoutubeThumbnail(submissionUrl);
-}
-
-// ── Thumbnail img ─────────────────────────────────────────────────────────────
+// ── Thumbnail — uses useThumbnail hook (Bunny CDN → YouTube → edge fn) ────────
 
 function EditThumbnail({ submissionUrl, stored }: { submissionUrl: string | null; stored: string | null }) {
-  const thumb = resolveThumbnail(submissionUrl, stored);
-  if (!thumb) return null;
+  const { thumbnail } = useThumbnail(stored || submissionUrl || "", "");
+  const src = stored || thumbnail;
+  if (!src) return null;
   return (
     <img
-      src={thumb}
+      src={src}
       alt=""
       loading="lazy"
       className="absolute inset-0 w-full h-full object-cover"
@@ -216,15 +168,11 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
         if (hidden.has(c.id)) continue;
         if (!c.submission_url) continue;
         const comp = c.hosted_competitions as any;
-        let thumb = c.thumbnail_url || null;
-        if (!thumb && c.submission_url.includes("tiktok.com")) {
-          thumb = await fetchTikTokThumbnail(c.submission_url);
-        }
         entries.push({
           id: c.id,
           type: "competition",
           submissionUrl: c.submission_url,
-          thumbnailUrl: thumb,
+          thumbnailUrl: c.thumbnail_url || null,
           label: comp?.title || "Competition",
           result: c.winner_place === 1 ? "win" : c.winner_place ? "loss" : "pending",
           rank: c.winner_place || null,
