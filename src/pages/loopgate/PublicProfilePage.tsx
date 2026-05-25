@@ -10,7 +10,7 @@ import CrewBadge from "@/components/loopgate/CrewBadge";
 import LevelBadge from "@/components/loopgate/LevelBadge";
 import ArchetypeBadge from "@/components/loopgate/ArchetypeBadge";
 import { SoftwareBadges } from "@/components/loopgate/SoftwareBadge";
-import SubmissionGrid from "@/components/loopgate/SubmissionGrid";
+import BattleEditsGrid from "@/components/loopgate/BattleEditsGrid";
 import MessageButton from "@/components/loopgate/MessageButton";
 import PublicJudgeVideos from "@/components/loopgate/PublicJudgeVideos";
 import loopgateLogo from "@/assets/loopgate-logo.png";
@@ -510,7 +510,7 @@ export default function PublicProfilePage() {
       {activeTab === 'videos' && isJudge ? (
         <PublicJudgeVideos userId={resolvedUserId || ''} />
       ) : activeTab === 'edits' ? (
-        <SubmissionGrid userId={resolvedUserId || ''} />
+        <BattleEditsGrid userId={resolvedUserId || ''} />
       ) : (
         <div className="px-4 py-5 space-y-5">
           {/* Pentagon Radar Stats */}
