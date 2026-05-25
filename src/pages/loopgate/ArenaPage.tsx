@@ -947,7 +947,7 @@ export default function ArenaPage() {
 
               {/* ── YOUR OPEN LOBBIES ── */}
               {(() => {
-                const openLobbies = myQuickFights.filter(f => f.status === 'waiting');
+                const openLobbies = myQuickFights.filter(f => f.status === 'waiting' || f.status === 'selecting');
                 if (openLobbies.length === 0) return null;
                 return (
                   <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
@@ -959,6 +959,7 @@ export default function ArenaPage() {
                     <div className="space-y-2">
                       {openLobbies.map(lobby => {
                         const isPrivate = !!lobby.is_private;
+                        const isSelecting = lobby.status === 'selecting';
                         const lobbyUrl = `${window.location.origin}/fight/${lobby.id}`;
                         const copyLink = () => {
                           navigator.clipboard.writeText(lobbyUrl);
@@ -1002,15 +1003,15 @@ export default function ArenaPage() {
                                   BATTLE
                                 </span>
                               </div>
-                              {/* Waiting pulse row bottom of thumbnail */}
+                              {/* Status pulse row bottom of thumbnail */}
                               <div className="absolute bottom-2 left-2 flex items-center gap-1.5">
                                 <motion.span
                                   animate={{ opacity: [1, 0.2, 1] }}
                                   transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut' }}
-                                  className="w-1.5 h-1.5 rounded-full bg-white/50 shrink-0"
+                                  className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSelecting ? 'bg-amber-400' : 'bg-white/50'}`}
                                 />
-                                <span className="text-[13px] font-black uppercase text-white/60" style={{ fontFamily: 'Teko, sans-serif' }}>
-                                  Waiting for Opponent
+                                <span className={`text-[13px] font-black uppercase ${isSelecting ? 'text-amber-400' : 'text-white/60'}`} style={{ fontFamily: 'Teko, sans-serif' }}>
+                                  {isSelecting ? 'Picking Loadout' : 'Waiting for Opponent'}
                                 </span>
                               </div>
                             </div>
@@ -1042,14 +1043,14 @@ export default function ArenaPage() {
                                 </button>
                               )}
 
-                              {/* JOIN button — full width, gold, Roblox play button */}
+                              {/* JOIN / REJOIN button */}
                               <button
                                 onClick={() => navigate(`/fight/${lobby.id}`)}
                                 className="w-full flex items-center justify-center gap-2 py-3 mb-2 text-[18px] font-black uppercase tracking-[0.1em] text-black active:scale-[0.98] transition-transform"
-                                style={{ background: '#f59e0b', fontFamily: 'Teko, sans-serif' }}
+                                style={{ background: isSelecting ? '#f59e0b' : '#f59e0b', fontFamily: 'Teko, sans-serif' }}
                               >
                                 <Play className="w-4 h-4 fill-current" />
-                                Join Lobby
+                                {isSelecting ? 'Rejoin — Still Picking' : 'Join Lobby'}
                               </button>
 
                               {/* Bottom row — copy link + time */}
