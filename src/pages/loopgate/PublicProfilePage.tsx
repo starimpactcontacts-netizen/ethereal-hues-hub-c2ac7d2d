@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, ExternalLink, Loader2, Globe, Share2, Video } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -79,6 +80,7 @@ type AppRole = 'admin' | 'moderator' | 'user' | 'judge' | 'dev' | 'enterprise';
 export default function PublicProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [resolvedUserId, setResolvedUserId] = useState<string | null>(null);
   const [platforms, setPlatforms] = useState<ConnectedPlatform[]>([]);
@@ -510,7 +512,7 @@ export default function PublicProfilePage() {
       {activeTab === 'videos' && isJudge ? (
         <PublicJudgeVideos userId={resolvedUserId || ''} />
       ) : activeTab === 'edits' ? (
-        <BattleEditsGrid userId={resolvedUserId || ''} />
+        <BattleEditsGrid userId={resolvedUserId || ''} isOwner={!!currentUser && currentUser.id === resolvedUserId} />
       ) : (
         <div className="px-4 py-5 space-y-5">
           {/* Pentagon Radar Stats */}

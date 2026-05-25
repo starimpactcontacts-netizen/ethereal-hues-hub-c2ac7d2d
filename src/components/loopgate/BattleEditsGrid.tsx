@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
-import { Play, Trophy, Clock, Swords, Users, ExternalLink, ArrowRight } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Play, Trophy, Clock, Swords, Users, ExternalLink, ArrowRight, EyeOff, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 
 interface EditEntry {
   id: string;
@@ -18,17 +19,23 @@ interface EditEntry {
 
 interface BattleEditsGridProps {
   userId: string;
+  isOwner?: boolean;
+  viewerUserId?: string;
 }
 
-export default function BattleEditsGrid({ userId }: BattleEditsGridProps) {
+export default function BattleEditsGrid({ userId, isOwner = false }: BattleEditsGridProps) {
   const [edits, setEdits] = useState<EditEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
+  const [menuFor, setMenuFor] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!userId) return;
-    const fetch = async () => {
+    const load = async () => {
       setLoading(true);
-      const [fightsRes, compsRes] = await Promise.all([
+
+      const [fightsRes, compsRes, hiddenRes] = await Promise.all([
         supabase
           .from("quick_fights")
           .select("id, player_1_id, player_2_id, player_1_submission_url, player_2_submission_url, winner_id, status, created_at")
@@ -42,11 +49,19 @@ export default function BattleEditsGrid({ userId }: BattleEditsGridProps) {
           .eq("user_id", userId)
           .order("created_at", { ascending: false })
           .limit(50),
+        supabase
+          .from("hidden_edits")
+          .select("source_id")
+          .eq("user_id", userId),
       ]);
+
+      const hidden = new Set((hiddenRes.data || []).map((h) => h.source_id));
+      setHiddenIds(hidden);
 
       const entries: EditEntry[] = [];
 
       for (const f of fightsRes.data || []) {
+        if (hidden.has(f.id)) continue;
         const isP1 = f.player_1_id === userId;
         const subUrl = isP1 ? f.player_1_submission_url : f.player_2_submission_url;
         if (!subUrl) continue;
@@ -70,6 +85,7 @@ export default function BattleEditsGrid({ userId }: BattleEditsGridProps) {
       }
 
       for (const c of compsRes.data || []) {
+        if (hidden.has(c.id)) continue;
         if (!c.submission_url) continue;
         const comp = c.hosted_competitions as any;
         entries.push({
@@ -89,8 +105,77 @@ export default function BattleEditsGrid({ userId }: BattleEditsGridProps) {
       setEdits(entries);
       setLoading(false);
     };
-    fetch();
+    load();
   }, [userId]);
+
+  // Close menu on outside tap
+  useEffect(() => {
+    if (!menuFor) return;
+    const handler = (e: MouseEvent | TouchEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuFor(null);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    document.addEventListener("touchstart", handler);
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("touchstart", handler);
+    };
+  }, [menuFor]);
+
+  const hideEdit = async (edit: EditEntry) => {
+    setMenuFor(null);
+    // Optimistic removal
+    setEdits((prev) => prev.filter((e) => e.id !== edit.id));
+    setHiddenIds((prev) => new Set([...prev, edit.id]));
+
+    const { error } = await supabase.from("hidden_edits").insert({
+      user_id: userId,
+      source: edit.type,
+      source_id: edit.id,
+    });
+
+    if (error) {
+      // Rollback
+      setEdits((prev) => {
+        const restored = [...prev, edit].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        return restored;
+      });
+      setHiddenIds((prev) => {
+        const next = new Set(prev);
+        next.delete(edit.id);
+        return next;
+      });
+      toast.error("Couldn't hide edit");
+    } else {
+      toast.success("Hidden from your profile", {
+        action: {
+          label: "Undo",
+          onClick: async () => {
+            await supabase
+              .from("hidden_edits")
+              .delete()
+              .eq("user_id", userId)
+              .eq("source_id", edit.id);
+            setEdits((prev) => {
+              const restored = [...prev, edit].sort(
+                (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+              );
+              return restored;
+            });
+            setHiddenIds((prev) => {
+              const next = new Set(prev);
+              next.delete(edit.id);
+              return next;
+            });
+          },
+        },
+      });
+    }
+  };
 
   if (loading) {
     return (
@@ -149,8 +234,8 @@ export default function BattleEditsGrid({ userId }: BattleEditsGridProps) {
             )}
           </div>
 
-          {/* Result badge top-right */}
-          <div className="absolute top-2 right-2">
+          {/* Result badge top-right — shift left if owner (space for ⋯) */}
+          <div className={`absolute top-2 ${isOwner ? "right-7" : "right-2"}`}>
             {edit.result === "win" ? (
               <div className="flex items-center gap-0.5 bg-gold/90 rounded px-1.5 py-0.5">
                 <Trophy className="w-2.5 h-2.5 text-black" />
@@ -164,6 +249,40 @@ export default function BattleEditsGrid({ userId }: BattleEditsGridProps) {
               </div>
             )}
           </div>
+
+          {/* Owner-only ⋯ button */}
+          {isOwner && (
+            <button
+              onClick={(e) => { e.stopPropagation(); e.preventDefault(); setMenuFor(menuFor === edit.id ? null : edit.id); }}
+              className="absolute top-1.5 right-1.5 z-20 w-5 h-5 flex items-center justify-center rounded text-white/50 hover:text-white/90 hover:bg-white/10 transition-colors"
+              aria-label="Edit options"
+            >
+              <span className="text-[11px] leading-none font-bold tracking-tighter">···</span>
+            </button>
+          )}
+
+          {/* Hide menu */}
+          <AnimatePresence>
+            {menuFor === edit.id && (
+              <motion.div
+                ref={menuRef}
+                initial={{ opacity: 0, scale: 0.92, y: -4 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.92, y: -4 }}
+                transition={{ duration: 0.12 }}
+                className="absolute top-7 right-1.5 z-30 bg-[#1a1a1c] border border-white/[0.1] rounded-lg shadow-xl overflow-hidden min-w-[130px]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  onClick={() => hideEdit(edit)}
+                  className="flex items-center gap-2 w-full px-3 py-2.5 text-[11px] font-semibold text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+                >
+                  <EyeOff className="w-3 h-3 shrink-0" />
+                  Hide from profile
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Rank */}
           {edit.rank && (

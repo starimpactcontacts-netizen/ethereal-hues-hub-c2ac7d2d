@@ -14,7 +14,7 @@ import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import AvatarUploadModal from "@/components/loopgate/AvatarUploadModal";
 import ActivityStatusSelector from "@/components/loopgate/ActivityStatusSelector";
 
-import SubmissionGrid from "@/components/loopgate/SubmissionGrid";
+import BattleEditsGrid from "@/components/loopgate/BattleEditsGrid";
 import MyJudgeReviews from "@/components/loopgate/MyJudgeReviews";
 import MyRatingVideos from "@/components/loopgate/MyRatingVideos";
 
@@ -277,7 +277,7 @@ export default function ProfilePage() {
       </div>
 
       {/* ═══ TAB CONTENT ═══ */}
-      {activeTab === 'edits' && <SubmissionGrid />}
+      {activeTab === 'edits' && profile && <BattleEditsGrid userId={profile.id} isOwner />}
       {activeTab === 'reviews' && <div className="px-4"><MyJudgeReviews /></div>}
       {activeTab === 'videos' && isAnyJudge && <div className="px-4"><MyRatingVideos /></div>}
       {/* ═══ AVATAR MODAL ═══ */}
