@@ -17,7 +17,7 @@ const DIFF: Record<Difficulty, { label: string; cls: string }> = {
 };
 const DIFFICULTIES: Difficulty[] = ['easy', 'normal', 'hard', 'nightmare'];
 
-interface RadioTrack {
+interface BattleSong {
   id: string;
   song_name: string;
   artist_name: string | null;
@@ -42,6 +42,7 @@ interface ScenepackRow {
   scenepack_gdrive_url: string | null;
   active: boolean;
   sort_order: number;
+  pack_count: number;
   created_at: string;
 }
 
@@ -59,24 +60,33 @@ async function uploadFileToBunny(file: File, folder: string): Promise<string> {
   const token = sessionData.session?.access_token;
   if (!token) throw new Error("Not signed in");
 
+  const form = new FormData();
+  form.append("file", file);
+  form.append("folder", folder);
+
   const res = await fetch(
     `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bunny-sign-upload`,
     {
       method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ fileName: file.name, folder }),
+      headers: { Authorization: `Bearer ${token}` },
+      body: form,
     }
   );
-  if (!res.ok) throw new Error(`Bunny sign failed: ${res.status}`);
-  const { uploadUrl, accessKey, cdnUrl } = await res.json();
-
-  const put = await fetch(uploadUrl, {
-    method: "PUT",
-    headers: { AccessKey: accessKey },
-    body: file,
-  });
-  if (!put.ok) throw new Error(`Upload failed: ${put.status}`);
+  if (!res.ok) {
+    const detail = await res.json().catch(() => ({}));
+    throw new Error(detail?.error || `Upload failed: ${res.status}`);
+  }
+  const { cdnUrl } = await res.json();
   return cdnUrl;
+}
+
+async function uploadImageToSupabase(file: File, bucket: string): Promise<string> {
+  const ext = file.name.split('.').pop() || 'jpg';
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: true });
+  if (error) throw new Error(error.message);
+  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+  return data.publicUrl;
 }
 
 /* =========================================================================
@@ -108,7 +118,7 @@ export default function LibraryManagementSection() {
 
 /* ============================ SONGS ============================ */
 function SongsManager() {
-  const [tracks, setTracks] = useState<RadioTrack[]>([]);
+  const [tracks, setTracks] = useState<BattleSong[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
@@ -118,21 +128,29 @@ function SongsManager() {
   const [showManual, setShowManual] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // Single persistent audio element — creating new Audio() per tap loses iOS user-gesture context
+  useEffect(() => {
+    const a = new Audio();
+    a.volume = 0.6;
+    a.preload = 'none';
+    audioRef.current = a;
+    return () => { a.pause(); a.src = ''; };
+  }, []);
+
   const load = async () => {
     setLoading(true);
     const { data } = await supabase
-      .from("radio_tracks")
+      .from("battle_songs" as any)
       .select("*")
       .order("is_priority", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(500);
-    setTracks((data as any as RadioTrack[]) || []);
+    setTracks((data as any as BattleSong[]) || []);
     setLoading(false);
   };
 
   useEffect(() => {
     load();
-    return () => { audioRef.current?.pause(); };
   }, []);
 
   const search = async (q: string) => {
@@ -152,27 +170,38 @@ function SongsManager() {
     }
   };
 
-  const togglePreview = (url: string | null) => {
-    if (!url) return;
-    if (playingUrl === url) {
-      audioRef.current?.pause();
+  const togglePreview = async (url: string | null, deezerId?: number | null) => {
+    if (!url && !deezerId) return;
+    const a = audioRef.current;
+    if (!a) return;
+    const key = String(deezerId ?? url);
+    if (playingUrl === key) {
+      a.pause();
       setPlayingUrl(null);
       return;
     }
-    audioRef.current?.pause();
-    const a = new Audio(url);
-    a.volume = 0.6;
-    a.play().catch(() => {});
-    a.onended = () => setPlayingUrl((p) => (p === url ? null : p));
-    audioRef.current = a;
-    setPlayingUrl(url);
+    a.pause();
+    setPlayingUrl(key);
+    let src = url;
+    if (deezerId) {
+      try {
+        const res = await fetch(`https://api.deezer.com/track/${deezerId}`);
+        const data = await res.json();
+        if (data?.preview) src = data.preview;
+      } catch { /* fall back to stored url */ }
+    }
+    if (!src) { setPlayingUrl(null); return; }
+    a.src = src;
+    a.onended = () => setPlayingUrl((p) => (p === key ? null : p));
+    a.load();
+    a.play().catch(() => setPlayingUrl(null));
   };
 
   const addFromDeezer = async (t: DeezerTrack) => {
     setAddingId(t.id);
     try {
       const cover = t.album?.cover_medium || t.album?.cover_small || null;
-      const { error } = await supabase.from("radio_tracks").insert({
+      const { error } = await supabase.from("battle_songs" as any).insert({
         song_name: t.title,
         artist_name: t.artist?.name || "Unknown",
         audio_url: t.preview,
@@ -180,7 +209,7 @@ function SongsManager() {
         cover_url: cover,
         deezer_id: t.id,
         is_featured: true,
-      } as any);
+      });
       if (error) throw error;
       toast.success(`Added "${t.title}"`);
       load();
@@ -197,28 +226,28 @@ function SongsManager() {
 
   const removeTrack = async (id: string) => {
     if (!confirm("Remove this song from the library?")) return;
-    const { error } = await supabase.from("radio_tracks").delete().eq("id", id);
+    const { error } = await supabase.from("battle_songs" as any).delete().eq("id", id);
     if (error) return toast.error(error.message);
     toast.success("Removed");
     setTracks((t) => t.filter((x) => x.id !== id));
   };
 
-  const togglePriority = async (t: RadioTrack) => {
+  const togglePriority = async (t: BattleSong) => {
     const next = !t.is_priority;
-    const { error } = await supabase.from("radio_tracks").update({ is_priority: next }).eq("id", t.id);
+    const { error } = await supabase.from("battle_songs" as any).update({ is_priority: next }).eq("id", t.id);
     if (error) return toast.error(error.message);
     setTracks((arr) => arr.map((x) => (x.id === t.id ? { ...x, is_priority: next } : x)));
   };
 
-  const toggleFeatured = async (t: RadioTrack) => {
+  const toggleFeatured = async (t: BattleSong) => {
     const next = !t.is_featured;
-    const { error } = await supabase.from("radio_tracks").update({ is_featured: next }).eq("id", t.id);
+    const { error } = await supabase.from("battle_songs" as any).update({ is_featured: next }).eq("id", t.id);
     if (error) return toast.error(error.message);
     setTracks((arr) => arr.map((x) => (x.id === t.id ? { ...x, is_featured: next } : x)));
   };
 
   const setDifficulty = async (id: string, diff: Difficulty | null) => {
-    const { error } = await supabase.from("radio_tracks").update({ difficulty: diff } as any).eq("id", id);
+    const { error } = await supabase.from("battle_songs" as any).update({ difficulty: diff }).eq("id", id);
     if (error) return toast.error(error.message);
     setTracks((arr) => arr.map((x) => (x.id === id ? { ...x, difficulty: diff } : x)));
   };
@@ -252,11 +281,11 @@ function SongsManager() {
           <div className="mt-2 max-h-72 overflow-y-auto rounded-lg border border-border divide-y divide-border bg-background/30">
             {results.map((t) => {
               const exists = existingIds.has(t.id);
-              const isPlaying = playingUrl === t.preview;
+              const isPlaying = playingUrl === String(t.id);
               return (
                 <div key={t.id} className="flex items-center gap-2 p-2">
                   <button
-                    onClick={() => togglePreview(t.preview)}
+                    onClick={() => togglePreview(t.preview, t.id)}
                     className="w-9 h-9 rounded-full bg-muted/30 hover:bg-muted/60 flex items-center justify-center shrink-0"
                   >
                     {isPlaying ? <Pause size={14} /> : <Play size={14} className="ml-0.5" />}
@@ -327,23 +356,23 @@ function SongsManager() {
           <div className="max-h-96 overflow-y-auto rounded-lg border border-border divide-y divide-border">
             {tracks.map((t) => {
               const url = t.preview_url || t.audio_url;
-              const isPlaying = playingUrl === url;
+              const key = String(t.deezer_id ?? t.id);
+              const isPlaying = playingUrl === key;
               const diff = t.difficulty;
               return (
                 <div key={t.id} className="flex items-center gap-2 p-2">
                   <button
-                    onClick={() => togglePreview(url)}
+                    onClick={() => togglePreview(url, t.deezer_id)}
                     className="w-9 h-9 rounded-full bg-muted/30 hover:bg-muted/60 flex items-center justify-center shrink-0"
                   >
                     {isPlaying ? <Pause size={14} /> : <Play size={14} className="ml-0.5" />}
                   </button>
-                  {t.cover_url ? (
-                    <img src={t.cover_url} alt="" className="w-9 h-9 rounded object-cover shrink-0" />
-                  ) : (
-                    <div className="w-9 h-9 rounded bg-muted shrink-0 flex items-center justify-center">
-                      <Music size={14} className="text-muted-foreground/40" />
-                    </div>
-                  )}
+                  <div className="w-9 h-9 rounded bg-muted shrink-0 flex items-center justify-center overflow-hidden relative">
+                    <Music size={14} className="text-muted-foreground/40" />
+                    {t.cover_url && (
+                      <img src={t.cover_url} alt="" className="absolute inset-0 w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    )}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold truncate flex items-center gap-1.5">
                       {t.song_name}
@@ -412,16 +441,16 @@ function ManualUploadForm({ onAdded }: { onAdded: () => void }) {
     setUploading(true);
     try {
       setProgress("Uploading audio…");
-      const audioUrl = await uploadFileToBunny(audioFile, "radio-tracks/audio");
+      const audioUrl = await uploadImageToSupabase(audioFile, "battle-songs-audio");
 
       let coverUrl: string | null = null;
       if (coverFile) {
         setProgress("Uploading cover…");
-        coverUrl = await uploadFileToBunny(coverFile, "radio-tracks/covers");
+        coverUrl = await uploadImageToSupabase(coverFile, "scenepack-previews");
       }
 
       setProgress("Saving to library…");
-      const { error } = await supabase.from("radio_tracks").insert({
+      const { error } = await supabase.from("battle_songs" as any).insert({
         song_name: songName.trim(),
         artist_name: artistName.trim() || null,
         audio_url: audioUrl,
@@ -430,7 +459,7 @@ function ManualUploadForm({ onAdded }: { onAdded: () => void }) {
         deezer_id: null,
         is_featured: true,
         difficulty: difficulty || null,
-      } as any);
+      });
       if (error) throw error;
 
       toast.success(`"${songName.trim()}" added to library`);
@@ -563,12 +592,16 @@ function ScenepacksManager() {
   const [form, setForm] = useState({
     title: "",
     series: "",
-    thumbnail_url: "",
-    preview_video_url: "",
+    pack_count: "",
     scenepack_youtube_url: "",
     scenepack_gdrive_url: "",
   });
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [previewFile, setPreviewFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
+  const [saveProgress, setSaveProgress] = useState("");
+  const thumbnailRef = useRef<HTMLInputElement>(null);
+  const previewRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
     setLoading(true);
@@ -586,20 +619,42 @@ function ScenepacksManager() {
   const create = async () => {
     if (!form.title.trim()) return toast.error("Title is required");
     setSaving(true);
-    const { error } = await supabase.from("scenepack_pool").insert({
-      title: form.title.trim(),
-      series: form.series.trim() || null,
-      thumbnail_url: form.thumbnail_url.trim() || null,
-      preview_video_url: form.preview_video_url.trim() || null,
-      scenepack_youtube_url: form.scenepack_youtube_url.trim() || null,
-      scenepack_gdrive_url: form.scenepack_gdrive_url.trim() || null,
-      active: true,
-    } as any);
-    setSaving(false);
-    if (error) return toast.error(error.message);
-    toast.success("Scenepack added");
-    setForm({ title: "", series: "", thumbnail_url: "", preview_video_url: "", scenepack_youtube_url: "", scenepack_gdrive_url: "" });
-    load();
+    try {
+      let thumbnail_url: string | null = null;
+      let preview_video_url: string | null = null;
+
+      if (thumbnailFile) {
+        setSaveProgress("Uploading cover…");
+        thumbnail_url = await uploadImageToSupabase(thumbnailFile, "scenepack-previews");
+      }
+      if (previewFile) {
+        setSaveProgress("Uploading preview video…");
+        preview_video_url = await uploadFileToBunny(previewFile, "scenepacks/previews");
+      }
+
+      setSaveProgress("Saving…");
+      const { error } = await supabase.from("scenepack_pool").insert({
+        title: form.title.trim(),
+        series: form.series.trim() || null,
+        thumbnail_url,
+        preview_video_url,
+        scenepack_youtube_url: form.scenepack_youtube_url.trim() || null,
+        scenepack_gdrive_url: form.scenepack_gdrive_url.trim() || null,
+        pack_count: parseInt(form.pack_count) || 0,
+        active: true,
+      } as any);
+      if (error) throw error;
+      toast.success("Scenepack added");
+      setForm({ title: "", series: "", pack_count: "", scenepack_youtube_url: "", scenepack_gdrive_url: "" });
+      setThumbnailFile(null);
+      setPreviewFile(null);
+      load();
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to add");
+    } finally {
+      setSaving(false);
+      setSaveProgress("");
+    }
   };
 
   const toggleActive = async (p: ScenepackRow) => {
@@ -621,18 +676,53 @@ function ScenepacksManager() {
       {/* Add form */}
       <div className="rounded-lg border border-border p-3 space-y-2 bg-background/30">
         <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Add Scenepack</Label>
+
         <div className="grid grid-cols-2 gap-2">
-          <Input placeholder="Title (e.g. Bleach TYBW)" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="h-8 text-xs" />
-          <Input placeholder="Series (optional)" value={form.series} onChange={(e) => setForm({ ...form, series: e.target.value })} className="h-8 text-xs" />
+          <Input placeholder="Title (e.g. Bleach TYBW)" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="h-8 text-xs" disabled={saving} />
+          <Input placeholder="Series (optional)" value={form.series} onChange={(e) => setForm({ ...form, series: e.target.value })} className="h-8 text-xs" disabled={saving} />
         </div>
-        <Input placeholder="Thumbnail URL" value={form.thumbnail_url} onChange={(e) => setForm({ ...form, thumbnail_url: e.target.value })} className="h-8 text-xs" />
-        <Input placeholder="Preview video URL (mp4, loops in picker)" value={form.preview_video_url} onChange={(e) => setForm({ ...form, preview_video_url: e.target.value })} className="h-8 text-xs" />
+
+        <Input
+          type="number"
+          min={0}
+          placeholder="# of scenepacks (e.g. 47)"
+          value={form.pack_count}
+          onChange={(e) => setForm({ ...form, pack_count: e.target.value })}
+          className="h-8 text-xs"
+          disabled={saving}
+        />
+
+        {/* Cover upload */}
+        <input ref={thumbnailRef} type="file" accept="image/*" className="hidden" onChange={(e) => setThumbnailFile(e.target.files?.[0] || null)} />
+        <button
+          type="button"
+          disabled={saving}
+          onClick={() => thumbnailRef.current?.click()}
+          className={`w-full h-9 rounded-md border border-dashed text-[10px] flex items-center justify-center gap-1.5 transition-colors ${thumbnailFile ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/5" : "border-border text-muted-foreground hover:border-border/60"}`}
+        >
+          <ImageIcon size={12} />
+          {thumbnailFile ? thumbnailFile.name : "Upload cover image"}
+        </button>
+
+        {/* Preview video upload */}
+        <input ref={previewRef} type="file" accept="video/*" className="hidden" onChange={(e) => setPreviewFile(e.target.files?.[0] || null)} />
+        <button
+          type="button"
+          disabled={saving}
+          onClick={() => previewRef.current?.click()}
+          className={`w-full h-9 rounded-md border border-dashed text-[10px] flex items-center justify-center gap-1.5 transition-colors ${previewFile ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/5" : "border-border text-muted-foreground hover:border-border/60"}`}
+        >
+          <Film size={12} />
+          {previewFile ? previewFile.name : "Upload preview video (loops in picker, optional)"}
+        </button>
+
         <div className="grid grid-cols-2 gap-2">
-          <Input placeholder="YouTube download URL" value={form.scenepack_youtube_url} onChange={(e) => setForm({ ...form, scenepack_youtube_url: e.target.value })} className="h-8 text-xs" />
-          <Input placeholder="Google Drive URL" value={form.scenepack_gdrive_url} onChange={(e) => setForm({ ...form, scenepack_gdrive_url: e.target.value })} className="h-8 text-xs" />
+          <Input placeholder="YouTube download URL" value={form.scenepack_youtube_url} onChange={(e) => setForm({ ...form, scenepack_youtube_url: e.target.value })} className="h-8 text-xs" disabled={saving} />
+          <Input placeholder="Google Drive URL" value={form.scenepack_gdrive_url} onChange={(e) => setForm({ ...form, scenepack_gdrive_url: e.target.value })} className="h-8 text-xs" disabled={saving} />
         </div>
+
         <Button size="sm" onClick={create} disabled={saving || !form.title.trim()} className="w-full">
-          {saving ? <Loader2 size={14} className="animate-spin" /> : <><Plus size={14} className="mr-1" /> Add Scenepack</>}
+          {saving ? <><Loader2 size={14} className="animate-spin mr-1" />{saveProgress || "Saving…"}</> : <><Plus size={14} className="mr-1" /> Add Scenepack</>}
         </Button>
       </div>
 
@@ -661,7 +751,10 @@ function ScenepacksManager() {
                     {p.title}
                     {!p.active && <span className="text-[8px] uppercase text-muted-foreground/60">inactive</span>}
                   </p>
-                  <p className="text-[10px] text-muted-foreground truncate">{p.series || "—"}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">
+                    {p.series || "—"}
+                    {p.pack_count > 0 && <span className="ml-1.5 text-white/40">{p.pack_count} clips</span>}
+                  </p>
                 </div>
                 {(p.scenepack_youtube_url || p.scenepack_gdrive_url) && (
                   <a

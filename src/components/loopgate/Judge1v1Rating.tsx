@@ -471,7 +471,7 @@ export default function Judge1v1Rating() {
                     flexShrink: 0,
                     borderRadius: 999,
                   }}>
-                    loopgate.io
+                    loopgate.gg
                   </div>
                 </div>
               </div>

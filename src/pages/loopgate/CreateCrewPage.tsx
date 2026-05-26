@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Shield, Crown, Users, Star, Zap, Award } from "lucide-react";
+import { ArrowLeft, Camera, ImagePlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRoles } from "@/hooks/useUserRoles";
@@ -9,15 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import PageTransition from "@/components/loopgate/PageTransition";
-
-const emblems = [
-  { id: "shield", icon: Shield, label: "Shield" },
-  { id: "crown", icon: Crown, label: "Crown" },
-  { id: "users", icon: Users, label: "Team" },
-  { id: "star", icon: Star, label: "Star" },
-  { id: "zap", icon: Zap, label: "Lightning" },
-  { id: "award", icon: Award, label: "Award" },
-];
+import { toast } from "sonner";
 
 const leagues = [
   { id: "open", label: "Open", description: "Anyone can join" },
@@ -30,131 +22,139 @@ const joinTypes = [
   { id: "invite_only", label: "Invite Only", description: "Requires approval" },
 ];
 
+async function uploadImage(file: File, path: string): Promise<string | null> {
+  const { error } = await supabase.storage
+    .from("crew-avatars")
+    .upload(path, file, { contentType: file.type, upsert: true });
+  if (error) return null;
+  const { data: { publicUrl } } = supabase.storage.from("crew-avatars").getPublicUrl(path);
+  return publicUrl;
+}
+
 export default function CreateCrewPage() {
   const navigate = useNavigate();
-  const { user, isAdmin, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { isAdmin: hasAdminRole, isDev } = useUserRoles(user?.id);
   const canBypassLimit = hasAdminRole || isDev;
   const [loading, setLoading] = useState(false);
   const [ownedCrewsCount, setOwnedCrewsCount] = useState<number | null>(null);
-const [formData, setFormData] = useState({
+
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
+  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+
+  const logoRef = useRef<HTMLInputElement>(null);
+  const bannerRef = useRef<HTMLInputElement>(null);
+
+  const [formData, setFormData] = useState({
     name: "",
     description: "",
-    emblem: "shield",
+    discord_url: "",
     min_league: "open" as "open" | "pro" | "elite",
     join_type: "open",
     max_members: "",
   });
 
-  // Redirect if not logged in
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/units');
-    }
+    if (!authLoading && !user) navigate('/units');
   }, [authLoading, user, navigate]);
 
-  // Check how many units user already owns
   useEffect(() => {
-    const checkOwnedCrews = async () => {
-      if (!user) return;
-      const { count, error } = await supabase
-        .from("crews")
-        .select("*", { count: "exact", head: true })
-        .eq("owner_id", user.id);
-      
-      if (!error) {
-        setOwnedCrewsCount(count || 0);
-      }
-    };
-    checkOwnedCrews();
+    if (!user) return;
+    supabase.from("crews").select("*", { count: "exact", head: true }).eq("owner_id", user.id)
+      .then(({ count, error }) => { if (!error) setOwnedCrewsCount(count || 0); });
   }, [user]);
 
-  const handleCreate = async () => {
-    if (!user || !formData.name.trim() || (!canBypassLimit && ownedCrewsCount !== null && ownedCrewsCount >= 2)) return;
+  const pickFile = (file: File, type: "logo" | "banner") => {
+    const url = URL.createObjectURL(file);
+    if (type === "logo") { setLogoFile(file); setLogoPreview(url); }
+    else { setBannerFile(file); setBannerPreview(url); }
+  };
 
+  const handleCreate = async () => {
+    if (!user || !formData.name.trim()) return;
+    if (!canBypassLimit && ownedCrewsCount !== null && ownedCrewsCount >= 2) return;
     setLoading(true);
 
     try {
-      // Check if user is already in a unit
       const { data: existingProfile } = await supabase
-        .from("profiles")
-        .select("crew_id")
-        .eq("id", user.id)
-        .single();
+        .from("profiles").select("crew_id").eq("id", user.id).single();
 
       if (existingProfile?.crew_id && !canBypassLimit) {
-        alert("You are already in a unit. Leave your current unit before creating a new one.");
+        toast.error("Leave your current unit before creating a new one.");
         setLoading(false);
         return;
       }
 
-      // Check if user already has a primary unit (for non-admins)
       const { data: existingPrimary } = await supabase
-        .from("crew_members")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("is_primary", true)
-        .single();
+        .from("crew_members").select("id").eq("user_id", user.id).eq("is_primary", true).single();
 
-      const willBePrimary = !existingPrimary; // First unit is always primary
+      const willBePrimary = !existingPrimary;
 
-      // Create the unit with member_count 1 (owner)
       const { data: crew, error: crewError } = await supabase
         .from("crews")
         .insert({
           name: formData.name.trim(),
           description: formData.description.trim() || null,
-          emblem: formData.emblem,
+          emblem: "shield",
           min_league: formData.min_league,
           join_type: formData.join_type,
           owner_id: user.id,
-          member_count: 1, // Start with owner
+          member_count: 1,
           max_members: formData.max_members ? parseInt(formData.max_members) : null,
+          discord_url: formData.discord_url.trim() || null,
         })
-        .select()
-        .single();
+        .select().single();
 
       if (crewError) {
-        console.error("Error creating unit:", crewError);
-        if (crewError.code === "23505") {
-          alert("A unit with this name already exists.");
-        }
+        if (crewError.code === "23505") toast.error("A unit with this name already exists.");
+        else toast.error("Failed to create unit.");
         setLoading(false);
         return;
       }
 
-      // Add creator as owner member (primary if they don't have one)
+      // Upload images after crew is created
+      const uploads: Promise<void>[] = [];
+      if (logoFile) {
+        uploads.push(
+          uploadImage(logoFile, `${crew.id}/avatar_${Date.now()}.jpg`).then(url => {
+            if (url) supabase.from("crews").update({ avatar_url: url }).eq("id", crew.id);
+          })
+        );
+      }
+      if (bannerFile) {
+        uploads.push(
+          uploadImage(bannerFile, `${crew.id}/banner_${Date.now()}.jpg`).then(url => {
+            if (url) supabase.from("crews").update({ banner_url: url }).eq("id", crew.id);
+          })
+        );
+      }
+      await Promise.all(uploads);
+
       const { error: memberError } = await supabase.from("crew_members").insert({
-        crew_id: crew.id,
-        user_id: user.id,
-        role: "owner",
-        is_primary: willBePrimary,
+        crew_id: crew.id, user_id: user.id, role: "owner", is_primary: willBePrimary,
       });
 
       if (memberError) {
-        console.error("Error adding owner to crew_members:", memberError);
-        // Try to clean up the unit if member insert failed
         await supabase.from("crews").delete().eq("id", crew.id);
-        alert("Failed to create unit. Please try again.");
+        toast.error("Failed to create unit. Please try again.");
         setLoading(false);
         return;
       }
 
-      // Update profile with crew_id only if this is their primary unit
       if (willBePrimary) {
-        await supabase
-          .from("profiles")
-          .update({ crew_id: crew.id })
-          .eq("id", user.id);
+        await supabase.from("profiles").update({ crew_id: crew.id }).eq("id", user.id);
       }
 
       navigate(`/units/${crew.id}`);
-    } catch (error) {
-      console.error("Unexpected error creating unit:", error);
-      alert("An unexpected error occurred. Please try again.");
+    } catch {
+      toast.error("An unexpected error occurred.");
       setLoading(false);
     }
   };
+
+  const isAtLimit = !canBypassLimit && ownedCrewsCount !== null && ownedCrewsCount >= 2;
 
   return (
     <PageTransition>
@@ -170,14 +170,60 @@ const [formData, setFormData] = useState({
         </div>
 
         <div className="px-4 py-6 space-y-6">
-          {/* Max units limit warning - admins/devs bypass */}
-          {!canBypassLimit && ownedCrewsCount !== null && ownedCrewsCount >= 2 && (
+          {isAtLimit && (
             <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
-              <p className="text-sm text-destructive">
-                You already own 2 units (maximum limit). Delete one to create a new unit.
-              </p>
+              <p className="text-sm text-destructive">You already own 2 units (maximum). Delete one to create a new unit.</p>
             </div>
           )}
+
+          {/* Banner picker */}
+          <div className="space-y-2">
+            <Label>Banner</Label>
+            <button
+              type="button"
+              onClick={() => bannerRef.current?.click()}
+              className="relative w-full h-28 rounded-xl overflow-hidden border border-border/40 bg-muted/20 flex items-center justify-center group"
+            >
+              {bannerPreview ? (
+                <img src={bannerPreview} className="w-full h-full object-cover" alt="" />
+              ) : (
+                <div className="flex flex-col items-center gap-1 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors">
+                  <ImagePlus className="w-6 h-6" />
+                  <span className="text-[11px]">Add banner image</span>
+                </div>
+              )}
+              {bannerPreview && (
+                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <ImagePlus className="w-5 h-5 text-white" />
+                </div>
+              )}
+            </button>
+            <input ref={bannerRef} type="file" accept="image/*" className="hidden"
+              onChange={e => e.target.files?.[0] && pickFile(e.target.files[0], "banner")} />
+          </div>
+
+          {/* Logo picker */}
+          <div className="space-y-2">
+            <Label>Logo</Label>
+            <button
+              type="button"
+              onClick={() => logoRef.current?.click()}
+              className="relative w-20 h-20 rounded-xl overflow-hidden border border-border/40 bg-muted/20 flex items-center justify-center group"
+            >
+              {logoPreview ? (
+                <img src={logoPreview} className="w-full h-full object-cover" alt="" />
+              ) : (
+                <Camera className="w-6 h-6 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors" />
+              )}
+              {logoPreview && (
+                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <Camera className="w-4 h-4 text-white" />
+                </div>
+              )}
+            </button>
+            <input ref={logoRef} type="file" accept="image/*" className="hidden"
+              onChange={e => e.target.files?.[0] && pickFile(e.target.files[0], "logo")} />
+          </div>
 
           {/* Unit Name */}
           <div className="space-y-2">
@@ -185,10 +231,10 @@ const [formData, setFormData] = useState({
             <Input
               placeholder="Enter unit name..."
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={e => setFormData({ ...formData, name: e.target.value })}
               maxLength={48}
               className="bg-muted/50"
-              disabled={!canBypassLimit && ownedCrewsCount !== null && ownedCrewsCount >= 2}
+              disabled={isAtLimit}
             />
           </div>
 
@@ -198,43 +244,32 @@ const [formData, setFormData] = useState({
             <Textarea
               placeholder="Tell others about your unit..."
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={e => setFormData({ ...formData, description: e.target.value })}
               maxLength={200}
               className="bg-muted/50 resize-none"
               rows={3}
             />
           </div>
 
-          {/* Emblem */}
-          <div className="space-y-3">
-            <Label>Emblem</Label>
-            <div className="grid grid-cols-6 gap-2">
-              {emblems.map((emblem) => (
-                <button
-                  key={emblem.id}
-                  onClick={() => setFormData({ ...formData, emblem: emblem.id })}
-                  className={`aspect-square rounded-lg flex items-center justify-center transition-all ${
-                    formData.emblem === emblem.id
-                      ? "bg-gold/20 border-2 border-gold text-gold"
-                      : "bg-muted/50 border border-border text-muted-foreground hover:bg-muted"
-                  }`}
-                >
-                  <emblem.icon className="w-6 h-6" />
-                </button>
-              ))}
-            </div>
+          {/* Discord */}
+          <div className="space-y-2">
+            <Label>Discord Link <span className="text-muted-foreground/50 font-normal">(optional)</span></Label>
+            <Input
+              placeholder="https://discord.gg/..."
+              value={formData.discord_url}
+              onChange={e => setFormData({ ...formData, discord_url: e.target.value })}
+              className="bg-muted/50"
+            />
           </div>
 
           {/* Minimum League */}
           <div className="space-y-3">
             <Label>Minimum League Requirement</Label>
             <div className="space-y-2">
-              {leagues.map((league) => (
+              {leagues.map(league => (
                 <button
                   key={league.id}
-                  onClick={() =>
-                    setFormData({ ...formData, min_league: league.id as "open" | "pro" | "elite" })
-                  }
+                  onClick={() => setFormData({ ...formData, min_league: league.id as "open" | "pro" | "elite" })}
                   className={`w-full p-3 rounded-lg text-left transition-all ${
                     formData.min_league === league.id
                       ? "bg-gold/10 border border-gold"
@@ -252,7 +287,7 @@ const [formData, setFormData] = useState({
           <div className="space-y-3">
             <Label>Join Type</Label>
             <div className="space-y-2">
-              {joinTypes.map((type) => (
+              {joinTypes.map(type => (
                 <button
                   key={type.id}
                   onClick={() => setFormData({ ...formData, join_type: type.id })}
@@ -271,28 +306,21 @@ const [formData, setFormData] = useState({
 
           {/* Max Members */}
           <div className="space-y-2">
-            <Label>Set Max Members (optional)</Label>
+            <Label>Max Members <span className="text-muted-foreground/50 font-normal">(optional, blank = unlimited)</span></Label>
             <Input
               type="number"
-              placeholder="example: 20"
+              placeholder="e.g. 20"
               value={formData.max_members}
-              onChange={(e) => setFormData({ ...formData, max_members: e.target.value })}
+              onChange={e => setFormData({ ...formData, max_members: e.target.value })}
               min={1}
               max={1000}
               className="bg-muted/50"
             />
-            <p className="text-xs text-muted-foreground">
-              {formData.max_members 
-                ? `Max Members: ${formData.max_members}` 
-                : "Max Members: ∞"}
-            </p>
-            <p className="text-[10px] text-muted-foreground/70">Blank = ∞</p>
           </div>
 
-          {/* Create Button */}
           <Button
             onClick={handleCreate}
-            disabled={loading || !formData.name.trim() || (!canBypassLimit && ownedCrewsCount !== null && ownedCrewsCount >= 2)}
+            disabled={loading || !formData.name.trim() || isAtLimit}
             className="w-full bg-gold text-black hover:bg-gold/90"
           >
             {loading ? "Creating..." : "Create Unit"}

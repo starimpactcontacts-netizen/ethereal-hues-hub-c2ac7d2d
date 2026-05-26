@@ -11,14 +11,6 @@ const STORAGE_ZONE = Deno.env.get('BUNNY_STORAGE_ZONE')!;
 const STORAGE_PASSWORD = Deno.env.get('BUNNY_STORAGE_PASSWORD')!;
 const CDN_HOSTNAME = Deno.env.get('BUNNY_CDN_HOSTNAME')!;
 
-/**
- * Issues a direct-PUT target for Bunny Storage so the browser can upload
- * straight to storage.bunnycdn.com (no proxy hop through the edge function).
- *
- * Auth-gated: only signed-in users get a target. The AccessKey is returned
- * to the client — this trades a small write-scope risk for ~50% faster uploads
- * on big video files.
- */
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
@@ -41,6 +33,48 @@ Deno.serve(async (req) => {
       });
     }
 
+    const contentType = req.headers.get('content-type') || '';
+
+    // Proxy mode: file sent as multipart/form-data — upload server-side to avoid browser CORS issues
+    if (contentType.includes('multipart/form-data')) {
+      const form = await req.formData();
+      const file = form.get('file') as File | null;
+      const folder = String(form.get('folder') || '');
+
+      if (!file) {
+        return new Response(JSON.stringify({ error: 'No file provided' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const safeFolder = folder.replace(/[^a-zA-Z0-9/_-]/g, '').replace(/^\/+|\/+$/g, '');
+      const justName = file.name.split('/').pop() || 'file.bin';
+      const ext = justName.includes('.') ? justName.split('.').pop() : 'bin';
+      const folderPart = safeFolder ? `${safeFolder}/` : '';
+      const path = `${folderPart}${user.id}/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
+
+      const uploadUrl = `https://${STORAGE_HOST}/${STORAGE_ZONE}/${path}`;
+      const cdnUrl = `https://${CDN_HOSTNAME}/${path}`;
+
+      const put = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: { AccessKey: STORAGE_PASSWORD },
+        body: await file.arrayBuffer(),
+      });
+
+      if (!put.ok) {
+        const detail = await put.text().catch(() => '');
+        return new Response(JSON.stringify({ error: `Bunny upload failed: ${put.status} ${detail}` }), {
+          status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      return new Response(JSON.stringify({ cdnUrl, path }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Sign-only mode: return upload target for client-side direct PUT (large videos)
     const { fileName = 'file.bin', folder = '' } = await req.json().catch(() => ({}));
     const safeFolder = String(folder).replace(/[^a-zA-Z0-9/_-]/g, '').replace(/^\/+|\/+$/g, '');
     const justName = String(fileName).split('/').pop() || 'file.bin';

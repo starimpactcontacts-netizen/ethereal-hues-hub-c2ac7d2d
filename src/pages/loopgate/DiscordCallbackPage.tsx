@@ -1,0 +1,103 @@
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+
+export default function DiscordCallbackPage() {
+  const [params] = useSearchParams();
+  const navigate = useNavigate();
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    const errorParam = params.get('error');
+    const code = params.get('code');
+
+    if (errorParam) {
+      setErr('Discord authorization was cancelled.');
+      return;
+    }
+    if (!code) {
+      setErr('No authorization code received from Discord.');
+      return;
+    }
+
+    (async () => {
+      try {
+        const res = await fetch(`/api/discord-callback?code=${encodeURIComponent(code)}`);
+        const json = await res.json();
+
+        if (!res.ok || json.error) {
+          setErr(json.error || 'Authentication failed. Please try again.');
+          return;
+        }
+
+        if (json.needsEmailConfirm) {
+          setErr('Check your email — we sent a confirmation link to complete sign-up.');
+          return;
+        }
+
+        const { data: sessionData, error: sessionErr } = await supabase.auth.setSession({
+          access_token: json.access_token,
+          refresh_token: json.refresh_token,
+        });
+
+        if (sessionErr) {
+          setErr(sessionErr.message);
+          return;
+        }
+
+        // For new Discord users, overwrite the trigger-generated username with their Discord username
+        if (json.isNew && sessionData?.user && json.discord_username) {
+          const base = (json.discord_username as string)
+            .toLowerCase()
+            .replace(/[^a-z0-9_]/g, '_')
+            .slice(0, 20);
+          // Try base name, then base_2, base_3, etc. until one is free
+          let candidate = base;
+          let suffix = 2;
+          while (suffix <= 10) {
+            const { error: upErr } = await supabase
+              .from('profiles')
+              .update({ username: candidate, display_name: json.discord_global_name || json.discord_username })
+              .eq('id', sessionData.user.id);
+            if (!upErr) break;
+            candidate = `${base.slice(0, 17)}_${suffix}`;
+            suffix++;
+          }
+        }
+
+        navigate('/hub', { replace: true });
+      } catch {
+        setErr('Something went wrong. Please try again.');
+      }
+    })();
+  }, []);
+
+  if (err) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center gap-4 px-6">
+        <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center mb-2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-red-400">
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
+        </div>
+        <p className="text-sm text-red-400 text-center">{err}</p>
+        <button
+          onClick={() => navigate('/login')}
+          className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors"
+        >
+          Back to login
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center gap-3">
+      <div
+        className="w-10 h-10 rounded-full border-2 border-[#5865F2] animate-spin"
+        style={{ borderTopColor: 'transparent' }}
+      />
+      <p className="text-sm text-muted-foreground">Connecting with Discord…</p>
+    </div>
+  );
+}

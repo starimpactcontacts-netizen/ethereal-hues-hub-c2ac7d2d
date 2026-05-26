@@ -8,14 +8,8 @@ interface LevelBadgeProps {
   className?: string;
 }
 
-// Color tier scaled for 1-100 level system
-function getLevelColors(level: number) {
-  if (level >= 100) return { bg: "bg-gold/20", text: "text-gold", border: "border-gold/50", glow: "shadow-[0_0_12px_rgba(212,175,55,0.6)]" };
-  if (level >= 75)  return { bg: "bg-gold/10", text: "text-gold", border: "border-gold/30", glow: "shadow-[0_0_8px_rgba(212,175,55,0.4)]" };
-  if (level >= 50)  return { bg: "bg-purple-500/10", text: "text-purple-400", border: "border-purple-500/30" } as const;
-  if (level >= 30)  return { bg: "bg-blue-500/10", text: "text-blue-400", border: "border-blue-500/30" } as const;
-  if (level >= 15)  return { bg: "bg-emerald-500/10", text: "text-emerald-400", border: "border-emerald-500/30" } as const;
-  return { bg: "bg-muted/50", text: "text-muted-foreground", border: "border-muted-foreground/30" } as const;
+function getLevelColors(_level: number) {
+  return { bg: "bg-white/[0.05]", text: "text-white/50", border: "border-white/[0.08]" } as const;
 }
 
 const sizeClasses = {
@@ -32,19 +26,16 @@ export default function LevelBadge({
   showAura = false,
   className 
 }: LevelBadgeProps) {
-  const colors = getLevelColors(level) as { bg: string; text: string; border: string; glow?: string };
-  const hasGoldAura = showAura && level >= 50;
-  
+  const colors = getLevelColors(level);
+
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 font-semibold uppercase tracking-wider border rounded-md transition-shadow",
+        "inline-flex items-center gap-1 font-semibold uppercase tracking-wider border rounded-md",
         colors.bg,
         colors.text,
         colors.border,
         sizeClasses[size],
-        hasGoldAura && colors.glow,
-        hasGoldAura && level >= 75 && "animate-pulse",
         className
       )}
     >

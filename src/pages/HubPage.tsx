@@ -46,7 +46,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import lvMonogram from '@/assets/lv-monogram.png';
-import GatePattern from '@/components/loopgate/GatePattern';
 import { getRankFromScore, getRankFromLevel, getEffectiveRank } from '@/data/gqtConfig';
 import IndexEarnBadge from '@/components/loopgate/IndexEarnBadge';
 import FoundingBadge from '@/components/loopgate/FoundingBadge';
@@ -526,21 +525,21 @@ export default function HubPage() {
   const totalFeatured = totalArtistFeatured + totalEvents;
 
   return (
-    <div className="min-h-screen bg-background pb-16 overflow-x-hidden relative">
-      {/* Gate lattice — subtle geometric texture */}
-      <GatePattern opacity={1.5} tileSize={48} className="z-0" />
-
-      {/* Arcade grid texture overlay — beat-battle.net style */}
+    <div
+      className="min-h-screen pb-16 overflow-x-hidden relative"
+      style={{
+        background: '#0A0A0A',
+        backgroundImage:
+          'linear-gradient(rgba(255,255,255,0.032) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.032) 1px, transparent 1px)',
+        backgroundSize: '44px 44px',
+      }}
+    >
+      {/* Radial depth pull */}
       <div
-        className="pointer-events-none absolute inset-0 z-0 opacity-[0.18]"
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-0"
         style={{
-          backgroundImage: `
-            linear-gradient(to right, hsl(0 80% 50% / 0.18) 1px, transparent 1px),
-            linear-gradient(to bottom, hsl(0 80% 50% / 0.18) 1px, transparent 1px)
-          `,
-          backgroundSize: '28px 28px',
-          maskImage: 'radial-gradient(ellipse at center, black 30%, transparent 80%)',
-          WebkitMaskImage: 'radial-gradient(ellipse at center, black 30%, transparent 80%)',
+          background: 'radial-gradient(ellipse 70% 40% at 50% 0%, rgba(255,255,255,0.022) 0%, transparent 100%)',
         }}
       />
       
@@ -549,12 +548,7 @@ export default function HubPage() {
       {/* ═══════════════════════════════════════════════════════════════════
           HERO LAYER - Profile Card with Dimensional Gate Background
       ═══════════════════════════════════════════════════════════════════ */}
-      <div className="relative z-10 overflow-hidden">
-        {/* Subtle top gradient */}
-        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-surface-1/50 to-transparent pointer-events-none" />
-        {/* Side arch blurs — clipped to this container */}
-        <div className="absolute top-0 -left-10 w-48 h-64 bg-surface-1 rounded-full blur-[50px] pointer-events-none" />
-        <div className="absolute top-0 -right-10 w-48 h-64 bg-surface-1 rounded-full blur-[50px] pointer-events-none" />
+      <div className="relative z-10 overflow-hidden" style={{ background: '#0a0a0a' }}>
 
         <div className="relative px-4 pt-5 pb-0">
           <motion.div

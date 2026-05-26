@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { ChevronRight, Lock, ArrowLeft, Zap, Users, Trophy, Crown, Medal, Target, TrendingUp } from "lucide-react";
+import { ChevronRight, Lock, ArrowLeft, Users, Trophy, BarChart2, Star, Crosshair } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRealEvents, useRealRankings, useEventRankings, useActiveSession } from "@/hooks/useRealData";
 import { useXPUserLeaderboard, useXPCrewLeaderboard } from "@/hooks/useXPLeaderboard";
@@ -10,43 +11,53 @@ import CrewBadge from "@/components/loopgate/CrewBadge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import SEO, { pageSEO } from "@/components/SEO";
 
-type TabType = "index" | "xp" | "crews" | "events";
+type TabType = "index" | "xp" | "crews" | "skill" | "events";
 
 const getRankStyle = (rank: number) => {
   if (rank === 1) return {
-    bg: "bg-gradient-to-r from-gold/12 via-gold/5 to-gold/12",
-    border: "border-l-2 border-gold/60",
-    text: "text-gold",
-    icon: Crown,
-    shimmer: true,
+    rankBadge: "bg-[#D4A857] text-black",
+    scoreColor: "text-[#D4A857]",
+    scoreSize: "text-2xl",
+    nameSize: "text-[15px]",
+    avatarSize: "w-11 h-11",
+    avatarBorder: "border-[#D4A857]/40",
+    py: "py-3.5 px-4",
   };
   if (rank === 2) return {
-    bg: "bg-surface-1/50",
-    border: "border-l-2 border-foreground/30",
-    text: "text-foreground/70",
-    icon: Medal,
-    shimmer: false,
+    rankBadge: "bg-zinc-500 text-white",
+    scoreColor: "text-zinc-300",
+    scoreSize: "text-xl",
+    nameSize: "text-sm",
+    avatarSize: "w-10 h-10",
+    avatarBorder: "border-zinc-500/30",
+    py: "py-3 px-4",
   };
   if (rank === 3) return {
-    bg: "bg-surface-1/40",
-    border: "border-l-2 border-foreground/20",
-    text: "text-foreground/50",
-    icon: Medal,
-    shimmer: false,
+    rankBadge: "bg-amber-800 text-white",
+    scoreColor: "text-amber-600",
+    scoreSize: "text-xl",
+    nameSize: "text-sm",
+    avatarSize: "w-10 h-10",
+    avatarBorder: "border-amber-800/30",
+    py: "py-3 px-4",
   };
   if (rank <= 10) return {
-    bg: "bg-surface-1/30",
-    border: "border-l border-border/50",
-    text: "text-muted-foreground",
-    icon: null,
-    shimmer: false,
+    rankBadge: null,
+    scoreColor: "text-foreground",
+    scoreSize: "text-lg",
+    nameSize: "text-sm",
+    avatarSize: "w-9 h-9",
+    avatarBorder: "border-border/40",
+    py: "py-2.5 px-4",
   };
   return {
-    bg: "",
-    border: "border-l border-border/20",
-    text: "text-muted-foreground",
-    icon: null,
-    shimmer: false,
+    rankBadge: null,
+    scoreColor: "text-muted-foreground/70",
+    scoreSize: "text-base",
+    nameSize: "text-sm",
+    avatarSize: "w-8 h-8",
+    avatarBorder: "border-border/20",
+    py: "py-2 px-4",
   };
 };
 
@@ -59,9 +70,10 @@ export default function RankingsPage() {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(eventIdFromUrl);
 
   const tabs: { id: TabType; label: string; icon: React.ElementType }[] = [
-    { id: "index", label: "INDEX", icon: Target },
-    { id: "xp", label: "XP", icon: Zap },
+    { id: "index", label: "INDEX", icon: BarChart2 },
+    { id: "xp", label: "XP", icon: Star },
     { id: "crews", label: "UNITS", icon: Users },
+    { id: "skill", label: "SKILL", icon: Crosshair },
   ];
 
   useActiveSession();
@@ -71,6 +83,13 @@ export default function RankingsPage() {
   const { rankings: eventRankings, loading: eventRankingsLoading } = useEventRankings(selectedEventId);
   const { users: xpUsers, loading: xpLoading } = useXPUserLeaderboard(50);
   const { crews: xpCrews, loading: crewsLoading } = useXPCrewLeaderboard(20);
+  const [skillRankings, setSkillRankings] = useState<{ id: string; username: string; avatar_url: string | null; best_gatekeeper_qoi: number; level: number | null }[]>([]);
+  useEffect(() => {
+    supabase.from('profiles').select('id, username, avatar_url, best_gatekeeper_qoi, level')
+      .eq('is_hidden', false).not('best_gatekeeper_qoi', 'is', null)
+      .order('best_gatekeeper_qoi', { ascending: false }).limit(50)
+      .then(({ data }) => setSkillRankings((data as any[]) || []));
+  }, []);
 
   const selectedEvent = events.find((e) => e.id === selectedEventId);
   const isLiveEvent = selectedEvent?.status === "live";
@@ -182,33 +201,16 @@ export default function RankingsPage() {
     <div className="min-h-screen pb-24 bg-background">
       <SEO {...pageSEO.rankings} />
       
-      {/* Header — clean, no gold glow */}
-      <header className="px-4 pt-4 pb-3 border-b border-border/30">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-foreground" />
-            <span className="text-[9px] text-muted-foreground uppercase tracking-[0.35em] font-semibold">Global Leaderboard</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="relative">
-              <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-              <div className="absolute inset-0 w-1.5 h-1.5 rounded-full bg-red-500 animate-ping opacity-75" />
-            </div>
-            <span className="text-[8px] font-bold uppercase tracking-widest text-red-400/80">Live</span>
-          </div>
-        </div>
-        
-        <h1 className="font-display text-4xl tracking-wider text-foreground leading-none">
-          RANKINGS
+      {/* Header */}
+      <header className="px-4 pt-5 pb-4 border-b border-white/[0.07]">
+        <h1 className="font-display text-[38px] tracking-[0.06em] text-foreground leading-none font-black" style={{ fontFamily: 'Teko, sans-serif' }}>
+          GLOBAL LEADERBOARD
         </h1>
-        <p className="text-[10px] text-muted-foreground/60 uppercase tracking-[0.2em] mt-1">
-          Top editors worldwide
-        </p>
       </header>
 
-      {/* Tab Nav — white active, no gold */}
-      <div className="px-3 py-3">
-        <div className="flex bg-surface-0/60 border border-border/40 rounded-lg p-1 gap-0.5">
+      {/* Tab Nav */}
+      <div className="px-3 pt-3 pb-1">
+        <div className="flex border-b border-white/[0.07]">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             const Icon = tab.icon;
@@ -216,14 +218,15 @@ export default function RankingsPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-bold tracking-wider rounded-md transition-all duration-150 ${
-                  isActive
-                    ? "bg-foreground text-background shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-[10px] font-black tracking-[0.15em] uppercase transition-all duration-150 relative ${
+                  isActive ? "text-foreground" : "text-muted-foreground/40 hover:text-muted-foreground"
                 }`}
               >
-                <Icon className="w-3.5 h-3.5" />
+                <Icon className="w-3 h-3" />
                 {tab.label}
+                {isActive && (
+                  <div className="absolute bottom-0 left-4 right-4 h-[2px] bg-[#D4A857] rounded-full" />
+                )}
               </button>
             );
           })}
@@ -240,81 +243,89 @@ export default function RankingsPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
-            className="px-3"
+            className="px-0 pt-2"
           >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] font-semibold">Skill Index</span>
-              <span className="text-[10px] text-muted-foreground/50">Top 50</span>
-            </div>
-            
             {globalRankings.length === 0 && !rankingsLoading ? (
               <EmptyState icon={Target} message="No rankings yet" />
             ) : (
-              <div className="space-y-1">
+              <div>
                 {globalRankings.slice(0, 50).map((editor, index) => {
                   const rank = editor.rank || index + 1;
                   const style = getRankStyle(rank);
-                  const IconComponent = style.icon;
-                  const isFirst = rank === 1;
-                  
+                  const score = editor.global_index_score;
+                  const scoreLabel = score ? (score >= 1000 ? `${(score / 1000).toFixed(1)}K` : score.toFixed(1)) : '—';
+
                   return (
-                    <motion.button
-                      key={editor.id}
-                      initial={{ opacity: 0, x: -12 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.012, duration: 0.25 }}
-                      onClick={() => navigate(`/editor/${editor.id}`)}
-                      className={`w-full relative overflow-hidden ${style.bg} ${style.border} p-3 flex items-center gap-3 text-left rounded-md active:scale-[0.995] transition-transform duration-100`}
-                    >
-                      {style.shimmer && (
-                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                          <div className="absolute -inset-full animate-shimmer bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+                    <div key={editor.id}>
+                      {rank === 4 && (
+                        <div className="flex items-center gap-2 px-4 py-2 mt-1">
+                          <div className="flex-1 h-px bg-white/[0.06]" />
+                          <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-muted-foreground/30">Top 10</span>
+                          <div className="flex-1 h-px bg-white/[0.06]" />
                         </div>
                       )}
-                      
-                      <div className="w-7 flex items-center justify-center flex-shrink-0">
-                        {IconComponent ? (
-                          <IconComponent className={`w-4.5 h-4.5 ${style.text}`} />
-                        ) : (
-                          <span className={`font-display text-base ${style.text} tabular-nums`}>{rank}</span>
-                        )}
-                      </div>
-                      
-                      <Avatar className={`w-8 h-8 border ${isFirst ? 'border-gold/40' : 'border-border/60'}`}>
-                        <AvatarImage src={editor.avatar_url || undefined} />
-                        <AvatarFallback className="bg-surface-1 text-[10px] font-bold">
-                          {editor.username[0]?.toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-semibold text-sm truncate text-foreground">{editor.username}</span>
-                          {editor.verification_status && (
-                            <div className="w-3.5 h-3.5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-                              <span className="text-[7px] text-white font-bold">✓</span>
-                            </div>
-                          )}
-                          <LevelBadge level={editor.level || 1} size="sm" />
+                      {rank === 11 && (
+                        <div className="flex items-center gap-2 px-4 py-2">
+                          <div className="flex-1 h-px bg-white/[0.04]" />
+                          <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-muted-foreground/20">Rankings</span>
+                          <div className="flex-1 h-px bg-white/[0.04]" />
                         </div>
-                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                          <span className="uppercase tracking-wider">{editor.league}</span>
-                          {editor.crew && (
-                            <>
-                              <span className="text-border">•</span>
-                              <CrewBadge crew={editor.crew} size="sm" />
-                            </>
+                      )}
+                      <motion.button
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.01, duration: 0.22 }}
+                        onClick={() => navigate(`/editor/${editor.id}`)}
+                        className={`w-full ${style.py} flex items-center gap-3 text-left active:opacity-60 transition-opacity border-b border-white/[0.04] last:border-0`}
+                      >
+                        {/* Rank */}
+                        <div className="w-8 shrink-0 flex items-center justify-center">
+                          {style.rankBadge ? (
+                            <span className={`w-6 h-6 rounded flex items-center justify-center text-[11px] font-black ${style.rankBadge}`} style={{ fontFamily: 'Teko, sans-serif' }}>{rank}</span>
+                          ) : (
+                            <span className={`font-black tabular-nums ${rank <= 10 ? 'text-base text-white/50' : 'text-sm text-white/25'}`} style={{ fontFamily: 'Teko, sans-serif' }}>{rank}</span>
                           )}
                         </div>
-                      </div>
-                      
-                      <div className="text-right flex-shrink-0">
-                        <span className={`font-display text-xl tabular-nums ${isFirst ? 'text-gold' : 'text-foreground'}`}>
-                          {editor.global_index_score?.toFixed(1) || '0.0'}
-                        </span>
-                        <p className="text-[8px] text-muted-foreground/50 uppercase tracking-wider font-semibold">Index</p>
-                      </div>
-                    </motion.button>
+
+                        {/* Avatar */}
+                        <Avatar className={`${style.avatarSize} border ${style.avatarBorder} shrink-0`}>
+                          <AvatarImage src={editor.avatar_url || undefined} />
+                          <AvatarFallback className="bg-surface-1 text-[10px] font-bold">
+                            {editor.username[0]?.toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+
+                        {/* Name + meta */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className={`font-bold ${style.nameSize} truncate text-foreground`}>{editor.username}</span>
+                            {editor.verification_status && (
+                              <div className="w-3.5 h-3.5 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
+                                <span className="text-[7px] text-white font-bold">✓</span>
+                              </div>
+                            )}
+                            {rank <= 10 && <LevelBadge level={editor.level || 1} size="sm" />}
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/50 mt-0.5">
+                            <span className="uppercase tracking-wider">{editor.league}</span>
+                            {editor.crew && (
+                              <>
+                                <span>•</span>
+                                <CrewBadge crew={editor.crew} size="sm" />
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Score */}
+                        <div className="text-right shrink-0">
+                          <span className={`font-display font-black tabular-nums ${style.scoreSize} ${style.scoreColor}`}>
+                            {scoreLabel}
+                          </span>
+                          <p className="text-[8px] text-muted-foreground/30 uppercase tracking-wider font-bold">IDX</p>
+                        </div>
+                      </motion.button>
+                    </div>
                   );
                 })}
               </div>
@@ -330,67 +341,67 @@ export default function RankingsPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
-            className="px-3"
+            className="px-0 pt-2"
           >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] font-semibold">Experience Points</span>
-              <span className="text-[10px] text-muted-foreground/50">Top Grinders</span>
-            </div>
-            
             {xpUsers.length === 0 && !xpLoading ? (
               <EmptyState icon={Zap} message="No XP rankings yet" />
             ) : (
-              <div className="space-y-1">
+              <div>
                 {xpUsers.map((user, index) => {
                   const rank = user.rank || index + 1;
                   const style = getRankStyle(rank);
-                  const IconComponent = style.icon;
-                  const isFirst = rank === 1;
-                  
+                  const xpLabel = user.xp >= 1000 ? `${(user.xp / 1000).toFixed(1)}K` : user.xp.toLocaleString();
+
                   return (
-                    <motion.button
-                      key={user.id}
-                      initial={{ opacity: 0, x: -12 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.015 }}
-                      onClick={() => navigate(`/editor/${user.id}`)}
-                      className={`w-full relative ${style.bg} ${style.border} p-3 flex items-center gap-3 text-left rounded-md active:scale-[0.995] transition-transform duration-100`}
-                    >
-                      {style.shimmer && (
-                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                          <div className="absolute -inset-full animate-shimmer bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+                    <div key={user.id}>
+                      {rank === 4 && (
+                        <div className="flex items-center gap-2 px-4 py-2 mt-1">
+                          <div className="flex-1 h-px bg-white/[0.06]" />
+                          <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-muted-foreground/30">Top 10</span>
+                          <div className="flex-1 h-px bg-white/[0.06]" />
                         </div>
                       )}
-                      
-                      <div className="w-7 flex items-center justify-center">
-                        {IconComponent ? (
-                          <IconComponent className={`w-4.5 h-4.5 ${style.text}`} />
-                        ) : (
-                          <span className={`font-display text-base ${style.text} tabular-nums`}>{rank}</span>
-                        )}
-                      </div>
-                      
-                      <Avatar className={`w-8 h-8 border ${isFirst ? 'border-gold/40' : 'border-border/60'}`}>
-                        <AvatarImage src={user.avatar_url || undefined} />
-                        <AvatarFallback className="bg-surface-1 text-[10px]">
-                          {user.username[0]?.toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-semibold text-sm text-foreground truncate">{user.username}</span>
-                          <LevelBadge level={user.level} size="sm" showAura />
+                      {rank === 11 && (
+                        <div className="flex items-center gap-2 px-4 py-2">
+                          <div className="flex-1 h-px bg-white/[0.04]" />
+                          <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-muted-foreground/20">Rankings</span>
+                          <div className="flex-1 h-px bg-white/[0.04]" />
                         </div>
-                      </div>
-                      
-                      <div className="text-right">
-                        <span className="font-display text-xl text-foreground tabular-nums">
-                          {user.xp.toLocaleString()}
-                        </span>
-                        <p className="text-[8px] text-muted-foreground/50 uppercase tracking-wider font-semibold">XP</p>
-                      </div>
-                    </motion.button>
+                      )}
+                      <motion.button
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.01 }}
+                        onClick={() => navigate(`/editor/${user.id}`)}
+                        className={`w-full ${style.py} flex items-center gap-3 text-left active:opacity-60 transition-opacity border-b border-white/[0.04] last:border-0`}
+                      >
+                        <div className="w-8 shrink-0 flex items-center justify-center">
+                          {style.rankBadge ? (
+                            <span className={`w-6 h-6 rounded flex items-center justify-center text-[11px] font-black ${style.rankBadge}`} style={{ fontFamily: 'Teko, sans-serif' }}>{rank}</span>
+                          ) : (
+                            <span className={`font-black tabular-nums ${rank <= 10 ? 'text-base text-white/50' : 'text-sm text-white/25'}`} style={{ fontFamily: 'Teko, sans-serif' }}>{rank}</span>
+                          )}
+                        </div>
+                        <Avatar className={`${style.avatarSize} border ${style.avatarBorder} shrink-0`}>
+                          <AvatarImage src={user.avatar_url || undefined} />
+                          <AvatarFallback className="bg-surface-1 text-[10px] font-bold">
+                            {user.username[0]?.toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className={`font-bold ${style.nameSize} truncate text-foreground`}>{user.username}</span>
+                            {rank <= 10 && <LevelBadge level={user.level} size="sm" showAura />}
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className={`font-display font-black tabular-nums ${style.scoreSize} ${style.scoreColor}`}>
+                            {xpLabel}
+                          </span>
+                          <p className="text-[8px] text-muted-foreground/30 uppercase tracking-wider font-bold">XP</p>
+                        </div>
+                      </motion.button>
+                    </div>
                   );
                 })}
               </div>
@@ -406,69 +417,135 @@ export default function RankingsPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
-            className="px-3"
+            className="px-0 pt-2"
           >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] font-semibold">Unit Rankings</span>
-              <span className="text-[10px] text-muted-foreground/50">Combined XP</span>
-            </div>
-            
             {xpCrews.length === 0 && !crewsLoading ? (
               <EmptyState icon={Users} message="No units ranked yet" />
             ) : (
-              <div className="space-y-1">
+              <div>
                 {xpCrews.map((crew, index) => {
                   const rank = crew.rank || index + 1;
                   const style = getRankStyle(rank);
-                  const IconComponent = style.icon;
-                  const isFirst = rank === 1;
-                  
+                  const xpLabel = crew.totalXP >= 1000 ? `${(crew.totalXP / 1000).toFixed(1)}K` : crew.totalXP.toLocaleString();
+
                   return (
-                    <motion.button
-                      key={crew.id}
-                      initial={{ opacity: 0, x: -12 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.015 }}
-                      onClick={() => navigate(`/units/${crew.id}`)}
-                      className={`w-full relative ${style.bg} ${style.border} p-3 flex items-center gap-3 text-left rounded-md active:scale-[0.995] transition-transform duration-100`}
-                    >
-                      {style.shimmer && (
-                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                          <div className="absolute -inset-full animate-shimmer bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+                    <div key={crew.id}>
+                      {rank === 4 && (
+                        <div className="flex items-center gap-2 px-4 py-2 mt-1">
+                          <div className="flex-1 h-px bg-white/[0.06]" />
+                          <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-muted-foreground/30">Top 10</span>
+                          <div className="flex-1 h-px bg-white/[0.06]" />
                         </div>
                       )}
-                      
-                      <div className="w-7 flex items-center justify-center">
-                        {IconComponent ? (
-                          <IconComponent className={`w-4.5 h-4.5 ${style.text}`} />
-                        ) : (
-                          <span className={`font-display text-base ${style.text} tabular-nums`}>{rank}</span>
-                        )}
-                      </div>
-                      
-                      <Avatar className={`w-8 h-8 border ${isFirst ? 'border-gold/40' : 'border-border/60'}`}>
-                        <AvatarImage src={crew.avatar_url || undefined} />
-                        <AvatarFallback className="bg-surface-1 text-sm">
-                          {crew.emblem}
-                        </AvatarFallback>
-                      </Avatar>
-                      
-                      <div className="flex-1 min-w-0">
-                        <span className="font-semibold text-sm text-foreground truncate block">{crew.name}</span>
-                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                          <span>{crew.member_count} editors</span>
-                          <span className="text-border">•</span>
-                          <span>Lv {crew.crewLevel}</span>
+                      <motion.button
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.01 }}
+                        onClick={() => navigate(`/units/${crew.id}`)}
+                        className={`w-full ${style.py} flex items-center gap-3 text-left active:opacity-60 transition-opacity border-b border-white/[0.04] last:border-0`}
+                      >
+                        <div className="w-8 shrink-0 flex items-center justify-center">
+                          {style.rankBadge ? (
+                            <span className={`w-6 h-6 rounded flex items-center justify-center text-[11px] font-black ${style.rankBadge}`} style={{ fontFamily: 'Teko, sans-serif' }}>{rank}</span>
+                          ) : (
+                            <span className={`font-black tabular-nums ${rank <= 10 ? 'text-base text-white/50' : 'text-sm text-white/25'}`} style={{ fontFamily: 'Teko, sans-serif' }}>{rank}</span>
+                          )}
                         </div>
-                      </div>
-                      
-                      <div className="text-right">
-                        <span className="font-display text-xl text-foreground tabular-nums">
-                          {crew.totalXP.toLocaleString()}
-                        </span>
-                        <p className="text-[8px] text-muted-foreground/50 uppercase tracking-wider font-semibold">XP</p>
-                      </div>
-                    </motion.button>
+                        <Avatar className={`${style.avatarSize} border ${style.avatarBorder} shrink-0`}>
+                          <AvatarImage src={crew.avatar_url || undefined} />
+                          <AvatarFallback className="bg-surface-1 text-sm font-bold">
+                            {crew.emblem}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <span className={`font-bold ${style.nameSize} text-foreground truncate block`}>{crew.name}</span>
+                          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/50 mt-0.5">
+                            <span>{crew.member_count} editors</span>
+                            <span>•</span>
+                            <span>Lv {crew.crewLevel}</span>
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className={`font-display font-black tabular-nums ${style.scoreSize} ${style.scoreColor}`}>
+                            {xpLabel}
+                          </span>
+                          <p className="text-[8px] text-muted-foreground/30 uppercase tracking-wider font-bold">XP</p>
+                        </div>
+                      </motion.button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* Skill Tab */}
+        {activeTab === "skill" && (
+          <motion.div
+            key="skill"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="px-0 pt-2"
+          >
+            {skillRankings.length === 0 ? (
+              <EmptyState icon={Crosshair} message="No skill rankings yet" />
+            ) : (
+              <div>
+                {skillRankings.map((user, index) => {
+                  const rank = index + 1;
+                  const style = getRankStyle(rank);
+                  const qoi = Number(user.best_gatekeeper_qoi).toFixed(2);
+                  return (
+                    <div key={user.id}>
+                      {rank === 4 && (
+                        <div className="flex items-center gap-2 px-4 py-2 mt-1">
+                          <div className="flex-1 h-px bg-white/[0.06]" />
+                          <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-muted-foreground/30">Top 10</span>
+                          <div className="flex-1 h-px bg-white/[0.06]" />
+                        </div>
+                      )}
+                      {rank === 11 && (
+                        <div className="flex items-center gap-2 px-4 py-2">
+                          <div className="flex-1 h-px bg-white/[0.04]" />
+                          <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-muted-foreground/20">Rankings</span>
+                          <div className="flex-1 h-px bg-white/[0.04]" />
+                        </div>
+                      )}
+                      <motion.button
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.01 }}
+                        onClick={() => navigate(`/editor/${user.id}`)}
+                        className={`w-full ${style.py} flex items-center gap-3 text-left active:opacity-60 transition-opacity border-b border-white/[0.04] last:border-0`}
+                      >
+                        <div className="w-8 shrink-0 flex items-center justify-center">
+                          {style.rankBadge ? (
+                            <span className={`w-6 h-6 rounded flex items-center justify-center text-[11px] font-black ${style.rankBadge}`} style={{ fontFamily: 'Teko, sans-serif' }}>{rank}</span>
+                          ) : (
+                            <span className={`font-black tabular-nums ${rank <= 10 ? 'text-base text-white/50' : 'text-sm text-white/25'}`} style={{ fontFamily: 'Teko, sans-serif' }}>{rank}</span>
+                          )}
+                        </div>
+                        <Avatar className={`${style.avatarSize} border ${style.avatarBorder} shrink-0`}>
+                          <AvatarImage src={user.avatar_url || undefined} />
+                          <AvatarFallback className="bg-surface-1 text-[10px] font-bold">
+                            {user.username[0]?.toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <span className={`font-bold ${style.nameSize} truncate text-foreground block`}>{user.username}</span>
+                          {user.level && <LevelBadge level={user.level} size="sm" className="mt-0.5" />}
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className={`font-display font-black tabular-nums ${style.scoreSize} ${style.scoreColor}`}>
+                            {qoi}
+                          </span>
+                          <p className="text-[8px] text-muted-foreground/30 uppercase tracking-wider font-bold">QOI</p>
+                        </div>
+                      </motion.button>
+                    </div>
                   );
                 })}
               </div>

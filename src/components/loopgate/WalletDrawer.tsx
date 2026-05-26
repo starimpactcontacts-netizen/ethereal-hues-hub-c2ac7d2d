@@ -400,7 +400,7 @@ export default function WalletDrawer({ open, onClose }: WalletDrawerProps) {
                 </AnimatePresence>
 
                 <button 
-                  onClick={() => window.location.href = 'mailto:team@loopgate.io'}
+                  onClick={() => window.location.href = 'mailto:team@loopgate.gg'}
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/[0.03] transition-colors text-left"
                 >
                   <Mail className="w-3.5 h-3.5 text-muted-foreground/40" />

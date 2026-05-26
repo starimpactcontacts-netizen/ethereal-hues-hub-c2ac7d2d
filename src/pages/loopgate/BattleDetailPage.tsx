@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "react"; // UFC bar live
 import { useParams, useNavigate } from "react-router-dom";
 import { MAX_EDIT_UPLOAD_BYTES, MAX_EDIT_UPLOAD_LABEL, uploadToBunny } from "@/lib/bunnyUpload";
 import { motion, AnimatePresence } from "framer-motion";
@@ -308,179 +308,92 @@ export default function BattleDetailPage() {
         </div>
       </div>
 
-      {/* ═══ HERO BANNER ═══ */}
-      <div className="relative overflow-hidden">
-        {/* Layered atmosphere */}
-        <div className="absolute inset-0 bg-gradient-to-b from-red-950/40 via-red-950/15 to-background" />
-        <div className="absolute inset-0 bg-gradient-to-r from-red-600/5 via-transparent to-blue-600/5" />
-        {/* Subtle noise texture */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: `radial-gradient(circle at 20% 30%, rgba(239,68,68,0.15) 0%, transparent 50%),
-                            radial-gradient(circle at 80% 30%, rgba(59,130,246,0.1) 0%, transparent 50%)`
-        }} />
+      {/* ═══ UFC-STYLE MATCHUP BAR ═══ */}
+      <div className="relative overflow-hidden" style={{ background: '#080808' }}>
+        {/* Status label */}
+        <div className="flex items-center justify-center gap-2 pt-2.5 pb-1.5">
+          {isLive && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
+          <span className={`text-[10px] tracking-[0.28em] uppercase font-bold ${statusColor}`} style={{ fontFamily: 'Teko, sans-serif' }}>
+            {statusLabel}
+          </span>
+          {isRapid && <span className="flex items-center gap-1 text-amber-400 text-[10px]"><Zap className="w-3 h-3" /> RAPID</span>}
+        </div>
 
-        <div className="relative max-w-3xl mx-auto px-4 pt-5 pb-6">
-          {/* Status + Role */}
-          <div className="flex items-center justify-center gap-2 mb-5">
-            {isLive && <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_12px_rgba(239,68,68,0.5)]" />}
-            <span className={`text-sm tracking-[0.25em] uppercase font-bold ${statusColor}`} style={{ fontFamily: 'Teko, sans-serif' }}>
-              {statusLabel}
-            </span>
-            {isRapid && (
-              <span className="flex items-center gap-1 text-amber-400 text-xs tracking-wider ml-1">
-                <Zap className="w-3 h-3" /> RAPID
+        {/* The bar — NAME [RED] score [BLUE] NAME */}
+        <div className="flex items-stretch h-11 border-y border-white/[0.06]">
+
+          {/* Challenger name — left, text-right */}
+          <div className="flex-1 flex items-center justify-end pr-2.5 min-w-0" style={{ background: 'linear-gradient(90deg, transparent, rgba(239,68,68,0.07))' }}>
+            <div className="flex items-center gap-1.5 min-w-0">
+              {battle.winner_id === battle.challenger_id && <Trophy className="w-3 h-3 text-amber-400 shrink-0" />}
+              {battle.challenger_submitted_at && <CheckCircle className="w-2.5 h-2.5 text-emerald-400/50 shrink-0" />}
+              {isChallenger && <span className="text-[7px] text-red-400/50 font-bold uppercase shrink-0">YOU</span>}
+              <span className="font-black uppercase text-white truncate" style={{ fontFamily: 'Teko, sans-serif', fontSize: 19, letterSpacing: '0.07em', textShadow: '-2px 0 rgba(255,40,40,0.6), 1px 0 rgba(255,255,255,0.85)' }}>
+                {battle.challenger_username}
+              </span>
+            </div>
+          </div>
+
+          {/* RED tag */}
+          <div className="flex items-center justify-center px-2.5 shrink-0" style={{ background: 'rgba(220,38,38,0.95)' }}>
+            <span className="text-[9px] font-black uppercase tracking-[0.18em] text-white" style={{ fontFamily: 'Teko, sans-serif' }}>RED</span>
+          </div>
+
+          {/* Center score / status */}
+          <div className="flex flex-col items-center justify-center px-3 shrink-0" style={{ background: '#0d0d0d', minWidth: 64 }}>
+            {totalVotes > 0 ? (
+              <>
+                <div className="flex items-baseline gap-1.5 leading-none">
+                  <span className="font-black text-red-400 tabular-nums" style={{ fontFamily: 'Teko, sans-serif', fontSize: 20 }}>{battle.challenger_votes}</span>
+                  <span className="text-white/20 text-base">·</span>
+                  <span className="font-black text-blue-400 tabular-nums" style={{ fontFamily: 'Teko, sans-serif', fontSize: 20 }}>{battle.opponent_votes}</span>
+                </div>
+                <span className="text-[6px] uppercase tracking-[0.22em] text-white/25 mt-px">
+                  {battle.challenger_votes > battle.opponent_votes ? 'RED LEADS' : battle.opponent_votes > battle.challenger_votes ? 'BLUE LEADS' : 'TIED'}
+                </span>
+              </>
+            ) : (
+              <span className="text-[11px] uppercase tracking-[0.2em] text-white/25 font-black" style={{ fontFamily: 'Teko, sans-serif' }}>
+                {isLive ? 'LIVE' : isJudging ? 'REVIEW' : isCompleted ? 'FINAL' : 'VS'}
               </span>
             )}
           </div>
 
-          {/* VS Display */}
-          <div className="flex items-center justify-center gap-2">
-            {/* Challenger Side */}
-            <div className="flex-1 flex flex-col items-center text-center">
-              <div className="relative mb-2">
-                {/* Glow ring */}
-                <div className={`absolute -inset-1 rounded-full opacity-40 blur-md ${
-                  battle.winner_id === battle.challenger_id ? 'bg-amber-500' : 'bg-red-500/50'
-                }`} />
-                <div className={`relative p-[2px] rounded-full ${
-                  battle.winner_id === battle.challenger_id 
-                    ? 'bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600' 
-                    : 'bg-gradient-to-br from-red-500/70 to-red-800/70'
-                }`}>
-                  <Avatar className="w-[72px] h-[72px] border-2 border-background rounded-full">
-                    <AvatarImage src={battle.challenger_avatar_url || ''} />
-                    <AvatarFallback className="bg-red-500/15 text-red-400 text-xl font-bold">
-                      {battle.challenger_username.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
-                {battle.challenger_submitted_at && (
-                  <span className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-background">
-                    <CheckCircle className="w-3 h-3 text-white" />
-                  </span>
-                )}
-                {battle.winner_id === battle.challenger_id && (
-                  <span className="absolute -top-1 -right-1">
-                    <Trophy className="w-4 h-4 text-amber-400 drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]" />
-                  </span>
-                )}
-              </div>
-              <span className="text-[14px] font-bold text-white uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.08em' }}>
-                {battle.challenger_username}
-              </span>
-              {battle.challenger_score !== null && (
-                <span className="text-2xl font-bold text-amber-400 tabular-nums leading-none mt-0.5" style={{ fontFamily: 'Teko, sans-serif' }}>
-                  {battle.challenger_score}
-                </span>
-              )}
-              {isChallenger ? (
-                <span className="text-[8px] text-red-400/70 font-bold uppercase tracking-[0.15em] mt-1">YOU</span>
-              ) : (
-                <ReportUserButton
-                  userId={battle.challenger_id}
-                  username={battle.challenger_username}
-                  context="battle"
-                  contextId={battle.id}
-                />
-              )}
-            </div>
-
-            {/* VS Center */}
-            <div className="relative shrink-0 mx-1">
-              <div className="w-[52px] h-[52px] rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-[0_0_30px_rgba(239,68,68,0.25)]">
-                <Swords className="w-6 h-6 text-white" />
-              </div>
-              {isLive && (
-                <div className="absolute inset-0 rounded-full animate-ping bg-red-500/20" />
-              )}
-            </div>
-
-            {/* Opponent Side */}
-            <div className="flex-1 flex flex-col items-center text-center">
-              {battle.opponent_id ? (
-                <>
-                  <div className="relative mb-2">
-                    <div className={`absolute -inset-1 rounded-full opacity-40 blur-md ${
-                      battle.winner_id === battle.opponent_id ? 'bg-amber-500' : 'bg-blue-500/50'
-                    }`} />
-                    <div className={`relative p-[2px] rounded-full ${
-                      battle.winner_id === battle.opponent_id 
-                        ? 'bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600' 
-                        : 'bg-gradient-to-br from-blue-500/70 to-blue-800/70'
-                    }`}>
-                      <Avatar className="w-[72px] h-[72px] border-2 border-background rounded-full">
-                        <AvatarImage src={battle.opponent_avatar_url || ''} />
-                        <AvatarFallback className="bg-blue-500/15 text-blue-400 text-xl font-bold">
-                          {battle.opponent_username?.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                    </div>
-                    {battle.opponent_submitted_at && (
-                      <span className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-background">
-                        <CheckCircle className="w-3 h-3 text-white" />
-                      </span>
-                    )}
-                    {battle.winner_id === battle.opponent_id && (
-                      <span className="absolute -top-1 -right-1">
-                        <Trophy className="w-4 h-4 text-amber-400 drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]" />
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-[14px] font-bold text-white uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.08em' }}>
-                    {battle.opponent_username}
-                  </span>
-                  {battle.opponent_score !== null && (
-                    <span className="text-2xl font-bold text-amber-400 tabular-nums leading-none mt-0.5" style={{ fontFamily: 'Teko, sans-serif' }}>
-                      {battle.opponent_score}
-                    </span>
-                  )}
-                  {isOpponent ? (
-                    <span className="text-[8px] text-blue-400/70 font-bold uppercase tracking-[0.15em] mt-1">YOU</span>
-                  ) : battle.opponent_id ? (
-                    <ReportUserButton
-                      userId={battle.opponent_id}
-                      username={battle.opponent_username}
-                      context="battle"
-                      contextId={battle.id}
-                    />
-                  ) : null}
-                </>
-              ) : (
-                <>
-                  <div className="relative mb-2">
-                    <div className="w-[72px] h-[72px] rounded-full border-2 border-dashed border-zinc-600/50 flex items-center justify-center bg-zinc-900/50">
-                      <span className="text-2xl text-zinc-600" style={{ fontFamily: 'Teko, sans-serif' }}>?</span>
-                    </div>
-                  </div>
-                  <span className="text-[13px] text-zinc-500 uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>
-                    AWAITING
-                  </span>
-                </>
-              )}
-            </div>
+          {/* BLUE tag */}
+          <div className="flex items-center justify-center px-2.5 shrink-0" style={{ background: 'rgba(37,99,235,0.95)' }}>
+            <span className="text-[9px] font-black uppercase tracking-[0.18em] text-white" style={{ fontFamily: 'Teko, sans-serif' }}>BLUE</span>
           </div>
 
-          {/* Matchup text */}
-          <p className="text-center text-[11px] text-zinc-500 mt-3 tracking-wide">
-            {battle.challenger_username} vs {battle.opponent_username || '???'}
-          </p>
-
-          {/* Timer */}
-          {isLive && battle.ends_at && (
-            <div className="flex justify-center mt-5">
-              <ArcadeCountdown endDate={battle.ends_at} label="ENDS IN" variant="battle" />
-            </div>
-          )}
-
-          {battle.status !== 'active' && battle.ends_at && (
-            <div className="flex justify-center mt-3">
-              <span className="text-[11px] text-zinc-500 tracking-wider uppercase">
-                {new Date(battle.ends_at) <= new Date() ? 'Ended' : 
-                  `${Math.max(0, Math.ceil((new Date(battle.ends_at).getTime() - Date.now()) / 3600000))}h remaining`}
-              </span>
-            </div>
-          )}
+          {/* Opponent name — right, text-left */}
+          <div className="flex-1 flex items-center pl-2.5 min-w-0" style={{ background: 'linear-gradient(270deg, transparent, rgba(59,130,246,0.07))' }}>
+            {battle.opponent_id ? (
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="font-black uppercase text-white truncate" style={{ fontFamily: 'Teko, sans-serif', fontSize: 19, letterSpacing: '0.07em', textShadow: '2px 0 rgba(40,100,255,0.6), -1px 0 rgba(255,255,255,0.85)' }}>
+                  {battle.opponent_username}
+                </span>
+                {battle.winner_id === battle.opponent_id && <Trophy className="w-3 h-3 text-amber-400 shrink-0" />}
+                {battle.opponent_submitted_at && <CheckCircle className="w-2.5 h-2.5 text-emerald-400/50 shrink-0" />}
+                {isOpponent && <span className="text-[7px] text-blue-400/50 font-bold uppercase shrink-0">YOU</span>}
+              </div>
+            ) : (
+              <span className="text-zinc-600 font-black uppercase" style={{ fontFamily: 'Teko, sans-serif', fontSize: 15 }}>AWAITING</span>
+            )}
+          </div>
         </div>
+
+        {/* Timer */}
+        {isLive && battle.ends_at && (
+          <div className="flex justify-center py-2.5">
+            <ArcadeCountdown endDate={battle.ends_at} label="ENDS IN" variant="battle" />
+          </div>
+        )}
+        {battle.status !== 'active' && battle.ends_at && new Date(battle.ends_at) > new Date() && (
+          <div className="flex justify-center py-2">
+            <span className="text-[11px] text-zinc-500 tracking-wider uppercase">
+              {Math.max(0, Math.ceil((new Date(battle.ends_at).getTime() - Date.now()) / 3600000))}h remaining
+            </span>
+          </div>
+        )}
       </div>
 
       {/* ═══ CONTENT ═══ */}
@@ -700,20 +613,6 @@ export default function BattleDetailPage() {
               ) : null}
             </div>
 
-            {/* Vote Bar */}
-            {totalVotes > 0 && (
-              <div className="bg-zinc-900/60 border border-white/[0.06] rounded-xl p-3">
-                <div className="flex items-center justify-between text-[10px] mb-1.5">
-                  <span className="text-red-400 font-bold uppercase">{battle.challenger_username}</span>
-                  <span className="text-[9px] text-zinc-500 tabular-nums">{totalVotes} votes</span>
-                  <span className="text-blue-400 font-bold uppercase">{battle.opponent_username}</span>
-                </div>
-                <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden flex">
-                  <div className="h-full bg-gradient-to-r from-red-500 to-red-400 rounded-l-full transition-all" style={{ width: `${(battle.challenger_votes / totalVotes) * 100}%` }} />
-                  <div className="h-full bg-gradient-to-r from-blue-400 to-blue-500 rounded-r-full transition-all" style={{ width: `${(battle.opponent_votes / totalVotes) * 100}%` }} />
-                </div>
-              </div>
-            )}
           </div>
         )}
 

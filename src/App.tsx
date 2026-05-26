@@ -84,6 +84,7 @@ const AppPage = lazy(() => import("./pages/AppPage"));
 const HowItWorksPage = lazy(() => import("./pages/HowItWorksPage"));
 const FAQPage = lazy(() => import("./pages/FAQPage"));
 const StartPage = lazy(() => import("./pages/StartPage"));
+const DiscordCallbackPage = lazy(() => import("./pages/loopgate/DiscordCallbackPage"));
 const MessagesPage = lazy(() => import("./pages/loopgate/MessagesPage"));
 const DirectMessagePage = lazy(() => import("./pages/loopgate/DirectMessagePage"));
 const CompetitionLobbyPage = lazy(() => import("./pages/loopgate/CompetitionLobbyPage"));
@@ -101,11 +102,8 @@ const CommissionDetailPage = lazy(() => import("./pages/loopgate/CommissionDetai
 const PayoutsPage = lazy(() => import("./pages/loopgate/PayoutsPage"));
 const SoloArenaPage = lazy(() => import("./pages/loopgate/SoloArenaPage"));
 const MissionLobbyPage = lazy(() => import("./pages/loopgate/MissionLobbyPage"));
-const LoopyPage = lazy(() => import("./pages/loopgate/LoopyPage"));
 const CreateCompetitionPage = lazy(() => import("./pages/loopgate/CreateCompetitionPage"));
 const CompetitionsListPage = lazy(() => import("./pages/loopgate/CompetitionsListPage"));
-const LoopyRatePage = lazy(() => import("./pages/loopgate/LoopyRatePage"));
-const StandaloneLinkPage = lazy(() => import("./pages/loopgate/StandaloneLinkPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // GLOBAL DEV MODE DETECTION - runs BEFORE React
@@ -118,7 +116,7 @@ const isProduction = hostname.endsWith('.lovable.app');
 // GLOBAL OVERRIDE - inject mock auth for dev preview ONLY (not production)
 if (isDevPreview && !isProduction && typeof window !== 'undefined') {
   (window as any).__LOOPGATE_DEV_AUTH__ = {
-    user: { id: 'dev', email: 'dev@loopgate.io', role: 'admin' },
+    user: { id: 'dev', email: 'dev@loopgate.gg', role: 'admin' },
     profile: {
       id: 'dev',
       username: 'DEV_PREVIEW',
@@ -227,7 +225,7 @@ function OnboardingWrapper() {
   }
   
   // Dev account bypasses onboarding entirely - straight to hub
-  if (user.email === 'dev@loopgate.io') {
+  if (user.email === 'dev@loopgate.gg') {
     return <Navigate to="/hub" replace />;
   }
   
@@ -308,6 +306,7 @@ export default function App() {
             <Route path="/join/:crewSlug" element={<JoinCrewPage />} />
             <Route path="/u/:username" element={<UsernameLookupPage />} />
             <Route path="/start" element={<StartPage />} />
+            <Route path="/auth/discord/callback" element={<DiscordCallbackPage />} />
             
             {/* Guest-accessible routes (can browse, need login to participate) */}
             <Route element={
@@ -359,8 +358,6 @@ export default function App() {
               <Route path="/payouts" element={<PayoutsPage />} />
               <Route path="/solo-arena" element={<SoloArenaPage />} />
               <Route path="/mission/:id" element={<MissionLobbyPage />} />
-              <Route path="/loopy" element={<LoopyPage />} />
-              <Route path="/loopy/rate" element={<LoopyRatePage />} />
 
             </Route>
 
@@ -429,8 +426,6 @@ export default function App() {
             <Route path="/crews" element={<Navigate to="/units" replace />} />
             <Route path="/crews/*" element={<CrewsRedirect />} />
 
-            {/* Clean username links: loopgate.io/username → standalone link page */}
-            <Route path="/:username" element={<StandaloneLinkPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           </Suspense>

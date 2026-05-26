@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Plus, Share2, Users, Info, X, Gavel, Hourglass, Radio, Timer, Vote, Lock, Key } from "lucide-react";
+import { Trophy, Plus, Share2, Users, Info, X, Gavel, Hourglass, Radio, Timer, Vote, Lock, Key, ChevronRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCompetitionsList, type Competition } from "@/hooks/useCompetitions";
 import { toast } from "sonner";
@@ -20,7 +20,6 @@ function formatCount(n: number): string {
 }
 
 function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: string) => void }) {
-  const navigate = useNavigate();
   const spotsLeft = comp.max_players - comp.current_players;
   const isLive = comp.status === "live";
   const isFull = spotsLeft <= 0;
@@ -51,7 +50,7 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
     <div className="shrink-0 snap-start" style={{ width: CARD_W, height: CARD_H }}>
       <motion.div
         whileTap={{ scale: 0.97 }}
-        onClick={() => navigate(`/competition/${comp.slug || comp.id}`)}
+        onClick={() => onJoin(comp.id)}
         className="relative w-full h-full bg-surface-1 border border-white/[0.06] overflow-hidden rounded-2xl cursor-pointer flex flex-col"
       >
         {/* Cover — fills most of the square */}
@@ -119,8 +118,21 @@ export default function ArenaCompetitionsSection({ onCreateClick, hideHeader = f
   const handleJoin = async (compId: string) => {
     if (!user || !profile) { navigate("/start"); return; }
 
-    // Private rooms — go to lobby and let user enter code there
     const target = comps.find(c => c.id === compId);
+
+    // Live — spectate only, no joining
+    if (target?.status === 'live') {
+      navigate(`/competition/${target.slug || compId}`);
+      return;
+    }
+
+    // Full lobby — block entry
+    if (target && target.current_players >= target.max_players) {
+      toast.error("Lobby is full");
+      return;
+    }
+
+    // Private rooms — go to lobby so user can enter the code
     if (target?.is_private && target.creator_id !== user.id) {
       navigate(`/competition/${target.slug || compId}`);
       return;
@@ -156,35 +168,36 @@ export default function ArenaCompetitionsSection({ onCreateClick, hideHeader = f
             <span className="text-[15px] font-extrabold text-foreground tracking-tight" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
               Competitions
             </span>
+          </div>
+          <div className="flex items-center gap-1">
             <button
               onClick={() => setShowInfo(true)}
-              className="flex items-center justify-center w-5 h-5 rounded-full bg-gold/10 border border-gold/30 hover:bg-gold/20 active:scale-90 transition-all touch-manipulation"
+              className="w-7 h-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-white/[0.06] active:scale-90 transition-all"
               aria-label="How Competitions work"
             >
-              <Info className="w-3 h-3 text-gold" strokeWidth={2.5} />
+              <Info className="w-3.5 h-3.5" strokeWidth={2} />
             </button>
-          </div>
-          <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={() => setCodeOpen(true)}
-              className="flex items-center gap-1 px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-amber-300 border border-amber-400/30 hover:bg-amber-400/10 rounded transition-colors whitespace-nowrap"
-              aria-label="Join competition with code"
+              className="w-7 h-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-white/[0.06] active:scale-90 transition-all"
+              aria-label="Join with code"
             >
-              <Key className="w-3 h-3" strokeWidth={2.5} /> Code
-            </button>
-            <button
-              onClick={() => navigate('/competitions')}
-              className="flex items-center text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors px-1 whitespace-nowrap"
-              aria-label="View all competitions"
-            >
-              View All
+              <Key className="w-3.5 h-3.5" strokeWidth={2} />
             </button>
             <button
               onClick={onCreateClick}
-              className="flex items-center gap-1 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-gold border border-gold/20 hover:bg-gold/10 rounded transition-colors"
+              className="w-7 h-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-white/[0.06] active:scale-90 transition-all"
+              aria-label="Create competition"
             >
-              <Plus className="w-3 h-3" /> Create
+              <Plus className="w-3.5 h-3.5" strokeWidth={2} />
+            </button>
+            <button
+              onClick={() => navigate('/competitions')}
+              className="w-7 h-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-white/[0.06] active:scale-90 transition-all"
+              aria-label="View all competitions"
+            >
+              <ChevronRight className="w-3.5 h-3.5" strokeWidth={2} />
             </button>
           </div>
         </div>
@@ -222,91 +235,64 @@ export default function ArenaCompetitionsSection({ onCreateClick, hideHeader = f
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setShowInfo(false)}
-            className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-3 sm:p-4 overflow-y-auto"
+            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-5"
           >
             <motion.div
-              initial={{ y: 40, opacity: 0, scale: 0.96 }}
-              animate={{ y: 0, opacity: 1, scale: 1 }}
-              exit={{ y: 40, opacity: 0, scale: 0.96 }}
-              transition={{ type: 'spring', damping: 24, stiffness: 280 }}
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 20, opacity: 0 }}
+              transition={{ type: 'spring', damping: 26, stiffness: 300 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-md rounded-3xl border border-gold/20 flex flex-col max-h-[92vh] sm:max-h-[88vh] my-auto"
-              style={{
-                background: 'linear-gradient(165deg, #1a1410 0%, #0a0a0d 60%, #100a14 100%)',
-                boxShadow: '0 30px 80px -20px rgba(234,179,8,0.35), inset 0 1px 0 rgba(255,255,255,0.06)',
-              }}
+              className="w-full max-w-sm rounded-2xl bg-[#0f0f11] border border-white/[0.07] overflow-hidden"
             >
-              <div className="relative px-5 pt-5 pb-4 border-b border-white/[0.06] rounded-t-3xl overflow-hidden shrink-0">
-                <div className="absolute inset-0 opacity-50" style={{
-                  background: 'radial-gradient(circle at 30% 0%, rgba(234,179,8,0.25), transparent 60%)',
-                }} />
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-white/[0.06]">
+                <div>
+                  <h2 className="text-[1.6rem] font-black text-white uppercase leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>
+                    Competitions
+                  </h2>
+                  <p className="text-[10px] text-white/30 uppercase tracking-[0.14em] mt-0.5">Up to 10 editors · one winner</p>
+                </div>
                 <button
                   onClick={() => setShowInfo(false)}
-                  className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] flex items-center justify-center transition-colors"
-                  aria-label="Close"
+                  className="w-7 h-7 rounded-full bg-white/[0.06] hover:bg-white/[0.12] flex items-center justify-center transition-colors"
                 >
-                  <X className="w-4 h-4 text-white/70" />
+                  <X className="w-3.5 h-3.5 text-white/50" />
                 </button>
-                <div className="relative flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-2xl flex items-center justify-center" style={{
-                    background: 'linear-gradient(135deg, hsl(43, 96%, 55%), hsl(38, 92%, 45%))',
-                    boxShadow: '0 8px 20px -8px rgba(234,179,8,0.6), inset 0 1px 0 rgba(255,255,255,0.3)',
-                  }}>
-                    <Trophy className="w-5 h-5 text-black" strokeWidth={2.8} />
-                  </div>
-                  <div className="min-w-0">
-                    <h2 className="text-[22px] font-black text-white leading-none uppercase" style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.01em' }}>
-                      Competitions
-                    </h2>
-                    <p className="text-[11px] font-bold text-gold/80 uppercase tracking-[0.15em] mt-0.5">Up to 10 editors · One winner</p>
-                  </div>
-                </div>
               </div>
 
-              <div className="px-5 py-4 space-y-3 overflow-y-auto flex-1 overscroll-contain">
+              {/* Steps */}
+              <div className="px-5 py-4 space-y-3">
                 {[
-                  { icon: Users, color: '#10b981', title: 'Open or private lobby', desc: 'Up to 10 editors per room. Make it public, or lock it private with a 4-character join code.' },
-                  { icon: Timer, color: '#fbbf24', title: 'Host picks the window', desc: 'Pick 15, 30, 45 or 60 minutes when you create the room. Once the host starts it, the timer is locked — no extensions.' },
-                  { icon: Trophy, color: '#a855f7', title: 'Optional theme', desc: 'Host can set a theme prompt (song, vibe, brief). Any software allowed — CapCut, Premiere, AE, mobile, anything.' },
-                  { icon: Vote, color: '#3b82f6', title: 'Community vote decides', desc: 'After submissions close, the lobby + viewers vote on every entry. Most votes takes the win and the IDX pool.' },
-                ].map((step, i) => {
-                  const Icon = step.icon;
-                  return (
-                    <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.025] border border-white/[0.05]">
-                      <div className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center" style={{
-                        background: `${step.color}1a`,
-                        border: `1px solid ${step.color}40`,
-                      }}>
-                        <Icon className="w-4 h-4" style={{ color: step.color }} strokeWidth={2.5} />
+                  { n: '01', icon: Users,  title: 'Open or private lobby',   desc: 'Up to 10 editors per room. Public or locked with a 4-character join code.' },
+                  { n: '02', icon: Timer,  title: 'Host picks the window',   desc: '15, 30, 45 or 60 minutes. Once started the timer is locked — no extensions.' },
+                  { n: '03', icon: Trophy, title: 'Optional theme',          desc: 'Host sets a prompt (song, vibe, brief). Any software — CapCut, Premiere, AE, mobile.' },
+                  { n: '04', icon: Vote,   title: 'Community vote decides',  desc: 'Lobby + viewers vote after submissions. Most votes wins the IDX pool.' },
+                ].map(({ n, icon: Icon, title, desc }) => (
+                  <div key={n} className="flex items-start gap-3">
+                    <span className="text-[11px] font-black text-white/20 w-5 shrink-0 mt-0.5 tabular-nums">{n}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <Icon className="w-3 h-3 text-white/40 shrink-0" strokeWidth={2.5} />
+                        <p className="text-[12px] font-bold text-white/80 leading-none">{title}</p>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-black text-white/40">0{i + 1}</span>
-                          <h3 className="text-[13px] font-extrabold text-white leading-tight">{step.title}</h3>
-                        </div>
-                        <p className="text-[11.5px] text-white/55 leading-snug mt-0.5">{step.desc}</p>
-                      </div>
+                      <p className="text-[11px] text-white/35 leading-snug">{desc}</p>
                     </div>
-                  );
-                })}
-                <p className="text-[10.5px] text-white/40 leading-snug px-1 pt-1">
-                  💡 The more editors who join, the bigger the IDX reward pool grows.
+                  </div>
+                ))}
+                <p className="text-[10px] text-white/25 leading-snug pt-1">
+                  More editors = bigger IDX reward pool.
                 </p>
               </div>
 
-              <div className="px-5 pb-5 pt-3 border-t border-white/[0.06] shrink-0 rounded-b-3xl">
+              {/* CTA */}
+              <div className="px-5 pb-5">
                 <button
                   onClick={() => { setShowInfo(false); onCreateClick(); }}
-                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black text-black uppercase active:scale-[0.98] transition-transform"
-                  style={{
-                    background: 'linear-gradient(135deg, hsl(43, 96%, 55%), hsl(38, 92%, 45%))',
-                    boxShadow: '0 12px 28px -10px rgba(234,179,8,0.55), inset 0 1px 0 rgba(255,255,255,0.3)',
-                    fontFamily: 'Teko, sans-serif',
-                    letterSpacing: '0.05em',
-                    fontSize: 16,
-                  }}
+                  className="w-full py-3 rounded-xl bg-gold text-black font-black text-sm uppercase tracking-wide hover:bg-gold/90 active:scale-[0.98] transition-all"
+                  style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.06em', fontSize: 15 }}
                 >
-                  <Plus className="w-4 h-4" strokeWidth={3} /> Create Competition
+                  + Create Competition
                 </button>
               </div>
             </motion.div>

@@ -338,6 +338,7 @@ export default function CrewDetailPage() {
   const [mobileView, setMobileView] = useState<"channels" | "chat">("channels");
   const [permissionsChannel, setPermissionsChannel] = useState<CrewChannel | null>(null);
   const [crewLevel, setCrewLevel] = useState(1);
+  const [totalIndexScore, setTotalIndexScore] = useState(0);
   const [showCreateChannel, setShowCreateChannel] = useState(false);
   const [createChannelCategory, setCreateChannelCategory] = useState("General");
   const [showEarnings, setShowEarnings] = useState(false);
@@ -388,6 +389,8 @@ export default function CrewDetailPage() {
 
         const totalXP = profiles?.reduce((sum, p) => sum + (p.xp || 0), 0) || 0;
         setCrewLevel(calculateCrewLevel(totalXP));
+        const totalIdx = profiles?.reduce((sum, p) => sum + (p.global_index_score || 0), 0) || 0;
+        setTotalIndexScore(totalIdx);
 
         if (user) {
           const myMembership = membersData.find((m) => m.user_id === user.id);
@@ -520,7 +523,11 @@ export default function CrewDetailPage() {
 
           <div className="flex items-center gap-3 text-[10px] text-muted-foreground/50">
             <span className="flex items-center gap-1">
-              <CrewLevelBadge level={crewLevel} size="xs" />
+              <Zap className="w-3 h-3 text-primary/70" />
+              <span className="font-black text-foreground/70 tabular-nums" style={teko}>
+                {totalIndexScore >= 1000 ? `${(totalIndexScore / 1000).toFixed(1)}K` : totalIndexScore}
+              </span>
+              <span className="text-[8px] uppercase tracking-widest text-muted-foreground/30">idx</span>
             </span>
             <span className="flex items-center gap-1">
               <Users className="w-3 h-3" />
@@ -588,20 +595,6 @@ export default function CrewDetailPage() {
           </div>
         </div>
       </div>
-
-      {/* Tournament Earnings for owners */}
-      {isOwner && crewId && <TournamentEarnings crewId={crewId} />}
-      
-      {/* Full Earnings Dashboard (expandable) */}
-      {/* Earnings dashboard placeholder */}
-      {isOwner && crewId && (
-        <button
-          onClick={() => setShowEarnings(!showEarnings)}
-          className="mx-3 mb-2 w-[calc(100%-24px)] py-1.5 text-[10px] uppercase tracking-widest text-emerald-400 font-bold hover:text-emerald-300 transition-colors"
-        >
-          {showEarnings ? "Hide Details" : "View Full Earnings Dashboard →"}
-        </button>
-      )}
 
       {/* ━━━ OWNER ACTION BUTTONS ━━━ */}
       {/* Channels */}
@@ -685,7 +678,7 @@ export default function CrewDetailPage() {
         className="fixed inset-0 bg-background flex flex-col z-50"
         style={{
           paddingTop: "env(safe-area-inset-top)",
-          paddingBottom: "calc(56px + env(safe-area-inset-bottom))",
+          paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
         <AnimatePresence mode="wait" initial={false}>
@@ -708,10 +701,6 @@ export default function CrewDetailPage() {
                 </button>
                 <div className="flex-1 min-w-0">
                   <h2 className="font-bold text-[15px] truncate" style={teko}>{crew.name}</h2>
-                </div>
-                <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                  <span>{onlineCount}</span>
                 </div>
               </div>
 

@@ -536,7 +536,7 @@ export default function EnterpriseAccountPage() {
           <div className="flex items-center gap-3">
             <Input value={userEmail} readOnly className="bg-white/[0.02] border-white/[0.04] text-sm text-white/50 rounded-none flex-1 cursor-default" />
             <Button size="sm" variant="outline" className="border-white/[0.08] text-white/30 hover:text-white/60 rounded-none text-[8px] uppercase tracking-wider h-9 px-4"
-              onClick={() => toast.info('Contact team@loopgate.io to change email')}>
+              onClick={() => toast.info('Contact team@loopgate.gg to change email')}>
               Change
             </Button>
           </div>
@@ -603,7 +603,7 @@ export default function EnterpriseAccountPage() {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="border border-white/[0.06] p-5 mb-8 text-center" style={{ background: 'rgba(255,255,255,0.01)' }}>
           <p className="text-[10px] text-white/15 mb-3">Need dedicated support?</p>
           <Button
-            onClick={() => window.location.href = 'mailto:team@loopgate.io'}
+            onClick={() => window.location.href = 'mailto:team@loopgate.gg'}
             className="bg-white/[0.04] hover:bg-white/[0.08] text-white/40 h-10 px-8 text-[9px] uppercase tracking-[0.3em] rounded-none border border-white/[0.06]"
           >
             <Mail className="w-3 h-3 mr-2" /> Contact Team

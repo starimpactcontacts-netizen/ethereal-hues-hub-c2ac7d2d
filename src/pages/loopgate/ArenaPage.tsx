@@ -428,8 +428,8 @@ function Quick1v1Row({ fight, onClick }: { fight: any; onClick: () => void }) {
       onClick={onClick}
       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all touch-manipulation text-left group"
       style={{
-        background: 'linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))',
-        border: '1px solid rgba(255,255,255,0.04)',
+        background: '#111111',
+        border: '1px solid rgba(255,255,255,0.07)',
       }}
     >
       <Avatar className="w-7 h-7 shrink-0" style={{ border: '1.5px solid rgba(255,255,255,0.08)' }}>
@@ -767,15 +767,27 @@ export default function ArenaPage() {
   };
 
   return (
-    <div className="min-h-screen pb-4" style={{ background: '#0A0A0A' }}>
+    <div
+      className="relative min-h-screen pb-4"
+      style={{
+        background: '#0A0A0A',
+        backgroundImage:
+          'linear-gradient(rgba(255,255,255,0.032) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.032) 1px, transparent 1px)',
+        backgroundSize: '44px 44px',
+      }}
+    >
+      {/* Radial depth pull — center top */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-0"
+        style={{
+          background: 'radial-gradient(ellipse 70% 40% at 50% 0%, rgba(255,255,255,0.022) 0%, transparent 100%)',
+        }}
+      />
       <LoopMonster />
 
       {/* ═══ HERO ═══ */}
-      <div className="relative overflow-hidden border-b border-white/[0.02]">
-        <div className="absolute inset-0 bg-gradient-to-b from-red-950/10 via-transparent to-transparent" />
-        <div className="absolute inset-0" style={{ 
-          backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(239, 68, 68, 0.03) 0%, transparent 50%)',
-        }} />
+      <div className="relative z-[1] min-h-[100dvh] border-b border-white/[0.06]" style={{ background: '#0a0a0a' }}>
 
         <div className="relative px-4 sm:px-6 lg:px-8 pt-3 pb-1 max-w-2xl mx-auto">
           {/* Title row — merged with stats */}
@@ -830,7 +842,7 @@ export default function ArenaPage() {
           </AnimatePresence>
 
           {/* Arena / My Arena toggle — slim segmented pill with sliding indicator */}
-          <div className="relative grid grid-cols-2 mb-3 p-1 rounded-full border border-white/[0.08] bg-white/[0.03] backdrop-blur-md shadow-inner">
+          <div className="relative grid grid-cols-2 mb-3 p-1 rounded-full border border-white/[0.08] shadow-inner" style={{ background: '#111' }}>
             {/* Sliding active pill */}
             <div
               className={`absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-full transition-transform duration-300 ease-out ${
@@ -872,11 +884,8 @@ export default function ArenaPage() {
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
                   <div
                     className="relative overflow-hidden rounded-2xl border border-white/[0.07]"
-                    style={{ background: 'linear-gradient(160deg, hsl(0 0% 10%) 0%, hsl(0 0% 6%) 100%)' }}
+                    style={{ background: '#000' }}
                   >
-                    {/* Top glow line */}
-                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-red-500/40 to-transparent" />
-                    <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-40 h-32 opacity-20 pointer-events-none blur-3xl rounded-full" style={{ background: 'radial-gradient(circle, rgba(239,68,68,0.9), transparent 70%)' }} />
 
                     {/* Fighter identity */}
                     <div className="relative flex items-center gap-3 px-4 pt-4 pb-3 border-b border-white/[0.05]">
@@ -896,52 +905,61 @@ export default function ArenaPage() {
                       </Link>
                     </div>
 
-                    {/* Stats grid */}
-                    <div className="relative grid grid-cols-4 divide-x divide-white/[0.05]">
-                      {[
-                        { label: 'Wins',    value: userStats?.wins   ?? '—', color: 'text-emerald-400', bg: 'radial-gradient(ellipse at 50% 120%, rgba(16,185,129,0.13), transparent 70%)' },
-                        { label: 'Losses',  value: userStats?.losses ?? '—', color: 'text-red-400',     bg: 'radial-gradient(ellipse at 50% 120%, rgba(239,68,68,0.10), transparent 70%)' },
-                        {
-                          label: 'Win %',
-                          value: userStats
-                            ? (userStats.wins + userStats.losses === 0 ? '—' : `${Math.round(userStats.wins / (userStats.wins + userStats.losses) * 100)}%`)
-                            : '—',
-                          color: 'text-amber-400',
-                          bg: 'radial-gradient(ellipse at 50% 120%, rgba(245,158,11,0.10), transparent 70%)',
-                        },
-                        {
-                          label: 'Streak',
-                          value: (userStats?.streak ?? 0) > 0 ? `${userStats!.streak}🔥` : '—',
-                          color: 'text-white',
-                          bg: 'radial-gradient(ellipse at 50% 120%, rgba(255,255,255,0.04), transparent 70%)',
-                        },
-                      ].map((stat) => (
-                        <div key={stat.label} className="flex flex-col items-center py-4 gap-0.5" style={{ background: stat.bg }}>
-                          <span className={`text-[28px] font-black leading-none tabular-nums ${stat.color}`} style={{ fontFamily: 'Teko, sans-serif' }}>
-                            {stat.value}
-                          </span>
-                          <span className="text-[7px] font-bold uppercase tracking-[0.18em] text-white/30">{stat.label}</span>
+                    {/* Stats bar */}
+                    {(() => {
+                      const wins = userStats?.wins ?? 0;
+                      const losses = userStats?.losses ?? 0;
+                      const total = wins + losses;
+                      const winPct = total === 0 ? null : Math.round(wins / total * 100);
+                      const streak = userStats?.streak ?? 0;
+                      return (
+                        <div className="grid grid-cols-4 divide-x divide-white/[0.06]">
+                          <div className="flex flex-col items-center py-3.5 gap-1">
+                            <span className="text-[26px] font-black leading-none tabular-nums text-emerald-400" style={{ fontFamily: 'Teko, sans-serif' }}>
+                              {userStats ? wins : '—'}
+                            </span>
+                            <span className="text-[8px] font-bold uppercase tracking-[0.18em] text-white/25">Wins</span>
+                          </div>
+                          <div className="flex flex-col items-center py-3.5 gap-1">
+                            <span className="text-[26px] font-black leading-none tabular-nums text-red-400" style={{ fontFamily: 'Teko, sans-serif' }}>
+                              {userStats ? losses : '—'}
+                            </span>
+                            <span className="text-[8px] font-bold uppercase tracking-[0.18em] text-white/25">Losses</span>
+                          </div>
+                          <div className="flex flex-col items-center py-3.5 gap-1">
+                            <span className="text-[26px] font-black leading-none tabular-nums text-white/80" style={{ fontFamily: 'Teko, sans-serif' }}>
+                              {winPct !== null ? `${winPct}%` : '—'}
+                            </span>
+                            <span className="text-[8px] font-bold uppercase tracking-[0.18em] text-white/25">Win %</span>
+                          </div>
+                          <div className="flex flex-col items-center py-3.5 gap-1">
+                            <span className={`text-[26px] font-black leading-none tabular-nums ${streak > 0 ? 'text-amber-400' : 'text-white/80'}`} style={{ fontFamily: 'Teko, sans-serif' }}>
+                              {streak !== 0 ? Math.abs(streak) : '—'}
+                            </span>
+                            <span className="text-[8px] font-bold uppercase tracking-[0.18em] text-white/25">Streak</span>
+                          </div>
                         </div>
-                      ))}
-                    </div>
+                      );
+                    })()}
                   </div>
                 </motion.div>
               )}
 
               {/* ── YOUR OPEN LOBBIES ── */}
               {(() => {
-                const openLobbies = myQuickFights.filter(f => f.status === 'waiting');
+                const openLobbies = myQuickFights.filter(f => f.status === 'waiting' || f.status === 'selecting');
                 if (openLobbies.length === 0) return null;
                 return (
                   <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
                     <div className="flex items-center gap-2 mb-2 px-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                      <span className="text-[9px] font-black uppercase tracking-[0.25em] text-amber-400">Your Open Lobbies</span>
-                      <span className="ml-auto px-1.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/25 text-[9px] font-black text-amber-300">{openLobbies.length}</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse" />
+                      <span className="text-[14px] font-black uppercase text-white/70" style={{ fontFamily: 'Teko, sans-serif' }}>Your Open Lobbies</span>
+                      <span className="ml-auto px-1.5 py-0.5 border border-white/15 text-[10px] font-black text-white/50" style={{ fontFamily: 'Teko, sans-serif' }}>{openLobbies.length}</span>
                     </div>
                     <div className="space-y-2">
                       {openLobbies.map(lobby => {
                         const isPrivate = !!lobby.is_private;
+                        const isSelecting = lobby.status === 'selecting';
                         const lobbyUrl = `${window.location.origin}/fight/${lobby.id}`;
                         const copyLink = () => {
                           navigator.clipboard.writeText(lobbyUrl);
@@ -956,72 +974,97 @@ export default function ArenaPage() {
                         return (
                           <div
                             key={lobby.id}
-                            className="relative overflow-hidden rounded-2xl border border-amber-500/25"
-                            style={{ background: 'linear-gradient(160deg, hsl(0 0% 11%) 0%, hsl(0 0% 7%) 100%)' }}
+                            className="overflow-hidden border border-white/[0.08]"
+                            style={{ background: '#111111' }}
                           >
-                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-transparent" />
-
-                            <div className="px-4 pt-3.5 pb-3">
-                              {/* Status row */}
-                              <div className="flex items-center gap-2 mb-3">
-                                <div className="w-7 h-7 rounded-lg bg-amber-500/15 flex items-center justify-center shrink-0">
-                                  {isPrivate
-                                    ? <Lock className="w-3.5 h-3.5 text-amber-400" />
-                                    : <Globe className="w-3.5 h-3.5 text-amber-400" />}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="w-1 h-1 rounded-full bg-amber-400 animate-pulse" />
-                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-400">
-                                      {isPrivate ? 'Private' : 'Public'} · Waiting for opponent
-                                    </span>
-                                  </div>
-                                  <p className="text-[11px] text-white/40 mt-0.5">
-                                    {lobby.duration_minutes}min · created {formatDistanceToNow(new Date(lobby.created_at), { addSuffix: true })}
-                                  </p>
-                                </div>
+                            {/* Thumbnail strip — game tile style */}
+                            <div className="relative h-[88px]" style={{ background: '#0a0a0a' }}>
+                              {/* PRIVATE / PUBLIC tag — top left like a Roblox badge */}
+                              <div className="absolute top-2 left-2 z-10 flex items-center gap-1.5 px-2 py-1 border border-amber-500/40" style={{ background: '#111' }}>
+                                {isPrivate
+                                  ? <Lock className="w-2.5 h-2.5 text-amber-400" />
+                                  : <Globe className="w-2.5 h-2.5 text-amber-400" />}
+                                <span className="text-[8px] font-black uppercase tracking-[0.2em] text-amber-400">
+                                  {isPrivate ? 'Private' : 'Public'}
+                                </span>
                               </div>
+                              {/* Duration — top right */}
+                              <div className="absolute top-2 right-2 z-10 px-2 py-1" style={{ background: '#111' }}>
+                                <span className="text-[8px] font-black uppercase tracking-wider text-white/40">
+                                  {lobby.duration_minutes}MIN
+                                </span>
+                              </div>
+                              {/* Big background word — flavor */}
+                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+                                <span
+                                  className="text-[64px] font-black text-white/[0.04] leading-none"
+                                  style={{ fontFamily: 'Teko, sans-serif' }}
+                                >
+                                  BATTLE
+                                </span>
+                              </div>
+                              {/* Status pulse row bottom of thumbnail */}
+                              <div className="absolute bottom-2 left-2 flex items-center gap-1.5">
+                                <motion.span
+                                  animate={{ opacity: [1, 0.2, 1] }}
+                                  transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut' }}
+                                  className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSelecting ? 'bg-amber-400' : 'bg-white/50'}`}
+                                />
+                                <span className={`text-[13px] font-black uppercase ${isSelecting ? 'text-amber-400' : 'text-white/60'}`} style={{ fontFamily: 'Teko, sans-serif' }}>
+                                  {isSelecting ? 'Picking Loadout' : 'Waiting for Opponent'}
+                                </span>
+                              </div>
+                            </div>
 
-                              {/* Join code — shown for private lobbies */}
+                            <div className="px-3 pt-3 pb-3">
+                              {/* Lobby title — big Teko */}
+                              <p
+                                className="text-[24px] font-black uppercase leading-none text-white mb-1"
+                                style={{ fontFamily: 'Teko, sans-serif' }}
+                              >
+                                Custom Edit Battle
+                              </p>
+
+                              {/* Code pill */}
                               {isPrivate && lobby.join_code && (
                                 <button
                                   onClick={copyCode}
-                                  className="w-full flex items-center justify-between px-3 py-2 mb-3 rounded-xl border border-amber-500/20 bg-amber-500/5 hover:bg-amber-500/10 transition-colors group"
+                                  className="flex items-center gap-2 mb-3 px-3 py-1.5 border border-white/[0.08] hover:border-amber-500/30 transition-colors group"
+                                  style={{ background: '#0a0a0a' }}
                                 >
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-amber-400/60">Code</span>
-                                    <span className="text-[18px] font-black text-amber-300 tracking-[0.25em] leading-none" style={{ fontFamily: 'Teko, monospace' }}>
-                                      {lobby.join_code}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-1 text-[9px] font-bold text-amber-400/50 group-hover:text-amber-300 transition-colors">
-                                    <Copy className="w-3 h-3" />
-                                    Copy code
-                                  </div>
+                                  <span className="text-[8px] font-black uppercase tracking-widest text-white/30">Code</span>
+                                  <span
+                                    className="text-[16px] font-black text-white tracking-[0.3em] leading-none"
+                                    style={{ fontFamily: 'Teko, monospace' }}
+                                  >
+                                    {lobby.join_code}
+                                  </span>
+                                  <Copy className="w-2.5 h-2.5 text-white/20 group-hover:text-amber-400 transition-colors ml-1" />
                                 </button>
                               )}
 
-                              {/* Actions */}
-                              <div className="flex gap-2">
+                              {/* JOIN / REJOIN button */}
+                              <button
+                                onClick={() => navigate(`/fight/${lobby.id}`)}
+                                className="w-full flex items-center justify-center gap-2 py-3 mb-2 text-[18px] font-black uppercase tracking-[0.1em] text-black active:scale-[0.98] transition-transform"
+                                style={{ background: isSelecting ? '#f59e0b' : '#f59e0b', fontFamily: 'Teko, sans-serif' }}
+                              >
+                                <Play className="w-4 h-4 fill-current" />
+                                {isSelecting ? 'Rejoin — Still Picking' : 'Join Lobby'}
+                              </button>
+
+                              {/* Bottom row — copy link + time */}
+                              <div className="flex items-center justify-between">
                                 <button
                                   onClick={copyLink}
-                                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06] transition-colors text-[10px] font-bold text-white/50 hover:text-white/70"
+                                  className="flex items-center gap-1 text-[9px] font-bold text-white/25 hover:text-white/50 transition-colors"
                                 >
-                                  <Link2 className="w-3 h-3" />
+                                  <Link2 className="w-2.5 h-2.5" />
                                   Copy Link
                                 </button>
-                                <button
-                                  onClick={() => navigate(`/fight/${lobby.id}`)}
-                                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-black uppercase tracking-[0.15em] text-black transition-all active:scale-[0.98]"
-                                  style={{
-                                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                                    boxShadow: '0 6px 20px -6px rgba(245,158,11,0.45)',
-                                    fontFamily: 'Teko, sans-serif',
-                                  }}
-                                >
-                                  View Lobby
-                                  <ChevronRight className="w-3.5 h-3.5" />
-                                </button>
+                                <span className="text-[9px] text-white/25 tabular-nums">
+                                  {formatDistanceToNow(new Date(lobby.created_at), { addSuffix: true })}
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -1306,7 +1349,7 @@ export default function ArenaPage() {
                         key={`${h.kind}-${h.id}`}
                         to={h.href}
                         className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-white/[0.05] hover:border-white/[0.09] transition-colors group"
-                        style={{ background: 'rgba(255,255,255,0.02)' }}
+                        style={{ background: '#111111' }}
                       >
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${h.result === 'win' ? 'bg-emerald-500/15' : 'bg-red-500/10'}`}>
                           <span

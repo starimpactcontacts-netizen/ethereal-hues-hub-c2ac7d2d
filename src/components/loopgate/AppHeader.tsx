@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, User, HelpCircle, FileText, Home, Trophy, Shield, Search, Calendar, Building2, ShoppingBag, BookOpen, Gavel, Crown, Clapperboard, ChevronRight } from 'lucide-react';
+import { Menu, X, LogOut, User, HelpCircle, FileText, Home, Trophy, Shield, Search, Calendar, Building2, ShoppingBag, BookOpen, Gavel, Crown, Clapperboard, ChevronRight, Swords } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,7 +13,7 @@ import HeaderMusicPlayer from './HeaderMusicPlayer';
 import MessagesHeaderIcon from './MessagesHeaderIcon';
 import loopgateBrand from '@/assets/loopgate-brand.png';
 
-type NavItem = { to: string; icon: typeof Home; label: string; highlight?: boolean };
+type NavItem = { to: string; icon: typeof Home; label: string; highlight?: boolean; red?: boolean };
 type NavSection = { title: string; items: NavItem[] };
 
 const navSections: NavSection[] = [
@@ -21,7 +21,7 @@ const navSections: NavSection[] = [
     title: 'Play',
     items: [
       { to: '/hub', icon: Home, label: 'Hub' },
-      { to: '/studio', icon: Clapperboard, label: 'Studio', highlight: true },
+      { to: '/arena?tab=my', icon: Swords, label: 'My Arena', red: true },
       { to: '/league', icon: Crown, label: 'League' },
     ],
   },
@@ -222,8 +222,8 @@ export default function AppHeader() {
                                       : 'text-muted-foreground hover:text-foreground hover:bg-white/[0.03]'
                                   }`}
                                 >
-                                  <Icon className={`w-[18px] h-[18px] ${item.highlight ? 'text-gold' : ''}`} />
-                                  <span className={`font-display text-[15px] tracking-tight ${item.highlight ? 'text-gold' : ''}`}>{item.label}</span>
+                                  <Icon className={`w-[18px] h-[18px] ${item.highlight ? 'text-gold' : item.red ? 'text-red-500' : ''}`} />
+                                  <span className={`font-display text-[15px] tracking-tight ${item.highlight ? 'text-gold' : item.red ? 'text-red-500' : ''}`}>{item.label}</span>
                                   {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-gold" />}
                                 </Link>
                               </SheetClose>

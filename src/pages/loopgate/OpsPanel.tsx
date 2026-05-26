@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2, ShieldCheck, BadgeCheck, Ban, EyeOff, Shield, UserX, ThumbsUp, ThumbsDown, ShoppingBag, Package, Gift, Coins, Home, Crown, UserPlus, Search, Send, Zap, Play, Square, LinkIcon, Gavel, Megaphone, Bell, DollarSign } from "lucide-react";
 import GateIcon from '@/components/loopgate/GateIcon';
@@ -37,6 +37,40 @@ import FeedModerationAdmin from "@/components/loopgate/FeedModerationAdmin";
 import PlatformAnalyticsAdmin from "@/components/loopgate/PlatformAnalyticsAdmin";
 import SupportTicketsAdmin from "@/components/loopgate/SupportTicketsAdmin";
 import EditAnalyzerAdmin from "@/components/loopgate/EditAnalyzerAdmin";
+
+function CollapsibleSection({
+  title, badge, badgeColor = "text-gold", icon, children, defaultOpen = false,
+}: {
+  title: string;
+  badge?: string | number | null;
+  badgeColor?: string;
+  icon?: ReactNode;
+  children: ReactNode;
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <section>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center justify-between w-full py-2 group"
+      >
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+          {icon}{title}
+        </h2>
+        <div className="flex items-center gap-2">
+          {badge != null && badge !== 0 && badge !== "" && (
+            <span className={`text-xs font-semibold ${badgeColor}`}>{badge}</span>
+          )}
+          {open
+            ? <ChevronUp size={14} className="text-muted-foreground" />
+            : <ChevronDown size={14} className="text-muted-foreground" />}
+        </div>
+      </button>
+      {open && <div className="mt-3">{children}</div>}
+    </section>
+  );
+}
 
 interface RealEvent {
   id: string;
@@ -2355,140 +2389,86 @@ export default function OpsPanel() {
         {/* ━━━ PLATFORM DASHBOARD ━━━ */}
         <OpsAdminDashboard />
 
-        {/* Quick Actions - Hyper Growth Mode */}
-        <section className="bg-gradient-to-r from-gold/5 to-transparent border border-gold/20 rounded-lg p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-gold flex items-center gap-2">
-               <GateIcon size={14} />
-              Quick Actions
+        {/* Quick Actions */}
+        <section className="border border-gold/20 rounded-lg p-3">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-[10px] font-semibold uppercase tracking-widest text-gold flex items-center gap-1.5">
+              <GateIcon size={12} /> Quick Actions
             </h2>
-            <span className="text-[10px] text-gold bg-gold/10 px-2 py-0.5 rounded-full">
-              {inviteAnalytics.total_invites} invites • {inviteAnalytics.conversion_rate}% conv
-            </span>
-          </div>
-          {/* Missions — Primary CTA */}
-          <button 
-            onClick={() => navigate('/missions')}
-            className="w-full flex items-center justify-center gap-2 bg-emerald-500 text-black font-bold py-4 rounded-lg text-base mb-2 hover:bg-emerald-400 transition-colors"
-          >
-            <DollarSign size={20} />
-            Missions — Create & Manage
-          </button>
-          <div className="grid grid-cols-4 gap-2">
-            <button 
-              onClick={() => setShowCreateEvent(true)}
-              className="flex items-center justify-center gap-2 bg-gold text-black font-semibold py-3 rounded-lg text-sm"
-            >
-              <Calendar size={16} />
-              New Event
-            </button>
-            <button 
-              onClick={() => navigate('/ops-panel/a7c92ff31b/campaigns')}
-              className="flex items-center justify-center gap-2 bg-cyan-500/20 border border-cyan-500/50 text-cyan-300 font-semibold py-3 rounded-lg text-sm hover:bg-cyan-500/30 transition-colors"
-            >
-              <Crown size={16} />
-              Campaigns
-            </button>
-            <button 
-              onClick={() => navigate('/commissions')}
-              className="flex items-center justify-center gap-2 bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 font-semibold py-3 rounded-lg text-sm hover:bg-emerald-500/30 transition-colors"
-            >
-              <DollarSign size={16} />
-              Commissions
-            </button>
-            <button 
-              onClick={() => navigate('/solo-arena')}
-              className="flex items-center justify-center gap-2 bg-amber-600/20 border border-amber-500/50 text-amber-300 font-semibold py-3 rounded-lg text-sm hover:bg-amber-600/30 transition-colors"
-            >
-              <Zap size={16} />
-              Solo Arena
-            </button>
-            <button 
-              onClick={() => navigate('/payouts')}
-              className="flex items-center justify-center gap-2 bg-amber-500/20 border border-amber-500/50 text-amber-300 font-semibold py-3 rounded-lg text-sm hover:bg-amber-500/30 transition-colors"
-            >
-              <DollarSign size={16} />
-              Payouts Queue
-            </button>
-            <button 
-              onClick={() => setShowCreateItem(true)}
-              className="flex items-center justify-center gap-2 bg-surface-1 border border-border font-semibold py-3 rounded-lg text-sm hover:border-gold/50 transition-colors"
-            >
-              <ShoppingBag size={16} />
-              Shop Item
-            </button>
-          </div>
-          <div className="grid grid-cols-2 gap-2 mt-2">
-            <button 
-              onClick={() => setShowBroadcastModal(true)}
-              className="flex items-center justify-center gap-2 bg-violet-500/20 border border-violet-500/50 text-violet-300 font-semibold py-3 rounded-lg text-sm hover:bg-violet-500/30 transition-colors"
-            >
-              <Megaphone size={16} />
-              Broadcast
-            </button>
-            <button
-              onClick={() => document.getElementById('edit-analyzer')?.scrollIntoView({ behavior: 'smooth' })}
-              className="flex items-center justify-center gap-2 bg-purple-500/20 border border-purple-500/50 text-purple-300 font-semibold py-3 rounded-lg text-sm hover:bg-purple-500/30 transition-colors"
-            >
-              <Eye size={16} />
-              AI Analyzer
-            </button>
-          </div>
-          
-          {/* Live Stats Bar */}
-          <div className="mt-3 pt-3 border-t border-gold/20 flex items-center justify-between text-xs">
-            <div className="flex items-center gap-4">
-              <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                <span className="text-muted-foreground">{pendingSubmissions.length} pending</span>
-              </span>
-              <span className="text-muted-foreground">{pendingRedemptions.length} orders</span>
-              <span className="text-muted-foreground">{verificationRequests.length} verifications</span>
+            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />{pendingSubmissions.length} pending</span>
+              <span>{pendingRedemptions.length} orders</span>
+              <span>{verificationRequests.length} verif.</span>
+              <span>{users.length} users</span>
             </div>
-            <span className="text-muted-foreground">{users.length} users</span>
+          </div>
+          <div className="grid grid-cols-5 gap-1.5">
+            {[
+              { icon: <DollarSign size={15} />, label: "Missions", onClick: () => navigate('/missions'), color: "text-emerald-400" },
+              { icon: <Calendar size={15} />, label: "New Event", onClick: () => setShowCreateEvent(true), color: "text-gold" },
+              { icon: <Crown size={15} />, label: "Campaigns", onClick: () => navigate('/ops-panel/a7c92ff31b/campaigns'), color: "text-cyan-400" },
+              { icon: <DollarSign size={15} />, label: "Commissions", onClick: () => navigate('/commissions'), color: "text-emerald-400" },
+              { icon: <Zap size={15} />, label: "Solo Arena", onClick: () => navigate('/solo-arena'), color: "text-amber-400" },
+              { icon: <DollarSign size={15} />, label: "Payouts", onClick: () => navigate('/payouts'), color: "text-amber-400" },
+              { icon: <ShoppingBag size={15} />, label: "Shop Item", onClick: () => setShowCreateItem(true), color: "text-muted-foreground" },
+              { icon: <Megaphone size={15} />, label: "Broadcast", onClick: () => setShowBroadcastModal(true), color: "text-violet-400" },
+              { icon: <Eye size={15} />, label: "AI Analyze", onClick: () => document.getElementById('edit-analyzer')?.scrollIntoView({ behavior: 'smooth' }), color: "text-purple-400" },
+            ].map(({ icon, label, onClick, color }) => (
+              <button
+                key={label}
+                onClick={onClick}
+                className="flex flex-col items-center gap-1 py-2 px-1 rounded-lg bg-surface-1 hover:bg-surface-2 transition-colors"
+              >
+                <span className={color}>{icon}</span>
+                <span className="text-[9px] text-muted-foreground leading-none text-center">{label}</span>
+              </button>
+            ))}
           </div>
         </section>
 
-        {/* ═══ MISSIONS (PAID CLIPPER MISSIONS) — top priority ═══ */}
-        <div id="missions-admin" className="mb-6 p-4 bg-surface-0 border border-emerald-500/30 rounded-lg scroll-mt-20">
-          <MissionsAdmin />
-        </div>
+        <CollapsibleSection title="Missions" icon={<DollarSign size={13} className="text-emerald-400" />} badge="Paid Clipper" badgeColor="text-emerald-400">
+          <div id="missions-admin" className="p-4 bg-surface-0 border border-emerald-500/30 rounded-lg scroll-mt-20">
+            <MissionsAdmin />
+          </div>
+        </CollapsibleSection>
 
-        {/* LOOPGATE Radio Admin */}
-        <RadioAdmin />
+        <CollapsibleSection title="Radio" icon={<Bell size={13} className="text-blue-400" />}>
+          <RadioAdmin />
+        </CollapsibleSection>
 
-        {/* Edit Analyzer — AI Judge Tool */}
-        <div id="edit-analyzer" className="scroll-mt-20">
-          <EditAnalyzerAdmin />
-        </div>
+        <CollapsibleSection title="AI Edit Analyzer" icon={<Eye size={13} className="text-purple-400" />}>
+          <div id="edit-analyzer" className="scroll-mt-20">
+            <EditAnalyzerAdmin />
+          </div>
+        </CollapsibleSection>
 
-        {/* Featured Edit Battles (quick fights) — pinned to Hub */}
-        <QuickFightFeaturedAdmin />
+        <CollapsibleSection title="Featured Battles" icon={<Trophy size={13} className="text-gold" />}>
+          <QuickFightFeaturedAdmin />
+        </CollapsibleSection>
 
-        {/* 1v1 Battle Admin (legacy idx battles) */}
-        <BattleAdminPanel />
+        <CollapsibleSection title="1v1 Battle Admin" icon={<Shield size={13} className="text-muted-foreground" />}>
+          <BattleAdminPanel />
+        </CollapsibleSection>
 
-        {/* ═══ MISSION ADMIN ═══ */}
-        <div id="mission-admin" className="mb-6 p-4 bg-surface-0 border border-emerald-500/20 rounded-lg scroll-mt-20">
-          <MissionAdmin />
-        </div>
+        <CollapsibleSection title="Mission Admin" icon={<GateIcon size={13} className="text-gold" />}>
+          <div id="mission-admin" className="p-4 bg-surface-0 border border-emerald-500/20 rounded-lg scroll-mt-20">
+            <MissionAdmin />
+          </div>
+        </CollapsibleSection>
 
-        {/* Featured Artists & Drops Admin */}
-        <FeaturedArtistAdmin />
+        <CollapsibleSection title="Featured Artists" icon={<Crown size={13} className="text-gold" />}>
+          <FeaturedArtistAdmin />
+        </CollapsibleSection>
 
-        {/* Editorium Admin */}
-        <div className="mb-6 p-4 bg-surface-0 border border-border rounded-lg">
-          <EditoriumAdmin />
-        </div>
+        <CollapsibleSection title="Editorium" icon={<ImageIcon size={13} className="text-muted-foreground" />}>
+          <div className="p-4 bg-surface-0 border border-border rounded-lg">
+            <EditoriumAdmin />
+          </div>
+        </CollapsibleSection>
 
         {/* Event Control */}
+        <CollapsibleSection title="Events" icon={<Calendar size={13} className="text-gold" />} badge={events.length || null}>
         <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              Events Overview
-            </h2>
-            <span className="text-xs text-muted-foreground">{events.length} total</span>
-          </div>
           
           {events.length === 0 ? (
             <div className="bg-card border border-border rounded-lg p-6 text-center">
@@ -2722,42 +2702,24 @@ export default function OpsPanel() {
             </div>
           )}
         </section>
+        </CollapsibleSection>
 
-        {/* Create Event Button */}
-        <section>
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
-            Create New Event
-          </h2>
-          <button 
-            onClick={() => setShowCreateEvent(true)}
-            className="w-full bg-card border border-dashed border-border rounded-lg p-6 text-center hover:border-gold/50 transition-colors"
-          >
-            <Plus size={24} className="mx-auto text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">New Event</p>
-          </button>
-        </section>
-
-        {/* ═══════════════════════════════════════════════════════════════════
-            SANCTIONED TOURNAMENTS - Crew proposals & admin approval
-        ═══════════════════════════════════════════════════════════════════ */}
-        <section className="bg-card border border-gold/30 rounded-lg p-4">
-          <SanctionedTournamentManagement onClose={() => {}} />
-        </section>
+        <CollapsibleSection title="Sanctioned Tournaments" icon={<Trophy size={13} className="text-gold" />}>
+          <div className="bg-card border border-gold/30 rounded-lg p-4">
+            <SanctionedTournamentManagement onClose={() => {}} />
+          </div>
+        </CollapsibleSection>
 
         {/* Competitions management - TODO: rebuild with new system */}
 
         {/* Submissions & Judging */}
+        <CollapsibleSection
+          title={`Submissions${activeEventFilter ? ` • ${events.find(e => e.id === activeEventFilter)?.title || ''}` : ''}`}
+          icon={<ThumbsUp size={13} className="text-orange-400" />}
+          badge={pendingSubmissions.length || null}
+          badgeColor="text-orange-400"
+        >
         <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              Submissions {activeEventFilter && `• ${events.find(e => e.id === activeEventFilter)?.title || ''}`}
-            </h2>
-            <div className="flex items-center gap-3 text-xs">
-              <span className="text-orange-400">{pendingSubmissions.length} pending</span>
-              <span className="text-green-500">{approvedSubmissions.length} approved</span>
-              <span className="text-gold">{ratedSubmissions.length} rated</span>
-            </div>
-          </div>
 
           <Tabs defaultValue="pending" className="w-full">
             <TabsList className="w-full mb-4 grid grid-cols-4">
@@ -3099,15 +3061,14 @@ export default function OpsPanel() {
             </TabsContent>
           </Tabs>
         </section>
+        </CollapsibleSection>
 
-        {/* Verification Requests */}
+        <CollapsibleSection
+          title="Verification Requests"
+          icon={<ShieldCheck size={13} className="text-gold" />}
+          badge={verificationRequests.length || null}
+        >
         <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              Verification Requests
-            </h2>
-            <span className="text-xs text-gold">{verificationRequests.length} pending</span>
-          </div>
 
           {verificationRequests.length === 0 ? (
             <div className="bg-card border border-border rounded-lg p-6 text-center">
@@ -3167,18 +3128,14 @@ export default function OpsPanel() {
             </div>
           )}
         </section>
+        </CollapsibleSection>
 
-        {/* GQT Submissions Section */}
+        <CollapsibleSection
+          title="Global QOI Test (GQT)"
+          icon={<GateIcon size={13} className="text-gold" />}
+          badge={gqtSubmissions.filter(s => s.status === 'pending').length || null}
+        >
         <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-               <GateIcon size={14} className="text-gold" />
-              Global QOI Test (GQT)
-            </h2>
-            <span className="text-xs text-gold">
-              {gqtSubmissions.filter(s => s.status === 'pending').length} pending
-            </span>
-          </div>
 
           {gqtSubmissions.length === 0 ? (
             <div className="bg-card border border-border rounded-lg p-6 text-center">
@@ -3466,18 +3423,15 @@ export default function OpsPanel() {
             </Tabs>
           )}
         </section>
+        </CollapsibleSection>
 
-        {/* Review Requests Section */}
+        <CollapsibleSection
+          title="Review Requests"
+          icon={<Send size={13} className="text-purple-400" />}
+          badge={reviewRequests.filter(r => r.status === 'pending').length || null}
+          badgeColor="text-purple-400"
+        >
         <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-              <Send size={14} className="text-purple-400" />
-              Review Requests
-            </h2>
-            <span className="text-xs text-purple-400">
-              {reviewRequests.filter(r => r.status === 'pending').length} pending
-            </span>
-          </div>
 
           {reviewRequests.filter(r => r.status === 'pending').length === 0 ? (
             <div className="bg-card border border-border rounded-lg p-6 text-center">
@@ -3572,39 +3526,38 @@ export default function OpsPanel() {
             </div>
           )}
         </section>
+        </CollapsibleSection>
 
-        {/* ━━━ TOURNAMENT PROPOSALS (from unit owners) ━━━ */}
-        <TournamentProposalsAdmin />
+        <CollapsibleSection title="Tournament Proposals" icon={<Trophy size={13} className="text-gold" />}>
+          <TournamentProposalsAdmin />
+        </CollapsibleSection>
 
-        {/* ━━━ TOURNAMENT LIFECYCLE & EARNINGS ━━━ */}
-        <div className="mt-6">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2 mb-4">
-            <Zap size={14} className="text-emerald-400" />
-            Tournament Lifecycle & Revenue
-          </h2>
+        <CollapsibleSection title="Tournament Lifecycle & Revenue" icon={<Zap size={13} className="text-emerald-400" />}>
           <TournamentLifecycleAdmin />
-        </div>
+        </CollapsibleSection>
 
-        {/* ━━━ FEED MODERATION ━━━ */}
-        <FeedModerationAdmin />
+        <CollapsibleSection title="Feed Moderation" icon={<EyeOff size={13} className="text-muted-foreground" />}>
+          <FeedModerationAdmin />
+        </CollapsibleSection>
 
-        {/* ━━━ SUPPORT TICKETS ━━━ */}
-        <SupportTicketsAdmin />
+        <CollapsibleSection title="Support Tickets" icon={<Send size={13} className="text-muted-foreground" />}>
+          <SupportTicketsAdmin />
+        </CollapsibleSection>
 
-        {/* ━━━ GROWTH ANALYTICS ━━━ */}
-        <PlatformAnalyticsAdmin />
+        <CollapsibleSection title="Growth Analytics" icon={<Users size={13} className="text-muted-foreground" />}>
+          <PlatformAnalyticsAdmin />
+        </CollapsibleSection>
 
-        {/* Admin: League Applications */}
-        <LeagueApplicationsAdmin />
+        <CollapsibleSection title="League Applications" icon={<Shield size={13} className="text-muted-foreground" />}>
+          <LeagueApplicationsAdmin />
+        </CollapsibleSection>
 
-        {/* Admin: Cash Battle Applications & Matchmaking */}
-        <CashBattleAdminPanel />
+        <CollapsibleSection title="Cash Battle Admin" icon={<DollarSign size={13} className="text-amber-400" />}>
+          <CashBattleAdminPanel />
+        </CollapsibleSection>
 
+        <CollapsibleSection title="Unit Management" icon={<Users size={13} className="text-muted-foreground" />} badge={crews.length || null} badgeColor="text-muted-foreground">
         <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Unit Management</h2>
-            <span className="text-xs text-muted-foreground">{crews.length} units</span>
-          </div>
           <div className="space-y-2 max-h-64 overflow-y-auto">
             {crews.map((crew) => (
               <div key={crew.id} className={`bg-card border rounded-lg p-3 flex items-center justify-between ${crew.is_featured ? 'border-primary/50' : 'border-border'}`}>
@@ -3642,12 +3595,10 @@ export default function OpsPanel() {
             ))}
           </div>
         </section>
+        </CollapsibleSection>
 
-        {/* Admin: User Management */}
+        <CollapsibleSection title="User Management" icon={<UserX size={13} className="text-muted-foreground" />} badge={users.length || null} badgeColor="text-muted-foreground">
         <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">User Management</h2>
-          </div>
           <Input placeholder="Search users..." value={userSearch} onChange={(e) => setUserSearch(e.target.value)} className="mb-3" />
           <div className="space-y-2 max-h-80 overflow-y-auto">
             {filteredUsers.slice(0, 50).map((u) => (
@@ -3672,26 +3623,21 @@ export default function OpsPanel() {
             ))}
           </div>
         </section>
+        </CollapsibleSection>
 
-        {/* Judge Badge Management */}
-        <JudgeManagementSection />
+        <CollapsibleSection title="Judge Management" icon={<Gavel size={13} className="text-gold" />}>
+          <JudgeManagementSection />
+        </CollapsibleSection>
 
-        {/* Judge Applications */}
-        <section>
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2 mb-4">
-            <Gavel size={14} className="text-gold" />
-            Judge Applications
-          </h2>
+        <CollapsibleSection title="Judge Applications" icon={<Gavel size={13} className="text-gold" />}>
           <JudgeApplicationsSection />
-        </section>
+        </CollapsibleSection>
 
         {/* Shop Management */}
+        <CollapsibleSection title="Shop Management" icon={<ShoppingBag size={13} className="text-gold" />} badge={pendingRedemptions.length || null}>
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-              <ShoppingBag size={14} className="text-gold" />
-              Shop Management
-            </h2>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Items & Redemptions</p>
             <button
               onClick={() => setShowCreateItem(true)}
               className="flex items-center gap-1 text-xs bg-gold text-black px-3 py-1.5 rounded-lg font-semibold"
@@ -3899,16 +3845,10 @@ export default function OpsPanel() {
             )}
           </div>
         </section>
+        </CollapsibleSection>
 
-        {/* Invite Analytics - Quick Growth Dashboard */}
+        <CollapsibleSection title="Invite Analytics" icon={<UserPlus size={13} className="text-gold" />} badge={`${inviteAnalytics.conversion_rate}% conv`} badgeColor="text-gold">
         <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-              <Send className="w-4 h-4 text-gold" />
-              Invite Analytics
-            </h2>
-            <span className="text-xs text-gold font-semibold">Hyper Growth Mode</span>
-          </div>
 
           {/* Quick Stats */}
           <div className="grid grid-cols-4 gap-2 mb-4">
@@ -4013,12 +3953,10 @@ export default function OpsPanel() {
             </div>
           </div>
         </section>
+        </CollapsibleSection>
 
-        {/* Export */}
+        <CollapsibleSection title="Export" icon={<Download size={13} className="text-muted-foreground" />}>
         <section>
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
-            Export
-          </h2>
           <button 
             onClick={() => {
               const csv = ratedSubmissions.map(s => 
@@ -4041,8 +3979,11 @@ export default function OpsPanel() {
             CSV export for payout processing
           </p>
         </section>
+        </CollapsibleSection>
 
-        <LibraryManagementSection />
+        <CollapsibleSection title="Library" icon={<ImageIcon size={13} className="text-muted-foreground" />}>
+          <LibraryManagementSection />
+        </CollapsibleSection>
       </div>
 
       {/* Create Event Dialog */}
