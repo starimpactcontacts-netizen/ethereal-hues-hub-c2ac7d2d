@@ -29,6 +29,7 @@ export interface ChannelMessage {
   message_text: string;
   is_bot: boolean;
   is_pinned: boolean;
+  is_deleted: boolean;
   created_at: string;
 }
 
@@ -176,6 +177,7 @@ export function useChannelMessages(channelId: string | undefined) {
       .from("crew_channel_messages")
       .select("*")
       .eq("channel_id", channelId)
+      .eq("is_deleted", false)
       .order("created_at", { ascending: true })
       .limit(100);
 
@@ -206,6 +208,23 @@ export function useChannelMessages(channelId: string | undefined) {
         (payload) => {
           const newMessage = payload.new as ChannelMessage;
           setMessages((prev) => [...prev, newMessage]);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "crew_channel_messages",
+          filter: `channel_id=eq.${channelId}`,
+        },
+        (payload) => {
+          const updated = payload.new as ChannelMessage;
+          if (updated.is_deleted) {
+            setMessages((prev) => prev.filter((m) => m.id !== updated.id));
+          } else {
+            setMessages((prev) => prev.map((m) => m.id === updated.id ? updated : m));
+          }
         }
       )
       .subscribe();
