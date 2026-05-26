@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MAX_EDIT_UPLOAD_BYTES, MAX_EDIT_UPLOAD_LABEL, uploadToBunny } from '@/lib/bunnyUpload';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Video, Music, Upload, EyeOff, Loader2, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Video, Music, Upload, EyeOff, Loader2, RotateCcw, MessageSquare, BarChart2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -376,7 +376,7 @@ export default function QuickFightPage() {
     <div className="min-h-screen bg-background pb-20">
       {/* ════════ HEADER ════════ */}
       <div className="relative z-30 bg-black border-b border-white/[0.06]">
-        <div className="px-4 py-3 flex items-center justify-between">
+        <div className="px-4 py-2.5 flex items-center justify-between">
           <button
             onClick={() => navigate('/hub')}
             className="flex items-center gap-1.5 text-zinc-500 hover:text-white transition-colors touch-manipulation"
@@ -385,52 +385,54 @@ export default function QuickFightPage() {
             <span className="text-sm">Back</span>
           </button>
 
-          <div className="flex items-center gap-2">
-            {/* Status badge */}
+          <div className="flex items-center gap-3">
+            {/* Utility icons */}
+            <div className="flex items-center gap-2.5">
+              <MessageSquare className="w-4 h-4 text-zinc-600" />
+              <BarChart2 className="w-4 h-4 text-zinc-600" />
+            </div>
+
+            {/* Divider */}
+            <div className="w-px h-4 bg-white/10" />
+
+            {/* Status — raw Teko, no box */}
             {fight.status === 'active' && (
-              <div className="flex items-center gap-2 px-3 py-1 border border-red-500/30 bg-red-500/10">
+              <div className="flex items-center gap-1.5">
                 <span className="relative flex w-1.5 h-1.5">
                   <span className="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping" />
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500" />
                 </span>
-                <Swords className="w-3 h-3 text-red-400" />
-                <span className="text-[13px] font-black uppercase tracking-[0.25em] text-red-400" style={{ fontFamily: 'Teko, sans-serif' }}>
+                <span className="text-[17px] font-black uppercase tracking-[0.18em] text-red-400 leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>
                   LIVE FIGHT
                 </span>
               </div>
             )}
             {fight.status === 'judging' && (
-              <div className="flex items-center gap-2 px-3 py-1 border border-purple-500/30 bg-purple-500/10">
-                <Gavel className="w-3 h-3 text-purple-400" />
-                <span className="text-[13px] font-black uppercase tracking-[0.25em] text-purple-400" style={{ fontFamily: 'Teko, sans-serif' }}>
-                  AWAITING JUDGE
-                </span>
-              </div>
+              <span className="text-[17px] font-black uppercase tracking-[0.18em] text-purple-400 leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>
+                AWAITING JUDGE
+              </span>
             )}
             {fight.status === 'completed' && (
-              <div className="flex items-center gap-2 px-3 py-1 border border-amber-500/30 bg-amber-500/10">
-                <Trophy className="w-3 h-3 text-amber-400" />
-                <span className="text-[13px] font-black uppercase tracking-[0.25em] text-amber-400" style={{ fontFamily: 'Teko, sans-serif' }}>
+              <div className="flex items-center gap-1.5">
+                <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                <span className="text-[17px] font-black uppercase tracking-[0.18em] text-amber-400 leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>
                   DECIDED
                 </span>
               </div>
             )}
             {(fight.status === 'cancelled' || fight.status === 'forfeited') && (
-              <div className="flex items-center gap-2 px-3 py-1 border border-zinc-700 bg-zinc-900">
-                <span className="text-[13px] font-black uppercase tracking-[0.25em] text-zinc-500" style={{ fontFamily: 'Teko, sans-serif' }}>
-                  {fight.status === 'forfeited' ? 'FORFEIT' : 'CANCELLED'}
-                </span>
-              </div>
+              <span className="text-[17px] font-black uppercase tracking-[0.18em] text-zinc-500 leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>
+                {fight.status === 'forfeited' ? 'FORFEIT' : 'CANCELLED'}
+              </span>
             )}
 
             {isParticipant && fight.status === 'completed' && (
               <button
                 onClick={() => setHideConfirmOpen(true)}
-                className="flex items-center gap-1 px-2 py-1 border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 transition-colors touch-manipulation"
+                className="p-1.5 text-zinc-600 hover:text-red-400 transition-colors touch-manipulation"
                 aria-label="Hide this battle"
               >
-                <EyeOff className="w-3 h-3 text-red-400" />
-                <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-red-400">Hide</span>
+                <EyeOff className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
