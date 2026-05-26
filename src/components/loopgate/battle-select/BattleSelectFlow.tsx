@@ -42,6 +42,7 @@ interface Song {
   cover: string | null;
   preview: string | null;
   difficulty?: string | null;
+  deezer_id?: number | null;
 }
 
 const PHASE_TIMER_SEC = 180;
@@ -263,6 +264,7 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
             cover: t.cover_url,
             preview: t.preview_url || t.audio_url,
             difficulty: t.difficulty || null,
+            deezer_id: t.deezer_id || null,
           })));
         }
       });
@@ -395,8 +397,8 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
     setMySong(pool[Math.floor(Math.random() * pool.length)]);
   }
 
-  function togglePreview(s: Song) {
-    if (!s.preview) return;
+  async function togglePreview(s: Song) {
+    if (!s.preview && !s.deezer_id) return;
     const a = previewRef.current;
     if (!a) return;
 
@@ -407,14 +409,21 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
     }
 
     a.pause();
-    a.src = s.preview;
-    a.onended = () => setPreviewingId(p => p === s.id ? null : p);
     setPreviewingId(s.id);
-    // load() is required on iOS after changing src — without it play() rejects
+
+    let src = s.preview;
+    if (s.deezer_id) {
+      try {
+        const res = await fetch(`https://api.deezer.com/track/${s.deezer_id}`);
+        const data = await res.json();
+        if (data?.preview) src = data.preview;
+      } catch { /* fall back to stored url */ }
+    }
+    if (!src) { setPreviewingId(null); return; }
+    a.src = src;
+    a.onended = () => setPreviewingId(p => p === s.id ? null : p);
     a.load();
-    a.play().catch(() => {
-      setPreviewingId(null);
-    });
+    a.play().catch(() => setPreviewingId(null));
   }
 
   if (!open) return null;

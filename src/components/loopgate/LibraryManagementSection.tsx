@@ -170,19 +170,29 @@ function SongsManager() {
     }
   };
 
-  const togglePreview = (url: string | null) => {
-    if (!url) return;
+  const togglePreview = async (url: string | null, deezerId?: number | null) => {
+    if (!url && !deezerId) return;
     const a = audioRef.current;
     if (!a) return;
-    if (playingUrl === url) {
+    const key = String(deezerId ?? url);
+    if (playingUrl === key) {
       a.pause();
       setPlayingUrl(null);
       return;
     }
     a.pause();
-    a.src = url;
-    a.onended = () => setPlayingUrl((p) => (p === url ? null : p));
-    setPlayingUrl(url);
+    setPlayingUrl(key);
+    let src = url;
+    if (deezerId) {
+      try {
+        const res = await fetch(`https://api.deezer.com/track/${deezerId}`);
+        const data = await res.json();
+        if (data?.preview) src = data.preview;
+      } catch { /* fall back to stored url */ }
+    }
+    if (!src) { setPlayingUrl(null); return; }
+    a.src = src;
+    a.onended = () => setPlayingUrl((p) => (p === key ? null : p));
     a.load();
     a.play().catch(() => setPlayingUrl(null));
   };
@@ -271,11 +281,11 @@ function SongsManager() {
           <div className="mt-2 max-h-72 overflow-y-auto rounded-lg border border-border divide-y divide-border bg-background/30">
             {results.map((t) => {
               const exists = existingIds.has(t.id);
-              const isPlaying = playingUrl === t.preview;
+              const isPlaying = playingUrl === String(t.id);
               return (
                 <div key={t.id} className="flex items-center gap-2 p-2">
                   <button
-                    onClick={() => togglePreview(t.preview)}
+                    onClick={() => togglePreview(t.preview, t.id)}
                     className="w-9 h-9 rounded-full bg-muted/30 hover:bg-muted/60 flex items-center justify-center shrink-0"
                   >
                     {isPlaying ? <Pause size={14} /> : <Play size={14} className="ml-0.5" />}
@@ -346,12 +356,13 @@ function SongsManager() {
           <div className="max-h-96 overflow-y-auto rounded-lg border border-border divide-y divide-border">
             {tracks.map((t) => {
               const url = t.preview_url || t.audio_url;
-              const isPlaying = playingUrl === url;
+              const key = String(t.deezer_id ?? t.id);
+              const isPlaying = playingUrl === key;
               const diff = t.difficulty;
               return (
                 <div key={t.id} className="flex items-center gap-2 p-2">
                   <button
-                    onClick={() => togglePreview(url)}
+                    onClick={() => togglePreview(url, t.deezer_id)}
                     className="w-9 h-9 rounded-full bg-muted/30 hover:bg-muted/60 flex items-center justify-center shrink-0"
                   >
                     {isPlaying ? <Pause size={14} /> : <Play size={14} className="ml-0.5" />}
