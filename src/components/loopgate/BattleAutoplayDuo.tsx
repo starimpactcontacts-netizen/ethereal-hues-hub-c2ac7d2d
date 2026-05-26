@@ -27,78 +27,24 @@ function isVideo(url: string) {
   return isBunnyVideoUrl(url);
 }
 
-export default function BattleAutoplayDuo({ red, blue, redScore = 0, blueScore = 0 }: Props) {
+export default function BattleAutoplayDuo({ red, blue }: Props) {
   const sides = useMemo<[Side, Side]>(() => [
     { ...red, url: getBunnyPlaybackUrl(red.url) },
     { ...blue, url: getBunnyPlaybackUrl(blue.url) },
   ], [red, blue]);
 
-  const total = redScore + blueScore;
-  const redPct  = total > 0 ? (redScore  / total) * 100 : 50;
-  const bluePct = total > 0 ? (blueScore / total) * 100 : 50;
-
   return (
     <div className="select-none -mx-4 md:-mx-0 bg-black overflow-hidden">
-      {/* ── TikTok-style battle HUD ── */}
-      <div className="flex items-center gap-2 px-3 pt-3 pb-2 bg-black">
-        {/* Red player */}
-        <div className="flex flex-col items-center gap-0.5 shrink-0">
-          <div
-            className="w-10 h-10 overflow-hidden border-2 border-red-500 bg-zinc-900"
-            style={{ boxShadow: '0 0 14px rgba(239,68,68,0.65)' }}
-          >
-            {red.avatarUrl
-              ? <img src={red.avatarUrl} alt={red.username} className="w-full h-full object-cover" />
-              : <div className="w-full h-full flex items-center justify-center font-black text-red-400 text-sm">{red.username[0]?.toUpperCase()}</div>}
-          </div>
-          <span className="text-[8px] font-bold text-white/75 max-w-[48px] truncate">@{red.username}</span>
-        </div>
-
-        {/* Score bars */}
-        <div className="flex-1 flex items-center gap-1.5">
-          <span className="text-[11px] font-black text-red-400 tabular-nums w-4 text-right">{redScore}</span>
-          {/* Red bar — fills right-to-left */}
-          <div className="flex-1 h-2.5 rounded-full overflow-hidden relative bg-red-950/60">
-            <div
-              className="absolute right-0 top-0 bottom-0 rounded-full transition-all duration-700"
-              style={{ width: `${redPct}%`, background: 'linear-gradient(90deg, #b91c1c, #ef4444)' }}
-            />
-          </div>
-          {/* Blue bar — fills left-to-right */}
-          <div className="flex-1 h-2.5 rounded-full overflow-hidden relative bg-blue-950/60">
-            <div
-              className="absolute left-0 top-0 bottom-0 rounded-full transition-all duration-700"
-              style={{ width: `${bluePct}%`, background: 'linear-gradient(270deg, #1d4ed8, #3b82f6)' }}
-            />
-          </div>
-          <span className="text-[11px] font-black text-blue-400 tabular-nums w-4">{blueScore}</span>
-        </div>
-
-        {/* Blue player */}
-        <div className="flex flex-col items-center gap-0.5 shrink-0">
-          <div
-            className="w-10 h-10 overflow-hidden border-2 border-blue-500 bg-zinc-900"
-            style={{ boxShadow: '0 0 14px rgba(59,130,246,0.65)' }}
-          >
-            {blue.avatarUrl
-              ? <img src={blue.avatarUrl} alt={blue.username} className="w-full h-full object-cover" />
-              : <div className="w-full h-full flex items-center justify-center font-black text-blue-400 text-sm">{blue.username[0]?.toUpperCase()}</div>}
-          </div>
-          <span className="text-[8px] font-bold text-white/75 max-w-[48px] truncate">@{blue.username}</span>
-        </div>
-      </div>
-
-      {/* ── Videos — always side by side ── */}
-      <div className="relative flex flex-row items-stretch h-[calc(100svh-260px)] min-h-[300px] max-h-[700px]">
-        <div className="flex-1 min-w-0 relative bg-black">
+      {/* Two square video slots, always side by side */}
+      <div className="relative flex flex-row">
+        <div className="flex-1 aspect-square relative overflow-hidden bg-black">
           <BattleVideoSlot side={sides[0]} />
         </div>
-        {/* Center divider glow */}
         <div
           className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-px pointer-events-none z-20"
           style={{ background: 'linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.18) 20%, rgba(255,255,255,0.18) 80%, transparent 100%)' }}
         />
-        <div className="flex-1 min-w-0 relative bg-black">
+        <div className="flex-1 aspect-square relative overflow-hidden bg-black">
           <BattleVideoSlot side={sides[1]} />
         </div>
       </div>
