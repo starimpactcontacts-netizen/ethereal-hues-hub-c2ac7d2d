@@ -101,7 +101,7 @@ export default function JudgeCardExport({ isOpen, onClose, data, onSubmitToEdito
           });
         } else {
           // Fallback - copy text
-          const shareText = `🎬 @${data.editorUsername} scored ${data.totalScore}/100 on Loopgate!\n\nJudged by @${data.judgeUsername}\n\nloopgate.io`;
+          const shareText = `🎬 @${data.editorUsername} scored ${data.totalScore}/100 on Loopgate!\n\nJudged by @${data.judgeUsername}\n\nloopgate.gg`;
           await navigator.clipboard.writeText(shareText);
           toast.success('Share text copied to clipboard!');
         }

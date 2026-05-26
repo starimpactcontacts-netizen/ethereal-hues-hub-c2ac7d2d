@@ -30,7 +30,7 @@ export default function CrewInviteModal({
   const { profile } = useAuth();
   const [copied, setCopied] = useState(false);
 
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://loopgate.io';
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://loopgate.gg';
   const unitSlug = crewName.toLowerCase().replace(/\s+/g, '-');
   const inviteLink = `${baseUrl}/unit/${unitSlug}?via=${profile?.username || 'anon'}&id=${crewId}`;
 

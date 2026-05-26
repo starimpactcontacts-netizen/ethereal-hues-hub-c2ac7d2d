@@ -166,7 +166,7 @@ export default function GQTResultCard({ submission, username, displayName }: GQT
 Rank: ${rank?.rank || 'N/A'}
 ${projectedClass ? `Class: ${projectedClass.name}` : ''}
 
-Take the Global QOI Test at loopgate.io/gqt`;
+Take the Global QOI Test at loopgate.gg/gqt`;
 
     try {
       if (navigator.share) {

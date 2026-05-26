@@ -116,7 +116,7 @@ const isProduction = hostname.endsWith('.lovable.app');
 // GLOBAL OVERRIDE - inject mock auth for dev preview ONLY (not production)
 if (isDevPreview && !isProduction && typeof window !== 'undefined') {
   (window as any).__LOOPGATE_DEV_AUTH__ = {
-    user: { id: 'dev', email: 'dev@loopgate.io', role: 'admin' },
+    user: { id: 'dev', email: 'dev@loopgate.gg', role: 'admin' },
     profile: {
       id: 'dev',
       username: 'DEV_PREVIEW',
@@ -225,7 +225,7 @@ function OnboardingWrapper() {
   }
   
   // Dev account bypasses onboarding entirely - straight to hub
-  if (user.email === 'dev@loopgate.io') {
+  if (user.email === 'dev@loopgate.gg') {
     return <Navigate to="/hub" replace />;
   }
   

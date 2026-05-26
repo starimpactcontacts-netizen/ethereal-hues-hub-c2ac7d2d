@@ -75,7 +75,7 @@ export function isDevMode(): boolean {
 // Mock user for dev mode - simulates authenticated admin
 const DEV_MOCK_USER = {
   id: 'dev-user-preview',
-  email: 'dev@loopgate.io',
+  email: 'dev@loopgate.gg',
   role: 'admin',
   aud: 'authenticated',
   created_at: new Date().toISOString(),
@@ -96,7 +96,7 @@ const DEV_MOCK_PROFILE: Profile = {
 
 // Demo account credentials for Apple Review (HARDCODED)
 const DEMO_ACCOUNT = {
-  email: 'dev@loopgate.io',
+  email: 'dev@loopgate.gg',
   username: 'DEV',
   password: 'admin!!!',
 };
@@ -375,7 +375,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Web: bypass Supabase Discord provider, use our own OAuth flow
     const discordParams = new URLSearchParams({
       client_id: '1508087834555187291',
-      redirect_uri: 'https://loopgate.io/auth/discord/callback',
+      redirect_uri: 'https://loopgate.gg/auth/discord/callback',
       response_type: 'code',
       scope: 'identify email',
     });

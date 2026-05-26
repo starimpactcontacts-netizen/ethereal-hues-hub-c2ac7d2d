@@ -78,7 +78,7 @@ export default function LinkTreeEditor() {
 
   const displayTitle = settings.page_title || (profile as any)?.display_name || profile?.username || "My Links";
   const displayBio = settings.bio || "";
-  const linkUrl = `loopgate.io/${profile?.username || profile?.id}`;
+  const linkUrl = `loopgate.gg/${profile?.username || profile?.id}`;
   const fullUrl = `${window.location.origin}/editor/${profile?.username || profile?.id}`;
   const accentColor = settings.accent_color || "#d4af37";
 

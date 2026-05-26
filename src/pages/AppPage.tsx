@@ -43,7 +43,7 @@ export default function AppPage() {
       <SEO 
         title="Loopgate App - Compete in Video Editing Events"
         description="Download the Loopgate app to compete in video editing events, track your global ranking, and connect with editors worldwide. Available on iOS and web."
-        canonical="https://loopgate.io/app"
+        canonical="https://loopgate.gg/app"
       />
       
       {/* Hero Section */}
