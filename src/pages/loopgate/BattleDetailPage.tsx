@@ -622,6 +622,8 @@ export default function BattleDetailPage() {
                     color: "blue",
                   },
                 ]}
+                redScore={battle.challenger_votes}
+                blueScore={battle.opponent_votes}
               />
             )}
 

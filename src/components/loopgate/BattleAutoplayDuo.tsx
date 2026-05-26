@@ -16,6 +16,8 @@ type Side = {
 interface Props {
   red: Side;
   blue: Side;
+  redScore?: number;
+  blueScore?: number;
   fightId?: string | null;
   startedAt?: string | null;
   paused?: boolean;
@@ -25,50 +27,86 @@ function isVideo(url: string) {
   return isBunnyVideoUrl(url);
 }
 
-export default function BattleAutoplayDuo({ red, blue }: Props) {
+export default function BattleAutoplayDuo({ red, blue, redScore = 0, blueScore = 0 }: Props) {
   const sides = useMemo<[Side, Side]>(() => [
     { ...red, url: getBunnyPlaybackUrl(red.url) },
     { ...blue, url: getBunnyPlaybackUrl(blue.url) },
   ], [red, blue]);
 
+  const total = redScore + blueScore;
+  const redPct  = total > 0 ? (redScore  / total) * 100 : 50;
+  const bluePct = total > 0 ? (blueScore / total) * 100 : 50;
+
   return (
-    <div className="select-none -mx-4 md:-mx-0 bg-black rounded-md overflow-hidden">
-      {/* Mobile: stacked w/ 4:3-ish frame so square edits aren't clipped. Desktop: side-by-side. */}
-      <div className="relative flex flex-col md:flex-row md:items-stretch h-[calc(100svh-220px)] min-h-[420px] max-h-[820px] md:h-[560px]">
-        <div className="flex-1 min-h-0 md:min-w-0 relative bg-black">
+    <div className="select-none -mx-4 md:-mx-0 bg-black overflow-hidden">
+      {/* ── TikTok-style battle HUD ── */}
+      <div className="flex items-center gap-2 px-3 pt-3 pb-2 bg-black">
+        {/* Red player */}
+        <div className="flex flex-col items-center gap-0.5 shrink-0">
+          <div
+            className="w-10 h-10 rounded-full overflow-hidden border-2 border-red-500 bg-zinc-900"
+            style={{ boxShadow: '0 0 14px rgba(239,68,68,0.65)' }}
+          >
+            {red.avatarUrl
+              ? <img src={red.avatarUrl} alt={red.username} className="w-full h-full object-cover" />
+              : <div className="w-full h-full flex items-center justify-center font-black text-red-400 text-sm">{red.username[0]?.toUpperCase()}</div>}
+          </div>
+          <span className="text-[8px] font-bold text-white/75 max-w-[48px] truncate">@{red.username}</span>
+        </div>
+
+        {/* Score bars */}
+        <div className="flex-1 flex items-center gap-1.5">
+          <span className="text-[11px] font-black text-red-400 tabular-nums w-4 text-right">{redScore}</span>
+          {/* Red bar — fills right-to-left (from center toward left edge) */}
+          <div className="flex-1 h-2.5 rounded-full overflow-hidden relative bg-red-950/60">
+            <div
+              className="absolute right-0 top-0 bottom-0 rounded-full transition-all duration-700"
+              style={{ width: `${redPct}%`, background: 'linear-gradient(90deg, #b91c1c, #ef4444)' }}
+            />
+          </div>
+          {/* VS medallion */}
+          <div
+            className="w-7 h-7 rounded-full bg-zinc-900 border border-white/20 flex items-center justify-center shrink-0"
+            style={{ boxShadow: '0 0 10px rgba(255,255,255,0.12), 0 0 6px rgba(239,68,68,0.3), 0 0 6px rgba(59,130,246,0.3)' }}
+          >
+            <span className="text-[8px] font-black text-white tracking-tight" style={teko}>VS</span>
+          </div>
+          {/* Blue bar — fills left-to-right (from center toward right edge) */}
+          <div className="flex-1 h-2.5 rounded-full overflow-hidden relative bg-blue-950/60">
+            <div
+              className="absolute left-0 top-0 bottom-0 rounded-full transition-all duration-700"
+              style={{ width: `${bluePct}%`, background: 'linear-gradient(270deg, #1d4ed8, #3b82f6)' }}
+            />
+          </div>
+          <span className="text-[11px] font-black text-blue-400 tabular-nums w-4">{blueScore}</span>
+        </div>
+
+        {/* Blue player */}
+        <div className="flex flex-col items-center gap-0.5 shrink-0">
+          <div
+            className="w-10 h-10 rounded-full overflow-hidden border-2 border-blue-500 bg-zinc-900"
+            style={{ boxShadow: '0 0 14px rgba(59,130,246,0.65)' }}
+          >
+            {blue.avatarUrl
+              ? <img src={blue.avatarUrl} alt={blue.username} className="w-full h-full object-cover" />
+              : <div className="w-full h-full flex items-center justify-center font-black text-blue-400 text-sm">{blue.username[0]?.toUpperCase()}</div>}
+          </div>
+          <span className="text-[8px] font-bold text-white/75 max-w-[48px] truncate">@{blue.username}</span>
+        </div>
+      </div>
+
+      {/* ── Videos — always side by side ── */}
+      <div className="relative flex flex-row items-stretch h-[calc(100svh-260px)] min-h-[300px] max-h-[700px]">
+        <div className="flex-1 min-w-0 relative bg-black">
           <BattleVideoSlot side={sides[0]} />
         </div>
-
-        <div className="flex-1 min-h-0 md:min-w-0 relative bg-black">
-          <BattleVideoSlot side={sides[1]} />
-        </div>
-
-        {/* VS badge — sits on the dividing seam, slight overlap, premium fighting-game medallion */}
+        {/* Center divider glow */}
         <div
-          className="absolute z-40 pointer-events-none left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:left-1/2 md:top-1/2"
-          style={{}}
-        >
-          <div className="relative">
-            <div
-              className="absolute inset-0 rounded-full blur-lg opacity-80"
-              style={{ background: "radial-gradient(circle, rgba(239,68,68,0.7), rgba(59,130,246,0.7) 60%, transparent 75%)" }}
-            />
-            <div
-              className="relative w-6 h-6 rounded-full flex items-center justify-center border border-white/40"
-              style={{
-                background: "linear-gradient(135deg, #ef4444 0%, #0a0a0a 50%, #3b82f6 100%)",
-                boxShadow:
-                  "0 0 10px rgba(255,255,255,0.35), 0 0 18px rgba(239,68,68,0.45), 0 0 18px rgba(59,130,246,0.45), inset 0 0 0 1px rgba(255,255,255,0.15)",
-              }}
-            >
-              <span
-                className="text-[8px] font-black tracking-[0.18em] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]"
-                style={teko}
-              >
-                VS
-              </span>
-            </div>
-          </div>
+          className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-px pointer-events-none z-20"
+          style={{ background: 'linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.18) 20%, rgba(255,255,255,0.18) 80%, transparent 100%)' }}
+        />
+        <div className="flex-1 min-w-0 relative bg-black">
+          <BattleVideoSlot side={sides[1]} />
         </div>
       </div>
     </div>
@@ -89,7 +127,6 @@ function BattleVideoSlot({ side }: { side: Side }) {
   const isRed = side.color === "red";
   const accentHex = isRed ? "#ef4444" : "#3b82f6";
   const accentGlow = isRed ? "rgba(239,68,68,0.55)" : "rgba(59,130,246,0.55)";
-  const label = isRed ? "RED" : "BLUE";
 
   useEffect(() => {
     const video = videoRef.current;
@@ -102,7 +139,6 @@ function BattleVideoSlot({ side }: { side: Side }) {
     video.currentTime = 0;
   }, [side.url]);
 
-  // Auto-hide controls after a tap
   useEffect(() => {
     if (!showControls) return;
     const t = setTimeout(() => setShowControls(false), 2200);
@@ -112,33 +148,27 @@ function BattleVideoSlot({ side }: { side: Side }) {
   const togglePlay = async () => {
     const video = videoRef.current;
     if (!video) return;
-
     try {
       if (video.paused) {
         video.muted = muted;
         video.volume = 1;
         await video.play();
         setIsPlaying(true);
-        console.info("[Bunny Video] Battle playing direct Bunny CDN:", activeSrc);
       } else {
         video.pause();
         setIsPlaying(false);
       }
       setShowControls(true);
     } catch (error) {
-      console.warn("[Bunny Video] Battle tap-to-play blocked:", side.url, error);
+      console.warn("[Bunny Video] tap-to-play blocked:", side.url, error);
     }
   };
 
   const handleVideoError = () => {
-    console.warn("[Bunny Video] Battle direct video error:", activeSrc, videoRef.current?.error?.code || "unknown");
     setIsPlaying(false);
     setSourceIndex((current) => {
       const next = current + 1;
-      if (next < sources.length) {
-        console.info("[Bunny Video] Battle trying fallback source:", sources[next]);
-        return next;
-      }
+      if (next < sources.length) return next;
       setLoadError(true);
       return current;
     });
@@ -178,7 +208,7 @@ function BattleVideoSlot({ side }: { side: Side }) {
           ref={videoRef}
           src={activeSrc}
           poster={side.posterUrl || `${activeSrc}#t=0.1`}
-          className="w-full h-full object-contain bg-black"
+          className="w-full h-full object-cover bg-black"
           muted={muted}
           playsInline
           loop
@@ -187,21 +217,19 @@ function BattleVideoSlot({ side }: { side: Side }) {
           onPause={() => setIsPlaying(false)}
           onEnded={() => setIsPlaying(false)}
           onTimeUpdate={handleTimeUpdate}
-          onLoadedData={() => console.info("[Bunny Video] Battle loadeddata:", activeSrc)}
-          onCanPlay={() => console.info("[Bunny Video] Battle canplay:", activeSrc)}
           onError={handleVideoError}
         />
       ) : (
         <img
           src={side.url}
           alt={`${side.username} edit`}
-          className="w-full h-full object-contain bg-black"
+          className="w-full h-full object-cover bg-black"
           loading="eager"
           decoding="async"
         />
       )}
 
-      {/* Initial play tap target — minimal game icon, small */}
+      {/* Tap-to-play button */}
       {isVid && !isPlaying && !loadError && (
         <button
           type="button"
@@ -215,7 +243,7 @@ function BattleVideoSlot({ side }: { side: Side }) {
               background: "rgba(0,0,0,0.55)",
               backdropFilter: "blur(8px)",
               border: `1px solid ${accentHex}`,
-              boxShadow: `0 0 12px ${accentGlow}, inset 0 0 0 1px rgba(255,255,255,0.08)`,
+              boxShadow: `0 0 12px ${accentGlow}`,
             }}
           >
             <Play className="w-4 h-4 text-white fill-white ml-0.5" />
@@ -223,73 +251,55 @@ function BattleVideoSlot({ side }: { side: Side }) {
         </button>
       )}
 
-      {/* Tiny game-icon HUD — shows briefly on tap */}
+      {/* Playback controls (brief on tap) */}
       {isVid && isPlaying && (
         <div
           className={`absolute bottom-1.5 left-1.5 right-1.5 z-20 flex items-end justify-between gap-2 transition-opacity duration-300 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"}`}
           onClick={(e) => e.stopPropagation()}
         >
-          <button
-            type="button"
-            onClick={togglePlay}
+          <button type="button" onClick={togglePlay}
             className="w-6 h-6 rounded-md bg-black/60 backdrop-blur-md border border-white/15 flex items-center justify-center active:scale-90"
             style={{ boxShadow: `0 0 8px ${accentGlow}` }}
-            aria-label="Pause"
           >
             <Pause className="w-2.5 h-2.5 text-white fill-white" />
           </button>
-
-          <button
-            type="button"
-            onClick={toggleMute}
+          <button type="button" onClick={toggleMute}
             className="w-6 h-6 rounded-md bg-black/60 backdrop-blur-md border border-white/15 flex items-center justify-center active:scale-90"
             style={{ boxShadow: `0 0 8px ${accentGlow}` }}
-            aria-label={muted ? "Unmute" : "Mute"}
           >
             {muted ? <VolumeX className="w-2.5 h-2.5 text-white" /> : <Volume2 className="w-2.5 h-2.5 text-white" />}
           </button>
         </div>
       )}
 
-      {/* Always-on tiny mute toggle when paused but loaded */}
+      {/* Mute toggle when paused */}
       {isVid && !isPlaying && !loadError && (
-        <button
-          type="button"
+        <button type="button"
           onClick={(e) => { e.stopPropagation(); toggleMute(); }}
           className="absolute top-1.5 right-1.5 z-20 w-5 h-5 rounded-md bg-black/55 backdrop-blur-md border border-white/15 flex items-center justify-center active:scale-90"
-          aria-label={muted ? "Unmute" : "Mute"}
         >
           {muted ? <VolumeX className="w-2.5 h-2.5 text-white/90" /> : <Volume2 className="w-2.5 h-2.5 text-white/90" />}
         </button>
       )}
 
-      {/* Slim accent progress bar — game-style */}
+      {/* Progress bar */}
       {isVid && (
-        <div
-          className="absolute bottom-0 left-0 right-0 z-10 h-1 cursor-pointer"
-          onClick={(e) => { e.stopPropagation(); handleScrub(e); }}
-        >
+        <div className="absolute bottom-0 left-0 right-0 z-10 h-1 cursor-pointer"
+          onClick={(e) => { e.stopPropagation(); handleScrub(e); }}>
           <div className="absolute inset-0 bg-white/10" />
-          <div
-            className="absolute inset-y-0 left-0 transition-[width] duration-150"
-            style={{
-              width: `${progress}%`,
-              background: `linear-gradient(90deg, ${accentHex}, ${accentHex})`,
-              boxShadow: `0 0 8px ${accentGlow}`,
-            }}
-          />
+          <div className="absolute inset-y-0 left-0 transition-[width] duration-150"
+            style={{ width: `${progress}%`, background: accentHex, boxShadow: `0 0 8px ${accentGlow}` }} />
         </div>
       )}
 
+      {/* Edit Submitted overlay on load error */}
       {loadError && (
         <div
           className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 pointer-events-none"
           style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.90) 100%)' }}
         >
-          <div
-            className="w-11 h-11 rounded-lg flex items-center justify-center"
-            style={{ border: `1px solid ${accentHex}`, background: 'rgba(0,0,0,0.55)', boxShadow: `0 0 18px ${accentGlow}` }}
-          >
+          <div className="w-11 h-11 rounded-lg flex items-center justify-center"
+            style={{ border: `1px solid ${accentHex}`, background: 'rgba(0,0,0,0.55)', boxShadow: `0 0 18px ${accentGlow}` }}>
             <span className="text-2xl select-none leading-none">✓</span>
           </div>
           <div className="text-center">
@@ -299,25 +309,12 @@ function BattleVideoSlot({ side }: { side: Side }) {
         </div>
       )}
 
-      {/* Top corner game-tag — minimal, doesn't cover edit */}
-      <div className="absolute top-1.5 left-1.5 z-10 flex items-center gap-1.5 pointer-events-none">
+      {/* Subtle username label at bottom */}
+      <div className="absolute bottom-4 left-0 right-0 z-10 flex justify-center pointer-events-none">
         <span
-          className="flex items-center gap-1 px-1.5 py-[1px] rounded-sm text-[8px] font-black uppercase tracking-[0.22em] text-white"
-          style={{
-            background: "rgba(0,0,0,0.5)",
-            backdropFilter: "blur(6px)",
-            border: `1px solid ${accentHex}`,
-            boxShadow: `0 0 8px ${accentGlow}`,
-            ...teko,
-          }}
+          className="text-[9px] font-bold text-white/60 px-2 py-0.5 rounded-full"
+          style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)' }}
         >
-          <span
-            className="w-1 h-1 rounded-full animate-pulse"
-            style={{ background: accentHex, boxShadow: `0 0 6px ${accentHex}` }}
-          />
-          {label}
-        </span>
-        <span className="text-[9px] font-bold text-white/90 truncate drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
           @{side.username}
         </span>
       </div>

@@ -3,6 +3,22 @@ import { createClient } from '@supabase/supabase-js';
 const DISCORD_CLIENT_ID = '1508087834555187291';
 const DISCORD_REDIRECT_URI = 'https://loopgate.gg/auth/discord/callback';
 
+/**
+ * Calls the auto-confirm-user edge function (which uses its own service role
+ * key) so we don't need to expose the service role key here.
+ */
+async function confirmSyntheticEmail(supabaseUrl: string, email: string): Promise<void> {
+  try {
+    await fetch(`${supabaseUrl}/functions/v1/auto-confirm-user`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+  } catch {
+    // Non-fatal — sign-in attempt will surface any real error
+  }
+}
+
 export default async function handler(req: any, res: any) {
   res.setHeader('Access-Control-Allow-Origin', 'https://loopgate.gg');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -45,8 +61,7 @@ export default async function handler(req: any, res: any) {
   });
   const discordUser = await discordRes.json();
 
-  // 3. Use a synthetic email keyed to Discord ID so Discord accounts never
-  //    collide with existing Google/email accounts on the same email address.
+  // 3. Stable synthetic email keyed to Discord ID (never collides with real emails)
   const syntheticEmail = `discord_${discordUser.id}@user.loopgate.io`;
   const derivedPassword = `dsc_${discordUser.id}_${clientSecret.slice(-12)}`;
 
@@ -54,7 +69,17 @@ export default async function handler(req: any, res: any) {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
-  // 4. Try signing in first (existing user)
+  const discordMeta = {
+    discord_id: discordUser.id,
+    discord_username: discordUser.username,
+    discord_email: discordUser.email,
+    full_name: discordUser.global_name || discordUser.username,
+    avatar_url: discordUser.avatar
+      ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.webp?size=256`
+      : null,
+  };
+
+  // 4. Happy path: returning user signs in with stored password
   const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
     email: syntheticEmail,
     password: derivedPassword,
@@ -70,37 +95,66 @@ export default async function handler(req: any, res: any) {
     });
   }
 
-  // 5. Sign-in failed — user doesn't exist yet, create them
+  // 5. Sign-in failed — most common cause: account exists but email was never
+  //    confirmed (e.g. created before email auto-confirm was enabled in Supabase).
+  //    Use the auto-confirm-user edge function (which owns the service role key)
+  //    to confirm it, then retry sign-in before ever touching signUp.
+  await confirmSyntheticEmail(supabaseUrl, syntheticEmail);
+
+  const { data: retrySignIn, error: retryErr } = await supabase.auth.signInWithPassword({
+    email: syntheticEmail,
+    password: derivedPassword,
+  });
+
+  if (!retryErr && retrySignIn.session) {
+    return res.status(200).json({
+      access_token: retrySignIn.session.access_token,
+      refresh_token: retrySignIn.session.refresh_token,
+      discord_username: discordUser.username,
+      discord_global_name: discordUser.global_name || null,
+      isNew: false,
+    });
+  }
+
+  // 6. Still failing — this Discord ID genuinely has no account. Create one.
   const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
     email: syntheticEmail,
     password: derivedPassword,
-    options: {
-      data: {
-        discord_id: discordUser.id,
-        discord_username: discordUser.username,
-        discord_email: discordUser.email,
-        full_name: discordUser.global_name || discordUser.username,
-        avatar_url: discordUser.avatar
-          ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.webp?size=256`
-          : null,
-      },
-    },
+    options: { data: discordMeta },
   });
 
   if (signUpErr) {
     return res.status(500).json({ error: signUpErr.message });
   }
 
-  if (!signUpData.session) {
-    // Email confirmation is required on this Supabase project
-    return res.status(200).json({ needsEmailConfirm: true });
+  if (signUpData.session) {
+    return res.status(200).json({
+      access_token: signUpData.session.access_token,
+      refresh_token: signUpData.session.refresh_token,
+      discord_username: discordUser.username,
+      discord_global_name: discordUser.global_name || null,
+      isNew: true,
+    });
   }
 
-  return res.status(200).json({
-    access_token: signUpData.session.access_token,
-    refresh_token: signUpData.session.refresh_token,
-    discord_username: discordUser.username,
-    discord_global_name: discordUser.global_name || null,
-    isNew: true,
+  // 7. signUp returned no session (project requires email confirmation).
+  //    Confirm via edge function then sign in.
+  await confirmSyntheticEmail(supabaseUrl, syntheticEmail);
+
+  const { data: finalSignIn, error: finalErr } = await supabase.auth.signInWithPassword({
+    email: syntheticEmail,
+    password: derivedPassword,
   });
+
+  if (!finalErr && finalSignIn.session) {
+    return res.status(200).json({
+      access_token: finalSignIn.session.access_token,
+      refresh_token: finalSignIn.session.refresh_token,
+      discord_username: discordUser.username,
+      discord_global_name: discordUser.global_name || null,
+      isNew: true,
+    });
+  }
+
+  return res.status(200).json({ needsEmailConfirm: true });
 }
