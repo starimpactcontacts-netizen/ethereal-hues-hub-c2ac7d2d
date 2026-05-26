@@ -44,7 +44,7 @@ export default function BattleAutoplayDuo({ red, blue, redScore = 0, blueScore =
         {/* Red player */}
         <div className="flex flex-col items-center gap-0.5 shrink-0">
           <div
-            className="w-10 h-10 rounded-full overflow-hidden border-2 border-red-500 bg-zinc-900"
+            className="w-10 h-10 overflow-hidden border-2 border-red-500 bg-zinc-900"
             style={{ boxShadow: '0 0 14px rgba(239,68,68,0.65)' }}
           >
             {red.avatarUrl
@@ -57,21 +57,14 @@ export default function BattleAutoplayDuo({ red, blue, redScore = 0, blueScore =
         {/* Score bars */}
         <div className="flex-1 flex items-center gap-1.5">
           <span className="text-[11px] font-black text-red-400 tabular-nums w-4 text-right">{redScore}</span>
-          {/* Red bar — fills right-to-left (from center toward left edge) */}
+          {/* Red bar — fills right-to-left */}
           <div className="flex-1 h-2.5 rounded-full overflow-hidden relative bg-red-950/60">
             <div
               className="absolute right-0 top-0 bottom-0 rounded-full transition-all duration-700"
               style={{ width: `${redPct}%`, background: 'linear-gradient(90deg, #b91c1c, #ef4444)' }}
             />
           </div>
-          {/* VS medallion */}
-          <div
-            className="w-7 h-7 rounded-full bg-zinc-900 border border-white/20 flex items-center justify-center shrink-0"
-            style={{ boxShadow: '0 0 10px rgba(255,255,255,0.12), 0 0 6px rgba(239,68,68,0.3), 0 0 6px rgba(59,130,246,0.3)' }}
-          >
-            <span className="text-[8px] font-black text-white tracking-tight" style={teko}>VS</span>
-          </div>
-          {/* Blue bar — fills left-to-right (from center toward right edge) */}
+          {/* Blue bar — fills left-to-right */}
           <div className="flex-1 h-2.5 rounded-full overflow-hidden relative bg-blue-950/60">
             <div
               className="absolute left-0 top-0 bottom-0 rounded-full transition-all duration-700"
@@ -84,7 +77,7 @@ export default function BattleAutoplayDuo({ red, blue, redScore = 0, blueScore =
         {/* Blue player */}
         <div className="flex flex-col items-center gap-0.5 shrink-0">
           <div
-            className="w-10 h-10 rounded-full overflow-hidden border-2 border-blue-500 bg-zinc-900"
+            className="w-10 h-10 overflow-hidden border-2 border-blue-500 bg-zinc-900"
             style={{ boxShadow: '0 0 14px rgba(59,130,246,0.65)' }}
           >
             {blue.avatarUrl
