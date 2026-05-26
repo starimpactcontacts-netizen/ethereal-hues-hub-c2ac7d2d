@@ -441,7 +441,7 @@ function ManualUploadForm({ onAdded }: { onAdded: () => void }) {
     setUploading(true);
     try {
       setProgress("Uploading audio…");
-      const audioUrl = await uploadFileToBunny(audioFile, "radio-tracks/audio");
+      const audioUrl = await uploadImageToSupabase(audioFile, "battle-songs-audio");
 
       let coverUrl: string | null = null;
       if (coverFile) {
