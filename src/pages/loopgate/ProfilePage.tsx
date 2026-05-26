@@ -160,6 +160,7 @@ export default function ProfilePage() {
             </Link>
             <ActivityStatusSelector
               userId={profile.id}
+              username={(profile as any).username}
               currentStatus={(profile as any).activity_status || "online"}
               onStatusChange={refreshProfile}
             />
