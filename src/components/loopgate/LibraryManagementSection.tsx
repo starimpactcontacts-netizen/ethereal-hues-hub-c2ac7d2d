@@ -60,23 +60,23 @@ async function uploadFileToBunny(file: File, folder: string): Promise<string> {
   const token = sessionData.session?.access_token;
   if (!token) throw new Error("Not signed in");
 
+  const form = new FormData();
+  form.append("file", file);
+  form.append("folder", folder);
+
   const res = await fetch(
     `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bunny-sign-upload`,
     {
       method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ fileName: file.name, folder }),
+      headers: { Authorization: `Bearer ${token}` },
+      body: form,
     }
   );
-  if (!res.ok) throw new Error(`Bunny sign failed: ${res.status}`);
-  const { uploadUrl, accessKey, cdnUrl } = await res.json();
-
-  const put = await fetch(uploadUrl, {
-    method: "PUT",
-    headers: { AccessKey: accessKey },
-    body: file,
-  });
-  if (!put.ok) throw new Error(`Upload failed: ${put.status}`);
+  if (!res.ok) {
+    const detail = await res.json().catch(() => ({}));
+    throw new Error(detail?.error || `Upload failed: ${res.status}`);
+  }
+  const { cdnUrl } = await res.json();
   return cdnUrl;
 }
 
