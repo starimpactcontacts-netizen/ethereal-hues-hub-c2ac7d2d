@@ -251,7 +251,7 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
     if (!open) return;
     supabase
       .from('battle_songs' as any)
-      .select('id, song_name, artist_name, cover_url, preview_url, audio_url, is_priority, is_featured, difficulty')
+      .select('id, song_name, artist_name, cover_url, preview_url, audio_url, is_priority, is_featured, difficulty, deezer_id')
       .eq('is_featured', true)
       .order('is_priority', { ascending: false })
       .limit(60)
