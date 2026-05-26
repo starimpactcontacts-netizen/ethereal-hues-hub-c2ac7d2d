@@ -511,9 +511,9 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
             )}
 
             {tab === 'song' && (
-              <div className="flex-1 overflow-y-auto px-3">
-                {/* Deezer global search */}
-                <div className="mb-3">
+              <div className="flex-1 overflow-y-auto overflow-x-hidden">
+                {/* Search bar */}
+                <div className="mb-3 px-3">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
                     <input
@@ -543,47 +543,108 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {(deezerResults.length > 0 ? deezerResults : songs).map((s) => {
-                    const picked = mine.song?.id === s.id;
-                    const playing = previewingId === s.id;
-                    return (
-                      <div key={s.id} className={`relative rounded-xl overflow-hidden border-2 transition-all
-                          ${picked ? (mySide === 'red' ? 'border-red-500 shadow-[0_0_24px_rgba(239,68,68,0.55)]' : 'border-blue-500 shadow-[0_0_24px_rgba(59,130,246,0.55)]') :
-                            'border-white/10'}`}>
-                        <button onClick={() => setMySong(s)} disabled={mine.ready} className="w-full text-left disabled:opacity-70">
-                          <div className="aspect-square w-full bg-surface-2 flex items-center justify-center overflow-hidden relative">
-                            <Music className="w-8 h-8 text-muted-foreground/40" />
-                            {s.cover && (
-                              <img src={s.cover} alt={s.title} className="absolute inset-0 w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                            )}
-                          </div>
-                          <div className="px-2 py-1.5 bg-black/85">
-                            <p className="text-[11px] font-bold truncate">{s.title}</p>
-                            <div className="flex items-center justify-between gap-1 mt-0.5">
-                              <p className="text-[9px] text-muted-foreground truncate">{s.artist}</p>
+                {deezerResults.length > 0 ? (
+                  /* Deezer search results — grid cards */
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 px-3">
+                    {deezerResults.map((s) => {
+                      const picked = mine.song?.id === s.id;
+                      const playing = previewingId === s.id;
+                      return (
+                        <div key={s.id} className={`relative rounded-xl overflow-hidden border-2 transition-all
+                            ${picked ? (mySide === 'red' ? 'border-red-500 shadow-[0_0_24px_rgba(239,68,68,0.55)]' : 'border-blue-500 shadow-[0_0_24px_rgba(59,130,246,0.55)]') : 'border-white/10'}`}>
+                          <button onClick={() => setMySong(s)} disabled={mine.ready} className="w-full text-left disabled:opacity-70">
+                            <div className="aspect-square w-full bg-surface-2 flex items-center justify-center overflow-hidden relative">
+                              <Music className="w-8 h-8 text-muted-foreground/40" />
+                              {s.cover && <img src={s.cover} alt={s.title} className="absolute inset-0 w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
+                            </div>
+                            <div className="px-2 py-1.5 bg-black/85">
+                              <p className="text-[11px] font-bold truncate">{s.title}</p>
+                              <p className="text-[9px] text-muted-foreground truncate mt-0.5">{s.artist}</p>
+                            </div>
+                          </button>
+                          {(s.preview || s.deezer_id) && (
+                            <button onClick={() => togglePreview(s)} className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/80 backdrop-blur flex items-center justify-center border border-white/20 active:scale-90">
+                              {playing ? <Pause className="w-3 h-3 text-white" /> : <Play className="w-3 h-3 text-white ml-0.5" />}
+                            </button>
+                          )}
+                          {picked && (
+                            <div className={`absolute top-1.5 left-1.5 w-6 h-6 rounded-full ${mySide === 'red' ? 'bg-red-500' : 'bg-blue-500'} flex items-center justify-center shadow-lg`}>
+                              <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  /* osu!-style curated library list */
+                  <div className="relative">
+                    {/* Blurred cover background from selected song */}
+                    {mine.song?.cover && (
+                      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                        <img src={mine.song.cover} alt="" className="w-full h-full object-cover blur-2xl scale-110 opacity-[0.13]" />
+                      </div>
+                    )}
+                    <div className="relative space-y-px">
+                      {songs.map((s) => {
+                        const picked = mine.song?.id === s.id;
+                        const playing = previewingId === s.id;
+                        const red = mySide === 'red';
+                        return (
+                          <div
+                            key={s.id}
+                            className={`flex items-stretch transition-all duration-200 ${picked ? 'translate-x-0 h-[58px]' : 'translate-x-5 h-[50px]'}`}
+                          >
+                            {/* Cover thumbnail */}
+                            <div className={`shrink-0 bg-black/50 overflow-hidden relative transition-all duration-200 ${picked ? 'w-[58px]' : 'w-[50px]'}`}>
+                              <Music className="absolute inset-0 m-auto w-4 h-4 text-white/20" />
+                              {s.cover && (
+                                <img src={s.cover} alt="" className="absolute inset-0 w-full h-full object-cover"
+                                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                              )}
+                            </div>
+                            {/* Song ribbon */}
+                            <button
+                              onClick={() => !mine.ready && setMySong(s)}
+                              disabled={mine.ready}
+                              style={{ clipPath: 'polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%)' }}
+                              className={`flex-1 flex items-center gap-2 px-3 text-left min-w-0 disabled:opacity-60 transition-all duration-200
+                                ${picked
+                                  ? red
+                                    ? 'bg-gradient-to-r from-red-600 via-red-800/90 to-black/60 border-l-[3px] border-red-400'
+                                    : 'bg-gradient-to-r from-blue-600 via-blue-800/90 to-black/60 border-l-[3px] border-blue-400'
+                                  : 'bg-black/55 hover:bg-white/[0.07]'}`}
+                            >
+                              <div className="flex-1 min-w-0">
+                                <p className={`font-bold truncate leading-snug ${picked ? 'text-white text-[14px]' : 'text-white/70 text-[12px]'}`}>{s.title}</p>
+                                <p className={`truncate ${picked ? 'text-[11px] text-white/55' : 'text-[9px] text-white/30'}`}>{s.artist}</p>
+                              </div>
                               {s.difficulty && (
-                                <span className={`shrink-0 text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full ${DIFF_BADGE[s.difficulty] ?? ''}`}>
+                                <span className={`shrink-0 font-bold uppercase tracking-wide rounded-full ${picked ? 'text-[9px] px-2 py-0.5' : 'text-[7px] px-1.5 py-px'} ${DIFF_BADGE[s.difficulty] ?? ''}`}>
                                   {s.difficulty}
                                 </span>
                               )}
-                            </div>
+                            </button>
+                            {/* Preview / selection indicator */}
+                            <button
+                              onClick={() => (s.preview || s.deezer_id) ? togglePreview(s) : undefined}
+                              className={`w-11 shrink-0 flex items-center justify-center transition-all duration-200
+                                ${picked ? (red ? 'bg-red-800/70' : 'bg-blue-800/70') : 'bg-black/35 hover:bg-white/[0.06]'}`}
+                            >
+                              {playing
+                                ? <Pause className="w-3.5 h-3.5 text-white" />
+                                : picked
+                                  ? <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                                  : (s.preview || s.deezer_id)
+                                    ? <Play className="w-3 h-3 text-white/50 ml-0.5" />
+                                    : null}
+                            </button>
                           </div>
-                        </button>
-                        {(s.preview || s.deezer_id) && (
-                          <button onClick={() => togglePreview(s)} className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/80 backdrop-blur flex items-center justify-center border border-white/20 active:scale-90">
-                            {playing ? <Pause className="w-3 h-3 text-white" /> : <Play className="w-3 h-3 text-white ml-0.5" />}
-                          </button>
-                        )}
-                        {picked && (
-                          <div className={`absolute top-1.5 left-1.5 w-6 h-6 rounded-full ${mySide === 'red' ? 'bg-red-500' : 'bg-blue-500'} flex items-center justify-center shadow-lg`}>
-                            <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
