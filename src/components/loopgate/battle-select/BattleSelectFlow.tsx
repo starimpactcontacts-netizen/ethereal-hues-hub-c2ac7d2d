@@ -408,11 +408,11 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
 
     a.pause();
     a.src = s.preview;
-    a.currentTime = 0;
     a.onended = () => setPreviewingId(p => p === s.id ? null : p);
     setPreviewingId(s.id);
+    // load() is required on iOS after changing src — without it play() rejects
+    a.load();
     a.play().catch(() => {
-      // Play failed — reset so button goes back to play icon
       setPreviewingId(null);
     });
   }
@@ -479,9 +479,9 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
                           className={`relative rounded-xl overflow-hidden border-2 transition-all active:scale-[0.97] disabled:opacity-70
                             ${picked ? (mySide === 'red' ? 'border-red-500 shadow-[0_0_24px_rgba(239,68,68,0.55)]' : 'border-blue-500 shadow-[0_0_24px_rgba(59,130,246,0.55)]') :
                               'border-white/10 hover:border-white/30'}`}>
-                          <div className="aspect-[2/3] w-full bg-white/5 flex items-center justify-center">
+                          <div className="aspect-[2/3] w-full bg-white/5 flex items-center justify-center overflow-hidden">
                             {p.poster
-                              ? <img src={p.poster} alt={p.name} className="w-full h-full object-cover" />
+                              ? <img src={p.poster} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                               : <Film className="w-8 h-8 text-white/20" />}
                           </div>
                           <div className="px-2 py-1.5 bg-black/85 text-left">
