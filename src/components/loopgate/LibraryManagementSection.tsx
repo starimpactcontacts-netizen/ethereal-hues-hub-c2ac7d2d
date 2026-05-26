@@ -367,13 +367,12 @@ function SongsManager() {
                   >
                     {isPlaying ? <Pause size={14} /> : <Play size={14} className="ml-0.5" />}
                   </button>
-                  {t.cover_url ? (
-                    <img src={t.cover_url} alt="" className="w-9 h-9 rounded object-cover shrink-0" />
-                  ) : (
-                    <div className="w-9 h-9 rounded bg-muted shrink-0 flex items-center justify-center">
-                      <Music size={14} className="text-muted-foreground/40" />
-                    </div>
-                  )}
+                  <div className="w-9 h-9 rounded bg-muted shrink-0 flex items-center justify-center overflow-hidden relative">
+                    <Music size={14} className="text-muted-foreground/40" />
+                    {t.cover_url && (
+                      <img src={t.cover_url} alt="" className="absolute inset-0 w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    )}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold truncate flex items-center gap-1.5">
                       {t.song_name}

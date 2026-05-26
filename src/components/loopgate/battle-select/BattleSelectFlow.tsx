@@ -552,10 +552,11 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
                           ${picked ? (mySide === 'red' ? 'border-red-500 shadow-[0_0_24px_rgba(239,68,68,0.55)]' : 'border-blue-500 shadow-[0_0_24px_rgba(59,130,246,0.55)]') :
                             'border-white/10'}`}>
                         <button onClick={() => setMySong(s)} disabled={mine.ready} className="w-full text-left disabled:opacity-70">
-                          <div className="aspect-square w-full bg-surface-2 flex items-center justify-center">
-                            {s.cover
-                              ? <img src={s.cover} alt={s.title} className="w-full h-full object-cover" />
-                              : <Music className="w-8 h-8 text-muted-foreground/40" />}
+                          <div className="aspect-square w-full bg-surface-2 flex items-center justify-center overflow-hidden relative">
+                            <Music className="w-8 h-8 text-muted-foreground/40" />
+                            {s.cover && (
+                              <img src={s.cover} alt={s.title} className="absolute inset-0 w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                            )}
                           </div>
                           <div className="px-2 py-1.5 bg-black/85">
                             <p className="text-[11px] font-bold truncate">{s.title}</p>
@@ -563,13 +564,13 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
                               <p className="text-[9px] text-muted-foreground truncate">{s.artist}</p>
                               {s.difficulty && (
                                 <span className={`shrink-0 text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full ${DIFF_BADGE[s.difficulty] ?? ''}`}>
-                                  {s.difficulty === 'nightmare' ? '☠ NM' : s.difficulty}
+                                  {s.difficulty === 'nightmare' ? '😈 NM' : s.difficulty}
                                 </span>
                               )}
                             </div>
                           </div>
                         </button>
-                        {s.preview && (
+                        {(s.preview || s.deezer_id) && (
                           <button onClick={() => togglePreview(s)} className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/80 backdrop-blur flex items-center justify-center border border-white/20 active:scale-90">
                             {playing ? <Pause className="w-3 h-3 text-white" /> : <Play className="w-3 h-3 text-white ml-0.5" />}
                           </button>
