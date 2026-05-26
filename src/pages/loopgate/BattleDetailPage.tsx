@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "react"; // UFC bar live
 import { useParams, useNavigate } from "react-router-dom";
 import { MAX_EDIT_UPLOAD_BYTES, MAX_EDIT_UPLOAD_LABEL, uploadToBunny } from "@/lib/bunnyUpload";
 import { motion, AnimatePresence } from "framer-motion";
