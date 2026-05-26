@@ -564,7 +564,7 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
                               <p className="text-[9px] text-muted-foreground truncate">{s.artist}</p>
                               {s.difficulty && (
                                 <span className={`shrink-0 text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full ${DIFF_BADGE[s.difficulty] ?? ''}`}>
-                                  {s.difficulty === 'nightmare' ? '😈 NM' : s.difficulty}
+                                  {s.difficulty}
                                 </span>
                               )}
                             </div>

@@ -446,7 +446,7 @@ function ManualUploadForm({ onAdded }: { onAdded: () => void }) {
       let coverUrl: string | null = null;
       if (coverFile) {
         setProgress("Uploading cover…");
-        coverUrl = await uploadFileToBunny(coverFile, "radio-tracks/covers");
+        coverUrl = await uploadImageToSupabase(coverFile, "scenepack-previews");
       }
 
       setProgress("Saving to library…");
