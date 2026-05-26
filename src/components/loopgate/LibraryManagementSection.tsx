@@ -128,7 +128,14 @@ function SongsManager() {
   const [showManual, setShowManual] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const load = async () => {
+  // Single persistent audio element — creating new Audio() per tap loses iOS user-gesture context
+  useEffect(() => {
+    const a = new Audio();
+    a.volume = 0.6;
+    a.preload = 'none';
+    audioRef.current = a;
+    return () => { a.pause(); a.src = ''; };
+  }, []);
     setLoading(true);
     const { data } = await supabase
       .from("battle_songs" as any)
@@ -142,7 +149,6 @@ function SongsManager() {
 
   useEffect(() => {
     load();
-    return () => { audioRef.current?.pause(); };
   }, []);
 
   const search = async (q: string) => {
@@ -164,18 +170,19 @@ function SongsManager() {
 
   const togglePreview = (url: string | null) => {
     if (!url) return;
+    const a = audioRef.current;
+    if (!a) return;
     if (playingUrl === url) {
-      audioRef.current?.pause();
+      a.pause();
       setPlayingUrl(null);
       return;
     }
-    audioRef.current?.pause();
-    const a = new Audio(url);
-    a.volume = 0.6;
-    a.play().catch(() => {});
+    a.pause();
+    a.src = url;
     a.onended = () => setPlayingUrl((p) => (p === url ? null : p));
-    audioRef.current = a;
     setPlayingUrl(url);
+    a.load();
+    a.play().catch(() => setPlayingUrl(null));
   };
 
   const addFromDeezer = async (t: DeezerTrack) => {
