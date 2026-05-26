@@ -395,33 +395,30 @@ export default function QuickFightPage() {
             {/* Divider */}
             <div className="w-px h-4 bg-white/10" />
 
-            {/* Status — raw Teko, no box */}
+            {/* Status — Bebas Neue, no box */}
             {fight.status === 'active' && (
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <span className="relative flex w-1.5 h-1.5">
                   <span className="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping" />
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500" />
                 </span>
-                <span className="text-[17px] font-black uppercase tracking-[0.18em] text-red-400 leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>
+                <span className="text-[22px] leading-none tracking-[0.06em] text-red-400" style={{ fontFamily: 'Bebas Neue, sans-serif', textShadow: '0 0 18px rgba(239,68,68,0.5)' }}>
                   LIVE FIGHT
                 </span>
               </div>
             )}
             {fight.status === 'judging' && (
-              <span className="text-[17px] font-black uppercase tracking-[0.18em] text-purple-400 leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>
+              <span className="text-[22px] leading-none tracking-[0.06em] text-white" style={{ fontFamily: 'Bebas Neue, sans-serif', textShadow: '1px 1px 0 rgba(0,0,0,0.9), 0 0 12px rgba(255,255,255,0.08)' }}>
                 AWAITING JUDGE
               </span>
             )}
             {fight.status === 'completed' && (
-              <div className="flex items-center gap-1.5">
-                <Trophy className="w-3.5 h-3.5 text-amber-400" />
-                <span className="text-[17px] font-black uppercase tracking-[0.18em] text-amber-400 leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>
-                  DECIDED
-                </span>
-              </div>
+              <span className="text-[22px] leading-none tracking-[0.06em] text-amber-400" style={{ fontFamily: 'Bebas Neue, sans-serif', textShadow: '0 0 14px rgba(251,191,36,0.4)' }}>
+                DECIDED
+              </span>
             )}
             {(fight.status === 'cancelled' || fight.status === 'forfeited') && (
-              <span className="text-[17px] font-black uppercase tracking-[0.18em] text-zinc-500 leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>
+              <span className="text-[22px] leading-none tracking-[0.06em] text-zinc-500" style={{ fontFamily: 'Bebas Neue, sans-serif' }}>
                 {fight.status === 'forfeited' ? 'FORFEIT' : 'CANCELLED'}
               </span>
             )}
