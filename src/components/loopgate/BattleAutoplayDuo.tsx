@@ -282,20 +282,21 @@ function BattleVideoSlot({ side }: { side: Side }) {
       )}
 
       {loadError && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            const video = videoRef.current;
-            if (!video) return;
-            setLoadError(false);
-            setSourceIndex(0);
-            video.load();
-          }}
-          className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-2 bg-black/85"
+        <div
+          className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 pointer-events-none"
+          style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.90) 100%)' }}
         >
-          <span className="text-xs font-black uppercase tracking-[0.18em] text-white" style={teko}>Tap to reload</span>
-        </button>
+          <div
+            className="w-11 h-11 rounded-lg flex items-center justify-center"
+            style={{ border: `1px solid ${accentHex}`, background: 'rgba(0,0,0,0.55)', boxShadow: `0 0 18px ${accentGlow}` }}
+          >
+            <span className="text-2xl select-none leading-none">✓</span>
+          </div>
+          <div className="text-center">
+            <p className="text-[11px] font-black uppercase tracking-[0.28em] text-white" style={teko}>Edit Submitted</p>
+            <p className="text-[8px] text-white/35 tracking-widest mt-0.5">@{side.username}</p>
+          </div>
+        </div>
       )}
 
       {/* Top corner game-tag — minimal, doesn't cover edit */}
