@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, Shuffle, Upload, Users, Swords, Music, Play, Pause, X, Film, Search, Loader2 } from 'lucide-react';
+import { Check, Shuffle, Upload, Users, Swords, Music, Play, Pause, X, Film, Search, Loader2, Star } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -9,6 +9,17 @@ const DIFF_BADGE: Record<string, string> = {
   normal:    'bg-blue-500/20 text-blue-300 border border-blue-500/30',
   hard:      'bg-orange-500/20 text-orange-300 border border-orange-500/30',
   nightmare: 'bg-red-500/20 text-red-300 border border-red-500/30',
+};
+
+const DIFF_STARS: Record<string, number> = { easy: 2, normal: 3, hard: 4, nightmare: 5 };
+const DIFF_STAR_COLOR: Record<string, string> = {
+  easy: 'text-emerald-400', normal: 'text-blue-400', hard: 'text-orange-400', nightmare: 'text-red-400',
+};
+const DIFF_STAR_BG: Record<string, string> = {
+  easy: 'bg-emerald-500/15 border-emerald-500/35',
+  normal: 'bg-blue-500/15 border-blue-500/35',
+  hard: 'bg-orange-500/15 border-orange-500/35',
+  nightmare: 'bg-red-500/20 border-red-500/50',
 };
 
 interface Player {
@@ -590,13 +601,16 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
                         const picked = mine.song?.id === s.id;
                         const playing = previewingId === s.id;
                         const red = mySide === 'red';
+                        const starCount = DIFF_STARS[s.difficulty ?? ''] ?? 0;
+                        const starColor = DIFF_STAR_COLOR[s.difficulty ?? ''] ?? 'text-white/30';
+                        const starBg = DIFF_STAR_BG[s.difficulty ?? ''] ?? 'bg-white/5 border-white/15';
                         return (
                           <div
                             key={s.id}
-                            className={`flex items-stretch transition-all duration-200 ${picked ? 'translate-x-0 h-[58px]' : 'translate-x-5 h-[50px]'}`}
+                            className={`flex items-stretch transition-all duration-200 ${picked ? 'pl-0 h-[62px]' : 'pl-4 h-[52px]'}`}
                           >
                             {/* Cover thumbnail */}
-                            <div className={`shrink-0 bg-black/50 overflow-hidden relative transition-all duration-200 ${picked ? 'w-[58px]' : 'w-[50px]'}`}>
+                            <div className={`shrink-0 bg-black/50 overflow-hidden relative transition-all duration-200 ${picked ? 'w-[62px]' : 'w-[52px]'}`}>
                               <Music className="absolute inset-0 m-auto w-4 h-4 text-white/20" />
                               {s.cover && (
                                 <img src={s.cover} alt="" className="absolute inset-0 w-full h-full object-cover"
@@ -607,7 +621,7 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
                             <button
                               onClick={() => !mine.ready && setMySong(s)}
                               disabled={mine.ready}
-                              style={{ clipPath: 'polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%)' }}
+                              style={{ clipPath: 'polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%)' }}
                               className={`flex-1 flex items-center gap-2 px-3 text-left min-w-0 disabled:opacity-60 transition-all duration-200
                                 ${picked
                                   ? red
@@ -620,9 +634,14 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
                                 <p className={`truncate ${picked ? 'text-[11px] text-white/55' : 'text-[9px] text-white/30'}`}>{s.artist}</p>
                               </div>
                               {s.difficulty && (
-                                <span className={`shrink-0 font-bold uppercase tracking-wide rounded-full ${picked ? 'text-[9px] px-2 py-0.5' : 'text-[7px] px-1.5 py-px'} ${DIFF_BADGE[s.difficulty] ?? ''}`}>
-                                  {s.difficulty}
-                                </span>
+                                <div className={`flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-lg border ${starBg} shrink-0`}>
+                                  <div className="flex items-center gap-px">
+                                    {Array.from({ length: 5 }).map((_, i) => (
+                                      <Star key={i} className={`${picked ? 'w-2.5 h-2.5' : 'w-2 h-2'} ${i < starCount ? `fill-current ${starColor}` : 'text-white/10'}`} />
+                                    ))}
+                                  </div>
+                                  <span className={`text-[7px] font-black uppercase tracking-wider leading-none ${starColor}`}>{s.difficulty}</span>
+                                </div>
                               )}
                             </button>
                             {/* Preview / selection indicator */}
