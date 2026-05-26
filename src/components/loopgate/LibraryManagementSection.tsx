@@ -80,6 +80,15 @@ async function uploadFileToBunny(file: File, folder: string): Promise<string> {
   return cdnUrl;
 }
 
+async function uploadImageToSupabase(file: File, bucket: string): Promise<string> {
+  const ext = file.name.split('.').pop() || 'jpg';
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: true });
+  if (error) throw new Error(error.message);
+  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+  return data.publicUrl;
+}
+
 /* =========================================================================
    Library Management — Songs + Scenepacks
    ========================================================================= */
@@ -597,7 +606,7 @@ function ScenepacksManager() {
 
       if (thumbnailFile) {
         setSaveProgress("Uploading cover…");
-        thumbnail_url = await uploadFileToBunny(thumbnailFile, "scenepacks/covers");
+        thumbnail_url = await uploadImageToSupabase(thumbnailFile, "scenepack-previews");
       }
       if (previewFile) {
         setSaveProgress("Uploading preview video…");
