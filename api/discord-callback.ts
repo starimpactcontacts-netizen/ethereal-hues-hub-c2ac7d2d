@@ -47,7 +47,7 @@ export default async function handler(req: any, res: any) {
 
   // 3. Use a synthetic email keyed to Discord ID so Discord accounts never
   //    collide with existing Google/email accounts on the same email address.
-  const syntheticEmail = `discord_${discordUser.id}@auth.loopgate.gg`;
+  const syntheticEmail = `discord_${discordUser.id}@user.loopgate.io`;
   const derivedPassword = `dsc_${discordUser.id}_${clientSecret.slice(-12)}`;
 
   const supabase = createClient(supabaseUrl, supabaseAnonKey, {
