@@ -1,10 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
 const DISCORD_CLIENT_ID = '1508087834555187291';
-const DISCORD_REDIRECT_URI = 'https://loopgate.io/auth/discord/callback';
+const DISCORD_REDIRECT_URI = 'https://loopgate.gg/auth/discord/callback';
 
 export default async function handler(req: any, res: any) {
-  res.setHeader('Access-Control-Allow-Origin', 'https://loopgate.io');
+  res.setHeader('Access-Control-Allow-Origin', 'https://loopgate.gg');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -47,7 +47,7 @@ export default async function handler(req: any, res: any) {
 
   // 3. Use a synthetic email keyed to Discord ID so Discord accounts never
   //    collide with existing Google/email accounts on the same email address.
-  const syntheticEmail = `discord_${discordUser.id}@auth.loopgate.io`;
+  const syntheticEmail = `discord_${discordUser.id}@auth.loopgate.gg`;
   const derivedPassword = `dsc_${discordUser.id}_${clientSecret.slice(-12)}`;
 
   const supabase = createClient(supabaseUrl, supabaseAnonKey, {
