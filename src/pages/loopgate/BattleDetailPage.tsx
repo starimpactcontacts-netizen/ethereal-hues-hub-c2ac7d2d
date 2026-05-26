@@ -309,110 +309,81 @@ export default function BattleDetailPage() {
       </div>
 
       {/* ═══ UFC-STYLE MATCHUP BAR ═══ */}
-      <div className="relative overflow-hidden">
-        {/* Edge atmosphere */}
-        <div className="absolute inset-y-0 left-0 w-40 pointer-events-none z-0" style={{ background: 'linear-gradient(90deg, rgba(239,68,68,0.12), transparent)' }} />
-        <div className="absolute inset-y-0 right-0 w-40 pointer-events-none z-0" style={{ background: 'linear-gradient(270deg, rgba(59,130,246,0.12), transparent)' }} />
-
-        {/* Status pill */}
-        <div className="flex items-center justify-center gap-2 pt-3 pb-2 px-4">
+      <div className="relative overflow-hidden" style={{ background: '#080808' }}>
+        {/* Status label */}
+        <div className="flex items-center justify-center gap-2 pt-2.5 pb-1.5">
           {isLive && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
-          <span className={`text-[11px] tracking-[0.25em] uppercase font-bold ${statusColor}`} style={{ fontFamily: 'Teko, sans-serif' }}>
+          <span className={`text-[10px] tracking-[0.28em] uppercase font-bold ${statusColor}`} style={{ fontFamily: 'Teko, sans-serif' }}>
             {statusLabel}
           </span>
-          {isRapid && <span className="flex items-center gap-1 text-amber-400 text-[10px] tracking-wider"><Zap className="w-3 h-3" /> RAPID</span>}
+          {isRapid && <span className="flex items-center gap-1 text-amber-400 text-[10px]"><Zap className="w-3 h-3" /> RAPID</span>}
         </div>
 
-        {/* UFC bar */}
-        <div className="relative flex items-stretch" style={{ minHeight: 56 }}>
-          {/* RED corner tag */}
-          <div className="flex items-center justify-center px-3 shrink-0" style={{ background: 'rgba(220,38,38,0.92)' }}>
-            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white" style={{ fontFamily: 'Teko, sans-serif' }}>RED</span>
-          </div>
+        {/* The bar — NAME [RED] score [BLUE] NAME */}
+        <div className="flex items-stretch h-11 border-y border-white/[0.06]">
 
-          {/* Challenger */}
-          <div className="flex-1 flex items-center gap-2.5 px-3 min-w-0" style={{ background: 'rgba(0,0,0,0.85)' }}>
-            <div className="w-9 h-9 shrink-0 overflow-hidden border border-red-500/40 bg-zinc-900">
-              {battle.challenger_avatar_url
-                ? <img src={battle.challenger_avatar_url} alt="" className="w-full h-full object-cover" />
-                : <div className="w-full h-full flex items-center justify-center text-red-400 font-black" style={{ fontFamily: 'Teko, sans-serif', fontSize: 18 }}>{battle.challenger_username.charAt(0).toUpperCase()}</div>}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5 min-w-0">
-                <span className="font-black uppercase text-white truncate leading-none" style={{ fontFamily: 'Teko, sans-serif', fontSize: 17, letterSpacing: '0.06em', textShadow: '-1.5px 0 rgba(255,60,60,0.5)' }}>
-                  {battle.challenger_username}
-                </span>
-                {battle.winner_id === battle.challenger_id && <Trophy className="w-3.5 h-3.5 text-amber-400 shrink-0" />}
-                {battle.challenger_submitted_at && <CheckCircle className="w-3 h-3 text-emerald-400/60 shrink-0" />}
-                {isChallenger && <span className="text-[7px] text-red-400/60 font-bold uppercase tracking-wider shrink-0">YOU</span>}
-              </div>
-              {battle.challenger_score !== null && (
-                <span className="text-[11px] text-amber-400 font-bold tabular-nums">{battle.challenger_score} pts</span>
-              )}
+          {/* Challenger name — left, text-right */}
+          <div className="flex-1 flex items-center justify-end pr-2.5 min-w-0" style={{ background: 'linear-gradient(90deg, transparent, rgba(239,68,68,0.07))' }}>
+            <div className="flex items-center gap-1.5 min-w-0">
+              {battle.winner_id === battle.challenger_id && <Trophy className="w-3 h-3 text-amber-400 shrink-0" />}
+              {battle.challenger_submitted_at && <CheckCircle className="w-2.5 h-2.5 text-emerald-400/50 shrink-0" />}
+              {isChallenger && <span className="text-[7px] text-red-400/50 font-bold uppercase shrink-0">YOU</span>}
+              <span className="font-black uppercase text-white truncate" style={{ fontFamily: 'Teko, sans-serif', fontSize: 19, letterSpacing: '0.07em', textShadow: '-2px 0 rgba(255,40,40,0.6), 1px 0 rgba(255,255,255,0.85)' }}>
+                {battle.challenger_username}
+              </span>
             </div>
           </div>
 
-          {/* Center score */}
-          <div className="flex flex-col items-center justify-center px-4 shrink-0 border-x border-white/[0.07]" style={{ background: 'rgba(0,0,0,0.9)' }}>
+          {/* RED tag */}
+          <div className="flex items-center justify-center px-2.5 shrink-0" style={{ background: 'rgba(220,38,38,0.95)' }}>
+            <span className="text-[9px] font-black uppercase tracking-[0.18em] text-white" style={{ fontFamily: 'Teko, sans-serif' }}>RED</span>
+          </div>
+
+          {/* Center score / status */}
+          <div className="flex flex-col items-center justify-center px-3 shrink-0" style={{ background: '#0d0d0d', minWidth: 64 }}>
             {totalVotes > 0 ? (
               <>
-                <span className="font-black text-white tabular-nums leading-none" style={{ fontFamily: 'Teko, sans-serif', fontSize: 24 }}>
-                  <span className="text-red-400">{battle.challenger_votes}</span>
-                  <span className="text-white/25 mx-1.5">·</span>
-                  <span className="text-blue-400">{battle.opponent_votes}</span>
-                </span>
-                <span className="text-[7px] uppercase tracking-[0.22em] text-white/35 mt-0.5">
-                  {battle.challenger_votes > battle.opponent_votes ? 'RED LEADS'
-                    : battle.opponent_votes > battle.challenger_votes ? 'BLUE LEADS'
-                    : 'TIED'}
+                <div className="flex items-baseline gap-1.5 leading-none">
+                  <span className="font-black text-red-400 tabular-nums" style={{ fontFamily: 'Teko, sans-serif', fontSize: 20 }}>{battle.challenger_votes}</span>
+                  <span className="text-white/20 text-base">·</span>
+                  <span className="font-black text-blue-400 tabular-nums" style={{ fontFamily: 'Teko, sans-serif', fontSize: 20 }}>{battle.opponent_votes}</span>
+                </div>
+                <span className="text-[6px] uppercase tracking-[0.22em] text-white/25 mt-px">
+                  {battle.challenger_votes > battle.opponent_votes ? 'RED LEADS' : battle.opponent_votes > battle.challenger_votes ? 'BLUE LEADS' : 'TIED'}
                 </span>
               </>
             ) : (
-              <span className="text-[10px] uppercase tracking-[0.2em] text-white/30 font-bold" style={{ fontFamily: 'Teko, sans-serif' }}>
-                {isLive ? 'LIVE' : isJudging ? 'JUDGING' : isCompleted ? 'FINAL' : 'VS'}
+              <span className="text-[11px] uppercase tracking-[0.2em] text-white/25 font-black" style={{ fontFamily: 'Teko, sans-serif' }}>
+                {isLive ? 'LIVE' : isJudging ? 'REVIEW' : isCompleted ? 'FINAL' : 'VS'}
               </span>
             )}
           </div>
 
-          {/* Opponent */}
-          <div className="flex-1 flex items-center gap-2.5 px-3 min-w-0 justify-end" style={{ background: 'rgba(0,0,0,0.85)' }}>
-            {battle.opponent_id ? (
-              <>
-                <div className="min-w-0 flex-1 text-right">
-                  <div className="flex items-center justify-end gap-1.5 min-w-0">
-                    {isOpponent && <span className="text-[7px] text-blue-400/60 font-bold uppercase tracking-wider shrink-0">YOU</span>}
-                    {battle.winner_id === battle.opponent_id && <Trophy className="w-3.5 h-3.5 text-amber-400 shrink-0" />}
-                    {battle.opponent_submitted_at && <CheckCircle className="w-3 h-3 text-emerald-400/60 shrink-0" />}
-                    <span className="font-black uppercase text-white truncate leading-none" style={{ fontFamily: 'Teko, sans-serif', fontSize: 17, letterSpacing: '0.06em', textShadow: '1.5px 0 rgba(60,100,255,0.5)' }}>
-                      {battle.opponent_username}
-                    </span>
-                  </div>
-                  {battle.opponent_score !== null && (
-                    <span className="text-[11px] text-amber-400 font-bold tabular-nums">{battle.opponent_score} pts</span>
-                  )}
-                </div>
-                <div className="w-9 h-9 shrink-0 overflow-hidden border border-blue-500/40 bg-zinc-900">
-                  {battle.opponent_avatar_url
-                    ? <img src={battle.opponent_avatar_url} alt="" className="w-full h-full object-cover" />
-                    : <div className="w-full h-full flex items-center justify-center text-blue-400 font-black" style={{ fontFamily: 'Teko, sans-serif', fontSize: 18 }}>{battle.opponent_username?.charAt(0).toUpperCase()}</div>}
-                </div>
-              </>
-            ) : (
-              <div className="flex-1 flex items-center justify-end">
-                <span className="text-zinc-500 font-black uppercase text-sm" style={{ fontFamily: 'Teko, sans-serif' }}>AWAITING</span>
-              </div>
-            )}
+          {/* BLUE tag */}
+          <div className="flex items-center justify-center px-2.5 shrink-0" style={{ background: 'rgba(37,99,235,0.95)' }}>
+            <span className="text-[9px] font-black uppercase tracking-[0.18em] text-white" style={{ fontFamily: 'Teko, sans-serif' }}>BLUE</span>
           </div>
 
-          {/* BLUE corner tag */}
-          <div className="flex items-center justify-center px-3 shrink-0" style={{ background: 'rgba(37,99,235,0.92)' }}>
-            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white" style={{ fontFamily: 'Teko, sans-serif' }}>BLUE</span>
+          {/* Opponent name — right, text-left */}
+          <div className="flex-1 flex items-center pl-2.5 min-w-0" style={{ background: 'linear-gradient(270deg, transparent, rgba(59,130,246,0.07))' }}>
+            {battle.opponent_id ? (
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="font-black uppercase text-white truncate" style={{ fontFamily: 'Teko, sans-serif', fontSize: 19, letterSpacing: '0.07em', textShadow: '2px 0 rgba(40,100,255,0.6), -1px 0 rgba(255,255,255,0.85)' }}>
+                  {battle.opponent_username}
+                </span>
+                {battle.winner_id === battle.opponent_id && <Trophy className="w-3 h-3 text-amber-400 shrink-0" />}
+                {battle.opponent_submitted_at && <CheckCircle className="w-2.5 h-2.5 text-emerald-400/50 shrink-0" />}
+                {isOpponent && <span className="text-[7px] text-blue-400/50 font-bold uppercase shrink-0">YOU</span>}
+              </div>
+            ) : (
+              <span className="text-zinc-600 font-black uppercase" style={{ fontFamily: 'Teko, sans-serif', fontSize: 15 }}>AWAITING</span>
+            )}
           </div>
         </div>
 
         {/* Timer */}
         {isLive && battle.ends_at && (
-          <div className="flex justify-center py-3">
+          <div className="flex justify-center py-2.5">
             <ArcadeCountdown endDate={battle.ends_at} label="ENDS IN" variant="battle" />
           </div>
         )}
