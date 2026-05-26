@@ -415,6 +415,51 @@ export type Database = {
           },
         ]
       }
+      battle_songs: {
+        Row: {
+          artist_name: string | null
+          audio_url: string
+          cover_url: string | null
+          created_at: string
+          deezer_id: number | null
+          difficulty: string | null
+          id: string
+          is_featured: boolean
+          is_priority: boolean
+          preview_url: string | null
+          song_name: string
+          track_order: number
+        }
+        Insert: {
+          artist_name?: string | null
+          audio_url: string
+          cover_url?: string | null
+          created_at?: string
+          deezer_id?: number | null
+          difficulty?: string | null
+          id?: string
+          is_featured?: boolean
+          is_priority?: boolean
+          preview_url?: string | null
+          song_name: string
+          track_order?: number
+        }
+        Update: {
+          artist_name?: string | null
+          audio_url?: string
+          cover_url?: string | null
+          created_at?: string
+          deezer_id?: number | null
+          difficulty?: string | null
+          id?: string
+          is_featured?: boolean
+          is_priority?: boolean
+          preview_url?: string | null
+          song_name?: string
+          track_order?: number
+        }
+        Relationships: []
+      }
       battle_views: {
         Row: {
           battle_id: string
@@ -2757,6 +2802,7 @@ export type Database = {
           display_name: string | null
           id: string
           is_bot: boolean | null
+          is_deleted: boolean
           is_pinned: boolean | null
           message_text: string
           user_id: string
@@ -2770,6 +2816,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           is_bot?: boolean | null
+          is_deleted?: boolean
           is_pinned?: boolean | null
           message_text: string
           user_id: string
@@ -2783,6 +2830,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           is_bot?: boolean | null
+          is_deleted?: boolean
           is_pinned?: boolean | null
           message_text?: string
           user_id?: string
@@ -7609,6 +7657,27 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "quick_fights_scenepack_locked_id_fkey"
+            columns: ["scenepack_locked_id"]
+            isOneToOne: false
+            referencedRelation: "scenepack_pool"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quick_fights_scenepack_option_a_id_fkey"
+            columns: ["scenepack_option_a_id"]
+            isOneToOne: false
+            referencedRelation: "scenepack_pool"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quick_fights_scenepack_option_b_id_fkey"
+            columns: ["scenepack_option_b_id"]
+            isOneToOne: false
+            referencedRelation: "scenepack_pool"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "quick_fights_theme_drop_id_fkey"
             columns: ["theme_drop_id"]
             isOneToOne: false
@@ -8240,6 +8309,7 @@ export type Database = {
           active: boolean
           created_at: string
           id: string
+          pack_count: number
           preview_video_url: string | null
           scenepack_gdrive_url: string | null
           scenepack_youtube_url: string | null
@@ -8252,6 +8322,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           id?: string
+          pack_count?: number
           preview_video_url?: string | null
           scenepack_gdrive_url?: string | null
           scenepack_youtube_url?: string | null
@@ -8264,6 +8335,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           id?: string
+          pack_count?: number
           preview_video_url?: string | null
           scenepack_gdrive_url?: string | null
           scenepack_youtube_url?: string | null
