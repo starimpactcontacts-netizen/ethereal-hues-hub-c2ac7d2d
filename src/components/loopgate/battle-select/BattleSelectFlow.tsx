@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check, Shuffle, Upload, Users, Swords, Music, Play, Pause, X, Film, Search, Loader2 } from 'lucide-react';
 import { createPortal } from 'react-dom';
-import { SCENEPACKS, type Scenepack } from './scenepacks';
 import { supabase } from '@/integrations/supabase/client';
 
 const DIFF_BADGE: Record<string, string> = {
@@ -27,6 +26,13 @@ interface Props {
   selectionDeadline?: string | null;
   onComplete: () => void;
   onCancel?: () => void;
+}
+
+interface Scenepack {
+  id: string;
+  name: string;
+  poster: string;
+  packCount: number;
 }
 
 interface Song {
@@ -91,6 +97,7 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
   const [tab, setTab] = useState<Tab>('scenepack');
   const [timeLeft, setTimeLeft] = useState(PHASE_TIMER_SEC);
   const [songs, setSongs] = useState<Song[]>(FALLBACK_SONGS);
+  const [scenepacks, setScenepacks] = useState<Scenepack[]>([]);
 
   // STRICT ISOLATION: local actions only mutate `mine`; opponent picks are
   // fetched from the backend only after both players are locked or timer expires.
@@ -216,6 +223,27 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
     const state = await saveSelection(next);
     if (state?.bothReady || state?.reveal) await startFromSelection();
   };
+
+  // Load scenepacks from DB
+  useEffect(() => {
+    if (!open) return;
+    supabase
+      .from('scenepack_pool')
+      .select('id, title, thumbnail_url, pack_count')
+      .eq('active', true)
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: false })
+      .then(({ data }) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setScenepacks(data.map((p: any) => ({
+            id: p.id,
+            name: p.title,
+            poster: p.thumbnail_url || '',
+            packCount: p.pack_count || 0,
+          })));
+        }
+      });
+  }, [open]);
 
   // Load songs from battle_songs
   useEffect(() => {
@@ -347,10 +375,10 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
 
   function handleTimeout() {
     const pool = songs.length ? songs : FALLBACK_SONGS;
-    // Timer expiry auto-fills ONLY this player's missing picks, then asks backend to start.
+    const packPool = scenepacks.length ? scenepacks : [];
     const next = {
       ...mine,
-      pack: mine.pack || SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)],
+      pack: mine.pack || (packPool.length ? packPool[Math.floor(Math.random() * packPool.length)] : null),
       song: mine.song || pool[Math.floor(Math.random() * pool.length)],
       ready: true,
     } as PlayerPicks;
@@ -359,7 +387,8 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
   }
 
   function pickRandomPack() {
-    setMyPack(SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)]);
+    if (!scenepacks.length) return;
+    setMyPack(scenepacks[Math.floor(Math.random() * scenepacks.length)]);
   }
   function pickRandomSong() {
     const pool = songs.length ? songs : FALLBACK_SONGS;
@@ -436,30 +465,39 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
 
             {tab === 'scenepack' && (
               <div className="flex-1 overflow-y-auto px-3">
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {SCENEPACKS.map((p) => {
-                    const picked = mine.pack?.id === p.id;
-                    return (
-                      <button key={p.id} onClick={() => setMyPack(p)} disabled={mine.ready}
-                        className={`relative rounded-xl overflow-hidden border-2 transition-all active:scale-[0.97] disabled:opacity-70
-                          ${picked ? (mySide === 'red' ? 'border-red-500 shadow-[0_0_24px_rgba(239,68,68,0.55)]' : 'border-blue-500 shadow-[0_0_24px_rgba(59,130,246,0.55)]') :
-                            'border-white/10 hover:border-white/30'}`}>
-                        <div className="aspect-[2/3] w-full bg-surface-2">
-                          <img src={p.poster} alt={p.name} className="w-full h-full object-cover" />
-                        </div>
-                        <div className="px-2 py-1.5 bg-black/85 text-left">
-                          <p className="text-[11px] font-bold truncate">{p.name}</p>
-                          <p className="text-[9px] text-muted-foreground">{p.packCount} scenepacks</p>
-                        </div>
-                        {picked && (
-                          <div className={`absolute top-1.5 left-1.5 w-6 h-6 rounded-full ${mySide === 'red' ? 'bg-red-500' : 'bg-blue-500'} flex items-center justify-center shadow-lg`}>
-                            <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                {scenepacks.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 gap-2 text-white/30">
+                    <Film className="w-8 h-8" />
+                    <p className="text-xs">No scenepacks available</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {scenepacks.map((p) => {
+                      const picked = mine.pack?.id === p.id;
+                      return (
+                        <button key={p.id} onClick={() => setMyPack(p)} disabled={mine.ready}
+                          className={`relative rounded-xl overflow-hidden border-2 transition-all active:scale-[0.97] disabled:opacity-70
+                            ${picked ? (mySide === 'red' ? 'border-red-500 shadow-[0_0_24px_rgba(239,68,68,0.55)]' : 'border-blue-500 shadow-[0_0_24px_rgba(59,130,246,0.55)]') :
+                              'border-white/10 hover:border-white/30'}`}>
+                          <div className="aspect-[2/3] w-full bg-white/5 flex items-center justify-center">
+                            {p.poster
+                              ? <img src={p.poster} alt={p.name} className="w-full h-full object-cover" />
+                              : <Film className="w-8 h-8 text-white/20" />}
                           </div>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
+                          <div className="px-2 py-1.5 bg-black/85 text-left">
+                            <p className="text-[11px] font-bold truncate">{p.name}</p>
+                            <p className="text-[9px] text-muted-foreground">{p.packCount} scenepacks</p>
+                          </div>
+                          {picked && (
+                            <div className={`absolute top-1.5 left-1.5 w-6 h-6 rounded-full ${mySide === 'red' ? 'bg-red-500' : 'bg-blue-500'} flex items-center justify-center shadow-lg`}>
+                              <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
 
