@@ -239,7 +239,10 @@ export default function ChannelChatView({
 
   const handleDeleteMessage = async (messageId: string) => {
     setDeletedIds((prev) => new Set([...prev, messageId]));
-    const { error } = await supabase.from("crew_channel_messages").delete().eq("id", messageId);
+    const { error } = await supabase
+      .from("crew_channel_messages")
+      .update({ is_deleted: true })
+      .eq("id", messageId);
     if (error) {
       setDeletedIds((prev) => { const next = new Set(prev); next.delete(messageId); return next; });
       toast.error("Failed to delete message");
