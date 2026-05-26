@@ -136,6 +136,8 @@ function SongsManager() {
     audioRef.current = a;
     return () => { a.pause(); a.src = ''; };
   }, []);
+
+  const load = async () => {
     setLoading(true);
     const { data } = await supabase
       .from("battle_songs" as any)
