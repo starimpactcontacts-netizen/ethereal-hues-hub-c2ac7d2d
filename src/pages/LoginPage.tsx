@@ -40,6 +40,8 @@ export default function LoginPage() {
   // Forgot password flow
   const [showForgot, setShowForgot] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotNewPw, setForgotNewPw] = useState('');
+  const [showForgotPw, setShowForgotPw] = useState(false);
   const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotSent, setForgotSent] = useState(false);
 
@@ -74,12 +76,19 @@ export default function LoginPage() {
       toast.error('Enter a valid email address');
       return;
     }
+    if (forgotNewPw.length < 6) {
+      toast.error('New password must be at least 6 characters');
+      return;
+    }
     setForgotLoading(true);
+    // Stash the intended password so the reset page can silently apply it
+    sessionStorage.setItem('loopgate_pending_pw', forgotNewPw);
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     setForgotLoading(false);
     if (error) {
+      sessionStorage.removeItem('loopgate_pending_pw');
       toast.error(error.message || 'Could not send reset email');
       return;
     }
@@ -536,7 +545,7 @@ export default function LoginPage() {
                 <div className="flex justify-end -mt-1">
                   <button
                     type="button"
-                    onClick={() => { setShowForgot((v) => !v); setForgotSent(false); setForgotEmail(''); }}
+                    onClick={() => { setShowForgot((v) => !v); setForgotSent(false); setForgotEmail(''); setForgotNewPw(''); }}
                     className="text-[12px] text-[#0A84FF] font-medium active:opacity-60"
                   >
                     Forgot password?
@@ -555,12 +564,15 @@ export default function LoginPage() {
                     >
                       {forgotSent ? (
                         <div
-                          className="p-3 rounded-[14px] text-center"
+                          className="p-3 rounded-[14px] text-center space-y-1"
                           style={{ background: 'rgba(52,199,89,0.1)', border: '1px solid rgba(52,199,89,0.25)' }}
                         >
-                          <p className="text-[13px] text-[#34C759] font-semibold">Check your email</p>
-                          <p className="text-[12px] text-white/55 mt-1">
-                            We sent a reset link to <span className="text-white/80">{forgotEmail}</span>
+                          <p className="text-[13px] text-[#34C759] font-semibold">Check your inbox</p>
+                          <p className="text-[12px] text-white/55 leading-snug">
+                            Sent to <span className="text-white/80">{forgotEmail}</span>
+                          </p>
+                          <p className="text-[11px] text-white/40 leading-snug">
+                            Click the link and you'll be logged straight in with your new password — no extra steps.
                           </p>
                         </div>
                       ) : (
@@ -570,7 +582,7 @@ export default function LoginPage() {
                           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
                         >
                           <p className="text-[11px] text-white/55 leading-snug">
-                            Enter your account email and we'll send a reset link.
+                            Enter your email and pick a new password. We'll email you a link — click it and you're in.
                           </p>
                           <Input
                             type="email"
@@ -583,12 +595,30 @@ export default function LoginPage() {
                             className="h-11 rounded-[10px] border-0 text-[15px] text-white placeholder:text-white/35"
                             style={{ background: 'rgba(118, 118, 128, 0.24)' }}
                           />
+                          <div className="relative">
+                            <Input
+                              type={showForgotPw ? 'text' : 'password'}
+                              value={forgotNewPw}
+                              onChange={(e) => setForgotNewPw(e.target.value)}
+                              placeholder="New password (6+ chars)"
+                              autoComplete="new-password"
+                              className="h-11 pr-10 rounded-[10px] border-0 text-[15px] text-white placeholder:text-white/35"
+                              style={{ background: 'rgba(118, 118, 128, 0.24)' }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowForgotPw((v) => !v)}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-[6px] bg-white/[0.06] flex items-center justify-center"
+                            >
+                              {showForgotPw ? <EyeOff className="h-3.5 w-3.5 text-white/60" /> : <Eye className="h-3.5 w-3.5 text-white/60" />}
+                            </button>
+                          </div>
                           <button
                             type="submit"
                             disabled={forgotLoading}
                             className="w-full h-11 rounded-[12px] bg-white/10 text-white text-[14px] font-semibold active:opacity-60 disabled:opacity-50 flex items-center justify-center"
                           >
-                            {forgotLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send reset link'}
+                            {forgotLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send login link'}
                           </button>
                         </form>
                       )}

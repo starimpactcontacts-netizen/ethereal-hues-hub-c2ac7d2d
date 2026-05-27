@@ -15,20 +15,48 @@ export default function ResetPasswordPage() {
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [ready, setReady] = useState(false);
+  // null = waiting for recovery event, false = no pending pw (show form)
+  const [autoApplying, setAutoApplying] = useState<boolean | null>(null);
 
-  // Supabase sends the recovery token via URL hash; the SDK fires
-  // PASSWORD_RECOVERY once it processes the hash.
   useEffect(() => {
+    const applyPending = async (pendingPw: string) => {
+      setAutoApplying(true);
+      const { error } = await supabase.auth.updateUser({ password: pendingPw });
+      sessionStorage.removeItem('loopgate_pending_pw');
+      if (error) {
+        toast.error('Could not update password — please set it again below');
+        setAutoApplying(false);
+        return;
+      }
+      toast.success('Password updated — welcome back!');
+      navigate('/hub');
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') setReady(true);
+      if (event === 'PASSWORD_RECOVERY') {
+        const pending = sessionStorage.getItem('loopgate_pending_pw');
+        if (pending) {
+          applyPending(pending);
+        } else {
+          setAutoApplying(false);
+        }
+      }
     });
-    // Also accept if user already has an active session from the link
+
+    // If they already have a session (link already processed), check immediately
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) setReady(true);
+      if (session) {
+        const pending = sessionStorage.getItem('loopgate_pending_pw');
+        if (pending) {
+          applyPending(pending);
+        } else {
+          setAutoApplying(false);
+        }
+      }
     });
+
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,11 +65,8 @@ export default function ResetPasswordPage() {
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     setLoading(false);
-    if (error) {
-      toast.error(error.message || 'Could not update password');
-      return;
-    }
-    toast.success('Password updated — you are logged in');
+    if (error) { toast.error(error.message || 'Could not update password'); return; }
+    toast.success('Password updated — you are in');
     navigate('/hub');
   };
 
@@ -103,19 +128,25 @@ export default function ResetPasswordPage() {
                   style={{ filter: 'drop-shadow(0 8px 20px rgba(212,168,87,0.35))' }}
                 />
                 <p className="text-[11px] font-semibold tracking-[0.22em] text-[#D4A857] uppercase mb-2">
-                  Reset Password
+                  {autoApplying ? 'Logging you in' : 'Reset Password'}
                 </p>
                 <h1 className="text-white text-[34px] leading-[1.05] font-bold tracking-[-0.03em]">
-                  New password.
+                  {autoApplying ? 'One sec…' : 'New password.'}
                 </h1>
                 <p className="text-white/55 text-[14px] mt-2 leading-snug tracking-[-0.01em]">
-                  {ready
-                    ? 'Choose a new password for your account.'
-                    : 'Opening your reset link…'}
+                  {autoApplying === null
+                    ? 'Verifying your link…'
+                    : autoApplying
+                    ? 'Applying your new password and logging you in.'
+                    : 'Set your new password below.'}
                 </p>
               </div>
 
-              {ready ? (
+              {autoApplying !== false ? (
+                <div className="flex justify-center py-6">
+                  <Loader2 className="w-6 h-6 text-white/40 animate-spin" />
+                </div>
+              ) : (
                 <form onSubmit={handleSubmit} className="space-y-3">
                   <div className="space-y-1.5">
                     <label className="text-[13px] text-[#8E8E93] font-medium px-1">New password</label>
@@ -172,10 +203,6 @@ export default function ResetPasswordPage() {
                     {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Update password'}
                   </button>
                 </form>
-              ) : (
-                <div className="flex justify-center py-6">
-                  <Loader2 className="w-6 h-6 text-white/40 animate-spin" />
-                </div>
               )}
             </div>
           </motion.div>
