@@ -37,6 +37,12 @@ export default function LoginPage() {
   const [reclaimPw, setReclaimPw] = useState('');
   const [reclaimLoading, setReclaimLoading] = useState(false);
 
+  // Forgot password flow
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
+
   const handleReclaim = async (e: React.FormEvent) => {
     e.preventDefault();
     const u = reclaimUser.trim().replace(/^@/, '');
@@ -59,6 +65,25 @@ export default function LoginPage() {
     } finally {
       setReclaimLoading(false);
     }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const email = forgotEmail.trim().toLowerCase();
+    if (!email.includes('@') || !email.includes('.')) {
+      toast.error('Enter a valid email address');
+      return;
+    }
+    setForgotLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setForgotLoading(false);
+    if (error) {
+      toast.error(error.message || 'Could not send reset email');
+      return;
+    }
+    setForgotSent(true);
   };
 
   useEffect(() => {
@@ -506,6 +531,70 @@ export default function LoginPage() {
                     </button>
                   </div>
                 </div>
+
+                {/* Forgot password link */}
+                <div className="flex justify-end -mt-1">
+                  <button
+                    type="button"
+                    onClick={() => { setShowForgot((v) => !v); setForgotSent(false); setForgotEmail(''); }}
+                    className="text-[12px] text-[#0A84FF] font-medium active:opacity-60"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+
+                {/* Forgot password panel */}
+                <AnimatePresence initial={false}>
+                  {showForgot && (
+                    <motion.div
+                      key="forgot"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      {forgotSent ? (
+                        <div
+                          className="p-3 rounded-[14px] text-center"
+                          style={{ background: 'rgba(52,199,89,0.1)', border: '1px solid rgba(52,199,89,0.25)' }}
+                        >
+                          <p className="text-[13px] text-[#34C759] font-semibold">Check your email</p>
+                          <p className="text-[12px] text-white/55 mt-1">
+                            We sent a reset link to <span className="text-white/80">{forgotEmail}</span>
+                          </p>
+                        </div>
+                      ) : (
+                        <form
+                          onSubmit={handleForgotPassword}
+                          className="space-y-2 p-3 rounded-[14px]"
+                          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                        >
+                          <p className="text-[11px] text-white/55 leading-snug">
+                            Enter your account email and we'll send a reset link.
+                          </p>
+                          <Input
+                            type="email"
+                            value={forgotEmail}
+                            onChange={(e) => setForgotEmail(e.target.value)}
+                            placeholder="your@email.com"
+                            autoComplete="email"
+                            autoCapitalize="none"
+                            spellCheck={false}
+                            className="h-11 rounded-[10px] border-0 text-[15px] text-white placeholder:text-white/35"
+                            style={{ background: 'rgba(118, 118, 128, 0.24)' }}
+                          />
+                          <button
+                            type="submit"
+                            disabled={forgotLoading}
+                            className="w-full h-11 rounded-[12px] bg-white/10 text-white text-[14px] font-semibold active:opacity-60 disabled:opacity-50 flex items-center justify-center"
+                          >
+                            {forgotLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send reset link'}
+                          </button>
+                        </form>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 <button
                   type="submit"

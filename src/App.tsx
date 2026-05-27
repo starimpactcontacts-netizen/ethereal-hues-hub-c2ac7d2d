@@ -20,6 +20,7 @@ import { isNativeApp } from "./lib/native";
 
 // Lazy-loaded pages — code-split per route
 const LoginPage = lazy(() => import("./pages/LoginPage"));
+const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 const OnboardingPage = lazy(() => import("./pages/OnboardingPage"));
 const EnterpriseOnboardingPage = lazy(() => import("./pages/EnterpriseOnboardingPage"));
 const HubPage = lazy(() => import("./pages/HubPage"));
@@ -292,6 +293,7 @@ export default function App() {
             <Route path="/" element={<RootRedirect />} />
             {/* /auth removed - use /start or /login */}
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/onboarding" element={<OnboardingWrapper />} />
             <Route path="/enterprise-onboarding" element={<EnterpriseOnboardingWrapper />} />
             <Route path="/rules" element={<RulesPage />} />
