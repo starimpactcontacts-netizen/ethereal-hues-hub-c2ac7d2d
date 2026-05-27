@@ -11,8 +11,8 @@ interface Player {
   avatarUrl: string | null;
 }
 interface Pick {
-  pack?: { name?: string | null } | null;
-  song?: { title?: string | null; artist?: string | null } | null;
+  pack?: { name?: string | null; poster?: string | null } | null;
+  song?: { title?: string | null; artist?: string | null; cover?: string | null } | null;
 }
 interface Props {
   fightId: string;
@@ -124,26 +124,51 @@ function Side({ player, pick, color, isYou }: { player: Player; pick: Pick | nul
       </p>
 
       <div className="mt-6 w-full max-w-[160px] space-y-3">
+        {/* Scenepack */}
         <div>
-          <div className="flex items-center gap-1.5 mb-1">
+          <div className="flex items-center gap-1.5 mb-1.5">
             <Film className="w-3 h-3 text-white/50" />
             <span className="text-[9px] uppercase tracking-[0.2em] text-white/50 font-bold">Scenepack</span>
           </div>
-          <p className="text-base font-bold text-white truncate" style={teko}>
-            {pick?.pack?.name || '—'}
-          </p>
+          {pick?.pack?.name ? (
+            <div className="flex items-center gap-2">
+              {pick.pack.poster ? (
+                <img src={pick.pack.poster} alt={pick.pack.name} className="w-10 h-10 rounded-sm object-cover shrink-0 border border-white/15" />
+              ) : (
+                <div className="w-10 h-10 rounded-sm bg-white/10 border border-white/15 shrink-0 flex items-center justify-center">
+                  <Film className="w-4 h-4 text-white/30" />
+                </div>
+              )}
+              <p className="text-sm font-bold text-white truncate" style={teko}>{pick.pack.name}</p>
+            </div>
+          ) : (
+            <p className="text-[11px] text-white/30 italic">No scenepack — find your own</p>
+          )}
         </div>
+
+        {/* Song */}
         <div>
-          <div className="flex items-center gap-1.5 mb-1">
+          <div className="flex items-center gap-1.5 mb-1.5">
             <Music className="w-3 h-3 text-white/50" />
             <span className="text-[9px] uppercase tracking-[0.2em] text-white/50 font-bold">Song</span>
           </div>
-          <p className="text-base font-bold text-white truncate" style={teko}>
-            {pick?.song?.title || '—'}
-          </p>
-          {pick?.song?.artist ? (
-            <p className="text-[11px] text-white/50 truncate">{pick.song.artist}</p>
-          ) : null}
+          {pick?.song?.title ? (
+            <div className="flex items-center gap-2">
+              {pick.song.cover ? (
+                <img src={pick.song.cover} alt={pick.song.title} className="w-10 h-10 rounded-sm object-cover shrink-0 border border-white/15" />
+              ) : (
+                <div className="w-10 h-10 rounded-sm bg-white/10 border border-white/15 shrink-0 flex items-center justify-center">
+                  <Music className="w-4 h-4 text-white/30" />
+                </div>
+              )}
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-white truncate" style={teko}>{pick.song.title}</p>
+                {pick.song.artist && <p className="text-[11px] text-white/50 truncate">{pick.song.artist}</p>}
+              </div>
+            </div>
+          ) : (
+            <p className="text-[11px] text-white/30 italic">No song selected</p>
+          )}
         </div>
       </div>
     </div>
