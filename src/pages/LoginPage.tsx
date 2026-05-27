@@ -83,13 +83,13 @@ export default function LoginPage() {
     setForgotLoading(true);
     // Stash the intended password so the reset page can silently apply it
     sessionStorage.setItem('loopgate_pending_pw', forgotNewPw);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+    const { data, error } = await supabase.functions.invoke('send-password-reset', {
+      body: { email, redirectTo: `${window.location.origin}/reset-password` },
     });
     setForgotLoading(false);
-    if (error) {
+    if (error || (data as any)?.error) {
       sessionStorage.removeItem('loopgate_pending_pw');
-      toast.error(error.message || 'Could not send reset email');
+      toast.error(error?.message || (data as any)?.error || 'Could not send reset email');
       return;
     }
     setForgotSent(true);
