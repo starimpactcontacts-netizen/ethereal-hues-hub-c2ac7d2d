@@ -121,24 +121,68 @@ function SideBlock({ color, label, username, pick }: { color: 'red' | 'blue'; la
   );
 }
 
-/** Fetch the preview URL and save it as a clean audio file — hides the original URL/filename. */
+/**
+ * Fetch the source (any container — MP4, MP3, etc.), decode the audio track
+ * via AudioContext, re-encode as WAV, then download with a clean filename.
+ * This strips the video container entirely so the file is pure playable audio.
+ */
 async function downloadAudio(previewUrl: string, title: string, artist?: string | null) {
   try {
     const res = await fetch(previewUrl);
     if (!res.ok) throw new Error('fetch failed');
-    const blob = await res.blob();
-    const audioBlob = new Blob([blob], { type: 'audio/mpeg' });
-    const safeName = [title, artist].filter(Boolean).join(' - ').replace(/[^\w\s\-]/g, '').trim();
-    const filename = `${safeName || 'preview'}.mp3`;
-    const url = URL.createObjectURL(audioBlob);
+    const arrayBuffer = await res.arrayBuffer();
+
+    const audioCtx = new AudioContext();
+    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+    audioCtx.close();
+
+    const wavBuffer = encodeWAV(audioBuffer);
+    const blob = new Blob([wavBuffer], { type: 'audio/wav' });
+
+    const safeName = [title, artist].filter(Boolean).join(' - ').replace(/[^\w\s\-()']/g, '').trim();
+    const filename = `${safeName || 'preview'}.wav`;
+
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = filename;
     a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    setTimeout(() => URL.revokeObjectURL(url), 15_000);
   } catch {
     toast.error('Could not download audio — try again');
   }
+}
+
+function encodeWAV(buf: AudioBuffer): ArrayBuffer {
+  const numCh = buf.numberOfChannels;
+  const sr = buf.sampleRate;
+  const numSamples = buf.length;
+  const bps = 16;
+  const dataSize = numSamples * numCh * (bps / 8);
+  const ab = new ArrayBuffer(44 + dataSize);
+  const v = new DataView(ab);
+  const ws = (off: number, s: string) => { for (let i = 0; i < s.length; i++) v.setUint8(off + i, s.charCodeAt(i)); };
+
+  ws(0, 'RIFF'); v.setUint32(4, 36 + dataSize, true);
+  ws(8, 'WAVE'); ws(12, 'fmt ');
+  v.setUint32(16, 16, true);
+  v.setUint16(20, 1, true);          // PCM
+  v.setUint16(22, numCh, true);
+  v.setUint32(24, sr, true);
+  v.setUint32(28, sr * numCh * (bps / 8), true);
+  v.setUint16(32, numCh * (bps / 8), true);
+  v.setUint16(34, bps, true);
+  ws(36, 'data'); v.setUint32(40, dataSize, true);
+
+  let off = 44;
+  for (let i = 0; i < numSamples; i++) {
+    for (let ch = 0; ch < numCh; ch++) {
+      const s = Math.max(-1, Math.min(1, buf.getChannelData(ch)[i]));
+      v.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+      off += 2;
+    }
+  }
+  return ab;
 }
 
 function PickRow({
