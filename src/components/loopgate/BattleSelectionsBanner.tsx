@@ -1,11 +1,28 @@
 import { useEffect, useState } from 'react';
-import { Download, Film, Loader2, Music } from 'lucide-react';
+import { Download, ExternalLink, Film, Loader2, Music, Play, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+interface Pack {
+  id?: string | null;
+  name?: string | null;
+  poster?: string | null;
+  youtubeUrl?: string | null;
+  gdriveUrl?: string | null;
+  previewUrl?: string | null;
+  videoCount?: number | null;
+}
+
 interface Pick {
-  pack?: { id?: string | null; name?: string | null; poster?: string | null } | null;
+  pack?: Pack | null;
   song?: { id?: string | null; title?: string | null; artist?: string | null; cover?: string | null; preview?: string | null } | null;
+}
+
+interface ClipRow {
+  id: string;
+  title: string | null;
+  video_url: string;
+  file_size_mb: number | null;
 }
 
 interface Props {
@@ -86,16 +103,7 @@ function SideBlock({ color, label, username, pick }: { color: 'red' | 'blue'; la
       ) : (
         <div className="space-y-2">
           {pick?.pack?.name ? (
-            <PickRow
-              icon={<Film className="w-3 h-3 text-white/40" />}
-              label="Scenepack"
-              coverUrl={pick.pack.poster || null}
-              title={pick.pack.name}
-              subtitle={null}
-              accentHex={accentHex}
-              /* No pack file download URL available — button stays disabled */
-              onDownload={null}
-            />
+            <ScenepackPickRow pack={pick.pack} accentHex={accentHex} />
           ) : (
             <EmptyPickRow label="Scenepack" />
           )}
@@ -118,6 +126,180 @@ function SideBlock({ color, label, username, pick }: { color: 'red' | 'blue'; la
         </div>
       )}
     </div>
+  );
+}
+
+/** Scenepack row: cover art + name + view-clips button + external download link */
+function ScenepackPickRow({ pack, accentHex }: { pack: Pack; accentHex: string }) {
+  const [clipsOpen, setClipsOpen] = useState(false);
+  const [clips, setClips] = useState<ClipRow[]>([]);
+  const [loadingClips, setLoadingClips] = useState(false);
+  const [playingId, setPlayingId] = useState<string | null>(null);
+
+  const downloadUrl = pack.youtubeUrl || pack.gdriveUrl || null;
+  const videoCount = pack.videoCount ?? 0;
+
+  const openClips = async () => {
+    setClipsOpen(true);
+    if (clips.length || !pack.id) return;
+    setLoadingClips(true);
+    const { data } = await supabase
+      .from('scenepack_videos' as any)
+      .select('id, title, video_url, file_size_mb')
+      .eq('scenepack_id', pack.id)
+      .order('sort_order', { ascending: true });
+    setClips((data as any as ClipRow[]) || []);
+    setLoadingClips(false);
+  };
+
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        {/* Thumbnail */}
+        <div className="w-11 h-11 shrink-0 overflow-hidden rounded-sm bg-white/5 border border-white/10 flex items-center justify-center">
+          {pack.poster ? (
+            <img src={pack.poster} alt={pack.name || ''} className="w-full h-full object-cover" loading="lazy" />
+          ) : (
+            <Film className="w-3.5 h-3.5 text-white/20" />
+          )}
+        </div>
+
+        {/* Text */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1 mb-0.5">
+            <Film className="w-3 h-3 text-white/40" />
+            <span className="text-[8px] uppercase tracking-wider text-white/40 font-bold">Scenepack</span>
+          </div>
+          <p className="text-[12px] font-bold text-white truncate leading-none" style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.02em' }}>
+            {pack.name}
+          </p>
+          {videoCount > 0 && (
+            <p className="text-[9px] text-white/30 leading-tight">{videoCount} clip{videoCount !== 1 ? 's' : ''}</p>
+          )}
+        </div>
+
+        {/* View clips button */}
+        {(videoCount > 0 || pack.id) && (
+          <button
+            type="button"
+            onClick={openClips}
+            className="shrink-0 w-6 h-6 flex items-center justify-center rounded-sm border border-white/15 hover:border-white/30 bg-white/5 hover:bg-white/10 transition-colors active:scale-90"
+            aria-label="View clips"
+            style={{ color: accentHex }}
+          >
+            <Play className="w-3 h-3" />
+          </button>
+        )}
+
+        {/* External download link */}
+        {downloadUrl ? (
+          <a
+            href={downloadUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 w-6 h-6 flex items-center justify-center rounded-sm border border-white/15 hover:border-white/30 bg-white/5 hover:bg-white/10 transition-colors active:scale-90"
+            aria-label="Download scenepack"
+            style={{ color: accentHex }}
+          >
+            <Download className="w-3 h-3" />
+          </a>
+        ) : (
+          <div className="shrink-0 w-6 h-6 flex items-center justify-center rounded-sm border border-white/8 bg-white/[0.03] opacity-25 cursor-not-allowed" title="No download link yet">
+            <Download className="w-3 h-3 text-white/40" />
+          </div>
+        )}
+      </div>
+
+      {/* Clips overlay */}
+      {clipsOpen && (
+        <div className="fixed inset-0 z-[9999] bg-black/85 backdrop-blur-sm flex flex-col" onClick={() => setClipsOpen(false)}>
+          <div
+            className="absolute bottom-0 left-0 right-0 bg-zinc-950 border-t border-white/10 rounded-t-xl overflow-hidden max-h-[70vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0">
+              <div className="flex items-center gap-2">
+                {pack.poster && <img src={pack.poster} alt="" className="w-8 h-8 rounded-sm object-cover" />}
+                <div>
+                  <p className="text-sm font-black text-white" style={{ fontFamily: 'Teko, sans-serif' }}>{pack.name}</p>
+                  <p className="text-[10px] text-white/40">Scenepack clips</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {downloadUrl && (
+                  <a href={downloadUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-[10px] font-bold text-white/60 hover:text-white px-2 py-1 border border-white/15 rounded">
+                    <ExternalLink className="w-3 h-3" /> Full Pack
+                  </a>
+                )}
+                <button onClick={() => setClipsOpen(false)} className="w-7 h-7 flex items-center justify-center text-white/50 hover:text-white">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Clips list */}
+            <div className="overflow-y-auto flex-1">
+              {loadingClips ? (
+                <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-white/30" /></div>
+              ) : clips.length === 0 ? (
+                <div className="text-center py-8 space-y-1">
+                  <Film className="w-8 h-8 text-white/15 mx-auto" />
+                  <p className="text-[11px] text-white/30">No individual clips uploaded yet</p>
+                  {downloadUrl && (
+                    <a href={downloadUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] text-blue-400 hover:text-blue-300">
+                      <ExternalLink className="w-3 h-3" /> Download full pack
+                    </a>
+                  )}
+                </div>
+              ) : (
+                <div className="divide-y divide-white/[0.06]">
+                  {clips.map((clip) => (
+                    <div key={clip.id} className="flex items-center gap-3 px-4 py-2.5">
+                      {playingId === clip.id ? (
+                        <div className="flex-1 min-w-0">
+                          <video
+                            src={clip.video_url}
+                            controls
+                            autoPlay
+                            className="w-full rounded-sm max-h-40 bg-black"
+                          />
+                          <button onClick={() => setPlayingId(null)} className="text-[10px] text-white/40 mt-1">Close</button>
+                        </div>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => setPlayingId(clip.id)}
+                            className="w-9 h-9 rounded-sm bg-white/10 border border-white/15 flex items-center justify-center shrink-0 hover:bg-white/15"
+                          >
+                            <Play className="w-4 h-4 text-white" />
+                          </button>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[12px] font-bold text-white truncate" style={{ fontFamily: 'Teko, sans-serif' }}>
+                              {clip.title || 'Untitled clip'}
+                            </p>
+                            {clip.file_size_mb != null && (
+                              <p className="text-[10px] text-white/30">{clip.file_size_mb} MB</p>
+                            )}
+                          </div>
+                          <a
+                            href={clip.video_url}
+                            download
+                            className="shrink-0 w-7 h-7 flex items-center justify-center rounded-sm border border-white/15 hover:border-white/30 bg-white/5 text-white/50 hover:text-white"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                          </a>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
