@@ -39,6 +39,9 @@ verify_jwt = false
 [functions.auto-confirm-user]
 verify_jwt = false
 
+[functions.send-password-reset]
+verify_jwt = false
+
 [functions.livekit-token]
 verify_jwt = false
 
