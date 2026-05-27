@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Check, Shuffle, Upload, Users, Swords, Music, Play, Pause, X, Film, Search, Loader2, Star } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const DIFF_BADGE: Record<string, string> = {
   easy:      'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30',
@@ -389,12 +390,22 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
   function handleTimeout() {
     const pool = songs.length ? songs : FALLBACK_SONGS;
     const packPool = scenepacks.length ? scenepacks : [];
+    const randomPack = packPool.length ? packPool[Math.floor(Math.random() * packPool.length)] : null;
+    const randomSong = pool[Math.floor(Math.random() * pool.length)];
     const next = {
       ...mine,
-      pack: mine.pack || (packPool.length ? packPool[Math.floor(Math.random() * packPool.length)] : null),
-      song: mine.song || pool[Math.floor(Math.random() * pool.length)],
+      pack: mine.pack || randomPack,
+      song: mine.song || randomSong,
       ready: true,
     } as PlayerPicks;
+    const assignedPack = !mine.pack && randomPack;
+    const assignedSong = !mine.song && randomSong;
+    if (assignedPack || assignedSong) {
+      const parts: string[] = [];
+      if (assignedPack) parts.push(`scenepack: ${randomPack!.name}`);
+      if (assignedSong) parts.push(`song: ${randomSong.title}`);
+      toast(`🎲 Time's up! Random picks assigned — ${parts.join(', ')}`, { duration: 6000 });
+    }
     setMine(next);
     saveSelection(next).finally(() => startFromSelection()).catch(() => {});
   }
