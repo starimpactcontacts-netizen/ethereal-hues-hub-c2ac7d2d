@@ -153,12 +153,12 @@ async function downloadAudio(previewUrl: string, title: string, artist?: string 
       audioCtx.close();
       triggerDownload(new Blob([encodeWAV(audioBuffer)], { type: 'audio/wav' }), `${safeName}.wav`);
     } catch {
-      // Fallback: decodeAudioData unsupported for this codec — download raw with clean name
-      const contentType = res.headers.get('content-type') || '';
-      const isVideo = contentType.startsWith('video/');
+      // Fallback: decodeAudioData failed (e.g. video-container MP4 on iOS).
+      // Re-wrap as audio/mp4 (.m4a) — same bytes, but iOS opens it in the
+      // audio player rather than the video player, hiding the video track.
       triggerDownload(
-        new Blob([arrayBuffer], { type: isVideo ? 'video/mp4' : 'audio/mpeg' }),
-        `${safeName}.${isVideo ? 'mp4' : 'mp3'}`,
+        new Blob([arrayBuffer], { type: 'audio/mp4' }),
+        `${safeName}.m4a`,
       );
     }
   } catch {
