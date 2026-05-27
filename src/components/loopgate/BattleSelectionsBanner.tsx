@@ -77,10 +77,10 @@ function SideBlock({ color, label, username, pick }: { color: 'red' | 'blue'; la
       {!hasAnyPick ? (
         <div className="py-3 space-y-1">
           <p className="text-[10px] font-bold text-white/30 uppercase tracking-wider leading-tight" style={{ fontFamily: 'Teko, sans-serif' }}>
-            No selections yet
+            Awaiting selection
           </p>
           <p className="text-[9px] text-white/20 leading-snug">
-            No scenepacks available — go find your own scenepacks for this type shi
+            No scenepacks available — source your own for this battle
           </p>
         </div>
       ) : (
