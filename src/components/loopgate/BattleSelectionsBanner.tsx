@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Download, Film, Music } from 'lucide-react';
+import { Download, Film, Loader2, Music } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface Pick {
   pack?: { id?: string | null; name?: string | null; poster?: string | null } | null;
@@ -69,13 +70,11 @@ function SideBlock({ color, label, username, pick }: { color: 'red' | 'blue'; la
 
   return (
     <div className={`p-2.5 ${border} bg-gradient-to-b ${gradFrom} to-transparent space-y-2`}>
-      {/* Header */}
       <p className={`text-[9px] font-black uppercase tracking-[0.22em] ${accent}`} style={{ fontFamily: 'Teko, sans-serif' }}>
         {label} <span className="text-white/40">· @{username}</span>
       </p>
 
       {!hasAnyPick ? (
-        /* Empty state */
         <div className="py-3 space-y-1">
           <p className="text-[10px] font-bold text-white/30 uppercase tracking-wider leading-tight" style={{ fontFamily: 'Teko, sans-serif' }}>
             No selections yet
@@ -86,7 +85,6 @@ function SideBlock({ color, label, username, pick }: { color: 'red' | 'blue'; la
         </div>
       ) : (
         <div className="space-y-2">
-          {/* Scenepack row */}
           {pick?.pack?.name ? (
             <PickRow
               icon={<Film className="w-3 h-3 text-white/40" />}
@@ -94,14 +92,14 @@ function SideBlock({ color, label, username, pick }: { color: 'red' | 'blue'; la
               coverUrl={pick.pack.poster || null}
               title={pick.pack.name}
               subtitle={null}
-              downloadUrl={pick.pack.poster || null}
               accentHex={accentHex}
+              /* No pack file download URL available — button stays disabled */
+              onDownload={null}
             />
           ) : (
             <EmptyPickRow label="Scenepack" />
           )}
 
-          {/* Song row */}
           {pick?.song?.title ? (
             <PickRow
               icon={<Music className="w-3 h-3 text-white/40" />}
@@ -109,8 +107,10 @@ function SideBlock({ color, label, username, pick }: { color: 'red' | 'blue'; la
               coverUrl={pick.song.cover || null}
               title={pick.song.title}
               subtitle={pick.song.artist || null}
-              downloadUrl={pick.song.preview || null}
               accentHex={accentHex}
+              onDownload={pick.song.preview
+                ? () => downloadAudio(pick.song!.preview!, pick.song!.title!, pick.song!.artist)
+                : null}
             />
           ) : (
             <EmptyPickRow label="Song" />
@@ -121,44 +121,62 @@ function SideBlock({ color, label, username, pick }: { color: 'red' | 'blue'; la
   );
 }
 
+/** Fetch the preview URL and save it as a clean audio file — hides the original URL/filename. */
+async function downloadAudio(previewUrl: string, title: string, artist?: string | null) {
+  try {
+    const res = await fetch(previewUrl);
+    if (!res.ok) throw new Error('fetch failed');
+    const blob = await res.blob();
+    const audioBlob = new Blob([blob], { type: 'audio/mpeg' });
+    const safeName = [title, artist].filter(Boolean).join(' - ').replace(/[^\w\s\-]/g, '').trim();
+    const filename = `${safeName || 'preview'}.mp3`;
+    const url = URL.createObjectURL(audioBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  } catch {
+    toast.error('Could not download audio — try again');
+  }
+}
+
 function PickRow({
   icon,
   label,
   coverUrl,
   title,
   subtitle,
-  downloadUrl,
   accentHex,
+  onDownload,
 }: {
   icon: React.ReactNode;
   label: string;
   coverUrl: string | null;
   title: string;
   subtitle: string | null;
-  downloadUrl: string | null;
   accentHex: string;
+  onDownload: (() => Promise<void> | void) | null;
 }) {
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownload = async () => {
+    if (!onDownload || downloading) return;
+    setDownloading(true);
+    await onDownload();
+    setDownloading(false);
+  };
+
   return (
     <div className="flex items-center gap-2">
-      {/* Cover art thumbnail */}
-      <div
-        className="w-11 h-11 shrink-0 overflow-hidden rounded-sm bg-white/5 border border-white/10 flex items-center justify-center"
-      >
+      <div className="w-11 h-11 shrink-0 overflow-hidden rounded-sm bg-white/5 border border-white/10 flex items-center justify-center">
         {coverUrl ? (
-          <img
-            src={coverUrl}
-            alt={title}
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
+          <img src={coverUrl} alt={title} className="w-full h-full object-cover" loading="lazy" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center opacity-30">
-            {icon}
-          </div>
+          <div className="w-full h-full flex items-center justify-center opacity-30">{icon}</div>
         )}
       </div>
 
-      {/* Text */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1 mb-0.5">
           {icon}
@@ -172,21 +190,22 @@ function PickRow({
         )}
       </div>
 
-      {/* Download / preview button */}
-      {downloadUrl ? (
-        <a
-          href={downloadUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="shrink-0 w-6 h-6 flex items-center justify-center rounded-sm border border-white/15 hover:border-white/30 bg-white/5 hover:bg-white/10 transition-colors active:scale-90"
+      {onDownload ? (
+        <button
+          type="button"
+          onClick={handleDownload}
+          disabled={downloading}
+          className="shrink-0 w-6 h-6 flex items-center justify-center rounded-sm border border-white/15 hover:border-white/30 bg-white/5 hover:bg-white/10 transition-colors active:scale-90 disabled:opacity-50"
           aria-label={`Download ${label}`}
           style={{ color: accentHex }}
         >
-          <Download className="w-3 h-3" />
-        </a>
+          {downloading
+            ? <Loader2 className="w-3 h-3 animate-spin" />
+            : <Download className="w-3 h-3" />}
+        </button>
       ) : (
         <div
-          className="shrink-0 w-6 h-6 flex items-center justify-center rounded-sm border border-white/8 bg-white/[0.03] opacity-30 cursor-not-allowed"
+          className="shrink-0 w-6 h-6 flex items-center justify-center rounded-sm border border-white/8 bg-white/[0.03] opacity-25 cursor-not-allowed"
           title="No download available"
         >
           <Download className="w-3 h-3 text-white/40" />
