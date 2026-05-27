@@ -121,33 +121,46 @@ function SideBlock({ color, label, username, pick }: { color: 'red' | 'blue'; la
   );
 }
 
+function triggerDownload(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 15_000);
+}
+
 /**
- * Fetch the source (any container — MP4, MP3, etc.), decode the audio track
- * via AudioContext, re-encode as WAV, then download with a clean filename.
- * This strips the video container entirely so the file is pure playable audio.
+ * Fetch the source, attempt WAV extraction via AudioContext (strips video
+ * container). If decodeAudioData fails (e.g. the codec isn't supported by
+ * the browser), fall back to downloading the raw bytes with a clean filename
+ * so the download always succeeds regardless of original format.
  */
 async function downloadAudio(previewUrl: string, title: string, artist?: string | null) {
+  const safeName = [title, artist].filter(Boolean).join(' - ').replace(/[^\w\s\-()']/g, '').trim() || 'preview';
+
   try {
     const res = await fetch(previewUrl);
     if (!res.ok) throw new Error('fetch failed');
+    // Keep a copy of the buffer — decodeAudioData detaches the original
     const arrayBuffer = await res.arrayBuffer();
+    const bufferCopy = arrayBuffer.slice(0);
 
-    const audioCtx = new AudioContext();
-    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-    audioCtx.close();
-
-    const wavBuffer = encodeWAV(audioBuffer);
-    const blob = new Blob([wavBuffer], { type: 'audio/wav' });
-
-    const safeName = [title, artist].filter(Boolean).join(' - ').replace(/[^\w\s\-()']/g, '').trim();
-    const filename = `${safeName || 'preview'}.wav`;
-
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 15_000);
+    try {
+      // Primary path: decode audio track → encode as WAV (pure audio, no video)
+      const audioCtx = new AudioContext();
+      const audioBuffer = await audioCtx.decodeAudioData(bufferCopy);
+      audioCtx.close();
+      triggerDownload(new Blob([encodeWAV(audioBuffer)], { type: 'audio/wav' }), `${safeName}.wav`);
+    } catch {
+      // Fallback: decodeAudioData unsupported for this codec — download raw with clean name
+      const contentType = res.headers.get('content-type') || '';
+      const isVideo = contentType.startsWith('video/');
+      triggerDownload(
+        new Blob([arrayBuffer], { type: isVideo ? 'video/mp4' : 'audio/mpeg' }),
+        `${safeName}.${isVideo ? 'mp4' : 'mp3'}`,
+      );
+    }
   } catch {
     toast.error('Could not download audio — try again');
   }
