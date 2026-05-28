@@ -128,9 +128,9 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
           .limit(50),
         supabase
           .from("hosted_competition_submissions")
-          .select("id, submission_url, thumbnail_url, winner_place, created_at, competition_id, hosted_competitions(title)")
+          .select("id, submission_url, winner_place, submitted_at, competition_id, hosted_competitions(title)")
           .eq("user_id", userId)
-          .order("created_at", { ascending: false })
+          .order("submitted_at", { ascending: false })
           .limit(50),
         supabase
           .from("hidden_edits")
