@@ -170,8 +170,6 @@ export default function QuickFightChat({
     inputRef.current?.focus();
   };
 
-  const isMe = (userId: string) => userId === user?.id;
-
   const getColor = (userId: string) => {
     if (userId === player1Id) return 'text-red-400';
     if (userId === player2Id) return 'text-blue-400';
@@ -183,23 +181,6 @@ export default function QuickFightChat({
     if (userId === player2Id) return 'border-blue-500/50';
     return 'border-white/10';
   };
-
-  const tagFor = (uid: string) =>
-    uid === player1Id
-      ? {
-          label: 'RED',
-          cls: 'text-red-100 border-red-400/70 bg-gradient-to-b from-red-500/40 to-red-700/40 shadow-[0_0_8px_rgba(239,68,68,0.6),inset_0_1px_0_rgba(255,255,255,0.25)]',
-          dot: 'bg-red-400 shadow-[0_0_6px_rgba(239,68,68,0.9)]',
-        }
-      : uid === player2Id
-      ? {
-          label: 'BLUE',
-          cls: 'text-blue-100 border-blue-400/70 bg-gradient-to-b from-blue-500/40 to-blue-700/40 shadow-[0_0_8px_rgba(59,130,246,0.6),inset_0_1px_0_rgba(255,255,255,0.25)]',
-          dot: 'bg-blue-400 shadow-[0_0_6px_rgba(59,130,246,0.9)]',
-        }
-      : null;
-
-  const myTag = user ? tagFor(user.id) : null;
 
   return (
     <div className="bg-black border border-white/10 overflow-hidden">
@@ -282,8 +263,11 @@ export default function QuickFightChat({
               );
             }
 
-            const tag = tagFor(msg.user_id);
-            const mine = isMe(msg.user_id);
+            // RED (player1) always right, BLUE (player2) + spectators always left
+            const isRed = msg.user_id === player1Id;
+            const isBlue = msg.user_id === player2Id;
+            const onRight = isRed;
+            const showAvatar = !onRight; // avatar only on left-side messages
 
             return (
               <motion.div
@@ -291,28 +275,25 @@ export default function QuickFightChat({
                 initial={{ opacity: 0, y: 8, scale: 0.96 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ type: 'spring', stiffness: 380, damping: 26 }}
-                className={`group flex gap-2 px-3 ${mine ? 'justify-end' : ''}`}
+                className={`group flex gap-2 px-3 ${onRight ? 'justify-end' : ''}`}
               >
-                {/* Other user's message */}
-                {!mine && (
+                {/* Avatar — left side only */}
+                {showAvatar && (
                   <Avatar className={`w-7 h-7 shrink-0 border-2 mt-0.5 ${getBorderColor(msg.user_id)} ${
-                    msg.user_id === player1Id ? 'shadow-[0_0_8px_rgba(239,68,68,0.5)]' :
-                    msg.user_id === player2Id ? 'shadow-[0_0_8px_rgba(59,130,246,0.5)]' : ''
+                    isBlue ? 'shadow-[0_0_8px_rgba(59,130,246,0.5)]' : ''
                   }`}>
                     <AvatarImage src={msg.avatar_url || ''} />
                     <AvatarFallback className={`text-[9px] font-black ${
-                      msg.user_id === player1Id ? 'bg-red-500/20 text-red-200' :
-                      msg.user_id === player2Id ? 'bg-blue-500/20 text-blue-200' :
-                      'bg-white/5 text-zinc-300'
+                      isBlue ? 'bg-blue-500/20 text-blue-200' : 'bg-white/5 text-zinc-300'
                     }`}>
                       {msg.username.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                 )}
 
-                <div className={`max-w-[78%] ${mine ? 'items-end' : 'items-start'} flex flex-col`}>
+                <div className={`max-w-[78%] flex flex-col ${onRight ? 'items-end' : 'items-start'}`}>
                   {/* Name */}
-                  {!mine && (
+                  {!onRight && (
                     <div className="flex items-center gap-1.5 mb-0.5 pl-0.5">
                       <span className={`text-[10px] font-bold ${getColor(msg.user_id)}`}>@{msg.username}</span>
                     </div>
@@ -320,26 +301,20 @@ export default function QuickFightChat({
 
                   {/* Reply context */}
                   {msg.reply_to_username && (
-                    <div className={`flex items-center gap-1 mb-0.5 text-[9px] text-zinc-500 ${mine ? 'justify-end' : ''}`}>
+                    <div className={`flex items-center gap-1 mb-0.5 text-[9px] text-zinc-500 ${onRight ? 'justify-end' : ''}`}>
                       <Reply className="w-2.5 h-2.5 rotate-180 shrink-0" />
                       <span className="truncate max-w-[160px]">@{msg.reply_to_username}: {msg.reply_to_text}</span>
                     </div>
                   )}
 
                   {/* Bubble */}
-                  <div className={`relative ${
-                    mine
-                      ? myTag
-                        ? user?.id === player1Id
-                          ? 'bg-gradient-to-br from-red-500/35 to-red-800/25 border-red-500/50 shadow-[0_0_14px_rgba(239,68,68,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] rounded-2xl rounded-tr-sm'
-                          : 'bg-gradient-to-br from-blue-500/35 to-blue-800/25 border-blue-500/50 shadow-[0_0_14px_rgba(59,130,246,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] rounded-2xl rounded-tr-sm'
-                        : 'bg-white/8 border-white/15 rounded-2xl rounded-tr-sm'
-                      : tag
-                        ? msg.user_id === player1Id
-                          ? 'bg-gradient-to-br from-red-500/20 to-red-800/15 border-red-500/40 shadow-[0_0_10px_rgba(239,68,68,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] rounded-2xl rounded-tl-sm'
-                          : 'bg-gradient-to-br from-blue-500/20 to-blue-800/15 border-blue-500/40 shadow-[0_0_10px_rgba(59,130,246,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] rounded-2xl rounded-tl-sm'
+                  <div className={`relative border px-3 py-1.5 ${
+                    isRed
+                      ? 'bg-gradient-to-br from-red-500/35 to-red-800/25 border-red-500/50 shadow-[0_0_14px_rgba(239,68,68,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] rounded-2xl rounded-tr-sm'
+                      : isBlue
+                        ? 'bg-gradient-to-br from-blue-500/20 to-blue-800/15 border-blue-500/40 shadow-[0_0_10px_rgba(59,130,246,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] rounded-2xl rounded-tl-sm'
                         : 'bg-white/5 border-white/10 rounded-2xl rounded-tl-sm'
-                  } border px-3 py-1.5`}>
+                  }`}>
                     {isMediaUrl(msg.message_text) ? (
                       <img
                         src={msg.message_text}
