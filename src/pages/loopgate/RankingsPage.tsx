@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { ChevronRight, Lock, ArrowLeft, Users, Trophy, BarChart2, Star, Crosshair } from "lucide-react";
+import { ChevronRight, Lock, ArrowLeft, Users, Trophy, BarChart2, Star, Crosshair, Target, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRealEvents, useRealRankings, useEventRankings, useActiveSession } from "@/hooks/useRealData";
 import { useXPUserLeaderboard, useXPCrewLeaderboard } from "@/hooks/useXPLeaderboard";

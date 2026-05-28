@@ -394,9 +394,6 @@ export default function UnitChatPage() {
               onClose={() => setPermissionsChannel(null)}
               onSave={handleSavePermissions}
               tiers={tiers}
-              botName={crew.bot_name || "Unit Bot"}
-              botAvatarUrl={crew.bot_avatar_url || ""}
-              onSaveBotSettings={handleSaveBotSettings}
             />
           )}
         </AnimatePresence>
@@ -478,9 +475,6 @@ export default function UnitChatPage() {
             onClose={() => setPermissionsChannel(null)}
             onSave={handleSavePermissions}
             tiers={tiers}
-            botName={crew.bot_name || "Unit Bot"}
-            botAvatarUrl={crew.bot_avatar_url || ""}
-            onSaveBotSettings={handleSaveBotSettings}
           />
         )}
       </AnimatePresence>
