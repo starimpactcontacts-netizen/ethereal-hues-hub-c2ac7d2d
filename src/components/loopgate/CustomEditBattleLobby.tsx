@@ -215,7 +215,7 @@ export default function CustomEditBattleLobby({
                 >
                   <motion.span
                     animate={{ opacity: [1, 0.2, 1] }}
-                    transition={{ duration: 0.9, repeat: Infinity, ease: "steps(2)" }}
+                    transition={{ duration: 0.9, repeat: Infinity, ease: "linear" }}
                     className="text-[62px] leading-none font-black"
                     style={{ fontFamily: "Teko, sans-serif", color: P2_COLOR }}
                   >

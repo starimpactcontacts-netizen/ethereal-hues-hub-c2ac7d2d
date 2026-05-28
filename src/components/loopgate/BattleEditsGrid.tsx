@@ -128,9 +128,9 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
           .limit(50),
         supabase
           .from("hosted_competition_submissions")
-          .select("id, submission_url, thumbnail_url, winner_place, created_at, competition_id, hosted_competitions(title)")
+          .select("id, submission_url, winner_place, submitted_at, competition_id, hosted_competitions(name)")
           .eq("user_id", userId)
-          .order("created_at", { ascending: false })
+          .order("submitted_at", { ascending: false })
           .limit(50),
         supabase
           .from("hidden_edits")
@@ -172,11 +172,11 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
           id: c.id,
           type: "competition",
           submissionUrl: c.submission_url,
-          thumbnailUrl: c.thumbnail_url || null,
-          label: comp?.title || "Competition",
+          thumbnailUrl: null,
+          label: comp?.name || "Competition",
           result: c.winner_place === 1 ? "win" : c.winner_place ? "loss" : "pending",
           rank: c.winner_place || null,
-          createdAt: c.created_at,
+          createdAt: c.submitted_at,
           linkTo: `/competition/${c.competition_id}`,
         });
       }
