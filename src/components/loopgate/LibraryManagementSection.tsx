@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadToBunny } from "@/lib/bunnyUpload";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -803,7 +804,12 @@ function ScenepackPoolRow({
     setUploadProgress("Uploading…");
     try {
       const sizeMb = file.size / 1_048_576;
-      const url = await uploadFileToBunny(file, `scenepacks/clips/${pack.id}`);
+      const result = await uploadToBunny(file, {
+        folder: `scenepacks/clips/${pack.id}`,
+        fileName: file.name,
+        onProgress: (p) => setUploadProgress(`${Math.round(p * 100)}%`),
+      });
+      const url = result.url;
       const { error } = await supabase.from("scenepack_videos" as any).insert({
         scenepack_id: pack.id,
         title: vidTitle.trim() || file.name.replace(/\.[^.]+$/, ""),
