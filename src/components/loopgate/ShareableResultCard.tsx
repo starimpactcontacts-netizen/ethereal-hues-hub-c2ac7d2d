@@ -24,7 +24,7 @@ export default function ShareableResultCard({ isOpen, onClose, data }: Shareable
 
   if (!isOpen) return null;
 
-  const shareText = `🏆 I ranked #${data.rank} in ${data.eventTitle} with a QOI score of ${data.qoiScore.toFixed(1)}!\n\nQ: ${data.qualityScore || '—'} | O: ${data.originalityScore || '—'} | I: ${data.impactScore || '—'}\n\n@loopgate_ | loopgate.io`;
+  const shareText = `🏆 I ranked #${data.rank} in ${data.eventTitle} with a QOI score of ${data.qoiScore.toFixed(1)}!\n\nQ: ${data.qualityScore || '—'} | O: ${data.originalityScore || '—'} | I: ${data.impactScore || '—'}\n\n@loopgate_ | loopgate.gg`;
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -32,7 +32,7 @@ export default function ShareableResultCard({ isOpen, onClose, data }: Shareable
         await navigator.share({
           title: `My ${data.eventTitle} Result`,
           text: shareText,
-          url: 'https://loopgate.io',
+          url: 'https://loopgate.gg',
         });
       } catch {
         // User cancelled or share failed
@@ -137,7 +137,7 @@ export default function ShareableResultCard({ isOpen, onClose, data }: Shareable
 
           {/* Footer */}
           <div className="relative mt-6 pt-4 border-t border-border/50 flex items-center justify-between">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">loopgate.io</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">loopgate.gg</p>
             <p className="text-[10px] text-muted-foreground">Global Editing Index</p>
           </div>
         </div>

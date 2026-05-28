@@ -98,7 +98,7 @@ const faqs = [
       },
       {
         q: 'How do I contact support?',
-        a: 'Visit our Support page or email team@loopgate.io. You can also join our Discord community for faster help from other editors.',
+        a: 'Visit our Support page or email team@loopgate.gg. You can also join our Discord community for faster help from other editors.',
       },
     ],
   },

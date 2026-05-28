@@ -71,22 +71,25 @@ interface Props {
   votingDeadline: string | null | undefined;
   onVote: (submissionId: string) => Promise<boolean>;
   onClose: () => void;
+  loop?: boolean;
 }
 
 export default function CompetitionShowcaseStage({
   competitionId, competitionName, theme,
   submissions, myUserId, myVoteSubmissionId,
-  votingStartedAt, votingDeadline, onVote, onClose,
+  votingStartedAt, votingDeadline, onVote, onClose, loop = false,
 }: Props) {
   const audioUnlocked = useBattleAudioUnlock();
   const ordered = useMemo(() => [...submissions].sort((a, b) => a.created_at.localeCompare(b.created_at)), [submissions]);
 
-  const startMs = votingStartedAt ? new Date(votingStartedAt).getTime() : null;
+  const startMsBase = votingStartedAt ? new Date(votingStartedAt).getTime() : null;
   const totalShowcaseMs = ordered.length * PER_EDIT_SECONDS * 1000;
+  // In loop mode we keep a local offset so we can restart the cycle.
+  const loopOffsetRef = useRef(0);
 
   const compute = () => {
-    if (!startMs) return { idx: 0, left: PER_EDIT_SECONDS, done: false };
-    const elapsed = Math.max(0, Date.now() - startMs);
+    if (!startMsBase) return { idx: 0, left: PER_EDIT_SECONDS, done: false };
+    const elapsed = Math.max(0, Date.now() - startMsBase - loopOffsetRef.current);
     if (elapsed >= totalShowcaseMs) return { idx: ordered.length - 1, left: 0, done: true };
     const idx = Math.min(ordered.length - 1, Math.floor(elapsed / (PER_EDIT_SECONDS * 1000)));
     const intoEdit = elapsed - idx * PER_EDIT_SECONDS * 1000;
@@ -94,6 +97,7 @@ export default function CompetitionShowcaseStage({
     return { idx, left, done: false };
   };
 
+  const startMs = startMsBase;
   const initial = compute();
   const [phase, setPhase] = useState<Phase>(!startMs || !initial.done ? "watching" : (myVoteSubmissionId ? "submitted" : "voting"));
   const [currentIdx, setCurrentIdx] = useState(initial.idx);
@@ -174,14 +178,24 @@ export default function CompetitionShowcaseStage({
     if (phase !== "watching" || !startMs) return;
     const tick = () => {
       const { idx, left, done } = compute();
-      if (done) { setPhase(p => p === "watching" ? (myVoteSubmissionId ? "submitted" : "voting") : p); return; }
+      if (done) {
+        if (loop) {
+          // Restart cycle from idx 0
+          loopOffsetRef.current += totalShowcaseMs;
+          setCurrentIdx(0);
+          setSecondsLeft(PER_EDIT_SECONDS);
+        } else {
+          setPhase(p => p === "watching" ? (myVoteSubmissionId ? "submitted" : "voting") : p);
+        }
+        return;
+      }
       setCurrentIdx(prev => prev !== idx ? idx : prev);
       setSecondsLeft(left);
     };
     tick();
     const i = setInterval(tick, 250);
     return () => clearInterval(i);
-  }, [phase, startMs, ordered.length]);
+  }, [phase, startMs, ordered.length, loop, totalShowcaseMs]);
 
   // Voting countdown
   const [voteSecs, setVoteSecs] = useState(0);

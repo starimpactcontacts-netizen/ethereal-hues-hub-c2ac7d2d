@@ -415,6 +415,51 @@ export type Database = {
           },
         ]
       }
+      battle_songs: {
+        Row: {
+          artist_name: string | null
+          audio_url: string
+          cover_url: string | null
+          created_at: string
+          deezer_id: number | null
+          difficulty: string | null
+          id: string
+          is_featured: boolean
+          is_priority: boolean
+          preview_url: string | null
+          song_name: string
+          track_order: number
+        }
+        Insert: {
+          artist_name?: string | null
+          audio_url: string
+          cover_url?: string | null
+          created_at?: string
+          deezer_id?: number | null
+          difficulty?: string | null
+          id?: string
+          is_featured?: boolean
+          is_priority?: boolean
+          preview_url?: string | null
+          song_name: string
+          track_order?: number
+        }
+        Update: {
+          artist_name?: string | null
+          audio_url?: string
+          cover_url?: string | null
+          created_at?: string
+          deezer_id?: number | null
+          difficulty?: string | null
+          id?: string
+          is_featured?: boolean
+          is_priority?: boolean
+          preview_url?: string | null
+          song_name?: string
+          track_order?: number
+        }
+        Relationships: []
+      }
       battle_views: {
         Row: {
           battle_id: string
@@ -2757,6 +2802,7 @@ export type Database = {
           display_name: string | null
           id: string
           is_bot: boolean | null
+          is_deleted: boolean
           is_pinned: boolean | null
           message_text: string
           user_id: string
@@ -2770,6 +2816,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           is_bot?: boolean | null
+          is_deleted?: boolean
           is_pinned?: boolean | null
           message_text: string
           user_id: string
@@ -2783,6 +2830,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           is_bot?: boolean | null
+          is_deleted?: boolean
           is_pinned?: boolean | null
           message_text?: string
           user_id?: string
@@ -3730,6 +3778,93 @@ export type Database = {
           sent_at?: string
           subject?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      email_send_log: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          message_id: string | null
+          metadata: Json | null
+          recipient_email: string
+          status: string
+          template_name: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          message_id?: string | null
+          metadata?: Json | null
+          recipient_email: string
+          status: string
+          template_name: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          message_id?: string | null
+          metadata?: Json | null
+          recipient_email?: string
+          status?: string
+          template_name?: string
+        }
+        Relationships: []
+      }
+      email_send_state: {
+        Row: {
+          auth_email_ttl_minutes: number
+          batch_size: number
+          id: number
+          retry_after_until: string | null
+          send_delay_ms: number
+          transactional_email_ttl_minutes: number
+          updated_at: string
+        }
+        Insert: {
+          auth_email_ttl_minutes?: number
+          batch_size?: number
+          id?: number
+          retry_after_until?: string | null
+          send_delay_ms?: number
+          transactional_email_ttl_minutes?: number
+          updated_at?: string
+        }
+        Update: {
+          auth_email_ttl_minutes?: number
+          batch_size?: number
+          id?: number
+          retry_after_until?: string | null
+          send_delay_ms?: number
+          transactional_email_ttl_minutes?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      email_unsubscribe_tokens: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          token: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          token: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          token?: string
+          used_at?: string | null
         }
         Relationships: []
       }
@@ -7609,6 +7744,27 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "quick_fights_scenepack_locked_id_fkey"
+            columns: ["scenepack_locked_id"]
+            isOneToOne: false
+            referencedRelation: "scenepack_pool"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quick_fights_scenepack_option_a_id_fkey"
+            columns: ["scenepack_option_a_id"]
+            isOneToOne: false
+            referencedRelation: "scenepack_pool"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quick_fights_scenepack_option_b_id_fkey"
+            columns: ["scenepack_option_b_id"]
+            isOneToOne: false
+            referencedRelation: "scenepack_pool"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "quick_fights_theme_drop_id_fkey"
             columns: ["theme_drop_id"]
             isOneToOne: false
@@ -8240,6 +8396,7 @@ export type Database = {
           active: boolean
           created_at: string
           id: string
+          pack_count: number
           preview_video_url: string | null
           scenepack_gdrive_url: string | null
           scenepack_youtube_url: string | null
@@ -8252,6 +8409,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           id?: string
+          pack_count?: number
           preview_video_url?: string | null
           scenepack_gdrive_url?: string | null
           scenepack_youtube_url?: string | null
@@ -8264,6 +8422,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           id?: string
+          pack_count?: number
           preview_video_url?: string | null
           scenepack_gdrive_url?: string | null
           scenepack_youtube_url?: string | null
@@ -8599,6 +8758,30 @@ export type Database = {
           updated_at?: string
           user_id?: string
           username?: string
+        }
+        Relationships: []
+      }
+      suppressed_emails: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          metadata: Json | null
+          reason: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          metadata?: Json | null
+          reason: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          metadata?: Json | null
+          reason?: string
         }
         Relationships: []
       }
@@ -9250,9 +9433,17 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: number
       }
+      delete_email: {
+        Args: { message_id: number; queue_name: string }
+        Returns: boolean
+      }
       delete_user_account: { Args: never; Returns: undefined }
       end_event_round: {
         Args: { p_event_id: string; p_round_number: number }
+        Returns: number
+      }
+      enqueue_email: {
+        Args: { payload: Json; queue_name: string }
         Returns: number
       }
       ensure_default_channels: {
@@ -9360,6 +9551,15 @@ export type Database = {
         Returns: undefined
       }
       mark_password_prompted: { Args: never; Returns: undefined }
+      move_to_dlq: {
+        Args: {
+          dlq_name: string
+          message_id: number
+          payload: Json
+          source_queue: string
+        }
+        Returns: number
+      }
       pick_practice_song: {
         Args: {
           p_drop_id: string
@@ -9403,6 +9603,14 @@ export type Database = {
       quick_fight_submit: {
         Args: { p_fight_id: string; p_url: string; p_user_id: string }
         Returns: boolean
+      }
+      read_email_batch: {
+        Args: { batch_size: number; queue_name: string; vt: number }
+        Returns: {
+          message: Json
+          msg_id: number
+          read_ct: number
+        }[]
       }
       recalc_mission_approved_count: {
         Args: { _mission_id: string }

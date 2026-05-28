@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MAX_EDIT_UPLOAD_BYTES, MAX_EDIT_UPLOAD_LABEL, uploadToBunny } from '@/lib/bunnyUpload';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Video, Music, Upload, EyeOff, Loader2 } from 'lucide-react';
+import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Video, Music, Upload, EyeOff, Loader2, RotateCcw, MessageSquare, BarChart2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,7 +24,7 @@ import { toast } from 'sonner';
 import CountdownTimer from '@/components/loopgate/CountdownTimer';
 import QuickFightChat from '@/components/loopgate/QuickFightChat';
 import QuickFightResultCard from '@/components/loopgate/QuickFightResultCard';
-import BattleSubmissionCard from '@/components/loopgate/BattleSubmissionCard';
+import BattleSubmissionCard, { ForfeitSlot } from '@/components/loopgate/BattleSubmissionCard';
 import BattleAutoplayDuo from '@/components/loopgate/BattleAutoplayDuo';
 import FNFVoteScoreboard from '@/components/loopgate/FNFVoteScoreboard';
 import QuickFightPublicVote from '@/components/loopgate/QuickFightPublicVote';
@@ -196,6 +196,17 @@ export default function QuickFightPage() {
     }
   };
 
+  const handleClearSubmission = async (player: 'player_1' | 'player_2') => {
+    const confirmed = window.confirm('Remove your edit?\n\nYou can re-upload a new one while the battle is still active.');
+    if (!confirmed) return;
+    const update = player === 'player_1'
+      ? { player_1_submission_url: null, player_1_submitted_at: null, player_1_thumbnail_url: null }
+      : { player_2_submission_url: null, player_2_submitted_at: null, player_2_thumbnail_url: null };
+    const { error } = await supabase.from('quick_fights').update(update as any).eq('id', fight.id);
+    if (error) toast.error("Couldn't remove edit. Try again.");
+    else toast.info('Edit removed — upload a new one before time runs out.');
+  };
+
   const handleCopyLobby = async () => {
     try {
       await navigator.clipboard.writeText(`⚔️ Join my custom Loopgate edit battle: ${shareUrl}`);
@@ -330,7 +341,10 @@ export default function QuickFightPage() {
         opponent={opponentPlayer}
         youSide={isP1 ? 'red' : 'blue'}
         selectionDeadline={(fight as any).selection_deadline || null}
-        onComplete={() => {}}
+        onComplete={() => {
+          if (typeof window !== 'undefined') sessionStorage.setItem(`qf_reveal_done_${fight.id}`, '1');
+          setRevealDone(true);
+        }}
         onCancel={() => navigate('/hub')}
       />
     );
@@ -360,47 +374,62 @@ export default function QuickFightPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* ════════ ARCADE HUD ════════ */}
-      {/* Top bar: back + status pill */}
-      <div className="relative z-30 bg-black/80 backdrop-blur-xl border-b border-white/5">
+      {/* ════════ HEADER ════════ */}
+      <div className="relative z-30 bg-black border-b border-white/[0.06]">
         <div className="px-4 py-2.5 flex items-center justify-between">
           <button
             onClick={() => navigate('/hub')}
-            className="flex items-center gap-1.5 text-zinc-400 hover:text-white touch-manipulation"
+            className="flex items-center gap-1.5 text-zinc-500 hover:text-white transition-colors touch-manipulation"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="text-xs">Back</span>
+            <span className="text-sm">Back</span>
           </button>
-          <div className="flex items-center gap-1.5">
+
+          <div className="flex items-center gap-3">
+            {/* Utility icons */}
+            <div className="flex items-center gap-2.5">
+              <MessageSquare className="w-4 h-4 text-zinc-600" />
+              <BarChart2 className="w-4 h-4 text-zinc-600" />
+            </div>
+
+            {/* Divider */}
+            <div className="w-px h-4 bg-white/10" />
+
+            {/* Status — Bebas Neue, no box */}
             {fight.status === 'active' && (
-              <span className="relative flex w-2 h-2">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+              <div className="flex items-center gap-2">
+                <span className="relative flex w-1.5 h-1.5">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500" />
+                </span>
+                <span className="text-[22px] leading-none tracking-[0.06em] text-red-400" style={{ fontFamily: 'Bebas Neue, sans-serif', textShadow: '0 0 18px rgba(239,68,68,0.5)' }}>
+                  LIVE FIGHT
+                </span>
+              </div>
+            )}
+            {fight.status === 'judging' && (
+              <span className="text-[22px] leading-none tracking-[0.06em] text-white" style={{ fontFamily: 'Bebas Neue, sans-serif', textShadow: '1px 1px 0 rgba(0,0,0,0.9), 0 0 12px rgba(255,255,255,0.08)' }}>
+                AWAITING JUDGE
               </span>
             )}
-            {fight.status === 'active' && <Swords className="w-3.5 h-3.5 text-red-400" />}
-            <span
-              className={`text-[11px] font-black uppercase tracking-[0.2em] ${
-                fight.status === 'active' ? 'text-red-400' :
-                fight.status === 'judging' ? 'text-purple-400' :
-                fight.status === 'completed' ? 'text-amber-400' : 'text-zinc-500'
-              }`}
-              style={{ fontFamily: 'Teko, sans-serif' }}
-            >
-              {fight.status === 'active' ? 'LIVE FIGHT' :
-               fight.status === 'judging' ? 'AWAITING JUDGE' :
-               fight.status === 'completed' ? 'DECIDED' :
-               fight.status === 'cancelled' ? 'CANCELLED' :
-               fight.status === 'forfeited' ? 'FORFEIT' : fight.status.toUpperCase()}
-            </span>
+            {fight.status === 'completed' && (
+              <span className="text-[22px] leading-none tracking-[0.06em] text-amber-400" style={{ fontFamily: 'Bebas Neue, sans-serif', textShadow: '0 0 14px rgba(251,191,36,0.4)' }}>
+                DECIDED
+              </span>
+            )}
+            {(fight.status === 'cancelled' || fight.status === 'forfeited') && (
+              <span className="text-[22px] leading-none tracking-[0.06em] text-zinc-500" style={{ fontFamily: 'Bebas Neue, sans-serif' }}>
+                {fight.status === 'forfeited' ? 'FORFEIT' : 'CANCELLED'}
+              </span>
+            )}
+
             {isParticipant && fight.status === 'completed' && (
               <button
                 onClick={() => setHideConfirmOpen(true)}
-                className="ml-2 flex items-center gap-1 px-2 py-1 rounded-md bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-colors touch-manipulation"
+                className="p-1.5 text-zinc-600 hover:text-red-400 transition-colors touch-manipulation"
                 aria-label="Hide this battle"
               >
-                <EyeOff className="w-3 h-3 text-red-400" />
-                <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-red-400">Hide</span>
+                <EyeOff className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
@@ -489,77 +518,79 @@ export default function QuickFightPage() {
               }}
             />
           ) : (
-            // Pre-upload state — placeholders stacked with VS divider
-            <div className="md:flex md:items-stretch md:gap-0 -mx-4 md:-mx-0">
-              <div className="md:flex-1 md:min-w-0">
+            // Pre-upload state — always side-by-side with vertical VS divider
+            <div className="relative grid grid-cols-2 -mx-4 md:-mx-0 overflow-hidden border border-white/[0.07]">
+              {/* ── RED ── */}
+              <div className="min-w-0 border-r border-red-500/20">
                 {fight.player_1_submission_url ? (
-                  <BattleSubmissionCard
-                    url={fight.player_1_submission_url}
-                    username={fight.player_1_username}
-                    color="red"
-                    aspectClass="aspect-square"
-                    avatarUrl={fight.player_1_avatar_url}
-                    customThumbnailUrl={(fight as any).player_1_thumbnail_url}
-                  />
-                ) : (
-                  isP1 && canSubmit ? (
-                    <UploadEditSlot
-                      color="red"
-                      submitting={submitting}
-                      uploadPct={uploadPct}
-                      onUpload={handleUploadEdit}
-                    />
-                  ) : (
-                    <WaitingSlot
-                      color="red"
+                  <div>
+                    <BattleSubmissionCard
+                      url={fight.player_1_submission_url}
                       username={fight.player_1_username}
-                      submitted={!!fight.player_1_submitted_at}
+                      color="red"
+                      aspectClass="aspect-square"
+                      avatarUrl={fight.player_1_avatar_url}
+                      customThumbnailUrl={(fight as any).player_1_thumbnail_url}
                     />
-                  )
+                    {isP1 && fight.status === 'active' && (
+                      <button
+                        type="button"
+                        onClick={() => handleClearSubmission('player_1')}
+                        className="w-full flex items-center justify-center gap-1.5 py-2 bg-black/70 border-t border-red-500/25 text-[9px] font-bold uppercase tracking-[0.2em] text-white/40 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                        style={{ fontFamily: 'Teko, sans-serif' }}
+                      >
+                        <RotateCcw className="w-2.5 h-2.5" />
+                        Change Edit
+                      </button>
+                    )}
+                  </div>
+                ) : (fight.status === 'completed' && fight.winner_id) ? (
+                  <ForfeitSlot username={fight.player_1_username} color="red" aspectClass="aspect-square" />
+                ) : isP1 && canSubmit ? (
+                  <UploadEditSlot color="red" submitting={submitting} uploadPct={uploadPct} onUpload={handleUploadEdit} />
+                ) : (
+                  <WaitingSlot color="red" username={fight.player_1_username} submitted={!!fight.player_1_submitted_at} />
                 )}
               </div>
 
-              {/* VS divider — horizontal on mobile, vertical on laptop */}
-              <div className="relative h-8 md:h-auto md:w-0 flex items-center justify-center bg-black z-20">
-                <div
-                  className="absolute inset-x-0 top-1/2 h-px md:inset-y-0 md:left-1/2 md:top-0 md:h-auto md:w-px"
-                  style={{ background: 'linear-gradient(90deg, transparent, rgba(239,68,68,0.7), #fff, rgba(59,130,246,0.7), transparent)' }}
-                />
-                <div className="relative px-3 py-0.5 bg-black border border-white/15">
-                  <span
-                    className="text-[14px] font-black tracking-[0.25em] bg-gradient-to-r from-red-400 to-blue-400 bg-clip-text text-transparent"
-                    style={{ fontFamily: 'Teko, sans-serif' }}
-                  >
-                    VS
-                  </span>
+              {/* ── Vertical VS badge ── */}
+              <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 pointer-events-none z-20 flex items-center justify-center" style={{ width: 1 }}>
+                <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg,transparent 0%,rgba(239,68,68,.55) 30%,rgba(255,255,255,.85) 50%,rgba(59,130,246,.55) 70%,transparent 100%)' }} />
+                <div className="relative bg-black border border-white/20 px-1.5 py-0.5">
+                  <span className="text-[11px] font-black tracking-[0.22em] bg-gradient-to-b from-red-400 to-blue-400 bg-clip-text text-transparent" style={{ fontFamily: 'Teko, sans-serif' }}>VS</span>
                 </div>
               </div>
 
-              <div className="md:flex-1 md:min-w-0">
+              {/* ── BLUE ── */}
+              <div className="min-w-0 border-l border-blue-500/20">
                 {fight.player_2_submission_url ? (
-                  <BattleSubmissionCard
-                    url={fight.player_2_submission_url}
-                    username={fight.player_2_username || '???'}
-                    color="blue"
-                    aspectClass="aspect-square"
-                    avatarUrl={fight.player_2_avatar_url}
-                    customThumbnailUrl={(fight as any).player_2_thumbnail_url}
-                  />
+                  <div>
+                    <BattleSubmissionCard
+                      url={fight.player_2_submission_url}
+                      username={fight.player_2_username || '???'}
+                      color="blue"
+                      aspectClass="aspect-square"
+                      avatarUrl={fight.player_2_avatar_url}
+                      customThumbnailUrl={(fight as any).player_2_thumbnail_url}
+                    />
+                    {isP2 && fight.status === 'active' && (
+                      <button
+                        type="button"
+                        onClick={() => handleClearSubmission('player_2')}
+                        className="w-full flex items-center justify-center gap-1.5 py-2 bg-black/70 border-t border-blue-500/25 text-[9px] font-bold uppercase tracking-[0.2em] text-white/40 hover:text-blue-300 hover:bg-blue-500/10 transition-colors"
+                        style={{ fontFamily: 'Teko, sans-serif' }}
+                      >
+                        <RotateCcw className="w-2.5 h-2.5" />
+                        Change Edit
+                      </button>
+                    )}
+                  </div>
+                ) : (fight.status === 'completed' && fight.winner_id) ? (
+                  <ForfeitSlot username={fight.player_2_username || '???'} color="blue" aspectClass="aspect-square" />
+                ) : isP2 && canSubmit ? (
+                  <UploadEditSlot color="blue" submitting={submitting} uploadPct={uploadPct} onUpload={handleUploadEdit} />
                 ) : (
-                  isP2 && canSubmit ? (
-                    <UploadEditSlot
-                      color="blue"
-                      submitting={submitting}
-                      uploadPct={uploadPct}
-                      onUpload={handleUploadEdit}
-                    />
-                  ) : (
-                    <WaitingSlot
-                      color="blue"
-                      username={fight.player_2_username || 'Waiting…'}
-                      submitted={!!fight.player_2_submitted_at}
-                    />
-                  )
+                  <WaitingSlot color="blue" username={fight.player_2_username || 'Waiting…'} submitted={!!fight.player_2_submitted_at} />
                 )}
               </div>
             </div>
@@ -654,11 +685,6 @@ export default function QuickFightPage() {
           </div>
         )}
 
-        {/* Result Card (shareable) */}
-        {fight.status === 'completed' && fight.winner_id && (
-          <QuickFightResultCard fight={fight} />
-        )}
-
         {/* Cancelled Banner */}
         {fight.status === 'cancelled' && (
           <div className="bg-muted border border-border p-4 text-center">
@@ -667,15 +693,6 @@ export default function QuickFightPage() {
           </div>
         )}
 
-        {/* Forfeit Result */}
-        {fight.status === 'completed' && fight.judge_notes?.includes('forfeit') && (
-          <div className="bg-muted border border-destructive/30 p-4 text-center">
-            <p className="text-sm font-display text-foreground uppercase tracking-wider">🏳️ Won by Forfeit</p>
-            <p className="text-[10px] text-muted-foreground mt-1">
-              Opponent did not submit. Winner receives <span className="text-gold font-bold">+20 IDX</span>, forfeiter penalized <span className="text-destructive font-bold">-10 IDX</span>
-            </p>
-          </div>
-        )}
         </div>
 
         {/* ── BELOW-VIDEO RAIL (vote + chat) — stacked on mobile, side-by-side on desktop ── */}
@@ -704,6 +721,13 @@ export default function QuickFightPage() {
           />
         )}
         </aside>
+
+        {/* Share — below voting so people share after seeing the result */}
+        {fight.status === 'completed' && fight.winner_id && (
+          <div className="mt-4">
+            <QuickFightResultCard fight={fight} />
+          </div>
+        )}
       </div>
 
       <AlertDialog open={hideConfirmOpen} onOpenChange={setHideConfirmOpen}>
@@ -735,55 +759,57 @@ export default function QuickFightPage() {
   );
 }
 
-/** Compact slot shown to the OPPONENT side (or when not your turn). No dead space. */
-function WaitingSlot({
-  color,
-  username,
-  submitted,
-}: {
-  color: 'red' | 'blue';
-  username: string;
-  submitted: boolean;
-}) {
+function WaitingSlot({ color, username, submitted }: { color: 'red' | 'blue'; username: string; submitted: boolean }) {
   const isRed = color === 'red';
   const accentHex = isRed ? '#ef4444' : '#3b82f6';
-  const borderColor = isRed ? 'border-red-500/40' : 'border-blue-500/40';
   const accentText = isRed ? 'text-red-400' : 'text-blue-400';
+  const grad = isRed ? 'from-red-500/[0.06]' : 'from-blue-500/[0.06]';
   const label = isRed ? 'RED' : 'BLUE';
 
   return (
-    <div className={`relative bg-surface-1 border ${borderColor} overflow-hidden h-[120px] md:h-[200px] flex items-center justify-between gap-3 px-3`}>
-      <div className="flex items-center gap-2 min-w-0">
-        <span
-          className="w-1.5 h-1.5 rounded-full shrink-0 animate-pulse"
-          style={{ background: accentHex, boxShadow: `0 0 8px ${accentHex}` }}
-        />
-        <div className="min-w-0">
-          <p className={`text-[9px] font-black uppercase tracking-[0.22em] ${accentText}`} style={{ fontFamily: 'Teko, sans-serif' }}>
-            {label}
-          </p>
-          <p className="text-[13px] font-bold text-white truncate" style={{ fontFamily: 'Teko, sans-serif' }}>
-            @{username}
-          </p>
-        </div>
-      </div>
-      {submitted ? (
-        <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-500/15 border border-emerald-400/40">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300" style={{ fontFamily: 'Teko, sans-serif' }}>
-            Submitted
-          </span>
-        </div>
-      ) : (
-        <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground" style={{ fontFamily: 'Teko, sans-serif' }}>
-          Waiting…
+    <div
+      className={`relative overflow-hidden bg-gradient-to-b ${grad} to-black flex flex-col h-[200px]`}
+      style={{ boxShadow: `inset 0 0 40px ${accentHex}18` }}
+    >
+      {/* Top strip */}
+      <div className="flex items-center gap-1.5 px-2.5 pt-2.5 pb-1">
+        <span className="w-1.5 h-1.5 rounded-full shrink-0 animate-pulse" style={{ background: accentHex }} />
+        <span className={`text-[9px] font-black uppercase tracking-[0.22em] ${accentText}`} style={{ fontFamily: 'Teko, sans-serif' }}>
+          {label}
         </span>
-      )}
+      </div>
+
+      {/* Username */}
+      <div className="px-2.5">
+        <p className="text-[15px] font-black text-white leading-none truncate" style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.04em' }}>
+          @{username}
+        </p>
+      </div>
+
+      {/* Status — grows to fill */}
+      <div className="flex-1 flex items-end justify-end px-2.5 pb-3">
+        {submitted ? (
+          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/15 border border-emerald-400/35">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300" style={{ fontFamily: 'Teko, sans-serif' }}>
+              Edit in
+            </span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5">
+            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/25" style={{ fontFamily: 'Teko, sans-serif' }}>
+              Working on it…
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Subtle corner accent */}
+      <div className="absolute bottom-0 left-0 w-12 h-12 opacity-20" style={{ background: `radial-gradient(circle at 0% 100%, ${accentHex}, transparent 70%)` }} />
     </div>
   );
 }
 
-/** Inline uploader shown in the player's OWN side — pick file, preview, re-pick, submit, progress. */
 function UploadEditSlot({
   color,
   submitting,
@@ -797,8 +823,8 @@ function UploadEditSlot({
 }) {
   const isRed = color === 'red';
   const accentHex = isRed ? '#ef4444' : '#3b82f6';
-  const borderColor = isRed ? 'border-red-500/50' : 'border-blue-500/50';
   const accentText = isRed ? 'text-red-400' : 'text-blue-400';
+  const grad = isRed ? 'from-red-500/[0.07]' : 'from-blue-500/[0.07]';
   const label = isRed ? 'RED' : 'BLUE';
 
   const [picked, setPicked] = useState<File | null>(null);
@@ -832,110 +858,93 @@ function UploadEditSlot({
 
   return (
     <div
-      className={`relative bg-surface-1 border ${borderColor} overflow-hidden`}
-      style={{ boxShadow: `0 0 16px ${accentHex}30 inset` }}
+      className={`relative overflow-hidden bg-gradient-to-b ${grad} to-black flex flex-col h-[200px]`}
+      style={{ boxShadow: `inset 0 0 40px ${accentHex}18` }}
     >
-      {/* Header strip */}
-      <div className="flex items-center justify-between px-2.5 py-1 bg-black/60">
+      {/* Top strip */}
+      <div className="flex items-center justify-between px-2.5 pt-2.5 pb-1 shrink-0">
         <div className="flex items-center gap-1.5">
-          <span
-            className="w-1.5 h-1.5 rounded-full animate-pulse"
-            style={{ background: accentHex, boxShadow: `0 0 8px ${accentHex}` }}
-          />
+          <span className="w-1.5 h-1.5 rounded-full animate-pulse shrink-0" style={{ background: accentHex }} />
           <span className={`text-[9px] font-black uppercase tracking-[0.22em] ${accentText}`} style={{ fontFamily: 'Teko, sans-serif' }}>
             {label} · You
           </span>
         </div>
-        <span className="text-[8px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-          MP4 · MOV · {MAX_EDIT_UPLOAD_LABEL}
+        <span className="text-[7px] font-bold uppercase tracking-[0.15em] text-white/20">
+          {MAX_EDIT_UPLOAD_LABEL}
         </span>
       </div>
 
-      <div className="relative h-[180px] md:h-[220px] bg-black flex items-center justify-center overflow-hidden">
+      {/* Main area — preview or pick zone */}
+      <div className="relative flex-1 overflow-hidden">
         {picked && previewUrl ? (
           <>
             {isVideo ? (
-              <video
-                src={previewUrl}
-                className="w-full h-full object-contain bg-black"
-                muted
-                playsInline
-                autoPlay
-                loop
-              />
+              <video src={previewUrl} className="w-full h-full object-cover" muted playsInline autoPlay loop />
             ) : (
-              <img src={previewUrl} alt="Preview" className="w-full h-full object-contain bg-black" />
+              <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
             )}
             {!submitting && (
               <button
                 type="button"
                 onClick={() => setPicked(null)}
-                className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/75 backdrop-blur-sm border border-white/15 flex items-center justify-center active:scale-90"
-                aria-label="Remove and re-upload"
-              >
-                <span className="text-white text-base leading-none">×</span>
-              </button>
+                className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/80 border border-white/20 flex items-center justify-center active:scale-90 text-white text-sm leading-none"
+                aria-label="Remove"
+              >×</button>
             )}
             {submitting && (
-              <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center gap-2">
-                <Loader2 className="w-5 h-5 text-white animate-spin" />
-                <span className="text-[11px] font-black uppercase tracking-[0.22em] text-white" style={{ fontFamily: 'Teko, sans-serif' }}>
-                  Uploading {Math.round(uploadPct * 100)}%
+              <div className="absolute inset-0 bg-black/75 backdrop-blur-sm flex flex-col items-center justify-center gap-2">
+                <Loader2 className="w-4 h-4 text-white animate-spin" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white" style={{ fontFamily: 'Teko, sans-serif' }}>
+                  {Math.round(uploadPct * 100)}%
                 </span>
-                <div className="w-32 h-1 bg-white/15 overflow-hidden">
-                  <div
-                    className="h-full transition-[width] duration-150"
-                    style={{ width: `${Math.round(uploadPct * 100)}%`, background: accentHex, boxShadow: `0 0 8px ${accentHex}` }}
-                  />
+                <div className="w-20 h-[2px] bg-white/15 overflow-hidden">
+                  <div className="h-full transition-[width] duration-150" style={{ width: `${Math.round(uploadPct * 100)}%`, background: accentHex }} />
                 </div>
               </div>
             )}
           </>
         ) : (
-          <label
-            className="absolute inset-0 flex flex-col items-center justify-center gap-2 cursor-pointer active:scale-[0.99] transition"
-          >
+          <label className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 cursor-pointer group">
             <input type="file" accept="video/*,image/*" className="hidden" onChange={handlePick} />
             <div
-              className="w-11 h-11 rounded-md flex items-center justify-center"
-              style={{
-                background: 'rgba(0,0,0,0.55)',
-                border: `1px solid ${accentHex}`,
-                boxShadow: `0 0 14px ${accentHex}80`,
-              }}
+              className="w-9 h-9 flex items-center justify-center transition-transform group-active:scale-95"
+              style={{ border: `1.5px solid ${accentHex}`, boxShadow: `0 0 18px ${accentHex}50` }}
             >
-              <Upload className="w-5 h-5 text-white" strokeWidth={2.5} />
+              <Upload className="w-4 h-4 text-white" strokeWidth={2} />
             </div>
-            <span className="text-[14px] font-black uppercase tracking-[0.16em] text-white" style={{ fontFamily: 'Teko, sans-serif' }}>
-              Upload Your Edit
+            <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/80" style={{ fontFamily: 'Teko, sans-serif' }}>
+              Drop Edit Here
             </span>
-            <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-              Tap to choose file
+            <span className="text-[7px] font-bold uppercase tracking-[0.18em] text-white/25">
+              MP4 · MOV
             </span>
           </label>
         )}
       </div>
 
-      {picked && (
-        <div className="flex gap-1.5 p-1.5 bg-black/40">
+      {/* Action bar — only visible after picking */}
+      {picked && !submitting && (
+        <div className="flex shrink-0 border-t border-white/[0.08]">
           <label
-            className={`flex-1 h-9 flex items-center justify-center text-[11px] font-black uppercase tracking-[0.18em] text-white/80 border border-white/15 cursor-pointer active:scale-[0.99] ${submitting ? 'opacity-40 pointer-events-none' : 'hover:bg-white/5'}`}
+            className="flex-1 h-8 flex items-center justify-center text-[10px] font-black uppercase tracking-[0.18em] text-white/50 hover:text-white/80 hover:bg-white/5 cursor-pointer transition-colors border-r border-white/[0.08]"
             style={{ fontFamily: 'Teko, sans-serif' }}
           >
-            <input type="file" accept="video/*,image/*" className="hidden" onChange={handlePick} disabled={submitting} />
+            <input type="file" accept="video/*,image/*" className="hidden" onChange={handlePick} />
             Re-pick
           </label>
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={submitting}
-            className="flex-[2] h-9 bg-gold text-background text-[12px] font-black uppercase tracking-[0.2em] active:scale-[0.99] disabled:opacity-50"
-            style={{ fontFamily: 'Teko, sans-serif' }}
+            className="flex-[2] h-8 text-[11px] font-black uppercase tracking-[0.2em] text-black active:scale-[0.99] transition-transform"
+            style={{ background: accentHex, fontFamily: 'Teko, sans-serif' }}
           >
-            {submitting ? `Uploading ${Math.round(uploadPct * 100)}%` : 'Submit Edit'}
+            Submit
           </button>
         </div>
       )}
+
+      {/* Subtle corner accent */}
+      <div className="absolute bottom-0 right-0 w-12 h-12 opacity-20" style={{ background: `radial-gradient(circle at 100% 100%, ${accentHex}, transparent 70%)` }} />
     </div>
   );
 }

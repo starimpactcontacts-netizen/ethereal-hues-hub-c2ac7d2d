@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { getBunnySourceUrl } from '@/lib/bunnyPlayback';
 
 // Simple in-memory cache for thumbnails
 const thumbnailCache = new Map<string, string | null>();
@@ -13,11 +14,37 @@ export function resolveYouTubeThumbnail(url: string): string | null {
   return match ? `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg` : null;
 }
 
+/**
+ * Derive the Bunny Stream thumbnail synchronously.
+ * Bunny auto-generates thumbnail.jpg at /{guid}/thumbnail.jpg on the same pull-zone.
+ */
+export function resolveBunnyThumbnail(url: string): string | null {
+  if (!url) return null;
+  try {
+    const source = getBunnySourceUrl(url);
+    const parsed = new URL(source);
+    if (!parsed.hostname.endsWith('.b-cdn.net')) return null;
+    const thumbPath = parsed.pathname.replace(
+      /\/(playlist\.m3u8|play_\d+p\.mp4)$/i,
+      '/thumbnail.jpg'
+    );
+    if (thumbPath === parsed.pathname) return null;
+    parsed.pathname = thumbPath;
+    parsed.search = '';
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}
+
 /** Instantly resolve a thumbnail for any platform if possible client-side */
 export function resolveInstantThumbnail(url: string, platform: string): string | null {
   if (!url) return null;
   // Check cache
   if (thumbnailCache.has(url)) return thumbnailCache.get(url) || null;
+  // Bunny CDN — instant, no network
+  const bunny = resolveBunnyThumbnail(url);
+  if (bunny) { thumbnailCache.set(url, bunny); return bunny; }
   // YouTube — instant
   if (platform === 'youtube' || url.includes('youtube.com') || url.includes('youtu.be')) {
     const thumb = resolveYouTubeThumbnail(url);
@@ -27,7 +54,7 @@ export function resolveInstantThumbnail(url: string, platform: string): string |
 }
 
 export function useThumbnail(url: string, platform: string) {
-  const [thumbnail, setThumbnail] = useState<string | null>(null);
+  const [thumbnail, setThumbnail] = useState<string | null>(() => resolveInstantThumbnail(url, platform));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,9 +71,18 @@ export function useThumbnail(url: string, platform: string) {
       return;
     }
 
+    // Bunny CDN — instant, no network
+    const bunny = resolveBunnyThumbnail(url);
+    if (bunny) {
+      thumbnailCache.set(cacheKey, bunny);
+      setThumbnail(bunny);
+      setLoading(false);
+      return;
+    }
+
     // For YouTube, we can get thumbnail directly without API call
     if (platform === 'youtube' || url.includes('youtube.com') || url.includes('youtu.be')) {
-      const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+      const match = url.match(YT_REGEX);
       if (match) {
         const ytThumbnail = `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg`;
         thumbnailCache.set(cacheKey, ytThumbnail);

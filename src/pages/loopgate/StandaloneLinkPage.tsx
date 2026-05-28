@@ -309,13 +309,13 @@ export default function StandaloneLinkPage() {
         {/* Powered by Loopgate */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="pt-6 pb-2 flex justify-center">
           <a
-            href="https://loopgate.io/hub"
+            href="https://loopgate.gg/hub"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 text-white/20 hover:text-white/35 transition-colors"
           >
             <img src={loopgateLogo} alt="Loopgate" className="w-3 h-3 opacity-30" />
-            <span className="text-[9px] font-medium tracking-[0.12em] uppercase">loopgate.io</span>
+            <span className="text-[9px] font-medium tracking-[0.12em] uppercase">loopgate.gg</span>
           </a>
         </motion.div>
       </div>

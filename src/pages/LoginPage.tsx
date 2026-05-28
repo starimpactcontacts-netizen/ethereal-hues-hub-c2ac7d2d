@@ -20,7 +20,8 @@ import {
 export default function LoginPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { signInWithPassword } = useAuth();
+  const { signInWithPassword, signInWithGoogle, signInWithDiscord } = useAuth();
+  const [oauthLoading, setOauthLoading] = useState(false);
   const returnTo = searchParams.get('returnTo') || '/hub';
 
   const [accounts, setAccounts] = useState<RememberedAccount[]>([]);
@@ -35,6 +36,14 @@ export default function LoginPage() {
   const [reclaimUser, setReclaimUser] = useState('');
   const [reclaimPw, setReclaimPw] = useState('');
   const [reclaimLoading, setReclaimLoading] = useState(false);
+
+  // Forgot password flow
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotNewPw, setForgotNewPw] = useState('');
+  const [showForgotPw, setShowForgotPw] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
 
   const handleReclaim = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,6 +67,32 @@ export default function LoginPage() {
     } finally {
       setReclaimLoading(false);
     }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const email = forgotEmail.trim().toLowerCase();
+    if (!email.includes('@') || !email.includes('.')) {
+      toast.error('Enter a valid email address');
+      return;
+    }
+    if (forgotNewPw.length < 6) {
+      toast.error('New password must be at least 6 characters');
+      return;
+    }
+    setForgotLoading(true);
+    // Stash the intended password so the reset page can silently apply it
+    sessionStorage.setItem('loopgate_pending_pw', forgotNewPw);
+    const { data, error } = await supabase.functions.invoke('send-password-reset', {
+      body: { email, redirectTo: `${window.location.origin}/reset-password` },
+    });
+    setForgotLoading(false);
+    if (error || (data as any)?.error) {
+      sessionStorage.removeItem('loopgate_pending_pw');
+      toast.error(error?.message || (data as any)?.error || 'Could not send reset email');
+      return;
+    }
+    setForgotSent(true);
   };
 
   useEffect(() => {
@@ -506,6 +541,91 @@ export default function LoginPage() {
                   </div>
                 </div>
 
+                {/* Forgot password link */}
+                <div className="flex justify-end -mt-1">
+                  <button
+                    type="button"
+                    onClick={() => { setShowForgot((v) => !v); setForgotSent(false); setForgotEmail(''); setForgotNewPw(''); }}
+                    className="text-[12px] text-[#0A84FF] font-medium active:opacity-60"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+
+                {/* Forgot password panel */}
+                <AnimatePresence initial={false}>
+                  {showForgot && (
+                    <motion.div
+                      key="forgot"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      {forgotSent ? (
+                        <div
+                          className="p-3 rounded-[14px] text-center space-y-1"
+                          style={{ background: 'rgba(52,199,89,0.1)', border: '1px solid rgba(52,199,89,0.25)' }}
+                        >
+                          <p className="text-[13px] text-[#34C759] font-semibold">Check your inbox</p>
+                          <p className="text-[12px] text-white/55 leading-snug">
+                            Sent to <span className="text-white/80">{forgotEmail}</span>
+                          </p>
+                          <p className="text-[11px] text-white/40 leading-snug">
+                            Click the link and you'll be logged straight in with your new password — no extra steps.
+                          </p>
+                        </div>
+                      ) : (
+                        <form
+                          onSubmit={handleForgotPassword}
+                          className="space-y-2 p-3 rounded-[14px]"
+                          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                        >
+                          <p className="text-[11px] text-white/55 leading-snug">
+                            Enter your email and pick a new password. We'll email you a link — click it and you're in.
+                          </p>
+                          <Input
+                            type="email"
+                            value={forgotEmail}
+                            onChange={(e) => setForgotEmail(e.target.value)}
+                            placeholder="your@email.com"
+                            autoComplete="email"
+                            autoCapitalize="none"
+                            spellCheck={false}
+                            className="h-11 rounded-[10px] border-0 text-[15px] text-white placeholder:text-white/35"
+                            style={{ background: 'rgba(118, 118, 128, 0.24)' }}
+                          />
+                          <div className="relative">
+                            <Input
+                              type={showForgotPw ? 'text' : 'password'}
+                              value={forgotNewPw}
+                              onChange={(e) => setForgotNewPw(e.target.value)}
+                              placeholder="New password (6+ chars)"
+                              autoComplete="new-password"
+                              className="h-11 pr-10 rounded-[10px] border-0 text-[15px] text-white placeholder:text-white/35"
+                              style={{ background: 'rgba(118, 118, 128, 0.24)' }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowForgotPw((v) => !v)}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-[6px] bg-white/[0.06] flex items-center justify-center"
+                            >
+                              {showForgotPw ? <EyeOff className="h-3.5 w-3.5 text-white/60" /> : <Eye className="h-3.5 w-3.5 text-white/60" />}
+                            </button>
+                          </div>
+                          <button
+                            type="submit"
+                            disabled={forgotLoading}
+                            className="w-full h-11 rounded-[12px] bg-white/10 text-white text-[14px] font-semibold active:opacity-60 disabled:opacity-50 flex items-center justify-center"
+                          >
+                            {forgotLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send login link'}
+                          </button>
+                        </form>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 <button
                   type="submit"
                   disabled={loading || !password || (!selected && !identifier.trim())}
@@ -514,6 +634,28 @@ export default function LoginPage() {
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : selected ? `Continue as @${selected.username}` : 'Log in'}
                 </button>
               </form>
+
+              {/* OAuth — divider + provider buttons */}
+              <div className="relative flex items-center my-4">
+                <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.1)' }} />
+                <span className="px-3 text-[11px] text-white/35 font-medium select-none">OR</span>
+                <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.1)' }} />
+              </div>
+              <div>
+                {/* Discord — sole OAuth provider */}
+                <button
+                  type="button"
+                  disabled={oauthLoading || loading}
+                  onClick={async () => { setOauthLoading(true); await signInWithDiscord(); setOauthLoading(false); }}
+                  className="w-full h-12 rounded-[14px] flex items-center justify-center gap-2.5 text-[15px] font-semibold text-white active:opacity-60 disabled:opacity-50 transition"
+                  style={{ background: '#5865F2', border: '1px solid rgba(88,101,242,0.6)' }}
+                >
+                  <svg width="22" height="17" viewBox="0 0 127.14 96.36" fill="white" aria-hidden>
+                    <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/>
+                  </svg>
+                  Continue with Discord
+                </button>
+              </div>
 
               {/* New here */}
               <div className="text-center pt-5">

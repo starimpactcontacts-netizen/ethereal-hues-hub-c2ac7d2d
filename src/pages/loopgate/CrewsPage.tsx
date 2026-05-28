@@ -81,6 +81,18 @@ const UnitCard = ({
 }) => {
   const onlineCount = Math.max(1, Math.floor(crew.member_count * 0.25));
   const teko = { fontFamily: 'Teko, sans-serif' };
+  const fallbackColors = [
+    'linear-gradient(135deg,#1a1a2e,#16213e)',
+    'linear-gradient(135deg,#1a0a0a,#2d1515)',
+    'linear-gradient(135deg,#0a1a0a,#152d15)',
+    'linear-gradient(135deg,#0d0d1a,#1a1a3a)',
+    'linear-gradient(135deg,#1a100a,#2d1f0a)',
+    'linear-gradient(135deg,#0a1a1a,#0a2d2d)',
+    'linear-gradient(135deg,#1a0a1a,#2d152d)',
+    'linear-gradient(135deg,#101010,#1e1e1e)',
+  ];
+  const colorIdx = crew.id.charCodeAt(0) % fallbackColors.length;
+  const bannerFallback = fallbackColors[colorIdx];
   
   return (
     <motion.div
@@ -90,38 +102,32 @@ const UnitCard = ({
       onClick={onClick}
       className="group cursor-pointer"
     >
-      <div className="relative rounded-xl overflow-hidden border border-border/20 hover:border-border/50 bg-muted/5 transition-all duration-300 hover:bg-muted/10">
+      <div className="relative rounded-xl border border-border/20 hover:border-border/50 bg-muted/5 transition-all duration-300 hover:bg-muted/10">
         {/* Banner strip */}
-        <div className="h-24 sm:h-28 relative overflow-hidden">
+        <div className="h-24 sm:h-28 relative overflow-hidden rounded-t-xl">
           {crew.banner_url ? (
             <img src={crew.banner_url} alt="" className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-muted/30 via-muted/10 to-background" />
+            <div className="w-full h-full" style={{ background: bannerFallback }} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-          
-          {crew.is_featured && (
-            <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-gold/20 backdrop-blur-sm flex items-center justify-center">
-              <Star className="w-3 h-3 text-gold fill-gold" />
-            </div>
-          )}
-          
-          {/* Avatar floating at bottom-left */}
-          <div className="absolute -bottom-5 left-3 z-10">
-            <div className="w-[42px] h-[42px] rounded-lg bg-background border-2 border-background overflow-hidden flex items-center justify-center shadow-lg">
-              {crew.avatar_url ? (
-                <img src={crew.avatar_url} alt={crew.name} className="w-full h-full object-cover" />
-              ) : (
-                <div className="text-muted-foreground/60 scale-75">
-                  {emblemIcons[crew.emblem] || <Shield className="w-5 h-5" />}
-                </div>
-              )}
-            </div>
+        </div>
+
+        {/* Avatar — sits on the boundary, not clipped */}
+        <div className="absolute top-[72px] left-3 z-10">
+          <div className="w-[44px] h-[44px] rounded-lg bg-background border-2 border-background overflow-hidden flex items-center justify-center shadow-lg">
+            {crew.avatar_url ? (
+              <img src={crew.avatar_url} alt={crew.name} className="w-full h-full object-cover" />
+            ) : (
+              <div className="text-muted-foreground/60 scale-75">
+                {emblemIcons[crew.emblem] || <Shield className="w-5 h-5" />}
+              </div>
+            )}
           </div>
         </div>
-        
+
         {/* Content */}
-        <div className="pt-7 pb-3 px-3">
+        <div className="pt-8 pb-3 px-3">
           <h3 className="text-sm font-bold uppercase tracking-wide truncate text-foreground/90 group-hover:text-foreground transition-colors" style={teko}>
             {crew.name}
           </h3>
@@ -377,7 +383,6 @@ export default function CrewsPage() {
 
   const categories = [
     { id: "all" as const, label: "All" },
-    { id: "featured" as const, label: "Featured" },
     { id: "top" as const, label: "Top" },
   ];
 
@@ -436,17 +441,6 @@ export default function CrewsPage() {
           </div>
         </div>
 
-        {/* Hero — bold, short */}
-        <div className="px-4 sm:px-6 pt-8 pb-6">
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-            <h1 className="text-5xl sm:text-6xl font-black uppercase tracking-wide text-foreground leading-[0.9] mb-2" style={teko}>
-              FIND YOUR<br />UNIT
-            </h1>
-            <p className="text-xs text-muted-foreground/40 tracking-wider uppercase font-medium">
-              Compete together · Climb together
-            </p>
-          </motion.div>
-        </div>
 
         {/* Tab Switch */}
         <div className="px-4 sm:px-6 mb-6">
@@ -708,98 +702,6 @@ export default function CrewsPage() {
           {activeTab === "discover" && (
             <AnimatePresence mode="wait">
               <motion.div key="discover" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
-                {/* Editorium Featured Units */}
-                {editoriumUnits.length > 0 && (activeCategory === "all" || activeCategory === "featured") && (
-                  <section>
-                    <div className="flex items-center justify-between mb-3">
-                      <h2 className="text-sm font-semibold flex items-center gap-2">
-                        <Award className="w-4 h-4 text-gold" />
-                        <span className="text-gold">Featured</span>
-                        <span className="px-1.5 py-0.5 rounded bg-destructive/20 text-[7px] text-destructive font-bold uppercase tracking-widest">Editorium</span>
-                      </h2>
-                      <Link to="/editorium" className="text-[10px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
-                        VIEW ALL <ArrowRight size={10} />
-                      </Link>
-                    </div>
-                    <div className="space-y-2">
-                      {editoriumUnits.map((eu) => {
-                        const crew = crews.find(c => c.id === eu.unit_id);
-                        if (!crew) return null;
-                        return (
-                          <motion.div
-                            key={eu.unit_id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="rounded-lg border border-destructive/20 bg-surface-1/60 overflow-hidden group cursor-pointer"
-                            onClick={() => navigate(`/units/${crew.id}`)}
-                          >
-                            <div className="flex items-center gap-3 p-3">
-                              {/* Unit avatar */}
-                              <div className="w-11 h-11 rounded-lg overflow-hidden bg-surface-0 border border-border/40 flex items-center justify-center shrink-0">
-                                {crew.avatar_url ? (
-                                  <img src={crew.avatar_url} alt="" className="w-full h-full object-cover" />
-                                ) : (
-                                  <div className="text-muted-foreground scale-75">
-                                    {emblemIcons[crew.emblem] || <Shield className="w-5 h-5" />}
-                                  </div>
-                                )}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <h3 className="text-sm font-semibold truncate group-hover:text-white transition-colors">{crew.name}</h3>
-                                  <span className="shrink-0 px-1.5 py-0.5 rounded bg-destructive/20 text-[8px] text-destructive font-bold uppercase tracking-wider">Editorium</span>
-                                </div>
-                                <Link
-                                  to={`/editorium/${eu.article_slug}`}
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="text-[11px] text-muted-foreground hover:text-destructive transition-colors line-clamp-1 mt-0.5 block"
-                                >
-                                  📰 {eu.article_title}
-                                </Link>
-                              </div>
-                              {eu.cover_image_url && (
-                                <div className="w-16 h-11 rounded overflow-hidden shrink-0">
-                                  <img src={eu.cover_image_url} alt="" className="w-full h-full object-cover" />
-                                </div>
-                              )}
-                              <ChevronRight className="w-4 h-4 text-muted-foreground/40 shrink-0" />
-                            </div>
-                          </motion.div>
-                        );
-                      })}
-                    </div>
-                  </section>
-                )}
-
-
-                {/* Featured Units (immortal — any unit ever featured or with editorium coverage) */}
-                {(activeCategory === "all" || activeCategory === "featured") && featuredCrews.length > 0 && (
-                  <section>
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className="text-sm font-semibold flex items-center gap-2">
-                        <Award className="w-4 h-4 text-gold" />
-                        <span className="text-gold">Featured</span>
-                      </h2>
-                      <span className="text-[10px] text-muted-foreground">{featuredCrews.length} units</span>
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                      {featuredCrews.map((crew, i) => (
-                        <UnitCard
-                          key={crew.id}
-                          crew={crew}
-                          index={i}
-                          onClick={() => navigate(`/units/${crew.id}`)}
-                          showActions={!!user && !myCrewIds.includes(crew.id)}
-                          onJoinPrimary={() => handleJoinCrew(crew, true)}
-                          onJoinSecondary={() => handleJoinCrew(crew, false)}
-                          canJoinPrimary={!primaryCrew}
-                          canJoinSecondary={canJoinSecondary}
-                        />
-                      ))}
-                    </div>
-                  </section>
-                )}
-
                 {/* All Units */}
                 <section>
                   <div className="flex items-center justify-between mb-4">

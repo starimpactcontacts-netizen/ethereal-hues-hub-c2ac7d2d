@@ -58,6 +58,9 @@ export const hasBothQuickFightSubmissions = (fight: Pick<QuickFight, 'player_1_s
 export const isPublicDecidedQuickFight = (fight: Pick<QuickFight, 'status' | 'player_1_submission_url' | 'player_2_submission_url'>) =>
   fight.status === 'completed' && hasBothQuickFightSubmissions(fight);
 
+export const isPublicOpenLobby = (fight: Pick<QuickFight, 'status' | 'is_private'>) =>
+  !fight.is_private && ['waiting', 'active', 'submitted', 'judging'].includes(fight.status);
+
 // Instant matchmaking
 export async function findQuickFight(userId: string, username: string, avatarUrl: string | null): Promise<string | null> {
   const { data, error } = await supabase.rpc('quick_fight_match', {
@@ -259,6 +262,37 @@ export function useOpenQuickFightQueue() {
   }, []);
 
   return { entries, loading };
+}
+
+// Public custom lobbies waiting for an opponent or actively running
+export function usePublicOpenLobbies() {
+  const [lobbies, setLobbies] = useState<QuickFight[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetch = async () => {
+      const { data } = await supabase
+        .from('quick_fights')
+        .select('*')
+        .or('is_private.is.null,is_private.eq.false')
+        .in('status', ['waiting', 'active', 'submitted', 'judging'])
+        .is('hidden_at' as any, null)
+        .order('created_at', { ascending: false })
+        .limit(20);
+      setLobbies((data as unknown as QuickFight[]) || []);
+      setLoading(false);
+    };
+    fetch();
+
+    const channel = supabase
+      .channel('public_open_lobbies')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'quick_fights' }, () => fetch())
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
+  return { lobbies, loading };
 }
 
 // Quick fight messages

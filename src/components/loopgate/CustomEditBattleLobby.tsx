@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, Copy, Eye, Lock, Share2, Swords, UserPlus, Users, Zap } from "lucide-react";
+import { ArrowLeft, Clock, Copy, Eye, Lock, Share2, UserPlus, Users, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import QuickFightChat from "@/components/loopgate/QuickFightChat";
+import { useLobbyMusicMute } from "@/components/loopgate/LobbyMusicPlayer";
 import type { OpenQueueEntry, QuickFight } from "@/hooks/useQuickFight";
 import { toast } from "sonner";
 
@@ -20,11 +21,20 @@ interface CustomEditBattleLobbyProps {
   onSongPicked?: (drop: any) => Promise<void>;
 }
 
-function StatTile({ value, label }: { value: string; label: string }) {
+const P1_COLOR = "#1d6fff";
+const P2_COLOR = "#cc1111";
+
+const stripeStyle = {
+  backgroundImage:
+    "repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,0.06) 5px, rgba(255,255,255,0.06) 10px)",
+};
+
+function StockDots() {
   return (
-    <div className="min-h-[72px] rounded-xl border border-border/60 bg-surface-1/80 flex flex-col items-center justify-center">
-      <span className="text-[26px] leading-none font-black text-foreground" style={{ fontFamily: "Teko, sans-serif" }}>{value}</span>
-      <span className="text-[9px] font-black uppercase tracking-[0.22em] text-muted-foreground">{label}</span>
+    <div className="flex gap-1.5 mt-2">
+      {[0, 1, 2].map((i) => (
+        <div key={i} className="w-2 h-2 rounded-full bg-white/25" />
+      ))}
     </div>
   );
 }
@@ -40,11 +50,20 @@ export default function CustomEditBattleLobby({
   onJoin,
   onCancel,
 }: CustomEditBattleLobbyProps) {
-  const duration = fight.duration_minutes >= 60 ? `${Math.round(fight.duration_minutes / 60)}H` : `${fight.duration_minutes}M`;
-  const otherEditors = openQueue.filter((entry) => entry.user_id !== fight.player_1_id && entry.user_id !== viewerId).slice(0, 5);
+  const duration =
+    fight.duration_minutes >= 60
+      ? `${Math.round(fight.duration_minutes / 60)}H`
+      : `${fight.duration_minutes}M`;
+
+  const otherEditors = openQueue
+    .filter((e) => e.user_id !== fight.player_1_id && e.user_id !== viewerId)
+    .slice(0, 5);
+
   const isPrivate = !!fight.is_private;
   const [codeInput, setCodeInput] = useState("");
   const [searchParams] = useSearchParams();
+  const [muted, toggleMuted] = useLobbyMusicMute();
+
   useEffect(() => {
     const q = searchParams.get("code");
     if (q && isPrivate) setCodeInput(q.toUpperCase().slice(0, 6));
@@ -61,170 +80,270 @@ export default function CustomEditBattleLobby({
   };
 
   return (
-    <div className="relative min-h-[100dvh] overflow-hidden bg-background text-foreground">
-      <div aria-hidden className="pointer-events-none fixed inset-0 bg-[linear-gradient(180deg,hsl(var(--surface-0))_0%,hsl(var(--background))_54%,hsl(var(--surface-0))_100%)]" />
-      <div aria-hidden className="pointer-events-none fixed inset-0 opacity-[0.16]" style={{ backgroundImage: "linear-gradient(hsl(var(--foreground) / 0.08) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground) / 0.08) 1px, transparent 1px)", backgroundSize: "42px 42px" }} />
+    <div className="relative min-h-[100dvh] overflow-hidden text-white bg-[#090909]">
 
-      <header className="sticky top-0 z-30 px-4 pt-[calc(env(safe-area-inset-top,0px)+12px)] pb-3 bg-background/80 backdrop-blur-xl border-b border-border/50">
+      {/* Header */}
+      <header className="sticky top-0 z-30 px-4 pt-[calc(env(safe-area-inset-top,0px)+12px)] pb-3 bg-[#090909] border-b border-white/[0.08]">
         <div className="flex items-center justify-between">
-          <button onClick={onBack} className="h-9 px-2 -ml-2 flex items-center gap-2 text-muted-foreground active:scale-95 transition-transform">
+          <button
+            onClick={onBack}
+            className="h-9 px-2 -ml-2 flex items-center gap-2 text-white/50 active:scale-95 transition-transform"
+          >
             <ArrowLeft className="w-4 h-4" />
             <span className="text-[11px] font-black uppercase tracking-[0.18em]">Arena</span>
           </button>
-          <div className="flex items-center gap-3 text-muted-foreground">
-            <div className="flex items-center gap-1.5 text-[11px] tabular-nums">
+
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 text-[11px] text-white/40 tabular-nums">
               <Eye className="w-3.5 h-3.5" />
               {fight.view_count || 1}
             </div>
-            <button onClick={onShare} className="h-9 w-9 grid place-items-center rounded-lg border border-border/60 bg-surface-1/70 active:scale-95 transition-transform" aria-label="Share lobby">
-              <Share2 className="w-4 h-4" />
+            <button
+              onClick={toggleMuted}
+              className="h-8 w-8 grid place-items-center border border-white/15 bg-white/[0.04] active:scale-95 transition-transform"
+              aria-label={muted ? "Unmute" : "Mute"}
+            >
+              {muted
+                ? <VolumeX className="w-3.5 h-3.5 text-red-400" />
+                : <Volume2 className="w-3.5 h-3.5 text-white/50" />}
+            </button>
+            <button
+              onClick={onShare}
+              className="h-8 w-8 grid place-items-center border border-white/15 bg-white/[0.04] text-white/50 active:scale-95 transition-transform"
+              aria-label="Share"
+            >
+              <Share2 className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
       </header>
 
-      <main className="relative z-10 px-4 pt-5 pb-[calc(env(safe-area-inset-bottom,0px)+28px)]">
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22 }}>
-          <h1 className="text-center text-[46px] leading-[0.88] font-black uppercase text-foreground" style={{ fontFamily: "Teko, sans-serif" }}>
+      <main className="px-4 pt-5 pb-[calc(env(safe-area-inset-bottom,0px)+32px)]">
+
+        {/* Title */}
+        <div className="text-center mb-5">
+          <p className="text-[9px] font-black uppercase tracking-[0.35em] text-white/25 mb-1">
+            {isPrivate ? "Private" : "Open"} • {duration} Duration
+          </p>
+          <h1
+            className="text-[46px] leading-[0.88] font-black uppercase text-white"
+            style={{ fontFamily: "Teko, sans-serif", letterSpacing: "0.02em" }}
+          >
             Custom Edit Battle
           </h1>
-        </motion.div>
+        </div>
 
-        <motion.section
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.05, duration: 0.24 }}
-          className="relative mt-6"
-        >
-          <div aria-hidden className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(circle at 18% 30%, hsl(var(--verified) / 0.16), transparent 38%), radial-gradient(circle at 82% 30%, hsl(var(--destructive) / 0.16), transparent 40%)" }} />
+        {/* VS Panel */}
+        <div className="border border-white/15 overflow-hidden" style={{ backgroundColor: "#111" }}>
+          <div className="h-2.5" style={stripeStyle} />
+
           {isPrivate && (
-            <div className="relative flex items-center justify-center mb-4">
-              <div className="flex items-center gap-2 rounded-full border border-fuchsia-500/30 bg-fuchsia-500/10 px-3 py-1">
-                <Lock className="w-3 h-3 text-fuchsia-300" />
-                <span className="text-[10px] font-black uppercase tracking-[0.18em] text-fuchsia-300">Private Lobby</span>
+            <div className="flex justify-center py-2 border-b border-white/[0.08]">
+              <div className="flex items-center gap-1.5 border border-white/15 px-3 py-1">
+                <Lock className="w-2.5 h-2.5 text-white/35" />
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/35">
+                  Private Lobby
+                </span>
               </div>
             </div>
           )}
 
-          <div className="relative flex items-center justify-between gap-4 px-2">
-            <div className="flex-1 min-w-0 flex flex-col items-center">
-              <div className="relative">
-                <span className="absolute -inset-2 rounded-full bg-blue-500/20 blur-lg" />
-                <Avatar className="relative w-[78px] h-[78px] border-2 border-blue-500/45">
-                  <AvatarImage src={fight.player_1_avatar_url || ""} />
-                  <AvatarFallback className="bg-surface-2 text-blue-300 text-2xl font-black">
-                    {fight.player_1_username?.charAt(0)?.toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+          <div className="flex items-center px-3 py-5 gap-2">
+            {/* P1 */}
+            <div className="flex-1 flex flex-col items-center">
+              <div className="relative mt-3">
+                <div
+                  className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-white"
+                  style={{ backgroundColor: P1_COLOR }}
+                >
+                  P1
+                </div>
+                <div
+                  className="w-[96px] h-[96px] border-[3px] overflow-hidden"
+                  style={{ borderColor: P1_COLOR }}
+                >
+                  <Avatar className="w-full h-full rounded-none">
+                    <AvatarImage src={fight.player_1_avatar_url || ""} className="object-cover w-full h-full" />
+                    <AvatarFallback
+                      className="rounded-none text-3xl font-black"
+                      style={{ backgroundColor: "#050d1f", color: P1_COLOR, fontFamily: "Teko, sans-serif" }}
+                    >
+                      {fight.player_1_username?.charAt(0)?.toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
               </div>
-              <span className="mt-3 max-w-[110px] truncate text-[17px] leading-none font-black uppercase text-blue-200" style={{ fontFamily: "Teko, sans-serif" }}>
+              <span
+                className="mt-2.5 max-w-[110px] truncate text-[15px] font-black uppercase text-white"
+                style={{ fontFamily: "Teko, sans-serif" }}
+              >
                 {fight.player_1_username}
               </span>
-              {isHost && <span className="mt-1 text-[9px] font-black uppercase tracking-[0.2em] text-blue-400/80">You</span>}
+              {isHost && (
+                <span className="mt-0.5 text-[8px] font-black uppercase tracking-[0.25em]" style={{ color: P1_COLOR }}>
+                  You
+                </span>
+              )}
+              <StockDots />
             </div>
 
-            <div className="shrink-0 flex flex-col items-center gap-2">
-              <div className="relative w-[54px] h-[54px] rounded-full border border-border bg-background grid place-items-center">
-                <span className="absolute inset-0 rounded-full border border-red-500/30 animate-ping" />
-                <Swords className="w-6 h-6 text-foreground" />
-              </div>
-              <span className="text-[13px] font-black uppercase tracking-[0.18em] text-muted-foreground" style={{ fontFamily: "Teko, sans-serif" }}>VS</span>
-              <div className="flex flex-col items-center">
-                <span className="text-[20px] leading-none font-black text-foreground tabular-nums" style={{ fontFamily: "Teko, sans-serif" }}>{duration}</span>
-                <span className="text-[8px] font-black uppercase tracking-[0.22em] text-muted-foreground">Duration</span>
-              </div>
+            {/* VS */}
+            <div className="shrink-0">
+              <span
+                className="text-[62px] leading-none font-black text-white block"
+                style={{
+                  fontFamily: "Teko, sans-serif",
+                  textShadow: `2px 2px 0 ${P2_COLOR}, 3px 3px 0 #660000`,
+                }}
+              >
+                VS
+              </span>
             </div>
 
-            <div className="flex-1 min-w-0 flex flex-col items-center">
-              <div className="w-[78px] h-[78px] rounded-full border-2 border-dashed border-red-500/35 bg-background/60 grid place-items-center">
-                <span className="text-[30px] font-black text-red-400/45" style={{ fontFamily: "Teko, sans-serif" }}>?</span>
+            {/* P2 */}
+            <div className="flex-1 flex flex-col items-center">
+              <div className="relative mt-3">
+                <div
+                  className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-white"
+                  style={{ backgroundColor: P2_COLOR }}
+                >
+                  P2
+                </div>
+                <div
+                  className="w-[96px] h-[96px] border-[3px] flex items-center justify-center"
+                  style={{ borderColor: P2_COLOR, backgroundColor: "#160000" }}
+                >
+                  <motion.span
+                    animate={{ opacity: [1, 0.2, 1] }}
+                    transition={{ duration: 0.9, repeat: Infinity, ease: "linear" }}
+                    className="text-[62px] leading-none font-black"
+                    style={{ fontFamily: "Teko, sans-serif", color: P2_COLOR }}
+                  >
+                    ?
+                  </motion.span>
+                </div>
               </div>
-              <span className="mt-3 max-w-[110px] truncate text-[17px] leading-none font-black uppercase text-red-200" style={{ fontFamily: "Teko, sans-serif" }}>
+              <span
+                className="mt-2.5 text-[15px] font-black uppercase"
+                style={{ fontFamily: "Teko, sans-serif", color: P2_COLOR }}
+              >
                 Open Slot
               </span>
-              <span className="mt-1 text-[9px] font-black uppercase tracking-[0.2em] text-red-400/80">Tap In</span>
+              <span className="mt-0.5 text-[8px] font-black uppercase tracking-[0.25em] text-white/30">
+                Tap In
+              </span>
+              <StockDots />
             </div>
           </div>
-        </motion.section>
 
-        {/* Primary actions — right under the matchup for fast activation */}
-        <div className="mt-5 space-y-3">
+          <div className="h-2.5 border-t border-white/10" style={stripeStyle} />
+        </div>
+
+        {/* Actions */}
+        <div className="mt-4 space-y-2">
           {isHost ? (
             <div className="grid grid-cols-[1fr_auto] gap-2">
-              <button onClick={onShare} className="h-14 rounded-xl bg-primary text-primary-foreground flex items-center justify-center gap-2 text-[14px] font-black uppercase tracking-[0.14em] active:scale-[0.98] transition-transform" style={{ fontFamily: "Teko, sans-serif" }}>
+              <button
+                onClick={onShare}
+                className="h-[50px] bg-white text-black flex items-center justify-center gap-2 text-[15px] font-black uppercase tracking-[0.12em] active:scale-[0.98] transition-transform"
+                style={{ fontFamily: "Teko, sans-serif" }}
+              >
                 <Users className="w-4 h-4" /> Invite
               </button>
-              <button onClick={onCopy} className="h-14 w-14 rounded-xl border border-border bg-surface-1 grid place-items-center text-muted-foreground active:scale-[0.96] transition-transform" aria-label="Copy lobby link">
-                <Copy className="w-5 h-5" />
+              <button
+                onClick={onCopy}
+                className="h-[50px] w-[50px] border border-white/15 bg-white/[0.04] grid place-items-center text-white/50 active:scale-95 transition-transform"
+              >
+                <Copy className="w-4 h-4" />
               </button>
             </div>
           ) : isPrivate ? (
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-fuchsia-300">
+              <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-white/35">
                 <Lock className="w-3 h-3" /> Code Required
               </div>
               <input
                 value={codeInput}
                 onChange={(e) => setCodeInput(e.target.value.toUpperCase().slice(0, 6))}
                 placeholder="ENTER CODE"
-                className="w-full h-14 rounded-xl border border-border bg-surface-1 px-4 text-center text-[20px] font-black tracking-[0.4em] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-fuchsia-500/50"
+                className="w-full h-[50px] border border-white/15 bg-white/[0.04] px-4 text-center text-[20px] font-black tracking-[0.4em] text-white placeholder:text-white/20 focus:outline-none focus:border-white/35"
                 style={{ fontFamily: "Teko, sans-serif" }}
               />
               <button
                 onClick={() => onJoin(codeInput.trim())}
                 disabled={codeInput.trim().length < 4}
-                className="h-[60px] w-full rounded-xl bg-primary text-primary-foreground flex items-center justify-center gap-2 text-[16px] font-black uppercase tracking-[0.14em] active:scale-[0.98] transition-transform disabled:opacity-40"
+                className="h-[52px] w-full bg-white text-black flex items-center justify-center gap-2 text-[15px] font-black uppercase tracking-[0.12em] active:scale-[0.98] transition-transform disabled:opacity-30"
                 style={{ fontFamily: "Teko, sans-serif" }}
               >
                 <UserPlus className="w-5 h-5" /> Accept Battle
               </button>
             </div>
           ) : (
-            <button onClick={() => onJoin()} className="h-[60px] w-full rounded-xl bg-primary text-primary-foreground flex items-center justify-center gap-2 text-[16px] font-black uppercase tracking-[0.14em] active:scale-[0.98] transition-transform" style={{ fontFamily: "Teko, sans-serif" }}>
+            <button
+              onClick={() => onJoin()}
+              className="h-[52px] w-full bg-white text-black flex items-center justify-center gap-2 text-[15px] font-black uppercase tracking-[0.12em] active:scale-[0.98] transition-transform"
+              style={{ fontFamily: "Teko, sans-serif" }}
+            >
               <UserPlus className="w-5 h-5" /> Accept Battle
             </button>
           )}
         </div>
 
+        {/* Join Code */}
         {isPrivate && isHost && fight.join_code && (
-          <div className="mt-3 rounded-2xl border border-fuchsia-500/30 bg-fuchsia-500/[0.06] p-4">
+          <div className="mt-3 border border-white/10 bg-white/[0.03] px-4 py-3">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-[9px] font-black uppercase tracking-[0.24em] text-fuchsia-300">Join Code</p>
-                <p className="mt-1 text-[28px] leading-none font-black tracking-[0.3em] text-foreground" style={{ fontFamily: "Teko, sans-serif" }}>{fight.join_code}</p>
+                <p className="text-[8px] font-black uppercase tracking-[0.3em] text-white/30">Join Code</p>
+                <p
+                  className="mt-0.5 text-[30px] leading-none font-black tracking-[0.3em] text-white"
+                  style={{ fontFamily: "Teko, sans-serif" }}
+                >
+                  {fight.join_code}
+                </p>
               </div>
-              <button onClick={handleCopyCode} className="h-10 w-10 rounded-lg border border-fuchsia-500/30 bg-background grid place-items-center text-fuchsia-300 active:scale-95 transition-transform" aria-label="Copy code">
-                <Copy className="w-4 h-4" />
+              <button
+                onClick={handleCopyCode}
+                className="h-9 w-9 border border-white/15 bg-black/40 grid place-items-center text-white/40 active:scale-95 transition-transform"
+              >
+                <Copy className="w-3.5 h-3.5" />
               </button>
             </div>
-            <p className="mt-2 text-[10px] text-muted-foreground">Share this code privately. Only people with the code can accept this battle.</p>
+            <p className="mt-1.5 text-[9px] text-white/20 leading-relaxed">
+              Share privately — only people with this code can join.
+            </p>
           </div>
         )}
 
+        {/* Chat + Carousel */}
         <div className="mt-4 space-y-3">
           <QuickFightChat
             fightId={fight.id}
             player1Id={fight.player_1_id}
-            player2Id={fight.player_2_id || ''}
+            player2Id={fight.player_2_id || ""}
             player1Username={fight.player_1_username}
-            player2Username={fight.player_2_username || ''}
+            player2Username={fight.player_2_username || ""}
           />
 
-          <div className="rounded-2xl border border-border/70 bg-surface-1/50 p-3">
+          <div className="border border-white/10 bg-white/[0.03] p-3">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Open in carousel</p>
-                <p className="mt-0.5 text-[13px] text-foreground/80 truncate">Visible as an edit battle card</p>
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30">Open in carousel</p>
+                <p className="mt-0.5 text-[12px] text-white/45 truncate">Visible as an edit battle card</p>
               </div>
               <div className="flex -space-x-2 shrink-0">
-                {otherEditors.length > 0 ? otherEditors.map((editor) => (
-                  <Avatar key={editor.id} className="w-8 h-8 border-2 border-background">
-                    <AvatarImage src={editor.avatar_url || ""} />
-                    <AvatarFallback className="bg-surface-2 text-[10px] font-bold">{editor.username?.charAt(0)?.toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                )) : (
-                  <div className="h-8 px-3 rounded-full border border-border bg-background/70 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.14em] text-muted-foreground">
-                    <Clock className="w-3 h-3" /> First Open
+                {otherEditors.length > 0 ? (
+                  otherEditors.map((editor) => (
+                    <Avatar key={editor.id} className="w-7 h-7 rounded-none border-2 border-[#090909]">
+                      <AvatarImage src={editor.avatar_url || ""} />
+                      <AvatarFallback className="rounded-none bg-white/10 text-[10px] font-bold text-white">
+                        {editor.username?.charAt(0)?.toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  ))
+                ) : (
+                  <div className="h-7 px-2.5 border border-white/10 flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.14em] text-white/30">
+                    <Clock className="w-2.5 h-2.5" /> First Open
                   </div>
                 )}
               </div>
@@ -232,7 +351,11 @@ export default function CustomEditBattleLobby({
           </div>
 
           {isHost && (
-            <button onClick={onCancel} className="w-full h-12 rounded-xl border border-border bg-background/50 text-muted-foreground text-[11px] font-black uppercase tracking-[0.22em] active:scale-[0.98] transition-transform" style={{ fontFamily: "Teko, sans-serif" }}>
+            <button
+              onClick={onCancel}
+              className="w-full h-10 border border-white/[0.08] text-white/20 text-[10px] font-black uppercase tracking-[0.25em] active:scale-[0.98] transition-transform"
+              style={{ fontFamily: "Teko, sans-serif" }}
+            >
               Cancel Lobby
             </button>
           )}

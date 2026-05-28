@@ -269,7 +269,7 @@ export default function EnterprisePage() {
         setPaymentProcessing(false);
       }
     } else if (paymentMethod === 'crypto') {
-      toast.info('Crypto payments coming soon. Contact team@loopgate.io for Binance Pay.');
+      toast.info('Crypto payments coming soon. Contact team@loopgate.gg for Binance Pay.');
     }
   };
 
@@ -879,7 +879,7 @@ export default function EnterprisePage() {
         <section className="border-t border-white/[0.04] py-24 text-center">
           <h2 className="text-3xl md:text-4xl mb-3 text-white/50" style={luxuryFont}>Custom Packages</h2>
           <p className="text-[11px] text-white/12 mb-8">We build bespoke campaigns for labels, studios, and agencies.</p>
-          <Button onClick={() => window.location.href = 'mailto:team@loopgate.io'} className="bg-transparent hover:bg-white/[0.03] border border-white/[0.08] text-white/30 hover:text-white/60 h-12 px-10 text-[10px] uppercase tracking-[0.3em] rounded-none transition-all duration-300">
+          <Button onClick={() => window.location.href = 'mailto:team@loopgate.gg'} className="bg-transparent hover:bg-white/[0.03] border border-white/[0.08] text-white/30 hover:text-white/60 h-12 px-10 text-[10px] uppercase tracking-[0.3em] rounded-none transition-all duration-300">
             <Mail className="w-3.5 h-3.5 mr-2" /> Contact Team
           </Button>
         </section>
