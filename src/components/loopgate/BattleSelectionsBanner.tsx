@@ -30,10 +30,9 @@ interface Props {
   mySide: 'red' | 'blue';
   redUsername: string;
   blueUsername: string;
-  isSpectator?: boolean;
 }
 
-export default function BattleSelectionsBanner({ fightId, mySide, redUsername, blueUsername, isSpectator = false }: Props) {
+export default function BattleSelectionsBanner({ fightId, mySide, redUsername, blueUsername }: Props) {
   const [mine, setMine] = useState<Pick | null>(null);
   const [opp, setOpp] = useState<Pick | null>(null);
 
@@ -57,17 +56,19 @@ export default function BattleSelectionsBanner({ fightId, mySide, redUsername, b
   const red = mySide === 'red' ? mine : opp;
   const blue = mySide === 'blue' ? mine : opp;
 
+  if (!red?.pack?.name && !red?.song?.title && !blue?.pack?.name && !blue?.song?.title) return null;
+
   return (
     <div className="grid grid-cols-2 gap-0 border border-white/10 bg-black/70 overflow-hidden">
       <SideBlock
         color="red"
-        label={!isSpectator && mySide === 'red' ? 'RED · YOU' : 'RED'}
+        label={mySide === 'red' ? 'RED · YOU' : 'RED'}
         username={redUsername}
         pick={red}
       />
       <SideBlock
         color="blue"
-        label={!isSpectator && mySide === 'blue' ? 'BLUE · YOU' : 'BLUE'}
+        label={mySide === 'blue' ? 'BLUE · YOU' : 'BLUE'}
         username={blueUsername}
         pick={blue}
       />
@@ -93,7 +94,7 @@ function SideBlock({ color, label, username, pick }: { color: 'red' | 'blue'; la
       {!hasAnyPick ? (
         <div className="py-3 space-y-1">
           <p className="text-[10px] font-bold text-white/30 uppercase tracking-wider leading-tight" style={{ fontFamily: 'Teko, sans-serif' }}>
-            No selections
+            Awaiting selection
           </p>
           <p className="text-[9px] text-white/20 leading-snug">
             No scenepacks available — source your own for this battle
@@ -128,6 +129,7 @@ function SideBlock({ color, label, username, pick }: { color: 'red' | 'blue'; la
   );
 }
 
+/** Scenepack row: cover art + name + view-clips button + external download link */
 function ScenepackPickRow({ pack, accentHex }: { pack: Pack; accentHex: string }) {
   const [clipsOpen, setClipsOpen] = useState(false);
   const [clips, setClips] = useState<ClipRow[]>([]);
@@ -310,21 +312,32 @@ function triggerDownload(blob: Blob, filename: string) {
   setTimeout(() => URL.revokeObjectURL(url), 15_000);
 }
 
+/**
+ * Fetch the source, attempt WAV extraction via AudioContext (strips video
+ * container). If decodeAudioData fails (e.g. the codec isn't supported by
+ * the browser), fall back to downloading the raw bytes with a clean filename
+ * so the download always succeeds regardless of original format.
+ */
 async function downloadAudio(previewUrl: string, title: string, artist?: string | null) {
   const safeName = [title, artist].filter(Boolean).join(' - ').replace(/[^\w\s\-()']/g, '').trim() || 'preview';
 
   try {
     const res = await fetch(previewUrl);
     if (!res.ok) throw new Error('fetch failed');
+    // Keep a copy of the buffer — decodeAudioData detaches the original
     const arrayBuffer = await res.arrayBuffer();
     const bufferCopy = arrayBuffer.slice(0);
 
     try {
+      // Primary path: decode audio track → encode as WAV (pure audio, no video)
       const audioCtx = new AudioContext();
       const audioBuffer = await audioCtx.decodeAudioData(bufferCopy);
       audioCtx.close();
       triggerDownload(new Blob([encodeWAV(audioBuffer)], { type: 'audio/wav' }), `${safeName}.wav`);
     } catch {
+      // Fallback: decodeAudioData failed (e.g. video-container MP4 on iOS).
+      // Re-wrap as audio/mp4 (.m4a) — same bytes, but iOS opens it in the
+      // audio player rather than the video player, hiding the video track.
       triggerDownload(
         new Blob([arrayBuffer], { type: 'audio/mp4' }),
         `${safeName}.m4a`,
@@ -348,7 +361,7 @@ function encodeWAV(buf: AudioBuffer): ArrayBuffer {
   ws(0, 'RIFF'); v.setUint32(4, 36 + dataSize, true);
   ws(8, 'WAVE'); ws(12, 'fmt ');
   v.setUint32(16, 16, true);
-  v.setUint16(20, 1, true);
+  v.setUint16(20, 1, true);          // PCM
   v.setUint16(22, numCh, true);
   v.setUint32(24, sr, true);
   v.setUint32(28, sr * numCh * (bps / 8), true);
