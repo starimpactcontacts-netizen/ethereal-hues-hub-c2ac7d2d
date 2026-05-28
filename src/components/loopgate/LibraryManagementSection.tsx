@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadToBunny } from "@/lib/bunnyUpload";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,6 +44,16 @@ interface ScenepackRow {
   active: boolean;
   sort_order: number;
   pack_count: number;
+  created_at: string;
+}
+
+interface ScenepackVideoRow {
+  id: string;
+  scenepack_id: string;
+  title: string | null;
+  video_url: string;
+  file_size_mb: number | null;
+  sort_order: number;
   created_at: string;
 }
 
@@ -675,7 +686,7 @@ function ScenepacksManager() {
     <div className="space-y-4">
       {/* Add form */}
       <div className="rounded-lg border border-border p-3 space-y-2 bg-background/30">
-        <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Add Scenepack</Label>
+        <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">New Scenepack</Label>
 
         <div className="grid grid-cols-2 gap-2">
           <Input placeholder="Title (e.g. Bleach TYBW)" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="h-8 text-xs" disabled={saving} />
@@ -736,54 +747,208 @@ function ScenepacksManager() {
         ) : packs.length === 0 ? (
           <p className="text-xs text-muted-foreground text-center py-4">No scenepacks yet.</p>
         ) : (
-          <div className="mt-2 max-h-96 overflow-y-auto rounded-lg border border-border divide-y divide-border">
+          <div className="mt-2 rounded-lg border border-border divide-y divide-border">
             {packs.map((p) => (
-              <div key={p.id} className="flex items-center gap-2 p-2">
-                {p.thumbnail_url ? (
-                  <img src={p.thumbnail_url} alt="" className="w-12 h-12 rounded object-cover shrink-0" />
-                ) : (
-                  <div className="w-12 h-12 rounded bg-muted shrink-0 flex items-center justify-center">
-                    <Film size={16} className="text-muted-foreground/40" />
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold truncate flex items-center gap-1.5">
-                    {p.title}
-                    {!p.active && <span className="text-[8px] uppercase text-muted-foreground/60">inactive</span>}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground truncate">
-                    {p.series || "—"}
-                    {p.pack_count > 0 && <span className="ml-1.5 text-white/40">{p.pack_count} clips</span>}
-                  </p>
-                </div>
-                {(p.scenepack_youtube_url || p.scenepack_gdrive_url) && (
-                  <a
-                    href={p.scenepack_youtube_url || p.scenepack_gdrive_url || "#"}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="w-7 h-7 rounded-md text-muted-foreground hover:text-foreground flex items-center justify-center"
-                    title="Open download link"
-                  >
-                    <ExternalLink size={14} />
-                  </a>
-                )}
-                <button
-                  onClick={() => toggleActive(p)}
-                  className={`text-[10px] px-2 h-7 rounded-md border ${p.active ? "border-emerald-500/40 text-emerald-300" : "border-border text-muted-foreground"}`}
-                >
-                  {p.active ? "Active" : "Inactive"}
-                </button>
-                <button
-                  onClick={() => removePack(p.id)}
-                  className="w-7 h-7 rounded-md text-red-400 hover:bg-red-500/10 flex items-center justify-center"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
+              <ScenepackPoolRow
+                key={p.id}
+                pack={p}
+                onToggle={toggleActive}
+                onRemove={removePack}
+              />
             ))}
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+// ─── Per-scenepack row with expandable video clip manager ────────────────────
+
+function ScenepackPoolRow({
+  pack,
+  onToggle,
+  onRemove,
+}: {
+  pack: ScenepackRow;
+  onToggle: (p: ScenepackRow) => void;
+  onRemove: (id: string) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [videos, setVideos] = useState<ScenepackVideoRow[]>([]);
+  const [loadingVids, setLoadingVids] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState("");
+  const [vidTitle, setVidTitle] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const loadVideos = async () => {
+    setLoadingVids(true);
+    const { data } = await supabase
+      .from("scenepack_videos" as any)
+      .select("*")
+      .eq("scenepack_id", pack.id)
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true });
+    setVideos((data as any as ScenepackVideoRow[]) || []);
+    setLoadingVids(false);
+  };
+
+  const handleExpand = () => {
+    if (!expanded) loadVideos();
+    setExpanded((v) => !v);
+  };
+
+  const handleUpload = async (file: File) => {
+    setUploading(true);
+    setUploadProgress("Uploading…");
+    try {
+      const sizeMb = file.size / 1_048_576;
+      const result = await uploadToBunny(file, {
+        folder: `scenepacks/clips/${pack.id}`,
+        fileName: file.name,
+        onProgress: (p) => setUploadProgress(`${Math.round(p * 100)}%`),
+      });
+      const url = result.url;
+      const { error } = await supabase.from("scenepack_videos" as any).insert({
+        scenepack_id: pack.id,
+        title: vidTitle.trim() || file.name.replace(/\.[^.]+$/, ""),
+        video_url: url,
+        file_size_mb: Math.round(sizeMb * 10) / 10,
+        sort_order: videos.length,
+      } as any);
+      if (error) throw error;
+      setVidTitle("");
+      toast.success("Clip added");
+      loadVideos();
+    } catch (e: any) {
+      toast.error(e?.message || "Upload failed");
+    } finally {
+      setUploading(false);
+      setUploadProgress("");
+    }
+  };
+
+  const removeVideo = async (id: string) => {
+    if (!confirm("Remove this clip?")) return;
+    await supabase.from("scenepack_videos" as any).delete().eq("id", id);
+    setVideos((arr) => arr.filter((v) => v.id !== id));
+  };
+
+  return (
+    <div>
+      {/* Header row */}
+      <div className="flex items-center gap-2 p-2">
+        {pack.thumbnail_url ? (
+          <img src={pack.thumbnail_url} alt="" className="w-12 h-12 rounded object-cover shrink-0" />
+        ) : (
+          <div className="w-12 h-12 rounded bg-muted shrink-0 flex items-center justify-center">
+            <Film size={16} className="text-muted-foreground/40" />
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-semibold truncate flex items-center gap-1.5">
+            {pack.title}
+            {!pack.active && <span className="text-[8px] uppercase text-muted-foreground/60">inactive</span>}
+          </p>
+          <p className="text-[10px] text-muted-foreground truncate">
+            {pack.series || "—"}
+            {pack.pack_count > 0 && <span className="ml-1.5 text-white/40">{pack.pack_count} clips</span>}
+          </p>
+        </div>
+
+        {/* Expand clips button */}
+        <button
+          onClick={handleExpand}
+          className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground hover:text-white px-1.5 h-7 rounded border border-border hover:border-white/20 transition-colors"
+        >
+          <Film size={11} />
+          Clips
+          {expanded ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+        </button>
+
+        {(pack.scenepack_youtube_url || pack.scenepack_gdrive_url) && (
+          <a
+            href={pack.scenepack_youtube_url || pack.scenepack_gdrive_url || "#"}
+            target="_blank" rel="noreferrer"
+            className="w-7 h-7 rounded-md text-muted-foreground hover:text-foreground flex items-center justify-center"
+            title="Open download link"
+          >
+            <ExternalLink size={14} />
+          </a>
+        )}
+        <button
+          onClick={() => onToggle(pack)}
+          className={`text-[10px] px-2 h-7 rounded-md border ${pack.active ? "border-emerald-500/40 text-emerald-300" : "border-border text-muted-foreground"}`}
+        >
+          {pack.active ? "Active" : "Inactive"}
+        </button>
+        <button
+          onClick={() => onRemove(pack.id)}
+          className="w-7 h-7 rounded-md text-red-400 hover:bg-red-500/10 flex items-center justify-center"
+        >
+          <Trash2 size={14} />
+        </button>
+      </div>
+
+      {/* Expanded clip manager */}
+      {expanded && (
+        <div className="px-3 pb-3 bg-muted/20 border-t border-border space-y-2">
+          {/* Upload new clip */}
+          <div className="pt-2 space-y-1.5">
+            <Label className="text-[9px] uppercase tracking-widest text-muted-foreground">Add Video Clip</Label>
+            <div className="flex gap-1.5">
+              <Input
+                placeholder="Clip title (optional)"
+                value={vidTitle}
+                onChange={(e) => setVidTitle(e.target.value)}
+                className="h-7 text-[11px] flex-1"
+                disabled={uploading}
+              />
+              <input
+                ref={fileRef}
+                type="file"
+                accept="video/*"
+                className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) handleUpload(f); }}
+              />
+              <button
+                type="button"
+                disabled={uploading}
+                onClick={() => fileRef.current?.click()}
+                className="h-7 px-2.5 rounded-md border border-dashed border-border text-[10px] flex items-center gap-1 text-muted-foreground hover:text-white hover:border-white/30 disabled:opacity-40 transition-colors"
+              >
+                {uploading ? <><Loader2 size={11} className="animate-spin" /> {uploadProgress}</> : <><Upload size={11} /> Upload</>}
+              </button>
+            </div>
+          </div>
+
+          {/* Clip list */}
+          {loadingVids ? (
+            <div className="flex justify-center py-3"><Loader2 size={14} className="animate-spin text-muted-foreground" /></div>
+          ) : videos.length === 0 ? (
+            <p className="text-[10px] text-muted-foreground/50 text-center py-2">No clips uploaded yet — add your first one above</p>
+          ) : (
+            <div className="space-y-1">
+              {videos.map((v) => (
+                <div key={v.id} className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-background/40 border border-border/50">
+                  <Film size={12} className="text-muted-foreground shrink-0" />
+                  <span className="flex-1 text-[11px] text-foreground truncate">{v.title || "Untitled clip"}</span>
+                  {v.file_size_mb != null && (
+                    <span className="text-[9px] text-muted-foreground/60 shrink-0">{v.file_size_mb} MB</span>
+                  )}
+                  <a href={v.video_url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-foreground shrink-0">
+                    <ExternalLink size={12} />
+                  </a>
+                  <button onClick={() => removeVideo(v.id)} className="text-red-400/60 hover:text-red-400 shrink-0">
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
