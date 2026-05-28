@@ -181,27 +181,27 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
   };
 
   return (
-    <div className="bg-surface-1 border border-border overflow-hidden">
+    <div className="bg-black/40 border border-white/[0.07] overflow-hidden">
       {/* Tab Header */}
-      <div className="flex border-b border-border">
+      <div className="flex border-b border-white/[0.06]">
         <button
           onClick={() => { setTab("public"); setReplyTo(null); }}
           className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${
             tab === "public"
-              ? "text-red-400 border-b-2 border-red-500 bg-red-500/5"
-              : "text-muted-foreground hover:text-foreground"
+              ? "text-white/80 border-b-2 border-white/30"
+              : "text-white/30 hover:text-white/50"
           }`}
         >
           <Users className="w-3 h-3" />
-          Spectator Chat
+          Battle Chat
         </button>
         {isParticipant && (
           <button
             onClick={() => { setTab("private"); setReplyTo(null); }}
             className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${
               tab === "private"
-                ? "text-purple-400 border-b-2 border-purple-500 bg-purple-500/5"
-                : "text-muted-foreground hover:text-foreground"
+                ? "text-white/80 border-b-2 border-white/30"
+                : "text-white/30 hover:text-white/50"
             }`}
           >
             <Lock className="w-3 h-3" />
@@ -222,71 +222,83 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
         )}
 
         <AnimatePresence initial={false}>
-          {messages.map((msg) => (
-            <motion.div
-              key={msg.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={`flex gap-2 group ${msg.is_system ? "justify-center" : ""}`}
-            >
-              {msg.is_system ? (
-                <span className="text-[10px] text-muted-foreground italic bg-surface-2 px-3 py-1">
-                  {msg.message_text}
-                </span>
-              ) : (
-                <>
-                  <Avatar className="w-6 h-6 shrink-0 mt-0.5">
-                    <AvatarImage src={msg.avatar_url || ""} />
-                    <AvatarFallback className="text-[8px] bg-surface-2">
-                      {msg.username.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1">
-                    {/* Reply context */}
-                    {msg.reply_to_username && (
-                      <div className="flex items-center gap-1 text-[9px] text-muted-foreground/50 mb-0.5">
-                        <Reply className="w-2.5 h-2.5 rotate-180" />
-                        <span>replying to</span>
-                        <span className="font-bold">@{msg.reply_to_username}</span>
-                      </div>
-                    )}
-                    <div className="flex items-start gap-1">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            onClick={() => handleMention(msg.username)}
-                            className={`text-[10px] font-bold ${getNameColor(msg.user_id)} hover:underline`}
-                          >
-                            {msg.username}
-                          </button>
-                          {getRoleBadge(msg.user_id)}
-                          <span className="text-[8px] text-muted-foreground">{formatTime(msg.created_at)}</span>
+          {messages.map((msg) => {
+            const isRed = msg.user_id === challengerId;
+            const isBlue = msg.user_id === opponentId;
+            const isRight = isBlue;
+            return (
+              <motion.div
+                key={msg.id}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`flex gap-2 group ${msg.is_system ? "justify-center" : isRight ? "flex-row-reverse" : "flex-row"}`}
+              >
+                {msg.is_system ? (
+                  <span className="text-[10px] text-muted-foreground/50 italic px-2 py-0.5 text-center">
+                    {msg.message_text}
+                  </span>
+                ) : (
+                  <>
+                    <Avatar className="w-6 h-6 shrink-0 mt-0.5">
+                      <AvatarImage src={msg.avatar_url || ""} />
+                      <AvatarFallback className={`text-[8px] ${isRed ? "bg-red-900/60 text-red-300" : isBlue ? "bg-blue-900/60 text-blue-300" : "bg-white/10 text-white/60"}`}>
+                        {msg.username.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className={`min-w-0 max-w-[72%] flex flex-col ${isRight ? "items-end" : "items-start"}`}>
+                      {/* Reply context */}
+                      {msg.reply_to_username && (
+                        <div className={`flex items-center gap-1 text-[9px] text-muted-foreground/40 mb-0.5 ${isRight ? "flex-row-reverse" : ""}`}>
+                          <Reply className="w-2.5 h-2.5 rotate-180" />
+                          <span>@{msg.reply_to_username}</span>
                         </div>
+                      )}
+                      {/* Name + badge + time */}
+                      <div className={`flex items-center gap-1 mb-0.5 ${isRight ? "flex-row-reverse" : ""}`}>
+                        <button
+                          onClick={() => handleMention(msg.username)}
+                          className={`text-[10px] font-bold ${getNameColor(msg.user_id)} hover:underline`}
+                        >
+                          {msg.username}
+                        </button>
+                        {getRoleBadge(msg.user_id)}
+                        <span className="text-[8px] text-muted-foreground/40">{formatTime(msg.created_at)}</span>
+                      </div>
+                      {/* Bubble */}
+                      <div className="relative">
                         {isGifUrl(msg.message_text) ? (
                           <img
                             src={msg.message_text}
                             alt="GIF"
-                            className="max-w-[200px] mt-1 border border-border"
+                            className="max-w-[160px] rounded-[8px]"
                             loading="lazy"
                           />
                         ) : (
-                          <p className="text-xs text-foreground/90 break-words">{renderMessageText(msg.message_text)}</p>
+                          <p className={`text-xs px-2.5 py-1.5 rounded-[10px] break-words leading-relaxed ${
+                            isRed
+                              ? "bg-red-500/[0.12] text-white/85 rounded-tl-[3px]"
+                              : isBlue
+                              ? "bg-blue-500/[0.12] text-white/85 rounded-tr-[3px]"
+                              : "bg-white/[0.06] text-white/70"
+                          }`}>
+                            {renderMessageText(msg.message_text)}
+                          </p>
+                        )}
+                        {user && (
+                          <button
+                            onClick={() => handleReply(msg)}
+                            className={`absolute top-0 ${isRight ? "-left-5" : "-right-5"} opacity-0 group-hover:opacity-100 active:opacity-100 p-0.5 text-muted-foreground/30 hover:text-white/60 transition-all`}
+                          >
+                            <Reply className="w-3 h-3 rotate-180" />
+                          </button>
                         )}
                       </div>
-                      {user && (
-                        <button
-                          onClick={() => handleReply(msg)}
-                          className="opacity-0 group-hover:opacity-100 active:opacity-100 p-1 text-muted-foreground/30 hover:text-red-400 transition-all shrink-0 touch-manipulation"
-                        >
-                          <Reply className="w-3 h-3 rotate-180" />
-                        </button>
-                      )}
                     </div>
-                  </div>
-                </>
-              )}
-            </motion.div>
-          ))}
+                  </>
+                )}
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
       </div>
 
@@ -299,7 +311,7 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
 
       {/* Reply bar + Input */}
       {user && (tab === "public" || isParticipant) && (
-        <div className="border-t border-border">
+        <div className="border-t border-white/[0.06]">
           {replyTo && (
             <ChatReplyBar
               username={replyTo.username}
@@ -308,11 +320,11 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
               accentColor={tab === "public" ? "red" : "purple"}
             />
           )}
-          <div className="p-2 flex gap-2">
+          <div className="p-2 flex gap-1.5">
             <button
               onClick={() => setShowGifPicker(!showGifPicker)}
-              className={`h-8 w-8 flex items-center justify-center shrink-0 border transition-colors ${
-                showGifPicker ? "bg-red-500/20 border-red-500/40 text-red-400" : "bg-surface-2 border-border text-muted-foreground hover:text-foreground"
+              className={`h-8 w-8 flex items-center justify-center shrink-0 rounded-[6px] transition-colors ${
+                showGifPicker ? "bg-white/10 text-white/80" : "bg-white/[0.05] text-white/30 hover:text-white/60"
               }`}
             >
               <ImageIcon className="w-3.5 h-3.5" />
@@ -322,14 +334,14 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              placeholder={replyTo ? `Reply to @${replyTo.username}...` : (tab === "public" ? "Chat as spectator..." : "Fighter chat...")}
-              className="flex-1 h-8 text-xs bg-background border-border"
+              placeholder={replyTo ? `Reply to @${replyTo.username}...` : (tab === "public" ? "Say something..." : "Fighter chat...")}
+              className="flex-1 h-8 text-xs bg-white/[0.05] border-white/[0.07] text-white placeholder:text-white/25 rounded-[6px]"
             />
             <Button
               size="sm"
               onClick={() => handleSend()}
               disabled={!input.trim() || sending}
-              className={`h-8 px-3 ${tab === "public" ? "bg-red-500 hover:bg-red-600" : "bg-purple-500 hover:bg-purple-600"} text-white`}
+              className="h-8 px-3 bg-white/10 hover:bg-white/15 text-white/80 rounded-[6px]"
             >
               <Send className="w-3 h-3" />
             </Button>
