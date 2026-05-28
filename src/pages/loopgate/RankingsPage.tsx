@@ -22,6 +22,10 @@ const getRankStyle = (rank: number) => {
     avatarSize: "w-11 h-11",
     avatarBorder: "border-[#D4A857]/40",
     py: "py-3.5 px-4",
+    icon: Trophy,
+    bg: "bg-[#D4A857]/10",
+    border: "border border-[#D4A857]/30",
+    text: "text-[#D4A857]",
   };
   if (rank === 2) return {
     rankBadge: "bg-zinc-500 text-white",
@@ -31,6 +35,10 @@ const getRankStyle = (rank: number) => {
     avatarSize: "w-10 h-10",
     avatarBorder: "border-zinc-500/30",
     py: "py-3 px-4",
+    icon: null,
+    bg: "bg-zinc-500/10",
+    border: "border border-zinc-500/20",
+    text: "text-zinc-300",
   };
   if (rank === 3) return {
     rankBadge: "bg-amber-800 text-white",
@@ -40,6 +48,10 @@ const getRankStyle = (rank: number) => {
     avatarSize: "w-10 h-10",
     avatarBorder: "border-amber-800/30",
     py: "py-3 px-4",
+    icon: null,
+    bg: "bg-amber-800/10",
+    border: "border border-amber-800/20",
+    text: "text-amber-600",
   };
   if (rank <= 10) return {
     rankBadge: null,
@@ -49,6 +61,10 @@ const getRankStyle = (rank: number) => {
     avatarSize: "w-9 h-9",
     avatarBorder: "border-border/40",
     py: "py-2.5 px-4",
+    icon: null,
+    bg: "",
+    border: "",
+    text: "text-foreground",
   };
   return {
     rankBadge: null,
@@ -58,6 +74,10 @@ const getRankStyle = (rank: number) => {
     avatarSize: "w-8 h-8",
     avatarBorder: "border-border/20",
     py: "py-2 px-4",
+    icon: null,
+    bg: "",
+    border: "",
+    text: "text-muted-foreground",
   };
 };
 
