@@ -40,7 +40,7 @@ export default function JudgeOnboardingCard({ isOpen, onDismiss }: JudgeOnboardi
   const { profile } = useAuth();
   const [copied, setCopied] = useState(false);
 
-  const judgeLink = `https://loopgate.io/judge/${profile?.username || "you"}`;
+  const judgeLink = `https://loopgate.gg/judge/${profile?.username || "you"}`;
 
   const handleCopy = async () => {
     try {

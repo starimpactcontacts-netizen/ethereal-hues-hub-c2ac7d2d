@@ -38,7 +38,7 @@ export default function TournamentInviteModal({
   const { profile } = useAuth();
   const [copied, setCopied] = useState(false);
 
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://loopgate.io';
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://loopgate.gg';
   // Use clean slug URL instead of UUID
   const inviteLink = `${baseUrl}/sanctioned/${tournamentSlug}${profile?.username ? `?ref=${profile.username}` : ''}`;
 

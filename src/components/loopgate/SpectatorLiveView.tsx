@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Eye, Lock, Vote, Trophy, Clock } from "lucide-react";
+import { ArrowLeft, Eye, Lock, Vote, Trophy, Clock, ChevronRight } from "lucide-react";
 import { differenceInSeconds } from "date-fns";
 
 const teko = { fontFamily: "Teko, sans-serif" };
@@ -137,11 +137,10 @@ export default function SpectatorLiveView({
     );
   }
 
-  // ─── live — waiting for showcase to start ───
-  // Editors might submit early but spectators can't peek before deadline.
+  // ─── live — no edits submitted yet, waiting for first drop ───
   return (
     <div className="fixed inset-0 flex flex-col bg-black overflow-hidden">
-      <header className="shrink-0 px-4 pt-[env(safe-area-inset-top)]">
+      <header className="shrink-0 px-4 pt-[env(safe-area-inset-top)] border-b border-white/[0.06]">
         <div className="flex items-center gap-2 py-3">
           <button onClick={() => navigate(-1)} className="p-1.5 -ml-1.5 rounded-lg active:scale-95">
             <ArrowLeft className="w-[18px] h-[18px] text-white/70" />
@@ -150,38 +149,57 @@ export default function SpectatorLiveView({
             <p className="text-[9px] font-black uppercase tracking-[0.3em] text-red-400/80" style={teko}>Spectating · Live</p>
             <h1 className="text-[20px] font-black uppercase truncate text-white tracking-tight leading-none" style={teko}>{competitionName}</h1>
           </div>
-          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md border border-white/10 bg-white/[0.04] text-[10px] font-extrabold uppercase tracking-[0.2em] text-white/60" style={teko}>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-white/10 bg-white/[0.04] text-[10px] font-extrabold uppercase tracking-[0.2em] text-white/60" style={teko}>
             <Eye className="w-3 h-3" /> Watch
           </span>
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+      <main className="flex-1 flex flex-col items-center justify-center px-6 text-center gap-5">
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-sm"
+          className="flex flex-col items-center gap-4 w-full max-w-xs"
         >
-          <div className="w-14 h-14 mx-auto rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center mb-5">
-            <Clock className="w-7 h-7 text-white/70" />
+          <div className="flex items-center gap-2">
+            <span className="relative flex w-2 h-2">
+              <span className="absolute inline-flex w-full h-full rounded-full bg-red-500 opacity-70 animate-ping" />
+              <span className="relative inline-flex w-2 h-2 rounded-full bg-red-500" />
+            </span>
+            <span className="text-[9px] font-black uppercase tracking-[0.35em] text-red-400/90">Editing In Progress</span>
           </div>
+
           {competitionDeadline ? (
             <Countdown target={competitionDeadline} label="Showcase Drops In" />
           ) : (
-            <p className="text-[14px] text-white/60">Showcase starts soon</p>
+            <div className="flex items-center gap-2 text-white/40">
+              <Clock className="w-5 h-5" />
+              <span className="text-sm">Showcase starts soon</span>
+            </div>
           )}
-          <p className="mt-5 text-[12.5px] text-white/45 leading-relaxed">
-            Editors are heads-down right now. The moment the timer hits zero, every edit plays back here in sequence — and you'll get to hype them up.
+
+          <p className="text-[12px] text-white/35 leading-relaxed">
+            Edits will appear here the moment the first editor submits — stay on this screen.
           </p>
-          <div className="mt-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.04]">
+
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.04]">
             <span className="relative flex w-1.5 h-1.5">
               <span className="absolute inline-flex w-full h-full rounded-full bg-emerald-500 opacity-60 animate-ping" />
               <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-emerald-500" />
             </span>
-            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/60" style={teko}>
+            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/55" style={teko}>
               {submittedCount}/{participantsCount} Submitted
             </span>
           </div>
+
+          <button
+            onClick={() => navigate("/arena")}
+            className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-white text-black text-[13px] font-black uppercase tracking-wide active:scale-[0.98] transition-transform"
+            style={teko}
+          >
+            <span>Join Next Round</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </motion.div>
       </main>
     </div>

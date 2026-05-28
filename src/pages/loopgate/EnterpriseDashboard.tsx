@@ -109,7 +109,7 @@ export default function EnterpriseDashboard() {
             variant="outline"
             size="sm"
             className="border-gold/50 text-gold hover:bg-gold/10"
-            onClick={() => window.location.href = 'mailto:team@loopgate.io'}
+            onClick={() => window.location.href = 'mailto:team@loopgate.gg'}
           >
             Contact Support
           </Button>

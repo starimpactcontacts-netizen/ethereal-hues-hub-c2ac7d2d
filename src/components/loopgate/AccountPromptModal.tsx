@@ -56,7 +56,7 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
     try {
       const idVal = remembered.identifier.trim();
       let loginEmail = idVal;
-      const isEmail = loginEmail.includes('@') && loginEmail.includes('.') && !loginEmail.endsWith('@user.loopgate.io');
+      const isEmail = loginEmail.includes('@') && loginEmail.includes('.') && !loginEmail.endsWith('@user.loopgate.gg') && !loginEmail.endsWith('@user.loopgate.io');
       if (!isEmail && !loginEmail.includes('@')) {
         const uname = loginEmail.replace(/^@/, '').toLowerCase();
         const { data: profileRow } = await supabase
@@ -64,7 +64,7 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
           .select('email')
           .ilike('username', uname)
           .maybeSingle();
-        loginEmail = profileRow?.email || `${uname}@user.loopgate.io`;
+        loginEmail = profileRow?.email || `${uname}@user.loopgate.gg`;
       }
       let { error } = await supabase.auth.signInWithPassword({
         email: loginEmail,
@@ -149,7 +149,7 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
         if (existing?.id) {
           throw new Error('That username is taken');
         }
-        const synthEmail = `${cleanUsername}@user.loopgate.io`;
+        const synthEmail = `${cleanUsername}@user.loopgate.gg`;
         const { data, error } = await supabase.auth.signUp({
           email: synthEmail,
           password,
@@ -196,7 +196,7 @@ export default function AccountPromptModal({ isOpen, onClose, reason, onSuccess 
           if (profileRow?.email) {
             loginEmail = profileRow.email;
           } else {
-            loginEmail = `${uname}@user.loopgate.io`;
+            loginEmail = `${uname}@user.loopgate.gg`;
           }
         }
         let { error } = await supabase.auth.signInWithPassword({

@@ -230,7 +230,7 @@ export default function JudgeProfilePage() {
   };
 
   const handleShare = async () => {
-    const shareText = `Get your edit rated by @${judge?.username} on Loopgate — ${stats?.totalReviews || 0} verdicts filed.\n\nloopgate.io/judge/${judge?.username}`;
+    const shareText = `Get your edit rated by @${judge?.username} on Loopgate — ${stats?.totalReviews || 0} verdicts filed.\n\nloopgate.gg/judge/${judge?.username}`;
     if (navigator.share) {
       try {
         await navigator.share({ title: `${judge?.username} — QOI Judge`, text: shareText, url: window.location.href });

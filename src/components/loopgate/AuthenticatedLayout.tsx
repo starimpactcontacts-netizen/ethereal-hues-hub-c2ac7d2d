@@ -6,6 +6,7 @@ import LoadingScreen from './LoadingScreen';
 import TicketFAB from './TicketFAB';
 import LobbyMusicPlayer from './LobbyMusicPlayer';
 import GlobalWinCelebration from './GlobalWinCelebration';
+import CompCancelledModal from './CompCancelledModal';
 import { useGlobalNotifications } from '@/hooks/useGlobalNotifications';
 import { useGlobalTapSound } from '@/hooks/useGlobalTapSound';
 import { useRecoverBodyScroll } from '@/hooks/useRecoverBodyScroll';
@@ -13,8 +14,8 @@ import { getPageSafeFill } from '@/lib/pageSafeFill';
 
 export default function AuthenticatedLayout() {
   const location = useLocation();
-  const hideNavPaths = ['/admin', '/onboarding', '/studio', '/editorium', '/clippers', '/missions', '/shop', '/competition/', '/fight/', '/collabs', '/collab/', '/duo-battle/', '/event/'];
-  const hideHeaderPaths = ['/messages', '/studio', '/editorium', '/judge-panel', '/judges', '/clippers', '/missions', '/shop', '/competition/', '/fight/', '/collabs', '/collab/', '/duo-battle/', '/event/'];
+  const hideNavPaths = ['/admin', '/onboarding', '/editorium', '/missions', '/shop', '/competition/', '/fight/', '/collabs', '/collab/', '/duo-battle/', '/event/', '/units/'];
+  const hideHeaderPaths = ['/messages', '/editorium', '/judge-panel', '/judges', '/missions', '/shop', '/competition/', '/fight/', '/collabs', '/collab/', '/duo-battle/', '/event/', '/units/'];
   const hideNav = hideNavPaths.some(path => location.pathname.startsWith(path));
   const hideHeader = hideHeaderPaths.some(path => location.pathname.startsWith(path));
   const showNav = !hideNav;
@@ -55,6 +56,7 @@ export default function AuthenticatedLayout() {
       <TicketFAB />
       <LobbyMusicPlayer />
       <GlobalWinCelebration />
+      <CompCancelledModal />
     </div>
   );
 }

@@ -112,7 +112,7 @@ export default function EditoriumArticlePage() {
         description={article.seo_description || article.subtitle || `Read about ${article.title} on LOOPGATE Editorium`}
         type="article"
         image={article.cover_image_url || article.header_image_url || undefined}
-        canonical={`https://loopgate.io/editorium/${article.slug}`}
+        canonical={`https://loopgate.gg/editorium/${article.slug}`}
         keywords={article.seo_keywords?.join(', ') || article.tags?.join(', ')}
       />
 

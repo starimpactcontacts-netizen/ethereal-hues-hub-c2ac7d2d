@@ -42,6 +42,7 @@ interface AuthContextType {
   loading: boolean;
   needsPasswordSetup: boolean; // True if user signed up via magic link only
   signInWithGoogle: () => Promise<{ error: Error | null }>;
+  signInWithDiscord: () => Promise<{ error: Error | null }>;
   signInWithMagicLink: (email: string) => Promise<{ error: Error | null; tokenHash?: string }>;
   signInWithOtp: (email: string, token: string, tokenHash?: string) => Promise<{ error: Error | null }>;
   signInWithPassword: (email: string, password: string) => Promise<{ error: Error | null }>;
@@ -74,7 +75,7 @@ export function isDevMode(): boolean {
 // Mock user for dev mode - simulates authenticated admin
 const DEV_MOCK_USER = {
   id: 'dev-user-preview',
-  email: 'dev@loopgate.io',
+  email: 'dev@loopgate.gg',
   role: 'admin',
   aud: 'authenticated',
   created_at: new Date().toISOString(),
@@ -95,7 +96,7 @@ const DEV_MOCK_PROFILE: Profile = {
 
 // Demo account credentials for Apple Review (HARDCODED)
 const DEMO_ACCOUNT = {
-  email: 'dev@loopgate.io',
+  email: 'dev@loopgate.gg',
   username: 'DEV',
   password: 'admin!!!',
 };
@@ -351,6 +352,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error };
   };
 
+  const signInWithDiscord = async () => {
+    if (isNativeApp()) {
+      const redirectUrl = 'io.loopgate.app://auth-callback';
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'discord',
+        options: {
+          redirectTo: redirectUrl,
+          skipBrowserRedirect: true,
+        },
+      });
+      if (error) return { error };
+      if (data?.url) {
+        await Browser.open({
+          url: data.url,
+          presentationStyle: 'fullscreen',
+          toolbarColor: '#09090B',
+        });
+      }
+      return { error: null };
+    }
+    // Web: bypass Supabase Discord provider, use our own OAuth flow
+    const discordParams = new URLSearchParams({
+      client_id: '1508087834555187291',
+      redirect_uri: 'https://loopgate.gg/auth/discord/callback',
+      response_type: 'code',
+      scope: 'identify email',
+    });
+    window.location.href = `https://discord.com/oauth2/authorize?${discordParams}`;
+    return { error: null };
+  };
+
   const signInWithMagicLink = async (email: string) => {
     const redirectUrl = `${window.location.origin}/hub`;
     
@@ -574,8 +606,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // However the most reliable check: did they ever call signUpWithPassword or updatePassword?
   // We use has_password from profile as the source of truth when available
   const needsPasswordSetup = (() => {
-    // Google-only users don't need password setup prompt (different flow)
-    if (user?.app_metadata?.provider === 'google') return false;
+    // OAuth-only users don't need password setup prompt
+    if (user?.app_metadata?.provider === 'google' || user?.app_metadata?.provider === 'discord') return false;
     // If no user, no setup needed
     if (!user) return false;
     // Check if the user's sign-up method was password-based
@@ -604,6 +636,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         needsPasswordSetup,
         signInWithGoogle,
+        signInWithDiscord,
         signInWithMagicLink,
         signInWithOtp,
         signInWithPassword,
@@ -640,6 +673,7 @@ export function useAuth() {
       loading: false,
       needsPasswordSetup: false,
       signInWithGoogle: async () => ({ error: null }),
+      signInWithDiscord: async () => ({ error: null }),
       signInWithMagicLink: async () => ({ error: null, tokenHash: undefined }),
       signInWithOtp: async () => ({ error: null }),
       signInWithPassword: async () => ({ error: null }),

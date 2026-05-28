@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, ExternalLink, Loader2, Globe, Share2, Video } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,7 +11,7 @@ import CrewBadge from "@/components/loopgate/CrewBadge";
 import LevelBadge from "@/components/loopgate/LevelBadge";
 import ArchetypeBadge from "@/components/loopgate/ArchetypeBadge";
 import { SoftwareBadges } from "@/components/loopgate/SoftwareBadge";
-import SubmissionGrid from "@/components/loopgate/SubmissionGrid";
+import BattleEditsGrid from "@/components/loopgate/BattleEditsGrid";
 import MessageButton from "@/components/loopgate/MessageButton";
 import PublicJudgeVideos from "@/components/loopgate/PublicJudgeVideos";
 import loopgateLogo from "@/assets/loopgate-logo.png";
@@ -23,8 +24,6 @@ import { Users } from "lucide-react";
 import StatsRadarChart from "@/components/loopgate/StatsRadarChart";
 // IndexEarnBadge removed — Index is NOT money
 import { useEquippedBadges } from "@/hooks/useEquippedBadges";
-import LinkTreePreview from "@/components/loopgate/LinkTreePreview";
-import type { LinkPageSettings, EditorLink } from "@/hooks/useEditorLinkPage";
 
 interface PublicProfile {
   id: string;
@@ -81,6 +80,7 @@ type AppRole = 'admin' | 'moderator' | 'user' | 'judge' | 'dev' | 'enterprise';
 export default function PublicProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [resolvedUserId, setResolvedUserId] = useState<string | null>(null);
   const [platforms, setPlatforms] = useState<ConnectedPlatform[]>([]);
@@ -88,14 +88,12 @@ export default function PublicProfilePage() {
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [userCrew, setUserCrew] = useState<{ id: string; name: string; emblem: string; avatar_url: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'videos' | 'edits' | 'links' | 'about'>('edits');
+  const [activeTab, setActiveTab] = useState<'videos' | 'edits' | 'about'>('edits');
    const [submissionCount, setSubmissionCount] = useState(0);
    const [videoCount, setVideoCount] = useState(0);
    const [isJudge, setIsJudge] = useState(false);
    const [realStats, setRealStats] = useState<{ totalEvents: number; winRate: number; totalWins: number }>({ totalEvents: 0, winRate: 0, totalWins: 0 });
    const [realConnectionCount, setRealConnectionCount] = useState(0);
-  const [linkPageSettings, setLinkPageSettings] = useState<LinkPageSettings | null>(null);
-  const [editorLinks, setEditorLinks] = useState<EditorLink[]>([]);
   const { hasEquippedOG } = useEquippedBadges(resolvedUserId || undefined);
 
   useEffect(() => {
@@ -254,14 +252,6 @@ export default function PublicProfilePage() {
         .or(`sender_id.eq.${uid},receiver_id.eq.${uid}`);
       setRealConnectionCount(connCount || 0);
 
-      // Fetch link page
-      const [linkPageRes, linksRes] = await Promise.all([
-        supabase.from("editor_link_pages").select("*").eq("user_id", profileData.id).eq("is_published", true).maybeSingle(),
-        supabase.from("editor_links").select("*").eq("user_id", profileData.id).eq("is_active", true).order("sort_order", { ascending: true }),
-      ]);
-      if (linkPageRes.data) setLinkPageSettings(linkPageRes.data as unknown as LinkPageSettings);
-      if (linksRes.data) setEditorLinks(linksRes.data as unknown as EditorLink[]);
-
       setLoading(false);
     };
 
@@ -387,6 +377,13 @@ export default function PublicProfilePage() {
               <button onClick={handleShare} className="p-1.5 text-muted-foreground hover:text-foreground transition-colors">
                 <Share2 size={16} />
               </button>
+              <ReportUserButton
+                userId={profile.id}
+                username={profile.username}
+                context="profile"
+                contextId={profile.id}
+                variant="icon"
+              />
             </div>
           </div>
 
@@ -412,15 +409,6 @@ export default function PublicProfilePage() {
               {(hasEquippedOG || profile.is_founding_member) && <FoundingBadge size="sm" />}
             </div>
             <p className="text-[11px] text-muted-foreground/60 mb-3">@{profile.username}</p>
-            <div className="-mt-2 mb-3">
-              <ReportUserButton
-                userId={profile.id}
-                username={profile.username}
-                context="profile"
-                contextId={profile.id}
-                variant="text"
-              />
-            </div>
 
             {/* TikTok stats row */}
             <div className="flex items-center justify-center mb-3 w-full max-w-[280px]">
@@ -511,14 +499,6 @@ export default function PublicProfilePage() {
             }`}>
             Edits
           </button>
-          {platforms.length > 0 && (
-            <button onClick={() => setActiveTab('links')}
-              className={`flex-1 py-2.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${
-                activeTab === 'links' ? 'text-gold border-b-2 border-gold' : 'text-muted-foreground/50 hover:text-foreground'
-              }`}>
-              Links
-            </button>
-          )}
           <button onClick={() => setActiveTab('about')}
             className={`flex-1 py-2.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${
               activeTab === 'about' ? 'text-gold border-b-2 border-gold' : 'text-muted-foreground/50 hover:text-foreground'
@@ -532,53 +512,7 @@ export default function PublicProfilePage() {
       {activeTab === 'videos' && isJudge ? (
         <PublicJudgeVideos userId={resolvedUserId || ''} />
       ) : activeTab === 'edits' ? (
-        <SubmissionGrid userId={resolvedUserId || ''} />
-      ) : activeTab === 'links' ? (
-        linkPageSettings ? (
-          <LinkTreePreview
-            settings={linkPageSettings}
-            links={editorLinks}
-            profile={profile}
-            isPublic
-            platforms={platforms}
-            stats={{ classLetter: editorClass.letter, indexScore: profile.global_index_score || 0, rank: rank || 0 }}
-          />
-        ) : (
-          <div className="px-4 py-5 space-y-2">
-            {platforms.map((p) => {
-              const PlatformIcon = p.platform === 'tiktok' ? SiTiktok
-                : p.platform === 'instagram' ? SiInstagram
-                : p.platform === 'youtube' ? SiYoutube
-                : Globe;
-              return (
-                <a key={p.id} href={p.platform_url} target="_blank" rel="noopener noreferrer"
-                  className="group flex items-center gap-3 p-3 bg-foreground/[0.03] border border-border/20 rounded-lg hover:border-gold/30 transition-all">
-                  <div className="w-8 h-8 rounded-full bg-foreground/[0.06] flex items-center justify-center text-muted-foreground group-hover:text-foreground transition-colors">
-                    <PlatformIcon size={16} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-xs text-foreground">{platformLabels[p.platform] || p.platform}</p>
-                    <p className="text-[10px] text-muted-foreground/50 truncate">@{p.platform_username}</p>
-                  </div>
-                  <ExternalLink size={12} className="text-muted-foreground/30 group-hover:text-gold transition-colors" />
-                </a>
-              );
-            })}
-            {profile.portfolio_url && (
-              <a href={profile.portfolio_url} target="_blank" rel="noopener noreferrer"
-                className="group flex items-center gap-3 p-3 bg-foreground/[0.03] border border-border/20 rounded-lg hover:border-gold/30 transition-all">
-                <div className="w-8 h-8 rounded-full bg-foreground/[0.06] flex items-center justify-center text-muted-foreground group-hover:text-foreground transition-colors">
-                  <Globe size={16} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-xs text-foreground">Portfolio</p>
-                  <p className="text-[10px] text-muted-foreground/50 truncate">{profile.portfolio_url.replace(/^https?:\/\//, '').split('/')[0]}</p>
-                </div>
-                <ExternalLink size={12} className="text-muted-foreground/30 group-hover:text-gold transition-colors" />
-              </a>
-            )}
-          </div>
-        )
+        <BattleEditsGrid userId={resolvedUserId || ''} isOwner={!!currentUser && currentUser.id === resolvedUserId} />
       ) : (
         <div className="px-4 py-5 space-y-5">
           {/* Pentagon Radar Stats */}

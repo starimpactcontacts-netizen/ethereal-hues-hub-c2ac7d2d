@@ -227,12 +227,12 @@ const jsonLd = {
   "@type": "WebApplication",
   "name": "Loopy Rating — Video Edit Analyzer",
   "alternateName": "Rate My Edit",
-  "url": "https://loopgate.io/loopy",
+  "url": "https://loopgate.gg/loopy",
   "description": "Upload your video edit and get instant AI-powered scores across 5 diagnostic pillars. Free, brutal, and accurate.",
   "applicationCategory": "MultimediaApplication",
   "operatingSystem": "Web",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-  "creator": { "@type": "Organization", "name": "Loopgate", "url": "https://loopgate.io" },
+  "creator": { "@type": "Organization", "name": "Loopgate", "url": "https://loopgate.gg" },
   "featureList": ["Direct video upload analysis", "Frame-by-frame AI evaluation", "5-pillar QOI scoring", "Viral-worthy feedback", "Screenshot-ready results"],
 };
 
@@ -433,7 +433,7 @@ export default function LoopyPage() {
           navigator.share({
             files: [file],
             title: `My Loopy Rating: ${rating?.grade} (${rating?.total}/100)`,
-            text: `${GRADE_REACTIONS[rating?.grade || 'C']?.emoji} I scored ${rating?.total}/100 on Loopy Rating!\n\nRate your edit → loopgate.io/loopy`,
+            text: `${GRADE_REACTIONS[rating?.grade || 'C']?.emoji} I scored ${rating?.total}/100 on Loopy Rating!\n\nRate your edit → loopgate.gg/loopy`,
           }).catch(() => {});
         } else {
           const url = URL.createObjectURL(blob);
@@ -459,10 +459,10 @@ export default function LoopyPage() {
         <title>Rate My Edit — Free AI Video Analysis | Loopy by Loopgate</title>
         <meta name="description" content="Upload your video edit and get instant AI-powered diagnostic scores. Brutally honest, hilariously accurate. 5 pillars, 100 points, zero filter. Free." />
         <meta name="keywords" content="rate my edit, video edit rating, AMV rating, edit analyzer, free edit feedback, loopy rating, video editing score, edit quality" />
-        <link rel="canonical" href="https://loopgate.io/loopy" />
+        <link rel="canonical" href="https://loopgate.gg/loopy" />
         <meta property="og:title" content="Rate My Edit — Drop Your Video, Get Roasted (or Hyped)" />
         <meta property="og:description" content="Upload your edit. Loopy will analyze every frame and tell you exactly how good (or bad) it is. No cap." />
-        <meta property="og:url" content="https://loopgate.io/loopy" />
+        <meta property="og:url" content="https://loopgate.gg/loopy" />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Loopy Rating — The Edit Judge That Doesn't Hold Back" />
@@ -802,7 +802,7 @@ export default function LoopyPage() {
 
                     {/* Watermark for screenshots */}
                     <div className="text-center mt-4">
-                      <span className="text-[8px] text-white/10 uppercase tracking-[0.3em]" style={TEKO}>loopgate.io/loopy</span>
+                      <span className="text-[8px] text-white/10 uppercase tracking-[0.3em]" style={TEKO}>loopgate.gg/loopy</span>
                     </div>
                   </div>
                 </div>

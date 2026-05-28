@@ -1,9 +1,27 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, Shuffle, Upload, Users, Swords, Music, Play, Pause, X, Film, Search, Loader2 } from 'lucide-react';
+import { Check, Shuffle, Upload, Users, Swords, Music, Play, Pause, X, Film, Search, Loader2, Star } from 'lucide-react';
 import { createPortal } from 'react-dom';
-import { SCENEPACKS, type Scenepack } from './scenepacks';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+
+const DIFF_BADGE: Record<string, string> = {
+  easy:      'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30',
+  normal:    'bg-blue-500/20 text-blue-300 border border-blue-500/30',
+  hard:      'bg-orange-500/20 text-orange-300 border border-orange-500/30',
+  nightmare: 'bg-red-500/20 text-red-300 border border-red-500/30',
+};
+
+const DIFF_STARS: Record<string, number> = { easy: 2, normal: 3, hard: 4, nightmare: 5 };
+const DIFF_STAR_COLOR: Record<string, string> = {
+  easy: 'text-emerald-400', normal: 'text-blue-400', hard: 'text-orange-400', nightmare: 'text-red-400',
+};
+const DIFF_STAR_BG: Record<string, string> = {
+  easy: 'bg-emerald-500/15 border-emerald-500/35',
+  normal: 'bg-blue-500/15 border-blue-500/35',
+  hard: 'bg-orange-500/15 border-orange-500/35',
+  nightmare: 'bg-red-500/20 border-red-500/50',
+};
 
 interface Player {
   username: string;
@@ -22,12 +40,21 @@ interface Props {
   onCancel?: () => void;
 }
 
+interface Scenepack {
+  id: string;
+  name: string;
+  poster: string;
+  packCount: number;
+}
+
 interface Song {
   id: string;
   title: string;
   artist: string;
   cover: string | null;
   preview: string | null;
+  difficulty?: string | null;
+  deezer_id?: number | null;
 }
 
 const PHASE_TIMER_SEC = 180;
@@ -83,6 +110,7 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
   const [tab, setTab] = useState<Tab>('scenepack');
   const [timeLeft, setTimeLeft] = useState(PHASE_TIMER_SEC);
   const [songs, setSongs] = useState<Song[]>(FALLBACK_SONGS);
+  const [scenepacks, setScenepacks] = useState<Scenepack[]>([]);
 
   // STRICT ISOLATION: local actions only mutate `mine`; opponent picks are
   // fetched from the backend only after both players are locked or timer expires.
@@ -102,7 +130,15 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
   const startingRef = useRef(false);
   const [previewingId, setPreviewingId] = useState<string | null>(null);
 
-  // Deezer global song search
+  // Single persistent audio element — reusing it keeps mobile browser user-gesture context intact
+  useEffect(() => {
+    const a = new Audio();
+    a.volume = 0.5;
+    a.preload = 'none';
+    previewRef.current = a;
+    return () => { a.pause(); a.src = ''; };
+  }, []);
+
   const [deezerQuery, setDeezerQuery] = useState('');
   const [deezerLoading, setDeezerLoading] = useState(false);
   const [deezerResults, setDeezerResults] = useState<Song[]>([]);
@@ -201,12 +237,33 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
     if (state?.bothReady || state?.reveal) await startFromSelection();
   };
 
-  // Load songs from radio_tracks
+  // Load scenepacks from DB
   useEffect(() => {
     if (!open) return;
     supabase
-      .from('radio_tracks' as any)
-      .select('id, song_name, artist_name, cover_url, preview_url, audio_url, is_priority, is_featured')
+      .from('scenepack_pool')
+      .select('id, title, thumbnail_url, pack_count')
+      .eq('active', true)
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: false })
+      .then(({ data }) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setScenepacks(data.map((p: any) => ({
+            id: p.id,
+            name: p.title,
+            poster: p.thumbnail_url || '',
+            packCount: p.pack_count || 0,
+          })));
+        }
+      });
+  }, [open]);
+
+  // Load songs from battle_songs
+  useEffect(() => {
+    if (!open) return;
+    supabase
+      .from('battle_songs' as any)
+      .select('id, song_name, artist_name, cover_url, preview_url, audio_url, is_priority, is_featured, difficulty, deezer_id')
       .eq('is_featured', true)
       .order('is_priority', { ascending: false })
       .limit(60)
@@ -218,6 +275,8 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
             artist: t.artist_name,
             cover: t.cover_url,
             preview: t.preview_url || t.audio_url,
+            difficulty: t.difficulty || null,
+            deezer_id: t.deezer_id || null,
           })));
         }
       });
@@ -316,44 +375,78 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
+  // Force-reveal both players' picks when intro starts (poll stopped at this point)
+  useEffect(() => {
+    if (phase !== 'intro') return;
+    let cancelled = false;
+    supabase.rpc('get_quick_fight_selection_state' as any, { p_fight_id: fightId } as any)
+      .then(({ data }) => {
+        if (cancelled || !data) return;
+        applySelectionState(data as any);
+      });
+    return () => { cancelled = true; };
+  }, [phase, fightId, applySelectionState]);
+
   function handleTimeout() {
     const pool = songs.length ? songs : FALLBACK_SONGS;
-    // Timer expiry auto-fills ONLY this player's missing picks, then asks backend to start.
+    const packPool = scenepacks.length ? scenepacks : [];
+    const randomPack = packPool.length ? packPool[Math.floor(Math.random() * packPool.length)] : null;
+    const randomSong = pool[Math.floor(Math.random() * pool.length)];
     const next = {
       ...mine,
-      pack: mine.pack || SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)],
-      song: mine.song || pool[Math.floor(Math.random() * pool.length)],
+      pack: mine.pack || randomPack,
+      song: mine.song || randomSong,
       ready: true,
     } as PlayerPicks;
+    const assignedPack = !mine.pack && randomPack;
+    const assignedSong = !mine.song && randomSong;
+    if (assignedPack || assignedSong) {
+      const parts: string[] = [];
+      if (assignedPack) parts.push(`scenepack: ${randomPack!.name}`);
+      if (assignedSong) parts.push(`song: ${randomSong.title}`);
+      toast(`🎲 Time's up! Random picks assigned — ${parts.join(', ')}`, { duration: 6000 });
+    }
     setMine(next);
     saveSelection(next).finally(() => startFromSelection()).catch(() => {});
   }
 
   function pickRandomPack() {
-    setMyPack(SCENEPACKS[Math.floor(Math.random() * SCENEPACKS.length)]);
+    if (!scenepacks.length) return;
+    setMyPack(scenepacks[Math.floor(Math.random() * scenepacks.length)]);
   }
   function pickRandomSong() {
     const pool = songs.length ? songs : FALLBACK_SONGS;
     setMySong(pool[Math.floor(Math.random() * pool.length)]);
   }
 
-  function togglePreview(s: Song) {
-    if (!s.preview) return;
+  async function togglePreview(s: Song) {
+    if (!s.preview && !s.deezer_id) return;
+    const a = previewRef.current;
+    if (!a) return;
+
     if (previewingId === s.id) {
-      previewRef.current?.pause();
+      a.pause();
       setPreviewingId(null);
       return;
     }
-    if (previewRef.current) previewRef.current.pause();
-    const a = new Audio(s.preview);
-    a.volume = 0.5;
-    a.play().catch(() => {});
-    previewRef.current = a;
-    setPreviewingId(s.id);
-    setTimeout(() => { a.pause(); setPreviewingId(p => p === s.id ? null : p); }, 5000);
-  }
 
-  useEffect(() => () => { previewRef.current?.pause(); }, []);
+    a.pause();
+    setPreviewingId(s.id);
+
+    let src = s.preview;
+    if (s.deezer_id) {
+      try {
+        const res = await fetch(`https://api.deezer.com/track/${s.deezer_id}`);
+        const data = await res.json();
+        if (data?.preview) src = data.preview;
+      } catch { /* fall back to stored url */ }
+    }
+    if (!src) { setPreviewingId(null); return; }
+    a.src = src;
+    a.onended = () => setPreviewingId(p => p === s.id ? null : p);
+    a.load();
+    a.play().catch(() => setPreviewingId(null));
+  }
 
   if (!open) return null;
 
@@ -403,37 +496,46 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
 
             {tab === 'scenepack' && (
               <div className="flex-1 overflow-y-auto px-3">
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {SCENEPACKS.map((p) => {
-                    const picked = mine.pack?.id === p.id;
-                    return (
-                      <button key={p.id} onClick={() => setMyPack(p)} disabled={mine.ready}
-                        className={`relative rounded-xl overflow-hidden border-2 transition-all active:scale-[0.97] disabled:opacity-70
-                          ${picked ? (mySide === 'red' ? 'border-red-500 shadow-[0_0_24px_rgba(239,68,68,0.55)]' : 'border-blue-500 shadow-[0_0_24px_rgba(59,130,246,0.55)]') :
-                            'border-white/10 hover:border-white/30'}`}>
-                        <div className="aspect-[2/3] w-full bg-surface-2">
-                          <img src={p.poster} alt={p.name} className="w-full h-full object-cover" />
-                        </div>
-                        <div className="px-2 py-1.5 bg-black/85 text-left">
-                          <p className="text-[11px] font-bold truncate">{p.name}</p>
-                          <p className="text-[9px] text-muted-foreground">{p.packCount} scenepacks</p>
-                        </div>
-                        {picked && (
-                          <div className={`absolute top-1.5 left-1.5 w-6 h-6 rounded-full ${mySide === 'red' ? 'bg-red-500' : 'bg-blue-500'} flex items-center justify-center shadow-lg`}>
-                            <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                {scenepacks.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 gap-2 text-white/30">
+                    <Film className="w-8 h-8" />
+                    <p className="text-xs">No scenepacks available</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {scenepacks.map((p) => {
+                      const picked = mine.pack?.id === p.id;
+                      return (
+                        <button key={p.id} onClick={() => setMyPack(p)} disabled={mine.ready}
+                          className={`relative rounded-xl overflow-hidden border-2 transition-all active:scale-[0.97] disabled:opacity-70
+                            ${picked ? (mySide === 'red' ? 'border-red-500 shadow-[0_0_24px_rgba(239,68,68,0.55)]' : 'border-blue-500 shadow-[0_0_24px_rgba(59,130,246,0.55)]') :
+                              'border-white/10 hover:border-white/30'}`}>
+                          <div className="aspect-[2/3] w-full bg-white/5 flex items-center justify-center overflow-hidden">
+                            {p.poster
+                              ? <img src={p.poster} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                              : <Film className="w-8 h-8 text-white/20" />}
                           </div>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
+                          <div className="px-2 py-1.5 bg-black/85 text-left">
+                            <p className="text-[11px] font-bold truncate">{p.name}</p>
+                            <p className="text-[9px] text-muted-foreground">{p.packCount} scenepacks</p>
+                          </div>
+                          {picked && (
+                            <div className={`absolute top-1.5 left-1.5 w-6 h-6 rounded-full ${mySide === 'red' ? 'bg-red-500' : 'bg-blue-500'} flex items-center justify-center shadow-lg`}>
+                              <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
 
             {tab === 'song' && (
-              <div className="flex-1 overflow-y-auto px-3">
-                {/* Deezer global search */}
-                <div className="mb-3">
+              <div className="flex-1 overflow-y-auto overflow-x-hidden">
+                {/* Search bar */}
+                <div className="mb-3 px-3">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
                     <input
@@ -463,39 +565,116 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {(deezerResults.length > 0 ? deezerResults : songs).map((s) => {
-                    const picked = mine.song?.id === s.id;
-                    const playing = previewingId === s.id;
-                    return (
-                      <div key={s.id} className={`relative rounded-xl overflow-hidden border-2 transition-all
-                          ${picked ? (mySide === 'red' ? 'border-red-500 shadow-[0_0_24px_rgba(239,68,68,0.55)]' : 'border-blue-500 shadow-[0_0_24px_rgba(59,130,246,0.55)]') :
-                            'border-white/10'}`}>
-                        <button onClick={() => setMySong(s)} disabled={mine.ready} className="w-full text-left disabled:opacity-70">
-                          <div className="aspect-square w-full bg-surface-2 flex items-center justify-center">
-                            {s.cover
-                              ? <img src={s.cover} alt={s.title} className="w-full h-full object-cover" />
-                              : <Music className="w-8 h-8 text-muted-foreground/40" />}
-                          </div>
-                          <div className="px-2 py-1.5 bg-black/85">
-                            <p className="text-[11px] font-bold truncate">{s.title}</p>
-                            <p className="text-[9px] text-muted-foreground truncate">{s.artist}</p>
-                          </div>
-                        </button>
-                        {s.preview && (
-                          <button onClick={() => togglePreview(s)} className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/80 backdrop-blur flex items-center justify-center border border-white/20 active:scale-90">
-                            {playing ? <Pause className="w-3 h-3 text-white" /> : <Play className="w-3 h-3 text-white ml-0.5" />}
+                {deezerResults.length > 0 ? (
+                  /* Deezer search results — grid cards */
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 px-3">
+                    {deezerResults.map((s) => {
+                      const picked = mine.song?.id === s.id;
+                      const playing = previewingId === s.id;
+                      return (
+                        <div key={s.id} className={`relative rounded-xl overflow-hidden border-2 transition-all
+                            ${picked ? (mySide === 'red' ? 'border-red-500 shadow-[0_0_24px_rgba(239,68,68,0.55)]' : 'border-blue-500 shadow-[0_0_24px_rgba(59,130,246,0.55)]') : 'border-white/10'}`}>
+                          <button onClick={() => setMySong(s)} disabled={mine.ready} className="w-full text-left disabled:opacity-70">
+                            <div className="aspect-square w-full bg-surface-2 flex items-center justify-center overflow-hidden relative">
+                              <Music className="w-8 h-8 text-muted-foreground/40" />
+                              {s.cover && <img src={s.cover} alt={s.title} className="absolute inset-0 w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
+                            </div>
+                            <div className="px-2 py-1.5 bg-black/85">
+                              <p className="text-[11px] font-bold truncate">{s.title}</p>
+                              <p className="text-[9px] text-muted-foreground truncate mt-0.5">{s.artist}</p>
+                            </div>
                           </button>
-                        )}
-                        {picked && (
-                          <div className={`absolute top-1.5 left-1.5 w-6 h-6 rounded-full ${mySide === 'red' ? 'bg-red-500' : 'bg-blue-500'} flex items-center justify-center shadow-lg`}>
-                            <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
-                          </div>
-                        )}
+                          {(s.preview || s.deezer_id) && (
+                            <button onClick={() => togglePreview(s)} className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/80 backdrop-blur flex items-center justify-center border border-white/20 active:scale-90">
+                              {playing ? <Pause className="w-3 h-3 text-white" /> : <Play className="w-3 h-3 text-white ml-0.5" />}
+                            </button>
+                          )}
+                          {picked && (
+                            <div className={`absolute top-1.5 left-1.5 w-6 h-6 rounded-full ${mySide === 'red' ? 'bg-red-500' : 'bg-blue-500'} flex items-center justify-center shadow-lg`}>
+                              <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  /* osu!-style curated library list */
+                  <div className="relative">
+                    {/* Blurred cover background from selected song */}
+                    {mine.song?.cover && (
+                      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                        <img src={mine.song.cover} alt="" className="w-full h-full object-cover blur-2xl scale-110 opacity-[0.13]" />
                       </div>
-                    );
-                  })}
-                </div>
+                    )}
+                    <div className="relative space-y-px">
+                      {songs.map((s) => {
+                        const picked = mine.song?.id === s.id;
+                        const playing = previewingId === s.id;
+                        const red = mySide === 'red';
+                        const starCount = DIFF_STARS[s.difficulty ?? ''] ?? 0;
+                        const starColor = DIFF_STAR_COLOR[s.difficulty ?? ''] ?? 'text-white/30';
+                        const starBg = DIFF_STAR_BG[s.difficulty ?? ''] ?? 'bg-white/5 border-white/15';
+                        return (
+                          <div
+                            key={s.id}
+                            className={`flex items-stretch transition-all duration-200 ${picked ? 'pl-0 h-[62px]' : 'pl-4 h-[52px]'}`}
+                          >
+                            {/* Cover thumbnail */}
+                            <div className={`shrink-0 bg-black/50 overflow-hidden relative transition-all duration-200 ${picked ? 'w-[62px]' : 'w-[52px]'}`}>
+                              <Music className="absolute inset-0 m-auto w-4 h-4 text-white/20" />
+                              {s.cover && (
+                                <img src={s.cover} alt="" className="absolute inset-0 w-full h-full object-cover"
+                                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                              )}
+                            </div>
+                            {/* Song ribbon */}
+                            <button
+                              onClick={() => !mine.ready && setMySong(s)}
+                              disabled={mine.ready}
+                              style={{ clipPath: 'polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%)' }}
+                              className={`flex-1 flex items-center gap-2 px-3 text-left min-w-0 disabled:opacity-60 transition-all duration-200
+                                ${picked
+                                  ? red
+                                    ? 'bg-gradient-to-r from-red-600 via-red-800/90 to-black/60 border-l-[3px] border-red-400'
+                                    : 'bg-gradient-to-r from-blue-600 via-blue-800/90 to-black/60 border-l-[3px] border-blue-400'
+                                  : 'bg-black/55 hover:bg-white/[0.07]'}`}
+                            >
+                              <div className="flex-1 min-w-0">
+                                <p className={`font-bold truncate leading-snug ${picked ? 'text-white text-[14px]' : 'text-white/70 text-[12px]'}`}>{s.title}</p>
+                                <p className={`truncate ${picked ? 'text-[11px] text-white/55' : 'text-[9px] text-white/30'}`}>{s.artist}</p>
+                              </div>
+                              {s.difficulty && (
+                                <div className={`flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-lg border ${starBg} shrink-0`}>
+                                  <div className="flex items-center gap-px">
+                                    {Array.from({ length: 5 }).map((_, i) => (
+                                      <Star key={i} className={`${picked ? 'w-2.5 h-2.5' : 'w-2 h-2'} ${i < starCount ? `fill-current ${starColor}` : 'text-white/10'}`} />
+                                    ))}
+                                  </div>
+                                  <span className={`text-[7px] font-black uppercase tracking-wider leading-none ${starColor}`}>{s.difficulty}</span>
+                                </div>
+                              )}
+                            </button>
+                            {/* Preview / selection indicator */}
+                            <button
+                              onClick={() => (s.preview || s.deezer_id) ? togglePreview(s) : undefined}
+                              className={`w-11 shrink-0 flex items-center justify-center transition-all duration-200
+                                ${picked ? (red ? 'bg-red-800/70' : 'bg-blue-800/70') : 'bg-black/35 hover:bg-white/[0.06]'}`}
+                            >
+                              {playing
+                                ? <Pause className="w-3.5 h-3.5 text-white" />
+                                : picked
+                                  ? <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                                  : (s.preview || s.deezer_id)
+                                    ? <Play className="w-3 h-3 text-white/50 ml-0.5" />
+                                    : null}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -516,23 +695,45 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
         {phase === 'intro' && (
           <motion.div key="intro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="absolute inset-0 flex">
-            <IntroSide color="red"  player={redPlayer}  pack={redPicks.pack}  song={redPicks.song}  pct={intro.pct} />
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="text-center">
-                <motion.div animate={{ scale: [1, 1.15, 1] }} transition={{ duration: 0.9, repeat: Infinity }}>
-                  <Swords className="w-12 h-12 mx-auto text-gold mb-2" />
-                  <p className="font-display text-6xl text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]">VS</p>
+            <IntroSide color="red"  player={redPlayer}  pack={redPicks.pack}  song={redPicks.song} />
+            <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+              <div className="flex flex-col items-center">
+                <motion.div animate={{ scale: [1, 1.12, 1] }} transition={{ duration: 0.9, repeat: Infinity }} className="flex flex-col items-center">
+                  <Swords className="w-8 h-8 text-amber-400 mb-1" style={{ filter: 'drop-shadow(0 0 8px rgba(245,158,11,0.6))' }} />
+                  <p
+                    className="text-[72px] leading-none font-black text-white"
+                    style={{ fontFamily: 'Teko, sans-serif', WebkitTextStroke: '3px #000', textShadow: '4px 4px 0 #000', letterSpacing: '0.02em' }}
+                  >
+                    VS
+                  </p>
                 </motion.div>
-                <p className="mt-3 text-[10px] uppercase tracking-[0.3em] text-white/80 font-bold">Fight Starting</p>
-                {intro.count > 0 && intro.pct >= 100 && (
-                  <p className="mt-2 font-display text-4xl text-red-500 tabular-nums">{intro.count}</p>
+                <p className="mt-1 text-[8px] uppercase tracking-[0.4em] text-white/50 font-black">Fight Starting</p>
+                {intro.pct >= 100 && intro.count > 0 && (
+                  <motion.p
+                    key={intro.count}
+                    initial={{ scale: 0.6, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: 'spring', stiffness: 380, damping: 18 }}
+                    className="mt-1 text-[48px] leading-none font-black text-red-500"
+                    style={{ fontFamily: 'Teko, sans-serif', WebkitTextStroke: '2px #000', textShadow: '3px 3px 0 #000' }}
+                  >
+                    {intro.count}
+                  </motion.p>
                 )}
-                {intro.count === 0 && intro.pct >= 100 && (
-                  <p className="mt-2 font-display text-4xl text-emerald-400">START!</p>
+                {intro.pct >= 100 && intro.count === 0 && (
+                  <motion.p
+                    initial={{ scale: 0.6, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: 'spring', stiffness: 380, damping: 18 }}
+                    className="mt-1 text-[48px] leading-none font-black text-emerald-400"
+                    style={{ fontFamily: 'Teko, sans-serif', WebkitTextStroke: '2px #000', textShadow: '3px 3px 0 #000' }}
+                  >
+                    GO!
+                  </motion.p>
                 )}
               </div>
             </div>
-            <IntroSide color="blue" player={bluePlayer} pack={bluePicks.pack} song={bluePicks.song} pct={intro.pct} mirrored />
+            <IntroSide color="blue" player={bluePlayer} pack={bluePicks.pack} song={bluePicks.song} mirrored />
           </motion.div>
         )}
       </AnimatePresence>
@@ -657,36 +858,62 @@ function BottomControls({
   );
 }
 
-function IntroSide({ color, player, pack, song, pct, mirrored }: { color: 'red' | 'blue'; player: Player; pack: Scenepack | null; song: Song | null; pct: number; mirrored?: boolean }) {
-  const bg = color === 'red'
-    ? 'linear-gradient(135deg, rgba(239,68,68,0.35), rgba(0,0,0,0.95) 70%)'
-    : 'linear-gradient(225deg, rgba(59,130,246,0.35), rgba(0,0,0,0.95) 70%)';
-  const tint = color === 'red' ? 'text-red-400' : 'text-blue-400';
+function IntroSide({ color, player, pack, song, mirrored }: { color: 'red' | 'blue'; player: Player; pack: Scenepack | null; song: Song | null; mirrored?: boolean }) {
+  const isRed = color === 'red';
+  const borderColor = isRed ? '#ef4444' : '#3b82f6';
+  const accent = isRed ? 'text-red-400' : 'text-blue-400';
+  const grad = isRed
+    ? 'linear-gradient(180deg, rgba(239,68,68,0.25) 0%, rgba(0,0,0,0.98) 100%)'
+    : 'linear-gradient(180deg, rgba(59,130,246,0.25) 0%, rgba(0,0,0,0.98) 100%)';
   return (
-    <motion.div initial={{ x: mirrored ? 60 : -60, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.5 }}
-      className={`flex-1 relative overflow-hidden ${mirrored ? 'text-right items-end' : 'text-left items-start'} flex flex-col justify-center p-5`}
-      style={{ background: bg }}>
-      {pack && (
-        <img src={pack.poster} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" />
+    <motion.div
+      initial={{ x: mirrored ? 50 : -50, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      transition={{ duration: 0.45 }}
+      className="flex-1 relative overflow-hidden flex flex-col items-center justify-center px-4 py-6"
+      style={{ background: grad }}
+    >
+      {pack?.poster && (
+        <img src={pack.poster} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.12]" />
       )}
-      <div className={`relative z-10 ${mirrored ? 'ml-auto' : ''}`}>
-        <motion.div initial={{ scale: 0.85 }} animate={{ scale: 1 }} transition={{ duration: 0.6 }}
-          className={`w-24 h-24 rounded-full overflow-hidden border-4 ${color === 'red' ? 'border-red-500' : 'border-blue-500'} bg-surface-2 mb-3 ${mirrored ? 'ml-auto' : ''}`}>
+      <div className="relative z-10 flex flex-col items-center text-center w-full">
+        <motion.div
+          initial={{ scale: 0.8 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="w-24 h-24 rounded-full overflow-hidden border-4 bg-black mb-2.5"
+          style={{ borderColor }}
+        >
           {player.avatarUrl
             ? <img src={player.avatarUrl} alt={player.username} className="w-full h-full object-cover" />
-            : <div className="w-full h-full flex items-center justify-center text-3xl font-bold">{player.username[0]?.toUpperCase()}</div>}
+            : <div className="w-full h-full flex items-center justify-center text-3xl font-black" style={{ fontFamily: 'Teko, sans-serif', color: borderColor }}>
+                {player.username[0]?.toUpperCase()}
+              </div>}
         </motion.div>
-        <p className={`text-[9px] uppercase tracking-[0.22em] font-bold ${tint}`}>{classFromLevel(player.level)} · LV {player.level}</p>
-        <p className="font-display text-xl text-white truncate max-w-[160px]">{player.username}</p>
-        <div className="mt-3 space-y-1">
-          <p className="text-[9px] uppercase tracking-wider text-white/50">Scenepack</p>
-          <p className="text-[12px] font-bold text-white truncate max-w-[180px]">{pack?.name || '—'}</p>
-          <p className="text-[9px] uppercase tracking-wider text-white/50 mt-1.5">Song</p>
-          <p className="text-[12px] font-bold text-white truncate max-w-[180px]">{song?.title || '—'}</p>
-        </div>
-        <p className={`mt-4 font-mono text-[10px] ${tint} tabular-nums`}>{pct.toFixed(1)}%</p>
-        <div className={`mt-1 h-[2px] w-32 bg-white/10 rounded overflow-hidden ${mirrored ? 'ml-auto' : ''}`}>
-          <div className={`h-full ${color === 'red' ? 'bg-red-500' : 'bg-blue-500'}`} style={{ width: `${pct}%` }} />
+
+        <p className={`text-[8px] font-black uppercase tracking-[0.3em] ${accent}`} style={{ fontFamily: 'Teko, sans-serif' }}>
+          {color.toUpperCase()}
+        </p>
+        <p
+          className="text-[22px] font-black text-white uppercase leading-tight w-full max-w-[140px] truncate"
+          style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.02em' }}
+        >
+          {player.username}
+        </p>
+
+        <div className="mt-4 w-full max-w-[140px] space-y-2.5 text-left">
+          <div>
+            <p className="text-[8px] uppercase tracking-[0.2em] text-white/40 font-bold mb-0.5">Scenepack</p>
+            <p className="text-[15px] font-black text-white leading-tight truncate" style={{ fontFamily: 'Teko, sans-serif' }}>
+              {pack?.name || '—'}
+            </p>
+          </div>
+          <div>
+            <p className="text-[8px] uppercase tracking-[0.2em] text-white/40 font-bold mb-0.5">Song</p>
+            <p className="text-[15px] font-black text-white leading-tight truncate" style={{ fontFamily: 'Teko, sans-serif' }}>
+              {song?.title || '—'}
+            </p>
+          </div>
         </div>
       </div>
     </motion.div>

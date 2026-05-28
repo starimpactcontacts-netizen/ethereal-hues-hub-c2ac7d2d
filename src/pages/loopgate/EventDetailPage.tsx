@@ -36,12 +36,8 @@ import EventChatSheet from "@/components/loopgate/EventChatSheet";
 import EventSharePoster from "@/components/loopgate/EventSharePoster";
 import MyEventSubmissionsSheet from "@/components/loopgate/MyEventSubmissionsSheet";
 import { useEventChatUnread } from "@/hooks/useEventChatUnread";
-import lightYagamiPoster from "@/assets/light_yagami_poster.jpg";
-import fixMySoulCover from "@/assets/fix_my_soul_cover.jpg";
-
 const displayFont = { fontFamily: "Teko, Inter, system-ui, sans-serif" };
 const bodyFont = { fontFamily: "Inter, system-ui, sans-serif" };
-const LIGHT_YAGAMI_SLUG = "light-yagami-edit-competition";
 
 export default function EventDetailPage() {
   const { id } = useParams();
@@ -99,8 +95,7 @@ export default function EventDetailPage() {
 
   const isLive = event.status === "live";
   const isClosed = event.status === "closed";
-  const isLightYagami = event.slug === LIGHT_YAGAMI_SLUG;
-  const displayPoster = isLightYagami ? lightYagamiPoster : event.poster_url;
+  const displayPoster = event.poster_url;
   const formatHeroDate = (iso?: string) => {
     if (!iso) return null;
     const d = new Date(iso);
@@ -150,10 +145,10 @@ export default function EventDetailPage() {
       {/* CINEMATIC HERO — background only, content owns the height */}
       <div className="relative overflow-hidden bg-black">
         <img
-          src={displayPoster || lightYagamiPoster}
+          src={displayPoster || ''}
           alt={event.title}
           className="absolute inset-0 w-full h-full object-cover scale-110"
-          style={{ objectPosition: isLightYagami ? "50% 22%" : "50% 35%" }}
+          style={{ objectPosition: "50% 35%" }}
         />
         {/* cinematic vignette: clear up top, deep black down low */}
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.55)_0%,rgba(0,0,0,0.15)_28%,rgba(0,0,0,0.45)_62%,rgba(0,0,0,0.95)_92%,#000_100%)]" />
@@ -295,29 +290,6 @@ export default function EventDetailPage() {
       </div>
 
       <main className="px-4 space-y-4 bg-black">
-        <section className="-mt-1 rounded-lg bg-[#0d0d0d] p-3 shadow-[0_18px_38px_rgba(0,0,0,0.55),inset_0_1px_0_hsl(var(--arena-line)/0.18)]">
-          <div className="flex items-center gap-3">
-            <img
-              src={fixMySoulCover}
-              alt="Fix My Soul cover"
-              className="h-14 w-14 shrink-0 rounded-md object-cover shadow-[0_8px_18px_hsl(var(--arena-bg)/0.5),0_0_0_1px_hsl(var(--arena-line)/0.55)]"
-            />
-            <div className="min-w-0 flex-1">
-              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-arena-muted">Official Sound</p>
-              <p className="mt-0.5 text-[20px] font-black uppercase leading-none text-arena-ink" style={displayFont}>Fix My Soul</p>
-            </div>
-            {event.materials_url && (
-              <a
-                href={event.materials_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-primary px-3 text-[10px] font-black uppercase tracking-[0.16em] text-primary-foreground shadow-[0_10px_24px_hsl(var(--arena-bg)/0.35)] active:scale-95 transition"
-              >
-                Use <ExternalLink size={12} />
-              </a>
-            )}
-          </div>
-        </section>
 
         <section className="rounded-lg bg-black p-3 shadow-[0_18px_38px_hsl(var(--arena-bg)/0.28)]">
           <div className="mb-3 flex items-center justify-between gap-3">
@@ -349,39 +321,6 @@ export default function EventDetailPage() {
           </div>
         </section>
 
-        {isLightYagami && (
-          <section className="relative overflow-hidden rounded-lg bg-[#06070a] p-4 shadow-[0_18px_42px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.04)]">
-            {/* EWC diagonal stripe backdrop */}
-            <div className="pointer-events-none absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "repeating-linear-gradient(115deg, #ffffff 0 1px, transparent 1px 14px)" }} />
-            <div className="pointer-events-none absolute -top-16 -right-10 h-44 w-44 rounded-full bg-arena-amber/25 blur-[80px]" />
-            <div className="pointer-events-none absolute -bottom-16 -left-10 h-44 w-44 rounded-full bg-arena-emerald/15 blur-[80px]" />
-
-            <div className="relative mb-4 flex items-end justify-between">
-              <div>
-                <p className="text-[9px] font-black uppercase tracking-[0.42em] text-white/40">Prize Pool</p>
-                <h2 className="mt-0.5 text-[30px] font-black uppercase leading-none text-white" style={{ ...displayFont, transform: "skewX(-6deg)" }}>Rewards</h2>
-              </div>
-              <div className="inline-flex items-center gap-1.5 rounded-sm bg-black/70 px-2.5 py-1.5 ring-1 ring-arena-amber/45">
-                <RingsCoin size={13} />
-                <span className="text-[11px] font-black uppercase tracking-[0.18em] text-arena-amber" style={displayFont}>1,000,000 Rings</span>
-              </div>
-            </div>
-
-            <div className="relative grid grid-cols-2 gap-2.5">
-              <PrizeSlab rank="01" title="Best Edit" cash="$90" rings="120K" tone="gold" />
-              <PrizeSlab rank="02" title="Most Viral" cash="$60" rings="100K" />
-            </div>
-
-            <div className="relative mt-2.5 grid grid-cols-4 gap-1.5 text-center">
-              {["1–5", "6–15", "16–30", "31–50"].map((range, index) => (
-                <div key={range} className="relative overflow-hidden bg-black/55 px-1.5 py-2 ring-1 ring-white/[0.06]" style={{ clipPath: "polygon(0 0, 100% 0, calc(100% - 6px) 100%, 0 100%)" }}>
-                  <p className="text-[8px] font-black uppercase tracking-[0.16em] text-white/45">Rank {range}</p>
-                  <p className="mt-1 text-[15px] font-black text-arena-amber tabular-nums" style={displayFont}>{["400K", "300K", "200K", "100K"][index]}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
 
         {isOpenArena && rounds.length > 0 && (
           <section className="rounded-lg bg-arena-panel p-3 shadow-[0_18px_38px_hsl(var(--arena-bg)/0.26)]">
@@ -570,9 +509,7 @@ export default function EventDetailPage() {
         isOpen={showShare}
         onClose={() => setShowShare(false)}
         title={event.title}
-        posterUrl={displayPoster || lightYagamiPoster}
-        songTitle={isLightYagami ? "Fix My Soul" : undefined}
-        themeLabel={isLightYagami ? "Death Note Theme" : undefined}
+        posterUrl={displayPoster || ''}
         endDate={(event as any).end_date}
         shareUrl={`${window.location.origin}/event/${event.slug || event.id}`}
         cashPrize="$150"

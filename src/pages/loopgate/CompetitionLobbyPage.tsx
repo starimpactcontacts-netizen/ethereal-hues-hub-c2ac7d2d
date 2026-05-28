@@ -125,6 +125,12 @@ export default function CompetitionLobbyPage() {
     }
   }, [searchParams]);
   const [musicMuted, toggleMusicMuted] = useLobbyMusicMute();
+  const liveShowcaseStart = useRef<string | null>(null);
+  useEffect(() => {
+    if (competition?.status === "live" && submissions.length > 0 && !liveShowcaseStart.current) {
+      liveShowcaseStart.current = new Date().toISOString();
+    }
+  });
   const [lobbyTab, setLobbyTab] = useState<"members" | "chat">("members");
   const [chatMessageCount, setChatMessageCount] = useState(0);
   const [chatUnread, setChatUnread] = useState(0);
@@ -1015,24 +1021,44 @@ export default function CompetitionLobbyPage() {
   // LIVE / SCORED — original full-detail page
   // ═══════════════════════════════════════════════════════════════
   // ── SPECTATOR PATH — non-participants once we leave the lobby ──
-  // Private rooms hard-block, public rooms get a countdown → showcase →
-  // voting gate → auto-kick after winner reveal. The shared showcaseStage
-  // overlay still mounts on top during the actual showcase phase.
+  // Private rooms hard-block, public rooms get a countdown until first
+  // edit drops, then the full showcase stage takes over (reactions + voting).
   if (!hasJoined && !isCreator && (isLive || isVoting || isCompleted)) {
     const isShowcasePhase = isVoting && !!votingStartedAt && submissions.length > 0 && !showcaseDone;
+    // Only show the showcase stage during live/voting — completed always
+    // uses SpectatorLiveView so the auto-kick + winner card fire correctly.
+    const hasContent = !isCompleted && submissions.length > 0;
+    const spectatorShowcaseStage = hasContent ? (
+      <CompetitionShowcaseStage
+        competitionId={competition.id}
+        competitionName={competition.name}
+        theme={resolvedTheme.theme}
+        submissions={submissions}
+        myUserId={user?.id}
+        myVoteSubmissionId={myVoteSubmissionId}
+        votingStartedAt={isVoting ? (votingStartedAt ?? null) : liveShowcaseStart.current}
+        votingDeadline={isVoting ? votingDeadline : null}
+        loop={isLive}
+        onVote={castVote}
+        onClose={() => navigate("/arena")}
+      />
+    ) : null;
     return (
       <>
-        <SpectatorLiveView
-          status={isLive ? "live" : isVoting ? "voting" : "completed"}
-          isPrivate={!!competition.is_private}
-          isShowcasePhase={isShowcasePhase}
-          competitionName={competition.name}
-          competitionDeadline={competition.deadline}
-          participantsCount={participants.length || competition.current_players}
-          submittedCount={submissions.length}
-        />
-        <AnimatePresence>{showcaseStage}</AnimatePresence>
-      </>
+        {/* Fallback: no submissions yet, or competition is completed */}
+        {!hasContent && (
+          <SpectatorLiveView
+            status={isLive ? "live" : isVoting ? "voting" : "completed"}
+            isPrivate={!!competition.is_private}
+            isShowcasePhase={isShowcasePhase}
+            competitionName={competition.name}
+            competitionDeadline={competition.deadline}
+            participantsCount={participants.length || competition.current_players}
+            submittedCount={submissions.length}
+          />
+        )}
+        <AnimatePresence>{spectatorShowcaseStage}</AnimatePresence>
+</>
     );
   }
 

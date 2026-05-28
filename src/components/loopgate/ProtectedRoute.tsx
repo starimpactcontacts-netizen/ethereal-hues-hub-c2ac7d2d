@@ -38,7 +38,7 @@ export default function ProtectedRoute({
   // AUTHENTICATED USERS: Let them through! They have real accounts.
   if (user) {
     // Dev account bypasses ALL checks
-    const isDevAccount = user?.email === 'dev@loopgate.io';
+    const isDevAccount = user?.email === 'dev@loopgate.gg';
     if (isDevAccount) {
       if (requireAdmin && !isAdmin) return <Navigate to="/hub" replace />;
       if (requireOpsAccess && !hasOpsAccess) return <Navigate to="/404" replace />;

@@ -250,7 +250,7 @@ export default function ProfileSettingsPage() {
                   <AuthorityGavel size={18} className="text-red-400" />
                   <div>
                     <p className="text-sm font-medium text-foreground">Your Judge Page</p>
-                    <p className="text-xs text-muted-foreground">loopgate.io/judge/{profile.username}</p>
+                    <p className="text-xs text-muted-foreground">loopgate.gg/judge/{profile.username}</p>
                   </div>
                 </div>
                 <ExternalLink className="w-4 h-4 text-muted-foreground" />

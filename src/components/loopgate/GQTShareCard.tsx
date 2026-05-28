@@ -141,7 +141,7 @@ Score: ${data.score.toFixed(0)}/100
 Class: ${gqtClass.name}
 ${data.judgeQuote ? `\n"${data.judgeQuote}"` : ''}
 
-Take the Global QOI Test → loopgate.io/gqt
+Take the Global QOI Test → loopgate.gg/gqt
 
 #Loopgate #GQT #EditingRank`;
 
@@ -151,7 +151,7 @@ Take the Global QOI Test → loopgate.io/gqt
         await navigator.share({
           title: `My GQT Rank: ${rank.rank}`,
           text: shareText,
-          url: 'https://loopgate.io/gqt',
+          url: 'https://loopgate.gg/gqt',
         });
       } catch {
         handleCopy();
@@ -322,7 +322,7 @@ Take the Global QOI Test → loopgate.io/gqt
 
           <div className="relative px-6 py-4 border-t border-border/30 bg-black/30">
             <p className="text-center text-xs text-muted-foreground">
-              Take the test → <span className="text-gold font-semibold">loopgate.io/gqt</span>
+              Take the test → <span className="text-gold font-semibold">loopgate.gg/gqt</span>
             </p>
           </div>
         </div>
@@ -476,7 +476,7 @@ Take the Global QOI Test → loopgate.io/gqt
 
             <div className="relative px-4 sm:px-6 py-3 sm:py-4 border-t border-border/30 bg-black/30">
               <p className="text-center text-[10px] sm:text-xs text-muted-foreground">
-                Take the test → <span className="text-gold font-semibold">loopgate.io/gqt</span>
+                Take the test → <span className="text-gold font-semibold">loopgate.gg/gqt</span>
               </p>
             </div>
           </div>
