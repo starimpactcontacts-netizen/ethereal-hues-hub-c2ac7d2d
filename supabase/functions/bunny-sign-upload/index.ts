@@ -6,10 +6,29 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-const STORAGE_HOST = Deno.env.get('BUNNY_STORAGE_HOST') || 'storage.bunnycdn.com';
-const STORAGE_ZONE = Deno.env.get('BUNNY_STORAGE_ZONE')!;
+// Strip any accidental https:// prefix and trailing paths from a hostname env var.
+// If the result has no dot it's likely a zone name, not a host — fall back to default.
+function normalizeHost(raw: string | undefined, fallback: string): string {
+  if (!raw) return fallback;
+  const stripped = raw.replace(/^https?:\/\//i, '').replace(/\/.*$/, '');
+  return stripped.includes('.') ? stripped : fallback;
+}
+
+// If someone set BUNNY_STORAGE_ZONE to a full URL, extract the first path segment.
+function normalizeZone(raw: string | undefined): string {
+  if (!raw) return '';
+  if (/^https?:\/\//i.test(raw)) {
+    try {
+      return new URL(raw).pathname.split('/').filter(Boolean)[0] || raw;
+    } catch { /* fall through */ }
+  }
+  return raw;
+}
+
+const STORAGE_HOST = normalizeHost(Deno.env.get('BUNNY_STORAGE_HOST'), 'storage.bunnycdn.com');
+const STORAGE_ZONE = normalizeZone(Deno.env.get('BUNNY_STORAGE_ZONE'));
 const STORAGE_PASSWORD = Deno.env.get('BUNNY_STORAGE_PASSWORD')!;
-const CDN_HOSTNAME = Deno.env.get('BUNNY_CDN_HOSTNAME')!;
+const CDN_HOSTNAME = normalizeHost(Deno.env.get('BUNNY_CDN_HOSTNAME'), `${STORAGE_HOST}/${STORAGE_ZONE}`);
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
