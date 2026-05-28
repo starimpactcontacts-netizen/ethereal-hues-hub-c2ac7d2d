@@ -342,6 +342,16 @@ export default function QuickFightChat({
                     {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
+
+                {/* Avatar — right side (RED) */}
+                {isRed && (
+                  <Avatar className="w-7 h-7 shrink-0 border-2 mt-0.5 border-red-500/50 shadow-[0_0_8px_rgba(239,68,68,0.5)]">
+                    <AvatarImage src={msg.avatar_url || ''} />
+                    <AvatarFallback className="text-[9px] font-black bg-red-500/20 text-red-200">
+                      {msg.username.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                )}
               </motion.div>
             );
           })}
