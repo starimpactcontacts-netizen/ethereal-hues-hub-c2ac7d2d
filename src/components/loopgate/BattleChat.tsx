@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, MessageSquare, Users, Lock, Image as ImageIcon, Reply } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { Send, MessageSquare, Lock, Reply, Flame, Camera, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -33,8 +31,13 @@ interface BattleChatProps {
   judgeId: string | null;
 }
 
-function isGifUrl(text: string): boolean {
-  return /\.(gif|gifv)(\?|$)/i.test(text) || text.includes("tenor.com") || text.includes("giphy.com");
+function isMediaUrl(text: string): boolean {
+  return (
+    /\.(jpg|jpeg|png|webp|gif|gifv)(\?|$)/i.test(text) ||
+    text.includes("tenor.com") ||
+    text.includes("giphy.com") ||
+    text.includes(".supabase.co/storage")
+  );
 }
 
 export default function BattleChat({ battleId, challengerId, opponentId, judgeId }: BattleChatProps) {
@@ -43,11 +46,13 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
   const [messages, setMessages] = useState<BattleMessage[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [tab, setTab] = useState<"public" | "private">("public");
   const [showGifPicker, setShowGifPicker] = useState(false);
   const [replyTo, setReplyTo] = useState<{ id: string; username: string; text: string } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isParticipant = user?.id === challengerId || user?.id === opponentId || user?.id === judgeId;
 
@@ -91,9 +96,7 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
       )
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [battleId, tab]);
 
   useEffect(() => {
@@ -101,7 +104,7 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
   }, [messages]);
 
   const handleReply = (msg: BattleMessage) => {
-    const previewText = isGifUrl(msg.message_text) ? "GIF" : msg.message_text.slice(0, 60);
+    const previewText = isMediaUrl(msg.message_text) ? "📷 Photo" : msg.message_text.slice(0, 60);
     setReplyTo({ id: msg.id, username: msg.username, text: previewText });
     inputRef.current?.focus();
   };
@@ -116,7 +119,7 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
     if (!msgText || !profile || sending) return;
 
     setSending(true);
-    const insertPayload: any = {
+    const insertPayload: Record<string, unknown> = {
       battle_id: battleId,
       user_id: profile.id,
       username: profile.username,
@@ -132,7 +135,6 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
     }
 
     const { error } = await supabase.from("battle_messages").insert(insertPayload);
-
     if (error) {
       toast.error("Failed to send message");
     } else {
@@ -142,36 +144,57 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
     setSending(false);
   };
 
+  const handleImageUpload = async (file: File) => {
+    if (!profile) return;
+    if (file.size > 8 * 1024 * 1024) { toast.error("Image must be under 8 MB"); return; }
+    setUploading(true);
+    const ext = file.name.split(".").pop() || "jpg";
+    const path = `${battleId}/${Date.now()}-${profile.id}.${ext}`;
+    const { error: uploadError } = await supabase.storage
+      .from("battle-chat-images")
+      .upload(path, file, { cacheControl: "3600", upsert: false });
+    if (uploadError) {
+      toast.error("Failed to upload photo");
+      setUploading(false);
+      return;
+    }
+    const { data: { publicUrl } } = supabase.storage.from("battle-chat-images").getPublicUrl(path);
+    await handleSend(publicUrl);
+    setUploading(false);
+  };
+
   const handleGifSelect = (gifUrl: string) => {
     setShowGifPicker(false);
     handleSend(gifUrl);
   };
 
-  const formatTime = (date: string) => {
-    return new Date(date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  };
-
-  const getRoleBadge = (userId: string) => {
-    if (userId === judgeId) return <span className="text-[8px] bg-purple-500/20 text-purple-400 px-1">JUDGE</span>;
-    if (userId === challengerId) return <span className="text-[8px] bg-red-500/20 text-red-400 px-1">RED</span>;
-    if (userId === opponentId) return <span className="text-[8px] bg-blue-500/20 text-blue-400 px-1">BLUE</span>;
-    return null;
-  };
+  const formatTime = (date: string) =>
+    new Date(date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
   const getNameColor = (userId: string) => {
     if (userId === challengerId) return "text-red-400";
-    if (userId === opponentId) return "text-sky-400";
+    if (userId === opponentId) return "text-[#38bdf8]";
     if (userId === judgeId) return "text-purple-400";
-    return "text-foreground";
+    return "text-white/60";
   };
 
-  const renderMessageText = (text: string) => {
+  const getBadge = (userId: string) => {
+    if (userId === judgeId)
+      return <span className="text-[8px] font-bold tracking-widest text-purple-400/70 uppercase">JUDGE</span>;
+    if (userId === challengerId)
+      return <span className="text-[8px] font-bold tracking-widest text-red-400/70 uppercase">RED</span>;
+    if (userId === opponentId)
+      return <span className="text-[8px] font-bold tracking-widest text-sky-400/70 uppercase">BLUE</span>;
+    return null;
+  };
+
+  const renderText = (text: string) => {
     const parts = text.split(/(@\w+)/g);
     return parts.map((part, i) => {
-      if (part.startsWith('@')) {
-        const username = part.slice(1);
+      if (part.startsWith("@")) {
+        const uname = part.slice(1);
         return (
-          <button key={i} onClick={() => navigate(`/u/${username}`)} className="text-primary font-bold hover:underline">
+          <button key={i} onClick={() => navigate(`/u/${uname}`)} className="text-[#D4A857] font-semibold hover:underline">
             {part}
           </button>
         );
@@ -181,42 +204,44 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
   };
 
   return (
-    <div className="bg-black/40 border border-white/[0.07] overflow-hidden">
-      {/* Tab Header */}
-      <div className="flex border-b border-white/[0.06]">
+    <div className="flex flex-col overflow-hidden" style={{ background: "rgba(8,8,10,0.7)", border: "1px solid rgba(255,255,255,0.06)" }}>
+      {/* Tabs */}
+      <div className="flex shrink-0" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
         <button
           onClick={() => { setTab("public"); setReplyTo(null); }}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${
-            tab === "public"
-              ? "text-white/80 border-b-2 border-white/30"
-              : "text-white/30 hover:text-white/50"
+          className={`flex-1 relative flex items-center justify-center gap-1.5 py-3 text-[10px] font-black uppercase tracking-[0.15em] transition-colors ${
+            tab === "public" ? "text-white" : "text-white/25 hover:text-white/40"
           }`}
         >
-          <Users className="w-3 h-3" />
+          <Flame className="w-3 h-3" />
           Battle Chat
+          {tab === "public" && (
+            <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#D4A857]" />
+          )}
         </button>
         {isParticipant && (
           <button
             onClick={() => { setTab("private"); setReplyTo(null); }}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${
-              tab === "private"
-                ? "text-white/80 border-b-2 border-white/30"
-                : "text-white/30 hover:text-white/50"
+            className={`flex-1 relative flex items-center justify-center gap-1.5 py-3 text-[10px] font-black uppercase tracking-[0.15em] transition-colors ${
+              tab === "private" ? "text-white" : "text-white/25 hover:text-white/40"
             }`}
           >
             <Lock className="w-3 h-3" />
             Fighter Chat
+            {tab === "private" && (
+              <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-purple-400" />
+            )}
           </button>
         )}
       </div>
 
       {/* Messages */}
-      <div ref={scrollRef} className="h-64 overflow-y-auto p-3 space-y-2">
+      <div ref={scrollRef} className="flex-1 h-64 overflow-y-auto py-2" style={{ overscrollBehavior: "contain" }}>
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-            <MessageSquare className="w-6 h-6 mb-2 opacity-30" />
-            <span className="text-[10px] uppercase tracking-wider">
-              {tab === "public" ? "Be the first to comment" : "Fighter-only chat"}
+          <div className="flex flex-col items-center justify-center h-full gap-2">
+            <MessageSquare className="w-5 h-5 text-white/10" />
+            <span className="text-[10px] text-white/20 uppercase tracking-widest">
+              {tab === "public" ? "Hype the battle" : "Fighters only"}
             </span>
           </div>
         )}
@@ -225,76 +250,101 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
           {messages.map((msg) => {
             const isRed = msg.user_id === challengerId;
             const isBlue = msg.user_id === opponentId;
-            const isRight = isBlue;
+
+            if (msg.is_system) {
+              return (
+                <motion.div
+                  key={msg.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex items-center gap-2 px-4 py-1.5"
+                >
+                  <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.05)" }} />
+                  <span className="text-[9px] text-white/20 uppercase tracking-widest shrink-0">{msg.message_text}</span>
+                  <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.05)" }} />
+                </motion.div>
+              );
+            }
+
             return (
               <motion.div
                 key={msg.id}
-                initial={{ opacity: 0, y: 6 }}
+                initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`flex gap-2 group ${msg.is_system ? "justify-center" : isRight ? "flex-row-reverse" : "flex-row"}`}
+                transition={{ duration: 0.15 }}
+                className="group flex items-start gap-2.5 px-3 py-[5px] hover:bg-white/[0.02] transition-colors relative"
+                style={{
+                  borderLeft: isRed
+                    ? "2px solid rgba(239,68,68,0.35)"
+                    : isBlue
+                    ? "2px solid rgba(56,189,248,0.35)"
+                    : "2px solid transparent",
+                }}
               >
-                {msg.is_system ? (
-                  <span className="text-[10px] text-muted-foreground/50 italic px-2 py-0.5 text-center">
-                    {msg.message_text}
-                  </span>
-                ) : (
-                  <>
-                    <Avatar className="w-6 h-6 shrink-0 mt-0.5">
-                      <AvatarImage src={msg.avatar_url || ""} />
-                      <AvatarFallback className={`text-[8px] ${isRed ? "bg-red-900/60 text-red-300" : isBlue ? "bg-blue-900/60 text-blue-300" : "bg-white/10 text-white/60"}`}>
-                        {msg.username.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className={`min-w-0 max-w-[72%] flex flex-col ${isRight ? "items-end" : "items-start"}`}>
-                      {/* Reply context */}
-                      {msg.reply_to_username && (
-                        <div className={`flex items-center gap-1 text-[9px] text-muted-foreground/40 mb-0.5 ${isRight ? "flex-row-reverse" : ""}`}>
-                          <Reply className="w-2.5 h-2.5 rotate-180" />
-                          <span>@{msg.reply_to_username}</span>
-                        </div>
-                      )}
-                      {/* Name + badge + time */}
-                      <div className={`flex items-center gap-1 mb-0.5 ${isRight ? "flex-row-reverse" : ""}`}>
-                        <button
-                          onClick={() => handleMention(msg.username)}
-                          className={`text-[10px] font-bold ${getNameColor(msg.user_id)} hover:underline`}
-                        >
-                          {msg.username}
-                        </button>
-                        {getRoleBadge(msg.user_id)}
-                        <span className="text-[8px] text-muted-foreground/40">{formatTime(msg.created_at)}</span>
-                      </div>
-                      {/* Bubble */}
-                      <div className="relative">
-                        {isGifUrl(msg.message_text) ? (
-                          <img
-                            src={msg.message_text}
-                            alt="GIF"
-                            className="max-w-[160px] rounded-[8px]"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <p className={`text-xs px-2.5 py-1.5 rounded-[10px] break-words leading-relaxed ${
-                            isRed
-                              ? "bg-red-500/[0.12] text-white/85 rounded-tl-[3px]"
-                              : isBlue
-                              ? "bg-blue-500/[0.12] text-white/85 rounded-tr-[3px]"
-                              : "bg-white/[0.06] text-white/70"
-                          }`}>
-                            {renderMessageText(msg.message_text)}
-                          </p>
-                        )}
-                        {user && (
-                          <button
-                            onClick={() => handleReply(msg)}
-                            className={`absolute top-0 ${isRight ? "-left-5" : "-right-5"} opacity-0 group-hover:opacity-100 active:opacity-100 p-0.5 text-muted-foreground/30 hover:text-white/60 transition-all`}
-                          >
-                            <Reply className="w-3 h-3 rotate-180" />
-                          </button>
-                        )}
-                      </div>
+                {/* Avatar */}
+                <div
+                  className="w-[22px] h-[22px] rounded-full shrink-0 mt-[1px] overflow-hidden flex items-center justify-center text-[8px] font-bold"
+                  style={{
+                    background: isRed
+                      ? "rgba(239,68,68,0.15)"
+                      : isBlue
+                      ? "rgba(56,189,248,0.15)"
+                      : "rgba(255,255,255,0.08)",
+                    color: isRed ? "#f87171" : isBlue ? "#38bdf8" : "rgba(255,255,255,0.4)",
+                  }}
+                >
+                  {msg.avatar_url ? (
+                    <img src={msg.avatar_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    msg.username[0].toUpperCase()
+                  )}
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  {/* Reply context */}
+                  {msg.reply_to_username && (
+                    <div className="flex items-center gap-1 mb-0.5 text-[9px] text-white/20 leading-none">
+                      <Reply className="w-2.5 h-2.5 rotate-180 shrink-0" />
+                      <span className="truncate">@{msg.reply_to_username}: {msg.reply_to_text}</span>
                     </div>
-                  </>
+                  )}
+
+                  {/* Name line */}
+                  <div className="flex items-baseline gap-1.5 mb-[2px] flex-wrap">
+                    <button
+                      onClick={() => handleMention(msg.username)}
+                      className={`text-[11px] font-bold leading-none hover:underline ${getNameColor(msg.user_id)}`}
+                    >
+                      @{msg.username}
+                    </button>
+                    {getBadge(msg.user_id)}
+                    <span className="text-[9px] text-white/15 leading-none">{formatTime(msg.created_at)}</span>
+                  </div>
+
+                  {/* Message / media */}
+                  {isMediaUrl(msg.message_text) ? (
+                    <img
+                      src={msg.message_text}
+                      alt=""
+                      className="mt-1 rounded-[6px] max-w-[200px] max-h-[160px] object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <p className="text-[12px] text-white/65 break-words leading-snug">
+                      {renderText(msg.message_text)}
+                    </p>
+                  )}
+                </div>
+
+                {/* Reply button on hover */}
+                {user && (
+                  <button
+                    onClick={() => handleReply(msg)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-1 text-white/20 hover:text-white/50"
+                  >
+                    <Reply className="w-3 h-3 rotate-180" />
+                  </button>
                 )}
               </motion.div>
             );
@@ -304,14 +354,14 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
 
       {/* GIF Picker */}
       {showGifPicker && (
-        <div className="border-t border-border">
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
           <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
         </div>
       )}
 
-      {/* Reply bar + Input */}
-      {user && (tab === "public" || isParticipant) && (
-        <div className="border-t border-white/[0.06]">
+      {/* Input area */}
+      {user && (tab === "public" || isParticipant) ? (
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
           {replyTo && (
             <ChatReplyBar
               username={replyTo.username}
@@ -320,34 +370,69 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
               accentColor={tab === "public" ? "red" : "purple"}
             />
           )}
-          <div className="p-2 flex gap-1.5">
+          <div className="flex items-center gap-1.5 p-2">
+            {/* Photo upload */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleImageUpload(file);
+                e.target.value = "";
+              }}
+            />
             <button
-              onClick={() => setShowGifPicker(!showGifPicker)}
-              className={`h-8 w-8 flex items-center justify-center shrink-0 rounded-[6px] transition-colors ${
-                showGifPicker ? "bg-white/10 text-white/80" : "bg-white/[0.05] text-white/30 hover:text-white/60"
-              }`}
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading || sending}
+              className="h-8 w-8 shrink-0 rounded-[6px] flex items-center justify-center transition-colors text-white/25 hover:text-white/60 disabled:opacity-40"
+              style={{ background: "rgba(255,255,255,0.05)" }}
             >
-              <ImageIcon className="w-3.5 h-3.5" />
+              {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
+            </button>
+            {/* GIF */}
+            <button
+              type="button"
+              onClick={() => setShowGifPicker(!showGifPicker)}
+              className={`h-8 px-2 shrink-0 rounded-[6px] text-[9px] font-black tracking-widest transition-colors ${
+                showGifPicker ? "text-[#D4A857] bg-[#D4A857]/10" : "text-white/20 hover:text-white/50"
+              }`}
+              style={{ background: showGifPicker ? undefined : "rgba(255,255,255,0.05)" }}
+            >
+              GIF
             </button>
             <Input
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              placeholder={replyTo ? `Reply to @${replyTo.username}...` : (tab === "public" ? "Say something..." : "Fighter chat...")}
-              className="flex-1 h-8 text-xs bg-white/[0.05] border-white/[0.07] text-white placeholder:text-white/25 rounded-[6px]"
+              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+              placeholder={replyTo ? `↩ @${replyTo.username}` : "Hype the battle..."}
+              className="flex-1 h-8 text-[12px] text-white placeholder:text-white/20 border-0 rounded-[6px] focus-visible:ring-0"
+              style={{ background: "rgba(255,255,255,0.05)" }}
             />
-            <Button
-              size="sm"
+            <button
+              type="button"
               onClick={() => handleSend()}
               disabled={!input.trim() || sending}
-              className="h-8 px-3 bg-white/10 hover:bg-white/15 text-white/80 rounded-[6px]"
+              className="h-8 w-8 shrink-0 rounded-[6px] flex items-center justify-center transition-colors disabled:opacity-30"
+              style={{ background: "rgba(212,168,87,0.9)" }}
             >
-              <Send className="w-3 h-3" />
-            </Button>
+              {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin text-black" /> : <Send className="w-3.5 h-3.5 text-black" />}
+            </button>
           </div>
         </div>
-      )}
+      ) : !user ? (
+        <div className="p-3 text-center" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+          <button
+            onClick={() => navigate("/login")}
+            className="text-[11px] text-white/30 hover:text-white/60 transition-colors"
+          >
+            Sign in to join the chat
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }
