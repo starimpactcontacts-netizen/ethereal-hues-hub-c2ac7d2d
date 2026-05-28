@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MAX_EDIT_UPLOAD_BYTES, MAX_EDIT_UPLOAD_LABEL, uploadToBunny } from '@/lib/bunnyUpload';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Video, Music, Upload, EyeOff, Loader2, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Swords, Trophy, ExternalLink, Gavel, Video, Upload, EyeOff, Loader2, RotateCcw, MessageSquare, BarChart2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -474,29 +474,16 @@ export default function QuickFightPage() {
       <div className="max-w-7xl mx-auto px-4 mt-2">
         {/* ── MAIN COLUMN (videos + judge + result) ── */}
         <div className="space-y-4 min-w-0">
-        {/* Show picked song for non-participants */}
-        {!isParticipant && (fight as any).theme_song_name && (
-          <div className="bg-surface-1 border border-border p-3 flex items-center gap-3">
-            <Music className="w-4 h-4 text-emerald-400 shrink-0" />
-            <div className="flex-1 min-w-0">
-              <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Theme Song</p>
-              <p className="text-sm text-foreground font-medium truncate">{(fight as any).theme_song_name}</p>
-            </div>
-            {(fight as any).theme_song_preview_url && (
-              <audio src={(fight as any).theme_song_preview_url} controls className="h-7 w-28 shrink-0" />
-            )}
-          </div>
-        )}
-
         {/* SCREEN VS SCREEN — stacked vertical, RED on top, VS divider, BLUE on bottom */}
         <div className="space-y-0">
-          {isParticipant && fight.player_2_id && ['active','submitted','judging','completed'].includes(fight.status) && (
+          {fight.player_2_id && ['active','submitted','judging','completed'].includes(fight.status) && (
             <div className="mb-2">
               <BattleSelectionsBanner
                 fightId={fight.id}
-                mySide={isP1 ? 'red' : 'blue'}
+                mySide={isP1 ? 'red' : isP2 ? 'blue' : 'red'}
                 redUsername={fight.player_1_username}
                 blueUsername={fight.player_2_username || '???'}
+                isSpectator={!isParticipant}
               />
             </div>
           )}
