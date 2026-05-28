@@ -311,16 +311,10 @@ export default function QuickFightChat({
                 )}
 
                 <div className={`max-w-[78%] ${mine ? 'items-end' : 'items-start'} flex flex-col`}>
-                  {/* Name + tag */}
+                  {/* Name */}
                   {!mine && (
                     <div className="flex items-center gap-1.5 mb-0.5 pl-0.5">
                       <span className={`text-[10px] font-bold ${getColor(msg.user_id)}`}>@{msg.username}</span>
-                      {tag && (
-                        <span className={`inline-flex items-center gap-1 text-[8px] font-black uppercase tracking-[0.2em] px-1.5 py-[2px] border rounded-[3px] ${tag.cls}`} style={{ fontFamily: 'Teko, sans-serif' }}>
-                          <span className={`w-1 h-1 rounded-full ${tag.dot}`} />
-                          {tag.label}
-                        </span>
-                      )}
                     </div>
                   )}
 
