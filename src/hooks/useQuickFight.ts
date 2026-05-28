@@ -49,6 +49,10 @@ export interface QuickFightMessage {
   message_text: string;
   is_auto_text: boolean;
   is_system: boolean;
+  channel: string;
+  reply_to_id: string | null;
+  reply_to_username: string | null;
+  reply_to_text: string | null;
   created_at: string;
 }
 
