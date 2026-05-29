@@ -104,7 +104,7 @@ export default function QuickFightChat({
   const sendMessage = async (text: string, isAutoText = false) => {
     if (!text.trim() || !profile || sending) return;
     setSending(true);
-    const payload = {
+    const payload: Record<string, unknown> = {
       fight_id: fightId,
       user_id: profile.id,
       username: profile.username,
@@ -112,11 +112,13 @@ export default function QuickFightChat({
       message_text: text.trim(),
       is_auto_text: isAutoText,
       channel: chatTab,
-      reply_to_id: replyTo?.id ?? null,
-      reply_to_username: replyTo?.username ?? null,
-      reply_to_text: replyTo?.text ?? null,
     };
-    const { error } = await supabase.from('quick_fight_messages').insert(payload);
+    if (replyTo) {
+      payload.reply_to_id = replyTo.id;
+      payload.reply_to_username = replyTo.username;
+      payload.reply_to_text = replyTo.text;
+    }
+    const { error } = await supabase.from('quick_fight_messages').insert(payload as any);
     if (error) toast.error('Failed to send');
     else {
       if (!isAutoText) setInput('');
