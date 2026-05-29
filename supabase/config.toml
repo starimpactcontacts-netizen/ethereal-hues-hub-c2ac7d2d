@@ -1,52 +1,39 @@
 project_id = "tmfnqnmyxxydrxwjkaiq"
 
-[functions.send-enterprise-lead]
-verify_jwt = false
-
-[functions.verify-tiktok]
-verify_jwt = false
-
-[functions.verify-screenshot]
-verify_jwt = false
-
-[functions.refresh-video-stats]
-verify_jwt = false
-
-[functions.auto-match-battles]
-verify_jwt = false
-
-[functions.create-enterprise-payment]
-verify_jwt = false
-
-[functions.create-paypal-payment]
-verify_jwt = false
-
-[functions.enrich-submission]
-verify_jwt = false
-
-[functions.send-notification-email]
-verify_jwt = false
-
-[functions.studio-ai-brain]
-verify_jwt = false
-
-[functions.instagram-stats]
-verify_jwt = false
-
-[functions.reclaim-guest-account]
-verify_jwt = false
-
-[functions.auto-confirm-user]
-verify_jwt = false
-
-[functions.send-password-reset]
-verify_jwt = false
-
-[functions.livekit-token]
-verify_jwt = false
-
-[functions.bunny-stream]
-verify_jwt = false
-
-[functions.process-email-queue]
-verify_jwt = true
+[functions]
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.auto-confirm-user]
+    verify_jwt = false
+  [functions.auto-match-battles]
+    verify_jwt = false
+  [functions.bunny-stream]
+    verify_jwt = false
+  [functions.create-enterprise-payment]
+    verify_jwt = false
+  [functions.create-paypal-payment]
+    verify_jwt = false
+  [functions.enrich-submission]
+    verify_jwt = false
+  [functions.instagram-stats]
+    verify_jwt = false
+  [functions.livekit-token]
+    verify_jwt = false
+  [functions.process-email-queue]
+    verify_jwt = true
+  [functions.reclaim-guest-account]
+    verify_jwt = false
+  [functions.refresh-video-stats]
+    verify_jwt = false
+  [functions.send-enterprise-lead]
+    verify_jwt = false
+  [functions.send-notification-email]
+    verify_jwt = false
+  [functions.send-password-reset]
+    verify_jwt = false
+  [functions.studio-ai-brain]
+    verify_jwt = false
+  [functions.verify-screenshot]
+    verify_jwt = false
+  [functions.verify-tiktok]
+    verify_jwt = false
