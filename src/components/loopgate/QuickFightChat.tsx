@@ -276,11 +276,9 @@ export default function QuickFightChat({
 
                 <div className={`max-w-[78%] flex flex-col ${onRight ? 'items-end' : 'items-start'}`}>
                   {/* Name */}
-                  {!onRight && (
-                    <div className="flex items-center gap-1.5 mb-0.5 pl-0.5">
-                      <span className={`text-[10px] font-bold ${getColor(msg.user_id)}`}>@{msg.username}</span>
-                    </div>
-                  )}
+                  <div className={`flex items-center gap-1.5 mb-0.5 ${onRight ? 'justify-end pr-0.5' : 'pl-0.5'}`}>
+                    <span className={`text-[10px] font-bold ${getColor(msg.user_id)}`}>@{msg.username}</span>
+                  </div>
 
                   {/* Reply context */}
                   {msg.reply_to_username && (
