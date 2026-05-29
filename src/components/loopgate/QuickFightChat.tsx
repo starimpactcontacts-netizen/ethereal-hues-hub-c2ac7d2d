@@ -52,28 +52,11 @@ function isMediaUrl(text: string): boolean {
 }
 
 function SystemMessage({ text }: { text: string }) {
-  const lower = text.toLowerCase();
-  let icon = '⚙️';
-  let accent = 'border-white/10 text-zinc-400';
-  if (lower.includes('fight started') || lower.includes('submit your edit')) {
-    icon = '⚔️';
-    accent = 'border-amber-400/30 text-amber-300 bg-amber-400/5';
-  } else if (lower.includes('selection') || lower.includes('pick')) {
-    icon = '🗓️';
-    accent = 'border-sky-400/30 text-sky-300 bg-sky-400/5';
-  } else if (lower.includes('won') || lower.includes('winner') || lower.includes('completed')) {
-    icon = '🏆';
-    accent = 'border-yellow-400/30 text-yellow-300 bg-yellow-400/5';
-  } else if (lower.includes('joined') || lower.includes('accepted')) {
-    icon = '🔥';
-    accent = 'border-orange-400/30 text-orange-300 bg-orange-400/5';
-  }
   return (
-    <div className="flex justify-center px-3 py-1">
-      <span className={`inline-flex items-center gap-1.5 text-[10px] font-semibold border rounded-full px-3 py-1 ${accent}`}>
-        <span>{icon}</span>
-        <span>{text}</span>
-      </span>
+    <div className="flex items-center gap-2 px-4 py-1.5">
+      <div className="flex-1 h-px bg-white/5" />
+      <span className="text-[10px] text-zinc-500 shrink-0">{text}</span>
+      <div className="flex-1 h-px bg-white/5" />
     </div>
   );
 }
