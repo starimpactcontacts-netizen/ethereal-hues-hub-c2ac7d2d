@@ -119,20 +119,17 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
     if (!msgText || !profile || sending) return;
 
     setSending(true);
-    const insertPayload: Record<string, unknown> = {
+    const insertPayload = {
       battle_id: battleId,
       user_id: profile.id,
       username: profile.username,
       avatar_url: profile.avatar_url,
       message_text: msgText,
       is_public: tab === "public",
+      reply_to_id: replyTo?.id ?? null,
+      reply_to_username: replyTo?.username ?? null,
+      reply_to_text: replyTo?.text ?? null,
     };
-
-    if (replyTo) {
-      insertPayload.reply_to_id = replyTo.id;
-      insertPayload.reply_to_username = replyTo.username;
-      insertPayload.reply_to_text = replyTo.text;
-    }
 
     const { error } = await supabase.from("battle_messages").insert(insertPayload);
     if (error) {
