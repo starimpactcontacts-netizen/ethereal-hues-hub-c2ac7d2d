@@ -127,14 +127,13 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
       message_text: msgText,
       is_public: tab === "public",
     };
-
     if (replyTo) {
       insertPayload.reply_to_id = replyTo.id;
       insertPayload.reply_to_username = replyTo.username;
       insertPayload.reply_to_text = replyTo.text;
     }
 
-    const { error } = await supabase.from("battle_messages").insert(insertPayload);
+    const { error } = await supabase.from("battle_messages").insert(insertPayload as any);
     if (error) {
       toast.error("Failed to send message");
     } else {

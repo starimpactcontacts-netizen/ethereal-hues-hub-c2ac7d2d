@@ -118,7 +118,7 @@ export default function QuickFightChat({
       payload.reply_to_username = replyTo.username;
       payload.reply_to_text = replyTo.text;
     }
-    const { error } = await supabase.from('quick_fight_messages').insert(payload);
+    const { error } = await supabase.from('quick_fight_messages').insert(payload as any);
     if (error) toast.error('Failed to send');
     else {
       if (!isAutoText) setInput('');
