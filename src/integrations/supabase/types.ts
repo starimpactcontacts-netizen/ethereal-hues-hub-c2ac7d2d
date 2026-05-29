@@ -7172,6 +7172,7 @@ export type Database = {
           notify_scores: boolean
           onboarding_completed: boolean | null
           paypal_email: string | null
+          pending_gift_modal: Json | null
           pending_withdrawal_cents: number
           playlist_name: string | null
           portfolio_url: string | null
@@ -7238,6 +7239,7 @@ export type Database = {
           notify_scores?: boolean
           onboarding_completed?: boolean | null
           paypal_email?: string | null
+          pending_gift_modal?: Json | null
           pending_withdrawal_cents?: number
           playlist_name?: string | null
           portfolio_url?: string | null
@@ -7304,6 +7306,7 @@ export type Database = {
           notify_scores?: boolean
           onboarding_completed?: boolean | null
           paypal_email?: string | null
+          pending_gift_modal?: Json | null
           pending_withdrawal_cents?: number
           playlist_name?: string | null
           portfolio_url?: string | null

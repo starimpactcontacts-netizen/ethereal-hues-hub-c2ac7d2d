@@ -16,6 +16,7 @@ import LoadingScreen from "./components/loopgate/LoadingScreen";
 import GlobalAccountPrompt from "./components/loopgate/GlobalAccountPrompt";
 import GlobalGuestConversionModal from "./components/loopgate/GlobalGuestConversionModal";
 import GuestNicknameModal from "./components/loopgate/GuestNicknameModal";
+import PendingGiftModal from "./components/loopgate/PendingGiftModal";
 import { isNativeApp } from "./lib/native";
 
 // Lazy-loaded pages — code-split per route
@@ -434,6 +435,7 @@ export default function App() {
           <GlobalAccountPrompt />
           <GlobalGuestConversionModal />
           <GuestNicknameModal />
+          <PendingGiftModal />
           <DevModeBadge />
           <Toaster 
             position="top-center" 
