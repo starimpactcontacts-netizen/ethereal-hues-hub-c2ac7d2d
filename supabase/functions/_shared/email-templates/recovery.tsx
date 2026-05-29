@@ -24,16 +24,16 @@ export const RecoveryEmail = ({
 }: RecoveryEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Reset your password for {siteName}</Preview>
+    <Preview>Reset your Loopgate password</Preview>
     <Body style={main}>
       <Container style={container}>
+        <Text style={brand}>LOOPGATE</Text>
         <Heading style={h1}>Reset your password</Heading>
         <Text style={text}>
-          We received a request to reset your password for {siteName}. Click
-          the button below to choose a new password.
+          Someone requested a password reset for your Loopgate account. Click below to set your new password and get straight back in.
         </Text>
         <Button style={button} href={confirmationUrl}>
-          Reset Password
+          Log back in →
         </Button>
         <Text style={footer}>
           If you didn't request a password reset, you can safely ignore this
@@ -46,26 +46,34 @@ export const RecoveryEmail = ({
 
 export default RecoveryEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
+const main = { backgroundColor: '#000000', fontFamily: 'Arial, sans-serif' }
+const container = { padding: '40px 25px', maxWidth: '460px', margin: '0 auto' }
+const brand = {
+  color: '#D4A857',
+  fontSize: '13px',
   fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
+  letterSpacing: '4px',
+  margin: '0 0 18px',
+}
+const h1 = {
+  fontSize: '28px',
+  fontWeight: 'bold' as const,
+  color: '#ffffff',
+  margin: '0 0 18px',
 }
 const text = {
-  fontSize: '14px',
-  color: '#55575d',
+  fontSize: '15px',
+  color: '#c9c9c9',
   lineHeight: '1.5',
   margin: '0 0 25px',
 }
 const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
-  fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
+  backgroundColor: '#D4A857',
+  color: '#000000',
+  fontSize: '15px',
+  fontWeight: 'bold' as const,
+  borderRadius: '10px',
+  padding: '14px 22px',
   textDecoration: 'none',
 }
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const footer = { fontSize: '12px', color: '#777777', margin: '30px 0 0' }

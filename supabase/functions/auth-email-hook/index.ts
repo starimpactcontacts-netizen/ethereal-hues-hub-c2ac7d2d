@@ -17,10 +17,10 @@ const corsHeaders = {
 }
 
 const EMAIL_SUBJECTS: Record<string, string> = {
-  signup: 'Confirm your email',
+  signup: 'Confirm your Loopgate email',
   invite: "You've been invited",
   magiclink: 'Your login link',
-  recovery: 'Reset your password',
+  recovery: 'Reset your Loopgate password',
   email_change: 'Confirm your new email',
   reauthentication: 'Your verification code',
 }
@@ -36,7 +36,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "ethereal-hues-hub"
+const SITE_NAME = "Loopgate"
 const SENDER_DOMAIN = "notify.loopgate.gg"
 const ROOT_DOMAIN = "loopgate.gg"
 const FROM_DOMAIN = "notify.loopgate.gg" // Domain shown in From address (may be root or sender subdomain)
