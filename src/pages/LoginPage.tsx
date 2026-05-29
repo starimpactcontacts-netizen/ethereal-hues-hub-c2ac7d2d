@@ -69,7 +69,7 @@ export default function LoginPage() {
     }
   };
 
-  const handleForgotPassword = async (e: React.FormEvent) => {
+  const handleForgotPassword = async (e: React.FormEvent | React.MouseEvent) => {
     e.preventDefault();
     const email = forgotEmail.trim().toLowerCase();
     if (!email.includes('@') || !email.includes('.')) {
@@ -576,8 +576,7 @@ export default function LoginPage() {
                           </p>
                         </div>
                       ) : (
-                        <form
-                          onSubmit={handleForgotPassword}
+                        <div
                           className="space-y-2 p-3 rounded-[14px]"
                           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
                         >
@@ -614,13 +613,14 @@ export default function LoginPage() {
                             </button>
                           </div>
                           <button
-                            type="submit"
+                            type="button"
+                            onClick={handleForgotPassword}
                             disabled={forgotLoading}
                             className="w-full h-11 rounded-[12px] bg-white/10 text-white text-[14px] font-semibold active:opacity-60 disabled:opacity-50 flex items-center justify-center"
                           >
                             {forgotLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send login link'}
                           </button>
-                        </form>
+                        </div>
                       )}
                     </motion.div>
                   )}
