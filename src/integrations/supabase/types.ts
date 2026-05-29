@@ -8433,6 +8433,44 @@ export type Database = {
         }
         Relationships: []
       }
+      scenepack_videos: {
+        Row: {
+          created_at: string
+          file_size_mb: number | null
+          id: string
+          scenepack_id: string
+          sort_order: number
+          title: string | null
+          video_url: string
+        }
+        Insert: {
+          created_at?: string
+          file_size_mb?: number | null
+          id?: string
+          scenepack_id: string
+          sort_order?: number
+          title?: string | null
+          video_url: string
+        }
+        Update: {
+          created_at?: string
+          file_size_mb?: number | null
+          id?: string
+          scenepack_id?: string
+          sort_order?: number
+          title?: string | null
+          video_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scenepack_videos_scenepack_id_fkey"
+            columns: ["scenepack_id"]
+            isOneToOne: false
+            referencedRelation: "scenepack_pool"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shop_items: {
         Row: {
           available_until: string | null
