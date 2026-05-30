@@ -1389,14 +1389,14 @@ export default function ArenaPage() {
               whileTap={{ scale: 0.97 }}
               onClick={handleQuickFight}
               className="relative h-[120px] overflow-hidden text-left touch-manipulation group"
-              style={{ background: '#000' }}
+              style={{ background: '#0e0e0e' }}
             >
               {/* Dot grid */}
               <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)', backgroundSize: '14px 14px' }} />
               {/* Top-left light leak */}
               <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] via-transparent to-transparent pointer-events-none" />
               {/* Bottom-right vignette */}
-              <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 80% 120%, transparent 30%, black 80%)' }} />
+              <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 80% 120%, transparent 30%, #0e0e0e 80%)' }} />
               {/* Border */}
               <div className="absolute inset-0 border border-white/[0.13] group-active:border-white/25 transition-colors pointer-events-none" />
               {/* Corner notches */}
@@ -1427,11 +1427,11 @@ export default function ArenaPage() {
               whileTap={{ scale: 0.97 }}
               onClick={() => document.getElementById('arena-competitions')?.scrollIntoView({ behavior: 'smooth' })}
               className="relative h-[120px] overflow-hidden text-left touch-manipulation group"
-              style={{ background: '#000' }}
+              style={{ background: '#0e0e0e' }}
             >
               <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)', backgroundSize: '14px 14px' }} />
               <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] via-transparent to-transparent pointer-events-none" />
-              <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 80% 120%, transparent 30%, black 80%)' }} />
+              <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 80% 120%, transparent 30%, #0e0e0e 80%)' }} />
               <div className="absolute inset-0 border border-white/[0.13] group-active:border-white/25 transition-colors pointer-events-none" />
               <div className="absolute top-0 right-0 pointer-events-none"><div className="w-5 h-px bg-white/30" /><div className="w-px h-5 bg-white/30 ml-auto" /></div>
               <div className="absolute bottom-0 left-0 pointer-events-none"><div className="w-5 h-px bg-white/30" /><div className="w-px h-5 bg-white/30" /></div>
