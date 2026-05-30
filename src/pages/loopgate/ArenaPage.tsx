@@ -1387,22 +1387,19 @@ export default function ArenaPage() {
             <motion.button
               whileTap={{ scale: 0.96 }}
               onClick={handleQuickFight}
-              className="relative overflow-hidden h-[110px] flex flex-col justify-between p-4 text-left touch-manipulation"
-              style={{ background: 'linear-gradient(145deg, #1c0303 0%, #330808 60%, #1c0303 100%)' }}
+              className="relative h-[100px] flex flex-col justify-between p-4 text-left touch-manipulation border border-white/10 bg-[#111]"
             >
-              <div className="absolute inset-0 border border-red-600/40 pointer-events-none" />
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_20%,rgba(239,68,68,0.18),transparent_60%)] pointer-events-none" />
               {liveQuick > 0 && (
-                <div className="absolute top-2.5 right-2.5 flex items-center gap-1 px-1.5 py-0.5 border border-red-500/40 bg-red-500/15">
-                  <span className="w-1 h-1 rounded-full bg-red-400 animate-pulse" />
-                  <span className="text-[7px] font-black text-red-400">{liveQuick} LIVE</span>
+                <div className="absolute top-2.5 right-2.5 flex items-center gap-1 px-1.5 py-0.5 border border-white/15 bg-white/5">
+                  <span className="w-1 h-1 rounded-full bg-white/60 animate-pulse" />
+                  <span className="text-[7px] font-black text-white/50">{liveQuick} LIVE</span>
                 </div>
               )}
-              <div className="w-8 h-8 rounded-lg bg-red-500/20 border border-red-500/30 flex items-center justify-center">
-                <Swords className="w-4 h-4 text-red-400" strokeWidth={2.5} />
+              <div className="w-8 h-8 border border-white/10 bg-white/5 flex items-center justify-center">
+                <Swords className="w-4 h-4 text-white/60" strokeWidth={2.5} />
               </div>
               <div>
-                <p className="text-[9px] font-black uppercase tracking-[0.15em] text-red-400/70">1v1</p>
+                <p className="text-[9px] font-black uppercase tracking-[0.15em] text-white/35">1v1</p>
                 <p className="text-[22px] font-black text-white leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>EDIT BATTLE</p>
               </div>
             </motion.button>
@@ -1411,16 +1408,13 @@ export default function ArenaPage() {
             <motion.button
               whileTap={{ scale: 0.96 }}
               onClick={() => document.getElementById('arena-competitions')?.scrollIntoView({ behavior: 'smooth' })}
-              className="relative overflow-hidden h-[110px] flex flex-col justify-between p-4 text-left touch-manipulation"
-              style={{ background: 'linear-gradient(145deg, #0d0a00 0%, #1f1500 60%, #0d0a00 100%)' }}
+              className="relative h-[100px] flex flex-col justify-between p-4 text-left touch-manipulation border border-white/10 bg-[#111]"
             >
-              <div className="absolute inset-0 border border-amber-500/30 pointer-events-none" />
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_20%,rgba(245,158,11,0.13),transparent_60%)] pointer-events-none" />
-              <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/25 flex items-center justify-center">
-                <Trophy className="w-4 h-4 text-amber-400" strokeWidth={2.5} />
+              <div className="w-8 h-8 border border-white/10 bg-white/5 flex items-center justify-center">
+                <Trophy className="w-4 h-4 text-white/60" strokeWidth={2.5} />
               </div>
               <div>
-                <p className="text-[9px] font-black uppercase tracking-[0.15em] text-amber-400/70">Enter & Vote</p>
+                <p className="text-[9px] font-black uppercase tracking-[0.15em] text-white/35">Enter & Vote</p>
                 <p className="text-[22px] font-black text-white leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>COMPETITION</p>
               </div>
             </motion.button>
