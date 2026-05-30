@@ -168,7 +168,7 @@ export default function QuickFightChat({
   return (
     <div className="bg-black border border-white/10 overflow-hidden">
       {/* Header tabs */}
-      <div className="flex border-b border-white/10 bg-gradient-to-r from-red-500/10 via-transparent to-blue-500/10">
+      <div className="flex border-b border-white/10 bg-black">
         <button
           onClick={() => { setChatTab('battle'); setReplyTo(null); }}
           className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 transition-colors ${
@@ -434,7 +434,7 @@ export default function QuickFightChat({
             <button
               onClick={() => sendMessage(input)}
               disabled={!input.trim() || sending}
-              className="h-9 w-9 flex items-center justify-center bg-gradient-to-br from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black disabled:opacity-50 transition-colors rounded-lg shrink-0"
+              className="h-9 w-9 flex items-center justify-center bg-white hover:bg-zinc-200 text-black disabled:opacity-30 transition-colors rounded-lg shrink-0"
             >
               {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             </button>
