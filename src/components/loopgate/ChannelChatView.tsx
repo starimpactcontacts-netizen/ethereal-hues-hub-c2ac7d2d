@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Hash, Megaphone, Send, MoreVertical, Trash2, Pin, BookOpen, Lock, Users, Settings, ChevronLeft, CornerUpLeft, X } from "lucide-react";
+import { Hash, Megaphone, Send, MoreVertical, Trash2, Pin, BookOpen, Lock, Users, Settings, ChevronLeft, CornerUpLeft, X, Paperclip, Loader2 } from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -126,6 +126,7 @@ export default function ChannelChatView({
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [showGifPicker, setShowGifPicker] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [showMentions, setShowMentions] = useState(false);
   const [mentionQuery, setMentionQuery] = useState("");
   const [cursorPosition, setCursorPosition] = useState(0);
@@ -135,6 +136,7 @@ export default function ChannelChatView({
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Filter out optimistically deleted messages
   const visibleMessages = messages.filter((m) => !deletedIds.has(m.id));
@@ -186,6 +188,26 @@ export default function ChannelChatView({
   const handleGifSelect = (gifUrl: string) => {
     handleSendMessage(gifUrl);
     setShowGifPicker(false);
+  };
+
+  const handleMediaUpload = async (file: File) => {
+    if (!profile) return;
+    const isVideo = file.type.startsWith('video/');
+    const maxSize = isVideo ? 50 * 1024 * 1024 : 8 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error(`File must be under ${isVideo ? '50' : '8'} MB`);
+      return;
+    }
+    setUploading(true);
+    const ext = file.name.split('.').pop() || 'jpg';
+    const path = `${channel.id}/${Date.now()}-${profile.id}.${ext}`;
+    const { error: uploadError } = await supabase.storage
+      .from('channel-media')
+      .upload(path, file, { cacheControl: '3600', upsert: false });
+    if (uploadError) { toast.error('Upload failed'); setUploading(false); return; }
+    const { data: { publicUrl } } = supabase.storage.from('channel-media').getPublicUrl(path);
+    await handleSendMessage(publicUrl);
+    setUploading(false);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -592,7 +614,26 @@ export default function ChannelChatView({
 
         {canPost ? (
           <div className="flex items-center gap-1.5 bg-muted/30 rounded-xl px-3">
-            {/* Bot command menu moved to channel header */}
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,video/*"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleMediaUpload(f); e.target.value = ''; }}
+            />
+
+            {/* Media upload button */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-transparent shrink-0"
+            >
+              {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Paperclip className="w-4 h-4" />}
+            </Button>
 
             <Button
               type="button"

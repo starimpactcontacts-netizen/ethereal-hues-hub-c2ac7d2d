@@ -11,6 +11,16 @@ interface RichMessageContentProps {
 const GIF_PATTERN = /https?:\/\/[^\s]+\.gif(\?[^\s]*)?/gi;
 const URL_PATTERN = /(https?:\/\/[^\s]+)/g;
 
+const IMAGE_PATTERN = /\.(jpg|jpeg|png|webp)(\?|$)/i;
+const VIDEO_PATTERN = /\.(mp4|webm|mov)(\?|$)/i;
+
+function isImageUrl(url: string) {
+  return IMAGE_PATTERN.test(url) || url.includes('.supabase.co/storage');
+}
+function isVideoUrl(url: string) {
+  return VIDEO_PATTERN.test(url);
+}
+
 // Domains to skip previews for (already handled or not useful)
 const SKIP_PREVIEW_DOMAINS = [
   'tenor.com',
@@ -41,22 +51,38 @@ export default function RichMessageContent({ content, showLinkPreviews = true }:
     let lastIndex = 0;
     let key = 0;
 
-    // Check if the entire message is just a GIF URL
+    // Check if the entire message is a single media URL
     const trimmed = content.trim();
-    GIF_PATTERN.lastIndex = 0;
-    if (GIF_PATTERN.test(trimmed) && !trimmed.includes(" ")) {
-      return {
-        elements: [
-          <img
-            key="gif"
-            src={trimmed}
-            alt="GIF"
-            className="max-w-[180px] max-h-[140px] rounded-lg mt-1"
-            loading="lazy"
-          />
-        ],
-        previewUrls: []
-      };
+    if (!trimmed.includes(" ")) {
+      if (isVideoUrl(trimmed)) {
+        return {
+          elements: [
+            <video
+              key="video"
+              src={trimmed}
+              controls
+              className="max-w-[260px] max-h-[200px] rounded-lg mt-1"
+              preload="metadata"
+            />
+          ],
+          previewUrls: []
+        };
+      }
+      GIF_PATTERN.lastIndex = 0;
+      if (GIF_PATTERN.test(trimmed) || isImageUrl(trimmed)) {
+        return {
+          elements: [
+            <img
+              key="img"
+              src={trimmed}
+              alt=""
+              className="max-w-[260px] max-h-[200px] rounded-lg mt-1 object-cover"
+              loading="lazy"
+            />
+          ],
+          previewUrls: []
+        };
+      }
     }
 
     // Reset regex
@@ -100,23 +126,30 @@ export default function RichMessageContent({ content, showLinkPreviews = true }:
           />
         );
       } else if (match[3]) {
-        // Regular URL - make it a link
         const urlText = match[3];
-        elements.push(
-          <a
-            key={key++}
-            href={urlText}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary hover:underline break-all"
-          >
-            {urlText.length > 50 ? urlText.slice(0, 50) + "..." : urlText}
-          </a>
-        );
-        
-        // Collect URLs for previews (only first one to avoid clutter)
-        if (showLinkPreviews && previewUrls.length === 0 && shouldShowPreview(urlText)) {
-          previewUrls.push(urlText);
+        if (isVideoUrl(urlText)) {
+          elements.push(
+            <video key={key++} src={urlText} controls className="max-w-[260px] max-h-[200px] rounded-lg mt-1 block" preload="metadata" />
+          );
+        } else if (isImageUrl(urlText)) {
+          elements.push(
+            <img key={key++} src={urlText} alt="" className="max-w-[260px] max-h-[200px] rounded-lg mt-1 block object-cover" loading="lazy" />
+          );
+        } else {
+          elements.push(
+            <a
+              key={key++}
+              href={urlText}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline break-all"
+            >
+              {urlText.length > 50 ? urlText.slice(0, 50) + "..." : urlText}
+            </a>
+          );
+          if (showLinkPreviews && previewUrls.length === 0 && shouldShowPreview(urlText)) {
+            previewUrls.push(urlText);
+          }
         }
       }
 
