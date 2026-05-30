@@ -51,10 +51,33 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
       <motion.div
         whileTap={{ scale: 0.97 }}
         onClick={() => onJoin(comp.id)}
-        className="relative w-full h-full bg-surface-1 border border-white/[0.06] overflow-hidden rounded-2xl cursor-pointer flex flex-col"
+        className="relative w-full h-full overflow-hidden cursor-pointer flex flex-col"
+        style={{ background: '#111', border: '1px solid rgba(255,255,255,0.07)' }}
       >
-        {/* Cover — fills most of the square */}
-        <div className="relative flex-1 overflow-hidden">
+        {/* Dot grid */}
+        <div className="absolute inset-0 pointer-events-none z-0" style={{
+          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)',
+          backgroundSize: '14px 14px',
+        }} />
+
+        {/* Gold top accent bar */}
+        <div className="absolute inset-x-0 top-0 h-[2px] pointer-events-none z-10" style={{
+          background: 'linear-gradient(90deg, #f59e0b, rgba(245,158,11,0.3) 60%, transparent)',
+        }} />
+
+        {/* Corner notches — top-right */}
+        <div className="absolute top-0 right-0 pointer-events-none z-10">
+          <div className="w-3 h-px bg-white/20" />
+          <div className="w-px h-3 bg-white/20 ml-auto" />
+        </div>
+        {/* Corner notches — bottom-left */}
+        <div className="absolute bottom-0 left-0 pointer-events-none z-10">
+          <div className="w-3 h-px bg-white/20" />
+          <div className="w-px h-3 bg-white/20" />
+        </div>
+
+        {/* Cover — fills most of the card */}
+        <div className="relative flex-1 overflow-hidden z-0">
           {comp.cover_image_url ? (
             <img
               src={comp.cover_image_url}
@@ -65,43 +88,68 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
           ) : (
             <LobbyDefaultCover name={comp.name} variant="card" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
+          {/* Bottom gradient for text legibility */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent pointer-events-none" />
 
+          {/* Share button */}
           <button
             onClick={handleShare}
-            className="absolute top-2 right-2 z-20 p-1.5 bg-black/50 backdrop-blur-md rounded-full active:scale-90"
+            className="absolute top-2.5 right-2.5 z-20 w-6 h-6 flex items-center justify-center bg-black/60 active:scale-90"
+            style={{ border: '1px solid rgba(255,255,255,0.12)' }}
           >
-            <Share2 className="w-3 h-3 text-white/70" />
+            <Share2 className="w-3 h-3 text-white/60" />
           </button>
 
+          {/* Private badge */}
           {comp.is_private && (
-            <div className="absolute top-2 left-2 z-20 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-fuchsia-500/20 backdrop-blur-md border border-fuchsia-400/40">
-              <Lock className="w-2.5 h-2.5 text-fuchsia-200" strokeWidth={2.5} />
-              <span className="text-[8px] font-black uppercase tracking-wider text-fuchsia-100">Private</span>
+            <div className="absolute top-2.5 left-2.5 z-20 flex items-center gap-1 px-1.5 py-0.5" style={{ background: 'rgba(168,85,247,0.2)', border: '1px solid rgba(168,85,247,0.35)' }}>
+              <Lock className="w-2 h-2 text-purple-300" strokeWidth={2.5} />
+              <span className="text-[7px] font-black uppercase tracking-wider text-purple-200" style={{ fontFamily: 'Teko, sans-serif' }}>Private</span>
             </div>
           )}
 
-          {/* Title overlaid bottom */}
-          <div className="absolute bottom-0 left-0 right-0 p-2.5">
-            <h3 className="text-[12px] font-bold text-white leading-tight line-clamp-2" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
+          {/* Bottom overlay: theme + title */}
+          <div className="absolute bottom-0 left-0 right-0 p-2.5 z-10">
+            {comp.theme && (
+              <div className="flex items-center gap-1 mb-1">
+                <span
+                  className="text-[7px] font-black uppercase tracking-[0.16em] text-amber-400/80 leading-none"
+                  style={{ fontFamily: 'Teko, sans-serif' }}
+                >
+                  THEME
+                </span>
+                <span className="w-px h-2.5 bg-white/15" />
+                <span
+                  className="text-[7px] font-black uppercase tracking-[0.1em] text-white/65 leading-none truncate"
+                  style={{ fontFamily: 'Teko, sans-serif' }}
+                >
+                  {comp.theme}
+                </span>
+              </div>
+            )}
+            <h3
+              className="text-[15px] font-black text-white leading-tight line-clamp-2 uppercase"
+              style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.02em' }}
+            >
               {comp.name}
             </h3>
           </div>
         </div>
 
-        {/* Roblox-style footer: stats + join */}
-        <div className="px-2.5 py-2 flex items-center justify-between gap-2 border-t border-white/[0.04]">
-          <div className="flex items-center gap-1.5 text-[9px] font-bold text-zinc-300 min-w-0 w-full">
-            <span className="flex items-center gap-1 whitespace-nowrap text-zinc-400">
-              <Users className="w-3 h-3" strokeWidth={2.5} />
-              {comp.current_players}/{comp.max_players}
-            </span>
-            <span className="text-white/15">·</span>
-            <span className={`flex items-center gap-1 whitespace-nowrap ${statusColor} truncate`}>
-              <StatusIcon className="w-2.5 h-2.5" strokeWidth={2.5} />
-              <span className="truncate tracking-wider">{statusLabel}</span>
-            </span>
-          </div>
+        {/* Footer: player count + status */}
+        <div className="relative z-10 px-2.5 py-2 flex items-center gap-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+          <Users className="w-2.5 h-2.5 text-white/30 shrink-0" strokeWidth={2.5} />
+          <span className="text-[9px] font-black text-white/35 tabular-nums" style={{ fontFamily: 'Teko, sans-serif' }}>
+            {comp.current_players}/{comp.max_players}
+          </span>
+          <span className="text-white/15">·</span>
+          <StatusIcon className="w-2.5 h-2.5 shrink-0" strokeWidth={2.5} style={{ color: isLive ? '#f87171' : isFull ? '#fbbf24' : '#34d399' }} />
+          <span
+            className={`text-[9px] font-black uppercase truncate leading-none ${statusColor}`}
+            style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.08em' }}
+          >
+            {statusLabel}
+          </span>
         </div>
       </motion.div>
     </div>
@@ -214,15 +262,20 @@ export default function ArenaCompetitionsSection({ onCreateClick, hideHeader = f
             <motion.div
               whileTap={{ scale: 0.97 }}
               onClick={onCreateClick}
-              className="relative w-full h-full bg-surface-1 border border-dashed border-white/[0.1] overflow-hidden rounded-2xl cursor-pointer hover:border-gold/30 transition-colors flex flex-col items-center justify-center gap-2"
+              className="relative w-full h-full overflow-hidden cursor-pointer flex flex-col items-center justify-center gap-2"
+              style={{ background: '#0e0e0e', border: '1px dashed rgba(245,158,11,0.2)' }}
             >
-              <div className="w-12 h-12 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center">
-                <Plus className="w-6 h-6 text-gold" />
+              <div className="absolute inset-0 pointer-events-none" style={{
+                backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)',
+                backgroundSize: '14px 14px',
+              }} />
+              <div className="relative w-10 h-10 flex items-center justify-center" style={{ border: '1px solid rgba(245,158,11,0.3)' }}>
+                <Plus className="w-5 h-5 text-amber-400/70" strokeWidth={2} />
               </div>
-              <h3 className="text-[12px] font-bold text-foreground" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
-                Create
-              </h3>
-              <p className="text-[9px] text-muted-foreground">Set theme, invite editors</p>
+              <div className="relative text-center px-3">
+                <p className="text-[13px] font-black text-white/60 uppercase leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>Create</p>
+                <p className="text-[8px] text-white/25 uppercase tracking-[0.12em] mt-0.5" style={{ fontFamily: 'Teko, sans-serif' }}>Set theme · invite editors</p>
+              </div>
             </motion.div>
           </div>
         </ArenaRail>
