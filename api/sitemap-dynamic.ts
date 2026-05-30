@@ -1,4 +1,3 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
 
 const SITE = "https://loopgate.gg";
@@ -13,7 +12,7 @@ function urlEntry(
   return `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`;
 }
 
-export default async function handler(_req: VercelRequest, res: VercelResponse) {
+export default async function handler(_req: any, res: any) {
   const supabaseUrl =
     process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || "";
   const supabaseKey =
