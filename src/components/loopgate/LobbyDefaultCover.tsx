@@ -25,7 +25,6 @@ interface Props {
 export function LobbyDefaultCover({ name, className = "", variant = "card" }: Props) {
   const base = DARK_BASES[hashIndex(name || "loopgate", DARK_BASES.length)];
   const isHero = variant === "hero";
-  const logoSize = isHero ? 64 : 44;
 
   return (
     <div
@@ -61,21 +60,27 @@ export function LobbyDefaultCover({ name, className = "", variant = "card" }: Pr
         <div className="w-px h-4 bg-white/20" />
       </div>
 
-      {/* Watermark logo — centered, low opacity */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <img
-          src={loopgateLogo}
-          alt=""
-          style={{
-            width: logoSize,
-            height: logoSize,
-            objectFit: 'contain',
-            opacity: 0.1,
-            filter: 'invert(1)',
-          }}
-          loading="lazy"
-        />
-      </div>
+      {/* Big gradient logo — bottom-right corner, partially cropped */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          bottom: isHero ? -16 : -10,
+          right: isHero ? -16 : -10,
+          width: isHero ? 140 : 90,
+          height: isHero ? 140 : 90,
+          maskImage: `url(${loopgateLogo})`,
+          WebkitMaskImage: `url(${loopgateLogo})`,
+          maskSize: 'contain',
+          WebkitMaskSize: 'contain',
+          maskRepeat: 'no-repeat',
+          WebkitMaskRepeat: 'no-repeat',
+          maskPosition: 'center',
+          WebkitMaskPosition: 'center',
+          background: 'linear-gradient(135deg, #818cf8 0%, #a78bfa 40%, #38bdf8 100%)',
+          opacity: 0.28,
+          filter: `drop-shadow(0 0 ${isHero ? 20 : 12}px rgba(129,140,248,0.7)) drop-shadow(0 0 ${isHero ? 40 : 24}px rgba(167,139,250,0.4))`,
+        }}
+      />
 
       {/* Bottom shimmer line */}
       <div
