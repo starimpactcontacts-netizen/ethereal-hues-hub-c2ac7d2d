@@ -1384,39 +1384,66 @@ export default function ArenaPage() {
           {/* ═══ PRIMARY ACTION BUTTONS ═══ */}
           <div className="grid grid-cols-2 gap-2.5 mb-5">
             {/* EDIT BATTLE */}
+            {/* EDIT BATTLE */}
             <motion.button
-              whileTap={{ scale: 0.96 }}
+              whileTap={{ scale: 0.97 }}
               onClick={handleQuickFight}
-              className="relative h-[100px] flex flex-col justify-between p-4 text-left touch-manipulation border border-white/10 bg-[#111]"
+              className="relative h-[120px] overflow-hidden text-left touch-manipulation group"
+              style={{ background: '#000' }}
             >
+              {/* Dot grid */}
+              <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)', backgroundSize: '14px 14px' }} />
+              {/* Top-left light leak */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] via-transparent to-transparent pointer-events-none" />
+              {/* Bottom-right vignette */}
+              <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 80% 120%, transparent 30%, black 80%)' }} />
+              {/* Border */}
+              <div className="absolute inset-0 border border-white/[0.13] group-active:border-white/25 transition-colors pointer-events-none" />
+              {/* Corner notches */}
+              <div className="absolute top-0 right-0 pointer-events-none"><div className="w-5 h-px bg-white/30" /><div className="w-px h-5 bg-white/30 ml-auto" /></div>
+              <div className="absolute bottom-0 left-0 pointer-events-none"><div className="w-5 h-px bg-white/30" /><div className="w-px h-5 bg-white/30" /></div>
+              {/* Watermark icon — large, top-right */}
+              <div className="absolute -top-1 -right-1 opacity-[0.08] pointer-events-none">
+                <Swords className="w-20 h-20 text-white" strokeWidth={1} />
+              </div>
+              {/* Live pill */}
               {liveQuick > 0 && (
-                <div className="absolute top-2.5 right-2.5 flex items-center gap-1 px-1.5 py-0.5 border border-white/15 bg-white/5">
+                <div className="absolute top-3 left-3 flex items-center gap-1 border border-white/15 px-1.5 py-0.5 bg-black/60">
                   <span className="w-1 h-1 rounded-full bg-white/60 animate-pulse" />
-                  <span className="text-[7px] font-black text-white/50">{liveQuick} LIVE</span>
+                  <span className="text-[7px] font-black text-white/45 uppercase tracking-wider">{liveQuick} Live</span>
                 </div>
               )}
-              <div className="w-8 h-8 border border-white/10 bg-white/5 flex items-center justify-center">
-                <Swords className="w-4 h-4 text-white/60" strokeWidth={2.5} />
+              {/* Text */}
+              <div className="absolute bottom-0 left-0 right-0 p-3.5">
+                <p className="text-[8px] font-black uppercase tracking-[0.22em] text-white/28 mb-0.5">1v1</p>
+                <p className="text-[22px] font-black text-white leading-none" style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.02em' }}>EDIT BATTLE</p>
               </div>
-              <div>
-                <p className="text-[9px] font-black uppercase tracking-[0.15em] text-white/35">1v1</p>
-                <p className="text-[22px] font-black text-white leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>EDIT BATTLE</p>
-              </div>
+              {/* Bottom shimmer */}
+              <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/18 to-transparent pointer-events-none" />
             </motion.button>
 
             {/* COMPETITION */}
             <motion.button
-              whileTap={{ scale: 0.96 }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => document.getElementById('arena-competitions')?.scrollIntoView({ behavior: 'smooth' })}
-              className="relative h-[100px] flex flex-col justify-between p-4 text-left touch-manipulation border border-white/10 bg-[#111]"
+              className="relative h-[120px] overflow-hidden text-left touch-manipulation group"
+              style={{ background: '#000' }}
             >
-              <div className="w-8 h-8 border border-white/10 bg-white/5 flex items-center justify-center">
-                <Trophy className="w-4 h-4 text-white/60" strokeWidth={2.5} />
+              <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)', backgroundSize: '14px 14px' }} />
+              <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] via-transparent to-transparent pointer-events-none" />
+              <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 80% 120%, transparent 30%, black 80%)' }} />
+              <div className="absolute inset-0 border border-white/[0.13] group-active:border-white/25 transition-colors pointer-events-none" />
+              <div className="absolute top-0 right-0 pointer-events-none"><div className="w-5 h-px bg-white/30" /><div className="w-px h-5 bg-white/30 ml-auto" /></div>
+              <div className="absolute bottom-0 left-0 pointer-events-none"><div className="w-5 h-px bg-white/30" /><div className="w-px h-5 bg-white/30" /></div>
+              {/* Watermark icon */}
+              <div className="absolute -top-1 -right-1 opacity-[0.08] pointer-events-none">
+                <Trophy className="w-20 h-20 text-white" strokeWidth={1} />
               </div>
-              <div>
-                <p className="text-[9px] font-black uppercase tracking-[0.15em] text-white/35">Enter & Vote</p>
-                <p className="text-[22px] font-black text-white leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>COMPETITION</p>
+              <div className="absolute bottom-0 left-0 right-0 p-3.5">
+                <p className="text-[8px] font-black uppercase tracking-[0.22em] text-white/28 mb-0.5">Enter & Vote</p>
+                <p className="text-[22px] font-black text-white leading-none" style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.02em' }}>COMPETITION</p>
               </div>
+              <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/18 to-transparent pointer-events-none" />
             </motion.button>
           </div>
 
