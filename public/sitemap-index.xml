@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Static core pages -->
+  <sitemap>
+    <loc>https://loopgate.gg/sitemap.xml</loc>
+    <lastmod>2026-05-30</lastmod>
+  </sitemap>
+  <!-- Dynamic: editor profiles, battles, competitions (Supabase Edge Function) -->
+  <sitemap>
+    <loc>https://loopgate.gg/sitemap-dynamic.xml</loc>
+    <lastmod>2026-05-30</lastmod>
+  </sitemap>
+</sitemapindex>

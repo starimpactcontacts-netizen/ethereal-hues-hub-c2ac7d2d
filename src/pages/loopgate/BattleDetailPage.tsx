@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"; // UFC bar live
 import { useParams, useNavigate } from "react-router-dom";
+import SEO from "@/components/SEO";
 import { MAX_EDIT_UPLOAD_BYTES, MAX_EDIT_UPLOAD_LABEL, uploadToBunny } from "@/lib/bunnyUpload";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -268,8 +269,23 @@ export default function BattleDetailPage() {
     return null;
   };
 
+  const opp = battle?.opponent_username || 'Open Slot';
+  const seoTitle = battle
+    ? `${battle.challenger_username} vs ${opp} — 1v1 Edit Battle`
+    : 'Edit Battle';
+  const totalVotes = battle ? (battle.challenger_votes || 0) + (battle.opponent_votes || 0) : 0;
+  const seoDesc = battle
+    ? `Watch this 1v1 edit battle between ${battle.challenger_username} and ${opp} on Loopgate. ${totalVotes} votes cast. ${battle.status === 'completed' ? 'See the results and winning edit.' : 'Vote on the best edit.'}`
+    : 'Watch a competitive 1v1 edit battle on Loopgate — the #1 video editing competition platform.';
+
   return (
     <div className="min-h-screen bg-background pb-24">
+      <SEO
+        title={seoTitle}
+        description={seoDesc}
+        canonical={`https://loopgate.gg/battles/${battleId}`}
+        keywords={`edit battle, ${battle?.challenger_username || ''}, ${opp}, 1v1 editing battle, video editing competition, loopgate`}
+      />
       {/* ═══ HEADER ═══ */}
       <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-white/[0.06]">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">

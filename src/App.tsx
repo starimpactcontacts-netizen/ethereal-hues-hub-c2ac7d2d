@@ -319,6 +319,7 @@ export default function App() {
             }>
               <Route path="/hub" element={<HubPage />} />
               <Route path="/editor/:userId" element={<PublicProfilePage />} />
+              <Route path="/editors/:userId" element={<PublicProfilePage />} />
               <Route path="/rankings" element={<RankingsPage />} />
               <Route path="/class" element={<ClassPage />} />
               <Route path="/league" element={<LeaguePage />} />
@@ -337,6 +338,7 @@ export default function App() {
               <Route path="/competition/create" element={<CreateCompetitionPage />} />
               <Route path="/sanctioned/:id" element={<SanctionedTournamentPage />} />
               <Route path="/battle/:battleId" element={<BattleDetailPage />} />
+              <Route path="/battles/:battleId" element={<BattleDetailPage />} />
               <Route path="/cash-battle" element={<CashBattleReadyPage />} />
               <Route path="/cash-battle/:battleId" element={<CashBattlePage />} />
               <Route path="/edit-battles" element={<EditBattlesHubPage />} />
@@ -344,6 +346,7 @@ export default function App() {
               <Route path="/quick-fight" element={<QuickFightPage />} />
               <Route path="/judge-queue" element={<JudgeQueuePage />} />
               <Route path="/competition/:id" element={<CompetitionLobbyPage />} />
+              <Route path="/competitions/:id" element={<CompetitionLobbyPage />} />
               <Route path="/judge/gatekeeper/:id" element={<GatekeeperRankPage />} />
               <Route path="/judges" element={<JudgeHubPage />} />
               <Route path="/judges/leaderboard" element={<JudgeLeaderboardPage />} />

@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, ExternalLink, Loader2, Globe, Share2, Video } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import SEO from "@/components/SEO";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import AuthorityBadge from "@/components/loopgate/AuthorityBadge";
 import FoundingBadge from "@/components/loopgate/FoundingBadge";
@@ -344,8 +345,26 @@ export default function PublicProfilePage() {
    const selectedBgColor = profile.profile_bg_color || 'gold';
    const hasBgImage = profile.profile_bg_image_url && profile.level >= 3;
  
+  const seoTitle = profile.display_name
+    ? `${profile.display_name} (@${profile.username}) — Edit Battle Profile`
+    : `${profile.username} — Edit Battle Profile`;
+  const seoDesc = [
+    `${profile.display_name || profile.username} is a competitive video editor on Loopgate.`,
+    profile.global_index_score ? `Index score: ${Number(profile.global_index_score).toFixed(0)}.` : '',
+    profile.win_rate != null ? `Win rate: ${Number(profile.win_rate).toFixed(0)}%.` : '',
+    profile.total_events ? `${profile.total_events} competitions entered.` : '',
+    'View their edit battles, submissions, and rankings on Loopgate.',
+  ].filter(Boolean).join(' ');
+
   return (
     <div className="min-h-screen bg-background pb-24">
+      <SEO
+        title={seoTitle}
+        description={seoDesc}
+        canonical={`https://loopgate.gg/editors/${profile.username}`}
+        image={profile.avatar_url || undefined}
+        keywords={`${profile.username}, edit battle, video editing competition, editor profile, loopgate, competitive editing`}
+      />
       {/* ─── HERO HEADER ─── */}
       <div className="relative overflow-hidden">
         {/* Background */}

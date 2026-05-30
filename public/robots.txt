@@ -30,5 +30,6 @@ Disallow: /onboarding
 Disallow: /studio
 Disallow: /wallet
 
-# Sitemap
-Sitemap: https://loopgate.io/sitemap.xml
+# Sitemaps
+Sitemap: https://loopgate.gg/sitemap-index.xml
+Sitemap: https://loopgate.gg/sitemap.xml

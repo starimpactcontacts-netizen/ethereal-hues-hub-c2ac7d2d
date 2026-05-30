@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import SEO from "@/components/SEO";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Trophy, Users, Clock, Play, Loader2,
@@ -1157,8 +1158,27 @@ export default function CompetitionLobbyPage() {
     );
   }
 
+  const compSlug = competition?.slug || id;
+  const seoTitle = competition
+    ? `${competition.name} — Edit Competition`
+    : 'Edit Competition';
+  const seoDesc = competition
+    ? [
+        `${competition.name} is a video edit competition on Loopgate, hosted by ${competition.creator_username}.`,
+        competition.theme ? `Theme: ${competition.theme}.` : '',
+        `${competition.current_players}/${competition.max_players} editors competing.`,
+        competition.status === 'completed' ? 'See the full results and winning edits.' : 'Join and compete.',
+      ].filter(Boolean).join(' ')
+    : 'Watch or join a competitive video edit competition on Loopgate.';
+
   return (
     <div className="min-h-screen bg-background pb-32">
+      <SEO
+        title={seoTitle}
+        description={seoDesc}
+        canonical={`https://loopgate.gg/competitions/${compSlug}`}
+        keywords={`edit competition, ${competition?.name || ''}, ${competition?.creator_username || ''}, video editing competition, loopgate, competitive editing`}
+      />
       <ThemeRevealModal
         open={showThemeReveal}
         onClose={() => setShowThemeReveal(false)}
