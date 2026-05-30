@@ -1,3 +1,4 @@
+import React from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Clock, Copy, Eye, Lock, Share2, UserPlus, Users, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -28,6 +29,62 @@ const stripeStyle = {
   backgroundImage:
     "repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,0.06) 5px, rgba(255,255,255,0.06) 10px)",
 };
+
+function DotGrid() {
+  return (
+    <div
+      className="absolute inset-0 pointer-events-none"
+      style={{
+        backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)',
+        backgroundSize: '14px 14px',
+      }}
+    />
+  );
+}
+
+function ArenaButton({
+  onClick,
+  icon,
+  label,
+  large = false,
+  disabled = false,
+}: {
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+  large?: boolean;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`relative w-full overflow-hidden flex items-center justify-center gap-2.5 active:scale-[0.98] transition-transform disabled:opacity-30 ${large ? 'h-[58px]' : 'h-[50px]'}`}
+      style={{ background: '#111', border: '1px solid rgba(255,255,255,0.18)' }}
+    >
+      <DotGrid />
+      {/* Top accent */}
+      <div className="absolute inset-x-0 top-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)' }} />
+      {/* Corner notch top-right */}
+      <div className="absolute top-0 right-0">
+        <div className="w-2.5 h-px bg-white/30" />
+        <div className="w-px h-2.5 bg-white/30 ml-auto" />
+      </div>
+      {/* Corner notch bottom-left */}
+      <div className="absolute bottom-0 left-0">
+        <div className="w-2.5 h-px bg-white/30" />
+        <div className="w-px h-2.5 bg-white/30" />
+      </div>
+      <span className="relative z-10 text-white/60">{icon}</span>
+      <span
+        className="relative z-10 text-white font-black uppercase leading-none"
+        style={{ fontFamily: 'Teko, sans-serif', fontSize: large ? 22 : 16, letterSpacing: '0.1em' }}
+      >
+        {label}
+      </span>
+    </button>
+  );
+}
 
 function StockDots() {
   return (
@@ -126,8 +183,14 @@ export default function CustomEditBattleLobby({
             {isPrivate ? "Private" : "Open"} • {duration} Duration
           </p>
           <h1
-            className="text-[52px] leading-[0.88] font-black uppercase text-white"
-            style={{ fontFamily: "'Burbank Big Condensed', 'Teko', sans-serif", letterSpacing: "0.03em" }}
+            className="text-[58px] leading-[0.88] font-black uppercase text-white"
+            style={{
+              fontFamily: "'Bebas Neue', 'Teko', sans-serif",
+              letterSpacing: "0.04em",
+              WebkitTextStroke: "3px #000",
+              textShadow: "4px 4px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000",
+              filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.6))",
+            }}
           >
             Edit Battle
           </h1>
@@ -243,18 +306,14 @@ export default function CustomEditBattleLobby({
         <div className="mt-4 space-y-2">
           {isHost ? (
             <div className="grid grid-cols-[1fr_auto] gap-2">
-              <button
-                onClick={onShare}
-                className="h-[50px] bg-white text-black flex items-center justify-center gap-2 text-[15px] font-black uppercase tracking-[0.12em] active:scale-[0.98] transition-transform"
-                style={{ fontFamily: "Teko, sans-serif" }}
-              >
-                <Users className="w-4 h-4" /> Invite
-              </button>
+              <ArenaButton onClick={onShare} icon={<Users className="w-4 h-4" />} label="Invite" />
               <button
                 onClick={onCopy}
-                className="h-[50px] w-[50px] border border-white/15 bg-white/[0.04] grid place-items-center text-white/50 active:scale-95 transition-transform"
+                className="h-[54px] w-[54px] grid place-items-center text-white/50 active:scale-95 transition-transform relative overflow-hidden"
+                style={{ background: '#111', border: '1px solid rgba(255,255,255,0.13)' }}
               >
-                <Copy className="w-4 h-4" />
+                <DotGrid />
+                <Copy className="relative w-4 h-4 z-10" />
               </button>
             </div>
           ) : isPrivate ? (
@@ -269,25 +328,21 @@ export default function CustomEditBattleLobby({
                 className="w-full h-[50px] border border-white/15 bg-white/[0.04] px-4 text-center text-[20px] font-black tracking-[0.4em] text-white placeholder:text-white/20 focus:outline-none focus:border-white/35"
                 style={{ fontFamily: "Teko, sans-serif" }}
               />
-              <button
+              <ArenaButton
                 onClick={() => onJoin(codeInput.trim())}
                 disabled={codeInput.trim().length < 4}
-                className="h-[58px] w-full bg-white text-black flex items-center justify-center gap-2.5 active:scale-[0.98] transition-transform disabled:opacity-30"
-                style={{ fontFamily: "Teko, sans-serif" }}
-              >
-                <UserPlus className="w-5 h-5" />
-                <span className="text-[22px] leading-none font-black uppercase tracking-[0.1em]">Accept Battle</span>
-              </button>
+                icon={<UserPlus className="w-5 h-5" />}
+                label="Accept Battle"
+                large
+              />
             </div>
           ) : (
-            <button
+            <ArenaButton
               onClick={() => onJoin()}
-              className="h-[58px] w-full bg-white text-black flex items-center justify-center gap-2.5 active:scale-[0.98] transition-transform"
-              style={{ fontFamily: "Teko, sans-serif" }}
-            >
-              <UserPlus className="w-5 h-5" />
-              <span className="text-[22px] leading-none font-black uppercase tracking-[0.1em]">Accept Battle</span>
-            </button>
+              icon={<UserPlus className="w-5 h-5" />}
+              label="Accept Battle"
+              large
+            />
           )}
         </div>
 
