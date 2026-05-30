@@ -126,10 +126,10 @@ export default function CustomEditBattleLobby({
             {isPrivate ? "Private" : "Open"} • {duration} Duration
           </p>
           <h1
-            className="text-[46px] leading-[0.88] font-black uppercase text-white"
-            style={{ fontFamily: "Teko, sans-serif", letterSpacing: "0.02em" }}
+            className="text-[52px] leading-[0.88] font-black uppercase text-white"
+            style={{ fontFamily: "'Burbank Big Condensed', 'Teko', sans-serif", letterSpacing: "0.03em" }}
           >
-            Custom Edit Battle
+            Edit Battle
           </h1>
         </div>
 
@@ -272,19 +272,33 @@ export default function CustomEditBattleLobby({
               <button
                 onClick={() => onJoin(codeInput.trim())}
                 disabled={codeInput.trim().length < 4}
-                className="h-[52px] w-full bg-white text-black flex items-center justify-center gap-2 text-[15px] font-black uppercase tracking-[0.12em] active:scale-[0.98] transition-transform disabled:opacity-30"
+                className="relative h-[58px] w-full overflow-hidden active:scale-[0.98] transition-transform disabled:opacity-30 group"
                 style={{ fontFamily: "Teko, sans-serif" }}
               >
-                <UserPlus className="w-5 h-5" /> Accept Battle
+                <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-red-500 to-orange-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-red-500 via-orange-400 to-red-500" />
+                <div className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-white/60 to-transparent" />
+                <div className="relative flex items-center justify-center gap-2.5 text-white">
+                  <UserPlus className="w-5 h-5 drop-shadow-lg" />
+                  <span className="text-[22px] leading-none font-black uppercase tracking-[0.1em] drop-shadow-lg">Accept Battle</span>
+                </div>
               </button>
             </div>
           ) : (
             <button
               onClick={() => onJoin()}
-              className="h-[52px] w-full bg-white text-black flex items-center justify-center gap-2 text-[15px] font-black uppercase tracking-[0.12em] active:scale-[0.98] transition-transform"
+              className="relative h-[58px] w-full overflow-hidden active:scale-[0.98] transition-transform group"
               style={{ fontFamily: "Teko, sans-serif" }}
             >
-              <UserPlus className="w-5 h-5" /> Accept Battle
+              <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-red-500 to-orange-500" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-red-500 via-orange-400 to-red-500" />
+              <div className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-white/60 to-transparent" />
+              <div className="relative flex items-center justify-center gap-2.5 text-white">
+                <UserPlus className="w-5 h-5 drop-shadow-lg" />
+                <span className="text-[22px] leading-none font-black uppercase tracking-[0.1em] drop-shadow-lg">Accept Battle</span>
+              </div>
             </button>
           )}
         </div>
