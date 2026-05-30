@@ -1,17 +1,13 @@
 import loopgateLogo from "@/assets/loopgate-logo.png";
 
-// Deterministic, vibrant gradient palettes — picked by room name hash
-const GRADIENTS: [string, string, string][] = [
-  ["#7c3aed", "#db2777", "#0a0a0a"], // violet → pink
-  ["#0ea5e9", "#6366f1", "#0a0a0a"], // sky → indigo
-  ["#10b981", "#0ea5e9", "#0a0a0a"], // emerald → sky
-  ["#f59e0b", "#ef4444", "#0a0a0a"], // amber → red
-  ["#ec4899", "#8b5cf6", "#0a0a0a"], // pink → violet
-  ["#06b6d4", "#3b82f6", "#0a0a0a"], // cyan → blue
-  ["#f43f5e", "#7c3aed", "#0a0a0a"], // rose → violet
-  ["#22d3ee", "#a855f7", "#0a0a0a"], // cyan → purple
-  ["#84cc16", "#10b981", "#0a0a0a"], // lime → emerald
-  ["#fb7185", "#f59e0b", "#0a0a0a"], // rose → amber
+// Very subtle dark-tone variations — near-black, just enough to distinguish cards
+const DARK_BASES = [
+  '#0e0e0e',  // neutral charcoal
+  '#0c0e10',  // slight blue undertone
+  '#100e0c',  // slight warm undertone
+  '#0c100e',  // slight cool-green undertone
+  '#0f0d0f',  // slight purple undertone
+  '#0e0e0c',  // slight warm-neutral
 ];
 
 function hashIndex(str: string, mod: number) {
@@ -23,41 +19,72 @@ function hashIndex(str: string, mod: number) {
 interface Props {
   name: string;
   className?: string;
-  /** "card" = small grid card; "hero" = lobby hero banner */
   variant?: "card" | "hero";
 }
 
 export function LobbyDefaultCover({ name, className = "", variant = "card" }: Props) {
-  const [c1, c2, c3] = GRADIENTS[hashIndex(name || "loopgate", GRADIENTS.length)];
+  const base = DARK_BASES[hashIndex(name || "loopgate", DARK_BASES.length)];
   const isHero = variant === "hero";
+  const logoSize = isHero ? 64 : 44;
 
   return (
     <div
       className={`relative w-full h-full overflow-hidden ${className}`}
-      style={{
-        background: `radial-gradient(120% 100% at 0% 0%, ${c1} 0%, transparent 55%), radial-gradient(120% 100% at 100% 100%, ${c2} 0%, transparent 55%), ${c3}`,
-      }}
+      style={{ background: base }}
     >
-      {/* subtle grid texture */}
+      {/* Dot grid */}
       <div
-        className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none"
+        className="absolute inset-0 pointer-events-none"
         style={{
-          backgroundImage:
-            "linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px)",
-          backgroundSize: "24px 24px",
+          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)',
+          backgroundSize: '14px 14px',
         }}
       />
-      {/* center logo */}
-      <div className="absolute inset-0 flex items-center justify-center">
+
+      {/* Top-left light leak */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.04] via-transparent to-transparent pointer-events-none" />
+
+      {/* Bottom vignette for text legibility */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: 'linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.75) 100%)' }}
+      />
+
+      {/* Corner notches — top-right */}
+      <div className="absolute top-0 right-0 pointer-events-none">
+        <div className="w-4 h-px bg-white/20" />
+        <div className="w-px h-4 bg-white/20 ml-auto" />
+      </div>
+      {/* Corner notches — bottom-left */}
+      <div className="absolute bottom-0 left-0 pointer-events-none">
+        <div className="w-4 h-px bg-white/20" />
+        <div className="w-px h-4 bg-white/20" />
+      </div>
+
+      {/* Watermark logo — centered, low opacity */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <img
           src={loopgateLogo}
           alt=""
-          className={`${isHero ? "w-20 h-20" : "w-12 h-12"} opacity-90 drop-shadow-[0_4px_18px_rgba(0,0,0,0.6)]`}
+          style={{
+            width: logoSize,
+            height: logoSize,
+            objectFit: 'contain',
+            opacity: 0.1,
+            filter: 'invert(1)',
+          }}
           loading="lazy"
         />
       </div>
-      {/* darkening for text legibility (parent overlays still apply) */}
-      <div className="absolute inset-0 bg-black/15" />
+
+      {/* Bottom shimmer line */}
+      <div
+        className="absolute bottom-0 inset-x-0 h-px pointer-events-none"
+        style={{ background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent)' }}
+      />
+
+      {/* Outer border */}
+      <div className="absolute inset-0 border border-white/[0.07] pointer-events-none" />
     </div>
   );
 }
