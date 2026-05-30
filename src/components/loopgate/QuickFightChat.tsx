@@ -178,7 +178,7 @@ export default function QuickFightChat({
           }`}
         >
           <Flame className={`w-3.5 h-3.5 ${chatTab === 'battle' ? 'text-amber-400' : ''}`} />
-          <span className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ fontFamily: 'Teko, sans-serif' }}>
+          <span className="text-[11px] font-black uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>
             Battle Chat
           </span>
           <span className="text-[9px] text-zinc-500">{battleCount}</span>
@@ -192,7 +192,7 @@ export default function QuickFightChat({
           }`}
         >
           <MessageSquare className={`w-3.5 h-3.5 ${chatTab === 'live' ? 'text-amber-400' : ''}`} />
-          <span className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ fontFamily: 'Teko, sans-serif' }}>
+          <span className="text-[11px] font-black uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>
             Live Chat
           </span>
           <span className="text-[9px] text-zinc-500">{liveCount}</span>
@@ -221,12 +221,12 @@ export default function QuickFightChat({
             {chatTab === 'battle' ? (
               <>
                 <span className="text-3xl opacity-30">⚔️</span>
-                <span className="text-[10px] uppercase tracking-[0.2em]">Red vs Blue — no smack yet</span>
+                <span className="text-[10px] uppercase tracking-wide">Red vs Blue — no smack yet</span>
               </>
             ) : (
               <>
                 <MessageSquare className="w-7 h-7 opacity-30" />
-                <span className="text-[10px] uppercase tracking-[0.2em]">Be the first to hype this battle</span>
+                <span className="text-[10px] uppercase tracking-wide">Be the first to hype this battle</span>
               </>
             )}
           </div>
