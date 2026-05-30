@@ -272,33 +272,21 @@ export default function CustomEditBattleLobby({
               <button
                 onClick={() => onJoin(codeInput.trim())}
                 disabled={codeInput.trim().length < 4}
-                className="relative h-[58px] w-full overflow-hidden active:scale-[0.98] transition-transform disabled:opacity-30 group"
+                className="h-[58px] w-full bg-white text-black flex items-center justify-center gap-2.5 active:scale-[0.98] transition-transform disabled:opacity-30"
                 style={{ fontFamily: "Teko, sans-serif" }}
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-red-500 to-orange-500" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-red-500 via-orange-400 to-red-500" />
-                <div className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-white/60 to-transparent" />
-                <div className="relative flex items-center justify-center gap-2.5 text-white">
-                  <UserPlus className="w-5 h-5 drop-shadow-lg" />
-                  <span className="text-[22px] leading-none font-black uppercase tracking-[0.1em] drop-shadow-lg">Accept Battle</span>
-                </div>
+                <UserPlus className="w-5 h-5" />
+                <span className="text-[22px] leading-none font-black uppercase tracking-[0.1em]">Accept Battle</span>
               </button>
             </div>
           ) : (
             <button
               onClick={() => onJoin()}
-              className="relative h-[58px] w-full overflow-hidden active:scale-[0.98] transition-transform group"
+              className="h-[58px] w-full bg-white text-black flex items-center justify-center gap-2.5 active:scale-[0.98] transition-transform"
               style={{ fontFamily: "Teko, sans-serif" }}
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-red-500 to-orange-500" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-red-500 via-orange-400 to-red-500" />
-              <div className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-white/60 to-transparent" />
-              <div className="relative flex items-center justify-center gap-2.5 text-white">
-                <UserPlus className="w-5 h-5 drop-shadow-lg" />
-                <span className="text-[22px] leading-none font-black uppercase tracking-[0.1em] drop-shadow-lg">Accept Battle</span>
-              </div>
+              <UserPlus className="w-5 h-5" />
+              <span className="text-[22px] leading-none font-black uppercase tracking-[0.1em]">Accept Battle</span>
             </button>
           )}
         </div>
