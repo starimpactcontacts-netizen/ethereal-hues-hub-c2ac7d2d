@@ -273,7 +273,6 @@ export default function BattleDetailPage() {
   const seoTitle = battle
     ? `${battle.challenger_username} vs ${opp} — 1v1 Edit Battle`
     : 'Edit Battle';
-  const totalVotes = battle ? (battle.challenger_votes || 0) + (battle.opponent_votes || 0) : 0;
   const seoDesc = battle
     ? `Watch this 1v1 edit battle between ${battle.challenger_username} and ${opp} on Loopgate. ${totalVotes} votes cast. ${battle.status === 'completed' ? 'See the results and winning edit.' : 'Vote on the best edit.'}`
     : 'Watch a competitive 1v1 edit battle on Loopgate — the #1 video editing competition platform.';
