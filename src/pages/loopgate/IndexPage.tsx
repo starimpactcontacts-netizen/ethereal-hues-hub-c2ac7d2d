@@ -96,100 +96,115 @@ function EditorCard({ editor, pinnedEdits, navigate, size = "md", showRank = fal
 }) {
   const classLetter = getClassLetter(editor.best_gatekeeper_qoi, editor.level);
   const hasTakenGQT = !!(editor.best_gatekeeper_qoi && editor.best_gatekeeper_qoi > 0);
-  const classStyle = getClassColors(classLetter, hasTakenGQT);
   const authorityRole = getAuthorityRole(editor.roles);
   const rank = editor.rank || 999;
   const firstEdit = pinnedEdits?.[0];
-  
-  const widthClass = size === "lg" ? "w-[220px]" : size === "md" ? "w-[180px]" : "w-[160px]";
-  const thumbH = size === "lg" ? "h-[130px]" : size === "md" ? "h-[110px]" : "h-[95px]";
-  const editCount = pinnedEdits?.length || 0;
+
+  const CLASS_COLOR: Record<string, string> = {
+    'S++': '#fbbf24', 'S+': '#fbbf24', 'S': '#f59e0b',
+    'A': '#34d399', 'B': '#60a5fa', 'C': '#cbd5e1',
+    'D': '#fb923c', 'F': hasTakenGQT ? '#ef4444' : 'rgba(255,255,255,0.18)',
+  };
+  const classColor = CLASS_COLOR[classLetter] || CLASS_COLOR['F'];
+
+  const dims = {
+    lg: { w: 'w-[220px]', h: 'h-[158px]' },
+    md: { w: 'w-[180px]', h: 'h-[136px]' },
+    sm: { w: 'w-[158px]', h: 'h-[118px]' },
+  }[size];
 
   return (
-    <div className={`${widthClass} flex-shrink-0 text-left group`}>
-      {/* Thumbnail / Visual */}
-      <button
-        onClick={() => navigate(`/editor/${editor.id}`)}
-        className="w-full text-left"
+    <button
+      onClick={() => navigate(`/editor/${editor.id}`)}
+      className={`${dims.w} ${dims.h} relative flex-shrink-0 overflow-hidden text-left group`}
+      style={{ background: '#111' }}
+    >
+      {/* Cover image */}
+      {firstEdit?.thumbnail_url ? (
+        <ThumbnailImage src={firstEdit.thumbnail_url} alt="" className="absolute inset-0 w-full h-full object-cover group-active:scale-105 transition-transform duration-300" />
+      ) : editor.avatar_url ? (
+        <img src={editor.avatar_url} alt="" className="absolute inset-0 w-full h-full object-cover group-active:scale-105 transition-transform duration-300" loading="lazy" />
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'linear-gradient(160deg, #1a1a1a, #111)' }}>
+          <span className="font-black text-[44px] leading-none text-white/8" style={{ fontFamily: 'Teko, sans-serif' }}>
+            {(editor.display_name || editor.username)[0]?.toUpperCase()}
+          </span>
+        </div>
+      )}
+
+      {/* Bottom gradient */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none" />
+
+      {/* Rank badge — top left */}
+      {showRank && rank <= 999 && (
+        <div
+          className="absolute top-2 left-2 px-1.5 py-[2px] text-[9px] font-black leading-none"
+          style={{
+            background: rank === 1 ? '#fbbf24' : '#000',
+            color: rank === 1 ? '#000' : 'rgba(255,255,255,0.5)',
+            border: rank === 1 ? 'none' : '1px solid rgba(255,255,255,0.1)',
+            fontFamily: 'Teko, sans-serif',
+          }}
+        >
+          #{rank}
+        </div>
+      )}
+
+      {/* Class badge — top right */}
+      <div
+        className="absolute top-2 right-2 px-1.5 py-[2px] text-[9px] font-black leading-none"
+        style={{
+          background: '#000',
+          color: classColor,
+          border: `1px solid ${classColor}35`,
+          fontFamily: 'Teko, sans-serif',
+        }}
       >
-        <div className={`relative ${thumbH} w-full bg-surface-1 rounded-t-lg border border-border/20 overflow-hidden`}>
-          {firstEdit?.thumbnail_url ? (
-            <ThumbnailImage src={firstEdit.thumbnail_url} alt={editor.username} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-          ) : editor.avatar_url ? (
-            <img src={editor.avatar_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-surface-2 to-surface-0 flex items-center justify-center">
-              <span className="font-display text-3xl text-muted-foreground/30">{editor.username[0]?.toUpperCase()}</span>
-            </div>
-          )}
-          
-          {/* Overlay gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-          
-          {/* Rank badge */}
-          {showRank && rank <= 50 && (
-            <div className={`absolute top-1.5 left-1.5 px-1.5 py-0.5 text-[9px] font-black ${
-              rank === 1 ? 'bg-gold text-background' : rank <= 3 ? 'bg-foreground/90 text-background' : 'bg-background/80 text-foreground'
-            }`}>
-              #{rank}
-            </div>
-          )}
-          
-          {/* Class badge */}
-          <div className={`absolute top-1.5 right-1.5 px-1.5 py-0.5 text-[8px] border ${classStyle}`}>
-            {classLetter}
-          </div>
-          
-          {/* Bottom overlay info */}
-          <div className="absolute bottom-0 left-0 right-0 px-2 pb-1.5 pt-4">
-            <div className="flex items-center gap-1 mb-0.5">
-              {editor.verification_status && <VerifiedBadge size="sm" />}
-              {authorityRole && <AuthorityBadge role={authorityRole} size="sm" />}
-              {editor.is_founding_member && <FoundingBadge size="sm" animate={false} />}
-            </div>
-            <p className="font-semibold text-[13px] text-white truncate leading-tight drop-shadow-lg">
-              {editor.display_name || editor.username}
-            </p>
-          </div>
-          
-          {/* Play indicator if has edit */}
-          {firstEdit?.thumbnail_url && (
-            <div className="absolute bottom-1.5 right-1.5 w-5 h-5 bg-white/90 flex items-center justify-center">
-              <Play className="w-2.5 h-2.5 text-black fill-black" />
-            </div>
-          )}
+        {classLetter}
+      </div>
+
+      {/* Founding badge */}
+      {editor.is_founding_member && (
+        <div className="absolute top-8 left-2">
+          <FoundingBadge size="sm" animate={false} />
         </div>
-      </button>
-      
-      {/* Stats bar below thumbnail */}
-      <div className="bg-surface-1/60 border-x border-b border-border/20 rounded-b-lg px-2 py-1.5">
-        <div className="flex items-center justify-between text-[9px] text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <span className="text-gold font-bold text-[11px]">{(editor.global_index_score || 0).toFixed(1)}</span>
-            <span className="text-border/40">|</span>
-            <span>{editor.win_rate?.toFixed(0) || 0}% W</span>
-            <span className="text-border/40">|</span>
-            <span>Lv {editor.level || 1}</span>
-          </div>
+      )}
+
+      {/* Bottom content */}
+      <div className="absolute bottom-0 left-0 right-0 px-2 pb-2">
+        <div className="flex items-center gap-1 mb-0.5">
+          {editor.verification_status && <VerifiedBadge size="sm" />}
+          {authorityRole && <AuthorityBadge role={authorityRole} size="sm" />}
         </div>
-        <div className="flex items-center justify-between mt-1">
-          <div className="flex items-center gap-2 text-[9px] text-muted-foreground/70">
-            <span className="flex items-center gap-0.5"><Users className="w-2.5 h-2.5" />{editor.connection_count || 0}</span>
-            <span>{editor.total_events || 0} events</span>
-            {editor.crew && <CrewBadge crew={editor.crew} size="sm" />}
-          </div>
-          <div onClick={(e) => e.stopPropagation()}>
-            <ConnectButton targetUserId={editor.id} variant="micro" />
-          </div>
+        <p
+          className="text-[14px] font-black text-white leading-none truncate"
+          style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.03em' }}
+        >
+          {editor.display_name || editor.username}
+        </p>
+        <div className="flex items-center gap-1 mt-0.5 text-[8px] font-bold text-white/30">
+          <span style={{ color: 'rgba(251,191,36,0.75)' }}>{(editor.global_index_score || 0).toFixed(0)}</span>
+          <span>·</span>
+          <span>{editor.win_rate?.toFixed(0) || 0}%W</span>
+          <span>·</span>
+          <span>Lv{editor.level || 1}</span>
+          {(editor.total_events || 0) > 0 && <><span>·</span><span>{editor.total_events}ev</span></>}
         </div>
       </div>
-    </div>
+
+      {/* Play indicator */}
+      {firstEdit?.thumbnail_url && (
+        <div className="absolute bottom-2 right-2 w-4 h-4 bg-white/85 flex items-center justify-center">
+          <Play className="w-2 h-2 text-black fill-black" />
+        </div>
+      )}
+
+      {/* Border */}
+      <div className="absolute inset-0 border border-white/[0.07] pointer-events-none" />
+    </button>
   );
 }
 
-/* ═══════════════════════════════════════════════════
-   SECTION HEADER — Roblox-style with arrow
-═══════════════════════════════════════════════════ */
 function SectionHeader({ icon: Icon, label, count, onSeeAll }: {
   icon: React.ElementType;
   label: string;
@@ -197,16 +212,22 @@ function SectionHeader({ icon: Icon, label, count, onSeeAll }: {
   onSeeAll?: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between px-4 mb-3">
-      <div className="flex items-center gap-2">
-        <Icon className="w-4 h-4 text-foreground/50" />
-        <h2 className="font-display text-xl tracking-wide text-foreground">{label}</h2>
-        {count !== undefined && (
-          <span className="text-[10px] text-muted-foreground bg-surface-1 px-1.5 py-0.5">{count}</span>
-        )}
-      </div>
+    <div className="flex items-center gap-3 px-4 mb-3">
+      <span
+        className="text-[11px] font-black uppercase tracking-[0.2em] text-white/70"
+        style={{ fontFamily: 'Teko, sans-serif' }}
+      >
+        {label}
+      </span>
+      {count !== undefined && (
+        <span className="text-[8px] font-black text-white/18 px-1.5 py-0.5 bg-white/[0.04] border border-white/[0.06]">{count}</span>
+      )}
+      <div className="flex-1 h-px bg-white/[0.06]" />
       {onSeeAll && (
-        <button onClick={onSeeAll} className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground uppercase tracking-wider transition-colors">
+        <button
+          onClick={onSeeAll}
+          className="flex items-center gap-0.5 text-[9px] font-black uppercase tracking-[0.15em] text-white/25 hover:text-white/50 transition-colors"
+        >
           See All <ChevronRight className="w-3 h-3" />
         </button>
       )}
