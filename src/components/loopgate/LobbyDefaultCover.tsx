@@ -60,14 +60,14 @@ export function LobbyDefaultCover({ name, className = "", variant = "card" }: Pr
         <div className="w-px h-4 bg-white/20" />
       </div>
 
-      {/* Big gradient logo — bottom-right corner, partially cropped */}
+      {/* Big white logo — bottom-right corner, partially cropped */}
       <div
         className="absolute pointer-events-none"
         style={{
-          bottom: isHero ? -16 : -10,
-          right: isHero ? -16 : -10,
-          width: isHero ? 140 : 90,
-          height: isHero ? 140 : 90,
+          bottom: isHero ? -20 : -14,
+          right: isHero ? -20 : -14,
+          width: isHero ? 160 : 110,
+          height: isHero ? 160 : 110,
           maskImage: `url(${loopgateLogo})`,
           WebkitMaskImage: `url(${loopgateLogo})`,
           maskSize: 'contain',
@@ -76,9 +76,9 @@ export function LobbyDefaultCover({ name, className = "", variant = "card" }: Pr
           WebkitMaskRepeat: 'no-repeat',
           maskPosition: 'center',
           WebkitMaskPosition: 'center',
-          background: 'linear-gradient(135deg, #818cf8 0%, #a78bfa 40%, #38bdf8 100%)',
-          opacity: 0.28,
-          filter: `drop-shadow(0 0 ${isHero ? 20 : 12}px rgba(129,140,248,0.7)) drop-shadow(0 0 ${isHero ? 40 : 24}px rgba(167,139,250,0.4))`,
+          background: '#ffffff',
+          opacity: 0.22,
+          filter: `drop-shadow(0 0 ${isHero ? 24 : 16}px rgba(255,255,255,0.5)) drop-shadow(0 0 ${isHero ? 48 : 32}px rgba(255,255,255,0.2))`,
         }}
       />
 
