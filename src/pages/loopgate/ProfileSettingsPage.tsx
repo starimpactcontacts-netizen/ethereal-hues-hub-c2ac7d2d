@@ -46,11 +46,12 @@ function SectionLabel({ label }: { label: string }) {
 }
 
 function SettingRow({
-  label, value, action, onAction, actionLabel, danger = false, children,
+  label, value, action, actionLabel, danger = false, children,
 }: {
   label: string;
   value?: string;
   action?: () => void;
+  onAction?: () => void;
   actionLabel?: string;
   danger?: boolean;
   children?: React.ReactNode;
