@@ -1,16 +1,72 @@
 import { useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Zap, Award, Star, Clock, Target, Flame, Trophy, Grid3X3, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealRankings } from "@/hooks/useRealData";
 import { useXP, getXPForNextLevel, getXPForCurrentLevel } from "@/hooks/useXP";
 import { useUserSubmissions } from "@/hooks/useUserSubmissions";
 import { useReviewRequests } from "@/hooks/useReviewRequests";
 import { useUserActivityStats } from "@/hooks/useUserActivityStats";
-import { motion } from "framer-motion";
-import XPProgressBar from "@/components/loopgate/XPProgressBar";
 import XPHistory from "@/components/loopgate/XPHistory";
-
 import { getRankFromScore, getEffectiveRank } from "@/data/gqtConfig";
+
+const CLASS_STYLES: Record<string, { color: string; glow: string }> = {
+  'S++': { color: '#fbbf24', glow: 'rgba(251,191,36,0.35)' },
+  'S+':  { color: '#fbbf24', glow: 'rgba(251,191,36,0.25)' },
+  'S':   { color: '#f59e0b', glow: 'rgba(245,158,11,0.25)' },
+  'A':   { color: '#34d399', glow: 'rgba(52,211,153,0.25)' },
+  'B':   { color: '#60a5fa', glow: 'rgba(96,165,250,0.25)' },
+  'C':   { color: '#cbd5e1', glow: 'rgba(203,213,225,0.15)' },
+  'D':   { color: '#fb923c', glow: 'rgba(251,146,60,0.2)' },
+  'F':   { color: 'rgba(255,255,255,0.35)', glow: 'transparent' },
+};
+
+function SectionLabel({ label }: { label: string }) {
+  return (
+    <div className="px-4 pt-6 pb-2 flex items-center gap-3">
+      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/25">{label}</span>
+      <div className="flex-1 h-px bg-white/[0.06]" />
+    </div>
+  );
+}
+
+function StatBox({ value, label, sub, href, accent }: {
+  value: string;
+  label: string;
+  sub?: string;
+  href?: string;
+  accent?: string;
+}) {
+  const inner = (
+    <div className="flex flex-col justify-between p-4 h-[100px] border border-white/[0.08] bg-[#111]">
+      <span className="text-[10px] font-black uppercase tracking-[0.15em] text-white/30">{label}</span>
+      <div>
+        <span
+          className="text-[38px] leading-none font-black"
+          style={{ fontFamily: 'Teko, sans-serif', color: accent || 'white' }}
+        >
+          {value}
+        </span>
+        {sub && <p className="text-[10px] text-white/30 mt-0.5">{sub}</p>}
+      </div>
+    </div>
+  );
+  if (href) return <Link to={href} className="block hover:border-white/20 transition-colors">{inner}</Link>;
+  return inner;
+}
+
+function ActivityRow({ label, value, accent }: { label: string; value: string | number; accent?: string }) {
+  return (
+    <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.05]">
+      <span className="text-[13px] text-white/55">{label}</span>
+      <span
+        className="text-[20px] font-black leading-none tabular-nums"
+        style={{ fontFamily: 'Teko, sans-serif', color: accent || 'rgba(255,255,255,0.75)' }}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
 
 export default function ProfileStatsPage() {
   const navigate = useNavigate();
@@ -23,193 +79,155 @@ export default function ProfileStatsPage() {
 
   if (authLoading || !profile) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0a0a0a' }}>
+        <Loader2 className="w-5 h-5 animate-spin text-white/30" />
       </div>
     );
   }
 
   const userRanking = rankings.find(r => r.id === profile.id);
   const userRank = userRanking?.rank || (rankings.length > 0 ? rankings.length + 1 : '—');
-  
-  // Get class info
+
   const bestGQT = (profile as any).best_gatekeeper_qoi;
   const hasTakenGQT = bestGQT && bestGQT > 0;
   const classLetter = getEffectiveRank(bestGQT, level);
-  
-  const classColors: Record<string, string> = {
-    'S++': 'text-gold bg-gold/15 border-gold',
-    'S+': 'text-gold bg-gold/10 border-gold/60',
-    'S': 'text-amber-400 bg-amber-400/10 border-amber-400/60',
-    'A': 'text-emerald-400 bg-emerald-400/10 border-emerald-400/60',
-    'B': 'text-blue-400 bg-blue-400/10 border-blue-400/60',
-    'C': 'text-slate-300 bg-slate-400/10 border-slate-400/40',
-    'D': 'text-orange-400 bg-orange-500/10 border-orange-500/40',
-    'F': 'text-muted-foreground bg-muted/10 border-border',
-  };
+  const classStyle = CLASS_STYLES[classLetter] || CLASS_STYLES['F'];
 
-  const winRate = activityStats.totalEvents > 0 
-    ? activityStats.winRate.toFixed(0) 
-    : '0';
-    
-  const currentLevelXP = getXPForCurrentLevel(level);
+  const winRate = activityStats.totalEvents > 0 ? activityStats.winRate.toFixed(0) : '0';
   const nextLevelXP = getXPForNextLevel(level);
   const xpToNextLevel = nextLevelXP - xp;
   const currentStreak = streak?.current_streak || 0;
+  const xpPct = Math.min(100, Math.round((xp / nextLevelXP) * 100));
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen pb-24" style={{ background: '#0a0a0a' }}>
       {/* Header */}
-      <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-20">
-        <div className="flex items-center gap-3 px-4 py-3">
-          <button onClick={() => navigate('/profile')} className="p-2 -ml-2 hover:bg-surface-1 rounded-lg transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <h1 className="font-display text-xl">Stats</h1>
-        </div>
+      <div className="sticky top-0 z-20 flex items-center gap-3 px-4 py-3 border-b border-white/[0.07]" style={{ background: '#0a0a0a' }}>
+        <button onClick={() => navigate('/profile')} className="p-1.5 -ml-1.5 text-white/50 hover:text-white transition-colors">
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <h1 className="text-[15px] font-black uppercase tracking-[0.15em] text-white">Stats</h1>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="p-4 space-y-6"
-      >
-        {/* ─── XP & Level ─── */}
-        <section className="space-y-3">
-          <h3 className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Experience</h3>
-          <div className="bg-surface-1 border border-border rounded-xl p-4">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center">
-                  <Zap className="w-6 h-6 text-purple-400" />
-                </div>
-                <div>
-                  <p className="font-display text-2xl">LV {level}</p>
-                  <p className="text-xs text-muted-foreground">{xp.toLocaleString()} XP Total</p>
-                </div>
-              </div>
+      {/* ─── LEVEL / XP ─── */}
+      <SectionLabel label="Experience" />
+
+      {/* Level hero */}
+      <div className="px-4 pb-4">
+        <div className="border border-white/[0.08] bg-[#111] p-5">
+          {/* Level + streak row */}
+          <div className="flex items-end justify-between mb-4">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 mb-0.5">Level</p>
+              <span
+                className="text-[72px] leading-none font-black text-white"
+                style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '-0.01em' }}
+              >
+                {level}
+              </span>
+            </div>
+            <div className="text-right pb-2">
+              <p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/30 mb-1">Total XP</p>
+              <span className="text-[28px] font-black text-white/70 leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>
+                {xp.toLocaleString()}
+              </span>
               {currentStreak > 0 && (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-status-live/10 border border-status-live/30 rounded-lg">
-                  <Flame className="w-4 h-4 text-status-live" />
-                  <span className="text-sm font-medium text-status-live">{currentStreak}d</span>
+                <div className="flex items-center justify-end gap-1 mt-1.5">
+                  <span className="text-[11px] font-black text-amber-400">{currentStreak}d streak</span>
+                  <span className="text-[11px]">🔥</span>
                 </div>
               )}
             </div>
-            <XPProgressBar xp={xp} level={level} size="md" />
-            <p className="text-xs text-muted-foreground mt-2 text-center">
-              {xpToNextLevel} XP to Level {level + 1}
-            </p>
           </div>
-        </section>
 
-        {/* ─── Core Stats Grid ─── */}
-        <section className="space-y-3">
-          <h3 className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Performance</h3>
-          <div className="grid grid-cols-2 gap-3">
-            {/* Class */}
-            <Link to="/gqt" className={`bg-surface-1 border rounded-xl p-4 flex flex-col items-center justify-center ${classColors[classLetter]} hover:scale-[1.02] transition-transform`}>
-              <span className="font-display text-3xl">{classLetter}</span>
-              <span className="text-[10px] uppercase tracking-wider opacity-70 mt-1">Class</span>
-            </Link>
-            
-            {/* Rank */}
-            <div className="bg-surface-1 border border-border rounded-xl p-4 flex flex-col items-center justify-center">
-              <span className="font-display text-3xl">#{userRank}</span>
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">Global Rank</span>
-            </div>
-            
-            {/* Index Score */}
-            <div className="bg-surface-1 border border-border rounded-xl p-4 flex flex-col items-center justify-center">
-              <span className="font-display text-3xl">{Number(profile.global_index_score || 0).toFixed(1)}</span>
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">Index Score</span>
-            </div>
-            
-            {/* Win Rate */}
-            <div className="bg-surface-1 border border-border rounded-xl p-4 flex flex-col items-center justify-center">
-              <span className="font-display text-3xl">{winRate}%</span>
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">Win Rate</span>
-            </div>
+          {/* XP bar */}
+          <div className="relative h-1.5 bg-white/[0.07] w-full overflow-hidden mb-2">
+            <div
+              className="absolute inset-y-0 left-0 bg-white transition-all duration-700"
+              style={{ width: `${xpPct}%` }}
+            />
           </div>
-        </section>
-
-        {/* ─── Activity Stats ─── */}
-        <section className="space-y-3">
-          <h3 className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Activity</h3>
-          <div className="bg-surface-1 border border-border rounded-xl divide-y divide-border">
-            <div className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-3">
-                <Grid3X3 className="w-5 h-5 text-muted-foreground" />
-                <span className="text-sm">Total Edits</span>
-              </div>
-              <span className="font-display text-lg">{submissions.length}</span>
-            </div>
-            <div className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-3">
-                <Trophy className="w-5 h-5 text-muted-foreground" />
-                <span className="text-sm">Events Entered</span>
-              </div>
-              <span className="font-display text-lg">{activityStats.totalEvents}</span>
-            </div>
-            <div className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-3">
-                <Award className="w-5 h-5 text-emerald-400" />
-                <span className="text-sm">Wins</span>
-              </div>
-              <span className="font-display text-lg text-emerald-400">{activityStats.totalWins}</span>
-            </div>
-            <div className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-3">
-                <Star className="w-5 h-5 text-purple-400" />
-                <span className="text-sm">Reviews Received</span>
-              </div>
-              <span className="font-display text-lg">{completedReviews.length}</span>
-            </div>
-            <div className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-3">
-                <Clock className="w-5 h-5 text-orange-400" />
-                <span className="text-sm">Pending Reviews</span>
-              </div>
-              <span className="font-display text-lg text-orange-400">{pendingReviews.length}</span>
-            </div>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] text-white/30 tabular-nums">{xp.toLocaleString()} / {nextLevelXP.toLocaleString()} XP</span>
+            <span className="text-[10px] text-white/30">{xpToNextLevel.toLocaleString()} to Level {level + 1}</span>
           </div>
-        </section>
+        </div>
+      </div>
 
-        {/* ─── GQT Score ─── */}
-        <section className="space-y-3">
-          <h3 className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Gatekeeper Quotient</h3>
-          <Link to="/gqt">
-            <div className="bg-surface-1 border border-border rounded-xl p-4 hover:border-foreground/30 transition-colors">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center">
-                    <Target className="w-5 h-5 text-cyan-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Best GQT Score</p>
-                    <p className="text-xs text-muted-foreground">
-                      {hasTakenGQT ? `${bestGQT} points` : 'Not yet tested'}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {hasTakenGQT && (
-                    <span className={`font-display text-xl ${classColors[classLetter]?.split(' ')[0]}`}>
-                      {classLetter}
-                    </span>
-                  )}
-                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </div>
+      {/* ─── PERFORMANCE ─── */}
+      <SectionLabel label="Performance" />
+      <div className="px-4">
+        <div className="grid grid-cols-2 gap-2">
+          {/* Class — special treatment */}
+          <Link to="/gqt" className="block">
+            <div
+              className="flex flex-col justify-between p-4 h-[100px] border bg-[#111] relative overflow-hidden"
+              style={{
+                borderColor: `${classStyle.color}40`,
+                boxShadow: `inset 0 0 40px ${classStyle.glow}`,
+              }}
+            >
+              <span className="text-[10px] font-black uppercase tracking-[0.15em]" style={{ color: `${classStyle.color}90` }}>Class</span>
+              <div className="flex items-end justify-between">
+                <span
+                  className="text-[52px] leading-none font-black"
+                  style={{ fontFamily: 'Teko, sans-serif', color: classStyle.color }}
+                >
+                  {classLetter}
+                </span>
+                <span className="text-[9px] font-black uppercase tracking-wider mb-1" style={{ color: `${classStyle.color}60` }}>
+                  {hasTakenGQT ? 'GQT' : 'Unrated'}
+                </span>
               </div>
             </div>
           </Link>
-        </section>
 
-        {/* ─── XP History ─── */}
-        <section className="space-y-3">
-          <h3 className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Recent XP Activity</h3>
-          <XPHistory />
-        </section>
-      </motion.div>
+          <StatBox value={`#${userRank}`} label="Global Rank" />
+          <StatBox
+            value={Number(profile.global_index_score || 0).toFixed(1)}
+            label="Index Score"
+          />
+          <StatBox value={`${winRate}%`} label="Win Rate" accent={Number(winRate) >= 50 ? '#34d399' : undefined} />
+        </div>
+      </div>
+
+      {/* ─── ACTIVITY ─── */}
+      <SectionLabel label="Activity" />
+      <ActivityRow label="Total Edits" value={submissions.length} />
+      <ActivityRow label="Events Entered" value={activityStats.totalEvents} />
+      <ActivityRow label="Wins" value={activityStats.totalWins} accent="#34d399" />
+      <ActivityRow label="Losses" value={Math.max(0, activityStats.totalEvents - activityStats.totalWins)} accent={activityStats.totalEvents - activityStats.totalWins > 0 ? '#f87171' : undefined} />
+      <ActivityRow label="Reviews Received" value={completedReviews.length} />
+      {pendingReviews.length > 0 && (
+        <ActivityRow label="Pending Reviews" value={pendingReviews.length} accent="#fb923c" />
+      )}
+
+      {/* ─── GQT ─── */}
+      <SectionLabel label="Gatekeeper Quotient" />
+      <Link to="/gqt" className="flex items-center justify-between px-4 py-4 border-b border-white/[0.05] hover:bg-white/[0.02] transition-colors">
+        <div>
+          <p className="text-[13px] font-medium text-white/80">Best GQT Score</p>
+          <p className="text-[11px] text-white/30 mt-0.5">
+            {hasTakenGQT ? `${bestGQT} pts — Class ${classLetter}` : 'Take the test to get your class'}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {hasTakenGQT && (
+            <span className="text-[24px] font-black leading-none" style={{ fontFamily: 'Teko, sans-serif', color: classStyle.color }}>
+              {classLetter}
+            </span>
+          )}
+          <ChevronRight className="w-4 h-4 text-white/20" />
+        </div>
+      </Link>
+
+      {/* ─── XP HISTORY ─── */}
+      <SectionLabel label="XP History" />
+      <div className="px-4">
+        <XPHistory />
+      </div>
+
+      <div className="h-8" />
     </div>
   );
 }
