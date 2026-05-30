@@ -400,95 +400,152 @@ export function QuickFightCarouselCard({ fight, isMine }: { fight: QuickFight; i
   return (
     <motion.div
       whileTap={{ scale: 0.97 }}
-      whileHover={{ y: -3 }}
       onClick={() => navigate(`/fight/${fight.id}`)}
-      className={`w-full h-full overflow-hidden cursor-pointer group rounded-2xl relative flex flex-col ${isCompleted ? 'opacity-55 grayscale-[60%]' : ''}`}
-      style={{
-        background: isCompleted
-          ? 'linear-gradient(160deg, hsl(var(--surface-2)) 0%, hsl(var(--surface-0)) 100%)'
-          : 'linear-gradient(160deg, hsl(var(--surface-2)) 0%, hsl(var(--background)) 100%)',
-        boxShadow: isWaiting
-          ? '0 0 0 1px hsl(var(--foreground) / 0.10), 0 16px 34px -22px hsl(var(--background) / 0.8), inset 0 1px 0 hsl(var(--foreground) / 0.04)'
-          : isLive
-          ? '0 0 24px hsl(var(--destructive) / 0.15), 0 8px 32px hsl(var(--background) / 0.5), inset 0 1px 0 hsl(var(--foreground) / 0.04)'
-          : '0 8px 32px hsl(var(--background) / 0.5), inset 0 1px 0 hsl(var(--foreground) / 0.04)',
-      }}
+      className={`w-full h-full overflow-hidden cursor-pointer relative flex flex-col ${isCompleted ? 'opacity-50 grayscale-[50%]' : ''}`}
+      style={{ background: '#111', border: '1px solid rgba(255,255,255,0.07)' }}
     >
-      <div className="absolute top-0 left-0 right-0 h-[1px] bg-[linear-gradient(90deg,transparent,hsl(var(--foreground)/0.08),transparent)]" />
-      <div className="absolute inset-x-0 top-0 h-[2px] bg-[linear-gradient(90deg,hsl(217_91%_60%),transparent_44%,transparent_56%,hsl(0_72%_51%))]" />
-      {isWaiting && <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,hsl(var(--foreground)/0.04),transparent_48%)]" />}
+      {/* Dot grid */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)',
+        backgroundSize: '14px 14px',
+      }} />
 
-      <div className="relative flex items-center justify-between px-2.5 pt-2 pb-0.5">
-        <div className="flex items-center gap-1 min-w-0">
-          {(isLive || isWaiting) && <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${isWaiting ? 'bg-foreground/70' : 'bg-destructive'}`} />}
-          <span className={`text-[9px] font-bold uppercase tracking-[0.12em] ${isWaiting ? 'text-foreground/80' : isLive ? 'text-red-400' : isCompleted ? 'text-muted-foreground' : 'text-blue-400'}`} style={{ fontFamily: 'Teko, sans-serif' }}>
+      {/* Blue | Red top accent bar */}
+      <div className="absolute inset-x-0 top-0 h-[2px] pointer-events-none" style={{
+        background: 'linear-gradient(90deg, #3b82f6 0%, #3b82f6 46%, transparent 46%, transparent 54%, #ef4444 54%, #ef4444 100%)',
+      }} />
+
+      {/* Corner notches — top-right */}
+      <div className="absolute top-0 right-0 pointer-events-none">
+        <div className="w-3 h-px bg-white/20" />
+        <div className="w-px h-3 bg-white/20 ml-auto" />
+      </div>
+      {/* Corner notches — bottom-left */}
+      <div className="absolute bottom-0 left-0 pointer-events-none">
+        <div className="w-3 h-px bg-white/20" />
+        <div className="w-px h-3 bg-white/20" />
+      </div>
+
+      {/* Status + duration row */}
+      <div className="relative flex items-center justify-between px-3 pt-2.5 pb-0 z-10">
+        <div className="flex items-center gap-1.5">
+          {(isLive || isWaiting) && (
+            <span className={`w-1 h-1 rounded-full animate-pulse ${isWaiting ? 'bg-white/50' : 'bg-red-500'}`} />
+          )}
+          <span
+            className="text-[9px] font-black uppercase tracking-[0.14em] leading-none"
+            style={{
+              fontFamily: 'Teko, sans-serif',
+              color: isWaiting ? 'rgba(255,255,255,0.75)'
+                : isLive ? '#f87171'
+                : isCompleted ? 'rgba(255,255,255,0.22)'
+                : '#93c5fd',
+            }}
+          >
             {statusText}
           </span>
           {fight.is_private && (
-            <span className="ml-1 inline-flex items-center gap-0.5 px-1 py-[1px] rounded-sm bg-amber-500/15 border border-amber-500/30">
-              <Lock className="w-2 h-2 text-amber-400" strokeWidth={3} />
-              <span className="text-[8px] font-black uppercase tracking-wider text-amber-300" style={{ fontFamily: 'Teko, sans-serif' }}>Private</span>
-            </span>
+            <Lock className="w-2 h-2 text-amber-400/80" strokeWidth={2.5} />
           )}
         </div>
-        <div className="flex items-center gap-1 text-[8px] text-muted-foreground">
-          <Clock className="w-2.5 h-2.5" />
-          <span>{duration}</span>
+        <div className="flex items-center gap-0.5">
+          <Clock className="w-2 h-2 text-white/20" strokeWidth={2} />
+          <span className="text-[8px] font-black text-white/25 tabular-nums" style={{ fontFamily: 'Teko, sans-serif' }}>{duration}</span>
         </div>
       </div>
 
-      <div className="relative px-3 py-3 flex-1 flex items-center">
-        <div className="relative flex items-center justify-between w-full">
-          <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
-            <Avatar className={`w-10 h-10 border-2 ${isCompleted ? 'border-border/60' : 'border-blue-500/40'}`}>
-              <AvatarImage src={fight.player_1_avatar_url || ''} />
-              <AvatarFallback className="text-xs font-bold bg-surface-2 text-blue-300">
-                {fight.player_1_username?.charAt(0)?.toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <span className="text-[9px] font-bold truncate max-w-[55px] uppercase text-foreground" style={{ fontFamily: 'Teko, sans-serif' }}>
-              {fight.player_1_username}
-            </span>
-          </div>
-
-          <div className="mx-1 shrink-0">
-            <div className="w-7 h-7 rounded-full flex items-center justify-center border border-border bg-background/70">
-              <Swords className="w-3 h-3 text-foreground/70" />
+      {/* Players section */}
+      <div className="relative flex-1 flex items-center justify-between px-3.5 py-2 z-10">
+        {/* Player 1 — blue side */}
+        <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+          <div className="relative">
+            <div
+              className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center"
+              style={{ background: '#1a1e30', border: '2px solid rgba(59,130,246,0.35)', boxShadow: '0 0 14px rgba(59,130,246,0.2)' }}
+            >
+              {fight.player_1_avatar_url ? (
+                <img src={fight.player_1_avatar_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span className="font-black text-xl text-blue-300" style={{ fontFamily: 'Teko, sans-serif' }}>
+                  {fight.player_1_username?.charAt(0)?.toUpperCase()}
+                </span>
+              )}
             </div>
           </div>
+          <span
+            className="text-[10px] font-black uppercase truncate max-w-[58px] leading-none text-center"
+            style={{ fontFamily: 'Teko, sans-serif', color: 'rgba(147,197,253,0.85)' }}
+          >
+            {fight.player_1_username}
+          </span>
+        </div>
 
-          <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
-            {fight.player_2_id ? (
-              <Avatar className={`w-10 h-10 border-2 ${isCompleted ? 'border-border/60' : 'border-red-500/40'}`}>
-                <AvatarImage src={fight.player_2_avatar_url || ''} />
-                <AvatarFallback className="text-xs font-bold bg-surface-2 text-red-300">
-                  {fight.player_2_username?.charAt(0)?.toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            ) : (
-              <div className="w-10 h-10 rounded-full border-2 border-dashed border-foreground/20 flex items-center justify-center bg-background/60">
-                <span className="text-sm text-foreground/50 font-bold">?</span>
-              </div>
-            )}
-            <span className={`text-[9px] font-bold truncate max-w-[55px] uppercase ${fight.player_2_id ? 'text-foreground' : 'text-foreground/60'}`} style={{ fontFamily: 'Teko, sans-serif' }}>
-              {fight.player_2_username || 'Open'}
-            </span>
+        {/* VS badge */}
+        <div className="shrink-0 mx-0.5 flex flex-col items-center gap-0.5">
+          <div
+            className="w-8 h-8 rounded-full flex items-center justify-center"
+            style={{ background: '#0e0e0e', border: '1px solid rgba(255,255,255,0.1)' }}
+          >
+            <Swords className="w-3.5 h-3.5 text-white/35" strokeWidth={1.5} />
           </div>
+        </div>
+
+        {/* Player 2 — red side (or open slot) */}
+        <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+          {fight.player_2_id ? (
+            <>
+              <div
+                className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center"
+                style={{ background: '#2a1010', border: '2px solid rgba(239,68,68,0.32)', boxShadow: '0 0 14px rgba(239,68,68,0.15)' }}
+              >
+                {fight.player_2_avatar_url ? (
+                  <img src={fight.player_2_avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="font-black text-xl text-red-300" style={{ fontFamily: 'Teko, sans-serif' }}>
+                    {fight.player_2_username?.charAt(0)?.toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <span
+                className="text-[10px] font-black uppercase truncate max-w-[58px] leading-none text-center"
+                style={{ fontFamily: 'Teko, sans-serif', color: 'rgba(252,165,165,0.75)' }}
+              >
+                {fight.player_2_username}
+              </span>
+            </>
+          ) : (
+            <>
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center"
+                style={{ border: '2px dashed rgba(255,255,255,0.12)', background: 'transparent' }}
+              >
+                <span className="font-black text-xl text-white/18" style={{ fontFamily: 'Teko, sans-serif' }}>?</span>
+              </div>
+              <span className="text-[10px] font-black uppercase leading-none text-white/20" style={{ fontFamily: 'Teko, sans-serif' }}>OPEN</span>
+            </>
+          )}
         </div>
       </div>
 
-      <div className="relative px-3 pb-3 mt-auto space-y-1.5">
-        <BattleVoteBarCompact
-          blueVotes={votes.blue}
-          redVotes={votes.red}
-          blueLabel={fight.player_1_username}
-          redLabel={fight.player_2_username || undefined}
-        />
-        {(isWaiting || isMine) && (
-          <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-[0.12em]">
-            {isWaiting && <span className="text-foreground/70">Tap to enter lobby</span>}
-            {isMine && <span className="text-muted-foreground ml-auto">Yours</span>}
-          </div>
+      {/* Bottom strip — vote bar */}
+      <div className="relative px-3 pb-3 shrink-0 z-10" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        <div className="pt-2">
+          <BattleVoteBarCompact
+            blueVotes={votes.blue}
+            redVotes={votes.red}
+            blueLabel={fight.player_1_username}
+            redLabel={fight.player_2_username || undefined}
+          />
+        </div>
+        {isWaiting && (
+          <p className="text-[7px] font-black uppercase tracking-[0.18em] text-white/22 mt-1.5" style={{ fontFamily: 'Teko, sans-serif' }}>
+            TAP TO ENTER LOBBY
+          </p>
+        )}
+        {isMine && !isWaiting && (
+          <p className="text-[7px] font-black uppercase tracking-[0.18em] text-amber-400/50 mt-1.5" style={{ fontFamily: 'Teko, sans-serif' }}>
+            YOUR BATTLE
+          </p>
         )}
       </div>
     </motion.div>
