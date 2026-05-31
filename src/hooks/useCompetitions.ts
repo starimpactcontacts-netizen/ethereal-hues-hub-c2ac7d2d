@@ -66,7 +66,7 @@ export function useCompetitionsList() {
     const { data } = await supabase
       .from("competitions")
       .select("*")
-      .in("status", ["lobby", "live"])
+      .in("status", ["lobby"])
       .or("is_private.is.null,is_private.eq.false")
       .order("created_at", { ascending: false })
       .limit(20);
