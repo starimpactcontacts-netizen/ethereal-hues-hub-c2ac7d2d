@@ -188,7 +188,7 @@ export default function CustomEditBattleLobby({
             alt="Edit Battle"
             draggable={false}
             className="select-none mx-auto block mt-2"
-            style={{ maxWidth: '300px', width: '85%', height: 'auto' }}
+            style={{ maxWidth: '220px', width: '65%', height: 'auto' }}
           />
         </div>
 
