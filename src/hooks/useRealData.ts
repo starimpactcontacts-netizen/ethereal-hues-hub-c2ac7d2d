@@ -606,11 +606,12 @@ export function useEventStats(eventId: string | null) {
 
 // Hook for global stats (for Hub page) - aggregates ALL platform activity
 export function useGlobalStats() {
-  const [stats, setStats] = useState<{ entries24h: number; entriesLabel: string; activeUsers: number; totalCompeting: number }>({
+  const [stats, setStats] = useState<{ entries24h: number; entriesLabel: string; activeUsers: number; totalCompeting: number; totalEditors: number }>({
     entries24h: 0,
     entriesLabel: '24h',
     activeUsers: 0,
     totalCompeting: 0,
+    totalEditors: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -630,6 +631,7 @@ export function useGlobalStats() {
       onlineStatusUsers,
       compParticipants,
       quickFightPlayers,
+      totalProfilesResult,
     ] = await Promise.all([
       // Standard event submissions in last 24h
       supabase
@@ -695,6 +697,13 @@ export function useGlobalStats() {
         .neq('status', 'cancelled')
         .not('player_2_id', 'is', null)
         .limit(10000),
+
+      // Total registered editors (profiles)
+      supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_banned', false)
+        .eq('is_hidden', false),
     ]);
 
     // Sum all entries for last 24h
@@ -745,6 +754,7 @@ export function useGlobalStats() {
       entriesLabel,
       activeUsers: activeNow,
       totalCompeting: totalCompeting,
+      totalEditors: totalProfilesResult.count || 0,
     });
     setLoading(false);
   }, []);
