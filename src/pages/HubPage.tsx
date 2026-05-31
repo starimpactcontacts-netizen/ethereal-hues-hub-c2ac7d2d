@@ -686,30 +686,27 @@ export default function HubPage() {
                   <button
                     onClick={() => setPlayExpanded(true)}
                     className="group relative w-full max-w-[340px] active:scale-[0.98] transition-transform overflow-hidden"
-                    style={{ background: '#111', border: '2px solid rgba(255,255,255,0.22)' }}
+                    style={{
+                      background: '#FF3B3B',
+                      boxShadow: 'inset 0 1px 0 hsl(0 100% 82% / 0.5), inset 0 -4px 0 hsl(0 80% 28% / 0.6), 0 0 28px hsl(0 100% 55% / 0.5)',
+                    }}
                   >
-                    {/* Dot grid */}
-                    <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)', backgroundSize: '14px 14px' }} />
-                    {/* Blue | Red top accent bar */}
-                    <div className="absolute inset-x-0 top-0 h-[3px]" style={{ background: 'linear-gradient(90deg, #3b82f6 0%, #3b82f6 46%, transparent 46%, transparent 54%, #ef4444 54%, #ef4444 100%)' }} />
-                    {/* Corner notches — all 4 */}
-                    <div className="absolute top-0 left-0"><div className="w-4 h-[2px] bg-white/40" /><div className="w-[2px] h-4 bg-white/40" /></div>
-                    <div className="absolute top-0 right-0"><div className="w-4 h-[2px] bg-white/40" /><div className="w-[2px] h-4 bg-white/40 ml-auto" /></div>
-                    <div className="absolute bottom-0 left-0"><div className="w-4 h-[2px] bg-white/40" /><div className="w-[2px] h-4 bg-white/40" /></div>
-                    <div className="absolute bottom-0 right-0"><div className="w-4 h-[2px] bg-white/40" /><div className="w-[2px] h-4 bg-white/40 ml-auto" /></div>
+                    {/* Dot texture on red surface */}
+                    <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.18) 1px, transparent 1px)', backgroundSize: '14px 14px' }} />
                     <div className="relative flex items-center justify-center gap-3 py-6">
-                      <Play className="relative w-6 h-6 fill-white text-white" strokeWidth={3} />
-                      <div className="relative inline-block leading-none">
-                        <span
-                          aria-hidden="true"
-                          className="absolute inset-0 uppercase select-none"
-                          style={{ fontFamily: "'Anton', 'Teko', sans-serif", fontSize: '44px', WebkitTextStroke: '8px #000', color: 'transparent', letterSpacing: '0.04em' }}
-                        >PLAY</span>
-                        <span
-                          className="relative text-white uppercase leading-none"
-                          style={{ fontFamily: "'Anton', 'Teko', sans-serif", fontSize: '44px', letterSpacing: '0.04em' }}
-                        >PLAY</span>
-                      </div>
+                      <Play className="relative w-7 h-7 fill-white text-white drop-shadow-[2px_2px_0_rgba(0,0,0,0.5)]" strokeWidth={3} />
+                      <span
+                        className="relative text-white uppercase leading-none"
+                        style={{
+                          fontFamily: 'Teko, sans-serif',
+                          fontSize: '52px',
+                          fontWeight: 700,
+                          letterSpacing: '0.02em',
+                          textShadow: '2px 2px 0 rgba(0,0,0,0.5), 0 0 20px rgba(255,255,255,0.25)',
+                        }}
+                      >
+                        PLAY
+                      </span>
                     </div>
                   </button>
                 </motion.div>
@@ -726,33 +723,31 @@ export default function HubPage() {
                     onClick={() => { setPlayExpanded(false); handleQuickFight(); }}
                     disabled={qfIsSearching}
                     className="relative w-full py-4 overflow-hidden active:scale-[0.99] transition disabled:opacity-60 flex flex-col items-center justify-center"
-                    style={{ background: '#111', border: '1px solid rgba(255,255,255,0.18)' }}
+                    style={{ background: '#FF3B3B', boxShadow: 'inset 0 1px 0 hsl(0 100% 82% / 0.4), inset 0 -3px 0 hsl(0 80% 28% / 0.5), 0 0 20px hsl(0 100% 55% / 0.35)' }}
                   >
-                    <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)', backgroundSize: '14px 14px' }} />
-                    <div className="absolute inset-x-0 top-0 h-[2px]" style={{ background: 'linear-gradient(90deg, #3b82f6 0%, #3b82f6 46%, transparent 46%, transparent 54%, #ef4444 54%, #ef4444 100%)' }} />
-                    <span className="relative font-black text-[26px] text-white uppercase leading-none flex items-center gap-2" style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.04em' }}>
+                    <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.18) 1px, transparent 1px)', backgroundSize: '14px 14px' }} />
+                    <span className="relative text-white uppercase leading-none flex items-center gap-2" style={{ fontFamily: 'Teko, sans-serif', fontSize: '32px', fontWeight: 700, letterSpacing: '0.04em', textShadow: '1px 1px 0 rgba(0,0,0,0.4)' }}>
                       {qfIsSearching && <Loader2 className="w-4 h-4 animate-spin" />}
                       Edit Battles
                     </span>
-                    <span className="relative text-[10px] font-black text-white/35 uppercase tracking-[0.18em] mt-1.5" style={{ fontFamily: 'Teko, sans-serif' }}>Enter 1v1 Lobby</span>
+                    <span className="relative text-[10px] font-black text-white/70 uppercase tracking-[0.2em] mt-1" style={{ fontFamily: 'Teko, sans-serif' }}>Enter 1v1 Lobby</span>
                   </button>
 
                   <button
                     onClick={() => { setPlayExpanded(false); handleMultiplayer(); }}
-                    className="relative w-full py-4 overflow-hidden active:scale-[0.99] transition flex flex-col items-center justify-center"
-                    style={{ background: '#0e0e0e', border: '1px solid rgba(255,255,255,0.1)' }}
+                    className="w-full py-4 active:scale-[0.99] transition flex flex-col items-center justify-center"
+                    style={{ background: 'hsl(var(--surface-1))', border: '1px solid hsl(0 100% 55% / 0.4)' }}
                   >
-                    <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize: '14px 14px' }} />
-                    <span className="relative font-black text-[26px] text-white/80 uppercase leading-none" style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.04em' }}>Multiplayer</span>
-                    <span className="relative text-[10px] font-black text-white/25 uppercase tracking-[0.18em] mt-1.5" style={{ fontFamily: 'Teko, sans-serif' }}>Join An Open Lobby</span>
+                    <span className="text-foreground uppercase leading-none" style={{ fontFamily: 'Teko, sans-serif', fontSize: '32px', fontWeight: 700, letterSpacing: '0.04em' }}>Multiplayer</span>
+                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-1" style={{ fontFamily: 'Teko, sans-serif' }}>Join An Open Lobby</span>
                   </button>
 
                   <button
                     onClick={() => setPlayExpanded(false)}
-                    className="w-full py-3 active:scale-[0.99] transition flex flex-col items-center justify-center"
-                    style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.07)' }}
+                    className="w-full py-3 active:scale-[0.99] transition"
+                    style={{ background: 'hsl(var(--surface-1))', border: '1px solid hsl(var(--border))' }}
                   >
-                    <span className="font-black text-[20px] text-white/30 uppercase leading-none" style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.04em' }}>Back</span>
+                    <span className="text-muted-foreground uppercase leading-none" style={{ fontFamily: 'Teko, sans-serif', fontSize: '26px', fontWeight: 700, letterSpacing: '0.04em' }}>Back</span>
                   </button>
                 </motion.div>
               )}
@@ -851,24 +846,19 @@ export default function HubPage() {
         >
           <div
             className="relative flex items-center justify-center gap-3 py-3.5 overflow-hidden"
-            style={{ background: '#0e0e0e', border: '1px solid rgba(255,255,255,0.13)' }}
+            style={{ background: 'black', border: '2px solid hsl(0 100% 55% / 0.55)', boxShadow: '0 0 18px hsl(0 100% 55% / 0.18)' }}
           >
-            {/* Dot grid */}
-            <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize: '14px 14px' }} />
-            {/* Gold top accent */}
-            <div className="absolute inset-x-0 top-0 h-[2px]" style={{ background: 'linear-gradient(90deg, #f59e0b, rgba(245,158,11,0.3) 60%, transparent)' }} />
-            {/* Corner notches */}
-            <div className="absolute top-0 right-0"><div className="w-3 h-px bg-white/25" /><div className="w-px h-3 bg-white/25 ml-auto" /></div>
-            <div className="absolute bottom-0 left-0"><div className="w-3 h-px bg-white/25" /><div className="w-px h-3 bg-white/25" /></div>
-            <Trophy className="relative w-4 h-4 text-amber-400/80 shrink-0" strokeWidth={2.5} />
+            {/* Dot texture on dark surface */}
+            <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize: '14px 14px' }} />
+            <Trophy className="relative w-4 h-4 text-[#FF3B3B] shrink-0" strokeWidth={2.5} />
             <span
               className="relative text-white uppercase leading-none"
-              style={{ fontFamily: "'Anton', 'Teko', sans-serif", fontSize: '28px', letterSpacing: '0.06em' }}
+              style={{ fontFamily: 'Teko, sans-serif', fontSize: '34px', fontWeight: 700, letterSpacing: '0.06em', textShadow: '1px 1px 0 rgba(0,0,0,0.6)' }}
             >
-              Rankings
+              RANKINGS
             </span>
           </div>
-          <p className="text-center text-[10px] font-black text-white/25 uppercase tracking-[0.2em] mt-2" style={{ fontFamily: 'Teko, sans-serif' }}>
+          <p className="text-center text-[11px] font-bold text-muted-foreground uppercase tracking-widest mt-2" style={{ fontFamily: 'Teko, sans-serif' }}>
             Climb The Leaderboard
           </p>
         </Link>
