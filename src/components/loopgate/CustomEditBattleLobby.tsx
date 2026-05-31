@@ -35,8 +35,8 @@ function DotGrid() {
     <div
       className="absolute inset-0 pointer-events-none"
       style={{
-        backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)',
-        backgroundSize: '14px 14px',
+        backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.025) 1px, transparent 1px)',
+        backgroundSize: '18px 18px',
       }}
     />
   );

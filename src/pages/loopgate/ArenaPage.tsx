@@ -888,8 +888,8 @@ export default function ArenaPage() {
                   >
                     {/* Dot grid */}
                     <div className="absolute inset-0 pointer-events-none" style={{
-                      backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px)',
-                      backgroundSize: '14px 14px',
+                      backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.025) 1px, transparent 1px)',
+                      backgroundSize: '18px 18px',
                     }} />
                     {/* Top accent */}
                     <div className="absolute inset-x-0 top-0 h-[2px] pointer-events-none" style={{
@@ -991,72 +991,65 @@ export default function ArenaPage() {
                         return (
                           <div
                             key={lobby.id}
-                            className="overflow-hidden border border-white/[0.08]"
-                            style={{ background: '#111111' }}
+                            className="relative overflow-hidden border border-white/[0.07]"
+                            style={{ background: '#111' }}
                           >
-                            {/* Thumbnail strip — game tile style */}
-                            <div className="relative h-[88px]" style={{ background: '#0a0a0a' }}>
-                              {/* PRIVATE / PUBLIC tag — top left like a Roblox badge */}
-                              <div className="absolute top-2 left-2 z-10 flex items-center gap-1.5 px-2 py-1 border border-amber-500/40" style={{ background: '#111' }}>
-                                {isPrivate
-                                  ? <Lock className="w-2.5 h-2.5 text-amber-400" />
-                                  : <Globe className="w-2.5 h-2.5 text-amber-400" />}
-                                <span className="text-[8px] font-black uppercase tracking-[0.2em] text-amber-400">
-                                  {isPrivate ? 'Private' : 'Public'}
-                                </span>
-                              </div>
-                              {/* Duration — top right */}
-                              <div className="absolute top-2 right-2 z-10 px-2 py-1" style={{ background: '#111', border: '1px solid rgba(255,255,255,0.08)' }}>
-                                <span className="text-[9px] font-black uppercase tracking-wider text-white/50" style={{ fontFamily: 'Teko, sans-serif' }}>
-                                  {lobby.duration_minutes}MIN
-                                </span>
-                              </div>
-                              {/* Big background word — flavor */}
-                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+                            {/* Subtle dot texture */}
+                            <div className="absolute inset-0 pointer-events-none" style={{
+                              backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.025) 1px, transparent 1px)',
+                              backgroundSize: '18px 18px',
+                            }} />
+                            {/* Top accent line */}
+                            <div className="absolute inset-x-0 top-0 h-px pointer-events-none" style={{ background: 'rgba(255,255,255,0.08)' }} />
+
+                            <div className="relative z-10 px-4 pt-4 pb-4">
+                              {/* Header row: icon + title + duration */}
+                              <div className="flex items-start justify-between gap-3 mb-3">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  {isPrivate
+                                    ? <Lock className="w-3 h-3 text-white/30 shrink-0" strokeWidth={2} />
+                                    : <Globe className="w-3 h-3 text-white/30 shrink-0" strokeWidth={2} />}
+                                  <p
+                                    className="text-[22px] font-black uppercase leading-none text-white truncate"
+                                    style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.03em' }}
+                                  >
+                                    Custom Edit Battle
+                                  </p>
+                                </div>
                                 <span
-                                  className="text-[64px] font-black text-white/[0.04] leading-none"
+                                  className="text-[11px] font-black uppercase text-white/25 shrink-0 mt-1"
+                                  style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.1em' }}
+                                >
+                                  {lobby.duration_minutes}M
+                                </span>
+                              </div>
+
+                              {/* Status */}
+                              <div className="flex items-center gap-1.5 mb-4">
+                                <span className={`w-1 h-1 rounded-full shrink-0 ${isSelecting ? 'bg-amber-400' : 'bg-white/30'}`} />
+                                <span
+                                  className="text-[10px] font-black uppercase tracking-[0.18em] text-white/35"
                                   style={{ fontFamily: 'Teko, sans-serif' }}
                                 >
-                                  BATTLE
-                                </span>
-                              </div>
-                              {/* Status pulse row bottom of thumbnail */}
-                              <div className="absolute bottom-2 left-2 flex items-center gap-1.5">
-                                <motion.span
-                                  animate={{ opacity: [1, 0.2, 1] }}
-                                  transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut' }}
-                                  className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSelecting ? 'bg-amber-400' : 'bg-white/50'}`}
-                                />
-                                <span className={`text-[13px] font-black uppercase ${isSelecting ? 'text-amber-400' : 'text-white/60'}`} style={{ fontFamily: 'Teko, sans-serif' }}>
                                   {isSelecting ? 'Picking Loadout' : 'Waiting for Opponent'}
                                 </span>
                               </div>
-                            </div>
-
-                            <div className="px-3 pt-3 pb-3">
-                              {/* Lobby title — big Teko */}
-                              <p
-                                className="text-[24px] font-black uppercase leading-none text-white mb-1"
-                                style={{ fontFamily: 'Teko, sans-serif' }}
-                              >
-                                Custom Edit Battle
-                              </p>
 
                               {/* Code pill */}
                               {isPrivate && lobby.join_code && (
                                 <button
                                   onClick={copyCode}
-                                  className="flex items-center gap-2 mb-3 px-3 py-1.5 border border-white/[0.08] hover:border-amber-500/30 transition-colors group"
-                                  style={{ background: '#0a0a0a' }}
+                                  className="flex items-center gap-2 mb-4 px-3 py-2 w-full group transition-colors"
+                                  style={{ background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.07)' }}
                                 >
-                                  <span className="text-[8px] font-black uppercase tracking-widest text-white/30">Code</span>
+                                  <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/20" style={{ fontFamily: 'Teko, sans-serif' }}>Code</span>
                                   <span
-                                    className="text-[16px] font-black text-white tracking-[0.3em] leading-none"
-                                    style={{ fontFamily: 'Teko, monospace' }}
+                                    className="text-[18px] font-black text-white tracking-[0.35em] leading-none flex-1 text-left"
+                                    style={{ fontFamily: 'Teko, sans-serif' }}
                                   >
                                     {lobby.join_code}
                                   </span>
-                                  <Copy className="w-2.5 h-2.5 text-white/20 group-hover:text-amber-400 transition-colors ml-1" />
+                                  <Copy className="w-3 h-3 text-white/15 group-hover:text-white/40 transition-colors" />
                                 </button>
                               )}
 
@@ -1079,15 +1072,16 @@ export default function ArenaPage() {
                               </button>
 
                               {/* Bottom row — copy link + time */}
-                              <div className="flex items-center justify-between">
+                              <div className="flex items-center justify-between mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                                 <button
                                   onClick={copyLink}
-                                  className="flex items-center gap-1 text-[9px] font-bold text-white/25 hover:text-white/50 transition-colors"
+                                  className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.15em] text-white/20 hover:text-white/45 transition-colors"
+                                  style={{ fontFamily: 'Teko, sans-serif' }}
                                 >
                                   <Link2 className="w-2.5 h-2.5" />
                                   Copy Link
                                 </button>
-                                <span className="text-[9px] text-white/25 tabular-nums">
+                                <span className="text-[9px] text-white/20 tabular-nums" style={{ fontFamily: 'Teko, sans-serif' }}>
                                   {formatDistanceToNow(new Date(lobby.created_at), { addSuffix: true })}
                                 </span>
                               </div>
@@ -1418,7 +1412,7 @@ export default function ArenaPage() {
               style={{ background: '#0e0e0e' }}
             >
               {/* Dot grid */}
-              <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)', backgroundSize: '14px 14px' }} />
+              <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.025) 1px, transparent 1px)', backgroundSize: '18px 18px' }} />
               {/* Top-left light leak */}
               <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] via-transparent to-transparent pointer-events-none" />
               {/* Bottom-right vignette */}
@@ -1455,7 +1449,7 @@ export default function ArenaPage() {
               className="relative h-[120px] overflow-hidden text-left touch-manipulation group"
               style={{ background: '#0e0e0e' }}
             >
-              <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)', backgroundSize: '14px 14px' }} />
+              <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.025) 1px, transparent 1px)', backgroundSize: '18px 18px' }} />
               <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] via-transparent to-transparent pointer-events-none" />
               <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 80% 120%, transparent 30%, #0e0e0e 80%)' }} />
               <div className="absolute inset-0 border border-white/[0.13] group-active:border-white/25 transition-colors pointer-events-none" />

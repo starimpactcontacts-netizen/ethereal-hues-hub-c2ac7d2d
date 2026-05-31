@@ -72,8 +72,8 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
       >
         {/* Dot grid */}
         <div className="absolute inset-0 pointer-events-none z-0" style={{
-          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)',
-          backgroundSize: '14px 14px',
+          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.025) 1px, transparent 1px)',
+          backgroundSize: '18px 18px',
         }} />
 
         {/* Gold top accent bar */}
@@ -290,8 +290,8 @@ export default function ArenaCompetitionsSection({ onCreateClick, hideHeader = f
               style={{ background: '#0e0e0e', border: '1px dashed rgba(245,158,11,0.2)' }}
             >
               <div className="absolute inset-0 pointer-events-none" style={{
-                backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)',
-                backgroundSize: '14px 14px',
+                backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.02) 1px, transparent 1px)',
+                backgroundSize: '18px 18px',
               }} />
               <div className="relative w-10 h-10 flex items-center justify-center" style={{ border: '1px solid rgba(245,158,11,0.3)' }}>
                 <Plus className="w-5 h-5 text-amber-400/70" strokeWidth={2} />

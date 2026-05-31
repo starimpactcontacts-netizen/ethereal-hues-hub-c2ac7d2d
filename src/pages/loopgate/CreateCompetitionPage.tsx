@@ -11,8 +11,8 @@ const DURATION_OPTIONS = [15, 30, 45, 60];
 function DotGrid({ opacity = 0.05 }: { opacity?: number }) {
   return (
     <div className="absolute inset-0 pointer-events-none" style={{
-      backgroundImage: `radial-gradient(circle, rgba(255,255,255,${opacity}) 1px, transparent 1px)`,
-      backgroundSize: '14px 14px',
+      backgroundImage: `radial-gradient(circle, rgba(255,255,255,${opacity * 0.4}) 1px, transparent 1px)`,
+      backgroundSize: '18px 18px',
     }} />
   );
 }
