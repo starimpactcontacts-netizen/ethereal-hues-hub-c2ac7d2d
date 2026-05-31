@@ -696,7 +696,7 @@ export default function HubPage() {
                       <Play className="w-7 h-7 fill-white text-white" strokeWidth={2.5} />
                       <span
                         className="text-white uppercase leading-none tracking-wider"
-                        style={{ fontFamily: 'Teko, sans-serif', fontSize: '56px', fontWeight: 700, letterSpacing: '0.08em' }}
+                        style={{ fontFamily: 'Teko, sans-serif', fontSize: '40px', fontWeight: 700, letterSpacing: '0.08em' }}
                       >
                         PLAY
                       </span>
@@ -845,7 +845,7 @@ export default function HubPage() {
             <Trophy className="relative w-4 h-4 text-[#FF3B3B] shrink-0" strokeWidth={2.5} />
             <span
               className="relative text-white uppercase leading-none tracking-wider"
-              style={{ fontFamily: 'Teko, sans-serif', fontSize: '38px', fontWeight: 700, letterSpacing: '0.1em' }}
+              style={{ fontFamily: 'Teko, sans-serif', fontSize: '28px', fontWeight: 700, letterSpacing: '0.1em' }}
             >
               RANKINGS
             </span>
