@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 
-type EmailType = 'score_rated' | 'battle_update' | 'new_drop' | 'connection_request' | 'connection_accepted' | 'battle_result';
+type EmailType = 'score_rated' | 'battle_update' | 'new_drop' | 'connection_request' | 'connection_accepted' | 'battle_result' | 'battle_accepted' | 'competition_starting';
 
 /**
  * Fire-and-forget email notification sender.

@@ -235,7 +235,7 @@ export async function acceptBattle(battleId: string, opponentId: string, opponen
     const startsAt = new Date();
     const { data: battle } = await supabase
       .from('battles')
-      .select('duration_hours')
+      .select('duration_hours, challenger_id, challenger_username')
       .eq('id', battleId)
       .maybeSingle();
 
@@ -260,8 +260,29 @@ export async function acceptBattle(battleId: string, opponentId: string, opponen
       console.error('acceptBattle error:', error);
       return false;
     }
-    // If RLS or a race blocks the update, no row will come back
-    return Array.isArray(updated) && updated.length > 0;
+    if (!Array.isArray(updated) || updated.length === 0) return false;
+
+    // Notify the challenger that their battle was accepted
+    const challengerId = battle?.challenger_id;
+    if (challengerId) {
+      supabase.from('notifications').insert({
+        user_id: challengerId,
+        type: 'battle_accepted',
+        title: 'Battle Accepted!',
+        message: `@${opponentUsername} joined. Pick your scenepack and song.`,
+        data: { battle_id: battleId, opponent_id: opponentId, opponent_username: opponentUsername },
+      }).then(() => {});
+
+      supabase.functions.invoke('send-notification-email', {
+        body: {
+          user_id: challengerId,
+          email_type: 'battle_accepted',
+          data: { battle_id: battleId, opponent_username: opponentUsername },
+        },
+      }).then(() => {});
+    }
+
+    return true;
   } catch (error) {
     console.error('Error accepting battle:', error);
     return false;

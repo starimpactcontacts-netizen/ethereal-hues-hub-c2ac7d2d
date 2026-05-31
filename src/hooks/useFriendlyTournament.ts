@@ -192,6 +192,30 @@ export function useFriendlyTournament(tournamentId?: string) {
 
       if (updateError) throw updateError;
 
+      // Notify all participants when competition starts
+      if (newCount >= tournament.max_players) {
+        const { data: participants } = await supabase
+          .from('friendly_tournament_participants')
+          .select('user_id')
+          .eq('tournament_id', tournament.id);
+        (participants || []).forEach(p => {
+          supabase.from('notifications').insert({
+            user_id: p.user_id,
+            type: 'event_starting',
+            title: 'Competition is live!',
+            message: `${tournament.name || 'Your competition'} is full — submit your edit now.`,
+            data: { tournament_id: tournament.id },
+          }).then(() => {});
+          supabase.functions.invoke('send-notification-email', {
+            body: {
+              user_id: p.user_id,
+              email_type: 'competition_starting',
+              data: { competition_name: tournament.name, competition_id: tournament.id },
+            },
+          }).then(() => {});
+        });
+      }
+
       toast.success("You joined the tournament!");
       setIsParticipant(true);
       fetchTournament();

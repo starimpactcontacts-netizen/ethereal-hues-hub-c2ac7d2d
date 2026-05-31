@@ -10,7 +10,7 @@ const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-type EmailType = "score_rated" | "battle_update" | "new_drop" | "connection_request" | "connection_accepted" | "battle_result";
+type EmailType = "score_rated" | "battle_update" | "new_drop" | "connection_request" | "connection_accepted" | "battle_result" | "battle_accepted" | "competition_starting";
 
 interface EmailRequest {
   user_id: string;
@@ -22,6 +22,8 @@ const PREFERENCE_MAP: Record<EmailType, string> = {
   score_rated: "notify_scores",
   battle_update: "notify_battles",
   battle_result: "notify_battles",
+  battle_accepted: "notify_battles",
+  competition_starting: "notify_battles",
   new_drop: "notify_drops",
   connection_request: "notify_connections",
   connection_accepted: "notify_connections",
@@ -160,6 +162,36 @@ function buildEmail(type: EmailType, data: Record<string, any>): { subject: stri
         <a href="https://loopgate.io/editor/${data.accepter_id || ""}" style="${ctaStyle}">View Profile →</a>
         `,
         `@${data.accepter_username || "Someone"} connected with you on Loopgate`
+      );
+
+    case "battle_accepted":
+      return wrap(
+        `
+        <p style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px;">⚔️ Battle Accepted</p>
+        <h2 style="margin: 0 0 8px; font-size: 22px; font-weight: 900; color: #ef4444;">
+          @${data.opponent_username || "someone"} joined your battle!
+        </h2>
+        <p style="color: #aaa; font-size: 14px; margin: 0;">
+          Head to the arena — pick your scenepack and song to start the fight.
+        </p>
+        <a href="https://loopgate.gg/fight/${data.battle_id || ""}" style="${ctaStyle}">Go to Battle →</a>
+        `,
+        `@${data.opponent_username || "Someone"} accepted your battle on Loopgate ⚔️`
+      );
+
+    case "competition_starting":
+      return wrap(
+        `
+        <p style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px;">🏆 Competition Starting</p>
+        <h2 style="margin: 0 0 8px; font-size: 22px; font-weight: 900; color: #facc15;">
+          ${data.competition_name || "A competition"} is live!
+        </h2>
+        <p style="color: #aaa; font-size: 14px; margin: 0;">
+          The lobby is full and the competition has started. Submit your edit now.
+        </p>
+        <a href="https://loopgate.gg/competition/${data.competition_id || ""}" style="${ctaStyle}">Enter Competition →</a>
+        `,
+        `${data.competition_name || "Competition"} has started on Loopgate 🏆`
       );
 
     default:

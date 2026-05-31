@@ -18,6 +18,7 @@ import SoftwareSelector from "@/components/loopgate/SoftwareSelector";
 import InviteFriendsModal from "@/components/loopgate/InviteFriendsModal";
 import ProfileBackgroundSettings from "@/components/loopgate/ProfileBackgroundSettings";
 import AccountSecuritySection from "@/components/loopgate/AccountSecuritySection";
+import EmailNotificationSettings from "@/components/loopgate/EmailNotificationSettings";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 
@@ -451,6 +452,12 @@ export default function ProfileSettingsPage() {
           <Plus className="w-4 h-4" /> Add platform
         </button>
       )}
+
+      {/* ─── NOTIFICATIONS ─── */}
+      <SectionLabel label="Notifications" />
+      <div className="px-4 py-4">
+        <EmailNotificationSettings />
+      </div>
 
       {/* ─── SECURITY ─── */}
       <SectionLabel label="Security" />

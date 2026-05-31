@@ -4,104 +4,50 @@ import {
   Bell, Check, Trash2, Trophy, Zap, Star, Calendar,
   MessageSquare, Users, Megaphone, UserPlus, UserCheck,
   Heart, MessageCircle, Bookmark, Swords, Award, Flame,
-  ChevronRight,
+  ChevronRight, Mail, X as XIcon, Settings,
 } from "lucide-react";
 import { useNotifications, Notification } from "@/hooks/useNotifications";
 import { formatDistanceToNow } from "date-fns";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
+  Sheet, SheetContent, SheetPortal, SheetOverlay,
 } from "@/components/ui/sheet";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion, AnimatePresence } from "framer-motion";
+import EmailNotificationSettings from "./EmailNotificationSettings";
 
-// System notifications - platform updates, announcements
 const SYSTEM_TYPES = ['system', 'announcement', 'maintenance', 'update'];
 
-const typeConfig: Record<string, { icon: typeof Bell; color: string; bg: string; accent: string }> = {
-  // Social / Loop engagement
-  post_liked:          { icon: Heart,          color: "text-red-500",      bg: "bg-red-500/15",      accent: "border-l-red-500" },
-  post_commented:      { icon: MessageCircle,  color: "text-blue-400",     bg: "bg-blue-400/15",     accent: "border-l-blue-400" },
-  post_saved:          { icon: Bookmark,       color: "text-amber-400",    bg: "bg-amber-400/15",    accent: "border-l-amber-400" },
-  // Connections
-  connection_request:  { icon: UserPlus,       color: "text-sky-400",      bg: "bg-sky-400/15",      accent: "border-l-sky-400" },
-  connection_accepted: { icon: UserCheck,      color: "text-emerald-400",  bg: "bg-emerald-400/15",  accent: "border-l-emerald-400" },
-  // Battles
-  battle_challenge:    { icon: Swords,         color: "text-orange-500",   bg: "bg-orange-500/15",   accent: "border-l-orange-500" },
-  battle_judge_request:{ icon: Swords,         color: "text-purple-400",   bg: "bg-purple-400/15",   accent: "border-l-purple-400" },
-  battle_result:       { icon: Trophy,         color: "text-gold",         bg: "bg-gold/15",         accent: "border-l-gold" },
-  // Scoring / Arena
-  submission_judged:   { icon: Trophy,         color: "text-gold",         bg: "bg-gold/15",         accent: "border-l-gold" },
-  review_complete:     { icon: Star,           color: "text-purple-400",   bg: "bg-purple-400/15",   accent: "border-l-purple-400" },
-  solo_scored:         { icon: Award,          color: "text-green-400",    bg: "bg-green-400/15",    accent: "border-l-green-400" },
-  drop_scored:         { icon: Flame,          color: "text-orange-400",   bg: "bg-orange-400/15",   accent: "border-l-orange-400" },
-  // Events / Tournaments
-  rank_changed:        { icon: Zap,            color: "text-blue-400",     bg: "bg-blue-400/15",     accent: "border-l-blue-400" },
-  event_starting:      { icon: Calendar,       color: "text-green-500",    bg: "bg-green-500/15",    accent: "border-l-green-500" },
-  event_ended:         { icon: Calendar,       color: "text-muted-foreground", bg: "bg-muted/15",    accent: "border-l-muted" },
-  tournament_started:  { icon: Trophy,         color: "text-green-500",    bg: "bg-green-500/15",    accent: "border-l-green-500" },
-  tournament_scored:   { icon: Trophy,         color: "text-gold",         bg: "bg-gold/15",         accent: "border-l-gold" },
-  tournament_placement:{ icon: Award,          color: "text-gold",         bg: "bg-gold/15",         accent: "border-l-gold" },
-  // Crews / Groups
-  achievement:         { icon: Star,           color: "text-purple-400",   bg: "bg-purple-400/15",   accent: "border-l-purple-400" },
-  house_accepted:      { icon: Star,           color: "text-gold",         bg: "bg-gold/15",         accent: "border-l-gold" },
-  house_invited:       { icon: Star,           color: "text-gold",         bg: "bg-gold/15",         accent: "border-l-gold" },
-  dm_received:         { icon: MessageSquare,  color: "text-cyan-400",     bg: "bg-cyan-400/15",     accent: "border-l-cyan-400" },
-  chat_mention:        { icon: MessageCircle,  color: "text-red-400",      bg: "bg-red-400/15",      accent: "border-l-red-400" },
-  chat_reply:          { icon: MessageCircle,  color: "text-blue-400",     bg: "bg-blue-400/15",     accent: "border-l-blue-400" },
-  crew_mention:        { icon: Users,          color: "text-orange-400",   bg: "bg-orange-400/15",   accent: "border-l-orange-400" },
-  // System
-  system:              { icon: Megaphone,      color: "text-white",        bg: "bg-white/10",        accent: "border-l-white" },
-  announcement:        { icon: Megaphone,      color: "text-gold",         bg: "bg-gold/15",         accent: "border-l-gold" },
-  maintenance:         { icon: Bell,           color: "text-yellow-500",   bg: "bg-yellow-500/15",   accent: "border-l-yellow-500" },
-  update:              { icon: Zap,            color: "text-cyan-400",     bg: "bg-cyan-400/15",     accent: "border-l-cyan-400" },
+const typeConfig: Record<string, { icon: typeof Bell; color: string; bg: string }> = {
+  post_liked:           { icon: Heart,          color: "text-red-400",      bg: "bg-red-500/15" },
+  post_commented:       { icon: MessageCircle,  color: "text-blue-400",     bg: "bg-blue-400/15" },
+  post_saved:           { icon: Bookmark,       color: "text-amber-400",    bg: "bg-amber-400/15" },
+  connection_request:   { icon: UserPlus,       color: "text-sky-400",      bg: "bg-sky-400/15" },
+  connection_accepted:  { icon: UserCheck,      color: "text-emerald-400",  bg: "bg-emerald-400/15" },
+  battle_challenge:     { icon: Swords,         color: "text-orange-400",   bg: "bg-orange-500/15" },
+  battle_accepted:      { icon: Swords,         color: "text-red-400",      bg: "bg-red-500/15" },
+  battle_judge_request: { icon: Swords,         color: "text-purple-400",   bg: "bg-purple-400/15" },
+  battle_result:        { icon: Trophy,         color: "text-gold",         bg: "bg-gold/15" },
+  submission_judged:    { icon: Trophy,         color: "text-gold",         bg: "bg-gold/15" },
+  review_complete:      { icon: Star,           color: "text-purple-400",   bg: "bg-purple-400/15" },
+  solo_scored:          { icon: Award,          color: "text-green-400",    bg: "bg-green-400/15" },
+  drop_scored:          { icon: Flame,          color: "text-orange-400",   bg: "bg-orange-400/15" },
+  rank_changed:         { icon: Zap,            color: "text-blue-400",     bg: "bg-blue-400/15" },
+  event_starting:       { icon: Calendar,       color: "text-green-400",    bg: "bg-green-500/15" },
+  event_ended:          { icon: Calendar,       color: "text-white/40",     bg: "bg-white/[0.06]" },
+  tournament_started:   { icon: Trophy,         color: "text-green-400",    bg: "bg-green-500/15" },
+  tournament_scored:    { icon: Trophy,         color: "text-gold",         bg: "bg-gold/15" },
+  tournament_placement: { icon: Award,          color: "text-gold",         bg: "bg-gold/15" },
+  achievement:          { icon: Star,           color: "text-purple-400",   bg: "bg-purple-400/15" },
+  house_accepted:       { icon: Star,           color: "text-gold",         bg: "bg-gold/15" },
+  house_invited:        { icon: Star,           color: "text-gold",         bg: "bg-gold/15" },
+  dm_received:          { icon: MessageSquare,  color: "text-cyan-400",     bg: "bg-cyan-400/15" },
+  chat_mention:         { icon: MessageCircle,  color: "text-red-400",      bg: "bg-red-400/15" },
+  chat_reply:           { icon: MessageCircle,  color: "text-blue-400",     bg: "bg-blue-400/15" },
+  crew_mention:         { icon: Users,          color: "text-orange-400",   bg: "bg-orange-400/15" },
+  system:               { icon: Megaphone,      color: "text-white",        bg: "bg-white/10" },
+  announcement:         { icon: Megaphone,      color: "text-gold",         bg: "bg-gold/15" },
+  maintenance:          { icon: Bell,           color: "text-yellow-400",   bg: "bg-yellow-500/15" },
+  update:               { icon: Zap,            color: "text-cyan-400",     bg: "bg-cyan-400/15" },
 };
-
-// Quick summary stats for dopamine header
-function NotifSummaryBanner({ notifications }: { notifications: Notification[] }) {
-  const likes = notifications.filter(n => n.type === 'post_liked' && !n.read).length;
-  const comments = notifications.filter(n => n.type === 'post_commented' && !n.read).length;
-  const followers = notifications.filter(n => (n.type === 'connection_request' || n.type === 'connection_accepted') && !n.read).length;
-
-  if (likes + comments + followers === 0) return null;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="mx-4 mt-3 mb-1 rounded-xl bg-gradient-to-r from-red-500/90 via-pink-500/90 to-rose-500/90 p-3 flex items-center justify-center gap-6 shadow-lg shadow-red-500/20"
-    >
-      {likes > 0 && (
-        <div className="flex items-center gap-1.5">
-          <Heart size={16} className="text-white fill-white" />
-          <span className="text-white font-bold text-sm">{likes}</span>
-        </div>
-      )}
-      {comments > 0 && (
-        <div className="flex items-center gap-1.5">
-          <MessageCircle size={16} className="text-white fill-white" />
-          <span className="text-white font-bold text-sm">{comments}</span>
-        </div>
-      )}
-      {followers > 0 && (
-        <div className="flex items-center gap-1.5">
-          <UserPlus size={16} className="text-white" />
-          <span className="text-white font-bold text-sm">{followers}</span>
-        </div>
-      )}
-    </motion.div>
-  );
-}
-
-interface NotificationItemProps {
-  notification: Notification;
-  onMarkAsRead: (id: string) => void;
-  onDelete: (id: string) => void;
-  index: number;
-}
 
 function getNotificationLink(notification: Notification): string | null {
   const data = notification.data as Record<string, any>;
@@ -114,8 +60,9 @@ function getNotificationLink(notification: Notification): string | null {
     case 'connection_accepted':
       return `/editor/${data?.sender_id || data?.user_id || ''}`;
     case 'battle_challenge':
+    case 'battle_accepted':
     case 'battle_result':
-      return data?.battle_id ? `/battle/${data.battle_id}` : '/arena';
+      return data?.battle_id ? `/fight/${data.battle_id}` : '/arena';
     case 'submission_judged':
     case 'review_complete':
     case 'solo_scored':
@@ -132,16 +79,11 @@ function getNotificationLink(notification: Notification): string | null {
       const chatType = data?.chat_type;
       if (chatType === 'featured_drop_messages' && data?.drop_id) return `/drop/${data.drop_id}`;
       if (chatType === 'battle_messages' && data?.battle_id) return `/battle/${data.battle_id}`;
-      if (chatType === 'arena_messages' && data?.arena_id) return `/arena/${data.arena_id}`;
-      if (chatType === 'competition_messages' && data?.competition_id) return `/arena/competition/${data.competition_id}`;
+      if (chatType === 'competition_messages' && data?.competition_id) return `/competition/${data.competition_id}`;
       return '/arena';
     }
-    case 'quick_fight_result':
-      return data?.fight_id ? `/quick-fight/${data.fight_id}` : '/arena';
-    case 'practice_matched':
-      return data?.match_id ? `/practice/${data.match_id}` : '/arena';
-    case 'battle_invite':
-      return data?.battle_id ? `/battle/${data.battle_id}` : '/arena';
+    case 'event_starting':
+      return data?.competition_id ? `/competition/${data.competition_id}` : '/arena';
     case 'announcement':
     case 'system':
       if (data?.mission_id) return `/mission/${data.mission_id}`;
@@ -151,306 +93,331 @@ function getNotificationLink(notification: Notification): string | null {
   }
 }
 
-function NotificationItem({ notification, onMarkAsRead, onDelete, index }: NotificationItemProps) {
-  const config = typeConfig[notification.type] || { icon: Bell, color: "text-foreground", bg: "bg-muted", accent: "border-l-muted" };
-  const Icon = config.icon;
+function timeAgo(ts: string) {
+  return formatDistanceToNow(new Date(ts), { addSuffix: true })
+    .replace('about ', '')
+    .replace('less than a minute ago', 'just now');
+}
+
+function NotificationItem({ notification, onMarkAsRead, onDelete, index }: {
+  notification: Notification;
+  onMarkAsRead: (id: string) => void;
+  onDelete: (id: string) => void;
+  index: number;
+}) {
+  const cfg = typeConfig[notification.type] || { icon: Bell, color: "text-foreground/60", bg: "bg-white/[0.06]" };
+  const Icon = cfg.icon;
   const link = getNotificationLink(notification);
   const data = notification.data as Record<string, any>;
   const avatarUrl = data?.liker_avatar || data?.commenter_avatar || data?.sender_avatar || data?.avatar || null;
   const isSystem = SYSTEM_TYPES.includes(notification.type);
+  const [expanded, setExpanded] = useState(false);
   const highlights: string[] = Array.isArray(data?.highlights) ? data.highlights : [];
   const version: string | null = data?.version || null;
-  const [expanded, setExpanded] = useState(false);
 
   if (isSystem) {
-    const card = (
+    return (
       <motion.div
-        initial={{ opacity: 0, y: 8 }}
+        initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: index * 0.03 }}
-        className={`group relative mx-3 my-2 rounded-2xl border overflow-hidden
-          ${notification.read
-            ? 'bg-white/[0.02] border-white/[0.05] opacity-70'
-            : 'bg-gradient-to-br from-gold/[0.07] via-white/[0.02] to-transparent border-gold/30 shadow-[0_8px_24px_-12px_rgba(201,168,76,0.35)]'
-          }`}
-        onClick={(e) => {
-          e.stopPropagation();
-          if (!notification.read) onMarkAsRead(notification.id);
-          setExpanded((v) => !v);
-        }}
+        transition={{ delay: index * 0.025 }}
+        className={`mx-3 my-1.5 border overflow-hidden cursor-pointer transition-all ${
+          notification.read
+            ? 'bg-white/[0.02] border-white/[0.05] opacity-60'
+            : 'bg-gold/[0.05] border-gold/25 shadow-[0_4px_16px_-8px_rgba(201,168,76,0.25)]'
+        }`}
+        onClick={() => { if (!notification.read) onMarkAsRead(notification.id); setExpanded(v => !v); }}
       >
-        {/* Top strip */}
         <div className="flex items-start gap-3 p-3.5">
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${config.bg} border border-white/[0.06]`}>
-            <Icon size={18} className={config.color} />
+          <div className={`w-9 h-9 flex items-center justify-center shrink-0 ${cfg.bg}`}>
+            <Icon size={16} className={cfg.color} />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[8.5px] font-black uppercase tracking-[0.18em] text-gold/90">
-                {notification.type === 'announcement' ? 'Announcement' : notification.type === 'maintenance' ? 'Maintenance' : notification.type === 'update' ? 'Update' : 'System'}
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="text-[9px] font-black uppercase tracking-[0.18em] text-gold/70">
+                {notification.type === 'announcement' ? 'Announcement' : notification.type === 'update' ? 'Update' : notification.type === 'maintenance' ? 'Maintenance' : 'System'}
               </span>
-              {version && (
-                <span className="text-[8.5px] font-black uppercase tracking-[0.12em] text-gold bg-gold/10 border border-gold/30 rounded px-1.5 py-[1px]">
-                  v{version}
-                </span>
-              )}
-              {!notification.read && (
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-              )}
+              {version && <span className="text-[9px] font-bold text-gold bg-gold/10 px-1.5 py-[1px]">v{version}</span>}
+              {!notification.read && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
             </div>
-            <p className="text-[14px] font-black text-white leading-tight mt-1" style={{ fontFamily: "Teko, sans-serif", letterSpacing: "0.01em" }}>
+            <p className="text-[13px] font-black text-white leading-tight" style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.02em' }}>
               {notification.title}
             </p>
             {notification.message && (
-              <p className={`text-[12px] text-white/70 leading-relaxed mt-1 ${expanded ? '' : 'line-clamp-2'}`}>
+              <p className={`text-[11.5px] text-white/60 leading-relaxed mt-1 ${expanded ? '' : 'line-clamp-2'}`}>
                 {notification.message}
               </p>
             )}
-
             {expanded && highlights.length > 0 && (
-              <ul className="mt-2.5 space-y-1.5">
-                {highlights.map((h, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-[11.5px] text-white/80 leading-snug">
+              <ul className="mt-2 space-y-1">
+                {highlights.map((h, i) => (
+                  <li key={i} className="flex items-start gap-2 text-[11px] text-white/70">
                     <span className="mt-1.5 w-1 h-1 rounded-full bg-gold shrink-0" />
                     <span>{h}</span>
                   </li>
                 ))}
               </ul>
             )}
-
-            <div className="flex items-center justify-between mt-2.5">
-              <span className="text-[10px] text-white/40">
-                {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
-              </span>
-              <span className="text-[10px] uppercase tracking-[0.15em] font-bold text-gold/80 inline-flex items-center gap-1">
-                {expanded ? 'Show less' : (notification.message && notification.message.length > 80) || highlights.length > 0 ? 'Read more' : ''}
-                {((notification.message && notification.message.length > 80) || highlights.length > 0) && (
-                  <ChevronRight size={11} className={`transition-transform ${expanded ? 'rotate-90' : ''}`} />
-                )}
-              </span>
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-[9.5px] text-white/30">{timeAgo(notification.created_at)}</span>
+              {(notification.message && notification.message.length > 80 || highlights.length > 0) && (
+                <span className="text-[9.5px] font-bold uppercase tracking-[0.12em] text-gold/60 flex items-center gap-0.5">
+                  {expanded ? 'Less' : 'More'}
+                  <ChevronRight size={10} className={`transition-transform ${expanded ? 'rotate-90' : ''}`} />
+                </span>
+              )}
             </div>
           </div>
-
           <button
-            onClick={(e) => { e.stopPropagation(); onDelete(notification.id); }}
-            className="p-1 text-white/30 hover:text-destructive transition-colors shrink-0"
-            title="Delete"
+            onClick={e => { e.stopPropagation(); onDelete(notification.id); }}
+            className="p-1 text-white/20 hover:text-red-400 transition-colors shrink-0 mt-0.5"
           >
-            <Trash2 size={12} />
+            <Trash2 size={11} />
           </button>
         </div>
       </motion.div>
     );
-    return card;
   }
 
   const content = (
     <motion.div
-      initial={{ opacity: 0, x: 20 }}
+      initial={{ opacity: 0, x: 16 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.03 }}
-      className={`group relative flex items-start gap-3 p-3 mx-2 my-1 rounded-lg border-l-[3px] transition-all
-        ${config.accent}
-        ${notification.read 
-          ? 'opacity-50 bg-transparent hover:opacity-80' 
-          : 'bg-white/[0.03] hover:bg-white/[0.06]'
-        }`}
+      transition={{ delay: index * 0.025 }}
+      className={`group relative flex items-start gap-3 px-4 py-3 transition-colors ${
+        notification.read ? 'opacity-45' : 'bg-white/[0.025] hover:bg-white/[0.04]'
+      }`}
       onClick={() => !notification.read && onMarkAsRead(notification.id)}
     >
-      {/* Avatar or Icon */}
+      {/* Unread left bar */}
+      {!notification.read && (
+        <div className="absolute left-0 top-3 bottom-3 w-[2px] bg-gold/60" />
+      )}
+
+      {/* Avatar / Icon */}
       <div className="relative shrink-0">
         {avatarUrl ? (
-          <div className="relative">
-            <img src={avatarUrl} alt="" className="w-10 h-10 rounded-full object-cover border border-border" />
-            <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center ${config.bg} border border-background`}>
-              <Icon size={10} className={config.color} />
+          <>
+            <img src={avatarUrl} alt="" className="w-9 h-9 rounded-full object-cover border border-white/[0.08]" />
+            <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center ${cfg.bg} border-2 border-[#0d0d0d]`}>
+              <Icon size={9} className={cfg.color} />
             </div>
-          </div>
+          </>
         ) : (
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${config.bg}`}>
-            <Icon size={18} className={config.color} />
+          <div className={`w-9 h-9 rounded-full flex items-center justify-center ${cfg.bg}`}>
+            <Icon size={16} className={cfg.color} />
           </div>
-        )}
-        {/* Unread dot */}
-        {!notification.read && (
-          <div className="absolute -top-0.5 -left-0.5 w-2.5 h-2.5 rounded-full bg-red-500 border border-background animate-pulse" />
         )}
       </div>
 
-      {/* Content */}
+      {/* Text */}
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-medium leading-tight">{notification.title}</p>
+        <p className="text-[12.5px] font-semibold text-foreground leading-snug">{notification.title}</p>
         {notification.message && (
-          <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{notification.message}</p>
+          <p className="text-[11px] text-white/40 mt-0.5 line-clamp-2 leading-snug">{notification.message}</p>
         )}
-        <p className="text-[10px] text-muted-foreground/60 mt-1">
-          {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
-        </p>
+        <p className="text-[10px] text-white/25 mt-1">{timeAgo(notification.created_at)}</p>
       </div>
 
       {/* Actions */}
       <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
         {!notification.read && (
           <button
-            onClick={(e) => { e.stopPropagation(); onMarkAsRead(notification.id); }}
-            className="p-1 text-muted-foreground hover:text-gold transition-colors"
-            title="Mark as read"
+            onClick={e => { e.stopPropagation(); onMarkAsRead(notification.id); }}
+            className="p-1 text-white/30 hover:text-gold transition-colors"
+            title="Mark read"
           >
-            <Check size={12} />
+            <Check size={11} />
           </button>
         )}
         <button
-          onClick={(e) => { e.stopPropagation(); onDelete(notification.id); }}
-          className="p-1 text-muted-foreground hover:text-destructive transition-colors"
+          onClick={e => { e.stopPropagation(); onDelete(notification.id); }}
+          className="p-1 text-white/30 hover:text-red-400 transition-colors"
           title="Delete"
         >
-          <Trash2 size={12} />
+          <Trash2 size={11} />
         </button>
       </div>
 
-      {/* Arrow indicator for links */}
-      {link && (
-        <ChevronRight size={14} className="text-muted-foreground/30 shrink-0 self-center" />
-      )}
+      {link && <ChevronRight size={13} className="text-white/15 shrink-0 self-center" />}
     </motion.div>
   );
 
-  if (link) {
-    return <Link to={link} className="block">{content}</Link>;
-  }
+  if (link) return <Link to={link} className="block">{content}</Link>;
   return content;
 }
 
 export default function NotificationCenter() {
   const [open, setOpen] = useState(false);
-  const [tab, setTab] = useState<'activity' | 'system'>('activity');
+  const [tab, setTab] = useState<'activity' | 'system' | 'email'>('activity');
   const { notifications, unreadCount, loading, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
 
-  const activityNotifications = notifications.filter(n => !SYSTEM_TYPES.includes(n.type));
-  const systemNotifications = notifications.filter(n => SYSTEM_TYPES.includes(n.type));
-  const activityUnread = activityNotifications.filter(n => !n.read).length;
-  const systemUnread = systemNotifications.filter(n => !n.read).length;
+  const activityNotifs = notifications.filter(n => !SYSTEM_TYPES.includes(n.type));
+  const systemNotifs = notifications.filter(n => SYSTEM_TYPES.includes(n.type));
+  const activityUnread = activityNotifs.filter(n => !n.read).length;
+  const systemUnread = systemNotifs.filter(n => !n.read).length;
 
-  const renderNotificationList = (items: Notification[]) => {
+  const renderList = (items: Notification[], emptyIcon: typeof Bell, emptyMsg: string, emptySubMsg: string) => {
     if (loading) {
       return (
         <div className="flex items-center justify-center py-16">
-          <div className="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+          <div className="w-5 h-5 border-2 border-gold/40 border-t-gold rounded-full animate-spin" />
         </div>
       );
     }
-    
     if (items.length === 0) {
+      const EmptyIcon = emptyIcon;
       return (
-        <div className="text-center py-16 px-4">
-          <div className="w-16 h-16 rounded-full bg-white/[0.03] flex items-center justify-center mx-auto mb-4">
-            <Bell className="w-7 h-7 text-muted-foreground/40" />
+        <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+          <div className="w-14 h-14 bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mb-4">
+            <EmptyIcon className="w-6 h-6 text-white/20" />
           </div>
-          <p className="text-sm text-muted-foreground font-medium">No notifications yet</p>
-          <p className="text-xs text-muted-foreground/50 mt-1">When people interact with your content, you'll see it here</p>
+          <p className="text-[13px] font-bold text-white/40">{emptyMsg}</p>
+          <p className="text-[11px] text-white/20 mt-1">{emptySubMsg}</p>
         </div>
       );
     }
-
     return (
-      <div className="py-1">
-        {items.map((notification, i) => (
-          <NotificationItem
-            key={notification.id}
-            notification={notification}
-            onMarkAsRead={markAsRead}
-            onDelete={deleteNotification}
-            index={i}
-          />
+      <div className="py-1 divide-y divide-white/[0.04]">
+        {items.map((n, i) => (
+          <NotificationItem key={n.id} notification={n} onMarkAsRead={markAsRead} onDelete={deleteNotification} index={i} />
         ))}
       </div>
     );
   };
 
+  const tabs = [
+    { key: 'activity' as const, label: 'Activity', badge: activityUnread },
+    { key: 'system' as const, label: 'System', badge: systemUnread },
+    { key: 'email' as const, label: 'Email Alerts', badge: 0 },
+  ];
+
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <button className="relative p-2 transition-transform active:scale-90">
-          <Bell size={20} />
-          <AnimatePresence>
-            {unreadCount > 0 && (
-              <motion.span
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0 }}
-                className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center"
-              >
-                {unreadCount > 99 ? '99+' : unreadCount}
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </button>
-      </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-md bg-background border-border p-0">
-        <SheetHeader className="px-4 pt-4 pb-3 pr-14 border-b border-border">
-          <div className="flex items-center justify-between">
-            <SheetTitle className="font-display text-lg tracking-wide">NOTIFICATIONS</SheetTitle>
-            {unreadCount > 0 && (
-              <button
-                onClick={markAllAsRead}
-                className="text-[10px] text-primary uppercase tracking-widest font-bold hover:underline"
-              >
-                Mark all read
-              </button>
-            )}
-          </div>
-        </SheetHeader>
+      {/* Bell trigger */}
+      <button
+        onClick={() => setOpen(true)}
+        className="relative p-2 transition-transform active:scale-90"
+      >
+        <Bell size={20} />
+        <AnimatePresence>
+          {unreadCount > 0 && (
+            <motion.span
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0 }}
+              className="absolute -top-0.5 -right-0.5 min-w-[17px] h-[17px] px-1 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center"
+            >
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </motion.span>
+          )}
+        </AnimatePresence>
+      </button>
 
-        <Tabs value={tab} onValueChange={(v) => setTab(v as 'activity' | 'system')} className="w-full">
-          <TabsList className="w-full grid grid-cols-2 bg-transparent rounded-none border-b border-border h-11">
-            <TabsTrigger 
-              value="activity" 
-              className="data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none relative font-display tracking-wide text-sm"
+      {/* Sheet rendered manually to control background */}
+      <AnimatePresence>
+        {open && (
+          <SheetPortal>
+            <SheetOverlay onClick={() => setOpen(false)} />
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className="fixed inset-y-0 right-0 z-50 w-full sm:max-w-md flex flex-col"
+              style={{ background: '#0d0d0d' }}
             >
-              <span>Activity</span>
-              {activityUnread > 0 && (
-                <span className="ml-1.5 min-w-[20px] h-5 px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                  {activityUnread > 99 ? '99+' : activityUnread}
-                </span>
-              )}
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gold data-[state=inactive]:opacity-0 transition-opacity" 
-                    style={{ opacity: tab === 'activity' ? 1 : 0 }} />
-            </TabsTrigger>
-            <TabsTrigger 
-              value="system"
-              className="data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none relative font-display tracking-wide text-sm"
-            >
-              <span>System</span>
-              {systemUnread > 0 && (
-                <span className="ml-1.5 min-w-[20px] h-5 px-1 bg-white/80 text-black text-[10px] font-bold rounded-full flex items-center justify-center">
-                  {systemUnread > 99 ? '99+' : systemUnread}
-                </span>
-              )}
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gold transition-opacity" 
-                    style={{ opacity: tab === 'system' ? 1 : 0 }} />
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="activity" className="mt-0 overflow-y-auto max-h-[calc(100vh-180px)]">
-            <NotifSummaryBanner notifications={activityNotifications} />
-            {renderNotificationList(activityNotifications)}
-          </TabsContent>
-          
-          <TabsContent value="system" className="mt-0 overflow-y-auto max-h-[calc(100vh-180px)]">
-            {systemNotifications.length === 0 && !loading ? (
-              <div className="text-center py-16 px-4">
-                <div className="w-16 h-16 rounded-full bg-white/[0.03] flex items-center justify-center mx-auto mb-4">
-                  <Megaphone className="w-7 h-7 text-muted-foreground/40" />
+              {/* Dot grid bg */}
+              <div className="absolute inset-0 pointer-events-none" style={{
+                backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.018) 1px, transparent 1px)',
+                backgroundSize: '18px 18px',
+              }} />
+              {/* Gold top accent */}
+              <div className="absolute inset-x-0 top-0 h-[2px] pointer-events-none z-10"
+                style={{ background: 'linear-gradient(90deg, #f59e0b, rgba(245,158,11,0.2) 70%, transparent)' }} />
+
+              {/* Header */}
+              <div className="relative z-10 flex items-center justify-between px-4 pt-5 pb-3 border-b border-white/[0.06]">
+                <div>
+                  <h2 className="text-[18px] font-black tracking-[0.1em] text-white" style={{ fontFamily: 'Teko, sans-serif' }}>
+                    NOTIFICATIONS
+                  </h2>
+                  {unreadCount > 0 && (
+                    <p className="text-[10px] text-white/30 mt-0.5">{unreadCount} unread</p>
+                  )}
                 </div>
-                <p className="text-sm text-muted-foreground font-medium">No system updates</p>
-                <p className="text-xs text-muted-foreground/50 mt-1">Platform announcements will appear here</p>
+                <div className="flex items-center gap-2">
+                  {unreadCount > 0 && tab !== 'email' && (
+                    <button
+                      onClick={markAllAsRead}
+                      className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40 hover:text-gold transition-colors"
+                    >
+                      Mark all read
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setOpen(false)}
+                    className="w-8 h-8 flex items-center justify-center text-white/30 hover:text-white transition-colors"
+                  >
+                    <XIcon size={16} />
+                  </button>
+                </div>
               </div>
-            ) : (
-              renderNotificationList(systemNotifications)
-            )}
-          </TabsContent>
-        </Tabs>
-      </SheetContent>
+
+              {/* Tab bar */}
+              <div className="relative z-10 flex border-b border-white/[0.06]">
+                {tabs.map(t => (
+                  <button
+                    key={t.key}
+                    onClick={() => setTab(t.key)}
+                    className={`flex-1 flex items-center justify-center gap-1.5 h-10 text-[11px] font-black uppercase tracking-[0.1em] transition-colors relative ${
+                      tab === t.key ? 'text-white' : 'text-white/35 hover:text-white/60'
+                    }`}
+                  >
+                    {t.key === 'email' && <Mail size={11} />}
+                    {t.label}
+                    {t.badge > 0 && (
+                      <span className="min-w-[16px] h-4 px-1 bg-red-500 text-white text-[9px] font-black rounded-sm flex items-center justify-center">
+                        {t.badge > 99 ? '99+' : t.badge}
+                      </span>
+                    )}
+                    {tab === t.key && (
+                      <motion.div
+                        layoutId="notif-tab-indicator"
+                        className="absolute bottom-0 left-0 right-0 h-[2px] bg-gold"
+                      />
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {/* Content */}
+              <div className="relative z-10 flex-1 overflow-y-auto">
+                {tab === 'activity' && renderList(
+                  activityNotifs, Bell,
+                  'No activity yet',
+                  'Likes, battles, and more will appear here'
+                )}
+                {tab === 'system' && renderList(
+                  systemNotifs, Megaphone,
+                  'No system updates',
+                  'Platform announcements will appear here'
+                )}
+                {tab === 'email' && (
+                  <div className="p-4">
+                    <div className="mb-4">
+                      <p className="text-[11px] text-white/40 leading-relaxed">
+                        Get email reminders when someone accepts your battle or a competition you're in goes live. We'll only send what you enable.
+                      </p>
+                    </div>
+                    <EmailNotificationSettings />
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </SheetPortal>
+        )}
+      </AnimatePresence>
     </Sheet>
   );
 }
