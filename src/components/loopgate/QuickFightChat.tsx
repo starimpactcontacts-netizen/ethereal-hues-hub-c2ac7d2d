@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import GifPicker from './GifPicker';
 
 const TRASH_TALK = [
+  "yo wake up bro 👀",
   "Yo actually edit battle rn 🔥",
   "bro im better than you 😭✌️",
   "f*ck it let's die right here 💀",
@@ -18,13 +19,11 @@ const TRASH_TALK = [
   "You cooked bro 💀",
   "This gonna be posted 📱",
   "No way you beatin me rn",
-  "Winner posts first 🎬",
   "Bet. Run it.",
-  "Loser posts the L 😭",
+  "Loser owes $20",
   "Say less 🤝",
-  "Send your hardest",
   "Gg already fr 😭",
-  "I eat editors for breakfast",
+  "brb im doin my edit rn",
 ];
 
 function isMediaUrl(text: string): boolean {
