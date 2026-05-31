@@ -18,6 +18,7 @@ import GlobalGuestConversionModal from "./components/loopgate/GlobalGuestConvers
 import GuestNicknameModal from "./components/loopgate/GuestNicknameModal";
 import PendingGiftModal from "./components/loopgate/PendingGiftModal";
 import { isNativeApp } from "./lib/native";
+import { motion } from "framer-motion";
 
 // Lazy-loaded pages — code-split per route
 const LoginPage = lazy(() => import("./pages/LoginPage"));
