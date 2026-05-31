@@ -132,7 +132,7 @@ export default function CreateCompetitionPage() {
 
         {/* Stats strip */}
         <SectionBox accent="gold">
-          <div className="flex items-stretch divide-x" style={{ divideColor: 'rgba(255,255,255,0.06)' }}>
+          <div className="flex items-stretch divide-x divide-white/[0.06]">
             {[
               { icon: Users,  top: '10', bot: 'LOBBY CAP' },
               { icon: Timer,  top: `${durationMin === 60 ? '1 HR' : `${durationMin} MIN`}`, bot: 'TIME LIMIT' },
