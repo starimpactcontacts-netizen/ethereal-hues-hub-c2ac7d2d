@@ -883,12 +883,28 @@ export default function ArenaPage() {
               {profile && (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
                   <div
-                    className="relative overflow-hidden rounded-2xl border border-white/[0.07]"
-                    style={{ background: '#000' }}
+                    className="relative overflow-hidden border border-white/[0.07]"
+                    style={{ background: '#111' }}
                   >
+                    {/* Dot grid */}
+                    <div className="absolute inset-0 pointer-events-none" style={{
+                      backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px)',
+                      backgroundSize: '14px 14px',
+                    }} />
+                    {/* Top accent */}
+                    <div className="absolute inset-x-0 top-0 h-[2px] pointer-events-none" style={{
+                      background: 'linear-gradient(90deg, #f59e0b, rgba(245,158,11,0.3) 60%, transparent)',
+                    }} />
+                    {/* Corner notches */}
+                    <div className="absolute top-0 right-0 pointer-events-none z-10">
+                      <div className="w-3 h-px bg-white/15" /><div className="w-px h-3 bg-white/15 ml-auto" />
+                    </div>
+                    <div className="absolute bottom-0 left-0 pointer-events-none z-10">
+                      <div className="w-3 h-px bg-white/15" /><div className="w-px h-3 bg-white/15" />
+                    </div>
 
                     {/* Fighter identity */}
-                    <div className="relative flex items-center gap-3 px-4 pt-4 pb-3 border-b border-white/[0.05]">
+                    <div className="relative z-10 flex items-center gap-3 px-4 pt-4 pb-3 border-b border-white/[0.05]">
                       <Avatar className="w-10 h-10 ring-2 ring-black shrink-0">
                         <AvatarImage src={profile.avatar_url || ''} />
                         <AvatarFallback className="bg-white/5 text-white font-bold">{profile.username?.charAt(0).toUpperCase()}</AvatarFallback>
@@ -899,7 +915,8 @@ export default function ArenaPage() {
                       </div>
                       <Link
                         to="/profile"
-                        className="shrink-0 px-2.5 py-1 rounded-lg border border-white/[0.08] text-[9px] font-bold uppercase tracking-wider text-white/40 hover:text-white/70 hover:border-white/15 transition-colors"
+                        className="shrink-0 px-2.5 py-1 border border-white/[0.1] text-[9px] font-black uppercase tracking-wider text-white/40 hover:text-white/70 hover:border-white/20 transition-colors"
+                        style={{ fontFamily: 'Teko, sans-serif' }}
                       >
                         Profile →
                       </Link>
@@ -913,7 +930,7 @@ export default function ArenaPage() {
                       const winPct = total === 0 ? null : Math.round(wins / total * 100);
                       const streak = userStats?.streak ?? 0;
                       return (
-                        <div className="grid grid-cols-4 divide-x divide-white/[0.06]">
+                        <div className="relative z-10 grid grid-cols-4 divide-x divide-white/[0.06]">
                           <div className="flex flex-col items-center py-3.5 gap-1">
                             <span className="text-[26px] font-black leading-none tabular-nums text-emerald-400" style={{ fontFamily: 'Teko, sans-serif' }}>
                               {userStats ? wins : '—'}
@@ -989,8 +1006,8 @@ export default function ArenaPage() {
                                 </span>
                               </div>
                               {/* Duration — top right */}
-                              <div className="absolute top-2 right-2 z-10 px-2 py-1" style={{ background: '#111' }}>
-                                <span className="text-[8px] font-black uppercase tracking-wider text-white/40">
+                              <div className="absolute top-2 right-2 z-10 px-2 py-1" style={{ background: '#111', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                <span className="text-[9px] font-black uppercase tracking-wider text-white/50" style={{ fontFamily: 'Teko, sans-serif' }}>
                                   {lobby.duration_minutes}MIN
                                 </span>
                               </div>
@@ -1046,11 +1063,19 @@ export default function ArenaPage() {
                               {/* JOIN / REJOIN button */}
                               <button
                                 onClick={() => navigate(`/fight/${lobby.id}`)}
-                                className="w-full flex items-center justify-center gap-2 py-3 mb-2 text-[18px] font-black uppercase tracking-[0.1em] text-black active:scale-[0.98] transition-transform"
-                                style={{ background: isSelecting ? '#f59e0b' : '#f59e0b', fontFamily: 'Teko, sans-serif' }}
+                                className="relative w-full overflow-hidden flex items-center justify-center gap-2 py-3.5 mb-2 text-[20px] font-black uppercase tracking-[0.08em] text-black active:scale-[0.98] transition-transform"
+                                style={{
+                                  background: '#f59e0b',
+                                  fontFamily: 'Teko, sans-serif',
+                                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -3px 0 rgba(0,0,0,0.25), 0 0 20px rgba(245,158,11,0.3)',
+                                }}
                               >
-                                <Play className="w-4 h-4 fill-current" />
-                                {isSelecting ? 'Rejoin — Still Picking' : 'Join Lobby'}
+                                <div className="absolute inset-0 pointer-events-none" style={{
+                                  backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.1) 1px, transparent 1px)',
+                                  backgroundSize: '10px 10px',
+                                }} />
+                                <Play className="relative w-4 h-4 fill-current z-10" />
+                                <span className="relative z-10">{isSelecting ? 'Rejoin — Still Picking' : 'Join Lobby'}</span>
                               </button>
 
                               {/* Bottom row — copy link + time */}
@@ -1336,8 +1361,8 @@ export default function ArenaPage() {
                   )}
                 </div>
                 {recentHistory.length === 0 ? (
-                  <div className="flex flex-col items-center gap-3 py-10 rounded-2xl border border-dashed border-white/[0.07]">
-                    <div className="w-10 h-10 rounded-full bg-white/[0.03] border border-white/[0.07] flex items-center justify-center">
+                  <div className="flex flex-col items-center gap-3 py-10 border border-dashed border-white/[0.07]">
+                    <div className="w-10 h-10 bg-white/[0.03] border border-white/[0.07] flex items-center justify-center">
                       <Swords className="w-5 h-5 text-white/20" />
                     </div>
                     <p className="text-[11px] text-white/30 font-medium">No battles yet — go fight someone</p>
@@ -1348,12 +1373,13 @@ export default function ArenaPage() {
                       <Link
                         key={`${h.kind}-${h.id}`}
                         to={h.href}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-white/[0.05] hover:border-white/[0.09] transition-colors group"
+                        className="flex items-center gap-3 px-3 py-2.5 border border-white/[0.05] hover:border-white/[0.1] transition-colors group"
                         style={{ background: '#111111' }}
                       >
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${h.result === 'win' ? 'bg-emerald-500/15' : 'bg-red-500/10'}`}>
+                        <div className={`w-8 h-8 flex items-center justify-center shrink-0 ${h.result === 'win' ? 'bg-emerald-500/10' : 'bg-red-500/10'}`}
+                          style={{ border: `1px solid ${h.result === 'win' ? 'rgba(52,211,153,0.25)' : 'rgba(248,113,113,0.2)'}` }}>
                           <span
-                            className={`text-[15px] font-black leading-none ${h.result === 'win' ? 'text-emerald-400' : 'text-red-400'}`}
+                            className={`text-[16px] font-black leading-none ${h.result === 'win' ? 'text-emerald-400' : 'text-red-400'}`}
                             style={{ fontFamily: 'Teko, sans-serif' }}
                           >
                             {h.result === 'win' ? 'W' : 'L'}
