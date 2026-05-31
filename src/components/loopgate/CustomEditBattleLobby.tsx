@@ -178,8 +178,8 @@ export default function CustomEditBattleLobby({
       <main className="px-4 pt-5 pb-[calc(env(safe-area-inset-bottom,0px)+32px)]">
 
         {/* Title */}
-        <div className="text-center mb-5">
-          <p className="text-[9px] font-black uppercase tracking-[0.35em] text-white/25 mb-1">
+        <div className="text-center mb-3">
+          <p className="text-[9px] font-black uppercase tracking-[0.35em] text-white/25 mb-0">
             {isPrivate ? "Private" : "Open"} • {duration} Duration
           </p>
           {/* Custom EDIT BATTLE title image */}
@@ -187,8 +187,8 @@ export default function CustomEditBattleLobby({
             src="/edit-battle-title.png"
             alt="Edit Battle"
             draggable={false}
-            className="select-none mx-auto"
-            style={{ maxWidth: '340px', width: '100%', height: 'auto' }}
+            className="select-none mx-auto block -my-8"
+            style={{ maxWidth: '300px', width: '85%', height: 'auto' }}
           />
         </div>
 
