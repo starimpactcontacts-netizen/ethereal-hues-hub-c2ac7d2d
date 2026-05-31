@@ -558,6 +558,7 @@ export default function ArenaPage() {
   const [recentHistory, setRecentHistory] = useState<HistoryItem[]>([]);
 
   const qfActiveFight = useMemo(() => myQuickFights.find(f => f.status === 'active' || f.status === 'judging'), [myQuickFights]);
+  const openLobbyCount = useMemo(() => myQuickFights.filter(f => f.status === 'waiting' || f.status === 'selecting').length, [myQuickFights]);
   const isQfSearching = qfSearching || qfInQueue;
 
   // Queue timer
@@ -868,7 +869,11 @@ export default function ArenaPage() {
             >
               <UserRound className="w-3.5 h-3.5" strokeWidth={2.5} />
               <span>My Arena</span>
-              {(activeSolo || myBattles.length > 0 || myActiveQuickFights.length > 0 || myJudgingBattles.length > 0 || myCashBattles.length > 0 || myLiveCompetitions.length > 0) && (
+              {openLobbyCount > 0 ? (
+                <span className={`min-w-[16px] h-4 px-1 text-[9px] font-black flex items-center justify-center rounded-sm ${arenaView === 'my' ? 'bg-black/40 text-black' : 'bg-gold text-black'}`}>
+                  {openLobbyCount}
+                </span>
+              ) : (activeSolo || myBattles.length > 0 || myActiveQuickFights.length > 0 || myJudgingBattles.length > 0 || myCashBattles.length > 0 || myLiveCompetitions.length > 0) && (
                 <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${arenaView === 'my' ? 'bg-black/70' : 'bg-red-500'}`} />
               )}
             </button>
