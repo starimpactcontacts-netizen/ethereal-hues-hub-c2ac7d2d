@@ -149,9 +149,29 @@ const queryClient = new QueryClient({
   },
 });
 
-// Lazy fallback — shows nothing (HTML splash or AuthenticatedLayout's Suspense handles it)
+// Full-screen branded fallback shown during lazy route loads — no black flash
 function LazyFallback() {
-  return <LoadingScreen minimal />;
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: '#0A0A0A',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 9998,
+      }}
+    >
+      <motion.img
+        src="/loopgate-logo.png"
+        alt="Loopgate"
+        style={{ width: 64, height: 64, objectFit: 'contain' }}
+        animate={{ opacity: [0.5, 1, 0.5], scale: [1, 1.06, 1] }}
+        transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+      />
+    </div>
+  );
 }
 
 // Root redirect component
