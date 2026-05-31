@@ -9,43 +9,23 @@ import { useQuickFightMessages, type QuickFightMessage } from '@/hooks/useQuickF
 import { toast } from 'sonner';
 import GifPicker from './GifPicker';
 
-const AUTO_TEXTS = {
-  trash: [
-    "Yo actually edit battle rn 🔥",
-    "bro im better than you 😭✌️",
-    "f*ck it let's die right here 💀",
-    "I'll win fr fr",
-    "Not even warmed up rn",
-    "You cooked bro 💀",
-    "This gonna be posted 📱",
-    "No way you beatin me rn",
-    "Winner posts first 🎬",
-    "Bet. Run it.",
-    "Loser posts the L 😭",
-    "Say less 🤝",
-    "Send your hardest",
-    "Gg already fr 😭",
-    "I eat editors for breakfast",
-  ],
-  theme: [
-    "Dark/moody only 🖤",
-    "Most viral song wins",
-    "Anime arc only 🍥",
-    "Slowmo only 🎬",
-    "Hardest transition wins",
-    "Hood edit 🎤",
-    "Random audio go",
-    "Whatever's in your camera roll",
-    "Most creative wins — no cap",
-    "Horror edit 👻",
-  ],
-  judge: [
-    "Viewers decide 👀",
-    "Post it — TikTok judges",
-    "3 mutuals decide",
-    "Let the comments vote",
-  ],
-};
+const TRASH_TALK = [
+  "Yo actually edit battle rn 🔥",
+  "bro im better than you 😭✌️",
+  "f*ck it let's die right here 💀",
+  "I'll win fr fr",
+  "Not even warmed up rn",
+  "You cooked bro 💀",
+  "This gonna be posted 📱",
+  "No way you beatin me rn",
+  "Winner posts first 🎬",
+  "Bet. Run it.",
+  "Loser posts the L 😭",
+  "Say less 🤝",
+  "Send your hardest",
+  "Gg already fr 😭",
+  "I eat editors for breakfast",
+];
 
 function isMediaUrl(text: string): boolean {
   return (
@@ -86,7 +66,7 @@ export default function QuickFightChat({
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [autoTextTab, setAutoTextTab] = useState<'trash' | 'theme' | 'judge'>('trash');
+  const [showAllChips, setShowAllChips] = useState(false);
   const [showGifPicker, setShowGifPicker] = useState(false);
   const [chatTab, setChatTab] = useState<'battle' | 'live'>('battle');
   const [replyTo, setReplyTo] = useState<{ id: string; username: string; text: string } | null>(null);
@@ -351,24 +331,11 @@ export default function QuickFightChat({
         </div>
       )}
 
-      {/* Auto-text chips — participants only */}
+      {/* Quick-send chips — participants only, collapsible */}
       {user && isParticipant && (
         <div className="border-t border-white/10">
-          <div className="flex border-b border-white/5">
-            {(['trash', 'theme', 'judge'] as const).map(t => (
-              <button
-                key={t}
-                onClick={() => setAutoTextTab(t)}
-                className={`flex-1 py-1.5 text-[9px] font-bold uppercase tracking-wider transition-colors ${
-                  autoTextTab === t ? 'text-white border-b-2 border-amber-400' : 'text-zinc-500 hover:text-zinc-300'
-                }`}
-              >
-                {t === 'trash' ? '🗣️ Talk' : t === 'theme' ? '🎨 Theme' : '⚖️ Judge'}
-              </button>
-            ))}
-          </div>
-          <div className="px-3 py-2 flex flex-wrap gap-1.5">
-            {AUTO_TEXTS[autoTextTab].map((text) => (
+          <div className="px-3 pt-2 pb-1.5 flex flex-wrap gap-1.5">
+            {(showAllChips ? TRASH_TALK : TRASH_TALK.slice(0, 6)).map((text) => (
               <button
                 key={text}
                 onClick={() => sendMessage(text, true)}
@@ -378,6 +345,12 @@ export default function QuickFightChat({
                 {text}
               </button>
             ))}
+            <button
+              onClick={() => setShowAllChips(v => !v)}
+              className="text-[10px] px-2.5 py-1 border border-white/10 text-zinc-500 hover:text-zinc-300 transition-colors rounded-full"
+            >
+              {showAllChips ? 'less' : `+${TRASH_TALK.length - 6} more`}
+            </button>
           </div>
         </div>
       )}
