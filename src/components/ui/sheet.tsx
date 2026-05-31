@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
-import { LoopedX } from "@/components/loopgate/LoopedX";
+import { X } from "lucide-react";
 
 const Sheet = SheetPrimitive.Root;
 
@@ -57,7 +57,7 @@ const SheetContent = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Con
       <SheetOverlay />
       <SheetPrimitive.Content ref={ref} className={cn(sheetVariants({ side }), className)} {...props}>
         <SheetPrimitive.Close className="absolute right-4 top-4 z-10 w-8 h-8 rounded-sm ring-offset-background transition-all hover:opacity-70 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none flex items-center justify-center">
-          <LoopedX size={18} className="text-foreground" />
+          <X size={18} className="text-foreground" />
           <span className="sr-only">Close</span>
         </SheetPrimitive.Close>
         {children}
