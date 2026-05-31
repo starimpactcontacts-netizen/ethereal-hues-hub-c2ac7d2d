@@ -118,7 +118,7 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
     const load = async () => {
       setLoading(true);
 
-      const [fightsRes, compsRes, hiddenRes] = await Promise.all([
+      const [fightsRes, compsRes, profileRes] = await Promise.all([
         supabase
           .from("quick_fights")
           .select("id, player_1_id, player_2_id, player_1_submission_url, player_2_submission_url, player_1_thumbnail_url, player_2_thumbnail_url, winner_id, status, created_at")
@@ -133,12 +133,13 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
           .order("submitted_at", { ascending: false })
           .limit(50),
         supabase
-          .from("hidden_edits")
-          .select("source_id")
-          .eq("user_id", userId),
+          .from("profiles")
+          .select("data")
+          .eq("id", userId)
+          .single(),
       ]);
 
-      const hidden = new Set((hiddenRes.data || []).map((h) => h.source_id));
+      const hidden = new Set<string>((profileRes.data?.data as any)?.hidden_edits || []);
       const entries: EditEntry[] = [];
 
       for (const f of fightsRes.data || []) {
@@ -201,23 +202,32 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
     };
   }, [menuFor]);
 
+  const updateHiddenList = async (newList: string[]) => {
+    const { data: profileRow } = await supabase.from("profiles").select("data").eq("id", userId).single();
+    return supabase.from("profiles").update({
+      data: { ...(profileRow?.data as any || {}), hidden_edits: newList },
+    }).eq("id", userId);
+  };
+
   const hideEdit = async (edit: EditEntry) => {
     setMenuFor(null);
     setEdits((prev) => prev.filter((e) => e.id !== edit.id));
-    const { error } = await supabase.from("hidden_edits").insert({
-      user_id: userId, source: edit.type, source_id: edit.id,
-    });
+    const { data: profileRow } = await supabase.from("profiles").select("data").eq("id", userId).single();
+    const current: string[] = (profileRow?.data as any)?.hidden_edits || [];
+    const { error } = await updateHiddenList([...new Set([...current, edit.id])]);
     if (error) {
       setEdits((prev) =>
         [...prev, edit].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       );
       toast.error("Couldn't hide edit");
     } else {
-      toast.success("Hidden from your profile", {
+      toast.success("Removed from profile", {
         action: {
           label: "Undo",
           onClick: async () => {
-            await supabase.from("hidden_edits").delete().eq("user_id", userId).eq("source_id", edit.id);
+            const { data: profileRow2 } = await supabase.from("profiles").select("data").eq("id", userId).single();
+            const current2: string[] = (profileRow2?.data as any)?.hidden_edits || [];
+            await updateHiddenList(current2.filter((id) => id !== edit.id));
             setEdits((prev) =>
               [...prev, edit].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
             );
