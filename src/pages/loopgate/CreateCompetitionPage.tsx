@@ -1,12 +1,44 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Trophy, ArrowLeft, ImagePlus, Loader2, X, Users, Clock, Hash, Vote, Lock, Globe, Copy, Check } from "lucide-react";
+import { Trophy, ArrowLeft, ImagePlus, Loader2, X, Users, Clock, Hash, Vote, Lock, Globe, Copy, Check, Timer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 const MAX_PLAYERS = 10;
 const DURATION_OPTIONS = [15, 30, 45, 60];
+
+function DotGrid({ opacity = 0.05 }: { opacity?: number }) {
+  return (
+    <div className="absolute inset-0 pointer-events-none" style={{
+      backgroundImage: `radial-gradient(circle, rgba(255,255,255,${opacity}) 1px, transparent 1px)`,
+      backgroundSize: '14px 14px',
+    }} />
+  );
+}
+
+function SectionBox({ children, accent = 'gold' }: { children: React.ReactNode; accent?: 'gold' | 'none' }) {
+  return (
+    <div className="relative" style={{ background: '#111', border: '1px solid rgba(255,255,255,0.07)' }}>
+      <DotGrid opacity={0.04} />
+      {accent === 'gold' && (
+        <div className="absolute inset-x-0 top-0 h-[2px] pointer-events-none" style={{
+          background: 'linear-gradient(90deg, #f59e0b, rgba(245,158,11,0.3) 60%, transparent)',
+        }} />
+      )}
+      {/* corner notches */}
+      <div className="absolute top-0 right-0 pointer-events-none">
+        <div className="w-3 h-px bg-white/15" />
+        <div className="w-px h-3 bg-white/15 ml-auto" />
+      </div>
+      <div className="absolute bottom-0 left-0 pointer-events-none">
+        <div className="w-3 h-px bg-white/15" />
+        <div className="w-px h-3 bg-white/15" />
+      </div>
+      <div className="relative z-10">{children}</div>
+    </div>
+  );
+}
 
 export default function CreateCompetitionPage() {
   const { user, profile } = useAuth();
@@ -23,7 +55,6 @@ export default function CreateCompetitionPage() {
   const [codeCopied, setCodeCopied] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
-  // Pre-fill name with "{username}'s Room" once profile loads
   useEffect(() => {
     if (profile?.username && !name) {
       setName(`${profile.username}'s Room`);
@@ -60,7 +91,6 @@ export default function CreateCompetitionPage() {
 
       if (error) throw error;
 
-      // Auto-join creator
       await supabase.from("competition_participants").insert({
         competition_id: data.id,
         user_id: user.id,
@@ -68,7 +98,6 @@ export default function CreateCompetitionPage() {
         avatar_url: profile.avatar_url,
       } as any);
 
-      // Bump current_players to 1
       await supabase.from("competitions").update({ current_players: 1 } as any).eq("id", data.id);
 
       toast.success(isPrivate ? `🔒 Private lobby opened — code ${joinCode}` : "🏆 Lobby opened — waiting for editors!");
@@ -82,75 +111,93 @@ export default function CreateCompetitionPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-28">
+    <div className="min-h-screen pb-28" style={{ background: '#0A0A0A' }}>
       {/* Header */}
-      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border/30 px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate("/arena")} className="p-1.5 hover:bg-surface-1 rounded-full transition-colors">
-          <ArrowLeft className="w-4 h-4 text-muted-foreground" />
+      <div className="sticky top-0 z-30 px-4 py-3 flex items-center gap-3"
+        style={{ background: 'rgba(10,10,10,0.95)', borderBottom: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(12px)' }}>
+        <button
+          onClick={() => navigate("/arena")}
+          className="w-8 h-8 flex items-center justify-center active:scale-90 transition-transform"
+          style={{ border: '1px solid rgba(255,255,255,0.08)', background: '#111' }}
+        >
+          <ArrowLeft className="w-4 h-4 text-white/60" />
         </button>
-        <Trophy className="w-4 h-4 text-gold" />
-        <h1 className="text-sm font-bold text-foreground">Create Competition</h1>
+        <Trophy className="w-4 h-4 text-amber-400" />
+        <span className="text-[18px] font-black uppercase text-white leading-none" style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.08em' }}>
+          Create Competition
+        </span>
       </div>
 
-      <div className="px-4 pt-5 space-y-5">
-        {/* Format summary card */}
-        <div className="bg-gold/5 border border-gold/20 rounded-xl p-3 flex items-center justify-around">
-          <div className="flex flex-col items-center gap-1">
-            <Users className="w-4 h-4 text-gold" />
-            <span className="text-[11px] font-bold text-foreground">10 Editors</span>
-            <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Lobby Cap</span>
-          </div>
-          <div className="w-px h-10 bg-border/40" />
-          <div className="flex flex-col items-center gap-1">
-            <Clock className="w-4 h-4 text-gold" />
-            <span className="text-[11px] font-bold text-foreground">{durationMin} Mins</span>
-            <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Time Limit</span>
-          </div>
-          <div className="w-px h-10 bg-border/40" />
-          <div className="flex flex-col items-center gap-1">
-            <Vote className="w-4 h-4 text-gold" />
-            <span className="text-[11px] font-bold text-foreground">Voting</span>
-            <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Winner Pick</span>
-          </div>
-        </div>
+      <div className="px-4 pt-5 space-y-4">
 
-        {/* Privacy — top of form: most important decision */}
+        {/* Stats strip */}
+        <SectionBox accent="gold">
+          <div className="flex items-stretch divide-x" style={{ divideColor: 'rgba(255,255,255,0.06)' }}>
+            {[
+              { icon: Users,  top: '10', bot: 'LOBBY CAP' },
+              { icon: Timer,  top: `${durationMin === 60 ? '1 HR' : `${durationMin} MIN`}`, bot: 'TIME LIMIT' },
+              { icon: Vote,   top: 'VOTE', bot: 'WINNER PICK' },
+            ].map(({ icon: Icon, top, bot }, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-1.5 py-4" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                <Icon className="w-4 h-4 text-amber-400/70" strokeWidth={1.5} />
+                <span className="text-[16px] font-black text-white leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>{top}</span>
+                <span className="text-[8px] font-bold uppercase tracking-[0.14em] text-white/30">{bot}</span>
+              </div>
+            ))}
+          </div>
+        </SectionBox>
+
+        {/* Lobby Access */}
         <div>
-          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-            <Lock className="w-3 h-3" /> Lobby Access
-          </label>
+          <div className="flex items-center gap-1.5 mb-2">
+            <Lock className="w-3 h-3 text-white/35" strokeWidth={2.5} />
+            <span className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35" style={{ fontFamily: 'Teko, sans-serif' }}>Lobby Access</span>
+          </div>
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => setIsPrivate(false)}
-              className={`py-2.5 rounded-lg border text-[12px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
-                !isPrivate ? "bg-emerald-500/15 border-emerald-500/50 text-emerald-300" : "bg-surface-1 border-border/40 text-muted-foreground"
-              }`}
+              className="py-3 flex items-center justify-center gap-2 transition-all active:scale-[0.97]"
+              style={{
+                background: !isPrivate ? 'rgba(52,211,153,0.1)' : '#111',
+                border: `1px solid ${!isPrivate ? 'rgba(52,211,153,0.5)' : 'rgba(255,255,255,0.08)'}`,
+              }}
             >
-              <Globe className="w-3.5 h-3.5" /> Public
+              <Globe className="w-3.5 h-3.5" style={{ color: !isPrivate ? '#34d399' : 'rgba(255,255,255,0.3)' }} strokeWidth={2} />
+              <span className="text-[13px] font-black uppercase tracking-wider leading-none" style={{ fontFamily: 'Teko, sans-serif', color: !isPrivate ? '#34d399' : 'rgba(255,255,255,0.35)' }}>
+                Public
+              </span>
             </button>
             <button
               type="button"
               onClick={() => setIsPrivate(true)}
-              className={`py-2.5 rounded-lg border text-[12px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
-                isPrivate ? "bg-fuchsia-500/15 border-fuchsia-500/50 text-fuchsia-300" : "bg-surface-1 border-border/40 text-muted-foreground"
-              }`}
+              className="py-3 flex items-center justify-center gap-2 transition-all active:scale-[0.97]"
+              style={{
+                background: isPrivate ? 'rgba(168,85,247,0.1)' : '#111',
+                border: `1px solid ${isPrivate ? 'rgba(168,85,247,0.5)' : 'rgba(255,255,255,0.08)'}`,
+              }}
             >
-              <Lock className="w-3.5 h-3.5" /> Private
+              <Lock className="w-3.5 h-3.5" style={{ color: isPrivate ? '#c084fc' : 'rgba(255,255,255,0.3)' }} strokeWidth={2} />
+              <span className="text-[13px] font-black uppercase tracking-wider leading-none" style={{ fontFamily: 'Teko, sans-serif', color: isPrivate ? '#c084fc' : 'rgba(255,255,255,0.35)' }}>
+                Private
+              </span>
             </button>
           </div>
+
           {isPrivate && (
-            <div className="mt-2 rounded-lg border border-fuchsia-500/30 bg-fuchsia-500/5 p-3">
-              <div className="flex items-center justify-between gap-3">
+            <div className="mt-2 p-3 relative" style={{ background: 'rgba(168,85,247,0.07)', border: '1px solid rgba(168,85,247,0.25)' }}>
+              <DotGrid opacity={0.03} />
+              <div className="relative z-10 flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="text-[9px] font-bold text-fuchsia-300/80 uppercase tracking-wider mb-0.5">Join Code</div>
-                  <div className="text-2xl font-black text-foreground tabular-nums tracking-[0.3em]" style={{ fontFamily: "Teko, sans-serif" }}>{joinCode}</div>
+                  <div className="text-[8px] font-black text-purple-300/70 uppercase tracking-[0.16em] mb-1">Join Code</div>
+                  <div className="text-[32px] font-black text-white tabular-nums tracking-[0.3em] leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>{joinCode}</div>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button
                     type="button"
                     onClick={() => setJoinCode(Math.random().toString(36).slice(2, 6).toUpperCase())}
-                    className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground border border-border/40 rounded-md px-2 py-1.5"
+                    className="text-[9px] font-black uppercase tracking-wider text-white/40 px-2 py-1.5 active:scale-95 transition-transform"
+                    style={{ border: '1px solid rgba(255,255,255,0.1)', background: '#111' }}
                   >
                     New
                   </button>
@@ -159,80 +206,97 @@ export default function CreateCompetitionPage() {
                     onClick={async () => {
                       try { await navigator.clipboard.writeText(joinCode); setCodeCopied(true); setTimeout(() => setCodeCopied(false), 1500); } catch {}
                     }}
-                    className="text-[9px] font-bold uppercase tracking-wider text-fuchsia-300 border border-fuchsia-500/40 bg-fuchsia-500/10 rounded-md px-2 py-1.5 flex items-center gap-1"
+                    className="text-[9px] font-black uppercase tracking-wider text-purple-300 px-2 py-1.5 flex items-center gap-1 active:scale-95 transition-transform"
+                    style={{ border: '1px solid rgba(168,85,247,0.4)', background: 'rgba(168,85,247,0.12)' }}
                   >
                     {codeCopied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />} {codeCopied ? "Copied" : "Copy"}
                   </button>
                 </div>
               </div>
-              <p className="text-[10px] text-muted-foreground/70 mt-2">Lobby still shows in the carousel with a 🔒 — but only editors with the code can join & ready up.</p>
+              <p className="relative z-10 text-[9px] text-white/25 mt-2 leading-snug">Lobby is still visible — only editors with this code can join.</p>
             </div>
           )}
         </div>
 
-        {/* Name */}
+        {/* Competition Name */}
         <div>
-          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5 block">
-            Competition Name *
-          </label>
+          <div className="flex items-center gap-1.5 mb-2">
+            <span className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35" style={{ fontFamily: 'Teko, sans-serif' }}>Competition Name <span className="text-amber-400/60">*</span></span>
+          </div>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder={profile?.username ? `${profile.username}'s Room` : "Your Room"}
             maxLength={60}
-            className="w-full bg-surface-1 border border-border/40 rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-gold/40 transition-colors"
+            className="w-full px-3 py-3 text-sm text-white placeholder:text-white/20 focus:outline-none transition-colors"
+            style={{ background: '#111', border: '1px solid rgba(255,255,255,0.08)', fontFamily: 'Inter, sans-serif' }}
+            onFocus={(e) => e.currentTarget.style.borderColor = 'rgba(245,158,11,0.4)'}
+            onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'}
           />
         </div>
 
-        {/* Duration selector */}
+        {/* Time Limit */}
         <div>
-          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-            <Clock className="w-3 h-3" /> Time Limit
-          </label>
+          <div className="flex items-center gap-1.5 mb-2">
+            <Clock className="w-3 h-3 text-white/35" strokeWidth={2.5} />
+            <span className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35" style={{ fontFamily: 'Teko, sans-serif' }}>Time Limit</span>
+          </div>
           <div className="grid grid-cols-4 gap-2">
             {DURATION_OPTIONS.map((m) => (
               <button
                 key={m}
                 type="button"
                 onClick={() => setDurationMin(m)}
-                className={`py-2.5 rounded-lg border text-sm font-bold transition-all ${
-                  durationMin === m
-                    ? "bg-gold/15 border-gold/50 text-gold"
-                    : "bg-surface-1 border-border/40 text-muted-foreground hover:border-border"
-                }`}
+                className="py-3 flex items-center justify-center transition-all active:scale-95"
+                style={{
+                  background: durationMin === m ? 'rgba(245,158,11,0.1)' : '#111',
+                  border: `1px solid ${durationMin === m ? 'rgba(245,158,11,0.55)' : 'rgba(255,255,255,0.08)'}`,
+                }}
               >
-                {m === 60 ? "1 hr" : `${m} min`}
+                <span
+                  className="text-[13px] font-black uppercase leading-none"
+                  style={{ fontFamily: 'Teko, sans-serif', color: durationMin === m ? '#f59e0b' : 'rgba(255,255,255,0.35)' }}
+                >
+                  {m === 60 ? '1 HR' : `${m}M`}
+                </span>
               </button>
             ))}
           </div>
         </div>
 
-        {/* Theme (optional) */}
+        {/* Theme */}
         <div>
-          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-            <Hash className="w-3 h-3" /> Theme / Topic
-          </label>
+          <div className="flex items-center gap-1.5 mb-2">
+            <Hash className="w-3 h-3 text-white/35" strokeWidth={2.5} />
+            <span className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35" style={{ fontFamily: 'Teko, sans-serif' }}>Theme / Topic</span>
+            <span className="text-[9px] text-white/20 ml-1">— optional</span>
+          </div>
           <input
             value={theme}
             onChange={(e) => setTheme(e.target.value)}
             placeholder="e.g. Squid Game, Travis Scott, Anime..."
             maxLength={100}
-            className="w-full bg-surface-1 border border-border/40 rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-gold/40 transition-colors"
+            className="w-full px-3 py-3 text-sm text-white placeholder:text-white/20 focus:outline-none transition-colors"
+            style={{ background: '#111', border: '1px solid rgba(255,255,255,0.08)', fontFamily: 'Inter, sans-serif' }}
+            onFocus={(e) => e.currentTarget.style.borderColor = 'rgba(245,158,11,0.4)'}
+            onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'}
           />
-          <span className="text-[9px] text-muted-foreground/50 mt-1 block">Optional — leave blank for open theme</span>
         </div>
 
-        {/* Cover Image Upload */}
+        {/* Cover Image */}
         <div>
-          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-            <ImagePlus className="w-3 h-3" /> Cover Image <span className="text-muted-foreground/40 normal-case tracking-normal">— optional</span>
-          </label>
+          <div className="flex items-center gap-1.5 mb-2">
+            <ImagePlus className="w-3 h-3 text-white/35" strokeWidth={2.5} />
+            <span className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35" style={{ fontFamily: 'Teko, sans-serif' }}>Cover Image</span>
+            <span className="text-[9px] text-white/20 ml-1">— optional</span>
+          </div>
           {coverUrl ? (
-            <div className="relative rounded-lg overflow-hidden border border-border/40">
-              <img src={coverUrl} alt="Cover" className="w-full h-32 object-cover" />
+            <div className="relative overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+              <img src={coverUrl} alt="Cover" className="w-full h-36 object-cover" />
               <button
                 onClick={() => setCoverUrl("")}
-                className="absolute top-2 right-2 w-6 h-6 bg-black/70 rounded-full flex items-center justify-center hover:bg-black/90 transition-colors"
+                className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center active:scale-90 transition-transform"
+                style={{ background: 'rgba(0,0,0,0.75)', border: '1px solid rgba(255,255,255,0.15)' }}
               >
                 <X className="w-3.5 h-3.5 text-white" />
               </button>
@@ -241,15 +305,15 @@ export default function CreateCompetitionPage() {
             <button
               onClick={() => coverInputRef.current?.click()}
               disabled={uploadingCover}
-              className="w-full bg-surface-1 border border-border/40 border-dashed rounded-lg px-3 py-5 flex flex-col items-center gap-1.5 hover:border-gold/30 transition-colors disabled:opacity-50"
+              className="w-full py-7 flex flex-col items-center gap-2 transition-colors disabled:opacity-50 active:scale-[0.98]"
+              style={{ background: '#0d0d0d', border: '1px dashed rgba(245,158,11,0.2)' }}
             >
-              {uploadingCover ? (
-                <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
-              ) : (
-                <ImagePlus className="w-5 h-5 text-muted-foreground/60" />
-              )}
-              <span className="text-[11px] text-muted-foreground/60 font-medium">
-                {uploadingCover ? "Uploading..." : "Tap to upload — we'll auto-generate one if you skip"}
+              {uploadingCover
+                ? <Loader2 className="w-5 h-5 text-white/30 animate-spin" />
+                : <ImagePlus className="w-5 h-5 text-white/20" strokeWidth={1.5} />
+              }
+              <span className="text-[10px] font-bold uppercase tracking-wider text-white/25" style={{ fontFamily: 'Teko, sans-serif' }}>
+                {uploadingCover ? "Uploading..." : "Tap to upload · auto-generated if skipped"}
               </span>
             </button>
           )}
@@ -283,19 +347,39 @@ export default function CreateCompetitionPage() {
         </div>
 
         {/* Submit */}
-        <button
-          onClick={handleSubmit}
-          disabled={submitting || !name.trim()}
-          className="w-full bg-gold text-black font-bold uppercase tracking-wider text-sm py-3.5 rounded-xl flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-transform"
-        >
-          {submitting ? (
-            <><Loader2 className="w-4 h-4 animate-spin" /> Opening Lobby...</>
-          ) : (
-            <><Trophy className="w-4 h-4" /> Open Lobby</>
-          )}
-        </button>
-        <p className="text-[10px] text-muted-foreground/60 text-center">
-          Lobby waits for editors. Host can start when ready, or wait until 10 join.
+        <div className="relative overflow-hidden active:scale-[0.98] transition-transform">
+          <button
+            onClick={handleSubmit}
+            disabled={submitting || !name.trim()}
+            className="w-full py-4 flex items-center justify-center gap-2.5 disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{
+              background: '#f59e0b',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -3px 0 rgba(0,0,0,0.3), 0 0 24px rgba(245,158,11,0.35)',
+            }}
+          >
+            <div className="absolute inset-0 pointer-events-none" style={{
+              backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.12) 1px, transparent 1px)',
+              backgroundSize: '12px 12px',
+            }} />
+            {submitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin text-black relative z-10" />
+                <span className="relative z-10 text-[20px] font-black uppercase text-black leading-none" style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.06em' }}>
+                  Opening...
+                </span>
+              </>
+            ) : (
+              <>
+                <Trophy className="w-4 h-4 text-black relative z-10" strokeWidth={2.5} />
+                <span className="relative z-10 text-[22px] font-black uppercase text-black leading-none" style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.06em' }}>
+                  Open Lobby
+                </span>
+              </>
+            )}
+          </button>
+        </div>
+        <p className="text-[9px] text-white/20 text-center uppercase tracking-[0.1em]" style={{ fontFamily: 'Teko, sans-serif' }}>
+          Lobby waits for editors · host starts when ready
         </p>
       </div>
     </div>

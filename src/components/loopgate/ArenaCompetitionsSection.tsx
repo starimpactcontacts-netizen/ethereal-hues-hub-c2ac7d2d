@@ -19,7 +19,23 @@ function formatCount(n: number): string {
   return `${n}`;
 }
 
+function getDurationLabel(comp: Competition): string | null {
+  const dm = (comp as any).duration_minutes as number | undefined;
+  let mins: number | null = null;
+  if (dm && dm > 0) {
+    mins = dm;
+  } else if (comp.started_at && comp.deadline) {
+    mins = Math.round((new Date(comp.deadline).getTime() - new Date(comp.started_at).getTime()) / 60000);
+  }
+  if (!mins || mins <= 0) return null;
+  if (mins < 60) return `${mins} MIN`;
+  if (mins === 60) return '1 HR';
+  const hrs = mins / 60;
+  return `${Number.isInteger(hrs) ? hrs : hrs.toFixed(1)} HR`;
+}
+
 function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: string) => void }) {
+  const durationLabel = getDurationLabel(comp);
   const spotsLeft = comp.max_players - comp.current_players;
   const isLive = comp.status === "live";
   const isFull = spotsLeft <= 0;
@@ -100,13 +116,21 @@ function CompetitionCard({ comp, onJoin }: { comp: Competition; onJoin: (id: str
             <Share2 className="w-3 h-3 text-white/60" />
           </button>
 
-          {/* Private badge */}
-          {comp.is_private && (
-            <div className="absolute top-2.5 left-2.5 z-20 flex items-center gap-1 px-1.5 py-0.5" style={{ background: 'rgba(168,85,247,0.2)', border: '1px solid rgba(168,85,247,0.35)' }}>
-              <Lock className="w-2 h-2 text-purple-300" strokeWidth={2.5} />
-              <span className="text-[7px] font-black uppercase tracking-wider text-purple-200" style={{ fontFamily: 'Teko, sans-serif' }}>Private</span>
-            </div>
-          )}
+          {/* Top-left badges: duration + private */}
+          <div className="absolute top-2.5 left-2.5 z-20 flex flex-col gap-1">
+            {durationLabel && (
+              <div className="flex items-center gap-1 px-1.5 py-0.5" style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.13)' }}>
+                <Timer className="w-2 h-2 text-amber-400/70" strokeWidth={2.5} />
+                <span className="text-[8px] font-black uppercase tracking-wider text-white/75 leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>{durationLabel}</span>
+              </div>
+            )}
+            {comp.is_private && (
+              <div className="flex items-center gap-1 px-1.5 py-0.5" style={{ background: 'rgba(168,85,247,0.2)', border: '1px solid rgba(168,85,247,0.35)' }}>
+                <Lock className="w-2 h-2 text-purple-300" strokeWidth={2.5} />
+                <span className="text-[7px] font-black uppercase tracking-wider text-purple-200 leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>Private</span>
+              </div>
+            )}
+          </div>
 
           {/* Bottom overlay: theme + title */}
           <div className="absolute bottom-0 left-0 right-0 p-2.5 z-10">
