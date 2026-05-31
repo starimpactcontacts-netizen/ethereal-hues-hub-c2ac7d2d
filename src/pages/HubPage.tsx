@@ -695,18 +695,17 @@ export default function HubPage() {
                     <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.18) 1px, transparent 1px)', backgroundSize: '14px 14px' }} />
                     <div className="relative flex items-center justify-center gap-3 py-6">
                       <Play className="relative w-7 h-7 fill-white text-white drop-shadow-[2px_2px_0_rgba(0,0,0,0.5)]" strokeWidth={3} />
-                      <span
-                        className="relative text-white uppercase leading-none"
-                        style={{
-                          fontFamily: 'Teko, sans-serif',
-                          fontSize: '52px',
-                          fontWeight: 700,
-                          letterSpacing: '0.02em',
-                          textShadow: '2px 2px 0 rgba(0,0,0,0.5), 0 0 20px rgba(255,255,255,0.25)',
-                        }}
-                      >
-                        PLAY
-                      </span>
+                      <div className="relative inline-block" style={{ lineHeight: 1 }}>
+                        <span
+                          aria-hidden="true"
+                          className="absolute inset-0 uppercase select-none"
+                          style={{ fontFamily: "'Lilita One', 'Anton', sans-serif", fontSize: '52px', WebkitTextStroke: '10px rgba(0,0,0,0.55)', color: 'transparent', letterSpacing: '0.03em', lineHeight: 1 }}
+                        >PLAY</span>
+                        <span
+                          className="relative text-white uppercase leading-none"
+                          style={{ fontFamily: "'Lilita One', 'Anton', sans-serif", fontSize: '52px', letterSpacing: '0.03em', lineHeight: 1 }}
+                        >PLAY</span>
+                      </div>
                     </div>
                   </button>
                 </motion.div>
