@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, ChevronDown } from "lucide-react";
+import { Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -46,11 +46,10 @@ export default function ActivityStatusSelector({
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={updating}
-        className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-2 border border-border hover:border-gold transition-colors text-sm"
+        title={currentConfig.label}
+        className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/5 transition-colors"
       >
-        <span className={`w-2 h-2 rounded-full ${currentConfig.color} ${currentStatus === 'online' || currentStatus === 'dev' ? 'animate-pulse' : ''}`} />
-        <span className="uppercase text-[10px] font-semibold tracking-wider">{currentConfig.label}</span>
-        <ChevronDown size={12} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <span className={`w-2.5 h-2.5 rounded-full ${currentConfig.color} ${currentStatus === 'online' || currentStatus === 'dev' ? 'animate-pulse' : ''}`} />
       </button>
 
       {isOpen && (
