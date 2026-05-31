@@ -21,10 +21,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SiTiktok, SiInstagram, SiYoutube, SiX } from "@icons-pack/react-simple-icons";
 import ConnectButton from "@/components/loopgate/ConnectButton";
 import ReportUserButton from "@/components/loopgate/ReportUserButton";
-import { Users } from "lucide-react";
+import { Users, MessageSquare } from "lucide-react";
 import StatsRadarChart from "@/components/loopgate/StatsRadarChart";
 // IndexEarnBadge removed — Index is NOT money
 import { useEquippedBadges } from "@/hooks/useEquippedBadges";
+import ProfileCommentsSection from "@/components/loopgate/ProfileCommentsSection";
 
 interface PublicProfile {
   id: string;
@@ -89,7 +90,7 @@ export default function PublicProfilePage() {
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [userCrew, setUserCrew] = useState<{ id: string; name: string; emblem: string; avatar_url: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'videos' | 'edits' | 'about'>('edits');
+  const [activeTab, setActiveTab] = useState<'videos' | 'edits' | 'about' | 'comments'>('edits');
    const [submissionCount, setSubmissionCount] = useState(0);
    const [videoCount, setVideoCount] = useState(0);
    const [isJudge, setIsJudge] = useState(false);
@@ -301,7 +302,7 @@ export default function PublicProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0d0d0d' }}>
         <Loader2 className="w-6 h-6 animate-spin text-gold" />
       </div>
     );
@@ -309,7 +310,7 @@ export default function PublicProfilePage() {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: '#0d0d0d' }}>
         <p className="text-muted-foreground">Editor not found</p>
         <button
           onClick={() => navigate("/index")}
@@ -357,7 +358,7 @@ export default function PublicProfilePage() {
   ].filter(Boolean).join(' ');
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen pb-24" style={{ background: '#0d0d0d' }}>
       <SEO
         title={seoTitle}
         description={seoDesc}
@@ -502,7 +503,7 @@ export default function PublicProfilePage() {
       </div>
 
       {/* ─── TABS ─── */}
-      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border/20">
+      <div className="sticky top-0 z-30 backdrop-blur-sm border-b border-border/20" style={{ background: 'rgba(13,13,13,0.92)' }}>
         <div className="flex">
           {isJudge && (
             <button onClick={() => setActiveTab('videos')}
@@ -518,6 +519,12 @@ export default function PublicProfilePage() {
             }`}>
             Edits
           </button>
+          <button onClick={() => setActiveTab('comments')}
+            className={`flex-1 py-2.5 text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1 ${
+              activeTab === 'comments' ? 'text-gold border-b-2 border-gold' : 'text-muted-foreground/50 hover:text-foreground'
+            }`}>
+            <MessageSquare size={10} /> Comments
+          </button>
           <button onClick={() => setActiveTab('about')}
             className={`flex-1 py-2.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${
               activeTab === 'about' ? 'text-gold border-b-2 border-gold' : 'text-muted-foreground/50 hover:text-foreground'
@@ -532,6 +539,8 @@ export default function PublicProfilePage() {
         <PublicJudgeVideos userId={resolvedUserId || ''} />
       ) : activeTab === 'edits' ? (
         <BattleEditsGrid userId={resolvedUserId || ''} isOwner={!!currentUser && currentUser.id === resolvedUserId} />
+      ) : activeTab === 'comments' ? (
+        <ProfileCommentsSection profileUserId={resolvedUserId || ''} profileUsername={profile.username} />
       ) : (
         <div className="px-4 py-5 space-y-5">
           {/* Pentagon Radar Stats */}

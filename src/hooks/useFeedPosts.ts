@@ -6,7 +6,7 @@ export interface FeedPostItem {
   id: string;
   user_id: string;
   content: string;
-  post_type: 'text' | 'flex' | 'edit_share' | 'milestone' | 'find_battle' | 'rate_edit' | 'help' | 'competition' | 'news';
+  post_type: 'text' | 'flex' | 'edit_share' | 'milestone' | 'find_battle' | 'rate_edit' | 'help' | 'competition' | 'news' | 'profile_comment';
   media_url: string | null;
   media_platform: string | null;
   uploaded_media_url: string | null;
@@ -38,6 +38,7 @@ export function useFeedPosts(limit = 30) {
     const { data, error } = await supabase
       .from('feed_posts')
       .select('*')
+      .neq('post_type', 'profile_comment')
       .order('created_at', { ascending: false })
       .limit(limit);
 
