@@ -6,21 +6,44 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { motion, AnimatePresence } from "framer-motion";
 import { FeedPostItem } from "@/hooks/useFeedPosts";
 
+const LOOP_LABELS: Record<string, string> = {
+  find_battle: 'Find A Battle',
+  rate_edit: 'Rate My Edit',
+  help: 'Editing Help',
+  competition: 'Competition',
+  news: 'News',
+};
+
+const LOOP_PLACEHOLDERS: Record<string, string> = {
+  find_battle: 'Call out an editor or challenge the community to a 1v1...',
+  rate_edit: 'Share your edit link for honest feedback...',
+  help: 'Ask a question about editing, technique, or software...',
+  competition: 'Share a competition clip or announcement...',
+  news: 'Share news from the editing world...',
+};
+
+const SOFTWARE_TAGS = ['CapCut', 'Premiere', 'DaVinci', 'After Effects', 'Final Cut', 'Resolve'];
+
 interface FeedComposeSheetProps {
   open: boolean;
   onClose: () => void;
   userProfile?: { username: string; avatar_url: string | null; league?: string; level?: number } | null;
   onPost: (content: string, postType: FeedPostItem['post_type'], mediaUrl?: string, mediaPlatform?: string, uploadedMediaUrl?: string, uploadedMediaType?: string) => Promise<void>;
+  loopPill?: string;
 }
 
 const MAX_CHARS = 280;
 
-export default function FeedComposeSheet({ open, onClose, userProfile, onPost }: FeedComposeSheetProps) {
+export default function FeedComposeSheet({ open, onClose, userProfile, onPost, loopPill }: FeedComposeSheetProps) {
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [showGifPicker, setShowGifPicker] = useState(false);
   const [selectedGif, setSelectedGif] = useState<string | null>(null);
   const [uploadedMedia, setUploadedMedia] = useState<{ url: string; type: 'image' | 'video' } | null>(null);
+  const [selectedSoftware, setSelectedSoftware] = useState<string[]>([]);
+
+  const isLoopPost = loopPill && loopPill !== 'feed';
+  const postType = isLoopPost ? (loopPill as FeedPostItem['post_type']) : 'text';
 
   const charsLeft = MAX_CHARS - content.length;
   const isOverLimit = charsLeft < 0;
@@ -29,7 +52,10 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
   const handleSubmit = async () => {
     if (!canSubmit) return;
     setSubmitting(true);
-    const finalContent = selectedGif ? (content.trim() ? `${content.trim()} ${selectedGif}` : selectedGif) : content.trim();
+    let finalContent = selectedGif ? (content.trim() ? `${content.trim()} ${selectedGif}` : selectedGif) : content.trim();
+    if (loopPill === 'help' && selectedSoftware.length > 0) {
+      finalContent = `${finalContent}\n[${selectedSoftware.join(', ')}]`;
+    }
 
     const savedContent = finalContent;
     const savedUploadedMedia = uploadedMedia ? { ...uploadedMedia } : null;
@@ -37,12 +63,13 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
     setContent("");
     setSelectedGif(null);
     setUploadedMedia(null);
+    setSelectedSoftware([]);
     setSubmitting(false);
     onClose();
 
     await onPost(
       savedContent,
-      'text',
+      postType,
       undefined,
       undefined,
       savedUploadedMedia?.url,
@@ -75,8 +102,40 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
           <X className="w-5 h-5 text-black" strokeWidth={2.5} />
           <span className="text-black text-sm font-bold">Close</span>
         </button>
-        <span className="text-muted-foreground/50 text-xs font-medium">New Post</span>
+        <span className="text-muted-foreground/50 text-xs font-medium">
+          {isLoopPost ? LOOP_LABELS[loopPill!] : 'New Post'}
+        </span>
       </div>
+
+      {/* Loop context banner */}
+      {isLoopPost && (
+        <div className="flex items-center gap-2 px-4 py-2 border-b border-border/15 bg-foreground/[0.03] shrink-0">
+          <span className="text-[9px] font-black tracking-[0.2em] uppercase text-muted-foreground">Posting in</span>
+          <span className="text-[9px] font-black tracking-[0.2em] uppercase text-foreground bg-foreground/10 border border-border/30 px-2 py-0.5">
+            {LOOP_LABELS[loopPill!]}
+          </span>
+        </div>
+      )}
+
+      {/* Software tags — help posts only */}
+      {loopPill === 'help' && (
+        <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border/15 shrink-0 overflow-x-auto scrollbar-hide">
+          <span className="text-[9px] font-black tracking-[0.2em] uppercase text-muted-foreground shrink-0">Software</span>
+          {SOFTWARE_TAGS.map(sw => (
+            <button
+              key={sw}
+              onClick={() => setSelectedSoftware(prev => prev.includes(sw) ? prev.filter(s => s !== sw) : [...prev, sw])}
+              className={`shrink-0 px-2.5 py-1 text-[9px] font-black tracking-wider uppercase border transition-all ${
+                selectedSoftware.includes(sw)
+                  ? 'bg-foreground text-background border-foreground'
+                  : 'bg-transparent text-muted-foreground border-border/30 hover:text-foreground'
+              }`}
+            >
+              {sw}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Media buttons */}
       <div className="flex items-center gap-1.5 px-4 py-2 border-b border-border/15 shrink-0">
@@ -121,7 +180,7 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="What's on your mind?"
+              placeholder={isLoopPost ? (LOOP_PLACEHOLDERS[loopPill!] || "What's on your mind?") : "What's on your mind?"}
               autoFocus
               className="w-full bg-transparent text-foreground text-[17px] placeholder:text-muted-foreground/40 resize-none focus:outline-none leading-relaxed min-h-[160px]"
               maxLength={300}

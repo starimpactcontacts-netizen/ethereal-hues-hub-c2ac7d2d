@@ -18,7 +18,25 @@ import FeedSidebar from "@/components/loopgate/FeedSidebar";
 
 const BATCH_SIZE = 20;
 
-type FeedTab = 'foryou' | 'posts' | 'connections';
+type LoopPill = 'feed' | 'find_battle' | 'rate_edit' | 'help' | 'competition' | 'news';
+
+const LOOP_PILLS: { key: LoopPill; label: string }[] = [
+  { key: 'feed', label: 'Feed' },
+  { key: 'find_battle', label: 'Find A Battle' },
+  { key: 'rate_edit', label: 'Rate My Edit' },
+  { key: 'help', label: 'Editing Help' },
+  { key: 'competition', label: 'Competition' },
+  { key: 'news', label: 'News' },
+];
+
+const LOOP_EMPTY: Record<LoopPill, { title: string; subtitle: string }> = {
+  feed: { title: 'The Loop is quiet', subtitle: 'Drop a loop or submit an edit to get things moving' },
+  find_battle: { title: 'No battle requests yet', subtitle: 'Post here to call out editors for a 1v1' },
+  rate_edit: { title: 'No edits to rate', subtitle: 'Share your edit link to get community feedback' },
+  help: { title: 'No questions yet', subtitle: 'Ask the community for editing advice and tips' },
+  competition: { title: 'No competition posts', subtitle: 'Share your competition clips and highlights' },
+  news: { title: 'Nothing here yet', subtitle: 'Share updates and news from the editing world' },
+};
 
 export default function FeedPage() {
   const navigate = useNavigate();
@@ -32,11 +50,10 @@ export default function FeedPage() {
 
   const [playerItem, setPlayerItem] = useState<LoopFeedItem | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<FeedTab>('foryou');
+  const [loopPill, setLoopPill] = useState<LoopPill>('feed');
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [showCompose, setShowCompose] = useState(false);
-  const [connectionIds, setConnectionIds] = useState<string[]>([]);
   const [trendingEditors, setTrendingEditors] = useState<Array<{ id: string; username: string; avatar_url: string | null; is_verified: boolean }>>([]);
   const [trendingUnits, setTrendingUnits] = useState<Array<{ id: string; name: string; avatar_url: string | null; emblem: string }>>([]);
   const [userProfile, setUserProfile] = useState<{ username: string; avatar_url: string | null; league?: string; level?: number } | null>(null);
@@ -52,21 +69,6 @@ export default function FeedPage() {
     supabase.from('profiles').select('username, avatar_url, league, level').eq('id', user.id).single().then(({ data }) => {
       if (data) setUserProfile(data);
     });
-  }, [user]);
-
-  // Fetch connections
-  useEffect(() => {
-    if (!user) return;
-    const fetchConnections = async () => {
-      const { data } = await supabase
-        .from('connections')
-        .select('sender_id, receiver_id')
-        .eq('status', 'accepted')
-        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`);
-      const ids = (data || []).map(c => c.sender_id === user.id ? c.receiver_id : c.sender_id);
-      setConnectionIds(ids);
-    };
-    fetchConnections();
   }, [user]);
 
   // Fetch trending
@@ -184,9 +186,8 @@ export default function FeedPage() {
   }, [fetchFeed, hasMore, loadingMore]);
 
   const filteredItems = feedItems.filter(item => {
-    if (activeTab === 'connections' && !connectionIds.includes(item.user_id)) return false;
-    // Hide own activity from "For You" and "Loops" feeds — users shouldn't see themselves in discovery
-    if (activeTab !== 'connections' && user && item.user_id === user.id) return false;
+    // Hide own activity from discovery feed
+    if (user && item.user_id === user.id) return false;
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       const title = (item.custom_title || item.event_title || '').toLowerCase();
@@ -196,12 +197,20 @@ export default function FeedPage() {
     return true;
   });
 
-  // Interleave posts + activity for "For You"
-  const interleavedFeed = activeTab === 'foryou' ? (() => {
+  // Filtered + sorted posts for non-feed loop pills
+  const loopPosts = loopPill !== 'feed'
+    ? (() => {
+        const filtered = feedPosts.filter(p => p.post_type === loopPill);
+        if (loopPill === 'rate_edit') return [...filtered].sort((a, b) => (b.like_count || 0) - (a.like_count || 0));
+        return [...filtered].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      })()
+    : [];
+
+  // Interleave posts + activity for Feed loop
+  const interleavedFeed = loopPill === 'feed' ? (() => {
     const combined: Array<{ kind: 'activity'; item: LoopFeedItem } | { kind: 'post'; item: FeedPostItem }> = [];
     let ai = 0, pi = 0;
     const activityItems = filteredItems;
-    // Show own posts in feed — users want to see what they shared
     const postItems = feedPosts;
     while (ai < activityItems.length || pi < postItems.length) {
       const aTime = ai < activityItems.length ? new Date(activityItems[ai].created_at).getTime() : -Infinity;
@@ -223,12 +232,6 @@ export default function FeedPage() {
       </div>
     );
   }
-
-  const TABS: { key: FeedTab; label: string }[] = [
-    { key: 'foryou', label: 'For You' },
-    { key: 'posts', label: 'Loops' },
-    { key: 'connections', label: 'Following' },
-  ];
 
   return (
     <div className="h-[100dvh] bg-background pb-16 overflow-y-auto overscroll-y-contain" onScroll={handleScroll}>
@@ -273,32 +276,27 @@ export default function FeedPage() {
                 )}
               </AnimatePresence>
 
-              {/* Tabs — X-style with underline indicator */}
-              <div className="flex">
-                {TABS.map(tab => (
+              {/* Loop Pills — horizontal scrollable */}
+              <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pb-3 pt-1.5">
+                {LOOP_PILLS.map(pill => (
                   <button
-                    key={tab.key}
-                    onClick={() => setActiveTab(tab.key)}
-                    className={`flex-1 text-center py-3 text-[13px] transition-colors relative ${
-                      activeTab === tab.key ? 'text-foreground font-bold' : 'text-muted-foreground font-semibold hover:text-foreground/60 hover:bg-muted/5'
+                    key={pill.key}
+                    onClick={() => setLoopPill(pill.key)}
+                    className={`shrink-0 px-3.5 py-1.5 text-[10px] font-black tracking-[0.12em] uppercase transition-all rounded-full border ${
+                      loopPill === pill.key
+                        ? 'bg-foreground text-background border-foreground'
+                        : 'bg-transparent text-muted-foreground border-border/30 hover:text-foreground hover:border-border/60'
                     }`}
                   >
-                    {tab.label}
-                    {activeTab === tab.key && (
-                      <motion.div
-                        layoutId="loopTab"
-                        className="absolute bottom-0 left-1/4 right-1/4 h-[3px] bg-primary rounded-full"
-                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                      />
-                    )}
+                    {pill.label}
                   </button>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* ─── Trending Strip ─── */}
-          {activeTab !== 'posts' && (trendingEditors.length > 0 || trendingUnits.length > 0) && (
+          {/* ─── Trending Strip (Feed only) ─── */}
+          {loopPill === 'feed' && (trendingEditors.length > 0 || trendingUnits.length > 0) && (
             <div className="mx-auto max-w-xl lg:max-w-none border-b border-border/15">
               <div className="flex gap-3 overflow-x-auto scrollbar-hide px-4 py-3">
                 {trendingUnits.map(unit => (
@@ -348,27 +346,16 @@ export default function FeedPage() {
 
           {/* ─── Feed Content ─── */}
           <div className="mx-auto max-w-xl lg:max-w-none pb-24 lg:pb-0">
-            {/* Inline composer — mobile taps open full-screen sheet */}
+            {/* Inline composer */}
             {user && (
               <FeedPostComposer userProfile={userProfile} onPost={createPost} onMobileTap={() => setShowCompose(true)} />
             )}
 
-            {activeTab === 'posts' ? (
-              (() => {
-                const visiblePosts = feedPosts;
-                return visiblePosts.length === 0 ? (
-                <EmptyState icon={<PenSquare className="w-6 h-6 text-muted-foreground/30" />} title="No loops yet" subtitle="Be the first — share a flex, an edit, or just say what's on your mind." />
-              ) : (
-                visiblePosts.map(post => (
-                  <FeedPostCard key={post.id} post={post} isLiked={likedPostIds.has(post.id)} isBookmarked={bookmarkedPostIds.has(post.id)} onLike={toggleLike} onBookmark={toggleBookmark} onDelete={deletePost} reactions={reactions[post.id] || []} onToggleReaction={toggleReaction} />
-                ))
-                );
-              })()
-            ) : activeTab === 'foryou' && interleavedFeed ? (
+            {loopPill === 'feed' && interleavedFeed ? (
               interleavedFeed.length === 0 ? (
-                <EmptyState icon={<Play className="w-6 h-6 text-muted-foreground/30" />} title="The Loop is quiet" subtitle="Drop a loop or submit an edit to get things moving" />
+                <EmptyState icon={<Play className="w-6 h-6 text-muted-foreground/30" />} title={LOOP_EMPTY.feed.title} subtitle={LOOP_EMPTY.feed.subtitle} />
               ) : (
-                interleavedFeed.map((entry, idx) => (
+                interleavedFeed.map((entry) => (
                   entry.kind === 'post' ? (
                     <FeedPostCard key={`post-${entry.item.id}`} post={entry.item as FeedPostItem} isLiked={likedPostIds.has(entry.item.id)} isBookmarked={bookmarkedPostIds.has(entry.item.id)} onLike={toggleLike} onBookmark={toggleBookmark} onDelete={deletePost} reactions={reactions[entry.item.id] || []} onToggleReaction={toggleReaction} />
                   ) : (
@@ -376,19 +363,19 @@ export default function FeedPage() {
                   )
                 ))
               )
-            ) : (
-              filteredItems.length === 0 ? (
+            ) : loopPill !== 'feed' ? (
+              loopPosts.length === 0 ? (
                 <EmptyState
-                  icon={<Play className="w-6 h-6 text-muted-foreground/30" />}
-                  title={searchQuery ? "No results" : "Nothing from connections yet"}
-                  subtitle={searchQuery ? "Try a different search" : "Connect with editors to see their edits here"}
+                  icon={<PenSquare className="w-6 h-6 text-muted-foreground/30" />}
+                  title={LOOP_EMPTY[loopPill].title}
+                  subtitle={LOOP_EMPTY[loopPill].subtitle}
                 />
               ) : (
-                filteredItems.map(item => (
-                  <LoopFeedCard key={item.id} item={item} isExpanded={expandedId === item.id} onToggleExpand={() => setExpandedId(prev => prev === item.id ? null : item.id)} onOpenPlayer={() => setPlayerItem(item)} />
+                loopPosts.map(post => (
+                  <FeedPostCard key={post.id} post={post} isLiked={likedPostIds.has(post.id)} isBookmarked={bookmarkedPostIds.has(post.id)} onLike={toggleLike} onBookmark={toggleBookmark} onDelete={deletePost} reactions={reactions[post.id] || []} onToggleReaction={toggleReaction} />
                 ))
               )
-            )}
+            ) : null}
 
             {loadingMore && (
               <div className="flex items-center justify-center py-6">
@@ -396,7 +383,7 @@ export default function FeedPage() {
               </div>
             )}
 
-            {!hasMore && filteredItems.length > 0 && activeTab !== 'posts' && (
+            {!hasMore && filteredItems.length > 0 && loopPill === 'feed' && (
               <p className="text-center text-xs text-muted-foreground/50 py-8">You've reached the end 🔥</p>
             )}
           </div>
@@ -413,7 +400,7 @@ export default function FeedPage() {
         </div>
       </div>{/* end flex container */}
 
-      {/* ─── Compose FAB (mobile only, X-style floating button) ─── */}
+      {/* ─── Compose FAB (mobile only) ─── */}
       {user && (
         <motion.button
           whileTap={{ scale: 0.9 }}
@@ -430,6 +417,7 @@ export default function FeedPage() {
         onClose={() => setShowCompose(false)}
         userProfile={userProfile}
         onPost={createPost}
+        loopPill={loopPill}
       />
 
       {/* ─── Video Player ─── */}

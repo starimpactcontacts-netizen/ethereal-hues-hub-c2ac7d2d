@@ -6,7 +6,7 @@ export interface FeedPostItem {
   id: string;
   user_id: string;
   content: string;
-  post_type: 'text' | 'flex' | 'edit_share' | 'milestone';
+  post_type: 'text' | 'flex' | 'edit_share' | 'milestone' | 'find_battle' | 'rate_edit' | 'help' | 'competition' | 'news';
   media_url: string | null;
   media_platform: string | null;
   uploaded_media_url: string | null;

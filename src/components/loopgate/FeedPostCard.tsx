@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { MessageCircle, Trash2, Trophy, ArrowUp, Link2, MoreHorizontal, Swords, X, Play, SmilePlus, Sparkles, Volume2, VolumeX } from "lucide-react";
+import { MessageCircle, Trash2, Trophy, ArrowUp, Link2, MoreHorizontal, Swords, X, Play, SmilePlus, Sparkles, Volume2, VolumeX, HelpCircle, Newspaper } from "lucide-react";
 import FeedInlineComments from "./FeedInlineComments";
 import GateIcon from '@/components/loopgate/GateIcon';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -42,6 +42,11 @@ function getPostTypeIndicator(type: string) {
     case 'flex': return { icon: <GateIcon className="w-3 h-3 text-gold" />, label: 'FLEX' };
     case 'edit_share': return { icon: <Link2 className="w-3 h-3 text-primary" />, label: 'EDIT' };
     case 'milestone': return { icon: <Trophy className="w-3 h-3 text-gold" />, label: 'MILESTONE' };
+    case 'find_battle': return { icon: <Swords className="w-3 h-3 text-red-400" />, label: 'FIND A BATTLE' };
+    case 'rate_edit': return { icon: <Sparkles className="w-3 h-3 text-purple-400" />, label: 'RATE MY EDIT' };
+    case 'help': return { icon: <HelpCircle className="w-3 h-3 text-blue-400" />, label: 'EDITING HELP' };
+    case 'competition': return { icon: <Trophy className="w-3 h-3 text-amber-400" />, label: 'COMPETITION' };
+    case 'news': return { icon: <Newspaper className="w-3 h-3 text-emerald-400" />, label: 'NEWS' };
     default: return null;
   }
 }
@@ -249,6 +254,31 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
                 onToggle={(emoji) => onToggleReaction(post.id, emoji)}
                 hideCounts
               />
+            )}
+
+            {/* Loop-specific primary actions */}
+            {post.post_type === 'find_battle' && !isOwn && user && (
+              <div className="mt-2.5">
+                <button
+                  onClick={() => setShowChallengeConfirm(true)}
+                  className="flex items-center gap-1.5 h-8 px-4 text-[11px] font-black uppercase tracking-wider text-white active:scale-95 transition-all"
+                  style={{ background: 'linear-gradient(90deg, #dc2626, #2563eb)', boxShadow: '0 2px 12px rgba(220,38,38,0.35)' }}
+                >
+                  <Swords className="w-3.5 h-3.5" /> Accept Battle
+                </button>
+              </div>
+            )}
+
+            {post.post_type === 'rate_edit' && (
+              <div className="mt-2.5">
+                <button
+                  onClick={() => setShowRateModal(true)}
+                  className="flex items-center gap-1.5 h-8 px-4 text-[11px] font-black uppercase tracking-wider text-purple-200 border border-purple-500/40 active:scale-95 transition-all"
+                  style={{ background: 'rgba(168,85,247,0.15)' }}
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-purple-400" /> Rate This Edit
+                </button>
+              </div>
             )}
 
             {/* Action cluster — iPhone 17 glassy pill */}
