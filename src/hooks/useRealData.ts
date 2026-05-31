@@ -628,8 +628,8 @@ export function useGlobalStats() {
       gqtSubmissions,
       activeSessions,
       onlineStatusUsers,
-      sanctionedCompeting,
-      battleCompeting
+      compParticipants,
+      quickFightPlayers,
     ] = await Promise.all([
       // Standard event submissions in last 24h
       supabase
@@ -682,16 +682,19 @@ export function useGlobalStats() {
         .eq('is_banned', false)
         .eq('is_hidden', false),
       
-      // Users in active sanctioned tournaments (lobby, ready_up, live, bracket)
+      // All competition participants ever
       supabase
-        .from('sanctioned_tournament_participants')
-        .select('user_id', { count: 'exact', head: true }),
-      
-      // Users in active battles
+        .from('competition_participants')
+        .select('user_id')
+        .limit(10000),
+
+      // All completed/active quick fights (edit battles) ever
       supabase
-        .from('battles')
-        .select('challenger_id', { count: 'exact', head: true })
-        .in('status', ['pending', 'active', 'judging'])
+        .from('quick_fights')
+        .select('player_1_id, player_2_id')
+        .neq('status', 'cancelled')
+        .not('player_2_id', 'is', null)
+        .limit(10000),
     ]);
 
     // Sum all entries for last 24h
@@ -724,10 +727,12 @@ export function useGlobalStats() {
       }
     }
 
-    // Total competing = sanctioned + battle participants (unique-ish approximation)
-    const totalCompeting = 
-      (sanctionedCompeting.count || 0) + 
-      (battleCompeting.count || 0);
+    // Distinct users who have ever competed in a competition or edit battle
+    const uniqueCompetitorIds = new Set([
+      ...(compParticipants.data?.map((r: any) => r.user_id) || []),
+      ...(quickFightPlayers.data?.flatMap((r: any) => [r.player_1_id, r.player_2_id].filter(Boolean)) || []),
+    ]);
+    const totalCompeting = uniqueCompetitorIds.size;
 
     // Active now = max of session-based activity or users with online status set
     const activeNow = Math.max(
