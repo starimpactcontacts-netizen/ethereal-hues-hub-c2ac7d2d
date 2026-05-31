@@ -182,36 +182,14 @@ export default function CustomEditBattleLobby({
           <p className="text-[9px] font-black uppercase tracking-[0.35em] text-white/25 mb-1">
             {isPrivate ? "Private" : "Open"} • {duration} Duration
           </p>
-          {/* Fortnite-style: fat chunky Lilita One, thick outline behind white fill */}
-          <div className="relative inline-block" style={{ lineHeight: 1 }}>
-            {/* Stroke layer — only black outline visible, fill transparent */}
-            <h1
-              aria-hidden="true"
-              className="absolute inset-0 uppercase select-none whitespace-nowrap"
-              style={{
-                fontFamily: "'Lilita One', 'Anton', sans-serif",
-                fontSize: '72px',
-                WebkitTextStroke: '14px #000',
-                color: 'transparent',
-                letterSpacing: '0.03em',
-                lineHeight: 1,
-              }}
-            >
-              Edit Battle
-            </h1>
-            {/* Fill layer — white on top of outline */}
-            <h1
-              className="relative uppercase text-white whitespace-nowrap"
-              style={{
-                fontFamily: "'Lilita One', 'Anton', sans-serif",
-                fontSize: '72px',
-                letterSpacing: '0.03em',
-                lineHeight: 1,
-              }}
-            >
-              Edit Battle
-            </h1>
-          </div>
+          {/* Custom EDIT BATTLE title image */}
+          <img
+            src="/edit-battle-title.png"
+            alt="Edit Battle"
+            draggable={false}
+            className="select-none mx-auto"
+            style={{ maxWidth: '340px', width: '100%', height: 'auto' }}
+          />
         </div>
 
         {/* VS Panel */}
