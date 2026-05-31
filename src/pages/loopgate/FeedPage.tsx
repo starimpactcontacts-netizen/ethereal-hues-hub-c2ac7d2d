@@ -234,12 +234,12 @@ export default function FeedPage() {
   }
 
   return (
-    <div className="h-[100dvh] pb-16 overflow-y-auto overscroll-y-contain" style={{ background: '#111' }} onScroll={handleScroll}>
+    <div className="h-[100dvh] pb-16 overflow-y-auto overscroll-y-contain" style={{ background: '#0d0d0d' }} onScroll={handleScroll}>
       <div className="mx-auto flex w-full lg:max-w-[920px]">
         {/* Feed Column */}
         <div className="w-full lg:max-w-[600px] lg:border-r lg:border-border/10">
           {/* ─── Sticky Header ─── */}
-          <div className="sticky top-0 z-40 backdrop-blur-xl border-b border-border/20" style={{ background: 'rgba(17,17,17,0.85)' }}>
+          <div className="sticky top-0 z-40 backdrop-blur-xl border-b border-border/20" style={{ background: 'rgba(13,13,13,0.88)' }}>
             <div className="mx-auto max-w-xl lg:max-w-none">
               {/* Top bar */}
               <div className="flex items-center justify-between px-4 h-11">
