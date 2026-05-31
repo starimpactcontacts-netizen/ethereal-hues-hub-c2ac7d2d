@@ -46,7 +46,7 @@ export default function ProfilePage() {
   // Guest mode
   if (isGuest) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 pb-20">
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 pb-20" style={{ background: '#0d0d0d' }}>
         <div className="text-center">
           <h1 className="font-display text-3xl mb-2">Sign In Required</h1>
           <p className="text-muted-foreground text-sm mb-6">You're browsing as a guest. Sign in to view your profile.</p>
@@ -59,7 +59,7 @@ export default function ProfilePage() {
   // Temp profile mode
   if (isTemp && tempProfile && !profile) {
     return (
-      <div className="min-h-screen bg-background pb-20">
+      <div className="min-h-screen pb-20" style={{ background: '#0d0d0d' }}>
         <div className="absolute inset-0 bg-gradient-to-b from-gold/5 via-background to-background pointer-events-none" />
         <div className="relative pt-6 pb-4 px-4">
           <div className="flex items-center justify-between mb-6">
@@ -99,7 +99,7 @@ export default function ProfilePage() {
 
   if (authLoading || !profile) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0d0d0d' }}>
         <p className="text-muted-foreground">Loading...</p>
       </div>
     );
@@ -137,7 +137,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="bg-background min-h-screen text-foreground">
+    <div className="min-h-screen text-foreground" style={{ background: '#0d0d0d' }}>
       
       {/* ═══ TIKTOK-STYLE CENTERED HERO ═══ */}
       <div className="relative pt-2 pb-0">
