@@ -182,18 +182,35 @@ export default function CustomEditBattleLobby({
           <p className="text-[9px] font-black uppercase tracking-[0.35em] text-white/25 mb-1">
             {isPrivate ? "Private" : "Open"} • {duration} Duration
           </p>
-          <h1
-            className="text-[58px] leading-[0.88] font-black uppercase text-white"
-            style={{
-              fontFamily: "'Bebas Neue', 'Teko', sans-serif",
-              letterSpacing: "0.04em",
-              WebkitTextStroke: "3px #000",
-              textShadow: "4px 4px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000",
-              filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.6))",
-            }}
-          >
-            Edit Battle
-          </h1>
+          {/* Layered outline: stroke behind, fill on top = true Fortnite style */}
+          <div className="relative inline-block leading-[0.9]">
+            <h1
+              aria-hidden="true"
+              className="absolute inset-0 uppercase select-none"
+              style={{
+                fontFamily: "'Anton', 'Teko', sans-serif",
+                fontSize: '64px',
+                WebkitTextStroke: '10px #000',
+                color: 'transparent',
+                letterSpacing: '0.04em',
+                lineHeight: '0.9',
+              }}
+            >
+              Edit Battle
+            </h1>
+            <h1
+              className="relative uppercase text-white"
+              style={{
+                fontFamily: "'Anton', 'Teko', sans-serif",
+                fontSize: '64px',
+                letterSpacing: '0.04em',
+                lineHeight: '0.9',
+                textShadow: '0 4px 16px rgba(0,0,0,0.5)',
+              }}
+            >
+              Edit Battle
+            </h1>
+          </div>
         </div>
 
         {/* VS Panel */}

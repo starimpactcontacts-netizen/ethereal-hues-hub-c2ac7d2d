@@ -699,18 +699,17 @@ export default function HubPage() {
                     <div className="absolute bottom-0 right-0"><div className="w-4 h-[2px] bg-white/40" /><div className="w-[2px] h-4 bg-white/40 ml-auto" /></div>
                     <div className="relative flex items-center justify-center gap-3 py-6">
                       <Play className="relative w-6 h-6 fill-white text-white" strokeWidth={3} />
-                      <span
-                        className="relative text-white leading-none uppercase"
-                        style={{
-                          fontFamily: "'Bebas Neue', 'Teko', sans-serif",
-                          fontSize: '42px',
-                          WebkitTextStroke: '2px #000',
-                          textShadow: '3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000',
-                          letterSpacing: '0.04em',
-                        }}
-                      >
-                        PLAY
-                      </span>
+                      <div className="relative inline-block leading-none">
+                        <span
+                          aria-hidden="true"
+                          className="absolute inset-0 uppercase select-none"
+                          style={{ fontFamily: "'Anton', 'Teko', sans-serif", fontSize: '44px', WebkitTextStroke: '8px #000', color: 'transparent', letterSpacing: '0.04em' }}
+                        >PLAY</span>
+                        <span
+                          className="relative text-white uppercase leading-none"
+                          style={{ fontFamily: "'Anton', 'Teko', sans-serif", fontSize: '44px', letterSpacing: '0.04em' }}
+                        >PLAY</span>
+                      </div>
                     </div>
                   </button>
                 </motion.div>
@@ -863,8 +862,8 @@ export default function HubPage() {
             <div className="absolute bottom-0 left-0"><div className="w-3 h-px bg-white/25" /><div className="w-px h-3 bg-white/25" /></div>
             <Trophy className="relative w-4 h-4 text-amber-400/80 shrink-0" strokeWidth={2.5} />
             <span
-              className="relative text-white uppercase leading-none font-black"
-              style={{ fontFamily: "'Bebas Neue', 'Teko', sans-serif", fontSize: '28px', letterSpacing: '0.06em' }}
+              className="relative text-white uppercase leading-none"
+              style={{ fontFamily: "'Anton', 'Teko', sans-serif", fontSize: '28px', letterSpacing: '0.06em' }}
             >
               Rankings
             </span>
