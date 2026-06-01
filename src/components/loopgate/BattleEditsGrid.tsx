@@ -132,14 +132,16 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
           .eq("user_id", userId)
           .order("submitted_at", { ascending: false })
           .limit(50),
-        (supabase as any)
-          .from("profiles")
-          .select("data")
-          .eq("id", userId)
-          .single(),
+        supabase
+          .from("hidden_edits")
+          .select("source, source_id")
+          .eq("user_id", userId)
+          .in("source", ["quick_fight", "hosted_competition"]),
       ]);
 
-      const hidden = new Set<string>(((profileRes as any).data?.data as any)?.hidden_edits || []);
+      const hidden = new Set<string>(
+        ((profileRes as any).data || []).map((h: any) => h.source_id)
+      );
       const entries: EditEntry[] = [];
 
       for (const f of fightsRes.data || []) {
@@ -202,19 +204,13 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
     };
   }, [menuFor]);
 
-  const updateHiddenList = async (newList: string[]) => {
-    const { data: profileRow } = await (supabase as any).from("profiles").select("data").eq("id", userId).single();
-    return (supabase as any).from("profiles").update({
-      data: { ...(profileRow?.data as any || {}), hidden_edits: newList },
-    }).eq("id", userId);
-  };
-
   const hideEdit = async (edit: EditEntry) => {
     setMenuFor(null);
     setEdits((prev) => prev.filter((e) => e.id !== edit.id));
-    const { data: profileRow } = await (supabase as any).from("profiles").select("data").eq("id", userId).single();
-    const current: string[] = (profileRow?.data as any)?.hidden_edits || [];
-    const { error } = await updateHiddenList([...new Set([...current, edit.id])]);
+    const source = edit.type === "battle" ? "quick_fight" : "hosted_competition";
+    const { error } = await supabase
+      .from("hidden_edits")
+      .insert({ user_id: userId, source, source_id: edit.id });
     if (error) {
       setEdits((prev) =>
         [...prev, edit].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -225,9 +221,12 @@ export default function BattleEditsGrid({ userId, isOwner = false }: BattleEdits
         action: {
           label: "Undo",
           onClick: async () => {
-            const { data: profileRow2 } = await (supabase as any).from("profiles").select("data").eq("id", userId).single();
-            const current2: string[] = (profileRow2?.data as any)?.hidden_edits || [];
-            await updateHiddenList(current2.filter((id) => id !== edit.id));
+            await supabase
+              .from("hidden_edits")
+              .delete()
+              .eq("user_id", userId)
+              .eq("source", source)
+              .eq("source_id", edit.id);
             setEdits((prev) =>
               [...prev, edit].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
             );
