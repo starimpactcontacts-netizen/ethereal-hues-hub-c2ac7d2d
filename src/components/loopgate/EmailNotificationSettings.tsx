@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Mail, Trophy, Swords, Calendar, Check, Loader2 } from 'lucide-react';
+import { Mail, Trophy, Swords, Calendar, Check, Loader2, Bell } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
