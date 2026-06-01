@@ -145,81 +145,24 @@ export function playToggleOff() {
   } catch {}
 }
 
-/** Match alert — CS:GO double-bell chime + Valorant sub hit + Fortnite sparkle arpeggio */
+/** Match alert — real audio file, preloaded for instant playback */
+let _matchAlertAudio: HTMLAudioElement | null = null;
 export function playMatchAlert() {
   try {
-    const c = getCtx();
-    const t = c.currentTime;
-    const master = c.createGain();
-    master.gain.value = 0.80;
-    master.connect(c.destination);
-
-    // VALORANT — deep sub punch + noise snap on impact
-    osc(c, 'sine', 58,  t, 0.26, 0.90, master);
-    osc(c, 'sine', 116, t, 0.16, 0.48, master);
-
-    const snapBuf = c.createBuffer(1, Math.floor(c.sampleRate * 0.025), c.sampleRate);
-    const sd = snapBuf.getChannelData(0);
-    for (let i = 0; i < sd.length; i++) sd[i] = Math.random() * 2 - 1;
-    const snap = c.createBufferSource();
-    snap.buffer = snapBuf;
-    const sg = c.createGain();
-    sg.gain.setValueAtTime(0.48, t);
-    sg.gain.exponentialRampToValueAtTime(0.001, t + 0.025);
-    snap.connect(sg).connect(master);
-    snap.start(t);
-
-    // CS:GO — iconic two-tone upward bell chime (C5 → E5)
-    osc(c, 'sine',     523,  t + 0.05, 0.38, 0.68, master);
-    osc(c, 'triangle', 1046, t + 0.05, 0.30, 0.24, master);
-    osc(c, 'sine',     659,  t + 0.19, 0.42, 0.62, master);
-    osc(c, 'triangle', 1318, t + 0.19, 0.32, 0.20, master);
-
-    // FORTNITE / ROBLOX — quick ascending sparkle arpeggio (C6 E6 G6 C7)
-    [1047, 1319, 1568, 2093].forEach((f, i) => {
-      osc(c, 'sine', f, t + 0.22 + i * 0.05, 0.13, 0.30 - i * 0.05, master);
-    });
+    if (!_matchAlertAudio) _matchAlertAudio = new Audio('/sounds/match-found.mp3');
+    _matchAlertAudio.currentTime = 0;
+    _matchAlertAudio.volume = 0.85;
+    _matchAlertAudio.play();
   } catch {}
 }
 
-/** Countdown tick — CS:GO bomb-tick sharpness, escalating A5→E6 */
-export function playCountdownTick(count: number) {
+/** Countdown tick — real audio file, same crisp click each second */
+let _tickAudio: HTMLAudioElement | null = null;
+export function playCountdownTick(_count: number) {
   try {
-    const c = getCtx();
-    const t = c.currentTime;
-    const master = c.createGain();
-    master.gain.value = count <= 2 ? 0.88 : 0.74;
-    master.connect(c.destination);
-
-    // CS:GO bomb tick: very short, sharp sine — pitch climbs each second
-    const rows: Record<number, [number, number]> = {
-      5: [880,  0.08],  // A5
-      4: [988,  0.08],  // B5
-      3: [1047, 0.09],  // C6
-      2: [1175, 0.10],  // D6
-      1: [1319, 0.14],  // E6 — urgent
-    };
-    const [freq, dur] = rows[count] ?? [880, 0.08];
-
-    // Micro noise click (physical feel of a button/key)
-    const cbuf = c.createBuffer(1, Math.floor(c.sampleRate * 0.007), c.sampleRate);
-    const cd = cbuf.getChannelData(0);
-    for (let i = 0; i < cd.length; i++) cd[i] = Math.random() * 2 - 1;
-    const ck = c.createBufferSource();
-    ck.buffer = cbuf;
-    const cg = c.createGain();
-    cg.gain.setValueAtTime(0.20, t);
-    cg.gain.exponentialRampToValueAtTime(0.001, t + 0.007);
-    ck.connect(cg).connect(master);
-    ck.start(t);
-
-    osc(c, 'sine',     freq,     t, dur,       0.82, master);
-    osc(c, 'triangle', freq * 2, t, dur * 0.4, 0.18, master);
-
-    if (count === 1) {
-      // Final beat: Fortnite-style double-hit + sub thump
-      osc(c, 'sine', 78,   t,        0.24, 0.58, master);
-      osc(c, 'sine', freq, t + 0.07, 0.11, 0.62, master);
-    }
+    if (!_tickAudio) _tickAudio = new Audio('/sounds/tick.mp3');
+    _tickAudio.currentTime = 0;
+    _tickAudio.volume = 0.75;
+    _tickAudio.play();
   } catch {}
 }
