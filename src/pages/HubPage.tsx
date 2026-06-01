@@ -593,56 +593,63 @@ export default function HubPage() {
                    <div className="absolute top-3 right-3 w-3 h-3 border-t border-r border-gold/15" />
                  </div>
                )}
-               {/* Top Row: Avatar + Identity + Earnings/Index */}
+               {/* Top Row: Avatar + Identity + Currency */}
               <div className="relative z-10 p-4 pb-2">
-                <div className="flex items-start justify-between gap-2">
-                  <button 
+                <div className="flex items-start justify-between gap-3">
+                  <button
                     onClick={() => navigate('/profile')}
                     className="flex items-center gap-3 group text-left min-w-0"
                   >
+                    {/* Square avatar — no ring, clean */}
                     <div className="relative shrink-0">
-                      <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br ${league.gradient} p-[2px] shadow-lg ${league.glow} group-hover:scale-105 transition-transform`}>
-                        <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden">
-                          {displayAvatar ? (
-                            <img src={displayAvatar} alt="" className="w-full h-full object-cover" />
-                          ) : (
+                      <div className="w-[58px] h-[58px] rounded-md overflow-hidden bg-surface-2 group-hover:scale-[1.03] transition-transform"
+                        style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
+                        {displayAvatar ? (
+                          <img src={displayAvatar} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
                             <span className="font-display text-2xl text-foreground">
                               {displayUsername?.charAt(0).toUpperCase() || 'E'}
                             </span>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </div>
                       <div className="absolute -bottom-1.5 -right-1.5 px-1 py-0.5 rounded-md bg-background border border-border flex items-center justify-center shadow-lg gap-0.5">
                         <img src={lvMonogram} alt="Lv" className="w-3 h-3 object-contain opacity-90" />
                         <span className="font-display text-sm font-bold text-foreground">{profile?.level || 1}</span>
                       </div>
                     </div>
-                    
+
                     <div className="min-w-0">
+                      {/* Username + special badges */}
                       <div className="flex items-center gap-2 flex-wrap">
                         <h1 className="font-display text-xl sm:text-2xl text-foreground leading-none truncate max-w-[160px] sm:max-w-[200px]">
                           {displayUsername}
                         </h1>
-                        {hasEquippedOG && (
-                          <FoundingBadge size="sm" animate={false} />
-                        )}
-                        {isJudge && (
-                          <JudgeClassBadge reviewCount={judgeReviewCount} size="sm" />
-                        )}
+                        {hasEquippedOG && <FoundingBadge size="sm" animate={false} />}
+                        {isJudge && <JudgeClassBadge reviewCount={judgeReviewCount} size="sm" />}
                       </div>
-                      <div className="flex items-center gap-[6px] mt-1.5">
-                        <button onClick={(e) => { e.stopPropagation(); navigate('/league'); }} className="text-[10px] font-bold tracking-normal text-muted-foreground uppercase hover:text-gold transition-colors">{league.label}</button>
-                        <span className="text-muted-foreground/30 text-[8px]">·</span>
-                        <button onClick={(e) => { e.stopPropagation(); navigate('/class'); }} className={`text-[10px] font-black hover:text-gold transition-colors ${classRankConfig?.color || 'text-muted-foreground'}`}>
-                          CLASS {classLetter}
-                        </button>
-                      </div>
+                      {/* Class badge — hex icon + label */}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); navigate('/class'); }}
+                        className={`flex items-center gap-1.5 mt-2 active:opacity-70 transition-opacity ${classRankConfig?.color || 'text-muted-foreground'}`}
+                      >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                          <path d="M12 2L21.5 7.5V16.5L12 22L2.5 16.5V7.5L12 2Z"
+                            fill="currentColor" fillOpacity="0.18" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                          <path d="M12 5.5L18.5 9.25V16.75L12 20.5L5.5 16.75V9.25L12 5.5Z"
+                            fill="none" stroke="currentColor" strokeWidth="0.6" opacity="0.45" />
+                        </svg>
+                        <span className="text-[14px] font-black uppercase"
+                          style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.1em' }}>
+                          {classLetter} CLASS
+                        </span>
+                      </button>
                     </div>
                   </button>
 
-                  {/* Earnings + Index — top right */}
-                  <div className="flex flex-col gap-1.5 shrink-0 items-end">
-                    {/* Rings — Loopgate's spendable currency (V-Bucks style) */}
+                  {/* Currency — top right */}
+                  <div className="shrink-0">
                     <button
                       onClick={() => setRingsOpen(true)}
                       className="flex items-center gap-1.5 active:scale-95 transition-transform"
