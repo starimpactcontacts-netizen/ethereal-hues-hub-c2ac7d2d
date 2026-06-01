@@ -7,8 +7,11 @@ export interface SyncFight {
   id: string;
   battle_mode?: string;
   sync_scenepack_name?: string | null;
+  sync_scenepack_thumbnail_url?: string | null;
   sync_song_title?: string | null;
   sync_song_artist?: string | null;
+  sync_song_cover_url?: string | null;
+  sync_song_difficulty?: string | null;
   sync_spun_at?: string | null;
 }
 
@@ -32,6 +35,25 @@ const FAKE_SONGS = [
   'MONTERO', 'Panda', 'Runaway', 'Ghost Town', 'Levitating',
   'ROYAL', 'MELTDOWN', 'BUTTERFLY EFFECT', 'Savage', 'LUST.',
 ];
+
+const DIFFICULTY_STYLES: Record<string, { label: string; color: string; bg: string; border: string }> = {
+  easy:      { label: 'EASY',      color: '#4ade80', bg: 'rgba(74,222,128,0.10)', border: 'rgba(74,222,128,0.25)' },
+  normal:    { label: 'NORMAL',    color: '#94a3b8', bg: 'rgba(148,163,184,0.10)', border: 'rgba(148,163,184,0.25)' },
+  hard:      { label: 'HARD',      color: '#fb923c', bg: 'rgba(251,146,60,0.10)',  border: 'rgba(251,146,60,0.25)' },
+  nightmare: { label: 'NIGHTMARE', color: '#c084fc', bg: 'rgba(192,132,252,0.10)', border: 'rgba(192,132,252,0.30)' },
+};
+
+function DifficultyBadge({ difficulty }: { difficulty: string }) {
+  const s = DIFFICULTY_STYLES[difficulty.toLowerCase()] ?? DIFFICULTY_STYLES.normal;
+  return (
+    <span
+      className="inline-block mt-1.5 text-[7px] font-black uppercase tracking-[0.22em] px-1.5 py-0.5"
+      style={{ color: s.color, background: s.bg, border: `1px solid ${s.border}` }}
+    >
+      {s.label}
+    </span>
+  );
+}
 
 export default function SyncSpinFlow({ fight, onComplete }: Props) {
   const [phase, setPhase] = useState<'idle' | 'spinning' | 'revealing' | 'done'>('idle');
@@ -166,13 +188,32 @@ export default function SyncSpinFlow({ fight, onComplete }: Props) {
             <span className="text-[8px] font-black uppercase tracking-[0.32em] text-white/20">Scenepack</span>
           </div>
           <div
-            className="relative overflow-hidden h-[72px] flex items-center px-5"
+            className="relative overflow-hidden"
             style={{
-              background: showResult ? 'rgba(34,197,94,0.06)' : 'rgba(255,255,255,0.025)',
+              height: showResult ? 100 : 72,
+              background: showResult && fight.sync_scenepack_thumbnail_url
+                ? 'transparent'
+                : showResult ? 'rgba(34,197,94,0.06)' : 'rgba(255,255,255,0.025)',
               border: showResult ? '1px solid rgba(34,197,94,0.3)' : '1px solid rgba(255,255,255,0.06)',
-              transition: 'background 0.35s, border-color 0.35s',
+              transition: 'background 0.35s, border-color 0.35s, height 0.35s',
             }}
           >
+            {/* Cover image background when revealed */}
+            {showResult && fight.sync_scenepack_thumbnail_url && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.4 }}
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: `url(${fight.sync_scenepack_thumbnail_url})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}
+              >
+                <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(5,5,5,0.85) 0%, rgba(5,5,5,0.45) 60%, rgba(5,5,5,0.6) 100%)' }} />
+              </motion.div>
+            )}
             {/* Edge fade during spin */}
             {!showResult && (
               <>
@@ -182,25 +223,27 @@ export default function SyncSpinFlow({ fight, onComplete }: Props) {
                   style={{ background: 'linear-gradient(to left, #050505, transparent)' }} />
               </>
             )}
-            <AnimatePresence mode="wait">
-              <motion.p
-                key={showResult ? 'rp' : packIdx}
-                initial={{ opacity: showResult ? 0 : 0.55, y: showResult ? 3 : 0 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: showResult ? 0.2 : 0.01 }}
-                className="text-[26px] font-black text-white leading-none truncate"
-                style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.02em' }}
-              >
-                {packDisplay}
-              </motion.p>
-            </AnimatePresence>
+            <div className="relative z-10 h-full flex items-center px-5">
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={showResult ? 'rp' : packIdx}
+                  initial={{ opacity: showResult ? 0 : 0.55, y: showResult ? 3 : 0 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: showResult ? 0.2 : 0.01 }}
+                  className="text-[26px] font-black text-white leading-none truncate"
+                  style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.02em' }}
+                >
+                  {packDisplay}
+                </motion.p>
+              </AnimatePresence>
+            </div>
             {showResult && (
               <motion.div
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: 'spring', stiffness: 380, damping: 22 }}
-                className="absolute right-4 top-1/2 -translate-y-1/2"
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-10"
               >
                 <CheckCircle2 className="w-5 h-5 text-emerald-400" />
               </motion.div>
@@ -222,14 +265,12 @@ export default function SyncSpinFlow({ fight, onComplete }: Props) {
             <span className="text-[8px] font-black uppercase tracking-[0.32em] text-white/20">Song</span>
           </div>
           <div
-            className="relative overflow-hidden px-5 flex flex-col justify-center"
+            className="relative overflow-hidden"
             style={{
               background: showResult ? 'rgba(34,197,94,0.06)' : 'rgba(255,255,255,0.025)',
               border: showResult ? '1px solid rgba(34,197,94,0.3)' : '1px solid rgba(255,255,255,0.06)',
               transition: 'background 0.35s, border-color 0.35s',
               minHeight: 72,
-              paddingTop: showResult ? 14 : 0,
-              paddingBottom: showResult ? 14 : 0,
             }}
           >
             {!showResult && (
@@ -240,35 +281,77 @@ export default function SyncSpinFlow({ fight, onComplete }: Props) {
                   style={{ background: 'linear-gradient(to left, #050505, transparent)' }} />
               </>
             )}
-            <AnimatePresence mode="wait">
-              <motion.p
-                key={showResult ? 'rs' : songIdx}
-                initial={{ opacity: showResult ? 0 : 0.55, y: showResult ? 3 : 0 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: showResult ? 0.2 : 0.01 }}
-                className="text-[26px] font-black text-white leading-none truncate"
-                style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.02em' }}
-              >
-                {songDisplay}
-              </motion.p>
-            </AnimatePresence>
-            {showResult && fight.sync_song_artist && (
-              <motion.p
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.18 }}
-                className="text-[11px] text-white/35 mt-1 truncate"
-              >
-                {fight.sync_song_artist}
-              </motion.p>
+
+            {/* Spinning state */}
+            {!showResult && (
+              <div className="h-[72px] flex items-center px-5">
+                <AnimatePresence mode="wait">
+                  <motion.p
+                    key={songIdx}
+                    initial={{ opacity: 0.55 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.01 }}
+                    className="text-[26px] font-black text-white leading-none truncate"
+                    style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.02em' }}
+                  >
+                    {songDisplay}
+                  </motion.p>
+                </AnimatePresence>
+              </div>
             )}
+
+            {/* Reveal state: cover art + info */}
             {showResult && (
               <motion.div
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: 'spring', stiffness: 380, damping: 22 }}
-                className="absolute right-4 top-1/2 -translate-y-1/2"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.25 }}
+                className="flex items-stretch"
               >
-                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                {/* Cover art */}
+                {fight.sync_song_cover_url ? (
+                  <div className="shrink-0 w-[80px] h-[80px]">
+                    <img
+                      src={fight.sync_song_cover_url}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="shrink-0 w-[80px] h-[80px] flex items-center justify-center"
+                    style={{ background: 'rgba(255,255,255,0.04)' }}>
+                    <Music className="w-6 h-6 text-white/15" />
+                  </div>
+                )}
+
+                {/* Song info */}
+                <div className="flex-1 flex flex-col justify-center px-4 py-3 min-w-0">
+                  <p
+                    className="text-[22px] font-black text-white leading-none truncate"
+                    style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.02em' }}
+                  >
+                    {fight.sync_song_title || 'Unknown Song'}
+                  </p>
+                  {fight.sync_song_artist && (
+                    <p className="text-[11px] text-white/40 truncate mt-0.5">
+                      {fight.sync_song_artist}
+                    </p>
+                  )}
+                  {fight.sync_song_difficulty && (
+                    <DifficultyBadge difficulty={fight.sync_song_difficulty} />
+                  )}
+                </div>
+
+                <div className="flex items-center pr-4">
+                  <motion.div
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: 'spring', stiffness: 380, damping: 22 }}
+                  >
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                  </motion.div>
+                </div>
               </motion.div>
             )}
           </div>

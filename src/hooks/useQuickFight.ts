@@ -43,6 +43,9 @@ export interface QuickFight {
   sync_song_title?: string | null;
   sync_song_artist?: string | null;
   sync_song_preview_url?: string | null;
+  sync_scenepack_thumbnail_url?: string | null;
+  sync_song_cover_url?: string | null;
+  sync_song_difficulty?: string | null;
   sync_spun_at?: string | null;
   created_at: string;
 }
