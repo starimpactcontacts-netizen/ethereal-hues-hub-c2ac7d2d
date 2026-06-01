@@ -98,31 +98,34 @@ export default function FeaturedEditBattlesSection() {
 
             <div className="relative overflow-hidden" style={{
               background: '#0a0a0a',
-              border: '2px solid #ffffff',
-              boxShadow: '4px 4px 0 0 #000, 4px 4px 0 2px #ffffff',
+              border: '1px solid rgba(255,255,255,0.08)',
             }}>
               {/* ── PLAYER PANELS ── */}
               <div className="flex relative">
 
-                {/* Player 1 — solid blue block */}
-                <div className="flex-1 flex flex-col items-center pt-5 pb-4 px-3 gap-2 min-w-0"
-                  style={{ background: '#1e40af' }}>
-                  <Avatar className="w-[68px] h-[68px] rounded-none" style={{ border: '2px solid #ffffff' }}>
+                {/* Player 1 — muted blue block w/ dots */}
+                <div className="relative flex-1 flex flex-col items-center pt-5 pb-4 px-3 gap-2 min-w-0"
+                  style={{
+                    background: '#1a2740',
+                    backgroundImage: 'radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px)',
+                    backgroundSize: '8px 8px',
+                  }}>
+                  <Avatar className="w-[68px] h-[68px] rounded-none relative z-10" style={{ border: '1px solid rgba(255,255,255,0.15)' }}>
                     <AvatarImage src={current.player_1_avatar_url || ''} className="object-cover" />
                     <AvatarFallback className="rounded-none text-white font-black text-3xl"
-                      style={{ fontFamily: 'Teko, sans-serif', background: '#0b1e4d' }}>
+                      style={{ fontFamily: 'Teko, sans-serif', background: '#101a2e' }}>
                       {current.player_1_username?.[0]?.toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <p className="text-[12px] font-black text-white truncate w-full text-center uppercase tracking-wider"
+                  <p className="relative z-10 text-[12px] font-black text-white/85 truncate w-full text-center uppercase tracking-wider"
                     style={{ fontFamily: 'Teko, sans-serif' }}>
                     {current.player_1_username}
                   </p>
-                  <span className="text-[48px] font-black text-white tabular-nums leading-none"
-                    style={{ fontFamily: 'Teko, sans-serif', WebkitTextStroke: '2px #000' }}>
+                  <span className="relative z-10 text-[48px] font-black text-white/90 tabular-nums leading-none"
+                    style={{ fontFamily: 'Teko, sans-serif' }}>
                     {votes.blue}
                   </span>
-                  <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/80">Votes</p>
+                  <p className="relative z-10 text-[9px] font-black uppercase tracking-[0.22em] text-white/45">Votes</p>
                 </div>
 
                 {/* VS divider — chunky badge, sits centered */}
@@ -134,46 +137,51 @@ export default function FeaturedEditBattlesSection() {
                       width: 78,
                       height: 78,
                       objectFit: 'contain',
-                      filter: 'drop-shadow(3px 3px 0 #000)',
+                      filter: 'drop-shadow(2px 2px 0 rgba(0,0,0,0.6))',
                     }}
                   />
                 </div>
 
-                {/* Player 2 — solid red block */}
-                <div className="flex-1 flex flex-col items-center pt-5 pb-4 px-3 gap-2 min-w-0"
-                  style={{ background: '#b91c1c', borderLeft: '2px solid #000' }}>
-                  <Avatar className="w-[68px] h-[68px] rounded-none" style={{ border: '2px solid #ffffff' }}>
+                {/* Player 2 — muted red block w/ dots */}
+                <div className="relative flex-1 flex flex-col items-center pt-5 pb-4 px-3 gap-2 min-w-0"
+                  style={{
+                    background: '#3a1a1a',
+                    backgroundImage: 'radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px)',
+                    backgroundSize: '8px 8px',
+                    borderLeft: '1px solid rgba(255,255,255,0.06)',
+                  }}>
+                  <Avatar className="w-[68px] h-[68px] rounded-none relative z-10" style={{ border: '1px solid rgba(255,255,255,0.15)' }}>
                     <AvatarImage src={current.player_2_avatar_url || ''} className="object-cover" />
                     <AvatarFallback className="rounded-none text-white font-black text-3xl"
-                      style={{ fontFamily: 'Teko, sans-serif', background: '#4d0b0b' }}>
+                      style={{ fontFamily: 'Teko, sans-serif', background: '#2a1010' }}>
                       {current.player_2_username?.[0]?.toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <p className="text-[12px] font-black text-white truncate w-full text-center uppercase tracking-wider"
+                  <p className="relative z-10 text-[12px] font-black text-white/85 truncate w-full text-center uppercase tracking-wider"
                     style={{ fontFamily: 'Teko, sans-serif' }}>
                     {current.player_2_username}
                   </p>
-                  <span className="text-[48px] font-black text-white tabular-nums leading-none"
-                    style={{ fontFamily: 'Teko, sans-serif', WebkitTextStroke: '2px #000' }}>
+                  <span className="relative z-10 text-[48px] font-black text-white/90 tabular-nums leading-none"
+                    style={{ fontFamily: 'Teko, sans-serif' }}>
                     {votes.red}
                   </span>
-                  <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/80">Votes</p>
+                  <p className="relative z-10 text-[9px] font-black uppercase tracking-[0.22em] text-white/45">Votes</p>
                 </div>
 
               </div>
 
               {/* ── VOTE BAR ── */}
-              <div className="px-3 py-3 space-y-2" style={{ background: '#000', borderTop: '2px solid #ffffff' }}>
-                <div className="flex overflow-hidden" style={{ height: 8, background: '#1a1a1a', border: '1px solid #fff' }}>
-                  <div className="h-full transition-all duration-700" style={{ width: `${bluePct}%`, background: '#3b82f6' }} />
-                  <div className="h-full flex-1" style={{ background: '#ef4444' }} />
+              <div className="px-3 py-3 space-y-2" style={{ background: '#000', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                <div className="flex overflow-hidden" style={{ height: 6, background: 'rgba(255,255,255,0.04)' }}>
+                  <div className="h-full transition-all duration-700" style={{ width: `${bluePct}%`, background: '#3b6fb8' }} />
+                  <div className="h-full flex-1" style={{ background: '#b84747' }} />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-[12px] font-black text-blue-400 tabular-nums" style={{ fontFamily: 'Teko, sans-serif' }}>{bluePct}%</span>
-                  <span className="text-[9px] font-black uppercase tracking-[0.18em] text-white/60">
+                  <span className="text-[12px] font-black tabular-nums" style={{ fontFamily: 'Teko, sans-serif', color: '#7a9bd1' }}>{bluePct}%</span>
+                  <span className="text-[9px] font-black uppercase tracking-[0.18em] text-white/40">
                     {total} vote{total !== 1 ? 's' : ''} · tap to vote
                   </span>
-                  <span className="text-[12px] font-black text-red-400 tabular-nums" style={{ fontFamily: 'Teko, sans-serif' }}>{redPct}%</span>
+                  <span className="text-[12px] font-black tabular-nums" style={{ fontFamily: 'Teko, sans-serif', color: '#d18585' }}>{redPct}%</span>
                 </div>
               </div>
 
