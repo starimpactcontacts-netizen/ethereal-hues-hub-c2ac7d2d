@@ -97,104 +97,83 @@ export default function FeaturedEditBattlesSection() {
           <Link to={`/fight/${current.id}`} className="block">
 
             <div className="relative overflow-hidden" style={{
-              background: '#0c0c0c',
-              border: '1px solid rgba(255,255,255,0.1)',
+              background: '#0a0a0a',
+              border: '2px solid #ffffff',
+              boxShadow: '4px 4px 0 0 #000, 4px 4px 0 2px #ffffff',
             }}>
-              {/* Corner bracket marks */}
-              <Corner pos="tl" /><Corner pos="tr" />
-              <Corner pos="bl" /><Corner pos="br" />
-
-              {/* Top accent strip: blue → white → red */}
-              <div style={{ height: 2, background: 'linear-gradient(90deg, #3b82f6 0%, rgba(255,255,255,0.15) 50%, #ef4444 100%)' }} />
-
               {/* ── PLAYER PANELS ── */}
               <div className="flex relative">
 
-                {/* Left edge glow (blue) */}
-                <div className="absolute left-0 inset-y-0 pointer-events-none" style={{ width: 2, background: 'linear-gradient(to bottom, transparent, rgba(59,130,246,0.55), transparent)' }} />
-                {/* Right edge glow (red) */}
-                <div className="absolute right-0 inset-y-0 pointer-events-none" style={{ width: 2, background: 'linear-gradient(to bottom, transparent, rgba(239,68,68,0.55), transparent)' }} />
-
-                {/* Player 1 */}
-                <div className="flex-1 flex flex-col items-center pt-5 pb-4 px-3 gap-1.5 min-w-0"
-                  style={{ background: 'linear-gradient(150deg, rgba(59,130,246,0.06) 0%, transparent 55%)' }}>
-                  <div className="relative">
-                    <div className="absolute -inset-[2px] bg-blue-500/50" />
-                    <Avatar className="relative w-[64px] h-[64px] rounded-none">
-                      <AvatarImage src={current.player_1_avatar_url || ''} className="object-cover" />
-                      <AvatarFallback className="rounded-none text-blue-300 font-black text-3xl"
-                        style={{ fontFamily: 'Teko, sans-serif', background: '#070e1c' }}>
-                        {current.player_1_username?.[0]?.toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                  </div>
-                  <p className="text-[11px] font-black text-white/80 truncate w-full text-center uppercase tracking-wider mt-1"
+                {/* Player 1 — solid blue block */}
+                <div className="flex-1 flex flex-col items-center pt-5 pb-4 px-3 gap-2 min-w-0"
+                  style={{ background: '#1e40af' }}>
+                  <Avatar className="w-[68px] h-[68px] rounded-none" style={{ border: '2px solid #ffffff' }}>
+                    <AvatarImage src={current.player_1_avatar_url || ''} className="object-cover" />
+                    <AvatarFallback className="rounded-none text-white font-black text-3xl"
+                      style={{ fontFamily: 'Teko, sans-serif', background: '#0b1e4d' }}>
+                      {current.player_1_username?.[0]?.toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <p className="text-[12px] font-black text-white truncate w-full text-center uppercase tracking-wider"
                     style={{ fontFamily: 'Teko, sans-serif' }}>
                     {current.player_1_username}
                   </p>
-                  <span className="text-[44px] font-black text-blue-400 tabular-nums leading-none"
-                    style={{ fontFamily: 'Teko, sans-serif' }}>
+                  <span className="text-[48px] font-black text-white tabular-nums leading-none"
+                    style={{ fontFamily: 'Teko, sans-serif', WebkitTextStroke: '2px #000' }}>
                     {votes.blue}
                   </span>
-                  <p className="text-[8px] font-bold uppercase tracking-[0.22em] text-blue-400/35">Votes</p>
+                  <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/80">Votes</p>
                 </div>
 
-                {/* VS divider */}
-                <div className="flex-shrink-0 flex flex-col items-center justify-center gap-1.5"
-                  style={{ width: 44, borderLeft: '1px solid rgba(255,255,255,0.07)', borderRight: '1px solid rgba(255,255,255,0.07)' }}>
+                {/* VS divider — chunky badge, sits centered */}
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none">
                   <img
                     src={vsBadge.url}
                     alt="VS"
                     style={{
-                      width: 40,
-                      height: 40,
+                      width: 78,
+                      height: 78,
                       objectFit: 'contain',
-                      filter: 'drop-shadow(0 0 6px rgba(255,255,255,0.25))',
+                      filter: 'drop-shadow(3px 3px 0 #000)',
                     }}
                   />
                 </div>
 
-                {/* Player 2 */}
-                <div className="flex-1 flex flex-col items-center pt-5 pb-4 px-3 gap-1.5 min-w-0"
-                  style={{ background: 'linear-gradient(210deg, rgba(239,68,68,0.06) 0%, transparent 55%)' }}>
-                  <div className="relative">
-                    <div className="absolute -inset-[2px] bg-red-500/50" />
-                    <Avatar className="relative w-[64px] h-[64px] rounded-none">
-                      <AvatarImage src={current.player_2_avatar_url || ''} className="object-cover" />
-                      <AvatarFallback className="rounded-none text-red-300 font-black text-3xl"
-                        style={{ fontFamily: 'Teko, sans-serif', background: '#1c0707' }}>
-                        {current.player_2_username?.[0]?.toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                  </div>
-                  <p className="text-[11px] font-black text-white/80 truncate w-full text-center uppercase tracking-wider mt-1"
+                {/* Player 2 — solid red block */}
+                <div className="flex-1 flex flex-col items-center pt-5 pb-4 px-3 gap-2 min-w-0"
+                  style={{ background: '#b91c1c', borderLeft: '2px solid #000' }}>
+                  <Avatar className="w-[68px] h-[68px] rounded-none" style={{ border: '2px solid #ffffff' }}>
+                    <AvatarImage src={current.player_2_avatar_url || ''} className="object-cover" />
+                    <AvatarFallback className="rounded-none text-white font-black text-3xl"
+                      style={{ fontFamily: 'Teko, sans-serif', background: '#4d0b0b' }}>
+                      {current.player_2_username?.[0]?.toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <p className="text-[12px] font-black text-white truncate w-full text-center uppercase tracking-wider"
                     style={{ fontFamily: 'Teko, sans-serif' }}>
                     {current.player_2_username}
                   </p>
-                  <span className="text-[44px] font-black text-red-400 tabular-nums leading-none"
-                    style={{ fontFamily: 'Teko, sans-serif' }}>
+                  <span className="text-[48px] font-black text-white tabular-nums leading-none"
+                    style={{ fontFamily: 'Teko, sans-serif', WebkitTextStroke: '2px #000' }}>
                     {votes.red}
                   </span>
-                  <p className="text-[8px] font-bold uppercase tracking-[0.22em] text-red-400/35">Votes</p>
+                  <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/80">Votes</p>
                 </div>
 
               </div>
 
-              {/* Section divider */}
-              <div style={{ height: 1, background: 'rgba(255,255,255,0.07)' }} />
-
               {/* ── VOTE BAR ── */}
-              <div className="px-4 py-3 space-y-2">
-                <div className="flex overflow-hidden" style={{ height: 5, background: 'rgba(255,255,255,0.05)' }}>
-                  <div className="h-full bg-blue-500 transition-all duration-700" style={{ width: `${bluePct}%` }} />
-                  <div className="h-full bg-red-500 flex-1" />
+              <div className="px-3 py-3 space-y-2" style={{ background: '#000', borderTop: '2px solid #ffffff' }}>
+                <div className="flex overflow-hidden" style={{ height: 8, background: '#1a1a1a', border: '1px solid #fff' }}>
+                  <div className="h-full transition-all duration-700" style={{ width: `${bluePct}%`, background: '#3b82f6' }} />
+                  <div className="h-full flex-1" style={{ background: '#ef4444' }} />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-black text-blue-400/70 tabular-nums">{bluePct}%</span>
-                  <span className="text-[8px] font-bold uppercase tracking-[0.18em] text-white/18">
+                  <span className="text-[12px] font-black text-blue-400 tabular-nums" style={{ fontFamily: 'Teko, sans-serif' }}>{bluePct}%</span>
+                  <span className="text-[9px] font-black uppercase tracking-[0.18em] text-white/60">
                     {total} vote{total !== 1 ? 's' : ''} · tap to vote
                   </span>
-                  <span className="text-[11px] font-black text-red-400/70 tabular-nums">{redPct}%</span>
+                  <span className="text-[12px] font-black text-red-400 tabular-nums" style={{ fontFamily: 'Teko, sans-serif' }}>{redPct}%</span>
                 </div>
               </div>
 
