@@ -7584,6 +7584,7 @@ export type Database = {
       }
       quick_fights: {
         Row: {
+          battle_mode: string
           created_at: string
           duration_minutes: number
           ends_at: string | null
@@ -7629,6 +7630,13 @@ export type Database = {
           selection_started_at: string | null
           starts_at: string | null
           status: string
+          sync_scenepack_id: string | null
+          sync_scenepack_name: string | null
+          sync_scenepack_preview_url: string | null
+          sync_song_artist: string | null
+          sync_song_preview_url: string | null
+          sync_song_title: string | null
+          sync_spun_at: string | null
           theme_drop_id: string | null
           theme_song_name: string | null
           theme_song_preview_url: string | null
@@ -7638,6 +7646,7 @@ export type Database = {
           winner_score: number | null
         }
         Insert: {
+          battle_mode?: string
           created_at?: string
           duration_minutes?: number
           ends_at?: string | null
@@ -7683,6 +7692,13 @@ export type Database = {
           selection_started_at?: string | null
           starts_at?: string | null
           status?: string
+          sync_scenepack_id?: string | null
+          sync_scenepack_name?: string | null
+          sync_scenepack_preview_url?: string | null
+          sync_song_artist?: string | null
+          sync_song_preview_url?: string | null
+          sync_song_title?: string | null
+          sync_spun_at?: string | null
           theme_drop_id?: string | null
           theme_song_name?: string | null
           theme_song_preview_url?: string | null
@@ -7692,6 +7708,7 @@ export type Database = {
           winner_score?: number | null
         }
         Update: {
+          battle_mode?: string
           created_at?: string
           duration_minutes?: number
           ends_at?: string | null
@@ -7737,6 +7754,13 @@ export type Database = {
           selection_started_at?: string | null
           starts_at?: string | null
           status?: string
+          sync_scenepack_id?: string | null
+          sync_scenepack_name?: string | null
+          sync_scenepack_preview_url?: string | null
+          sync_song_artist?: string | null
+          sync_song_preview_url?: string | null
+          sync_song_title?: string | null
+          sync_spun_at?: string | null
           theme_drop_id?: string | null
           theme_song_name?: string | null
           theme_song_preview_url?: string | null
@@ -8826,6 +8850,42 @@ export type Database = {
         }
         Relationships: []
       }
+      sync_song_pool: {
+        Row: {
+          active: boolean
+          artist: string
+          cover_url: string | null
+          created_at: string
+          genre: string | null
+          id: string
+          preview_url: string | null
+          sort_order: number
+          title: string
+        }
+        Insert: {
+          active?: boolean
+          artist: string
+          cover_url?: string | null
+          created_at?: string
+          genre?: string | null
+          id?: string
+          preview_url?: string | null
+          sort_order?: number
+          title: string
+        }
+        Update: {
+          active?: boolean
+          artist?: string
+          cover_url?: string | null
+          created_at?: string
+          genre?: string | null
+          id?: string
+          preview_url?: string | null
+          sort_order?: number
+          title?: string
+        }
+        Relationships: []
+      }
       thumbnail_cache: {
         Row: {
           cached_at: string
@@ -9690,6 +9750,7 @@ export type Database = {
         Args: { p_amount: number; p_user_id: string }
         Returns: boolean
       }
+      spin_sync_fight: { Args: { p_fight_id: string }; Returns: Json }
       start_event_round: {
         Args: { p_event_id: string; p_round_number: number }
         Returns: boolean
