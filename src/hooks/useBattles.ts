@@ -289,6 +289,99 @@ export async function acceptBattle(battleId: string, opponentId: string, opponen
   }
 }
 
+/**
+ * Claim the open slot WITHOUT starting the battle. Status stays 'pending'
+ * so both players can smack-talk in chat. Either side can then click
+ * "Accept Battle" to flip it to 'active'.
+ */
+export async function joinBattleSlot(
+  battleId: string,
+  opponentId: string,
+  opponentUsername: string,
+  opponentAvatarUrl: string | null
+): Promise<boolean> {
+  try {
+    const { data: updated, error } = await supabase
+      .from('battles')
+      .update({
+        opponent_id: opponentId,
+        opponent_username: opponentUsername,
+        opponent_avatar_url: opponentAvatarUrl,
+      })
+      .eq('id', battleId)
+      .eq('status', 'pending')
+      .is('opponent_id', null)
+      .select('id');
+
+    if (error) {
+      console.error('joinBattleSlot error:', error);
+      return false;
+    }
+    if (!Array.isArray(updated) || updated.length === 0) return false;
+
+    // Pull challenger to notify them someone is warming up the lobby.
+    const { data: battle } = await supabase
+      .from('battles')
+      .select('challenger_id')
+      .eq('id', battleId)
+      .maybeSingle();
+
+    if (battle?.challenger_id) {
+      supabase.from('notifications').insert({
+        user_id: battle.challenger_id,
+        type: 'battle_joined',
+        title: 'Challenger joined your lobby',
+        message: `@${opponentUsername} took the red slot — tap Accept Battle to start.`,
+        data: { battle_id: battleId, opponent_id: opponentId, opponent_username: opponentUsername },
+      }).then(() => {});
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error joining battle slot:', error);
+    return false;
+  }
+}
+
+/**
+ * Start a battle that already has both players locked in.
+ * Used after `joinBattleSlot` to flip status from 'pending' → 'active'.
+ */
+export async function startBattle(battleId: string): Promise<boolean> {
+  try {
+    const { data: battle } = await supabase
+      .from('battles')
+      .select('duration_hours, opponent_id')
+      .eq('id', battleId)
+      .maybeSingle();
+    if (!battle?.opponent_id) return false;
+
+    const startsAt = new Date();
+    const endsAt = new Date(startsAt.getTime() + (battle?.duration_hours || 48) * 60 * 60 * 1000);
+
+    const { data: updated, error } = await supabase
+      .from('battles')
+      .update({
+        status: 'active',
+        accepted_at: startsAt.toISOString(),
+        starts_at: startsAt.toISOString(),
+        ends_at: endsAt.toISOString(),
+      })
+      .eq('id', battleId)
+      .eq('status', 'pending')
+      .select('id');
+
+    if (error) {
+      console.error('startBattle error:', error);
+      return false;
+    }
+    return Array.isArray(updated) && updated.length > 0;
+  } catch (error) {
+    console.error('Error starting battle:', error);
+    return false;
+  }
+}
+
 export async function submitToBattle(
   battleId: string,
   userId: string,
