@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Mail, Bell, Swords, Music, Users, Star, Check, Loader2 } from 'lucide-react';
+import { Mail, Trophy, Swords, Calendar, Check, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -7,10 +7,9 @@ import { motion } from 'framer-motion';
 
 interface NotifPrefs {
   notification_email: string | null;
-  notify_scores: boolean;
   notify_battles: boolean;
+  notify_scores: boolean;
   notify_drops: boolean;
-  notify_connections: boolean;
 }
 
 export default function EmailNotificationSettings() {
@@ -18,10 +17,9 @@ export default function EmailNotificationSettings() {
   const [email, setEmail] = useState('');
   const [prefs, setPrefs] = useState<NotifPrefs>({
     notification_email: null,
-    notify_scores: true,
     notify_battles: true,
+    notify_scores: true,
     notify_drops: true,
-    notify_connections: true,
   });
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -31,17 +29,16 @@ export default function EmailNotificationSettings() {
     const fetchPrefs = async () => {
       const { data } = await supabase
         .from('profiles')
-        .select('notification_email, notify_scores, notify_battles, notify_drops, notify_connections, email')
+        .select('notification_email, notify_battles, notify_scores, notify_drops, email')
         .eq('id', user.id)
         .single();
 
       if (data) {
         setPrefs({
           notification_email: (data as any).notification_email || null,
-          notify_scores: (data as any).notify_scores ?? true,
           notify_battles: (data as any).notify_battles ?? true,
+          notify_scores: (data as any).notify_scores ?? true,
           notify_drops: (data as any).notify_drops ?? true,
-          notify_connections: (data as any).notify_connections ?? true,
         });
         setEmail((data as any).notification_email || (data as any).email || user.email || '');
       }
@@ -65,10 +62,9 @@ export default function EmailNotificationSettings() {
       .from('profiles')
       .update({
         notification_email: emailVal || null,
-        notify_scores: prefs.notify_scores,
         notify_battles: prefs.notify_battles,
+        notify_scores: prefs.notify_scores,
         notify_drops: prefs.notify_drops,
-        notify_connections: prefs.notify_connections,
       } as any)
       .eq('id', user.id);
 
@@ -93,10 +89,9 @@ export default function EmailNotificationSettings() {
   }
 
   const toggleItems = [
-    { key: 'notify_scores' as const, icon: Star, label: 'Score Ratings', desc: 'When your edit gets rated by a judge', color: 'text-amber-400' },
-    { key: 'notify_battles' as const, icon: Swords, label: 'Battle Updates', desc: 'Challenges, results, and battle reminders', color: 'text-red-400' },
-    { key: 'notify_drops' as const, icon: Music, label: 'New Drops', desc: 'When a new featured song drops', color: 'text-emerald-400' },
-    { key: 'notify_connections' as const, icon: Users, label: 'Connections', desc: 'New connection requests & accepts', color: 'text-blue-400' },
+    { key: 'notify_battles' as const, icon: Swords, label: 'Edit Battles', desc: 'When someone accepts your battle challenge', color: 'text-red-400' },
+    { key: 'notify_scores' as const, icon: Trophy, label: 'Competitions', desc: 'When a competition you joined goes live', color: 'text-gold' },
+    { key: 'notify_drops' as const, icon: Calendar, label: 'Events', desc: 'When a live event or tournament starts', color: 'text-emerald-400' },
   ];
 
   return (
@@ -108,7 +103,7 @@ export default function EmailNotificationSettings() {
         </div>
         <div>
           <h3 className="text-[14px] font-black text-foreground tracking-tight">Email Notifications</h3>
-          <p className="text-[11px] text-muted-foreground">Get notified about scores, battles & drops</p>
+          <p className="text-[11px] text-muted-foreground">Get emailed about battles, competitions & events</p>
         </div>
       </div>
 

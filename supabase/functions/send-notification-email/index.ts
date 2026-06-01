@@ -19,14 +19,14 @@ interface EmailRequest {
 }
 
 const PREFERENCE_MAP: Record<EmailType, string> = {
-  score_rated: "notify_scores",
   battle_update: "notify_battles",
   battle_result: "notify_battles",
   battle_accepted: "notify_battles",
-  competition_starting: "notify_battles",
+  competition_starting: "notify_scores",
+  score_rated: "notify_scores",
   new_drop: "notify_drops",
-  connection_request: "notify_connections",
-  connection_accepted: "notify_connections",
+  connection_request: "notify_drops",
+  connection_accepted: "notify_drops",
 };
 
 function buildEmail(type: EmailType, data: Record<string, any>): { subject: string; html: string } {
