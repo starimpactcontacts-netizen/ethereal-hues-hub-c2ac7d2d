@@ -196,7 +196,7 @@ function InventoryCard({
   onToggle: () => void;
 }) {
   const isOG = item.item?.name === "OG Claim";
-  const displayName = isOG ? "First Circle" : item.item?.name || "Item";
+  const displayName = isOG ? "OG" : item.item?.name || "Item";
   const categoryLabel = item.item?.category === "badge" ? "Badge" : item.item?.category === "skin" ? "Skin" : item.item?.item_type || "Item";
 
   return (

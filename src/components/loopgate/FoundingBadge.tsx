@@ -5,153 +5,153 @@ interface FoundingBadgeProps {
   animate?: boolean;
 }
 
-/* Tiny inline emblem for chip use (sm/md) */
-function ChipEmblem({ size }: { size: number }) {
+/* ── Inline chip (sm / md) ──────────────────────────────────── */
+function OGChip({ size }: { size: 'sm' | 'md' }) {
+  const isMd = size === 'md';
   return (
-    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
-      <defs>
-        <linearGradient id="cg" x1="0" y1="0" x2="16" y2="16">
-          <stop offset="0%" stopColor="#F4D27A" />
-          <stop offset="100%" stopColor="#8C6A1F" />
-        </linearGradient>
-      </defs>
-      <path d="M8 1.5 L9.6 5.6 L14 6 L10.7 8.9 L11.7 13.2 L8 11 L4.3 13.2 L5.3 8.9 L2 6 L6.4 5.6 Z"
-            fill="url(#cg)" stroke="#3a2a08" strokeWidth="0.5" strokeLinejoin="round" />
-    </svg>
+    <span
+      className="inline-flex items-center gap-1 font-black uppercase select-none"
+      style={{
+        fontFamily: 'Teko, sans-serif',
+        fontSize: isMd ? 13 : 10,
+        letterSpacing: '0.1em',
+        paddingInline: isMd ? 10 : 7,
+        paddingBlock: isMd ? 3 : 2,
+        color: '#FFD060',
+        background: 'linear-gradient(135deg, #1c1200 0%, #0a0800 100%)',
+        border: '1px solid rgba(255,200,40,0.45)',
+        clipPath: 'polygon(7px 0%, 100% 0%, calc(100% - 7px) 100%, 0% 100%)',
+        boxShadow: '0 0 10px rgba(255,190,30,0.08) inset, 0 0 6px rgba(255,190,30,0.12)',
+        textShadow: '0 0 10px rgba(255,200,40,0.55)',
+      }}
+      title="OG — Founding Loopgate Member"
+    >
+      ★ OG
+    </span>
   );
 }
 
-const SIZES = {
-  sm: { icon: 12, text: 'text-[8px]', px: 'px-2 py-[2px]', gap: 'gap-1' },
-  md: { icon: 14, text: 'text-[10px]', px: 'px-2.5 py-[3px]', gap: 'gap-1' },
-  lg: { icon: 48, text: '', px: '', gap: '' },
-};
-
-/* iPhone 17 Pro — Liquid Glass disc. Pure monochrome, no gradient kitsch. */
-function HeroMedallion() {
+/* ── Inventory / Profile hero emblem (lg) ───────────────────── */
+function OGMedallion() {
   return (
-    <div className="relative w-[170px] h-[170px] flex items-center justify-center">
-      {/* Soft ambient light bloom */}
-      <div className="absolute inset-0 rounded-full bg-white/[0.04] blur-2xl" />
-
-      {/* Glass disc */}
-      <motion.div
-        className="relative w-[150px] h-[150px] rounded-full overflow-hidden"
-        animate={{ rotate: [0, 1.5, 0, -1.5, 0] }}
-        transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-        style={{
-          background:
-            "radial-gradient(circle at 30% 25%, rgba(255,255,255,0.16), rgba(255,255,255,0.04) 45%, rgba(255,255,255,0.02) 100%)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          border: "0.5px solid rgba(255,255,255,0.18)",
-          boxShadow:
-            "inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.4), 0 24px 60px -20px rgba(0,0,0,0.8)",
-        }}
-      >
-        {/* Inner ring — hairline */}
-        <div
-          className="absolute inset-3 rounded-full"
-          style={{ border: "0.5px solid rgba(255,255,255,0.08)" }}
-        />
-
-        {/* Roman numeral I — SF-style, ultra-thin */}
-        <div
-          className="absolute inset-0 flex items-center justify-center text-foreground"
-          style={{
-            fontFamily:
-              "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif",
-            fontWeight: 200,
-            fontSize: 76,
-            letterSpacing: "-0.04em",
-            lineHeight: 1,
-            textShadow: "0 1px 0 rgba(255,255,255,0.15), 0 -1px 0 rgba(0,0,0,0.4)",
-          }}
-        >
-          I
-        </div>
-
-        {/* Specular highlight */}
+    <div className="flex flex-col items-center gap-3">
+      {/* Outer glow */}
+      <div className="relative w-[160px] h-[160px] flex items-center justify-center">
         <div
           className="absolute inset-0 rounded-full pointer-events-none"
           style={{
             background:
-              "linear-gradient(160deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 35%, rgba(255,255,255,0) 70%, rgba(255,255,255,0.06) 100%)",
+              'radial-gradient(circle at 50% 45%, rgba(255,185,20,0.18) 0%, transparent 68%)',
+            filter: 'blur(6px)',
           }}
         />
 
-        {/* Slow specular sweep */}
+        {/* Ring */}
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{
+            border: '1px solid rgba(255,190,35,0.22)',
+          }}
+        />
+
+        {/* Disc */}
         <motion.div
-          className="absolute inset-0 pointer-events-none"
-          animate={{ x: ["-100%", "100%"] }}
-          transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", repeatDelay: 2.5 }}
+          className="relative w-[140px] h-[140px] rounded-full flex flex-col items-center justify-center overflow-hidden"
+          animate={{ rotate: [0, 1.2, 0, -1.2, 0] }}
+          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
           style={{
             background:
-              "linear-gradient(110deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%)",
+              'radial-gradient(circle at 38% 30%, rgba(255,215,60,0.12) 0%, rgba(10,8,0,0.98) 65%)',
+            border: '1px solid rgba(255,190,35,0.28)',
+            boxShadow:
+              '0 0 40px rgba(255,180,20,0.10), inset 0 0 24px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,220,80,0.18)',
           }}
-        />
-      </motion.div>
+        >
+          {/* Crown icon */}
+          <svg width="28" height="20" viewBox="0 0 28 20" fill="none" style={{ marginBottom: -2 }}>
+            <defs>
+              <linearGradient id="og-crown" x1="0" y1="0" x2="28" y2="20">
+                <stop offset="0%" stopColor="#FFE066" />
+                <stop offset="55%" stopColor="#F4A820" />
+                <stop offset="100%" stopColor="#9A6200" />
+              </linearGradient>
+            </defs>
+            <path
+              d="M2 17 L4 7 L9 12 L14 2 L19 12 L24 7 L26 17 Z"
+              fill="url(#og-crown)"
+              stroke="rgba(80,45,0,0.6)"
+              strokeWidth="0.6"
+              strokeLinejoin="round"
+            />
+            <rect x="2" y="17" width="24" height="3" rx="0.8" fill="url(#og-crown)" />
+          </svg>
 
-      {/* Micro caption */}
-      <div
-        className="absolute -bottom-1 left-0 right-0 text-center text-foreground/40"
-        style={{
-          fontSize: 8,
-          fontWeight: 600,
-          letterSpacing: "0.35em",
-        }}
-      >
-        FIRST · CIRCLE
+          {/* OG lettering */}
+          <div
+            style={{
+              fontFamily: 'Teko, sans-serif',
+              fontWeight: 700,
+              fontSize: 68,
+              lineHeight: 0.88,
+              letterSpacing: '-0.01em',
+              background: 'linear-gradient(180deg, #FFE566 0%, #F4A820 45%, #C07010 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              filter: 'drop-shadow(0 2px 10px rgba(255,175,20,0.35))',
+            }}
+          >
+            OG
+          </div>
+
+          {/* Specular sweep */}
+          <motion.div
+            className="absolute inset-0 rounded-full pointer-events-none"
+            animate={{ x: ['-110%', '110%'] }}
+            transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', repeatDelay: 4 }}
+            style={{
+              background:
+                'linear-gradient(110deg, transparent 40%, rgba(255,230,100,0.14) 50%, transparent 60%)',
+            }}
+          />
+        </motion.div>
       </div>
+
+      {/* Caption */}
+      <p
+        className="text-[8px] font-black uppercase tracking-[0.38em]"
+        style={{ color: 'rgba(255,185,30,0.45)', fontFamily: 'Teko, sans-serif' }}
+      >
+        OG · FOUNDING MEMBER
+      </p>
     </div>
   );
 }
 
 export default function FoundingBadge({ size = 'sm', animate = true }: FoundingBadgeProps) {
-  const s = SIZES[size];
-
-  // Large standalone — Roblox-tier holographic medallion
   if (size === 'lg') {
-    const coin = <HeroMedallion />;
-    if (!animate) return <div className="inline-flex">{coin}</div>;
+    if (!animate) return <div className="inline-flex"><OGMedallion /></div>;
     return (
       <motion.div
-        initial={{ opacity: 0, scale: 0.85, rotate: -8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, type: "spring", stiffness: 220, damping: 18 }}
+        initial={{ opacity: 0, scale: 0.82, rotate: -6 }}
+        animate={{ opacity: 1, scale: 1, rotate: 0 }}
+        transition={{ duration: 0.55, type: 'spring', stiffness: 210, damping: 17 }}
         className="inline-flex"
       >
-        {coin}
+        <OGMedallion />
       </motion.div>
     );
   }
 
-  // Fortnite-style skewed badge
-  const badge = (
-    <span
-      className={`inline-flex items-center ${s.gap} ${s.px} font-display ${s.text} tracking-[0.15em] text-gold uppercase`}
-      style={{
-        background: 'linear-gradient(135deg, #1a1608 0%, #0e0c04 100%)',
-        border: '1px solid hsl(var(--gold) / 0.3)',
-        clipPath: 'polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%)',
-      }}
-      title="First Circle — Founding Loopgate Member"
-    >
-      <ChipEmblem size={s.icon} />
-      FIRST CIRCLE
-    </span>
-  );
-
-  if (!animate) return badge;
-
+  const chip = <OGChip size={size} />;
+  if (!animate) return chip;
   return (
     <motion.span
-      initial={{ opacity: 0, scale: 0.9 }}
+      initial={{ opacity: 0, scale: 0.88 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.28 }}
       className="inline-flex"
     >
-      {badge}
+      {chip}
     </motion.span>
   );
 }
