@@ -735,24 +735,6 @@ export default function ArenaPage() {
     setLobbyTypeOpen(true);
   };
 
-  const handleSyncFight = async () => {
-    if (!user || !profile) { navigate('/start'); return; }
-    if (qfActiveFight) { navigate(`/fight/${qfActiveFight.id}`); return; }
-    const existingSync = myQuickFights.find(f => f.status === 'waiting' && f.player_1_id === user.id && (f as any).battle_mode === 'sync');
-    if (existingSync) { navigate(`/fight/${existingSync.id}`); return; }
-    setQfSearching(true);
-    try {
-      const lobby = await createQuickFightLobby(user.id, profile.username, profile.avatar_url, { isPrivate: false, durationMinutes: 60, battleMode: 'sync' });
-      if (!lobby) throw new Error('create sync lobby failed');
-      await leaveQueue(user.id);
-      navigate(`/fight/${lobby.id}`);
-      setQfSearching(false);
-    } catch {
-      toast.error("Couldn't create sync lobby");
-      setQfSearching(false);
-    }
-  };
-
   const handleCreateLobby = async (isPrivate: boolean, durationMinutes: number) => {
     if (!user || !profile) return;
     setQfSearching(true);
@@ -1036,7 +1018,7 @@ export default function ArenaPage() {
                                     className="text-[22px] font-black uppercase leading-none text-white truncate"
                                     style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.03em' }}
                                   >
-                                    {lobby.battle_mode === 'sync' ? 'Sync Edit Battle' : 'Custom Edit Battle'}
+                                    Custom Edit Battle
                                   </p>
                                 </div>
                                 <span
