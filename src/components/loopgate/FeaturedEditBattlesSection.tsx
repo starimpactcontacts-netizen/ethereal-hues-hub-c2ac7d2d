@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { QuickFight } from '@/hooks/useQuickFight';
-import vsBadge from '@/assets/vs-badge-filled.png.asset.json';
 
 function Corner({ pos }: { pos: 'tl' | 'tr' | 'bl' | 'br' }) {
   const t = pos[0] === 't', l = pos[1] === 'l';
@@ -130,16 +129,27 @@ export default function FeaturedEditBattlesSection() {
 
                 {/* VS divider — chunky badge, sits centered */}
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none">
-                  <img
-                    src={vsBadge.url}
-                    alt="VS"
-                    style={{
-                      width: 78,
-                      height: 78,
-                      objectFit: 'contain',
-                      filter: 'drop-shadow(2px 2px 0 rgba(0,0,0,0.6))',
-                    }}
-                  />
+                  <svg
+                    width="78"
+                    height="78"
+                    viewBox="0 0 100 100"
+                    style={{ filter: 'drop-shadow(2px 2px 0 rgba(0,0,0,0.6))' }}
+                  >
+                    <circle cx="50" cy="50" r="42" fill="#ffffff" stroke="#000000" strokeWidth="5" />
+                    <text
+                      x="50"
+                      y="50"
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fontFamily="Teko, Impact, sans-serif"
+                      fontWeight="900"
+                      fontSize="46"
+                      fill="#000000"
+                      letterSpacing="-2"
+                    >
+                      VS
+                    </text>
+                  </svg>
                 </div>
 
                 {/* Player 2 — muted red block w/ dots */}
