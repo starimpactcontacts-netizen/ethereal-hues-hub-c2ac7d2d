@@ -675,10 +675,10 @@ export default function HubPage() {
                <div
                  className="absolute inset-0 pointer-events-none z-[1]"
                  style={{
-                   backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)',
-                   backgroundSize: '14px 14px',
-                   maskImage: 'radial-gradient(ellipse 90% 100% at 50% 0%, black 30%, transparent 100%)',
-                   WebkitMaskImage: 'radial-gradient(ellipse 90% 100% at 50% 0%, black 30%, transparent 100%)',
+                   backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.03) 0.5px, transparent 0.5px)',
+                   backgroundSize: '6px 6px',
+                   maskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)',
+                   WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)',
                  }}
                />
                {/* First Circle Skin — luxury prestige aesthetic */}

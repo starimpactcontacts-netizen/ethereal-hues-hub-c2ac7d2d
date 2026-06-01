@@ -29,24 +29,33 @@ export default function XPProgressBar({
     ? 100
     : Math.max(0, Math.min(100, (xpIntoCurrentLevel / xpNeededForNextLevel) * 100));
 
-  const trackH = size === "sm" ? 6 : size === "md" ? 8 : 10;
+  const trackH = size === "sm" ? 5 : size === "md" ? 7 : 9;
 
   return (
     <div className={cn("w-full", className)}>
       {showNumbers && (
         <div className="flex items-center justify-between mb-1.5">
           <span
-            className="text-[10px] font-black uppercase tracking-[0.18em]"
-            style={{ fontFamily: 'Teko, sans-serif', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.18em' }}
+            style={{
+              fontFamily: 'Teko, sans-serif',
+              fontSize: 11,
+              letterSpacing: '0.15em',
+              color: 'rgba(255,255,255,0.28)',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+            }}
           >
-            {isMaxLevel
-              ? "MAX LEVEL"
-              : `XP  ${safeXp.toLocaleString()} / ${nextLevelXP.toLocaleString()}`}
+            {isMaxLevel ? "MAX LEVEL" : `XP  ${safeXp.toLocaleString()} / ${nextLevelXP.toLocaleString()}`}
           </span>
           {!isMaxLevel && (
             <span
-              className="text-[10px] font-black"
-              style={{ fontFamily: 'Teko, sans-serif', color: 'rgba(245,158,11,0.55)', letterSpacing: '0.12em' }}
+              style={{
+                fontFamily: 'Teko, sans-serif',
+                fontSize: 11,
+                letterSpacing: '0.12em',
+                color: 'rgba(245,158,11,0.5)',
+                fontWeight: 700,
+              }}
             >
               → LV {effectiveLevel + 1}
             </span>
@@ -55,17 +64,11 @@ export default function XPProgressBar({
       )}
 
       {/* Track */}
-      <div
-        className="relative w-full overflow-visible"
-        style={{ height: trackH }}
-      >
-        {/* Background track */}
+      <div className="relative w-full" style={{ height: trackH }}>
+        {/* Background */}
         <div
           className="absolute inset-0"
-          style={{
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.07)',
-          }}
+          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
         />
 
         {/* Fill */}
@@ -74,45 +77,32 @@ export default function XPProgressBar({
             className="absolute top-0 left-0 h-full"
             style={{
               width: `${progress}%`,
-              background: 'linear-gradient(90deg, #b45309 0%, #d97706 35%, #f59e0b 70%, #fcd34d 100%)',
-              boxShadow: '0 0 10px rgba(245,158,11,0.5), 0 0 24px rgba(245,158,11,0.2)',
+              background: 'linear-gradient(90deg, #b45309, #f59e0b)',
+              boxShadow: '0 0 8px rgba(245,158,11,0.35)',
               transition: 'width 0.7s cubic-bezier(0.22,1,0.36,1)',
             }}
           >
-            {/* Shimmer sweep */}
+            {/* Single subtle shimmer */}
             <div
-              className="absolute inset-0 overflow-hidden"
-              style={{ borderRadius: 'inherit' }}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                overflow: 'hidden',
+              }}
             >
               <div
                 style={{
                   position: 'absolute',
                   top: 0,
-                  left: '-60%',
-                  width: '50%',
+                  left: '-80%',
+                  width: '40%',
                   height: '100%',
-                  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent)',
-                  animation: 'xp-shimmer 2.2s ease-in-out infinite',
+                  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent)',
+                  animation: 'xp-shimmer 3s ease-in-out infinite',
                 }}
               />
             </div>
           </div>
-        )}
-
-        {/* Glowing tip dot */}
-        {progress > 2 && progress < 100 && (
-          <div
-            className="absolute top-1/2 -translate-y-1/2"
-            style={{
-              left: `calc(${progress}% - ${trackH / 2}px)`,
-              width: trackH + 2,
-              height: trackH + 2,
-              borderRadius: '50%',
-              background: '#fcd34d',
-              boxShadow: '0 0 6px 2px rgba(252,211,77,0.7), 0 0 14px 4px rgba(245,158,11,0.4)',
-              transition: 'left 0.7s cubic-bezier(0.22,1,0.36,1)',
-            }}
-          />
         )}
 
         {/* Tick marks at 25 / 50 / 75 */}
@@ -122,9 +112,7 @@ export default function XPProgressBar({
             className="absolute top-0 bottom-0 w-px"
             style={{
               left: `${pct}%`,
-              background: pct <= progress
-                ? 'rgba(0,0,0,0.3)'
-                : 'rgba(255,255,255,0.06)',
+              background: pct <= progress ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.05)',
             }}
           />
         ))}
@@ -132,8 +120,8 @@ export default function XPProgressBar({
 
       <style>{`
         @keyframes xp-shimmer {
-          0%   { left: -60%; }
-          100% { left: 130%; }
+          0%   { left: -80%; }
+          100% { left: 120%; }
         }
       `}</style>
     </div>
