@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MAX_EDIT_UPLOAD_BYTES, MAX_EDIT_UPLOAD_LABEL, uploadToBunny } from '@/lib/bunnyUpload';
 import { motion } from 'framer-motion';
@@ -34,6 +34,19 @@ import BattleSelectFlow from '@/components/loopgate/battle-select/BattleSelectFl
 import BattleSelectionsBanner from '@/components/loopgate/BattleSelectionsBanner';
 import BattleRevealScreen from '@/components/loopgate/BattleRevealScreen';
 
+/** Deterministic index from fight ID — both players independently produce the same pick */
+function seededIndex(seed: string, len: number): number {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) { h = Math.imul(31, h) + seed.charCodeAt(i) | 0; }
+  return Math.abs(h) % len;
+}
+
+const FALLBACK_SONG_POOL = [
+  { id: 'fb-1', song_name: 'Virtuoso',    artist_name: 'Loneliness x Sace', cover_url: null, preview_url: null },
+  { id: 'fb-2', song_name: 'LUA NOVA',    artist_name: 'refri',             cover_url: null, preview_url: null },
+  { id: 'fb-3', song_name: 'Toxic Potion',artist_name: 'Margaux',           cover_url: null, preview_url: null },
+];
+
 /** Detect platform from URL */
 function detectPlatform(url: string): string {
   if (!url) return 'unknown';
@@ -68,6 +81,50 @@ export default function QuickFightPage() {
     return sessionStorage.getItem(`qf_reveal_done_${fightId}`) === '1';
   });
 
+  const autoAssignedRef = useRef(false);
+
+  // Auto-assign random picks when fight is active but player never made selections.
+  // Uses fight ID as seed so both players independently get the same song + scenepack
+  // when neither chose anything.
+  useEffect(() => {
+    if (!fight || fight.status !== 'active' || !isParticipant || !user?.id) return;
+    if (autoAssignedRef.current) return;
+    autoAssignedRef.current = true;
+
+    (async () => {
+      const { data } = await supabase.rpc('get_quick_fight_selection_state' as any, { p_fight_id: fight.id } as any);
+      const existing = (data as any)?.mine;
+      const needsPack = !existing?.pack?.id;
+      const needsSong = !existing?.song?.id;
+      if (!needsPack && !needsSong) return;
+
+      const [{ data: packRows }, { data: songRows }] = await Promise.all([
+        supabase.from('scenepack_pool').select('id, title, thumbnail_url, pack_count').eq('active', true).order('sort_order', { ascending: true }),
+        supabase.from('battle_songs' as any).select('id, song_name, artist_name, cover_url, preview_url, audio_url').eq('is_featured', true).limit(60),
+      ]);
+
+      const packPool = Array.isArray(packRows) && packRows.length ? packRows : [];
+      const songPool = Array.isArray(songRows) && songRows.length ? songRows : FALLBACK_SONG_POOL;
+
+      const p_scenepack = needsPack && packPool.length ? (() => {
+        const p = packPool[seededIndex(fight.id, packPool.length)] as any;
+        return { id: p.id, name: p.title || 'Unknown', poster: p.thumbnail_url || '', packCount: p.pack_count || 0 };
+      })() : (existing?.pack || null);
+
+      const p_song = needsSong ? (() => {
+        const s = songPool[seededIndex(fight.id + 's', songPool.length)] as any;
+        return { id: s.id, title: s.song_name || 'Unknown', artist: s.artist_name || '', cover: s.cover_url || null, preview: s.preview_url || s.audio_url || null };
+      })() : (existing?.song || null);
+
+      await supabase.rpc('upsert_quick_fight_selection' as any, {
+        p_fight_id: fight.id,
+        p_scenepack,
+        p_song,
+        p_ready: true,
+      } as any);
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fight?.status, fight?.id, isParticipant, user?.id]);
 
   // Auto-resolve expired fights on page load
   useEffect(() => {
