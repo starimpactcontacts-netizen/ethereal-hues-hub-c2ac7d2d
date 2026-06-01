@@ -788,8 +788,58 @@ export default function HubPage() {
             </div>
           </motion.div>
 
+          {/* ⚔️ ACTIVE REMINDERS — above PLAY so it doesn't split the CTA stack */}
+          {(() => {
+            const qfItems: LiveBattleReminderItem[] = qfFights
+              .filter(f => ['active', 'submitted', 'judging'].includes(f.status))
+              .map(f => {
+                const isP1 = f.player_1_id === user?.id;
+                return {
+                  kind: 'quick' as const,
+                  id: f.id,
+                  title: `${f.player_1_username} vs ${f.player_2_username || '???'}`,
+                  status: f.status,
+                  endsAt: f.ends_at,
+                  hasSubmitted: isP1 ? !!f.player_1_submission_url : !!f.player_2_submission_url,
+                  href: `/fight/${f.id}`,
+                };
+              });
+            const items: LiveBattleReminderItem[] = [
+              ...activeBattles.map(battle => {
+                const isJudgeRole = battle.judge_id === user?.id;
+                const isChallenger = battle.challenger_id === user?.id;
+                return {
+                  kind: 'battle' as const,
+                  id: battle.id,
+                  title: `${battle.challenger_username} vs ${battle.opponent_username || '???'}`,
+                  status: battle.status,
+                  endsAt: battle.ends_at,
+                  hasSubmitted: isChallenger ? !!(battle as any).challenger_submission_url : !!(battle as any).opponent_submission_url,
+                  isJudge: isJudgeRole,
+                  href: `/battle/${battle.id}`,
+                };
+              }),
+              ...qfItems,
+              ...myLiveCompetitions.map(comp => ({
+                kind: 'competition' as const,
+                id: comp.id,
+                title: comp.name,
+                status: comp.status,
+                endsAt: comp.status === 'voting' ? comp.voting_deadline : comp.deadline,
+                hasSubmitted: comp.hasSubmitted,
+                hasVoted: comp.hasVoted,
+                href: `/competition/${comp.slug || comp.id}`,
+              })),
+            ];
+            return items.length > 0 && !dismissedBanners.battles ? (
+              <div className="px-4 mt-4 mb-2">
+                <LiveBattleReminders items={items} />
+              </div>
+            ) : null;
+          })()}
+
           {/* PLAY — aggressive arena CTA (red, angular, retro) */}
-          <div className="relative mt-8 mb-3">
+          <div className="relative mt-4 mb-3">
             <AnimatePresence mode="wait" initial={false}>
               {!playExpanded ? (
                 <motion.div
@@ -866,55 +916,6 @@ export default function HubPage() {
         </div>
       </div>
 
-      {/* ⚔️ ACTIVE REMINDERS — clean, rounded, dismissible */}
-      {(() => {
-        const qfItems: LiveBattleReminderItem[] = qfFights
-          .filter(f => ['active', 'submitted', 'judging'].includes(f.status))
-          .map(f => {
-            const isP1 = f.player_1_id === user?.id;
-            return {
-              kind: 'quick' as const,
-              id: f.id,
-              title: `${f.player_1_username} vs ${f.player_2_username || '???'}`,
-              status: f.status,
-              endsAt: f.ends_at,
-              hasSubmitted: isP1 ? !!f.player_1_submission_url : !!f.player_2_submission_url,
-              href: `/fight/${f.id}`,
-            };
-          });
-        const items: LiveBattleReminderItem[] = [
-          ...activeBattles.map(battle => {
-            const isJudgeRole = battle.judge_id === user?.id;
-            const isChallenger = battle.challenger_id === user?.id;
-            return {
-              kind: 'battle' as const,
-              id: battle.id,
-              title: `${battle.challenger_username} vs ${battle.opponent_username || '???'}`,
-              status: battle.status,
-              endsAt: battle.ends_at,
-              hasSubmitted: isChallenger ? !!(battle as any).challenger_submission_url : !!(battle as any).opponent_submission_url,
-              isJudge: isJudgeRole,
-              href: `/battle/${battle.id}`,
-            };
-          }),
-          ...qfItems,
-          ...myLiveCompetitions.map(comp => ({
-            kind: 'competition' as const,
-            id: comp.id,
-            title: comp.name,
-            status: comp.status,
-            endsAt: comp.status === 'voting' ? comp.voting_deadline : comp.deadline,
-            hasSubmitted: comp.hasSubmitted,
-            hasVoted: comp.hasVoted,
-            href: `/competition/${comp.slug || comp.id}`,
-          })),
-        ];
-        return items.length > 0 && !dismissedBanners.battles ? (
-          <div className="px-4 mt-2">
-            <LiveBattleReminders items={items} />
-          </div>
-        ) : null;
-      })()}
 
       {activeSolo && !dismissedBanners.solo && (
         <div className="px-4 mt-2">
