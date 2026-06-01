@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { QuickFight } from '@/hooks/useQuickFight';
-import vsBadge from '@/assets/vs-badge-filled.png.asset.json';
 
 function Corner({ pos }: { pos: 'tl' | 'tr' | 'bl' | 'br' }) {
   const t = pos[0] === 't', l = pos[1] === 'l';
@@ -131,7 +130,7 @@ export default function FeaturedEditBattlesSection() {
                 {/* VS divider — chunky badge, sits centered */}
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none">
                   <img
-                    src={vsBadge.url}
+                    src="/vs-badge.png"
                     alt="VS"
                     style={{
                       width: 78,
