@@ -55,12 +55,10 @@ export default function FeaturedEditBattlesSection() {
   const bluePct = total === 0 ? 50 : Math.round((votes.blue / total) * 100);
   const redPct = 100 - bluePct;
 
-  const G = {
-    w: 500, h: 120,
-    pL: 60,   // left pillar inner edge
-    pR: 440,  // right pillar inner edge
-    pW: 34,   // pillar width
-  };
+  // Pillar hairlines: CSS left/right border on content divs.
+  // SVG handles only the kasagi arch — no chunky pillar blocks.
+  const pillar = '1px solid rgba(255,255,255,0.5)';
+  const pillarFaint = '1px solid rgba(255,255,255,0.12)';
 
   return (
     <section className="px-4 mt-6">
@@ -89,203 +87,122 @@ export default function FeaturedEditBattlesSection() {
           transition={{ duration: 0.18 }}>
           <Link to={`/fight/${current.id}`} className="block">
 
-            {/*
-              ╔══════════════════════════════════════════════╗
-                 TORII GATE CARD
-                 Structure:
-                  [SVG] kasagi arch (curved, wider) + shimagi + pillar tops
-                  [DIV] left pillar | content | right pillar
-                  [DIV] nuki crossbar (full width, through pillars)
-                  [DIV] lower pillar section | lower content | lower pillar
-                  [DIV] base rail
-              ╚══════════════════════════════════════════════╝
-            */}
-
-            {/* ── KASAGI + SHIMAGI: SVG arch section ─────────────────────── */}
-            {/* height:82 on an 120-unit viewBox → scale=0.683, giving shimagi ~19px rendered */}
-            <div className="-mx-1.5 overflow-visible">
-              <svg
-                viewBox={`0 0 ${G.w} ${G.h}`}
-                className="w-full block"
-                style={{ height: 82, overflow: 'visible' }}
-                preserveAspectRatio="none"
-              >
-                {/* ── KASAGI fill ── */}
+            {/* ── KASAGI: torii top beam, upswept ends ─────────────────────── */}
+            {/* viewBox 0 0 500 80, displayed at 54px → y-scale 0.675           */}
+            {/* End caps land at x=0/500 = card left/right edges                */}
+            <div className="overflow-visible">
+              <svg viewBox="0 0 500 80" className="w-full block"
+                style={{ height: 54, overflow: 'visible' }} preserveAspectRatio="none">
+                {/* Fill drawn first so stroke renders on top */}
                 <path
-                  d="M -20 18 C 5 4, 80 34, 130 38 L 370 38 C 420 34, 495 4, 520 18 L 520 55 C 490 52, 10 52, -20 55 Z"
-                  fill="#111111"
+                  d="M 0 26 C 25 13, 95 36, 155 39 L 345 39 C 405 36, 475 13, 500 26 L 500 54 C 470 52, 30 52, 0 54 Z"
+                  fill="#0e0e0e"
                 />
-                {/* Kasagi top edge — sweeps up at ends */}
+                {/* Top edge — the upswept kasagi profile */}
                 <path
-                  d="M -20 18 C 5 4, 80 34, 130 38 L 370 38 C 420 34, 495 4, 520 18"
-                  fill="none" stroke="#ffffff" strokeWidth="2.5"
+                  d="M 0 26 C 25 13, 95 36, 155 39 L 345 39 C 405 36, 475 13, 500 26"
+                  fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="1"
                 />
-                {/* Kasagi soffit */}
+                {/* Soffit (underside) — faint */}
                 <path
-                  d="M -20 55 C 10 52, 490 52, 520 55"
-                  fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="1"
+                  d="M 0 54 C 30 52, 470 52, 500 54"
+                  fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1"
                 />
-                {/* Kasagi end caps */}
-                <line x1="-20" y1="17" x2="-20" y2="56" stroke="#ffffff" strokeWidth="2.5" />
-                <line x1="520" y1="17" x2="520" y2="56" stroke="#ffffff" strokeWidth="2.5" />
-
-                {/* ── PILLAR BODIES (run from kasagi to bottom of SVG) ── */}
-                {/* Left */}
-                <rect x={G.pL} y="52" width={G.pW} height="68" fill="#161616" />
-                <line x1={G.pL} y1="52" x2={G.pL} y2="120" stroke="#ffffff" strokeWidth="1.5" />
-                <line x1={G.pL + G.pW} y1="52" x2={G.pL + G.pW} y2="120"
-                  stroke="rgba(255,255,255,0.22)" strokeWidth="1" />
-                {/* Right */}
-                <rect x={G.pR - G.pW} y="52" width={G.pW} height="68" fill="#161616" />
-                <line x1={G.pR} y1="52" x2={G.pR} y2="120" stroke="#ffffff" strokeWidth="1.5" />
-                <line x1={G.pR - G.pW} y1="52" x2={G.pR - G.pW} y2="120"
-                  stroke="rgba(255,255,255,0.22)" strokeWidth="1" />
-
-                {/* ── SHIMAGI: second beam (28 SVG units = ~19px rendered) ── */}
-                <rect x={G.pL - 18} y="57" width={G.w - (G.pL - 18) * 2} height="28"
-                  fill="#141414" />
-                {/* Top edge */}
-                <line x1={G.pL - 18} y1="57" x2={G.w - G.pL + 18} y2="57"
-                  stroke="rgba(255,255,255,0.65)" strokeWidth="1.5" />
-                {/* Inner shadow line */}
-                <line x1={G.pL - 18} y1="60" x2={G.w - G.pL + 18} y2="60"
-                  stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
-                {/* Bottom edge */}
-                <line x1={G.pL - 18} y1="85" x2={G.w - G.pL + 18} y2="85"
-                  stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
-
-                {/* ── BRACKET EARS: hang below shimagi at each pillar ── */}
-                {/* Left pillar — left ear */}
-                <rect x={G.pL - 14} y="85" width="14" height="12" fill="#181818" />
-                <line x1={G.pL - 14} y1="85" x2={G.pL - 14} y2="97" stroke="rgba(255,255,255,0.38)" strokeWidth="1" />
-                <line x1={G.pL - 14} y1="97" x2={G.pL} y2="97" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
-                {/* Left pillar — right ear */}
-                <rect x={G.pL + G.pW} y="85" width="14" height="12" fill="#181818" />
-                <line x1={G.pL + G.pW + 14} y1="85" x2={G.pL + G.pW + 14} y2="97" stroke="rgba(255,255,255,0.38)" strokeWidth="1" />
-                <line x1={G.pL + G.pW} y1="97" x2={G.pL + G.pW + 14} y2="97" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
-                {/* Right pillar — left ear */}
-                <rect x={G.pR - G.pW - 14} y="85" width="14" height="12" fill="#181818" />
-                <line x1={G.pR - G.pW - 14} y1="85" x2={G.pR - G.pW - 14} y2="97" stroke="rgba(255,255,255,0.38)" strokeWidth="1" />
-                <line x1={G.pR - G.pW - 14} y1="97" x2={G.pR - G.pW} y2="97" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
-                {/* Right pillar — right ear */}
-                <rect x={G.pR} y="85" width="14" height="12" fill="#181818" />
-                <line x1={G.pR + 14} y1="85" x2={G.pR + 14} y2="97" stroke="rgba(255,255,255,0.38)" strokeWidth="1" />
-                <line x1={G.pR} y1="97" x2={G.pR + 14} y2="97" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
+                {/* End caps — align with card left/right edges = pillar positions */}
+                <line x1="0" y1="25" x2="0" y2="55" stroke="rgba(255,255,255,0.55)" strokeWidth="1" />
+                <line x1="500" y1="25" x2="500" y2="55" stroke="rgba(255,255,255,0.55)" strokeWidth="1" />
               </svg>
             </div>
 
-            {/* ── PILLAR + UPPER CONTENT (above nuki) ────────────────────── */}
-            <div className="flex" style={{ background: '#0a0a0a' }}>
-              {/* Left pillar */}
-              <div className="flex-shrink-0" style={{
-                width: 34,
-                background: '#141414',
-                borderLeft: '2px solid #ffffff',
-                borderRight: '1px solid rgba(255,255,255,0.12)',
+            {/* ── SHIMAGI: second flat beam ──────────────────────────────────── */}
+            <div style={{ borderLeft: pillar, borderRight: pillar, background: '#0e0e0e' }}>
+              <div style={{ height: 1, background: 'rgba(255,255,255,0.45)' }} />
+              <div style={{ height: 12, background: '#131313' }} />
+              <div style={{ height: 1, background: 'rgba(255,255,255,0.12)' }} />
+              {/* Bracket ear tabs at left/right pillar junction */}
+              <div className="relative" style={{ height: 8, background: '#0e0e0e' }}>
+                <div className="absolute left-0 top-0 bottom-0" style={{ width: 14, borderBottom: '1px solid rgba(255,255,255,0.3)', borderRight: '1px solid rgba(255,255,255,0.2)' }} />
+                <div className="absolute right-0 top-0 bottom-0" style={{ width: 14, borderBottom: '1px solid rgba(255,255,255,0.3)', borderLeft: '1px solid rgba(255,255,255,0.2)' }} />
+              </div>
+            </div>
+
+            {/* ── PLAYER CONTENT ─────────────────────────────────────────────── */}
+            <div className="relative" style={{ borderLeft: pillar, borderRight: pillarFaint, background: '#0a0a0a' }}>
+              <div className="absolute inset-0 pointer-events-none" style={{
+                backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.018) 1px, transparent 1px)',
+                backgroundSize: '20px 20px',
               }} />
+              <div className="relative flex items-start pt-5 pb-4 px-4 gap-2">
 
-              {/* Upper content — players */}
-              <div className="flex-1 min-w-0 relative">
-                {/* Dot grid */}
-                <div className="absolute inset-0 pointer-events-none" style={{
-                  backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.025) 1px, transparent 1px)',
-                  backgroundSize: '18px 18px',
-                }} />
-                <div className="relative flex items-start pt-5 pb-4 px-3 gap-2">
-
-                  {/* Player 1 */}
-                  <div className="flex-1 flex flex-col items-center gap-2 min-w-0">
-                    <div className="relative">
-                      <div className="absolute -inset-[2px] bg-blue-500 opacity-60" />
-                      <Avatar className="relative w-[72px] h-[72px] rounded-none">
-                        <AvatarImage src={current.player_1_avatar_url || ''} className="object-cover" />
-                        <AvatarFallback className="rounded-none text-blue-300 font-black text-3xl"
-                          style={{ fontFamily: 'Teko, sans-serif', background: '#080f1a' }}>
-                          {current.player_1_username?.[0]?.toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                    </div>
-                    <p className="text-[11px] font-black text-white/80 truncate w-full text-center uppercase tracking-wider"
-                      style={{ fontFamily: 'Teko, sans-serif' }}>
-                      {current.player_1_username}
-                    </p>
-                    <div className="text-center leading-none">
-                      <span className="text-[40px] font-black text-blue-400 tabular-nums"
-                        style={{ fontFamily: 'Teko, sans-serif', lineHeight: 1 }}>
-                        {votes.blue}
-                      </span>
-                      <p className="text-[8px] font-bold uppercase tracking-[0.25em] text-blue-400/30 mt-0.5">Votes</p>
-                    </div>
+                {/* Player 1 */}
+                <div className="flex-1 flex flex-col items-center gap-2 min-w-0">
+                  <div className="relative">
+                    <div className="absolute -inset-[2px] bg-blue-500 opacity-50" />
+                    <Avatar className="relative w-[68px] h-[68px] rounded-none">
+                      <AvatarImage src={current.player_1_avatar_url || ''} className="object-cover" />
+                      <AvatarFallback className="rounded-none text-blue-300 font-black text-3xl"
+                        style={{ fontFamily: 'Teko, sans-serif', background: '#080f1a' }}>
+                        {current.player_1_username?.[0]?.toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
                   </div>
-
-                  {/* VS */}
-                  <div className="flex-shrink-0 flex items-center justify-center pt-10">
-                    <span className="text-[28px] font-black text-white/[0.07] leading-none"
-                      style={{ fontFamily: 'Teko, sans-serif' }}>
-                      VS
+                  <p className="text-[11px] font-black text-white/75 truncate w-full text-center uppercase tracking-wider"
+                    style={{ fontFamily: 'Teko, sans-serif' }}>
+                    {current.player_1_username}
+                  </p>
+                  <div className="text-center leading-none">
+                    <span className="text-[38px] font-black text-blue-400 tabular-nums"
+                      style={{ fontFamily: 'Teko, sans-serif', lineHeight: 1 }}>
+                      {votes.blue}
                     </span>
-                  </div>
-
-                  {/* Player 2 */}
-                  <div className="flex-1 flex flex-col items-center gap-2 min-w-0">
-                    <div className="relative">
-                      <div className="absolute -inset-[2px] bg-red-500 opacity-60" />
-                      <Avatar className="relative w-[72px] h-[72px] rounded-none">
-                        <AvatarImage src={current.player_2_avatar_url || ''} className="object-cover" />
-                        <AvatarFallback className="rounded-none text-red-300 font-black text-3xl"
-                          style={{ fontFamily: 'Teko, sans-serif', background: '#1a0808' }}>
-                          {current.player_2_username?.[0]?.toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                    </div>
-                    <p className="text-[11px] font-black text-white/80 truncate w-full text-center uppercase tracking-wider"
-                      style={{ fontFamily: 'Teko, sans-serif' }}>
-                      {current.player_2_username}
-                    </p>
-                    <div className="text-center leading-none">
-                      <span className="text-[40px] font-black text-red-400 tabular-nums"
-                        style={{ fontFamily: 'Teko, sans-serif', lineHeight: 1 }}>
-                        {votes.red}
-                      </span>
-                      <p className="text-[8px] font-bold uppercase tracking-[0.25em] text-red-400/30 mt-0.5">Votes</p>
-                    </div>
+                    <p className="text-[8px] font-bold uppercase tracking-[0.25em] text-blue-400/30 mt-0.5">Votes</p>
                   </div>
                 </div>
+
+                {/* VS */}
+                <div className="flex-shrink-0 flex items-center justify-center pt-8">
+                  <span className="text-[22px] font-black text-white/[0.055] leading-none"
+                    style={{ fontFamily: 'Teko, sans-serif' }}>VS</span>
+                </div>
+
+                {/* Player 2 */}
+                <div className="flex-1 flex flex-col items-center gap-2 min-w-0">
+                  <div className="relative">
+                    <div className="absolute -inset-[2px] bg-red-500 opacity-50" />
+                    <Avatar className="relative w-[68px] h-[68px] rounded-none">
+                      <AvatarImage src={current.player_2_avatar_url || ''} className="object-cover" />
+                      <AvatarFallback className="rounded-none text-red-300 font-black text-3xl"
+                        style={{ fontFamily: 'Teko, sans-serif', background: '#1a0808' }}>
+                        {current.player_2_username?.[0]?.toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                  <p className="text-[11px] font-black text-white/75 truncate w-full text-center uppercase tracking-wider"
+                    style={{ fontFamily: 'Teko, sans-serif' }}>
+                    {current.player_2_username}
+                  </p>
+                  <div className="text-center leading-none">
+                    <span className="text-[38px] font-black text-red-400 tabular-nums"
+                      style={{ fontFamily: 'Teko, sans-serif', lineHeight: 1 }}>
+                      {votes.red}
+                    </span>
+                    <p className="text-[8px] font-bold uppercase tracking-[0.25em] text-red-400/30 mt-0.5">Votes</p>
+                  </div>
+                </div>
+
               </div>
-
-              {/* Right pillar */}
-              <div className="flex-shrink-0" style={{
-                width: 34,
-                background: '#141414',
-                borderRight: '2px solid #ffffff',
-                borderLeft: '1px solid rgba(255,255,255,0.12)',
-              }} />
             </div>
 
-            {/* ── NUKI: horizontal crossbar through the pillars ───────────── */}
-            <div className="-mx-1.5 relative" style={{ background: '#141414', height: 14 }}>
-              <div className="absolute inset-x-0 top-0 h-px" style={{ background: 'rgba(255,255,255,0.4)' }} />
-              <div className="absolute inset-x-0 bottom-0 h-px" style={{ background: 'rgba(255,255,255,0.12)' }} />
-              {/* Bracket marks at pillar edges */}
-              <div className="absolute top-0 bottom-0" style={{ left: 34, width: 2, background: 'rgba(255,255,255,0.3)' }} />
-              <div className="absolute top-0 bottom-0" style={{ left: 68, width: 1, background: 'rgba(255,255,255,0.12)' }} />
-              <div className="absolute top-0 bottom-0" style={{ right: 34, width: 2, background: 'rgba(255,255,255,0.3)' }} />
-              <div className="absolute top-0 bottom-0" style={{ right: 68, width: 1, background: 'rgba(255,255,255,0.12)' }} />
+            {/* ── NUKI: crossbar spanning full width ──────────────────────────── */}
+            <div className="relative" style={{ height: 11, background: '#111111' }}>
+              <div className="absolute inset-x-0 top-0" style={{ height: 1, background: 'rgba(255,255,255,0.38)' }} />
+              <div className="absolute inset-x-0 bottom-0" style={{ height: 1, background: 'rgba(255,255,255,0.1)' }} />
             </div>
 
-            {/* ── LOWER PILLAR + VOTE AREA ────────────────────────────────── */}
-            <div className="flex" style={{ background: '#0a0a0a' }}>
-              {/* Left pillar lower */}
-              <div className="flex-shrink-0" style={{
-                width: 34,
-                background: '#141414',
-                borderLeft: '2px solid #ffffff',
-                borderRight: '1px solid rgba(255,255,255,0.12)',
-              }} />
-
-              {/* Vote bar section */}
-              <div className="flex-1 min-w-0 px-4 py-3 space-y-2">
-                <div className="flex" style={{ height: 5, background: 'rgba(255,255,255,0.04)' }}>
+            {/* ── VOTE AREA ──────────────────────────────────────────────────── */}
+            <div className="relative" style={{ borderLeft: pillar, borderRight: pillarFaint, background: '#0a0a0a' }}>
+              <div className="px-4 py-3 space-y-2">
+                <div className="flex overflow-hidden" style={{ height: 4, background: 'rgba(255,255,255,0.04)' }}>
                   <div className="h-full bg-blue-500 transition-all duration-700"
                     style={{ width: `${bluePct}%` }} />
                   <div className="h-full bg-red-500 flex-1" />
@@ -298,26 +215,14 @@ export default function FeaturedEditBattlesSection() {
                   <span className="text-[10px] font-black text-red-400/60 tabular-nums">{redPct}%</span>
                 </div>
               </div>
-
-              {/* Right pillar lower */}
-              <div className="flex-shrink-0" style={{
-                width: 34,
-                background: '#141414',
-                borderRight: '2px solid #ffffff',
-                borderLeft: '1px solid rgba(255,255,255,0.12)',
-              }} />
             </div>
 
-            {/* ── BASE RAIL ───────────────────────────────────────────────── */}
-            <div className="-mx-1.5 h-[20px] flex items-center justify-center relative"
-              style={{ background: '#141414' }}>
-              <div className="absolute inset-x-0 top-0 h-px" style={{ background: 'rgba(255,255,255,0.25)' }} />
-              <div className="absolute inset-x-0 bottom-0 h-[2px]" style={{ background: 'rgba(255,255,255,0.75)' }} />
-              {/* Pillar base marks */}
-              <div className="absolute top-0 bottom-0" style={{ left: 34, width: 34, borderLeft: '2px solid #ffffff', borderRight: '1px solid rgba(255,255,255,0.15)' }} />
-              <div className="absolute top-0 bottom-0" style={{ right: 34, width: 34, borderRight: '2px solid #ffffff', borderLeft: '1px solid rgba(255,255,255,0.15)' }} />
-              {/* Center gate emblem */}
-              <Swords className="w-3 h-3 text-white/20" strokeWidth={2} />
+            {/* ── BASE RAIL ───────────────────────────────────────────────────── */}
+            <div className="h-4 flex items-center justify-center relative"
+              style={{ background: '#111111' }}>
+              <div className="absolute inset-x-0 top-0" style={{ height: 1, background: 'rgba(255,255,255,0.12)' }} />
+              <div className="absolute inset-x-0 bottom-0" style={{ height: 1, background: 'rgba(255,255,255,0.45)' }} />
+              <Swords className="w-2.5 h-2.5 text-white/15" strokeWidth={1.5} />
             </div>
 
           </Link>
