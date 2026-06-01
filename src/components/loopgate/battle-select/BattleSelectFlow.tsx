@@ -124,6 +124,11 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
   const [oppSyncVote, setOppSyncVote] = useState(false);
   const syncChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const mySyncVoteRef = useRef(false);
+  // Refs so effects can read current values without being in deps
+  const mineRef = useRef<PlayerPicks>(EMPTY_PICKS);
+  const oppRef = useRef<PlayerPicks>(EMPTY_PICKS);
+  const syncActiveRef = useRef(false);
+  const syncRoleRef = useRef<Tab>('song');
 
   const [intro, setIntro] = useState({ pct: 0, count: 3 });
 
@@ -178,6 +183,11 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
   // Sync mode: red picks song, blue picks scenepack
   const syncRole: Tab = mySide === 'red' ? 'song' : 'scenepack';
   const syncActive = mySyncVote && oppSyncVote;
+  // Keep refs current so stale-closure-prone effects can read latest values
+  mineRef.current = mine;
+  oppRef.current = opp;
+  syncActiveRef.current = syncActive;
+  syncRoleRef.current = syncRole;
   const redPicks = mySide === 'red' ? mine : opp;
   const bluePicks = mySide === 'blue' ? mine : opp;
   const redPlayer = mySide === 'red' ? you : opponent;
@@ -240,9 +250,26 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
   };
   const lockInReady = async () => {
     if (!canReady || mine.ready) return;
-    const next = { ...mine, ready: true };
+    let next: PlayerPicks = { ...mine, ready: true };
     setMine(next);
     const state = await saveSelection(next);
+
+    // Sync mode: when opponent is already ready, cross-fill their complementary pick
+    if (syncActiveRef.current && (state?.bothReady || state?.reveal) && state?.opponent) {
+      const oppPack = cleanPack(state.opponent.pack);
+      const oppSong = cleanSong(state.opponent.song);
+      const filled: PlayerPicks = {
+        ...next,
+        pack: next.pack || oppPack || null,
+        song: next.song || oppSong || null,
+      };
+      if (filled.pack !== next.pack || filled.song !== next.song) {
+        next = filled;
+        setMine(filled);
+        await saveSelection(filled);
+      }
+    }
+
     if (state?.bothReady || state?.reveal) await startFromSelection();
   };
 
@@ -382,15 +409,32 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
     }, 500);
     return () => clearInterval(iv);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, phase, deadlineIso, mine.pack, mine.song, mine.ready, songs]);
+  }, [open, phase, deadlineIso, mine.pack, mine.song, mine.ready, songs, syncActive]);
 
   // Advance only when backend confirms both ready / reveal condition.
   useEffect(() => {
     if (!open || phase !== 'select') return;
-    if (bothReady && revealSelections) {
-      startFromSelection().catch(() => {});
-    }
-  }, [bothReady, revealSelections, open, phase, startFromSelection]);
+    if (!(bothReady && revealSelections)) return;
+
+    const go = async () => {
+      // Sync mode: cross-fill the opponent's complementary pick so both share the full set
+      if (syncActiveRef.current && !startingRef.current) {
+        const cur = mineRef.current;
+        const opp = oppRef.current;
+        const filledPack = !cur.pack && opp.pack ? opp.pack : cur.pack;
+        const filledSong = !cur.song && opp.song ? opp.song : cur.song;
+        if (filledPack !== cur.pack || filledSong !== cur.song) {
+          const cross: PlayerPicks = { ...cur, pack: filledPack, song: filledSong };
+          setMine(cross);
+          mineRef.current = cross;
+          await saveSelection(cross);
+        }
+      }
+      await startFromSelection();
+    };
+    go().catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bothReady, revealSelections, open, phase, startFromSelection, saveSelection]);
 
   // Intro animation
   useEffect(() => {
