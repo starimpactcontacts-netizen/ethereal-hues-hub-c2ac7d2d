@@ -133,6 +133,34 @@ export default function TournamentLifecycleAdmin() {
       const { error } = await supabase.from(table).update(updateData).eq("id", t.id);
       if (error) throw error;
       toast.success(`Advanced to "${nextStatus}"`);
+
+      // Email all participants when the competition goes live
+      if (nextStatus === "live") {
+        try {
+          const partTable = t.type === "sanctioned"
+            ? "sanctioned_tournament_participants"
+            : "hosted_competition_participants";
+          const fkCol = t.type === "sanctioned" ? "tournament_id" : "competition_id";
+          const { data: participants } = await (supabase as any)
+            .from(partTable)
+            .select("user_id")
+            .eq(fkCol, t.id);
+
+          const ids = Array.from(new Set((participants || []).map((p: any) => p.user_id).filter(Boolean)));
+          await Promise.all(ids.map((uid) =>
+            supabase.functions.invoke("send-notification-email", {
+              body: {
+                user_id: uid,
+                email_type: "competition_starting",
+                data: { competition_id: t.id, competition_name: t.name },
+              },
+            }).catch(() => {})
+          ));
+        } catch (e) {
+          console.error("comp live email fanout failed", e);
+        }
+      }
+
       fetchTournaments();
     } catch (err) {
       toast.error("Failed to advance status");
