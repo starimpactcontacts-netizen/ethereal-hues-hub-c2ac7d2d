@@ -139,10 +139,23 @@ export default function FeaturedEditBattlesSection() {
                 </div>
 
                 {/* VS divider */}
-                <div className="flex-shrink-0 flex items-center justify-center"
-                  style={{ width: 38, borderLeft: '1px solid rgba(255,255,255,0.06)', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
-                  <span className="text-[18px] font-black tracking-widest"
-                    style={{ fontFamily: 'Teko, sans-serif', color: 'rgba(255,255,255,0.1)' }}>VS</span>
+                <div className="flex-shrink-0 flex flex-col items-center justify-center gap-1.5"
+                  style={{ width: 44, borderLeft: '1px solid rgba(255,255,255,0.07)', borderRight: '1px solid rgba(255,255,255,0.07)' }}>
+                  {/* Top tick */}
+                  <div style={{ width: 18, height: 1, background: 'linear-gradient(90deg, rgba(59,130,246,0.6), rgba(239,68,68,0.6))' }} />
+                  {/* VS text — gradient blue→red */}
+                  <span className="font-black leading-none"
+                    style={{
+                      fontFamily: 'Teko, sans-serif',
+                      fontSize: 28,
+                      letterSpacing: '0.04em',
+                      background: 'linear-gradient(180deg, #93c5fd 0%, #fca5a5 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                    }}>VS</span>
+                  {/* Bottom tick */}
+                  <div style={{ width: 18, height: 1, background: 'linear-gradient(90deg, rgba(59,130,246,0.6), rgba(239,68,68,0.6))' }} />
                 </div>
 
                 {/* Player 2 */}
