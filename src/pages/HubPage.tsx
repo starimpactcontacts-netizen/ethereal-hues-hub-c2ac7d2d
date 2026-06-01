@@ -737,7 +737,7 @@ export default function HubPage() {
                           {displayUsername}
                         </h1>
                         {hasEquippedOG && <FoundingBadge size="sm" animate={false} />}
-                        {isJudge && <JudgeClassBadge reviewCount={judgeReviewCount} size="sm" />}
+                        {isJudge && <JudgeDivisionBadge jxp={profile?.judge_xp || 0} size="sm" />}
                       </div>
                       {/* Class badge — hex icon + label */}
                       <button
