@@ -7,14 +7,15 @@ import { toast } from 'sonner';
 
 interface Prefs {
   notification_email: string | null;
-  notify_scores: boolean;
   notify_battles: boolean;
+  notify_scores: boolean;
   notify_drops: boolean;
-  notify_connections: boolean;
 }
 
 const TOGGLES: { key: keyof Prefs; label: string }[] = [
-  { key: 'notify_drops', label: 'New campaigns' },
+  { key: 'notify_battles', label: 'Edit Battles' },
+  { key: 'notify_scores', label: 'Competitions' },
+  { key: 'notify_drops', label: 'Events' },
 ];
 
 export default function NotificationsInlineCard() {
@@ -25,10 +26,9 @@ export default function NotificationsInlineCard() {
   const [email, setEmail] = useState('');
   const [prefs, setPrefs] = useState<Prefs>({
     notification_email: null,
-    notify_scores: true,
     notify_battles: true,
+    notify_scores: true,
     notify_drops: true,
-    notify_connections: true,
   });
 
   useEffect(() => {
@@ -37,17 +37,16 @@ export default function NotificationsInlineCard() {
     (async () => {
       const { data } = await supabase
         .from('profiles')
-        .select('notification_email, notify_scores, notify_battles, notify_drops, notify_connections, email')
+        .select('notification_email, notify_battles, notify_scores, notify_drops, email')
         .eq('id', user.id)
         .maybeSingle();
       if (cancelled || !data) { setLoaded(true); return; }
       const d = data as any;
       setPrefs({
         notification_email: d.notification_email || null,
-        notify_scores: d.notify_scores ?? true,
         notify_battles: d.notify_battles ?? true,
+        notify_scores: d.notify_scores ?? true,
         notify_drops: d.notify_drops ?? true,
-        notify_connections: d.notify_connections ?? true,
       });
       setEmail(d.notification_email || d.email || user.email || '');
       setLoaded(true);
@@ -69,10 +68,9 @@ export default function NotificationsInlineCard() {
       .from('profiles')
       .update({
         notification_email: emailVal || null,
-        notify_scores: prefs.notify_scores,
         notify_battles: prefs.notify_battles,
+        notify_scores: prefs.notify_scores,
         notify_drops: prefs.notify_drops,
-        notify_connections: prefs.notify_connections,
       } as any)
       .eq('id', user.id);
     setSaving(false);
@@ -130,7 +128,7 @@ export default function NotificationsInlineCard() {
             )}
           </div>
           <p className="text-[12px] text-[#8E8E93] mt-1 leading-none truncate">
-            {hasEmail ? prefs.notification_email : 'Get scores, payouts & drops in your inbox'}
+            {hasEmail ? prefs.notification_email : 'Get battle & competition alerts in your inbox'}
           </p>
         </div>
         <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.25 }}>
@@ -188,15 +186,6 @@ export default function NotificationsInlineCard() {
                     )}
                   </div>
                 ))}
-                {/* Payout notifications — coming soon */}
-                <div className="h-px ml-3.5 bg-white/[0.05]" />
-                <div className="w-full flex items-center justify-between px-3.5 py-2.5 opacity-60">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[14px] text-white tracking-[-0.01em]">Payouts</span>
-                    <span className="text-[10px] font-semibold text-[#8E8E93] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-white/[0.06]">Soon</span>
-                  </div>
-                  <IOSSwitch on={false} />
-                </div>
               </div>
 
               {/* Save button */}
