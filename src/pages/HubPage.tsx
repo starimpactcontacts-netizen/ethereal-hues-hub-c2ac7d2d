@@ -181,6 +181,116 @@ interface UserCrew {
   avatar_url: string | null;
 }
 
+// Hex badge that visually evolves per class rank — F is grey/minimal, S++ is most ornate
+function ClassHexBadge({ rank, size = 16 }: { rank: string; size?: number }) {
+  const colors: Record<string, string> = {
+    'S++': '#f59e0b', 'S+': '#f59e0b', 'S': '#fbbf24',
+    'A': '#34d399', 'B': '#60a5fa', 'C': '#cbd5e1',
+    'D': '#fb923c', 'F': '#6b7280',
+  };
+  const c = colors[rank] || '#6b7280';
+
+  // Pointy-top hexagons at 4 radii, viewBox 0 0 40 40, center (20,20)
+  const H = {
+    xl: "20,3 34.7,11.5 34.7,28.5 20,37 5.3,28.5 5.3,11.5",
+    lg: "20,7 31.3,13.5 31.3,26.5 20,33 8.7,26.5 8.7,13.5",
+    md: "20,11 27.8,15.5 27.8,24.5 20,29 12.2,24.5 12.2,15.5",
+    sm: "20,14 24.6,16.5 24.6,23.5 20,26 15.4,23.5 15.4,16.5",
+  };
+  // 6 outer vertex coords (xl radius)
+  const verts: [number,number][] = [[20,3],[34.7,11.5],[34.7,28.5],[20,37],[5.3,28.5],[5.3,11.5]];
+  // 6 mid-ring coords (md radius)
+  const rays: [number,number][] = [[20,11],[27.8,15.5],[27.8,24.5],[20,29],[12.2,24.5],[12.2,15.5]];
+
+  if (rank === 'F') return (
+    // Grey dashed outline only — incomplete/unranked
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
+      <polygon points={H.xl} stroke={c} strokeWidth="1.5" fill={c} fillOpacity="0.06" strokeDasharray="4,2.5" />
+    </svg>
+  );
+
+  if (rank === 'D') return (
+    // Solid outline + center pip
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
+      <polygon points={H.xl} stroke={c} strokeWidth="1.5" fill={c} fillOpacity="0.12" />
+      <circle cx="20" cy="20" r="2.5" fill={c} opacity="0.7" />
+    </svg>
+  );
+
+  if (rank === 'C') return (
+    // Double rings
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
+      <polygon points={H.xl} stroke={c} strokeWidth="1.5" fill={c} fillOpacity="0.1" />
+      <polygon points={H.md} stroke={c} strokeWidth="1" fill="none" opacity="0.55" />
+    </svg>
+  );
+
+  if (rank === 'B') return (
+    // Double rings + 3 alternate vertex dots
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
+      <polygon points={H.xl} stroke={c} strokeWidth="1.5" fill={c} fillOpacity="0.12" />
+      <polygon points={H.md} stroke={c} strokeWidth="1" fill="none" opacity="0.5" />
+      {verts.filter((_,i) => i % 2 === 0).map(([x,y],i) => (
+        <circle key={i} cx={x} cy={y} r="1.8" fill={c} opacity="0.8" />
+      ))}
+    </svg>
+  );
+
+  if (rank === 'A') return (
+    // Double rings + 6 rays from center + center dot
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
+      <polygon points={H.xl} stroke={c} strokeWidth="1.5" fill={c} fillOpacity="0.12" />
+      <polygon points={H.lg} stroke={c} strokeWidth="0.8" fill="none" opacity="0.4" />
+      {rays.map(([x,y],i) => (
+        <line key={i} x1="20" y1="20" x2={x} y2={y} stroke={c} strokeWidth="0.8" opacity="0.45" />
+      ))}
+      <circle cx="20" cy="20" r="2.5" fill={c} opacity="0.7" />
+    </svg>
+  );
+
+  if (rank === 'S') return (
+    // Double rings + rays + filled inner hex + center
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
+      <polygon points={H.xl} stroke={c} strokeWidth="2" fill={c} fillOpacity="0.14" />
+      <polygon points={H.lg} stroke={c} strokeWidth="1" fill="none" opacity="0.55" />
+      {rays.map(([x,y],i) => (
+        <line key={i} x1="20" y1="20" x2={x} y2={y} stroke={c} strokeWidth="1" opacity="0.4" />
+      ))}
+      <polygon points={H.sm} stroke={c} strokeWidth="1" fill={c} fillOpacity="0.3" />
+      <circle cx="20" cy="20" r="2.5" fill={c} opacity="0.85" />
+    </svg>
+  );
+
+  if (rank === 'S+') return (
+    // All of S + vertex dots on all 6 points + stronger center
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
+      <polygon points={H.xl} stroke={c} strokeWidth="2" fill={c} fillOpacity="0.16" />
+      <polygon points={H.lg} stroke={c} strokeWidth="1" fill="none" opacity="0.6" />
+      {verts.map(([x,y],i) => <circle key={i} cx={x} cy={y} r="1.8" fill={c} />)}
+      {rays.map(([x,y],i) => (
+        <line key={i} x1="20" y1="20" x2={x} y2={y} stroke={c} strokeWidth="1" opacity="0.5" />
+      ))}
+      <polygon points={H.sm} stroke={c} strokeWidth="1.2" fill={c} fillOpacity="0.35" />
+      <circle cx="20" cy="20" r="3" fill={c} />
+    </svg>
+  );
+
+  // S++ — maximum ornate: thick border, double outer ring, all vertex dots, rays, inner hex, bold center
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
+      <polygon points={H.xl} stroke={c} strokeWidth="2.5" fill={c} fillOpacity="0.18" />
+      <polygon points={H.xl} stroke={c} strokeWidth="0.5" fill="none" opacity="0.35" transform="scale(1.06) translate(-1.2,-1.2)" />
+      <polygon points={H.lg} stroke={c} strokeWidth="1" fill="none" opacity="0.6" />
+      {verts.map(([x,y],i) => <circle key={i} cx={x} cy={y} r="2.2" fill={c} />)}
+      {rays.map(([x,y],i) => (
+        <line key={i} x1="20" y1="20" x2={x} y2={y} stroke={c} strokeWidth="1.2" opacity="0.6" />
+      ))}
+      <polygon points={H.md} stroke={c} strokeWidth="1.5" fill={c} fillOpacity="0.2" />
+      <circle cx="20" cy="20" r="3.5" fill={c} />
+    </svg>
+  );
+}
+
 export default function HubPage() {
   const { profile, user, refreshProfile, isAdmin } = useAuth();
   const { isJudge } = useUserRoles(user?.id);
@@ -634,12 +744,7 @@ export default function HubPage() {
                         onClick={(e) => { e.stopPropagation(); navigate('/class'); }}
                         className={`flex items-center gap-1.5 mt-2 active:opacity-70 transition-opacity ${classRankConfig?.color || 'text-muted-foreground'}`}
                       >
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-                          <path d="M12 2L21.5 7.5V16.5L12 22L2.5 16.5V7.5L12 2Z"
-                            fill="currentColor" fillOpacity="0.18" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-                          <path d="M12 5.5L18.5 9.25V16.75L12 20.5L5.5 16.75V9.25L12 5.5Z"
-                            fill="none" stroke="currentColor" strokeWidth="0.6" opacity="0.45" />
-                        </svg>
+                        <ClassHexBadge rank={classLetter} size={18} />
                         <span className="text-[14px] font-black uppercase"
                           style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.1em' }}>
                           {classLetter} CLASS
