@@ -145,24 +145,106 @@ export function playToggleOff() {
   } catch {}
 }
 
-/** Match alert — real audio file, preloaded for instant playback */
-let _matchAlertAudio: HTMLAudioElement | null = null;
+/** Match alert — engine rev build → ignition impact → roar (Valorant/anime energy) */
 export function playMatchAlert() {
   try {
-    if (!_matchAlertAudio) _matchAlertAudio = new Audio('/sounds/match-found.mp3');
-    _matchAlertAudio.currentTime = 0;
-    _matchAlertAudio.volume = 0.85;
-    _matchAlertAudio.play();
+    const c = getCtx();
+    const t = c.currentTime;
+    const master = c.createGain();
+    master.gain.value = 0.88;
+    master.connect(c.destination);
+
+    // ── RUMBLE BUILD (0 → 180ms): low filtered noise sweeping up ──
+    const rBuf = c.createBuffer(1, Math.floor(c.sampleRate * 0.22), c.sampleRate);
+    const rd = rBuf.getChannelData(0);
+    for (let i = 0; i < rd.length; i++) rd[i] = Math.random() * 2 - 1;
+    const rSrc = c.createBufferSource(); rSrc.buffer = rBuf;
+    const rFilt = c.createBiquadFilter(); rFilt.type = 'lowpass';
+    rFilt.frequency.setValueAtTime(60, t);
+    rFilt.frequency.exponentialRampToValueAtTime(280, t + 0.20);
+    const rGain = c.createGain();
+    rGain.gain.setValueAtTime(0, t);
+    rGain.gain.linearRampToValueAtTime(0.65, t + 0.20);
+    rSrc.connect(rFilt).connect(rGain).connect(master);
+    rSrc.start(t);
+
+    // ── IGNITION IMPACT (at 190ms): sub punch + bandpass crack ──
+    osc(c, 'sine', 52, t + 0.19, 0.38, 0.92, master);
+    osc(c, 'sine', 104, t + 0.19, 0.22, 0.55, master);
+
+    const iBuf = c.createBuffer(1, Math.floor(c.sampleRate * 0.07), c.sampleRate);
+    const id = iBuf.getChannelData(0);
+    for (let i = 0; i < id.length; i++) id[i] = Math.random() * 2 - 1;
+    const iSrc = c.createBufferSource(); iSrc.buffer = iBuf;
+    const iFilt = c.createBiquadFilter(); iFilt.type = 'bandpass';
+    iFilt.frequency.value = 1400; iFilt.Q.value = 0.9;
+    const iGain = c.createGain();
+    iGain.gain.setValueAtTime(0.75, t + 0.19);
+    iGain.gain.exponentialRampToValueAtTime(0.001, t + 0.26);
+    iSrc.connect(iFilt).connect(iGain).connect(master);
+    iSrc.start(t + 0.19);
+
+    // ── ENGINE ROAR (190 → 650ms): sawtooth growl sweeping up ──
+    const roar = c.createOscillator(); roar.type = 'sawtooth';
+    roar.frequency.setValueAtTime(52, t + 0.19);
+    roar.frequency.exponentialRampToValueAtTime(92, t + 0.60);
+    const roarFilt = c.createBiquadFilter(); roarFilt.type = 'lowpass';
+    roarFilt.frequency.value = 380;
+    const roarGain = c.createGain();
+    roarGain.gain.setValueAtTime(0, t + 0.19);
+    roarGain.gain.linearRampToValueAtTime(0.38, t + 0.26);
+    roarGain.gain.exponentialRampToValueAtTime(0.001, t + 0.68);
+    roar.connect(roarFilt).connect(roarGain).connect(master);
+    roar.start(t + 0.19); roar.stop(t + 0.70);
+
+    // ── ANIME SHIMMER TAIL: high sine sparks after impact ──
+    osc(c, 'sine', 3200, t + 0.21, 0.16, 0.20, master);
+    osc(c, 'sine', 5000, t + 0.24, 0.12, 0.14, master);
   } catch {}
 }
 
-/** Countdown tick — real audio file, same crisp click each second */
-let _tickAudio: HTMLAudioElement | null = null;
-export function playCountdownTick(_count: number) {
+/** Countdown tick — anime impact frame: bandpass noise SHHK + sub punch */
+export function playCountdownTick(count: number) {
   try {
-    if (!_tickAudio) _tickAudio = new Audio('/sounds/tick.mp3');
-    _tickAudio.currentTime = 0;
-    _tickAudio.volume = 0.75;
-    _tickAudio.play();
+    const c = getCtx();
+    const t = c.currentTime;
+    const master = c.createGain();
+    master.gain.value = count <= 2 ? 0.88 : 0.72;
+    master.connect(c.destination);
+
+    // Bandpass noise burst — the "SHHK" impact texture
+    const dur = 0.045;
+    const nBuf = c.createBuffer(1, Math.floor(c.sampleRate * dur), c.sampleRate);
+    const nd = nBuf.getChannelData(0);
+    for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+    const nSrc = c.createBufferSource(); nSrc.buffer = nBuf;
+    const nFilt = c.createBiquadFilter(); nFilt.type = 'bandpass';
+    // Pitch climbs as count goes 5 → 1
+    nFilt.frequency.value = 2200 + (5 - count) * 600;
+    nFilt.Q.value = 1.4;
+    const nGain = c.createGain();
+    nGain.gain.setValueAtTime(0.60, t);
+    nGain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    nSrc.connect(nFilt).connect(nGain).connect(master);
+    nSrc.start(t);
+
+    // Sub body under the noise
+    osc(c, 'sine', count <= 2 ? 88 : 66, t, 0.07, count <= 2 ? 0.65 : 0.48, master);
+
+    if (count === 1) {
+      // Final tick: extra low thud + second hit = full anime clash
+      osc(c, 'sine', 44, t, 0.22, 0.78, master);
+      const fBuf = c.createBuffer(1, Math.floor(c.sampleRate * 0.06), c.sampleRate);
+      const fd = fBuf.getChannelData(0);
+      for (let i = 0; i < fd.length; i++) fd[i] = Math.random() * 2 - 1;
+      const fSrc = c.createBufferSource(); fSrc.buffer = fBuf;
+      const fFilt = c.createBiquadFilter(); fFilt.type = 'lowpass';
+      fFilt.frequency.value = 600;
+      const fGain = c.createGain();
+      fGain.gain.setValueAtTime(0.55, t + 0.02);
+      fGain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+      fSrc.connect(fFilt).connect(fGain).connect(master);
+      fSrc.start(t + 0.02);
+    }
   } catch {}
 }
