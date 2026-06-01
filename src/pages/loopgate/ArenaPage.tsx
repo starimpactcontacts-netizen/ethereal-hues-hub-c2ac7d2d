@@ -735,6 +735,24 @@ export default function ArenaPage() {
     setLobbyTypeOpen(true);
   };
 
+  const handleSyncFight = async () => {
+    if (!user || !profile) { navigate('/start'); return; }
+    if (qfActiveFight) { navigate(`/fight/${qfActiveFight.id}`); return; }
+    const existingSync = myQuickFights.find(f => f.status === 'waiting' && f.player_1_id === user.id && (f as any).battle_mode === 'sync');
+    if (existingSync) { navigate(`/fight/${existingSync.id}`); return; }
+    setQfSearching(true);
+    try {
+      const lobby = await createQuickFightLobby(user.id, profile.username, profile.avatar_url, { isPrivate: false, durationMinutes: 60, battleMode: 'sync' });
+      if (!lobby) throw new Error('create sync lobby failed');
+      await leaveQueue(user.id);
+      navigate(`/fight/${lobby.id}`);
+      setQfSearching(false);
+    } catch {
+      toast.error("Couldn't create sync lobby");
+      setQfSearching(false);
+    }
+  };
+
   const handleCreateLobby = async (isPrivate: boolean, durationMinutes: number) => {
     if (!user || !profile) return;
     setQfSearching(true);
@@ -1471,6 +1489,42 @@ export default function ArenaPage() {
               <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/18 to-transparent pointer-events-none" />
             </motion.button>
           </div>
+
+          {/* SYNC EDIT BATTLE — full-width tile */}
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            onClick={handleSyncFight}
+            className="relative w-full h-[72px] overflow-hidden text-left touch-manipulation group mb-2.5"
+            style={{ background: '#0a0a0f' }}
+          >
+            {/* Dot grid */}
+            <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, rgba(139,92,246,0.06) 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
+            {/* Purple top glow */}
+            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-violet-500/40 to-transparent pointer-events-none" />
+            {/* Vignette */}
+            <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 100% 50%, rgba(139,92,246,0.07) 0%, transparent 55%)' }} />
+            {/* Border */}
+            <div className="absolute inset-0 border border-violet-500/15 group-active:border-violet-500/35 transition-colors pointer-events-none" />
+            {/* Corner accents */}
+            <div className="absolute top-0 right-0 pointer-events-none"><div className="w-5 h-px bg-violet-400/30" /><div className="w-px h-5 bg-violet-400/30 ml-auto" /></div>
+            <div className="absolute bottom-0 left-0 pointer-events-none"><div className="w-5 h-px bg-violet-400/30" /><div className="w-px h-5 bg-violet-400/30" /></div>
+            {/* Shuffle icon watermark */}
+            <div className="absolute -top-2 right-2 opacity-[0.07] pointer-events-none">
+              <Shuffle className="w-16 h-16 text-violet-300" strokeWidth={1} />
+            </div>
+            {/* Content */}
+            <div className="absolute inset-0 flex items-center px-4 gap-3">
+              <div className="flex flex-col">
+                <span className="text-[7px] font-black uppercase tracking-[0.3em] text-violet-400/60 mb-0.5">Same Pack · Same Song</span>
+                <span className="text-[22px] font-black text-white leading-none" style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.02em' }}>SYNC BATTLE</span>
+              </div>
+              <div className="ml-auto flex items-center gap-1.5 px-2 py-1 border border-violet-500/25 bg-violet-500/10">
+                <Shuffle className="w-3 h-3 text-violet-400" strokeWidth={2.5} />
+                <span className="text-[9px] font-black text-violet-300/80 uppercase tracking-wider">New</span>
+              </div>
+            </div>
+            <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-violet-400/20 to-transparent pointer-events-none" />
+          </motion.button>
 
           {/* ═══ FEATURED EVENT AD — top of arena ═══ */}
           {liveEvents.length > 0 && (

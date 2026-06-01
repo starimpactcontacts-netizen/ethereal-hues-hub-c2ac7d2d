@@ -37,6 +37,13 @@ export interface QuickFight {
   theme_song_preview_url?: string | null;
   is_private?: boolean;
   join_code?: string | null;
+  battle_mode?: 'standard' | 'sync';
+  sync_scenepack_name?: string | null;
+  sync_scenepack_preview_url?: string | null;
+  sync_song_title?: string | null;
+  sync_song_artist?: string | null;
+  sync_song_preview_url?: string | null;
+  sync_spun_at?: string | null;
   created_at: string;
 }
 
@@ -84,7 +91,7 @@ export async function createQuickFightLobby(
   userId: string,
   username: string,
   avatarUrl: string | null,
-  options?: { isPrivate?: boolean; durationMinutes?: number }
+  options?: { isPrivate?: boolean; durationMinutes?: number; battleMode?: 'standard' | 'sync' }
 ): Promise<{ id: string; joinCode: string | null } | null> {
   let joinCode: string | null = null;
   if (options?.isPrivate) {
@@ -105,6 +112,7 @@ export async function createQuickFightLobby(
       duration_minutes: options?.durationMinutes ?? 60,
       is_private: !!options?.isPrivate,
       join_code: joinCode,
+      battle_mode: options?.battleMode ?? 'standard',
     } as any)
     .select('id')
     .single();

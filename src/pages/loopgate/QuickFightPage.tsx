@@ -33,6 +33,7 @@ import CustomEditBattleLobby from '@/components/loopgate/CustomEditBattleLobby';
 import BattleSelectFlow from '@/components/loopgate/battle-select/BattleSelectFlow';
 import BattleSelectionsBanner from '@/components/loopgate/BattleSelectionsBanner';
 import BattleRevealScreen from '@/components/loopgate/BattleRevealScreen';
+import SyncSpinFlow from '@/components/loopgate/battle-select/SyncSpinFlow';
 
 /** Detect platform from URL */
 function detectPlatform(url: string): string {
@@ -66,6 +67,10 @@ export default function QuickFightPage() {
   const [revealDone, setRevealDone] = useState<boolean>(() => {
     if (typeof window === 'undefined' || !fightId) return false;
     return sessionStorage.getItem(`qf_reveal_done_${fightId}`) === '1';
+  });
+  const [syncRevealDone, setSyncRevealDone] = useState<boolean>(() => {
+    if (typeof window === 'undefined' || !fightId) return false;
+    return sessionStorage.getItem(`qf_sync_reveal_${fightId}`) === '1';
   });
 
 
@@ -332,7 +337,33 @@ export default function QuickFightPage() {
     );
   }
 
-  if (fight.status === 'selecting' && isParticipant) {
+  // Sync battles: show the spin gacha during selecting phase
+  if (fight.battle_mode === 'sync' && fight.status === 'selecting' && isParticipant) {
+    return (
+      <SyncSpinFlow
+        fight={fight}
+        onComplete={() => {
+          sessionStorage.setItem(`qf_sync_reveal_${fight.id}`, '1');
+          setSyncRevealDone(true);
+        }}
+      />
+    );
+  }
+
+  // Sync battles: show spin reveal once when fight first goes active (other player spun)
+  if (fight.battle_mode === 'sync' && fight.status === 'active' && !syncRevealDone && fight.sync_spun_at) {
+    return (
+      <SyncSpinFlow
+        fight={fight}
+        onComplete={() => {
+          sessionStorage.setItem(`qf_sync_reveal_${fight.id}`, '1');
+          setSyncRevealDone(true);
+        }}
+      />
+    );
+  }
+
+  if (fight.status === 'selecting' && isParticipant && fight.battle_mode !== 'sync') {
     return (
       <BattleSelectFlow
         open
@@ -355,7 +386,8 @@ export default function QuickFightPage() {
     fight.status === 'active' &&
     !revealDone &&
     fight.player_2_id &&
-    fight.player_2_username
+    fight.player_2_username &&
+    fight.battle_mode !== 'sync'
   ) {
     return (
       <BattleRevealScreen

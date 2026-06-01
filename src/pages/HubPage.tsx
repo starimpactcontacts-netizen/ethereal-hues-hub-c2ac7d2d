@@ -671,6 +671,16 @@ export default function HubPage() {
                  maskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)',
                  WebkitMaskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)',
                }}>
+               {/* Dot gradient overlay — always visible */}
+               <div
+                 className="absolute inset-0 pointer-events-none z-[1]"
+                 style={{
+                   backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)',
+                   backgroundSize: '14px 14px',
+                   maskImage: 'radial-gradient(ellipse 90% 100% at 50% 0%, black 30%, transparent 100%)',
+                   WebkitMaskImage: 'radial-gradient(ellipse 90% 100% at 50% 0%, black 30%, transparent 100%)',
+                 }}
+               />
                {/* First Circle Skin — luxury prestige aesthetic */}
                 {hasEquippedOG && (
                   <div
