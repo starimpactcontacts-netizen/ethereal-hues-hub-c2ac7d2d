@@ -447,6 +447,19 @@ export function QuickFightCarouselCard({ fight, isMine }: { fight: QuickFight; i
           {fight.is_private && (
             <Lock className="w-2 h-2 text-amber-400/80" strokeWidth={2.5} />
           )}
+          {fight.battle_mode === 'sync' && (
+            <span
+              className="text-[7px] font-black uppercase tracking-[0.14em] leading-none px-1 py-0.5"
+              style={{
+                fontFamily: 'Teko, sans-serif',
+                color: '#a78bfa',
+                background: 'rgba(139,92,246,0.12)',
+                border: '1px solid rgba(139,92,246,0.3)',
+              }}
+            >
+              SYNC
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-0.5">
           <Clock className="w-2 h-2 text-white/20" strokeWidth={2} />

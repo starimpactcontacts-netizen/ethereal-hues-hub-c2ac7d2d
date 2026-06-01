@@ -179,9 +179,24 @@ export default function CustomEditBattleLobby({
 
         {/* Title */}
         <div className="text-center mb-3">
-          <p className="text-[9px] font-black uppercase tracking-[0.35em] text-white/25 mb-0">
-            {isPrivate ? "Private" : "Open"} • {duration} Duration
-          </p>
+          <div className="flex items-center justify-center gap-2 mb-0">
+            <p className="text-[9px] font-black uppercase tracking-[0.35em] text-white/25">
+              {isPrivate ? "Private" : "Open"} • {duration} Duration
+            </p>
+            {fight.battle_mode === 'sync' && (
+              <span
+                className="text-[8px] font-black uppercase tracking-[0.15em] px-1.5 py-0.5"
+                style={{
+                  fontFamily: 'Teko, sans-serif',
+                  color: '#a78bfa',
+                  background: 'rgba(139,92,246,0.12)',
+                  border: '1px solid rgba(139,92,246,0.3)',
+                }}
+              >
+                SYNC
+              </span>
+            )}
+          </div>
           {/* Custom EDIT BATTLE title image */}
           <img
             src="/edit-battle-title.png"
