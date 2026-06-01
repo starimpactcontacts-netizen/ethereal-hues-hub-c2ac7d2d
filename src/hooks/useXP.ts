@@ -52,9 +52,9 @@ export const XP_REWARDS = {
   // Feed posting (Loop)
   feed_post: 500,
 
-  // Daily caps (set high to effectively uncap)
-  crew_chat_cap: 1000000,
-  arena_chat_cap: 100000,
+  // Daily caps — 10 crew messages and 20 arena messages worth of XP per day
+  crew_chat_cap: 10000,
+  arena_chat_cap: 2000,
 };
 
 // Action descriptions for toasts
