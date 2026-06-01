@@ -809,46 +809,52 @@ export default function CompetitionLobbyPage() {
           </div>
         )}
 
-        {/* ── MOBILE TAB SWITCHER (Roblox-style chunky pills) ── */}
+        {/* ── MOBILE TAB SWITCHER — sharp angular style ── */}
         <div className="md:hidden shrink-0 px-3 pt-3">
-          <div className="relative grid grid-cols-2 gap-1.5 p-1 rounded-2xl bg-white/[0.035] border border-white/[0.07] shadow-inner">
+          <div className="grid grid-cols-2 border border-white/[0.08]" style={{ background: '#0d0d0d' }}>
             <button
               onClick={() => setLobbyTab("members")}
-              className={`relative h-11 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.97] ${
+              className={`relative h-10 flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
                 lobbyTab === "members"
-                  ? "bg-gradient-to-b from-white to-white/90 text-black shadow-[0_6px_18px_-6px_rgba(255,255,255,0.45)] ring-1 ring-white/40"
-                  : "text-foreground/55 hover:text-foreground/80"
+                  ? "bg-white/[0.06] text-white"
+                  : "text-white/35 hover:text-white/60"
               }`}
             >
-              <Users className="w-4 h-4" strokeWidth={2.6} />
-              <span className="text-[13px] font-extrabold uppercase tracking-[0.08em] leading-none" style={teko}>
+              {lobbyTab === "members" && (
+                <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-white" />
+              )}
+              <Users className="w-3.5 h-3.5" strokeWidth={2.5} />
+              <span className="text-[12px] font-black uppercase tracking-[0.15em] leading-none" style={teko}>
                 Squad
               </span>
-              <span className={`min-w-[28px] text-center text-[10px] font-black tabular-nums px-1.5 py-0.5 rounded-md leading-none ${
-                lobbyTab === "members" ? "bg-black/10 text-black" : "bg-white/[0.07] text-foreground/55"
+              <span className={`text-[9px] font-black tabular-nums px-1 py-0.5 leading-none ${
+                lobbyTab === "members" ? "text-white/50" : "text-white/20"
               }`} style={teko}>
                 {memberCount}/{cap}
               </span>
             </button>
             <button
               onClick={() => setLobbyTab("chat")}
-              className={`relative h-11 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.97] ${
+              className={`relative h-10 flex items-center justify-center gap-2 transition-all active:scale-[0.98] border-l border-white/[0.08] ${
                 lobbyTab === "chat"
-                  ? "bg-gradient-to-b from-red-500 to-red-600 text-white shadow-[0_6px_18px_-6px_rgba(239,68,68,0.65)] ring-1 ring-red-400/40"
-                  : "text-foreground/55 hover:text-foreground/80"
+                  ? "bg-red-500/[0.08] text-red-400"
+                  : "text-white/35 hover:text-white/60"
               }`}
             >
-              <MessageCircle className="w-4 h-4" strokeWidth={2.6} />
-              <span className="text-[13px] font-extrabold uppercase tracking-[0.08em] leading-none" style={teko}>
+              {lobbyTab === "chat" && (
+                <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-red-500" />
+              )}
+              <MessageCircle className="w-3.5 h-3.5" strokeWidth={2.5} />
+              <span className="text-[12px] font-black uppercase tracking-[0.15em] leading-none" style={teko}>
                 Chat
               </span>
-              <span className={`min-w-[28px] text-center text-[10px] font-black tabular-nums px-1.5 py-0.5 rounded-md leading-none ${
-                lobbyTab === "chat" ? "bg-white/15 text-white" : "bg-white/[0.07] text-foreground/55"
+              <span className={`text-[9px] font-black tabular-nums px-1 py-0.5 leading-none ${
+                lobbyTab === "chat" ? "text-red-400/60" : "text-white/20"
               }`} style={teko}>
                 {chatMessageCount}
               </span>
               {lobbyTab !== "chat" && chatUnread > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center ring-2 ring-[#0A0A0A] shadow-[0_2px_8px_rgba(239,68,68,0.6)] animate-pulse">
+                <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-red-500 text-white text-[9px] font-black flex items-center justify-center ring-2 ring-[#0A0A0A] animate-pulse">
                   {chatUnread > 9 ? '9+' : chatUnread}
                 </span>
               )}
@@ -859,97 +865,101 @@ export default function CompetitionLobbyPage() {
         {/* ── BODY: Members + Chat ── */}
         <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 gap-3 p-3 overflow-hidden">
           {/* MEMBERS PANEL */}
-          <section className={`${lobbyTab === "members" ? "flex" : "hidden"} md:flex flex-col min-h-0 rounded-xl border border-white/[0.07] overflow-hidden`} style={{ backgroundColor: '#111114' }}>
-            <div className="shrink-0 flex items-center justify-between px-3 py-2 border-b border-white/[0.06]">
-              <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-foreground/60" style={teko}>
+          <section className={`${lobbyTab === "members" ? "flex" : "hidden"} md:flex flex-col min-h-0 overflow-hidden`} style={{ background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="shrink-0 flex items-center justify-between px-3 py-2 border-b border-white/[0.05]">
+              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35" style={teko}>
                 Members
               </span>
-              <span className="text-[11px] font-bold tabular-nums text-foreground/50" style={teko}>
+              <span className="text-[10px] font-black tabular-nums text-white/25" style={teko}>
                 {memberCount}/{cap}
               </span>
             </div>
             {(hasJoined || isCreator) && (isLobby || isLive) && (
               <CompetitionVoiceChat competitionId={competition.id} compact />
             )}
-            <div className="flex-1 min-h-0 overflow-y-auto px-2 py-2 space-y-1">
+            <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-white/[0.04]">
               {participants.length === 0 ? (
-                <p className="text-xs text-muted-foreground/40 text-center py-6">No editors yet</p>
+                <p className="text-[11px] text-white/20 text-center py-8 font-black uppercase tracking-wider" style={teko}>No editors yet</p>
               ) : participants.map(p => {
                 const isHost = p.user_id === competition.creator_id;
                 const isMe = p.user_id === user?.id;
                 return (
                   <div
                     key={p.id}
-                    className={`flex items-center gap-2.5 px-2 py-1.5 rounded-lg border transition-all ${
-                      p.is_ready
-                        ? "border-emerald-500/40 bg-emerald-500/[0.06]"
-                        : "border-white/[0.05] bg-white/[0.015]"
-                    }`}
+                    className="relative flex items-center gap-2.5 px-3 py-2.5 transition-all"
+                    style={{
+                      background: p.is_ready ? 'rgba(16,185,129,0.04)' : 'transparent',
+                    }}
                   >
+                    {/* Left-edge ready indicator */}
+                    {p.is_ready && (
+                      <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-emerald-500" />
+                    )}
                     <button
                       onClick={() => navigate(`/u/${p.username}`)}
                       className="flex items-center gap-2.5 flex-1 min-w-0 group"
                     >
                       <div className="relative shrink-0">
-                        <Avatar className={`w-7 h-7 border ${p.is_ready ? "border-emerald-500/60" : "border-white/10"}`}>
+                        <Avatar className="w-7 h-7" style={{ border: `1.5px solid ${p.is_ready ? 'rgba(16,185,129,0.5)' : 'rgba(255,255,255,0.08)'}` }}>
                           <AvatarImage src={p.avatar_url || ""} />
-                          <AvatarFallback className="text-[9px] bg-surface-2 text-foreground font-bold">
+                          <AvatarFallback className="text-[9px] bg-white/[0.04] text-white/60 font-black" style={teko}>
                             {p.username?.[0]?.toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
-                        {p.is_ready && (
-                          <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-surface-1 flex items-center justify-center">
-                            <Check className="w-1.5 h-1.5 text-white" strokeWidth={4} />
-                          </div>
-                        )}
                       </div>
-                      <span className={`text-[12px] font-extrabold uppercase tracking-wider truncate group-hover:underline ${
-                        p.is_ready ? "text-emerald-400" : isMe ? "text-foreground" : "text-foreground/80"
+                      <span className={`text-[13px] font-black uppercase tracking-[0.06em] truncate ${
+                        p.is_ready ? "text-emerald-400" : isMe ? "text-white" : "text-white/65"
                       }`} style={teko}>
                         {p.username}{isMe && " (you)"}
                       </span>
                     </button>
-                    {isHost && (
-                      <span className="shrink-0 h-5 px-1.5 inline-flex items-center gap-1 rounded-md border border-gold/40 bg-gold/10">
-                        <Crown className="w-2.5 h-2.5 text-gold" />
-                        <span className="text-[9px] font-extrabold tracking-[0.2em] text-gold leading-none" style={teko}>HOST</span>
-                      </span>
-                    )}
-                    {isCreator && !isHost && isLobby && (
-                      <button
-                        onClick={async () => {
-                          if (!confirm(`Kick ${p.username} from the room?`)) return;
-                          const ok = await kick(p.user_id);
-                          if (ok) toast.success(`${p.username} was kicked`);
-                          else toast.error("Couldn't kick");
-                        }}
-                        title="Kick"
-                        className="shrink-0 h-6 w-6 inline-flex items-center justify-center rounded-md border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 active:scale-95 transition"
-                      >
-                        <X className="w-3 h-3" strokeWidth={3} />
-                      </button>
-                    )}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {p.is_ready && (
+                        <span className="text-[8px] font-black uppercase tracking-[0.2em] text-emerald-400/80 px-1.5 py-0.5" style={{ border: '1px solid rgba(16,185,129,0.25)', background: 'rgba(16,185,129,0.08)', ...teko }}>
+                          READY
+                        </span>
+                      )}
+                      {isHost && (
+                        <span className="text-[8px] font-black uppercase tracking-[0.2em] px-1.5 py-0.5" style={{ border: '1px solid rgba(245,158,11,0.3)', background: 'rgba(245,158,11,0.08)', color: '#f59e0b', ...teko }}>
+                          HOST
+                        </span>
+                      )}
+                      {isCreator && !isHost && isLobby && (
+                        <button
+                          onClick={async () => {
+                            if (!confirm(`Kick ${p.username} from the room?`)) return;
+                            const ok = await kick(p.user_id);
+                            if (ok) toast.success(`${p.username} was kicked`);
+                            else toast.error("Couldn't kick");
+                          }}
+                          title="Kick"
+                          className="h-5 w-5 inline-flex items-center justify-center text-red-400/60 hover:text-red-400 active:scale-95 transition"
+                        >
+                          <X className="w-3 h-3" strokeWidth={3} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
               })}
               {/* empty slots */}
               {Array.from({ length: Math.max(0, cap - memberCount) }).map((_, i) => (
-                <div key={`empty-${i}`} className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg border border-dashed border-white/[0.05]">
-                  <div className="w-7 h-7 rounded-full bg-white/[0.02] border border-dashed border-white/[0.06]" />
-                  <span className="text-[11px] uppercase tracking-wider text-foreground/20" style={teko}>Empty slot</span>
+                <div key={`empty-${i}`} className="flex items-center gap-2.5 px-3 py-2.5">
+                  <div className="w-7 h-7 rounded-full bg-white/[0.025]" style={{ border: '1.5px dashed rgba(255,255,255,0.07)' }} />
+                  <span className="text-[11px] uppercase tracking-[0.18em] text-white/15 font-black" style={teko}>Empty slot</span>
                 </div>
               ))}
             </div>
           </section>
 
           {/* CHAT PANEL */}
-          <section className={`${lobbyTab === "chat" ? "flex" : "hidden"} md:flex flex-col min-h-0 rounded-xl border border-white/[0.07] overflow-hidden`} style={{ backgroundColor: '#111114' }}>
-            <div className="shrink-0 flex items-center justify-between px-3 py-2 border-b border-white/[0.06]">
-              <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-red-400" style={teko}>
+          <section className={`${lobbyTab === "chat" ? "flex" : "hidden"} md:flex flex-col min-h-0 overflow-hidden`} style={{ background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="shrink-0 flex items-center justify-between px-3 py-2 border-b border-white/[0.05]">
+              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-red-400/70" style={teko}>
                 Chat
               </span>
-              <span className="text-[10px] font-bold tabular-nums text-foreground/40" style={teko}>
-                {chatMessageCount} {chatMessageCount === 1 ? 'message' : 'messages'}
+              <span className="text-[10px] font-black tabular-nums text-white/20" style={teko}>
+                {chatMessageCount}
               </span>
             </div>
             <div className="flex-1 min-h-0 overflow-hidden flex">
@@ -959,18 +969,23 @@ export default function CompetitionLobbyPage() {
         </div>
 
         {/* ── ACTION BAR ── */}
-        <footer className="shrink-0 border-t border-white/[0.06] backdrop-blur-sm px-3 pt-2.5 pb-[max(env(safe-area-inset-bottom),12px)]" style={{ backgroundColor: 'rgba(10,10,10,0.95)' }}>
+        <footer className="shrink-0 border-t border-white/[0.06] px-3 pt-3 pb-[max(env(safe-area-inset-bottom),14px)]" style={{ background: 'rgba(8,8,8,0.97)' }}>
           {!hasJoined ? (
             <button
               onClick={handleJoin}
               disabled={isJoining || memberCount >= cap}
-              className="w-full h-12 rounded-xl flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white border border-emerald-400/30 disabled:opacity-30 disabled:hover:bg-emerald-500 transition active:scale-[0.98]"
-              style={teko}
+              className="w-full h-14 flex items-center justify-center gap-2.5 text-white disabled:opacity-30 transition active:scale-[0.98]"
+              style={{
+                background: isJoining ? 'rgba(16,185,129,0.15)' : '#10B981',
+                border: '1px solid rgba(16,185,129,0.4)',
+                boxShadow: '0 0 20px rgba(16,185,129,0.2)',
+                ...teko,
+              }}
             >
               {isJoining ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                 <>
-                  <Play className="w-4 h-4" strokeWidth={2.5} />
-                  <span className="text-[15px] font-extrabold uppercase tracking-[0.08em] leading-none">Join Lobby</span>
+                  <Play className="w-4 h-4 fill-white" strokeWidth={2} />
+                  <span className="text-[17px] font-black uppercase tracking-[0.18em] leading-none">Join Lobby</span>
                 </>
               )}
             </button>
@@ -980,32 +995,37 @@ export default function CompetitionLobbyPage() {
                 <button
                   onClick={handleLeave}
                   disabled={isLeaving}
-                  className="flex-1 h-12 rounded-xl border border-white/[0.1] bg-white/[0.02] text-foreground/70 hover:bg-white/[0.05] hover:text-foreground flex items-center justify-center gap-1.5 transition active:scale-[0.98] disabled:opacity-50"
+                  className="flex-1 h-14 flex items-center justify-center gap-1.5 text-white/40 hover:text-white/70 transition active:scale-[0.98] disabled:opacity-50"
+                  style={{ border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)', ...teko }}
                 >
                   {isLeaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LogOut className="w-3.5 h-3.5" />}
-                  <span className="text-[12px] font-extrabold uppercase tracking-[0.2em] leading-none" style={teko}>Leave</span>
+                  <span className="text-[13px] font-black uppercase tracking-[0.22em] leading-none">Leave</span>
                 </button>
                 <button
                   onClick={handleReady}
                   disabled={isReadying}
-                  className={`flex-[2] h-12 rounded-xl flex items-center justify-center gap-2 transition active:scale-[0.98] disabled:opacity-50 border ${
-                    isReady
-                      ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-400"
-                      : "bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 border-emerald-400/30 text-white"
-                  }`}
-                  style={teko}
+                  className="flex-[2] h-14 flex items-center justify-center gap-2.5 transition active:scale-[0.98] disabled:opacity-50"
+                  style={{
+                    background: isReady ? 'rgba(16,185,129,0.08)' : '#10B981',
+                    border: isReady ? '1px solid rgba(16,185,129,0.35)' : '1px solid rgba(16,185,129,0.5)',
+                    boxShadow: isReady ? 'none' : '0 0 24px rgba(16,185,129,0.22)',
+                    color: isReady ? '#10B981' : '#fff',
+                    ...teko,
+                  }}
                 >
                   {isReadying ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                     <>
-                      {isReady ? <CheckCircle2 className="w-[18px] h-[18px]" strokeWidth={2.5} /> : <Circle className="w-[18px] h-[18px]" strokeWidth={2.5} />}
-                      <span className="text-[14px] font-extrabold uppercase tracking-[0.2em] leading-none">
+                      {isReady
+                        ? <CheckCircle2 className="w-5 h-5" strokeWidth={2.5} />
+                        : <Circle className="w-5 h-5" strokeWidth={2} />}
+                      <span className="text-[16px] font-black uppercase tracking-[0.18em] leading-none">
                         {isReady ? "You're Ready" : "Ready Up"}
                       </span>
                     </>
                   )}
                 </button>
               </div>
-              <p className="text-[10px] text-center text-muted-foreground/55 mt-2 tracking-[0.2em] uppercase font-bold" style={teko}>
+              <p className="text-[9px] text-center text-white/25 mt-2 tracking-[0.22em] uppercase font-black" style={teko}>
                 {memberCount < 2
                   ? "Need 1 more editor — share the room"
                   : `${readyCount}/${memberCount} ready · starts when everyone's set`}
