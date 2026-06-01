@@ -87,7 +87,9 @@ export default function QuickFightPage() {
   // Uses fight ID as seed so both players independently get the same song + scenepack
   // when neither chose anything.
   useEffect(() => {
-    if (!fight || fight.status !== 'active' || !isParticipant || !user?.id) return;
+    if (!fight || fight.status !== 'active' || !user?.id) return;
+    const isMe = user.id === fight.player_1_id || user.id === fight.player_2_id;
+    if (!isMe) return;
     if (autoAssignedRef.current) return;
     autoAssignedRef.current = true;
 
@@ -124,7 +126,7 @@ export default function QuickFightPage() {
       } as any);
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fight?.status, fight?.id, isParticipant, user?.id]);
+  }, [fight?.status, fight?.id, fight?.player_1_id, fight?.player_2_id, user?.id]);
 
   // Auto-resolve expired fights on page load
   useEffect(() => {
