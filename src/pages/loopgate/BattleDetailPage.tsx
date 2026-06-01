@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
-import { useBattle, recordBattleView, acceptBattle, submitToBattle, voteOnBattle, getMyVote } from "@/hooks/useBattles";
+import { useBattle, recordBattleView, acceptBattle, joinBattleSlot, startBattle, submitToBattle, voteOnBattle, getMyVote } from "@/hooks/useBattles";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import ArcadeCountdown from "@/components/loopgate/ArcadeCountdown";
@@ -49,6 +49,8 @@ export default function BattleDetailPage() {
   const [submitting, setSubmitting] = useState(false);
   const [uploadPct, setUploadPct] = useState(0);
   const [accepting, setAccepting] = useState(false);
+  const [joining, setJoining] = useState(false);
+  const [starting, setStarting] = useState(false);
   const [myVote, setMyVote] = useState<string | null>(null);
   const [voting, setVoting] = useState(false);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
@@ -131,6 +133,8 @@ export default function BattleDetailPage() {
   const canAcceptOpen = battle.status === 'pending' && !battle.opponent_id && user?.id && !isChallenger;
   const canAcceptDirect = battle.status === 'pending' && battle.opponent_id && isOpponent;
   const canAccept = canAcceptOpen || canAcceptDirect;
+  // After someone joins via "Join", either side can hit Accept Battle to start.
+  const canStartJoined = battle.status === 'pending' && !!battle.opponent_id && isParticipant;
   const canJudgeAccept = isRequestedJudge && battle.judge_status === 'requested';
   const canSubmit = battle.status === 'active' && isParticipant && (
     (isChallenger && !battle.challenger_submitted_at) ||
@@ -188,6 +192,46 @@ export default function BattleDetailPage() {
       toast.error("Failed to accept battle");
     }
     setAccepting(false);
+  };
+
+  const handleJoin = async () => {
+    if (!profile) return;
+    setJoining(true);
+    const success = await joinBattleSlot(battle.id, profile.id, profile.username, profile.avatar_url);
+    if (success) {
+      setBattle({
+        ...battle,
+        opponent_id: profile.id,
+        opponent_username: profile.username,
+        opponent_avatar_url: profile.avatar_url,
+      } as any);
+      toast.success("You're in! Talk smack — tap Accept Battle when you're ready.");
+      refetch();
+    } else {
+      toast.error("Couldn't join — slot may already be taken");
+    }
+    setJoining(false);
+  };
+
+  const handleStart = async () => {
+    setStarting(true);
+    const success = await startBattle(battle.id);
+    if (success) {
+      const startsAt = new Date().toISOString();
+      const endsAt = new Date(Date.now() + (battle.duration_hours || 48) * 60 * 60 * 1000).toISOString();
+      setBattle({
+        ...battle,
+        status: 'active',
+        accepted_at: startsAt,
+        starts_at: startsAt,
+        ends_at: endsAt,
+      } as any);
+      toast.success("Battle started! Time to edit!");
+      refetch();
+    } else {
+      toast.error("Couldn't start battle");
+    }
+    setStarting(false);
   };
 
   const handleSubmit = async () => {
