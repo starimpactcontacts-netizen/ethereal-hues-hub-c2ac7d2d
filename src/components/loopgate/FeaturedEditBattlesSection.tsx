@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { QuickFight } from '@/hooks/useQuickFight';
-import vsBadge from '@/assets/vs-badge.png.asset.json';
+import vsBadge from '@/assets/vs-badge-filled.png.asset.json';
 
 function Corner({ pos }: { pos: 'tl' | 'tr' | 'bl' | 'br' }) {
   const t = pos[0] === 't', l = pos[1] === 'l';
@@ -149,7 +149,7 @@ export default function FeaturedEditBattlesSection() {
                       width: 40,
                       height: 40,
                       objectFit: 'contain',
-                      filter: 'invert(1) drop-shadow(0 0 6px rgba(255,255,255,0.25))',
+                      filter: 'drop-shadow(0 0 6px rgba(255,255,255,0.25))',
                     }}
                   />
                 </div>
