@@ -777,7 +777,7 @@ export default function BattleDetailPage() {
                     title="Take the slot but wait to start — chat first"
                   >
                     <span className="relative z-10 flex items-center justify-center gap-2.5">
-                      <UserPlusIconAlias className="w-5 h-5 text-red-400" />
+                      <UserPlus className="w-5 h-5 text-red-400" />
                       <span className="text-lg text-red-400 font-bold uppercase tracking-[0.15em]" style={{ fontFamily: 'Teko, sans-serif' }}>
                         {joining ? "JOINING..." : "JOIN"}
                       </span>
