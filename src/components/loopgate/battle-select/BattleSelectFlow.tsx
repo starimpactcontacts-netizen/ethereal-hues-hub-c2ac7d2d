@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, Shuffle, Upload, Users, Swords, Music, Play, Pause, X, Film, Search, Loader2, Star, ChevronDown } from 'lucide-react';
+import { Check, Shuffle, Users, Swords, Music, Play, Pause, X, Film, Search, Loader2, Star, ChevronDown } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -120,8 +120,10 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
   const [bothReady, setBothReady] = useState(false);
   const [revealSelections, setRevealSelections] = useState(false);
   const [deadlineIso, setDeadlineIso] = useState<string | null>(selectionDeadline || null);
-  const [customOpen, setCustomOpen] = useState(false);
-  const [customText, setCustomText] = useState('');
+  const [mySyncVote, setMySyncVote] = useState(false);
+  const [oppSyncVote, setOppSyncVote] = useState(false);
+  const syncChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const mySyncVoteRef = useRef(false);
 
   const [intro, setIntro] = useState({ pct: 0, count: 3 });
 
@@ -173,12 +175,17 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
 
   const mySide: PlayerSide = youSide;
   const opponentSide: PlayerSide = mySide === 'red' ? 'blue' : 'red';
+  // Sync mode: red picks song, blue picks scenepack
+  const syncRole: Tab = mySide === 'red' ? 'song' : 'scenepack';
+  const syncActive = mySyncVote && oppSyncVote;
   const redPicks = mySide === 'red' ? mine : opp;
   const bluePicks = mySide === 'blue' ? mine : opp;
   const redPlayer = mySide === 'red' ? you : opponent;
   const bluePlayer = mySide === 'blue' ? you : opponent;
 
-  const canReady = !!mine.pack && !!mine.song;
+  const canReady = syncActive
+    ? (syncRole === 'song' ? !!mine.song : !!mine.pack)
+    : !!mine.pack && !!mine.song;
 
   const applySelectionState = useCallback((state: any) => {
     if (!state) return;
@@ -219,12 +226,14 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
 
   const setMyPack = (pack: Scenepack) => {
     if (mine.ready) return;
+    if (syncActive && syncRole !== 'scenepack') return;
     const next = { ...mine, pack };
     setMine(next);
     saveSelection(next).catch(() => {});
   };
   const setMySong = (song: Song) => {
     if (mine.ready) return;
+    if (syncActive && syncRole !== 'song') return;
     const next = { ...mine, song };
     setMine(next);
     saveSelection(next).catch(() => {});
@@ -235,6 +244,13 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
     setMine(next);
     const state = await saveSelection(next);
     if (state?.bothReady || state?.reveal) await startFromSelection();
+  };
+
+  const handleSyncVote = () => {
+    if (mySyncVoteRef.current || mine.ready) return;
+    mySyncVoteRef.current = true;
+    setMySyncVote(true);
+    syncChannelRef.current?.send({ type: 'broadcast', event: 'sync_vote', payload: { voted: true } });
   };
 
   // Load scenepacks from DB
@@ -296,8 +312,9 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
     setDeadlineIso(selectionDeadline || null);
     timeoutHandledRef.current = false;
     startingRef.current = false;
-    setCustomOpen(false);
-    setCustomText('');
+    mySyncVoteRef.current = false;
+    setMySyncVote(false);
+    setOppSyncVote(false);
     setIntro({ pct: 0, count: 3 });
   }, [open, selectionDeadline]);
 
@@ -322,6 +339,33 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
       supabase.removeChannel(channel);
     };
   }, [applySelectionState, fightId, open, phase]);
+
+  // Sync vote channel: broadcast-based so no DB schema changes needed
+  useEffect(() => {
+    if (!open || !fightId) return;
+    const ch = supabase.channel(`qfs_sync_${fightId}`);
+    syncChannelRef.current = ch;
+    ch.on('broadcast', { event: 'sync_vote' }, ({ payload }: any) => {
+      if (payload?.voted) setOppSyncVote(true);
+    }).subscribe();
+    // Re-broadcast our vote every 2s so late-joiners pick it up
+    const iv = setInterval(() => {
+      if (mySyncVoteRef.current) {
+        ch.send({ type: 'broadcast', event: 'sync_vote', payload: { voted: true } });
+      }
+    }, 2000);
+    return () => {
+      clearInterval(iv);
+      supabase.removeChannel(ch);
+      syncChannelRef.current = null;
+    };
+  }, [open, fightId]);
+
+  // Auto-switch to assigned tab when sync activates
+  useEffect(() => {
+    if (syncActive) setTab(syncRole);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [syncActive]);
 
   // Phase timer — lobby countdown. It does not start the battle until 0:00.
   useEffect(() => {
@@ -392,14 +436,16 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
     const packPool = scenepacks.length ? scenepacks : [];
     const randomPack = packPool.length ? packPool[Math.floor(Math.random() * packPool.length)] : null;
     const randomSong = pool[Math.floor(Math.random() * pool.length)];
+    const needsPack = !mine.pack && (syncActive ? syncRole === 'scenepack' : true);
+    const needsSong = !mine.song && (syncActive ? syncRole === 'song' : true);
     const next = {
       ...mine,
-      pack: mine.pack || randomPack,
-      song: mine.song || randomSong,
+      pack: needsPack ? randomPack : mine.pack,
+      song: needsSong ? randomSong : mine.song,
       ready: true,
     } as PlayerPicks;
-    const assignedPack = !mine.pack && randomPack;
-    const assignedSong = !mine.song && randomSong;
+    const assignedPack = needsPack && randomPack;
+    const assignedSong = needsSong && randomSong;
     if (assignedPack || assignedSong) {
       const parts: string[] = [];
       if (assignedPack) parts.push(`scenepack: ${randomPack!.name}`);
@@ -489,8 +535,8 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
             {/* Tabs */}
             <div className="px-3 mb-2">
               <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-white/5 border border-white/10">
-                <TabBtn active={tab === 'scenepack'} done={!!mine.pack} onClick={() => setTab('scenepack')} icon={<Film className="w-3.5 h-3.5" />} label="Scenepack" />
-                <TabBtn active={tab === 'song'} done={!!mine.song} onClick={() => setTab('song')} icon={<Music className="w-3.5 h-3.5" />} label="Song" />
+                <TabBtn active={tab === 'scenepack'} done={!!mine.pack} onClick={() => setTab('scenepack')} icon={<Film className="w-3.5 h-3.5" />} label="Scenepack" disabled={syncActive && syncRole !== 'scenepack'} />
+                <TabBtn active={tab === 'song'} done={!!mine.song} onClick={() => setTab('song')} icon={<Music className="w-3.5 h-3.5" />} label="Song" disabled={syncActive && syncRole !== 'song'} />
               </div>
             </div>
 
@@ -696,14 +742,12 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
 
             <BottomControls
               onRandom={() => tab === 'scenepack' ? pickRandomPack() : pickRandomSong()}
-              onCustom={() => {
-                if (mine.ready) return;
-                setCustomText(tab === 'scenepack' ? (mine.pack?.name || '') : (mine.song?.title || ''));
-                setCustomOpen(true);
-              }}
+              onSync={handleSyncVote}
               canReady={canReady}
               ready={mine.ready}
               onReady={lockInReady}
+              mySyncVote={mySyncVote}
+              syncActive={syncActive}
             />
           </motion.div>
         )}
@@ -754,48 +798,6 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
         )}
       </AnimatePresence>
 
-      {customOpen && (
-        <div className="absolute inset-0 z-40 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => setCustomOpen(false)}>
-          <div onClick={(e) => e.stopPropagation()}
-            className="w-full sm:max-w-md bg-zinc-950 border border-white/15 rounded-t-2xl sm:rounded-2xl p-4 pb-[max(env(safe-area-inset-bottom),16px)]">
-            <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-bold mb-1">Custom</p>
-            <h3 className="font-display text-2xl text-white mb-3">
-              {tab === 'scenepack' ? 'Enter Your Scenepack' : 'Enter Your Song'}
-            </h3>
-            <input
-              autoFocus
-              value={customText}
-              onChange={(e) => setCustomText(e.target.value)}
-              placeholder={tab === 'scenepack' ? 'e.g. Bleach TYBW' : 'e.g. The Weeknd — Blinding Lights'}
-              className="w-full px-3 py-3 rounded-xl bg-white/5 border border-white/15 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-white/40"
-            />
-            <p className="text-[10px] text-muted-foreground mt-2">
-              This will be used as your {tab === 'scenepack' ? 'scenepack' : 'song'} for the battle. Make sure you actually use it.
-            </p>
-            <div className="mt-4 flex gap-2">
-              <button onClick={() => setCustomOpen(false)}
-                className="flex-1 py-3 rounded-xl border border-white/15 text-white/70 text-xs font-bold uppercase tracking-wider active:scale-[0.98]">
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  const v = customText.trim();
-                  if (!v) return;
-                  if (tab === 'scenepack') {
-                    setMyPack({ id: `custom:${v}`, name: v, poster: '', packCount: 0 });
-                  } else {
-                    setMySong({ id: `custom:${v}`, title: v, artist: 'Custom', cover: null, preview: null });
-                  }
-                  setCustomOpen(false);
-                }}
-                disabled={!customText.trim()}
-                className="flex-1 py-3 rounded-xl bg-emerald-600 text-white text-xs font-bold uppercase tracking-wider disabled:opacity-40 active:scale-[0.98]">
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>,
     document.body,
   );
@@ -824,11 +826,11 @@ function PlayerChip({ player, color, ready, label, align = 'left' }: { player: P
   );
 }
 
-function TabBtn({ active, done, onClick, icon, label }: { active: boolean; done: boolean; onClick: () => void; icon: React.ReactNode; label: string }) {
+function TabBtn({ active, done, onClick, icon, label, disabled }: { active: boolean; done: boolean; onClick: () => void; icon: React.ReactNode; label: string; disabled?: boolean }) {
   return (
-    <button onClick={onClick}
+    <button onClick={onClick} disabled={disabled}
       className={`flex items-center justify-center gap-1.5 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wider transition
-        ${active ? 'bg-white text-black' : 'text-white/70 hover:text-white'}`}>
+        ${active ? 'bg-white text-black' : disabled ? 'text-white/20 cursor-not-allowed' : 'text-white/70 hover:text-white'}`}>
       {done ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : icon}
       {label}
     </button>
@@ -837,16 +839,20 @@ function TabBtn({ active, done, onClick, icon, label }: { active: boolean; done:
 
 function BottomControls({
   onRandom,
-  onCustom,
+  onSync,
   canReady,
   ready,
   onReady,
+  mySyncVote,
+  syncActive,
 }: {
   onRandom: () => void;
-  onCustom: () => void;
+  onSync: () => void;
   canReady: boolean;
   ready: boolean;
   onReady: () => void;
+  mySyncVote: boolean;
+  syncActive: boolean;
 }) {
   return (
     <div className="absolute bottom-0 left-0 right-0 z-10 px-3 pt-3 pb-[max(env(safe-area-inset-bottom),12px)] bg-gradient-to-t from-black via-black/90 to-transparent">
@@ -855,9 +861,16 @@ function BottomControls({
           className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-40 text-white font-bold uppercase tracking-wider text-xs active:scale-[0.98] transition shadow-lg shadow-red-600/30">
           <Shuffle className="w-4 h-4" /> Random
         </button>
-        <button onClick={onCustom} disabled={ready}
-          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-white/20 text-white/80 hover:text-white hover:border-white/40 disabled:opacity-40 font-bold uppercase tracking-wider text-xs active:scale-[0.98] transition">
-          <Upload className="w-4 h-4" /> Custom
+        <button onClick={onSync} disabled={ready || mySyncVote}
+          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold uppercase tracking-wider text-xs active:scale-[0.98] transition ${
+            syncActive
+              ? 'bg-emerald-600/20 border border-emerald-400/60 text-emerald-300'
+              : mySyncVote
+                ? 'border border-amber-400/50 text-amber-300 bg-amber-500/10 opacity-70'
+                : 'border border-white/20 text-white/80 hover:text-white hover:border-white/40'
+          }`}>
+          <Users className="w-4 h-4" />
+          {syncActive ? '2/2 SYNCED' : mySyncVote ? '1/2…' : 'SYNC'}
         </button>
         <button onClick={onReady} disabled={!canReady || ready}
           className={`flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl border font-bold uppercase tracking-wider text-[10px] transition active:scale-[0.97] ${
