@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, Shuffle, Upload, Users, Swords, Music, Play, Pause, X, Film, Search, Loader2, Star } from 'lucide-react';
+import { Check, Shuffle, Upload, Users, Swords, Music, Play, Pause, X, Film, Search, Loader2, Star, ChevronDown } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -495,14 +495,15 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
             </div>
 
             {tab === 'scenepack' && (
-              <div className="flex-1 overflow-y-auto px-3">
+              <div className="flex-1 relative min-h-0">
+                <div className="h-full overflow-y-auto px-3">
                 {scenepacks.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-16 gap-2 text-white/30">
                     <Film className="w-8 h-8" />
                     <p className="text-xs">No scenepacks available</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pb-8">
                     {scenepacks.map((p) => {
                       const picked = mine.pack?.id === p.id;
                       return (
@@ -529,11 +530,20 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
                     })}
                   </div>
                 )}
+                </div>
+                {/* Scroll indicator */}
+                {scenepacks.length > 0 && (
+                  <div className="absolute bottom-0 inset-x-0 h-16 pointer-events-none flex flex-col items-center justify-end pb-1.5"
+                    style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%)' }}>
+                    <ChevronDown className="w-4 h-4 text-white/30 animate-bounce" />
+                  </div>
+                )}
               </div>
             )}
 
             {tab === 'song' && (
-              <div className="flex-1 overflow-y-auto overflow-x-hidden">
+              <div className="flex-1 relative min-h-0">
+              <div className="h-full overflow-y-auto overflow-x-hidden">
                 {/* Search bar */}
                 <div className="mb-3 px-3">
                   <div className="relative">
@@ -675,6 +685,12 @@ export default function BattleSelectFlow({ open, fightId, you, opponent, youSide
                     </div>
                   </div>
                 )}
+              </div>
+                {/* Scroll indicator */}
+                <div className="absolute bottom-0 inset-x-0 h-16 pointer-events-none flex flex-col items-center justify-end pb-1.5"
+                  style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%)' }}>
+                  <ChevronDown className="w-4 h-4 text-white/30 animate-bounce" />
+                </div>
               </div>
             )}
 
