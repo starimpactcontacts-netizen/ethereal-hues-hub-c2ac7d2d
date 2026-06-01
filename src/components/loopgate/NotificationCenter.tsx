@@ -4,13 +4,13 @@ import {
   Bell, Check, Trash2, Trophy, Zap, Star, Calendar,
   MessageSquare, Users, Megaphone, UserPlus, UserCheck,
   Heart, MessageCircle, Bookmark, Swords, Award, Flame,
-  ChevronRight, Mail, Loader2,
+  ChevronRight, Mail, Loader2, X,
 } from "lucide-react";
 import { useNotifications, Notification } from "@/hooks/useNotifications";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
@@ -439,6 +439,12 @@ export default function NotificationCenter() {
         {/* Gold top accent */}
         <div className="absolute inset-x-0 top-0 h-[2px] pointer-events-none z-10"
           style={{ background: 'linear-gradient(90deg, #f59e0b, rgba(245,158,11,0.2) 70%, transparent)' }} />
+
+        {/* Close button */}
+        <SheetClose className="absolute top-3 right-3 z-20 h-9 w-9 rounded-full flex items-center justify-center bg-white/[0.04] hover:bg-white/[0.1] border border-white/[0.08] text-white/60 hover:text-white transition-colors">
+          <X className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </SheetClose>
 
         {/* Header */}
         <div className="relative z-10 flex items-center justify-between px-4 pt-5 pb-3 pr-14 border-b border-white/[0.06]">
