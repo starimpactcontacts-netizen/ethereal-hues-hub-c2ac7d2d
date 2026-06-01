@@ -8,7 +8,7 @@ import {
   Clock, Award, UserPlus, Eye, Globe, Crown, Zap, UserRound,
   Sparkles, Star, Music, Mail, ArrowRight, History, Play, Loader2,
   Clapperboard, ChevronDown, Crosshair, DollarSign, Shuffle,
-  Link2, Copy, Lock
+  Link2, Copy, Lock, X
 } from "lucide-react";
 import { InfinityLoop } from "@/components/loopgate/InfinityLoop";
 import { supabase } from "@/integrations/supabase/client";
@@ -551,6 +551,11 @@ export default function ArenaPage() {
   const [missionBillboards, setMissionBillboards] = useState<Array<{ id: string; song_name: string; poster_url: string | null; artist_name: string | null; max_pay: number }>>([]);
   const { activeSolo, loading: soloLoading, cancelSolo } = useSoloMode();
   const { fights: myQuickFights, inQueue: qfInQueue } = useMyQuickFights();
+  const cancelLobby = async (lobbyId: string) => {
+    const { error } = await supabase.from('quick_fights').update({ status: 'cancelled' }).eq('id', lobbyId);
+    if (error) toast.error('Could not cancel lobby');
+    else toast.success('Lobby cancelled');
+  };
   const { competitions: myLiveCompetitions } = useMyCompetitionReminders();
   const { battles: myCashBattles, acceptBattle: acceptCashBattle } = useMyCashBattles();
   const [arenaView, setArenaView] = useState<'arena' | 'my'>(() => (searchParams.get('tab') === 'my' || searchParams.get('view') === 'my') ? 'my' : 'arena');
@@ -1076,8 +1081,9 @@ export default function ArenaPage() {
                                 <span className="relative z-10">{isSelecting ? 'Rejoin — Still Picking' : 'Join Lobby'}</span>
                               </button>
 
-                              {/* Bottom row — copy link + time */}
+                              {/* Bottom row — copy link + cancel + time */}
                               <div className="flex items-center justify-between mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                <div className="flex items-center gap-3">
                                 <button
                                   onClick={copyLink}
                                   className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.15em] text-white/20 hover:text-white/45 transition-colors"
@@ -1086,6 +1092,15 @@ export default function ArenaPage() {
                                   <Link2 className="w-2.5 h-2.5" />
                                   Copy Link
                                 </button>
+                                <button
+                                  onClick={() => cancelLobby(lobby.id)}
+                                  className="flex items-center gap-1 text-[9px] font-black uppercase tracking-[0.15em] text-red-500/40 hover:text-red-400/70 transition-colors"
+                                  style={{ fontFamily: 'Teko, sans-serif' }}
+                                >
+                                  <X className="w-2.5 h-2.5" />
+                                  Cancel
+                                </button>
+                                </div>
                                 <span className="text-[9px] text-white/20 tabular-nums" style={{ fontFamily: 'Teko, sans-serif' }}>
                                   {formatDistanceToNow(new Date(lobby.created_at), { addSuffix: true })}
                                 </span>
