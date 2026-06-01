@@ -755,19 +755,41 @@ export default function BattleDetailPage() {
           {/* Accept Challenge — Premium CTA */}
           {canAccept && (
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
-              <button
-                onClick={handleAccept}
-                disabled={accepting}
-                className="w-full relative overflow-hidden py-4 rounded-xl bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 transition-all disabled:opacity-50 shadow-[0_4px_24px_rgba(239,68,68,0.25)] active:scale-[0.98]"
-              >
-                <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.1] to-transparent pointer-events-none rounded-t-xl" />
-                <span className="relative z-10 flex items-center justify-center gap-2.5">
-                  <Swords className="w-5 h-5 text-white" />
-                  <span className="text-lg text-white font-bold uppercase tracking-[0.15em]" style={{ fontFamily: 'Teko, sans-serif' }}>
-                    {accepting ? "ACCEPTING..." : "ACCEPT CHALLENGE"}
+              <div className={canAcceptOpen ? "grid grid-cols-2 gap-2" : ""}>
+                <button
+                  onClick={handleAccept}
+                  disabled={accepting || joining}
+                  className="w-full relative overflow-hidden py-4 rounded-xl bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 transition-all disabled:opacity-50 shadow-[0_4px_24px_rgba(239,68,68,0.25)] active:scale-[0.98]"
+                >
+                  <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.1] to-transparent pointer-events-none rounded-t-xl" />
+                  <span className="relative z-10 flex items-center justify-center gap-2.5">
+                    <Swords className="w-5 h-5 text-white" />
+                    <span className="text-lg text-white font-bold uppercase tracking-[0.15em]" style={{ fontFamily: 'Teko, sans-serif' }}>
+                      {accepting ? "ACCEPTING..." : canAcceptOpen ? "ACCEPT" : "ACCEPT CHALLENGE"}
+                    </span>
                   </span>
-                </span>
-              </button>
+                </button>
+                {canAcceptOpen && (
+                  <button
+                    onClick={handleJoin}
+                    disabled={joining || accepting}
+                    className="w-full relative overflow-hidden py-4 rounded-xl bg-zinc-900 border border-red-500/30 hover:bg-zinc-800 hover:border-red-500/50 transition-all disabled:opacity-50 active:scale-[0.98]"
+                    title="Take the slot but wait to start — chat first"
+                  >
+                    <span className="relative z-10 flex items-center justify-center gap-2.5">
+                      <UserPlusIconAlias className="w-5 h-5 text-red-400" />
+                      <span className="text-lg text-red-400 font-bold uppercase tracking-[0.15em]" style={{ fontFamily: 'Teko, sans-serif' }}>
+                        {joining ? "JOINING..." : "JOIN"}
+                      </span>
+                    </span>
+                  </button>
+                )}
+              </div>
+              {canAcceptOpen && (
+                <p className="text-[10px] text-zinc-500 text-center tracking-wide">
+                  ACCEPT starts the battle now · JOIN claims the slot so you can smack-talk first
+                </p>
+              )}
               {canAcceptDirect && (
                 <button
                   onClick={async () => {
@@ -780,6 +802,28 @@ export default function BattleDetailPage() {
                   DECLINE
                 </button>
               )}
+            </motion.div>
+          )}
+
+          {/* Both players locked in — either side starts */}
+          {canStartJoined && (
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
+              <button
+                onClick={handleStart}
+                disabled={starting}
+                className="w-full relative overflow-hidden py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 transition-all disabled:opacity-50 shadow-[0_4px_24px_rgba(16,185,129,0.25)] active:scale-[0.98]"
+              >
+                <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.1] to-transparent pointer-events-none rounded-t-xl" />
+                <span className="relative z-10 flex items-center justify-center gap-2.5">
+                  <Swords className="w-5 h-5 text-white" />
+                  <span className="text-lg text-white font-bold uppercase tracking-[0.15em]" style={{ fontFamily: 'Teko, sans-serif' }}>
+                    {starting ? "STARTING..." : "ACCEPT BATTLE · START"}
+                  </span>
+                </span>
+              </button>
+              <p className="text-[10px] text-zinc-500 text-center tracking-wide">
+                Both players locked in — either side can start the clock
+              </p>
             </motion.div>
           )}
 
