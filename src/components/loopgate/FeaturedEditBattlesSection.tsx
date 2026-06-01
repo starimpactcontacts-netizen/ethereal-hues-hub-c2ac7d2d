@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { QuickFight } from '@/hooks/useQuickFight';
+import vsBadge from '@/assets/vs-badge.png.asset.json';
 
 function Corner({ pos }: { pos: 'tl' | 'tr' | 'bl' | 'br' }) {
   const t = pos[0] === 't', l = pos[1] === 'l';
@@ -141,21 +142,16 @@ export default function FeaturedEditBattlesSection() {
                 {/* VS divider */}
                 <div className="flex-shrink-0 flex flex-col items-center justify-center gap-1.5"
                   style={{ width: 44, borderLeft: '1px solid rgba(255,255,255,0.07)', borderRight: '1px solid rgba(255,255,255,0.07)' }}>
-                  {/* Top tick */}
-                  <div style={{ width: 18, height: 1, background: 'linear-gradient(90deg, rgba(59,130,246,0.6), rgba(239,68,68,0.6))' }} />
-                  {/* VS text — gradient blue→red */}
-                  <span className="font-black leading-none"
+                  <img
+                    src={vsBadge.url}
+                    alt="VS"
                     style={{
-                      fontFamily: 'Teko, sans-serif',
-                      fontSize: 28,
-                      letterSpacing: '0.04em',
-                      background: 'linear-gradient(180deg, #93c5fd 0%, #fca5a5 100%)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      backgroundClip: 'text',
-                    }}>VS</span>
-                  {/* Bottom tick */}
-                  <div style={{ width: 18, height: 1, background: 'linear-gradient(90deg, rgba(59,130,246,0.6), rgba(239,68,68,0.6))' }} />
+                      width: 40,
+                      height: 40,
+                      objectFit: 'contain',
+                      filter: 'invert(1) drop-shadow(0 0 6px rgba(255,255,255,0.25))',
+                    }}
+                  />
                 </div>
 
                 {/* Player 2 */}
