@@ -4,12 +4,12 @@ import {
   Bell, Check, Trash2, Trophy, Zap, Star, Calendar,
   MessageSquare, Users, Megaphone, UserPlus, UserCheck,
   Heart, MessageCircle, Bookmark, Swords, Award, Flame,
-  ChevronRight, Mail, X as XIcon, Settings,
+  ChevronRight, Mail,
 } from "lucide-react";
 import { useNotifications, Notification } from "@/hooks/useNotifications";
 import { formatDistanceToNow } from "date-fns";
 import {
-  Sheet, SheetContent, SheetPortal, SheetOverlay,
+  Sheet, SheetContent, SheetTrigger,
 } from "@/components/ui/sheet";
 import { motion, AnimatePresence } from "framer-motion";
 import EmailNotificationSettings from "./EmailNotificationSettings";
@@ -294,130 +294,107 @@ export default function NotificationCenter() {
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      {/* Bell trigger */}
-      <button
-        onClick={() => setOpen(true)}
-        className="relative p-2 transition-transform active:scale-90"
+      <SheetTrigger asChild>
+        <button className="relative p-2 transition-transform active:scale-90">
+          <Bell size={20} />
+          <AnimatePresence>
+            {unreadCount > 0 && (
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
+                className="absolute -top-0.5 -right-0.5 min-w-[17px] h-[17px] px-1 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center"
+              >
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </button>
+      </SheetTrigger>
+
+      <SheetContent
+        side="right"
+        className="w-full sm:max-w-md p-0 border-0 flex flex-col overflow-hidden"
+        style={{ background: '#0d0d0d' }}
       >
-        <Bell size={20} />
-        <AnimatePresence>
-          {unreadCount > 0 && (
-            <motion.span
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0 }}
-              className="absolute -top-0.5 -right-0.5 min-w-[17px] h-[17px] px-1 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center"
+        {/* Dot grid */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.018) 1px, transparent 1px)',
+          backgroundSize: '18px 18px',
+        }} />
+        {/* Gold top accent */}
+        <div className="absolute inset-x-0 top-0 h-[2px] pointer-events-none z-10"
+          style={{ background: 'linear-gradient(90deg, #f59e0b, rgba(245,158,11,0.2) 70%, transparent)' }} />
+
+        {/* Header */}
+        <div className="relative z-10 flex items-center justify-between px-4 pt-5 pb-3 pr-14 border-b border-white/[0.06]">
+          <div>
+            <h2 className="text-[18px] font-black tracking-[0.1em] text-white" style={{ fontFamily: 'Teko, sans-serif' }}>
+              NOTIFICATIONS
+            </h2>
+            {unreadCount > 0 && (
+              <p className="text-[10px] text-white/30 mt-0.5">{unreadCount} unread</p>
+            )}
+          </div>
+          {unreadCount > 0 && tab !== 'email' && (
+            <button
+              onClick={markAllAsRead}
+              className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40 hover:text-gold transition-colors"
             >
-              {unreadCount > 99 ? '99+' : unreadCount}
-            </motion.span>
+              Mark all read
+            </button>
           )}
-        </AnimatePresence>
-      </button>
+        </div>
 
-      {/* Sheet rendered manually to control background */}
-      <AnimatePresence>
-        {open && (
-          <SheetPortal>
-            <SheetOverlay onClick={() => setOpen(false)} />
-            <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed inset-y-0 right-0 z-50 w-full sm:max-w-md flex flex-col"
-              style={{ background: '#0d0d0d' }}
+        {/* Tab bar */}
+        <div className="relative z-10 flex border-b border-white/[0.06]">
+          {tabs.map(t => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`flex-1 flex items-center justify-center gap-1.5 h-10 text-[11px] font-black uppercase tracking-[0.1em] transition-colors relative ${
+                tab === t.key ? 'text-white' : 'text-white/35 hover:text-white/60'
+              }`}
             >
-              {/* Dot grid bg */}
-              <div className="absolute inset-0 pointer-events-none" style={{
-                backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.018) 1px, transparent 1px)',
-                backgroundSize: '18px 18px',
-              }} />
-              {/* Gold top accent */}
-              <div className="absolute inset-x-0 top-0 h-[2px] pointer-events-none z-10"
-                style={{ background: 'linear-gradient(90deg, #f59e0b, rgba(245,158,11,0.2) 70%, transparent)' }} />
+              {t.key === 'email' && <Mail size={11} />}
+              {t.label}
+              {t.badge > 0 && (
+                <span className="min-w-[16px] h-4 px-1 bg-red-500 text-white text-[9px] font-black rounded-sm flex items-center justify-center">
+                  {t.badge > 99 ? '99+' : t.badge}
+                </span>
+              )}
+              {tab === t.key && (
+                <motion.div
+                  layoutId="notif-tab-indicator"
+                  className="absolute bottom-0 left-0 right-0 h-[2px] bg-gold"
+                />
+              )}
+            </button>
+          ))}
+        </div>
 
-              {/* Header */}
-              <div className="relative z-10 flex items-center justify-between px-4 pt-5 pb-3 border-b border-white/[0.06]">
-                <div>
-                  <h2 className="text-[18px] font-black tracking-[0.1em] text-white" style={{ fontFamily: 'Teko, sans-serif' }}>
-                    NOTIFICATIONS
-                  </h2>
-                  {unreadCount > 0 && (
-                    <p className="text-[10px] text-white/30 mt-0.5">{unreadCount} unread</p>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  {unreadCount > 0 && tab !== 'email' && (
-                    <button
-                      onClick={markAllAsRead}
-                      className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40 hover:text-gold transition-colors"
-                    >
-                      Mark all read
-                    </button>
-                  )}
-                  <button
-                    onClick={() => setOpen(false)}
-                    className="w-8 h-8 flex items-center justify-center text-white/30 hover:text-white transition-colors"
-                  >
-                    <XIcon size={16} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Tab bar */}
-              <div className="relative z-10 flex border-b border-white/[0.06]">
-                {tabs.map(t => (
-                  <button
-                    key={t.key}
-                    onClick={() => setTab(t.key)}
-                    className={`flex-1 flex items-center justify-center gap-1.5 h-10 text-[11px] font-black uppercase tracking-[0.1em] transition-colors relative ${
-                      tab === t.key ? 'text-white' : 'text-white/35 hover:text-white/60'
-                    }`}
-                  >
-                    {t.key === 'email' && <Mail size={11} />}
-                    {t.label}
-                    {t.badge > 0 && (
-                      <span className="min-w-[16px] h-4 px-1 bg-red-500 text-white text-[9px] font-black rounded-sm flex items-center justify-center">
-                        {t.badge > 99 ? '99+' : t.badge}
-                      </span>
-                    )}
-                    {tab === t.key && (
-                      <motion.div
-                        layoutId="notif-tab-indicator"
-                        className="absolute bottom-0 left-0 right-0 h-[2px] bg-gold"
-                      />
-                    )}
-                  </button>
-                ))}
-              </div>
-
-              {/* Content */}
-              <div className="relative z-10 flex-1 overflow-y-auto">
-                {tab === 'activity' && renderList(
-                  activityNotifs, Bell,
-                  'No activity yet',
-                  'Likes, battles, and more will appear here'
-                )}
-                {tab === 'system' && renderList(
-                  systemNotifs, Megaphone,
-                  'No system updates',
-                  'Platform announcements will appear here'
-                )}
-                {tab === 'email' && (
-                  <div className="p-4">
-                    <div className="mb-4">
-                      <p className="text-[11px] text-white/40 leading-relaxed">
-                        Get email reminders when someone accepts your battle or a competition you're in goes live. We'll only send what you enable.
-                      </p>
-                    </div>
-                    <EmailNotificationSettings />
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          </SheetPortal>
-        )}
-      </AnimatePresence>
+        {/* Content */}
+        <div className="relative z-10 flex-1 overflow-y-auto">
+          {tab === 'activity' && renderList(
+            activityNotifs, Bell,
+            'No activity yet',
+            'Likes, battles, and more will appear here'
+          )}
+          {tab === 'system' && renderList(
+            systemNotifs, Megaphone,
+            'No system updates',
+            'Platform announcements will appear here'
+          )}
+          {tab === 'email' && (
+            <div className="p-4">
+              <p className="text-[11px] text-white/40 leading-relaxed mb-4">
+                Get email reminders when someone accepts your battle or a competition goes live.
+              </p>
+              <EmailNotificationSettings />
+            </div>
+          )}
+        </div>
+      </SheetContent>
     </Sheet>
   );
 }
