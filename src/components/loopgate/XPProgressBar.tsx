@@ -38,8 +38,8 @@ export default function XPProgressBar({
           <span
             style={{
               fontFamily: 'Teko, sans-serif',
-              fontSize: 11,
-              letterSpacing: '0.15em',
+              fontSize: 9,
+              letterSpacing: '0.06em',
               color: 'rgba(255,255,255,0.28)',
               fontWeight: 700,
               textTransform: 'uppercase',
@@ -51,8 +51,8 @@ export default function XPProgressBar({
             <span
               style={{
                 fontFamily: 'Teko, sans-serif',
-                fontSize: 11,
-                letterSpacing: '0.12em',
+                fontSize: 9,
+                letterSpacing: '0.06em',
                 color: 'rgba(245,158,11,0.5)',
                 fontWeight: 700,
               }}
