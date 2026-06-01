@@ -1,18 +1,132 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Bell, Check, Trash2, Trophy, Zap, Star, Calendar,
   MessageSquare, Users, Megaphone, UserPlus, UserCheck,
   Heart, MessageCircle, Bookmark, Swords, Award, Flame,
-  ChevronRight, Mail,
+  ChevronRight, Mail, Loader2,
 } from "lucide-react";
 import { useNotifications, Notification } from "@/hooks/useNotifications";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
-import {
-  Sheet, SheetContent, SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { motion, AnimatePresence } from "framer-motion";
-import EmailNotificationSettings from "./EmailNotificationSettings";
+import { toast } from "sonner";
+
+// ── Inline email settings panel ──────────────────────────────────────────────
+function EmailAlertsPanel() {
+  const { user } = useAuth();
+  const [email, setEmail] = useState('');
+  const [battles, setBattles] = useState(true);
+  const [comps, setComps] = useState(true);
+  const [events, setEvents] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    supabase
+      .from('profiles')
+      .select('notification_email, notify_battles, notify_scores, notify_drops, email')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }) => {
+        if (!data) { setLoaded(true); return; }
+        const d = data as any;
+        setEmail(d.notification_email || d.email || user.email || '');
+        setBattles(d.notify_battles ?? true);
+        setComps(d.notify_scores ?? true);
+        setEvents(d.notify_drops ?? true);
+        setLoaded(true);
+      });
+  }, [user?.id]);
+
+  const save = async () => {
+    if (!user?.id) return;
+    const emailVal = email.trim();
+    if (emailVal && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+      toast.error('Enter a valid email'); return;
+    }
+    setSaving(true);
+    const { error } = await supabase.from('profiles').update({
+      notification_email: emailVal || null,
+      notify_battles: battles,
+      notify_scores: comps,
+      notify_drops: events,
+    } as any).eq('id', user.id);
+    setSaving(false);
+    if (error) toast.error('Could not save');
+    else toast.success('Email alerts saved');
+  };
+
+  if (!loaded) return (
+    <div className="flex justify-center py-10">
+      <Loader2 className="w-5 h-5 animate-spin text-white/30" />
+    </div>
+  );
+
+  const Toggle = ({ on, onToggle }: { on: boolean; onToggle: () => void }) => (
+    <button
+      onClick={onToggle}
+      className={`relative w-10 h-6 rounded-full transition-colors flex-shrink-0 ${on ? 'bg-gold' : 'bg-white/10'}`}
+    >
+      <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${on ? 'left-5' : 'left-1'}`} />
+    </button>
+  );
+
+  const rows = [
+    { label: 'Edit Battles', desc: 'When someone accepts your challenge', on: battles, toggle: () => setBattles(v => !v), icon: Swords },
+    { label: 'Competitions', desc: 'When a competition you joined goes live', on: comps, toggle: () => setComps(v => !v), icon: Trophy },
+    { label: 'Events', desc: 'When a live event or tournament starts', on: events, toggle: () => setEvents(v => !v), icon: Calendar },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <p className="text-[11px] text-white/35 leading-relaxed">
+        Get emailed when someone accepts your battle or a competition goes live. Only what you turn on.
+      </p>
+
+      {/* Email input */}
+      <div className="space-y-1.5">
+        <label className="text-[10px] font-bold uppercase tracking-widest text-white/30 flex items-center gap-1.5">
+          <Mail size={10} /> Notification Email
+        </label>
+        <input
+          type="email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          placeholder="your@email.com"
+          className="w-full h-10 px-3 text-[13px] text-white placeholder:text-white/20 bg-white/[0.05] border border-white/[0.08] focus:outline-none focus:border-gold/40 transition-colors"
+        />
+      </div>
+
+      {/* Toggles */}
+      <div className="divide-y divide-white/[0.05] border border-white/[0.06]">
+        {rows.map(({ label, desc, on, toggle, icon: Icon }) => (
+          <div key={label} className="flex items-center gap-3 px-3 py-3">
+            <Icon size={14} className="text-white/40 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[12px] font-bold text-white/80">{label}</p>
+              <p className="text-[10px] text-white/30">{desc}</p>
+            </div>
+            <Toggle on={on} onToggle={toggle} />
+          </div>
+        ))}
+      </div>
+
+      {/* Save */}
+      <button
+        onClick={save}
+        disabled={saving}
+        className="w-full h-10 bg-gold text-black font-black text-[12px] uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50 transition-opacity"
+      >
+        {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+        {saving ? 'Saving…' : 'Save'}
+      </button>
+    </div>
+  );
+}
 
 const SYSTEM_TYPES = ['system', 'announcement', 'maintenance', 'update'];
 
@@ -364,10 +478,7 @@ export default function NotificationCenter() {
                 </span>
               )}
               {tab === t.key && (
-                <motion.div
-                  layoutId="notif-tab-indicator"
-                  className="absolute bottom-0 left-0 right-0 h-[2px] bg-gold"
-                />
+                <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-gold" />
               )}
             </button>
           ))}
@@ -387,10 +498,7 @@ export default function NotificationCenter() {
           )}
           {tab === 'email' && (
             <div className="p-4">
-              <p className="text-[11px] text-white/40 leading-relaxed mb-4">
-                Get email reminders when someone accepts your battle or a competition goes live.
-              </p>
-              <EmailNotificationSettings />
+              <EmailAlertsPanel />
             </div>
           )}
         </div>
