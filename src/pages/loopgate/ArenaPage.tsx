@@ -1036,7 +1036,7 @@ export default function ArenaPage() {
                                     className="text-[22px] font-black uppercase leading-none text-white truncate"
                                     style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.03em' }}
                                   >
-                                    Custom Edit Battle
+                                    {lobby.battle_mode === 'sync' ? 'Sync Edit Battle' : 'Custom Edit Battle'}
                                   </p>
                                 </div>
                                 <span
