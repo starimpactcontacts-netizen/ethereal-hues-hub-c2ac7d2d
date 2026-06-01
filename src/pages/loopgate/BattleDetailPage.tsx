@@ -5,7 +5,7 @@ import { MAX_EDIT_UPLOAD_BYTES, MAX_EDIT_UPLOAD_LABEL, uploadToBunny } from "@/l
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Swords, Clock, Eye, Trophy, ArrowLeft,
-  CheckCircle, XCircle, Send, Share2, Users, Gavel, Zap, Play, Music, Flag, Upload, EyeOff, RotateCcw
+  CheckCircle, XCircle, Send, Share2, Users, Gavel, Zap, Play, Music, Flag, Upload, EyeOff, RotateCcw, UserPlus
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
