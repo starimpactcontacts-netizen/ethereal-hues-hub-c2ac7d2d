@@ -145,74 +145,81 @@ export function playToggleOff() {
   } catch {}
 }
 
-/** Match alert — sharp metallic bell hit + sub punch, Valorant-style */
+/** Match alert — CS:GO double-bell chime + Valorant sub hit + Fortnite sparkle arpeggio */
 export function playMatchAlert() {
   try {
     const c = getCtx();
     const t = c.currentTime;
     const master = c.createGain();
-    master.gain.value = 0.82;
+    master.gain.value = 0.80;
     master.connect(c.destination);
 
-    // Noise snap — physical crack transient on the hit
-    const snapBuf = c.createBuffer(1, Math.floor(c.sampleRate * 0.03), c.sampleRate);
-    const snapData = snapBuf.getChannelData(0);
-    for (let i = 0; i < snapData.length; i++) snapData[i] = Math.random() * 2 - 1;
+    // VALORANT — deep sub punch + noise snap on impact
+    osc(c, 'sine', 58,  t, 0.26, 0.90, master);
+    osc(c, 'sine', 116, t, 0.16, 0.48, master);
+
+    const snapBuf = c.createBuffer(1, Math.floor(c.sampleRate * 0.025), c.sampleRate);
+    const sd = snapBuf.getChannelData(0);
+    for (let i = 0; i < sd.length; i++) sd[i] = Math.random() * 2 - 1;
     const snap = c.createBufferSource();
     snap.buffer = snapBuf;
-    const snapGain = c.createGain();
-    snapGain.gain.setValueAtTime(0.55, t);
-    snapGain.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
-    snap.connect(snapGain).connect(master);
+    const sg = c.createGain();
+    sg.gain.setValueAtTime(0.48, t);
+    sg.gain.exponentialRampToValueAtTime(0.001, t + 0.025);
+    snap.connect(sg).connect(master);
     snap.start(t);
 
-    // Deep sub punch
-    osc(c, 'sine', 62, t, 0.22, 0.92, master);
-    osc(c, 'sine', 124, t, 0.14, 0.5, master);
+    // CS:GO — iconic two-tone upward bell chime (C5 → E5)
+    osc(c, 'sine',     523,  t + 0.05, 0.38, 0.68, master);
+    osc(c, 'triangle', 1046, t + 0.05, 0.30, 0.24, master);
+    osc(c, 'sine',     659,  t + 0.19, 0.42, 0.62, master);
+    osc(c, 'triangle', 1318, t + 0.19, 0.32, 0.20, master);
 
-    // Metallic bell body — E5 (659 Hz), triangle for edge
-    osc(c, 'triangle', 659, t, 0.32, 0.72, master);
-    osc(c, 'triangle', 1318, t, 0.24, 0.30, master);
-    osc(c, 'sine',     1976, t, 0.18, 0.14, master);
-
-    // Confirmation ping 110ms later — "locked in" feel
-    osc(c, 'sine', 880, t + 0.11, 0.22, 0.42, master);
-    osc(c, 'sine', 1760, t + 0.13, 0.14, 0.18, master);
+    // FORTNITE / ROBLOX — quick ascending sparkle arpeggio (C6 E6 G6 C7)
+    [1047, 1319, 1568, 2093].forEach((f, i) => {
+      osc(c, 'sine', f, t + 0.22 + i * 0.05, 0.13, 0.30 - i * 0.05, master);
+    });
   } catch {}
 }
 
-/** Countdown tick — sharp clock-like ticks, C6→C7 pentatonic escalation */
+/** Countdown tick — CS:GO bomb-tick sharpness, escalating A5→E6 */
 export function playCountdownTick(count: number) {
   try {
     const c = getCtx();
     const t = c.currentTime;
     const master = c.createGain();
-    master.gain.value = 0.78;
+    master.gain.value = count <= 2 ? 0.88 : 0.74;
     master.connect(c.destination);
 
-    // Pentatonic scale C6→C7 so escalation is tonally intentional
-    const freq = ({ 5: 1047, 4: 1175, 3: 1319, 2: 1568, 1: 2093 } as Record<number, number>)[count] ?? 1047;
-    const dur = count === 1 ? 0.13 : 0.07;
+    // CS:GO bomb tick: very short, sharp sine — pitch climbs each second
+    const rows: Record<number, [number, number]> = {
+      5: [880,  0.08],  // A5
+      4: [988,  0.08],  // B5
+      3: [1047, 0.09],  // C6
+      2: [1175, 0.10],  // D6
+      1: [1319, 0.14],  // E6 — urgent
+    };
+    const [freq, dur] = rows[count] ?? [880, 0.08];
 
-    // Noise micro-click — makes it feel physical, not just a beep
-    const clickBuf = c.createBuffer(1, Math.floor(c.sampleRate * 0.012), c.sampleRate);
-    const cd = clickBuf.getChannelData(0);
+    // Micro noise click (physical feel of a button/key)
+    const cbuf = c.createBuffer(1, Math.floor(c.sampleRate * 0.007), c.sampleRate);
+    const cd = cbuf.getChannelData(0);
     for (let i = 0; i < cd.length; i++) cd[i] = Math.random() * 2 - 1;
-    const click = c.createBufferSource();
-    click.buffer = clickBuf;
+    const ck = c.createBufferSource();
+    ck.buffer = cbuf;
     const cg = c.createGain();
-    cg.gain.setValueAtTime(0.22, t);
-    cg.gain.exponentialRampToValueAtTime(0.001, t + 0.012);
-    click.connect(cg).connect(master);
-    click.start(t);
+    cg.gain.setValueAtTime(0.20, t);
+    cg.gain.exponentialRampToValueAtTime(0.001, t + 0.007);
+    ck.connect(cg).connect(master);
+    ck.start(t);
 
-    osc(c, 'sine',     freq,     t, dur,        0.68, master);
-    osc(c, 'triangle', freq * 2, t, dur * 0.55, 0.22, master);
+    osc(c, 'sine',     freq,     t, dur,       0.82, master);
+    osc(c, 'triangle', freq * 2, t, dur * 0.4, 0.18, master);
 
     if (count === 1) {
-      // Final beat — sub thump + double strike for urgency
-      osc(c, 'sine', 78, t, 0.20, 0.65, master);
-      osc(c, 'sine', freq, t + 0.07, 0.10, 0.45, master);
+      // Final beat: Fortnite-style double-hit + sub thump
+      osc(c, 'sine', 78,   t,        0.24, 0.58, master);
+      osc(c, 'sine', freq, t + 0.07, 0.11, 0.62, master);
     }
   } catch {}
 }
