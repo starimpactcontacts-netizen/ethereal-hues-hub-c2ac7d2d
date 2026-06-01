@@ -29,7 +29,7 @@ export default function XPProgressBar({
     ? 100
     : Math.max(0, Math.min(100, (xpIntoCurrentLevel / xpNeededForNextLevel) * 100));
 
-  const trackH = size === "sm" ? 5 : size === "md" ? 7 : 9;
+  const trackH = size === "sm" ? 3 : size === "md" ? 4 : 6;
 
   return (
     <div className={cn("w-full", className)}>
@@ -77,8 +77,8 @@ export default function XPProgressBar({
             className="absolute top-0 left-0 h-full"
             style={{
               width: `${progress}%`,
-              background: 'linear-gradient(90deg, #b45309, #f59e0b)',
-              boxShadow: '0 0 8px rgba(245,158,11,0.35)',
+              background: 'linear-gradient(90deg, #ca8a04, #fbbf24)',
+              boxShadow: '0 0 6px rgba(251,191,36,0.3)',
               transition: 'width 0.7s cubic-bezier(0.22,1,0.36,1)',
             }}
           >
@@ -105,17 +105,6 @@ export default function XPProgressBar({
           </div>
         )}
 
-        {/* Tick marks at 25 / 50 / 75 */}
-        {[25, 50, 75].map((pct) => (
-          <div
-            key={pct}
-            className="absolute top-0 bottom-0 w-px"
-            style={{
-              left: `${pct}%`,
-              background: pct <= progress ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.05)',
-            }}
-          />
-        ))}
       </div>
 
       <style>{`
