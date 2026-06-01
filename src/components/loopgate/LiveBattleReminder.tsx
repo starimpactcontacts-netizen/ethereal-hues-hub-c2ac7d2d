@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Swords, Zap, Flag, ChevronRight, Gavel, Trophy, Vote } from "lucide-react";
+import { Flag, ChevronRight, Gavel, Trophy, Vote } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -65,64 +65,87 @@ export function LiveBattleReminderCard({ item, compact = false }: { item: LiveBa
   const { label, urgent, expired } = useCountdown(item.endsAt);
   const navigate = useNavigate();
   const isVoting = item.kind === "competition" && item.status === "voting";
-  const Icon = item.isJudge ? Gavel : isVoting ? Vote : item.kind === "competition" ? Trophy : item.kind === "quick" ? Zap : Swords;
-  const accent = item.isJudge || item.kind === "competition" ? "purple" : "red";
+  const isPurple = item.isJudge || item.kind === "competition";
+  const dotColor  = isPurple ? "bg-purple-400" : urgent ? "bg-red-400 animate-pulse" : "bg-red-500/70";
+  const labelColor = isPurple ? "text-purple-300" : "text-red-400";
+  const timerColor = expired ? "text-red-400" : urgent ? "text-red-300" : "text-white/30";
+
+  const statusText = item.isJudge
+    ? "JUDGING"
+    : item.kind === "competition"
+    ? (isVoting ? "VOTE NOW" : "LIVE COMPETITION")
+    : item.status === "judging"
+    ? "AWAITING JUDGE"
+    : "LIVE BATTLE";
 
   return (
     <div
-      className={`relative rounded-2xl border ${
-        accent === "purple" ? "border-purple-500/30" : urgent ? "border-red-500/60" : "border-red-500/25"
-      } overflow-hidden`}
-      style={{ background: "linear-gradient(160deg, hsl(0 0% 11%) 0%, hsl(0 0% 6%) 100%)" }}
+      className="relative overflow-hidden"
+      style={{
+        background: '#0e0e0e',
+        border: `1px solid ${isPurple ? 'rgba(168,85,247,0.18)' : 'rgba(239,68,68,0.18)'}`,
+        backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.025) 1px, transparent 1px)',
+        backgroundSize: '14px 14px',
+      }}
     >
+      {/* Top accent line */}
+      <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
+        style={{ background: isPurple ? 'rgba(168,85,247,0.3)' : 'rgba(239,68,68,0.3)' }} />
+
+      {/* Main row */}
       <button
         onClick={() => navigate(item.href)}
-        className="w-full flex items-center gap-3 p-3 text-left active:scale-[0.99] transition-transform"
+        className="relative w-full flex items-center gap-3 px-3 py-2.5 text-left active:opacity-80 transition-opacity"
       >
-        <div className={`relative shrink-0 w-9 h-9 rounded-xl flex items-center justify-center ${
-          accent === "purple" ? "bg-purple-500/15" : "bg-red-500/15"
-        }`}>
-          <Icon className={`w-4 h-4 ${accent === "purple" ? "text-purple-300" : "text-red-300"}`} />
-          <span className={`absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full animate-pulse ${
-            accent === "purple" ? "bg-purple-400" : "bg-red-500"
-          } shadow-[0_0_8px_rgba(239,68,68,0.7)]`} />
-        </div>
+        {/* Status dot */}
+        <span className={`shrink-0 w-1.5 h-1.5 rounded-full ${dotColor}`} />
+
+        {/* Text */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${
-              accent === "purple" ? "text-purple-300" : "text-red-300"
-            }`}>
-              {item.isJudge ? "JUDGING" : item.kind === "competition" ? (isVoting ? "VOTE NOW" : "LIVE COMPETITION") : item.status === "judging" ? "AWAITING JUDGE" : "LIVE BATTLE"}
+          <div className="flex items-center gap-2">
+            <span
+              className={`text-[9px] font-black uppercase tracking-[0.2em] ${labelColor}`}
+              style={{ fontFamily: 'Teko, sans-serif' }}
+            >
+              {statusText}
             </span>
             {(item.hasSubmitted || item.hasVoted) && !item.isJudge && (
-              <span className="text-[8px] font-bold text-emerald-300 px-1.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/25 uppercase">{item.hasVoted ? "Voted" : "Submitted"}</span>
+              <span className="text-[8px] font-black text-emerald-400 uppercase tracking-wider">✓ {item.hasVoted ? "Voted" : "Submitted"}</span>
             )}
           </div>
-          <p className="text-[13px] font-bold text-foreground truncate mt-0.5">{item.title}</p>
+          <p
+            className="text-[15px] font-black uppercase text-white/85 truncate leading-tight"
+            style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.04em' }}
+          >
+            {item.title}
+          </p>
           {!item.isJudge && (
-            <p className={`text-[10px] mt-0.5 font-bold uppercase tracking-wider ${
-              expired ? "text-red-400" : urgent ? "text-red-300 animate-pulse" : "text-muted-foreground"
-            }`}>
+            <p className={`text-[9px] font-black uppercase tracking-[0.14em] ${timerColor}`}
+              style={{ fontFamily: 'Teko, sans-serif' }}>
               {expired ? "Time expired" : `${label} left to ${isVoting ? "vote" : "submit"}`}
             </p>
           )}
         </div>
-        <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+
+        <ChevronRight className="w-3.5 h-3.5 text-white/20 shrink-0" />
       </button>
 
+      {/* Action row */}
       {!item.isJudge && !compact && (
-        <div className="flex border-t border-white/[0.05]">
+        <div className="flex" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
           <Link
             to={item.href}
-            className="flex-1 py-2 text-center text-[10px] font-black uppercase tracking-[0.2em] text-foreground hover:bg-white/[0.04] transition-colors"
+            className="flex-1 py-2 text-center text-[10px] font-black uppercase tracking-[0.18em] text-white/50 hover:text-white/80 hover:bg-white/[0.03] transition-colors"
+            style={{ fontFamily: 'Teko, sans-serif' }}
           >
             {isVoting ? "Vote" : item.hasSubmitted ? "View" : "Submit Edit"}
           </Link>
           <button
             onClick={(e) => { e.stopPropagation(); forfeit(item); }}
-            className="px-3 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-red-300 hover:bg-red-500/10 border-l border-white/[0.05] transition-colors flex items-center gap-1.5"
+            className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-red-500/50 hover:text-red-400 hover:bg-red-500/5 transition-colors flex items-center gap-1.5"
+            style={{ borderLeft: '1px solid rgba(255,255,255,0.05)', fontFamily: 'Teko, sans-serif' }}
           >
-            <Flag className="w-3 h-3" />
+            <Flag className="w-2.5 h-2.5" />
             Forfeit
           </button>
         </div>
