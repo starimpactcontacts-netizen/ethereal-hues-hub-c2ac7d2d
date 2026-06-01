@@ -751,11 +751,11 @@ export default function HubPage() {
                       {/* Class badge — hex icon + label */}
                       <button
                         onClick={(e) => { e.stopPropagation(); navigate('/class'); }}
-                        className={`flex items-center gap-1.5 mt-2 active:opacity-70 transition-opacity ${classRankConfig?.color || 'text-muted-foreground'}`}
+                        className="flex items-center gap-1.5 mt-2 active:opacity-70 transition-opacity"
                       >
                         <ClassHexBadge rank={classLetter} size={18} />
                         <span className="text-[14px] font-black uppercase"
-                          style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.1em' }}>
+                          style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.65)' }}>
                           {classLetter} CLASS
                         </span>
                       </button>

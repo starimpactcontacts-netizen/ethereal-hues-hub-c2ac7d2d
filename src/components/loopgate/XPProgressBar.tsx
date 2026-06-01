@@ -53,7 +53,7 @@ export default function XPProgressBar({
                 fontFamily: 'Teko, sans-serif',
                 fontSize: 9,
                 letterSpacing: '0.06em',
-                color: 'rgba(245,158,11,0.5)',
+                color: 'rgba(255,255,255,0.3)',
                 fontWeight: 700,
               }}
             >
