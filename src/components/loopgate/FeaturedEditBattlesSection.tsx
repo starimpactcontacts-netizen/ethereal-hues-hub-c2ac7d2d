@@ -55,13 +55,11 @@ export default function FeaturedEditBattlesSection() {
   const bluePct = total === 0 ? 50 : Math.round((votes.blue / total) * 100);
   const redPct = 100 - bluePct;
 
-  // SVG gate dimensions (unitless, scaled to card)
-  // Pillars at x=60 and x=440 in a 500-wide gate
   const G = {
     w: 500, h: 120,
-    pL: 60,  // left pillar inner edge
-    pR: 440, // right pillar inner edge
-    pW: 28,  // pillar width
+    pL: 60,   // left pillar inner edge
+    pR: 440,  // right pillar inner edge
+    pW: 34,   // pillar width
   };
 
   return (
@@ -104,59 +102,75 @@ export default function FeaturedEditBattlesSection() {
             */}
 
             {/* ── KASAGI + SHIMAGI: SVG arch section ─────────────────────── */}
+            {/* height:82 on an 120-unit viewBox → scale=0.683, giving shimagi ~19px rendered */}
             <div className="-mx-1.5 overflow-visible">
               <svg
                 viewBox={`0 0 ${G.w} ${G.h}`}
                 className="w-full block"
-                style={{ height: 64, overflow: 'visible' }}
+                style={{ height: 82, overflow: 'visible' }}
                 preserveAspectRatio="none"
               >
-                {/* ── KASAGI: upswept ends, thin centre — proper torii shape ── */}
+                {/* ── KASAGI fill ── */}
                 <path
-                  d={`
-                    M -20 18
-                    C 5 4, 80 34, 130 38
-                    L 370 38
-                    C 420 34, 495 4, 520 18
-                    L 520 55
-                    C 490 52, 10 52, -20 55
-                    Z
-                  `}
+                  d="M -20 18 C 5 4, 80 34, 130 38 L 370 38 C 420 34, 495 4, 520 18 L 520 55 C 490 52, 10 52, -20 55 Z"
                   fill="#111111"
                 />
-                {/* Top edge — sweeps up at ends */}
+                {/* Kasagi top edge — sweeps up at ends */}
                 <path
-                  d={`M -20 18 C 5 4, 80 34, 130 38 L 370 38 C 420 34, 495 4, 520 18`}
-                  fill="none" stroke="#ffffff" strokeWidth="2"
+                  d="M -20 18 C 5 4, 80 34, 130 38 L 370 38 C 420 34, 495 4, 520 18"
+                  fill="none" stroke="#ffffff" strokeWidth="2.5"
                 />
-                {/* Soffit (underside) */}
+                {/* Kasagi soffit */}
                 <path
-                  d={`M -20 55 C 10 52, 490 52, 520 55`}
-                  fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1"
+                  d="M -20 55 C 10 52, 490 52, 520 55"
+                  fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="1"
                 />
-                {/* End caps */}
-                <line x1="-20" y1="17" x2="-20" y2="56" stroke="#ffffff" strokeWidth="2" />
-                <line x1="520" y1="17" x2="520" y2="56" stroke="#ffffff" strokeWidth="2" />
+                {/* Kasagi end caps */}
+                <line x1="-20" y1="17" x2="-20" y2="56" stroke="#ffffff" strokeWidth="2.5" />
+                <line x1="520" y1="17" x2="520" y2="56" stroke="#ffffff" strokeWidth="2.5" />
 
-                {/* ── SHIMAGI: flat second beam just below kasagi ── */}
-                <rect x={G.pL - 20} y="62" width={G.w - (G.pL - 20) * 2} height="16"
+                {/* ── PILLAR BODIES (run from kasagi to bottom of SVG) ── */}
+                {/* Left */}
+                <rect x={G.pL} y="52" width={G.pW} height="68" fill="#161616" />
+                <line x1={G.pL} y1="52" x2={G.pL} y2="120" stroke="#ffffff" strokeWidth="1.5" />
+                <line x1={G.pL + G.pW} y1="52" x2={G.pL + G.pW} y2="120"
+                  stroke="rgba(255,255,255,0.22)" strokeWidth="1" />
+                {/* Right */}
+                <rect x={G.pR - G.pW} y="52" width={G.pW} height="68" fill="#161616" />
+                <line x1={G.pR} y1="52" x2={G.pR} y2="120" stroke="#ffffff" strokeWidth="1.5" />
+                <line x1={G.pR - G.pW} y1="52" x2={G.pR - G.pW} y2="120"
+                  stroke="rgba(255,255,255,0.22)" strokeWidth="1" />
+
+                {/* ── SHIMAGI: second beam (28 SVG units = ~19px rendered) ── */}
+                <rect x={G.pL - 18} y="57" width={G.w - (G.pL - 18) * 2} height="28"
                   fill="#141414" />
-                <line x1={G.pL - 20} y1="62" x2={G.w - G.pL + 20} y2="62"
-                  stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" />
-                <line x1={G.pL - 20} y1="78" x2={G.w - G.pL + 20} y2="78"
-                  stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+                {/* Top edge */}
+                <line x1={G.pL - 18} y1="57" x2={G.w - G.pL + 18} y2="57"
+                  stroke="rgba(255,255,255,0.65)" strokeWidth="1.5" />
+                {/* Inner shadow line */}
+                <line x1={G.pL - 18} y1="60" x2={G.w - G.pL + 18} y2="60"
+                  stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
+                {/* Bottom edge */}
+                <line x1={G.pL - 18} y1="85" x2={G.w - G.pL + 18} y2="85"
+                  stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
 
-                {/* ── PILLAR TOP CAPS ── */}
-                {/* Left pillar top */}
-                <rect x={G.pL} y="55" width={G.pW} height="23" fill="#161616" />
-                <line x1={G.pL} y1="55" x2={G.pL} y2="78" stroke="#ffffff" strokeWidth="1.5" />
-                <line x1={G.pL + G.pW} y1="55" x2={G.pL + G.pW} y2="78"
-                  stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
-                {/* Right pillar top */}
-                <rect x={G.pR - G.pW} y="55" width={G.pW} height="23" fill="#161616" />
-                <line x1={G.pR} y1="55" x2={G.pR} y2="78" stroke="#ffffff" strokeWidth="1.5" />
-                <line x1={G.pR - G.pW} y1="55" x2={G.pR - G.pW} y2="78"
-                  stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
+                {/* ── BRACKET EARS: hang below shimagi at each pillar ── */}
+                {/* Left pillar — left ear */}
+                <rect x={G.pL - 14} y="85" width="14" height="12" fill="#181818" />
+                <line x1={G.pL - 14} y1="85" x2={G.pL - 14} y2="97" stroke="rgba(255,255,255,0.38)" strokeWidth="1" />
+                <line x1={G.pL - 14} y1="97" x2={G.pL} y2="97" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
+                {/* Left pillar — right ear */}
+                <rect x={G.pL + G.pW} y="85" width="14" height="12" fill="#181818" />
+                <line x1={G.pL + G.pW + 14} y1="85" x2={G.pL + G.pW + 14} y2="97" stroke="rgba(255,255,255,0.38)" strokeWidth="1" />
+                <line x1={G.pL + G.pW} y1="97" x2={G.pL + G.pW + 14} y2="97" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
+                {/* Right pillar — left ear */}
+                <rect x={G.pR - G.pW - 14} y="85" width="14" height="12" fill="#181818" />
+                <line x1={G.pR - G.pW - 14} y1="85" x2={G.pR - G.pW - 14} y2="97" stroke="rgba(255,255,255,0.38)" strokeWidth="1" />
+                <line x1={G.pR - G.pW - 14} y1="97" x2={G.pR - G.pW} y2="97" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
+                {/* Right pillar — right ear */}
+                <rect x={G.pR} y="85" width="14" height="12" fill="#181818" />
+                <line x1={G.pR + 14} y1="85" x2={G.pR + 14} y2="97" stroke="rgba(255,255,255,0.38)" strokeWidth="1" />
+                <line x1={G.pR} y1="97" x2={G.pR + 14} y2="97" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
               </svg>
             </div>
 
@@ -164,7 +178,7 @@ export default function FeaturedEditBattlesSection() {
             <div className="flex" style={{ background: '#0a0a0a' }}>
               {/* Left pillar */}
               <div className="flex-shrink-0" style={{
-                width: 28,
+                width: 34,
                 background: '#141414',
                 borderLeft: '2px solid #ffffff',
                 borderRight: '1px solid rgba(255,255,255,0.12)',
@@ -206,7 +220,7 @@ export default function FeaturedEditBattlesSection() {
 
                   {/* VS */}
                   <div className="flex-shrink-0 flex items-center justify-center pt-10">
-                    <span className="text-[28px] font-black text-white/10 leading-none"
+                    <span className="text-[28px] font-black text-white/[0.07] leading-none"
                       style={{ fontFamily: 'Teko, sans-serif' }}>
                       VS
                     </span>
@@ -241,7 +255,7 @@ export default function FeaturedEditBattlesSection() {
 
               {/* Right pillar */}
               <div className="flex-shrink-0" style={{
-                width: 28,
+                width: 34,
                 background: '#141414',
                 borderRight: '2px solid #ffffff',
                 borderLeft: '1px solid rgba(255,255,255,0.12)',
@@ -249,20 +263,21 @@ export default function FeaturedEditBattlesSection() {
             </div>
 
             {/* ── NUKI: horizontal crossbar through the pillars ───────────── */}
-            <div className="-mx-1.5 relative" style={{ background: '#141414', height: 16 }}>
-              <div className="absolute inset-x-0 top-0 h-px" style={{ background: 'rgba(255,255,255,0.45)' }} />
-              <div className="absolute inset-x-0 bottom-0 h-px" style={{ background: 'rgba(255,255,255,0.15)' }} />
-              <div className="absolute top-0 bottom-0" style={{ left: 28, width: 2, background: 'rgba(255,255,255,0.35)' }} />
-              <div className="absolute top-0 bottom-0" style={{ left: 56, width: 2, background: 'rgba(255,255,255,0.15)' }} />
-              <div className="absolute top-0 bottom-0" style={{ right: 28, width: 2, background: 'rgba(255,255,255,0.35)' }} />
-              <div className="absolute top-0 bottom-0" style={{ right: 56, width: 2, background: 'rgba(255,255,255,0.15)' }} />
+            <div className="-mx-1.5 relative" style={{ background: '#141414', height: 14 }}>
+              <div className="absolute inset-x-0 top-0 h-px" style={{ background: 'rgba(255,255,255,0.4)' }} />
+              <div className="absolute inset-x-0 bottom-0 h-px" style={{ background: 'rgba(255,255,255,0.12)' }} />
+              {/* Bracket marks at pillar edges */}
+              <div className="absolute top-0 bottom-0" style={{ left: 34, width: 2, background: 'rgba(255,255,255,0.3)' }} />
+              <div className="absolute top-0 bottom-0" style={{ left: 68, width: 1, background: 'rgba(255,255,255,0.12)' }} />
+              <div className="absolute top-0 bottom-0" style={{ right: 34, width: 2, background: 'rgba(255,255,255,0.3)' }} />
+              <div className="absolute top-0 bottom-0" style={{ right: 68, width: 1, background: 'rgba(255,255,255,0.12)' }} />
             </div>
 
             {/* ── LOWER PILLAR + VOTE AREA ────────────────────────────────── */}
             <div className="flex" style={{ background: '#0a0a0a' }}>
               {/* Left pillar lower */}
               <div className="flex-shrink-0" style={{
-                width: 28,
+                width: 34,
                 background: '#141414',
                 borderLeft: '2px solid #ffffff',
                 borderRight: '1px solid rgba(255,255,255,0.12)',
@@ -286,7 +301,7 @@ export default function FeaturedEditBattlesSection() {
 
               {/* Right pillar lower */}
               <div className="flex-shrink-0" style={{
-                width: 28,
+                width: 34,
                 background: '#141414',
                 borderRight: '2px solid #ffffff',
                 borderLeft: '1px solid rgba(255,255,255,0.12)',
@@ -297,10 +312,10 @@ export default function FeaturedEditBattlesSection() {
             <div className="-mx-1.5 h-[20px] flex items-center justify-center relative"
               style={{ background: '#141414' }}>
               <div className="absolute inset-x-0 top-0 h-px" style={{ background: 'rgba(255,255,255,0.25)' }} />
-              <div className="absolute inset-x-0 bottom-0 h-[2px]" style={{ background: '#ffffff' }} />
+              <div className="absolute inset-x-0 bottom-0 h-[2px]" style={{ background: 'rgba(255,255,255,0.75)' }} />
               {/* Pillar base marks */}
-              <div className="absolute top-0 bottom-0" style={{ left: 28, width: 28, borderLeft: '2px solid #ffffff', borderRight: '1px solid rgba(255,255,255,0.18)' }} />
-              <div className="absolute top-0 bottom-0" style={{ right: 28, width: 28, borderRight: '2px solid #ffffff', borderLeft: '1px solid rgba(255,255,255,0.18)' }} />
+              <div className="absolute top-0 bottom-0" style={{ left: 34, width: 34, borderLeft: '2px solid #ffffff', borderRight: '1px solid rgba(255,255,255,0.15)' }} />
+              <div className="absolute top-0 bottom-0" style={{ right: 34, width: 34, borderRight: '2px solid #ffffff', borderLeft: '1px solid rgba(255,255,255,0.15)' }} />
               {/* Center gate emblem */}
               <Swords className="w-3 h-3 text-white/20" strokeWidth={2} />
             </div>
