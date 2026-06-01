@@ -7633,7 +7633,10 @@ export type Database = {
           sync_scenepack_id: string | null
           sync_scenepack_name: string | null
           sync_scenepack_preview_url: string | null
+          sync_scenepack_thumbnail_url: string | null
           sync_song_artist: string | null
+          sync_song_cover_url: string | null
+          sync_song_difficulty: string | null
           sync_song_preview_url: string | null
           sync_song_title: string | null
           sync_spun_at: string | null
@@ -7695,7 +7698,10 @@ export type Database = {
           sync_scenepack_id?: string | null
           sync_scenepack_name?: string | null
           sync_scenepack_preview_url?: string | null
+          sync_scenepack_thumbnail_url?: string | null
           sync_song_artist?: string | null
+          sync_song_cover_url?: string | null
+          sync_song_difficulty?: string | null
           sync_song_preview_url?: string | null
           sync_song_title?: string | null
           sync_spun_at?: string | null
@@ -7757,7 +7763,10 @@ export type Database = {
           sync_scenepack_id?: string | null
           sync_scenepack_name?: string | null
           sync_scenepack_preview_url?: string | null
+          sync_scenepack_thumbnail_url?: string | null
           sync_song_artist?: string | null
+          sync_song_cover_url?: string | null
+          sync_song_difficulty?: string | null
           sync_song_preview_url?: string | null
           sync_song_title?: string | null
           sync_spun_at?: string | null
