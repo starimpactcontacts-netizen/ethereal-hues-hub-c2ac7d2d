@@ -144,3 +144,53 @@ export function playToggleOff() {
     osc(c, 'sine', 900, t + 0.03, 0.05, 0.35, master);
   } catch {}
 }
+
+/** Match alert — dramatic rising ping + sub thud for match-found modal */
+export function playMatchAlert() {
+  try {
+    const c = getCtx();
+    const t = c.currentTime;
+    const master = c.createGain();
+    master.gain.value = 0.78;
+    master.connect(c.destination);
+
+    // Rising ping sweep
+    const o1 = c.createOscillator();
+    const g1 = c.createGain();
+    o1.type = 'sine';
+    o1.frequency.setValueAtTime(280, t);
+    o1.frequency.exponentialRampToValueAtTime(1500, t + 0.2);
+    g1.gain.setValueAtTime(0.85, t);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + 0.32);
+    o1.connect(g1).connect(master);
+    o1.start(t); o1.stop(t + 0.32);
+
+    // Sub impact thud
+    osc(c, 'sine',     80, t + 0.08, 0.55, 0.75, master);
+    osc(c, 'triangle', 160, t + 0.08, 0.38, 0.55, master);
+
+    // High shimmer tail
+    osc(c, 'sine', 2400, t + 0.18, 0.28, 0.28, master);
+    osc(c, 'sine', 3200, t + 0.22, 0.22, 0.18, master);
+  } catch {}
+}
+
+/** Countdown tick — escalating beep each second (pass the current count 5→1) */
+export function playCountdownTick(count: number) {
+  try {
+    const c = getCtx();
+    const t = c.currentTime;
+    const master = c.createGain();
+    master.gain.value = 0.72;
+    master.connect(c.destination);
+
+    const freq = ({ 5: 440, 4: 500, 3: 580, 2: 700, 1: 920 } as Record<number, number>)[count] ?? 440;
+
+    osc(c, 'sine',     freq,       t,        0.07, 0.95, master);
+    osc(c, 'triangle', freq * 1.5, t,        0.04, 0.45, master);
+    if (count === 1) {
+      // Final tick — extra urgency
+      osc(c, 'sine', freq * 2, t + 0.01, 0.10, 0.55, master);
+    }
+  } catch {}
+}
