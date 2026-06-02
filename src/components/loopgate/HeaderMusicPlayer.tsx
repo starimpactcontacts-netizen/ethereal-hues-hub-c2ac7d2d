@@ -25,6 +25,7 @@ interface Track {
   poster_url: string | null;
   is_priority?: boolean;
   source: 'featured_drop' | 'radio_track' | 'deezer';
+  difficulty?: 'easy' | 'normal' | 'hard' | 'nightmare' | null;
 }
 
 type TabMode = 'loopgate' | 'myplaylist' | 'search' | 'pitch';
@@ -139,7 +140,7 @@ export default function HeaderMusicPlayer() {
     const fetchTracks = async () => {
       const { data } = await supabase
         .from('battle_songs' as any)
-        .select('id, song_name, artist_name, audio_url, preview_url, cover_url, is_priority, track_order')
+        .select('id, song_name, artist_name, audio_url, preview_url, cover_url, is_priority, track_order, difficulty')
         .eq('is_featured', true)
         .order('is_priority', { ascending: false })
         .order('track_order', { ascending: true })
@@ -154,6 +155,7 @@ export default function HeaderMusicPlayer() {
         poster_url: t.cover_url,
         is_priority: t.is_priority,
         source: 'radio_track' as const,
+        difficulty: t.difficulty ?? null,
       }));
 
       const priority = libraryTracks.filter(t => t.is_priority);
@@ -663,8 +665,13 @@ export default function HeaderMusicPlayer() {
                 {track.id === '__loopgate_theme__' && (
                   <span className="text-[8px] font-semibold uppercase tracking-wider text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full shrink-0 border border-amber-400/20">Theme</span>
                 )}
-                {track.is_priority && track.id !== '__loopgate_theme__' && (
-                  <span className="text-[8px] font-semibold uppercase tracking-wider text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full shrink-0 border border-emerald-400/20">Priority</span>
+                {track.difficulty && (
+                  <span className={`text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0 border ${
+                    track.difficulty === 'easy'      ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/25' :
+                    track.difficulty === 'normal'    ? 'text-blue-400 bg-blue-500/10 border-blue-500/25' :
+                    track.difficulty === 'hard'      ? 'text-orange-400 bg-orange-500/10 border-orange-500/25' :
+                                                       'text-red-400 bg-red-500/10 border-red-500/25'
+                  }`}>{track.difficulty}</span>
                 )}
                 {i === currentIndex && playlistMode === 'loopgate' && isPlaying && (
                   <div className="flex gap-[2px] items-end h-4 shrink-0">
@@ -731,8 +738,15 @@ export default function HeaderMusicPlayer() {
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetContent side="bottom" className="h-[88vh] max-h-[88vh] rounded-t-[28px] px-0 pt-0 pb-0 overflow-hidden flex flex-col bg-[#070708] border-t border-white/[0.08]">
             <VisuallyHidden><SheetTitle>Radio Player</SheetTitle></VisuallyHidden>
-            <div className="flex justify-center py-2.5 shrink-0 relative z-10">
+            <div className="relative flex items-center justify-center py-2.5 shrink-0 z-10">
               <div className="w-9 h-[5px] rounded-full bg-white/15" />
+              <button
+                onClick={() => setOpen(false)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-full bg-white/[0.06] text-white/40 hover:text-white/80 hover:bg-white/[0.10] transition-colors active:scale-90"
+                aria-label="Close radio"
+              >
+                <X size={15} />
+              </button>
             </div>
             {playerContent}
           </SheetContent>
