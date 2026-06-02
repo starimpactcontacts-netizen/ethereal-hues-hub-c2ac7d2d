@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import editBattleTitle from '@/assets/edit-battle-title.png.asset.json';
 
 const TEKO = { fontFamily: 'Teko, sans-serif' };
 
@@ -67,7 +68,7 @@ export default function BattleEnterIntro({ redUsername, blueUsername, onDone }: 
 
             {/* Edit Battle title PNG */}
             <motion.img
-              src="/__l5e/assets-v1/f35df374-37cd-4ca4-8e5d-ba17be3e7a25/edit-battle-title.png"
+              src={editBattleTitle.url}
               alt="Edit Battle"
               className="mb-4"
               style={{ width: 280, objectFit: 'contain' }}
