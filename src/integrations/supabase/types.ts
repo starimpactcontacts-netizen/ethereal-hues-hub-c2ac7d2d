@@ -9738,6 +9738,16 @@ export type Database = {
           success: boolean
         }[]
       }
+      reserve_quick_fight_slot: {
+        Args: {
+          p_avatar_url: string
+          p_code?: string
+          p_fight_id: string
+          p_user_id: string
+          p_username: string
+        }
+        Returns: Json
+      }
       resolve_expired_quick_fights: { Args: never; Returns: number }
       resolve_scenepack_if_expired: {
         Args: { p_battle_id: string; p_is_cash?: boolean }
