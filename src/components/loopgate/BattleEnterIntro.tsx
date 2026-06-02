@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import editBattleTitle from '@/assets/edit-battle-title.png.asset.json';
 
 const TEKO = { fontFamily: 'Teko, sans-serif' };
+
+// Served from public/ — same path CustomEditBattleLobby uses (works on mobile Safari)
+const EDIT_BATTLE_IMG = '/edit-battle-title.png';
 
 interface Props {
   redUsername: string;
@@ -12,15 +14,7 @@ interface Props {
 
 export default function BattleEnterIntro({ redUsername, blueUsername, onDone }: Props) {
   const [visible, setVisible] = useState(true);
-  const [imgSrc, setImgSrc] = useState<string | null>(null);
-
-  // Preload image so it's ready when the overlay mounts (fixes mobile Safari)
-  useEffect(() => {
-    const img = new window.Image();
-    img.onload = () => setImgSrc(editBattleTitle.url);
-    img.onerror = () => setImgSrc(null);
-    img.src = editBattleTitle.url;
-  }, []);
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => { setVisible(false); setTimeout(onDone, 450); }, 1900);
@@ -83,16 +77,15 @@ export default function BattleEnterIntro({ redUsername, blueUsername, onDone }: 
               transition={{ delay: 0.24, duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
               style={{ width: 300 }}
             >
-              {imgSrc ? (
-                <img src={imgSrc} alt="Edit Battle" loading="eager" decoding="sync"
-                  style={{ width: '100%', height: 'auto', display: 'block' }} />
-              ) : (
-                /* fallback text while image loads */
-                <span style={{ ...TEKO, fontSize: 52, fontWeight: 900, letterSpacing: '0.02em', color: '#fff',
-                  WebkitTextStroke: '3px #000', textShadow: '4px 4px 0 #000' }}>
-                  EDIT BATTLE
-                </span>
-              )}
+              <img
+                src={EDIT_BATTLE_IMG}
+                alt="Edit Battle"
+                onLoad={() => setImgLoaded(true)}
+                style={{
+                  width: '100%', height: 'auto', display: 'block',
+                  opacity: imgLoaded ? 1 : 0, transition: 'opacity 0.15s',
+                }}
+              />
             </motion.div>
 
             {/* RED name */}
