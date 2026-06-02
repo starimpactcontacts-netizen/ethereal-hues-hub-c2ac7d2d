@@ -80,7 +80,7 @@ function BlueButton({ pressed, voted }: { pressed: boolean; voted: boolean }) {
         }}
       />
       {/* X symbol */}
-      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 118 118">
+      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 118 118" style={{ padding: 30 }}>
         <line x1="35" y1="35" x2="83" y2="83" stroke="rgba(255,255,255,0.88)" strokeWidth="7" strokeLinecap="round" />
         <line x1="83" y1="35" x2="35" y2="83" stroke="rgba(255,255,255,0.88)" strokeWidth="7" strokeLinecap="round" />
       </svg>
