@@ -12,6 +12,15 @@ interface Props {
 
 export default function BattleEnterIntro({ redUsername, blueUsername, onDone }: Props) {
   const [visible, setVisible] = useState(true);
+  const [imgSrc, setImgSrc] = useState<string | null>(null);
+
+  // Preload image so it's ready when the overlay mounts (fixes mobile Safari)
+  useEffect(() => {
+    const img = new window.Image();
+    img.onload = () => setImgSrc(editBattleTitle.url);
+    img.onerror = () => setImgSrc(null);
+    img.src = editBattleTitle.url;
+  }, []);
 
   useEffect(() => {
     const t = setTimeout(() => { setVisible(false); setTimeout(onDone, 450); }, 1900);
@@ -67,15 +76,24 @@ export default function BattleEnterIntro({ redUsername, blueUsername, onDone }: 
           <div className="relative z-10 flex flex-col items-center" style={{ gap: 0 }}>
 
             {/* Edit Battle title PNG */}
-            <motion.img
-              src={editBattleTitle.url}
-              alt="Edit Battle"
+            <motion.div
               className="mb-4"
-              style={{ width: 300, objectFit: 'contain' }}
               initial={{ opacity: 0, y: -20, scale: 0.88 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ delay: 0.24, duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
-            />
+              style={{ width: 300 }}
+            >
+              {imgSrc ? (
+                <img src={imgSrc} alt="Edit Battle" loading="eager" decoding="sync"
+                  style={{ width: '100%', height: 'auto', display: 'block' }} />
+              ) : (
+                /* fallback text while image loads */
+                <span style={{ ...TEKO, fontSize: 52, fontWeight: 900, letterSpacing: '0.02em', color: '#fff',
+                  WebkitTextStroke: '3px #000', textShadow: '4px 4px 0 #000' }}>
+                  EDIT BATTLE
+                </span>
+              )}
+            </motion.div>
 
             {/* RED name */}
             <motion.div
