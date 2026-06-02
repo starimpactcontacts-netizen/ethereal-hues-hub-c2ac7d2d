@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Flame, Trophy, Swords } from 'lucide-react';
 
 const TEKO = { fontFamily: 'Teko, sans-serif' };
 
@@ -9,16 +8,52 @@ type League = 'open' | 'pro' | 'elite';
 interface FighterStats {
   league: League;
   level: number;
-  xp: number;
   total_wins: number | null;
   win_rate: number | null;
-  archetype: string | null;
 }
 
-const LEAGUE_CONFIG: Record<League, { label: string; color: string; bg: string; border: string }> = {
-  open:  { label: 'OPEN',  color: '#a1a1aa', bg: 'rgba(161,161,170,0.1)', border: 'rgba(161,161,170,0.25)' },
-  pro:   { label: 'PRO',   color: '#60a5fa', bg: 'rgba(96,165,250,0.12)', border: 'rgba(96,165,250,0.3)'  },
-  elite: { label: 'ELITE', color: '#fbbf24', bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.3)'  },
+/* ── Valorant-inspired SVG rank badges ── */
+function BadgeOpen({ size = 22 }: { size?: number }) {
+  // Hexagon with inner ring — Iron/Bronze tier feel
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <polygon points="12,2 20,6.5 20,17.5 12,22 4,17.5 4,6.5" fill="#27272a" stroke="#71717a" strokeWidth="1.4" />
+      <polygon points="12,5.5 17,8.5 17,15.5 12,18.5 7,15.5 7,8.5" fill="none" stroke="#52525b" strokeWidth="1" />
+      <circle cx="12" cy="12" r="2" fill="#71717a" />
+    </svg>
+  );
+}
+
+function BadgePro({ size = 22 }: { size?: number }) {
+  // Pentagon + inner diamond — Gold/Plat tier
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <polygon points="12,2 21,8.5 18,19 6,19 3,8.5" fill="#1e3a5f" stroke="#3b82f6" strokeWidth="1.4" />
+      <polygon points="12,6 17,11 12,16 7,11" fill="none" stroke="#60a5fa" strokeWidth="1.2" />
+      <circle cx="12" cy="11" r="2" fill="#60a5fa" />
+    </svg>
+  );
+}
+
+function BadgeElite({ size = 22 }: { size?: number }) {
+  // 4-pointed star / diamond — Immortal/Radiant tier
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M12 2 L14.5 9.5 L22 12 L14.5 14.5 L12 22 L9.5 14.5 L2 12 L9.5 9.5 Z" fill="#3d2a00" stroke="#fbbf24" strokeWidth="1.3" />
+      <path d="M12 6 L13.5 10.5 L18 12 L13.5 13.5 L12 18 L10.5 13.5 L6 12 L10.5 10.5 Z" fill="#78350f" stroke="#fde68a" strokeWidth="0.6" />
+      <circle cx="12" cy="12" r="1.8" fill="#fbbf24" />
+    </svg>
+  );
+}
+
+const LEAGUE_CFG: Record<League, {
+  label: string;
+  color: string;
+  badge: (size?: number) => JSX.Element;
+}> = {
+  open:  { label: 'OPEN',  color: '#71717a', badge: (s) => <BadgeOpen  size={s} /> },
+  pro:   { label: 'PRO',   color: '#60a5fa', badge: (s) => <BadgePro   size={s} /> },
+  elite: { label: 'ELITE', color: '#fbbf24', badge: (s) => <BadgeElite size={s} /> },
 };
 
 interface Props {
@@ -34,17 +69,15 @@ export default function FighterStatsBar({ redUserId, blueUserId }: Props) {
     const fetch = async () => {
       const { data } = await supabase
         .from('profiles')
-        .select('id, league, level, xp, total_wins, win_rate, archetype')
+        .select('id, league, level, total_wins, win_rate')
         .in('id', [redUserId, blueUserId]);
       if (!data) return;
       for (const p of data) {
         const s: FighterStats = {
           league: (p.league as League) || 'open',
           level: p.level ?? 1,
-          xp: p.xp ?? 0,
           total_wins: p.total_wins,
           win_rate: p.win_rate,
-          archetype: p.archetype,
         };
         if (p.id === redUserId) setRed(s);
         else setBlue(s);
@@ -58,86 +91,75 @@ export default function FighterStatsBar({ redUserId, blueUserId }: Props) {
   return (
     <div
       className="flex items-stretch w-full"
-      style={{
-        background: '#0d0d0d',
-        borderTop: '1px solid rgba(255,255,255,0.05)',
-        borderBottom: '1px solid rgba(255,255,255,0.05)',
-      }}
+      style={{ background: '#0a0a0a', borderTop: '1px solid rgba(255,255,255,0.04)', height: 44 }}
     >
-      {/* RED side */}
-      <StatSide stats={red} accent="#ef4444" side="red" />
+      <Side stats={red} accentColor="#ef4444" align="left" />
 
-      {/* Center divider */}
-      <div className="flex items-center justify-center shrink-0 px-2" style={{ borderLeft: '1px solid rgba(255,255,255,0.06)', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
-        <Swords className="w-3 h-3 text-white/15" />
+      {/* Center sword divider */}
+      <div
+        className="flex items-center justify-center shrink-0"
+        style={{ width: 28, borderLeft: '1px solid rgba(255,255,255,0.05)', borderRight: '1px solid rgba(255,255,255,0.05)' }}
+      >
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <line x1="1" y1="1" x2="9" y2="9" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" strokeLinecap="round" />
+          <line x1="9" y1="1" x2="1" y2="9" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
       </div>
 
-      {/* BLUE side */}
-      <StatSide stats={blue} accent="#3b82f6" side="blue" />
+      <Side stats={blue} accentColor="#3b82f6" align="right" />
     </div>
   );
 }
 
-function StatSide({ stats, accent, side }: { stats: FighterStats | null; accent: string; side: 'red' | 'blue' }) {
-  const isRed = side === 'red';
-
+function Side({ stats, accentColor, align }: {
+  stats: FighterStats | null;
+  accentColor: string;
+  align: 'left' | 'right';
+}) {
   if (!stats) {
-    return (
-      <div className="flex-1 flex items-center justify-center py-2.5">
-        <span className="text-[10px] text-white/15 uppercase tracking-widest" style={TEKO}>—</span>
-      </div>
-    );
+    return <div className="flex-1" />;
   }
 
-  const cfg = LEAGUE_CONFIG[stats.league];
+  const cfg = LEAGUE_CFG[stats.league];
   const wins = stats.total_wins ?? 0;
-  const wr = stats.win_rate != null ? Math.round(stats.win_rate) : null;
 
-  const pills = (
-    <>
-      {/* League badge */}
-      <span
-        className="text-[9px] font-black uppercase tracking-[0.18em] px-1.5 py-0.5 rounded shrink-0"
-        style={{ ...TEKO, color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}` }}
-      >
-        {cfg.label}
-      </span>
+  const content = (
+    <div className={`flex items-center gap-2 ${align === 'right' ? 'flex-row-reverse' : ''}`}>
+      {/* Badge icon */}
+      {cfg.badge(22)}
 
-      {/* Level */}
-      <StatPill icon={<Flame className="w-2.5 h-2.5" />} label={`LVL ${stats.level}`} color="#d4d4d8" />
-
-      {/* Wins */}
-      <StatPill icon={<Trophy className="w-2.5 h-2.5" />} label={`${wins}W`} color={accent} />
-
-      {/* Win rate */}
-      {wr != null && (
-        <StatPill label={`${wr}% WR`} color={wr >= 60 ? '#4ade80' : wr >= 40 ? '#d4d4d8' : '#f87171'} />
-      )}
-
-      {/* Archetype */}
-      {stats.archetype && (
-        <span className="text-[9px] uppercase tracking-[0.14em] text-white/25 shrink-0 hidden sm:inline" style={TEKO}>
-          {stats.archetype}
+      {/* Text stack */}
+      <div className={`flex flex-col leading-none ${align === 'right' ? 'items-end' : 'items-start'}`}>
+        {/* League name */}
+        <span
+          className="font-black uppercase"
+          style={{ ...TEKO, fontSize: 13, letterSpacing: '0.14em', color: cfg.color }}
+        >
+          {cfg.label}
         </span>
-      )}
-    </>
+        {/* Level · Wins */}
+        <span
+          className="font-black tabular-nums"
+          style={{ ...TEKO, fontSize: 11, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.35)' }}
+        >
+          LVL {stats.level}
+          <span style={{ color: 'rgba(255,255,255,0.15)', margin: '0 3px' }}>·</span>
+          <span style={{ color: accentColor }}>{wins}W</span>
+        </span>
+      </div>
+    </div>
   );
 
   return (
     <div
-      className={`flex-1 flex items-center gap-1.5 py-2.5 px-3 min-w-0 overflow-hidden flex-wrap ${isRed ? 'justify-start' : 'justify-end'}`}
-      style={{ background: isRed ? `linear-gradient(90deg, rgba(239,68,68,0.04) 0%, transparent 100%)` : `linear-gradient(270deg, rgba(59,130,246,0.04) 0%, transparent 100%)` }}
+      className={`flex-1 flex items-center px-3 min-w-0 overflow-hidden ${align === 'right' ? 'justify-end' : 'justify-start'}`}
+      style={{
+        background: align === 'left'
+          ? `linear-gradient(90deg, rgba(${accentColor === '#ef4444' ? '239,68,68' : '59,130,246'},0.05) 0%, transparent 80%)`
+          : `linear-gradient(270deg, rgba(${accentColor === '#ef4444' ? '239,68,68' : '59,130,246'},0.05) 0%, transparent 80%)`,
+      }}
     >
-      {isRed ? pills : <>{pills}</>}
+      {content}
     </div>
-  );
-}
-
-function StatPill({ icon, label, color }: { icon?: React.ReactNode; label: string; color: string }) {
-  return (
-    <span className="flex items-center gap-0.5 shrink-0" style={{ color }}>
-      {icon && <span style={{ color }}>{icon}</span>}
-      <span className="text-[11px] font-black tabular-nums" style={TEKO}>{label}</span>
-    </span>
   );
 }
