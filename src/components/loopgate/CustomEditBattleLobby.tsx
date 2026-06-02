@@ -373,24 +373,31 @@ export default function CustomEditBattleLobby({
               />
             </div>
           ) : !fight.player_2_id ? (
-            /* Open slot — show JOIN + ACCEPT BATTLE side by side */
-            <div className="grid grid-cols-2 gap-2">
+            /* Open slot — ACCEPT BATTLE primary, JOIN as small secondary below */
+            <div className="space-y-2">
               <ArenaButton
+                onClick={() => onJoin()}
+                icon={<Swords className="w-5 h-5" />}
+                label="Accept Battle"
+                large
+              />
+              <button
                 onClick={async () => {
                   if (!onReserve || reserving) return;
                   setReserving(true);
                   try { await onReserve(); } finally { setReserving(false); }
                 }}
                 disabled={reserving}
-                icon={<UserPlus className="w-4 h-4" />}
-                label={reserving ? "…" : "Join"}
-              />
-              <ArenaButton
-                onClick={() => onJoin()}
-                icon={<Swords className="w-4 h-4" />}
-                label="Accept Battle"
-                large
-              />
+                className="w-full h-9 flex items-center justify-center gap-2 border border-white/10 bg-white/[0.02] active:scale-[0.98] transition-transform disabled:opacity-30"
+              >
+                <UserPlus className="w-3 h-3 text-white/45" />
+                <span
+                  className="text-white/55 font-black uppercase leading-none"
+                  style={{ fontFamily: 'Teko, sans-serif', fontSize: 13, letterSpacing: '0.18em' }}
+                >
+                  {reserving ? '…' : 'Join — Wait For Start'}
+                </span>
+              </button>
             </div>
           ) : viewerId === fight.player_2_id ? (
             /* Viewer already reserved — just show ACCEPT BATTLE */

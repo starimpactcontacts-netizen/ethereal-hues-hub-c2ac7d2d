@@ -287,16 +287,21 @@ export default function QuickFightPage() {
 
   const handleReserveLobby = async () => {
     if (!user || !profile || isP1 || fight.player_2_id) return;
-    await supabase
-      .from('quick_fights')
-      .update({
-        player_2_id: user.id,
-        player_2_username: profile.username,
-        player_2_avatar_url: profile.avatar_url || null,
-      } as any)
-      .eq('id', fight.id)
-      .eq('status', 'waiting')
-      .is('player_2_id', null);
+    const { data, error } = await supabase.rpc('reserve_quick_fight_slot' as any, {
+      p_fight_id: fight.id,
+      p_user_id: user.id,
+      p_username: profile.username,
+      p_avatar_url: profile.avatar_url || null,
+      p_code: null,
+    } as any);
+    const result = data as { ok?: boolean; error?: string } | null;
+    if (error || !result?.ok) {
+      if (result?.error === 'slot_taken') toast.error('Slot just got taken');
+      else if (result?.error === 'bad_code') toast.error('Code required');
+      else toast.error("Couldn't reserve slot");
+      return;
+    }
+    toast.success('🔴 You\'re in — smack talk away');
   };
 
   const handleJoinLobby = async (code?: string) => {
