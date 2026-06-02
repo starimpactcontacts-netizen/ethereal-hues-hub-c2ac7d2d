@@ -23,7 +23,7 @@ function RedButton({ pressed, voted }: { pressed: boolean; voted: boolean }) {
     <motion.div
       animate={{ y: voted ? 5 : 0 }}
       transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-      className="relative w-[118px] h-[118px] rounded-full"
+      className="relative w-[90px] h-[90px] rounded-full"
       style={{
         /* convex face gradient */
         background: 'radial-gradient(ellipse at 40% 34%, #ff6a6a 0%, #e01515 38%, #9e0000 72%, #680000 100%)',
@@ -64,7 +64,7 @@ function BlueButton({ pressed, voted }: { pressed: boolean; voted: boolean }) {
     <motion.div
       animate={{ y: voted ? 5 : 0 }}
       transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-      className="relative w-[118px] h-[118px] rounded-full"
+      className="relative w-[90px] h-[90px] rounded-full"
       style={{
         background: 'radial-gradient(ellipse at 40% 34%, #6699ff 0%, #1a48e8 38%, #0a28a0 72%, #051878 100%)',
         boxShadow: voted
@@ -159,10 +159,10 @@ export default function QuickFightPublicVote({
     : 'PRESS  ○  OR  ✕  TO VOTE';
 
   return (
-    <div className="bg-[#080808] border border-white/[0.07] overflow-hidden">
+    <div className="overflow-hidden">
 
       {/* Header */}
-      <div className="flex items-center justify-between px-3 h-8 border-b border-white/[0.06]">
+      <div className="flex items-center justify-between px-3 h-8">
         <span className="text-[12px] font-black uppercase tracking-[0.28em] text-white/70" style={TEKO}>
           Who Won?
         </span>
@@ -178,10 +178,7 @@ export default function QuickFightPublicVote({
       </div>
 
       {/* Buttons area */}
-      <div
-        className="flex items-center justify-center gap-8 py-6"
-        style={{ background: 'linear-gradient(180deg, #0e0e0e 0%, #080808 100%)' }}
-      >
+      <div className="flex items-center justify-center gap-8 py-5">
         {/* RED — O */}
         <div className="flex flex-col items-center gap-3">
           <motion.button
@@ -267,7 +264,7 @@ export default function QuickFightPublicVote({
       )}
 
       {/* CTA */}
-      <div className={`flex items-center justify-center h-7 border-t border-white/[0.06] ${myVote ? 'bg-emerald-500/[0.07]' : ''}`}>
+      <div className={`flex items-center justify-center h-7 ${myVote ? 'bg-emerald-500/[0.07]' : ''}`}>
         <p className={`text-[10px] tracking-[0.24em] ${myVote ? 'text-emerald-400' : 'text-zinc-600'}`}
           style={{ ...TEKO, fontWeight: 600 }}>
           {ctaText}
