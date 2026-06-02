@@ -85,7 +85,7 @@ export default function FNFVoteScoreboard({
   const redPct = total > 0 ? (redVotes / total) * 100 : 50;
 
   return (
-    <div className="w-full select-none" style={{ background: "#020202" }}>
+    <div className="w-full select-none bg-background">
       {/* Broadcast top edge — hard red|white|blue line */}
       <div className="w-full" style={{ height: 2, background: "linear-gradient(90deg, #cc0000 0%, #cc0000 40%, rgba(255,255,255,0.15) 50%, #0033cc 60%, #0033cc 100%)" }} />
 
@@ -103,7 +103,7 @@ export default function FNFVoteScoreboard({
           className="flex-1 flex items-center justify-end min-w-0 overflow-hidden"
           style={{
             paddingRight: 7,
-            background: "linear-gradient(90deg, #000 40%, rgba(140,0,0,0.28) 100%)",
+            background: "linear-gradient(90deg, hsl(var(--background)) 40%, rgba(140,0,0,0.28) 100%)",
           }}
         >
           <motion.span
@@ -135,7 +135,7 @@ export default function FNFVoteScoreboard({
           className="flex items-center justify-center shrink-0"
           style={{
             minWidth: 56,
-            background: "#080808",
+            background: "hsl(var(--background))",
             borderLeft: "1px solid rgba(255,255,255,0.05)",
             borderRight: "1px solid rgba(255,255,255,0.05)",
           }}
@@ -176,7 +176,7 @@ export default function FNFVoteScoreboard({
           className="flex-1 flex items-center min-w-0 overflow-hidden"
           style={{
             paddingLeft: 7,
-            background: "linear-gradient(270deg, #000 40%, rgba(0,30,140,0.28) 100%)",
+            background: "linear-gradient(270deg, hsl(var(--background)) 40%, rgba(0,30,140,0.28) 100%)",
           }}
         >
           <motion.span
