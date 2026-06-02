@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import battleEnterSfx from '@/assets/sounds/battle-enter-intro.m4a';
 
 const TEKO = { fontFamily: 'Teko, sans-serif' };
 
@@ -15,6 +16,15 @@ interface Props {
 export default function BattleEnterIntro({ redUsername, blueUsername, onDone }: Props) {
   const [visible, setVisible] = useState(true);
   const [imgLoaded, setImgLoaded] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    const a = new Audio(battleEnterSfx);
+    a.volume = 0.9;
+    audioRef.current = a;
+    a.play().catch(() => {});
+    return () => { a.pause(); };
+  }, []);
 
   useEffect(() => {
     const t = setTimeout(() => { setVisible(false); setTimeout(onDone, 450); }, 1900);
