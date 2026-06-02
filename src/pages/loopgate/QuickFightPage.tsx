@@ -467,21 +467,21 @@ export default function QuickFightPage() {
   return (
     <div className="min-h-screen pb-20" style={{ background: '#080808' }}>
       {/* ════════ HEADER ════════ */}
-      <div className="relative z-30 bg-black border-b border-white/[0.06]">
+      <div className="relative z-30 border-b border-white/[0.06]" style={{ background: '#080808' }}>
         <div className="px-4 py-2.5 flex items-center justify-between">
           <button
             onClick={() => navigate('/hub')}
-            className="flex items-center gap-1.5 text-zinc-500 hover:text-white transition-colors touch-manipulation"
+            className="flex items-center gap-1.5 text-zinc-400 hover:text-white transition-colors touch-manipulation"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm">Back</span>
+            <span className="text-sm font-medium tracking-wide">Back</span>
           </button>
 
           <div className="flex items-center gap-3">
             {/* Utility icons */}
             <div className="flex items-center gap-2.5">
-              <MessageSquare className="w-4 h-4 text-zinc-600" />
-              <BarChart2 className="w-4 h-4 text-zinc-600" />
+              <MessageSquare className="w-4 h-4 text-zinc-500 hover:text-white transition-colors" />
+              <BarChart2 className="w-4 h-4 text-zinc-500 hover:text-white transition-colors" />
             </div>
 
             {/* Divider */}
