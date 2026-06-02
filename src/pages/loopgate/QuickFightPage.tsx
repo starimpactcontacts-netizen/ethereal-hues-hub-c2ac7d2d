@@ -620,7 +620,7 @@ export default function QuickFightPage() {
             />
           )}
 
-          {!fight.player_1_submission_url || !fight.player_2_submission_url || !fight.player_2_id ? (
+          {(!fight.player_1_submission_url || !fight.player_2_submission_url || !fight.player_2_id) ? (
             // Pre-upload state — always side-by-side with vertical VS divider
             <div className="relative grid grid-cols-2 -mx-4 md:-mx-0 overflow-hidden border border-white/[0.07]">
               {/* ── RED ── */}
@@ -697,7 +697,7 @@ export default function QuickFightPage() {
                 )}
               </div>
             </div>
-          )}
+          ) : null}
 
           {/* Fighter stat strip also shown in pre-upload state */}
           {fight.player_2_id && !fight.player_1_submission_url && (
