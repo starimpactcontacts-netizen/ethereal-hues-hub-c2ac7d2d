@@ -465,7 +465,7 @@ export default function QuickFightPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen pb-20" style={{ background: '#080808' }}>
       {/* ════════ HEADER ════════ */}
       <div className="relative z-30 bg-black border-b border-white/[0.06]">
         <div className="px-4 py-2.5 flex items-center justify-between">
