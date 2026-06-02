@@ -34,6 +34,7 @@ import BattleSelectFlow from '@/components/loopgate/battle-select/BattleSelectFl
 import BattleSelectionsBanner from '@/components/loopgate/BattleSelectionsBanner';
 import BattleRevealScreen from '@/components/loopgate/BattleRevealScreen';
 import FighterStatsBar from '@/components/loopgate/FighterStatsBar';
+import BattleEnterIntro from '@/components/loopgate/BattleEnterIntro';
 
 /** Deterministic index from fight ID — both players independently produce the same pick */
 function seededIndex(seed: string, len: number): number {
@@ -77,6 +78,7 @@ export default function QuickFightPage() {
   const [voting, setVoting] = useState(false);
   const [hideConfirmOpen, setHideConfirmOpen] = useState(false);
   const [hiding, setHiding] = useState(false);
+  const [showIntro, setShowIntro] = useState(true);
   const [revealDone, setRevealDone] = useState<boolean>(() => {
     if (typeof window === 'undefined' || !fightId) return false;
     return sessionStorage.getItem(`qf_reveal_done_${fightId}`) === '1';
@@ -467,6 +469,13 @@ export default function QuickFightPage() {
 
   return (
     <div className="min-h-screen pb-20" style={{ background: '#080808' }}>
+      {showIntro && fight.player_2_username && (
+        <BattleEnterIntro
+          redUsername={fight.player_1_username}
+          blueUsername={fight.player_2_username}
+          onDone={() => setShowIntro(false)}
+        />
+      )}
       {/* ════════ HEADER ════════ */}
       <div className="relative z-30 border-b border-white/[0.06]" style={{ background: '#080808' }}>
         <div className="px-4 py-2.5 flex items-center justify-between">
