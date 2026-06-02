@@ -612,16 +612,6 @@ export default function QuickFightPage() {
             />
           ) : null}
 
-          {/* Fighter stat strip — shown whenever both players are set */}
-          {fight.player_2_id && (
-            <div className="-mx-4 md:-mx-0">
-              <FighterStatsBar
-                redUserId={fight.player_1_id}
-                blueUserId={fight.player_2_id}
-              />
-            </div>
-          )}
-
           {(!fight.player_1_submission_url || !fight.player_2_submission_url || !fight.player_2_id) ? (
             // Pre-upload state — always side-by-side with vertical VS divider
             <div className="relative grid grid-cols-2 -mx-4 md:-mx-0 overflow-hidden border border-white/[0.07]">
@@ -701,8 +691,8 @@ export default function QuickFightPage() {
             </div>
           ) : null}
 
-          {/* Fighter stat strip also shown in pre-upload state */}
-          {fight.player_2_id && !fight.player_1_submission_url && (
+          {/* Fighter stat strip — below videos, shown once */}
+          {fight.player_2_id && (
             <div className="-mx-4 md:-mx-0">
               <FighterStatsBar
                 redUserId={fight.player_1_id}
