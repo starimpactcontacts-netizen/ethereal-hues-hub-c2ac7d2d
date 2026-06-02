@@ -33,6 +33,7 @@ import CustomEditBattleLobby from '@/components/loopgate/CustomEditBattleLobby';
 import BattleSelectFlow from '@/components/loopgate/battle-select/BattleSelectFlow';
 import BattleSelectionsBanner from '@/components/loopgate/BattleSelectionsBanner';
 import BattleRevealScreen from '@/components/loopgate/BattleRevealScreen';
+import FighterStatsBar from '@/components/loopgate/FighterStatsBar';
 
 /** Deterministic index from fight ID — both players independently produce the same pick */
 function seededIndex(seed: string, len: number): number {
@@ -609,7 +610,17 @@ export default function QuickFightPage() {
                 avatarUrl: fight.player_2_avatar_url,
               }}
             />
-          ) : (
+          ) : null}
+
+          {/* Fighter stat strip — shown whenever both players are set */}
+          {fight.player_2_id && (
+            <FighterStatsBar
+              redUserId={fight.player_1_id}
+              blueUserId={fight.player_2_id}
+            />
+          )}
+
+          {!fight.player_1_submission_url || !fight.player_2_submission_url || !fight.player_2_id ? (
             // Pre-upload state — always side-by-side with vertical VS divider
             <div className="relative grid grid-cols-2 -mx-4 md:-mx-0 overflow-hidden border border-white/[0.07]">
               {/* ── RED ── */}
@@ -686,6 +697,14 @@ export default function QuickFightPage() {
                 )}
               </div>
             </div>
+          )}
+
+          {/* Fighter stat strip also shown in pre-upload state */}
+          {fight.player_2_id && !fight.player_1_submission_url && (
+            <FighterStatsBar
+              redUserId={fight.player_1_id}
+              blueUserId={fight.player_2_id}
+            />
           )}
 
           {/* Upload now lives inline inside the player's empty slot */}
