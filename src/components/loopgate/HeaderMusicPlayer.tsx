@@ -149,35 +149,29 @@ export default function HeaderMusicPlayer() {
 
   useEffect(() => {
     const fetchTracks = async () => {
-      const { data: radioData } = await supabase
-        .from('radio_tracks')
-        .select('id, song_name, artist_name, audio_url, cover_url, is_priority, track_order')
+      const { data } = await supabase
+        .from('battle_songs' as any)
+        .select('id, song_name, artist_name, audio_url, preview_url, cover_url, is_priority, track_order')
+        .eq('is_featured', true)
         .order('is_priority', { ascending: false })
-        .order('track_order', { ascending: true });
+        .order('track_order', { ascending: true })
+        .order('created_at', { ascending: true });
 
-      const { data: dropData } = await supabase
-        .from('featured_drops')
-        .select('id, song_name, song_preview_url, title, poster_url')
-        .not('song_preview_url', 'is', null)
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      const radioTracks: Track[] = (radioData || []).map(t => ({
-        id: t.id, song_name: t.song_name, song_preview_url: t.audio_url,
-        artist_name: t.artist_name, title: t.artist_name || 'LOOPGATE Radio',
-        poster_url: t.cover_url, is_priority: t.is_priority, source: 'radio_track' as const,
+      const libraryTracks: Track[] = ((data as any[]) || []).map((t: any) => ({
+        id: t.id,
+        song_name: t.song_name,
+        song_preview_url: t.preview_url || t.audio_url,
+        artist_name: t.artist_name,
+        title: t.artist_name || 'LOOPGATE Radio',
+        poster_url: t.cover_url,
+        is_priority: t.is_priority,
+        source: 'radio_track' as const,
       }));
 
-      const dropTracks: Track[] = (dropData || []).filter(t => t.song_preview_url).map(t => ({
-        id: t.id, song_name: t.song_name, song_preview_url: t.song_preview_url!,
-        title: t.title, poster_url: t.poster_url, is_priority: false, source: 'featured_drop' as const,
-      }));
-
-      const priority = radioTracks.filter(t => t.is_priority);
-      const nonPriority = shuffleArray([...radioTracks.filter(t => !t.is_priority), ...dropTracks]);
-      // Theme song always first
+      const priority = libraryTracks.filter(t => t.is_priority);
+      const nonPriority = shuffleArray(libraryTracks.filter(t => !t.is_priority));
       setTracks([THEME_TRACK, ...priority, ...nonPriority]);
-      setCurrentIndex(0); // Start on theme song
+      setCurrentIndex(0);
     };
     fetchTracks();
   }, []);
