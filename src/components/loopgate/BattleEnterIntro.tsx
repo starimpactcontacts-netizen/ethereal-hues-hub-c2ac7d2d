@@ -65,35 +65,16 @@ export default function BattleEnterIntro({ redUsername, blueUsername, onDone }: 
           {/* ── Center content ── */}
           <div className="relative z-10 flex flex-col items-center" style={{ gap: 0 }}>
 
-            {/* Loopgate logo + wordmark */}
-            <motion.div
-              className="flex items-center gap-2 mb-4"
-              initial={{ opacity: 0, y: -16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.26, duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M10 1 L19 10 L10 19 L1 10 Z" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="1.4" />
-                <path d="M10 5 L15 10 L10 15 L5 10 Z" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.28)" strokeWidth="1" />
-                <circle cx="10" cy="10" r="1.8" fill="rgba(255,255,255,0.65)" />
-              </svg>
-              <span style={{ ...TEKO, fontSize: 15, fontWeight: 900, letterSpacing: '0.36em', color: 'rgba(255,255,255,0.4)' }}>
-                LOOPGATE
-              </span>
-            </motion.div>
-
-            {/* EDIT BATTLE chip */}
-            <motion.div
-              className="mb-6 px-5 py-[3px]"
-              initial={{ opacity: 0, scaleX: 0.5 }}
-              animate={{ opacity: 1, scaleX: 1 }}
-              transition={{ delay: 0.3, duration: 0.18, ease: 'easeOut' }}
-              style={{ border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)' }}
-            >
-              <span style={{ ...TEKO, fontSize: 10, letterSpacing: '0.42em', color: 'rgba(255,255,255,0.3)', fontWeight: 700 }}>
-                EDIT BATTLE
-              </span>
-            </motion.div>
+            {/* Edit Battle title PNG */}
+            <motion.img
+              src="/__l5e/assets-v1/f35df374-37cd-4ca4-8e5d-ba17be3e7a25/edit-battle-title.png"
+              alt="Edit Battle"
+              className="mb-4"
+              style={{ width: 280, objectFit: 'contain' }}
+              initial={{ opacity: 0, y: -20, scale: 0.88 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ delay: 0.24, duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
+            />
 
             {/* RED name */}
             <motion.div
