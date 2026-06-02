@@ -4,6 +4,7 @@ import { Trophy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import vsBadge from '@/assets/vs-badge.png.asset.json';
 
 const TEKO = { fontFamily: 'Teko, sans-serif' };
 
@@ -213,9 +214,7 @@ export default function QuickFightPublicVote({
 
         {/* VS */}
         <div className="flex flex-col items-center gap-1 -mt-10 shrink-0">
-          <div className="w-8 h-8 rounded-full bg-[#111] border border-white/[0.07] flex items-center justify-center">
-            <span className="text-[12px] font-black text-white/25 tracking-wider" style={TEKO}>VS</span>
-          </div>
+          <img src={vsBadge.url} alt="VS" className="w-14 h-14 object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]" />
         </div>
 
         {/* BLUE — X */}
