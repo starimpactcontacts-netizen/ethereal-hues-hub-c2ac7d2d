@@ -23,7 +23,7 @@ function RedButton({ pressed, voted }: { pressed: boolean; voted: boolean }) {
     <motion.div
       animate={{ y: voted ? 5 : 0 }}
       transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-      className="relative w-[90px] h-[90px] rounded-full"
+      className="relative w-[76px] h-[76px] rounded-full"
       style={{
         /* convex face gradient */
         background: 'radial-gradient(ellipse at 40% 34%, #ff6a6a 0%, #e01515 38%, #9e0000 72%, #680000 100%)',
@@ -64,7 +64,7 @@ function BlueButton({ pressed, voted }: { pressed: boolean; voted: boolean }) {
     <motion.div
       animate={{ y: voted ? 5 : 0 }}
       transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-      className="relative w-[90px] h-[90px] rounded-full"
+      className="relative w-[76px] h-[76px] rounded-full"
       style={{
         background: 'radial-gradient(ellipse at 40% 34%, #6699ff 0%, #1a48e8 38%, #0a28a0 72%, #051878 100%)',
         boxShadow: voted
