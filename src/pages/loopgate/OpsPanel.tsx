@@ -2407,6 +2407,7 @@ export default function OpsPanel() {
               { icon: <DollarSign size={15} />, label: "Missions", onClick: () => navigate('/missions'), color: "text-emerald-400" },
               { icon: <Calendar size={15} />, label: "New Event", onClick: () => setShowCreateEvent(true), color: "text-gold" },
               { icon: <Crown size={15} />, label: "Campaigns", onClick: () => navigate('/ops-panel/a7c92ff31b/campaigns'), color: "text-cyan-400" },
+              { icon: <Play size={15} />, label: "Battle Sim", onClick: () => navigate('/ops-panel/a7c92ff31b/sim'), color: "text-yellow-400" },
               { icon: <DollarSign size={15} />, label: "Commissions", onClick: () => navigate('/commissions'), color: "text-emerald-400" },
               { icon: <Zap size={15} />, label: "Solo Arena", onClick: () => navigate('/solo-arena'), color: "text-amber-400" },
               { icon: <DollarSign size={15} />, label: "Payouts", onClick: () => navigate('/payouts'), color: "text-amber-400" },

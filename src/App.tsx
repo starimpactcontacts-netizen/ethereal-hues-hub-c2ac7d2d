@@ -73,6 +73,7 @@ const GatekeeperRankPage = lazy(() => import("./pages/loopgate/GatekeeperRankPag
 const EnterpriseDashboard = lazy(() => import("./pages/loopgate/EnterpriseDashboard"));
 const ArtistDashboardPage = lazy(() => import("./pages/loopgate/ArtistDashboardPage"));
 const CampaignAdminPage = lazy(() => import("./pages/loopgate/CampaignAdminPage"));
+const BattleSimPage = lazy(() => import("./pages/loopgate/BattleSimPage"));
 const CampaignPortalPage = lazy(() => import("./pages/loopgate/CampaignPortalPage"));
 const EnterpriseClientDashboard = lazy(() => import("./pages/loopgate/EnterpriseClientDashboard"));
 const EnterpriseAccountPage = lazy(() => import("./pages/loopgate/EnterpriseAccountPage"));
@@ -437,6 +438,13 @@ export default function App() {
             <Route path="/ops-panel/a7c92ff31b/campaigns" element={
               <ProtectedRoute requireOpsAccess={true}>
                 <CampaignAdminPage />
+              </ProtectedRoute>
+            } />
+
+            {/* Battle Simulator Sandbox - requires ops access */}
+            <Route path="/ops-panel/a7c92ff31b/sim" element={
+              <ProtectedRoute requireOpsAccess={true}>
+                <BattleSimPage />
               </ProtectedRoute>
             } />
             
