@@ -71,7 +71,7 @@ export default function BattleEnterIntro({ redUsername, blueUsername, onDone }: 
               src={editBattleTitle.url}
               alt="Edit Battle"
               className="mb-4"
-              style={{ width: 280, objectFit: 'contain' }}
+              style={{ width: 300, objectFit: 'contain', filter: 'invert(1)', mixBlendMode: 'screen' }}
               initial={{ opacity: 0, y: -20, scale: 0.88 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ delay: 0.24, duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
