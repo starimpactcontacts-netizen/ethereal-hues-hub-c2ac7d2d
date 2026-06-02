@@ -95,16 +95,11 @@ export default function FighterStatsBar({ redUserId, blueUserId }: Props) {
     >
       <Side stats={red} accentColor="#ef4444" align="left" />
 
-      {/* Center sword divider */}
+      {/* Center divider — thin line only */}
       <div
-        className="flex items-center justify-center shrink-0"
-        style={{ width: 28, borderLeft: '1px solid rgba(255,255,255,0.05)', borderRight: '1px solid rgba(255,255,255,0.05)' }}
-      >
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-          <line x1="1" y1="1" x2="9" y2="9" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" strokeLinecap="round" />
-          <line x1="9" y1="1" x2="1" y2="9" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
-      </div>
+        className="shrink-0"
+        style={{ width: 1, background: 'rgba(255,255,255,0.06)' }}
+      />
 
       <Side stats={blue} accentColor="#3b82f6" align="right" />
     </div>
@@ -152,7 +147,7 @@ function Side({ stats, accentColor, align }: {
 
   return (
     <div
-      className={`flex-1 flex items-center px-3 min-w-0 overflow-hidden ${align === 'right' ? 'justify-end' : 'justify-start'}`}
+      className={`flex-1 flex items-center px-4 min-w-0 overflow-hidden ${align === 'right' ? 'justify-end' : 'justify-start'}`}
       style={{
         background: align === 'left'
           ? `linear-gradient(90deg, rgba(${accentColor === '#ef4444' ? '239,68,68' : '59,130,246'},0.05) 0%, transparent 80%)`
