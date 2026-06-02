@@ -8,6 +8,7 @@ import QuickFightChat from "@/components/loopgate/QuickFightChat";
 import { useLobbyMusicMute } from "@/components/loopgate/LobbyMusicPlayer";
 import type { OpenQueueEntry, QuickFight } from "@/hooks/useQuickFight";
 import { toast } from "sonner";
+import editBattleTitle from "@/assets/edit-battle-title.png.asset.json";
 
 interface CustomEditBattleLobbyProps {
   fight: QuickFight;
@@ -189,7 +190,7 @@ export default function CustomEditBattleLobby({
           </div>
           {/* Custom EDIT BATTLE title image */}
           <img
-            src="/edit-battle-title.png"
+            src={editBattleTitle.url}
             alt="Edit Battle"
             draggable={false}
             className="select-none mx-auto block mt-2"
