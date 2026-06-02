@@ -41,9 +41,9 @@ function RedButton({ pressed, voted }: { pressed: boolean; voted: boolean }) {
         }}
       />
       {/* O symbol */}
-      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 118 118" style={{ padding: 26 }}>
-        <circle cx="59" cy="59" r="24" fill="none"
-          stroke="rgba(255,255,255,0.88)" strokeWidth="7" />
+      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 118 118">
+        <circle cx="59" cy="59" r="22" fill="none"
+          stroke="rgba(255,255,255,0.88)" strokeWidth="6" />
       </svg>
       {/* Specular glare top-left */}
       <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
@@ -80,9 +80,9 @@ function BlueButton({ pressed, voted }: { pressed: boolean; voted: boolean }) {
         }}
       />
       {/* X symbol */}
-      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 118 118" style={{ padding: 30 }}>
-        <line x1="35" y1="35" x2="83" y2="83" stroke="rgba(255,255,255,0.88)" strokeWidth="7" strokeLinecap="round" />
-        <line x1="83" y1="35" x2="35" y2="83" stroke="rgba(255,255,255,0.88)" strokeWidth="7" strokeLinecap="round" />
+      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 118 118">
+        <line x1="38" y1="38" x2="80" y2="80" stroke="rgba(255,255,255,0.88)" strokeWidth="6" strokeLinecap="round" />
+        <line x1="80" y1="38" x2="38" y2="80" stroke="rgba(255,255,255,0.88)" strokeWidth="6" strokeLinecap="round" />
       </svg>
       {/* Specular glare */}
       <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
