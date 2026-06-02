@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, Copy, Eye, Lock, Share2, UserPlus, Users, Volume2, VolumeX } from "lucide-react";
+import { ArrowLeft, Clock, Copy, Eye, Lock, Share2, Swords, UserPlus, Users, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -18,6 +18,7 @@ interface CustomEditBattleLobbyProps {
   onShare: () => void;
   onCopy: () => void;
   onJoin: (code?: string) => void;
+  onReserve?: () => Promise<void>;
   onCancel: () => void;
   onSongPicked?: (drop: any) => Promise<void>;
 }
@@ -105,6 +106,7 @@ export default function CustomEditBattleLobby({
   onShare,
   onCopy,
   onJoin,
+  onReserve,
   onCancel,
 }: CustomEditBattleLobbyProps) {
   const duration =
@@ -118,6 +120,7 @@ export default function CustomEditBattleLobby({
 
   const isPrivate = !!fight.is_private;
   const [codeInput, setCodeInput] = useState("");
+  const [reserving, setReserving] = useState(false);
   const [searchParams] = useSearchParams();
   const [muted, toggleMuted] = useLobbyMusicMute();
 
@@ -270,29 +273,64 @@ export default function CustomEditBattleLobby({
                 >
                   P2
                 </div>
-                <div
-                  className="w-[96px] h-[96px] border-[3px] flex items-center justify-center"
-                  style={{ borderColor: P2_COLOR, backgroundColor: "#160000" }}
-                >
-                  <motion.span
-                    animate={{ opacity: [1, 0.2, 1] }}
-                    transition={{ duration: 0.9, repeat: Infinity, ease: "linear" }}
-                    className="text-[62px] leading-none font-black"
+                {fight.player_2_id ? (
+                  <div
+                    className="w-[96px] h-[96px] border-[3px] overflow-hidden"
+                    style={{ borderColor: P2_COLOR }}
+                  >
+                    <Avatar className="w-full h-full rounded-none">
+                      <AvatarImage src={fight.player_2_avatar_url || ""} className="object-cover w-full h-full" />
+                      <AvatarFallback
+                        className="rounded-none text-3xl font-black"
+                        style={{ backgroundColor: "#160000", color: P2_COLOR, fontFamily: "Teko, sans-serif" }}
+                      >
+                        {fight.player_2_username?.charAt(0)?.toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                ) : (
+                  <div
+                    className="w-[96px] h-[96px] border-[3px] flex items-center justify-center"
+                    style={{ borderColor: P2_COLOR, backgroundColor: "#160000" }}
+                  >
+                    <motion.span
+                      animate={{ opacity: [1, 0.2, 1] }}
+                      transition={{ duration: 0.9, repeat: Infinity, ease: "linear" }}
+                      className="text-[62px] leading-none font-black"
+                      style={{ fontFamily: "Teko, sans-serif", color: P2_COLOR }}
+                    >
+                      ?
+                    </motion.span>
+                  </div>
+                )}
+              </div>
+              {fight.player_2_id ? (
+                <>
+                  <span
+                    className="mt-2.5 max-w-[110px] truncate text-[15px] font-black uppercase text-white"
+                    style={{ fontFamily: "Teko, sans-serif" }}
+                  >
+                    {fight.player_2_username}
+                  </span>
+                  {viewerId === fight.player_2_id && (
+                    <span className="mt-0.5 text-[8px] font-black uppercase tracking-[0.25em]" style={{ color: P2_COLOR }}>
+                      You
+                    </span>
+                  )}
+                </>
+              ) : (
+                <>
+                  <span
+                    className="mt-2.5 text-[15px] font-black uppercase"
                     style={{ fontFamily: "Teko, sans-serif", color: P2_COLOR }}
                   >
-                    ?
-                  </motion.span>
-                </div>
-              </div>
-              <span
-                className="mt-2.5 text-[15px] font-black uppercase"
-                style={{ fontFamily: "Teko, sans-serif", color: P2_COLOR }}
-              >
-                Open Slot
-              </span>
-              <span className="mt-0.5 text-[8px] font-black uppercase tracking-[0.25em] text-white/30">
-                Tap In
-              </span>
+                    Open Slot
+                  </span>
+                  <span className="mt-0.5 text-[8px] font-black uppercase tracking-[0.25em] text-white/30">
+                    Tap In
+                  </span>
+                </>
+              )}
               <StockDots />
             </div>
           </div>
@@ -334,13 +372,41 @@ export default function CustomEditBattleLobby({
                 large
               />
             </div>
-          ) : (
+          ) : !fight.player_2_id ? (
+            /* Open slot — show JOIN + ACCEPT BATTLE side by side */
+            <div className="grid grid-cols-2 gap-2">
+              <ArenaButton
+                onClick={async () => {
+                  if (!onReserve || reserving) return;
+                  setReserving(true);
+                  try { await onReserve(); } finally { setReserving(false); }
+                }}
+                disabled={reserving}
+                icon={<UserPlus className="w-4 h-4" />}
+                label={reserving ? "…" : "Join"}
+              />
+              <ArenaButton
+                onClick={() => onJoin()}
+                icon={<Swords className="w-4 h-4" />}
+                label="Accept Battle"
+                large
+              />
+            </div>
+          ) : viewerId === fight.player_2_id ? (
+            /* Viewer already reserved — just show ACCEPT BATTLE */
             <ArenaButton
               onClick={() => onJoin()}
-              icon={<UserPlus className="w-5 h-5" />}
+              icon={<Swords className="w-5 h-5" />}
               label="Accept Battle"
               large
             />
+          ) : (
+            /* Slot taken by someone else */
+            <div className="h-[58px] border border-white/10 flex items-center justify-center">
+              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-white/25" style={{ fontFamily: "Teko, sans-serif" }}>
+                Slot Taken
+              </span>
+            </div>
           )}
         </div>
 

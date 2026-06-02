@@ -146,7 +146,7 @@ export default function QuickFightPage() {
   }, [fightId, user?.id]);
 
   const hasSongPicked = !!(fight as any)?.theme_song_name;
-  const isWaitingLobby = !!fight && fight.status === 'waiting' && !fight.player_2_id;
+  const isWaitingLobby = !!fight && fight.status === 'waiting';
 
   useEffect(() => {
     if (!isWaitingLobby) return;
@@ -285,9 +285,36 @@ export default function QuickFightPage() {
     } catch {}
   };
 
+  const handleReserveLobby = async () => {
+    if (!user || !profile || isP1 || fight.player_2_id) return;
+    await supabase
+      .from('quick_fights')
+      .update({
+        player_2_id: user.id,
+        player_2_username: profile.username,
+        player_2_avatar_url: profile.avatar_url || null,
+      } as any)
+      .eq('id', fight.id)
+      .eq('status', 'waiting')
+      .is('player_2_id', null);
+  };
+
   const handleJoinLobby = async (code?: string) => {
     if (!user || !profile) { navigate('/start'); return; }
     if (isP1) return;
+    // If P2 already reserved their slot, just transition the fight to selecting
+    if (fight.player_2_id === user.id) {
+      const deadline = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+      const { error } = await supabase
+        .from('quick_fights')
+        .update({ status: 'selecting', selection_deadline: deadline } as any)
+        .eq('id', fight.id)
+        .eq('player_2_id', user.id)
+        .eq('status', 'waiting');
+      if (!error) toast.success('⚔️ Battle started');
+      else toast.error("Couldn't start battle");
+      return;
+    }
     const normalizedCode = code ? code.trim().toUpperCase() : undefined;
     const result = await joinWaitingQuickFight(fight.id, user.id, profile.username, profile.avatar_url || null, normalizedCode);
     if (result.ok) toast.success('⚔️ Battle started');
@@ -380,6 +407,7 @@ export default function QuickFightPage() {
         onShare={handleShareLobby}
         onCopy={handleCopyLobby}
         onJoin={handleJoinLobby}
+        onReserve={handleReserveLobby}
         onSongPicked={handleSongPick}
         onCancel={async () => {
           if (!window.confirm('Close this lobby?')) return;
