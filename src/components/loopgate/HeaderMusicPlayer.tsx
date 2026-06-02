@@ -135,18 +135,6 @@ export default function HeaderMusicPlayer() {
 
   const isMuted = volume === 0;
 
-  // Theme song — always first in the playlist
-  const THEME_TRACK: Track = {
-    id: '__loopgate_theme__',
-    song_name: 'Virtuoso',
-    song_preview_url: '/audio/loopgate-theme.mp3?v=quietmix2',
-    artist_name: 'Loneliness x Sace',
-    title: 'LOOPGATE Theme',
-    poster_url: '/images/loopgate-logo-cover.jpeg',
-    is_priority: true,
-    source: 'radio_track',
-  };
-
   useEffect(() => {
     const fetchTracks = async () => {
       const { data } = await supabase
@@ -170,7 +158,7 @@ export default function HeaderMusicPlayer() {
 
       const priority = libraryTracks.filter(t => t.is_priority);
       const nonPriority = shuffleArray(libraryTracks.filter(t => !t.is_priority));
-      setTracks([THEME_TRACK, ...priority, ...nonPriority]);
+      setTracks([...priority, ...nonPriority]);
       setCurrentIndex(0);
     };
     fetchTracks();
