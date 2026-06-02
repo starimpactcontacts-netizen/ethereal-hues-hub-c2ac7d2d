@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, Check } from 'lucide-react';
+import { Trophy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+
+const TEKO = { fontFamily: 'Teko, sans-serif' };
 
 interface Props {
   fightId: string;
@@ -11,19 +13,95 @@ interface Props {
   player2Id: string;
   player1Username: string;
   player2Username: string;
-  /** Locks voting (e.g. once judge decides). */
   locked?: boolean;
-  /** Official winner_id (judged), to mark the official side. */
   officialWinnerId?: string | null;
 }
 
-// Clean modern sans — no Teko condensed display font on this card.
+/** Circle / O symbol (RED corner) */
+function OSymbol() {
+  return (
+    <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full" style={{ padding: '24%' }}>
+      <circle cx="50" cy="50" r="35" fill="none"
+        stroke="rgba(255,255,255,0.88)" strokeWidth="12" />
+    </svg>
+  );
+}
 
-/**
- * Public spectator vote — "Which edit won?"
- * Reuses the existing `quick_fight_votes` table.
- * Participants and judges cannot vote on their own fight.
- */
+/** Cross / X symbol (BLUE corner) */
+function XSymbol() {
+  return (
+    <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full" style={{ padding: '24%' }}>
+      <line x1="18" y1="18" x2="82" y2="82" stroke="rgba(255,255,255,0.88)" strokeWidth="12" strokeLinecap="round" />
+      <line x1="82" y1="18" x2="18" y2="82" stroke="rgba(255,255,255,0.88)" strokeWidth="12" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function PsButton({
+  side,
+  voted,
+  leading,
+  isOfficial,
+  disabled,
+  onClick,
+}: {
+  side: 'red' | 'blue';
+  voted: boolean;
+  leading: boolean;
+  isOfficial: boolean;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  const isRed = side === 'red';
+
+  const resting = isRed
+    ? 'radial-gradient(circle at 38% 28%, #ff5555 0%, #cc1010 50%, #7a0000 100%)'
+    : 'radial-gradient(circle at 38% 28%, #5588ff 0%, #1140dd 50%, #001080 100%)';
+
+  const ringColor = isRed ? 'rgba(255,80,80,0.9)' : 'rgba(70,120,255,0.9)';
+  const glowColor = isRed ? 'rgba(255,40,40,0.7)' : 'rgba(40,90,255,0.7)';
+  const dimRing   = isRed ? 'rgba(180,30,30,0.35)' : 'rgba(30,60,200,0.35)';
+
+  const shadow = voted
+    ? `0 0 0 3.5px ${ringColor}, 0 0 40px ${glowColor}, inset 0 -6px 18px rgba(0,0,0,0.65)`
+    : leading
+    ? `0 0 0 2px ${dimRing}, 0 0 22px ${isRed ? 'rgba(255,40,40,0.3)' : 'rgba(40,90,255,0.3)'}, inset 0 -6px 18px rgba(0,0,0,0.65)`
+    : `0 0 0 1px rgba(255,255,255,0.06), 0 8px 28px rgba(0,0,0,0.7), inset 0 -6px 18px rgba(0,0,0,0.65)`;
+
+  return (
+    <motion.button
+      onClick={onClick}
+      disabled={disabled}
+      whileTap={disabled ? undefined : { scale: 0.90, transition: { duration: 0.08 } }}
+      animate={voted ? { scale: [1, 1.05, 1] } : {}}
+      transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+      className="relative w-[116px] h-[116px] rounded-full shrink-0"
+      style={{ background: resting, boxShadow: shadow }}
+    >
+      {/* Specular highlight — top-left glare */}
+      <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
+        <div className="absolute inset-0" style={{
+          background: 'radial-gradient(ellipse at 36% 22%, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0.06) 42%, transparent 65%)',
+        }} />
+        {/* Rim highlight */}
+        <div className="absolute inset-0 rounded-full" style={{
+          boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.18)',
+        }} />
+      </div>
+
+      {/* Symbol */}
+      {isRed ? <OSymbol /> : <XSymbol />}
+
+      {/* Official win crown */}
+      {isOfficial && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+          <Trophy className="w-4 h-4 text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.8)]" />
+        </div>
+      )}
+    </motion.button>
+  );
+}
+
 export default function QuickFightPublicVote({
   fightId,
   player1Id,
@@ -41,42 +119,36 @@ export default function QuickFightPublicVote({
 
   const isParticipant = !!user && (user.id === player1Id || user.id === player2Id);
   const total = redCount + blueCount;
-  const redPct = total === 0 ? 0 : Math.round((redCount / total) * 100);
-  const bluePct = total === 0 ? 0 : 100 - redPct;
+  const redPct  = total === 0 ? 50 : Math.round((redCount  / total) * 100);
+  const bluePct = total === 0 ? 50 : 100 - redPct;
   const leadingSide: 'red' | 'blue' | null =
     total === 0 ? null : redCount === blueCount ? null : redCount > blueCount ? 'red' : 'blue';
 
   useEffect(() => {
     if (!fightId) return;
-
     const fetchVotes = async () => {
       const { data } = await supabase
         .from('quick_fight_votes')
         .select('voted_for, user_id')
         .eq('fight_id', fightId);
       if (!data) return;
-      let r = 0, b = 0;
-      let mine: string | null = null;
+      let r = 0, b = 0, mine: string | null = null;
       for (const v of data) {
         if (v.voted_for === player1Id) r++;
         else if (v.voted_for === player2Id) b++;
         if (user?.id && v.user_id === user.id) mine = v.voted_for;
       }
-      setRedCount(r);
-      setBlueCount(b);
-      setMyVote(mine);
+      setRedCount(r); setBlueCount(b); setMyVote(mine);
     };
     fetchVotes();
-
-    const channel = supabase
+    const ch = supabase
       .channel(`qf_votes_${fightId}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'quick_fight_votes', filter: `fight_id=eq.${fightId}` },
-        () => fetchVotes(),
-      )
+      .on('postgres_changes', {
+        event: '*', schema: 'public',
+        table: 'quick_fight_votes', filter: `fight_id=eq.${fightId}`,
+      }, fetchVotes)
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => { supabase.removeChannel(ch); };
   }, [fightId, player1Id, player2Id, user?.id]);
 
   const castVote = async (votedFor: string) => {
@@ -85,156 +157,29 @@ export default function QuickFightPublicVote({
     if (locked || myVote || voting) return;
     setVoting(true);
     const { error } = await supabase.from('quick_fight_votes').insert({
-      fight_id: fightId,
-      user_id: user.id,
-      voted_for: votedFor,
+      fight_id: fightId, user_id: user.id, voted_for: votedFor,
     });
     if (error) toast.error('Could not record vote');
-    else {
-      setMyVote(votedFor);
-      toast.success('Vote in 🗳️');
-    }
+    else { setMyVote(votedFor); toast.success('Vote locked 🗳️'); }
     setVoting(false);
   };
 
   const disabled = !!myVote || !!locked || isParticipant || !user || voting;
 
-  const Side = ({
-    side,
-    pid,
-    username,
-    count,
-    pct,
-  }: {
-    side: 'red' | 'blue';
-    pid: string;
-    username: string;
-    count: number;
-    pct: number;
-  }) => {
-    const isMine = myVote === pid;
-    const isOfficial = officialWinnerId === pid;
-    const isLeading = leadingSide === side;
-    const isRed = side === 'red';
-
-    return (
-      <motion.button
-        onClick={() => castVote(pid)}
-        disabled={disabled}
-        whileTap={disabled ? undefined : { scale: 0.96 }}
-        className={`relative flex-1 overflow-hidden border-2 transition-all duration-300 ${
-          isMine
-            ? isRed ? 'border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]' : 'border-blue-500 shadow-[0_0_30px_rgba(59,130,246,0.5)]'
-            : isOfficial
-            ? 'border-amber-400 shadow-[0_0_24px_rgba(251,191,36,0.4)]'
-            : isLeading
-            ? isRed ? 'border-red-500/60' : 'border-blue-500/60'
-            : 'border-white/10'
-        } ${disabled && !isMine && !isOfficial ? 'opacity-80' : ''} disabled:cursor-default`}
-        style={{
-          background: isRed
-            ? `linear-gradient(135deg, rgba(239,68,68,${isLeading ? 0.18 : 0.08}) 0%, rgba(0,0,0,0.95) 100%)`
-            : `linear-gradient(135deg, rgba(59,130,246,${isLeading ? 0.18 : 0.08}) 0%, rgba(0,0,0,0.95) 100%)`,
-        }}
-      >
-        {/* Animated fill bar from bottom */}
-        <motion.div
-          className={`absolute inset-x-0 bottom-0 ${isRed ? 'bg-gradient-to-t from-red-500/40 to-red-500/10' : 'bg-gradient-to-t from-blue-500/40 to-blue-500/10'}`}
-          initial={{ height: 0 }}
-          animate={{ height: `${pct}%` }}
-          transition={{ duration: 0.7, ease: 'easeOut' }}
-        />
-
-        {/* Pulsing glow when leading */}
-        {isLeading && !isOfficial && (
-          <motion.div
-            className={`absolute inset-0 pointer-events-none ${isRed ? 'bg-red-500/5' : 'bg-blue-500/5'}`}
-            animate={{ opacity: [0.3, 0.7, 0.3] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          />
-        )}
-
-        <div className="relative px-3 py-3 flex flex-col items-center justify-center gap-1 min-h-[96px]">
-          {/* Top tag row */}
-          <div className="flex items-center gap-1.5">
-            <span
-              className={`text-[11px] tracking-[0.22em] ${isRed ? 'text-red-400/90' : 'text-blue-400/90'}`}
-              style={{ fontFamily: 'Teko, sans-serif', fontWeight: 500 }}
-            >
-              {side.toUpperCase()}
-            </span>
-            {isOfficial && (
-              <span
-                className="text-[10px] tracking-[0.18em] text-amber-400 flex items-center gap-0.5"
-                style={{ fontFamily: 'Teko, sans-serif', fontWeight: 500 }}
-              >
-                <Trophy className="w-2.5 h-2.5" /> WIN
-              </span>
-            )}
-          </div>
-
-          {/* Percentage — Teko display */}
-          <p
-            className="text-[40px] text-white tabular-nums leading-none"
-            style={{
-              fontFamily: 'Teko, sans-serif',
-              fontWeight: 600,
-              letterSpacing: '-0.01em',
-              textShadow: isRed ? '0 0 24px rgba(239,68,68,0.35)' : '0 0 24px rgba(59,130,246,0.35)',
-            }}
-          >
-            {pct}<span className="text-[20px] text-white/50">%</span>
-          </p>
-
-          {/* Username */}
-          <p
-            className="text-[15px] text-white/95 truncate max-w-full px-2 leading-tight"
-            style={{ fontFamily: 'Teko, sans-serif', fontWeight: 500, letterSpacing: '0.01em' }}
-          >
-            @{username}
-          </p>
-
-          {/* Vote count */}
-          <p
-            className="text-[11px] text-zinc-500 tabular-nums tracking-[0.12em]"
-            style={{ fontFamily: 'Teko, sans-serif', fontWeight: 400 }}
-          >
-            {count} {count === 1 ? 'VOTE' : 'VOTES'}
-          </p>
-
-          {/* Mine indicator */}
-          {isMine && (
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              className={`absolute top-1.5 right-1.5 w-4 h-4 rounded-full ${isRed ? 'bg-red-500' : 'bg-blue-500'} flex items-center justify-center`}
-            >
-              <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
-            </motion.div>
-          )}
-        </div>
-      </motion.button>
-    );
-  };
-
   const ctaText = !user
     ? 'SIGN IN TO VOTE'
     : isParticipant
     ? "PLAYERS CAN'T VOTE"
-    : myVote
-    ? '✓ VOTE LOCKED IN'
-    : locked
-    ? 'VOTING CLOSED'
-    : 'TAP A SIDE TO VOTE';
+    : myVote ? '✓ VOTE LOCKED IN'
+    : locked  ? 'VOTING CLOSED'
+    : 'TAP TO VOTE';
 
   return (
     <div className="relative bg-black border border-white/10 overflow-hidden">
+
       {/* Header */}
-      <div className="relative px-3 py-1.5 border-b border-white/10 bg-white/[0.02] flex items-center justify-between">
-        <span
-          className="text-[14px] text-white/95 tracking-[0.2em]"
-          style={{ fontFamily: 'Teko, sans-serif', fontWeight: 500 }}
-        >
+      <div className="px-3 py-1.5 border-b border-white/10 bg-white/[0.025] flex items-center justify-between">
+        <span className="text-[14px] text-white/90 tracking-[0.22em]" style={{ ...TEKO, fontWeight: 600 }}>
           WHO WON?
         </span>
         <div className="flex items-center gap-1.5">
@@ -242,41 +187,83 @@ export default function QuickFightPublicVote({
             <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60 animate-ping" />
             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
           </span>
-          <span
-            className="text-[12px] text-zinc-400 tracking-[0.14em] tabular-nums"
-            style={{ fontFamily: 'Teko, sans-serif', fontWeight: 400 }}
-          >
+          <span className="text-[12px] text-zinc-400 tracking-[0.16em] tabular-nums" style={{ ...TEKO, fontWeight: 400 }}>
             {total} {total === 1 ? 'VOTE' : 'VOTES'}
           </span>
         </div>
       </div>
 
-      {/* Duel */}
-      <div className="relative p-2">
-        <div className="flex gap-1.5 items-stretch">
-          <Side side="red" pid={player1Id} username={player1Username} count={redCount} pct={redPct} />
-          <Side side="blue" pid={player2Id} username={player2Username} count={blueCount} pct={bluePct} />
+      {/* Buttons */}
+      <div className="flex items-center justify-center gap-5 py-6 px-4">
+
+        {/* RED — O button */}
+        <div className="flex flex-col items-center gap-2.5">
+          <PsButton
+            side="red"
+            voted={myVote === player1Id}
+            leading={leadingSide === 'red'}
+            isOfficial={officialWinnerId === player1Id}
+            disabled={disabled}
+            onClick={() => castVote(player1Id)}
+          />
+          <div className="text-center">
+            <p className="text-[9px] uppercase tracking-[0.3em] text-red-500/70 leading-none mb-0.5" style={TEKO}>
+              RED
+            </p>
+            <p className="text-[17px] font-black text-white truncate max-w-[110px] leading-tight" style={TEKO}>
+              @{player1Username}
+            </p>
+            {total > 0 && (
+              <p className="text-[26px] font-black text-red-400 leading-none tabular-nums" style={TEKO}>
+                {redPct}<span className="text-[13px] text-white/35">%</span>
+              </p>
+            )}
+            <p className="text-[9px] text-zinc-600 tabular-nums tracking-wider" style={TEKO}>
+              {redCount} {redCount === 1 ? 'VOTE' : 'VOTES'}
+            </p>
+          </div>
         </div>
 
-        {/* Center VS chip overlapping the two sides */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10">
-          <div className="w-8 h-8 rounded-full bg-black border border-white/15 flex items-center justify-center shadow-[0_0_20px_rgba(0,0,0,0.8)]">
-            <span
-              className="text-[13px] text-white/90 tracking-[0.08em]"
-              style={{ fontFamily: 'Teko, sans-serif', fontWeight: 500 }}
-            >
-              VS
-            </span>
+        {/* VS divider */}
+        <div className="flex flex-col items-center gap-1 shrink-0 -mt-10">
+          <div className="w-9 h-9 rounded-full bg-[#0d0d0d] border border-white/[0.08] flex items-center justify-center shadow-[0_0_20px_rgba(0,0,0,0.8)]">
+            <span className="text-[14px] text-white/30 font-black tracking-wide" style={TEKO}>VS</span>
+          </div>
+        </div>
+
+        {/* BLUE — X button */}
+        <div className="flex flex-col items-center gap-2.5">
+          <PsButton
+            side="blue"
+            voted={myVote === player2Id}
+            leading={leadingSide === 'blue'}
+            isOfficial={officialWinnerId === player2Id}
+            disabled={disabled}
+            onClick={() => castVote(player2Id)}
+          />
+          <div className="text-center">
+            <p className="text-[9px] uppercase tracking-[0.3em] text-blue-500/70 leading-none mb-0.5" style={TEKO}>
+              BLUE
+            </p>
+            <p className="text-[17px] font-black text-white truncate max-w-[110px] leading-tight" style={TEKO}>
+              @{player2Username}
+            </p>
+            {total > 0 && (
+              <p className="text-[26px] font-black text-blue-400 leading-none tabular-nums" style={TEKO}>
+                {bluePct}<span className="text-[13px] text-white/35">%</span>
+              </p>
+            )}
+            <p className="text-[9px] text-zinc-600 tabular-nums tracking-wider" style={TEKO}>
+              {blueCount} {blueCount === 1 ? 'VOTE' : 'VOTES'}
+            </p>
           </div>
         </div>
       </div>
 
       {/* CTA bar */}
       <div className={`px-3 py-1.5 border-t border-white/10 text-center ${myVote ? 'bg-emerald-500/10' : 'bg-white/[0.015]'}`}>
-        <p
-          className={`text-[12px] tracking-[0.2em] ${myVote ? 'text-emerald-400' : 'text-zinc-500'}`}
-          style={{ fontFamily: 'Teko, sans-serif', fontWeight: 500 }}
-        >
+        <p className={`text-[12px] tracking-[0.24em] ${myVote ? 'text-emerald-400' : 'text-zinc-500'}`}
+          style={{ ...TEKO, fontWeight: 500 }}>
           {ctaText}
         </p>
       </div>
