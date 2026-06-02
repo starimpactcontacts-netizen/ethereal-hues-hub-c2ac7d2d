@@ -15,6 +15,32 @@ interface Props {
   activeSide?: "red" | "blue" | null;
 }
 
+// Chromatic aberration: always-on RGB split, leader gets extra intensity + glow
+function nameStyle(side: "red" | "blue", isLeading: boolean) {
+  const base = {
+    ...TEKO,
+    fontSize: 18,
+    fontWeight: 900,
+    letterSpacing: "0.09em",
+    lineHeight: 1,
+    color: "#fff",
+  };
+  if (side === "red") {
+    return {
+      ...base,
+      textShadow: isLeading
+        ? "-4px 0 #ff0000, 4px 0 rgba(255,200,200,0.95), 0 0 22px rgba(255,20,20,0.65), 0 0 2px rgba(255,80,80,0.4)"
+        : "-2px 0 rgba(220,0,0,0.8), 2px 0 rgba(255,220,220,0.6)",
+    };
+  }
+  return {
+    ...base,
+    textShadow: isLeading
+      ? "4px 0 #0044ff, -4px 0 rgba(180,210,255,0.95), 0 0 22px rgba(20,80,255,0.65), 0 0 2px rgba(80,140,255,0.4)"
+      : "2px 0 rgba(0,50,220,0.8), -2px 0 rgba(200,220,255,0.6)",
+  };
+}
+
 export default function FNFVoteScoreboard({
   fightId,
   redUserId,
@@ -59,112 +85,119 @@ export default function FNFVoteScoreboard({
   const redPct = total > 0 ? (redVotes / total) * 100 : 50;
 
   return (
-    <div className="w-full select-none" style={{ background: "#000", boxShadow: "0 1px 0 rgba(255,255,255,0.06)" }}>
-      {/* 1px broadcast highlight at top */}
-      <div className="w-full h-px" style={{ background: "linear-gradient(90deg, rgba(200,0,0,0.7) 0%, rgba(255,255,255,0.12) 50%, rgba(0,60,200,0.7) 100%)" }} />
+    <div className="w-full select-none" style={{ background: "#020202" }}>
+      {/* Broadcast top edge — hard red|white|blue line */}
+      <div className="w-full" style={{ height: 2, background: "linear-gradient(90deg, #cc0000 0%, #cc0000 40%, rgba(255,255,255,0.15) 50%, #0033cc 60%, #0033cc 100%)" }} />
 
       {/* ── HUD bar ── */}
-      <div className="flex items-stretch" style={{ height: 28 }}>
-
-        {/* Red name */}
+      <div
+        className="flex items-stretch relative"
+        style={{
+          height: 30,
+          /* subtle scanline overlay */
+          backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,0.18) 1px, rgba(0,0,0,0.18) 2px)",
+        }}
+      >
+        {/* Red name area */}
         <div
           className="flex-1 flex items-center justify-end min-w-0 overflow-hidden"
-          style={{ paddingRight: 8, background: "linear-gradient(90deg, #000 50%, rgba(160,10,10,0.22))" }}
+          style={{
+            paddingRight: 7,
+            background: "linear-gradient(90deg, #000 40%, rgba(140,0,0,0.28) 100%)",
+          }}
         >
           <motion.span
             className="font-black uppercase truncate"
-            style={{
-              ...TEKO,
-              fontSize: 17,
-              letterSpacing: "0.1em",
-              lineHeight: 1,
-              color: "#fff",
-              textShadow: leading === "red"
-                ? "-3px 0 #ff0000, 3px 0 rgba(255,180,180,0.9), 0 0 18px rgba(255,30,30,0.6)"
-                : "-1px 0 rgba(200,20,20,0.55), 1px 0 rgba(255,255,255,0.5)",
-            }}
-            animate={leading === "red" ? { opacity: [1, 0.8, 1] } : { opacity: 1 }}
-            transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+            style={nameStyle("red", leading === "red")}
+            animate={leading === "red" ? { opacity: [1, 0.78, 1] } : { opacity: 1 }}
+            transition={{ duration: 1.3, repeat: Infinity, ease: "easeInOut" }}
           >
             {redUsername}
           </motion.span>
         </div>
 
-        {/* RED corner block — flat solid, hard cut */}
+        {/* RED corner block */}
         <div
           className="flex items-center justify-center shrink-0"
-          style={{ width: 36, background: "#cc1010" }}
+          style={{
+            width: 38,
+            background: "#cc0000",
+            boxShadow: "inset 0 1px 0 rgba(255,100,100,0.3), 2px 0 12px rgba(200,0,0,0.4)",
+          }}
         >
-          <span style={{ ...TEKO, fontSize: 11, fontWeight: 900, letterSpacing: "0.18em", color: "#fff" }}>
+          <span style={{ ...TEKO, fontSize: 11, fontWeight: 900, letterSpacing: "0.2em", color: "#fff" }}>
             RED
           </span>
         </div>
 
-        {/* Center — score */}
+        {/* Center score */}
         <div
           className="flex items-center justify-center shrink-0"
-          style={{ minWidth: 52, background: "#070707", borderLeft: "1px solid rgba(255,255,255,0.06)", borderRight: "1px solid rgba(255,255,255,0.06)" }}
+          style={{
+            minWidth: 56,
+            background: "#080808",
+            borderLeft: "1px solid rgba(255,255,255,0.05)",
+            borderRight: "1px solid rgba(255,255,255,0.05)",
+          }}
         >
           {total > 0 ? (
-            <div className="flex items-baseline gap-[4px] leading-none">
-              <span style={{ ...TEKO, fontSize: 17, fontWeight: 900, color: "#f87171", letterSpacing: "0.02em" }}>
+            <div className="flex items-baseline gap-[5px]">
+              <span style={{ ...TEKO, fontSize: 18, fontWeight: 900, color: "#ff4444", letterSpacing: "0.02em", lineHeight: 1 }}>
                 {redVotes}
               </span>
-              <span style={{ ...TEKO, fontSize: 11, color: "rgba(255,255,255,0.18)", fontWeight: 900 }}>–</span>
-              <span style={{ ...TEKO, fontSize: 17, fontWeight: 900, color: "#60a5fa", letterSpacing: "0.02em" }}>
+              <span style={{ ...TEKO, fontSize: 12, color: "rgba(255,255,255,0.2)", fontWeight: 900, lineHeight: 1 }}>–</span>
+              <span style={{ ...TEKO, fontSize: 18, fontWeight: 900, color: "#4488ff", letterSpacing: "0.02em", lineHeight: 1 }}>
                 {blueVotes}
               </span>
             </div>
           ) : (
-            <span style={{ ...TEKO, fontSize: 15, fontWeight: 900, color: "rgba(255,255,255,0.18)", letterSpacing: "0.3em" }}>
+            <span style={{ ...TEKO, fontSize: 14, fontWeight: 900, color: "rgba(255,255,255,0.15)", letterSpacing: "0.32em", lineHeight: 1 }}>
               VS
             </span>
           )}
         </div>
 
-        {/* BLUE corner block — flat solid, hard cut */}
+        {/* BLUE corner block */}
         <div
           className="flex items-center justify-center shrink-0"
-          style={{ width: 36, background: "#1040cc" }}
+          style={{
+            width: 38,
+            background: "#0033cc",
+            boxShadow: "inset 0 1px 0 rgba(100,150,255,0.3), -2px 0 12px rgba(0,50,200,0.4)",
+          }}
         >
-          <span style={{ ...TEKO, fontSize: 11, fontWeight: 900, letterSpacing: "0.18em", color: "#fff" }}>
+          <span style={{ ...TEKO, fontSize: 11, fontWeight: 900, letterSpacing: "0.2em", color: "#fff" }}>
             BLUE
           </span>
         </div>
 
-        {/* Blue name */}
+        {/* Blue name area */}
         <div
           className="flex-1 flex items-center min-w-0 overflow-hidden"
-          style={{ paddingLeft: 8, background: "linear-gradient(270deg, #000 50%, rgba(10,40,180,0.22))" }}
+          style={{
+            paddingLeft: 7,
+            background: "linear-gradient(270deg, #000 40%, rgba(0,30,140,0.28) 100%)",
+          }}
         >
           <motion.span
             className="font-black uppercase truncate"
-            style={{
-              ...TEKO,
-              fontSize: 17,
-              letterSpacing: "0.1em",
-              lineHeight: 1,
-              color: "#fff",
-              textShadow: leading === "blue"
-                ? "3px 0 #0044ff, -3px 0 rgba(160,200,255,0.9), 0 0 18px rgba(30,80,255,0.6)"
-                : "1px 0 rgba(20,60,210,0.55), -1px 0 rgba(255,255,255,0.5)",
-            }}
-            animate={leading === "blue" ? { opacity: [1, 0.8, 1] } : { opacity: 1 }}
-            transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+            style={nameStyle("blue", leading === "blue")}
+            animate={leading === "blue" ? { opacity: [1, 0.78, 1] } : { opacity: 1 }}
+            transition={{ duration: 1.3, repeat: Infinity, ease: "easeInOut" }}
           >
             {blueUsername}
           </motion.span>
         </div>
       </div>
 
-      {/* ── Vote split bar ── */}
+      {/* Vote split bar */}
       <div className="flex w-full" style={{ height: 2 }}>
         <motion.div
-          style={{ background: "#cc1010", height: "100%" }}
+          style={{ background: "#cc0000", height: "100%" }}
           animate={{ width: `${redPct}%` }}
           transition={{ duration: 0.7, ease: "easeOut" }}
         />
-        <div className="flex-1" style={{ background: "#1040cc", height: "100%" }} />
+        <div className="flex-1" style={{ background: "#0033cc", height: "100%" }} />
       </div>
     </div>
   );
