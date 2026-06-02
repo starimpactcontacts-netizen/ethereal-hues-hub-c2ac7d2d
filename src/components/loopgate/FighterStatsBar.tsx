@@ -91,15 +91,9 @@ export default function FighterStatsBar({ redUserId, blueUserId }: Props) {
   return (
     <div
       className="flex items-stretch w-full"
-      style={{ background: '#0a0a0a', borderTop: '1px solid rgba(255,255,255,0.04)', height: 44 }}
+      style={{ background: '#0a0a0a', borderTop: '1px solid rgba(255,255,255,0.04)', height: 32 }}
     >
       <Side stats={red} accentColor="#ef4444" align="left" />
-
-      {/* Center divider — thin line only */}
-      <div
-        className="shrink-0"
-        style={{ width: 1, background: 'rgba(255,255,255,0.06)' }}
-      />
 
       <Side stats={blue} accentColor="#3b82f6" align="right" />
     </div>
