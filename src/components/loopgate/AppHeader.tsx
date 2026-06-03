@@ -55,7 +55,7 @@ const SIM_WHITELIST = ['guestvipe'];
 export default function AppHeader() {
   const { user, profile, signOut, isAdmin, hasOpsAccess } = useAuth();
   const { roles, isJudge, isDev } = useUserRoles(user?.id);
-  const showSimLink = hasOpsAccess || SIM_WHITELIST.includes(profile?.username ?? '');
+  const showSimLink = hasOpsAccess || SIM_WHITELIST.some(u => u.toLowerCase() === (profile?.username ?? '').toLowerCase());
   const [userRank, setUserRank] = useState<number | string>('—');
   useEffect(() => {
     if (!profile?.id) return;

@@ -214,7 +214,7 @@ function LeagueSelect({ value, onChange }: { value: League; onChange: (v: League
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function BattleSimPage() {
   const { profile, hasOpsAccess } = useAuth();
-  const canAccess = hasOpsAccess || SIM_WHITELIST.includes(profile?.username ?? '');
+  const canAccess = hasOpsAccess || SIM_WHITELIST.some(u => u.toLowerCase() === (profile?.username ?? '').toLowerCase());
   if (!canAccess) return <Navigate to="/404" replace />;
 
   const [cfg, setCfg] = useState<SimCfg>(DEFAULT);
