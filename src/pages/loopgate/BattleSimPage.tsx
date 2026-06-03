@@ -244,7 +244,7 @@ export default function BattleSimPage() {
   const hasVideos = cfg.red.videoUrl.trim() && cfg.blue.videoUrl.trim();
 
   return (
-    <div className="min-h-screen pb-20" style={{ background: '#080808', color: '#fff' }}>
+    <div className="h-full overflow-y-auto overscroll-contain pb-32" style={{ background: '#080808', color: '#fff', WebkitOverflowScrolling: 'touch' }}>
 
       {/* ── Header ── */}
       <div className="flex items-center gap-3 px-4 py-3 sticky top-0 z-50" style={{ background: '#080808', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
