@@ -47,6 +47,7 @@ export default function ShopPage() {
         .from("shop_items")
         .select("id, name, description, category, price, rarity, is_active")
         .eq("is_active", true)
+        .eq("category", "aura")
         .order("price", { ascending: true });
 
       if (shopData) setItems(shopData as ShopItem[]);
@@ -107,9 +108,7 @@ export default function ShopPage() {
     setBuying(null);
   };
 
-  // Group items by category
-  const auras = items.filter((i) => i.category === "aura");
-  const other = items.filter((i) => i.category !== "aura");
+  const auras = items;
 
   return (
     <div className="min-h-screen pb-24" style={{ background: "#080808", color: "#fff" }}>
@@ -169,30 +168,7 @@ export default function ShopPage() {
             </section>
           )}
 
-          {/* ── Other items ── */}
-          {other.length > 0 && (
-            <section>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="h-px flex-1" style={{ background: "rgba(255,255,255,0.06)" }} />
-                <span style={{ ...TEKO, fontSize: 11, fontWeight: 900, letterSpacing: "0.28em", color: "rgba(255,255,255,0.3)" }}>ITEMS</span>
-                <div className="h-px flex-1" style={{ background: "rgba(255,255,255,0.06)" }} />
-              </div>
-              <div className="space-y-3">
-                {other.map((item) => (
-                  <GenericCard
-                    key={item.id}
-                    item={item}
-                    owned={!!owned[item.id]}
-                    rings={rings}
-                    buying={buying === item.id}
-                    onBuy={() => handleBuy(item)}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {items.length === 0 && (
+          {auras.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
               <ShoppingBag className="w-10 h-10 text-zinc-700" strokeWidth={1.5} />
               <p className="text-zinc-600 text-sm">No items available right now</p>
@@ -292,50 +268,3 @@ function AuraCard({ item, owned, rings, buying, onBuy }: {
   );
 }
 
-// ── Generic item card ─────────────────────────────────────────────────────────
-function GenericCard({ item, owned, rings, buying, onBuy }: {
-  item: ShopItem; owned: boolean; rings: number; buying: boolean; onBuy: () => void;
-}) {
-  const rarity = RARITY_CFG[item.rarity] || RARITY_CFG.common;
-  const canAfford = rings >= item.price;
-
-  return (
-    <motion.div
-      whileTap={{ scale: 0.985 }}
-      className="relative overflow-hidden p-4"
-      style={{ background: "#0e0e0e", border: `1px solid ${rarity.color}33` }}
-    >
-      <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: rarity.color, opacity: 0.6 }} />
-      <div className="flex items-start justify-between gap-3 pt-1">
-        <div className="flex-1 min-w-0">
-          <p className="font-black tracking-wide text-white text-sm mb-0.5">{item.name}</p>
-          <span className="text-[9px] font-black tracking-[0.18em] uppercase mb-2 block" style={{ color: rarity.color }}>{rarity.label}</span>
-          {item.description && <p className="text-[11px] text-zinc-500 leading-relaxed">{item.description}</p>}
-        </div>
-        <div className="shrink-0 flex flex-col items-end gap-2">
-          {!owned && (
-            <div className="flex items-center gap-1">
-              <RingsCoin size={13} />
-              <span style={{ ...TEKO, fontSize: 16, fontWeight: 900, color: canAfford ? "#FFD060" : "#71717a" }}>
-                {item.price.toLocaleString()}
-              </span>
-            </div>
-          )}
-          <button
-            onClick={onBuy}
-            disabled={buying || (!owned && !canAfford)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase tracking-widest transition-all disabled:opacity-40"
-            style={{
-              background: owned ? "rgba(34,197,94,0.12)" : canAfford ? rarity.color + "22" : "rgba(255,255,255,0.04)",
-              border: `1px solid ${owned ? "rgba(34,197,94,0.4)" : canAfford ? rarity.color + "55" : "rgba(255,255,255,0.08)"}`,
-              color: owned ? "#22c55e" : canAfford ? rarity.color : "#71717a",
-            }}
-          >
-            {buying ? <Loader2 className="w-3 h-3 animate-spin" /> : owned ? <Check className="w-3 h-3" /> : null}
-            {buying ? "..." : owned ? "OWNED" : "BUY"}
-          </button>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
