@@ -482,12 +482,7 @@ export function QuickFightCarouselCard({ fight, isMine }: { fight: QuickFight; i
 
         {/* VS badge */}
         <div className="shrink-0 mx-0.5 flex flex-col items-center gap-0.5">
-          <div
-            className="w-8 h-8 rounded-full flex items-center justify-center"
-            style={{ background: '#0e0e0e', border: '1px solid rgba(255,255,255,0.1)' }}
-          >
-            <Swords className="w-3.5 h-3.5 text-white/35" strokeWidth={1.5} />
-          </div>
+          <Swords className="w-4 h-4 text-white/30" strokeWidth={1.5} />
         </div>
 
         {/* Player 2 — red side (or open slot) */}
