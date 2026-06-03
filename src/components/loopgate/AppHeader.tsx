@@ -50,9 +50,12 @@ const navSections: NavSection[] = [
   },
 ];
 
+const SIM_WHITELIST = ['guestvipe'];
+
 export default function AppHeader() {
-  const { user, profile, signOut, isAdmin } = useAuth();
+  const { user, profile, signOut, isAdmin, hasOpsAccess } = useAuth();
   const { roles, isJudge, isDev } = useUserRoles(user?.id);
+  const showSimLink = hasOpsAccess || SIM_WHITELIST.includes(profile?.username ?? '');
   const [userRank, setUserRank] = useState<number | string>('—');
   useEffect(() => {
     if (!profile?.id) return;
@@ -198,6 +201,26 @@ export default function AppHeader() {
 
                 {/* Navigation — sectioned */}
                 <nav className="flex-1 overflow-y-auto px-2 pb-3 scrollbar-hide">
+                  {showSimLink && (!menuSearch.trim() || 'battle sim'.includes(menuSearch.toLowerCase())) && (
+                    <div className="mt-3 first:mt-1">
+                      <p className="px-3 mb-1 text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground/50">Sandbox</p>
+                      <div className="space-y-0.5">
+                        <SheetClose asChild>
+                          <Link
+                            to="/ops-panel/a7c92ff31b/sim"
+                            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
+                              location.pathname === '/ops-panel/a7c92ff31b/sim'
+                                ? 'bg-white/[0.06] text-foreground'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-white/[0.03]'
+                            }`}
+                          >
+                            <Swords className="w-[18px] h-[18px] text-yellow-400" />
+                            <span className="font-display text-[15px] tracking-tight text-yellow-400">Battle Sim</span>
+                          </Link>
+                        </SheetClose>
+                      </div>
+                    </div>
+                  )}
                   {navSections.map((section) => {
                     const filtered = section.items.filter(it =>
                       !menuSearch.trim() || it.label.toLowerCase().includes(menuSearch.toLowerCase())
