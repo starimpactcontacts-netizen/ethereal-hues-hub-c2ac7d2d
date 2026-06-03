@@ -8,6 +8,7 @@ import SEO from "@/components/SEO";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import AuthorityBadge from "@/components/loopgate/AuthorityBadge";
 import FoundingBadge from "@/components/loopgate/FoundingBadge";
+import AuraUsername from "@/components/loopgate/AuraUsername";
 import CrewBadge from "@/components/loopgate/CrewBadge";
 import LevelBadge from "@/components/loopgate/LevelBadge";
 import ArchetypeBadge from "@/components/loopgate/ArchetypeBadge";
@@ -96,7 +97,7 @@ export default function PublicProfilePage() {
    const [isJudge, setIsJudge] = useState(false);
    const [realStats, setRealStats] = useState<{ totalEvents: number; winRate: number; totalWins: number }>({ totalEvents: 0, winRate: 0, totalWins: 0 });
    const [realConnectionCount, setRealConnectionCount] = useState(0);
-  const { hasEquippedOG } = useEquippedBadges(resolvedUserId || undefined);
+  const { hasEquippedOG, equippedAura } = useEquippedBadges(resolvedUserId || undefined);
 
   useEffect(() => {
     if (!userId) return;
@@ -422,7 +423,11 @@ export default function PublicProfilePage() {
 
             {/* Name + badges */}
             <div className="flex items-center gap-1.5 mb-0.5 flex-wrap justify-center">
-              <h1 className="font-display text-lg tracking-wide leading-none">{profile.display_name || profile.username}</h1>
+              <AuraUsername
+                username={profile.display_name || profile.username}
+                aura={equippedAura}
+                className="font-display text-lg tracking-wide leading-none"
+              />
               {profile.level > 1 && <LevelBadge level={profile.level} size="sm" />}
               {profile.verification_status && <VerifiedBadge size="md" />}
               {authorityRole && <AuthorityBadge role={authorityRole} size="md" />}

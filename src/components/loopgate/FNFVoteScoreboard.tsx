@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
+import { AURA_CFG, type AuraSlug } from "@/components/loopgate/AuraUsername";
 
 const TEKO = { fontFamily: "Teko, sans-serif" };
 
@@ -15,9 +16,8 @@ interface Props {
   activeSide?: "red" | "blue" | null;
 }
 
-// Chromatic aberration: always-on RGB split, leader gets extra intensity + glow
-function nameStyle(side: "red" | "blue", isLeading: boolean) {
-  const base = {
+function nameStyle(side: "red" | "blue", isLeading: boolean, aura?: string | null): React.CSSProperties {
+  const base: React.CSSProperties = {
     ...TEKO,
     fontSize: 18,
     fontWeight: 900,
@@ -25,6 +25,10 @@ function nameStyle(side: "red" | "blue", isLeading: boolean) {
     lineHeight: 1,
     color: "#fff",
   };
+  if (aura && AURA_CFG[aura as AuraSlug]) {
+    const cfg = AURA_CFG[aura as AuraSlug];
+    return { ...base, animation: cfg.animation, ...(cfg.color ? { color: cfg.color } : {}) };
+  }
   if (side === "red") {
     return {
       ...base,
@@ -42,14 +46,12 @@ function nameStyle(side: "red" | "blue", isLeading: boolean) {
 }
 
 export default function FNFVoteScoreboard({
-  fightId,
-  redUserId,
-  blueUserId,
-  redUsername,
-  blueUsername,
+  fightId, redUserId, blueUserId, redUsername, blueUsername,
 }: Props) {
   const [redVotes, setRedVotes] = useState(0);
   const [blueVotes, setBlueVotes] = useState(0);
+  const [redAura, setRedAura] = useState<string | null>(null);
+  const [blueAura, setBlueAura] = useState<string | null>(null);
 
   useEffect(() => {
     if (!fightId) return;
@@ -70,14 +72,26 @@ export default function FNFVoteScoreboard({
     fetchVotes();
     const ch = supabase
       .channel(`fnf_votes_${fightId}`)
-      .on("postgres_changes", {
-        event: "*", schema: "public",
-        table: "quick_fight_votes",
-        filter: `fight_id=eq.${fightId}`,
-      }, fetchVotes)
+      .on("postgres_changes", { event: "*", schema: "public", table: "quick_fight_votes", filter: `fight_id=eq.${fightId}` }, fetchVotes)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [fightId, redUserId, blueUserId]);
+
+  // Fetch equipped auras for both players
+  useEffect(() => {
+    if (!redUserId && !blueUserId) return;
+    supabase
+      .from("profiles")
+      .select("id, equipped_aura")
+      .in("id", [redUserId, blueUserId].filter(Boolean))
+      .then(({ data }) => {
+        if (!data) return;
+        for (const p of data) {
+          if (p.id === redUserId) setRedAura((p as any).equipped_aura ?? null);
+          if (p.id === blueUserId) setBlueAura((p as any).equipped_aura ?? null);
+        }
+      });
+  }, [redUserId, blueUserId]);
 
   const total = redVotes + blueVotes;
   const leading: "red" | "blue" | null =
@@ -86,103 +100,55 @@ export default function FNFVoteScoreboard({
 
   return (
     <div className="w-full select-none bg-background">
-      {/* Broadcast top edge — hard red|white|blue line */}
       <div className="w-full" style={{ height: 2, background: "linear-gradient(90deg, #cc0000 0%, #cc0000 40%, rgba(255,255,255,0.15) 50%, #0033cc 60%, #0033cc 100%)" }} />
 
-      {/* ── HUD bar ── */}
       <div
         className="flex items-stretch relative"
-        style={{
-          height: 30,
-          /* subtle scanline overlay */
-          backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,0.18) 1px, rgba(0,0,0,0.18) 2px)",
-        }}
+        style={{ height: 30, backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,0.18) 1px, rgba(0,0,0,0.18) 2px)" }}
       >
-        {/* Red name area */}
-        <div
-          className="flex-1 flex items-center justify-end min-w-0 overflow-hidden"
-          style={{
-            paddingRight: 7,
-            background: "linear-gradient(90deg, hsl(var(--background)) 40%, rgba(140,0,0,0.28) 100%)",
-          }}
-        >
+        {/* Red name */}
+        <div className="flex-1 flex items-center justify-end min-w-0 overflow-hidden"
+          style={{ paddingRight: 7, background: "linear-gradient(90deg, hsl(var(--background)) 40%, rgba(140,0,0,0.28) 100%)" }}>
           <motion.span
             className="font-black uppercase truncate"
-            style={nameStyle("red", leading === "red")}
-            animate={leading === "red" ? { opacity: [1, 0.78, 1] } : { opacity: 1 }}
+            style={nameStyle("red", leading === "red", redAura)}
+            animate={!redAura && leading === "red" ? { opacity: [1, 0.78, 1] } : { opacity: 1 }}
             transition={{ duration: 1.3, repeat: Infinity, ease: "easeInOut" }}
           >
             {redUsername}
           </motion.span>
         </div>
 
-        {/* RED corner block */}
-        <div
-          className="flex items-center justify-center shrink-0"
-          style={{
-            width: 38,
-            background: "#cc0000",
-            boxShadow: "inset 0 1px 0 rgba(255,100,100,0.3), 2px 0 12px rgba(200,0,0,0.4)",
-          }}
-        >
-          <span style={{ ...TEKO, fontSize: 11, fontWeight: 900, letterSpacing: "0.2em", color: "#fff" }}>
-            RED
-          </span>
+        <div className="flex items-center justify-center shrink-0"
+          style={{ width: 38, background: "#cc0000", boxShadow: "inset 0 1px 0 rgba(255,100,100,0.3), 2px 0 12px rgba(200,0,0,0.4)" }}>
+          <span style={{ ...TEKO, fontSize: 11, fontWeight: 900, letterSpacing: "0.2em", color: "#fff" }}>RED</span>
         </div>
 
-        {/* Center score */}
-        <div
-          className="flex items-center justify-center shrink-0"
-          style={{
-            minWidth: 56,
-            background: "hsl(var(--background))",
-            borderLeft: "1px solid rgba(255,255,255,0.05)",
-            borderRight: "1px solid rgba(255,255,255,0.05)",
-          }}
-        >
+        <div className="flex items-center justify-center shrink-0"
+          style={{ minWidth: 56, background: "hsl(var(--background))", borderLeft: "1px solid rgba(255,255,255,0.05)", borderRight: "1px solid rgba(255,255,255,0.05)" }}>
           {total > 0 ? (
             <div className="flex items-baseline gap-[5px]">
-              <span style={{ ...TEKO, fontSize: 18, fontWeight: 900, color: "#ff4444", letterSpacing: "0.02em", lineHeight: 1 }}>
-                {redVotes}
-              </span>
+              <span style={{ ...TEKO, fontSize: 18, fontWeight: 900, color: "#ff4444", letterSpacing: "0.02em", lineHeight: 1 }}>{redVotes}</span>
               <span style={{ ...TEKO, fontSize: 12, color: "rgba(255,255,255,0.2)", fontWeight: 900, lineHeight: 1 }}>–</span>
-              <span style={{ ...TEKO, fontSize: 18, fontWeight: 900, color: "#4488ff", letterSpacing: "0.02em", lineHeight: 1 }}>
-                {blueVotes}
-              </span>
+              <span style={{ ...TEKO, fontSize: 18, fontWeight: 900, color: "#4488ff", letterSpacing: "0.02em", lineHeight: 1 }}>{blueVotes}</span>
             </div>
           ) : (
-            <span style={{ ...TEKO, fontSize: 14, fontWeight: 900, color: "rgba(255,255,255,0.15)", letterSpacing: "0.32em", lineHeight: 1 }}>
-              VS
-            </span>
+            <span style={{ ...TEKO, fontSize: 14, fontWeight: 900, color: "rgba(255,255,255,0.15)", letterSpacing: "0.32em", lineHeight: 1 }}>VS</span>
           )}
         </div>
 
-        {/* BLUE corner block */}
-        <div
-          className="flex items-center justify-center shrink-0"
-          style={{
-            width: 38,
-            background: "#0033cc",
-            boxShadow: "inset 0 1px 0 rgba(100,150,255,0.3), -2px 0 12px rgba(0,50,200,0.4)",
-          }}
-        >
-          <span style={{ ...TEKO, fontSize: 11, fontWeight: 900, letterSpacing: "0.2em", color: "#fff" }}>
-            BLUE
-          </span>
+        <div className="flex items-center justify-center shrink-0"
+          style={{ width: 38, background: "#0033cc", boxShadow: "inset 0 1px 0 rgba(100,150,255,0.3), -2px 0 12px rgba(0,50,200,0.4)" }}>
+          <span style={{ ...TEKO, fontSize: 11, fontWeight: 900, letterSpacing: "0.2em", color: "#fff" }}>BLUE</span>
         </div>
 
-        {/* Blue name area */}
-        <div
-          className="flex-1 flex items-center min-w-0 overflow-hidden"
-          style={{
-            paddingLeft: 7,
-            background: "linear-gradient(270deg, hsl(var(--background)) 40%, rgba(0,30,140,0.28) 100%)",
-          }}
-        >
+        {/* Blue name */}
+        <div className="flex-1 flex items-center min-w-0 overflow-hidden"
+          style={{ paddingLeft: 7, background: "linear-gradient(270deg, hsl(var(--background)) 40%, rgba(0,30,140,0.28) 100%)" }}>
           <motion.span
             className="font-black uppercase truncate"
-            style={nameStyle("blue", leading === "blue")}
-            animate={leading === "blue" ? { opacity: [1, 0.78, 1] } : { opacity: 1 }}
+            style={nameStyle("blue", leading === "blue", blueAura)}
+            animate={!blueAura && leading === "blue" ? { opacity: [1, 0.78, 1] } : { opacity: 1 }}
             transition={{ duration: 1.3, repeat: Infinity, ease: "easeInOut" }}
           >
             {blueUsername}
@@ -190,13 +156,8 @@ export default function FNFVoteScoreboard({
         </div>
       </div>
 
-      {/* Vote split bar */}
       <div className="flex w-full" style={{ height: 2 }}>
-        <motion.div
-          style={{ background: "#cc0000", height: "100%" }}
-          animate={{ width: `${redPct}%` }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
-        />
+        <motion.div style={{ background: "#cc0000", height: "100%" }} animate={{ width: `${redPct}%` }} transition={{ duration: 0.7, ease: "easeOut" }} />
         <div className="flex-1" style={{ background: "#0033cc", height: "100%" }} />
       </div>
     </div>

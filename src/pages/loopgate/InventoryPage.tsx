@@ -80,6 +80,15 @@ export default function InventoryPage() {
           .update({ is_founding_member: newState } as any)
           .eq("id", user.id);
       }
+
+      // Sync equipped_aura on profile when toggling aura items
+      const AURA_NAMES = ['SPECTER', 'HELLFIRE', 'SOVEREIGN'];
+      if (AURA_NAMES.includes(purchase.item.name)) {
+        await supabase
+          .from("profiles")
+          .update({ equipped_aura: newState ? purchase.item.name.toLowerCase() : null } as any)
+          .eq("id", user.id);
+      }
     }
     setToggling(null);
   };

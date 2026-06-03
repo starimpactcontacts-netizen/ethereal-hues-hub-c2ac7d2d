@@ -473,3 +473,42 @@ body.battle-modal-open [data-mobile-topbar],
 body.battle-modal-open [data-bottom-nav] {
   display: none !important;
 }
+
+/* ── Aura name-tag animations ─────────────────────────────────────────────── */
+
+/* SPECTER — ghostly blue-white flicker */
+@keyframes aura-specter {
+  0%, 100% {
+    text-shadow: 0 0 10px rgba(150,210,255,0.9), 0 0 26px rgba(120,185,255,0.55), 0 0 52px rgba(100,165,255,0.22);
+    opacity: 1;
+  }
+  50% {
+    text-shadow: 0 0 6px rgba(150,210,255,0.5), 0 0 14px rgba(120,185,255,0.3);
+    opacity: 0.8;
+  }
+}
+
+/* HELLFIRE — volatile red-orange flame */
+@keyframes aura-hellfire {
+  0%, 100% {
+    text-shadow: 0 0 8px #ff4400, 0 0 20px rgba(255,90,0,0.72), 0 0 42px rgba(255,40,0,0.32);
+  }
+  35% {
+    text-shadow: 0 0 14px #ff6600, 0 0 30px rgba(255,130,0,0.82), 0 0 58px rgba(255,60,0,0.4);
+  }
+  65% {
+    text-shadow: 0 0 5px #ff2200, 0 0 13px rgba(255,65,0,0.58), 0 0 28px rgba(255,25,0,0.2);
+  }
+}
+
+/* SOVEREIGN — regal gold shimmer */
+@keyframes aura-sovereign {
+  0%, 100% {
+    text-shadow: 0 0 10px rgba(255,198,48,0.72), 0 0 26px rgba(255,172,0,0.42);
+    color: #fff;
+  }
+  50% {
+    text-shadow: 0 0 18px rgba(255,225,80,0.96), 0 0 42px rgba(255,198,30,0.68), 0 0 72px rgba(255,155,0,0.28);
+    color: #ffe566;
+  }
+}
