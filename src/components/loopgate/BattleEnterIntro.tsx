@@ -67,13 +67,13 @@ export default function BattleEnterIntro({ redUsername, blueUsername, onDone }: 
           {/* ── Horizontal accent lines ── */}
           <motion.div className="absolute left-0 right-0"
             initial={{ scaleX: 0 }} animate={{ scaleX: 1 }}
-            transition={{ delay: 0.22, duration: 0.25, ease: 'easeOut', originX: 0 }}
-            style={{ top: '40%', height: 1.5, background: 'linear-gradient(90deg,#cc0000 0%,rgba(200,0,0,0) 60%)' }}
+            transition={{ delay: 0.22, duration: 0.25, ease: 'easeOut' }}
+            style={{ top: '40%', height: 1.5, originX: 0, background: 'linear-gradient(90deg,#cc0000 0%,rgba(200,0,0,0) 60%)' }}
           />
           <motion.div className="absolute left-0 right-0"
             initial={{ scaleX: 0 }} animate={{ scaleX: 1 }}
-            transition={{ delay: 0.22, duration: 0.25, ease: 'easeOut', originX: '100%' }}
-            style={{ top: '60%', height: 1.5, background: 'linear-gradient(270deg,#0033cc 0%,rgba(0,50,200,0) 60%)' }}
+            transition={{ delay: 0.22, duration: 0.25, ease: 'easeOut' }}
+            style={{ top: '60%', height: 1.5, originX: 1, background: 'linear-gradient(270deg,#0033cc 0%,rgba(0,50,200,0) 60%)' }}
           />
 
           {/* ── Center content ── */}
