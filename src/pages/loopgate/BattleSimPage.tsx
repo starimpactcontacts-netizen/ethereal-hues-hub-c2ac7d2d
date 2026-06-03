@@ -1,11 +1,15 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { ArrowLeft, ChevronDown, ChevronUp, Play, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import BattleEnterIntro from '@/components/loopgate/BattleEnterIntro';
 import BattleIntroOverlay from '@/components/loopgate/BattleIntroOverlay';
 import BattleAutoplayDuo from '@/components/loopgate/BattleAutoplayDuo';
 import FoundingBadge from '@/components/loopgate/FoundingBadge';
+import { useAuth } from '@/hooks/useAuth';
+
+// Usernames explicitly granted sim access (beyond ops users)
+const SIM_WHITELIST = ['guestvipe'];
 
 const TEKO = { fontFamily: 'Teko, sans-serif' };
 
@@ -209,6 +213,10 @@ function LeagueSelect({ value, onChange }: { value: League; onChange: (v: League
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function BattleSimPage() {
+  const { profile, hasOpsAccess } = useAuth();
+  const canAccess = hasOpsAccess || SIM_WHITELIST.includes(profile?.username ?? '');
+  if (!canAccess) return <Navigate to="/404" replace />;
+
   const [cfg, setCfg] = useState<SimCfg>(DEFAULT);
   const [configOpen, setConfigOpen] = useState(true);
 

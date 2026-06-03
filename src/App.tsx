@@ -441,9 +441,9 @@ export default function App() {
               </ProtectedRoute>
             } />
 
-            {/* Battle Simulator Sandbox - requires ops access */}
+            {/* Battle Simulator Sandbox - access controlled inside the page */}
             <Route path="/ops-panel/a7c92ff31b/sim" element={
-              <ProtectedRoute requireOpsAccess={true}>
+              <ProtectedRoute>
                 <BattleSimPage />
               </ProtectedRoute>
             } />
