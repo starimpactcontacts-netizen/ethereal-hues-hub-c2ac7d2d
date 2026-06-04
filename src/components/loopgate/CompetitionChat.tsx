@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import GifPicker from "./GifPicker";
+import AuraUsername from "./AuraUsername";
 
 interface Message {
   id: string;
@@ -29,6 +30,7 @@ export default function CompetitionChat({ competitionId, embedded = false }: { c
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
+  const [auraMap, setAuraMap] = useState<Record<string, string | null>>({});
   const [newMessage, setNewMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -52,8 +54,18 @@ export default function CompetitionChat({ competitionId, embedded = false }: { c
         .order('created_at', { ascending: true })
         .limit(200);
 
-      setMessages((data as unknown as Message[]) || []);
+      const msgs = (data as unknown as Message[]) || [];
+      setMessages(msgs);
       setLoading(false);
+      const ids = [...new Set(msgs.map(m => m.user_id))];
+      if (ids.length) {
+        const { data: profiles } = await supabase.from('profiles').select('id, equipped_aura').in('id', ids);
+        if (profiles) {
+          const map: Record<string, string | null> = {};
+          (profiles as any[]).forEach(p => { map[p.id] = p.equipped_aura ?? null; });
+          setAuraMap(map);
+        }
+      }
     };
 
     fetchMessages();
@@ -65,9 +77,17 @@ export default function CompetitionChat({ competitionId, embedded = false }: { c
         schema: 'public',
         table: 'competition_messages',
         filter: `competition_id=eq.${competitionId}`
-      }, (payload) => {
-        setMessages(prev => [...prev, payload.new as Message]);
+      }, async (payload) => {
+        const msg = payload.new as Message;
+        setMessages(prev => [...prev, msg]);
         if (!isAtBottom) setNewCount(c => c + 1);
+        setAuraMap(prev => {
+          if (msg.user_id in prev) return prev;
+          supabase.from('profiles').select('id, equipped_aura').eq('id', msg.user_id).maybeSingle().then(({ data: p }) => {
+            if (p) setAuraMap(m => ({ ...m, [p.id]: (p as any).equipped_aura ?? null }));
+          });
+          return prev;
+        });
       })
       .subscribe();
 
@@ -285,11 +305,12 @@ export default function CompetitionChat({ competitionId, embedded = false }: { c
                     <div className={`max-w-[75%] ${isOwn ? 'items-end' : 'items-start'} flex flex-col`}>
                       {/* Name + time */}
                       <div className={`flex items-center gap-2 mb-1 ${isOwn ? 'flex-row-reverse' : ''}`}>
-                        <button
-                          onClick={() => handleMention(msg.username)}
-                          className="text-[11px] font-bold text-foreground hover:text-red-400 transition-colors"
-                        >
-                          {msg.username}
+                        <button onClick={() => handleMention(msg.username)}>
+                          <AuraUsername
+                            username={msg.username}
+                            aura={auraMap[msg.user_id] ?? undefined}
+                            className="text-[11px] font-bold text-foreground hover:text-red-400 transition-colors"
+                          />
                         </button>
                         <span className="text-[9px] text-muted-foreground/50">{formatTime(msg.created_at)}</span>
                       </div>

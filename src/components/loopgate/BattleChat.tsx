@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import GifPicker from "./GifPicker";
 import ChatReplyBar from "./ChatReplyBar";
+import AuraUsername from "./AuraUsername";
 import { useNavigate } from "react-router-dom";
 
 interface BattleMessage {
@@ -44,6 +45,7 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
   const { profile, user } = useAuth();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<BattleMessage[]>([]);
+  const [auraMap, setAuraMap] = useState<Record<string, string | null>>({});
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -72,7 +74,18 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
       }
 
       const { data } = await query;
-      if (data) setMessages(data as BattleMessage[]);
+      if (data) {
+        setMessages(data as BattleMessage[]);
+        const ids = [...new Set((data as BattleMessage[]).map(m => m.user_id))];
+        if (ids.length) {
+          const { data: profiles } = await supabase.from('profiles').select('id, equipped_aura').in('id', ids);
+          if (profiles) {
+            const map: Record<string, string | null> = {};
+            (profiles as any[]).forEach(p => { map[p.id] = p.equipped_aura ?? null; });
+            setAuraMap(map);
+          }
+        }
+      }
     };
 
     fetchMessages();
@@ -87,10 +100,17 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
           table: "battle_messages",
           filter: `battle_id=eq.${battleId}`,
         },
-        (payload) => {
+        async (payload) => {
           const msg = payload.new as BattleMessage;
           if ((tab === "public" && msg.is_public) || (tab === "private" && !msg.is_public)) {
             setMessages((prev) => [...prev, msg]);
+            setAuraMap(prev => {
+              if (msg.user_id in prev) return prev;
+              supabase.from('profiles').select('id, equipped_aura').eq('id', msg.user_id).maybeSingle().then(({ data: p }) => {
+                if (p) setAuraMap(m => ({ ...m, [p.id]: (p as any).equipped_aura ?? null }));
+              });
+              return prev;
+            });
           }
         }
       )
@@ -311,11 +331,12 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
 
                   {/* Name line */}
                   <div className="flex items-baseline gap-2 mb-1 flex-wrap">
-                    <button
-                      onClick={() => handleMention(msg.username)}
-                      className={`text-[18px] font-bold leading-none hover:underline ${getNameColor(msg.user_id)}`}
-                    >
-                      @{msg.username}
+                    <button onClick={() => handleMention(msg.username)}>
+                      <AuraUsername
+                        username={`@${msg.username}`}
+                        aura={auraMap[msg.user_id] ?? undefined}
+                        className={`text-[18px] font-bold leading-none hover:underline ${getNameColor(msg.user_id)}`}
+                      />
                     </button>
                     {getBadge(msg.user_id)}
                     <span className="text-[13px] text-white/15 leading-none">{formatTime(msg.created_at)}</span>

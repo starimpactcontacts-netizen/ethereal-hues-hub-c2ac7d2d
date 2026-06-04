@@ -42,6 +42,8 @@ import ArenaCollabsSection from "@/components/loopgate/ArenaCollabsSection";
 import { startQuickMatch } from "@/lib/startQuickMatch";
 import CashBattlesSection from "@/components/loopgate/CashBattlesSection";
 import CustomLobbyTypeModal from "@/components/loopgate/CustomLobbyTypeModal";
+import AuraUsername from "@/components/loopgate/AuraUsername";
+import { useEquippedBadges } from "@/hooks/useEquippedBadges";
 import { useMyCashBattles } from "@/hooks/useCashBattles";
 import { ArenaRail, ArenaRailCard, ArenaRailSkeleton } from "@/components/loopgate/ArenaCarouselSystem";
 import { useMyCompetitionReminders } from "@/hooks/useMyCompetitionReminders";
@@ -525,6 +527,7 @@ function SectionHeader({ icon, title, badge, badgeColor = "text-emerald-400", ac
 
 export default function ArenaPage() {
   const { profile, user } = useAuth();
+  const { equippedAura } = useEquippedBadges(profile?.id);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [events, setEvents] = useState<Event[]>([]);
@@ -920,7 +923,7 @@ export default function ArenaPage() {
                         <AvatarFallback className="bg-white/5 text-white font-bold">{profile.username?.charAt(0).toUpperCase()}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[14px] font-black text-white truncate leading-tight">{profile.display_name || profile.username}</p>
+                        <AuraUsername username={profile.display_name || profile.username} aura={equippedAura} className="text-[14px] font-black text-white truncate leading-tight" />
                         <p className="text-[10px] text-white/35">@{profile.username}</p>
                       </div>
                       <Link
