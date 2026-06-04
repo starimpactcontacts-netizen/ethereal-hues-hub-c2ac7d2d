@@ -354,23 +354,54 @@ export default function CustomEditBattleLobby({
             </div>
           ) : isPrivate ? (
             <div className="space-y-2">
-              <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-white/35">
-                <Lock className="w-3 h-3" /> Code Required
-              </div>
-              <input
-                value={codeInput}
-                onChange={(e) => setCodeInput(e.target.value.toUpperCase().slice(0, 6))}
-                placeholder="ENTER CODE"
-                className="w-full h-[50px] border border-white/15 bg-white/[0.04] px-4 text-center text-[20px] font-black tracking-[0.4em] text-white placeholder:text-white/20 focus:outline-none focus:border-white/35"
-                style={{ fontFamily: "Teko, sans-serif" }}
-              />
-              <ArenaButton
-                onClick={() => onJoin(codeInput.trim())}
-                disabled={codeInput.trim().length < 4}
-                icon={<UserPlus className="w-5 h-5" />}
-                label="Accept Battle"
-                large
-              />
+              {/* If code came from URL, process silently — don't expose it on screen */}
+              {codeInput ? (
+                <>
+                  <ArenaButton
+                    onClick={() => onJoin(codeInput.trim())}
+                    icon={<Swords className="w-5 h-5" />}
+                    label="Accept Battle"
+                    large
+                  />
+                  <button
+                    onClick={async () => {
+                      if (!onReserve || reserving) return;
+                      setReserving(true);
+                      try { await onReserve(); } finally { setReserving(false); }
+                    }}
+                    disabled={reserving}
+                    className="w-full h-9 flex items-center justify-center gap-2 border border-white/10 bg-white/[0.02] active:scale-[0.98] transition-transform disabled:opacity-30"
+                  >
+                    <UserPlus className="w-3 h-3 text-white/45" />
+                    <span
+                      className="text-white/55 font-black uppercase leading-none"
+                      style={{ fontFamily: 'Teko, sans-serif', fontSize: 13, letterSpacing: '0.18em' }}
+                    >
+                      {reserving ? '…' : 'Join — Wait For Start'}
+                    </span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-white/35">
+                    <Lock className="w-3 h-3" /> Code Required
+                  </div>
+                  <input
+                    value={codeInput}
+                    onChange={(e) => setCodeInput(e.target.value.toUpperCase().slice(0, 6))}
+                    placeholder="ENTER CODE"
+                    className="w-full h-[50px] border border-white/15 bg-white/[0.04] px-4 text-center text-[20px] font-black tracking-[0.4em] text-white placeholder:text-white/20 focus:outline-none focus:border-white/35"
+                    style={{ fontFamily: "Teko, sans-serif" }}
+                  />
+                  <ArenaButton
+                    onClick={() => onJoin(codeInput.trim())}
+                    disabled={codeInput.trim().length < 4}
+                    icon={<UserPlus className="w-5 h-5" />}
+                    label="Accept Battle"
+                    large
+                  />
+                </>
+              )}
             </div>
           ) : !fight.player_2_id ? (
             /* Open slot — ACCEPT BATTLE primary, JOIN as small secondary below */
