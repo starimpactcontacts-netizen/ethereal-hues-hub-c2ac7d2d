@@ -271,7 +271,7 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.15 }}
-                className="group flex items-start gap-2.5 px-3 py-[5px] hover:bg-white/[0.02] transition-colors relative"
+                className="group flex items-start gap-3.5 px-4 py-3 hover:bg-white/[0.02] transition-colors relative"
                 style={{
                   borderLeft: isRed
                     ? "2px solid rgba(239,68,68,0.35)"
@@ -282,7 +282,7 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
               >
                 {/* Avatar */}
                 <div
-                  className="w-[22px] h-[22px] rounded-full shrink-0 mt-[1px] overflow-hidden flex items-center justify-center text-[8px] font-bold"
+                  className="w-[44px] h-[44px] rounded-full shrink-0 mt-[1px] overflow-hidden flex items-center justify-center text-[13px] font-bold"
                   style={{
                     background: isRed
                       ? "rgba(239,68,68,0.15)"
@@ -303,22 +303,22 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
                 <div className="flex-1 min-w-0">
                   {/* Reply context */}
                   {msg.reply_to_username && (
-                    <div className="flex items-center gap-1 mb-0.5 text-[9px] text-white/20 leading-none">
-                      <Reply className="w-2.5 h-2.5 rotate-180 shrink-0" />
+                    <div className="flex items-center gap-1 mb-1 text-[12px] text-white/20 leading-none">
+                      <Reply className="w-3.5 h-3.5 rotate-180 shrink-0" />
                       <span className="truncate">@{msg.reply_to_username}: {msg.reply_to_text}</span>
                     </div>
                   )}
 
                   {/* Name line */}
-                  <div className="flex items-baseline gap-1.5 mb-[2px] flex-wrap">
+                  <div className="flex items-baseline gap-2 mb-1 flex-wrap">
                     <button
                       onClick={() => handleMention(msg.username)}
-                      className={`text-[11px] font-bold leading-none hover:underline ${getNameColor(msg.user_id)}`}
+                      className={`text-[15px] font-bold leading-none hover:underline ${getNameColor(msg.user_id)}`}
                     >
                       @{msg.username}
                     </button>
                     {getBadge(msg.user_id)}
-                    <span className="text-[9px] text-white/15 leading-none">{formatTime(msg.created_at)}</span>
+                    <span className="text-[12px] text-white/15 leading-none">{formatTime(msg.created_at)}</span>
                   </div>
 
                   {/* Message / media */}
@@ -330,7 +330,7 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
                       loading="lazy"
                     />
                   ) : (
-                    <p className="text-[12px] text-white/65 break-words leading-snug">
+                    <p className="text-[18px] text-white/80 break-words leading-snug">
                       {renderText(msg.message_text)}
                     </p>
                   )}
