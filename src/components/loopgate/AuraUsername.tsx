@@ -3,7 +3,11 @@ import React from 'react';
 export type AuraSlug = 'specter' | 'hellfire' | 'sovereign';
 
 interface AuraCfg {
+  // gradient designed for 200% sweep: dark → bright gleam → dark
   gradient: string;
+  font: string;
+  fontWeight: number;
+  letterSpacing?: string;
   animation: string;
   labelColor: string;
   label: string;
@@ -11,21 +15,30 @@ interface AuraCfg {
 
 export const AURA_CFG: Record<AuraSlug, AuraCfg> = {
   specter: {
-    gradient: 'linear-gradient(90deg, #0a2a4a, #1a6ab5, #5bc8e8, #e0f8ff, #ffffff, #a8e4f8, #1a6ab5, #0a2a4a)',
-    animation: 'aura-specter 3s linear infinite',
-    labelColor: '#96d2ff',
+    gradient: 'linear-gradient(90deg, #0a1e3a 0%, #1a5fa0 20%, #5bc8e8 40%, #e8f8ff 50%, #5bc8e8 60%, #1a5fa0 80%, #0a1e3a 100%)',
+    font: "'Bebas Neue', 'Teko', sans-serif",
+    fontWeight: 400,
+    letterSpacing: '0.06em',
+    animation: 'aura-specter 2.8s ease-in-out infinite',
+    labelColor: '#5bc8e8',
     label: 'SPECTER',
   },
   hellfire: {
-    gradient: 'linear-gradient(90deg, #4a0000, #cc1100, #ff4400, #ff9900, #ffdd44, #ff6600, #cc1100, #4a0000)',
-    animation: 'aura-hellfire 1.1s linear infinite',
-    labelColor: '#ff6633',
+    gradient: 'linear-gradient(90deg, #2a0000 0%, #aa1800 20%, #ff4400 38%, #ffbb00 50%, #ff5500 62%, #aa1800 80%, #2a0000 100%)',
+    font: "'Anton', 'Teko', sans-serif",
+    fontWeight: 400,
+    letterSpacing: '0.03em',
+    animation: 'aura-hellfire 0.85s ease-in-out infinite',
+    labelColor: '#ff5500',
     label: 'HELLFIRE',
   },
   sovereign: {
-    gradient: 'linear-gradient(90deg, #3a2200, #a07010, #ffd700, #fffacd, #ffffff, #ffe87a, #ffd700, #a07010, #3a2200)',
-    animation: 'aura-sovereign 2.2s linear infinite',
-    labelColor: '#FFD060',
+    gradient: 'linear-gradient(90deg, #2a1800 0%, #a07010 20%, #ffd700 38%, #ffffff 50%, #ffd700 62%, #a07010 80%, #2a1800 100%)',
+    font: "'Teko', sans-serif",
+    fontWeight: 700,
+    letterSpacing: '0.1em',
+    animation: 'aura-sovereign 3.2s ease-in-out infinite',
+    labelColor: '#ffd700',
     label: 'SOVEREIGN',
   },
 };
@@ -47,12 +60,18 @@ export default function AuraUsername({ username, aura, style, className }: Props
       className={className}
       style={{
         background: cfg.gradient,
-        backgroundSize: '400% auto',
+        backgroundSize: '200% auto',
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
         backgroundClip: 'text',
         animation: cfg.animation,
+        fontFamily: cfg.font,
+        fontWeight: cfg.fontWeight,
+        letterSpacing: cfg.letterSpacing,
         display: 'inline-block',
+        // Force GPU compositing — fixes iOS Safari background-position animation
+        transform: 'translateZ(0)',
+        WebkitTransform: 'translateZ(0)',
         ...style,
       }}
     >
@@ -66,15 +85,18 @@ export function AuraPill({ aura }: { aura: string }) {
   if (!cfg) return null;
   return (
     <span
-      className="inline-flex items-center px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest select-none"
+      className="inline-flex items-center px-1.5 py-0.5 text-[9px] uppercase tracking-widest select-none"
       style={{
+        fontFamily: cfg.font,
+        fontWeight: cfg.fontWeight,
         background: cfg.gradient,
-        backgroundSize: '400% auto',
+        backgroundSize: '200% auto',
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
         backgroundClip: 'text',
         animation: cfg.animation,
         border: `1px solid ${cfg.labelColor}55`,
+        transform: 'translateZ(0)',
       }}
     >
       {cfg.label}
