@@ -1790,6 +1790,46 @@ export default function OpsPanel() {
   }
 
   // Shop: Create item with image upload
+  const [seedingAuras, setSeedingAuras] = useState(false);
+  async function handleSeedAuras() {
+    setSeedingAuras(true);
+    try {
+      const AURAS = [
+        { name: 'SPECTER',   description: 'Your name haunts the scoreboard — a ghostly blue-white flicker that pulses like a signal from the other side.', category: 'aura', item_type: 'cosmetic', price: 120000,   is_active: true, rarity: 'rare'      },
+        { name: 'HELLFIRE',  description: 'Your name burns. A volatile red-orange flame glow that flickers like your edits are straight up on fire.',    category: 'aura', item_type: 'cosmetic', price: 450000,   is_active: true, rarity: 'epic'      },
+        { name: 'SOVEREIGN', description: 'Gold shimmer. Reserved for those who run the game. Your name gleams like it already won.',                     category: 'aura', item_type: 'cosmetic', price: 2000000, is_active: true, rarity: 'legendary' },
+      ];
+
+      // Upsert auras (match on name)
+      for (const aura of AURAS) {
+        const { data: existing } = await supabase.from('shop_items').select('id').eq('name', aura.name).maybeSingle();
+        if (!existing) {
+          await supabase.from('shop_items').insert(aura as any);
+        }
+      }
+
+      // Gift to quinx
+      const { data: quinxProfile } = await supabase.from('profiles').select('id').ilike('username', 'quinx').maybeSingle();
+      if (quinxProfile) {
+        const { data: auraItems } = await supabase.from('shop_items').select('id').in('name', ['SPECTER','HELLFIRE','SOVEREIGN']);
+        if (auraItems) {
+          for (const item of auraItems) {
+            await supabase.from('shop_purchases').upsert({ user_id: quinxProfile.id, item_id: item.id, is_equipped: false } as any, { onConflict: 'user_id,item_id' });
+          }
+        }
+        toast.success('Auras seeded + gifted to @quinx!');
+      } else {
+        toast.success('Auras seeded! (quinx not found — check username)');
+      }
+
+      fetchData();
+    } catch (e) {
+      console.error(e);
+      toast.error('Seed failed');
+    }
+    setSeedingAuras(false);
+  }
+
   async function handleCreateShopItem() {
     if (!newItem.name || newItem.price <= 0) {
       toast.error('Please fill in item name and price');
@@ -3639,13 +3679,23 @@ export default function OpsPanel() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Items & Redemptions</p>
-            <button
-              onClick={() => setShowCreateItem(true)}
-              className="flex items-center gap-1 text-xs bg-gold text-black px-3 py-1.5 rounded-lg font-semibold"
-            >
-              <Plus size={14} />
-              Add Item
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleSeedAuras}
+                disabled={seedingAuras}
+                className="flex items-center gap-1 text-xs bg-purple-600 text-white px-3 py-1.5 rounded-lg font-semibold disabled:opacity-50"
+              >
+                <Zap size={14} />
+                {seedingAuras ? 'Seeding…' : 'Seed Auras'}
+              </button>
+              <button
+                onClick={() => setShowCreateItem(true)}
+                className="flex items-center gap-1 text-xs bg-gold text-black px-3 py-1.5 rounded-lg font-semibold"
+              >
+                <Plus size={14} />
+                Add Item
+              </button>
+            </div>
           </div>
 
           {/* Shop Items */}
