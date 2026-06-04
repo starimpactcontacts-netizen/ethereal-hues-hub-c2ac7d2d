@@ -1792,6 +1792,26 @@ export default function OpsPanel() {
   // Shop: Create item with image upload
   const [seedingAuras, setSeedingAuras] = useState(false);
   const [giftingRings, setGiftingRings] = useState(false);
+  const [fixingAura, setFixingAura] = useState(false);
+  async function handleFixQuinxAura() {
+    setFixingAura(true);
+    try {
+      const { data: quinxProfile } = await supabase.from('profiles').select('id').ilike('username', 'quinx').maybeSingle();
+      if (!quinxProfile) { toast.error('quinx not found'); setFixingAura(false); return; }
+      const qid = (quinxProfile as any).id;
+      const { data: auraItems } = await supabase.from('shop_items').select('id, name').in('name', ['SPECTER','HELLFIRE','SOVEREIGN']);
+      if (auraItems) {
+        for (const item of auraItems) {
+          const name = (item as any).name;
+          const equip = name === 'SPECTER' || name === 'HELLFIRE';
+          await supabase.from('shop_purchases').update({ is_equipped: equip } as any).eq('user_id', qid).eq('item_id', item.id);
+        }
+      }
+      await supabase.from('profiles').update({ equipped_aura: 'specter' } as any).eq('id', qid);
+      toast.success('@quinx SPECTER + HELLFIRE re-equipped!');
+    } catch (e) { toast.error('Fix failed'); }
+    setFixingAura(false);
+  }
   async function handleGiftQuinxRings() {
     setGiftingRings(true);
     try {
@@ -1823,19 +1843,19 @@ export default function OpsPanel() {
         }
       }
 
-      // Gift to quinx + auto-equip SOVEREIGN
+      // Gift to quinx — only INSERT, never overwrite existing equip state
       const { data: quinxProfile } = await supabase.from('profiles').select('id').ilike('username', 'quinx').maybeSingle();
       if (quinxProfile) {
         const { data: auraItems } = await supabase.from('shop_items').select('id, name').in('name', ['SPECTER','HELLFIRE','SOVEREIGN']);
         if (auraItems) {
           for (const item of auraItems) {
-            const equip = (item as any).name === 'SOVEREIGN';
-            await supabase.from('shop_purchases').upsert({ user_id: quinxProfile.id, item_id: item.id, is_equipped: equip } as any, { onConflict: 'user_id,item_id' });
+            await (supabase.from('shop_purchases') as any).upsert(
+              { user_id: quinxProfile.id, item_id: item.id, is_equipped: false },
+              { onConflict: 'user_id,item_id', ignoreDuplicates: true }
+            );
           }
         }
-        // Set equipped_aura on profile
-        await supabase.from('profiles').update({ equipped_aura: 'sovereign' } as any).eq('id', (quinxProfile as any).id);
-        toast.success('Auras seeded + SOVEREIGN equipped for @quinx!');
+        toast.success('Auras seeded for @quinx! (equip state preserved)');
       } else {
         toast.success('Auras seeded! (quinx not found — check username)');
       }
@@ -3705,6 +3725,14 @@ export default function OpsPanel() {
               >
                 <Zap size={14} />
                 {seedingAuras ? 'Seeding…' : 'Seed Auras'}
+              </button>
+              <button
+                onClick={handleFixQuinxAura}
+                disabled={fixingAura}
+                className="flex items-center gap-1 text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg font-semibold disabled:opacity-50"
+              >
+                <Zap size={14} />
+                {fixingAura ? 'Fixing…' : 'Fix Quinx Aura'}
               </button>
               <button
                 onClick={handleGiftQuinxRings}
