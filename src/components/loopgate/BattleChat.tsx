@@ -78,12 +78,21 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
         setMessages(data as BattleMessage[]);
         const ids = [...new Set((data as BattleMessage[]).map(m => m.user_id))];
         if (ids.length) {
-          const { data: profiles } = await supabase.from('profiles').select('id, equipped_aura').in('id', ids);
-          if (profiles) {
-            const map: Record<string, string | null> = {};
-            (profiles as any[]).forEach(p => { map[p.id] = p.equipped_aura ?? null; });
-            setAuraMap(map);
+          const map: Record<string, string | null> = {};
+          ids.forEach(id => { map[id] = null; });
+          const { data: purchases } = await supabase
+            .from('shop_purchases')
+            .select('user_id, shop_items(name, category)')
+            .in('user_id', ids)
+            .eq('is_equipped', true);
+          if (purchases) {
+            (purchases as any[]).forEach(row => {
+              if (row.shop_items?.category === 'aura') {
+                map[row.user_id] = row.shop_items.name.toLowerCase();
+              }
+            });
           }
+          setAuraMap(map);
         }
       }
     };
@@ -106,10 +115,11 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
             setMessages((prev) => [...prev, msg]);
             setAuraMap(prev => {
               if (msg.user_id in prev) return prev;
-              supabase.from('profiles').select('id, equipped_aura').eq('id', msg.user_id).maybeSingle().then(({ data: p }) => {
-                if (p) setAuraMap(m => ({ ...m, [p.id]: (p as any).equipped_aura ?? null }));
+              supabase.from('shop_purchases').select('user_id, shop_items(name, category)').eq('user_id', msg.user_id).eq('is_equipped', true).then(({ data: rows }) => {
+                const aura = (rows as any[])?.find(r => r.shop_items?.category === 'aura')?.shop_items?.name?.toLowerCase() ?? null;
+                setAuraMap(m => ({ ...m, [msg.user_id]: aura }));
               });
-              return prev;
+              return { ...prev, [msg.user_id]: null };
             });
           }
         }

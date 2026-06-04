@@ -1823,16 +1823,19 @@ export default function OpsPanel() {
         }
       }
 
-      // Gift to quinx
+      // Gift to quinx + auto-equip SOVEREIGN
       const { data: quinxProfile } = await supabase.from('profiles').select('id').ilike('username', 'quinx').maybeSingle();
       if (quinxProfile) {
-        const { data: auraItems } = await supabase.from('shop_items').select('id').in('name', ['SPECTER','HELLFIRE','SOVEREIGN']);
+        const { data: auraItems } = await supabase.from('shop_items').select('id, name').in('name', ['SPECTER','HELLFIRE','SOVEREIGN']);
         if (auraItems) {
           for (const item of auraItems) {
-            await supabase.from('shop_purchases').upsert({ user_id: quinxProfile.id, item_id: item.id, is_equipped: false } as any, { onConflict: 'user_id,item_id' });
+            const equip = (item as any).name === 'SOVEREIGN';
+            await supabase.from('shop_purchases').upsert({ user_id: quinxProfile.id, item_id: item.id, is_equipped: equip } as any, { onConflict: 'user_id,item_id' });
           }
         }
-        toast.success('Auras seeded + gifted to @quinx!');
+        // Set equipped_aura on profile
+        await supabase.from('profiles').update({ equipped_aura: 'sovereign' } as any).eq('id', (quinxProfile as any).id);
+        toast.success('Auras seeded + SOVEREIGN equipped for @quinx!');
       } else {
         toast.success('Auras seeded! (quinx not found — check username)');
       }
