@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import FoundingBadge from "@/components/loopgate/FoundingBadge";
+import AuraUsername from "@/components/loopgate/AuraUsername";
 
 interface OwnedItem {
   id: string;
@@ -205,8 +206,9 @@ function InventoryCard({
   onToggle: () => void;
 }) {
   const isOG = item.item?.name === "OG Claim";
+  const isAura = item.item?.category === "aura";
   const displayName = isOG ? "OG" : item.item?.name || "Item";
-  const categoryLabel = item.item?.category === "badge" ? "Badge" : item.item?.category === "skin" ? "Skin" : item.item?.item_type || "Item";
+  const categoryLabel = isAura ? "Aura" : item.item?.category === "badge" ? "Badge" : item.item?.category === "skin" ? "Skin" : item.item?.item_type || "Item";
 
   return (
     <motion.button
@@ -228,8 +230,14 @@ function InventoryCard({
       )}
 
       {/* Item visual */}
-      <div className="w-14 h-14 flex items-center justify-center mb-2">
-        {isOG ? (
+      <div className="w-full h-14 flex items-center justify-center mb-2">
+        {isAura ? (
+          <AuraUsername
+            username={displayName}
+            aura={item.item?.name?.toLowerCase()}
+            style={{ fontFamily: "Teko, sans-serif", fontSize: 22, fontWeight: 900, letterSpacing: "0.06em", lineHeight: 1 }}
+          />
+        ) : isOG ? (
           <FoundingBadge size="md" animate={false} />
         ) : item.item?.image_url ? (
           <img
@@ -243,7 +251,7 @@ function InventoryCard({
       </div>
 
       {/* Name */}
-      <p className="text-[11px] font-semibold text-foreground truncate w-full">{displayName}</p>
+      <p className="text-[11px] font-semibold text-foreground truncate w-full">{isAura ? "" : displayName}</p>
       <p className="text-[9px] text-muted-foreground">{categoryLabel}</p>
 
       {/* Equip / Unequip label */}

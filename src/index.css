@@ -476,39 +476,28 @@ body.battle-modal-open [data-bottom-nav] {
 
 /* ── Aura name-tag animations ─────────────────────────────────────────────── */
 
-/* SPECTER — ghostly blue-white flicker */
+/* SPECTER — ice-blue ghost pulse, strong outer bloom */
 @keyframes aura-specter {
-  0%, 100% {
-    text-shadow: 0 0 10px rgba(150,210,255,0.9), 0 0 26px rgba(120,185,255,0.55), 0 0 52px rgba(100,165,255,0.22);
-    opacity: 1;
-  }
-  50% {
-    text-shadow: 0 0 6px rgba(150,210,255,0.5), 0 0 14px rgba(120,185,255,0.3);
-    opacity: 0.8;
-  }
+  0%   { color: #d6f0ff; text-shadow: 0 0 6px #90d8ff, 0 0 18px #60b8ff, 0 0 40px #3090ff, 0 0 80px rgba(48,144,255,0.35); opacity: 1; }
+  40%  { color: #ffffff; text-shadow: 0 0 12px #c0eaff, 0 0 30px #90ccff, 0 0 60px #5599ff, 0 0 110px rgba(80,160,255,0.55); opacity: 0.72; }
+  55%  { color: #b0deff; text-shadow: 0 0 4px #70bfff, 0 0 10px #4090ff, 0 0 22px #2266ee; opacity: 0.5; }
+  100% { color: #d6f0ff; text-shadow: 0 0 6px #90d8ff, 0 0 18px #60b8ff, 0 0 40px #3090ff, 0 0 80px rgba(48,144,255,0.35); opacity: 1; }
 }
 
-/* HELLFIRE — volatile red-orange flame */
+/* HELLFIRE — volatile fire, spikes chaotically */
 @keyframes aura-hellfire {
-  0%, 100% {
-    text-shadow: 0 0 8px #ff4400, 0 0 20px rgba(255,90,0,0.72), 0 0 42px rgba(255,40,0,0.32);
-  }
-  35% {
-    text-shadow: 0 0 14px #ff6600, 0 0 30px rgba(255,130,0,0.82), 0 0 58px rgba(255,60,0,0.4);
-  }
-  65% {
-    text-shadow: 0 0 5px #ff2200, 0 0 13px rgba(255,65,0,0.58), 0 0 28px rgba(255,25,0,0.2);
-  }
+  0%   { color: #ff7733; text-shadow: 0 0 8px #ff4400, 0 0 22px #ff2200, 0 0 50px rgba(255,40,0,0.6), 0 0 90px rgba(255,0,0,0.25); }
+  20%  { color: #ffaa44; text-shadow: 0 0 16px #ff8800, 0 0 38px #ff4400, 0 0 75px rgba(255,100,0,0.75), 0 0 130px rgba(255,40,0,0.4); }
+  38%  { color: #ff5500; text-shadow: 0 0 5px #ff2200, 0 0 14px #cc1100, 0 0 30px rgba(220,30,0,0.45); }
+  55%  { color: #ffcc55; text-shadow: 0 0 20px #ffaa00, 0 0 45px #ff6600, 0 0 85px rgba(255,90,0,0.65), 0 0 140px rgba(255,50,0,0.3); }
+  80%  { color: #ff4400; text-shadow: 0 0 7px #ff2200, 0 0 18px #dd1100, 0 0 38px rgba(220,20,0,0.4); }
+  100% { color: #ff7733; text-shadow: 0 0 8px #ff4400, 0 0 22px #ff2200, 0 0 50px rgba(255,40,0,0.6), 0 0 90px rgba(255,0,0,0.25); }
 }
 
-/* SOVEREIGN — regal gold shimmer */
+/* SOVEREIGN — royal gold crown glow */
 @keyframes aura-sovereign {
-  0%, 100% {
-    text-shadow: 0 0 10px rgba(255,198,48,0.72), 0 0 26px rgba(255,172,0,0.42);
-    color: #fff;
-  }
-  50% {
-    text-shadow: 0 0 18px rgba(255,225,80,0.96), 0 0 42px rgba(255,198,30,0.68), 0 0 72px rgba(255,155,0,0.28);
-    color: #ffe566;
-  }
+  0%   { color: #ffe566; text-shadow: 0 0 10px #ffd700, 0 0 28px rgba(255,200,0,0.8), 0 0 60px rgba(255,160,0,0.45), 0 0 100px rgba(255,120,0,0.2); }
+  30%  { color: #ffffff; text-shadow: 0 0 18px #ffe97a, 0 0 42px rgba(255,220,80,0.9), 0 0 80px rgba(255,180,0,0.6), 0 0 140px rgba(255,140,0,0.3); }
+  60%  { color: #ffd040; text-shadow: 0 0 8px #ffbb00, 0 0 20px rgba(255,185,0,0.7), 0 0 48px rgba(255,140,0,0.35); }
+  100% { color: #ffe566; text-shadow: 0 0 10px #ffd700, 0 0 28px rgba(255,200,0,0.8), 0 0 60px rgba(255,160,0,0.45), 0 0 100px rgba(255,120,0,0.2); }
 }
