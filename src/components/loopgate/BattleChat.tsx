@@ -271,7 +271,7 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.15 }}
-                className="group flex items-start gap-3.5 px-4 py-3 hover:bg-white/[0.02] transition-colors relative"
+                className="group flex items-start gap-4 px-4 py-4 hover:bg-white/[0.02] transition-colors relative"
                 style={{
                   borderLeft: isRed
                     ? "2px solid rgba(239,68,68,0.35)"
@@ -282,7 +282,7 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
               >
                 {/* Avatar */}
                 <div
-                  className="w-[44px] h-[44px] rounded-full shrink-0 mt-[1px] overflow-hidden flex items-center justify-center text-[13px] font-bold"
+                  className="w-[54px] h-[54px] rounded-full shrink-0 mt-[1px] overflow-hidden flex items-center justify-center text-[16px] font-bold"
                   style={{
                     background: isRed
                       ? "rgba(239,68,68,0.15)"
@@ -313,12 +313,12 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
                   <div className="flex items-baseline gap-2 mb-1 flex-wrap">
                     <button
                       onClick={() => handleMention(msg.username)}
-                      className={`text-[15px] font-bold leading-none hover:underline ${getNameColor(msg.user_id)}`}
+                      className={`text-[18px] font-bold leading-none hover:underline ${getNameColor(msg.user_id)}`}
                     >
                       @{msg.username}
                     </button>
                     {getBadge(msg.user_id)}
-                    <span className="text-[12px] text-white/15 leading-none">{formatTime(msg.created_at)}</span>
+                    <span className="text-[13px] text-white/15 leading-none">{formatTime(msg.created_at)}</span>
                   </div>
 
                   {/* Message / media */}
@@ -330,7 +330,7 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
                       loading="lazy"
                     />
                   ) : (
-                    <p className="text-[18px] text-white/80 break-words leading-snug">
+                    <p className="text-[24px] text-white/80 break-words leading-snug">
                       {renderText(msg.message_text)}
                     </p>
                   )}
