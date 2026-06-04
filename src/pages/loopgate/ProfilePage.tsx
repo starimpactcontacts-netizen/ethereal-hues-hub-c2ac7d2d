@@ -12,6 +12,8 @@ import { useUserRoles } from "@/hooks/useUserRoles";
 import { motion } from "framer-motion";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import AvatarUploadModal from "@/components/loopgate/AvatarUploadModal";
+import AuraUsername from "@/components/loopgate/AuraUsername";
+import { useEquippedBadges } from "@/hooks/useEquippedBadges";
 import ActivityStatusSelector from "@/components/loopgate/ActivityStatusSelector";
 
 import BattleEditsGrid from "@/components/loopgate/BattleEditsGrid";
@@ -30,6 +32,7 @@ export default function ProfilePage() {
   const { submissions } = useUserSubmissions();
   const { videos: judgeVideos } = useJudgeRatingVideos();
   const { isAnyJudge } = useUserRoles(profile?.id);
+  const { equippedAura } = useEquippedBadges(profile?.id);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'edits' | 'reviews' | 'videos'>('edits');
   const [editingBio, setEditingBio] = useState(false);
@@ -187,7 +190,11 @@ export default function ProfilePage() {
 
           {/* Name + verified */}
           <div className="flex items-center gap-1.5 mb-0.5">
-            <h1 className="font-display text-lg leading-tight">{(profile as any).display_name || profile.username}</h1>
+            <AuraUsername
+              username={(profile as any).display_name || profile.username}
+              aura={equippedAura}
+              className="font-display text-lg leading-tight"
+            />
             {profile.verification_status && <VerifiedBadge size="sm" />}
           </div>
           <p className="text-[11px] text-muted-foreground mb-3">@{profile.username}</p>
