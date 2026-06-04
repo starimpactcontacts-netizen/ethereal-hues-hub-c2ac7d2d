@@ -477,12 +477,11 @@ body.battle-modal-open [data-bottom-nav] {
 /* ── Aura name-tag animations ─────────────────────────────────────────────── */
 /* background-size: 200% — positions 0%→100% sweep the gleam L→R            */
 
-/* SPECTER — Bebas Neue, ice-blue gleam sweep, ethereal pulse */
-@keyframes aura-specter {
-  0%   { background-position: 0% 50%;   filter: drop-shadow(0 0 5px #4ab8f0) drop-shadow(0 0 14px rgba(40,120,255,0.55)) drop-shadow(0 0 32px rgba(20,70,200,0.3)); }
-  45%  { background-position: 55% 50%;  filter: drop-shadow(0 0 14px #c8f0ff) drop-shadow(0 0 32px rgba(80,170,255,0.95)) drop-shadow(0 0 65px rgba(40,110,255,0.65)); }
-  65%  { background-position: 75% 50%;  filter: drop-shadow(0 0 3px #3090e0) drop-shadow(0 0 8px rgba(30,90,200,0.4)); }
-  100% { background-position: 100% 50%; filter: drop-shadow(0 0 5px #4ab8f0) drop-shadow(0 0 14px rgba(40,120,255,0.55)) drop-shadow(0 0 32px rgba(20,70,200,0.3)); }
+/* STEVE — Press Start 2P, Minecraft grass block pixel jump */
+@keyframes aura-steve {
+  0%   { background-position: 0% 50%;   filter: drop-shadow(0 0 3px #3d7a18) drop-shadow(0 0 10px rgba(61,122,24,0.7)); }
+  50%  { background-position: 50% 50%;  filter: drop-shadow(0 0 9px #88cc40) drop-shadow(0 0 22px rgba(136,204,64,0.95)) drop-shadow(0 0 42px rgba(80,150,25,0.5)); }
+  100% { background-position: 100% 50%; filter: drop-shadow(0 0 3px #3d7a18) drop-shadow(0 0 10px rgba(61,122,24,0.7)); }
 }
 
 /* HELLFIRE — Anton, volatile fire burst, fast + chaotic flicker */

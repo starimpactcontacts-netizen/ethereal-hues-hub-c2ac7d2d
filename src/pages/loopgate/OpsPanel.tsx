@@ -1799,16 +1799,16 @@ export default function OpsPanel() {
       const { data: quinxProfile } = await supabase.from('profiles').select('id').ilike('username', 'quinx').maybeSingle();
       if (!quinxProfile) { toast.error('quinx not found'); setFixingAura(false); return; }
       const qid = (quinxProfile as any).id;
-      const { data: auraItems } = await supabase.from('shop_items').select('id, name').in('name', ['SPECTER','HELLFIRE','SOVEREIGN']);
+      const { data: auraItems } = await supabase.from('shop_items').select('id, name').in('name', ['STEVE','HELLFIRE','SOVEREIGN']);
       if (auraItems) {
         for (const item of auraItems) {
           const name = (item as any).name;
-          const equip = name === 'SPECTER' || name === 'HELLFIRE';
+          const equip = name === 'STEVE' || name === 'HELLFIRE';
           await supabase.from('shop_purchases').update({ is_equipped: equip } as any).eq('user_id', qid).eq('item_id', item.id);
         }
       }
-      await supabase.from('profiles').update({ equipped_aura: 'specter' } as any).eq('id', qid);
-      toast.success('@quinx SPECTER + HELLFIRE re-equipped!');
+      await supabase.from('profiles').update({ equipped_aura: 'steve' } as any).eq('id', qid);
+      toast.success('@quinx STEVE + HELLFIRE re-equipped!');
     } catch (e) { toast.error('Fix failed'); }
     setFixingAura(false);
   }
@@ -1830,10 +1830,16 @@ export default function OpsPanel() {
     setSeedingAuras(true);
     try {
       const AURAS = [
-        { name: 'SPECTER',   description: 'Your name haunts the scoreboard — a ghostly blue-white flicker that pulses like a signal from the other side.', category: 'aura', item_type: 'cosmetic', price: 120000,   is_active: true, rarity: 'rare'      },
+        { name: 'STEVE',     description: 'Minecraft drip. Your name jumps across the screen in pixel-block grass green like you just hit a creeper.',     category: 'aura', item_type: 'cosmetic', price: 120000,   is_active: true, rarity: 'rare'      },
         { name: 'HELLFIRE',  description: 'Your name burns. A volatile red-orange flame glow that flickers like your edits are straight up on fire.',    category: 'aura', item_type: 'cosmetic', price: 450000,   is_active: true, rarity: 'epic'      },
         { name: 'SOVEREIGN', description: 'Gold shimmer. Reserved for those who run the game. Your name gleams like it already won.',                     category: 'aura', item_type: 'cosmetic', price: 2000000, is_active: true, rarity: 'legendary' },
       ];
+
+      // Rename old SPECTER → STEVE if still in DB
+      const { data: oldSpecter } = await supabase.from('shop_items').select('id').eq('name', 'SPECTER').maybeSingle();
+      if (oldSpecter) {
+        await supabase.from('shop_items').update({ name: 'STEVE', description: 'Minecraft drip. Your name jumps across the screen in pixel-block grass green like you just hit a creeper.' } as any).eq('id', (oldSpecter as any).id);
+      }
 
       // Upsert auras (match on name)
       for (const aura of AURAS) {
@@ -1846,7 +1852,7 @@ export default function OpsPanel() {
       // Gift to quinx — only INSERT, never overwrite existing equip state
       const { data: quinxProfile } = await supabase.from('profiles').select('id').ilike('username', 'quinx').maybeSingle();
       if (quinxProfile) {
-        const { data: auraItems } = await supabase.from('shop_items').select('id, name').in('name', ['SPECTER','HELLFIRE','SOVEREIGN']);
+        const { data: auraItems } = await supabase.from('shop_items').select('id, name').in('name', ['STEVE','HELLFIRE','SOVEREIGN']);
         if (auraItems) {
           for (const item of auraItems) {
             await (supabase.from('shop_purchases') as any).upsert(

@@ -21,7 +21,7 @@ const RARITY_CFG: Record<string, { label: string; color: string; stars: number; 
 
 // Per-aura hero glow bg for the preview panel
 const AURA_BG: Record<string, string> = {
-  specter:   "radial-gradient(ellipse 80% 60% at 50% 60%, rgba(30,110,220,0.28) 0%, rgba(0,20,60,0.15) 60%, transparent 100%)",
+  steve:     "radial-gradient(ellipse 80% 60% at 50% 60%, rgba(80,160,30,0.28) 0%, rgba(20,50,8,0.18) 60%, transparent 100%)",
   hellfire:  "radial-gradient(ellipse 80% 60% at 50% 60%, rgba(200,40,0,0.32) 0%, rgba(60,5,0,0.18) 60%, transparent 100%)",
   sovereign: "radial-gradient(ellipse 80% 60% at 50% 60%, rgba(200,150,0,0.28) 0%, rgba(50,30,0,0.15) 60%, transparent 100%)",
 };

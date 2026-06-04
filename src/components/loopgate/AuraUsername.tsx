@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type AuraSlug = 'specter' | 'hellfire' | 'sovereign';
+export type AuraSlug = 'steve' | 'hellfire' | 'sovereign';
 
 interface AuraCfg {
   // gradient designed for 200% sweep: dark → bright gleam → dark
@@ -14,14 +14,14 @@ interface AuraCfg {
 }
 
 export const AURA_CFG: Record<AuraSlug, AuraCfg> = {
-  specter: {
-    gradient: 'linear-gradient(90deg, #0a1e3a 0%, #1a5fa0 20%, #5bc8e8 40%, #e8f8ff 50%, #5bc8e8 60%, #1a5fa0 80%, #0a1e3a 100%)',
-    font: "'Bebas Neue', 'Teko', sans-serif",
+  steve: {
+    gradient: 'linear-gradient(90deg, #1a3d08 0%, #3a7515 18%, #5c9a27 32%, #7db544 45%, #b8e870 50%, #7db544 55%, #5c9a27 68%, #3a7515 82%, #1a3d08 100%)',
+    font: "'Press Start 2P', monospace",
     fontWeight: 400,
-    letterSpacing: '0.06em',
-    animation: 'aura-specter 2.8s ease-in-out infinite',
-    labelColor: '#5bc8e8',
-    label: 'SPECTER',
+    letterSpacing: '0.04em',
+    animation: 'aura-steve 1.4s steps(6, end) infinite',
+    labelColor: '#7db544',
+    label: 'STEVE',
   },
   hellfire: {
     gradient: 'linear-gradient(90deg, #2a0000 0%, #aa1800 20%, #ff4400 38%, #ffbb00 50%, #ff5500 62%, #aa1800 80%, #2a0000 100%)',
