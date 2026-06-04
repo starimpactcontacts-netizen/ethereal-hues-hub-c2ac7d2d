@@ -1791,6 +1791,21 @@ export default function OpsPanel() {
 
   // Shop: Create item with image upload
   const [seedingAuras, setSeedingAuras] = useState(false);
+  const [giftingRings, setGiftingRings] = useState(false);
+  async function handleGiftQuinxRings() {
+    setGiftingRings(true);
+    try {
+      const { data: quinxProfile } = await supabase.from('profiles').select('id, rings').ilike('username', 'quinx').maybeSingle();
+      if (!quinxProfile) { toast.error('quinx not found'); setGiftingRings(false); return; }
+      const current = (quinxProfile as any).rings ?? 0;
+      await supabase.from('profiles').update({ rings: current + 2000000 } as any).eq('id', (quinxProfile as any).id);
+      toast.success(`Gifted 2M rings to @quinx! (now ${(current + 2000000).toLocaleString()})`);
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to gift rings');
+    }
+    setGiftingRings(false);
+  }
   async function handleSeedAuras() {
     setSeedingAuras(true);
     try {
@@ -3687,6 +3702,14 @@ export default function OpsPanel() {
               >
                 <Zap size={14} />
                 {seedingAuras ? 'Seeding…' : 'Seed Auras'}
+              </button>
+              <button
+                onClick={handleGiftQuinxRings}
+                disabled={giftingRings}
+                className="flex items-center gap-1 text-xs bg-amber-600 text-white px-3 py-1.5 rounded-lg font-semibold disabled:opacity-50"
+              >
+                <Coins size={14} />
+                {giftingRings ? 'Gifting…' : '+2M Quinx'}
               </button>
               <button
                 onClick={() => setShowCreateItem(true)}
