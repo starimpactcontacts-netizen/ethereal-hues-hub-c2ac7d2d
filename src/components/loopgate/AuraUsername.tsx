@@ -3,16 +3,31 @@ import React from 'react';
 export type AuraSlug = 'specter' | 'hellfire' | 'sovereign';
 
 interface AuraCfg {
+  gradient: string;
   animation: string;
-  color?: string;
   labelColor: string;
   label: string;
 }
 
 export const AURA_CFG: Record<AuraSlug, AuraCfg> = {
-  specter:  { animation: 'aura-specter 2.6s ease-in-out infinite',  color: '#c8e8ff', labelColor: '#96d2ff', label: 'SPECTER'  },
-  hellfire: { animation: 'aura-hellfire 1.4s ease-in-out infinite', color: '#ff6633', labelColor: '#ff6633', label: 'HELLFIRE' },
-  sovereign:{ animation: 'aura-sovereign 3.2s ease-in-out infinite',               labelColor: '#FFD060', label: 'SOVEREIGN'},
+  specter: {
+    gradient: 'linear-gradient(90deg, #0a2a4a, #1a6ab5, #5bc8e8, #e0f8ff, #ffffff, #a8e4f8, #1a6ab5, #0a2a4a)',
+    animation: 'aura-specter 3s linear infinite',
+    labelColor: '#96d2ff',
+    label: 'SPECTER',
+  },
+  hellfire: {
+    gradient: 'linear-gradient(90deg, #4a0000, #cc1100, #ff4400, #ff9900, #ffdd44, #ff6600, #cc1100, #4a0000)',
+    animation: 'aura-hellfire 1.1s linear infinite',
+    labelColor: '#ff6633',
+    label: 'HELLFIRE',
+  },
+  sovereign: {
+    gradient: 'linear-gradient(90deg, #3a2200, #a07010, #ffd700, #fffacd, #ffffff, #ffe87a, #ffd700, #a07010, #3a2200)',
+    animation: 'aura-sovereign 2.2s linear infinite',
+    labelColor: '#FFD060',
+    label: 'SOVEREIGN',
+  },
 };
 
 interface Props {
@@ -31,8 +46,13 @@ export default function AuraUsername({ username, aura, style, className }: Props
     <span
       className={className}
       style={{
+        background: cfg.gradient,
+        backgroundSize: '400% auto',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text',
         animation: cfg.animation,
-        ...(cfg.color ? { color: cfg.color } : {}),
+        display: 'inline-block',
         ...style,
       }}
     >
@@ -41,7 +61,6 @@ export default function AuraUsername({ username, aura, style, className }: Props
   );
 }
 
-/** Tiny inline pill shown beside the username in inventory / profile */
 export function AuraPill({ aura }: { aura: string }) {
   const cfg = AURA_CFG[aura as AuraSlug];
   if (!cfg) return null;
@@ -49,10 +68,13 @@ export function AuraPill({ aura }: { aura: string }) {
     <span
       className="inline-flex items-center px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest select-none"
       style={{
-        background: `${cfg.labelColor}18`,
-        border: `1px solid ${cfg.labelColor}55`,
-        color: cfg.labelColor,
+        background: cfg.gradient,
+        backgroundSize: '400% auto',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text',
         animation: cfg.animation,
+        border: `1px solid ${cfg.labelColor}55`,
       }}
     >
       {cfg.label}
