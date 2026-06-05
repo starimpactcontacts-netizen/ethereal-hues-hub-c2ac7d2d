@@ -40,43 +40,59 @@ export default function ChatBubble({
   const stroke = "#0b1437";
   const strokeW = 3;
 
-  const points =
-    tailSide === "left"
-      ? "98,7 2,0 0,58 13,58 1,99 28,58 98,58"
-      : "2,7 98,0 100,58 87,58 99,99 72,58 2,58";
+  const tail = (
+    <svg
+      aria-hidden
+      width="54"
+      height="34"
+      viewBox="0 0 54 34"
+      className="absolute pointer-events-none z-0"
+      style={{
+        bottom: -29,
+        [tailSide === "left" ? "left" : "right"]: -3,
+      }}
+    >
+      <polygon
+        points={
+          tailSide === "left"
+            ? "54,0 13,0 0,34 17,5 54,5"
+            : "0,0 41,0 54,34 37,5 0,5"
+        }
+        fill={fill}
+        stroke={stroke}
+        strokeWidth={strokeW}
+        strokeLinejoin="miter"
+      />
+      <rect
+        x={tailSide === "left" ? 16 : 0}
+        y={-2}
+        width={38}
+        height={8}
+        fill={fill}
+      />
+    </svg>
+  );
 
   return (
     <span
       className={`relative inline-block align-top max-w-full ${className ?? ""}`}
       style={{
-        marginBottom: 2,
+        marginBottom: 29,
         lineHeight: 1.25,
       }}
     >
-      <svg
-        aria-hidden
-        className="absolute inset-0 pointer-events-none overflow-visible"
-        preserveAspectRatio="none"
-        viewBox="0 0 100 100"
-      >
-        <polygon
-          points={points}
-          fill={fill}
-          stroke={stroke}
-          strokeWidth={strokeW}
-          strokeLinejoin="miter"
-          vectorEffect="non-scaling-stroke"
-        />
-      </svg>
       <span
         className="relative z-10 inline-block"
         style={{
-          padding: tailSide === "left" ? "8px 15px 24px 18px" : "8px 18px 24px 15px",
+          background: fill,
+          border: `${strokeW}px solid ${stroke}`,
+          padding: "8px 14px",
           color: textColor,
           fontWeight: 700,
         }}
       >
         {children}
+        {tail}
       </span>
     </span>
   );
