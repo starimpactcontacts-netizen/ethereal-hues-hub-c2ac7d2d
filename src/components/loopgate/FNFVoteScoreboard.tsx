@@ -27,7 +27,19 @@ function nameStyle(side: "red" | "blue", isLeading: boolean, aura?: string | nul
   };
   if (aura && AURA_CFG[aura as AuraSlug]) {
     const cfg = AURA_CFG[aura as AuraSlug];
-    return { ...base, animation: cfg.animation, ...(cfg.color ? { color: cfg.color } : {}) };
+    return {
+      ...base,
+      fontFamily: cfg.font,
+      fontWeight: cfg.fontWeight,
+      letterSpacing: cfg.letterSpacing ?? base.letterSpacing,
+      backgroundImage: cfg.gradient,
+      backgroundSize: "200% 100%",
+      WebkitBackgroundClip: "text",
+      backgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+      color: "transparent",
+      animation: cfg.animation,
+    };
   }
   if (side === "red") {
     return {
