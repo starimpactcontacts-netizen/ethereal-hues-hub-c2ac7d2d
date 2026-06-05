@@ -4,7 +4,7 @@ import { X, Bell, ShoppingBag, Zap } from 'lucide-react';
 import AuraUsername from './AuraUsername';
 
 const VERSION = '1.13';
-const SEEN_KEY = 'lg_patch_v113_seen';
+const SEEN_KEY = 'lg_patch_v113b_seen';
 
 const TEKO = { fontFamily: 'Teko, sans-serif' };
 
