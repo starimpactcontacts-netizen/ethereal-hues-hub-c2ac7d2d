@@ -13,6 +13,7 @@ import GifPicker from "@/components/loopgate/GifPicker";
 import MentionAutocomplete from "@/components/loopgate/MentionAutocomplete";
 import RichMessageContent from "@/components/loopgate/RichMessageContent";
 import SmartUsername from "@/components/loopgate/SmartUsername";
+import ChatBubble from "@/components/loopgate/ChatBubble";
 import { useCrewPresence } from "@/hooks/useCrewPresence";
 import { format, isToday, isYesterday } from "date-fns";
 import { toast } from "sonner";
@@ -406,7 +407,9 @@ export default function CrewChatPage() {
                             return (
                               <div key={message.id} className="group/msg flex items-start gap-2 mt-0.5">
                                 <div className="text-sm text-foreground/90 leading-relaxed break-words flex-1">
-                                  <RichMessageContent content={message.message_text} />
+                                  <ChatBubble userId={message.user_id}>
+                                    <RichMessageContent content={message.message_text} />
+                                  </ChatBubble>
                                 </div>
                                 {canDelete && (
                                   <DropdownMenu>
