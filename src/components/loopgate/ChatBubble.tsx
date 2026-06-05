@@ -37,45 +37,65 @@ export default function ChatBubble({
     tone === "blue" ? "#3b82f6" :
     "#FDE047";
   const textColor = tone === "neutral" ? "#0a0a0a" : "#ffffff";
+  const stroke = "#0b1437";
+  const strokeW = 2.5;
 
-  // Angular comic speech bubble with a tail dropping from bottom-right.
-  // viewBox is stretched to fit the text via preserveAspectRatio="none";
-  // non-scaling stroke keeps the outline crisp regardless of bubble size.
-  // Tail drops from bottom edge, side controlled by tailSide.
-  const points =
-    tailSide === "left"
-      ? "1,1 99,1 99,60 1,99"
-      : "1,1 99,1 99,99 1,60";
+  // Sharp fixed-size tail (skinny triangle) that stays crisp regardless of bubble width.
+  // Width 18px, height 14px — drops from bottom edge near the avatar side.
+  const tail = (
+    <svg
+      aria-hidden
+      width="18"
+      height="14"
+      viewBox="0 0 18 14"
+      className="absolute pointer-events-none"
+      style={{
+        bottom: -10,
+        [tailSide === "left" ? "left" : "right"]: 4,
+      }}
+    >
+      <polygon
+        points={
+          tailSide === "left"
+            ? "18,0 0,14 16,0"
+            : "0,0 18,14 2,0"
+        }
+        fill={fill}
+        stroke={stroke}
+        strokeWidth={strokeW}
+        strokeLinejoin="miter"
+      />
+      {/* Cover the body's bottom border where the tail joins, so the seam is clean */}
+      <rect
+        x={tailSide === "left" ? 2 : 0}
+        y={-1}
+        width={16}
+        height={2}
+        fill={fill}
+      />
+    </svg>
+  );
 
   return (
     <span
       className={`relative inline-block align-top max-w-full ${className ?? ""}`}
       style={{
-        padding: "10px 16px 22px 16px",
-        filter: "drop-shadow(2px 3px 0 #0b1437)",
+        marginBottom: 12,
         lineHeight: 1.25,
       }}
     >
-      <svg
-        aria-hidden
-        className="absolute inset-0 w-full h-full pointer-events-none"
-        viewBox="0 0 100 100"
-        preserveAspectRatio="none"
-      >
-        <polygon
-          points={points}
-          fill={fill}
-          stroke="#0b1437"
-          strokeWidth="3"
-          strokeLinejoin="round"
-          vectorEffect="non-scaling-stroke"
-        />
-      </svg>
       <span
-        className="relative z-[1] block"
-        style={{ color: textColor, fontWeight: 700 }}
+        className="relative inline-block"
+        style={{
+          background: fill,
+          border: `${strokeW}px solid ${stroke}`,
+          padding: "8px 14px",
+          color: textColor,
+          fontWeight: 700,
+        }}
       >
         {children}
+        {tail}
       </span>
     </span>
   );
