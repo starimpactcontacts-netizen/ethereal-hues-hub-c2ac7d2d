@@ -563,3 +563,35 @@ export default function QuickFightChat({
     </div>
   );
 }
+
+function QuickFightBubbleShell({
+  userId,
+  isRed,
+  isBlue,
+  children,
+}: {
+  userId: string;
+  isRed: boolean;
+  isBlue: boolean;
+  children: React.ReactNode;
+}) {
+  const equipped = useChatBubble(userId);
+  // When a custom chat-bubble cosmetic is equipped, let it stand on its own
+  // — no nested team-tinted wrapper.
+  if (equipped) {
+    return <div className="relative">{children}</div>;
+  }
+  return (
+    <div
+      className={`relative border px-4 py-2.5 ${
+        isRed
+          ? 'bg-gradient-to-br from-red-500/35 to-red-800/25 border-red-500/50 shadow-[0_0_14px_rgba(239,68,68,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] rounded-2xl rounded-tr-sm'
+          : isBlue
+            ? 'bg-gradient-to-br from-blue-500/20 to-blue-800/15 border-blue-500/40 shadow-[0_0_10px_rgba(59,130,246,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] rounded-2xl rounded-tl-sm'
+            : 'bg-white/5 border-white/10 rounded-2xl rounded-tl-sm'
+      }`}
+    >
+      {children}
+    </div>
+  );
+}
