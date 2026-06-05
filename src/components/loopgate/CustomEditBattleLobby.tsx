@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ChevronUp, Clock, Copy, Eye, EyeOff, Lock, Share2, Swords, UserPlus, Users, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -450,39 +450,66 @@ export default function CustomEditBattleLobby({
           )}
         </div>
 
-        {/* Join Code */}
+        {/* Join Code — collapsible */}
         {isPrivate && isHost && fight.join_code && (
-          <div className="mt-3 border border-white/10 bg-white/[0.03] px-4 py-3">
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-[8px] font-black uppercase tracking-[0.3em] text-white/30">Join Code</p>
-                <p
-                  className="mt-0.5 text-[30px] leading-none font-black tracking-[0.3em] text-white select-all"
-                  style={{ fontFamily: "Teko, sans-serif" }}
-                >
-                  {codeHidden ? '• • • • • •' : fight.join_code}
-                </p>
+          <div className="mt-3 border border-white/10 bg-white/[0.03] overflow-hidden">
+            {/* Compact bar — always visible */}
+            <div className="flex items-center justify-between px-4 py-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <Lock className="w-3 h-3 text-white/30" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">
+                  Join Code
+                </span>
+                {!codeHidden && (
+                  <span className="text-[10px] text-amber-400/70 font-black uppercase tracking-wider">
+                    {fight.join_code}
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <button
                   onClick={() => setCodeHidden(v => !v)}
-                  className="h-9 w-9 border border-white/15 bg-black/40 grid place-items-center text-white/40 hover:text-white/70 active:scale-95 transition"
+                  className="h-8 w-8 border border-white/15 bg-black/40 grid place-items-center text-white/40 hover:text-white/70 active:scale-95 transition"
                   aria-label={codeHidden ? 'Show code' : 'Hide code'}
                   title={codeHidden ? 'Show code' : 'Hide for filming'}
                 >
                   {codeHidden ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                 </button>
-                <button
-                  onClick={handleCopyCode}
-                  className="h-9 w-9 border border-white/15 bg-black/40 grid place-items-center text-white/40 active:scale-95 transition-transform"
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                </button>
+                {!codeHidden && (
+                  <button
+                    onClick={handleCopyCode}
+                    className="h-8 w-8 border border-white/15 bg-black/40 grid place-items-center text-white/40 active:scale-95 transition-transform"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             </div>
-            <p className="mt-1.5 text-[9px] text-white/20 leading-relaxed">
-              {codeHidden ? 'Hidden — tap the eye to reveal.' : 'Share privately — only people with this code can join.'}
-            </p>
+
+            {/* Expanded content */}
+            <AnimatePresence initial={false}>
+              {!codeHidden && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.18 }}
+                  className="overflow-hidden"
+                >
+                  <div className="px-4 pb-3">
+                    <p
+                      className="text-[30px] leading-none font-black tracking-[0.3em] text-white select-all"
+                      style={{ fontFamily: "Teko, sans-serif" }}
+                    >
+                      {fight.join_code}
+                    </p>
+                    <p className="mt-1.5 text-[9px] text-white/20 leading-relaxed">
+                      Share privately — only people with this code can join.
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
 
