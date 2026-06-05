@@ -7145,10 +7145,12 @@ export type Database = {
           connection_count: number
           created_at: string | null
           crew_id: string | null
+          daily_streak: number
           discord: string | null
           display_name: string | null
           earnings_cents: number
           email: string | null
+          equipped_aura: string | null
           global_index_score: number | null
           has_password: boolean | null
           house_changed_at: string | null
@@ -7163,6 +7165,7 @@ export type Database = {
           judge_review_count: number
           judge_specialty: string | null
           judge_xp: number
+          last_daily_claim_at: string | null
           league: Database["public"]["Enums"]["league_tier"]
           level: number
           notification_email: string | null
@@ -7212,10 +7215,12 @@ export type Database = {
           connection_count?: number
           created_at?: string | null
           crew_id?: string | null
+          daily_streak?: number
           discord?: string | null
           display_name?: string | null
           earnings_cents?: number
           email?: string | null
+          equipped_aura?: string | null
           global_index_score?: number | null
           has_password?: boolean | null
           house_changed_at?: string | null
@@ -7230,6 +7235,7 @@ export type Database = {
           judge_review_count?: number
           judge_specialty?: string | null
           judge_xp?: number
+          last_daily_claim_at?: string | null
           league?: Database["public"]["Enums"]["league_tier"]
           level?: number
           notification_email?: string | null
@@ -7279,10 +7285,12 @@ export type Database = {
           connection_count?: number
           created_at?: string | null
           crew_id?: string | null
+          daily_streak?: number
           discord?: string | null
           display_name?: string | null
           earnings_cents?: number
           email?: string | null
+          equipped_aura?: string | null
           global_index_score?: number | null
           has_password?: boolean | null
           house_changed_at?: string | null
@@ -7297,6 +7305,7 @@ export type Database = {
           judge_review_count?: number
           judge_specialty?: string | null
           judge_xp?: number
+          last_daily_claim_at?: string | null
           league?: Database["public"]["Enums"]["league_tier"]
           level?: number
           notification_email?: string | null
@@ -9514,6 +9523,7 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: number
       }
+      claim_daily_reward: { Args: never; Returns: Json }
       claim_practice_match: {
         Args: { p_judge_id: string; p_match_id: string }
         Returns: boolean
