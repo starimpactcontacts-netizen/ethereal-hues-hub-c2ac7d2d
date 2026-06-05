@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import GifPicker from './GifPicker';
 import SmartUsername from './SmartUsername';
 import ChatBubble from './ChatBubble';
+import { useChatBubble } from '@/lib/chatBubbleCache';
 
 const DEFAULT_TRASH_TALK = [
   "yo wake up bro 👀",
