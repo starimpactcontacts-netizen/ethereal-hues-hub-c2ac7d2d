@@ -1217,7 +1217,7 @@ export default function HubPage() {
         className="px-4 mt-8 mb-6 flex flex-col items-center gap-3"
       >
         <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-          Version 1.1
+          Version 1.13
         </span>
         <a
           href="https://discord.gg/R4bPuSvN57"
