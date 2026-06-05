@@ -44,8 +44,8 @@ export default function ChatBubble({
   // Tail drops from bottom edge, side controlled by tailSide.
   const points =
     tailSide === "left"
-      ? "1,1 99,1 99,72 30,72 1,99"
-      : "1,1 99,1 99,99 70,72 1,72";
+      ? "1,1 99,1 99,70 18,70 4,99 1,70"
+      : "1,1 99,1 99,70 96,99 82,70 1,70";
 
   return (
     <span
