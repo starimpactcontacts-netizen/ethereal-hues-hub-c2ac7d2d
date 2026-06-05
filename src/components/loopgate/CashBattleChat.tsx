@@ -10,6 +10,7 @@ import GifPicker from "./GifPicker";
 import ChatReplyBar from "./ChatReplyBar";
 import { useNavigate } from "react-router-dom";
 import SmartUsername from "./SmartUsername";
+import ChatBubble from "./ChatBubble";
 
 interface CashBattleMessage {
   id: string;
@@ -172,7 +173,9 @@ export default function CashBattleChat({ battleId, challengerId, opponentId }: P
                         {isGifUrl(msg.message_text) ? (
                           <img src={msg.message_text} alt="GIF" className="max-w-[180px] mt-1 rounded-lg" loading="lazy" />
                         ) : (
-                          <p className="text-[11px] text-zinc-300 break-words">{renderText(msg.message_text)}</p>
+                          <ChatBubble userId={msg.user_id}>
+                            <p className="text-[11px] text-zinc-300 break-words">{renderText(msg.message_text)}</p>
+                          </ChatBubble>
                         )}
                       </div>
                       {user && (
