@@ -66,6 +66,7 @@ export default function QuickFightChat({
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [chatOpen, setChatOpen] = useState(true);
   const [showAllChips, setShowAllChips] = useState(false);
   const [chipsOpen, setChipsOpen] = useState(false);
   const [editingChips, setEditingChips] = useState(false);
