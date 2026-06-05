@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import RingsCoin from "@/components/loopgate/RingsCoin";
 import AuraUsername, { AURA_CFG, type AuraSlug } from "@/components/loopgate/AuraUsername";
 import FoundingBadge from "@/components/loopgate/FoundingBadge";
+import ChatBubble from "@/components/loopgate/ChatBubble";
 
 // Loopgate signature font — bold Teko
 const PIXEL = {
@@ -68,7 +69,7 @@ export default function ShopPage() {
       setLoading(true);
       const { data: shopData } = await supabase
         .from("shop_items").select("id, name, description, category, price, rarity, is_active, is_limited, available_until")
-        .eq("is_active", true).in("category", ["aura", "badge"]).order("price", { ascending: true });
+        .eq("is_active", true).in("category", ["aura", "badge", "chat_bubble"]).order("price", { ascending: true });
       if (shopData) setItems(shopData as ShopItem[]);
       if (user) {
         const { data: purchaseData } = await supabase.from("shop_purchases").select("item_id").eq("user_id", user.id);
