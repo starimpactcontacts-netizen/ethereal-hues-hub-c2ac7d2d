@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import SmartUsername from '@/components/loopgate/SmartUsername';
 
 type Pillar = 'rhythm' | 'creativity' | 'technical' | 'emotional' | 'style';
 
@@ -74,7 +75,7 @@ export default function GatekeeperRankPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [entry, setEntry] = useState<any>(null);
-  const [profile, setProfile] = useState<{ username: string; avatar_url: string | null } | null>(null);
+  const [profile, setProfile] = useState<{ id: string; username: string; avatar_url: string | null } | null>(null);
   const [scores, setScores] = useState<Record<Pillar, number>>({
     rhythm: 12, creativity: 12, technical: 10, emotional: 8, style: 8,
   });
@@ -95,7 +96,7 @@ export default function GatekeeperRankPage() {
       if (data?.user_id) {
         const { data: prof } = await supabase
           .from('profiles')
-          .select('username, avatar_url')
+          .select('id, username, avatar_url')
           .eq('id', data.user_id)
           .maybeSingle();
         setProfile(prof as any);
@@ -200,7 +201,7 @@ export default function GatekeeperRankPage() {
           <ShieldCheck className="w-4 h-4 text-cyan-400 shrink-0" />
           <div className="min-w-0">
             <p className="text-[10px] font-bold text-cyan-400 tracking-wider">GATEKEEPER RANK</p>
-            <p className="text-xs text-zinc-400 truncate">@{profile?.username || 'editor'}</p>
+            <p className="text-xs text-zinc-400 truncate"><SmartUsername userId={profile?.id} username={profile?.username || 'editor'} prefix="@" /></p>
           </div>
         </div>
         {alreadyScored && (

@@ -15,12 +15,15 @@ import { useFeedPosts, type FeedPostItem } from "@/hooks/useFeedPosts";
 import { useLoopReactions } from "@/hooks/useLoopReactions";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 import FeedSidebar from "@/components/loopgate/FeedSidebar";
+import SmartUsername from "@/components/loopgate/SmartUsername";
+import EditBattlesFeed from "@/components/loopgate/EditBattlesFeed";
 
 const BATCH_SIZE = 20;
 
-type LoopPill = 'feed' | 'find_battle' | 'rate_edit' | 'help' | 'competition' | 'news';
+type LoopPill = 'edit_battles' | 'feed' | 'find_battle' | 'rate_edit' | 'help' | 'competition' | 'news';
 
 const LOOP_PILLS: { key: LoopPill; label: string }[] = [
+  { key: 'edit_battles', label: 'Edit Battles' },
   { key: 'feed', label: 'Feed' },
   { key: 'find_battle', label: 'Find A Battle' },
   { key: 'rate_edit', label: 'Rate My Edit' },
@@ -30,6 +33,7 @@ const LOOP_PILLS: { key: LoopPill; label: string }[] = [
 ];
 
 const LOOP_EMPTY: Record<LoopPill, { title: string; subtitle: string }> = {
+  edit_battles: { title: 'No edit battles yet', subtitle: 'Completed 1v1s will appear here for voting' },
   feed: { title: 'The Loop is quiet', subtitle: 'Drop a loop or submit an edit to get things moving' },
   find_battle: { title: 'No battle requests yet', subtitle: 'Post here to call out editors for a 1v1' },
   rate_edit: { title: 'No edits to rate', subtitle: 'Share your edit link to get community feedback' },
@@ -50,7 +54,7 @@ export default function FeedPage() {
 
   const [playerItem, setPlayerItem] = useState<LoopFeedItem | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [loopPill, setLoopPill] = useState<LoopPill>('feed');
+  const [loopPill, setLoopPill] = useState<LoopPill>('edit_battles');
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [showCompose, setShowCompose] = useState(false);
@@ -89,7 +93,7 @@ export default function FeedPage() {
 
       const scored = (editorsRes.data || []).map(p => {
         let score = 0;
-        if (!!p.verification_status) score += 10;
+        if (p.verification_status) score += 10;
         const conn = p.connection_count || 0;
         if (conn >= 20) score += 6; else if (conn >= 5) score += 4; else if (conn >= 1) score += 2;
         const idx = p.global_index_score || 0;
@@ -114,13 +118,14 @@ export default function FeedPage() {
     try {
       const arenaOffset = offsetRef.current.arena;
       const reviewOffset = offsetRef.current.review;
+      const battleSince = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
 
       const [roundRes, eventRes, sanctionedRes, reviewRes, battlesRes, judgeVideosRes] = await Promise.all([
         supabase.from('round_participations').select('id, submission_url, platform, qoi_score, quality_score, originality_score, impact_score, user_id, event_id, created_at, thumbnail_url, custom_title').not('qoi_score', 'is', null).not('submission_url', 'is', null).order('created_at', { ascending: false }).range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
         supabase.from('event_participations').select('id, submission_url, platform, qoi_score, quality_score, originality_score, impact_score, user_id, event_id, final_rank, thumbnail_url, custom_title, submitted_at').not('qoi_score', 'is', null).not('submission_url', 'is', null).order('qoi_score', { ascending: false }).range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
         supabase.from('sanctioned_tournament_participants').select('id, submission_url, submission_platform, qoi_score, user_id, tournament_id, submitted_at, final_rank, thumbnail_url, custom_title').not('qoi_score', 'is', null).not('submission_url', 'is', null).order('submitted_at', { ascending: false }).range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
         supabase.from('review_requests').select('*').eq('status', 'reviewed').not('total_score', 'is', null).order('reviewed_at', { ascending: false }).range(reviewOffset, reviewOffset + BATCH_SIZE - 1),
-        supabase.from('battles').select('*').in('status', ['pending', 'active', 'judging', 'completed']).is('hidden_at' as any, null).order('updated_at', { ascending: false }).range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
+        supabase.from('quick_fights').select('id, player_1_id, player_2_id, player_1_username, player_2_username, player_1_avatar_url, player_2_avatar_url, player_1_submission_url, player_2_submission_url, player_1_thumbnail_url, player_1_votes, player_2_votes, winner_id, winner_score, loser_score, status, updated_at, created_at, is_private').in('status', ['active', 'judging', 'completed']).eq('is_private', false).not('player_1_submission_url', 'is', null).not('player_2_submission_url', 'is', null).not('player_2_id', 'is', null).is('hidden_at' as never, null).gte('updated_at', battleSince).order('updated_at', { ascending: false }).range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
         supabase.from('judge_rating_videos').select('id, video_url, platform, title, thumbnail_url, current_views, judge_id, submitted_at').order('submitted_at', { ascending: false }).range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
       ]);
 
@@ -134,7 +139,7 @@ export default function FeedPage() {
       const fetchedCount = roundData.length + eventData.length + sanctionedData.length + reviewData.length + battlesData.length + judgeVideosData.length;
       if (fetchedCount === 0) { setHasMore(false); if (isLoadMore) { setLoadingMore(false); return; } }
 
-      const allUserIds = [...roundData.map(s => s.user_id), ...eventData.map(s => s.user_id), ...sanctionedData.map(s => s.user_id), ...reviewData.map(r => r.user_id), ...judgeVideosData.map(j => j.judge_id)];
+      const allUserIds = [...roundData.map(s => s.user_id), ...eventData.map(s => s.user_id), ...sanctionedData.map(s => s.user_id), ...reviewData.map(r => r.user_id), ...battlesData.map(b => b.player_1_id), ...judgeVideosData.map(j => j.judge_id)];
       const userIds = [...new Set(allUserIds)];
       const eventIds = [...new Set([...roundData.map(s => s.event_id), ...eventData.map(s => s.event_id)])];
       const tournamentIds = [...new Set(sanctionedData.map(s => s.tournament_id))];
@@ -151,16 +156,16 @@ export default function FeedPage() {
 
       const getThumb = (dbThumb: string | null) => dbThumb || null;
 
-      const roundItems: LoopFeedItem[] = roundData.map(s => ({ id: `arena-${s.id}`, rawId: s.id, type: 'arena' as const, submission_url: s.submission_url!, platform: s.platform || 'tiktok', user_id: s.user_id, username: profileMap.get(s.user_id)?.username || 'editor', avatar_url: profileMap.get(s.user_id)?.avatar_url || null, created_at: s.created_at || new Date().toISOString(), thumbnail_url: getThumb((s as any).thumbnail_url), custom_title: (s as any).custom_title || null, qoi_score: s.qoi_score, quality_score: s.quality_score || null, originality_score: s.originality_score || null, impact_score: s.impact_score || null, event_title: eventMap.get(s.event_id)?.title || 'Open Arena', final_rank: null }));
-      const eventItems: LoopFeedItem[] = eventData.map(s => ({ id: `arena-event-${s.id}`, rawId: s.id, type: 'arena' as const, submission_url: s.submission_url!, platform: s.platform || 'tiktok', user_id: s.user_id, username: profileMap.get(s.user_id)?.username || 'editor', avatar_url: profileMap.get(s.user_id)?.avatar_url || null, created_at: (s as any).submitted_at || new Date().toISOString(), thumbnail_url: getThumb(s.thumbnail_url), custom_title: (s as any).custom_title || null, qoi_score: s.qoi_score, quality_score: s.quality_score || null, originality_score: s.originality_score || null, impact_score: s.impact_score || null, event_title: eventMap.get(s.event_id)?.title || 'Event', final_rank: s.final_rank || null }));
-      const sanctionedItems: LoopFeedItem[] = sanctionedData.map(s => ({ id: `arena-sanctioned-${s.id}`, rawId: s.id, type: 'arena' as const, submission_url: s.submission_url!, platform: s.submission_platform || 'tiktok', user_id: s.user_id, username: profileMap.get(s.user_id)?.username || 'editor', avatar_url: profileMap.get(s.user_id)?.avatar_url || null, created_at: s.submitted_at || new Date().toISOString(), thumbnail_url: getThumb((s as any).thumbnail_url), custom_title: (s as any).custom_title || null, qoi_score: s.qoi_score, event_title: tournamentMap.get(s.tournament_id)?.title || 'Tournament', final_rank: s.final_rank || null }));
+      const roundItems: LoopFeedItem[] = roundData.map(s => ({ id: `arena-${s.id}`, rawId: s.id, type: 'arena' as const, submission_url: s.submission_url!, platform: s.platform || 'tiktok', user_id: s.user_id, username: profileMap.get(s.user_id)?.username || 'editor', avatar_url: profileMap.get(s.user_id)?.avatar_url || null, created_at: s.created_at || new Date().toISOString(), thumbnail_url: getThumb(s.thumbnail_url), custom_title: s.custom_title || null, qoi_score: s.qoi_score, quality_score: s.quality_score || null, originality_score: s.originality_score || null, impact_score: s.impact_score || null, event_title: eventMap.get(s.event_id)?.title || 'Open Arena', final_rank: null }));
+      const eventItems: LoopFeedItem[] = eventData.map(s => ({ id: `arena-event-${s.id}`, rawId: s.id, type: 'arena' as const, submission_url: s.submission_url!, platform: s.platform || 'tiktok', user_id: s.user_id, username: profileMap.get(s.user_id)?.username || 'editor', avatar_url: profileMap.get(s.user_id)?.avatar_url || null, created_at: s.submitted_at || new Date().toISOString(), thumbnail_url: getThumb(s.thumbnail_url), custom_title: s.custom_title || null, qoi_score: s.qoi_score, quality_score: s.quality_score || null, originality_score: s.originality_score || null, impact_score: s.impact_score || null, event_title: eventMap.get(s.event_id)?.title || 'Event', final_rank: s.final_rank || null }));
+      const sanctionedItems: LoopFeedItem[] = sanctionedData.map(s => ({ id: `arena-sanctioned-${s.id}`, rawId: s.id, type: 'arena' as const, submission_url: s.submission_url!, platform: s.submission_platform || 'tiktok', user_id: s.user_id, username: profileMap.get(s.user_id)?.username || 'editor', avatar_url: profileMap.get(s.user_id)?.avatar_url || null, created_at: s.submitted_at || new Date().toISOString(), thumbnail_url: getThumb(s.thumbnail_url), custom_title: s.custom_title || null, qoi_score: s.qoi_score, event_title: tournamentMap.get(s.tournament_id)?.title || 'Tournament', final_rank: s.final_rank || null }));
       const reviewItems: LoopFeedItem[] = reviewData.map(r => ({ id: `review-${r.id}`, rawId: r.id, type: 'review' as const, submission_url: r.submission_url, platform: r.platform || 'tiktok', user_id: r.user_id, username: r.username || 'editor', avatar_url: r.avatar_url, created_at: r.reviewed_at || r.requested_at, thumbnail_url: null, custom_title: null, total_score: r.total_score || 0, judge_comment: r.judge_comment, judge_username: r.judge_username, judge_avatar_url: r.judge_avatar_url }));
-      const battleItems: LoopFeedItem[] = battlesData.map(b => ({ id: `battle-${b.id}`, rawId: b.id, type: 'battle' as const, submission_url: b.challenger_submission_url || b.opponent_submission_url || '', platform: b.challenger_submission_platform || b.opponent_submission_platform || 'tiktok', user_id: b.challenger_id, username: b.challenger_username, avatar_url: b.challenger_avatar_url, created_at: b.updated_at || b.created_at, thumbnail_url: null, custom_title: null, battle_id: b.id, challenger_username: b.challenger_username, challenger_avatar_url: b.challenger_avatar_url, opponent_username: b.opponent_username, opponent_avatar_url: b.opponent_avatar_url, challenger_score: b.challenger_score, opponent_score: b.opponent_score, winner_id: b.winner_id, battle_status: b.status }));
-      const judgeVideoItems: LoopFeedItem[] = judgeVideosData.map(j => ({ id: `judge-video-${j.id}`, rawId: j.id, type: 'judge_video' as const, submission_url: j.video_url, platform: j.platform || 'tiktok', user_id: j.judge_id, username: profileMap.get(j.judge_id)?.username || 'judge', avatar_url: profileMap.get(j.judge_id)?.avatar_url || null, created_at: j.submitted_at || new Date().toISOString(), thumbnail_url: j.thumbnail_url || null, custom_title: null, video_title: j.title || 'Judge Rating Video', current_views: j.current_views, is_verified: true }));
+      const battleItems: LoopFeedItem[] = battlesData.map(b => ({ id: `quick-fight-${b.id}`, rawId: b.id, type: 'quick_fight' as const, submission_url: b.player_1_submission_url || b.player_2_submission_url || '', platform: 'tiktok', user_id: b.player_1_id, username: b.player_1_username, avatar_url: b.player_1_avatar_url, created_at: b.updated_at || b.created_at, thumbnail_url: b.player_1_thumbnail_url || null, custom_title: null, fight_id: b.id, fight_status: b.status, player_1_username: b.player_1_username, player_1_avatar_url: b.player_1_avatar_url, player_2_username: b.player_2_username, player_2_avatar_url: b.player_2_avatar_url, winner_id: b.winner_id, winner_score: b.winner_score, loser_score: b.loser_score }));
+      const judgeVideoItems: LoopFeedItem[] = judgeVideosData.map(j => ({ id: `judge-video-${j.id}`, rawId: j.id, type: 'judge_video' as const, submission_url: j.video_url, platform: j.platform || 'tiktok', user_id: j.judge_id, judge_id: j.judge_id, username: profileMap.get(j.judge_id)?.username || 'judge', avatar_url: profileMap.get(j.judge_id)?.avatar_url || null, created_at: j.submitted_at || new Date().toISOString(), thumbnail_url: j.thumbnail_url || null, custom_title: null, video_title: j.title || 'Judge Rating Video', current_views: j.current_views, is_verified: true }));
 
       const getBoost = (item: LoopFeedItem) => {
-        if (item.id.startsWith('battle-') && (item.battle_status === 'active' || item.battle_status === 'pending')) return 3;
-        if (item.id.startsWith('battle-') && item.battle_status === 'judging') return 2.5;
+        if (item.type === 'quick_fight' && (item.fight_status === 'active' || item.fight_status === 'judging')) return 3;
+        if (item.type === 'quick_fight' && item.fight_status === 'completed') return 1.5;
         if (item.id.startsWith('arena-event-')) return 2;
         if (item.id.startsWith('judge-video-')) return 1.8;
         if (item.id.startsWith('arena-sanctioned-')) return 1;
@@ -180,9 +185,16 @@ export default function FeedPage() {
 
   useEffect(() => { fetchFeed(false); }, []);
 
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const target = e.currentTarget;
-    if (target.scrollHeight - target.scrollTop - target.clientHeight < 400 && hasMore && !loadingMore) fetchFeed(true);
+  // Infinite scroll via sentinel — works regardless of which ancestor is the scroll container
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = loadMoreRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver((entries) => {
+      if (entries[0]?.isIntersecting && hasMore && !loadingMore) fetchFeed(true);
+    }, { rootMargin: '400px 0px' });
+    io.observe(el);
+    return () => io.disconnect();
   }, [fetchFeed, hasMore, loadingMore]);
 
   const filteredItems = feedItems.filter(item => {
@@ -198,7 +210,7 @@ export default function FeedPage() {
   });
 
   // Filtered + sorted posts for non-feed loop pills
-  const loopPosts = loopPill !== 'feed'
+  const loopPosts = (loopPill !== 'feed' && loopPill !== 'edit_battles')
     ? (() => {
         const filtered = feedPosts.filter(p => p.post_type === loopPill);
         if (loopPill === 'rate_edit') return [...filtered].sort((a, b) => (b.like_count || 0) - (a.like_count || 0));
@@ -234,7 +246,7 @@ export default function FeedPage() {
   }
 
   return (
-    <div className="h-[100dvh] pb-16 overflow-y-auto overscroll-y-contain" style={{ background: '#0d0d0d' }} onScroll={handleScroll}>
+    <div className="min-h-full pb-16" style={{ background: '#0d0d0d' }}>
       <div className="mx-auto flex w-full lg:max-w-[920px]">
         {/* Feed Column */}
         <div className="w-full lg:max-w-[600px] lg:border-r lg:border-border/10">
@@ -337,7 +349,7 @@ export default function FeedPage() {
                         <div className="absolute -bottom-0.5 -right-0.5 z-10"><VerifiedBadge size="sm" /></div>
                       )}
                     </div>
-                    <span className="text-[9px] text-muted-foreground/70 truncate max-w-[50px] leading-none">@{editor.username}</span>
+                    <SmartUsername userId={editor.id} username={editor.username} prefix="@" className="text-[9px] text-muted-foreground/70 truncate max-w-[50px] leading-none" />
                   </motion.button>
                 ))}
               </div>
@@ -347,11 +359,13 @@ export default function FeedPage() {
           {/* ─── Feed Content ─── */}
           <div className="mx-auto max-w-xl lg:max-w-none pb-24 lg:pb-0">
             {/* Inline composer */}
-            {user && (
+            {user && loopPill !== 'edit_battles' && (
               <FeedPostComposer userProfile={userProfile} onPost={createPost} onMobileTap={() => setShowCompose(true)} />
             )}
 
-            {loopPill === 'feed' && interleavedFeed ? (
+            {loopPill === 'edit_battles' ? (
+              <EditBattlesFeed />
+            ) : loopPill === 'feed' && interleavedFeed ? (
               interleavedFeed.length === 0 ? (
                 <EmptyState icon={<Play className="w-6 h-6 text-muted-foreground/30" />} title={LOOP_EMPTY.feed.title} subtitle={LOOP_EMPTY.feed.subtitle} />
               ) : (
@@ -386,6 +400,7 @@ export default function FeedPage() {
             {!hasMore && filteredItems.length > 0 && loopPill === 'feed' && (
               <p className="text-center text-xs text-muted-foreground/50 py-8">You've reached the end 🔥</p>
             )}
+            <div ref={loadMoreRef} aria-hidden className="h-1" />
           </div>
         </div>{/* end feed column */}
 

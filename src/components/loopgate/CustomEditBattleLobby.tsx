@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import QuickFightChat from "@/components/loopgate/QuickFightChat";
+import SmartUsername from "@/components/loopgate/SmartUsername";
 import { useLobbyMusicMute } from "@/components/loopgate/LobbyMusicPlayer";
 import type { OpenQueueEntry, QuickFight } from "@/hooks/useQuickFight";
 import { toast } from "sonner";
@@ -237,12 +238,12 @@ export default function CustomEditBattleLobby({
                   </Avatar>
                 </div>
               </div>
-              <span
+              <SmartUsername
+                userId={fight.player_1_id}
+                username={fight.player_1_username || ""}
                 className="mt-2.5 max-w-[110px] truncate text-[15px] font-black uppercase text-white"
                 style={{ fontFamily: "Teko, sans-serif" }}
-              >
-                {fight.player_1_username}
-              </span>
+              />
               {isHost && (
                 <span className="mt-0.5 text-[8px] font-black uppercase tracking-[0.25em]" style={{ color: P1_COLOR }}>
                   You
@@ -306,12 +307,12 @@ export default function CustomEditBattleLobby({
               </div>
               {fight.player_2_id ? (
                 <>
-                  <span
+                  <SmartUsername
+                    userId={fight.player_2_id}
+                    username={fight.player_2_username || ""}
                     className="mt-2.5 max-w-[110px] truncate text-[15px] font-black uppercase text-white"
                     style={{ fontFamily: "Teko, sans-serif" }}
-                  >
-                    {fight.player_2_username}
-                  </span>
+                  />
                   {viewerId === fight.player_2_id && (
                     <span className="mt-0.5 text-[8px] font-black uppercase tracking-[0.25em]" style={{ color: P2_COLOR }}>
                       You

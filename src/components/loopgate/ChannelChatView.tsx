@@ -16,6 +16,7 @@ import CrewTypingIndicator from "@/components/loopgate/CrewTypingIndicator";
 import MessageReactions from "@/components/loopgate/MessageReactions";
 import PinnedMessagesPanel from "@/components/loopgate/PinnedMessagesPanel";
 import BotMessageBadge from "@/components/loopgate/BotMessageBadge";
+import SmartUsername from "@/components/loopgate/SmartUsername";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -459,15 +460,16 @@ export default function ChannelChatView({
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span
-                            className={cn(
-                              "text-[13px] font-semibold hover:underline cursor-pointer",
-                              group.messages[0]?.is_bot && "text-primary"
-                            )}
-                            onClick={() => !group.messages[0]?.is_bot && navigate(`/u/${group.username}`)}
-                          >
-                            {group.messages[0]?.is_bot ? botName : (group.display_name || group.username)}
-                          </span>
+                          {group.messages[0]?.is_bot ? (
+                            <span className="text-[13px] font-semibold text-primary">{botName}</span>
+                          ) : (
+                            <button
+                              className="text-[13px] font-semibold hover:underline cursor-pointer truncate"
+                              onClick={() => navigate(`/u/${group.username}`)}
+                            >
+                              <SmartUsername userId={group.user_id} username={group.display_name || group.username} />
+                            </button>
+                          )}
                           {group.messages[0]?.is_bot && <BotMessageBadge />}
                           <span className="text-[10px] text-muted-foreground/40">
                             {format(group.firstMessageTime, "h:mm a")}
@@ -586,7 +588,7 @@ export default function ChannelChatView({
         <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/20 border-t border-border/20 shrink-0">
           <CornerUpLeft className="w-3 h-3 text-primary/60 shrink-0" />
           <span className="text-[11px] text-muted-foreground/60 truncate flex-1">
-            Replying to <span className="font-semibold text-foreground/60">{replyingTo.display_name || replyingTo.username}</span>
+            Replying to <SmartUsername userId={replyingTo.user_id} username={replyingTo.display_name || replyingTo.username} className="font-semibold text-foreground/60" />
             {" — "}{replyingTo.message_text.substring(0, 60)}
           </span>
           <button onClick={() => setReplyingTo(null)} className="p-0.5 text-muted-foreground/40 hover:text-muted-foreground shrink-0">

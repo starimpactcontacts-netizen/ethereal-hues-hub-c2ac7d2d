@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Trophy, ChevronRight, ArrowUp, ArrowDown, Minus, Flame } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import SmartUsername from "@/components/loopgate/SmartUsername";
 
 interface EditorRow {
   id: string;
@@ -12,7 +13,10 @@ interface EditorRow {
   global_index_score: number | null;
   total_wins: number | null;
   level: number | null;
+  metric?: number; // tab-specific count (comp wins / battle wins)
 }
+
+type TabKey = 'qoi' | 'comp' | 'battle';
 
 /** Custom podium marks — bespoke geometric medals, not lucide presets. */
 function PodiumMark({ rank }: { rank: 1 | 2 | 3 }) {
@@ -52,11 +56,15 @@ function PodiumMark({ rank }: { rank: 1 | 2 | 3 }) {
  * by their best gatekeeper QOI score (the QOI ranking system).
  */
 export default function ArenaQOITop() {
-  const [rows, setRows] = useState<EditorRow[]>([]);
+  const [tab, setTab] = useState<TabKey>('qoi');
+  const [rowsByTab, setRowsByTab] = useState<Record<TabKey, EditorRow[]>>({ qoi: [], comp: [], battle: [] });
   const [loading, setLoading] = useState(true);
   const [prevRanks, setPrevRanks] = useState<Record<string, number>>({});
   const [showAll, setShowAll] = useState(false);
 
+  const rows = rowsByTab[tab];
+
+  // Load QOI ranking (existing logic) on mount + realtime
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
@@ -112,7 +120,7 @@ export default function ArenaQOITop() {
             localStorage.setItem('arena_top_editors_ranks_w1', JSON.stringify({ week, ranks: snap }));
           }
         } catch {}
-        setRows(fresh);
+        setRowsByTab(prev => ({ ...prev, qoi: fresh }));
         setLoading(false);
       }
     };
@@ -126,7 +134,63 @@ export default function ArenaQOITop() {
     return () => { cancelled = true; supabase.removeChannel(ch); };
   }, []);
 
+  // Load Most Comp Wins + Most Edit Battle Wins (lazy per tab, cached)
+  useEffect(() => {
+    if (tab === 'qoi' || rowsByTab[tab].length) return;
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      let counts: Record<string, number> = {};
+      if (tab === 'comp') {
+        const { data } = await supabase
+          .from('competition_submissions')
+          .select('user_id')
+          .eq('is_winner', true)
+          .limit(5000);
+        (data || []).forEach((r: any) => { if (r.user_id) counts[r.user_id] = (counts[r.user_id] || 0) + 1; });
+      } else {
+        const [battlesRes, quickRes] = await Promise.all([
+          supabase.from('battles').select('winner_id').not('winner_id', 'is', null).limit(5000),
+          (supabase.from('quick_fights') as any).select('winner_id').not('winner_id', 'is', null).limit(5000),
+        ]);
+        (battlesRes.data || []).forEach((r: any) => { if (r.winner_id) counts[r.winner_id] = (counts[r.winner_id] || 0) + 1; });
+        (quickRes.data || []).forEach((r: any) => { if (r.winner_id) counts[r.winner_id] = (counts[r.winner_id] || 0) + 1; });
+      }
+      const topIds = Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 50)
+        .map(([id]) => id);
+      if (!topIds.length) {
+        if (!cancelled) { setRowsByTab(p => ({ ...p, [tab]: [] })); setLoading(false); }
+        return;
+      }
+      const { data: profs } = await supabase
+        .from('profiles')
+        .select('id, username, avatar_url, best_gatekeeper_qoi, global_index_score, total_wins, level')
+        .in('id', topIds)
+        .eq('is_hidden', false);
+      const byId = new Map<string, EditorRow>();
+      (profs as EditorRow[] || []).forEach(p => byId.set(p.id, p));
+      const merged = topIds
+        .map(id => byId.get(id) ? { ...byId.get(id)!, metric: counts[id] } : null)
+        .filter(Boolean)
+        .filter((r: any) => (r.username || '').toLowerCase() !== 'amid') as EditorRow[];
+      if (!cancelled) {
+        setRowsByTab(p => ({ ...p, [tab]: merged }));
+        setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [tab]);
+
+  // Toggle loading when switching to an already-cached tab
+  useEffect(() => {
+    if (rowsByTab[tab].length) setLoading(false);
+  }, [tab, rowsByTab]);
+
   if (!loading && rows.length === 0) return null;
+
+  const metricLabel = tab === 'qoi' ? 'IDX' : 'WINS';
 
   return (
     <div className="mb-5">
@@ -147,6 +211,26 @@ export default function ArenaQOITop() {
         </Link>
       </div>
 
+      {/* Section tabs */}
+      <div className="px-4 mb-3 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+        {([
+          { k: 'qoi' as TabKey, label: 'Top Index' },
+          { k: 'comp' as TabKey, label: 'Most Comp Wins' },
+          { k: 'battle' as TabKey, label: 'Most Battle Wins' },
+        ]).map(t => {
+          const active = tab === t.k;
+          return (
+            <button
+              key={t.k}
+              onClick={() => { setTab(t.k); setShowAll(false); }}
+              className={`px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.12em] border whitespace-nowrap transition-colors ${active ? 'bg-foreground text-background border-foreground' : 'bg-white/[0.03] text-muted-foreground/70 border-white/10 hover:text-foreground hover:border-white/30'}`}
+            >
+              {t.label}
+            </button>
+          );
+        })}
+      </div>
+
       <div className="space-y-2 px-4">
         {loading ? (
           <>
@@ -155,47 +239,54 @@ export default function ArenaQOITop() {
         ) : (
           (showAll ? rows : rows.slice(0, 4)).map((row, i) => {
             const rank = i + 1;
-            const idx = Number(row.global_index_score || 0);
-            const idxLabel = idx >= 1000 ? `${(idx / 1000).toFixed(idx >= 10000 ? 0 : 1)}K` : idx.toFixed(0);
-            const rankBadgeBg = rank === 1 ? 'bg-[#D4A857] text-black' : rank === 2 ? 'bg-zinc-400 text-black' : rank === 3 ? 'bg-amber-700 text-white' : 'bg-black/60 text-white/70';
+            const rawScore = tab === 'qoi' ? Number(row.global_index_score || 0) : Number(row.metric || 0);
+            const idxLabel = tab === 'qoi'
+              ? (rawScore >= 1000 ? `${(rawScore / 1000).toFixed(rawScore >= 10000 ? 0 : 1)}K` : rawScore.toFixed(0))
+              : rawScore.toString();
+            const rankBadgeBg = rank === 1 ? 'bg-[#D4A857] text-black' : rank === 2 ? 'bg-zinc-300 text-black' : rank === 3 ? 'bg-amber-700 text-white' : 'bg-white/[0.06] text-white/70';
             const scoreColor = rank === 1 ? 'text-[#D4A857]' : rank <= 3 ? 'text-foreground' : 'text-foreground/80';
-            const cardBg = rank === 1 ? 'bg-gradient-to-r from-[#D4A857]/[0.08] to-white/[0.02] border-[#D4A857]/20' : 'bg-white/[0.03] border-white/[0.06]';
+            const cardBg = rank === 1 ? 'bg-[#161310] border-[#D4A857]/40' : 'bg-[#0c0c0e] border-white/10';
 
             return (
               <Link
                 key={row.id}
                 to={`/u/${row.username}`}
-                className={`flex items-center gap-3 p-3 rounded-xl border ${cardBg} active:opacity-70 transition-opacity`}
+                className={`relative flex items-center gap-3 p-3 border ${cardBg} active:opacity-70 transition-opacity`}
+                style={{ clipPath: 'polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px))' }}
               >
+                {/* hard corner notches */}
+                <span className="pointer-events-none absolute top-0 right-0 w-[14px] h-[14px] bg-background" />
+                <span className={`pointer-events-none absolute top-0 right-0 w-[18px] h-px ${rank === 1 ? 'bg-[#D4A857]' : 'bg-white/40'} rotate-45 origin-top-right translate-x-[-1px]`} />
                 {/* Avatar with rank badge overlaid */}
                 <div className="relative shrink-0">
-                  <Avatar className="w-[52px] h-[52px] rounded-xl border border-white/10">
+                  <Avatar className="w-[52px] h-[52px] rounded-none border border-white/15">
                     <AvatarImage src={row.avatar_url || ''} className="object-cover" />
-                    <AvatarFallback className="bg-white/[0.06] text-foreground text-base font-black rounded-xl">
+                    <AvatarFallback className="bg-white/[0.06] text-foreground text-base font-black rounded-none">
                       {row.username?.[0]?.toUpperCase() || '?'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className={`absolute -top-1.5 -left-1.5 w-5 h-5 rounded-md flex items-center justify-center ${rankBadgeBg} shadow-lg`}>
+                  <div className={`absolute -top-1.5 -left-1.5 w-6 h-6 flex items-center justify-center ${rankBadgeBg} shadow-lg`}
+                       style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 70% 100%, 0 100%)' }}>
                     {rank <= 3 ? (
-                      rank === 1 ? <PodiumMark rank={1} /> : <span className="text-[10px] font-black">{rank}</span>
+                      rank === 1 ? <PodiumMark rank={1} /> : <span className="text-[11px] font-black font-mono">{rank}</span>
                     ) : (
-                      <span className="text-[9px] font-black">{rank}</span>
+                      <span className="text-[10px] font-black font-mono">{rank}</span>
                     )}
                   </div>
                 </div>
 
                 {/* Name + meta */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-[14px] font-bold text-foreground truncate leading-tight">{row.username}</p>
+                  <SmartUsername userId={row.id} username={row.username} className="text-[14px] font-bold text-foreground truncate leading-tight" />
                   <div className="flex items-center gap-2 mt-1">
-                    {row.level ? <span className="text-[10px] text-muted-foreground/60">Lvl {row.level}</span> : null}
-                    {(() => {
+                    {row.level ? <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground/60">L{row.level}</span> : null}
+                    {tab === 'qoi' && (() => {
                       const prev = prevRanks[row.id];
                       if (!prev) return null;
                       const delta = prev - rank;
                       if (delta > 0) {
                         return (
-                          <span className={`inline-flex items-center gap-0.5 px-1 py-px rounded text-[9px] font-black border ${delta >= 5 ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300' : 'bg-emerald-500/10 border-emerald-400/30 text-emerald-300'}`}>
+                          <span className={`inline-flex items-center gap-0.5 px-1 py-px text-[9px] font-black font-mono border ${delta >= 5 ? 'bg-emerald-500/20 border-emerald-400/60 text-emerald-300' : 'bg-emerald-500/10 border-emerald-400/40 text-emerald-300'}`}>
                             {delta >= 5 ? <Flame className="w-2.5 h-2.5" strokeWidth={2.75} fill="currentColor" /> : <ArrowUp className="w-2.5 h-2.5" strokeWidth={3} />}
                             +{delta}
                           </span>
@@ -203,16 +294,21 @@ export default function ArenaQOITop() {
                       }
                       if (delta < 0) {
                         return (
-                          <span className="inline-flex items-center gap-0.5 px-1 py-px rounded bg-red-500/10 border border-red-400/30 text-[9px] font-black text-red-300">
+                          <span className="inline-flex items-center gap-0.5 px-1 py-px bg-red-500/10 border border-red-400/40 text-[9px] font-black font-mono text-red-300">
                             <ArrowDown className="w-2.5 h-2.5" strokeWidth={3} />{delta}
                           </span>
                         );
                       }
                       return <Minus className="w-2.5 h-2.5 text-muted-foreground/30" strokeWidth={3} />;
                     })()}
-                    {row.best_gatekeeper_qoi ? (
-                      <span className="text-[9px] text-purple-300/70 font-semibold">QOI {Number(row.best_gatekeeper_qoi).toFixed(1)}</span>
+                    {tab === 'qoi' && row.best_gatekeeper_qoi ? (
+                      <span className="text-[9px] text-purple-300/80 font-bold font-mono tracking-wider">QOI {Number(row.best_gatekeeper_qoi).toFixed(1)}</span>
                     ) : null}
+                    {tab !== 'qoi' && (
+                      <span className="text-[9px] text-muted-foreground/60 font-bold font-mono tracking-wider uppercase">
+                        {tab === 'comp' ? 'Competition Victories' : 'Edit Battle Victories'}
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -221,7 +317,7 @@ export default function ArenaQOITop() {
                   <span className={`font-black text-[22px] tabular-nums leading-none ${scoreColor}`} style={{ fontFamily: "Teko, sans-serif", letterSpacing: "0.02em" }}>
                     {idxLabel}
                   </span>
-                  <span className="block text-[8px] text-muted-foreground/40 uppercase tracking-widest font-bold">IDX</span>
+                  <span className="block text-[8px] text-muted-foreground/40 uppercase tracking-widest font-bold">{metricLabel}</span>
                 </div>
               </Link>
             );

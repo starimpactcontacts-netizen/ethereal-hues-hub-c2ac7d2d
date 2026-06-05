@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import SmartUsername from "@/components/loopgate/SmartUsername";
 
 interface BattleInviteModalProps {
   isOpen: boolean;
@@ -230,7 +231,7 @@ export default function BattleInviteModal({
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 text-left">
-                        <span className="text-sm text-foreground font-medium">{user.username}</span>
+                        <SmartUsername userId={user.id} username={user.username} className="text-sm text-foreground font-medium" />
                         <span className="text-[10px] text-muted-foreground block uppercase">
                           {user.league || 'Open'} League
                         </span>

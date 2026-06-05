@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import UnitFeedCommentsSheet from "./UnitFeedCommentsSheet";
+import SmartUsername from "./SmartUsername";
 
 interface UnitFeedPostCardProps {
   post: FeedPost;
@@ -69,7 +70,9 @@ export default function UnitFeedPostCard({ post, isStaff, onReact, onPin, onDele
           </Avatar>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold truncate">{post.display_name || post.username}</span>
+              <span className="text-sm font-semibold truncate">
+                <SmartUsername userId={post.user_id} username={post.display_name || post.username} />
+              </span>
               <Badge variant="outline" className={`text-[10px] px-1.5 py-0 h-4 ${typeBadge.color}`}>
                 {typeBadge.icon}
                 <span className="ml-1">{typeBadge.label}</span>
@@ -77,7 +80,7 @@ export default function UnitFeedPostCard({ post, isStaff, onReact, onPin, onDele
               {post.is_pinned && <Pin className="w-3 h-3 text-gold shrink-0" />}
             </div>
             <p className="text-[11px] text-muted-foreground">
-              @{post.username} · {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+              <SmartUsername userId={post.user_id} username={post.username} prefix="@" /> · {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
             </p>
           </div>
           {(isStaff || isOwner) && (

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { getBunnyPlaybackCandidates, getBunnyPlaybackUrl, isBunnyVideoUrl } from "@/lib/bunnyPlayback";
+import SmartUsername from "@/components/loopgate/SmartUsername";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 
@@ -243,7 +244,7 @@ function BattleVideoSlot({ side }: { side: Side }) {
           </div>
           <div className="text-center">
             <p className="text-[11px] font-black uppercase tracking-[0.28em] text-white" style={teko}>Edit Submitted</p>
-            <p className="text-[8px] text-white/35 tracking-widest mt-0.5">@{side.username}</p>
+            <SmartUsername userId={side.userId} username={side.username} prefix="@" className="text-[8px] text-white/35 tracking-widest mt-0.5" />
           </div>
         </div>
       )}

@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import GifPicker from "./GifPicker";
 import ChatReplyBar from "./ChatReplyBar";
 import { useNavigate } from "react-router-dom";
+import SmartUsername from "./SmartUsername";
 
 interface CashBattleMessage {
   id: string;
@@ -162,7 +163,9 @@ export default function CashBattleChat({ battleId, challengerId, opponentId }: P
                     <div className="flex items-start gap-1">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <span className={`text-[10px] font-bold ${getNameColor(msg.user_id)}`}>{msg.username}</span>
+                          <span className={`text-[10px] font-bold ${getNameColor(msg.user_id)}`}>
+                            <SmartUsername userId={msg.user_id} username={msg.username} />
+                          </span>
                           {getRoleBadge(msg.user_id)}
                           <span className="text-[8px] text-zinc-700">{formatTime(msg.created_at)}</span>
                         </div>

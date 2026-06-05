@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import ThumbnailImage from "./ThumbnailImage";
 import FeedInlineComments from "./FeedInlineComments";
 import VerifiedBadge from "./VerifiedBadge";
+import SmartUsername from "@/components/loopgate/SmartUsername";
 
 export interface LoopFeedItem {
   id: string;
@@ -32,9 +33,12 @@ export interface LoopFeedItem {
   final_rank?: number | null;
   total_score?: number;
   judge_comment?: string | null;
+  judge_id?: string | null;
   judge_username?: string | null;
   judge_avatar_url?: string | null;
   battle_id?: string;
+  challenger_id?: string;
+  opponent_id?: string | null;
   opponent_username?: string | null;
   challenger_username?: string | null;
   challenger_avatar_url?: string | null;
@@ -178,7 +182,7 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
                 onClick={() => navigate(`/editor/${item.user_id}`)}
                 className="font-bold text-foreground text-[12px] hover:underline truncate"
               >
-                {item.username}
+                <SmartUsername userId={item.user_id} username={item.username} />
               </button>
               {item.is_verified && <VerifiedBadge size="sm" />}
               <span className="text-muted-foreground text-[11px] truncate">@{item.username}</span>
@@ -190,7 +194,7 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
             {item.type === 'quick_fight' ? (
               <div className="mb-2">
                 <p className="text-[14px] text-foreground leading-snug mb-1">
-                  ⚔️ <span className="font-bold">{item.player_1_username}</span>
+                  ⚔️ <SmartUsername userId={item.user_id} username={item.player_1_username || item.username} className="font-bold" />
                   <span className="text-muted-foreground"> vs </span>
                   <span className="font-bold">{item.player_2_username || '???'}</span>
                 </p>
@@ -213,9 +217,9 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
             ) : item.type === 'battle' ? (
               <div className="mb-2">
                 <p className="text-[14px] text-foreground leading-snug mb-1">
-                  ⚔️ <span className="font-bold">{item.challenger_username}</span>
+                  ⚔️ <SmartUsername userId={item.challenger_id || item.user_id} username={item.challenger_username || item.username} className="font-bold" />
                   <span className="text-muted-foreground"> vs </span>
-                  <span className="font-bold">{item.opponent_username || '???'}</span>
+                  {item.opponent_username ? <SmartUsername userId={item.opponent_id} username={item.opponent_username} className="font-bold" /> : <span className="font-bold">???</span>}
                 </p>
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className={`text-[11px] font-bold ${badge.cls} flex items-center gap-1`}>{badge.icon} {badge.label}</span>
@@ -238,7 +242,7 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
                   <p className="text-[13px] text-muted-foreground leading-snug mt-1 line-clamp-2 italic">
                     "{item.judge_comment}"
                     {item.judge_username && (
-                      <span className="text-foreground font-medium not-italic ml-1">— @{item.judge_username}</span>
+                      <span className="text-foreground font-medium not-italic ml-1">— <SmartUsername userId={item.judge_id} username={item.judge_username} prefix="@" /></span>
                     )}
                   </p>
                 )}

@@ -1,5 +1,5 @@
 import { Outlet, useLocation } from 'react-router-dom';
-import { Suspense, type CSSProperties } from 'react';
+import { Suspense, useEffect, useState, type CSSProperties } from 'react';
 import AppHeader from './AppHeader';
 import BottomNav from './BottomNav';
 import LoadingScreen from './LoadingScreen';
@@ -18,7 +18,8 @@ export default function AuthenticatedLayout() {
   const hideHeaderPaths = ['/messages', '/editorium', '/judge-panel', '/judges', '/missions', '/shop', '/competition/', '/fight/', '/collabs', '/collab/', '/duo-battle/', '/event/', '/units/'];
   const hideNav = hideNavPaths.some(path => location.pathname.startsWith(path));
   const hideHeader = hideHeaderPaths.some(path => location.pathname.startsWith(path));
-  const showNav = !hideNav;
+  const [composeOpen, setComposeOpen] = useState(false);
+  const showNav = !hideNav && !composeOpen;
   const safeFill = getPageSafeFill(location.pathname);
   const shellStyle = {
     '--app-safe-fill': safeFill,
@@ -34,15 +35,25 @@ export default function AuthenticatedLayout() {
   useGlobalTapSound();
   useRecoverBodyScroll();
 
+  useEffect(() => {
+    const syncComposeState = (event?: Event) => {
+      const detail = event instanceof CustomEvent ? event.detail : undefined;
+      setComposeOpen(detail === true || document.documentElement.dataset.composeOpen === 'true');
+    };
+    syncComposeState();
+    window.addEventListener('loopgate-compose-open', syncComposeState);
+    return () => window.removeEventListener('loopgate-compose-open', syncComposeState);
+  }, []);
+
   return (
     <div className="fixed inset-0 text-foreground flex flex-col overflow-hidden" style={shellStyle}>
-      <div aria-hidden className="pointer-events-none fixed inset-x-0 top-0 z-[60]" style={{ height: 'env(safe-area-inset-top, 0px)', backgroundColor: 'hsl(var(--app-safe-fill))' }} />
-      {!hideNav && !hideHeader && <AppHeader />}
+      {!composeOpen && <div aria-hidden className="pointer-events-none fixed inset-x-0 top-0 z-[60]" style={{ height: 'env(safe-area-inset-top, 0px)', backgroundColor: 'hsl(var(--app-safe-fill))' }} />}
+      {!composeOpen && !hideNav && !hideHeader && <AppHeader />}
       <main
         className="flex-1 min-h-0 overflow-y-auto overscroll-none"
         style={{
           backgroundColor: 'hsl(var(--app-safe-fill))',
-          paddingBottom: showNav ? 'var(--app-bottom-nav-height)' : 'env(safe-area-inset-bottom, 0px)',
+          paddingBottom: showNav ? 'var(--app-bottom-nav-height)' : composeOpen ? 0 : 'env(safe-area-inset-bottom, 0px)',
           WebkitOverflowScrolling: 'touch',
           touchAction: 'pan-y',
         }}
@@ -53,8 +64,8 @@ export default function AuthenticatedLayout() {
       </main>
       {showNav && <BottomNav />}
 
-      <TicketFAB />
-      <LobbyMusicPlayer />
+      {!composeOpen && <TicketFAB />}
+      {!composeOpen && <LobbyMusicPlayer />}
       <GlobalWinCelebration />
       <CompCancelledModal />
     </div>

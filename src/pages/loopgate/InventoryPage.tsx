@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import FoundingBadge from "@/components/loopgate/FoundingBadge";
 import AuraUsername from "@/components/loopgate/AuraUsername";
+import { primeAura } from "@/lib/auraCache";
 
 interface OwnedItem {
   id: string;
@@ -83,12 +84,29 @@ export default function InventoryPage() {
       }
 
       // Sync equipped_aura on profile when toggling aura items
-      const AURA_NAMES = ['SPECTER', 'HELLFIRE', 'SOVEREIGN'];
-      if (AURA_NAMES.includes(purchase.item.name)) {
+      if (purchase.item?.category === 'aura') {
+        const newAura = newState ? purchase.item.name.toLowerCase() : null;
         await supabase
           .from("profiles")
-          .update({ equipped_aura: newState ? purchase.item.name.toLowerCase() : null } as any)
+          .update({ equipped_aura: newAura } as any)
           .eq("id", user.id);
+        primeAura(user.id, newAura);
+        // Unequip any other aura purchases locally so only one stays equipped
+        if (newState) {
+          setItems((prev) =>
+            prev.map((i) =>
+              i.item?.category === 'aura' && i.id !== purchase.id
+                ? { ...i, is_equipped: false }
+                : i
+            )
+          );
+          await supabase
+            .from("shop_purchases")
+            .update({ is_equipped: false } as any)
+            .eq("user_id", user.id)
+            .neq("id", purchase.id)
+            .in("item_id", items.filter((i) => i.item?.category === 'aura' && i.id !== purchase.id).map((i) => i.item_id));
+        }
       }
     }
     setToggling(null);

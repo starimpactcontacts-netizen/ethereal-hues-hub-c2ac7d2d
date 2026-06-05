@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { CompetitionSubmission } from "@/hooks/useCompetitions";
+import SmartUsername from "./SmartUsername";
 
 const teko = { fontFamily: "Teko, sans-serif" };
 
@@ -130,8 +131,8 @@ function EditDetailView({
             <button onClick={onClose} className="p-1">
               <X className="w-5 h-5 text-muted-foreground" />
             </button>
-            <span className="text-sm font-bold text-foreground truncate uppercase" style={teko}>
-              #{rank} — @{sub.username}
+            <span className="text-sm font-bold text-foreground truncate uppercase flex items-center gap-1" style={teko}>
+              #{rank} — <SmartUsername userId={sub.user_id} username={sub.username} prefix="@" />
             </span>
           </div>
           {sub.score !== null && (
@@ -180,7 +181,7 @@ function EditDetailView({
               <AvatarFallback className="text-sm bg-surface-1 font-bold">{sub.username?.[0]?.toUpperCase()}</AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <span className="text-sm font-bold text-foreground">@{sub.username}</span>
+              <SmartUsername userId={sub.user_id} username={sub.username} prefix="@" className="text-sm font-bold text-foreground" />
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-[10px] text-muted-foreground/50 uppercase">{sub.platform}</span>
                 {rank === 1 && <CustomCrown className="w-3 h-3 text-amber-400" />}
@@ -427,7 +428,7 @@ export default function CompetitionLeaderboard({
                       <AvatarFallback className="text-xs bg-surface-1 font-bold">{winner.username?.[0]?.toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0 text-left">
-                      <div className="text-sm font-extrabold text-white truncate" style={teko}>@{winner.username}</div>
+                      <SmartUsername userId={winner.user_id} username={winner.username} prefix="@" className="text-sm font-extrabold text-white truncate block" style={teko} />
                       <div className="text-[10px] text-white/60 uppercase tracking-wider">{winner.platform}</div>
                     </div>
                     {(winner.vote_count || 0) > 0 && (
@@ -500,7 +501,7 @@ export default function CompetitionLeaderboard({
                           <AvatarImage src={sub.avatar_url || ""} />
                           <AvatarFallback className="text-[7px] bg-surface-1 font-bold">{sub.username?.[0]?.toUpperCase()}</AvatarFallback>
                         </Avatar>
-                        <span className="text-[10px] font-bold text-white truncate">{sub.username}</span>
+                        <SmartUsername userId={sub.user_id} username={sub.username} className="text-[10px] font-bold text-white truncate" />
                       </div>
                       <span className="text-[8px] text-white/40 uppercase mt-0.5 block">{sub.platform}</span>
                     </div>
@@ -541,7 +542,7 @@ export default function CompetitionLeaderboard({
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-bold text-foreground truncate">{sub.username}</span>
+                        <SmartUsername userId={sub.user_id} username={sub.username} className="text-xs font-bold text-foreground truncate" />
                         {isKing && <CustomCrown className="w-3 h-3 text-amber-400 shrink-0" />}
                       </div>
                       <span className="text-[9px] text-muted-foreground/40 uppercase">{sub.platform}</span>

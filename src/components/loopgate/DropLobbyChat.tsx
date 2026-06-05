@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import GifPicker from "./GifPicker";
+import SmartUsername from "./SmartUsername";
 
 interface Message {
   id: string;
@@ -290,9 +291,13 @@ export default function DropLobbyChat({ dropId }: DropLobbyChatProps) {
                       <div className={`flex items-center gap-2 mb-1 ${isOwn ? 'flex-row-reverse' : ''}`}>
                         <button
                           onClick={() => handleMention(msg.username)}
-                          className="text-[11px] font-bold text-foreground hover:text-red-400 transition-colors"
+                          className="hover:opacity-80 transition-opacity"
                         >
-                          {msg.username}
+                          <SmartUsername
+                            userId={msg.user_id}
+                            username={msg.username}
+                            className="text-[11px] font-bold text-foreground"
+                          />
                         </button>
                         <span className="text-[9px] text-muted-foreground/50">{formatTime(msg.created_at)}</span>
                       </div>

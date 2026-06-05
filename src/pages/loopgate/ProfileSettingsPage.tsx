@@ -21,6 +21,7 @@ import AccountSecuritySection from "@/components/loopgate/AccountSecuritySection
 import EmailNotificationSettings from "@/components/loopgate/EmailNotificationSettings";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
+import SmartUsername from "@/components/loopgate/SmartUsername";
 
 const platformLabels: Record<string, string> = {
   tiktok: "TikTok",
@@ -289,8 +290,8 @@ export default function ProfileSettingsPage() {
           <AvatarFallback className="bg-white/5 text-white font-black text-[15px]">{profile.username?.[0]?.toUpperCase()}</AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <p className="text-[14px] font-black text-white truncate">{profile.display_name || profile.username}</p>
-          <p className="text-[11px] text-white/35">@{profile.username}</p>
+          <p className="text-[14px] font-black text-white truncate"><SmartUsername userId={profile.id} username={profile.display_name || profile.username} className="truncate" /></p>
+          <p className="text-[11px] text-white/35"><SmartUsername userId={profile.id} username={profile.username} prefix="@" /></p>
         </div>
         <Link to="/profile" className="text-[11px] font-bold text-white/40 hover:text-white/70 border border-white/10 px-2.5 py-1.5 transition-colors">
           View →
@@ -324,7 +325,7 @@ export default function ProfileSettingsPage() {
           </div>
         ) : (
           <div className="flex items-center justify-between">
-            <span className="text-[14px] font-medium text-white/80">@{profile.username}</span>
+            <span className="text-[14px] font-medium text-white/80"><SmartUsername userId={profile.id} username={profile.username} prefix="@" /></span>
             {daysUntilUsernameChange === 0 && (
               <button onClick={() => setIsEditingUsername(true)} className="text-[11px] font-bold text-white/40 hover:text-white border border-white/10 px-2.5 py-1.5 transition-colors">Edit</button>
             )}

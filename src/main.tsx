@@ -4,7 +4,7 @@ import "./index.css";
 import { initializeNativeApp, disableZoom } from "./lib/native";
 
 // ── CACHE VERSION — bump this string to force a full wipe on all devices ──
-const CACHE_VERSION = "v2026-05-19a";
+const CACHE_VERSION = "v2026-06-05-feed-quick-fights";
 
 const didWipe = localStorage.getItem("lg_cache_version");
 if (didWipe !== CACHE_VERSION) {
@@ -19,7 +19,9 @@ if (didWipe !== CACHE_VERSION) {
         const keys = await caches.keys();
         await Promise.all(keys.map(k => caches.delete(k)));
       }
-    } catch (_) {}
+    } catch (error) {
+      console.debug("Cache reset skipped", error);
+    }
     localStorage.setItem("lg_cache_version", CACHE_VERSION);
     window.location.reload();
   })();

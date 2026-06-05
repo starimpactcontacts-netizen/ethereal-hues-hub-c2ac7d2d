@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { QuickFight } from '@/hooks/useQuickFight';
+import SmartUsername from './SmartUsername';
 
 function Corner({ pos }: { pos: 'tl' | 'tr' | 'bl' | 'br' }) {
   const t = pos[0] === 't', l = pos[1] === 'l';
@@ -116,10 +117,12 @@ export default function FeaturedEditBattlesSection() {
                       {current.player_1_username?.[0]?.toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <p className="relative z-10 text-[12px] font-black text-white/85 truncate w-full text-center uppercase tracking-wider"
-                    style={{ fontFamily: 'Teko, sans-serif' }}>
-                    {current.player_1_username}
-                  </p>
+                  <SmartUsername
+                    userId={current.player_1_id}
+                    username={current.player_1_username || '?'}
+                    className="relative z-10 text-[12px] font-black text-white/85 truncate w-full text-center uppercase tracking-wider"
+                    style={{ fontFamily: 'Teko, sans-serif' }}
+                  />
                   <span className="relative z-10 text-[48px] font-black text-white/90 tabular-nums leading-none"
                     style={{ fontFamily: 'Teko, sans-serif' }}>
                     {votes.blue}
@@ -156,10 +159,12 @@ export default function FeaturedEditBattlesSection() {
                       {current.player_2_username?.[0]?.toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <p className="relative z-10 text-[12px] font-black text-white/85 truncate w-full text-center uppercase tracking-wider"
-                    style={{ fontFamily: 'Teko, sans-serif' }}>
-                    {current.player_2_username}
-                  </p>
+                  <SmartUsername
+                    userId={current.player_2_id}
+                    username={current.player_2_username || '?'}
+                    className="relative z-10 text-[12px] font-black text-white/85 truncate w-full text-center uppercase tracking-wider"
+                    style={{ fontFamily: 'Teko, sans-serif' }}
+                  />
                   <span className="relative z-10 text-[48px] font-black text-white/90 tabular-nums leading-none"
                     style={{ fontFamily: 'Teko, sans-serif' }}>
                     {votes.red}

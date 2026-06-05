@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 
 import DropSubmissionCard from "@/components/loopgate/DropSubmissionCard";
 import DropLeaderboardRow from "@/components/loopgate/DropLeaderboardRow";
+import SmartUsername from "@/components/loopgate/SmartUsername";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
@@ -407,7 +408,7 @@ export default function FeaturedDropDetailPage() {
                   {activeRound.judge_username && (
                     <div className="flex items-center gap-1.5 px-2 py-1 bg-gold/10 rounded-full">
                       <Award className="w-3 h-3 text-gold" />
-                      <span className="text-[9px] font-bold text-gold">Judge: @{activeRound.judge_username}</span>
+                      <span className="text-[9px] font-bold text-gold">Judge: <SmartUsername userId={activeRound.judge_id} username={activeRound.judge_username} prefix="@" /></span>
                     </div>
                   )}
                 </div>
@@ -600,7 +601,7 @@ export default function FeaturedDropDetailPage() {
                         {currentRound.judge_username?.[0]}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-xs font-bold text-foreground">@{currentRound.judge_username}</span>
+                    <SmartUsername userId={currentRound.judge_id} username={currentRound.judge_username} prefix="@" className="text-xs font-bold text-foreground" />
                   </div>
                 )}
               </motion.div>
@@ -634,7 +635,7 @@ export default function FeaturedDropDetailPage() {
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-bold text-foreground" style={teko}>Judge's Ranking Video</p>
                         <p className="text-[9px] text-gold font-bold uppercase tracking-wider">
-                          by @{round.judge_username}
+                          by <SmartUsername userId={round.judge_id} username={round.judge_username || 'judge'} prefix="@" />
                         </p>
                       </div>
                       <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-gold transition-colors shrink-0" />
@@ -665,7 +666,7 @@ export default function FeaturedDropDetailPage() {
                                 {sub.username?.[0]?.toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
-                            <span className="text-xs font-bold text-foreground flex-1 truncate">@{sub.username}</span>
+                            <SmartUsername userId={sub.user_id} username={sub.username} prefix="@" className="text-xs font-bold text-foreground flex-1 truncate" />
                             {rk.rank === 1 && <Crown className="w-4 h-4 text-gold shrink-0" />}
                             {rk.index_awarded > 0 && (
                               <span className="text-[9px] font-bold text-emerald-400">+{rk.index_awarded} IDX</span>
@@ -831,7 +832,7 @@ export default function FeaturedDropDetailPage() {
               <div className="flex items-center gap-3 p-3 bg-gold/[0.06]">
                 <Crown className="w-5 h-5 text-gold shrink-0" />
                 <div>
-                  <span className="text-xs font-bold text-gold">@{drop.top_scorer_username}</span>
+                  <SmartUsername userId={drop.top_scorer_id} username={drop.top_scorer_username} prefix="@" className="text-xs font-bold text-gold" />
                   <p className="text-[9px] text-muted-foreground">Top Scorer — {Math.round(drop.top_score)} QOI</p>
                 </div>
               </div>
@@ -840,7 +841,7 @@ export default function FeaturedDropDetailPage() {
               <div className="flex items-center gap-3 p-3 bg-destructive/[0.04]">
                 <Star className="w-5 h-5 text-destructive shrink-0" />
                 <div>
-                  <span className="text-xs font-bold text-destructive">@{drop.random_pick_username}</span>
+                  <SmartUsername userId={drop.random_pick_id} username={drop.random_pick_username} prefix="@" className="text-xs font-bold text-destructive" />
                   <p className="text-[9px] text-muted-foreground">Artist's Pick</p>
                 </div>
               </div>

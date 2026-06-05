@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import FeedInlineComments from '@/components/loopgate/FeedInlineComments';
 import FeedVideoPlayer from '@/components/loopgate/FeedVideoPlayer';
 import type { SoloSubmission } from '@/hooks/useSoloMode';
+import SmartUsername from '@/components/loopgate/SmartUsername';
 
 export default function SoloDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -223,7 +224,7 @@ export default function SoloDetailPage() {
               onClick={() => navigate(`/editor/${solo.user_id}`)}
               className="text-sm font-bold text-foreground hover:text-gold transition-colors block truncate"
             >
-              @{solo.username}
+              <SmartUsername userId={solo.user_id} username={solo.username || ''} prefix="@" />
             </button>
             <p className="text-[11px] text-muted-foreground mt-0.5">{timeAgo}</p>
           </div>

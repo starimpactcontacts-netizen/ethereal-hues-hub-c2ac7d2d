@@ -3,10 +3,12 @@ import { motion } from 'framer-motion';
 import { Film, Music, Swords } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
+import SmartUsername from '@/components/loopgate/SmartUsername';
 
 const teko = { fontFamily: 'Teko, sans-serif' };
 
 interface Player {
+  id?: string;
   username: string;
   avatarUrl: string | null;
 }
@@ -120,7 +122,7 @@ function Side({ player, pick, color, isYou }: { player: Player; pick: Pick | nul
         {color.toUpperCase()}{isYou ? ' · YOU' : ''}
       </p>
       <p className="text-2xl font-black text-white uppercase tracking-wider" style={teko}>
-        @{player.username}
+        <SmartUsername userId={player.id} username={player.username} prefix="@" />
       </p>
 
       <div className="mt-6 w-full max-w-[160px] space-y-3">

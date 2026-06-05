@@ -1,4 +1,5 @@
 import { Editor } from "@/data/loopgateData";
+import SmartUsername from "@/components/loopgate/SmartUsername";
 
 interface RankingRowProps {
   editor: Editor;
@@ -26,7 +27,7 @@ export default function RankingRow({ editor }: RankingRowProps) {
       {/* Editor Info */}
       <div className="flex-1 min-w-0">
         <h3 className={`font-semibold truncate ${isTop3 ? "text-base" : "text-sm"}`}>
-          {editor.alias}
+          <SmartUsername userId={(editor as any).id} username={editor.alias} />
         </h3>
         <div className="flex items-center gap-3 mt-0.5 text-[10px] text-muted-foreground uppercase tracking-wider">
           <span>{editor.winRate}% Win</span>

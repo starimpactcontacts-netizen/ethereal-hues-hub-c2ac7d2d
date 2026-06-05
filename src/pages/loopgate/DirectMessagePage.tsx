@@ -21,6 +21,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import SmartUsername from '@/components/loopgate/SmartUsername';
 
 interface ReplyTarget {
   id: string;
@@ -189,7 +190,9 @@ export default function DirectMessagePage() {
           </div>
 
           <div className="min-w-0">
-            <p className="text-[14px] font-semibold truncate leading-tight">{otherUser?.username || 'Loading...'}</p>
+            <p className="text-[14px] font-semibold truncate leading-tight">
+              {otherUser ? <SmartUsername userId={otherUser.id} username={otherUser.username} /> : 'Loading...'}
+            </p>
             <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">
               {otherUser?.activity_status === 'online' ? (
                 <span className="text-emerald-400">Online</span>
@@ -217,7 +220,9 @@ export default function DirectMessagePage() {
                   </div>
                 )}
               </div>
-              <p className="text-sm font-semibold">{otherUser?.username}</p>
+              <p className="text-sm font-semibold">
+                {otherUser && <SmartUsername userId={otherUser.id} username={otherUser.username} />}
+              </p>
               <p className="text-xs text-muted-foreground">Send a message to start the conversation</p>
             </div>
           ) : (

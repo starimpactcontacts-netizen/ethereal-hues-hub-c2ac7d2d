@@ -45,57 +45,56 @@ export default function RingsModal({ open, onClose, amount }: RingsModalProps) {
               exit={{ opacity: 0, y: 24, scale: 0.96 }}
               transition={{ type: 'spring', stiffness: 380, damping: 32 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-[380px] my-auto overflow-hidden rounded-[28px] border border-white/[0.08] bg-gradient-to-b from-zinc-900 via-zinc-950 to-black"
+              className="relative w-full max-w-[420px] max-h-[calc(100dvh-32px)] my-auto overflow-y-auto rounded-[22px] border border-border/70 bg-card shadow-2xl"
             >
-              {/* Ambient gold glow */}
-              <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[420px] h-[420px] bg-amber-500/[0.18] rounded-full blur-[100px]" />
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_50%_0%,rgba(245,158,11,0.12),transparent_70%)]" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-foreground/20" />
 
               {/* Close */}
               <button
                 onClick={onClose}
-                className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] flex items-center justify-center text-foreground/70 hover:text-foreground transition-all active:scale-90"
+                className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-secondary text-muted-foreground transition-all hover:text-foreground active:scale-90"
               >
                 <X className="w-4 h-4" strokeWidth={2.5} />
               </button>
 
-              <div className="relative px-6 pt-8 pb-6 flex flex-col items-center text-center">
+              <div className="relative flex flex-col items-center px-5 pb-5 pt-7 text-center sm:px-6 sm:pb-6">
                 {/* Spinning coin */}
                 <motion.div
                   initial={{ scale: 0.5, rotate: -30 }}
                   animate={{ scale: 1, rotate: 0 }}
                   transition={{ type: 'spring', stiffness: 220, damping: 14, delay: 0.1 }}
+                  className="rounded-full border border-border bg-secondary/60 p-2 shadow-inner"
                 >
-                  <RingsCoin size={96} spin />
+                  <RingsCoin size={72} spin />
                 </motion.div>
 
-                <p className="mt-4 text-[10px] font-bold uppercase tracking-[0.25em] text-amber-300/80">
+                <p className="mt-4 text-[10px] font-display font-black uppercase tracking-[0.28em] text-muted-foreground">
                   Your Balance
                 </p>
-                <div className="mt-1 flex items-baseline gap-2">
-                  <span className="font-display text-5xl tracking-tight tabular-nums text-foreground leading-none">
+                <div className="mt-1 flex items-baseline justify-center gap-2">
+                  <span className="font-display text-[64px] font-semibold leading-[0.8] tabular-nums text-foreground">
                     {amount.toLocaleString()}
                   </span>
                 </div>
-                <p className="mt-2 text-[13px] font-bold uppercase tracking-[0.2em] text-amber-200">
+                <p className="mt-2 text-[15px] font-display font-black uppercase tracking-[0.26em] text-foreground">
                   Rings
                 </p>
 
-                <p className="mt-3 text-[12px] text-foreground/60 leading-relaxed max-w-[280px]">
+                <p className="mt-3 max-w-[310px] text-[12px] font-semibold leading-relaxed text-muted-foreground">
                   Spend Rings on cosmetics, badges, prestige skins & limited drops in the Shop.
                 </p>
 
                 {/* How to earn */}
-                <div className="mt-4 w-full grid grid-cols-2 gap-2">
-                  <div className="rounded-2xl bg-white/[0.04] border border-white/[0.06] px-3 py-2.5 text-left">
-                    <Swords className="w-3.5 h-3.5 text-emerald-400 mb-1.5" strokeWidth={2.5} />
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-foreground/90">Grind Battles</p>
-                    <p className="text-[10px] text-foreground/50 mt-0.5">Win matches to earn Rings</p>
+                <div className="mt-5 grid w-full grid-cols-2 gap-2">
+                  <div className="rounded-xl border border-border bg-secondary px-3 py-3 text-left">
+                    <Swords className="mb-2 h-4 w-4 text-arena-emerald" strokeWidth={2.5} />
+                    <p className="text-[10px] font-display font-black uppercase tracking-[0.16em] text-foreground">Grind</p>
+                    <p className="mt-0.5 text-[10px] font-display font-semibold leading-snug text-muted-foreground">Join events to get rings</p>
                   </div>
-                  <div className="rounded-2xl bg-white/[0.04] border border-white/[0.06] px-3 py-2.5 text-left">
-                    <CreditCard className="w-3.5 h-3.5 text-amber-300 mb-1.5" strokeWidth={2.5} />
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-foreground/90">Buy Rings</p>
-                    <p className="text-[10px] text-foreground/50 mt-0.5">Top up with real money</p>
+                  <div className="rounded-xl border border-border bg-secondary px-3 py-3 text-left">
+                    <CreditCard className="mb-2 h-4 w-4 text-gold" strokeWidth={2.5} />
+                    <p className="text-[10px] font-display font-black uppercase tracking-[0.16em] text-foreground">Buy</p>
+                    <p className="mt-0.5 text-[10px] font-display font-semibold leading-snug text-muted-foreground">Top up instantly</p>
                   </div>
                 </div>
 
@@ -103,14 +102,14 @@ export default function RingsModal({ open, onClose, amount }: RingsModalProps) {
                 <motion.button
                   whileTap={{ scale: 0.97 }}
                   onClick={() => { onClose(); navigate('/shop'); }}
-                  className="mt-4 w-full inline-flex items-center justify-center gap-2 bg-foreground text-background font-bold text-[14px] uppercase tracking-wider rounded-2xl py-3.5 active:opacity-90 transition-opacity"
+                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-[14px] font-display font-black uppercase tracking-[0.18em] text-primary-foreground transition-opacity active:opacity-90"
                 >
                   <ShoppingBag className="w-4 h-4" strokeWidth={2.5} />
-                  Open Shop
+                  Shop
                 </motion.button>
 
-                <p className="mt-3 text-[9px] uppercase tracking-[0.25em] text-foreground/30 font-semibold">
-                  Loopgate Currency · Separate from Index · Non-redeemable
+                <p className="mt-3 text-[9px] font-display font-black uppercase tracking-[0.28em] text-muted-foreground/60">
+                  Loopgate Currency · Separate from Index
                 </p>
               </div>
             </motion.div>

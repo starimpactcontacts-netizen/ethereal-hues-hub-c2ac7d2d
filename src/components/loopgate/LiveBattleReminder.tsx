@@ -3,11 +3,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { Flag, ChevronRight, Gavel, Trophy, Vote } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import SmartUsername from "./SmartUsername";
 
 export type LiveBattleReminderItem = {
   kind: "battle" | "quick" | "competition";
   id: string;
   title: string;
+  participants?: Array<{ userId?: string | null; username: string | null }>;
   status: string;
   endsAt: string | null;
   hasSubmitted: boolean;
@@ -113,12 +115,23 @@ export function LiveBattleReminderCard({ item, compact = false }: { item: LiveBa
               <span className="text-[8px] font-black text-emerald-400 uppercase tracking-wider">✓ {item.hasVoted ? "Voted" : "Submitted"}</span>
             )}
           </div>
-          <p
-            className="text-[15px] font-black uppercase text-white/85 truncate leading-tight"
-            style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.04em' }}
-          >
-            {item.title}
-          </p>
+          {item.participants?.length ? (
+            <div
+              className="flex items-center gap-1 text-[15px] font-black uppercase text-white/85 truncate leading-tight"
+              style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.04em' }}
+            >
+              <SmartUsername userId={item.participants[0]?.userId} username={item.participants[0]?.username || '???'} className="truncate" />
+              <span className="text-white/35 shrink-0">vs</span>
+              <SmartUsername userId={item.participants[1]?.userId} username={item.participants[1]?.username || '???'} className="truncate" />
+            </div>
+          ) : (
+            <p
+              className="text-[15px] font-black uppercase text-white/85 truncate leading-tight"
+              style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.04em' }}
+            >
+              {item.title}
+            </p>
+          )}
           {!item.isJudge && (
             <p className={`text-[9px] font-black uppercase tracking-[0.14em] ${timerColor}`}
               style={{ fontFamily: 'Teko, sans-serif' }}>

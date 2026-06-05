@@ -13,6 +13,7 @@ import { useUserRoles } from '@/hooks/useUserRoles';
 import { claimBattle, judgeBattle } from '@/hooks/useBattleJudging';
 import { toast } from 'sonner';
 import type { Battle } from '@/hooks/useBattles';
+import SmartUsername from '@/components/loopgate/SmartUsername';
 
 const PILLARS = [
   { id: 'emotion', label: 'Emotion', max: 15, icon: Heart, color: 'text-pink-400' },
@@ -151,7 +152,7 @@ export default function BattleJudgingPanel({ battle }: Props) {
               {battle.challenger_username.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <span className="text-xs font-display text-foreground">{battle.challenger_username}</span>
+          <SmartUsername userId={battle.challenger_id} username={battle.challenger_username} className="text-xs font-display text-foreground" />
           {battle.challenger_submission_url && (
             <a href={battle.challenger_submission_url} target="_blank" rel="noopener noreferrer" className="ml-auto text-gold hover:underline">
               <ExternalLink className="w-3 h-3" />
@@ -193,7 +194,7 @@ export default function BattleJudgingPanel({ battle }: Props) {
               {battle.opponent_username?.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <span className="text-xs font-display text-foreground">{battle.opponent_username}</span>
+          <SmartUsername userId={battle.opponent_id} username={battle.opponent_username || '???'} className="text-xs font-display text-foreground" />
           {battle.opponent_submission_url && (
             <a href={battle.opponent_submission_url} target="_blank" rel="noopener noreferrer" className="ml-auto text-gold hover:underline">
               <ExternalLink className="w-3 h-3" />
@@ -231,19 +232,19 @@ export default function BattleJudgingPanel({ battle }: Props) {
         <div className="flex items-center justify-center gap-6">
           <div>
             <span className="text-2xl font-display font-bold text-red-400">{cTotal}</span>
-            <span className="text-[9px] text-muted-foreground block">{battle.challenger_username}</span>
+            <SmartUsername userId={battle.challenger_id} username={battle.challenger_username} className="text-[9px] text-muted-foreground block" />
           </div>
           <span className="text-xs text-muted-foreground font-bold">VS</span>
           <div>
             <span className="text-2xl font-display font-bold text-sky-400">{oTotal}</span>
-            <span className="text-[9px] text-muted-foreground block">{battle.opponent_username}</span>
+            <SmartUsername userId={battle.opponent_id} username={battle.opponent_username || '???'} className="text-[9px] text-muted-foreground block" />
           </div>
         </div>
         {cTotal !== oTotal && (
           <div className="mt-2 flex items-center justify-center gap-1">
             <Crown className="w-3 h-3 text-gold" />
             <span className="text-[10px] text-gold font-bold uppercase">
-              Winner: {cTotal > oTotal ? battle.challenger_username : battle.opponent_username}
+              Winner: <SmartUsername userId={cTotal > oTotal ? battle.challenger_id : battle.opponent_id} username={cTotal > oTotal ? battle.challenger_username : (battle.opponent_username || '???')} />
             </span>
           </div>
         )}

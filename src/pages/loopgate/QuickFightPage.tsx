@@ -35,6 +35,7 @@ import BattleSelectionsBanner from '@/components/loopgate/BattleSelectionsBanner
 import BattleRevealScreen from '@/components/loopgate/BattleRevealScreen';
 import FighterStatsBar from '@/components/loopgate/FighterStatsBar';
 import BattleEnterIntro from '@/components/loopgate/BattleEnterIntro';
+import BattleClipExporter from '@/components/loopgate/BattleClipExporter';
 
 /** Deterministic index from fight ID — both players independently produce the same pick */
 function seededIndex(seed: string, len: number): number {
@@ -492,6 +493,19 @@ export default function QuickFightPage() {
             <div className="flex items-center gap-2.5">
               <MessageSquare className="w-4 h-4 text-zinc-500 hover:text-white transition-colors" />
               <BarChart2 className="w-4 h-4 text-zinc-500 hover:text-white transition-colors" />
+              {fight.player_1_submission_url && fight.player_2_submission_url && fight.player_2_id && fight.player_2_username && (
+                <BattleClipExporter
+                  fightId={fight.id}
+                  redUrl={fight.player_1_submission_url}
+                  blueUrl={fight.player_2_submission_url}
+                  redUsername={fight.player_1_username}
+                  blueUsername={fight.player_2_username}
+                  redScore={(fight as any).winner_id === fight.player_1_id ? (fight as any).winner_score ?? 0 : (fight as any).loser_score ?? 0}
+                  blueScore={(fight as any).winner_id === fight.player_2_id ? (fight as any).winner_score ?? 0 : (fight as any).loser_score ?? 0}
+                  winnerSide={fight.winner_id === fight.player_1_id ? 'red' : fight.winner_id === fight.player_2_id ? 'blue' : null}
+                  status={fight.status}
+                />
+              )}
             </div>
 
             {/* Divider */}

@@ -42,13 +42,12 @@ import ArenaCollabsSection from "@/components/loopgate/ArenaCollabsSection";
 import { startQuickMatch } from "@/lib/startQuickMatch";
 import CashBattlesSection from "@/components/loopgate/CashBattlesSection";
 import CustomLobbyTypeModal from "@/components/loopgate/CustomLobbyTypeModal";
-import AuraUsername from "@/components/loopgate/AuraUsername";
-import { useEquippedBadges } from "@/hooks/useEquippedBadges";
 import { useMyCashBattles } from "@/hooks/useCashBattles";
 import { ArenaRail, ArenaRailCard, ArenaRailSkeleton } from "@/components/loopgate/ArenaCarouselSystem";
 import { useMyCompetitionReminders } from "@/hooks/useMyCompetitionReminders";
 import ArenaQOITop from "@/components/loopgate/ArenaQOITop";
 import MatchmakingLobby from "@/components/loopgate/MatchmakingLobby";
+import SmartUsername from "@/components/loopgate/SmartUsername";
 
 interface Event {
   id: string;
@@ -442,11 +441,13 @@ function Quick1v1Row({ fight, onClick }: { fight: any; onClick: () => void }) {
       </Avatar>
 
       <div className="flex items-center gap-1.5 flex-1 min-w-0">
-        <span className="text-[11px] font-semibold text-foreground truncate">{fight.player_1_username}</span>
+        <SmartUsername userId={fight.player_1_id} username={fight.player_1_username || '?'} className="text-[11px] font-semibold text-foreground truncate" />
         <span className="text-[9px] text-muted-foreground/40 shrink-0">vs</span>
-        <span className="text-[11px] font-semibold text-foreground truncate">
-          {fight.player_2_username || "—"}
-        </span>
+        {fight.player_2_username ? (
+          <SmartUsername userId={fight.player_2_id} username={fight.player_2_username} className="text-[11px] font-semibold text-foreground truncate" />
+        ) : (
+          <span className="text-[11px] font-semibold text-foreground truncate">—</span>
+        )}
       </div>
 
       <div className="shrink-0 flex items-center gap-2">
@@ -527,7 +528,6 @@ function SectionHeader({ icon, title, badge, badgeColor = "text-emerald-400", ac
 
 export default function ArenaPage() {
   const { profile, user } = useAuth();
-  const { equippedAura } = useEquippedBadges(profile?.id);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [events, setEvents] = useState<Event[]>([]);
@@ -809,7 +809,7 @@ export default function ArenaPage() {
                     <AvatarImage src={profile.avatar_url || ''} />
                     <AvatarFallback className="bg-surface-2 text-foreground text-[8px] font-bold">{profile.username?.[0]?.toUpperCase()}</AvatarFallback>
                   </Avatar>
-                  <span className="text-[11px] text-muted-foreground font-medium truncate max-w-[80px]">{profile.username}</span>
+                  <span className="text-[11px] text-muted-foreground font-medium truncate max-w-[80px]"><SmartUsername userId={profile.id} username={profile.username} className="truncate" /></span>
                 </div>
               )}
             </div>
@@ -923,8 +923,8 @@ export default function ArenaPage() {
                         <AvatarFallback className="bg-white/5 text-white font-bold">{profile.username?.charAt(0).toUpperCase()}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <AuraUsername username={profile.display_name || profile.username} aura={equippedAura} className="text-[14px] font-black text-white truncate leading-tight" />
-                        <p className="text-[10px] text-white/35">@{profile.username}</p>
+                        <SmartUsername userId={profile.id} username={profile.display_name || profile.username} className="text-[14px] font-black text-white truncate leading-tight" />
+                        <p className="text-[10px] text-white/35"><SmartUsername userId={profile.id} username={profile.username} prefix="@" /></p>
                       </div>
                       <Link
                         to="/profile"
@@ -1131,7 +1131,11 @@ export default function ArenaPage() {
                           <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400">
                             ⚖️ JUDGING · {battle.status.toUpperCase()}
                           </span>
-                          <p className="text-xs text-foreground truncate">{battle.challenger_username} vs {battle.opponent_username || '???'}</p>
+                          <p className="text-xs text-foreground truncate flex items-center gap-1">
+                            <SmartUsername userId={battle.challenger_id} username={battle.challenger_username || '?'} className="truncate" />
+                            <span className="text-muted-foreground">vs</span>
+                            <SmartUsername userId={battle.opponent_id} username={battle.opponent_username || '???'} className="truncate" />
+                          </p>
                         </div>
                         <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
                       </Link>
@@ -1183,7 +1187,7 @@ export default function ArenaPage() {
                                   <AvatarImage src={battle.challenger_avatar_url || ''} />
                                   <AvatarFallback className="text-xs bg-blue-500/15 text-blue-400">{battle.challenger_username?.[0]}</AvatarFallback>
                                 </Avatar>
-                                <span className="text-[9px] font-bold text-blue-400 mt-1" style={{ fontFamily: 'Teko, sans-serif' }}>{battle.challenger_username}</span>
+                                <SmartUsername userId={battle.challenger_id} username={battle.challenger_username || '?'} className="text-[9px] font-bold text-blue-400 mt-1" style={{ fontFamily: 'Teko, sans-serif' }} />
                               </div>
                               <span className="text-sm font-black text-white/60" style={{ fontFamily: 'Teko, sans-serif' }}>VS</span>
                               <div className="flex flex-col items-center">
@@ -1191,7 +1195,7 @@ export default function ArenaPage() {
                                   <AvatarImage src={battle.opponent_avatar_url || ''} />
                                   <AvatarFallback className="text-xs bg-red-500/15 text-red-400">{battle.opponent_username?.[0]}</AvatarFallback>
                                 </Avatar>
-                                <span className="text-[9px] font-bold text-red-400 mt-1" style={{ fontFamily: 'Teko, sans-serif' }}>{battle.opponent_username}</span>
+                                <SmartUsername userId={battle.opponent_id} username={battle.opponent_username || '???'} className="text-[9px] font-bold text-red-400 mt-1" style={{ fontFamily: 'Teko, sans-serif' }} />
                               </div>
                             </div>
 
@@ -1303,6 +1307,10 @@ export default function ArenaPage() {
                       kind: 'battle',
                       id: b.id,
                       title: `${b.challenger_username} vs ${b.opponent_username || '???'}`,
+                      participants: [
+                        { userId: b.challenger_id, username: b.challenger_username },
+                        { userId: b.opponent_id, username: b.opponent_username || '???' },
+                      ],
                       status: b.status,
                       endsAt: b.ends_at,
                       hasSubmitted: submitted,
@@ -1318,6 +1326,10 @@ export default function ArenaPage() {
                     kind: 'quick',
                     id: f.id,
                     title: `${f.player_1_username} vs ${f.player_2_username || '???'}`,
+                    participants: [
+                      { userId: f.player_1_id, username: f.player_1_username },
+                      { userId: f.player_2_id, username: f.player_2_username || '???' },
+                    ],
                     status: f.status,
                     endsAt: f.ends_at,
                     hasSubmitted: submitted,
@@ -1605,10 +1617,18 @@ export default function ArenaPage() {
                   </AvatarFallback>
                 </Avatar>
               </div>
-              <span className="text-[10px] font-bold text-foreground truncate flex-1 group-hover:text-red-400 transition-colors">
-                {featuredFight.type === 'quick' ? featuredFight.data.player_1_username : (featuredFight.data as any).challenger_username}
-                {' vs '}
-                {featuredFight.type === 'quick' ? (featuredFight.data.player_2_username || '???') : ((featuredFight.data as any).opponent_username || '???')}
+              <span className="text-[10px] font-bold text-foreground truncate flex-1 group-hover:text-red-400 transition-colors flex items-center gap-1">
+                <SmartUsername
+                  userId={featuredFight.type === 'quick' ? featuredFight.data.player_1_id : (featuredFight.data as any).challenger_id}
+                  username={featuredFight.type === 'quick' ? (featuredFight.data.player_1_username || '?') : ((featuredFight.data as any).challenger_username || '?')}
+                  className="truncate"
+                />
+                <span className="text-muted-foreground">vs</span>
+                <SmartUsername
+                  userId={featuredFight.type === 'quick' ? featuredFight.data.player_2_id : (featuredFight.data as any).opponent_id}
+                  username={featuredFight.type === 'quick' ? (featuredFight.data.player_2_username || '???') : ((featuredFight.data as any).opponent_username || '???')}
+                  className="truncate"
+                />
               </span>
               <span className="text-[9px] text-gold font-semibold shrink-0">Watch →</span>
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />

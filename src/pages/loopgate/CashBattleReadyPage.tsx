@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCashBattles, useMyCashBattleApplication, useMyCashBattles } from "@/hooks/useCashBattles";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import SmartUsername from "@/components/loopgate/SmartUsername";
 
 export default function CashBattleReadyPage() {
   const navigate = useNavigate();
@@ -154,7 +155,7 @@ export default function CashBattleReadyPage() {
                   {profile.username?.charAt(0)?.toUpperCase() || "Y"}
                 </AvatarFallback>
               </Avatar>
-              <p className="text-sm font-display mt-2 truncate max-w-[100px]">{profile.username}</p>
+              <p className="text-sm font-display mt-2 truncate max-w-[100px]"><SmartUsername userId={profile.id} username={profile.username} className="truncate" /></p>
               <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-blue-500/15 px-2 py-0.5">
                 <Zap className="w-2.5 h-2.5 text-blue-400" />
                 <span className="text-[8px] font-bold uppercase tracking-[0.14em] text-blue-400">Ready</span>

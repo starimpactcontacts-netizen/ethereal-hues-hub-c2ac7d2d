@@ -12,6 +12,7 @@ import CrewTypingIndicator from "@/components/loopgate/CrewTypingIndicator";
 import GifPicker from "@/components/loopgate/GifPicker";
 import MentionAutocomplete from "@/components/loopgate/MentionAutocomplete";
 import RichMessageContent from "@/components/loopgate/RichMessageContent";
+import SmartUsername from "@/components/loopgate/SmartUsername";
 import { useCrewPresence } from "@/hooks/useCrewPresence";
 import { format, isToday, isYesterday } from "date-fns";
 import { toast } from "sonner";
@@ -391,7 +392,7 @@ export default function CrewChatPage() {
                               className="text-sm font-semibold hover:underline cursor-pointer"
                               onClick={() => navigate(`/u/${group.username}`)}
                             >
-                              {group.display_name || group.username}
+                              <SmartUsername userId={group.user_id} username={group.display_name || group.username} />
                             </span>
                             <span className="text-[11px] text-muted-foreground/50">
                               {format(group.firstMessageTime, "h:mm a")}

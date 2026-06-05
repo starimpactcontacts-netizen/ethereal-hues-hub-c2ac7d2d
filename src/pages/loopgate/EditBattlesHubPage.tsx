@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useAccountPrompt } from "@/hooks/useAccountPrompt";
 import { toast } from "sonner";
+import SmartUsername from "@/components/loopgate/SmartUsername";
 
 type TabKey = "live" | "open" | "cash" | "completed";
 type ModeKey = "instant" | "cash";
@@ -103,12 +104,12 @@ function BattleRow({ battle, onClick }: { battle: any; onClick: () => void }) {
                 {battle.challenger_username?.charAt(0)}
               </AvatarFallback>
             </Avatar>
-            <span
+            <SmartUsername
+              userId={battle.challenger_id}
+              username={battle.challenger_username || "?"}
               className="text-[10px] font-bold text-blue-300 truncate max-w-full mt-1 uppercase"
               style={{ fontFamily: "Teko, sans-serif" }}
-            >
-              {battle.challenger_username}
-            </span>
+            />
           </div>
           <span className="text-sm font-black text-white/30" style={{ fontFamily: "Teko, sans-serif" }}>
             VS
@@ -126,12 +127,16 @@ function BattleRow({ battle, onClick }: { battle: any; onClick: () => void }) {
                 <span className="text-amber-400/60 text-sm">?</span>
               </div>
             )}
-            <span
-              className="text-[10px] font-bold text-red-300 truncate max-w-full mt-1 uppercase"
-              style={{ fontFamily: "Teko, sans-serif" }}
-            >
-              {battle.opponent_username || "TBA"}
-            </span>
+            {battle.opponent_username ? (
+              <SmartUsername
+                userId={battle.opponent_id}
+                username={battle.opponent_username}
+                className="text-[10px] font-bold text-red-300 truncate max-w-full mt-1 uppercase"
+                style={{ fontFamily: "Teko, sans-serif" }}
+              />
+            ) : (
+              <span className="text-[10px] font-bold text-red-300 truncate max-w-full mt-1 uppercase" style={{ fontFamily: "Teko, sans-serif" }}>TBA</span>
+            )}
           </div>
         </div>
 
@@ -213,12 +218,12 @@ function OpenQueueRow({ app, onAccept, isOwn }: { app: CashBattleApplication; on
                 {app.username?.charAt(0)}
               </AvatarFallback>
             </Avatar>
-            <span
+            <SmartUsername
+              userId={app.user_id}
+              username={app.username}
               className="text-[10px] font-bold text-blue-300 truncate max-w-full mt-1 uppercase"
               style={{ fontFamily: "Teko, sans-serif" }}
-            >
-              {app.username}
-            </span>
+            />
           </div>
           <span className="text-sm font-black text-white/30" style={{ fontFamily: "Teko, sans-serif" }}>
             VS
@@ -305,12 +310,12 @@ function QuickFightRow({ fight, onClick }: { fight: QuickFight; onClick: () => v
                 {fight.player_1_username?.charAt(0)}
               </AvatarFallback>
             </Avatar>
-            <span
+            <SmartUsername
+              userId={fight.player_1_id}
+              username={fight.player_1_username || "?"}
               className="text-[10px] font-bold text-blue-300 truncate max-w-full mt-1 uppercase"
               style={{ fontFamily: "Teko, sans-serif" }}
-            >
-              {fight.player_1_username}
-            </span>
+            />
           </div>
           <span className="text-sm font-black text-white/30" style={{ fontFamily: "Teko, sans-serif" }}>
             VS
@@ -328,12 +333,16 @@ function QuickFightRow({ fight, onClick }: { fight: QuickFight; onClick: () => v
                 <span className="text-amber-400/60 text-sm">?</span>
               </div>
             )}
-            <span
-              className="text-[10px] font-bold text-red-300 truncate max-w-full mt-1 uppercase"
-              style={{ fontFamily: "Teko, sans-serif" }}
-            >
-              {fight.player_2_username || "TBA"}
-            </span>
+            {fight.player_2_username ? (
+              <SmartUsername
+                userId={fight.player_2_id}
+                username={fight.player_2_username}
+                className="text-[10px] font-bold text-red-300 truncate max-w-full mt-1 uppercase"
+                style={{ fontFamily: "Teko, sans-serif" }}
+              />
+            ) : (
+              <span className="text-[10px] font-bold text-red-300 truncate max-w-full mt-1 uppercase" style={{ fontFamily: "Teko, sans-serif" }}>TBA</span>
+            )}
           </div>
         </div>
 
@@ -426,12 +435,16 @@ function QueueEditorRow({ editor, isOwn, onAccept }: { editor: QueueEditor; isOw
                 {editor.username?.charAt(0)}
               </AvatarFallback>
             </Avatar>
-            <span
-              className="text-[10px] font-bold truncate max-w-full mt-1 uppercase"
-              style={{ fontFamily: "Teko, sans-serif", color: isOwn ? "#93c5fd" : "#c4b5fd" }}
-            >
-              {isOwn ? "YOU" : editor.username}
-            </span>
+            {isOwn ? (
+              <span className="text-[10px] font-bold truncate max-w-full mt-1 uppercase" style={{ fontFamily: "Teko, sans-serif", color: "#93c5fd" }}>YOU</span>
+            ) : (
+              <SmartUsername
+                userId={editor.user_id}
+                username={editor.username}
+                className="text-[10px] font-bold truncate max-w-full mt-1 uppercase"
+                style={{ fontFamily: "Teko, sans-serif", color: "#c4b5fd" }}
+              />
+            )}
           </div>
           <span className="text-sm font-black text-white/30" style={{ fontFamily: "Teko, sans-serif" }}>
             VS
@@ -1167,7 +1180,14 @@ export default function EditBattlesHubPage() {
                     </Avatar>
                   )}
                   <div className="flex-1 min-w-0">
-                    <div className="text-[13px] font-extrabold text-white leading-tight">@{profile?.username}</div>
+                    {profile?.username && (
+                      <SmartUsername
+                        userId={profile.id}
+                        username={profile.username}
+                        prefix="@"
+                        className="text-[13px] font-extrabold text-white leading-tight"
+                      />
+                    )}
                     <div className="text-[11px] text-white/50">Waiting for an opponent — share to pull one in</div>
                   </div>
                 </div>

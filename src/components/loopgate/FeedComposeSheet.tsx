@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import GifPicker from "./GifPicker";
 import MediaUploadButton from "./MediaUploadButton";
@@ -49,6 +50,27 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost, l
   const isOverLimit = charsLeft < 0;
   const canSubmit = (content.trim().length > 0 || selectedGif || uploadedMedia) && !isOverLimit && !submitting;
 
+  useEffect(() => {
+    if (!open || typeof document === 'undefined') return;
+    const body = document.body;
+    const root = document.documentElement;
+    const previousOverflow = body.style.overflow;
+    const previousOverscroll = body.style.overscrollBehavior;
+    root.dataset.composeOpen = 'true';
+    body.dataset.composeOpen = 'true';
+    body.style.overflow = 'hidden';
+    body.style.overscrollBehavior = 'none';
+    window.dispatchEvent(new CustomEvent('loopgate-compose-open', { detail: true }));
+
+    return () => {
+      delete root.dataset.composeOpen;
+      delete body.dataset.composeOpen;
+      body.style.overflow = previousOverflow;
+      body.style.overscrollBehavior = previousOverscroll;
+      window.dispatchEvent(new CustomEvent('loopgate-compose-open', { detail: false }));
+    };
+  }, [open]);
+
   const handleSubmit = async () => {
     if (!canSubmit) return;
     setSubmitting(true);
@@ -85,10 +107,10 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost, l
 
   if (!open) return null;
 
-  return (
+  const sheet = (
     <div
       className="fixed inset-0 flex flex-col bg-background"
-      style={{ zIndex: 9999 }}
+      style={{ zIndex: 2147483600, width: '100vw', height: '100svh' }}
     >
       {/* Close button — centered top bar, impossible to miss */}
       <div
@@ -111,8 +133,8 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost, l
       {isLoopPost && (
         <div className="flex items-center gap-2 px-4 py-2 border-b border-border/15 bg-foreground/[0.03] shrink-0">
           <span className="text-[9px] font-black tracking-[0.2em] uppercase text-muted-foreground">Posting in</span>
-          <span className="text-[9px] font-black tracking-[0.2em] uppercase text-foreground bg-foreground/10 border border-border/30 px-2 py-0.5">
-            {LOOP_LABELS[loopPill!]}
+          <span className="text-[10px] font-black tracking-[0.18em] uppercase text-background bg-foreground px-2 py-0.5 rounded-sm">
+            {LOOP_LABELS[loopPill!] || loopPill}
           </span>
         </div>
       )}
@@ -223,15 +245,16 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost, l
 
       {/* Bottom POST button */}
       <div
-        className="border-t border-border/20 bg-background px-4 pt-3 pb-24 shrink-0"
+        className="border-t border-border/20 bg-background px-4 pt-3 shrink-0"
+        style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)' }}
       >
         <button
           onClick={handleSubmit}
           disabled={!canSubmit}
           className={`w-full py-4 rounded-xl text-[16px] font-black tracking-wider transition-all ${
             canSubmit
-              ? "bg-foreground text-background shadow-lg active:scale-[0.98]"
-              : "bg-muted/40 text-muted-foreground/40 cursor-not-allowed"
+              ? "bg-emerald-500 text-white shadow-[0_8px_24px_-6px_rgba(16,185,129,0.55)] active:scale-[0.98]"
+              : "bg-foreground/15 text-foreground/50 cursor-not-allowed"
           }`}
         >
           {submitting ? (
@@ -241,4 +264,6 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost, l
       </div>
     </div>
   );
+
+  return createPortal(sheet, document.body);
 }

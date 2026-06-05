@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useThumbnail } from '@/hooks/useThumbnail';
 import { Button } from '@/components/ui/button';
 import JudgeCardExport from './JudgeCardExport';
+import SmartUsername from './SmartUsername';
 
 import { getDisplayGrade } from '@/hooks/useJudgeReviews';
 
@@ -53,7 +54,7 @@ function ReviewCard({ review, onExport }: { review: CompletedReview; onExport: (
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
-            <p className="font-medium text-sm">@{review.username}</p>
+            <SmartUsername userId={review.user_id} username={review.username} prefix="@" className="font-medium text-sm" />
             <div className="flex items-center gap-1">
               <span className={`font-display text-xl ${color}`}>{grade}</span>
               <span className="text-xs text-muted-foreground">({review.total_score})</span>

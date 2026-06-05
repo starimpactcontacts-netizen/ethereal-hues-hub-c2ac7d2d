@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import type { FeaturedSubmission } from "@/hooks/useFeaturedDrops";
 import FeedComments from "./FeedComments";
 import { cn } from "@/lib/utils";
+import SmartUsername from "./SmartUsername";
 
 const teko = { fontFamily: 'Teko, sans-serif' };
 
@@ -136,12 +137,14 @@ export default function DropSubmissionCard({ submission, rank, isTopScorer }: Pr
 
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
-                <span className={cn(
-                  "font-bold truncate block",
-                  isTopScorer ? "text-sm text-foreground" : "text-xs text-foreground/90"
-                )}>
-                  {submission.username}
-                </span>
+                <SmartUsername
+                  userId={submission.user_id}
+                  username={submission.username}
+                  className={cn(
+                    "font-bold truncate block",
+                    isTopScorer ? "text-sm text-foreground" : "text-xs text-foreground/90"
+                  )}
+                />
                 {isTopScorer && <Crown className="w-3.5 h-3.5 text-gold shrink-0" />}
               </div>
               {/* Feedback quote or status */}

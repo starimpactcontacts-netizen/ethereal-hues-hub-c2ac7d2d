@@ -1,5 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap');
 
+/* Minecraft font — used by the Steve aura */
+@font-face {
+  font-family: 'Minecraft';
+  src: url('https://cdn.jsdelivr.net/npm/@south-paw/typeface-minecraft@1.0.0/files/minecraft.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/npm/@south-paw/typeface-minecraft@1.0.0/files/minecraft.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Apple-grade system stack used for the Missions portal */
 .font-apple {
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Inter, system-ui, sans-serif;
@@ -484,19 +494,37 @@ body.battle-modal-open [data-bottom-nav] {
   100% { background-position: 100% 50%; filter: drop-shadow(0 0 3px #3d7a18) drop-shadow(0 0 10px rgba(61,122,24,0.7)); }
 }
 
-/* HELLFIRE — Anton, volatile fire burst, fast + chaotic flicker */
+/* HELLFIRE — Rubik Beastly graffiti, bloodshot red pulse */
 @keyframes aura-hellfire {
-  0%   { background-position: 0% 50%;   filter: drop-shadow(0 0 6px #ff2200) drop-shadow(0 0 18px rgba(220,40,0,0.75)) drop-shadow(0 0 40px rgba(180,10,0,0.45)); }
-  18%  { background-position: 22% 50%;  filter: drop-shadow(0 0 16px #ff7700) drop-shadow(0 0 36px rgba(255,110,0,1))   drop-shadow(0 0 75px rgba(255,45,0,0.7)); }
-  35%  { background-position: 40% 50%;  filter: drop-shadow(0 0 3px #bb1000) drop-shadow(0 0 7px rgba(160,15,0,0.55)); }
-  58%  { background-position: 65% 50%;  filter: drop-shadow(0 0 20px #ffaa00) drop-shadow(0 0 46px rgba(255,120,0,1))   drop-shadow(0 0 90px rgba(255,55,0,0.65)); }
-  80%  { background-position: 85% 50%;  filter: drop-shadow(0 0 4px #ff1800) drop-shadow(0 0 12px rgba(210,25,0,0.65)) drop-shadow(0 0 28px rgba(180,0,0,0.35)); }
-  100% { background-position: 100% 50%; filter: drop-shadow(0 0 6px #ff2200) drop-shadow(0 0 18px rgba(220,40,0,0.75)) drop-shadow(0 0 40px rgba(180,10,0,0.45)); }
+  0%   { background-position: 0% 50%;   filter: drop-shadow(0 0 6px #ff0000) drop-shadow(0 0 18px rgba(200,0,0,0.85)) drop-shadow(0 0 38px rgba(140,0,0,0.55)); }
+  50%  { background-position: 55% 50%;  filter: drop-shadow(0 0 14px #ff2222) drop-shadow(0 0 34px rgba(255,20,20,1))  drop-shadow(0 0 70px rgba(180,0,0,0.7)); }
+  100% { background-position: 100% 50%; filter: drop-shadow(0 0 6px #ff0000) drop-shadow(0 0 18px rgba(200,0,0,0.85)) drop-shadow(0 0 38px rgba(140,0,0,0.55)); }
 }
 
-/* SOVEREIGN — Teko 700, majestic gold gleam, imperial pulse */
+/* SOVEREIGN — green money aura, wealth pulse */
 @keyframes aura-sovereign {
-  0%   { background-position: 0% 50%;   filter: drop-shadow(0 0 8px rgba(255,200,0,0.85)) drop-shadow(0 0 24px rgba(255,155,0,0.55)) drop-shadow(0 0 55px rgba(200,100,0,0.25)); }
-  50%  { background-position: 55% 50%;  filter: drop-shadow(0 0 18px rgba(255,235,80,1))  drop-shadow(0 0 48px rgba(255,185,0,0.95)) drop-shadow(0 0 95px rgba(255,125,0,0.5)); }
-  100% { background-position: 100% 50%; filter: drop-shadow(0 0 8px rgba(255,200,0,0.85)) drop-shadow(0 0 24px rgba(255,155,0,0.55)) drop-shadow(0 0 55px rgba(200,100,0,0.25)); }
+  0%   { background-position: 0% 50%;   filter: drop-shadow(0 0 3px hsla(142, 76%, 50%, 0.65)) drop-shadow(0 0 9px hsla(142, 76%, 36%, 0.45)); }
+  50%  { background-position: 55% 50%;  filter: drop-shadow(0 0 6px hsla(142, 76%, 62%, 0.8)) drop-shadow(0 0 14px hsla(142, 76%, 36%, 0.58)); }
+  100% { background-position: 100% 50%; filter: drop-shadow(0 0 3px hsla(142, 76%, 50%, 0.65)) drop-shadow(0 0 9px hsla(142, 76%, 36%, 0.45)); }
+}
+
+/* SOVEREIGN halo — rotating golden ring behind the name */
+@keyframes aura-sovereign-halo {
+  0%   { transform: translate3d(-50%, -50%, 0) rotate(0deg);   opacity: 0.7; }
+  50%  { transform: translate3d(-50%, -50%, 0) rotate(180deg); opacity: 1;   }
+  100% { transform: translate3d(-50%, -50%, 0) rotate(360deg); opacity: 0.7; }
+}
+
+/* SOVEREIGN sparkle — soft pulsing core glow */
+@keyframes aura-sovereign-shimmer {
+  0%, 100% { opacity: 0.45; transform: translate3d(-50%, -50%, 0) scale(0.96); }
+  50%      { opacity: 0.88; transform: translate3d(-50%, -50%, 0) scale(1.04); }
+}
+
+/* SOVEREIGN money — mobile Safari-safe floating green $ */
+@keyframes aura-money-float {
+  0%   { opacity: 0; transform: translate3d(0, 12px, 0) scale(0.72); }
+  16%  { opacity: 0.95; }
+  64%  { opacity: 0.82; }
+  100% { opacity: 0; transform: translate3d(0, -28px, 0) scale(0.96); }
 }

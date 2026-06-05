@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import GifPicker from "./GifPicker";
-import AuraUsername from "./AuraUsername";
+import SmartUsername from "@/components/loopgate/SmartUsername";
 
 interface Message {
   id: string;
@@ -30,7 +30,6 @@ export default function CompetitionChat({ competitionId, embedded = false }: { c
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [auraMap, setAuraMap] = useState<Record<string, string | null>>({});
   const [newMessage, setNewMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -57,24 +56,6 @@ export default function CompetitionChat({ competitionId, embedded = false }: { c
       const msgs = (data as unknown as Message[]) || [];
       setMessages(msgs);
       setLoading(false);
-      const ids = [...new Set(msgs.map(m => m.user_id))];
-      if (ids.length) {
-        const map: Record<string, string | null> = {};
-        ids.forEach(id => { map[id] = null; });
-        const { data: purchases } = await supabase
-          .from('shop_purchases')
-          .select('user_id, shop_items(name, category)')
-          .in('user_id', ids)
-          .eq('is_equipped', true);
-        if (purchases) {
-          (purchases as any[]).forEach(row => {
-            if (row.shop_items?.category === 'aura') {
-              map[row.user_id] = row.shop_items.name.toLowerCase();
-            }
-          });
-        }
-        setAuraMap(map);
-      }
     };
 
     fetchMessages();
@@ -90,14 +71,6 @@ export default function CompetitionChat({ competitionId, embedded = false }: { c
         const msg = payload.new as Message;
         setMessages(prev => [...prev, msg]);
         if (!isAtBottom) setNewCount(c => c + 1);
-        setAuraMap(prev => {
-          if (msg.user_id in prev) return prev;
-          supabase.from('shop_purchases').select('user_id, shop_items(name, category)').eq('user_id', msg.user_id).eq('is_equipped', true).then(({ data: rows }) => {
-            const aura = (rows as any[])?.find(r => r.shop_items?.category === 'aura')?.shop_items?.name?.toLowerCase() ?? null;
-            setAuraMap(m => ({ ...m, [msg.user_id]: aura }));
-          });
-          return { ...prev, [msg.user_id]: null };
-        });
       })
       .subscribe();
 
@@ -316,9 +289,9 @@ export default function CompetitionChat({ competitionId, embedded = false }: { c
                       {/* Name + time */}
                       <div className={`flex items-center gap-2 mb-1 ${isOwn ? 'flex-row-reverse' : ''}`}>
                         <button onClick={() => handleMention(msg.username)}>
-                          <AuraUsername
+                          <SmartUsername
+                            userId={msg.user_id}
                             username={msg.username}
-                            aura={auraMap[msg.user_id] ?? undefined}
                             className="text-[11px] font-bold text-foreground hover:text-red-400 transition-colors"
                           />
                         </button>

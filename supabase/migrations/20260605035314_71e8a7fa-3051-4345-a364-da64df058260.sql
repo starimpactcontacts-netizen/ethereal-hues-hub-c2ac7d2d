@@ -1,0 +1,1 @@
+UPDATE public.shop_items SET is_limited = true, available_until = now() + interval '10 days', description = 'Founding Loopgate Member badge. Free for 10 days only.' WHERE name = 'OG Claim';

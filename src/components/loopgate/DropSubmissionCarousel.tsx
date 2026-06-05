@@ -14,6 +14,7 @@ import type { FeaturedSubmission } from "@/hooks/useFeaturedDrops";
 import { useUnifiedThumbnail, LOOPGATE_PLACEHOLDER } from "@/lib/thumbnail";
 import FeedComments from "./FeedComments";
 import loopgateLogo from "@/assets/loopgate-logo.png";
+import SmartUsername from "./SmartUsername";
 
 // ── Branded fallback when thumbnail fails ──
 function BrandedFallback({ username }: { username: string }) {
@@ -190,7 +191,12 @@ function SubmissionShowcaseCard({ submission, rank, isTopScorer }: {
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <span className="text-xs font-bold text-foreground truncate block">@{submission.username}</span>
+              <SmartUsername
+                userId={submission.user_id}
+                username={submission.username}
+                prefix="@"
+                className="text-xs font-bold text-foreground truncate block"
+              />
               <span className="text-[9px] text-muted-foreground">
                 {formatDistanceToNow(new Date(submission.created_at), { addSuffix: true })}
               </span>

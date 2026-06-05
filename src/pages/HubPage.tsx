@@ -54,9 +54,11 @@ import RingsModal from '@/components/loopgate/RingsModal';
 import { useEquippedBadges } from '@/hooks/useEquippedBadges';
 import WalletDrawer from '@/components/loopgate/WalletDrawer';
 import LoopyWelcomeModal from '@/components/loopgate/LoopyWelcomeModal';
+import DailyLoginModal from '@/components/loopgate/DailyLoginModal';
 import { useMyCashBattles, useMyCashBattleApplication } from '@/hooks/useCashBattles';
 import { useMyCompetitionReminders } from '@/hooks/useMyCompetitionReminders';
 import LiveBattleReminders, { type LiveBattleReminderItem } from '@/components/loopgate/LiveBattleReminder';
+import SmartUsername from '@/components/loopgate/SmartUsername';
 
 // ── Live Feed for Hub ──────────────────────────────────────────────────
 const actionColors: Record<string, string> = {
@@ -137,7 +139,11 @@ function HubLiveFeed() {
             <span className={`text-[7px] font-mono px-1 py-0.5 rounded-sm ${actionColors[item.type] || 'text-gold'} bg-white/[0.03] shrink-0`}>
               {typeLabels[item.type] || 'SYS'}
             </span>
-            <span className="text-foreground font-semibold truncate max-w-[70px]">{item.username}</span>
+            <SmartUsername
+              userId={item.user_id}
+              username={item.username}
+              className="text-foreground font-semibold truncate max-w-[70px]"
+            />
             <span className={`shrink-0 ${item.type === 'earning' ? 'text-emerald-400 font-bold' : 'text-muted-foreground/70'}`}>{item.action}</span>
             {item.target && (
               <span className={`${actionColors[item.type] || 'text-gold'} truncate flex-1 font-medium`}>{item.target}</span>
@@ -310,6 +316,7 @@ export default function HubPage() {
   const [walletOpen, setWalletOpen] = useState(false);
   const [ringsOpen, setRingsOpen] = useState(false);
   const [playExpanded, setPlayExpanded] = useState(false);
+  const [moreExpanded, setMoreExpanded] = useState(false);
   const [judgeReviewCount, setJudgeReviewCount] = useState(0);
   const [userCrew, setUserCrew] = useState<UserCrew | null>(null);
   const [quickAction, setQuickAction] = useState<'edit_battle' | 'mission' | 'solo' | 'multiplayer'>('edit_battle');
@@ -654,6 +661,7 @@ export default function HubPage() {
       />
       
       <LoopyWelcomeModal />
+      <DailyLoginModal />
       
       {/* ═══════════════════════════════════════════════════════════════════
           HERO LAYER - Profile Card with Dimensional Gate Background
@@ -681,38 +689,50 @@ export default function HubPage() {
                    WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)',
                  }}
                />
-               {/* First Circle Skin — luxury prestige aesthetic */}
+                {/* OG Skin — glossy iridescent (matches OG chip) */}
                 {hasEquippedOG && (
-                  <div
-                    className="absolute inset-0 pointer-events-none z-0 overflow-hidden"
-                     style={{}}
-                  >
-                    <div className="absolute inset-0 bg-[linear-gradient(to_bottom,hsl(var(--background)/0.9)_0%,hsl(var(--background)/0.78)_42%,hsl(var(--background)/0.28)_76%,transparent_100%)]" />
-                   {/* Subtle radial gold glow from center-top */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[320px] h-[220px] bg-[radial-gradient(ellipse_at_center,_hsl(var(--gold)/0.07)_0%,_transparent_72%)]" />
-                   
-                   {/* Fine diagonal crosshatch */}
-                    <svg className="absolute inset-0 w-full h-full opacity-[0.055]" xmlns="http://www.w3.org/2000/svg">
-                     <defs>
-                       <pattern id="fc-hatch" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                         <line x1="0" y1="0" x2="0" y2="20" stroke="#C4A44A" strokeWidth="0.5" />
-                       </pattern>
-                     </defs>
-                     <rect width="100%" height="100%" fill="url(#fc-hatch)" />
-                   </svg>
-                   
-                    {/* Soft depth without a hard dark bottom */}
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_transparent_28%,_hsl(var(--background)/0.18)_72%,_transparent_100%)]" />
-                   
-                   {/* Top accent line */}
-                   <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
-                   
-                   
-                   {/* Corner accents */}
-                   <div className="absolute top-3 left-3 w-3 h-3 border-t border-l border-gold/15" />
-                   <div className="absolute top-3 right-3 w-3 h-3 border-t border-r border-gold/15" />
-                 </div>
-               )}
+                  <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+                    {/* Base dark wash so text stays legible */}
+                    <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(10,8,20,0.92)_0%,rgba(14,10,28,0.78)_45%,rgba(14,10,28,0.25)_80%,transparent_100%)]" />
+                    {/* Iridescent holo sweep — blue → purple → pink */}
+                    <div
+                      className="absolute inset-0 opacity-[0.55]"
+                      style={{
+                        background:
+                          'linear-gradient(110deg, rgba(120,180,255,0.18) 0%, rgba(190,150,255,0.22) 35%, rgba(255,180,230,0.18) 65%, rgba(150,210,255,0.20) 100%)',
+                      }}
+                    />
+                    {/* Top glossy sheen */}
+                    <div
+                      className="absolute inset-x-0 top-0 h-[55%]"
+                      style={{
+                        background:
+                          'linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 35%, transparent 100%)',
+                      }}
+                    />
+                    {/* Center radial purple aura */}
+                    <div
+                      className="absolute top-0 left-1/2 -translate-x-1/2 w-[360px] h-[240px]"
+                      style={{
+                        background:
+                          'radial-gradient(ellipse at center, rgba(180,140,255,0.22) 0%, rgba(120,180,255,0.10) 45%, transparent 75%)',
+                      }}
+                    />
+                    {/* Shimmer specks */}
+                    <div
+                      className="absolute inset-0 opacity-60"
+                      style={{
+                        backgroundImage:
+                          'radial-gradient(circle at 18% 28%, rgba(255,255,255,0.55) 0.6px, transparent 1.6px), radial-gradient(circle at 72% 22%, rgba(200,230,255,0.5) 0.6px, transparent 1.6px), radial-gradient(circle at 42% 70%, rgba(255,210,240,0.45) 0.5px, transparent 1.4px), radial-gradient(circle at 86% 62%, rgba(220,200,255,0.5) 0.5px, transparent 1.4px)',
+                      }}
+                    />
+                    {/* Top accent line */}
+                    <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[rgba(200,180,255,0.45)] to-transparent" />
+                    {/* Corner accents */}
+                    <div className="absolute top-3 left-3 w-3 h-3 border-t border-l border-[rgba(200,180,255,0.35)]" />
+                    <div className="absolute top-3 right-3 w-3 h-3 border-t border-r border-[rgba(200,180,255,0.35)]" />
+                  </div>
+                )}
                {/* Top Row: Avatar + Identity + Currency */}
               <div className="relative z-10 p-4 pb-2">
                 <div className="flex items-start justify-between gap-3">
@@ -744,7 +764,7 @@ export default function HubPage() {
                       {/* Username + special badges */}
                       <div className="flex items-center gap-2 flex-wrap">
                         <h1 className="font-display text-xl sm:text-2xl text-foreground leading-none truncate max-w-[160px] sm:max-w-[200px]">
-                          {displayUsername}
+                          <SmartUsername userId={user?.id} username={displayUsername} />
                         </h1>
                         {hasEquippedOG && <FoundingBadge size="sm" animate={false} />}
                       </div>
@@ -766,10 +786,12 @@ export default function HubPage() {
                   <div className="shrink-0">
                     <button
                       onClick={() => setRingsOpen(true)}
-                      className="flex items-center gap-1.5 active:scale-95 transition-transform"
+                      className="flex items-baseline active:scale-95 transition-transform font-display text-xl font-bold leading-none"
+                      style={{ letterSpacing: '-0.05em', WebkitTextStroke: '1.5px #000', paintOrder: 'stroke fill' }}
                     >
-                      <RingsCoin size={20} />
-                      <span className="font-display text-sm tabular-nums font-bold text-foreground/90 leading-none">
+                      <span className="text-[#3BCB6B]" style={{ textShadow: '0 2px 0 rgba(0,0,0,0.6)' }}>$</span>
+                      <span className="text-foreground">R</span>
+                      <span className="ml-1 tabular-nums text-foreground">
                         {((profile as any)?.rings || 0).toLocaleString()}
                       </span>
                     </button>
@@ -798,6 +820,10 @@ export default function HubPage() {
                   kind: 'quick' as const,
                   id: f.id,
                   title: `${f.player_1_username} vs ${f.player_2_username || '???'}`,
+                  participants: [
+                    { userId: f.player_1_id, username: f.player_1_username },
+                    { userId: f.player_2_id, username: f.player_2_username || '???' },
+                  ],
                   status: f.status,
                   endsAt: f.ends_at,
                   hasSubmitted: isP1 ? !!f.player_1_submission_url : !!f.player_2_submission_url,
@@ -812,6 +838,10 @@ export default function HubPage() {
                   kind: 'battle' as const,
                   id: battle.id,
                   title: `${battle.challenger_username} vs ${battle.opponent_username || '???'}`,
+                  participants: [
+                    { userId: battle.challenger_id, username: battle.challenger_username },
+                    { userId: battle.opponent_id, username: battle.opponent_username || '???' },
+                  ],
                   status: battle.status,
                   endsAt: battle.ends_at,
                   hasSubmitted: isChallenger ? !!(battle as any).challenger_submission_url : !!(battle as any).opponent_submission_url,
@@ -852,7 +882,7 @@ export default function HubPage() {
                 >
                   <button
                     onClick={() => setPlayExpanded(true)}
-                    className="group relative w-full max-w-[340px] active:scale-[0.98] transition-transform overflow-hidden"
+                    className="group relative w-full max-w-[280px] active:scale-[0.98] transition-transform overflow-hidden"
                     style={{
                       background: '#FF3B3B',
                       boxShadow: 'inset 0 1px 0 hsl(0 100% 82% / 0.4), inset 0 -4px 0 hsl(0 80% 28% / 0.6), 0 0 28px hsl(0 100% 55% / 0.45)',
@@ -860,10 +890,9 @@ export default function HubPage() {
                   >
                     <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.15) 1px, transparent 1px)', backgroundSize: '12px 12px' }} />
                     <div className="relative flex items-center justify-center gap-2.5 py-[22px]">
-                      <Play className="w-7 h-7 fill-white text-white" strokeWidth={2.5} />
                       <span
-                        className="text-white uppercase leading-none tracking-wider"
-                        style={{ fontFamily: 'Teko, sans-serif', fontSize: '40px', fontWeight: 700, letterSpacing: '0.08em' }}
+                        className="text-white uppercase leading-none"
+                        style={{ fontFamily: 'Teko, sans-serif', fontSize: '34px', fontWeight: 600, letterSpacing: '0.01em', textShadow: '0 1px 0 rgba(0,0,0,0.45)' }}
                       >
                         PLAY
                       </span>
@@ -877,7 +906,7 @@ export default function HubPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.18 }}
-                  className="w-full flex flex-col gap-2 max-w-[340px] mx-auto"
+                  className="w-full flex flex-col gap-2 max-w-[280px] mx-auto"
                 >
                   <button
                     onClick={() => { setPlayExpanded(false); handleQuickFight(); }}
@@ -942,37 +971,76 @@ export default function HubPage() {
 
       {/* Arena banner removed — Arena access consolidated into quick-access grid */}
 
-      {/* ═══════════════════════════════════════════════════════════════════
-          QUICK MENU — Rankings tile (moved above live comp banner)
-      ═══════════════════════════════════════════════════════════════════ */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.18 }}
-        className="px-4 mt-0"
-      >
-        <Link
-          to="/rankings"
-          className="group block w-full max-w-[340px] mx-auto active:scale-[0.99] transition-transform"
-        >
-          <div
-            className="relative flex items-center justify-center gap-2.5 py-3.5 overflow-hidden"
-            style={{ background: '#0a0a0a', border: '2px solid rgba(255,59,59,0.6)', boxShadow: '0 0 20px rgba(255,59,59,0.15)' }}
+      {/* ═══ Collapsible: SHOP + RANKINGS ═══ */}
+      <div className="px-4 -mt-2">
+        <div className="w-full max-w-[280px] mx-auto">
+          <button
+            onClick={() => setMoreExpanded((v) => !v)}
+            className="w-full flex items-center justify-center gap-2 py-2 active:scale-[0.99] transition"
+            style={{ background: '#111114', border: '1px solid rgba(255,255,255,0.12)' }}
+            aria-expanded={moreExpanded}
           >
-            <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)', backgroundSize: '12px 12px' }} />
-            <Trophy className="relative w-4 h-4 text-[#FF3B3B] shrink-0" strokeWidth={2.5} />
             <span
-              className="relative text-white uppercase leading-none tracking-wider"
-              style={{ fontFamily: 'Teko, sans-serif', fontSize: '28px', fontWeight: 700, letterSpacing: '0.1em' }}
+              className="text-white/80 uppercase leading-none"
+              style={{ fontFamily: 'Teko, sans-serif', fontSize: '18px', fontWeight: 500, letterSpacing: '0.02em' }}
             >
-              RANKINGS
+              More
             </span>
-          </div>
-          <p className="text-center text-[10px] font-bold text-white/25 uppercase tracking-[0.25em] mt-2" style={{ fontFamily: 'Teko, sans-serif' }}>
-            Climb The Leaderboard
-          </p>
-        </Link>
-      </motion.div>
+            <ChevronDown
+              className="w-4 h-4 text-white/60 transition-transform duration-200"
+              style={{ transform: moreExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+              strokeWidth={2.5}
+            />
+          </button>
+
+          <AnimatePresence initial={false}>
+            {moreExpanded && (
+              <motion.div
+                key="more-options"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <div className="flex flex-col gap-2 pt-2">
+                  <Link to="/shop" className="group block w-full active:scale-[0.99] transition-transform">
+                    <div
+                      className="relative flex items-center justify-center gap-2.5 py-3 overflow-hidden"
+                      style={{ background: '#111114', border: '1px solid rgba(255,255,255,0.12)' }}
+                    >
+                      <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)', backgroundSize: '12px 12px' }} />
+                      <ShoppingBag className="relative w-3.5 h-3.5 text-white/60 shrink-0" strokeWidth={2.5} />
+                      <span
+                        className="relative text-white uppercase leading-none"
+                        style={{ fontFamily: 'Teko, sans-serif', fontSize: '20px', fontWeight: 500, letterSpacing: '0.01em' }}
+                      >
+                        SHOP
+                      </span>
+                    </div>
+                  </Link>
+
+                  <Link to="/rankings" className="group block w-full active:scale-[0.99] transition-transform">
+                    <div
+                      className="relative flex items-center justify-center gap-2.5 py-3 overflow-hidden"
+                      style={{ background: '#111114', border: '1px solid rgba(255,255,255,0.12)' }}
+                    >
+                      <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)', backgroundSize: '12px 12px' }} />
+                      <Trophy className="relative w-3.5 h-3.5 text-white/60 shrink-0" strokeWidth={2.5} />
+                      <span
+                        className="relative text-white uppercase leading-none"
+                        style={{ fontFamily: 'Teko, sans-serif', fontSize: '20px', fontWeight: 500, letterSpacing: '0.01em' }}
+                      >
+                        RANKINGS
+                      </span>
+                    </div>
+                  </Link>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
 
       {/* ═══ FEATURED EVENT AD — slim cinematic strip under quick action ═══ */}
       {liveEvents.length > 0 && (

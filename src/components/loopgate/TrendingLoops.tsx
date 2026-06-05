@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { MessageCircle, Flame, Play } from 'lucide-react';
 import LoopHeart from './LoopHeart';
 import { cn } from '@/lib/utils';
+import SmartUsername from './SmartUsername';
 
 interface TrendingPost {
   id: string;
@@ -137,7 +138,11 @@ export default function TrendingLoops({ limit = 10 }: { limit?: number }) {
                   <span className="text-[7px] font-bold text-gold">{(post.username || '?').charAt(0).toUpperCase()}</span>
                 </div>
               )}
-              <span className="text-[10px] font-bold text-white truncate">{post.username || 'anon'}</span>
+              <SmartUsername
+                userId={post.user_id}
+                username={post.username || 'anon'}
+                className="text-[10px] font-bold text-white truncate"
+              />
             </div>
             <div className="flex items-center gap-2.5 mt-1">
               {post.like_count > 0 && (

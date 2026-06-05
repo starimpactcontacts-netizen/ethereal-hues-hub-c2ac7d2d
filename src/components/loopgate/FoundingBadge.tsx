@@ -10,8 +10,8 @@ function OGChip({ size }: { size: 'sm' | 'md' }) {
   const isMd = size === 'md';
   const h  = isMd ? 22 : 17;
   const fs = isMd ? 13 : 10;
-  const px = isMd ? 12 : 8;
-  const skew = isMd ? 9 : 7;
+  const px = isMd ? 10 : 7;
+  const skew = isMd ? 8 : 6;
 
   return (
     <span
@@ -19,29 +19,46 @@ function OGChip({ size }: { size: 'sm' | 'md' }) {
       style={{
         fontFamily: 'Teko, sans-serif',
         fontSize: fs,
-        letterSpacing: '0.14em',
+        letterSpacing: '0.18em',
         paddingInline: px,
         height: h,
-        color: '#FFD060',
-        background: 'linear-gradient(135deg, #2a1a00 0%, #1a0e00 40%, #0d0700 100%)',
-        border: '1px solid rgba(255,190,40,0.5)',
+        color: '#ffffff',
+        background: 'linear-gradient(110deg, rgba(180,220,255,0.18) 0%, rgba(220,170,255,0.22) 35%, rgba(255,200,230,0.18) 65%, rgba(170,230,255,0.20) 100%)',
+        backdropFilter: 'blur(6px)',
+        WebkitBackdropFilter: 'blur(6px)',
+        border: '1px solid rgba(200,220,255,0.45)',
         clipPath: `polygon(${skew}px 0%, 100% 0%, calc(100% - ${skew}px) 100%, 0% 100%)`,
-        boxShadow: '0 0 12px rgba(255,165,0,0.15), inset 0 1px 0 rgba(255,220,80,0.12)',
-        textShadow: '0 0 8px rgba(255,200,40,0.6)',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -1px 0 rgba(180,140,255,0.25), 0 0 10px rgba(180,200,255,0.25)',
+        textShadow: '0 0 6px rgba(220,200,255,0.7), 0 1px 0 rgba(0,0,0,0.4)',
       }}
       title="OG — Founding Loopgate Member"
     >
-      {/* Valorant-style 4-pt star */}
-      <svg width={isMd ? 8 : 6} height={isMd ? 8 : 6} viewBox="0 0 8 8" fill="none" style={{ flexShrink: 0 }}>
-        <path d="M4 0 L4.9 3.1 L8 4 L4.9 4.9 L4 8 L3.1 4.9 L0 4 L3.1 3.1 Z" fill="#FFD060" />
+      {/* Holo 4-pt star */}
+      <svg width={isMd ? 9 : 7} height={isMd ? 9 : 7} viewBox="0 0 8 8" fill="none" style={{ flexShrink: 0, filter: 'drop-shadow(0 0 3px rgba(255,255,255,0.9))' }}>
+        <defs>
+          <linearGradient id="ogStarHolo" x1="0" y1="0" x2="8" y2="8" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#A8E6FF" />
+            <stop offset="50%" stopColor="#FFC8F0" />
+            <stop offset="100%" stopColor="#C8B4FF" />
+          </linearGradient>
+        </defs>
+        <path d="M4 0 L4.9 3.1 L8 4 L4.9 4.9 L4 8 L3.1 4.9 L0 4 L3.1 3.1 Z" fill="url(#ogStarHolo)" />
       </svg>
       OG
-      {/* top-edge glint */}
+      {/* iridescent sheen */}
       <span
         className="absolute inset-0 pointer-events-none"
         style={{
           clipPath: `polygon(${skew}px 0%, 100% 0%, calc(100% - ${skew}px) 100%, 0% 100%)`,
-          background: 'linear-gradient(180deg, rgba(255,220,80,0.12) 0%, transparent 40%)',
+          background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, transparent 50%)',
+        }}
+      />
+      {/* shimmer specks */}
+      <span
+        className="absolute inset-0 pointer-events-none opacity-70"
+        style={{
+          clipPath: `polygon(${skew}px 0%, 100% 0%, calc(100% - ${skew}px) 100%, 0% 100%)`,
+          backgroundImage: 'radial-gradient(circle at 20% 30%, rgba(255,255,255,0.7) 0.5px, transparent 1.5px), radial-gradient(circle at 70% 65%, rgba(200,230,255,0.55) 0.5px, transparent 1.5px), radial-gradient(circle at 45% 80%, rgba(255,210,240,0.5) 0.5px, transparent 1.2px)',
         }}
       />
     </span>

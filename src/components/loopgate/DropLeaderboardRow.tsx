@@ -13,6 +13,7 @@ import { formatDistanceToNow } from "date-fns";
 import type { FeaturedSubmission } from "@/hooks/useFeaturedDrops";
 import FeedComments from "./FeedComments";
 import { cn } from "@/lib/utils";
+import SmartUsername from "./SmartUsername";
 
 interface Props {
   submission: FeaturedSubmission;
@@ -139,12 +140,15 @@ export default function DropLeaderboardRow({ submission, rank, totalEntries }: P
 
               <div className="flex-1 min-w-0">
                 <Link to={`/editor/${submission.user_id}`} className="flex items-center gap-1.5">
-                  <span className={cn(
-                    "font-bold truncate block",
-                    rank === 1 ? "text-sm text-foreground" : "text-xs text-foreground/90"
-                  )}>
-                    @{submission.username}
-                  </span>
+                  <SmartUsername
+                    userId={submission.user_id}
+                    username={submission.username}
+                    prefix="@"
+                    className={cn(
+                      "font-bold truncate block",
+                      rank === 1 ? "text-sm text-foreground" : "text-xs text-foreground/90"
+                    )}
+                  />
                   {rank === 1 && <Flame className="w-3.5 h-3.5 text-gold shrink-0" />}
                 </Link>
                 <span className="text-[9px] text-muted-foreground/60">

@@ -23,6 +23,7 @@ import BattleSongPicker from "@/components/loopgate/BattleSongPicker";
 import BattleSubmissionCard, { ForfeitSlot } from "@/components/loopgate/BattleSubmissionCard";
 import BattleShowcase from "@/components/loopgate/BattleShowcase";
 import ReportUserButton from "@/components/loopgate/ReportUserButton";
+import SmartUsername from "@/components/loopgate/SmartUsername";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -387,9 +388,7 @@ export default function BattleDetailPage() {
               {battle.winner_id === battle.challenger_id && <Trophy className="w-3 h-3 text-amber-400 shrink-0" />}
               {battle.challenger_submitted_at && <CheckCircle className="w-2.5 h-2.5 text-emerald-400/50 shrink-0" />}
               {isChallenger && <span className="text-[7px] text-red-400/50 font-bold uppercase shrink-0">YOU</span>}
-              <span className="font-black uppercase text-white truncate" style={{ fontFamily: 'Teko, sans-serif', fontSize: 19, letterSpacing: '0.07em', textShadow: '-2px 0 rgba(255,40,40,0.6), 1px 0 rgba(255,255,255,0.85)' }}>
-                {battle.challenger_username}
-              </span>
+              <SmartUsername userId={battle.challenger_id} username={battle.challenger_username} className="font-black uppercase text-white truncate" style={{ fontFamily: 'Teko, sans-serif', fontSize: 19, letterSpacing: '0.07em', textShadow: '-2px 0 rgba(255,40,40,0.6), 1px 0 rgba(255,255,255,0.85)' }} />
             </div>
           </div>
 
@@ -427,9 +426,7 @@ export default function BattleDetailPage() {
           <div className="flex-1 flex items-center pl-2.5 min-w-0" style={{ background: 'linear-gradient(270deg, transparent, rgba(59,130,246,0.07))' }}>
             {battle.opponent_id ? (
               <div className="flex items-center gap-1.5 min-w-0">
-                <span className="font-black uppercase text-white truncate" style={{ fontFamily: 'Teko, sans-serif', fontSize: 19, letterSpacing: '0.07em', textShadow: '2px 0 rgba(40,100,255,0.6), -1px 0 rgba(255,255,255,0.85)' }}>
-                  {battle.opponent_username}
-                </span>
+                <SmartUsername userId={battle.opponent_id} username={battle.opponent_username || '???'} className="font-black uppercase text-white truncate" style={{ fontFamily: 'Teko, sans-serif', fontSize: 19, letterSpacing: '0.07em', textShadow: '2px 0 rgba(40,100,255,0.6), -1px 0 rgba(255,255,255,0.85)' }} />
                 {battle.winner_id === battle.opponent_id && <Trophy className="w-3 h-3 text-amber-400 shrink-0" />}
                 {battle.opponent_submitted_at && <CheckCircle className="w-2.5 h-2.5 text-emerald-400/50 shrink-0" />}
                 {isOpponent && <span className="text-[7px] text-blue-400/50 font-bold uppercase shrink-0">YOU</span>}
@@ -492,7 +489,7 @@ export default function BattleDetailPage() {
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <span className="text-sm font-medium text-white block">{battle.requested_judge_username || 'Assigned'}</span>
+                {battle.requested_judge_username ? <SmartUsername userId={battle.requested_judge_id || battle.judge_id} username={battle.requested_judge_username} className="text-sm font-medium text-white block" /> : <span className="text-sm font-medium text-white block">Assigned</span>}
                 <span className={`text-[10px] font-bold uppercase tracking-wider ${
                   battle.judge_status === 'accepted' ? 'text-emerald-400' :
                   battle.judge_status === 'declined' ? 'text-red-400' :
@@ -640,6 +637,7 @@ export default function BattleDetailPage() {
                 <BattleSubmissionCard
                   url={battle.challenger_submission_url}
                   username={battle.challenger_username}
+                    userId={battle.challenger_id}
                   color="red"
                   avatarUrl={battle.challenger_avatar_url}
                   customThumbnailUrl={(battle as any).challenger_thumbnail_url}
@@ -651,12 +649,13 @@ export default function BattleDetailPage() {
                   onVote={() => handleVote(battle.challenger_id)}
                 />
               ) : (isCompleted && battle.winner_id) ? (
-                <ForfeitSlot username={battle.challenger_username} color="red" />
+                <ForfeitSlot username={battle.challenger_username} userId={battle.challenger_id} color="red" />
               ) : null}
               {battle.opponent_submission_url ? (
                 <BattleSubmissionCard
                   url={battle.opponent_submission_url}
                   username={battle.opponent_username || '???'}
+                    userId={battle.opponent_id}
                   color="blue"
                   avatarUrl={battle.opponent_avatar_url}
                   customThumbnailUrl={(battle as any).opponent_thumbnail_url}
@@ -668,7 +667,7 @@ export default function BattleDetailPage() {
                   onVote={() => handleVote(battle.opponent_id!)}
                 />
               ) : (isCompleted && battle.winner_id && battle.opponent_username) ? (
-                <ForfeitSlot username={battle.opponent_username} color="blue" />
+                <ForfeitSlot username={battle.opponent_username} userId={battle.opponent_id} color="blue" />
               ) : null}
             </div>
 
@@ -697,18 +696,18 @@ export default function BattleDetailPage() {
               <Trophy className="w-10 h-10 text-amber-400 mx-auto mb-3 drop-shadow-[0_0_12px_rgba(245,158,11,0.3)]" />
               <span className="text-[10px] text-amber-400/60 font-bold uppercase tracking-[0.25em]">WINNER</span>
               <p className="text-3xl font-bold text-white uppercase tracking-wide mt-1" style={{ fontFamily: 'Teko, sans-serif' }}>
-                {battle.winner_id === battle.challenger_id ? battle.challenger_username : battle.opponent_username}
+                <SmartUsername userId={battle.winner_id} username={battle.winner_id === battle.challenger_id ? battle.challenger_username : (battle.opponent_username || '???')} />
               </p>
               {(battle.challenger_score !== null && battle.opponent_score !== null) && (
                 <div className="flex items-center justify-center gap-6 mt-3">
                   <div>
                     <span className="text-xl font-bold text-white tabular-nums" style={{ fontFamily: 'Teko, sans-serif' }}>{battle.challenger_score}</span>
-                    <span className="text-[9px] text-zinc-500 block uppercase">{battle.challenger_username}</span>
+                    <SmartUsername userId={battle.challenger_id} username={battle.challenger_username} className="text-[9px] text-zinc-500 block uppercase" />
                   </div>
                   <span className="text-xs text-zinc-600">vs</span>
                   <div>
                     <span className="text-xl font-bold text-white tabular-nums" style={{ fontFamily: 'Teko, sans-serif' }}>{battle.opponent_score}</span>
-                    <span className="text-[9px] text-zinc-500 block uppercase">{battle.opponent_username}</span>
+                    <SmartUsername userId={battle.opponent_id} username={battle.opponent_username || '???'} className="text-[9px] text-zinc-500 block uppercase" />
                   </div>
                 </div>
               )}
@@ -832,7 +831,7 @@ export default function BattleDetailPage() {
             <div className="bg-zinc-900/60 border border-amber-500/15 rounded-xl p-4 text-center">
               <Clock className="w-5 h-5 text-amber-400/60 mx-auto mb-2" />
               <p className="text-sm font-bold text-white uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>
-                Waiting for {battle.opponent_username}
+                Waiting for <SmartUsername userId={battle.opponent_id} username={battle.opponent_username || '???'} />
               </p>
               <p className="text-[10px] text-zinc-500 mt-1">They've been notified</p>
             </div>

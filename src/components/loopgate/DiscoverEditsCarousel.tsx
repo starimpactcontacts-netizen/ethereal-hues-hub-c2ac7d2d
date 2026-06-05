@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 import { getThumbnail, getThumbnailAsync, LOOPGATE_PLACEHOLDER, type ThumbnailResult } from "@/lib/thumbnail";
 import loopgateLogo from "@/assets/loopgate-logo.png";
+import SmartUsername from "./SmartUsername";
 
 // ── Types ──
 
@@ -197,9 +198,12 @@ function EditShowcaseCard({
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <span className="text-xs font-bold text-white truncate block drop-shadow-lg">
-              @{entry.username}
-            </span>
+            <SmartUsername
+              userId={entry.user_id}
+              username={entry.username}
+              prefix="@"
+              className="text-xs font-bold text-white truncate block drop-shadow-lg"
+            />
           </div>
           <div className="ml-auto pl-2 flex items-center gap-1 bg-white/15 backdrop-blur-sm px-2.5 py-1 rounded-full">
             <Play className="w-3 h-3 text-white" fill="white" />
@@ -282,7 +286,12 @@ function VideoPlayerOverlay({
               <AvatarFallback className="text-[9px] font-bold">{entry.username?.[0]?.toUpperCase()}</AvatarFallback>
             </Avatar>
             <div>
-              <span className="text-xs font-bold text-foreground">@{entry.username}</span>
+              <SmartUsername
+                userId={entry.user_id}
+                username={entry.username}
+                prefix="@"
+                className="text-xs font-bold text-foreground"
+              />
               <div className="flex items-center gap-1 text-[9px] text-muted-foreground">
                 <SourceIcon source={entry.source} />
                 <span>{entry.source_label}</span>

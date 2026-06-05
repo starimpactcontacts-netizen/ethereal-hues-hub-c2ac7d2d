@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useQuickFightMessages, type QuickFightMessage } from '@/hooks/useQuickFight';
 import { toast } from 'sonner';
 import GifPicker from './GifPicker';
+import SmartUsername from './SmartUsername';
 
 const TRASH_TALK = [
   "yo wake up bro 👀",
@@ -246,11 +247,11 @@ export default function QuickFightChat({
               >
                 {/* Avatar — left side only */}
                 {showAvatar && (
-                  <Avatar className={`w-7 h-7 shrink-0 border-2 mt-0.5 ${getBorderColor(msg.user_id)} ${
+                  <Avatar className={`w-10 h-10 shrink-0 border-2 mt-0.5 ${getBorderColor(msg.user_id)} ${
                     isBlue ? 'shadow-[0_0_8px_rgba(59,130,246,0.5)]' : ''
                   }`}>
                     <AvatarImage src={msg.avatar_url || ''} />
-                    <AvatarFallback className={`text-[9px] font-black ${
+                    <AvatarFallback className={`text-[13px] font-black ${
                       isBlue ? 'bg-blue-500/20 text-blue-200' : 'bg-white/5 text-zinc-300'
                     }`}>
                       {msg.username.charAt(0).toUpperCase()}
@@ -261,19 +262,24 @@ export default function QuickFightChat({
                 <div className={`max-w-[78%] flex flex-col ${onRight ? 'items-end' : 'items-start'}`}>
                   {/* Name */}
                   <div className={`flex items-center gap-1.5 mb-0.5 ${onRight ? 'justify-end pr-0.5' : 'pl-0.5'}`}>
-                    <span className={`text-[10px] font-bold ${getColor(msg.user_id)}`}>@{msg.username}</span>
+                    <SmartUsername
+                      userId={msg.user_id}
+                      username={msg.username}
+                      prefix="@"
+                      className={`text-[14px] font-bold ${getColor(msg.user_id)}`}
+                    />
                   </div>
 
                   {/* Reply context */}
                   {msg.reply_to_username && (
-                    <div className={`flex items-center gap-1 mb-0.5 text-[9px] text-zinc-500 ${onRight ? 'justify-end' : ''}`}>
-                      <Reply className="w-2.5 h-2.5 rotate-180 shrink-0" />
-                      <span className="truncate max-w-[160px]">@{msg.reply_to_username}: {msg.reply_to_text}</span>
+                    <div className={`flex items-center gap-1 mb-0.5 text-[12px] text-zinc-500 ${onRight ? 'justify-end' : ''}`}>
+                      <Reply className="w-3 h-3 rotate-180 shrink-0" />
+                      <span className="truncate max-w-[220px]">@{msg.reply_to_username}: {msg.reply_to_text}</span>
                     </div>
                   )}
 
                   {/* Bubble */}
-                  <div className={`relative border px-3 py-1.5 ${
+                  <div className={`relative border px-4 py-2.5 ${
                     isRed
                       ? 'bg-gradient-to-br from-red-500/35 to-red-800/25 border-red-500/50 shadow-[0_0_14px_rgba(239,68,68,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] rounded-2xl rounded-tr-sm'
                       : isBlue
@@ -284,11 +290,11 @@ export default function QuickFightChat({
                       <img
                         src={msg.message_text}
                         alt=""
-                        className="max-w-[220px] max-h-[180px] rounded-lg object-cover"
+                        className="max-w-[320px] max-h-[260px] rounded-lg object-cover"
                         loading="lazy"
                       />
                     ) : (
-                      <p className="text-[13px] text-white leading-snug break-words">{msg.message_text}</p>
+                      <p className="text-[19px] text-white leading-snug break-words">{msg.message_text}</p>
                     )}
 
                     {/* Reply button — shows on hover */}
@@ -303,16 +309,16 @@ export default function QuickFightChat({
                     )}
                   </div>
 
-                  <span className="text-[8px] text-zinc-600 mt-0.5 px-0.5">
+                  <span className="text-[11px] text-zinc-600 mt-0.5 px-0.5">
                     {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
 
                 {/* Avatar — right side (RED) */}
                 {isRed && (
-                  <Avatar className="w-7 h-7 shrink-0 border-2 mt-0.5 border-red-500/50 shadow-[0_0_8px_rgba(239,68,68,0.5)]">
+                  <Avatar className="w-10 h-10 shrink-0 border-2 mt-0.5 border-red-500/50 shadow-[0_0_8px_rgba(239,68,68,0.5)]">
                     <AvatarImage src={msg.avatar_url || ''} />
-                    <AvatarFallback className="text-[9px] font-black bg-red-500/20 text-red-200">
+                    <AvatarFallback className="text-[13px] font-black bg-red-500/20 text-red-200">
                       {msg.username.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>

@@ -25,6 +25,7 @@ import IndexHeroPattern from "@/components/loopgate/IndexHeroPattern";
 import editoriumLogo from "@/assets/editorium-logo.png";
 import EditoriumPicks from "@/components/loopgate/EditoriumPicks";
 import heroCollage from "@/assets/hero-collage.jpeg";
+import SmartUsername from "@/components/loopgate/SmartUsername";
 
 type LeagueFilter = "all" | "open" | "pro" | "elite";
 type RankFilter = "all" | "top10" | "top50" | "top100";
@@ -180,7 +181,7 @@ function EditorCard({ editor, pinnedEdits, navigate, size = "md", showRank = fal
           className="text-[14px] font-black text-white leading-none truncate"
           style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.03em' }}
         >
-          {editor.display_name || editor.username}
+          <SmartUsername userId={editor.id} username={editor.display_name || editor.username} className="truncate" />
         </p>
         <div className="flex items-center gap-1 mt-0.5 text-[8px] font-bold text-white/30">
           <span style={{ color: 'rgba(251,191,36,0.75)' }}>{(editor.global_index_score || 0).toFixed(0)}</span>
@@ -495,7 +496,7 @@ export default function IndexPage() {
                     <div className="w-12 flex items-center justify-center">
                       {IconComponent ? <IconComponent className={`w-6 h-6 ${style.text}`} /> : <span className={`font-display text-2xl ${style.text}`}>{displayRank}</span>}
                     </div>
-                    <div className="flex-1"><span className="font-semibold text-white">{ranking.profile?.username || 'Unknown'}</span></div>
+                    <div className="flex-1 min-w-0"><span className="font-semibold text-white truncate block"><SmartUsername userId={ranking.user_id} username={ranking.profile?.username || 'Unknown'} /></span></div>
                     {isLiveEvent ? (
                       <div className="flex items-center gap-3">
                         <div className="flex gap-2 text-xs text-muted-foreground">
@@ -669,7 +670,9 @@ export default function IndexPage() {
                               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                             </div>
                             <div className="px-2 pt-1.5">
-                              <p className="font-semibold text-[11px] text-foreground truncate">{editor.display_name || editor.username}</p>
+                              <p className="font-semibold text-[11px] text-foreground truncate">
+                                <SmartUsername userId={editor.id} username={editor.display_name || editor.username} className="truncate" />
+                              </p>
                               <div className="flex items-center justify-center gap-1 mt-0.5 text-[9px] text-muted-foreground/60">
                                 <Users className="w-2.5 h-2.5" />
                                 <span>{editor.connection_count || 0}</span>
@@ -812,7 +815,9 @@ export default function IndexPage() {
                           </button>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <button onClick={() => navigate(`/judge/${judge.username}`)} className="font-semibold text-[15px] text-foreground hover:underline truncate">{displayName}</button>
+                              <button onClick={() => navigate(`/judge/${judge.username}`)} className="font-semibold text-[15px] text-foreground hover:underline truncate">
+                                <SmartUsername userId={judge.id} username={displayName} className="truncate" />
+                              </button>
                               {judge.verification_status && <VerifiedBadge size="sm" />}
                               {judge.isTrial ? (
                                 <span className="text-[8px] px-1.5 py-0.5 bg-muted/20 border border-muted/30 text-muted-foreground uppercase tracking-wider">Trial</span>
@@ -820,7 +825,7 @@ export default function IndexPage() {
                                 <AuthorityBadge role="judge" size="sm" />
                               )}
                             </div>
-                            <p className="text-[12px] text-muted-foreground mt-0.5">@{judge.username}</p>
+                            <p className="text-[12px] text-muted-foreground mt-0.5"><SmartUsername userId={judge.id} username={judge.username} prefix="@" /></p>
                           </div>
                           {!judge.isTrial && <div className="flex-shrink-0"><JudgeDivisionBadge jxp={judge.judge_xp} size="sm" /></div>}
                         </div>
@@ -913,7 +918,7 @@ export default function IndexPage() {
                           </Avatar>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <span className="font-semibold text-sm text-foreground truncate">{user.username}</span>
+                              <span className="font-semibold text-sm text-foreground truncate"><SmartUsername userId={user.id} username={user.username} className="truncate" /></span>
                               <LevelBadge level={user.level} size="sm" />
                             </div>
                           </div>
@@ -1049,7 +1054,7 @@ function DirectoryList({ editors, pinnedEditsByUser, navigate, profile }: {
             {/* Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1 flex-wrap">
-                <span className="font-semibold text-[13px] text-foreground truncate">{editor.display_name || editor.username}</span>
+                <span className="font-semibold text-[13px] text-foreground truncate"><SmartUsername userId={editor.id} username={editor.display_name || editor.username} className="truncate" /></span>
                 {editor.level && editor.level > 1 && <LevelBadge level={editor.level} size="xs" />}
                 {editor.verification_status && <VerifiedBadge size="sm" />}
                 {authorityRole && <AuthorityBadge role={authorityRole} size="sm" />}
@@ -1057,7 +1062,7 @@ function DirectoryList({ editors, pinnedEditsByUser, navigate, profile }: {
                 <span className={`text-[7px] border px-1 py-px ${classStyle}`}>{classLetter}</span>
               </div>
               {editor.display_name && (
-                <p className="text-[10px] text-muted-foreground/60 mt-0.5">@{editor.username}</p>
+                <p className="text-[10px] text-muted-foreground/60 mt-0.5"><SmartUsername userId={editor.id} username={editor.username} prefix="@" /></p>
               )}
               <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground flex-wrap">
                 <span>{editor.win_rate?.toFixed(0) || 0}% Win</span>

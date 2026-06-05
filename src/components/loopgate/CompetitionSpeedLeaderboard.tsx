@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import type { CompetitionSubmission } from "@/hooks/useCompetitions";
+import SmartUsername from "./SmartUsername";
 
 interface Props {
   submissions: CompetitionSubmission[];
@@ -86,7 +87,7 @@ export default function CompetitionSpeedLeaderboard({
               )}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-white truncate tracking-tight">
-                  {row.username}
+                  <SmartUsername userId={row.user_id} username={row.username} />
                   {isMe && (
                     <span className="ml-1.5 text-[9px] font-mono uppercase tracking-tight text-emerald-400">
                       you

@@ -12,6 +12,7 @@ import NotificationCenter from './NotificationCenter';
 import HeaderMusicPlayer from './HeaderMusicPlayer';
 import MessagesHeaderIcon from './MessagesHeaderIcon';
 import loopgateBrand from '@/assets/loopgate-brand.png';
+import SmartUsername from './SmartUsername';
 
 type NavItem = { to: string; icon: typeof Home; label: string; highlight?: boolean; red?: boolean };
 type NavSection = { title: string; items: NavItem[] };
@@ -160,7 +161,12 @@ export default function AppHeader() {
                         </AvatarFallback>
                       </Avatar>
                       <div className="min-w-0 flex-1">
-                        <p className="font-display text-lg leading-tight text-foreground truncate">{profile.username}</p>
+                        <SmartUsername
+                          userId={profile.id}
+                          username={profile.username}
+                          aura={(profile as any).equipped_aura ?? null}
+                          className="font-display text-lg leading-tight text-foreground truncate block"
+                        />
                         <div className="flex items-center gap-1.5 mt-1">
                           <span className="text-[9px] font-bold tracking-[0.15em] uppercase px-1.5 py-0.5 rounded bg-gold/15 text-gold border border-gold/20">
                             {profile.league}

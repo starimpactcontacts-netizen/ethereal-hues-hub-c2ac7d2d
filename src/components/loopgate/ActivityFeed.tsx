@@ -5,6 +5,7 @@ import { useRecentSubmissions, RecentSubmission } from "@/hooks/useRecentSubmiss
 import { useThumbnail } from "@/hooks/useThumbnail";
 import { formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
+import SmartUsername from "./SmartUsername";
 
 interface ActivityFeedProps {
   limit?: number;
@@ -119,9 +120,11 @@ function EditCard({ submission, index }: { submission: RecentSubmission; index: 
                   </span>
                 </div>
               )}
-              <span className="text-[8px] sm:text-[10px] font-semibold text-white truncate flex-1">
-                {submission.display_name || submission.username}
-              </span>
+              <SmartUsername
+                userId={submission.user_id}
+                username={submission.display_name || submission.username}
+                className="text-[8px] sm:text-[10px] font-semibold text-white truncate flex-1"
+              />
             </div>
             
             {/* Index score */}
@@ -154,7 +157,11 @@ function EditCard({ submission, index }: { submission: RecentSubmission; index: 
 function CompactLogRow({ submission }: { submission: RecentSubmission }) {
   return (
     <div className="flex items-center gap-2 py-1.5 text-[10px] text-muted-foreground border-b border-border/30 last:border-0">
-      <span className="text-foreground font-medium">{submission.display_name || submission.username}</span>
+      <SmartUsername
+        userId={submission.user_id}
+        username={submission.display_name || submission.username}
+        className="text-foreground font-medium"
+      />
       <span>submitted to</span>
       <span className="text-gold">{submission.event_title}</span>
       {submission.qoi_score !== null && (

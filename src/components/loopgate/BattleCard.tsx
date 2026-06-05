@@ -3,6 +3,7 @@ import { Swords, Clock, Trophy, Lock } from "lucide-react";
 import BattleVoteBarCompact from "@/components/loopgate/BattleVoteBarCompact";
 import { getThumbnail } from "@/lib/thumbnail";
 import type { Battle } from "@/hooks/useBattles";
+import SmartUsername from "@/components/loopgate/SmartUsername";
 
 interface BattleCardProps {
   battle: Battle;
@@ -160,7 +161,7 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
             className="text-[10px] font-black uppercase truncate max-w-[62px] leading-none"
             style={{ fontFamily: 'Teko, sans-serif', color: 'rgba(147,197,253,0.8)' }}
           >
-            {battle.challenger_username}
+            <SmartUsername userId={battle.challenger_id} username={battle.challenger_username} />
           </span>
           <span
             className="text-[10px] font-black uppercase truncate max-w-[62px] leading-none text-right"
@@ -169,7 +170,7 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
               color: battle.opponent_id ? 'rgba(252,165,165,0.75)' : 'rgba(255,255,255,0.18)',
             }}
           >
-            {battle.opponent_username || 'OPEN'}
+            {battle.opponent_id ? <SmartUsername userId={battle.opponent_id} username={battle.opponent_username || '???'} /> : 'OPEN'}
           </span>
         </div>
 

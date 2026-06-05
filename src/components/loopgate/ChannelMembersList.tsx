@@ -2,6 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Crown, Shield, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import SmartUsername from "@/components/loopgate/SmartUsername";
 
 interface PresenceState {
   user_id: string;
@@ -92,7 +93,7 @@ export default function ChannelMembersList({ members, onlineMembers }: ChannelMe
                 isOnline ? "text-foreground" : "text-muted-foreground/60"
               )}
             >
-              {displayName}
+              <SmartUsername userId={member.user_id} username={displayName} />
             </span>
             {member.role === "owner" && <Crown className="w-3 h-3 text-gold shrink-0" />}
             {member.role === "officer" && <Shield className="w-3 h-3 text-blue-400 shrink-0" />}

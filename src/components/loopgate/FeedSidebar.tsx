@@ -3,6 +3,7 @@ import { Search, TrendingUp, Users, Flame } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import { motion } from "framer-motion";
+import SmartUsername from "@/components/loopgate/SmartUsername";
 
 interface TrendingEditor {
   id: string;
@@ -93,9 +94,9 @@ export default function FeedSidebar({ searchQuery, onSearchChange, trendingEdito
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-1">
-                    <span className="text-[13px] font-semibold text-foreground truncate">{editor.username}</span>
+                    <SmartUsername userId={editor.id} username={editor.username} className="text-[13px] font-semibold text-foreground truncate" />
                   </div>
-                  <span className="text-[11px] text-muted-foreground/60">@{editor.username}</span>
+                  <SmartUsername userId={editor.id} username={editor.username} prefix="@" className="text-[11px] text-muted-foreground/60" />
                 </div>
               </motion.button>
             ))}

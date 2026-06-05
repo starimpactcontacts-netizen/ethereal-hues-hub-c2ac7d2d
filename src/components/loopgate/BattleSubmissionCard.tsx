@@ -3,6 +3,7 @@ import { ExternalLink, Play, Trophy, ThumbsUp } from "lucide-react";
 import { useThumbnail } from "@/hooks/useThumbnail";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 import { getBunnyPlaybackUrl } from "@/lib/bunnyPlayback";
+import SmartUsername from "@/components/loopgate/SmartUsername";
 
 const SALTY_MESSAGES = [
   "Bro went to sleep 💀",
@@ -17,10 +18,12 @@ const SALTY_MESSAGES = [
 
 export function ForfeitSlot({
   username,
+  userId,
   color,
   aspectClass = "aspect-[9/16]",
 }: {
   username: string;
+  userId?: string | null;
   color: "red" | "blue";
   aspectClass?: string;
 }) {
@@ -60,7 +63,7 @@ export function ForfeitSlot({
         {/* Bottom overlay */}
         <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/95 to-transparent pointer-events-none" />
         <div className="absolute inset-x-0 bottom-0 px-2.5 py-2 flex items-center justify-between">
-          <span className="text-[10px] font-bold text-white/25 truncate">@{username}</span>
+          <SmartUsername userId={userId} username={username} prefix="@" className="text-[10px] font-bold text-white/25 truncate" />
           <span
             className="text-[8px] font-black uppercase tracking-[0.2em] text-red-400/60 shrink-0"
             style={{ fontFamily: "Teko, sans-serif" }}
@@ -82,7 +85,7 @@ function detectPlatform(url: string): string {
   return "unknown";
 }
 
-function FallbackThumbnail({ username, color }: { username: string; color: "red" | "blue" }) {
+function FallbackThumbnail({ username, userId, color }: { username: string; userId?: string | null; color: "red" | "blue" }) {
   const gradientFrom = color === "red" ? "from-red-950" : "from-blue-950";
   const gradientTo = color === "red" ? "to-red-900/60" : "to-blue-900/60";
   const accentColor = color === "red" ? "text-red-400" : "text-blue-400";
@@ -99,9 +102,7 @@ function FallbackThumbnail({ username, color }: { username: string; color: "red"
       />
       <img src={loopgateLogo} alt="" className="w-8 h-8 opacity-40" />
       <div className={`border ${borderColor} px-3 py-1 backdrop-blur-sm bg-black/20`}>
-        <span className={`text-xs font-display uppercase tracking-wider ${accentColor}`}>
-          @{username}
-        </span>
+        <SmartUsername userId={userId} username={username} prefix="@" className={`text-xs font-display uppercase tracking-wider ${accentColor}`} />
       </div>
     </div>
   );
@@ -110,6 +111,7 @@ function FallbackThumbnail({ username, color }: { username: string; color: "red"
 interface BattleSubmissionCardProps {
   url: string;
   username: string;
+  userId?: string | null;
   color: "red" | "blue";
   avatarUrl?: string | null;
   customThumbnailUrl?: string | null;
@@ -123,7 +125,7 @@ interface BattleSubmissionCardProps {
 }
 
 export default function BattleSubmissionCard({
-  url, username, color, customThumbnailUrl,
+  url, username, userId, color, customThumbnailUrl,
   score, isWinner, votes, onVote, hasVoted, canVote, aspectClass = 'aspect-[9/16]',
 }: BattleSubmissionCardProps) {
   const playbackUrl = getBunnyPlaybackUrl(url);
@@ -150,7 +152,7 @@ export default function BattleSubmissionCard({
           </div>
         </div>
       ) : (
-        <FallbackThumbnail username={username} color={color} />
+        <FallbackThumbnail username={username} userId={userId} color={color} />
       )}
 
       {/* Play hover overlay — only for linked (social) submissions */}
@@ -188,7 +190,7 @@ export default function BattleSubmissionCard({
       {/* Bottom gradient + username/vote overlay */}
       <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none" />
       <div className="absolute inset-x-0 bottom-0 px-2 py-1.5 flex items-center justify-between gap-1">
-        <span className="text-[10px] font-bold text-white truncate drop-shadow">@{username}</span>
+        <SmartUsername userId={userId} username={username} prefix="@" className="text-[10px] font-bold text-white truncate drop-shadow" />
         <div className="flex items-center gap-1 shrink-0">
           {canVote && onVote ? (
             <button

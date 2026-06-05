@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { AURA_CFG, type AuraSlug } from "@/components/loopgate/AuraUsername";
+import AuraUsername, { AURA_CFG, type AuraSlug } from "@/components/loopgate/AuraUsername";
 
 const TEKO = { fontFamily: "Teko, sans-serif" };
 
@@ -25,35 +25,31 @@ function nameStyle(side: "red" | "blue", isLeading: boolean, aura?: string | nul
     lineHeight: 1,
     color: "#fff",
   };
-  if (aura && AURA_CFG[aura as AuraSlug]) {
-    const cfg = AURA_CFG[aura as AuraSlug];
+  const auraKey = aura?.toLowerCase() as AuraSlug | undefined;
+  if (auraKey && AURA_CFG[auraKey]) {
+    const cfg = AURA_CFG[auraKey];
     return {
       ...base,
+      animation: cfg.animation,
+      color: cfg.labelColor,
       fontFamily: cfg.font,
       fontWeight: cfg.fontWeight,
-      letterSpacing: cfg.letterSpacing ?? base.letterSpacing,
-      backgroundImage: cfg.gradient,
-      backgroundSize: "200% 100%",
-      WebkitBackgroundClip: "text",
-      backgroundClip: "text",
-      WebkitTextFillColor: "transparent",
-      color: "transparent",
-      animation: cfg.animation,
+      letterSpacing: cfg.letterSpacing,
     };
   }
   if (side === "red") {
     return {
       ...base,
       textShadow: isLeading
-        ? "-4px 0 #ff0000, 4px 0 rgba(255,200,200,0.95), 0 0 22px rgba(255,20,20,0.65), 0 0 2px rgba(255,80,80,0.4)"
-        : "-2px 0 rgba(220,0,0,0.8), 2px 0 rgba(255,220,220,0.6)",
+        ? "0 0 12px rgba(255,30,30,0.65), 0 1px 0 rgba(0,0,0,0.6)"
+        : "0 1px 0 rgba(0,0,0,0.6)",
     };
   }
   return {
     ...base,
     textShadow: isLeading
-      ? "4px 0 #0044ff, -4px 0 rgba(180,210,255,0.95), 0 0 22px rgba(20,80,255,0.65), 0 0 2px rgba(80,140,255,0.4)"
-      : "2px 0 rgba(0,50,220,0.8), -2px 0 rgba(200,220,255,0.6)",
+      ? "0 0 12px rgba(40,90,255,0.65), 0 1px 0 rgba(0,0,0,0.6)"
+      : "0 1px 0 rgba(0,0,0,0.6)",
   };
 }
 
@@ -118,22 +114,26 @@ export default function FNFVoteScoreboard({
         className="flex items-stretch relative"
         style={{ height: 30, backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,0.18) 1px, rgba(0,0,0,0.18) 2px)" }}
       >
-        {/* Red name */}
-        <div className="flex-1 flex items-center justify-end min-w-0 overflow-hidden"
-          style={{ paddingRight: 7, background: "linear-gradient(90deg, hsl(var(--background)) 40%, rgba(140,0,0,0.28) 100%)" }}>
-          <motion.span
-            className="font-black uppercase truncate"
-            style={nameStyle("red", leading === "red", redAura)}
-            animate={!redAura && leading === "red" ? { opacity: [1, 0.78, 1] } : { opacity: 1 }}
-            transition={{ duration: 1.3, repeat: Infinity, ease: "easeInOut" }}
-          >
-            {redUsername}
-          </motion.span>
-        </div>
-
         <div className="flex items-center justify-center shrink-0"
           style={{ width: 38, background: "#cc0000", boxShadow: "inset 0 1px 0 rgba(255,100,100,0.3), 2px 0 12px rgba(200,0,0,0.4)" }}>
           <span style={{ ...TEKO, fontSize: 11, fontWeight: 900, letterSpacing: "0.2em", color: "#fff" }}>RED</span>
+        </div>
+
+        {/* Red name */}
+        <div className="flex-1 flex items-center justify-start min-w-0 overflow-hidden"
+          style={{ paddingLeft: 10, paddingRight: 7, background: "linear-gradient(90deg, rgba(140,0,0,0.32) 0%, hsl(var(--background)) 100%)" }}>
+          {redAura ? (
+            <AuraUsername username={redUsername.toUpperCase()} aura={redAura} className="truncate" style={{ ...TEKO, fontSize: 18, lineHeight: 1 }} />
+          ) : (
+            <motion.span
+              className="font-black uppercase truncate"
+              style={nameStyle("red", leading === "red", null)}
+              animate={leading === "red" ? { opacity: [1, 0.78, 1] } : { opacity: 1 }}
+              transition={{ duration: 1.3, repeat: Infinity, ease: "easeInOut" }}
+            >
+              {redUsername}
+            </motion.span>
+          )}
         </div>
 
         <div className="flex items-center justify-center shrink-0"
@@ -149,22 +149,26 @@ export default function FNFVoteScoreboard({
           )}
         </div>
 
+        {/* Blue name */}
+        <div className="flex-1 flex items-center justify-end min-w-0 overflow-hidden"
+          style={{ paddingLeft: 7, paddingRight: 10, background: "linear-gradient(270deg, rgba(0,30,140,0.32) 0%, hsl(var(--background)) 100%)" }}>
+          {blueAura ? (
+            <AuraUsername username={blueUsername.toUpperCase()} aura={blueAura} className="truncate" style={{ ...TEKO, fontSize: 18, lineHeight: 1 }} />
+          ) : (
+            <motion.span
+              className="font-black uppercase truncate"
+              style={nameStyle("blue", leading === "blue", null)}
+              animate={leading === "blue" ? { opacity: [1, 0.78, 1] } : { opacity: 1 }}
+              transition={{ duration: 1.3, repeat: Infinity, ease: "easeInOut" }}
+            >
+              {blueUsername}
+            </motion.span>
+          )}
+        </div>
+
         <div className="flex items-center justify-center shrink-0"
           style={{ width: 38, background: "#0033cc", boxShadow: "inset 0 1px 0 rgba(100,150,255,0.3), -2px 0 12px rgba(0,50,200,0.4)" }}>
           <span style={{ ...TEKO, fontSize: 11, fontWeight: 900, letterSpacing: "0.2em", color: "#fff" }}>BLUE</span>
-        </div>
-
-        {/* Blue name */}
-        <div className="flex-1 flex items-center min-w-0 overflow-hidden"
-          style={{ paddingLeft: 7, background: "linear-gradient(270deg, hsl(var(--background)) 40%, rgba(0,30,140,0.28) 100%)" }}>
-          <motion.span
-            className="font-black uppercase truncate"
-            style={nameStyle("blue", leading === "blue", blueAura)}
-            animate={!blueAura && leading === "blue" ? { opacity: [1, 0.78, 1] } : { opacity: 1 }}
-            transition={{ duration: 1.3, repeat: Infinity, ease: "easeInOut" }}
-          >
-            {blueUsername}
-          </motion.span>
         </div>
       </div>
 

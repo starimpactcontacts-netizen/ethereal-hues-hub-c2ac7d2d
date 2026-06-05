@@ -842,10 +842,15 @@ export default function CashBattlesSection({
         {/* Edit Battle cards — live ones first, ended ones DEPRIORITIZED to the right (still visible). */}
         {/* Quick-Fight battles — from the "Edit Battle · Match Instantly" button */}
         {[...myQuickFights, ...quickFights, ...openLobbies]
-          .filter((fight, index, all) =>
-            (isPublicDecidedQuickFight(fight) || isPublicOpenLobby(fight)) &&
-            all.findIndex((item) => item.id === fight.id) === index
-          )
+          .filter((fight, index, all) => {
+            if (!(isPublicDecidedQuickFight(fight) || isPublicOpenLobby(fight))) return false;
+            if (all.findIndex((item) => item.id === fight.id) !== index) return false;
+            // Only surface battles from the last 14 days — no ancient pre-Bunny stuff.
+            const RECENT_MS = 14 * 24 * 60 * 60 * 1000;
+            const ts = new Date(fight.created_at || 0).getTime();
+            if (!ts || Date.now() - ts > RECENT_MS) return false;
+            return true;
+          })
           .sort((a, b) => {
             const owned = (x: QuickFight) => user?.id && (x.player_1_id === user.id || x.player_2_id === user.id) ? 0 : 1;
             const rank = (x: QuickFight) => {

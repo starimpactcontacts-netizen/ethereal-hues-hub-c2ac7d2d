@@ -212,6 +212,10 @@ export default function HomePage() {
               kind: "battle" as const,
               id: b.id,
               title: `${b.challenger_username} vs ${b.opponent_username || '???'}`,
+              participants: [
+                { userId: b.challenger_id, username: b.challenger_username },
+                { userId: b.opponent_id, username: b.opponent_username || '???' },
+              ],
               status: b.status,
               endsAt: b.ends_at,
               hasSubmitted: !!submittedField,
@@ -228,6 +232,10 @@ export default function HomePage() {
                 kind: "quick" as const,
                 id: f.id,
                 title: `${f.player_1_username} vs ${f.player_2_username || '???'}`,
+                participants: [
+                  { userId: f.player_1_id, username: f.player_1_username },
+                  { userId: f.player_2_id, username: f.player_2_username || '???' },
+                ],
                 status: f.status,
                 endsAt: f.ends_at,
                 hasSubmitted: submitted,

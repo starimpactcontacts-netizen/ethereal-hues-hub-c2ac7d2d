@@ -39,7 +39,7 @@ export function useEquippedBadges(userId: string | undefined) {
   }, [userId]);
 
   const hasEquippedOG = badges.some((b) => b.item_name === "OG Claim");
-  const equippedAura = badges.find((b) => ['SPECTER','HELLFIRE','SOVEREIGN'].includes(b.item_name))?.item_name.toLowerCase() ?? null;
+  const equippedAura = badges.find((b) => b.item_type === 'aura' || ['SPECTER','HELLFIRE','SOVEREIGN','STEVE'].includes(b.item_name))?.item_name.toLowerCase() ?? null;
 
   return { badges, hasEquippedOG, equippedAura };
 }

@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { useAutoplayVideo } from "@/hooks/useAutoplayVideo";
 import FeedRateModal from "./FeedRateModal";
 import { getRankFromLevel } from "@/data/gqtConfig";
+import SmartUsername from "@/components/loopgate/SmartUsername";
 
 interface FeedPostCardProps {
   post: FeedPostItem;
@@ -123,7 +124,7 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
                 onClick={() => navigate(`/editor/${post.user_id}`)}
                 className="font-bold text-foreground text-[12px] hover:underline truncate"
               >
-                {post.username}
+                <SmartUsername userId={post.user_id} username={post.username} />
               </button>
               {post.is_verified && <VerifiedBadge size="sm" />}
               {leagueBadge && (
@@ -412,7 +413,9 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
                                   <span className="font-display text-sm text-blue-400">{post.username?.charAt(0).toUpperCase()}</span>
                                 )}
                               </div>
-                              <p className="text-[10px] text-foreground font-semibold mt-1 truncate max-w-[80px]">@{post.username}</p>
+                              <p className="text-[10px] text-foreground font-semibold mt-1 truncate max-w-[80px]">
+                                <SmartUsername userId={post.user_id} username={post.username} prefix="@" />
+                              </p>
                             </div>
                           </div>
 

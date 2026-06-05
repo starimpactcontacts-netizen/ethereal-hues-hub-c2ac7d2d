@@ -119,6 +119,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     if (profileData) {
       setProfile(profileData as Profile);
+      // Prime global aura cache so the user's equipped aura applies everywhere instantly.
+      import('@/lib/auraCache').then(({ primeAura }) => {
+        primeAura(userId, (profileData as any).equipped_aura ?? null);
+      });
       // Claim any guest submissions after profile is loaded
       import('@/lib/claimGuestSubmissions').then(({ claimGuestSubmissions }) => {
         claimGuestSubmissions(userId, (profileData as any).username, (profileData as any).avatar_url);
