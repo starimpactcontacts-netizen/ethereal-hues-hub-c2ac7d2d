@@ -176,6 +176,7 @@ export default function CashBattleChat({ battleId, challengerId, opponentId }: P
                           <ChatBubble
                             userId={msg.user_id}
                             tone={msg.user_id === challengerId ? 'blue' : msg.user_id === opponentId ? 'red' : 'neutral'}
+                            tailSide="left"
                           >
                             <p className="text-[11px] text-zinc-300 break-words">{renderText(msg.message_text)}</p>
                           </ChatBubble>
