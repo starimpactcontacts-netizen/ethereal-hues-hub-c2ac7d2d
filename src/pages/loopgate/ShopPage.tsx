@@ -826,3 +826,120 @@ function BadgePreviewModal({ item, onClose }: { item: ShopItem; onClose: () => v
     </motion.div>
   );
 }
+
+/* ────────────────── CHAT BUBBLE CARD ────────────────── */
+function ChatBubbleCard({ item, owned, canAfford, buying, onBuy, onPreview, index }: {
+  item: ShopItem; owned: boolean; canAfford: boolean; buying: boolean;
+  onBuy: () => void; onPreview: () => void; index: number;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.04, duration: 0.22 }}
+      className="relative flex flex-col overflow-hidden"
+      style={{ background: "#111114", border: "1px solid rgba(253,224,71,0.25)" }}
+    >
+      <button
+        onClick={onPreview}
+        aria-label="Preview"
+        className="relative w-full overflow-hidden flex items-center justify-center"
+        style={{
+          background: "#0a0a0a",
+          aspectRatio: "1/1",
+          backgroundImage: "radial-gradient(ellipse 80% 60% at 50% 50%, rgba(253,224,71,0.18), transparent 70%)",
+        }}
+      >
+        <div style={{ width: "70%" }}>
+          <ChatBubble forceBubble={item.name.toLowerCase()}>
+            <span style={{ fontSize: 16, fontWeight: 900, letterSpacing: "0.04em" }}>POW! BAM!</span>
+          </ChatBubble>
+        </div>
+        {owned && (
+          <div className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center" style={{ background: "#22c55e" }}>
+            <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+          </div>
+        )}
+      </button>
+
+      <div className="p-3 pt-2.5 flex flex-col gap-2">
+        <div className="min-w-0">
+          <div className="truncate" style={{ ...PIXEL, fontSize: 18, color: "#fff" }}>{item.name}</div>
+          {!owned && (
+            <div className="flex items-baseline mt-0.5" style={{ ...PIXEL, fontSize: 16, letterSpacing: "-0.03em" }}>
+              <span style={{ color: "#3BCB6B" }}>$</span>
+              <span style={{ color: "#fff" }}>R</span>
+              <span className="ml-1 tabular-nums" style={{ color: "#fff" }}>{item.price.toLocaleString()}</span>
+            </div>
+          )}
+        </div>
+        <button
+          onClick={onBuy}
+          disabled={buying || (!owned && !canAfford)}
+          className="w-full flex items-center justify-center gap-1.5 py-2 transition-colors disabled:opacity-60 active:scale-[0.98]"
+          style={{
+            background: owned ? "#222222" : "#FDE047",
+            color: owned ? "#fff" : "#0a0a0a",
+            ...PIXEL,
+            fontSize: 16,
+            border: owned ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(253,224,71,0.7)",
+          }}
+        >
+          {buying ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            : owned ? <>Owned</>
+            : !canAfford ? <>Not enough Rings</>
+            : <>Buy</>}
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ────────────────── CHAT BUBBLE PREVIEW MODAL ────────────────── */
+function ChatBubblePreviewModal({ item, onClose, viewerName }: { item: ShopItem; onClose: () => void; viewerName: string }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[80] flex items-center justify-center p-5"
+      style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(8px)" }}
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-sm overflow-hidden relative"
+        style={{ background: "#111114", border: "1px solid rgba(253,224,71,0.3)" }}
+      >
+        <button onClick={onClose} aria-label="Close"
+          className="absolute top-2 right-2 z-10 w-8 h-8 flex items-center justify-center text-white hover:bg-black/80"
+          style={{ background: "rgba(0,0,0,0.6)" }}>
+          <X className="w-4 h-4" />
+        </button>
+        <div className="relative overflow-hidden flex items-center justify-center p-6"
+          style={{
+            background: "#0a0a0a",
+            backgroundImage: "radial-gradient(ellipse 80% 60% at 50% 50%, rgba(253,224,71,0.2), transparent 70%)",
+            minHeight: 220,
+          }}>
+          <div style={{ width: "80%" }}>
+            <ChatBubble forceBubble={item.name.toLowerCase()}>
+              <span style={{ fontSize: 18, fontWeight: 900, letterSpacing: "0.04em" }}>this drop bouta cook 🔥</span>
+            </ChatBubble>
+          </div>
+        </div>
+        <div className="p-4 space-y-3">
+          <div style={{ ...UI, fontSize: 18, fontWeight: 700, color: "#fff" }}>{item.name} Chat Bubble</div>
+          <div style={{ ...UI, fontSize: 11, fontWeight: 600, color: "#FDE047", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            Cosmetic · Chat Bubble
+          </div>
+          {item.description && (
+            <p style={{ ...UI, fontSize: 12, color: "#b5bac1", lineHeight: 1.5 }}>{item.description}</p>
+          )}
+          <p style={{ ...UI, fontSize: 11, color: "#71717a", lineHeight: 1.5 }}>
+            Equip from your Inventory and every message you send — battle chat, arenas, DMs, lobbies — gets framed in this comic burst. {viewerName ? `Pop off, ${viewerName}.` : ""}
+          </p>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
