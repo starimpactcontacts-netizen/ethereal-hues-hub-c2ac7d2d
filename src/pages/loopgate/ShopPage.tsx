@@ -247,6 +247,7 @@ function CosmeticsTab({ items, owned, rings, buying, onBuy, onPreview, viewerNam
 }) {
   const auras = items.filter((i) => i.category === "aura");
   const badges = items.filter((i) => i.category === "badge");
+  const bubbles = items.filter((i) => i.category === "chat_bubble");
   return (
     <div className="space-y-8">
       {badges.length > 0 && (
@@ -258,6 +259,25 @@ function CosmeticsTab({ items, owned, rings, buying, onBuy, onPreview, viewerNam
                 key={item.id}
                 item={item}
                 owned={!!owned[item.id]}
+                buying={buying === item.id}
+                onBuy={() => onBuy(item)}
+                onPreview={() => onPreview(item)}
+                index={i}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+      {bubbles.length > 0 && (
+        <div className="space-y-5">
+          <SectionHeader label="CHAT BUBBLES" newTag />
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {bubbles.map((item, i) => (
+              <ChatBubbleCard
+                key={item.id}
+                item={item}
+                owned={!!owned[item.id]}
+                canAfford={rings >= item.price}
                 buying={buying === item.id}
                 onBuy={() => onBuy(item)}
                 onPreview={() => onPreview(item)}
