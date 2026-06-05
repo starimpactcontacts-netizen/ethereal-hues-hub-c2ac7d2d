@@ -67,6 +67,7 @@ export default function QuickFightChat({
   const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showAllChips, setShowAllChips] = useState(false);
+  const [chipsOpen, setChipsOpen] = useState(false);
   const [showGifPicker, setShowGifPicker] = useState(false);
   const [chatTab, setChatTab] = useState<'battle' | 'live'>('battle');
   const [replyTo, setReplyTo] = useState<{ id: string; username: string; text: string } | null>(null);
@@ -339,24 +340,43 @@ export default function QuickFightChat({
       {/* Quick-send chips — participants only, collapsible */}
       {user && isParticipant && (
         <div className="border-t border-white/10">
-          <div className="px-3 pt-2 pb-1.5 flex flex-wrap gap-1.5">
-            {(showAllChips ? TRASH_TALK : TRASH_TALK.slice(0, 6)).map((text) => (
-              <button
-                key={text}
-                onClick={() => sendMessage(text, true)}
-                disabled={sending}
-                className="text-[11px] px-2.5 py-1 bg-white/5 border border-white/10 hover:border-amber-400/50 hover:bg-amber-400/10 text-zinc-300 hover:text-white transition-all active:scale-95 rounded-full disabled:opacity-40"
+          <button
+            onClick={() => setChipsOpen(v => !v)}
+            className="w-full px-3 py-1.5 flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-zinc-500 hover:text-zinc-300 transition-colors"
+          >
+            <Flame className="w-3 h-3" />
+            {chipsOpen ? 'Hide quick talk' : 'Quick trash talk'}
+          </button>
+          <AnimatePresence initial={false}>
+            {chipsOpen && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.18 }}
+                className="overflow-hidden"
               >
-                {text}
-              </button>
-            ))}
-            <button
-              onClick={() => setShowAllChips(v => !v)}
-              className="text-[10px] px-2.5 py-1 border border-white/10 text-zinc-500 hover:text-zinc-300 transition-colors rounded-full"
-            >
-              {showAllChips ? 'less' : `+${TRASH_TALK.length - 6} more`}
-            </button>
-          </div>
+                <div className="px-3 pt-1 pb-2 flex flex-wrap gap-1.5">
+                  {(showAllChips ? TRASH_TALK : TRASH_TALK.slice(0, 6)).map((text) => (
+                    <button
+                      key={text}
+                      onClick={() => sendMessage(text, true)}
+                      disabled={sending}
+                      className="text-[11px] px-2.5 py-1 bg-white/5 border border-white/10 hover:border-amber-400/50 hover:bg-amber-400/10 text-zinc-300 hover:text-white transition-all active:scale-95 rounded-full disabled:opacity-40"
+                    >
+                      {text}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setShowAllChips(v => !v)}
+                    className="text-[10px] px-2.5 py-1 border border-white/10 text-zinc-500 hover:text-zinc-300 transition-colors rounded-full"
+                  >
+                    {showAllChips ? 'less' : `+${TRASH_TALK.length - 6} more`}
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       )}
 
