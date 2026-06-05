@@ -40,25 +40,25 @@ export default function ChatBubble({
   const stroke = "#0b1437";
   const strokeW = 2.5;
 
-  // Long, skinny corner pointer based on the reference: a sharp sliver that hugs the
-  // bubble's absolute bottom corner and points toward the avatar side.
+  // Integrated corner pointer based on the reference: long skinny blade, sharp point,
+  // attached flush to the absolute bottom corner on the avatar side.
   const tail = (
     <svg
       aria-hidden
-      width="40"
-      height="26"
-      viewBox="0 0 40 26"
+      width="46"
+      height="30"
+      viewBox="0 0 46 30"
       className="absolute pointer-events-none"
       style={{
-        bottom: -22,
-        [tailSide === "left" ? "left" : "right"]: -2,
+        bottom: -27,
+        [tailSide === "left" ? "left" : "right"]: -3,
       }}
     >
       <polygon
         points={
           tailSide === "left"
-            ? "40,0 7,0 1,26 13,3 40,3"
-            : "0,0 33,0 39,26 27,3 0,3"
+            ? "46,0 10,0 0,30 15,4 46,4"
+            : "0,0 36,0 46,30 31,4 0,4"
         }
         fill={fill}
         stroke={stroke}
@@ -67,10 +67,10 @@ export default function ChatBubble({
       />
       {/* Cover the body's bottom border where the tail joins, so the seam is clean */}
       <rect
-        x={tailSide === "left" ? 12 : 0}
+        x={tailSide === "left" ? 14 : 0}
         y={-1}
-        width={28}
-        height={4}
+        width={32}
+        height={5}
         fill={fill}
       />
     </svg>
@@ -80,7 +80,7 @@ export default function ChatBubble({
     <span
       className={`relative inline-block align-top max-w-full ${className ?? ""}`}
       style={{
-        marginBottom: 24,
+        marginBottom: 30,
         lineHeight: 1.25,
       }}
     >
