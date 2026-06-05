@@ -122,6 +122,7 @@ export default function CustomEditBattleLobby({
   const isPrivate = !!fight.is_private;
   const [codeInput, setCodeInput] = useState("");
   const [reserving, setReserving] = useState(false);
+  const [codeHidden, setCodeHidden] = useState(false);
   const [searchParams] = useSearchParams();
   const [muted, toggleMuted] = useLobbyMusicMute();
 
