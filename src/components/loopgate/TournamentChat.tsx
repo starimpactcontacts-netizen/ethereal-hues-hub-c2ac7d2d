@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import VerifiedBadge from "./VerifiedBadge";
+import ChatBubble from "./ChatBubble";
 
 interface TournamentMessage {
   id: string;
@@ -241,9 +242,11 @@ export default function TournamentChat({ tournamentId }: TournamentChatProps) {
                               </button>
                             )}
                           </div>
-                          <p className="text-xs text-foreground/90 break-words leading-relaxed">
-                            {message.message_text}
-                          </p>
+                          <ChatBubble userId={message.user_id}>
+                            <p className="text-xs text-foreground/90 break-words leading-relaxed">
+                              {message.message_text}
+                            </p>
+                          </ChatBubble>
                         </div>
                       </motion.div>
                     );
