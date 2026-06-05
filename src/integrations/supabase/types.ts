@@ -7151,6 +7151,7 @@ export type Database = {
           earnings_cents: number
           email: string | null
           equipped_aura: string | null
+          equipped_chat_bubble: string | null
           global_index_score: number | null
           has_password: boolean | null
           house_changed_at: string | null
@@ -7221,6 +7222,7 @@ export type Database = {
           earnings_cents?: number
           email?: string | null
           equipped_aura?: string | null
+          equipped_chat_bubble?: string | null
           global_index_score?: number | null
           has_password?: boolean | null
           house_changed_at?: string | null
@@ -7291,6 +7293,7 @@ export type Database = {
           earnings_cents?: number
           email?: string | null
           equipped_aura?: string | null
+          equipped_chat_bubble?: string | null
           global_index_score?: number | null
           has_password?: boolean | null
           house_changed_at?: string | null
