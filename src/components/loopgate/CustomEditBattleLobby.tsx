@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, Copy, Eye, Lock, Share2, Swords, UserPlus, Users, Volume2, VolumeX } from "lucide-react";
+import { ArrowLeft, ChevronUp, Clock, Copy, Eye, EyeOff, Lock, Share2, Swords, UserPlus, Users, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
