@@ -173,7 +173,10 @@ export default function CashBattleChat({ battleId, challengerId, opponentId }: P
                         {isGifUrl(msg.message_text) ? (
                           <img src={msg.message_text} alt="GIF" className="max-w-[180px] mt-1 rounded-lg" loading="lazy" />
                         ) : (
-                          <ChatBubble userId={msg.user_id}>
+                          <ChatBubble
+                            userId={msg.user_id}
+                            tone={msg.user_id === challengerId ? 'blue' : msg.user_id === opponentId ? 'red' : 'neutral'}
+                          >
                             <p className="text-[11px] text-zinc-300 break-words">{renderText(msg.message_text)}</p>
                           </ChatBubble>
                         )}
