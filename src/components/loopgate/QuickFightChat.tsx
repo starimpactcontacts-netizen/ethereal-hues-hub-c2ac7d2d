@@ -180,52 +180,77 @@ export default function QuickFightChat({
 
   return (
     <div className="bg-black border border-white/10 overflow-hidden">
-      {/* Header tabs */}
-      <div className="flex border-b border-white/10 bg-black">
-        <button
-          onClick={() => { setChatTab('battle'); setReplyTo(null); }}
-          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 transition-colors ${
-            chatTab === 'battle'
-              ? 'bg-white/5 border-b-2 border-amber-400 text-white'
-              : 'text-zinc-500 hover:text-zinc-300 border-b-2 border-transparent'
-          }`}
-        >
-          <Flame className={`w-3.5 h-3.5 ${chatTab === 'battle' ? 'text-amber-400' : ''}`} />
-          <span className="text-[11px] font-black uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>
-            Battle Chat
+      {/* Collapsible header */}
+      <button
+        onClick={() => setChatOpen(v => !v)}
+        className="w-full flex items-center justify-between px-3 py-2.5 bg-white/[0.02] hover:bg-white/[0.04] active:bg-white/[0.06] transition-colors"
+        aria-label={chatOpen ? 'Collapse chat' : 'Expand chat'}
+      >
+        <div className="flex items-center gap-2">
+          <MessageSquare className="w-3.5 h-3.5 text-white/40" />
+          <span className="text-[11px] font-black uppercase tracking-wide text-white/60" style={{ fontFamily: 'Teko, sans-serif' }}>
+            Chat
           </span>
-          <span className="text-[9px] text-zinc-500">{battleCount}</span>
-        </button>
-        <button
-          onClick={() => { setChatTab('live'); setReplyTo(null); }}
-          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 transition-colors ${
-            chatTab === 'live'
-              ? 'bg-white/5 border-b-2 border-amber-400 text-white'
-              : 'text-zinc-500 hover:text-zinc-300 border-b-2 border-transparent'
-          }`}
-        >
-          <MessageSquare className={`w-3.5 h-3.5 ${chatTab === 'live' ? 'text-amber-400' : ''}`} />
-          <span className="text-[11px] font-black uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>
-            Live Chat
-          </span>
-          <span className="text-[9px] text-zinc-500">{liveCount}</span>
-        </button>
-      </div>
-
-      {/* Fighter names bar — only on Battle Chat tab */}
-      {chatTab === 'battle' && (
-        <div className="flex items-center border-b border-white/5 bg-black/60">
-          <div className="flex-1 flex items-center gap-1.5 px-3 py-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-400 shadow-[0_0_6px_rgba(239,68,68,0.9)]" />
-            <span className="text-[10px] font-black text-red-300 uppercase tracking-wider truncate">{player1Username}</span>
-          </div>
-          <span className="text-[9px] text-zinc-600 font-black uppercase tracking-widest shrink-0">vs</span>
-          <div className="flex-1 flex items-center justify-end gap-1.5 px-3 py-1.5">
-            <span className="text-[10px] font-black text-blue-300 uppercase tracking-wider truncate text-right">{player2Username}</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_6px_rgba(59,130,246,0.9)]" />
-          </div>
+          <span className="text-[9px] text-zinc-500">({messages.length})</span>
         </div>
-      )}
+        <ChevronUp className={`w-4 h-4 text-zinc-500 transition-transform duration-200 ${chatOpen ? '' : 'rotate-180'}`} />
+      </button>
+
+      <AnimatePresence initial={false}>
+        {chatOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.22 }}
+            className="overflow-hidden"
+          >
+            {/* Header tabs */}
+            <div className="flex border-b border-white/10 bg-black">
+              <button
+                onClick={() => { setChatTab('battle'); setReplyTo(null); }}
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 transition-colors ${
+                  chatTab === 'battle'
+                    ? 'bg-white/5 border-b-2 border-amber-400 text-white'
+                    : 'text-zinc-500 hover:text-zinc-300 border-b-2 border-transparent'
+                }`}
+              >
+                <Flame className={`w-3.5 h-3.5 ${chatTab === 'battle' ? 'text-amber-400' : ''}`} />
+                <span className="text-[11px] font-black uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>
+                  Battle Chat
+                </span>
+                <span className="text-[9px] text-zinc-500">{battleCount}</span>
+              </button>
+              <button
+                onClick={() => { setChatTab('live'); setReplyTo(null); }}
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 transition-colors ${
+                  chatTab === 'live'
+                    ? 'bg-white/5 border-b-2 border-amber-400 text-white'
+                    : 'text-zinc-500 hover:text-zinc-300 border-b-2 border-transparent'
+                }`}
+              >
+                <MessageSquare className={`w-3.5 h-3.5 ${chatTab === 'live' ? 'text-amber-400' : ''}`} />
+                <span className="text-[11px] font-black uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>
+                  Live Chat
+                </span>
+                <span className="text-[9px] text-zinc-500">{liveCount}</span>
+              </button>
+            </div>
+
+            {/* Fighter names bar — only on Battle Chat tab */}
+            {chatTab === 'battle' && (
+              <div className="flex items-center border-b border-white/5 bg-black/60">
+                <div className="flex-1 flex items-center gap-1.5 px-3 py-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-400 shadow-[0_0_6px_rgba(239,68,68,0.9)]" />
+                  <span className="text-[10px] font-black text-red-300 uppercase tracking-wider truncate">{player1Username}</span>
+                </div>
+                <span className="text-[9px] text-zinc-600 font-black uppercase tracking-widest shrink-0">vs</span>
+                <div className="flex-1 flex items-center justify-end gap-1.5 px-3 py-1.5">
+                  <span className="text-[10px] font-black text-blue-300 uppercase tracking-wider truncate text-right">{player2Username}</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_6px_rgba(59,130,246,0.9)]" />
+                </div>
+              </div>
+            )}
 
       {/* Messages */}
       <div ref={scrollRef} className="h-[380px] sm:h-[440px] overflow-y-auto py-2 space-y-1 bg-[#0a0a0a]">
