@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Image as ImageIcon, Flame, MessageSquare, Reply, Camera, Loader2, X } from 'lucide-react';
+import { Send, Image as ImageIcon, Flame, MessageSquare, Reply, Camera, Loader2, X, ChevronUp, Pencil, Plus, Check, RotateCcw } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import GifPicker from './GifPicker';
 import SmartUsername from './SmartUsername';
 
-const TRASH_TALK = [
+const DEFAULT_TRASH_TALK = [
   "yo wake up bro 👀",
   "Yo actually edit battle rn 🔥",
   "bro im better than you 😭✌️",
@@ -68,6 +68,32 @@ export default function QuickFightChat({
   const [uploading, setUploading] = useState(false);
   const [showAllChips, setShowAllChips] = useState(false);
   const [chipsOpen, setChipsOpen] = useState(false);
+  const [editingChips, setEditingChips] = useState(false);
+  const [newChip, setNewChip] = useState('');
+  const storageKey = user ? `quickfight:chips:${user.id}` : '';
+  const [customChips, setCustomChips] = useState<string[]>(() => {
+    if (typeof window === 'undefined' || !user) return DEFAULT_TRASH_TALK;
+    try {
+      const raw = localStorage.getItem(`quickfight:chips:${user.id}`);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {}
+    return DEFAULT_TRASH_TALK;
+  });
+  useEffect(() => {
+    if (!storageKey) return;
+    try { localStorage.setItem(storageKey, JSON.stringify(customChips)); } catch {}
+  }, [customChips, storageKey]);
+  const addChip = () => {
+    const t = newChip.trim();
+    if (!t || customChips.includes(t) || customChips.length >= 24) return;
+    setCustomChips([...customChips, t]);
+    setNewChip('');
+  };
+  const removeChip = (text: string) => setCustomChips(customChips.filter(c => c !== text));
+  const resetChips = () => setCustomChips(DEFAULT_TRASH_TALK);
   const [showGifPicker, setShowGifPicker] = useState(false);
   const [chatTab, setChatTab] = useState<'battle' | 'live'>('battle');
   const [replyTo, setReplyTo] = useState<{ id: string; username: string; text: string } | null>(null);
@@ -341,11 +367,11 @@ export default function QuickFightChat({
       {user && isParticipant && (
         <div className="border-t border-white/10">
           <button
-            onClick={() => setChipsOpen(v => !v)}
-            className="w-full px-3 py-1.5 flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-zinc-500 hover:text-zinc-300 transition-colors"
+            onClick={() => { setChipsOpen(v => !v); if (chipsOpen) setEditingChips(false); }}
+            className="w-full px-3 py-1.5 flex items-center justify-center text-zinc-500 hover:text-zinc-300 transition-colors"
+            aria-label={chipsOpen ? 'Hide quick chats' : 'Show quick chats'}
           >
-            <Flame className="w-3 h-3" />
-            {chipsOpen ? 'Hide quick talk' : 'Quick trash talk'}
+            <ChevronUp className={`w-4 h-4 transition-transform duration-200 ${chipsOpen ? '' : 'rotate-180'}`} />
           </button>
           <AnimatePresence initial={false}>
             {chipsOpen && (
@@ -356,23 +382,78 @@ export default function QuickFightChat({
                 transition={{ duration: 0.18 }}
                 className="overflow-hidden"
               >
-                <div className="px-3 pt-1 pb-2 flex flex-wrap gap-1.5">
-                  {(showAllChips ? TRASH_TALK : TRASH_TALK.slice(0, 6)).map((text) => (
+                <div className="px-3 pt-1 pb-2">
+                  <div className="flex flex-wrap gap-1.5">
+                    {(showAllChips || editingChips ? customChips : customChips.slice(0, 6)).map((text) => (
+                      <div key={text} className="relative group">
+                        <button
+                          onClick={() => !editingChips && sendMessage(text, true)}
+                          disabled={sending || editingChips}
+                          className={`text-[11px] px-2.5 py-1 bg-white/5 border border-white/10 ${
+                            editingChips
+                              ? 'pr-6 text-zinc-300 border-amber-400/30'
+                              : 'hover:border-amber-400/50 hover:bg-amber-400/10 text-zinc-300 hover:text-white active:scale-95'
+                          } transition-all rounded-full disabled:opacity-60`}
+                        >
+                          {text}
+                        </button>
+                        {editingChips && (
+                          <button
+                            onClick={() => removeChip(text)}
+                            className="absolute top-1/2 -translate-y-1/2 right-1 w-4 h-4 flex items-center justify-center rounded-full bg-red-500/30 hover:bg-red-500/60 text-white"
+                            aria-label="Remove chip"
+                          >
+                            <X className="w-2.5 h-2.5" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    {!editingChips && customChips.length > 6 && (
+                      <button
+                        onClick={() => setShowAllChips(v => !v)}
+                        className="text-[10px] px-2.5 py-1 border border-white/10 text-zinc-500 hover:text-zinc-300 transition-colors rounded-full"
+                      >
+                        {showAllChips ? 'less' : `+${customChips.length - 6} more`}
+                      </button>
+                    )}
                     <button
-                      key={text}
-                      onClick={() => sendMessage(text, true)}
-                      disabled={sending}
-                      className="text-[11px] px-2.5 py-1 bg-white/5 border border-white/10 hover:border-amber-400/50 hover:bg-amber-400/10 text-zinc-300 hover:text-white transition-all active:scale-95 rounded-full disabled:opacity-40"
+                      onClick={() => { setEditingChips(v => !v); setShowAllChips(true); }}
+                      className={`text-[10px] px-2 py-1 rounded-full border flex items-center gap-1 transition-colors ${
+                        editingChips
+                          ? 'border-amber-400/60 bg-amber-400/10 text-amber-300'
+                          : 'border-white/10 text-zinc-500 hover:text-zinc-300'
+                      }`}
                     >
-                      {text}
+                      {editingChips ? <><Check className="w-3 h-3" /> done</> : <><Pencil className="w-3 h-3" /> edit</>}
                     </button>
-                  ))}
-                  <button
-                    onClick={() => setShowAllChips(v => !v)}
-                    className="text-[10px] px-2.5 py-1 border border-white/10 text-zinc-500 hover:text-zinc-300 transition-colors rounded-full"
-                  >
-                    {showAllChips ? 'less' : `+${TRASH_TALK.length - 6} more`}
-                  </button>
+                  </div>
+                  {editingChips && (
+                    <div className="mt-2 flex items-center gap-1.5">
+                      <Input
+                        value={newChip}
+                        onChange={(e) => setNewChip(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addChip())}
+                        placeholder="add your own..."
+                        maxLength={60}
+                        className="h-7 text-[11px] bg-white/5 border-white/10 text-white rounded-full px-3 placeholder:text-zinc-600 focus-visible:ring-0 focus-visible:border-white/20"
+                      />
+                      <button
+                        onClick={addChip}
+                        disabled={!newChip.trim() || customChips.length >= 24}
+                        className="h-7 w-7 flex items-center justify-center rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 disabled:opacity-30"
+                        aria-label="Add chip"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={resetChips}
+                        className="h-7 px-2 flex items-center gap-1 rounded-full border border-white/10 text-[10px] text-zinc-500 hover:text-zinc-300"
+                        title="Reset to defaults"
+                      >
+                        <RotateCcw className="w-3 h-3" /> reset
+                      </button>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             )}
