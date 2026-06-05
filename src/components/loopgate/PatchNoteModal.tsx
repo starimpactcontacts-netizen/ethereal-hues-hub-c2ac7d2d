@@ -33,8 +33,13 @@ export default function PatchNoteModal() {
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-[9998] flex items-end sm:items-center justify-center px-4 pb-safe"
-          style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
+          className="fixed inset-0 z-[9998] flex items-center justify-center overflow-y-auto"
+          style={{
+            paddingTop: 'max(1rem, env(safe-area-inset-top))',
+            paddingBottom: 'max(1rem, env(safe-area-inset-bottom))',
+            paddingLeft: 16,
+            paddingRight: 16,
+          }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -48,7 +53,7 @@ export default function PatchNoteModal() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 24, scale: 0.97 }}
             transition={{ type: 'spring', damping: 24, stiffness: 300 }}
-            className="relative w-full max-w-sm overflow-hidden rounded-2xl"
+            className="relative w-full max-w-sm my-auto overflow-hidden rounded-2xl"
             style={{
               background: 'linear-gradient(160deg, #0d0d18 0%, #09090f 100%)',
               border: '1px solid rgba(255,255,255,0.09)',
