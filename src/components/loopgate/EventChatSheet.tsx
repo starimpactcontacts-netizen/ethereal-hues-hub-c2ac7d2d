@@ -228,15 +228,17 @@ export default function EventChatSheet({ open, onClose, eventId, eventTitle }: E
                             className="rounded-lg max-w-[180px] max-h-[180px] object-cover shadow-[0_8px_20px_rgba(0,0,0,0.4)]"
                           />
                         ) : (
-                          <div
-                            className={`inline-block px-3 py-2 rounded-2xl text-[13px] break-words whitespace-pre-wrap ${
-                              own
-                                ? "bg-arena-emerald text-primary rounded-br-sm font-semibold"
-                                : "bg-arena-strong text-arena-ink rounded-bl-sm"
-                            }`}
-                          >
-                            {m.message_text}
-                          </div>
+                          <ChatBubble userId={m.user_id}>
+                            <div
+                              className={`inline-block px-3 py-2 rounded-2xl text-[13px] break-words whitespace-pre-wrap ${
+                                own
+                                  ? "bg-arena-emerald text-primary rounded-br-sm font-semibold"
+                                  : "bg-arena-strong text-arena-ink rounded-bl-sm"
+                              }`}
+                            >
+                              {m.message_text}
+                            </div>
+                          </ChatBubble>
                         )}
                         <div className={`flex gap-1 mt-0.5 opacity-0 group-hover:opacity-100 transition ${own ? "justify-end" : ""}`}>
                           <button
