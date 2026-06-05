@@ -289,14 +289,14 @@ export default function QuickFightPage() {
     } catch {}
   };
 
-  const handleReserveLobby = async () => {
+  const handleReserveLobby = async (code?: string) => {
     if (!user || !profile || isP1 || fight.player_2_id) return;
     const { data, error } = await supabase.rpc('reserve_quick_fight_slot' as any, {
       p_fight_id: fight.id,
       p_user_id: user.id,
       p_username: profile.username,
       p_avatar_url: profile.avatar_url || null,
-      p_code: null,
+      p_code: code ? code.trim().toUpperCase() : null,
     } as any);
     const result = data as { ok?: boolean; error?: string } | null;
     if (error || !result?.ok) {
