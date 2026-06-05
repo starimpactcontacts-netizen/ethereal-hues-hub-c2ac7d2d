@@ -19,7 +19,7 @@ interface CustomEditBattleLobbyProps {
   onShare: () => void;
   onCopy: () => void;
   onJoin: (code?: string) => void;
-  onReserve?: () => Promise<void>;
+  onReserve?: (code?: string) => Promise<void>;
   onCancel: () => void;
   onSongPicked?: (drop: any) => Promise<void>;
 }
@@ -368,7 +368,7 @@ export default function CustomEditBattleLobby({
                     onClick={async () => {
                       if (!onReserve || reserving) return;
                       setReserving(true);
-                      try { await onReserve(); } finally { setReserving(false); }
+                      try { await onReserve(codeInput.trim()); } finally { setReserving(false); }
                     }}
                     disabled={reserving}
                     className="w-full h-9 flex items-center justify-center gap-2 border border-white/10 bg-white/[0.02] active:scale-[0.98] transition-transform disabled:opacity-30"
