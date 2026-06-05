@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Image as ImageIcon, Flame, MessageSquare, Reply, Camera, Loader2, X } from 'lucide-react';
+import { Send, Image as ImageIcon, Flame, MessageSquare, Reply, Camera, Loader2, X, ChevronUp, Pencil, Plus, Check, RotateCcw } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import GifPicker from './GifPicker';
 import SmartUsername from './SmartUsername';
 
-const TRASH_TALK = [
+const DEFAULT_TRASH_TALK = [
   "yo wake up bro 👀",
   "Yo actually edit battle rn 🔥",
   "bro im better than you 😭✌️",
