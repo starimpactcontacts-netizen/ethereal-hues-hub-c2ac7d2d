@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Image as ImageIcon, Flame, MessageSquare, Reply, Camera, Loader2, X, ChevronUp, Pencil, Plus, Check, RotateCcw } from 'lucide-react';
+import { Send, Image as ImageIcon, Swords, MessageSquare, Reply, Camera, Loader2, X, ChevronUp, Pencil, Plus, Check, RotateCcw } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
@@ -211,11 +211,11 @@ export default function QuickFightChat({
                 onClick={() => { setChatTab('battle'); setReplyTo(null); }}
                 className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 transition-colors ${
                   chatTab === 'battle'
-                    ? 'bg-white/5 border-b-2 border-amber-400 text-white'
+                    ? 'bg-white/5 border-b-2 border-white text-white'
                     : 'text-zinc-500 hover:text-zinc-300 border-b-2 border-transparent'
                 }`}
               >
-                <Flame className={`w-3.5 h-3.5 ${chatTab === 'battle' ? 'text-amber-400' : ''}`} />
+                <Swords className={`w-3.5 h-3.5 ${chatTab === 'battle' ? 'text-white' : ''}`} />
                 <span className="text-[11px] font-black uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>
                   Battle Chat
                 </span>
@@ -225,11 +225,11 @@ export default function QuickFightChat({
                 onClick={() => { setChatTab('live'); setReplyTo(null); }}
                 className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 transition-colors ${
                   chatTab === 'live'
-                    ? 'bg-white/5 border-b-2 border-amber-400 text-white'
+                    ? 'bg-white/5 border-b-2 border-white text-white'
                     : 'text-zinc-500 hover:text-zinc-300 border-b-2 border-transparent'
                 }`}
               >
-                <MessageSquare className={`w-3.5 h-3.5 ${chatTab === 'live' ? 'text-amber-400' : ''}`} />
+                <MessageSquare className={`w-3.5 h-3.5 ${chatTab === 'live' ? 'text-white' : ''}`} />
                 <span className="text-[11px] font-black uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>
                   Live Chat
                 </span>
@@ -537,7 +537,7 @@ export default function QuickFightChat({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage(input)}
-              placeholder={replyTo ? `↩ @${replyTo.username}` : isParticipant ? 'Trash talk...' : 'Hype the battle...'}
+              placeholder={replyTo ? `↩ @${replyTo.username}` : isParticipant ? 'Message...' : 'Hype the battle...'}
               maxLength={500}
               className="flex-1 h-9 text-[13px] bg-white/5 border-white/10 text-white rounded-lg placeholder:text-zinc-500 focus-visible:ring-0 focus-visible:border-white/20"
             />
