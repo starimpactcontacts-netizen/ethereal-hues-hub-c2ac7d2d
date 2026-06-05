@@ -92,6 +92,35 @@ export default function ChatBubble({
         }}
       >
         {children}
+        {/* Halftone comic dots clustered near edges */}
+        <svg
+          aria-hidden
+          className="absolute inset-0 pointer-events-none z-0"
+          width="100%"
+          height="100%"
+          preserveAspectRatio="none"
+          style={{ mixBlendMode: "multiply" }}
+        >
+          {/* top-left cluster */}
+          <circle cx="5"  cy="4"  r="1.1" fill={stroke} />
+          <circle cx="11" cy="3"  r="0.8" fill={stroke} />
+          <circle cx="4"  cy="9"  r="0.8" fill={stroke} />
+          <circle cx="14" cy="7"  r="0.6" fill={stroke} />
+          <circle cx="8"  cy="13" r="0.6" fill={stroke} />
+          {/* top-right cluster */}
+          <circle cx="100%" cy="4"  r="1.1" fill={stroke} transform="translate(-6,0)" />
+          <circle cx="100%" cy="9"  r="0.8" fill={stroke} transform="translate(-11,0)" />
+          <circle cx="100%" cy="3"  r="0.6" fill={stroke} transform="translate(-15,0)" />
+          <circle cx="100%" cy="12" r="0.6" fill={stroke} transform="translate(-5,0)" />
+          {/* bottom-left cluster */}
+          <circle cx="5"  cy="100%" r="1.0" fill={stroke} transform="translate(0,-5)" />
+          <circle cx="12" cy="100%" r="0.7" fill={stroke} transform="translate(0,-4)" />
+          <circle cx="6"  cy="100%" r="0.6" fill={stroke} transform="translate(0,-11)" />
+          {/* bottom-right cluster */}
+          <circle cx="100%" cy="100%" r="1.0" fill={stroke} transform="translate(-6,-5)" />
+          <circle cx="100%" cy="100%" r="0.7" fill={stroke} transform="translate(-13,-4)" />
+          <circle cx="100%" cy="100%" r="0.6" fill={stroke} transform="translate(-5,-12)" />
+        </svg>
         {tail}
       </span>
     </span>
