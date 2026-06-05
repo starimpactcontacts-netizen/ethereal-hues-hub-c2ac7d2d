@@ -252,8 +252,9 @@ function InventoryCard({
 }) {
   const isOG = item.item?.name === "OG Claim";
   const isAura = item.item?.category === "aura";
+  const isBubble = item.item?.category === "chat_bubble";
   const displayName = isOG ? "OG" : item.item?.name || "Item";
-  const categoryLabel = isAura ? "Aura" : item.item?.category === "badge" ? "Badge" : item.item?.category === "skin" ? "Skin" : item.item?.item_type || "Item";
+  const categoryLabel = isAura ? "Aura" : isBubble ? "Chat Bubble" : item.item?.category === "badge" ? "Badge" : item.item?.category === "skin" ? "Skin" : item.item?.item_type || "Item";
 
   return (
     <motion.button
@@ -282,6 +283,10 @@ function InventoryCard({
             aura={item.item?.name?.toLowerCase()}
             style={{ fontFamily: "Teko, sans-serif", fontSize: 22, fontWeight: 900, letterSpacing: "0.06em", lineHeight: 1 }}
           />
+        ) : isBubble ? (
+          <ChatBubble forceBubble={item.item?.name?.toLowerCase()}>
+            <span style={{ fontSize: 11, fontWeight: 800 }}>POW!</span>
+          </ChatBubble>
         ) : isOG ? (
           <FoundingBadge size="md" animate={false} />
         ) : item.item?.image_url ? (
