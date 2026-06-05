@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, Copy, Eye, Lock, Share2, Swords, UserPlus, Users, Volume2, VolumeX } from "lucide-react";
+import { ArrowLeft, ChevronUp, Clock, Copy, Eye, EyeOff, Lock, Share2, Swords, UserPlus, Users, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -122,6 +122,7 @@ export default function CustomEditBattleLobby({
   const isPrivate = !!fight.is_private;
   const [codeInput, setCodeInput] = useState("");
   const [reserving, setReserving] = useState(false);
+  const [codeHidden, setCodeHidden] = useState(false);
   const [searchParams] = useSearchParams();
   const [muted, toggleMuted] = useLobbyMusicMute();
 
@@ -453,24 +454,34 @@ export default function CustomEditBattleLobby({
         {isPrivate && isHost && fight.join_code && (
           <div className="mt-3 border border-white/10 bg-white/[0.03] px-4 py-3">
             <div className="flex items-center justify-between gap-3">
-              <div>
+              <div className="min-w-0">
                 <p className="text-[8px] font-black uppercase tracking-[0.3em] text-white/30">Join Code</p>
                 <p
-                  className="mt-0.5 text-[30px] leading-none font-black tracking-[0.3em] text-white"
+                  className="mt-0.5 text-[30px] leading-none font-black tracking-[0.3em] text-white select-all"
                   style={{ fontFamily: "Teko, sans-serif" }}
                 >
-                  {fight.join_code}
+                  {codeHidden ? '• • • • • •' : fight.join_code}
                 </p>
               </div>
-              <button
-                onClick={handleCopyCode}
-                className="h-9 w-9 border border-white/15 bg-black/40 grid place-items-center text-white/40 active:scale-95 transition-transform"
-              >
-                <Copy className="w-3.5 h-3.5" />
-              </button>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={() => setCodeHidden(v => !v)}
+                  className="h-9 w-9 border border-white/15 bg-black/40 grid place-items-center text-white/40 hover:text-white/70 active:scale-95 transition"
+                  aria-label={codeHidden ? 'Show code' : 'Hide code'}
+                  title={codeHidden ? 'Show code' : 'Hide for filming'}
+                >
+                  {codeHidden ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </button>
+                <button
+                  onClick={handleCopyCode}
+                  className="h-9 w-9 border border-white/15 bg-black/40 grid place-items-center text-white/40 active:scale-95 transition-transform"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
             <p className="mt-1.5 text-[9px] text-white/20 leading-relaxed">
-              Share privately — only people with this code can join.
+              {codeHidden ? 'Hidden — tap the eye to reveal.' : 'Share privately — only people with this code can join.'}
             </p>
           </div>
         )}
