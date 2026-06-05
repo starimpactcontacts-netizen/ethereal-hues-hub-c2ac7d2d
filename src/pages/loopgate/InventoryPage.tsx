@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 import FoundingBadge from "@/components/loopgate/FoundingBadge";
 import AuraUsername from "@/components/loopgate/AuraUsername";
 import { primeAura } from "@/lib/auraCache";
+import { primeChatBubble } from "@/lib/chatBubbleCache";
+import ChatBubble from "@/components/loopgate/ChatBubble";
 
 interface OwnedItem {
   id: string;
@@ -106,6 +108,31 @@ export default function InventoryPage() {
             .eq("user_id", user.id)
             .neq("id", purchase.id)
             .in("item_id", items.filter((i) => i.item?.category === 'aura' && i.id !== purchase.id).map((i) => i.item_id));
+        }
+      }
+
+      // Sync equipped_chat_bubble on profile when toggling chat_bubble items
+      if (purchase.item?.category === 'chat_bubble') {
+        const newBubble = newState ? purchase.item.name.toLowerCase() : null;
+        await supabase
+          .from("profiles")
+          .update({ equipped_chat_bubble: newBubble } as any)
+          .eq("id", user.id);
+        primeChatBubble(user.id, newBubble);
+        if (newState) {
+          setItems((prev) =>
+            prev.map((i) =>
+              i.item?.category === 'chat_bubble' && i.id !== purchase.id
+                ? { ...i, is_equipped: false }
+                : i
+            )
+          );
+          await supabase
+            .from("shop_purchases")
+            .update({ is_equipped: false } as any)
+            .eq("user_id", user.id)
+            .neq("id", purchase.id)
+            .in("item_id", items.filter((i) => i.item?.category === 'chat_bubble' && i.id !== purchase.id).map((i) => i.item_id));
         }
       }
     }
