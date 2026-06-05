@@ -109,36 +109,39 @@ export default function PatchNoteModal() {
                   className="px-3 py-2 flex items-center gap-2"
                   style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}
                 >
-                  <ShoppingBag className="w-3 h-3" style={{ color: 'rgba(255,255,255,0.3)' }} />
-                  <span style={{ ...TEKO, fontSize: 10, letterSpacing: '0.3em', color: 'rgba(255,255,255,0.3)', fontWeight: 700 }}>
+                  <ShoppingBag className="w-3 h-3" style={{ color: 'rgba(255,255,255,0.35)' }} />
+                  <span style={{ ...TEKO, fontSize: 10, letterSpacing: '0.3em', color: 'rgba(255,255,255,0.35)', fontWeight: 700 }}>
                     SHOP NOW OPEN — AURAS
                   </span>
                 </div>
 
-                {/* Aura name previews */}
-                <div className="px-3 py-3 flex items-center gap-4">
-                  <AuraUsername
-                    username="STEVE"
-                    aura="steve"
-                    style={{ fontSize: 9, fontWeight: 400, letterSpacing: '0.04em' } as React.CSSProperties}
-                  />
-                  <AuraUsername
-                    username="HELLFIRE"
-                    aura="hellfire"
-                    style={{ fontSize: 14, fontWeight: 400, letterSpacing: '0.03em' } as React.CSSProperties}
-                  />
-                  <AuraUsername
-                    username="SOVEREIGN"
-                    aura="sovereign"
-                    style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.08em' } as React.CSSProperties}
-                  />
-                </div>
-
-                {/* Glow bar per aura */}
-                <div className="h-[1px] flex">
-                  <div className="flex-1" style={{ background: 'linear-gradient(90deg, #3d7a18, #7db544)' }} />
-                  <div className="flex-1" style={{ background: 'linear-gradient(90deg, #aa1800, #ff5500)' }} />
-                  <div className="flex-1" style={{ background: 'linear-gradient(90deg, #a07010, #ffd700)' }} />
+                {/* Aura name previews — stacked rows, no clipping */}
+                <div className="px-4 py-3 flex flex-col gap-2.5">
+                  {[
+                    { name: 'STEVE',     aura: 'steve',     dot: '#7db544' },
+                    { name: 'HELLFIRE',  aura: 'hellfire',  dot: '#ff5500' },
+                    { name: 'SOVEREIGN', aura: 'sovereign', dot: '#ffd700' },
+                  ].map((a) => (
+                    <div key={a.aura} className="flex items-center gap-3 min-w-0">
+                      <span
+                        className="w-1.5 h-1.5 rounded-full shrink-0"
+                        style={{ background: a.dot, boxShadow: `0 0 8px ${a.dot}` }}
+                      />
+                      <div className="min-w-0 flex-1 overflow-hidden">
+                        <AuraUsername
+                          username={a.name}
+                          aura={a.aura}
+                          style={{ fontSize: 18, lineHeight: 1.1 } as React.CSSProperties}
+                        />
+                      </div>
+                      <span
+                        className="text-[9px] uppercase tracking-[0.22em] shrink-0"
+                        style={{ color: 'rgba(255,255,255,0.32)', fontWeight: 700 }}
+                      >
+                        New
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
