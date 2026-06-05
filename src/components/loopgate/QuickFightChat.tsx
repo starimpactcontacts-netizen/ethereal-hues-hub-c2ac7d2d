@@ -348,7 +348,7 @@ export default function QuickFightChat({
                         loading="lazy"
                       />
                     ) : (
-                      <ChatBubble userId={msg.user_id}>
+                      <ChatBubble userId={msg.user_id} tone={isRed ? 'red' : isBlue ? 'blue' : 'neutral'}>
                         <p className="text-[19px] text-white leading-snug break-words">{msg.message_text}</p>
                       </ChatBubble>
                     )}

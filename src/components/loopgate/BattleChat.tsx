@@ -336,7 +336,7 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
                       loading="lazy"
                     />
                   ) : (
-                    <ChatBubble userId={msg.user_id}>
+                    <ChatBubble userId={msg.user_id} tone={isRed ? 'red' : isBlue ? 'blue' : 'neutral'}>
                       <p className="text-[24px] text-white/80 break-words leading-snug">
                         {renderText(msg.message_text)}
                       </p>

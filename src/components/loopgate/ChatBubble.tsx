@@ -8,6 +8,8 @@ interface Props {
   children: ReactNode;
   /** Extra padding inside the burst so text doesn't touch the spikes. */
   className?: string;
+  /** Team tint: tints the comic bubble fill while keeping the shape identical. */
+  tone?: "red" | "blue" | "neutral";
 }
 
 /**
@@ -15,27 +17,53 @@ interface Props {
  * renders the children inside the cosmetic frame. Otherwise renders children
  * unchanged so existing chat layouts stay pixel-identical.
  */
-export default function ChatBubble({ userId, forceBubble, children, className }: Props) {
+export default function ChatBubble({ userId, forceBubble, children, className, tone = "neutral" }: Props) {
   const equipped = useChatBubble(userId);
   const bubble = (forceBubble ?? equipped)?.toLowerCase() || null;
 
   if (bubble !== "comic") return <>{children}</>;
 
+  const fill =
+    tone === "red" ? "#ef4444" :
+    tone === "blue" ? "#3b82f6" :
+    "#FDE047";
+  const textColor = tone === "neutral" ? "#0a0a0a" : "#ffffff";
+
+  // Angular comic speech bubble with a tail dropping from bottom-right.
+  // viewBox is stretched to fit the text via preserveAspectRatio="none";
+  // non-scaling stroke keeps the outline crisp regardless of bubble size.
+  const points = "1,1 99,1 99,72 62,72 58,99 50,72 1,72";
+
   return (
     <span
       className={`relative inline-block align-top max-w-full ${className ?? ""}`}
       style={{
-        padding: "8px 14px",
-        backgroundColor: "#FDE047",
-        color: "#0a0a0a",
-        fontWeight: 600,
-        borderRadius: 18,
-        border: "1.5px solid #0a0a0a",
-        boxShadow: "2px 2px 0 0 #0a0a0a",
-        lineHeight: 1.35,
+        padding: "10px 16px 22px 16px",
+        filter: "drop-shadow(2px 3px 0 #0b1437)",
+        lineHeight: 1.25,
       }}
     >
-      {children}
+      <svg
+        aria-hidden
+        className="absolute inset-0 w-full h-full pointer-events-none"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+      >
+        <polygon
+          points={points}
+          fill={fill}
+          stroke="#0b1437"
+          strokeWidth="3"
+          strokeLinejoin="round"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+      <span
+        className="relative z-[1] block"
+        style={{ color: textColor, fontWeight: 700 }}
+      >
+        {children}
+      </span>
     </span>
   );
 }
