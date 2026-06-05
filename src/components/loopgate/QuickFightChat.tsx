@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import GifPicker from './GifPicker';
 import SmartUsername from './SmartUsername';
 import ChatBubble from './ChatBubble';
+import { useChatBubble } from '@/lib/chatBubbleCache';
 
 const DEFAULT_TRASH_TALK = [
   "yo wake up bro 👀",
@@ -333,13 +334,7 @@ export default function QuickFightChat({
                   )}
 
                   {/* Bubble */}
-                  <div className={`relative border px-4 py-2.5 ${
-                    isRed
-                      ? 'bg-gradient-to-br from-red-500/35 to-red-800/25 border-red-500/50 shadow-[0_0_14px_rgba(239,68,68,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] rounded-2xl rounded-tr-sm'
-                      : isBlue
-                        ? 'bg-gradient-to-br from-blue-500/20 to-blue-800/15 border-blue-500/40 shadow-[0_0_10px_rgba(59,130,246,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] rounded-2xl rounded-tl-sm'
-                        : 'bg-white/5 border-white/10 rounded-2xl rounded-tl-sm'
-                  }`}>
+                  <QuickFightBubbleShell userId={msg.user_id} isRed={isRed} isBlue={isBlue}>
                     {isMediaUrl(msg.message_text) ? (
                       <img
                         src={msg.message_text}
@@ -348,7 +343,11 @@ export default function QuickFightChat({
                         loading="lazy"
                       />
                     ) : (
-                      <ChatBubble userId={msg.user_id} tone={isRed ? 'red' : isBlue ? 'blue' : 'neutral'}>
+                      <ChatBubble
+                        userId={msg.user_id}
+                        tone={isRed ? 'red' : isBlue ? 'blue' : 'neutral'}
+                        tailSide={onRight ? 'right' : 'left'}
+                      >
                         <p className="text-[19px] text-white leading-snug break-words">{msg.message_text}</p>
                       </ChatBubble>
                     )}
@@ -363,7 +362,7 @@ export default function QuickFightChat({
                         <Reply className="w-3 h-3 rotate-180" />
                       </button>
                     )}
-                  </div>
+                  </QuickFightBubbleShell>
 
                   <span className="text-[11px] text-zinc-600 mt-0.5 px-0.5">
                     {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -561,6 +560,38 @@ export default function QuickFightChat({
             </motion.div>
           )}
         </AnimatePresence>
+    </div>
+  );
+}
+
+function QuickFightBubbleShell({
+  userId,
+  isRed,
+  isBlue,
+  children,
+}: {
+  userId: string;
+  isRed: boolean;
+  isBlue: boolean;
+  children: React.ReactNode;
+}) {
+  const equipped = useChatBubble(userId);
+  // When a custom chat-bubble cosmetic is equipped, let it stand on its own
+  // — no nested team-tinted wrapper.
+  if (equipped) {
+    return <div className="relative">{children}</div>;
+  }
+  return (
+    <div
+      className={`relative border px-4 py-2.5 ${
+        isRed
+          ? 'bg-gradient-to-br from-red-500/35 to-red-800/25 border-red-500/50 shadow-[0_0_14px_rgba(239,68,68,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] rounded-2xl rounded-tr-sm'
+          : isBlue
+            ? 'bg-gradient-to-br from-blue-500/20 to-blue-800/15 border-blue-500/40 shadow-[0_0_10px_rgba(59,130,246,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] rounded-2xl rounded-tl-sm'
+            : 'bg-white/5 border-white/10 rounded-2xl rounded-tl-sm'
+      }`}
+    >
+      {children}
     </div>
   );
 }

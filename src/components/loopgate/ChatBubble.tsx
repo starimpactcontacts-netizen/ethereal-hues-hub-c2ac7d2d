@@ -10,6 +10,8 @@ interface Props {
   className?: string;
   /** Team tint: tints the comic bubble fill while keeping the shape identical. */
   tone?: "red" | "blue" | "neutral";
+  /** Which side the tail/nub points toward — match the avatar side. */
+  tailSide?: "left" | "right";
 }
 
 /**
@@ -17,7 +19,14 @@ interface Props {
  * renders the children inside the cosmetic frame. Otherwise renders children
  * unchanged so existing chat layouts stay pixel-identical.
  */
-export default function ChatBubble({ userId, forceBubble, children, className, tone = "neutral" }: Props) {
+export default function ChatBubble({
+  userId,
+  forceBubble,
+  children,
+  className,
+  tone = "neutral",
+  tailSide = "right",
+}: Props) {
   const equipped = useChatBubble(userId);
   const bubble = (forceBubble ?? equipped)?.toLowerCase() || null;
 
@@ -32,7 +41,11 @@ export default function ChatBubble({ userId, forceBubble, children, className, t
   // Angular comic speech bubble with a tail dropping from bottom-right.
   // viewBox is stretched to fit the text via preserveAspectRatio="none";
   // non-scaling stroke keeps the outline crisp regardless of bubble size.
-  const points = "1,1 99,1 99,72 62,72 58,99 50,72 1,72";
+  // Tail drops from bottom edge, side controlled by tailSide.
+  const points =
+    tailSide === "left"
+      ? "1,1 99,1 99,72 50,72 42,99 38,72 1,72"
+      : "1,1 99,1 99,72 62,72 58,99 50,72 1,72";
 
   return (
     <span
