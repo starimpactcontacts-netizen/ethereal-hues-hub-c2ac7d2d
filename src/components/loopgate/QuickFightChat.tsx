@@ -555,6 +555,9 @@ export default function QuickFightChat({
           <span className="text-[10px] text-zinc-500 uppercase tracking-[0.2em]">Sign in to join the chat</span>
         </div>
       )}
+            </motion.div>
+          )}
+        </AnimatePresence>
     </div>
   );
 }
