@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import GifPicker from "./GifPicker";
 import ChatReplyBar from "./ChatReplyBar";
 import SmartUsername from "@/components/loopgate/SmartUsername";
+import ChatBubble from "./ChatBubble";
 import { useNavigate } from "react-router-dom";
 
 interface BattleMessage {
@@ -335,9 +336,11 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
                       loading="lazy"
                     />
                   ) : (
-                    <p className="text-[24px] text-white/80 break-words leading-snug">
-                      {renderText(msg.message_text)}
-                    </p>
+                    <ChatBubble userId={msg.user_id}>
+                      <p className="text-[24px] text-white/80 break-words leading-snug">
+                        {renderText(msg.message_text)}
+                      </p>
+                    </ChatBubble>
                   )}
                 </div>
 
