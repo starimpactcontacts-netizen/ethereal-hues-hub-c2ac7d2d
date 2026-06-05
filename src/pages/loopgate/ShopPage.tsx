@@ -224,6 +224,8 @@ export default function ShopPage() {
       {previewItem && (
         previewItem.category === "badge" ? (
           <BadgePreviewModal item={previewItem} onClose={() => setPreviewItem(null)} />
+        ) : previewItem.category === "chat_bubble" ? (
+          <ChatBubblePreviewModal item={previewItem} onClose={() => setPreviewItem(null)} viewerName={viewerName} />
         ) : (
           <AuraPreviewModal
             item={previewItem}
