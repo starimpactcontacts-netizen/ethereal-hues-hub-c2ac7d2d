@@ -17,6 +17,7 @@ import MessageReactions from "@/components/loopgate/MessageReactions";
 import PinnedMessagesPanel from "@/components/loopgate/PinnedMessagesPanel";
 import BotMessageBadge from "@/components/loopgate/BotMessageBadge";
 import SmartUsername from "@/components/loopgate/SmartUsername";
+import ChatBubble from "@/components/loopgate/ChatBubble";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -490,7 +491,9 @@ export default function ChannelChatView({
                                 )}
                                 
                                 <div className="text-[13px] text-foreground/85 leading-relaxed break-words flex-1">
-                                  <RichMessageContent content={message.message_text} />
+                                  <ChatBubble userId={message.user_id}>
+                                    <RichMessageContent content={message.message_text} />
+                                  </ChatBubble>
                                 </div>
                                 
                                 {/* Desktop: hover actions */}

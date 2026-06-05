@@ -9,6 +9,7 @@ import { format, isToday, isYesterday, isSameDay } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import GifPicker from '@/components/loopgate/GifPicker';
 import RichMessageContent from '@/components/loopgate/RichMessageContent';
+import ChatBubble from '@/components/loopgate/ChatBubble';
 import MessageReactions from '@/components/loopgate/MessageReactions';
 import DMTypingIndicator from '@/components/loopgate/DMTypingIndicator';
 import DMReplyBar from '@/components/loopgate/DMReplyBar';
@@ -295,7 +296,9 @@ export default function DirectMessagePage() {
                             }}
                           >
                             <div className="text-[13.5px] leading-relaxed">
-                              <RichMessageContent content={msg.message_text} />
+                              <ChatBubble userId={msg.sender_id}>
+                                <RichMessageContent content={msg.message_text} />
+                              </ChatBubble>
                             </div>
                           </div>
 

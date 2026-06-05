@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import ChatReplyBar from "@/components/loopgate/ChatReplyBar";
+import ChatBubble from "@/components/loopgate/ChatBubble";
 
 interface ArenaMessage {
   id: string;
@@ -311,17 +312,19 @@ export default function ArenaChatPage() {
                     </div>
                   )}
 
-                  <div
-                    className={`inline-block px-3 py-2 rounded-2xl ${
-                      isOwnMessage
-                        ? "bg-gold text-black rounded-br-sm"
-                        : "bg-muted rounded-bl-sm"
-                    }`}
-                  >
-                    <p className="text-sm whitespace-pre-wrap break-words">
-                      {renderMessageText(message.message_text)}
-                    </p>
-                  </div>
+                  <ChatBubble userId={message.user_id}>
+                    <div
+                      className={`inline-block px-3 py-2 rounded-2xl ${
+                        isOwnMessage
+                          ? "bg-gold text-black rounded-br-sm"
+                          : "bg-muted rounded-bl-sm"
+                      }`}
+                    >
+                      <p className="text-sm whitespace-pre-wrap break-words">
+                        {renderMessageText(message.message_text)}
+                      </p>
+                    </div>
+                  </ChatBubble>
 
                   {/* Action buttons */}
                   <div className={`flex items-center gap-1 mt-0.5 ${isOwnMessage ? "justify-end" : ""}`}>

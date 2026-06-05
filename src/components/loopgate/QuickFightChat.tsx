@@ -9,6 +9,7 @@ import { useQuickFightMessages, type QuickFightMessage } from '@/hooks/useQuickF
 import { toast } from 'sonner';
 import GifPicker from './GifPicker';
 import SmartUsername from './SmartUsername';
+import ChatBubble from './ChatBubble';
 
 const DEFAULT_TRASH_TALK = [
   "yo wake up bro 👀",
@@ -347,7 +348,9 @@ export default function QuickFightChat({
                         loading="lazy"
                       />
                     ) : (
-                      <p className="text-[19px] text-white leading-snug break-words">{msg.message_text}</p>
+                      <ChatBubble userId={msg.user_id}>
+                        <p className="text-[19px] text-white leading-snug break-words">{msg.message_text}</p>
+                      </ChatBubble>
                     )}
 
                     {/* Reply button — shows on hover */}

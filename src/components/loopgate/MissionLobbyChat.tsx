@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import GifPicker from "./GifPicker";
+import ChatBubble from "./ChatBubble";
 
 interface Message {
   id: string;
@@ -277,15 +278,17 @@ export default function MissionLobbyChat({ missionId }: MissionLobbyChatProps) {
                       )}
 
                       {/* Message content */}
-                      <div className={`rounded-2xl px-3.5 py-2 ${
-                        isOwn ? 'bg-red-500 text-white rounded-br-md' : 'bg-muted/50 text-foreground rounded-bl-md'
-                      }`}>
-                        {isGifUrl(msg.message_text) ? (
-                          <img src={msg.message_text} alt="GIF" className="max-w-[200px] max-h-[150px] rounded-lg object-cover" loading="lazy" />
-                        ) : (
-                          <p className="text-[13px] leading-relaxed break-words">{renderMessageText(msg.message_text)}</p>
-                        )}
-                      </div>
+                      <ChatBubble userId={msg.user_id}>
+                        <div className={`rounded-2xl px-3.5 py-2 ${
+                          isOwn ? 'bg-red-500 text-white rounded-br-md' : 'bg-muted/50 text-foreground rounded-bl-md'
+                        }`}>
+                          {isGifUrl(msg.message_text) ? (
+                            <img src={msg.message_text} alt="GIF" className="max-w-[200px] max-h-[150px] rounded-lg object-cover" loading="lazy" />
+                          ) : (
+                            <p className="text-[13px] leading-relaxed break-words">{renderMessageText(msg.message_text)}</p>
+                          )}
+                        </div>
+                      </ChatBubble>
 
                       {/* Reply action */}
                       {user && (
