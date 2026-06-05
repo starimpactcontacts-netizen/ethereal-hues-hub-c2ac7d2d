@@ -17,6 +17,7 @@ import GlobalAccountPrompt from "./components/loopgate/GlobalAccountPrompt";
 import GlobalGuestConversionModal from "./components/loopgate/GlobalGuestConversionModal";
 import GuestNicknameModal from "./components/loopgate/GuestNicknameModal";
 import PendingGiftModal from "./components/loopgate/PendingGiftModal";
+import PatchNoteModal from "./components/loopgate/PatchNoteModal";
 import { isNativeApp } from "./lib/native";
 import { motion } from "framer-motion";
 
@@ -468,6 +469,7 @@ export default function App() {
           <GlobalGuestConversionModal />
           <GuestNicknameModal />
           <PendingGiftModal />
+          <PatchNoteModal />
           <DevModeBadge />
           <Toaster 
             position="top-center" 

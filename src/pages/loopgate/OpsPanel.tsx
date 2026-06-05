@@ -481,6 +481,7 @@ export default function OpsPanel() {
     type: 'announcement' as string,
   });
   const [broadcasting, setBroadcasting] = useState(false);
+  const [broadcastingV113, setBroadcastingV113] = useState(false);
 
   useRecoverBodyScroll();
 
@@ -2392,6 +2393,26 @@ export default function OpsPanel() {
     }
   }
 
+  async function handleBroadcastV113() {
+    setBroadcastingV113(true);
+    try {
+      const { data: allProfiles } = await supabase.from('profiles').select('id').eq('is_banned', false);
+      if (!allProfiles?.length) { toast.error('No users found'); return; }
+      const notifs = allProfiles.map(p => ({
+        user_id: p.id,
+        type: 'update',
+        title: 'Loopgate v1.13',
+        message: 'Notifications are live. The Shop is open — Auras are the first drop, more cosmetics coming next week. Massive UI upgrades across the entire platform.',
+        data: { broadcast: true, version: '1.13', sent_by: user?.id },
+      }));
+      for (let i = 0; i < notifs.length; i += 100) {
+        await supabase.from('notifications').insert(notifs.slice(i, i + 100));
+      }
+      toast.success(`v1.13 patch note sent to ${allProfiles.length} users!`);
+    } catch (e) { toast.error('Broadcast failed'); }
+    setBroadcastingV113(false);
+  }
+
   // Filter users by search
   const filteredUsers = userSearch 
     ? users.filter(u => 
@@ -2497,6 +2518,7 @@ export default function OpsPanel() {
               { icon: <DollarSign size={15} />, label: "Payouts", onClick: () => navigate('/payouts'), color: "text-amber-400" },
               { icon: <ShoppingBag size={15} />, label: "Shop Item", onClick: () => setShowCreateItem(true), color: "text-muted-foreground" },
               { icon: <Megaphone size={15} />, label: "Broadcast", onClick: () => setShowBroadcastModal(true), color: "text-violet-400" },
+              { icon: <Zap size={15} />, label: broadcastingV113 ? "Sending…" : "v1.13 Notify", onClick: handleBroadcastV113, color: "text-yellow-400" },
               { icon: <Eye size={15} />, label: "AI Analyze", onClick: () => document.getElementById('edit-analyzer')?.scrollIntoView({ behavior: 'smooth' }), color: "text-purple-400" },
             ].map(({ icon, label, onClick, color }) => (
               <button
