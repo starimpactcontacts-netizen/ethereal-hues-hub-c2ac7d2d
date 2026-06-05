@@ -38,64 +38,45 @@ export default function ChatBubble({
     "#FDE047";
   const textColor = tone === "neutral" ? "#0a0a0a" : "#ffffff";
   const stroke = "#0b1437";
-  const strokeW = 2.5;
+  const strokeW = 3;
 
-  // Integrated corner pointer based on the reference: long skinny blade, sharp point,
-  // attached flush to the absolute bottom corner on the avatar side.
-  const tail = (
-    <svg
-      aria-hidden
-      width="46"
-      height="30"
-      viewBox="0 0 46 30"
-      className="absolute pointer-events-none"
-      style={{
-        bottom: -27,
-        [tailSide === "left" ? "left" : "right"]: -3,
-      }}
-    >
-      <polygon
-        points={
-          tailSide === "left"
-            ? "46,0 10,0 0,30 15,4 46,4"
-            : "0,0 36,0 46,30 31,4 0,4"
-        }
-        fill={fill}
-        stroke={stroke}
-        strokeWidth={strokeW}
-        strokeLinejoin="miter"
-      />
-      {/* Cover the body's bottom border where the tail joins, so the seam is clean */}
-      <rect
-        x={tailSide === "left" ? 14 : 0}
-        y={-1}
-        width={32}
-        height={5}
-        fill={fill}
-      />
-    </svg>
-  );
+  const points =
+    tailSide === "left"
+      ? "98,7 2,0 0,58 13,58 1,99 28,58 98,58"
+      : "2,7 98,0 100,58 87,58 99,99 72,58 2,58";
 
   return (
     <span
       className={`relative inline-block align-top max-w-full ${className ?? ""}`}
       style={{
-        marginBottom: 30,
+        marginBottom: 2,
         lineHeight: 1.25,
       }}
     >
+      <svg
+        aria-hidden
+        className="absolute inset-0 pointer-events-none overflow-visible"
+        preserveAspectRatio="none"
+        viewBox="0 0 100 100"
+      >
+        <polygon
+          points={points}
+          fill={fill}
+          stroke={stroke}
+          strokeWidth={strokeW}
+          strokeLinejoin="miter"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
       <span
-        className="relative inline-block"
+        className="relative z-10 inline-block"
         style={{
-          background: fill,
-          border: `${strokeW}px solid ${stroke}`,
-          padding: "8px 14px",
+          padding: tailSide === "left" ? "8px 15px 24px 18px" : "8px 18px 24px 15px",
           color: textColor,
           fontWeight: 700,
         }}
       >
         {children}
-        {tail}
       </span>
     </span>
   );
