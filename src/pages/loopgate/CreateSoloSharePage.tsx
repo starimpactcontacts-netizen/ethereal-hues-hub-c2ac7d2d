@@ -14,7 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import GateIcon from '@/components/loopgate/GateIcon';
 import BunnyVideo from '@/components/loopgate/BunnyVideo';
 import { uploadToBunny, MAX_EDIT_UPLOAD_BYTES, MAX_EDIT_UPLOAD_LABEL } from '@/lib/bunnyUpload';
-import { loadSoloDraft, saveSoloDraft, clearSoloDraft, loadActiveSoloDraft, saveActiveSoloDraft, clearActiveSoloDraft, loadLatestSoloDraft } from '@/lib/soloDraft';
+import { loadSoloDraft, saveSoloDraft, clearSoloDraft, loadActiveSoloDraft, saveActiveSoloDraft, clearActiveSoloDraft, loadLatestSoloDraft, isLiveDraft } from '@/lib/soloDraft';
 
 const teko = { fontFamily: 'Teko, sans-serif' };
 
@@ -94,6 +94,7 @@ export default function CreateSoloSharePage() {
 
   // ── Persist in-progress session across refresh ────────────────────────────
   const hydratedRef = useRef(false);
+  const [draftHydrated, setDraftHydrated] = useState(false);
   const applyDraft = (d: ReturnType<typeof loadSoloDraft>) => {
     if (!d) return;
     if (d.timer) setTimer(d.timer);
@@ -113,17 +114,20 @@ export default function CreateSoloSharePage() {
     const d = user ? loadSoloDraft(user.id) || loadActiveSoloDraft() || loadLatestSoloDraft() : loadActiveSoloDraft() || loadLatestSoloDraft();
     applyDraft(d);
     hydratedRef.current = true;
+    setDraftHydrated(true);
   }, [user]);
 
   useEffect(() => {
-    if (!hydratedRef.current) return;
+    if (!draftHydrated) return;
     const draft = {
       timer, startedAt: startedAt ? startedAt.toISOString() : null,
       song, scenepack, videoUrl, platform, title, caption, startOffset, mode,
+      updatedAt: new Date().toISOString(),
     };
+    if (!isLiveDraft(draft)) return;
     saveActiveSoloDraft(draft);
     if (user) saveSoloDraft(user.id, draft);
-  }, [user, timer, startedAt, song, scenepack, videoUrl, platform, title, caption, startOffset, mode]);
+  }, [draftHydrated, user, timer, startedAt, song, scenepack, videoUrl, platform, title, caption, startOffset, mode]);
 
   // Pull library content once
   useEffect(() => {

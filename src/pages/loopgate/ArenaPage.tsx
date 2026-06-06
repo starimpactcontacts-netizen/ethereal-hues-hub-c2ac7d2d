@@ -13,7 +13,7 @@ import {
 import { InfinityLoop } from "@/components/loopgate/InfinityLoop";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { loadSoloDraft, clearSoloDraft, isLiveDraft, type SoloDraft } from "@/lib/soloDraft";
+import { loadSoloDraft, loadActiveSoloDraft, loadLatestSoloDraft, clearSoloDraft, isLiveDraft, type SoloDraft } from "@/lib/soloDraft";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import LoopMonster from "@/components/loopgate/LoopMonster";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
@@ -577,11 +577,11 @@ export default function ArenaPage() {
   useEffect(() => {
     if (!user) { setSoloShareDraft(null); return; }
     const read = () => {
-      const d = loadSoloDraft(user.id);
+      const d = loadSoloDraft(user.id) || loadActiveSoloDraft() || loadLatestSoloDraft();
       setSoloShareDraft(isLiveDraft(d) ? d : null);
     };
     read();
-    const onStorage = (e: StorageEvent) => { if (e.key && e.key.includes('solo_share_draft_')) read(); };
+    const onStorage = (e: StorageEvent) => { if (e.key && e.key.includes('solo_share')) read(); };
     const onFocus = () => read();
     window.addEventListener('storage', onStorage);
     window.addEventListener('focus', onFocus);
