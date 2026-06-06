@@ -13,6 +13,7 @@ export type SoloDraft = {
 };
 
 const KEY = (userId: string) => `solo_share_draft_${userId}`;
+const ACTIVE_KEY = 'solo_share_active_draft';
 
 export function loadSoloDraft(userId: string | null | undefined): SoloDraft | null {
   if (!userId || typeof window === 'undefined') return null;
@@ -37,6 +38,48 @@ export function saveSoloDraft(userId: string | null | undefined, draft: Partial<
 export function clearSoloDraft(userId: string | null | undefined) {
   if (!userId || typeof window === 'undefined') return;
   try { localStorage.removeItem(KEY(userId)); } catch {}
+}
+
+export function loadActiveSoloDraft(): SoloDraft | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(ACTIVE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as SoloDraft;
+  } catch {
+    return null;
+  }
+}
+
+export function loadLatestSoloDraft(): SoloDraft | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const drafts: SoloDraft[] = [];
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i);
+      if (!key?.startsWith('solo_share_draft_')) continue;
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+      drafts.push(JSON.parse(raw) as SoloDraft);
+    }
+    return drafts.sort((a, b) => Date.parse(b.updatedAt || '') - Date.parse(a.updatedAt || ''))[0] || null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveActiveSoloDraft(draft: Partial<SoloDraft>) {
+  if (typeof window === 'undefined') return;
+  try {
+    const prev = loadActiveSoloDraft() || {};
+    const next = { ...prev, ...draft, updatedAt: new Date().toISOString() };
+    localStorage.setItem(ACTIVE_KEY, JSON.stringify(next));
+  } catch {}
+}
+
+export function clearActiveSoloDraft() {
+  if (typeof window === 'undefined') return;
+  try { localStorage.removeItem(ACTIVE_KEY); } catch {}
 }
 
 /** A draft is "live" if it has at least a started timer or some user content. */
