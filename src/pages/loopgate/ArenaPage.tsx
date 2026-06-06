@@ -910,7 +910,7 @@ export default function ArenaPage() {
                 <span className={`min-w-[16px] h-4 px-1 text-[9px] font-black flex items-center justify-center rounded-sm ${arenaView === 'my' ? 'bg-black/40 text-black' : 'bg-gold text-black'}`}>
                   {openLobbyCount}
                 </span>
-              ) : (activeSolo || myBattles.length > 0 || myActiveQuickFights.length > 0 || myJudgingBattles.length > 0 || myCashBattles.length > 0 || myLiveCompetitions.length > 0) && (
+              ) : (activeSolo || soloShareDraft || myBattles.length > 0 || myActiveQuickFights.length > 0 || myJudgingBattles.length > 0 || myCashBattles.length > 0 || myLiveCompetitions.length > 0) && (
                 <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${arenaView === 'my' ? 'bg-black/70' : 'bg-red-500'}`} />
               )}
             </button>
