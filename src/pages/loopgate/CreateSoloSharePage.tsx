@@ -279,7 +279,33 @@ export default function CreateSoloSharePage() {
               <div>
                 <p className="text-[10px] text-amber-400 font-bold uppercase tracking-[0.3em]" style={teko}>Step 3</p>
                 <h2 className="text-4xl font-black mt-1 leading-none" style={teko}>DROP THE EDIT.</h2>
-                <p className="text-sm text-white/50 mt-2">Paste your video link. Tune where it starts.</p>
+                <p className="text-sm text-white/50 mt-2">Upload your edit, or paste a link to your TikTok/IG/YouTube post.</p>
+              </div>
+
+              {/* Mode toggle */}
+              <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-white/[0.04] border border-white/10">
+                {([
+                  { id: 'upload', label: 'UPLOAD', icon: <Upload className="w-3.5 h-3.5" />, sub: 'host on Loopgate' },
+                  { id: 'link', label: 'PASTE LINK', icon: <LinkIcon className="w-3.5 h-3.5" />, sub: 'distribute from socials' },
+                ] as const).map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => {
+                      setMode(m.id);
+                      setVideoUrl('');
+                      if (m.id === 'link') setPlatform('tiktok');
+                    }}
+                    className={`py-2.5 rounded-xl flex flex-col items-center gap-0.5 transition-all ${
+                      mode === m.id ? 'bg-amber-400 text-black' : 'text-white/60 hover:bg-white/5'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      {m.icon}
+                      <span className="text-[11px] font-extrabold uppercase tracking-[0.18em]">{m.label}</span>
+                    </div>
+                    <span className={`text-[9px] uppercase tracking-wider ${mode === m.id ? 'text-black/60' : 'text-white/30'}`}>{m.sub}</span>
+                  </button>
+                ))}
               </div>
 
               {/* Session recap */}
@@ -311,6 +337,7 @@ export default function CreateSoloSharePage() {
               )}
 
               {/* Edit URL */}
+              {mode === 'link' && (
               <div>
                 <label className="text-[10px] uppercase tracking-[0.2em] text-white/40 mb-2 flex items-center gap-1.5">
                   <LinkIcon className="w-3 h-3" /> Your edit URL
@@ -339,6 +366,64 @@ export default function CreateSoloSharePage() {
                   ))}
                 </div>
               </div>
+              )}
+
+              {/* Upload zone */}
+              {mode === 'upload' && (
+                <div>
+                  <label className="text-[10px] uppercase tracking-[0.2em] text-white/40 mb-2 flex items-center gap-1.5">
+                    <Video className="w-3 h-3" /> Your edit file
+                  </label>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="video/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) handleFile(f);
+                      e.target.value = '';
+                    }}
+                  />
+                  {!videoUrl && !uploading && (
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full rounded-2xl border-2 border-dashed border-white/15 hover:border-amber-400/60 hover:bg-amber-400/[0.04] py-10 flex flex-col items-center gap-2 transition-all active:scale-[0.99]"
+                    >
+                      <div className="w-12 h-12 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center">
+                        <Upload className="w-5 h-5 text-amber-400" />
+                      </div>
+                      <span className="text-sm font-bold text-white">Tap to upload your edit</span>
+                      <span className="text-[10px] uppercase tracking-[0.2em] text-white/30">MP4 / MOV · up to {MAX_EDIT_UPLOAD_LABEL}</span>
+                    </button>
+                  )}
+                  {uploading && (
+                    <div className="rounded-2xl border border-amber-400/30 bg-amber-400/[0.05] p-5 space-y-3">
+                      <div className="flex items-center gap-2 text-amber-400">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span className="text-xs font-bold uppercase tracking-[0.2em]">Uploading — {uploadPct}%</span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+                        <div className="h-full bg-amber-400 transition-all" style={{ width: `${uploadPct}%` }} />
+                      </div>
+                      <p className="text-[10px] text-white/40">Don't close this tab.</p>
+                    </div>
+                  )}
+                  {videoUrl && !uploading && platform === 'bunny' && (
+                    <div className="space-y-2">
+                      <div className="rounded-2xl overflow-hidden bg-black border border-white/5" style={{ aspectRatio: '9/16', maxHeight: 360 }}>
+                        <BunnyVideo src={videoUrl} className="w-full h-full object-contain" controls />
+                      </div>
+                      <button
+                        onClick={() => { setVideoUrl(''); setPlatform('tiktok'); fileInputRef.current?.click(); }}
+                        className="text-[10px] uppercase tracking-wider text-white/40 hover:text-amber-400"
+                      >
+                        replace file
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Preview + start offset (YouTube only honors it in embed) */}
               {previewUrl && (
