@@ -7,7 +7,7 @@ import { getPageSafeFill } from "@/lib/pageSafeFill";
 
 export default function MobileLayout() {
   const location = useLocation();
-  const hideNavPaths = ["/admin", "/studio", "/editorium", "/missions", "/clippers", "/collabs", "/collab/", "/duo-battle/", "/units/"];
+  const hideNavPaths = ["/admin", "/studio", "/editorium", "/missions", "/clippers", "/collabs", "/collab/", "/duo-battle/", "/units/", "/solo/create"];
   const showNav = !hideNavPaths.some((p) => location.pathname.startsWith(p));
   const safeFill = getPageSafeFill(location.pathname);
   useRecoverBodyScroll();
