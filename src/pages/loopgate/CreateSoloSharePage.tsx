@@ -234,21 +234,11 @@ export default function CreateSoloSharePage() {
           >
             {/* ====== DROP THE EDIT (TOP) ====== */}
             <div className="space-y-3">
-              <div className="flex items-center justify-between px-1">
-                <div className="flex items-center gap-2">
-                  <Flame className="w-4 h-4 text-amber-400" />
-                  <span className="text-[16px] font-extrabold uppercase text-white" style={teko}>YOUR EDIT</span>
-                </div>
-                <button
-                  onClick={() => { setMode(mode === 'upload' ? 'link' : 'upload'); setVideoUrl(''); }}
-                  className="text-[11px] uppercase text-white/40 hover:text-amber-400 font-bold"
-                  style={teko}
-                >
-                  {mode === 'upload' ? '→ paste link instead' : '→ upload file instead'}
-                </button>
+              <div className="flex items-center px-1">
+                <span className="text-[16px] font-extrabold uppercase text-white" style={teko}>YOUR EDIT</span>
               </div>
 
-              {mode === 'upload' && (
+              {(
                 <>
                   <input
                     ref={fileInputRef}
@@ -298,47 +288,6 @@ export default function CreateSoloSharePage() {
                     </div>
                   )}
                 </>
-              )}
-
-              {mode === 'link' && (
-                <div className="space-y-2">
-                  <Input
-                    value={videoUrl}
-                    onChange={(e) => setVideoUrl(e.target.value)}
-                    placeholder="paste tiktok / ig / yt url"
-                    className="bg-white/5 border-white/10 h-12 rounded-2xl text-sm"
-                  />
-                  <div className="grid grid-cols-3 gap-2">
-                    {([
-                      { id: 'tiktok', label: 'TikTok', icon: <SiTiktok size={12} /> },
-                      { id: 'instagram', label: 'IG', icon: <SiInstagram size={12} /> },
-                      { id: 'youtube', label: 'YT', icon: <SiYoutube size={12} /> },
-                    ] as const).map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => setPlatform(p.id)}
-                        className={`py-2 rounded-xl text-[11px] font-bold uppercase flex items-center justify-center gap-1.5 transition-all ${
-                          platform === p.id ? 'bg-amber-400 text-black' : 'bg-white/[0.04] text-white/60 border border-white/10'
-                        }`}
-                      >
-                        {p.icon}{p.label}
-                      </button>
-                    ))}
-                  </div>
-                  {previewUrl && (
-                    <div className="rounded-3xl overflow-hidden bg-black border border-white/10 mt-2" style={{ aspectRatio: platform === 'youtube' && !videoUrl.includes('/shorts/') ? '16/9' : '9/16', maxHeight: 360 }}>
-                      <iframe src={previewUrl} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-                    </div>
-                  )}
-                  {platform === 'youtube' && previewUrl && (
-                    <div className="pt-2">
-                      <label className="text-[11px] uppercase text-white/40 mb-2 block" style={teko}>
-                        Start at <span className="text-amber-400 font-bold">{startOffset}s</span>
-                      </label>
-                      <input type="range" min={0} max={120} step={1} value={startOffset} onChange={(e) => setStartOffset(parseInt(e.target.value, 10))} className="w-full accent-amber-400" />
-                    </div>
-                  )}
-                </div>
               )}
 
               <div className="grid grid-cols-2 gap-2 pt-1">
