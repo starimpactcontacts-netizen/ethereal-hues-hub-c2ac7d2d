@@ -572,6 +572,32 @@ export default function ArenaPage() {
   const openLobbyCount = useMemo(() => myQuickFights.filter(f => f.status === 'waiting' || f.status === 'selecting').length, [myQuickFights]);
   const isQfSearching = qfSearching || qfInQueue;
 
+  // ── In-progress Solo Share draft (persists across refresh via localStorage) ──
+  const [soloShareDraft, setSoloShareDraft] = useState<SoloDraft | null>(null);
+  useEffect(() => {
+    if (!user) { setSoloShareDraft(null); return; }
+    const read = () => {
+      const d = loadSoloDraft(user.id);
+      setSoloShareDraft(isLiveDraft(d) ? d : null);
+    };
+    read();
+    const onStorage = (e: StorageEvent) => { if (e.key && e.key.includes('solo_share_draft_')) read(); };
+    const onFocus = () => read();
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('focus', onFocus);
+    const i = setInterval(read, 5000);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('focus', onFocus);
+      clearInterval(i);
+    };
+  }, [user]);
+  const soloDraftRemainingMs = useMemo(() => {
+    if (!soloShareDraft?.startedAt || !soloShareDraft?.timer) return null;
+    const start = new Date(soloShareDraft.startedAt).getTime();
+    return start + soloShareDraft.timer * 60_000 - Date.now();
+  }, [soloShareDraft]);
+
   // Queue timer
   useEffect(() => {
     if (!isQfSearching) { setQfElapsed(0); return; }
