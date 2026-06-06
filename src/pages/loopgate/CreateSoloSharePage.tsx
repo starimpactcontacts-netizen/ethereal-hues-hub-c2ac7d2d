@@ -401,7 +401,7 @@ function OsuLobby({ user, profile, onPick }: { user: any; profile: any; onPick: 
 
       {/* Top-center status text */}
       <div
-        className="absolute z-20 inset-x-0 flex flex-col items-center text-center px-4"
+        className="hidden sm:flex absolute z-20 inset-x-0 flex-col items-center text-center px-4"
         style={{ top: 'calc(env(safe-area-inset-top, 0px) + 18px)' }}
       >
         <p className="text-[12px] sm:text-[13px] text-white/80 font-semibold" style={teko}>
@@ -419,14 +419,47 @@ function OsuLobby({ user, profile, onPick }: { user: any; profile: any; onPick: 
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', stiffness: 140, damping: 14 }}
-          className="text-center leading-none mb-8"
+          className="relative mb-8"
         >
-          <div className="text-white font-black tracking-tight" style={{ ...teko, fontSize: 80 }}>
-            solo<span className="text-amber-400">!</span>
+          {/* halo rings */}
+          <motion.div
+            animate={{ scale: [1, 1.08, 1], opacity: [0.4, 0.1, 0.4] }}
+            transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute inset-0 rounded-full"
+            style={{ boxShadow: `0 0 0 10px ${tone}22, 0 0 60px 8px ${tone}55` }}
+          />
+          <div
+            className="relative w-[200px] h-[200px] rounded-full flex flex-col items-center justify-center"
+            style={{
+              background: 'radial-gradient(circle at 35% 30%, #1a1a1a 0%, #050505 70%)',
+              border: '3px solid rgba(255,255,255,0.85)',
+              boxShadow: 'inset 0 0 50px rgba(0,0,0,0.8), 0 20px 50px -10px rgba(0,0,0,0.9)',
+            }}
+          >
+            {/* triangle texture */}
+            <div
+              className="absolute inset-0 rounded-full opacity-[0.07] overflow-hidden"
+              style={{
+                backgroundImage:
+                  "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><polygon points='20,4 36,32 4,32' fill='white'/></svg>\")",
+                backgroundSize: '40px 40px',
+              }}
+            />
+            <div className="text-white font-black tracking-tight leading-none" style={{ ...teko, fontSize: 68 }}>
+              solo<span className="text-amber-400">!</span>
+            </div>
+            <p className="text-[9px] text-white/50 uppercase tracking-[0.25em] mt-1.5" style={teko}>
+              Pick your clock
+            </p>
+            {/* gloss */}
+            <div
+              className="absolute inset-2 rounded-full pointer-events-none"
+              style={{
+                background:
+                  'linear-gradient(160deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 35%)',
+              }}
+            />
           </div>
-          <p className="text-[11px] text-white/50 uppercase tracking-[0.25em] mt-2" style={teko}>
-            Pick your clock
-          </p>
         </motion.div>
 
         <div className="w-full max-w-sm flex flex-col gap-2.5">
