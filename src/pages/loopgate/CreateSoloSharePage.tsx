@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Loader2, Music, Film, Link as LinkIcon, Zap, AlertTriangle, Upload, Play, Flame, X, Check, Timer as TimerIcon, Clock, Hourglass, ChevronRight, ChevronLeft, PanelLeftOpen, User, Pause, Settings2, Maximize2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Music, Film, Link as LinkIcon, AlertTriangle, Upload, Play, Flame, X, Check, Timer as TimerIcon, Clock, Hourglass, ChevronRight, ChevronLeft, PanelLeftOpen, User, Pause, Settings2, Maximize2 } from 'lucide-react';
 import { SiTiktok, SiInstagram, SiYoutube } from '@icons-pack/react-simple-icons';
 import { useAuth } from '@/hooks/useAuth';
 import { createSoloShare } from '@/hooks/useSoloShares';
@@ -977,7 +977,7 @@ function NLECockpit({
             boxShadow: '0 4px 0 0 #6b21a8, 0 8px 20px -4px rgba(168,85,247,0.5), inset 0 1px 0 rgba(255,255,255,0.25)',
           }}
         >
-          <Zap className="w-4 h-4" />
+          <Film className="w-4 h-4" />
           <span className="text-[18px] font-black uppercase" style={teko}>{overtime ? 'SHIP OVERTIME' : 'PUBLISH SOLO'}</span>
         </button>
       </div>
