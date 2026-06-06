@@ -935,13 +935,26 @@ function NLECockpit({
           />
         </label>
         <label className="block">
-          <span className="text-[9px] uppercase tracking-[0.2em] text-white/35 font-mono">CAPTION</span>
+          <span className="flex items-center gap-1.5 text-[9px] uppercase tracking-[0.2em] text-white/35 font-mono">
+            <LinkIcon className="w-3 h-3" />
+            POSTED LINK
+            <span className="ml-1 px-1 py-px rounded-sm text-[8px] tracking-[0.15em] font-bold" style={{ background: 'rgba(34,197,94,0.15)', color: '#4ade80', border: '1px solid rgba(34,197,94,0.35)' }}>
+              RECOMMENDED
+            </span>
+          </span>
           <Input
             value={caption}
-            onChange={(e) => setCaption(e.target.value.slice(0, 200))}
-            placeholder="Short description"
+            onChange={(e) => setCaption(e.target.value.slice(0, 300))}
+            placeholder="tiktok.com / instagram.com / youtube.com …"
+            inputMode="url"
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck={false}
             className="mt-1 bg-black/60 border-white/10 h-9 rounded-md text-[12px] font-mono"
           />
+          <span className="block mt-1 text-[9px] text-white/40 leading-snug">
+            Drop the link if you posted this edit — drives more ratings & viewer traffic.
+          </span>
         </label>
         {hasVid && (
           <button
