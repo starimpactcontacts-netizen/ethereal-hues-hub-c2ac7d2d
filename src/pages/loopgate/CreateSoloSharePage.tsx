@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Loader2, Music, Film, Link as LinkIcon, Clock, Zap, Check, AlertTriangle, SkipForward } from 'lucide-react';
+import { ArrowLeft, Loader2, Music, Film, Link as LinkIcon, Clock, Zap, AlertTriangle, SkipForward } from 'lucide-react';
 import { SiTiktok, SiInstagram, SiYoutube } from '@icons-pack/react-simple-icons';
 import { useAuth } from '@/hooks/useAuth';
 import { createSoloShare } from '@/hooks/useSoloShares';
@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import SEO from '@/components/SEO';
-import SongPicker from '@/components/loopgate/SongPicker';
+import SoloLibraryPicker, { type LibrarySong, type LibraryScenepack } from '@/components/loopgate/SoloLibraryPicker';
 import GateIcon from '@/components/loopgate/GateIcon';
 
 const teko = { fontFamily: 'Teko, sans-serif' };
@@ -44,8 +44,8 @@ export default function CreateSoloSharePage() {
   const [startedAt, setStartedAt] = useState<Date | null>(null);
   const [now, setNow] = useState(Date.now());
 
-  const [songName, setSongName] = useState<string | null>(null);
-  const [scenepackUrl, setScenepackUrl] = useState('');
+  const [song, setSong] = useState<LibrarySong | null>(null);
+  const [scenepack, setScenepack] = useState<LibraryScenepack | null>(null);
 
   const [videoUrl, setVideoUrl] = useState('');
   const [platform, setPlatform] = useState<'tiktok' | 'instagram' | 'youtube'>('tiktok');
@@ -76,15 +76,13 @@ export default function CreateSoloSharePage() {
     setPhase('song');
   };
 
-  const handleSongPicked = (drop: any) => {
-    setSongName(drop?.song_name || null);
+  const handleSkipLibrary = () => {
+    setSong(null);
+    setScenepack(null);
     setPhase('upload');
   };
 
-  const handleSkipSong = () => {
-    setSongName(null);
-    setPhase('upload');
-  };
+  const handleContinueLibrary = () => setPhase('upload');
 
   // Auto-detect platform when URL changes
   useEffect(() => {
@@ -117,8 +115,8 @@ export default function CreateSoloSharePage() {
       deadline_at: deadline?.toISOString() || null,
       is_overtime: overtime,
       start_offset_seconds: Math.max(0, Math.floor(startOffset)),
-      song_name: songName,
-      scenepack_url: scenepackUrl.trim() || null,
+      song_name: song?.song_name || null,
+      scenepack_url: scenepack ? `scenepack:${scenepack.id}` : null,
     });
     if (!share) { toast.error('Could not publish. Try again.'); setPhase('upload'); return; }
     toast.success(overtime ? 'Published — flagged OVERTIME.' : 'Solo page live.');
