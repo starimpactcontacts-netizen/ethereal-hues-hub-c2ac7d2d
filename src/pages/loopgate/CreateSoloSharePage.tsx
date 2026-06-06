@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Loader2, Music, Film, Link as LinkIcon, Clock, Zap, Check, AlertTriangle, SkipForward } from 'lucide-react';
+import { ArrowLeft, Loader2, Music, Film, Link as LinkIcon, Clock, Zap, AlertTriangle, SkipForward } from 'lucide-react';
 import { SiTiktok, SiInstagram, SiYoutube } from '@icons-pack/react-simple-icons';
 import { useAuth } from '@/hooks/useAuth';
 import { createSoloShare } from '@/hooks/useSoloShares';
@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import SEO from '@/components/SEO';
-import SongPicker from '@/components/loopgate/SongPicker';
+import SoloLibraryPicker, { type LibrarySong, type LibraryScenepack } from '@/components/loopgate/SoloLibraryPicker';
 import GateIcon from '@/components/loopgate/GateIcon';
 
 const teko = { fontFamily: 'Teko, sans-serif' };
@@ -44,8 +44,8 @@ export default function CreateSoloSharePage() {
   const [startedAt, setStartedAt] = useState<Date | null>(null);
   const [now, setNow] = useState(Date.now());
 
-  const [songName, setSongName] = useState<string | null>(null);
-  const [scenepackUrl, setScenepackUrl] = useState('');
+  const [song, setSong] = useState<LibrarySong | null>(null);
+  const [scenepack, setScenepack] = useState<LibraryScenepack | null>(null);
 
   const [videoUrl, setVideoUrl] = useState('');
   const [platform, setPlatform] = useState<'tiktok' | 'instagram' | 'youtube'>('tiktok');
@@ -76,15 +76,13 @@ export default function CreateSoloSharePage() {
     setPhase('song');
   };
 
-  const handleSongPicked = (drop: any) => {
-    setSongName(drop?.song_name || null);
+  const handleSkipLibrary = () => {
+    setSong(null);
+    setScenepack(null);
     setPhase('upload');
   };
 
-  const handleSkipSong = () => {
-    setSongName(null);
-    setPhase('upload');
-  };
+  const handleContinueLibrary = () => setPhase('upload');
 
   // Auto-detect platform when URL changes
   useEffect(() => {
@@ -117,8 +115,8 @@ export default function CreateSoloSharePage() {
       deadline_at: deadline?.toISOString() || null,
       is_overtime: overtime,
       start_offset_seconds: Math.max(0, Math.floor(startOffset)),
-      song_name: songName,
-      scenepack_url: scenepackUrl.trim() || null,
+      song_name: song?.song_name || null,
+      scenepack_url: scenepack ? `scenepack:${scenepack.id}` : null,
     });
     if (!share) { toast.error('Could not publish. Try again.'); setPhase('upload'); return; }
     toast.success(overtime ? 'Published — flagged OVERTIME.' : 'Solo page live.');
@@ -202,19 +200,38 @@ export default function CreateSoloSharePage() {
             >
               <div>
                 <p className="text-[10px] text-amber-400 font-bold uppercase tracking-[0.3em]" style={teko}>Step 2</p>
-                <h2 className="text-4xl font-black mt-1 leading-none" style={teko}>PICK YOUR TRACK.</h2>
-                <p className="text-sm text-white/50 mt-2">Song first, then we'll grab a scenepack.</p>
+                <h2 className="text-4xl font-black mt-1 leading-none" style={teko}>LIBRARY.</h2>
+                <p className="text-sm text-white/50 mt-2">Lock a scenepack and a track — or skip and bring your own.</p>
               </div>
 
               <button
-                onClick={handleSkipSong}
+                onClick={handleSkipLibrary}
                 className="w-full py-3 rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.05] flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
               >
                 <SkipForward className="w-4 h-4 text-white/40" />
-                <span className="text-xs font-bold text-white/60 uppercase tracking-wider">Skip — bring my own song</span>
+                <span className="text-xs font-bold text-white/60 uppercase tracking-wider">Skip — bring my own</span>
               </button>
 
-              <SongPicker onPick={handleSongPicked} selectedDropId={null} />
+              <SoloLibraryPicker
+                selectedSongId={song?.id || null}
+                selectedPackId={scenepack?.id || null}
+                onPickSong={setSong}
+                onPickPack={setScenepack}
+              />
+
+              <button
+                onClick={handleContinueLibrary}
+                className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                style={{
+                  background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                  color: '#000',
+                  boxShadow: '0 4px 30px rgba(245,158,11,0.35)',
+                  ...teko,
+                }}
+              >
+                <Zap className="w-5 h-5" />
+                <span className="text-[18px] font-extrabold uppercase tracking-[0.18em]">CONTINUE</span>
+              </button>
             </motion.div>
           )}
 
@@ -240,23 +257,26 @@ export default function CreateSoloSharePage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[9px] uppercase tracking-[0.2em] text-white/40">Track</p>
-                  <p className="text-sm font-bold truncate">{songName || 'Your choice'}</p>
+                  <p className="text-sm font-bold truncate">{song?.song_name || 'Your choice'}</p>
                 </div>
                 <button onClick={() => setPhase('song')} className="text-[10px] uppercase tracking-wider text-white/40 hover:text-amber-400">change</button>
               </div>
 
-              {/* Scenepack */}
-              <div>
-                <label className="text-[10px] uppercase tracking-[0.2em] text-white/40 mb-2 flex items-center gap-1.5">
-                  <Film className="w-3 h-3" /> Scenepack URL <span className="text-white/30 normal-case tracking-normal">(optional)</span>
-                </label>
-                <Input
-                  value={scenepackUrl}
-                  onChange={(e) => setScenepackUrl(e.target.value)}
-                  placeholder="https://drive.google.com/..."
-                  className="bg-white/5 border-white/10"
-                />
-              </div>
+              {/* Scenepack recap */}
+              {scenepack && (
+                <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
+                  <div className="w-9 h-12 rounded-lg overflow-hidden bg-white/5 border border-white/10 shrink-0">
+                    {scenepack.thumbnail_url
+                      ? <img src={scenepack.thumbnail_url} alt={scenepack.title} className="w-full h-full object-cover" />
+                      : <div className="w-full h-full flex items-center justify-center"><Film className="w-4 h-4 text-white/30" /></div>}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[9px] uppercase tracking-[0.2em] text-white/40">Scenepack</p>
+                    <p className="text-sm font-bold truncate">{scenepack.title}</p>
+                  </div>
+                  <button onClick={() => setPhase('song')} className="text-[10px] uppercase tracking-wider text-white/40 hover:text-amber-400">change</button>
+                </div>
+              )}
 
               {/* Edit URL */}
               <div>
