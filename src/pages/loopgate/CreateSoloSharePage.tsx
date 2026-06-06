@@ -575,6 +575,7 @@ function NLECockpit({
   title, setTitle, caption, setCaption, overtime, remainingMs, timerLabel, onCancel,
   packs, songs, libLoading, scenepack, setScenepack, song, setSong, previewingId, togglePreview,
   onPublish, canPublish,
+  startOffset, setStartOffset,
 }: {
   tone: string;
   videoUrl: string;
@@ -602,12 +603,49 @@ function NLECockpit({
   togglePreview: (s: LibrarySong) => void;
   onPublish: () => void;
   canPublish: boolean;
+  startOffset: number;
+  setStartOffset: (n: number) => void;
 }) {
   const hasVid = !!videoUrl && platform === 'bunny' && !uploading;
   const timerDisplay = overtime ? `+${fmtRemaining(-remainingMs)}` : fmtRemaining(remainingMs);
   const timerColor = overtime ? '#ef4444' : tone;
   const [bin, setBin] = useState<'packs' | 'tracks'>('packs');
   const [binCollapsed, setBinCollapsed] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const timelineRef = useRef<HTMLDivElement | null>(null);
+  const draggingRef = useRef(false);
+
+  const seekTo = (t: number) => {
+    const v = videoRef.current;
+    if (!v || !isFinite(duration) || duration <= 0) return;
+    const clamped = Math.max(0, Math.min(duration, t));
+    v.currentTime = clamped;
+    setCurrentTime(clamped);
+  };
+
+  const handleTimelinePointer = (e: React.PointerEvent<HTMLDivElement>) => {
+    const el = timelineRef.current;
+    if (!el || !duration) return;
+    const rect = el.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    seekTo(pct * duration);
+  };
+
+  const togglePlay = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) v.play().catch(() => {}); else v.pause();
+  };
+
+  const fmtClock = (s: number) => {
+    if (!isFinite(s) || s < 0) s = 0;
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+  };
 
   return (
     <div
