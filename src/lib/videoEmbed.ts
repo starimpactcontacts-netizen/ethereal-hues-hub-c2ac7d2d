@@ -1,21 +1,22 @@
 // Lightweight client-side embed URL builder for Solo Share player.
-export function getEmbedUrl(url: string, platform?: string): string | null {
+export function getEmbedUrl(url: string, platform?: string, startSeconds = 0): string | null {
   try {
     const u = new URL(url);
     const host = u.hostname.replace(/^www\./, '');
     const p = (platform || '').toLowerCase();
+    const startQ = startSeconds > 0 ? `&start=${Math.floor(startSeconds)}` : '';
 
     if (p === 'youtube' || host.includes('youtube') || host.includes('youtu.be')) {
       if (host.includes('youtu.be')) {
         const id = u.pathname.slice(1);
-        if (id) return `https://www.youtube.com/embed/${id}?rel=0&playsinline=1`;
+        if (id) return `https://www.youtube.com/embed/${id}?rel=0&playsinline=1${startQ}`;
       }
       if (u.pathname.includes('/shorts/')) {
         const id = u.pathname.split('/shorts/')[1]?.split('/')[0];
-        if (id) return `https://www.youtube.com/embed/${id}?rel=0&playsinline=1`;
+        if (id) return `https://www.youtube.com/embed/${id}?rel=0&playsinline=1${startQ}`;
       }
       const id = u.searchParams.get('v');
-      if (id) return `https://www.youtube.com/embed/${id}?rel=0&playsinline=1`;
+      if (id) return `https://www.youtube.com/embed/${id}?rel=0&playsinline=1${startQ}`;
     }
     if (p === 'tiktok' || host.includes('tiktok')) {
       const parts = u.pathname.split('/');

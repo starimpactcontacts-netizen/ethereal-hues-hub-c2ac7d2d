@@ -8652,12 +8652,19 @@ export type Database = {
           avg_rating: number
           caption: string | null
           created_at: string
+          deadline_at: string | null
           id: string
           is_active: boolean
+          is_overtime: boolean
           platform: string
           rings_earned: number
+          scenepack_url: string | null
           slug: string
+          song_name: string | null
+          start_offset_seconds: number
+          started_at: string | null
           thumbnail_url: string | null
+          timer_minutes: number | null
           title: string | null
           total_ratings: number
           updated_at: string
@@ -8671,12 +8678,19 @@ export type Database = {
           avg_rating?: number
           caption?: string | null
           created_at?: string
+          deadline_at?: string | null
           id?: string
           is_active?: boolean
+          is_overtime?: boolean
           platform: string
           rings_earned?: number
+          scenepack_url?: string | null
           slug: string
+          song_name?: string | null
+          start_offset_seconds?: number
+          started_at?: string | null
           thumbnail_url?: string | null
+          timer_minutes?: number | null
           title?: string | null
           total_ratings?: number
           updated_at?: string
@@ -8690,12 +8704,19 @@ export type Database = {
           avg_rating?: number
           caption?: string | null
           created_at?: string
+          deadline_at?: string | null
           id?: string
           is_active?: boolean
+          is_overtime?: boolean
           platform?: string
           rings_earned?: number
+          scenepack_url?: string | null
           slug?: string
+          song_name?: string | null
+          start_offset_seconds?: number
+          started_at?: string | null
           thumbnail_url?: string | null
+          timer_minutes?: number | null
           title?: string | null
           total_ratings?: number
           updated_at?: string

@@ -19,6 +19,13 @@ export interface SoloShare {
   views: number;
   is_active: boolean;
   created_at: string;
+  timer_minutes?: number | null;
+  started_at?: string | null;
+  deadline_at?: string | null;
+  is_overtime?: boolean;
+  start_offset_seconds?: number;
+  song_name?: string | null;
+  scenepack_url?: string | null;
 }
 
 export interface SoloShareRating {
@@ -132,6 +139,13 @@ export async function createSoloShare(input: {
   platform: string;
   title?: string | null;
   caption?: string | null;
+  timer_minutes?: number | null;
+  started_at?: string | null;
+  deadline_at?: string | null;
+  is_overtime?: boolean;
+  start_offset_seconds?: number;
+  song_name?: string | null;
+  scenepack_url?: string | null;
 }): Promise<SoloShare | null> {
   // Try a few times in case of slug collision
   for (let i = 0; i < 5; i++) {

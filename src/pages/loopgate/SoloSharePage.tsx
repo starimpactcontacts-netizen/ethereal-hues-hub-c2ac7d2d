@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { Star, Send, ExternalLink, Loader2, Copy, Check, MessageCircle, Eye } from 'lucide-react';
+import { Star, Send, ExternalLink, Loader2, Copy, Check, MessageCircle, Eye, Clock, AlertTriangle, Music } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSoloShareBySlug, submitSoloShareRating } from '@/hooks/useSoloShares';
 import { getEmbedUrl } from '@/lib/videoEmbed';
@@ -48,7 +48,7 @@ export default function SoloSharePage() {
   }, [share, user]);
 
   const embedUrl = useMemo(
-    () => (share ? getEmbedUrl(share.video_url, share.platform) : null),
+    () => (share ? getEmbedUrl(share.video_url, share.platform, share.start_offset_seconds || 0) : null),
     [share]
   );
 
@@ -179,6 +179,30 @@ export default function SoloSharePage() {
             <span className="text-[10px] uppercase tracking-[0.18em] text-white/40">Room Code</span>
             <span className="font-mono text-sm font-bold tracking-[0.2em]">{share.slug.toUpperCase()}</span>
           </div>
+
+          {/* Session badges */}
+          {(share.timer_minutes || share.song_name || share.is_overtime) && (
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              {share.timer_minutes && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] uppercase tracking-[0.18em] text-white/60">
+                  <Clock className="w-3 h-3 text-amber-400" />
+                  {share.timer_minutes >= 60 ? `${share.timer_minutes / 60}h` : `${share.timer_minutes}m`} session
+                </span>
+              )}
+              {share.is_overtime && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-300 text-[10px] uppercase tracking-[0.18em] font-bold">
+                  <AlertTriangle className="w-3 h-3" />
+                  Overtime
+                </span>
+              )}
+              {share.song_name && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] uppercase tracking-[0.18em] text-white/60">
+                  <Music className="w-3 h-3 text-amber-400" />
+                  {share.song_name}
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Player */}
