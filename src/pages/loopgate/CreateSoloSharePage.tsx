@@ -267,34 +267,6 @@ export default function CreateSoloSharePage() {
       {/* ====== osu!-STYLE LOBBY (timer not yet locked) ====== */}
       {lobbyOpen && <OsuLobby user={user} profile={profile} onPick={startTimer} />}
 
-      {/* Rotate-to-landscape hint for phones in portrait */}
-      {lobbyOpen && rotateHintOpen && (
-        <div className="fixed inset-0 z-[80] bg-black/50 backdrop-blur-md flex flex-col items-center justify-center gap-4 portrait:flex landscape:hidden sm:hidden px-8 text-center">
-          <button
-            onClick={dismissRotateHint}
-            aria-label="Dismiss"
-            className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/10 backdrop-blur-xl border border-white/15 flex items-center justify-center active:scale-90 transition-transform"
-            style={{ top: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}
-          >
-            <X className="w-4 h-4" />
-          </button>
-          <div className="w-16 h-16 rounded-2xl border border-white/15 bg-white/[0.06] flex items-center justify-center animate-pulse">
-            <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <rect x="3" y="6" width="18" height="12" rx="2" />
-              <path d="M7 3l-2 2 2 2" />
-              <path d="M17 21l2-2-2-2" />
-            </svg>
-          </div>
-          <div style={teko} className="text-[42px] leading-none">ROTATE YOUR PHONE</div>
-          <div className="text-[13px] text-white/60 max-w-[260px]">This lobby is designed for landscape. Turn your device sideways for the best view.</div>
-          <button
-            onClick={dismissRotateHint}
-            className="mt-2 px-5 h-9 rounded-full bg-white text-black text-[12px] font-semibold active:opacity-80 transition-opacity"
-          >
-            GOT IT
-          </button>
-        </div>
-      )}
 
       <main className={`relative z-10 max-w-5xl mx-auto px-3 sm:px-5 pb-40 ${lobbyOpen ? 'hidden' : ''}`} style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 16px)' }}>
 
