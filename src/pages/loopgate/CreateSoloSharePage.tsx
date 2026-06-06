@@ -203,8 +203,8 @@ export default function CreateSoloSharePage() {
 
       {/* Floating close */}
       <button
-        onClick={() => navigate(-1)}
-        className="fixed top-3 left-3 z-30 w-10 h-10 rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-white/10 flex items-center justify-center active:scale-90 transition-transform"
+        onClick={() => navigate('/solo')}
+        className="fixed top-3 right-3 z-30 w-10 h-10 rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-white/10 flex items-center justify-center active:scale-90 transition-transform"
         style={{ top: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}
       >
         <X className="w-5 h-5" />
