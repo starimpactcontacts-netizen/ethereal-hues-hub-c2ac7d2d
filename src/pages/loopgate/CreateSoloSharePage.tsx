@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Loader2, Music, Film, Link as LinkIcon, Zap, AlertTriangle, Upload, Play, Flame, X, Check } from 'lucide-react';
+import { ArrowLeft, Loader2, Music, Film, Link as LinkIcon, Zap, AlertTriangle, Upload, Play, Flame, X, Check, Timer as TimerIcon, Clock, Hourglass, ChevronRight, User } from 'lucide-react';
 import { SiTiktok, SiInstagram, SiYoutube } from '@icons-pack/react-simple-icons';
 import { useAuth } from '@/hooks/useAuth';
 import { createSoloShare } from '@/hooks/useSoloShares';
@@ -24,6 +24,12 @@ const TIMERS: { value: Timer; label: string; sub: string; tone: string }[] = [
   { value: 60,  label: '1H',  sub: 'STANDARD',  tone: '#fbbf24' },
   { value: 180, label: '3H',  sub: 'CINEMATIC', tone: '#8b5cf6' },
 ];
+
+const TIMER_ICONS: Record<Timer, typeof TimerIcon> = {
+  30: TimerIcon,
+  60: Clock,
+  180: Hourglass,
+};
 
 function fmtRemaining(ms: number) {
   if (ms <= 0) return '00:00';
@@ -204,58 +210,19 @@ export default function CreateSoloSharePage() {
         <X className="w-5 h-5" />
       </button>
 
-      <main className="relative z-10 max-w-xl mx-auto px-4 pb-40" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 24px)' }}>
+      {/* ====== osu!-STYLE LOBBY (timer not yet locked) ====== */}
+      {lobbyOpen && <OsuLobby user={user} profile={profile} onPick={startTimer} />}
 
-        {/* ====== HERO HUD ====== */}
+      <main className={`relative z-10 max-w-xl mx-auto px-4 pb-40 ${lobbyOpen ? 'hidden' : ''}`} style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 24px)' }}>
+
+        {/* ====== TIMER HUD (after lock) ====== */}
         <div className="text-center pt-2 pb-6">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/10 mb-3">
             <GateIcon size={11} className="text-amber-400" />
             <span className="text-[9px] font-extrabold uppercase tracking-[0.3em] text-white/70" style={teko}>SOLO · LOBBY</span>
           </div>
-          {lobbyOpen ? (
-            <>
-              <h1 className="text-[68px] leading-[0.85] font-black tracking-tight" style={teko}>
-                PICK YOUR<br/>
-                <span className="bg-gradient-to-b from-amber-300 to-amber-600 bg-clip-text text-transparent">CLOCK.</span>
-              </h1>
-              <p className="text-[12px] text-white/40 mt-3 uppercase tracking-[0.2em]" style={teko}>Tap a tile to lock in</p>
-            </>
-          ) : (
-            <LobbyTimerHud remainingMs={remaining} overtime={overtime} pct={elapsedPct} tone={tonePicked} timerLabel={TIMERS.find(t=>t.value===timer)?.sub || ''} />
-          )}
+          <LobbyTimerHud remainingMs={remaining} overtime={overtime} pct={elapsedPct} tone={tonePicked} timerLabel={TIMERS.find(t=>t.value===timer)?.sub || ''} />
         </div>
-
-        {/* ====== TIMER PLAY TILES (only before lock) ====== */}
-        {lobbyOpen && (
-          <div className="grid grid-cols-3 gap-2.5 mb-8">
-            {TIMERS.map((t, idx) => (
-              <motion.button
-                key={t.value}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.06 }}
-                onClick={() => startTimer(t.value)}
-                className="group relative aspect-[3/4] rounded-3xl overflow-hidden active:scale-[0.94] transition-transform"
-                style={{
-                  background: `linear-gradient(180deg, ${t.tone}38 0%, ${t.tone}08 60%, rgba(0,0,0,0) 100%)`,
-                  border: `1px solid ${t.tone}55`,
-                  boxShadow: `0 8px 0 0 ${t.tone}22, 0 18px 40px -10px ${t.tone}55, inset 0 1px 0 rgba(255,255,255,0.1)`,
-                }}
-              >
-                {/* play icon top */}
-                <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white/10 border border-white/15 flex items-center justify-center">
-                  <Play className="w-3.5 h-3.5 fill-white text-white" />
-                </div>
-                <div className="absolute inset-x-0 bottom-0 p-3 text-left">
-                  <div className="text-[44px] leading-none font-black" style={{ ...teko, color: t.tone }}>{t.label}</div>
-                  <div className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-white/80 mt-1" style={teko}>{t.sub}</div>
-                </div>
-                {/* gloss */}
-                <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
-              </motion.button>
-            ))}
-          </div>
-        )}
 
         {/* ====== LIBRARY CAROUSELS ====== */}
         {!lobbyOpen && (
@@ -557,3 +524,189 @@ function LobbyTimerHud({ remainingMs, overtime, pct, tone, timerLabel }: { remai
 /* -------- Visual bits -------- */
 
 /* (legacy TimerPill / TimerRing removed — replaced by LobbyTimerHud) */
+
+/* ====== osu!-style LOBBY ====== */
+function OsuLobby({ user, profile, onPick }: { user: any; profile: any; onPick: (t: Timer) => void }) {
+  const [hover, setHover] = useState<Timer | null>(null);
+  const tone = TIMERS.find((t) => t.value === hover)?.tone || '#fbbf24';
+
+  return (
+    <div className="fixed inset-0 z-10 overflow-hidden bg-black">
+      {/* Cinematic background wash */}
+      <div className="absolute inset-0">
+        <motion.div
+          animate={{ backgroundColor: `${tone}1a` }}
+          transition={{ duration: 0.6 }}
+          className="absolute -inset-32 blur-[120px]"
+          style={{ backgroundColor: `${tone}1a` }}
+        />
+        <div
+          className="absolute inset-0 opacity-[0.08]"
+          style={{
+            backgroundImage:
+              'linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)',
+            backgroundSize: '40px 40px',
+            maskImage: 'radial-gradient(ellipse at 30% 50%, black, transparent 75%)',
+          }}
+        />
+        {/* film grain vignette */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-black/80" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black" />
+      </div>
+
+      {/* Top-left guest / user chip — osu!-style */}
+      <div
+        className="absolute z-20 left-4 top-0 flex items-center gap-3"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 14px)' }}
+      >
+        <div className="w-11 h-11 rounded-full bg-white/[0.06] border border-white/15 backdrop-blur-xl flex items-center justify-center overflow-hidden">
+          {profile?.avatar_url ? (
+            <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <User className="w-5 h-5 text-white/60" />
+          )}
+        </div>
+        <div className="leading-tight">
+          <p className="text-[15px] font-bold text-white" style={teko}>{profile?.username || 'GUEST'}</p>
+          <p className="text-[9px] uppercase tracking-[0.25em] text-white/40">
+            {user ? 'READY TO DROP' : 'Sign in to publish'}
+          </p>
+        </div>
+      </div>
+
+      {/* Top-center status text */}
+      <div
+        className="absolute z-20 inset-x-0 flex flex-col items-center text-center px-4"
+        style={{ top: 'calc(env(safe-area-inset-top, 0px) + 18px)' }}
+      >
+        <p className="text-[12px] sm:text-[13px] text-white/80 font-semibold" style={teko}>
+          You have a fresh slot — pick your clock.
+        </p>
+        <p className="text-[10px] text-white/35 uppercase tracking-[0.25em] mt-0.5" style={teko}>
+          Solo Mode · Soft-lock timer
+        </p>
+      </div>
+
+      {/* MAIN STAGE — circle on left, pills cascading right */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="w-full max-w-[920px] mx-auto px-4 grid grid-cols-12 items-center gap-2 pointer-events-auto">
+
+          {/* The disc */}
+          <div className="col-span-5 sm:col-span-5 flex items-center justify-center">
+            <motion.div
+              initial={{ scale: 0.6, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', stiffness: 140, damping: 14 }}
+              className="relative"
+            >
+              {/* outer halo rings */}
+              <motion.div
+                animate={{ scale: [1, 1.08, 1], opacity: [0.4, 0.1, 0.4] }}
+                transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+                className="absolute inset-0 rounded-full"
+                style={{ boxShadow: `0 0 0 12px ${tone}22, 0 0 80px 10px ${tone}55` }}
+              />
+              <div
+                className="relative w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] rounded-full flex items-center justify-center"
+                style={{
+                  background:
+                    'radial-gradient(circle at 35% 30%, #1a1a1a 0%, #050505 70%)',
+                  border: '4px solid rgba(255,255,255,0.85)',
+                  boxShadow:
+                    'inset 0 0 60px rgba(0,0,0,0.8), 0 30px 60px -10px rgba(0,0,0,0.9)',
+                }}
+              >
+                {/* triangle texture (osu! style) */}
+                <div
+                  className="absolute inset-0 rounded-full opacity-[0.07] overflow-hidden"
+                  style={{
+                    backgroundImage:
+                      "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><polygon points='20,4 36,32 4,32' fill='white'/></svg>\")",
+                    backgroundSize: '40px 40px',
+                  }}
+                />
+                <div className="text-center leading-none">
+                  <div className="text-white font-black tracking-tight" style={{ ...teko, fontSize: 90 }}>
+                    solo<span className="text-amber-400">!</span>
+                  </div>
+                  <div className="text-[9px] uppercase tracking-[0.4em] text-white/40 mt-1" style={teko}>
+                    LOOPGATE
+                  </div>
+                </div>
+                {/* gloss */}
+                <div
+                  className="absolute inset-2 rounded-full pointer-events-none"
+                  style={{
+                    background:
+                      'linear-gradient(160deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 35%)',
+                  }}
+                />
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Pill menu */}
+          <div className="col-span-7 sm:col-span-7 flex flex-col gap-2 sm:gap-2.5 -ml-6 sm:-ml-10">
+            {TIMERS.map((t, idx) => {
+              const Icon = TIMER_ICONS[t.value];
+              const isHover = hover === t.value;
+              return (
+                <motion.button
+                  key={t.value}
+                  initial={{ x: 120, opacity: 0 }}
+                  animate={{ x: isHover ? -10 : 0, opacity: 1 }}
+                  transition={{ delay: 0.15 + idx * 0.08, type: 'spring', stiffness: 200, damping: 18 }}
+                  onMouseEnter={() => setHover(t.value)}
+                  onMouseLeave={() => setHover(null)}
+                  onTouchStart={() => setHover(t.value)}
+                  onClick={() => onPick(t.value)}
+                  className="group relative w-full h-[58px] sm:h-[68px] rounded-l-full rounded-r-2xl flex items-center justify-between pl-10 pr-4 sm:pl-14 sm:pr-5 overflow-hidden active:scale-[0.97] transition-transform"
+                  style={{
+                    background: `linear-gradient(90deg, ${t.tone}cc 0%, ${t.tone}88 60%, ${t.tone}55 100%)`,
+                    boxShadow: `inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 30px -10px ${t.tone}88, 0 4px 0 0 rgba(0,0,0,0.4)`,
+                  }}
+                >
+                  {/* triangle texture */}
+                  <div
+                    className="absolute inset-0 opacity-[0.15] pointer-events-none"
+                    style={{
+                      backgroundImage:
+                        "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28'><polygon points='14,3 25,23 3,23' fill='white'/></svg>\")",
+                      backgroundSize: '28px 28px',
+                    }}
+                  />
+                  <div className="relative flex items-center gap-3">
+                    <span
+                      className="text-white font-black"
+                      style={{ ...teko, fontSize: 38, lineHeight: 1, textShadow: '0 2px 0 rgba(0,0,0,0.35)' }}
+                    >
+                      {t.label}
+                    </span>
+                    <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-[0.25em] text-white/90" style={teko}>
+                      {t.sub}
+                    </span>
+                  </div>
+                  <div className="relative flex items-center gap-2 text-white/90">
+                    <Icon className="w-5 h-5" />
+                    <ChevronRight className="w-5 h-5 -ml-1 opacity-70" />
+                  </div>
+                  {/* gloss top */}
+                  <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
+                </motion.button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom-left footer chip (osu!-style "ppy powered") */}
+      <div
+        className="absolute z-20 left-4 text-left"
+        style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 14px)' }}
+      >
+        <p className="text-[10px] font-bold text-white/50 leading-tight" style={teko}>LOOPGATE · SOLO LOBBY</p>
+        <p className="text-[9px] text-white/25 uppercase tracking-[0.25em]">soft-lock · overtime allowed</p>
+      </div>
+    </div>
+  );
+}
