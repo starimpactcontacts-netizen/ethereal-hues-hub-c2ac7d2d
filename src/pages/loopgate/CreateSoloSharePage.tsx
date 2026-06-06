@@ -338,7 +338,7 @@ export default function CreateSoloSharePage() {
               overtime={overtime}
               remainingMs={remaining}
               timerLabel={TIMERS.find(t=>t.value===timer)?.sub || ''}
-              onCancel={() => navigate('/solo')}
+              onCancel={() => { if (user) clearSoloDraft(user.id); navigate('/solo'); }}
               packs={packs}
               songs={songs}
               libLoading={libLoading}
