@@ -350,6 +350,8 @@ export default function CreateSoloSharePage() {
               togglePreview={togglePreview}
               onPublish={handlePublish}
               canPublish={!!videoUrl.trim()}
+              startOffset={startOffset}
+              setStartOffset={setStartOffset}
             />
           </motion.div>
         )}
