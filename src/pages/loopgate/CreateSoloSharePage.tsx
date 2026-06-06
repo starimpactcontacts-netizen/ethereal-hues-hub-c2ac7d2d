@@ -232,14 +232,16 @@ export default function CreateSoloSharePage() {
         }} />
       </div>
 
-      {/* Floating close */}
-      <button
-        onClick={() => navigate('/solo')}
-        className="fixed top-3 right-3 z-30 w-10 h-10 rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-white/10 flex items-center justify-center active:scale-90 transition-transform"
-        style={{ top: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}
-      >
-        <X className="w-5 h-5" />
-      </button>
+      {/* Floating close (only on lobby; in-edit cancel lives on the red title-bar dot) */}
+      {lobbyOpen && (
+        <button
+          onClick={() => navigate('/solo')}
+          className="fixed top-3 right-3 z-30 w-10 h-10 rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-white/10 flex items-center justify-center active:scale-90 transition-transform"
+          style={{ top: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}
+        >
+          <X className="w-5 h-5" />
+        </button>
+      )}
 
       {/* ====== osu!-STYLE LOBBY (timer not yet locked) ====== */}
       {lobbyOpen && <OsuLobby user={user} profile={profile} onPick={startTimer} />}
@@ -273,7 +275,7 @@ export default function CreateSoloSharePage() {
         </div>
       )}
 
-      <main className={`relative z-10 max-w-xl mx-auto px-4 pb-40 ${lobbyOpen ? 'hidden' : ''}`} style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 24px)' }}>
+      <main className={`relative z-10 max-w-5xl mx-auto px-3 sm:px-5 pb-40 ${lobbyOpen ? 'hidden' : ''}`} style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 16px)' }}>
 
         {/* ====== LIBRARY CAROUSELS ====== */}
         {!lobbyOpen && (
@@ -306,6 +308,7 @@ export default function CreateSoloSharePage() {
               overtime={overtime}
               remainingMs={remaining}
               timerLabel={TIMERS.find(t=>t.value===timer)?.sub || ''}
+              onCancel={() => navigate('/solo')}
             />
 
             {/* Scenepacks */}
