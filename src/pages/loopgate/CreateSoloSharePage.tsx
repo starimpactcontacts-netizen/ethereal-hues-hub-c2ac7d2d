@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Loader2, Music, Film, Link as LinkIcon, Zap, AlertTriangle, Upload, Play, Flame, X, Check, Timer as TimerIcon, Clock, Hourglass, ChevronRight, User, MousePointer2, Scissors, Type as TypeIcon, Wand2, Brush, Eraser, Layers, Pause, SkipBack, SkipForward, Volume2, Settings2, Maximize2, Magnet } from 'lucide-react';
+import { ArrowLeft, Loader2, Music, Film, Link as LinkIcon, Zap, AlertTriangle, Upload, Play, Flame, X, Check, Timer as TimerIcon, Clock, Hourglass, ChevronRight, User, MousePointer2, Scissors, Type as TypeIcon, Wand2, Brush, Eraser, Layers, Pause, SkipBack, SkipForward, Volume2, Settings2, Maximize2, Magnet, Square } from 'lucide-react';
 import { SiTiktok, SiInstagram, SiYoutube } from '@icons-pack/react-simple-icons';
 import { useAuth } from '@/hooks/useAuth';
 import { createSoloShare } from '@/hooks/useSoloShares';
@@ -68,6 +68,27 @@ export default function CreateSoloSharePage() {
   const [uploadPct, setUploadPct] = useState(0);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Song preview audio
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [previewingId, setPreviewingId] = useState<string | null>(null);
+  const togglePreview = (s: any) => {
+    const url = s.preview_url || s.audio_url;
+    if (!url) { toast.error('No preview available'); return; }
+    if (!audioRef.current) audioRef.current = new Audio();
+    const a = audioRef.current;
+    if (previewingId === s.id) {
+      a.pause();
+      setPreviewingId(null);
+      return;
+    }
+    a.src = url;
+    a.currentTime = 0;
+    a.volume = 0.7;
+    a.play().then(() => setPreviewingId(s.id)).catch(() => toast.error('Could not play preview'));
+    a.onended = () => setPreviewingId((p) => (p === s.id ? null : p));
+  };
+  useEffect(() => () => { audioRef.current?.pause(); }, []);
 
   // Rotate-to-landscape one-time hint
   const [rotateHintOpen, setRotateHintOpen] = useState(() => {
