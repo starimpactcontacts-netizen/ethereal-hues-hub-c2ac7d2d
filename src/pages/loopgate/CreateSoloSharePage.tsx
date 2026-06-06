@@ -210,58 +210,19 @@ export default function CreateSoloSharePage() {
         <X className="w-5 h-5" />
       </button>
 
-      <main className="relative z-10 max-w-xl mx-auto px-4 pb-40" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 24px)' }}>
+      {/* ====== osu!-STYLE LOBBY (timer not yet locked) ====== */}
+      {lobbyOpen && <OsuLobby user={user} profile={profile} onPick={startTimer} />}
 
-        {/* ====== HERO HUD ====== */}
+      <main className={`relative z-10 max-w-xl mx-auto px-4 pb-40 ${lobbyOpen ? 'hidden' : ''}`} style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 24px)' }}>
+
+        {/* ====== TIMER HUD (after lock) ====== */}
         <div className="text-center pt-2 pb-6">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/10 mb-3">
             <GateIcon size={11} className="text-amber-400" />
             <span className="text-[9px] font-extrabold uppercase tracking-[0.3em] text-white/70" style={teko}>SOLO · LOBBY</span>
           </div>
-          {lobbyOpen ? (
-            <>
-              <h1 className="text-[68px] leading-[0.85] font-black tracking-tight" style={teko}>
-                PICK YOUR<br/>
-                <span className="bg-gradient-to-b from-amber-300 to-amber-600 bg-clip-text text-transparent">CLOCK.</span>
-              </h1>
-              <p className="text-[12px] text-white/40 mt-3 uppercase tracking-[0.2em]" style={teko}>Tap a tile to lock in</p>
-            </>
-          ) : (
-            <LobbyTimerHud remainingMs={remaining} overtime={overtime} pct={elapsedPct} tone={tonePicked} timerLabel={TIMERS.find(t=>t.value===timer)?.sub || ''} />
-          )}
+          <LobbyTimerHud remainingMs={remaining} overtime={overtime} pct={elapsedPct} tone={tonePicked} timerLabel={TIMERS.find(t=>t.value===timer)?.sub || ''} />
         </div>
-
-        {/* ====== TIMER PLAY TILES (only before lock) ====== */}
-        {lobbyOpen && (
-          <div className="grid grid-cols-3 gap-2.5 mb-8">
-            {TIMERS.map((t, idx) => (
-              <motion.button
-                key={t.value}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.06 }}
-                onClick={() => startTimer(t.value)}
-                className="group relative aspect-[3/4] rounded-3xl overflow-hidden active:scale-[0.94] transition-transform"
-                style={{
-                  background: `linear-gradient(180deg, ${t.tone}38 0%, ${t.tone}08 60%, rgba(0,0,0,0) 100%)`,
-                  border: `1px solid ${t.tone}55`,
-                  boxShadow: `0 8px 0 0 ${t.tone}22, 0 18px 40px -10px ${t.tone}55, inset 0 1px 0 rgba(255,255,255,0.1)`,
-                }}
-              >
-                {/* play icon top */}
-                <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white/10 border border-white/15 flex items-center justify-center">
-                  <Play className="w-3.5 h-3.5 fill-white text-white" />
-                </div>
-                <div className="absolute inset-x-0 bottom-0 p-3 text-left">
-                  <div className="text-[44px] leading-none font-black" style={{ ...teko, color: t.tone }}>{t.label}</div>
-                  <div className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-white/80 mt-1" style={teko}>{t.sub}</div>
-                </div>
-                {/* gloss */}
-                <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
-              </motion.button>
-            ))}
-          </div>
-        )}
 
         {/* ====== LIBRARY CAROUSELS ====== */}
         {!lobbyOpen && (
