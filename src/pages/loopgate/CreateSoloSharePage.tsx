@@ -318,6 +318,8 @@ export default function CreateSoloSharePage() {
               setSong={setSong}
               previewingId={previewingId}
               togglePreview={togglePreview}
+              onPublish={handlePublish}
+              canPublish={!!videoUrl.trim()}
             />
           </motion.div>
         )}
