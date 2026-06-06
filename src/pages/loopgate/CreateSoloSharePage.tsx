@@ -318,28 +318,12 @@ export default function CreateSoloSharePage() {
               setSong={setSong}
               previewingId={previewingId}
               togglePreview={togglePreview}
+              onPublish={handlePublish}
+              canPublish={!!videoUrl.trim()}
             />
           </motion.div>
         )}
       </main>
-
-      {/* ====== STICKY PUBLISH ====== */}
-      {!lobbyOpen && (
-        <div className="fixed inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black via-black/95 to-transparent pt-8 pb-4 px-4" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}>
-          <button
-            onClick={handlePublish}
-            disabled={!videoUrl.trim()}
-            className="w-full max-w-xl mx-auto h-16 rounded-3xl flex items-center justify-center gap-2 active:scale-[0.97] transition-transform disabled:opacity-40 disabled:active:scale-100 relative overflow-hidden"
-            style={{
-              background: overtime ? 'linear-gradient(180deg, #f59e0b, #b45309)' : 'linear-gradient(180deg, #fde047, #f59e0b)',
-              color: '#000',
-              boxShadow: '0 8px 0 0 #92400e, 0 18px 40px -8px rgba(251,191,36,0.6), inset 0 1px 0 rgba(255,255,255,0.4)',
-            }}
-          >
-          <span className="text-[24px] font-black uppercase" style={teko}>{overtime ? 'SHIP OVERTIME' : 'PUBLISH SOLO'}</span>
-          </button>
-        </div>
-      )}
     </div>
   );
 }
@@ -558,6 +542,7 @@ function NLECockpit({
   tone, videoUrl, uploading, uploadPct, platform, onPick, onReplace,
   title, setTitle, caption, setCaption, overtime, remainingMs, timerLabel, onCancel,
   packs, songs, libLoading, scenepack, setScenepack, song, setSong, previewingId, togglePreview,
+  onPublish, canPublish,
 }: {
   tone: string;
   videoUrl: string;
@@ -583,6 +568,8 @@ function NLECockpit({
   setSong: (s: LibrarySong | null) => void;
   previewingId: string | null;
   togglePreview: (s: LibrarySong) => void;
+  onPublish: () => void;
+  canPublish: boolean;
 }) {
   const hasVid = !!videoUrl && platform === 'bunny' && !uploading;
   const timerDisplay = overtime ? `+${fmtRemaining(-remainingMs)}` : fmtRemaining(remainingMs);
@@ -979,6 +966,20 @@ function NLECockpit({
             <span>Clock expired — ships flagged <b>OVERTIME</b>.</span>
           </div>
         )}
+        <button
+          type="button"
+          onClick={onPublish}
+          disabled={!canPublish}
+          className="col-span-2 h-11 rounded-xl flex items-center justify-center gap-2 active:scale-[0.97] transition-transform disabled:opacity-30 disabled:active:scale-100 disabled:cursor-not-allowed"
+          style={{
+            background: overtime ? 'linear-gradient(180deg, #a855f7, #7e22ce)' : 'linear-gradient(180deg, #c084fc, #a855f7)',
+            color: '#fff',
+            boxShadow: '0 4px 0 0 #6b21a8, 0 8px 20px -4px rgba(168,85,247,0.5), inset 0 1px 0 rgba(255,255,255,0.25)',
+          }}
+        >
+          <Zap className="w-4 h-4" />
+          <span className="text-[18px] font-black uppercase" style={teko}>{overtime ? 'SHIP OVERTIME' : 'PUBLISH SOLO'}</span>
+        </button>
       </div>
     </div>
   );
