@@ -335,6 +335,8 @@ export default function App() {
             <Route path="/u/:username" element={<UsernameLookupPage />} />
             <Route path="/start" element={<StartPage />} />
             <Route path="/auth/discord/callback" element={<DiscordCallbackPage />} />
+            {/* Public Solo Share page — no auth required, optimized for viral sharing */}
+            <Route path="/s/:slug" element={<SoloSharePage />} />
             
             {/* Guest-accessible routes (can browse, need login to participate) */}
             <Route element={
@@ -355,6 +357,8 @@ export default function App() {
               <Route path="/index" element={<IndexPage />} />
               <Route path="/arenas" element={<ArenasPage />} />
               <Route path="/arena" element={<ArenaPage />} />
+              <Route path="/solo" element={<SoloHubPage />} />
+              <Route path="/solo/create" element={<CreateSoloSharePage />} />
               <Route path="/collabs" element={<CollabsPage />} />
               <Route path="/collabs/create" element={<CreateCollabPage />} />
               <Route path="/collab/:id" element={<CollabDetailPage />} />
