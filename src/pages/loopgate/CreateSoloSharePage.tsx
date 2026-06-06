@@ -966,6 +966,20 @@ function NLECockpit({
             <span>Clock expired — ships flagged <b>OVERTIME</b>.</span>
           </div>
         )}
+        <button
+          type="button"
+          onClick={onPublish}
+          disabled={!canPublish}
+          className="col-span-2 h-11 rounded-xl flex items-center justify-center gap-2 active:scale-[0.97] transition-transform disabled:opacity-30 disabled:active:scale-100 disabled:cursor-not-allowed"
+          style={{
+            background: overtime ? 'linear-gradient(180deg, #a855f7, #7e22ce)' : 'linear-gradient(180deg, #c084fc, #a855f7)',
+            color: '#fff',
+            boxShadow: '0 4px 0 0 #6b21a8, 0 8px 20px -4px rgba(168,85,247,0.5), inset 0 1px 0 rgba(255,255,255,0.25)',
+          }}
+        >
+          <Zap className="w-4 h-4" />
+          <span className="text-[18px] font-black uppercase" style={teko}>{overtime ? 'SHIP OVERTIME' : 'PUBLISH SOLO'}</span>
+        </button>
       </div>
     </div>
   );
