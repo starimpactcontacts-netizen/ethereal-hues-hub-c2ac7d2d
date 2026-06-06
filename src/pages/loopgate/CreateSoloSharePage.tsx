@@ -309,95 +309,16 @@ export default function CreateSoloSharePage() {
               remainingMs={remaining}
               timerLabel={TIMERS.find(t=>t.value===timer)?.sub || ''}
               onCancel={() => navigate('/solo')}
+              packs={packs}
+              songs={songs}
+              libLoading={libLoading}
+              scenepack={scenepack}
+              setScenepack={setScenepack}
+              song={song}
+              setSong={setSong}
+              previewingId={previewingId}
+              togglePreview={togglePreview}
             />
-
-            {/* Scenepacks */}
-            <CarouselRow
-              label="SCENEPACKS"
-              accent="#8b5cf6"
-              count={packs.length}
-              empty={libLoading ? 'Loading…' : 'No packs available'}
-            >
-              {packs.map((p) => {
-                const active = scenepack?.id === p.id;
-                return (
-                  <button
-                    key={p.id}
-                    onClick={() => setScenepack(active ? null : p)}
-                    className="snap-start shrink-0 relative w-[120px] aspect-[3/4] rounded-2xl overflow-hidden active:scale-[0.94] transition-transform"
-                    style={{
-                      border: active ? '2px solid #8b5cf6' : '1px solid rgba(255,255,255,0.08)',
-                      boxShadow: active ? '0 0 0 4px rgba(139,92,246,0.25), 0 10px 30px -10px rgba(139,92,246,0.6)' : '0 6px 20px -10px rgba(0,0,0,0.8)',
-                    }}
-                  >
-                    {p.thumbnail_url ? (
-                      <img src={p.thumbnail_url} alt={p.title} className="absolute inset-0 w-full h-full object-cover" />
-                    ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/40 to-black flex items-center justify-center">
-                        <Film className="w-6 h-6 text-white/30" />
-                      </div>
-                    )}
-                    <div className="absolute inset-x-0 bottom-0 p-2 pt-8 bg-gradient-to-t from-black/95 via-black/40 to-transparent">
-                      <p className="text-[11px] font-bold text-white leading-tight line-clamp-2">{p.title}</p>
-                    </div>
-                    {active && (
-                      <div className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center">
-                        <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </CarouselRow>
-
-            {/* Songs */}
-            <CarouselRow
-              label="TRACKS"
-              accent="#fbbf24"
-              count={songs.length}
-              empty={libLoading ? 'Loading…' : 'No tracks available'}
-            >
-              {songs.map((s) => {
-                const active = song?.id === s.id;
-                const isPlaying = previewingId === s.id;
-                return (
-                  <button
-                    key={s.id}
-                    onClick={() => setSong(active ? null : s)}
-                    className="snap-start shrink-0 w-[140px] rounded-2xl overflow-hidden active:scale-[0.94] transition-transform text-left"
-                    style={{
-                      border: active ? '2px solid #fbbf24' : '1px solid rgba(255,255,255,0.08)',
-                      background: active ? 'rgba(251,191,36,0.08)' : 'rgba(255,255,255,0.03)',
-                      boxShadow: active ? '0 0 0 4px rgba(251,191,36,0.25), 0 10px 30px -10px rgba(251,191,36,0.6)' : '0 6px 20px -10px rgba(0,0,0,0.8)',
-                    }}
-                  >
-                    <div className="relative aspect-square bg-gradient-to-br from-amber-900/40 to-black overflow-hidden">
-                      {(s as any).cover_url ? (
-                        <img src={(s as any).cover_url} alt={s.song_name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center"><Music className="w-7 h-7 text-amber-400/60" /></div>
-                      )}
-                      <div
-                        role="button"
-                        tabIndex={0}
-                        onClick={(e) => { e.stopPropagation(); togglePreview(s); }}
-                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); togglePreview(s); } }}
-                        className="absolute bottom-1.5 right-1.5 w-8 h-8 rounded-full bg-black/80 backdrop-blur flex items-center justify-center border border-white/15 hover:scale-110 active:scale-95 transition-transform cursor-pointer"
-                      >
-                        {isPlaying
-                          ? <Pause className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                          : <Play className="w-3.5 h-3.5 fill-amber-400 text-amber-400 ml-0.5" />}
-                      </div>
-                    </div>
-                    <div className="p-2">
-                      <p className="text-[11px] font-bold text-white truncate">{s.song_name}</p>
-                      <p className="text-[10px] text-white/50 truncate">{(s as any).artist_name || 'Unknown'}</p>
-                    </div>
-                  </button>
-                );
-              })}
-            </CarouselRow>
-
           </motion.div>
         )}
       </main>
