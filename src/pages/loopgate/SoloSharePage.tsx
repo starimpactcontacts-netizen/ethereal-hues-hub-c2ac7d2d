@@ -173,6 +173,12 @@ export default function SoloSharePage() {
           {share.caption && (
             <p className="text-sm text-white/70 mt-2 whitespace-pre-wrap">{share.caption}</p>
           )}
+
+          {/* Room code pill */}
+          <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
+            <span className="text-[10px] uppercase tracking-[0.18em] text-white/40">Room Code</span>
+            <span className="font-mono text-sm font-bold tracking-[0.2em]">{share.slug.toUpperCase()}</span>
+          </div>
         </div>
 
         {/* Player */}
