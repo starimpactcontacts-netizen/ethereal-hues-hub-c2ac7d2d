@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Loader2, Music, Film, Link as LinkIcon, Zap, AlertTriangle, Upload, Play, Flame, X, Check, Timer as TimerIcon, Clock, Hourglass, ChevronRight, User } from 'lucide-react';
+import { ArrowLeft, Loader2, Music, Film, Link as LinkIcon, Zap, AlertTriangle, Upload, Play, Flame, X, Check, Timer as TimerIcon, Clock, Hourglass, ChevronRight, User, MousePointer2, Scissors, Type as TypeIcon, Wand2, Brush, Eraser, Layers, Pause, SkipBack, SkipForward, Volume2, Settings2, Maximize2, Magnet } from 'lucide-react';
 import { SiTiktok, SiInstagram, SiYoutube } from '@icons-pack/react-simple-icons';
 import { useAuth } from '@/hooks/useAuth';
 import { createSoloShare } from '@/hooks/useSoloShares';
@@ -271,76 +271,28 @@ export default function CreateSoloSharePage() {
             transition={{ delay: 0.1 }}
             className="space-y-7"
           >
-            {/* ====== DROP THE EDIT (TOP) ====== */}
-            <div className="space-y-3">
-              <div className="flex items-center px-1">
-                <span className="text-[16px] font-extrabold uppercase text-white" style={teko}>YOUR EDIT</span>
-              </div>
-
-              {(
-                <>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="video/*"
-                    className="hidden"
-                    onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }}
-                  />
-                  {!videoUrl && !uploading && (
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="w-full aspect-[16/9] rounded-3xl flex flex-col items-center justify-center gap-3 active:scale-[0.98] transition-transform relative overflow-hidden"
-                      style={{
-                        background: 'radial-gradient(circle at 50% 30%, rgba(251,191,36,0.15), rgba(0,0,0,0) 60%)',
-                        border: '2px dashed rgba(251,191,36,0.4)',
-                      }}
-                    >
-                      <div className="w-16 h-16 rounded-3xl bg-amber-400 flex items-center justify-center" style={{ boxShadow: '0 6px 0 0 #b45309, 0 14px 30px -8px rgba(251,191,36,0.5)' }}>
-                        <Upload className="w-7 h-7 text-black" strokeWidth={2.5} />
-                      </div>
-                      <div className="text-center">
-                        <p className="text-[22px] font-black uppercase text-white leading-none" style={teko}>TAP TO UPLOAD</p>
-                        <p className="text-[11px] uppercase text-white/40 mt-1" style={teko}>MP4 / MOV · {MAX_EDIT_UPLOAD_LABEL}</p>
-                      </div>
-                    </button>
-                  )}
-                  {uploading && (
-                    <div className="rounded-3xl border-2 border-amber-400/40 bg-amber-400/[0.05] p-5 space-y-3">
-                      <div className="flex items-center justify-between text-amber-400">
-                        <span className="text-[14px] font-extrabold uppercase" style={teko}>UPLOADING</span>
-                        <span className="text-[20px] font-black" style={teko}>{uploadPct}%</span>
-                      </div>
-                      <div className="h-2 rounded-full bg-white/10 overflow-hidden">
-                        <div className="h-full bg-amber-400 transition-all" style={{ width: `${uploadPct}%`, boxShadow: '0 0 12px #fbbf24' }} />
-                      </div>
-                    </div>
-                  )}
-                  {videoUrl && !uploading && platform === 'bunny' && (
-                    <div className="space-y-2">
-                      <div className="rounded-3xl overflow-hidden bg-black border-2 border-emerald-500/40 relative" style={{ aspectRatio: '9/16', maxHeight: 360 }}>
-                        <BunnyVideo src={videoUrl} className="w-full h-full object-contain" controls />
-                        <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-emerald-500 text-black text-[10px] font-black uppercase flex items-center gap-1" style={teko}>
-                          <Check className="w-3 h-3" strokeWidth={3} /> LOADED
-                        </div>
-                      </div>
-                      <button onClick={() => { setVideoUrl(''); fileInputRef.current?.click(); }} className="text-[11px] uppercase text-white/40 hover:text-amber-400" style={teko}>replace file</button>
-                    </div>
-                  )}
-                </>
-              )}
-
-              <div className="grid grid-cols-2 gap-2 pt-1">
-                <Input value={title} onChange={(e) => setTitle(e.target.value.slice(0, 80))} placeholder="Title" className="bg-white/5 border-white/10 h-11 rounded-2xl text-sm" />
-                <Input value={caption} onChange={(e) => setCaption(e.target.value.slice(0, 200))} placeholder="Caption" className="bg-white/5 border-white/10 h-11 rounded-2xl text-sm" />
-              </div>
-
-              {overtime && (
-                <div className="flex items-center gap-2 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/40 text-amber-400 text-xs">
-                  <AlertTriangle className="w-4 h-4 shrink-0" />
-                  <span>Clock expired — page ships flagged <b>OVERTIME</b>.</span>
-                </div>
-              )}
-            </div>
+            {/* ====== NLE COCKPIT — YOUR EDIT ====== */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="video/*"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }}
+            />
+            <NLECockpit
+              tone={tonePicked}
+              videoUrl={videoUrl}
+              uploading={uploading}
+              uploadPct={uploadPct}
+              platform={platform}
+              onPick={() => fileInputRef.current?.click()}
+              onReplace={() => { setVideoUrl(''); fileInputRef.current?.click(); }}
+              title={title}
+              setTitle={setTitle}
+              caption={caption}
+              setCaption={setCaption}
+              overtime={overtime}
+            />
 
             {/* Scenepacks */}
             <CarouselRow
@@ -692,6 +644,341 @@ function OsuLobby({ user, profile, onPick }: { user: any; profile: any; onPick: 
       >
         <p className="text-[12px] font-bold text-white/60 leading-tight" style={teko}>LOOPGATE SOLO LOBBY</p>
         <p className="text-[9px] text-white/30 uppercase tracking-wider">soft-lock · overtime allowed</p>
+      </div>
+    </div>
+  );
+}
+/* ====== NLE COCKPIT — AE/Premiere/Resolve x Roblox-Draw ====== */
+function NLECockpit({
+  tone, videoUrl, uploading, uploadPct, platform, onPick, onReplace,
+  title, setTitle, caption, setCaption, overtime,
+}: {
+  tone: string;
+  videoUrl: string;
+  uploading: boolean;
+  uploadPct: number;
+  platform: 'tiktok' | 'instagram' | 'youtube' | 'bunny';
+  onPick: () => void;
+  onReplace: () => void;
+  title: string;
+  setTitle: (v: string) => void;
+  caption: string;
+  setCaption: (v: string) => void;
+  overtime: boolean;
+}) {
+  const hasVid = !!videoUrl && platform === 'bunny' && !uploading;
+
+  // Roblox-draw style tool palette (cosmetic — locked, NDA: no "AI" wording)
+  const tools = [
+    { Icon: MousePointer2, label: 'SEL'  },
+    { Icon: Scissors,       label: 'CUT'  },
+    { Icon: Brush,          label: 'PNT'  },
+    { Icon: TypeIcon,       label: 'TXT'  },
+    { Icon: Wand2,          label: 'FX'   },
+    { Icon: Eraser,         label: 'ERS'  },
+    { Icon: Layers,         label: 'LYR'  },
+  ];
+
+  return (
+    <div
+      className="rounded-2xl overflow-hidden border shadow-2xl"
+      style={{
+        background: 'linear-gradient(180deg,#101012 0%,#0a0a0c 100%)',
+        borderColor: 'rgba(255,255,255,0.08)',
+        boxShadow: `0 30px 60px -20px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.03), inset 0 1px 0 rgba(255,255,255,0.04)`,
+      }}
+    >
+      {/* ===== TITLE BAR (Premiere window chrome) ===== */}
+      <div
+        className="flex items-center gap-2 px-3 h-9 border-b"
+        style={{ background: 'linear-gradient(180deg,#1a1a1d,#131316)', borderColor: 'rgba(255,255,255,0.06)' }}
+      >
+        <div className="flex gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#ff5f57' }} />
+          <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#febc2e' }} />
+          <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#28c840' }} />
+        </div>
+        <div className="flex items-center gap-1.5 ml-2">
+          <span
+            className="w-1.5 h-1.5 rounded-full animate-pulse"
+            style={{ background: tone, boxShadow: `0 0 8px ${tone}` }}
+          />
+          <span className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-white/80" style={teko}>
+            YOUR_EDIT.PROJ
+          </span>
+        </div>
+        <div className="ml-auto flex items-center gap-2 text-white/40">
+          <Settings2 className="w-3.5 h-3.5" />
+          <Maximize2 className="w-3.5 h-3.5" />
+        </div>
+      </div>
+
+      {/* ===== MENU STRIP ===== */}
+      <div
+        className="flex items-center gap-4 px-3 h-7 border-b text-[10px] uppercase tracking-[0.18em] text-white/45 font-semibold"
+        style={{ background: '#0d0d10', borderColor: 'rgba(255,255,255,0.05)', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}
+      >
+        <span className="text-white/70">FILE</span>
+        <span>EDIT</span>
+        <span>CLIP</span>
+        <span>SEQUENCE</span>
+        <span>EFFECT</span>
+        <span className="ml-auto" style={{ color: tone }}>● REC</span>
+      </div>
+
+      {/* ===== MAIN STAGE: tools rail + program monitor ===== */}
+      <div className="flex" style={{ background: '#08080a' }}>
+        {/* Tool rail (Roblox-draw chunky buttons) */}
+        <div
+          className="flex flex-col gap-1.5 p-2 border-r"
+          style={{ background: 'linear-gradient(180deg,#141417,#0e0e10)', borderColor: 'rgba(255,255,255,0.06)' }}
+        >
+          {tools.map((t, i) => {
+            const active = i === 0;
+            return (
+              <button
+                key={t.label}
+                type="button"
+                className="w-9 h-9 rounded-lg flex flex-col items-center justify-center transition-transform active:scale-90 relative"
+                style={{
+                  background: active ? `${tone}26` : 'rgba(255,255,255,0.04)',
+                  border: active ? `1px solid ${tone}` : '1px solid rgba(255,255,255,0.06)',
+                  boxShadow: active ? `0 0 0 2px ${tone}33, inset 0 1px 0 rgba(255,255,255,0.08)` : 'inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 0 rgba(0,0,0,0.5)',
+                  color: active ? tone : 'rgba(255,255,255,0.55)',
+                }}
+              >
+                <t.Icon className="w-4 h-4" strokeWidth={2.2} />
+                <span className="text-[7px] font-black tracking-wider mt-0.5" style={teko}>{t.label}</span>
+              </button>
+            );
+          })}
+          <div className="h-px my-1" style={{ background: 'rgba(255,255,255,0.06)' }} />
+          {/* Color chip — Roblox palette nod */}
+          <div className="w-9 h-9 rounded-lg p-1 grid grid-cols-2 gap-0.5" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <span className="rounded-sm" style={{ background: tone }} />
+            <span className="rounded-sm" style={{ background: '#fbbf24' }} />
+            <span className="rounded-sm" style={{ background: '#22d3ee' }} />
+            <span className="rounded-sm" style={{ background: '#ffffff' }} />
+          </div>
+        </div>
+
+        {/* Program Monitor */}
+        <div className="flex-1 min-w-0 p-2.5">
+          {/* monitor header tabs */}
+          <div className="flex items-center gap-1 mb-2">
+            <span className="px-2 h-5 rounded-t-md text-[9px] font-extrabold uppercase tracking-wider flex items-center" style={{ ...teko, background: '#1a1a1d', color: tone, border: `1px solid ${tone}55`, borderBottom: 'none' }}>
+              PROGRAM
+            </span>
+            <span className="px-2 h-5 text-[9px] font-bold uppercase tracking-wider flex items-center text-white/35" style={teko}>SOURCE</span>
+            <span className="px-2 h-5 text-[9px] font-bold uppercase tracking-wider flex items-center text-white/35" style={teko}>LUMETRI</span>
+            <span className="ml-auto text-[9px] text-white/30 font-mono">9:16 · 1080×1920</span>
+          </div>
+
+          {/* The canvas / dropzone */}
+          {!videoUrl && !uploading && (
+            <button
+              type="button"
+              onClick={onPick}
+              className="relative w-full aspect-[16/10] rounded-md overflow-hidden flex flex-col items-center justify-center group active:scale-[0.995] transition-transform"
+              style={{
+                background:
+                  `radial-gradient(circle at 50% 35%, ${tone}26 0%, rgba(0,0,0,0) 60%), linear-gradient(180deg,#050507,#0a0a0d)`,
+                border: `1.5px dashed ${tone}66`,
+                boxShadow: `inset 0 0 0 1px rgba(255,255,255,0.03), inset 0 0 80px ${tone}14`,
+              }}
+            >
+              {/* Resolve-style grid */}
+              <div
+                className="absolute inset-0 opacity-[0.12] pointer-events-none"
+                style={{
+                  backgroundImage:
+                    'linear-gradient(rgba(255,255,255,.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.6) 1px, transparent 1px)',
+                  backgroundSize: '24px 24px',
+                  maskImage: 'radial-gradient(ellipse at center, black 30%, transparent 75%)',
+                }}
+              />
+              {/* corner brackets */}
+              {[
+                'top-2 left-2 border-t-2 border-l-2',
+                'top-2 right-2 border-t-2 border-r-2',
+                'bottom-2 left-2 border-b-2 border-l-2',
+                'bottom-2 right-2 border-b-2 border-r-2',
+              ].map((c) => (
+                <span key={c} className={`absolute w-4 h-4 ${c}`} style={{ borderColor: tone }} />
+              ))}
+              <div
+                className="relative w-14 h-14 rounded-2xl flex items-center justify-center mb-2"
+                style={{
+                  background: `linear-gradient(180deg, ${tone}, ${tone}aa)`,
+                  boxShadow: `0 6px 0 rgba(0,0,0,0.4), 0 14px 30px -6px ${tone}66, inset 0 1px 0 rgba(255,255,255,0.35)`,
+                }}
+              >
+                <Upload className="w-6 h-6 text-black" strokeWidth={2.6} />
+              </div>
+              <p className="text-[20px] font-black uppercase text-white leading-none" style={teko}>IMPORT MEDIA</p>
+              <p className="text-[10px] uppercase tracking-[0.25em] text-white/45 mt-1.5 font-mono">
+                DRAG · OR · CLICK · MP4 / MOV · {MAX_EDIT_UPLOAD_LABEL}
+              </p>
+              {/* HUD readouts */}
+              <div className="absolute top-2 left-1/2 -translate-x-1/2 text-[9px] font-mono text-white/40 flex items-center gap-2">
+                <span style={{ color: tone }}>● LIVE</span>
+                <span>00:00:00:00</span>
+              </div>
+            </button>
+          )}
+
+          {uploading && (
+            <div
+              className="relative w-full aspect-[16/10] rounded-md flex flex-col items-center justify-center"
+              style={{
+                background: 'linear-gradient(180deg,#050507,#0a0a0d)',
+                border: `1.5px solid ${tone}66`,
+              }}
+            >
+              <div className="text-[12px] uppercase tracking-[0.3em] font-extrabold mb-3" style={{ ...teko, color: tone }}>RENDERING IMPORT</div>
+              <div className="text-[44px] font-black tabular-nums leading-none" style={{ ...teko, color: '#fff' }}>{uploadPct}<span style={{ color: tone }}>%</span></div>
+              <div className="mt-4 w-2/3 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                <div className="h-full transition-all" style={{ width: `${uploadPct}%`, background: tone, boxShadow: `0 0 12px ${tone}` }} />
+              </div>
+            </div>
+          )}
+
+          {hasVid && (
+            <div
+              className="relative w-full rounded-md overflow-hidden bg-black"
+              style={{ aspectRatio: '16/10', border: `1px solid ${tone}44` }}
+            >
+              <BunnyVideo src={videoUrl} className="w-full h-full object-contain" controls />
+              {[
+                'top-1.5 left-1.5 border-t border-l',
+                'top-1.5 right-1.5 border-t border-r',
+                'bottom-1.5 left-1.5 border-b border-l',
+                'bottom-1.5 right-1.5 border-b border-r',
+              ].map((c) => (
+                <span key={c} className={`absolute w-3 h-3 pointer-events-none ${c}`} style={{ borderColor: tone }} />
+              ))}
+              <div className="absolute top-1.5 left-1/2 -translate-x-1/2 text-[9px] font-mono text-white/70 flex items-center gap-2 pointer-events-none">
+                <span style={{ color: tone }}>● LOADED</span>
+                <span>SRC.MP4</span>
+              </div>
+            </div>
+          )}
+
+          {/* Transport bar */}
+          <div
+            className="mt-2 flex items-center gap-2 px-2 h-9 rounded-md border"
+            style={{ background: '#101013', borderColor: 'rgba(255,255,255,0.06)' }}
+          >
+            <button type="button" className="w-7 h-7 rounded grid place-items-center text-white/70 hover:text-white"><SkipBack className="w-3.5 h-3.5" /></button>
+            <button type="button" className="w-8 h-7 rounded grid place-items-center" style={{ background: `${tone}22`, color: tone, border: `1px solid ${tone}55` }}>
+              {hasVid ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+            </button>
+            <button type="button" className="w-7 h-7 rounded grid place-items-center text-white/70 hover:text-white"><SkipForward className="w-3.5 h-3.5" /></button>
+            <div className="ml-1 text-[10px] font-mono text-white/60 tabular-nums">00:00:00<span className="text-white/30">:00</span></div>
+            <div className="ml-auto flex items-center gap-2 text-white/45">
+              <Magnet className="w-3.5 h-3.5" />
+              <Volume2 className="w-3.5 h-3.5" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ===== TIMELINE PANEL ===== */}
+      <div
+        className="border-t px-2 pt-1.5 pb-2"
+        style={{ background: '#0a0a0c', borderColor: 'rgba(255,255,255,0.06)' }}
+      >
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-[9px] font-extrabold uppercase tracking-[0.25em] text-white/55" style={teko}>TIMELINE</span>
+          <span className="text-[9px] font-mono text-white/30">01 SEQUENCE</span>
+          <div className="ml-auto flex items-center gap-1 text-[9px] font-mono text-white/30">
+            <span>FIT</span><span className="text-white/50">·</span><span>100%</span>
+          </div>
+        </div>
+        {/* Ruler */}
+        <div className="relative h-3 rounded-sm overflow-hidden mb-1" style={{ background: '#050506' }}>
+          <div className="absolute inset-0 flex">
+            {Array.from({ length: 24 }).map((_, i) => (
+              <div key={i} className="flex-1 border-r border-white/10 relative">
+                {i % 4 === 0 && (
+                  <span className="absolute left-0.5 top-0 text-[7px] font-mono text-white/35 leading-none">{String(i).padStart(2,'0')}s</span>
+                )}
+              </div>
+            ))}
+          </div>
+          {/* playhead */}
+          <span className="absolute top-0 bottom-0 w-px" style={{ left: '8%', background: tone, boxShadow: `0 0 6px ${tone}` }} />
+        </div>
+        {/* Tracks */}
+        {[
+          { label: 'V1', color: tone,        filled: hasVid ? 0.7 : 0 },
+          { label: 'V2', color: '#22d3ee',   filled: 0 },
+          { label: 'A1', color: '#fbbf24',   filled: hasVid ? 0.55 : 0 },
+        ].map((t) => (
+          <div key={t.label} className="flex items-center gap-1.5 mb-1 last:mb-0">
+            <span className="w-6 text-[8px] font-black uppercase text-white/45 font-mono">{t.label}</span>
+            <div className="flex-1 h-6 rounded-sm relative overflow-hidden" style={{ background: '#101013', border: '1px solid rgba(255,255,255,0.04)' }}>
+              {t.filled > 0 && (
+                <div
+                  className="absolute top-0 bottom-0 left-[4%] rounded-sm flex items-center px-1.5 overflow-hidden"
+                  style={{
+                    width: `${t.filled * 88}%`,
+                    background: `linear-gradient(180deg, ${t.color}55, ${t.color}22)`,
+                    border: `1px solid ${t.color}88`,
+                    boxShadow: `inset 0 1px 0 ${t.color}33`,
+                  }}
+                >
+                  {/* mini waveform / strip */}
+                  <div className="flex items-end gap-px h-full py-1 w-full">
+                    {Array.from({ length: 40 }).map((_, i) => (
+                      <span key={i} className="flex-1 rounded-sm" style={{ background: t.color, opacity: 0.45 + (Math.sin(i * 0.9) * 0.5 + 0.5) * 0.5, height: `${30 + ((i * 13) % 60)}%` }} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ===== METADATA PANEL ===== */}
+      <div
+        className="border-t px-3 py-2.5 grid grid-cols-2 gap-2"
+        style={{ background: '#0d0d10', borderColor: 'rgba(255,255,255,0.06)' }}
+      >
+        <label className="block">
+          <span className="text-[9px] uppercase tracking-[0.2em] text-white/35 font-mono">TITLE</span>
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value.slice(0, 80))}
+            placeholder="Untitled Sequence"
+            className="mt-1 bg-black/60 border-white/10 h-9 rounded-md text-[12px] font-mono"
+          />
+        </label>
+        <label className="block">
+          <span className="text-[9px] uppercase tracking-[0.2em] text-white/35 font-mono">CAPTION</span>
+          <Input
+            value={caption}
+            onChange={(e) => setCaption(e.target.value.slice(0, 200))}
+            placeholder="Short description"
+            className="mt-1 bg-black/60 border-white/10 h-9 rounded-md text-[12px] font-mono"
+          />
+        </label>
+        {hasVid && (
+          <button
+            type="button"
+            onClick={onReplace}
+            className="col-span-2 text-[10px] uppercase tracking-[0.2em] text-white/40 hover:text-white text-left font-mono"
+          >
+            ↻ replace source clip
+          </button>
+        )}
+        {overtime && (
+          <div className="col-span-2 flex items-center gap-2 p-2 rounded-md bg-red-500/10 border border-red-500/40 text-red-400 text-[11px] font-mono">
+            <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+            <span>Clock expired — ships flagged <b>OVERTIME</b>.</span>
+          </div>
+        )}
       </div>
     </div>
   );
