@@ -445,49 +445,7 @@ function CarouselRow({ label, accent, count, empty, children }: { label: string;
   );
 }
 
-function LobbyTimerHud({ remainingMs, overtime, pct, tone, timerLabel }: { remainingMs: number; overtime: boolean; pct: number; tone: string; timerLabel: string }) {
-  const size = 180;
-  const stroke = 8;
-  const r = (size - stroke) / 2;
-  const c = 2 * Math.PI * r;
-  const offset = c * (1 - Math.min(1, Math.max(0, pct)));
-  const display = overtime ? `+${fmtRemaining(-remainingMs)}` : fmtRemaining(remainingMs);
-  return (
-    <div className="relative mx-auto" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size/2} cy={size/2} r={r} stroke="rgba(255,255,255,0.06)" strokeWidth={stroke} fill="none" />
-        <motion.circle
-          cx={size/2} cy={size/2} r={r}
-          stroke={overtime ? '#ef4444' : tone}
-          strokeWidth={stroke} strokeLinecap="round" fill="none"
-          strokeDasharray={c}
-          animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 0.6 }}
-          style={{ filter: `drop-shadow(0 0 8px ${overtime ? '#ef4444' : tone})` }}
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className="flex items-center gap-1.5 mb-1">
-          <motion.span
-            animate={{ opacity: [1, 0.3, 1] }}
-            transition={{ duration: 1.4, repeat: Infinity }}
-            className="w-1.5 h-1.5 rounded-full"
-            style={{ background: overtime ? '#ef4444' : tone }}
-          />
-          <span className="text-[9px] font-extrabold uppercase tracking-[0.3em]" style={{ ...teko, color: overtime ? '#ef4444' : tone }}>
-            {overtime ? 'OVERTIME' : 'LIVE'}
-          </span>
-        </div>
-        <span className="text-[56px] leading-none font-black tabular-nums tracking-tight text-white" style={teko}>{display}</span>
-        <span className="text-[10px] uppercase tracking-[0.3em] text-white/40 mt-1" style={teko}>{timerLabel}</span>
-      </div>
-    </div>
-  );
-}
-
 /* -------- Visual bits -------- */
-
-/* (legacy TimerPill / TimerRing removed — replaced by LobbyTimerHud) */
 
 /* ====== osu!-style LOBBY ====== */
 function OsuLobby({ user, profile, onPick }: { user: any; profile: any; onPick: (t: Timer) => void }) {
