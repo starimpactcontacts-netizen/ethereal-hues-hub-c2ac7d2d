@@ -275,15 +275,6 @@ export default function CreateSoloSharePage() {
 
       <main className={`relative z-10 max-w-xl mx-auto px-4 pb-40 ${lobbyOpen ? 'hidden' : ''}`} style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 24px)' }}>
 
-        {/* ====== TIMER HUD (after lock) ====== */}
-        <div className="text-center pt-2 pb-6">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/10 mb-3">
-            <GateIcon size={11} className="text-amber-400" />
-            <span className="text-[11px] font-extrabold uppercase text-white/80" style={teko}>SOLO LOBBY</span>
-          </div>
-          <LobbyTimerHud remainingMs={remaining} overtime={overtime} pct={elapsedPct} tone={tonePicked} timerLabel={TIMERS.find(t=>t.value===timer)?.sub || ''} />
-        </div>
-
         {/* ====== LIBRARY CAROUSELS ====== */}
         {!lobbyOpen && (
           <motion.div
@@ -313,6 +304,8 @@ export default function CreateSoloSharePage() {
               caption={caption}
               setCaption={setCaption}
               overtime={overtime}
+              remainingMs={remaining}
+              timerLabel={TIMERS.find(t=>t.value===timer)?.sub || ''}
             />
 
             {/* Scenepacks */}
