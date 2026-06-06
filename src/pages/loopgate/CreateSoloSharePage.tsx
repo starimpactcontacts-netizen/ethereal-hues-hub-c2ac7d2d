@@ -91,15 +91,6 @@ export default function CreateSoloSharePage() {
   };
   useEffect(() => () => { audioRef.current?.pause(); }, []);
 
-  // Rotate-to-landscape one-time hint
-  const [rotateHintOpen, setRotateHintOpen] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return localStorage.getItem('solo_rotate_hint_seen') !== '1';
-  });
-  const dismissRotateHint = () => {
-    setRotateHintOpen(false);
-    try { localStorage.setItem('solo_rotate_hint_seen', '1'); } catch {}
-  };
 
   // ── Persist in-progress session across refresh ────────────────────────────
   const hydratedRef = useRef(false);
@@ -276,34 +267,6 @@ export default function CreateSoloSharePage() {
       {/* ====== osu!-STYLE LOBBY (timer not yet locked) ====== */}
       {lobbyOpen && <OsuLobby user={user} profile={profile} onPick={startTimer} />}
 
-      {/* Rotate-to-landscape hint for phones in portrait */}
-      {lobbyOpen && rotateHintOpen && (
-        <div className="fixed inset-0 z-[80] bg-black/50 backdrop-blur-md flex flex-col items-center justify-center gap-4 portrait:flex landscape:hidden sm:hidden px-8 text-center">
-          <button
-            onClick={dismissRotateHint}
-            aria-label="Dismiss"
-            className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/10 backdrop-blur-xl border border-white/15 flex items-center justify-center active:scale-90 transition-transform"
-            style={{ top: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}
-          >
-            <X className="w-4 h-4" />
-          </button>
-          <div className="w-16 h-16 rounded-2xl border border-white/15 bg-white/[0.06] flex items-center justify-center animate-pulse">
-            <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <rect x="3" y="6" width="18" height="12" rx="2" />
-              <path d="M7 3l-2 2 2 2" />
-              <path d="M17 21l2-2-2-2" />
-            </svg>
-          </div>
-          <div style={teko} className="text-[42px] leading-none">ROTATE YOUR PHONE</div>
-          <div className="text-[13px] text-white/60 max-w-[260px]">This lobby is designed for landscape. Turn your device sideways for the best view.</div>
-          <button
-            onClick={dismissRotateHint}
-            className="mt-2 px-5 h-9 rounded-full bg-white text-black text-[12px] font-semibold active:opacity-80 transition-opacity"
-          >
-            GOT IT
-          </button>
-        </div>
-      )}
 
       <main className={`relative z-10 max-w-5xl mx-auto px-3 sm:px-5 pb-40 ${lobbyOpen ? 'hidden' : ''}`} style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 16px)' }}>
 
@@ -449,12 +412,77 @@ function OsuLobby({ user, profile, onPick }: { user: any; profile: any; onPick: 
         </p>
       </div>
 
-      {/* MAIN STAGE — circle on left, pills cascading right */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      {/* MAIN STAGE — mobile: title top + stacked pills, desktop: circle left + pills right */}
+      {/* ---- MOBILE LAYOUT ---- */}
+      <div className="flex sm:hidden flex-col items-center justify-center h-full px-6 pb-8 pointer-events-auto">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 140, damping: 14 }}
+          className="text-center leading-none mb-8"
+        >
+          <div className="text-white font-black tracking-tight" style={{ ...teko, fontSize: 80 }}>
+            solo<span className="text-amber-400">!</span>
+          </div>
+          <p className="text-[11px] text-white/50 uppercase tracking-[0.25em] mt-2" style={teko}>
+            Pick your clock
+          </p>
+        </motion.div>
+
+        <div className="w-full max-w-sm flex flex-col gap-2.5">
+          {TIMERS.map((t, idx) => {
+            const Icon = TIMER_ICONS[t.value];
+            const isHover = hover === t.value;
+            return (
+              <motion.button
+                key={t.value}
+                initial={{ y: 40, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.1 + idx * 0.08, type: 'spring', stiffness: 200, damping: 18 }}
+                onTouchStart={() => setHover(t.value)}
+                onClick={() => onPick(t.value)}
+                className="group relative w-full h-[62px] rounded-xl flex items-center justify-between pl-6 pr-5 overflow-hidden active:scale-[0.97] transition-transform"
+                style={{
+                  background: `linear-gradient(90deg, ${t.tone}cc 0%, ${t.tone}88 60%, ${t.tone}55 100%)`,
+                  boxShadow: `inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 30px -10px ${t.tone}88, 0 4px 0 0 rgba(0,0,0,0.4)`,
+                }}
+              >
+                <div
+                  className="absolute inset-0 opacity-[0.15] pointer-events-none"
+                  style={{
+                    backgroundImage:
+                      "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28'><polygon points='14,3 25,23 3,23' fill='white'/></svg>\")",
+                    backgroundSize: '28px 28px',
+                  }}
+                />
+                <div className="relative flex items-center gap-3">
+                  <span
+                    className="text-white font-black"
+                    style={{ ...teko, fontSize: 38, lineHeight: 1, textShadow: '0 2px 0 rgba(0,0,0,0.35)' }}
+                  >
+                    {t.label}
+                  </span>
+                  <span className="text-[11px] font-extrabold uppercase tracking-[0.25em] text-white/90" style={teko}>
+                    {t.sub}
+                  </span>
+                </div>
+                <div className="relative flex items-center gap-2 text-white/90">
+                  <Icon className="w-5 h-5" />
+                  <ChevronRight className="w-5 h-5 -ml-1 opacity-70" />
+                </div>
+                <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
+              </motion.button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ---- DESKTOP LAYOUT ---- */}
+      <div className="hidden sm:flex absolute inset-0 items-center justify-center pointer-events-none">
         <div className="w-full max-w-[920px] mx-auto px-4 grid grid-cols-12 items-center gap-2 pointer-events-auto">
 
           {/* The disc */}
-          <div className="col-span-5 sm:col-span-5 flex items-center justify-center">
+          <div className="col-span-5 flex items-center justify-center">
             <motion.div
               initial={{ scale: 0.6, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -469,7 +497,7 @@ function OsuLobby({ user, profile, onPick }: { user: any; profile: any; onPick: 
                 style={{ boxShadow: `0 0 0 12px ${tone}22, 0 0 80px 10px ${tone}55` }}
               />
               <div
-                className="relative w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] rounded-full flex items-center justify-center"
+                className="relative w-[280px] h-[280px] rounded-full flex items-center justify-center"
                 style={{
                   background:
                     'radial-gradient(circle at 35% 30%, #1a1a1a 0%, #050505 70%)',
@@ -505,7 +533,7 @@ function OsuLobby({ user, profile, onPick }: { user: any; profile: any; onPick: 
           </div>
 
           {/* Pill menu */}
-          <div className="col-span-7 sm:col-span-7 flex flex-col gap-2 sm:gap-2.5 -ml-6 sm:-ml-10">
+          <div className="col-span-7 flex flex-col gap-2.5 -ml-10">
             {TIMERS.map((t, idx) => {
               const Icon = TIMER_ICONS[t.value];
               const isHover = hover === t.value;
@@ -517,9 +545,8 @@ function OsuLobby({ user, profile, onPick }: { user: any; profile: any; onPick: 
                   transition={{ delay: 0.15 + idx * 0.08, type: 'spring', stiffness: 200, damping: 18 }}
                   onMouseEnter={() => setHover(t.value)}
                   onMouseLeave={() => setHover(null)}
-                  onTouchStart={() => setHover(t.value)}
                   onClick={() => onPick(t.value)}
-                  className="group relative w-full h-[58px] sm:h-[68px] rounded-l-full rounded-r-2xl flex items-center justify-between pl-10 pr-4 sm:pl-14 sm:pr-5 overflow-hidden active:scale-[0.97] transition-transform"
+                  className="group relative w-full h-[68px] rounded-l-full rounded-r-2xl flex items-center justify-between pl-14 pr-5 overflow-hidden active:scale-[0.97] transition-transform"
                   style={{
                     background: `linear-gradient(90deg, ${t.tone}cc 0%, ${t.tone}88 60%, ${t.tone}55 100%)`,
                     boxShadow: `inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 30px -10px ${t.tone}88, 0 4px 0 0 rgba(0,0,0,0.4)`,
@@ -541,7 +568,7 @@ function OsuLobby({ user, profile, onPick }: { user: any; profile: any; onPick: 
                     >
                       {t.label}
                     </span>
-                    <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-[0.25em] text-white/90" style={teko}>
+                    <span className="text-[11px] font-extrabold uppercase tracking-[0.25em] text-white/90" style={teko}>
                       {t.sub}
                     </span>
                   </div>
