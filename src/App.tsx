@@ -360,6 +360,7 @@ export default function App() {
               <Route path="/arena" element={<ArenaPage />} />
               <Route path="/solo" element={<SoloHubPage />} />
               <Route path="/solo/create" element={<CreateSoloSharePage />} />
+              <Route path="/solo/find" element={<SoloFindPage />} />
               <Route path="/collabs" element={<CollabsPage />} />
               <Route path="/collabs/create" element={<CreateCollabPage />} />
               <Route path="/collab/:id" element={<CollabDetailPage />} />
