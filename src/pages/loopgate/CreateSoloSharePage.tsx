@@ -698,13 +698,21 @@ function NLECockpit({
                 </button>
               );
             })}
+            {/* Collapse-to-full tab */}
             <button
               type="button"
               onClick={() => setBinCollapsed(true)}
-              aria-label="Collapse project bin"
-              className="ml-1 w-7 h-7 rounded-md flex items-center justify-center text-white/40 hover:text-white/80 hover:bg-white/5 active:scale-90 transition"
+              className="flex items-center justify-center gap-1 h-7 px-2 rounded-t-md text-[9px] font-extrabold uppercase tracking-[0.15em] transition-colors active:scale-95"
+              style={{
+                ...teko,
+                background: 'transparent',
+                color: 'rgba(255,255,255,0.4)',
+                border: '1px solid transparent',
+                borderBottom: 'none',
+              }}
             >
-              <PanelLeftClose className="w-3.5 h-3.5" />
+              <Maximize2 className="w-3 h-3" />
+              <span className="hidden sm:inline">FULL</span>
             </button>
           </div>
 
