@@ -8,11 +8,12 @@ import {
   Clock, Award, UserPlus, Eye, Globe, Crown, Zap, UserRound,
   Sparkles, Star, Music, Mail, ArrowRight, History, Play, Loader2,
   Clapperboard, ChevronDown, Crosshair, DollarSign, Shuffle,
-  Link2, Copy, Lock
+  Link2, Copy, Lock, Film
 } from "lucide-react";
 import { InfinityLoop } from "@/components/loopgate/InfinityLoop";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { loadSoloDraft, clearSoloDraft, isLiveDraft, type SoloDraft } from "@/lib/soloDraft";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import LoopMonster from "@/components/loopgate/LoopMonster";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
@@ -571,6 +572,32 @@ export default function ArenaPage() {
   const openLobbyCount = useMemo(() => myQuickFights.filter(f => f.status === 'waiting' || f.status === 'selecting').length, [myQuickFights]);
   const isQfSearching = qfSearching || qfInQueue;
 
+  // ── In-progress Solo Share draft (persists across refresh via localStorage) ──
+  const [soloShareDraft, setSoloShareDraft] = useState<SoloDraft | null>(null);
+  useEffect(() => {
+    if (!user) { setSoloShareDraft(null); return; }
+    const read = () => {
+      const d = loadSoloDraft(user.id);
+      setSoloShareDraft(isLiveDraft(d) ? d : null);
+    };
+    read();
+    const onStorage = (e: StorageEvent) => { if (e.key && e.key.includes('solo_share_draft_')) read(); };
+    const onFocus = () => read();
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('focus', onFocus);
+    const i = setInterval(read, 5000);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('focus', onFocus);
+      clearInterval(i);
+    };
+  }, [user]);
+  const soloDraftRemainingMs = useMemo(() => {
+    if (!soloShareDraft?.startedAt || !soloShareDraft?.timer) return null;
+    const start = new Date(soloShareDraft.startedAt).getTime();
+    return start + soloShareDraft.timer * 60_000 - Date.now();
+  }, [soloShareDraft]);
+
   // Queue timer
   useEffect(() => {
     if (!isQfSearching) { setQfElapsed(0); return; }
@@ -883,7 +910,7 @@ export default function ArenaPage() {
                 <span className={`min-w-[16px] h-4 px-1 text-[9px] font-black flex items-center justify-center rounded-sm ${arenaView === 'my' ? 'bg-black/40 text-black' : 'bg-gold text-black'}`}>
                   {openLobbyCount}
                 </span>
-              ) : (activeSolo || myBattles.length > 0 || myActiveQuickFights.length > 0 || myJudgingBattles.length > 0 || myCashBattles.length > 0 || myLiveCompetitions.length > 0) && (
+              ) : (activeSolo || soloShareDraft || myBattles.length > 0 || myActiveQuickFights.length > 0 || myJudgingBattles.length > 0 || myCashBattles.length > 0 || myLiveCompetitions.length > 0) && (
                 <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${arenaView === 'my' ? 'bg-black/70' : 'bg-red-500'}`} />
               )}
             </button>
@@ -1232,6 +1259,63 @@ export default function ArenaPage() {
                         </div>
                       );
                     })}
+                  </div>
+                </motion.div>
+              )}
+
+              {soloShareDraft && (
+                <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
+                  <div className="bg-surface-1 border border-purple-400/40 p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 bg-purple-500/20 flex items-center justify-center shrink-0">
+                        <Film className="w-5 h-5 text-purple-300" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] text-purple-300 font-bold uppercase tracking-wider">Solo Session In Progress</p>
+                        <p className="text-sm text-foreground font-bold truncate">
+                          {soloShareDraft.title?.trim() || soloShareDraft.song?.song_name || 'Untitled solo edit'}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {soloDraftRemainingMs !== null && (
+                          <span className={`text-[10px] font-bold uppercase tracking-wider ${soloDraftRemainingMs < 0 ? 'text-red-400' : 'text-purple-300'}`}>
+                            {soloDraftRemainingMs < 0
+                              ? 'OVERTIME'
+                              : `${Math.floor(soloDraftRemainingMs / 60000)}M LEFT`}
+                          </span>
+                        )}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!confirm('Cancel this solo session? Your draft will be lost.')) return;
+                            if (user) clearSoloDraft(user.id);
+                            setSoloShareDraft(null);
+                            toast('Solo session cancelled');
+                          }}
+                          className="p-1.5 hover:bg-destructive/10 transition-colors"
+                          aria-label="Cancel solo session"
+                        >
+                          <X className="w-4 h-4 text-muted-foreground hover:text-destructive" />
+                        </button>
+                      </div>
+                    </div>
+                    {(soloShareDraft.song?.song_name || soloShareDraft.scenepack) && (
+                      <div className="flex items-center gap-2 bg-surface-1 border border-border px-3 py-2 mb-3">
+                        <Music className="w-3.5 h-3.5 text-purple-300 shrink-0" />
+                        <span className="text-[12px] text-foreground font-medium truncate">
+                          {soloShareDraft.song?.song_name || (soloShareDraft.scenepack ? 'Scenepack selected' : '')}
+                        </span>
+                      </div>
+                    )}
+                    <button
+                      onClick={() => navigate('/solo/create')}
+                      className="w-full bg-purple-500 hover:bg-purple-400 transition-colors py-3 flex items-center justify-center gap-2"
+                    >
+                      <Play className="w-4 h-4 text-background" />
+                      <span className="text-[14px] font-black text-background tracking-tight" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                        RESUME SESSION
+                      </span>
+                    </button>
                   </div>
                 </motion.div>
               )}
