@@ -232,6 +232,128 @@ export default function CreateSoloSharePage() {
             transition={{ delay: 0.1 }}
             className="space-y-7"
           >
+            {/* ====== DROP THE EDIT (TOP) ====== */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between px-1">
+                <div className="flex items-center gap-2">
+                  <Flame className="w-4 h-4 text-amber-400" />
+                  <span className="text-[16px] font-extrabold uppercase text-white" style={teko}>YOUR EDIT</span>
+                </div>
+                <button
+                  onClick={() => { setMode(mode === 'upload' ? 'link' : 'upload'); setVideoUrl(''); }}
+                  className="text-[11px] uppercase text-white/40 hover:text-amber-400 font-bold"
+                  style={teko}
+                >
+                  {mode === 'upload' ? '→ paste link instead' : '→ upload file instead'}
+                </button>
+              </div>
+
+              {mode === 'upload' && (
+                <>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="video/*"
+                    className="hidden"
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }}
+                  />
+                  {!videoUrl && !uploading && (
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full aspect-[16/9] rounded-3xl flex flex-col items-center justify-center gap-3 active:scale-[0.98] transition-transform relative overflow-hidden"
+                      style={{
+                        background: 'radial-gradient(circle at 50% 30%, rgba(251,191,36,0.15), rgba(0,0,0,0) 60%)',
+                        border: '2px dashed rgba(251,191,36,0.4)',
+                      }}
+                    >
+                      <div className="w-16 h-16 rounded-3xl bg-amber-400 flex items-center justify-center" style={{ boxShadow: '0 6px 0 0 #b45309, 0 14px 30px -8px rgba(251,191,36,0.5)' }}>
+                        <Upload className="w-7 h-7 text-black" strokeWidth={2.5} />
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[22px] font-black uppercase text-white leading-none" style={teko}>TAP TO UPLOAD</p>
+                        <p className="text-[11px] uppercase text-white/40 mt-1" style={teko}>MP4 / MOV · {MAX_EDIT_UPLOAD_LABEL}</p>
+                      </div>
+                    </button>
+                  )}
+                  {uploading && (
+                    <div className="rounded-3xl border-2 border-amber-400/40 bg-amber-400/[0.05] p-5 space-y-3">
+                      <div className="flex items-center justify-between text-amber-400">
+                        <span className="text-[14px] font-extrabold uppercase" style={teko}>UPLOADING</span>
+                        <span className="text-[20px] font-black" style={teko}>{uploadPct}%</span>
+                      </div>
+                      <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+                        <div className="h-full bg-amber-400 transition-all" style={{ width: `${uploadPct}%`, boxShadow: '0 0 12px #fbbf24' }} />
+                      </div>
+                    </div>
+                  )}
+                  {videoUrl && !uploading && platform === 'bunny' && (
+                    <div className="space-y-2">
+                      <div className="rounded-3xl overflow-hidden bg-black border-2 border-emerald-500/40 relative" style={{ aspectRatio: '9/16', maxHeight: 360 }}>
+                        <BunnyVideo src={videoUrl} className="w-full h-full object-contain" controls />
+                        <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-emerald-500 text-black text-[10px] font-black uppercase flex items-center gap-1" style={teko}>
+                          <Check className="w-3 h-3" strokeWidth={3} /> LOADED
+                        </div>
+                      </div>
+                      <button onClick={() => { setVideoUrl(''); fileInputRef.current?.click(); }} className="text-[11px] uppercase text-white/40 hover:text-amber-400" style={teko}>replace file</button>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {mode === 'link' && (
+                <div className="space-y-2">
+                  <Input
+                    value={videoUrl}
+                    onChange={(e) => setVideoUrl(e.target.value)}
+                    placeholder="paste tiktok / ig / yt url"
+                    className="bg-white/5 border-white/10 h-12 rounded-2xl text-sm"
+                  />
+                  <div className="grid grid-cols-3 gap-2">
+                    {([
+                      { id: 'tiktok', label: 'TikTok', icon: <SiTiktok size={12} /> },
+                      { id: 'instagram', label: 'IG', icon: <SiInstagram size={12} /> },
+                      { id: 'youtube', label: 'YT', icon: <SiYoutube size={12} /> },
+                    ] as const).map((p) => (
+                      <button
+                        key={p.id}
+                        onClick={() => setPlatform(p.id)}
+                        className={`py-2 rounded-xl text-[11px] font-bold uppercase flex items-center justify-center gap-1.5 transition-all ${
+                          platform === p.id ? 'bg-amber-400 text-black' : 'bg-white/[0.04] text-white/60 border border-white/10'
+                        }`}
+                      >
+                        {p.icon}{p.label}
+                      </button>
+                    ))}
+                  </div>
+                  {previewUrl && (
+                    <div className="rounded-3xl overflow-hidden bg-black border border-white/10 mt-2" style={{ aspectRatio: platform === 'youtube' && !videoUrl.includes('/shorts/') ? '16/9' : '9/16', maxHeight: 360 }}>
+                      <iframe src={previewUrl} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+                    </div>
+                  )}
+                  {platform === 'youtube' && previewUrl && (
+                    <div className="pt-2">
+                      <label className="text-[11px] uppercase text-white/40 mb-2 block" style={teko}>
+                        Start at <span className="text-amber-400 font-bold">{startOffset}s</span>
+                      </label>
+                      <input type="range" min={0} max={120} step={1} value={startOffset} onChange={(e) => setStartOffset(parseInt(e.target.value, 10))} className="w-full accent-amber-400" />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <Input value={title} onChange={(e) => setTitle(e.target.value.slice(0, 80))} placeholder="Title" className="bg-white/5 border-white/10 h-11 rounded-2xl text-sm" />
+                <Input value={caption} onChange={(e) => setCaption(e.target.value.slice(0, 200))} placeholder="Caption" className="bg-white/5 border-white/10 h-11 rounded-2xl text-sm" />
+              </div>
+
+              {overtime && (
+                <div className="flex items-center gap-2 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/40 text-amber-400 text-xs">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  <span>Clock expired — page ships flagged <b>OVERTIME</b>.</span>
+                </div>
+              )}
+            </div>
+
             {/* Scenepacks */}
             <CarouselRow
               label="SCENEPACKS"
@@ -310,126 +432,6 @@ export default function CreateSoloSharePage() {
               })}
             </CarouselRow>
 
-            {/* ====== DROP THE EDIT ====== */}
-            <div className="space-y-3 pt-2">
-              <div className="flex items-center justify-between px-1">
-                <div className="flex items-center gap-2">
-                  <Flame className="w-4 h-4 text-amber-400" />
-                  <span className="text-[13px] font-extrabold uppercase tracking-[0.22em]" style={teko}>YOUR EDIT</span>
-                </div>
-                <button
-                  onClick={() => { setMode(mode === 'upload' ? 'link' : 'upload'); setVideoUrl(''); }}
-                  className="text-[10px] uppercase tracking-wider text-white/40 hover:text-amber-400 font-bold"
-                >
-                  {mode === 'upload' ? '→ paste link instead' : '→ upload file instead'}
-                </button>
-              </div>
-
-              {mode === 'upload' && (
-                <>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="video/*"
-                    className="hidden"
-                    onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }}
-                  />
-                  {!videoUrl && !uploading && (
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="w-full aspect-[16/9] rounded-3xl flex flex-col items-center justify-center gap-3 active:scale-[0.98] transition-transform relative overflow-hidden"
-                      style={{
-                        background: 'radial-gradient(circle at 50% 30%, rgba(251,191,36,0.15), rgba(0,0,0,0) 60%)',
-                        border: '2px dashed rgba(251,191,36,0.4)',
-                      }}
-                    >
-                      <div className="w-16 h-16 rounded-3xl bg-amber-400 flex items-center justify-center" style={{ boxShadow: '0 6px 0 0 #b45309, 0 14px 30px -8px rgba(251,191,36,0.5)' }}>
-                        <Upload className="w-7 h-7 text-black" strokeWidth={2.5} />
-                      </div>
-                      <div className="text-center">
-                        <p className="text-[18px] font-black uppercase tracking-wider text-white" style={teko}>TAP TO UPLOAD</p>
-                        <p className="text-[9px] uppercase tracking-[0.25em] text-white/40 mt-0.5">MP4 / MOV · {MAX_EDIT_UPLOAD_LABEL}</p>
-                      </div>
-                    </button>
-                  )}
-                  {uploading && (
-                    <div className="rounded-3xl border-2 border-amber-400/40 bg-amber-400/[0.05] p-5 space-y-3">
-                      <div className="flex items-center justify-between text-amber-400">
-                        <span className="text-[11px] font-extrabold uppercase tracking-[0.25em]" style={teko}>UPLOADING</span>
-                        <span className="text-[20px] font-black" style={teko}>{uploadPct}%</span>
-                      </div>
-                      <div className="h-2 rounded-full bg-white/10 overflow-hidden">
-                        <div className="h-full bg-amber-400 transition-all" style={{ width: `${uploadPct}%`, boxShadow: '0 0 12px #fbbf24' }} />
-                      </div>
-                    </div>
-                  )}
-                  {videoUrl && !uploading && platform === 'bunny' && (
-                    <div className="space-y-2">
-                      <div className="rounded-3xl overflow-hidden bg-black border-2 border-emerald-500/40 relative" style={{ aspectRatio: '9/16', maxHeight: 360 }}>
-                        <BunnyVideo src={videoUrl} className="w-full h-full object-contain" controls />
-                        <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-emerald-500 text-black text-[9px] font-black uppercase tracking-widest flex items-center gap-1">
-                          <Check className="w-3 h-3" strokeWidth={3} /> LOADED
-                        </div>
-                      </div>
-                      <button onClick={() => { setVideoUrl(''); fileInputRef.current?.click(); }} className="text-[10px] uppercase tracking-wider text-white/40 hover:text-amber-400">replace file</button>
-                    </div>
-                  )}
-                </>
-              )}
-
-              {mode === 'link' && (
-                <div className="space-y-2">
-                  <Input
-                    value={videoUrl}
-                    onChange={(e) => setVideoUrl(e.target.value)}
-                    placeholder="paste tiktok / ig / yt url"
-                    className="bg-white/5 border-white/10 h-12 rounded-2xl text-sm"
-                  />
-                  <div className="grid grid-cols-3 gap-2">
-                    {([
-                      { id: 'tiktok', label: 'TikTok', icon: <SiTiktok size={12} /> },
-                      { id: 'instagram', label: 'IG', icon: <SiInstagram size={12} /> },
-                      { id: 'youtube', label: 'YT', icon: <SiYoutube size={12} /> },
-                    ] as const).map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => setPlatform(p.id)}
-                        className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all ${
-                          platform === p.id ? 'bg-amber-400 text-black' : 'bg-white/[0.04] text-white/60 border border-white/10'
-                        }`}
-                      >
-                        {p.icon}{p.label}
-                      </button>
-                    ))}
-                  </div>
-                  {previewUrl && (
-                    <div className="rounded-3xl overflow-hidden bg-black border border-white/10 mt-2" style={{ aspectRatio: platform === 'youtube' && !videoUrl.includes('/shorts/') ? '16/9' : '9/16', maxHeight: 360 }}>
-                      <iframe src={previewUrl} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-                    </div>
-                  )}
-                  {platform === 'youtube' && previewUrl && (
-                    <div className="pt-2">
-                      <label className="text-[10px] uppercase tracking-[0.2em] text-white/40 mb-2 block">
-                        Start at <span className="text-amber-400 font-bold">{startOffset}s</span>
-                      </label>
-                      <input type="range" min={0} max={120} step={1} value={startOffset} onChange={(e) => setStartOffset(parseInt(e.target.value, 10))} className="w-full accent-amber-400" />
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-2 pt-1">
-                <Input value={title} onChange={(e) => setTitle(e.target.value.slice(0, 80))} placeholder="Title" className="bg-white/5 border-white/10 h-11 rounded-2xl text-sm" />
-                <Input value={caption} onChange={(e) => setCaption(e.target.value.slice(0, 200))} placeholder="Caption" className="bg-white/5 border-white/10 h-11 rounded-2xl text-sm" />
-              </div>
-
-              {overtime && (
-                <div className="flex items-center gap-2 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/40 text-amber-400 text-xs">
-                  <AlertTriangle className="w-4 h-4 shrink-0" />
-                  <span>Clock expired — page ships flagged <b>OVERTIME</b>.</span>
-                </div>
-              )}
-            </div>
           </motion.div>
         )}
       </main>
