@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Loader2, Music, Film, Link as LinkIcon, Zap, AlertTriangle, Upload, Play, Flame, X, Check, Timer as TimerIcon, Clock, Hourglass, ChevronRight, User, MousePointer2, Scissors, Type as TypeIcon, Wand2, Brush, Eraser, Layers, Pause, SkipBack, SkipForward, Volume2, Settings2, Maximize2, Magnet, Square } from 'lucide-react';
+import { ArrowLeft, Loader2, Music, Film, Link as LinkIcon, Zap, AlertTriangle, Upload, Play, Flame, X, Check, Timer as TimerIcon, Clock, Hourglass, ChevronRight, User, Pause, Settings2, Maximize2 } from 'lucide-react';
 import { SiTiktok, SiInstagram, SiYoutube } from '@icons-pack/react-simple-icons';
 import { useAuth } from '@/hooks/useAuth';
 import { createSoloShare } from '@/hooks/useSoloShares';
@@ -275,15 +275,6 @@ export default function CreateSoloSharePage() {
 
       <main className={`relative z-10 max-w-xl mx-auto px-4 pb-40 ${lobbyOpen ? 'hidden' : ''}`} style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 24px)' }}>
 
-        {/* ====== TIMER HUD (after lock) ====== */}
-        <div className="text-center pt-2 pb-6">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/10 mb-3">
-            <GateIcon size={11} className="text-amber-400" />
-            <span className="text-[11px] font-extrabold uppercase text-white/80" style={teko}>SOLO LOBBY</span>
-          </div>
-          <LobbyTimerHud remainingMs={remaining} overtime={overtime} pct={elapsedPct} tone={tonePicked} timerLabel={TIMERS.find(t=>t.value===timer)?.sub || ''} />
-        </div>
-
         {/* ====== LIBRARY CAROUSELS ====== */}
         {!lobbyOpen && (
           <motion.div
@@ -313,6 +304,8 @@ export default function CreateSoloSharePage() {
               caption={caption}
               setCaption={setCaption}
               overtime={overtime}
+              remainingMs={remaining}
+              timerLabel={TIMERS.find(t=>t.value===timer)?.sub || ''}
             />
 
             {/* Scenepacks */}
@@ -452,49 +445,7 @@ function CarouselRow({ label, accent, count, empty, children }: { label: string;
   );
 }
 
-function LobbyTimerHud({ remainingMs, overtime, pct, tone, timerLabel }: { remainingMs: number; overtime: boolean; pct: number; tone: string; timerLabel: string }) {
-  const size = 180;
-  const stroke = 8;
-  const r = (size - stroke) / 2;
-  const c = 2 * Math.PI * r;
-  const offset = c * (1 - Math.min(1, Math.max(0, pct)));
-  const display = overtime ? `+${fmtRemaining(-remainingMs)}` : fmtRemaining(remainingMs);
-  return (
-    <div className="relative mx-auto" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size/2} cy={size/2} r={r} stroke="rgba(255,255,255,0.06)" strokeWidth={stroke} fill="none" />
-        <motion.circle
-          cx={size/2} cy={size/2} r={r}
-          stroke={overtime ? '#ef4444' : tone}
-          strokeWidth={stroke} strokeLinecap="round" fill="none"
-          strokeDasharray={c}
-          animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 0.6 }}
-          style={{ filter: `drop-shadow(0 0 8px ${overtime ? '#ef4444' : tone})` }}
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className="flex items-center gap-1.5 mb-1">
-          <motion.span
-            animate={{ opacity: [1, 0.3, 1] }}
-            transition={{ duration: 1.4, repeat: Infinity }}
-            className="w-1.5 h-1.5 rounded-full"
-            style={{ background: overtime ? '#ef4444' : tone }}
-          />
-          <span className="text-[9px] font-extrabold uppercase tracking-[0.3em]" style={{ ...teko, color: overtime ? '#ef4444' : tone }}>
-            {overtime ? 'OVERTIME' : 'LIVE'}
-          </span>
-        </div>
-        <span className="text-[56px] leading-none font-black tabular-nums tracking-tight text-white" style={teko}>{display}</span>
-        <span className="text-[10px] uppercase tracking-[0.3em] text-white/40 mt-1" style={teko}>{timerLabel}</span>
-      </div>
-    </div>
-  );
-}
-
 /* -------- Visual bits -------- */
-
-/* (legacy TimerPill / TimerRing removed — replaced by LobbyTimerHud) */
 
 /* ====== osu!-style LOBBY ====== */
 function OsuLobby({ user, profile, onPick }: { user: any; profile: any; onPick: (t: Timer) => void }) {
@@ -681,7 +632,7 @@ function OsuLobby({ user, profile, onPick }: { user: any; profile: any; onPick: 
 /* ====== NLE COCKPIT — AE/Premiere/Resolve x Roblox-Draw ====== */
 function NLECockpit({
   tone, videoUrl, uploading, uploadPct, platform, onPick, onReplace,
-  title, setTitle, caption, setCaption, overtime,
+  title, setTitle, caption, setCaption, overtime, remainingMs, timerLabel,
 }: {
   tone: string;
   videoUrl: string;
@@ -695,19 +646,12 @@ function NLECockpit({
   caption: string;
   setCaption: (v: string) => void;
   overtime: boolean;
+  remainingMs: number;
+  timerLabel: string;
 }) {
   const hasVid = !!videoUrl && platform === 'bunny' && !uploading;
-
-  // Roblox-draw style tool palette (cosmetic — locked, NDA: no "AI" wording)
-  const tools = [
-    { Icon: MousePointer2, label: 'SEL'  },
-    { Icon: Scissors,       label: 'CUT'  },
-    { Icon: Brush,          label: 'PNT'  },
-    { Icon: TypeIcon,       label: 'TXT'  },
-    { Icon: Wand2,          label: 'FX'   },
-    { Icon: Eraser,         label: 'ERS'  },
-    { Icon: Layers,         label: 'LYR'  },
-  ];
+  const timerDisplay = overtime ? `+${fmtRemaining(-remainingMs)}` : fmtRemaining(remainingMs);
+  const timerColor = overtime ? '#ef4444' : tone;
 
   return (
     <div
@@ -737,70 +681,32 @@ function NLECockpit({
             YOUR_EDIT.PROJ
           </span>
         </div>
-        <div className="ml-auto flex items-center gap-2 text-white/40">
-          <Settings2 className="w-3.5 h-3.5" />
-          <Maximize2 className="w-3.5 h-3.5" />
-        </div>
-      </div>
-
-      {/* ===== MENU STRIP ===== */}
-      <div
-        className="flex items-center gap-4 px-3 h-7 border-b text-[10px] uppercase tracking-[0.18em] text-white/45 font-semibold"
-        style={{ background: '#0d0d10', borderColor: 'rgba(255,255,255,0.05)', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}
-      >
-        <span className="text-white/70">FILE</span>
-        <span>EDIT</span>
-        <span>CLIP</span>
-        <span>SEQUENCE</span>
-        <span>EFFECT</span>
-        <span className="ml-auto" style={{ color: tone }}>● REC</span>
-      </div>
-
-      {/* ===== MAIN STAGE: tools rail + program monitor ===== */}
-      <div className="flex" style={{ background: '#08080a' }}>
-        {/* Tool rail (Roblox-draw chunky buttons) */}
+        {/* Inline countdown */}
         <div
-          className="flex flex-col gap-1.5 p-2 border-r"
-          style={{ background: 'linear-gradient(180deg,#141417,#0e0e10)', borderColor: 'rgba(255,255,255,0.06)' }}
+          className="ml-auto flex items-center gap-1.5 px-2 h-6 rounded-md"
+          style={{ background: `${timerColor}14`, border: `1px solid ${timerColor}55` }}
         >
-          {tools.map((t, i) => {
-            const active = i === 0;
-            return (
-              <button
-                key={t.label}
-                type="button"
-                className="w-9 h-9 rounded-lg flex flex-col items-center justify-center transition-transform active:scale-90 relative"
-                style={{
-                  background: active ? `${tone}26` : 'rgba(255,255,255,0.04)',
-                  border: active ? `1px solid ${tone}` : '1px solid rgba(255,255,255,0.06)',
-                  boxShadow: active ? `0 0 0 2px ${tone}33, inset 0 1px 0 rgba(255,255,255,0.08)` : 'inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 0 rgba(0,0,0,0.5)',
-                  color: active ? tone : 'rgba(255,255,255,0.55)',
-                }}
-              >
-                <t.Icon className="w-4 h-4" strokeWidth={2.2} />
-                <span className="text-[7px] font-black tracking-wider mt-0.5" style={teko}>{t.label}</span>
-              </button>
-            );
-          })}
-          <div className="h-px my-1" style={{ background: 'rgba(255,255,255,0.06)' }} />
-          {/* Color chip — Roblox palette nod */}
-          <div className="w-9 h-9 rounded-lg p-1 grid grid-cols-2 gap-0.5" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
-            <span className="rounded-sm" style={{ background: tone }} />
-            <span className="rounded-sm" style={{ background: '#fbbf24' }} />
-            <span className="rounded-sm" style={{ background: '#22d3ee' }} />
-            <span className="rounded-sm" style={{ background: '#ffffff' }} />
-          </div>
+          <motion.span
+            animate={{ opacity: [1, 0.3, 1] }}
+            transition={{ duration: 1.4, repeat: Infinity }}
+            className="w-1.5 h-1.5 rounded-full"
+            style={{ background: timerColor }}
+          />
+          <span className="text-[12px] font-black tabular-nums leading-none" style={{ ...teko, color: timerColor }}>{timerDisplay}</span>
+          {timerLabel && (
+            <span className="text-[8px] uppercase tracking-[0.2em] font-bold text-white/40" style={teko}>{timerLabel}</span>
+          )}
         </div>
+      </div>
 
-        {/* Program Monitor */}
-        <div className="flex-1 min-w-0 p-2.5">
+      {/* ===== PROGRAM MONITOR ===== */}
+      <div style={{ background: '#08080a' }}>
+        <div className="min-w-0 p-2.5">
           {/* monitor header tabs */}
           <div className="flex items-center gap-1 mb-2">
             <span className="px-2 h-5 rounded-t-md text-[9px] font-extrabold uppercase tracking-wider flex items-center" style={{ ...teko, background: '#1a1a1d', color: tone, border: `1px solid ${tone}55`, borderBottom: 'none' }}>
               PROGRAM
             </span>
-            <span className="px-2 h-5 text-[9px] font-bold uppercase tracking-wider flex items-center text-white/35" style={teko}>SOURCE</span>
-            <span className="px-2 h-5 text-[9px] font-bold uppercase tracking-wider flex items-center text-white/35" style={teko}>LUMETRI</span>
             <span className="ml-auto text-[9px] text-white/30 font-mono">9:16 · 1080×1920</span>
           </div>
 
@@ -893,82 +799,7 @@ function NLECockpit({
               </div>
             </div>
           )}
-
-          {/* Transport bar */}
-          <div
-            className="mt-2 flex items-center gap-2 px-2 h-9 rounded-md border"
-            style={{ background: '#101013', borderColor: 'rgba(255,255,255,0.06)' }}
-          >
-            <button type="button" className="w-7 h-7 rounded grid place-items-center text-white/70 hover:text-white"><SkipBack className="w-3.5 h-3.5" /></button>
-            <button type="button" className="w-8 h-7 rounded grid place-items-center" style={{ background: `${tone}22`, color: tone, border: `1px solid ${tone}55` }}>
-              {hasVid ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-            </button>
-            <button type="button" className="w-7 h-7 rounded grid place-items-center text-white/70 hover:text-white"><SkipForward className="w-3.5 h-3.5" /></button>
-            <div className="ml-1 text-[10px] font-mono text-white/60 tabular-nums">00:00:00<span className="text-white/30">:00</span></div>
-            <div className="ml-auto flex items-center gap-2 text-white/45">
-              <Magnet className="w-3.5 h-3.5" />
-              <Volume2 className="w-3.5 h-3.5" />
-            </div>
-          </div>
         </div>
-      </div>
-
-      {/* ===== TIMELINE PANEL ===== */}
-      <div
-        className="border-t px-2 pt-1.5 pb-2"
-        style={{ background: '#0a0a0c', borderColor: 'rgba(255,255,255,0.06)' }}
-      >
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-[9px] font-extrabold uppercase tracking-[0.25em] text-white/55" style={teko}>TIMELINE</span>
-          <span className="text-[9px] font-mono text-white/30">01 SEQUENCE</span>
-          <div className="ml-auto flex items-center gap-1 text-[9px] font-mono text-white/30">
-            <span>FIT</span><span className="text-white/50">·</span><span>100%</span>
-          </div>
-        </div>
-        {/* Ruler */}
-        <div className="relative h-3 rounded-sm overflow-hidden mb-1" style={{ background: '#050506' }}>
-          <div className="absolute inset-0 flex">
-            {Array.from({ length: 24 }).map((_, i) => (
-              <div key={i} className="flex-1 border-r border-white/10 relative">
-                {i % 4 === 0 && (
-                  <span className="absolute left-0.5 top-0 text-[7px] font-mono text-white/35 leading-none">{String(i).padStart(2,'0')}s</span>
-                )}
-              </div>
-            ))}
-          </div>
-          {/* playhead */}
-          <span className="absolute top-0 bottom-0 w-px" style={{ left: '8%', background: tone, boxShadow: `0 0 6px ${tone}` }} />
-        </div>
-        {/* Tracks */}
-        {[
-          { label: 'V1', color: tone,        filled: hasVid ? 0.7 : 0 },
-          { label: 'V2', color: '#22d3ee',   filled: 0 },
-          { label: 'A1', color: '#fbbf24',   filled: hasVid ? 0.55 : 0 },
-        ].map((t) => (
-          <div key={t.label} className="flex items-center gap-1.5 mb-1 last:mb-0">
-            <span className="w-6 text-[8px] font-black uppercase text-white/45 font-mono">{t.label}</span>
-            <div className="flex-1 h-6 rounded-sm relative overflow-hidden" style={{ background: '#101013', border: '1px solid rgba(255,255,255,0.04)' }}>
-              {t.filled > 0 && (
-                <div
-                  className="absolute top-0 bottom-0 left-[4%] rounded-sm flex items-center px-1.5 overflow-hidden"
-                  style={{
-                    width: `${t.filled * 88}%`,
-                    background: `linear-gradient(180deg, ${t.color}55, ${t.color}22)`,
-                    border: `1px solid ${t.color}88`,
-                    boxShadow: `inset 0 1px 0 ${t.color}33`,
-                  }}
-                >
-                  {/* mini waveform / strip */}
-                  <div className="flex items-end gap-px h-full py-1 w-full">
-                    {Array.from({ length: 40 }).map((_, i) => (
-                      <span key={i} className="flex-1 rounded-sm" style={{ background: t.color, opacity: 0.45 + (Math.sin(i * 0.9) * 0.5 + 0.5) * 0.5, height: `${30 + ((i * 13) % 60)}%` }} />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
       </div>
 
       {/* ===== METADATA PANEL ===== */}
