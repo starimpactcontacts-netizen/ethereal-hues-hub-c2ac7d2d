@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Loader2, Music, Film, Link as LinkIcon, Clock, Zap, AlertTriangle, SkipForward } from 'lucide-react';
+import { ArrowLeft, Loader2, Music, Film, Link as LinkIcon, Clock, Zap, AlertTriangle, SkipForward, Upload, Video } from 'lucide-react';
 import { SiTiktok, SiInstagram, SiYoutube } from '@icons-pack/react-simple-icons';
 import { useAuth } from '@/hooks/useAuth';
 import { createSoloShare } from '@/hooks/useSoloShares';
@@ -12,6 +12,8 @@ import { toast } from 'sonner';
 import SEO from '@/components/SEO';
 import SoloLibraryPicker, { type LibrarySong, type LibraryScenepack } from '@/components/loopgate/SoloLibraryPicker';
 import GateIcon from '@/components/loopgate/GateIcon';
+import BunnyVideo from '@/components/loopgate/BunnyVideo';
+import { uploadToBunny, MAX_EDIT_UPLOAD_BYTES, MAX_EDIT_UPLOAD_LABEL } from '@/lib/bunnyUpload';
 
 const teko = { fontFamily: 'Teko, sans-serif' };
 
@@ -48,10 +50,16 @@ export default function CreateSoloSharePage() {
   const [scenepack, setScenepack] = useState<LibraryScenepack | null>(null);
 
   const [videoUrl, setVideoUrl] = useState('');
-  const [platform, setPlatform] = useState<'tiktok' | 'instagram' | 'youtube'>('tiktok');
+  const [platform, setPlatform] = useState<'tiktok' | 'instagram' | 'youtube' | 'bunny'>('tiktok');
   const [title, setTitle] = useState('');
   const [caption, setCaption] = useState('');
   const [startOffset, setStartOffset] = useState(0);
+
+  // Upload vs paste-link mode
+  const [mode, setMode] = useState<'upload' | 'link'>('upload');
+  const [uploadPct, setUploadPct] = useState(0);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Tick clock once the session starts
   useEffect(() => {
@@ -86,13 +94,34 @@ export default function CreateSoloSharePage() {
 
   // Auto-detect platform when URL changes
   useEffect(() => {
-    if (!videoUrl.trim()) return;
+    if (mode !== 'link' || !videoUrl.trim()) return;
     const detected = detectPlatform(videoUrl.trim());
     if (detected !== 'other') setPlatform(detected);
-  }, [videoUrl]);
+  }, [videoUrl, mode]);
+
+  const handleFile = async (file: File) => {
+    if (!file) return;
+    if (!file.type.startsWith('video/')) { toast.error('Pick a video file.'); return; }
+    if (file.size > MAX_EDIT_UPLOAD_BYTES) { toast.error(`Too large — ${MAX_EDIT_UPLOAD_LABEL} max`); return; }
+    setUploading(true);
+    setUploadPct(0);
+    try {
+      const res = await uploadToBunny(file, {
+        folder: `solo/${user?.id || 'anon'}`,
+        onProgress: (p) => setUploadPct(Math.round(p * 100)),
+      });
+      setVideoUrl(res.url);
+      setPlatform('bunny');
+      toast.success('Edit uploaded.');
+    } catch (e: any) {
+      toast.error(e?.message || 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const previewUrl = useMemo(
-    () => (videoUrl ? getEmbedUrl(videoUrl, platform, startOffset) : null),
+    () => (videoUrl && platform !== 'bunny' ? getEmbedUrl(videoUrl, platform, startOffset) : null),
     [videoUrl, platform, startOffset]
   );
 
@@ -102,12 +131,15 @@ export default function CreateSoloSharePage() {
     try { new URL(videoUrl.trim()); } catch { toast.error('That URL looks invalid.'); return; }
 
     setPhase('publishing');
+    const finalPlatform = platform === 'bunny'
+      ? 'bunny'
+      : (detectPlatform(videoUrl.trim()) !== 'other' ? detectPlatform(videoUrl.trim()) : platform);
     const share = await createSoloShare({
       user_id: user.id,
       username: profile.username || 'editor',
       avatar_url: profile.avatar_url || null,
       video_url: videoUrl.trim(),
-      platform: detectPlatform(videoUrl.trim()) !== 'other' ? detectPlatform(videoUrl.trim()) : platform,
+      platform: finalPlatform,
       title: title.trim() || null,
       caption: caption.trim() || null,
       timer_minutes: timer,
@@ -247,7 +279,33 @@ export default function CreateSoloSharePage() {
               <div>
                 <p className="text-[10px] text-amber-400 font-bold uppercase tracking-[0.3em]" style={teko}>Step 3</p>
                 <h2 className="text-4xl font-black mt-1 leading-none" style={teko}>DROP THE EDIT.</h2>
-                <p className="text-sm text-white/50 mt-2">Paste your video link. Tune where it starts.</p>
+                <p className="text-sm text-white/50 mt-2">Upload your edit, or paste a link to your TikTok/IG/YouTube post.</p>
+              </div>
+
+              {/* Mode toggle */}
+              <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-white/[0.04] border border-white/10">
+                {([
+                  { id: 'upload', label: 'UPLOAD', icon: <Upload className="w-3.5 h-3.5" />, sub: 'host on Loopgate' },
+                  { id: 'link', label: 'PASTE LINK', icon: <LinkIcon className="w-3.5 h-3.5" />, sub: 'distribute from socials' },
+                ] as const).map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => {
+                      setMode(m.id);
+                      setVideoUrl('');
+                      if (m.id === 'link') setPlatform('tiktok');
+                    }}
+                    className={`py-2.5 rounded-xl flex flex-col items-center gap-0.5 transition-all ${
+                      mode === m.id ? 'bg-amber-400 text-black' : 'text-white/60 hover:bg-white/5'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      {m.icon}
+                      <span className="text-[11px] font-extrabold uppercase tracking-[0.18em]">{m.label}</span>
+                    </div>
+                    <span className={`text-[9px] uppercase tracking-wider ${mode === m.id ? 'text-black/60' : 'text-white/30'}`}>{m.sub}</span>
+                  </button>
+                ))}
               </div>
 
               {/* Session recap */}
@@ -279,6 +337,7 @@ export default function CreateSoloSharePage() {
               )}
 
               {/* Edit URL */}
+              {mode === 'link' && (
               <div>
                 <label className="text-[10px] uppercase tracking-[0.2em] text-white/40 mb-2 flex items-center gap-1.5">
                   <LinkIcon className="w-3 h-3" /> Your edit URL
@@ -307,6 +366,64 @@ export default function CreateSoloSharePage() {
                   ))}
                 </div>
               </div>
+              )}
+
+              {/* Upload zone */}
+              {mode === 'upload' && (
+                <div>
+                  <label className="text-[10px] uppercase tracking-[0.2em] text-white/40 mb-2 flex items-center gap-1.5">
+                    <Video className="w-3 h-3" /> Your edit file
+                  </label>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="video/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) handleFile(f);
+                      e.target.value = '';
+                    }}
+                  />
+                  {!videoUrl && !uploading && (
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full rounded-2xl border-2 border-dashed border-white/15 hover:border-amber-400/60 hover:bg-amber-400/[0.04] py-10 flex flex-col items-center gap-2 transition-all active:scale-[0.99]"
+                    >
+                      <div className="w-12 h-12 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center">
+                        <Upload className="w-5 h-5 text-amber-400" />
+                      </div>
+                      <span className="text-sm font-bold text-white">Tap to upload your edit</span>
+                      <span className="text-[10px] uppercase tracking-[0.2em] text-white/30">MP4 / MOV · up to {MAX_EDIT_UPLOAD_LABEL}</span>
+                    </button>
+                  )}
+                  {uploading && (
+                    <div className="rounded-2xl border border-amber-400/30 bg-amber-400/[0.05] p-5 space-y-3">
+                      <div className="flex items-center gap-2 text-amber-400">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span className="text-xs font-bold uppercase tracking-[0.2em]">Uploading — {uploadPct}%</span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+                        <div className="h-full bg-amber-400 transition-all" style={{ width: `${uploadPct}%` }} />
+                      </div>
+                      <p className="text-[10px] text-white/40">Don't close this tab.</p>
+                    </div>
+                  )}
+                  {videoUrl && !uploading && platform === 'bunny' && (
+                    <div className="space-y-2">
+                      <div className="rounded-2xl overflow-hidden bg-black border border-white/5" style={{ aspectRatio: '9/16', maxHeight: 360 }}>
+                        <BunnyVideo src={videoUrl} className="w-full h-full object-contain" controls />
+                      </div>
+                      <button
+                        onClick={() => { setVideoUrl(''); setPlatform('tiktok'); fileInputRef.current?.click(); }}
+                        className="text-[10px] uppercase tracking-wider text-white/40 hover:text-amber-400"
+                      >
+                        replace file
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Preview + start offset (YouTube only honors it in embed) */}
               {previewUrl && (

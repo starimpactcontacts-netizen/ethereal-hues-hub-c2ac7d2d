@@ -4,6 +4,7 @@ import { Star, Send, ExternalLink, Loader2, Copy, Check, MessageCircle, Eye, Clo
 import { useAuth } from '@/hooks/useAuth';
 import { useSoloShareBySlug, submitSoloShareRating } from '@/hooks/useSoloShares';
 import { getEmbedUrl } from '@/lib/videoEmbed';
+import BunnyVideo from '@/components/loopgate/BunnyVideo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -48,7 +49,7 @@ export default function SoloSharePage() {
   }, [share, user]);
 
   const embedUrl = useMemo(
-    () => (share ? getEmbedUrl(share.video_url, share.platform, share.start_offset_seconds || 0) : null),
+    () => (share && share.platform !== 'bunny' ? getEmbedUrl(share.video_url, share.platform, share.start_offset_seconds || 0) : null),
     [share]
   );
 
@@ -207,7 +208,9 @@ export default function SoloSharePage() {
 
         {/* Player */}
         <div className="relative w-full rounded-2xl overflow-hidden bg-black border border-white/5" style={{ aspectRatio: share.platform === 'youtube' && !share.video_url.includes('/shorts/') ? '16/9' : '9/16' }}>
-          {embedUrl ? (
+          {share.platform === 'bunny' ? (
+            <BunnyVideo src={share.video_url} className="absolute inset-0 w-full h-full object-contain" controls autoPlay={false} />
+          ) : embedUrl ? (
             <iframe
               src={embedUrl}
               className="absolute inset-0 w-full h-full"
