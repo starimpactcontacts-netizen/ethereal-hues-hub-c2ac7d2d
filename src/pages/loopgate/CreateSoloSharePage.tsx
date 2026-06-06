@@ -350,6 +350,8 @@ export default function CreateSoloSharePage() {
               togglePreview={togglePreview}
               onPublish={handlePublish}
               canPublish={!!videoUrl.trim()}
+              startOffset={startOffset}
+              setStartOffset={setStartOffset}
             />
           </motion.div>
         )}
@@ -573,6 +575,7 @@ function NLECockpit({
   title, setTitle, caption, setCaption, overtime, remainingMs, timerLabel, onCancel,
   packs, songs, libLoading, scenepack, setScenepack, song, setSong, previewingId, togglePreview,
   onPublish, canPublish,
+  startOffset, setStartOffset,
 }: {
   tone: string;
   videoUrl: string;
@@ -600,12 +603,49 @@ function NLECockpit({
   togglePreview: (s: LibrarySong) => void;
   onPublish: () => void;
   canPublish: boolean;
+  startOffset: number;
+  setStartOffset: (n: number) => void;
 }) {
   const hasVid = !!videoUrl && platform === 'bunny' && !uploading;
   const timerDisplay = overtime ? `+${fmtRemaining(-remainingMs)}` : fmtRemaining(remainingMs);
   const timerColor = overtime ? '#ef4444' : tone;
   const [bin, setBin] = useState<'packs' | 'tracks'>('packs');
   const [binCollapsed, setBinCollapsed] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const timelineRef = useRef<HTMLDivElement | null>(null);
+  const draggingRef = useRef(false);
+
+  const seekTo = (t: number) => {
+    const v = videoRef.current;
+    if (!v || !isFinite(duration) || duration <= 0) return;
+    const clamped = Math.max(0, Math.min(duration, t));
+    v.currentTime = clamped;
+    setCurrentTime(clamped);
+  };
+
+  const handleTimelinePointer = (e: React.PointerEvent<HTMLDivElement>) => {
+    const el = timelineRef.current;
+    if (!el || !duration) return;
+    const rect = el.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    seekTo(pct * duration);
+  };
+
+  const togglePlay = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) v.play().catch(() => {}); else v.pause();
+  };
+
+  const fmtClock = (s: number) => {
+    if (!isFinite(s) || s < 0) s = 0;
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+  };
 
   return (
     <div
@@ -923,11 +963,24 @@ function NLECockpit({
           )}
 
           {hasVid && (
+            <>
             <div
               className="relative w-full rounded-md overflow-hidden bg-black"
               style={{ aspectRatio: '16/10', border: `1px solid ${tone}44` }}
             >
-              <BunnyVideo src={videoUrl} className="w-full h-full object-contain" controls />
+              <BunnyVideo
+                ref={videoRef}
+                src={videoUrl}
+                className="w-full h-full object-contain"
+                controls
+                onLoadedMetadata={(e) => {
+                  const d = (e.currentTarget as HTMLVideoElement).duration;
+                  if (isFinite(d)) setDuration(d);
+                }}
+                onTimeUpdate={(e) => setCurrentTime((e.currentTarget as HTMLVideoElement).currentTime)}
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+              />
               {[
                 'top-1.5 left-1.5 border-t border-l',
                 'top-1.5 right-1.5 border-t border-r',
@@ -941,6 +994,111 @@ function NLECockpit({
                 <span>SRC.MP4</span>
               </div>
             </div>
+
+            {/* ===== TIMELINE / TRANSPORT ===== */}
+            <div
+              className="mt-2 rounded-md p-2"
+              style={{ background: '#0b0b0e', border: '1px solid rgba(255,255,255,0.06)' }}
+            >
+              {/* transport row */}
+              <div className="flex items-center gap-2 mb-2">
+                <button
+                  type="button"
+                  onClick={togglePlay}
+                  className="w-7 h-7 rounded-md flex items-center justify-center active:scale-90 transition-transform"
+                  style={{ background: tone, boxShadow: `0 0 10px ${tone}66` }}
+                  aria-label={isPlaying ? 'Pause' : 'Play'}
+                >
+                  {isPlaying
+                    ? <Pause className="w-3.5 h-3.5 fill-black text-black" />
+                    : <Play className="w-3.5 h-3.5 fill-black text-black ml-[1px]" />}
+                </button>
+                <span className="text-[10px] font-mono text-white/70 tabular-nums">
+                  {fmtClock(currentTime)} <span className="text-white/30">/</span> {fmtClock(duration)}
+                </span>
+                <div className="ml-auto flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setStartOffset(Math.floor(currentTime))}
+                    disabled={!duration}
+                    className="h-6 px-2 rounded text-[9px] font-extrabold uppercase tracking-[0.18em] active:scale-95 transition-transform disabled:opacity-30"
+                    style={{ ...teko, background: `${tone}22`, border: `1px solid ${tone}66`, color: tone }}
+                  >
+                    SET IN · {fmtClock(currentTime)}
+                  </button>
+                  {startOffset > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setStartOffset(0)}
+                      className="h-6 px-2 rounded text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/50 hover:text-white active:scale-95 transition-transform"
+                      style={{ ...teko, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                    >
+                      CLEAR
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* scrubber */}
+              <div
+                ref={timelineRef}
+                onPointerDown={(e) => { (e.target as HTMLElement).setPointerCapture(e.pointerId); draggingRef.current = true; handleTimelinePointer(e); }}
+                onPointerMove={(e) => { if (draggingRef.current) handleTimelinePointer(e); }}
+                onPointerUp={(e) => { draggingRef.current = false; try { (e.target as HTMLElement).releasePointerCapture(e.pointerId); } catch {} }}
+                onPointerCancel={() => { draggingRef.current = false; }}
+                className="relative h-7 rounded select-none cursor-pointer"
+                style={{
+                  background:
+                    'repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 24px), linear-gradient(180deg,#0a0a0c,#050507)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                }}
+              >
+                {/* filled progress */}
+                <div
+                  className="absolute top-0 bottom-0 left-0 pointer-events-none"
+                  style={{
+                    width: duration ? `${(currentTime / duration) * 100}%` : '0%',
+                    background: `linear-gradient(180deg, ${tone}44, ${tone}22)`,
+                    borderRight: `1px solid ${tone}`,
+                  }}
+                />
+                {/* IN marker */}
+                {duration > 0 && startOffset > 0 && (
+                  <div
+                    className="absolute top-0 bottom-0 pointer-events-none flex flex-col items-center"
+                    style={{ left: `${Math.min(100, (startOffset / duration) * 100)}%`, transform: 'translateX(-50%)' }}
+                  >
+                    <span
+                      className="text-[7px] font-extrabold leading-none px-1 rounded-sm mt-[1px]"
+                      style={{ ...teko, background: tone, color: '#000' }}
+                    >IN</span>
+                    <span className="flex-1 w-[2px]" style={{ background: tone, boxShadow: `0 0 6px ${tone}` }} />
+                  </div>
+                )}
+                {/* playhead */}
+                {duration > 0 && (
+                  <div
+                    className="absolute top-[-2px] bottom-[-2px] w-[2px] pointer-events-none"
+                    style={{
+                      left: `${(currentTime / duration) * 100}%`,
+                      background: '#fff',
+                      boxShadow: '0 0 8px rgba(255,255,255,0.7)',
+                      transform: 'translateX(-1px)',
+                    }}
+                  >
+                    <span className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45 bg-white" />
+                  </div>
+                )}
+              </div>
+
+              {/* legend */}
+              <div className="flex items-center justify-between mt-1.5 text-[8px] font-mono uppercase tracking-[0.2em] text-white/30">
+                <span>00:00</span>
+                <span>{startOffset > 0 ? `START @ ${fmtClock(startOffset)}` : 'TIMELINE · DRAG TO SCRUB · SET IN TO TRIM INTRO'}</span>
+                <span>{fmtClock(duration)}</span>
+              </div>
+            </div>
+            </>
           )}
         </div>
       </div>
