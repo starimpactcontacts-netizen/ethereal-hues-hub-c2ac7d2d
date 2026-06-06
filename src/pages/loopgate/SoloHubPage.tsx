@@ -56,7 +56,7 @@ export default function SoloHubPage() {
                 <div className="flex items-start justify-between gap-3">
                   <Link to={`/s/${s.slug}`} className="flex-1 min-w-0">
                     <div className="font-bold text-sm truncate">{s.title || 'Untitled Edit'}</div>
-                    <div className="text-[11px] text-white/40 truncate">{s.platform} · /s/{s.slug}</div>
+                    <div className="text-[11px] text-white/40 truncate font-mono tracking-wider">CODE {s.slug.toUpperCase()}</div>
                   </Link>
                   <div className="flex items-center gap-1 text-amber-400 shrink-0">
                     <Star className="w-3.5 h-3.5 fill-amber-400" />

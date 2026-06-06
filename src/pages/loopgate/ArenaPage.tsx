@@ -1696,6 +1696,13 @@ export default function ArenaPage() {
                     <ChevronRight className="w-5 h-5 text-white/40 shrink-0" />
                   </div>
                 </button>
+                <button
+                  onClick={() => navigate('/solo/find')}
+                  className="mt-2 w-full flex items-center justify-center gap-2 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-white/80"
+                >
+                  <Search className="w-3.5 h-3.5" />
+                  Find a Solo by code or @username
+                </button>
               </div>
             </div>
           )}

@@ -43,6 +43,7 @@ const ArenaChatPage = lazy(() => import("./pages/loopgate/ArenaChatPage"));
 const SoloSharePage = lazy(() => import("./pages/loopgate/SoloSharePage"));
 const CreateSoloSharePage = lazy(() => import("./pages/loopgate/CreateSoloSharePage"));
 const SoloHubPage = lazy(() => import("./pages/loopgate/SoloHubPage"));
+const SoloFindPage = lazy(() => import("./pages/loopgate/SoloFindPage"));
 const CollabsPage = lazy(() => import("./pages/loopgate/CollabsPage"));
 const CreateCollabPage = lazy(() => import("./pages/loopgate/CreateCollabPage"));
 const CollabDetailPage = lazy(() => import("./pages/loopgate/CollabDetailPage"));
@@ -359,6 +360,7 @@ export default function App() {
               <Route path="/arena" element={<ArenaPage />} />
               <Route path="/solo" element={<SoloHubPage />} />
               <Route path="/solo/create" element={<CreateSoloSharePage />} />
+              <Route path="/solo/find" element={<SoloFindPage />} />
               <Route path="/collabs" element={<CollabsPage />} />
               <Route path="/collabs/create" element={<CreateCollabPage />} />
               <Route path="/collab/:id" element={<CollabDetailPage />} />
