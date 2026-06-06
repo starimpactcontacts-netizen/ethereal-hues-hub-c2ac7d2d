@@ -271,76 +271,28 @@ export default function CreateSoloSharePage() {
             transition={{ delay: 0.1 }}
             className="space-y-7"
           >
-            {/* ====== DROP THE EDIT (TOP) ====== */}
-            <div className="space-y-3">
-              <div className="flex items-center px-1">
-                <span className="text-[16px] font-extrabold uppercase text-white" style={teko}>YOUR EDIT</span>
-              </div>
-
-              {(
-                <>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="video/*"
-                    className="hidden"
-                    onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }}
-                  />
-                  {!videoUrl && !uploading && (
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="w-full aspect-[16/9] rounded-3xl flex flex-col items-center justify-center gap-3 active:scale-[0.98] transition-transform relative overflow-hidden"
-                      style={{
-                        background: 'radial-gradient(circle at 50% 30%, rgba(251,191,36,0.15), rgba(0,0,0,0) 60%)',
-                        border: '2px dashed rgba(251,191,36,0.4)',
-                      }}
-                    >
-                      <div className="w-16 h-16 rounded-3xl bg-amber-400 flex items-center justify-center" style={{ boxShadow: '0 6px 0 0 #b45309, 0 14px 30px -8px rgba(251,191,36,0.5)' }}>
-                        <Upload className="w-7 h-7 text-black" strokeWidth={2.5} />
-                      </div>
-                      <div className="text-center">
-                        <p className="text-[22px] font-black uppercase text-white leading-none" style={teko}>TAP TO UPLOAD</p>
-                        <p className="text-[11px] uppercase text-white/40 mt-1" style={teko}>MP4 / MOV · {MAX_EDIT_UPLOAD_LABEL}</p>
-                      </div>
-                    </button>
-                  )}
-                  {uploading && (
-                    <div className="rounded-3xl border-2 border-amber-400/40 bg-amber-400/[0.05] p-5 space-y-3">
-                      <div className="flex items-center justify-between text-amber-400">
-                        <span className="text-[14px] font-extrabold uppercase" style={teko}>UPLOADING</span>
-                        <span className="text-[20px] font-black" style={teko}>{uploadPct}%</span>
-                      </div>
-                      <div className="h-2 rounded-full bg-white/10 overflow-hidden">
-                        <div className="h-full bg-amber-400 transition-all" style={{ width: `${uploadPct}%`, boxShadow: '0 0 12px #fbbf24' }} />
-                      </div>
-                    </div>
-                  )}
-                  {videoUrl && !uploading && platform === 'bunny' && (
-                    <div className="space-y-2">
-                      <div className="rounded-3xl overflow-hidden bg-black border-2 border-emerald-500/40 relative" style={{ aspectRatio: '9/16', maxHeight: 360 }}>
-                        <BunnyVideo src={videoUrl} className="w-full h-full object-contain" controls />
-                        <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-emerald-500 text-black text-[10px] font-black uppercase flex items-center gap-1" style={teko}>
-                          <Check className="w-3 h-3" strokeWidth={3} /> LOADED
-                        </div>
-                      </div>
-                      <button onClick={() => { setVideoUrl(''); fileInputRef.current?.click(); }} className="text-[11px] uppercase text-white/40 hover:text-amber-400" style={teko}>replace file</button>
-                    </div>
-                  )}
-                </>
-              )}
-
-              <div className="grid grid-cols-2 gap-2 pt-1">
-                <Input value={title} onChange={(e) => setTitle(e.target.value.slice(0, 80))} placeholder="Title" className="bg-white/5 border-white/10 h-11 rounded-2xl text-sm" />
-                <Input value={caption} onChange={(e) => setCaption(e.target.value.slice(0, 200))} placeholder="Caption" className="bg-white/5 border-white/10 h-11 rounded-2xl text-sm" />
-              </div>
-
-              {overtime && (
-                <div className="flex items-center gap-2 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/40 text-amber-400 text-xs">
-                  <AlertTriangle className="w-4 h-4 shrink-0" />
-                  <span>Clock expired — page ships flagged <b>OVERTIME</b>.</span>
-                </div>
-              )}
-            </div>
+            {/* ====== NLE COCKPIT — YOUR EDIT ====== */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="video/*"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }}
+            />
+            <NLECockpit
+              tone={tonePicked}
+              videoUrl={videoUrl}
+              uploading={uploading}
+              uploadPct={uploadPct}
+              platform={platform}
+              onPick={() => fileInputRef.current?.click()}
+              onReplace={() => { setVideoUrl(''); fileInputRef.current?.click(); }}
+              title={title}
+              setTitle={setTitle}
+              caption={caption}
+              setCaption={setCaption}
+              overtime={overtime}
+            />
 
             {/* Scenepacks */}
             <CarouselRow
