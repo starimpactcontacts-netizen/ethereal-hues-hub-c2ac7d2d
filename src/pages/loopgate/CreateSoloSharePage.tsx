@@ -447,7 +447,6 @@ export default function CreateSoloSharePage() {
               boxShadow: '0 8px 0 0 #92400e, 0 18px 40px -8px rgba(251,191,36,0.6), inset 0 1px 0 rgba(255,255,255,0.4)',
             }}
           >
-            <Zap className="w-6 h-6" strokeWidth={2.5} />
           <span className="text-[24px] font-black uppercase" style={teko}>{overtime ? 'SHIP OVERTIME' : 'PUBLISH SOLO'}</span>
           </button>
         </div>
