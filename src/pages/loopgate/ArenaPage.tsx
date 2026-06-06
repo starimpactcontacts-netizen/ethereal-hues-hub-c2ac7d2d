@@ -1263,6 +1263,63 @@ export default function ArenaPage() {
                 </motion.div>
               )}
 
+              {soloShareDraft && (
+                <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
+                  <div className="bg-surface-1 border border-purple-400/40 p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 bg-purple-500/20 flex items-center justify-center shrink-0">
+                        <Film className="w-5 h-5 text-purple-300" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] text-purple-300 font-bold uppercase tracking-wider">Solo Session In Progress</p>
+                        <p className="text-sm text-foreground font-bold truncate">
+                          {soloShareDraft.title?.trim() || soloShareDraft.song?.song_name || 'Untitled solo edit'}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {soloDraftRemainingMs !== null && (
+                          <span className={`text-[10px] font-bold uppercase tracking-wider ${soloDraftRemainingMs < 0 ? 'text-red-400' : 'text-purple-300'}`}>
+                            {soloDraftRemainingMs < 0
+                              ? 'OVERTIME'
+                              : `${Math.floor(soloDraftRemainingMs / 60000)}M LEFT`}
+                          </span>
+                        )}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!confirm('Cancel this solo session? Your draft will be lost.')) return;
+                            if (user) clearSoloDraft(user.id);
+                            setSoloShareDraft(null);
+                            toast('Solo session cancelled');
+                          }}
+                          className="p-1.5 hover:bg-destructive/10 transition-colors"
+                          aria-label="Cancel solo session"
+                        >
+                          <X className="w-4 h-4 text-muted-foreground hover:text-destructive" />
+                        </button>
+                      </div>
+                    </div>
+                    {(soloShareDraft.song?.song_name || soloShareDraft.scenepack) && (
+                      <div className="flex items-center gap-2 bg-surface-1 border border-border px-3 py-2 mb-3">
+                        <Music className="w-3.5 h-3.5 text-purple-300 shrink-0" />
+                        <span className="text-[12px] text-foreground font-medium truncate">
+                          {soloShareDraft.song?.song_name || (soloShareDraft.scenepack ? 'Scenepack selected' : '')}
+                        </span>
+                      </div>
+                    )}
+                    <button
+                      onClick={() => navigate('/solo/create')}
+                      className="w-full bg-purple-500 hover:bg-purple-400 transition-colors py-3 flex items-center justify-center gap-2"
+                    >
+                      <Play className="w-4 h-4 text-background" />
+                      <span className="text-[14px] font-black text-background tracking-tight" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                        RESUME SESSION
+                      </span>
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
               {activeSolo && (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
                   <div className="bg-surface-1 border border-gold/30 p-4">
