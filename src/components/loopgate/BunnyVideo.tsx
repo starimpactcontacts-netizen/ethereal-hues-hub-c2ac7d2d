@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import { attachHlsSource } from '@/lib/attachHlsSource';
 
 interface Props {
@@ -10,10 +10,14 @@ interface Props {
   loop?: boolean;
   poster?: string;
   playsInline?: boolean;
+  onLoadedMetadata?: (e: React.SyntheticEvent<HTMLVideoElement>) => void;
+  onTimeUpdate?: (e: React.SyntheticEvent<HTMLVideoElement>) => void;
+  onPlay?: () => void;
+  onPause?: () => void;
 }
 
 /** Native <video> wired up to Bunny Stream (MP4 with HLS fallback). */
-export default function BunnyVideo({
+const BunnyVideo = forwardRef<HTMLVideoElement, Props>(function BunnyVideo({
   src,
   className,
   controls = true,
@@ -22,8 +26,13 @@ export default function BunnyVideo({
   loop = false,
   poster,
   playsInline = true,
-}: Props) {
+  onLoadedMetadata,
+  onTimeUpdate,
+  onPlay,
+  onPause,
+}, externalRef) {
   const ref = useRef<HTMLVideoElement | null>(null);
+  useImperativeHandle(externalRef, () => ref.current as HTMLVideoElement, []);
 
   useEffect(() => {
     const v = ref.current;
@@ -42,6 +51,12 @@ export default function BunnyVideo({
       loop={loop}
       poster={poster}
       playsInline={playsInline}
+      onLoadedMetadata={onLoadedMetadata}
+      onTimeUpdate={onTimeUpdate}
+      onPlay={onPlay}
+      onPause={onPause}
     />
   );
-}
+});
+
+export default BunnyVideo;
