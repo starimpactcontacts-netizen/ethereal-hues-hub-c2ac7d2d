@@ -33,6 +33,7 @@ import FeaturedDropCard from "@/components/loopgate/FeaturedDropCard";
 import { useFeaturedDrops } from "@/hooks/useFeaturedDrops";
 import RingsCoin from "@/components/loopgate/RingsCoin";
 import { useSoloMode } from "@/hooks/useSoloMode";
+import { useLatestSoloShares } from "@/hooks/useSoloShares";
 import { useMyQuickFights } from "@/hooks/useQuickFight";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
@@ -553,6 +554,7 @@ export default function ArenaPage() {
   const { liveDrops } = useFeaturedDrops();
   const [missionBillboards, setMissionBillboards] = useState<Array<{ id: string; song_name: string; poster_url: string | null; artist_name: string | null; max_pay: number }>>([]);
   const { activeSolo, loading: soloLoading, cancelSolo } = useSoloMode();
+  const { shares: latestSoloShares, loading: latestSoloLoading } = useLatestSoloShares(12);
   const { fights: myQuickFights, inQueue: qfInQueue } = useMyQuickFights();
   const cancelLobby = async (lobbyId: string) => {
     const { error } = await supabase.from('quick_fights').update({ status: 'cancelled' }).eq('id', lobbyId);
@@ -1704,6 +1706,49 @@ export default function ArenaPage() {
                   Find a Solo by code or @username
                 </button>
               </div>
+              {/* Live solo cards rail */}
+              {latestSoloLoading ? (
+                <div className="mt-3"><ArenaRailSkeleton count={3} /></div>
+              ) : latestSoloShares.length > 0 && (
+                <div className="mt-3">
+                  <div className="flex items-center justify-between px-4 mb-2">
+                    <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">Rate Now</div>
+                    <div className="text-[10px] uppercase tracking-[0.18em] text-white/30">{latestSoloShares.length} live</div>
+                  </div>
+                  <ArenaRail>
+                    {latestSoloShares.map((s) => (
+                      <ArenaRailCard key={s.id}>
+                        <button
+                          onClick={() => navigate(`/s/${s.slug}`)}
+                          className="w-full h-full relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] text-left active:scale-[0.98] transition-transform group"
+                        >
+                          {s.thumbnail_url ? (
+                            <img src={s.thumbnail_url} alt={s.title || 'Solo edit'} className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition" loading="lazy" />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <Star className="w-10 h-10 text-white/15 fill-white/10" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                          <div className="absolute top-2 left-2 right-2 flex items-center justify-between">
+                            <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-white text-black">SOLO</span>
+                            <span className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/60 text-white/80 border border-white/10">{s.slug.toUpperCase()}</span>
+                          </div>
+                          <div className="absolute bottom-0 left-0 right-0 p-2.5">
+                            <div className="font-display text-sm leading-tight truncate text-white">{s.title || 'Untitled edit'}</div>
+                            <div className="text-[10px] text-white/60 truncate">@{s.username}</div>
+                            <div className="mt-1 flex items-center gap-1 text-[10px] text-white/70">
+                              <Star className="w-3 h-3 fill-gold text-gold" />
+                              <span className="font-bold">{s.total_ratings > 0 ? s.avg_rating.toFixed(1) : '—'}</span>
+                              <span className="text-white/40">· {s.total_ratings} {s.total_ratings === 1 ? 'rate' : 'rates'}</span>
+                            </div>
+                          </div>
+                        </button>
+                      </ArenaRailCard>
+                    ))}
+                  </ArenaRail>
+                </div>
+              )}
             </div>
           )}
 
