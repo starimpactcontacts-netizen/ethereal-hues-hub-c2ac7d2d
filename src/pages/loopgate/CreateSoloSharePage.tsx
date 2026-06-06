@@ -635,7 +635,7 @@ function OsuLobby({ user, profile, onPick }: { user: any; profile: any; onPick: 
 /* ====== NLE COCKPIT — AE/Premiere/Resolve x Roblox-Draw ====== */
 function NLECockpit({
   tone, videoUrl, uploading, uploadPct, platform, onPick, onReplace,
-  title, setTitle, caption, setCaption, overtime, remainingMs, timerLabel,
+  title, setTitle, caption, setCaption, overtime, remainingMs, timerLabel, onCancel,
 }: {
   tone: string;
   videoUrl: string;
@@ -651,6 +651,7 @@ function NLECockpit({
   overtime: boolean;
   remainingMs: number;
   timerLabel: string;
+  onCancel: () => void;
 }) {
   const hasVid = !!videoUrl && platform === 'bunny' && !uploading;
   const timerDisplay = overtime ? `+${fmtRemaining(-remainingMs)}` : fmtRemaining(remainingMs);
@@ -670,19 +671,28 @@ function NLECockpit({
         className="flex items-center gap-2 px-3 h-9 border-b"
         style={{ background: 'linear-gradient(180deg,#1a1a1d,#131316)', borderColor: 'rgba(255,255,255,0.06)' }}
       >
-        <div className="flex gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#ff5f57' }} />
-          <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#febc2e' }} />
-          <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#28c840' }} />
-        </div>
-        <div className="flex items-center gap-1.5 ml-2">
+        <button
+          type="button"
+          onClick={() => { if (confirm('Cancel this solo edit?')) onCancel(); }}
+          aria-label="Cancel edit"
+          className="group relative w-3 h-3 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+          style={{ background: '#ff5f57', boxShadow: '0 0 0 1px rgba(0,0,0,0.4), 0 0 8px rgba(255,95,87,0.5)' }}
+        >
+          <X className="w-2 h-2 text-black/0 group-hover:text-black/70 transition-colors" strokeWidth={3} />
+        </button>
+        <div className="flex items-center gap-1.5 ml-2 flex-1 min-w-0">
           <span
-            className="w-1.5 h-1.5 rounded-full animate-pulse"
+            className="w-1.5 h-1.5 rounded-full animate-pulse shrink-0"
             style={{ background: tone, boxShadow: `0 0 8px ${tone}` }}
           />
-          <span className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-white/80" style={teko}>
-            YOUR_EDIT.PROJ
-          </span>
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value.slice(0, 80))}
+            placeholder="UNTITLED.PROJ"
+            spellCheck={false}
+            className="flex-1 min-w-0 bg-transparent outline-none border-0 text-[11px] font-extrabold uppercase tracking-[0.18em] text-white/85 placeholder:text-white/30 focus:text-white"
+            style={teko}
+          />
         </div>
         {/* Inline countdown */}
         <div
