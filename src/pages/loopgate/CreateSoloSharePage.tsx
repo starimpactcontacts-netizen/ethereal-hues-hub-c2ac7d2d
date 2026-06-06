@@ -588,6 +588,7 @@ function NLECockpit({
   const timerDisplay = overtime ? `+${fmtRemaining(-remainingMs)}` : fmtRemaining(remainingMs);
   const timerColor = overtime ? '#ef4444' : tone;
   const [bin, setBin] = useState<'packs' | 'tracks'>('packs');
+  const [binCollapsed, setBinCollapsed] = useState(false);
 
   return (
     <div
@@ -648,8 +649,25 @@ function NLECockpit({
       <div className="flex flex-col sm:flex-row" style={{ background: '#08080a' }}>
 
         {/* ----- LEFT: PROJECT BIN (Scenepacks / Tracks) ----- */}
+        {binCollapsed ? (
+          <button
+            type="button"
+            onClick={() => setBinCollapsed(false)}
+            className="hidden sm:flex shrink-0 w-7 flex-col items-center justify-start gap-2 py-2 border-r active:scale-95 transition-transform"
+            style={{ background: '#0b0b0e', borderColor: 'rgba(255,255,255,0.06)' }}
+            aria-label="Expand project bin"
+          >
+            <PanelLeftOpen className="w-3.5 h-3.5 text-white/40" />
+            <span
+              className="text-[8px] font-extrabold uppercase tracking-[0.25em] text-white/30"
+              style={{ ...teko, writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
+            >
+              PROJECT BIN
+            </span>
+          </button>
+        ) : (
         <div
-          className="shrink-0 sm:w-[220px] border-b sm:border-b-0 sm:border-r flex flex-col"
+          className="shrink-0 sm:w-[260px] border-b sm:border-b-0 sm:border-r flex flex-col"
           style={{ background: '#0b0b0e', borderColor: 'rgba(255,255,255,0.06)' }}
         >
           {/* tab strip */}
@@ -680,11 +698,19 @@ function NLECockpit({
                 </button>
               );
             })}
+            <button
+              type="button"
+              onClick={() => setBinCollapsed(true)}
+              aria-label="Collapse project bin"
+              className="ml-1 w-7 h-7 rounded-md flex items-center justify-center text-white/40 hover:text-white/80 hover:bg-white/5 active:scale-90 transition"
+            >
+              <PanelLeftClose className="w-3.5 h-3.5" />
+            </button>
           </div>
 
           {/* bin list */}
           <div
-            className="flex-1 min-h-0 sm:max-h-[360px] overflow-y-auto overflow-x-hidden p-2 grid grid-cols-3 sm:grid-cols-2 gap-2 scrollbar-hide"
+            className={`flex-1 min-h-0 sm:max-h-[360px] overflow-y-auto overflow-x-hidden p-2 scrollbar-hide ${bin === 'packs' ? 'grid grid-cols-3 sm:grid-cols-2 gap-2' : 'flex flex-col gap-1.5'}`}
             style={{ scrollbarWidth: 'none', background: '#0d0d10', borderTop: `1px solid ${bin === 'packs' ? '#8b5cf655' : '#fbbf2455'}` }}
           >
             {libLoading && (
@@ -694,7 +720,7 @@ function NLECockpit({
               <div className="col-span-full text-center text-[10px] uppercase tracking-[0.2em] text-white/30 py-6">No packs</div>
             )}
             {!libLoading && bin === 'tracks' && songs.length === 0 && (
-              <div className="col-span-full text-center text-[10px] uppercase tracking-[0.2em] text-white/30 py-6">No tracks</div>
+              <div className="text-center text-[10px] uppercase tracking-[0.2em] text-white/30 py-6">No tracks</div>
             )}
 
             {bin === 'packs' && packs.map((p) => {
@@ -733,43 +759,64 @@ function NLECockpit({
               const active = song?.id === s.id;
               const isPlaying = previewingId === s.id;
               return (
-                <button
+                <div
                   key={s.id}
-                  type="button"
-                  onClick={() => setSong(active ? null : s)}
-                  className="rounded-md overflow-hidden active:scale-[0.94] transition-transform text-left"
+                  className="flex items-center gap-2.5 p-1.5 rounded-md transition-colors"
                   style={{
                     border: active ? '2px solid #fbbf24' : '1px solid rgba(255,255,255,0.08)',
-                    background: active ? 'rgba(251,191,36,0.08)' : 'rgba(255,255,255,0.02)',
+                    background: active ? 'rgba(251,191,36,0.10)' : 'rgba(255,255,255,0.02)',
                   }}
                 >
-                  <div className="relative aspect-square bg-gradient-to-br from-amber-900/40 to-black overflow-hidden">
+                  {/* cover (also click target for select) */}
+                  <button
+                    type="button"
+                    onClick={() => setSong(active ? null : s)}
+                    className="relative w-12 h-12 shrink-0 rounded-md overflow-hidden bg-gradient-to-br from-amber-900/40 to-black active:scale-95 transition-transform"
+                  >
                     {(s as any).cover_url ? (
                       <img src={(s as any).cover_url} alt={s.song_name} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center"><Music className="w-4 h-4 text-amber-400/60" /></div>
+                      <div className="w-full h-full flex items-center justify-center"><Music className="w-5 h-5 text-amber-400/60" /></div>
                     )}
-                    <div
-                      role="button"
-                      tabIndex={0}
-                      onClick={(e) => { e.stopPropagation(); togglePreview(s); }}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); togglePreview(s); } }}
-                      className="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-black/80 backdrop-blur flex items-center justify-center border border-white/15 active:scale-95 transition-transform cursor-pointer"
-                    >
-                      {isPlaying
-                        ? <Pause className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
-                        : <Play className="w-2.5 h-2.5 fill-amber-400 text-amber-400 ml-0.5" />}
-                    </div>
-                  </div>
-                  <div className="px-1.5 py-1">
-                    <p className="text-[9px] font-bold text-white truncate leading-tight">{s.song_name}</p>
-                    <p className="text-[8px] text-white/50 truncate">{(s as any).artist_name || 'Unknown'}</p>
-                  </div>
-                </button>
+                    {active && (
+                      <div className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-amber-400 flex items-center justify-center">
+                        <Check className="w-2 h-2 text-black" strokeWidth={4} />
+                      </div>
+                    )}
+                  </button>
+
+                  {/* meta */}
+                  <button
+                    type="button"
+                    onClick={() => setSong(active ? null : s)}
+                    className="flex-1 min-w-0 text-left active:opacity-80"
+                  >
+                    <p className="text-[11px] font-bold text-white truncate leading-tight">{s.song_name}</p>
+                    <p className="text-[9px] text-white/50 truncate mt-0.5">{(s as any).artist_name || 'Unknown'}</p>
+                  </button>
+
+                  {/* preview button — large + isolated */}
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); togglePreview(s); }}
+                    aria-label={isPlaying ? 'Pause preview' : 'Play preview'}
+                    className="shrink-0 w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+                    style={{
+                      background: isPlaying ? '#fbbf24' : 'rgba(251,191,36,0.15)',
+                      border: `1px solid ${isPlaying ? '#fbbf24' : 'rgba(251,191,36,0.5)'}`,
+                      boxShadow: isPlaying ? '0 0 12px rgba(251,191,36,0.5)' : 'none',
+                    }}
+                  >
+                    {isPlaying
+                      ? <Pause className="w-4 h-4 fill-black text-black" />
+                      : <Play className="w-4 h-4 fill-amber-400 text-amber-400 ml-0.5" />}
+                  </button>
+                </div>
               );
             })}
           </div>
         </div>
+        )}
 
         {/* ----- RIGHT: PROGRAM MONITOR ----- */}
         <div className="flex-1 min-w-0 p-2.5">
