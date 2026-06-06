@@ -51,6 +51,23 @@ export function loadActiveSoloDraft(): SoloDraft | null {
   }
 }
 
+export function loadLatestSoloDraft(): SoloDraft | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const drafts: SoloDraft[] = [];
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i);
+      if (!key?.startsWith('solo_share_draft_')) continue;
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+      drafts.push(JSON.parse(raw) as SoloDraft);
+    }
+    return drafts.sort((a, b) => Date.parse(b.updatedAt || '') - Date.parse(a.updatedAt || ''))[0] || null;
+  } catch {
+    return null;
+  }
+}
+
 export function saveActiveSoloDraft(draft: Partial<SoloDraft>) {
   if (typeof window === 'undefined') return;
   try {
