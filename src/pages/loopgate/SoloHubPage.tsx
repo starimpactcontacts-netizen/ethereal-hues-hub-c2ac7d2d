@@ -33,9 +33,9 @@ export default function SoloHubPage() {
       <main className="max-w-xl mx-auto px-4 py-5">
         <button
           onClick={() => navigate('/solo/create')}
-          className="w-full flex items-center justify-center gap-2 bg-white text-black h-12 rounded-xl font-bold text-sm mb-5"
+          className="w-full flex items-center justify-center gap-2 bg-black text-white h-12 rounded-xl text-sm mb-5 border border-white/10 active:scale-[0.99] transition-transform"
         >
-          <Plus className="w-4 h-4" /> New Solo Page
+          <Plus className="w-4 h-4" /> <span className="font-display tracking-tight">NEW SOLO</span>
         </button>
 
         {loading ? (
