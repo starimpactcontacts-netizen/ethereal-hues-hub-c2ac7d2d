@@ -74,7 +74,7 @@ export default function CreateSoloSharePage() {
     (async () => {
       const [{ data: s }, { data: p }] = await Promise.all([
         supabase.from('battle_songs' as any).select('*').eq('is_featured', true).order('is_priority', { ascending: false }).limit(40),
-        supabase.from('scenepack_pool' as any).select('*').eq('is_active', true).order('sort_order', { ascending: true }).limit(30),
+        supabase.from('scenepack_pool' as any).select('*').eq('active', true).order('sort_order', { ascending: true }).limit(30),
       ]);
       setSongs((s as any) || []);
       setPacks((p as any) || []);
@@ -219,7 +219,7 @@ export default function CreateSoloSharePage() {
         <div className="text-center pt-2 pb-6">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/10 mb-3">
             <GateIcon size={11} className="text-amber-400" />
-            <span className="text-[9px] font-extrabold uppercase tracking-[0.3em] text-white/70" style={teko}>SOLO · LOBBY</span>
+            <span className="text-[11px] font-extrabold uppercase text-white/80" style={teko}>SOLO LOBBY</span>
           </div>
           <LobbyTimerHud remainingMs={remaining} overtime={overtime} pct={elapsedPct} tone={tonePicked} timerLabel={TIMERS.find(t=>t.value===timer)?.sub || ''} />
         </div>
@@ -292,8 +292,8 @@ export default function CreateSoloSharePage() {
                     }}
                   >
                     <div className="relative aspect-square bg-gradient-to-br from-amber-900/40 to-black overflow-hidden">
-                      {(s as any).artwork_url ? (
-                        <img src={(s as any).artwork_url} alt={s.song_name} className="w-full h-full object-cover" />
+                      {(s as any).cover_url ? (
+                        <img src={(s as any).cover_url} alt={s.song_name} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center"><Music className="w-7 h-7 text-amber-400/60" /></div>
                       )}
@@ -303,7 +303,7 @@ export default function CreateSoloSharePage() {
                     </div>
                     <div className="p-2">
                       <p className="text-[11px] font-bold text-white truncate">{s.song_name}</p>
-                      <p className="text-[9px] text-white/40 truncate uppercase tracking-wider">{(s as any).artist_name || 'Unknown'}</p>
+                      <p className="text-[10px] text-white/50 truncate">{(s as any).artist_name || 'Unknown'}</p>
                     </div>
                   </button>
                 );
@@ -448,7 +448,7 @@ export default function CreateSoloSharePage() {
             }}
           >
             <Zap className="w-6 h-6" strokeWidth={2.5} />
-            <span className="text-[22px] font-black uppercase tracking-[0.2em]" style={teko}>{overtime ? 'SHIP OVERTIME' : 'PUBLISH SOLO'}</span>
+          <span className="text-[24px] font-black uppercase" style={teko}>{overtime ? 'SHIP OVERTIME' : 'PUBLISH SOLO'}</span>
           </button>
         </div>
       )}
@@ -464,7 +464,7 @@ function CarouselRow({ label, accent, count, empty, children }: { label: string;
       <div className="flex items-center justify-between px-1 mb-2.5">
         <div className="flex items-center gap-2">
           <span className="w-1 h-4 rounded-full" style={{ background: accent, boxShadow: `0 0 10px ${accent}` }} />
-          <span className="text-[13px] font-extrabold uppercase tracking-[0.22em] text-white" style={teko}>{label}</span>
+          <span className="text-[15px] font-extrabold uppercase text-white" style={teko}>{label}</span>
           <span className="text-[10px] font-bold text-white/30">{count}</span>
         </div>
       </div>
@@ -701,8 +701,8 @@ function OsuLobby({ user, profile, onPick }: { user: any; profile: any; onPick: 
         className="absolute z-20 left-4 text-left"
         style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 14px)' }}
       >
-        <p className="text-[10px] font-bold text-white/50 leading-tight" style={teko}>LOOPGATE · SOLO LOBBY</p>
-        <p className="text-[9px] text-white/25 uppercase tracking-[0.25em]">soft-lock · overtime allowed</p>
+        <p className="text-[12px] font-bold text-white/60 leading-tight" style={teko}>LOOPGATE SOLO LOBBY</p>
+        <p className="text-[9px] text-white/30 uppercase tracking-wider">soft-lock · overtime allowed</p>
       </div>
     </div>
   );
