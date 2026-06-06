@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Loader2, Music, Film, Link as LinkIcon, Zap, AlertTriangle, Upload, Play, Flame, X, Check } from 'lucide-react';
+import { ArrowLeft, Loader2, Music, Film, Link as LinkIcon, Zap, AlertTriangle, Upload, Play, Flame, X, Check, Timer as TimerIcon, Clock, Hourglass, ChevronRight, User } from 'lucide-react';
 import { SiTiktok, SiInstagram, SiYoutube } from '@icons-pack/react-simple-icons';
 import { useAuth } from '@/hooks/useAuth';
 import { createSoloShare } from '@/hooks/useSoloShares';
@@ -24,6 +24,12 @@ const TIMERS: { value: Timer; label: string; sub: string; tone: string }[] = [
   { value: 60,  label: '1H',  sub: 'STANDARD',  tone: '#fbbf24' },
   { value: 180, label: '3H',  sub: 'CINEMATIC', tone: '#8b5cf6' },
 ];
+
+const TIMER_ICONS: Record<Timer, typeof TimerIcon> = {
+  30: TimerIcon,
+  60: Clock,
+  180: Hourglass,
+};
 
 function fmtRemaining(ms: number) {
   if (ms <= 0) return '00:00';
