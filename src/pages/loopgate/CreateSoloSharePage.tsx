@@ -14,7 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import GateIcon from '@/components/loopgate/GateIcon';
 import BunnyVideo from '@/components/loopgate/BunnyVideo';
 import { uploadToBunny, MAX_EDIT_UPLOAD_BYTES, MAX_EDIT_UPLOAD_LABEL } from '@/lib/bunnyUpload';
-import { loadSoloDraft, saveSoloDraft, clearSoloDraft } from '@/lib/soloDraft';
+import { loadSoloDraft, saveSoloDraft, clearSoloDraft, loadActiveSoloDraft, saveActiveSoloDraft, clearActiveSoloDraft } from '@/lib/soloDraft';
 
 const teko = { fontFamily: 'Teko, sans-serif' };
 
@@ -94,30 +94,35 @@ export default function CreateSoloSharePage() {
 
   // ── Persist in-progress session across refresh ────────────────────────────
   const hydratedRef = useRef(false);
+  const applyDraft = (d: ReturnType<typeof loadSoloDraft>) => {
+    if (!d) return;
+    if (d.timer) setTimer(d.timer);
+    if (d.startedAt) setStartedAt(new Date(d.startedAt));
+    if (d.song) setSong(d.song);
+    if (d.scenepack) setScenepack(d.scenepack);
+    if (typeof d.videoUrl === 'string') setVideoUrl(d.videoUrl);
+    if (d.platform) setPlatform(d.platform);
+    if (typeof d.title === 'string') setTitle(d.title);
+    if (typeof d.caption === 'string') setCaption(d.caption);
+    if (typeof d.startOffset === 'number') setStartOffset(d.startOffset);
+    if (d.mode) setMode(d.mode);
+  };
+
   useEffect(() => {
-    if (hydratedRef.current || !user) return;
-    const d = loadSoloDraft(user.id);
-    if (d) {
-      if (d.timer) setTimer(d.timer);
-      if (d.startedAt) setStartedAt(new Date(d.startedAt));
-      if (d.song) setSong(d.song);
-      if (d.scenepack) setScenepack(d.scenepack);
-      if (typeof d.videoUrl === 'string') setVideoUrl(d.videoUrl);
-      if (d.platform) setPlatform(d.platform);
-      if (typeof d.title === 'string') setTitle(d.title);
-      if (typeof d.caption === 'string') setCaption(d.caption);
-      if (typeof d.startOffset === 'number') setStartOffset(d.startOffset);
-      if (d.mode) setMode(d.mode);
-    }
+    if (hydratedRef.current) return;
+    const d = user ? loadSoloDraft(user.id) || loadActiveSoloDraft() : loadActiveSoloDraft();
+    applyDraft(d);
     hydratedRef.current = true;
   }, [user]);
 
   useEffect(() => {
-    if (!user || !hydratedRef.current) return;
-    saveSoloDraft(user.id, {
+    if (!hydratedRef.current) return;
+    const draft = {
       timer, startedAt: startedAt ? startedAt.toISOString() : null,
       song, scenepack, videoUrl, platform, title, caption, startOffset, mode,
-    });
+    };
+    saveActiveSoloDraft(draft);
+    if (user) saveSoloDraft(user.id, draft);
   }, [user, timer, startedAt, song, scenepack, videoUrl, platform, title, caption, startOffset, mode]);
 
   // Pull library content once
@@ -215,6 +220,7 @@ export default function CreateSoloSharePage() {
     });
     if (!share) { toast.error('Could not publish. Try again.'); setPublishing(false); return; }
     clearSoloDraft(user.id);
+    clearActiveSoloDraft();
     toast.success(overtime ? 'Published — flagged OVERTIME.' : 'Solo page live.');
     navigate(`/s/${share.slug}`);
   };
@@ -301,7 +307,7 @@ export default function CreateSoloSharePage() {
               overtime={overtime}
               remainingMs={remaining}
               timerLabel={TIMERS.find(t=>t.value===timer)?.sub || ''}
-              onCancel={() => { if (user) clearSoloDraft(user.id); navigate('/solo'); }}
+              onCancel={() => { if (user) clearSoloDraft(user.id); clearActiveSoloDraft(); navigate('/solo'); }}
               packs={packs}
               songs={songs}
               libLoading={libLoading}
