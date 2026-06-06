@@ -629,9 +629,6 @@ function OsuLobby({ user, profile, onPick }: { user: any; profile: any; onPick: 
                   <div className="text-white font-black tracking-tight" style={{ ...teko, fontSize: 90 }}>
                     solo<span className="text-amber-400">!</span>
                   </div>
-                  <div className="text-[9px] uppercase tracking-[0.4em] text-white/40 mt-1" style={teko}>
-                    LOOPGATE
-                  </div>
                 </div>
                 {/* gloss */}
                 <div
