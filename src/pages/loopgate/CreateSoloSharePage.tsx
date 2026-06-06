@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Loader2, Music, Film, Link as LinkIcon, Clock, Zap, AlertTriangle, SkipForward } from 'lucide-react';
+import { ArrowLeft, Loader2, Music, Film, Link as LinkIcon, Clock, Zap, AlertTriangle, SkipForward, Upload, Video } from 'lucide-react';
 import { SiTiktok, SiInstagram, SiYoutube } from '@icons-pack/react-simple-icons';
 import { useAuth } from '@/hooks/useAuth';
 import { createSoloShare } from '@/hooks/useSoloShares';
@@ -12,6 +12,8 @@ import { toast } from 'sonner';
 import SEO from '@/components/SEO';
 import SoloLibraryPicker, { type LibrarySong, type LibraryScenepack } from '@/components/loopgate/SoloLibraryPicker';
 import GateIcon from '@/components/loopgate/GateIcon';
+import BunnyVideo from '@/components/loopgate/BunnyVideo';
+import { uploadToBunny, MAX_EDIT_UPLOAD_BYTES, MAX_EDIT_UPLOAD_LABEL } from '@/lib/bunnyUpload';
 
 const teko = { fontFamily: 'Teko, sans-serif' };
 
@@ -48,10 +50,16 @@ export default function CreateSoloSharePage() {
   const [scenepack, setScenepack] = useState<LibraryScenepack | null>(null);
 
   const [videoUrl, setVideoUrl] = useState('');
-  const [platform, setPlatform] = useState<'tiktok' | 'instagram' | 'youtube'>('tiktok');
+  const [platform, setPlatform] = useState<'tiktok' | 'instagram' | 'youtube' | 'bunny'>('tiktok');
   const [title, setTitle] = useState('');
   const [caption, setCaption] = useState('');
   const [startOffset, setStartOffset] = useState(0);
+
+  // Upload vs paste-link mode
+  const [mode, setMode] = useState<'upload' | 'link'>('upload');
+  const [uploadPct, setUploadPct] = useState(0);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Tick clock once the session starts
   useEffect(() => {
@@ -86,13 +94,34 @@ export default function CreateSoloSharePage() {
 
   // Auto-detect platform when URL changes
   useEffect(() => {
-    if (!videoUrl.trim()) return;
+    if (mode !== 'link' || !videoUrl.trim()) return;
     const detected = detectPlatform(videoUrl.trim());
     if (detected !== 'other') setPlatform(detected);
-  }, [videoUrl]);
+  }, [videoUrl, mode]);
+
+  const handleFile = async (file: File) => {
+    if (!file) return;
+    if (!file.type.startsWith('video/')) { toast.error('Pick a video file.'); return; }
+    if (file.size > MAX_EDIT_UPLOAD_BYTES) { toast.error(`Too large — ${MAX_EDIT_UPLOAD_LABEL} max`); return; }
+    setUploading(true);
+    setUploadPct(0);
+    try {
+      const res = await uploadToBunny(file, {
+        folder: `solo/${user?.id || 'anon'}`,
+        onProgress: (p) => setUploadPct(Math.round(p * 100)),
+      });
+      setVideoUrl(res.url);
+      setPlatform('bunny');
+      toast.success('Edit uploaded.');
+    } catch (e: any) {
+      toast.error(e?.message || 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const previewUrl = useMemo(
-    () => (videoUrl ? getEmbedUrl(videoUrl, platform, startOffset) : null),
+    () => (videoUrl && platform !== 'bunny' ? getEmbedUrl(videoUrl, platform, startOffset) : null),
     [videoUrl, platform, startOffset]
   );
 
@@ -102,12 +131,15 @@ export default function CreateSoloSharePage() {
     try { new URL(videoUrl.trim()); } catch { toast.error('That URL looks invalid.'); return; }
 
     setPhase('publishing');
+    const finalPlatform = platform === 'bunny'
+      ? 'bunny'
+      : (detectPlatform(videoUrl.trim()) !== 'other' ? detectPlatform(videoUrl.trim()) : platform);
     const share = await createSoloShare({
       user_id: user.id,
       username: profile.username || 'editor',
       avatar_url: profile.avatar_url || null,
       video_url: videoUrl.trim(),
-      platform: detectPlatform(videoUrl.trim()) !== 'other' ? detectPlatform(videoUrl.trim()) : platform,
+      platform: finalPlatform,
       title: title.trim() || null,
       caption: caption.trim() || null,
       timer_minutes: timer,
