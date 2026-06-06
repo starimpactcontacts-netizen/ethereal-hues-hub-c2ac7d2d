@@ -363,6 +363,7 @@ export default function CreateSoloSharePage() {
             >
               {songs.map((s) => {
                 const active = song?.id === s.id;
+                const isPlaying = previewingId === s.id;
                 return (
                   <button
                     key={s.id}
@@ -380,8 +381,16 @@ export default function CreateSoloSharePage() {
                       ) : (
                         <div className="w-full h-full flex items-center justify-center"><Music className="w-7 h-7 text-amber-400/60" /></div>
                       )}
-                      <div className="absolute bottom-1.5 right-1.5 w-7 h-7 rounded-full bg-black/70 backdrop-blur flex items-center justify-center border border-white/10">
-                        <Play className="w-3 h-3 fill-amber-400 text-amber-400" />
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => { e.stopPropagation(); togglePreview(s); }}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); togglePreview(s); } }}
+                        className="absolute bottom-1.5 right-1.5 w-8 h-8 rounded-full bg-black/80 backdrop-blur flex items-center justify-center border border-white/15 hover:scale-110 active:scale-95 transition-transform cursor-pointer"
+                      >
+                        {isPlaying
+                          ? <Pause className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                          : <Play className="w-3.5 h-3.5 fill-amber-400 text-amber-400 ml-0.5" />}
                       </div>
                     </div>
                     <div className="p-2">
