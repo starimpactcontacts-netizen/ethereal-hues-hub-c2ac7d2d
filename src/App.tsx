@@ -40,6 +40,9 @@ const IndexPage = lazy(() => import("./pages/loopgate/IndexPage"));
 const ArenasPage = lazy(() => import("./pages/loopgate/ArenasPage"));
 const ArenaPage = lazy(() => import("./pages/loopgate/ArenaPage"));
 const ArenaChatPage = lazy(() => import("./pages/loopgate/ArenaChatPage"));
+const SoloSharePage = lazy(() => import("./pages/loopgate/SoloSharePage"));
+const CreateSoloSharePage = lazy(() => import("./pages/loopgate/CreateSoloSharePage"));
+const SoloHubPage = lazy(() => import("./pages/loopgate/SoloHubPage"));
 const CollabsPage = lazy(() => import("./pages/loopgate/CollabsPage"));
 const CreateCollabPage = lazy(() => import("./pages/loopgate/CreateCollabPage"));
 const CollabDetailPage = lazy(() => import("./pages/loopgate/CollabDetailPage"));
@@ -332,6 +335,8 @@ export default function App() {
             <Route path="/u/:username" element={<UsernameLookupPage />} />
             <Route path="/start" element={<StartPage />} />
             <Route path="/auth/discord/callback" element={<DiscordCallbackPage />} />
+            {/* Public Solo Share page — no auth required, optimized for viral sharing */}
+            <Route path="/s/:slug" element={<SoloSharePage />} />
             
             {/* Guest-accessible routes (can browse, need login to participate) */}
             <Route element={
@@ -352,6 +357,8 @@ export default function App() {
               <Route path="/index" element={<IndexPage />} />
               <Route path="/arenas" element={<ArenasPage />} />
               <Route path="/arena" element={<ArenaPage />} />
+              <Route path="/solo" element={<SoloHubPage />} />
+              <Route path="/solo/create" element={<CreateSoloSharePage />} />
               <Route path="/collabs" element={<CollabsPage />} />
               <Route path="/collabs/create" element={<CreateCollabPage />} />
               <Route path="/collab/:id" element={<CollabDetailPage />} />

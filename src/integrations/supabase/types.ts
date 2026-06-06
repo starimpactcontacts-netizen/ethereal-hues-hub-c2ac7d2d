@@ -8605,6 +8605,107 @@ export type Database = {
           },
         ]
       }
+      solo_share_ratings: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          rater_ip_hash: string
+          rater_nickname: string | null
+          rater_user_id: string | null
+          share_id: string
+          stars: number
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rater_ip_hash: string
+          rater_nickname?: string | null
+          rater_user_id?: string | null
+          share_id: string
+          stars: number
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rater_ip_hash?: string
+          rater_nickname?: string | null
+          rater_user_id?: string | null
+          share_id?: string
+          stars?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solo_share_ratings_share_id_fkey"
+            columns: ["share_id"]
+            isOneToOne: false
+            referencedRelation: "solo_shares"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      solo_shares: {
+        Row: {
+          avatar_url: string | null
+          avg_rating: number
+          caption: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          platform: string
+          rings_earned: number
+          slug: string
+          thumbnail_url: string | null
+          title: string | null
+          total_ratings: number
+          updated_at: string
+          user_id: string
+          username: string
+          video_url: string
+          views: number
+        }
+        Insert: {
+          avatar_url?: string | null
+          avg_rating?: number
+          caption?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          platform: string
+          rings_earned?: number
+          slug: string
+          thumbnail_url?: string | null
+          title?: string | null
+          total_ratings?: number
+          updated_at?: string
+          user_id: string
+          username: string
+          video_url: string
+          views?: number
+        }
+        Update: {
+          avatar_url?: string | null
+          avg_rating?: number
+          caption?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          platform?: string
+          rings_earned?: number
+          slug?: string
+          thumbnail_url?: string | null
+          title?: string | null
+          total_ratings?: number
+          updated_at?: string
+          user_id?: string
+          username?: string
+          video_url?: string
+          views?: number
+        }
+        Relationships: []
+      }
       solo_submission_votes: {
         Row: {
           created_at: string

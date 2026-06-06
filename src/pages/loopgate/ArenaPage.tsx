@@ -1663,6 +1663,43 @@ export default function ArenaPage() {
             </div>
           )}
 
+          {/* ═══ SOLO — public shareable rating pages ═══ */}
+          {(activeFilter === "all" || activeFilter === "competitions") && (
+            <div id="arena-solo" className="mb-5">
+              <div className="flex items-center justify-between px-4 mb-2">
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">New</div>
+                  <h2 className="font-display text-xl leading-none">SOLO</h2>
+                </div>
+                <button
+                  onClick={() => navigate(profile ? '/solo' : '/start')}
+                  className="text-[11px] text-white/60 hover:text-white flex items-center gap-1"
+                >
+                  My Pages <ChevronRight className="w-3 h-3" />
+                </button>
+              </div>
+              <div className="px-4">
+                <button
+                  onClick={() => navigate(profile ? '/solo/create' : '/start')}
+                  className="w-full relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#141414] to-[#0a0a0a] p-4 text-left active:scale-[0.99] transition-transform"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-white text-black flex items-center justify-center shrink-0">
+                      <Star className="w-6 h-6 fill-black" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-display text-lg leading-tight">DROP YOUR EDIT.</div>
+                      <div className="text-[11px] text-white/55 leading-snug">
+                        Get a shareable Loopgate page. World rates. You earn Rings.
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-white/40 shrink-0" />
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Collabs / duo battles hidden for now — low activity */}
 
           {/* ═══ TOP QOI (Loopgate elite leaderboard) ═══ */}
