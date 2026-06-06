@@ -122,6 +122,7 @@ export default function CreateSoloSharePage() {
     const draft = {
       timer, startedAt: startedAt ? startedAt.toISOString() : null,
       song, scenepack, videoUrl, platform, title, caption, startOffset, mode,
+      updatedAt: new Date().toISOString(),
     };
     if (!isLiveDraft(draft)) return;
     saveActiveSoloDraft(draft);
