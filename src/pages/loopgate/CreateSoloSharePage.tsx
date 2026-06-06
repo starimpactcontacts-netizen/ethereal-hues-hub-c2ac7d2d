@@ -653,13 +653,13 @@ function NLECockpit({
           <button
             type="button"
             onClick={() => setBinCollapsed(false)}
-            className="hidden sm:flex shrink-0 w-7 flex-col items-center justify-start gap-2 py-2 border-r active:scale-95 transition-transform"
+            className="flex shrink-0 sm:w-7 sm:flex-col items-center justify-center sm:justify-start gap-1 sm:gap-2 py-1 sm:py-2 border-b sm:border-b-0 sm:border-r active:scale-95 transition-transform"
             style={{ background: '#0b0b0e', borderColor: 'rgba(255,255,255,0.06)' }}
             aria-label="Expand project bin"
           >
             <PanelLeftOpen className="w-3.5 h-3.5 text-white/40" />
             <span
-              className="text-[8px] font-extrabold uppercase tracking-[0.25em] text-white/30"
+              className="text-[8px] font-extrabold uppercase tracking-[0.25em] text-white/30 sm:mt-1"
               style={{ ...teko, writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
             >
               PROJECT BIN
