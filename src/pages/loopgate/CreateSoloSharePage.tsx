@@ -14,7 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import GateIcon from '@/components/loopgate/GateIcon';
 import BunnyVideo from '@/components/loopgate/BunnyVideo';
 import { uploadToBunny, MAX_EDIT_UPLOAD_BYTES, MAX_EDIT_UPLOAD_LABEL } from '@/lib/bunnyUpload';
-import { loadSoloDraft, saveSoloDraft, clearSoloDraft, loadActiveSoloDraft, saveActiveSoloDraft, clearActiveSoloDraft } from '@/lib/soloDraft';
+import { loadSoloDraft, saveSoloDraft, clearSoloDraft, loadActiveSoloDraft, saveActiveSoloDraft, clearActiveSoloDraft, loadLatestSoloDraft } from '@/lib/soloDraft';
 
 const teko = { fontFamily: 'Teko, sans-serif' };
 
@@ -110,7 +110,7 @@ export default function CreateSoloSharePage() {
 
   useEffect(() => {
     if (hydratedRef.current) return;
-    const d = user ? loadSoloDraft(user.id) || loadActiveSoloDraft() : loadActiveSoloDraft();
+    const d = user ? loadSoloDraft(user.id) || loadActiveSoloDraft() || loadLatestSoloDraft() : loadActiveSoloDraft() || loadLatestSoloDraft();
     applyDraft(d);
     hydratedRef.current = true;
   }, [user]);
