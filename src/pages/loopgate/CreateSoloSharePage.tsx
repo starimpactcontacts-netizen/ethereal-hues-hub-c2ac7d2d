@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Loader2, Music, Film, Link as LinkIcon, Zap, AlertTriangle, Upload, Play, Flame, X, Check, Timer as TimerIcon, Clock, Hourglass, ChevronRight, User, MousePointer2, Scissors, Type as TypeIcon, Wand2, Brush, Eraser, Layers, Pause, SkipBack, SkipForward, Volume2, Settings2, Maximize2, Magnet } from 'lucide-react';
+import { ArrowLeft, Loader2, Music, Film, Link as LinkIcon, Zap, AlertTriangle, Upload, Play, Flame, X, Check, Timer as TimerIcon, Clock, Hourglass, ChevronRight, User, MousePointer2, Scissors, Type as TypeIcon, Wand2, Brush, Eraser, Layers, Pause, SkipBack, SkipForward, Volume2, Settings2, Maximize2, Magnet, Square } from 'lucide-react';
 import { SiTiktok, SiInstagram, SiYoutube } from '@icons-pack/react-simple-icons';
 import { useAuth } from '@/hooks/useAuth';
 import { createSoloShare } from '@/hooks/useSoloShares';
@@ -68,6 +68,27 @@ export default function CreateSoloSharePage() {
   const [uploadPct, setUploadPct] = useState(0);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Song preview audio
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [previewingId, setPreviewingId] = useState<string | null>(null);
+  const togglePreview = (s: any) => {
+    const url = s.preview_url || s.audio_url;
+    if (!url) { toast.error('No preview available'); return; }
+    if (!audioRef.current) audioRef.current = new Audio();
+    const a = audioRef.current;
+    if (previewingId === s.id) {
+      a.pause();
+      setPreviewingId(null);
+      return;
+    }
+    a.src = url;
+    a.currentTime = 0;
+    a.volume = 0.7;
+    a.play().then(() => setPreviewingId(s.id)).catch(() => toast.error('Could not play preview'));
+    a.onended = () => setPreviewingId((p) => (p === s.id ? null : p));
+  };
+  useEffect(() => () => { audioRef.current?.pause(); }, []);
 
   // Rotate-to-landscape one-time hint
   const [rotateHintOpen, setRotateHintOpen] = useState(() => {
@@ -342,6 +363,7 @@ export default function CreateSoloSharePage() {
             >
               {songs.map((s) => {
                 const active = song?.id === s.id;
+                const isPlaying = previewingId === s.id;
                 return (
                   <button
                     key={s.id}
@@ -359,8 +381,16 @@ export default function CreateSoloSharePage() {
                       ) : (
                         <div className="w-full h-full flex items-center justify-center"><Music className="w-7 h-7 text-amber-400/60" /></div>
                       )}
-                      <div className="absolute bottom-1.5 right-1.5 w-7 h-7 rounded-full bg-black/70 backdrop-blur flex items-center justify-center border border-white/10">
-                        <Play className="w-3 h-3 fill-amber-400 text-amber-400" />
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => { e.stopPropagation(); togglePreview(s); }}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); togglePreview(s); } }}
+                        className="absolute bottom-1.5 right-1.5 w-8 h-8 rounded-full bg-black/80 backdrop-blur flex items-center justify-center border border-white/15 hover:scale-110 active:scale-95 transition-transform cursor-pointer"
+                      >
+                        {isPlaying
+                          ? <Pause className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                          : <Play className="w-3.5 h-3.5 fill-amber-400 text-amber-400 ml-0.5" />}
                       </div>
                     </div>
                     <div className="p-2">
