@@ -91,15 +91,6 @@ export default function CreateSoloSharePage() {
   };
   useEffect(() => () => { audioRef.current?.pause(); }, []);
 
-  // Rotate-to-landscape one-time hint
-  const [rotateHintOpen, setRotateHintOpen] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return localStorage.getItem('solo_rotate_hint_seen') !== '1';
-  });
-  const dismissRotateHint = () => {
-    setRotateHintOpen(false);
-    try { localStorage.setItem('solo_rotate_hint_seen', '1'); } catch {}
-  };
 
   // ── Persist in-progress session across refresh ────────────────────────────
   const hydratedRef = useRef(false);
