@@ -232,14 +232,16 @@ export default function CreateSoloSharePage() {
         }} />
       </div>
 
-      {/* Floating close */}
-      <button
-        onClick={() => navigate('/solo')}
-        className="fixed top-3 right-3 z-30 w-10 h-10 rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-white/10 flex items-center justify-center active:scale-90 transition-transform"
-        style={{ top: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}
-      >
-        <X className="w-5 h-5" />
-      </button>
+      {/* Floating close (only on lobby; in-edit cancel lives on the red title-bar dot) */}
+      {lobbyOpen && (
+        <button
+          onClick={() => navigate('/solo')}
+          className="fixed top-3 right-3 z-30 w-10 h-10 rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-white/10 flex items-center justify-center active:scale-90 transition-transform"
+          style={{ top: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}
+        >
+          <X className="w-5 h-5" />
+        </button>
+      )}
 
       {/* ====== osu!-STYLE LOBBY (timer not yet locked) ====== */}
       {lobbyOpen && <OsuLobby user={user} profile={profile} onPick={startTimer} />}
@@ -273,7 +275,7 @@ export default function CreateSoloSharePage() {
         </div>
       )}
 
-      <main className={`relative z-10 max-w-xl mx-auto px-4 pb-40 ${lobbyOpen ? 'hidden' : ''}`} style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 24px)' }}>
+      <main className={`relative z-10 max-w-5xl mx-auto px-3 sm:px-5 pb-40 ${lobbyOpen ? 'hidden' : ''}`} style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 16px)' }}>
 
         {/* ====== LIBRARY CAROUSELS ====== */}
         {!lobbyOpen && (
@@ -306,6 +308,7 @@ export default function CreateSoloSharePage() {
               overtime={overtime}
               remainingMs={remaining}
               timerLabel={TIMERS.find(t=>t.value===timer)?.sub || ''}
+              onCancel={() => navigate('/solo')}
             />
 
             {/* Scenepacks */}
@@ -632,7 +635,7 @@ function OsuLobby({ user, profile, onPick }: { user: any; profile: any; onPick: 
 /* ====== NLE COCKPIT — AE/Premiere/Resolve x Roblox-Draw ====== */
 function NLECockpit({
   tone, videoUrl, uploading, uploadPct, platform, onPick, onReplace,
-  title, setTitle, caption, setCaption, overtime, remainingMs, timerLabel,
+  title, setTitle, caption, setCaption, overtime, remainingMs, timerLabel, onCancel,
 }: {
   tone: string;
   videoUrl: string;
@@ -648,6 +651,7 @@ function NLECockpit({
   overtime: boolean;
   remainingMs: number;
   timerLabel: string;
+  onCancel: () => void;
 }) {
   const hasVid = !!videoUrl && platform === 'bunny' && !uploading;
   const timerDisplay = overtime ? `+${fmtRemaining(-remainingMs)}` : fmtRemaining(remainingMs);
@@ -667,19 +671,28 @@ function NLECockpit({
         className="flex items-center gap-2 px-3 h-9 border-b"
         style={{ background: 'linear-gradient(180deg,#1a1a1d,#131316)', borderColor: 'rgba(255,255,255,0.06)' }}
       >
-        <div className="flex gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#ff5f57' }} />
-          <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#febc2e' }} />
-          <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#28c840' }} />
-        </div>
-        <div className="flex items-center gap-1.5 ml-2">
+        <button
+          type="button"
+          onClick={() => { if (confirm('Cancel this solo edit?')) onCancel(); }}
+          aria-label="Cancel edit"
+          className="group relative w-3 h-3 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+          style={{ background: '#ff5f57', boxShadow: '0 0 0 1px rgba(0,0,0,0.4), 0 0 8px rgba(255,95,87,0.5)' }}
+        >
+          <X className="w-2 h-2 text-black/0 group-hover:text-black/70 transition-colors" strokeWidth={3} />
+        </button>
+        <div className="flex items-center gap-1.5 ml-2 flex-1 min-w-0">
           <span
-            className="w-1.5 h-1.5 rounded-full animate-pulse"
+            className="w-1.5 h-1.5 rounded-full animate-pulse shrink-0"
             style={{ background: tone, boxShadow: `0 0 8px ${tone}` }}
           />
-          <span className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-white/80" style={teko}>
-            YOUR_EDIT.PROJ
-          </span>
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value.slice(0, 80))}
+            placeholder="UNTITLED.PROJ"
+            spellCheck={false}
+            className="flex-1 min-w-0 bg-transparent outline-none border-0 text-[11px] font-extrabold uppercase tracking-[0.18em] text-white/85 placeholder:text-white/30 focus:text-white"
+            style={teko}
+          />
         </div>
         {/* Inline countdown */}
         <div
