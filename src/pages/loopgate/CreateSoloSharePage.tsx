@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Loader2, Music, Film, Link as LinkIcon, Zap, AlertTriangle, Upload, Play, Flame, X, Check, Timer as TimerIcon, Clock, Hourglass, ChevronRight, User, Pause, Settings2, Maximize2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Music, Film, Link as LinkIcon, Zap, AlertTriangle, Upload, Play, Flame, X, Check, Timer as TimerIcon, Clock, Hourglass, ChevronRight, ChevronLeft, PanelLeftClose, PanelLeftOpen, User, Pause, Settings2, Maximize2 } from 'lucide-react';
 import { SiTiktok, SiInstagram, SiYoutube } from '@icons-pack/react-simple-icons';
 import { useAuth } from '@/hooks/useAuth';
 import { createSoloShare } from '@/hooks/useSoloShares';
