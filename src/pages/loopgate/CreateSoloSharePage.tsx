@@ -540,6 +540,7 @@ function NLECockpit({
   tone, videoUrl, uploading, uploadPct, platform, onPick, onReplace,
   title, setTitle, caption, setCaption, overtime, remainingMs, timerLabel, onCancel,
   packs, songs, libLoading, scenepack, setScenepack, song, setSong, previewingId, togglePreview,
+  onPublish, canPublish,
 }: {
   tone: string;
   videoUrl: string;
@@ -565,6 +566,8 @@ function NLECockpit({
   setSong: (s: LibrarySong | null) => void;
   previewingId: string | null;
   togglePreview: (s: LibrarySong) => void;
+  onPublish: () => void;
+  canPublish: boolean;
 }) {
   const hasVid = !!videoUrl && platform === 'bunny' && !uploading;
   const timerDisplay = overtime ? `+${fmtRemaining(-remainingMs)}` : fmtRemaining(remainingMs);
