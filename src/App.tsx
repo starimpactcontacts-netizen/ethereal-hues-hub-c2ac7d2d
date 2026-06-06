@@ -43,6 +43,7 @@ const ArenaChatPage = lazy(() => import("./pages/loopgate/ArenaChatPage"));
 const SoloSharePage = lazy(() => import("./pages/loopgate/SoloSharePage"));
 const CreateSoloSharePage = lazy(() => import("./pages/loopgate/CreateSoloSharePage"));
 const SoloHubPage = lazy(() => import("./pages/loopgate/SoloHubPage"));
+const SoloFindPage = lazy(() => import("./pages/loopgate/SoloFindPage"));
 const CollabsPage = lazy(() => import("./pages/loopgate/CollabsPage"));
 const CreateCollabPage = lazy(() => import("./pages/loopgate/CreateCollabPage"));
 const CollabDetailPage = lazy(() => import("./pages/loopgate/CollabDetailPage"));
