@@ -213,6 +213,21 @@ export default function CreateSoloSharePage() {
       {/* ====== osu!-STYLE LOBBY (timer not yet locked) ====== */}
       {lobbyOpen && <OsuLobby user={user} profile={profile} onPick={startTimer} />}
 
+      {/* Rotate-to-landscape hint for phones in portrait */}
+      {lobbyOpen && (
+        <div className="fixed inset-0 z-[80] bg-black flex flex-col items-center justify-center gap-4 portrait:flex landscape:hidden sm:hidden px-8 text-center">
+          <div className="w-16 h-16 rounded-2xl border border-white/15 bg-white/[0.04] flex items-center justify-center animate-pulse">
+            <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <rect x="3" y="6" width="18" height="12" rx="2" />
+              <path d="M7 3l-2 2 2 2" />
+              <path d="M17 21l2-2-2-2" />
+            </svg>
+          </div>
+          <div style={teko} className="text-[42px] leading-none">ROTATE YOUR PHONE</div>
+          <div className="text-[13px] text-white/55 max-w-[260px]">This lobby is designed for landscape. Turn your device sideways to play.</div>
+        </div>
+      )}
+
       <main className={`relative z-10 max-w-xl mx-auto px-4 pb-40 ${lobbyOpen ? 'hidden' : ''}`} style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 24px)' }}>
 
         {/* ====== TIMER HUD (after lock) ====== */}
