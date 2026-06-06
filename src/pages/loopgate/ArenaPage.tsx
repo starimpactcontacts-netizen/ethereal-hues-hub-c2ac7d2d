@@ -554,6 +554,7 @@ export default function ArenaPage() {
   const { liveDrops } = useFeaturedDrops();
   const [missionBillboards, setMissionBillboards] = useState<Array<{ id: string; song_name: string; poster_url: string | null; artist_name: string | null; max_pay: number }>>([]);
   const { activeSolo, loading: soloLoading, cancelSolo } = useSoloMode();
+  const { shares: latestSoloShares, loading: latestSoloLoading } = useLatestSoloShares(12);
   const { fights: myQuickFights, inQueue: qfInQueue } = useMyQuickFights();
   const cancelLobby = async (lobbyId: string) => {
     const { error } = await supabase.from('quick_fights').update({ status: 'cancelled' }).eq('id', lobbyId);
