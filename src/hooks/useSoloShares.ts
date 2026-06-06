@@ -75,6 +75,25 @@ export function useMySoloShares() {
   return { shares, loading, refetch };
 }
 
+export function useLatestSoloShares(limit = 12) {
+  const [shares, setShares] = useState<SoloShare[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const refetch = useCallback(async () => {
+    const { data } = await supabase
+      .from('solo_shares' as any)
+      .select('*')
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    setShares((data as any) || []);
+    setLoading(false);
+  }, [limit]);
+
+  useEffect(() => { refetch(); }, [refetch]);
+  return { shares, loading, refetch };
+}
+
 export function useSoloShareBySlug(slug: string | undefined) {
   const [share, setShare] = useState<SoloShare | null>(null);
   const [ratings, setRatings] = useState<SoloShareRating[]>([]);
