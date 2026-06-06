@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Loader2, Music, Film, Link as LinkIcon, AlertTriangle, Upload, Play, Flame, X, Check, Timer as TimerIcon, Clock, Hourglass, ChevronRight, ChevronLeft, PanelLeftOpen, User, Pause, Settings2, Maximize2 } from 'lucide-react';
 import { SiTiktok, SiInstagram, SiYoutube } from '@icons-pack/react-simple-icons';
@@ -45,6 +45,7 @@ function fmtRemaining(ms: number) {
 
 export default function CreateSoloSharePage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, profile } = useAuth();
 
   const [timer, setTimer] = useState<Timer | null>(null);
@@ -111,11 +112,29 @@ export default function CreateSoloSharePage() {
 
   useEffect(() => {
     if (hydratedRef.current) return;
-    const d = user ? loadSoloDraft(user.id) || loadActiveSoloDraft() || loadLatestSoloDraft() : loadActiveSoloDraft() || loadLatestSoloDraft();
+    const urlTimer = Number(searchParams.get('timer'));
+    const urlStarted = searchParams.get('started');
+    const urlDraft = ([30, 60, 180].includes(urlTimer) && urlStarted)
+      ? {
+          timer: urlTimer as Timer,
+          startedAt: urlStarted,
+          song: null,
+          scenepack: null,
+          videoUrl: '',
+          platform: 'tiktok' as const,
+          title: '',
+          caption: '',
+          startOffset: 0,
+          mode: 'upload' as const,
+          updatedAt: new Date().toISOString(),
+        }
+      : null;
+    const storedDraft = user ? loadSoloDraft(user.id) || loadActiveSoloDraft() || loadLatestSoloDraft() : loadActiveSoloDraft() || loadLatestSoloDraft();
+    const d = isLiveDraft(storedDraft) ? storedDraft : urlDraft;
     applyDraft(d);
     hydratedRef.current = true;
     setDraftHydrated(true);
-  }, [user]);
+  }, [user, searchParams]);
 
   useEffect(() => {
     if (!draftHydrated) return;
@@ -176,6 +195,10 @@ export default function CreateSoloSharePage() {
     };
     saveActiveSoloDraft(draft);
     if (user) saveSoloDraft(user.id, draft);
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('timer', String(t));
+    nextParams.set('started', lockedAt.toISOString());
+    setSearchParams(nextParams, { replace: true });
     setTimer(t);
     setStartedAt(lockedAt);
   };
