@@ -160,8 +160,24 @@ export default function CreateSoloSharePage() {
   const overtime = !!(deadline && remaining < 0);
 
   const startTimer = (t: Timer) => {
+    const lockedAt = new Date();
+    const draft = {
+      timer: t,
+      startedAt: lockedAt.toISOString(),
+      song,
+      scenepack,
+      videoUrl,
+      platform,
+      title,
+      caption,
+      startOffset,
+      mode,
+      updatedAt: lockedAt.toISOString(),
+    };
+    saveActiveSoloDraft(draft);
+    if (user) saveSoloDraft(user.id, draft);
     setTimer(t);
-    setStartedAt(new Date());
+    setStartedAt(lockedAt);
   };
 
   // Auto-detect platform when URL changes
