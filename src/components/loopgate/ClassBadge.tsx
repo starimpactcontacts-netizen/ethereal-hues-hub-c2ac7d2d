@@ -2,24 +2,31 @@ import { useId } from 'react';
 
 const RANK_ORDER = ['F', 'D', 'C', 'B', 'A', 'S', 'S+', 'S++'];
 
-// Light → dark two-stop gradient per tier, escalating from dull grey to radiant gold
+// Light → dark two-stop gradient per tier — bronze/silver/gold escalation, crystal at the peak
 const RANK_COLORS: Record<string, [string, string]> = {
   'F':   ['#9ca3af', '#4b5563'],
-  'D':   ['#fdba74', '#c2570a'],
-  'C':   ['#e2e8f0', '#94a3b8'],
-  'B':   ['#7dd3fc', '#2563eb'],
-  'A':   ['#6ee7b7', '#059669'],
-  'S':   ['#fde68a', '#d97706'],
-  'S+':  ['#fde047', '#f59e0b'],
-  'S++': ['#fff7d6', '#f59e0b'],
+  'D':   ['#cd9265', '#8a5a35'],
+  'C':   ['#e6e9ed', '#9aa3ad'],
+  'B':   ['#e7b878', '#a86a2e'],
+  'A':   ['#eef2f6', '#aab4bf'],
+  'S':   ['#ffe8a3', '#d4970f'],
+  'S+':  ['#fff2c4', '#f0a800'],
+  'S++': ['#ffe9ff', '#b86bff'],
 };
 
-// Rim tick-mark count escalates per tier — like a dial filling toward completion
-const RANK_TICKS: Record<string, number> = {
-  'F': 0, 'D': 6, 'C': 8, 'B': 10, 'A': 12, 'S': 16, 'S+': 20, 'S++': 24,
-};
+// Stylized swept-feather wing, drawn pointing rightward from its attachment point — mirrored for the left side
+const WING_PATH = 'M0 0 C7 -5 16 -6 23 -2 C17 -1 11 1 6 2 C12 3 17 6 21 9 C13 8 5 6 0 3 Z';
 
-function pointOnCircle(r: number, angleDeg: number, cx = 32, cy = 32): [number, number] {
+function hexPoints(r: number, cx = 32, cy = 32): string {
+  const pts: string[] = [];
+  for (let i = 0; i < 6; i++) {
+    const angle = (Math.PI * 2 * i) / 6 - Math.PI / 2;
+    pts.push(`${(cx + r * Math.cos(angle)).toFixed(2)},${(cy + r * Math.sin(angle)).toFixed(2)}`);
+  }
+  return pts.join(' ');
+}
+
+function pointAt(r: number, angleDeg: number, cx = 32, cy = 32): [number, number] {
   const a = (angleDeg * Math.PI) / 180;
   return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
 }
@@ -31,22 +38,28 @@ interface ClassBadgeProps {
 }
 
 /**
- * Medallion-style class badge — a Discord-Nitro-esque coin emblem whose rim
- * ticks, sunburst rays, orbiting gems and crown all escalate with tier,
- * rendered in Loopgate's gold-escalation palette.
+ * Medal-style class badge — a hex-shield emblem that gains ridges, scalloped
+ * edges, wings, gems and finally crystal plumage as tier escalates, mirroring
+ * the bronze → silver → gold → winged-crystal progression of medal sets.
  */
 export function ClassBadge({ rank, size = 40, className }: ClassBadgeProps) {
-  const faceGradId = useId();
-  const rimGradId = useId();
+  const gradId = useId();
+  const wingGradId = useId();
   const [light, dark] = RANK_COLORS[rank] || RANK_COLORS['F'];
-  const ticks = RANK_TICKS[rank] ?? 0;
   const tier = RANK_ORDER.indexOf(rank);
-  const hasGlow = tier >= 5;        // S, S+, S++ radiate
-  const isOrnate = tier >= 6;       // S+, S++ earn rays + orbiting gems
-  const isMaximal = rank === 'S++'; // the absolute pinnacle — crowned
 
-  const rayCount = isMaximal ? 16 : 12;
-  const gemCount = isMaximal ? 8 : 6;
+  const hasRidges = tier >= 2;     // C and up — notched inner rim
+  const hasScallops = tier >= 3;   // B and up — bumped outer edge
+  const hasWings = tier >= 4;      // A and up — wings flank the shield
+  const isGilded = tier >= 5;      // S and up — radiant glow
+  const isOrnate = tier >= 6;      // S+ and up — gem-studded plumage
+  const isCrystal = rank === 'S++';
+
+  const r = 16;
+  const apothem = r * Math.cos(Math.PI / 6);
+  const wingScale = tier === 4 ? 0.5 : tier === 5 ? 0.68 : tier === 6 ? 0.85 : tier === 7 ? 1.02 : 0;
+  const wingFill = isCrystal ? `url(#${wingGradId})` : light;
+  const wingOpacity = isCrystal ? 0.95 : isGilded ? 0.9 : 0.7;
 
   return (
     <svg
@@ -55,74 +68,64 @@ export function ClassBadge({ rank, size = 40, className }: ClassBadgeProps) {
       viewBox="0 0 64 64"
       fill="none"
       className={className}
-      style={hasGlow ? { filter: `drop-shadow(0 0 ${isMaximal ? 7 : 4}px ${dark}aa)` } : undefined}
+      style={isGilded ? { filter: `drop-shadow(0 0 ${isCrystal ? 7 : 4}px ${dark}aa)` } : undefined}
     >
       <defs>
-        <radialGradient id={faceGradId} cx="0.35" cy="0.3" r="0.85">
-          <stop offset="0%" stopColor={light} />
-          <stop offset="100%" stopColor={dark} />
-        </radialGradient>
-        <linearGradient id={rimGradId} x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={gradId} x1="0" y1="0" x2="0.3" y2="1">
           <stop offset="0%" stopColor={light} />
           <stop offset="100%" stopColor={dark} />
         </linearGradient>
+        {isCrystal && (
+          <linearGradient id={wingGradId} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#7dd3fc" />
+            <stop offset="50%" stopColor="#e9d5ff" />
+            <stop offset="100%" stopColor="#fda4af" />
+          </linearGradient>
+        )}
       </defs>
 
-      {/* Sunburst rays — radiate from behind the medallion, top tiers only */}
-      {isOrnate && Array.from({ length: rayCount }).map((_, i) => {
-        const angle = (360 / rayCount) * i;
-        const [x1, y1] = pointOnCircle(26, angle);
-        const [x2, y2] = pointOnCircle(isMaximal ? 31.5 : 29.5, angle);
-        return (
-          <line key={i} x1={x1} y1={y1} x2={x2} y2={y2}
-            stroke={light} strokeWidth="1.4" strokeLinecap="round" opacity="0.4" />
-        );
-      })}
+      {/* Soft iridescent halo — the crystal tier only */}
+      {isCrystal && <circle cx="32" cy="32" r="29" fill={`url(#${wingGradId})`} fillOpacity="0.14" />}
 
-      {/* Outer rim ring — dashed/dim when unranked, solid gradient once ranked */}
-      <circle cx="32" cy="32" r="25" stroke={`url(#${rimGradId})`}
-        strokeWidth={hasGlow ? 2 : 1.4} fill="none"
-        opacity={rank === 'F' ? 0.3 : 0.85}
-        strokeDasharray={rank === 'F' ? '2,3' : undefined} />
-
-      {/* Rim tick marks — dial-style progress indicator, density escalates with tier */}
-      {Array.from({ length: ticks }).map((_, i) => {
-        const angle = (360 / ticks) * i;
-        const [x1, y1] = pointOnCircle(22.5, angle);
-        const [x2, y2] = pointOnCircle(25.5, angle);
-        return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke={light} strokeWidth="1.1" opacity="0.5" />;
-      })}
-
-      {/* Coin face — gradient-filled medallion */}
-      <circle cx="32" cy="32" r="20" fill={`url(#${faceGradId})`}
-        fillOpacity={rank === 'F' ? 0.16 : 0.92} stroke={light} strokeWidth="1" strokeOpacity="0.45" />
-
-      {/* Inner bevel ring — appears once ranked (D and up) */}
-      {rank !== 'F' && <circle cx="32" cy="32" r="15.5" stroke={dark} strokeWidth="1" fill="none" opacity="0.35" />}
-
-      {/* Orbiting gems along the rim — reserved for the elite tiers */}
-      {isOrnate && Array.from({ length: gemCount }).map((_, i) => {
-        const angle = (360 / gemCount) * i - 90;
-        const [x, y] = pointOnCircle(25, angle);
-        return <circle key={i} cx={x} cy={y} r={isMaximal ? 1.7 : 1.3} fill={light} />;
-      })}
-
-      {/* Centerpiece — faceted gem for ranked tiers, dim pip for unranked */}
-      {rank !== 'F' ? (
-        <g>
-          <path d="M32 22 L40 32 L32 42 L24 32 Z" fill={dark} fillOpacity="0.88" />
-          <path d="M32 22 L40 32 L32 32 Z" fill={light} fillOpacity="0.95" />
-          <path d="M32 22 L24 32 L32 32 Z" fill={light} fillOpacity="0.55" />
-        </g>
-      ) : (
-        <circle cx="32" cy="32" r="3" fill={light} opacity="0.4" />
+      {/* Wings — flank the shield from A onward, escalating in span + ornament */}
+      {hasWings && (
+        <>
+          <g transform={`translate(${32 - apothem - 1} 32) scale(${-wingScale} ${wingScale})`}>
+            <path d={WING_PATH} fill={wingFill} fillOpacity={wingOpacity} />
+            {isOrnate && <circle cx="14" cy="2" r="1.6" fill={light} />}
+          </g>
+          <g transform={`translate(${32 + apothem + 1} 32) scale(${wingScale} ${wingScale})`}>
+            <path d={WING_PATH} fill={wingFill} fillOpacity={wingOpacity} />
+            {isOrnate && <circle cx="14" cy="2" r="1.6" fill={light} />}
+          </g>
+        </>
       )}
 
-      {/* Crown flourish — S++ only, marking the absolute pinnacle */}
-      {isMaximal && (
-        <path d="M23 15 L27.5 20.5 L32 13 L36.5 20.5 L41 15 L38.5 24.5 L25.5 24.5 Z"
-          fill={light} fillOpacity="0.88" stroke={dark} strokeWidth="0.6" strokeLinejoin="round" />
-      )}
+      {/* Scalloped edge — small studs tracing the hexagon's perimeter, B and up */}
+      {hasScallops && Array.from({ length: 6 }).map((_, i) => {
+        const [x, y] = pointAt(apothem + 1.2, -60 + 60 * i);
+        return <circle key={i} cx={x} cy={y} r="1.6" fill={dark} fillOpacity="0.75" stroke={light} strokeWidth="0.5" />;
+      })}
+
+      {/* Shield body */}
+      <polygon points={hexPoints(r)} fill={`url(#${gradId})`} fillOpacity={rank === 'F' ? 0.14 : 0.92}
+        stroke={light} strokeWidth="1.5" strokeOpacity={rank === 'F' ? 0.5 : 0.8} />
+
+      {/* Ridged inner rim — notch ticks tracing an inner ring, C and up */}
+      {hasRidges && <polygon points={hexPoints(r - 3.5)} fill="none" stroke={dark} strokeWidth="1" strokeOpacity="0.4" />}
+      {hasRidges && Array.from({ length: 12 }).map((_, i) => {
+        const [x1, y1] = pointAt(r - 1.5, 30 * i);
+        const [x2, y2] = pointAt(r - 4.5, 30 * i);
+        return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke={dark} strokeWidth="0.8" opacity="0.35" />;
+      })}
+
+      {/* Star centerpiece — dim outline when unranked, filled emblem once ranked */}
+      <path d="M32 21 L34.6 27.8 L42 28.2 L36.2 32.8 L38.2 40 L32 35.8 L25.8 40 L27.8 32.8 L22 28.2 L29.4 27.8 Z"
+        fill={rank === 'F' ? 'none' : light}
+        fillOpacity={rank === 'F' ? 1 : 0.95}
+        stroke={rank === 'F' ? light : dark}
+        strokeWidth={rank === 'F' ? 1.2 : 0.8}
+        strokeOpacity={rank === 'F' ? 0.45 : 0.5} />
     </svg>
   );
 }
