@@ -56,12 +56,7 @@ export default function SoloSharePage() {
     const key = `lg_solo_viewed_${share.id}`;
     if (sessionStorage.getItem(key)) return;
     sessionStorage.setItem(key, '1');
-    supabase.rpc as any; // no-op type guard
-    supabase
-      .from('solo_shares' as any)
-      .update({ views: (share.views || 0) + 1 })
-      .eq('id', share.id)
-      .then(() => {});
+    supabase.rpc('increment_solo_share_views' as any, { share_id: share.id }).then(() => {});
   }, [share, user]);
 
   const embedUrl = useMemo(
