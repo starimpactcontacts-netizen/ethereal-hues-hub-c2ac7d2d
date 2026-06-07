@@ -475,7 +475,7 @@ function OsuLobby({ user, profile, onPick }: { user: any; profile: any; onPick: 
   const tone = TIMERS.find((t) => t.value === hover)?.tone || '#fbbf24';
 
   return (
-    <div className="fixed inset-0 z-10 overflow-hidden bg-black">
+    <div className="fixed inset-0 z-10 overflow-hidden" style={{ background: '#0a0a0a' }}>
       {/* Cinematic background wash */}
       <div className="absolute inset-0">
         <motion.div
@@ -493,9 +493,17 @@ function OsuLobby({ user, profile, onPick }: { user: any; profile: any; onPick: 
             maskImage: 'radial-gradient(ellipse at 30% 50%, black, transparent 75%)',
           }}
         />
-        {/* film grain vignette */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-black/80" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black" />
+        {/* Loopgate dot-grid texture — same signature as the Arena/Leaderboard surfaces */}
+        <div
+          className="absolute inset-0 opacity-[0.05]"
+          style={{
+            backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 1px)',
+            backgroundSize: '24px 24px',
+          }}
+        />
+        {/* vignette — Loopgate near-black (#0a0a0a), not pure black */}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, #0a0a0a 0%, transparent 50%, rgba(10,10,10,0.8) 100%)' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(10,10,10,0.6) 0%, transparent 50%, #0a0a0a 100%)' }} />
       </div>
 
       {/* Top-left guest / user chip — osu!-style */}
@@ -550,7 +558,7 @@ function OsuLobby({ user, profile, onPick }: { user: any; profile: any; onPick: 
           <div
             className="relative w-[200px] h-[200px] rounded-full flex flex-col items-center justify-center"
             style={{
-              background: 'radial-gradient(circle at 35% 30%, #1a1a1a 0%, #050505 70%)',
+              background: 'radial-gradient(circle at 35% 30%, #1c1c20 0%, #111114 70%)',
               border: '3px solid rgba(255,255,255,0.85)',
               boxShadow: 'inset 0 0 50px rgba(0,0,0,0.8), 0 20px 50px -10px rgba(0,0,0,0.9)',
             }}
@@ -652,7 +660,7 @@ function OsuLobby({ user, profile, onPick }: { user: any; profile: any; onPick: 
                 className="relative w-[280px] h-[280px] rounded-full flex items-center justify-center"
                 style={{
                   background:
-                    'radial-gradient(circle at 35% 30%, #1a1a1a 0%, #050505 70%)',
+                    'radial-gradient(circle at 35% 30%, #1c1c20 0%, #111114 70%)',
                   border: '4px solid rgba(255,255,255,0.85)',
                   boxShadow:
                     'inset 0 0 60px rgba(0,0,0,0.8), 0 30px 60px -10px rgba(0,0,0,0.9)',
