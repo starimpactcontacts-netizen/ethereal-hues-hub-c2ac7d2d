@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSoloShareBySlug, submitSoloShareRating } from '@/hooks/useSoloShares';
 import { getEmbedUrl } from '@/lib/videoEmbed';
 import BunnyVideo from '@/components/loopgate/BunnyVideo';
+import { getBunnyThumbnail } from '@/lib/bunnyPlayback';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -118,7 +119,7 @@ export default function SoloSharePage() {
         title={`${title} — by @${share.username}`}
         description={description}
         canonical={`https://loopgate.gg/s/${share.slug}`}
-        image={share.thumbnail_url || undefined}
+        image={share.thumbnail_url || getBunnyThumbnail(share.video_url) || undefined}
       />
 
       {/* Top bar */}
@@ -212,7 +213,7 @@ export default function SoloSharePage() {
         {/* Player */}
         <div className="relative w-full aspect-square overflow-hidden bg-zinc-900 border border-white/10">
           {share.platform === 'bunny' ? (
-            <BunnyVideo src={share.video_url} poster={share.thumbnail_url || undefined} className="absolute inset-0 w-full h-full object-cover" controls autoPlay={false} />
+            <BunnyVideo src={share.video_url} poster={share.thumbnail_url || getBunnyThumbnail(share.video_url) || undefined} className="absolute inset-0 w-full h-full object-cover" controls autoPlay={false} />
           ) : embedUrl ? (
             <iframe
               src={embedUrl}

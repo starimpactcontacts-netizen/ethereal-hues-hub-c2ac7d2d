@@ -30,6 +30,22 @@ export function getBunnyStreamMp4Url(url: string | null | undefined): string {
   return source;
 }
 
+/**
+ * Bunny Stream auto-generates a thumbnail at /thumbnail.jpg next to the
+ * playback files. Returns null for non-Bunny URLs.
+ */
+export function getBunnyThumbnail(source: string | null | undefined): string | null {
+  if (!source) return null;
+  try {
+    const parsed = new URL(source);
+    if (!parsed.hostname.endsWith('.b-cdn.net')) return null;
+    const base = parsed.pathname.replace(/\/[^/]+$/, '');
+    return `${parsed.origin}${base}/thumbnail.jpg`;
+  } catch {
+    return null;
+  }
+}
+
 export function getBunnyPlaybackCandidates(url: string | null | undefined): string[] {
   const source = getBunnySourceUrl(url);
   if (!source) return [];
