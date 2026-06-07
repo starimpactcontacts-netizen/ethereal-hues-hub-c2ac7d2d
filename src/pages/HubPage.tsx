@@ -659,14 +659,25 @@ export default function HubPage() {
                         </h1>
                         {hasEquippedOG && <FoundingBadge size="sm" animate={false} />}
                       </div>
-                      {/* Class badge — hex icon + label */}
+                      {/* Class crest + slanted league tag — loopgate HUD style */}
                       <button
                         onClick={(e) => { e.stopPropagation(); navigate('/class'); }}
-                        className="flex items-center gap-1.5 mt-2 active:opacity-70 transition-opacity"
+                        className="flex items-center gap-2 mt-1.5 active:opacity-70 transition-opacity"
                       >
-                        <ClassBadge rank={classLetter} size={22} />
-                        <span className="text-[14px] font-black uppercase"
-                          style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.65)' }}>
+                        <ClassBadge rank={classLetter} size={34} />
+                        <span
+                          className="text-[18px] font-black uppercase leading-none"
+                          style={{
+                            fontFamily: 'Teko, sans-serif',
+                            letterSpacing: '0.08em',
+                            color: '#ffffff',
+                            transform: 'skewX(-12deg)',
+                            display: 'inline-block',
+                            textShadow: '0 2px 0 rgba(0,0,0,0.55)',
+                            WebkitTextStroke: '0.5px rgba(0,0,0,0.6)',
+                            paintOrder: 'stroke fill',
+                          }}
+                        >
                           {classLetter} CLASS
                         </span>
                       </button>
