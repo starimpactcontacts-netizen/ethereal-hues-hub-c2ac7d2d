@@ -206,59 +206,73 @@ export default function SoloSharePage() {
       const chunks: Blob[] = [];
       recorder.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
 
+      const RED = '#FF3B3B';
+      const BLUE = '#3B82F6';
+
       const drawHUD = () => {
-        // Top-left identity pill
-        ctx.fillStyle = 'rgba(0,0,0,0.75)';
+        ctx.lineWidth = 1;
+
+        // Top-left identity pill — red accent edge
+        ctx.fillStyle = 'rgba(0,0,0,0.8)';
         ctx.fillRect(16, 16, 260, 60);
-        ctx.strokeStyle = 'rgba(255,255,255,0.18)'; ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
         ctx.strokeRect(16, 16, 260, 60);
+        ctx.fillStyle = RED;
+        ctx.fillRect(16, 16, 3, 60);
         if (avatar) {
           try { ctx.drawImage(avatar, 26, 26, 40, 40); } catch {}
         } else {
           ctx.fillStyle = 'rgba(255,255,255,0.1)';
           ctx.fillRect(26, 26, 40, 40);
         }
+        ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+        ctx.strokeRect(26, 26, 40, 40);
         ctx.fillStyle = '#fff';
         ctx.font = '900 15px system-ui, -apple-system, sans-serif';
         ctx.textBaseline = 'alphabetic';
         ctx.fillText(`@${share.username.toUpperCase()}`, 76, 44);
-        ctx.fillStyle = '#fbbf24';
+        ctx.fillStyle = RED;
         ctx.font = '800 10px system-ui, -apple-system, sans-serif';
         ctx.fillText(`LVL ${levelNum} · ${leagueLabel}`, 76, 62);
 
-        // Top-right IDX
-        ctx.fillStyle = 'rgba(0,0,0,0.75)';
+        // Top-right IDX — blue accent edge
+        ctx.fillStyle = 'rgba(0,0,0,0.8)';
         ctx.fillRect(W - 168, 16, 152, 60);
-        ctx.strokeStyle = 'rgba(251,191,36,0.5)';
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
         ctx.strokeRect(W - 168, 16, 152, 60);
-        ctx.fillStyle = 'rgba(255,255,255,0.55)';
+        ctx.fillStyle = BLUE;
+        ctx.fillRect(W - 19, 16, 3, 60);
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
         ctx.font = '800 10px system-ui';
-        ctx.fillText('IDX SCORE', W - 156, 36);
-        ctx.fillStyle = '#fbbf24';
+        ctx.textAlign = 'right';
+        ctx.fillText('IDX', W - 30, 36);
+        ctx.fillStyle = BLUE;
         ctx.font = '900 22px system-ui';
-        ctx.fillText(Number(idxScore).toFixed(2), W - 156, 64);
+        ctx.fillText(Number(idxScore).toFixed(2), W - 30, 62);
+        ctx.textAlign = 'left';
 
-        // Bottom-left room code
-        ctx.fillStyle = 'rgba(0,0,0,0.75)';
+        // Bottom-left room code — red accent edge
+        ctx.fillStyle = 'rgba(0,0,0,0.8)';
         ctx.fillRect(16, H - 76, 240, 60);
-        ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
         ctx.strokeRect(16, H - 76, 240, 60);
-        ctx.fillStyle = 'rgba(255,255,255,0.55)';
+        ctx.fillStyle = RED;
+        ctx.fillRect(16, H - 76, 3, 60);
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
         ctx.font = '800 10px system-ui';
-        ctx.fillText('ROOM', 28, H - 56);
+        ctx.fillText('ROOM', 30, H - 56);
         ctx.fillStyle = '#fff';
         ctx.font = '900 18px ui-monospace, SFMono-Regular, Menlo, monospace';
-        ctx.fillText(share.slug.toUpperCase(), 28, H - 30);
+        ctx.fillText(share.slug.toUpperCase(), 30, H - 30);
 
-        // Bottom-right brand
-        ctx.fillStyle = '#fbbf24';
-        ctx.fillRect(W - 220, H - 76, 204, 60);
+        // Bottom-right brand — clean white tag, blue accent edge
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(W - 200, H - 60, 184, 44);
+        ctx.fillStyle = BLUE;
+        ctx.fillRect(W - 19, H - 60, 3, 44);
         ctx.fillStyle = '#000';
-        ctx.font = '900 16px system-ui';
-        ctx.fillText('LOOPGATE.GG', W - 206, H - 46);
-        ctx.fillStyle = 'rgba(0,0,0,0.7)';
-        ctx.font = '800 11px ui-monospace, monospace';
-        ctx.fillText(`/s/${share.slug}`, W - 206, H - 26);
+        ctx.font = '900 15px system-ui';
+        ctx.fillText('LOOPGATE.GG', W - 188, H - 32);
       };
 
       const draw = () => {
@@ -445,42 +459,38 @@ export default function SoloSharePage() {
             </div>
           )}
 
-          {/* Valorant-style HUD overlay */}
+          {/* Smash-style competitive HUD overlay — white / red / blue / black, clean thin edges */}
           <div className="absolute inset-0 pointer-events-none">
-            {/* Top-left: editor identity */}
-            <div className="absolute top-2 left-2 flex items-center gap-2 px-2.5 py-1.5 bg-black/70 backdrop-blur-md border border-white/15"
-                 style={{ clipPath: 'polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%)' }}>
+            {/* Top-left: editor identity — red edge */}
+            <div className="absolute top-2 left-2 flex items-center gap-2 pl-2 pr-3 py-1.5 bg-black/80 backdrop-blur-md border border-white/20 border-l-[3px] border-l-[#FF3B3B]">
               {share.avatar_url ? (
-                <img src={share.avatar_url} alt="" className="w-6 h-6 rounded-sm object-cover" crossOrigin="anonymous" />
+                <img src={share.avatar_url} alt="" className="w-6 h-6 object-cover border border-white/25" crossOrigin="anonymous" />
               ) : (
-                <div className="w-6 h-6 bg-white/10 rounded-sm" />
+                <div className="w-6 h-6 bg-white/10 border border-white/25" />
               )}
-              <div className="leading-tight pr-2">
-                <div className="text-[10px] font-black tracking-wider text-white">@{share.username.toUpperCase()}</div>
-                <div className="text-[8px] uppercase tracking-[0.2em] text-amber-400 font-bold">LVL {levelNum} · {leagueLabel}</div>
-              </div>
-            </div>
-
-            {/* Top-right: IDX score */}
-            <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2.5 py-1.5 bg-black/70 backdrop-blur-md border border-amber-400/40"
-                 style={{ clipPath: 'polygon(8px 0, 100% 0, 100% 100%, 0 100%)' }}>
-              <Shield className="w-3 h-3 text-amber-400" />
               <div className="leading-tight">
-                <div className="text-[8px] uppercase tracking-[0.2em] text-white/50 font-bold">IDX</div>
-                <div className="text-[11px] font-black text-amber-400 tabular-nums">{Number(idxScore).toFixed(2)}</div>
+                <div className="text-[10px] font-black tracking-wider text-white">@{share.username.toUpperCase()}</div>
+                <div className="text-[8px] uppercase tracking-[0.2em] text-[#FF3B3B] font-bold">LVL {levelNum} · {leagueLabel}</div>
               </div>
             </div>
 
-            {/* Bottom-left: room code */}
-            <div className="absolute bottom-2 left-2 px-2.5 py-1.5 bg-black/70 backdrop-blur-md border border-white/15"
-                 style={{ clipPath: 'polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%)' }}>
+            {/* Top-right: IDX score — blue edge */}
+            <div className="absolute top-2 right-2 flex items-center gap-1.5 pl-3 pr-2 py-1.5 bg-black/80 backdrop-blur-md border border-white/20 border-r-[3px] border-r-[#3B82F6]">
+              <div className="leading-tight text-right">
+                <div className="text-[8px] uppercase tracking-[0.2em] text-white/50 font-bold">IDX</div>
+                <div className="text-[11px] font-black text-[#3B82F6] tabular-nums">{Number(idxScore).toFixed(2)}</div>
+              </div>
+              <Shield className="w-3 h-3 text-[#3B82F6]" />
+            </div>
+
+            {/* Bottom-left: room code — red edge */}
+            <div className="absolute bottom-2 left-2 pl-2 pr-3 py-1.5 bg-black/80 backdrop-blur-md border border-white/20 border-l-[3px] border-l-[#FF3B3B]">
               <div className="text-[8px] uppercase tracking-[0.2em] text-white/50 font-bold">ROOM</div>
               <div className="text-[11px] font-mono font-black text-white tracking-[0.18em]">{share.slug.toUpperCase()}</div>
             </div>
 
-            {/* Bottom-right: loopgate.gg branding */}
-            <div className="absolute bottom-2 right-2 px-2.5 py-1.5 bg-amber-400 border border-amber-300"
-                 style={{ clipPath: 'polygon(8px 0, 100% 0, 100% 100%, 0 100%)' }}>
+            {/* Bottom-right: loopgate.gg branding — clean white flag, blue edge */}
+            <div className="absolute bottom-2 right-2 px-3 py-1.5 bg-white border-r-[3px] border-r-[#3B82F6]">
               <div className="text-[10px] font-black text-black tracking-[0.15em]">LOOPGATE.GG</div>
             </div>
           </div>
