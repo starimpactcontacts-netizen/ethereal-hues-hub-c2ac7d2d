@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { Star, Send, ExternalLink, Loader2, Copy, Check, MessageCircle, Eye, Clock, AlertTriangle, Music, X } from 'lucide-react';
+import { Star, Send, ExternalLink, Loader2, Copy, Check, MessageCircle, Eye, Clock, AlertTriangle, Music, X, Download, Shield } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSoloShareBySlug, submitSoloShareRating } from '@/hooks/useSoloShares';
 import { getEmbedUrl } from '@/lib/videoEmbed';
@@ -13,6 +13,7 @@ import SEO from '@/components/SEO';
 import { toast } from 'sonner';
 import GateIcon from '@/components/loopgate/GateIcon';
 import { supabase } from '@/integrations/supabase/client';
+import html2canvas from 'html2canvas';
 
 const RATED_KEY = (slug: string) => `lg_solo_rated_${slug}`;
 
@@ -29,10 +30,24 @@ export default function SoloSharePage() {
   const [submitting, setSubmitting] = useState(false);
   const [alreadyRated, setAlreadyRated] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [editorProfile, setEditorProfile] = useState<{ level: number; league: string; global_index_score: number } | null>(null);
+  const [downloading, setDownloading] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (slug && localStorage.getItem(RATED_KEY(slug))) setAlreadyRated(true);
   }, [slug]);
+
+  // Fetch editor profile for HUD
+  useEffect(() => {
+    if (!share?.user_id) return;
+    supabase
+      .from('profiles')
+      .select('level, league, global_index_score')
+      .eq('id', share.user_id)
+      .maybeSingle()
+      .then(({ data }) => { if (data) setEditorProfile(data as any); });
+  }, [share?.user_id]);
 
   // Bump views once per page load (best-effort, non-owner)
   useEffect(() => {
@@ -112,6 +127,27 @@ export default function SoloSharePage() {
 
   const title = share.title || `${share.username}'s Edit`;
   const description = share.caption || `Rate ${share.username}'s edit on Loopgate. Independent rating page for editors.`;
+
+  const leagueLabel = (editorProfile?.league || 'open').toUpperCase();
+  const levelNum = editorProfile?.level ?? 1;
+  const idxScore = editorProfile?.global_index_score ?? 0;
+
+  const handleDownloadCard = async () => {
+    if (!cardRef.current) return;
+    setDownloading(true);
+    try {
+      const canvas = await html2canvas(cardRef.current, { backgroundColor: '#000', scale: 2, useCORS: true, allowTaint: true });
+      const link = document.createElement('a');
+      link.download = `loopgate-${share.slug}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      toast.success('Card downloaded — post it anywhere.');
+    } catch (e: any) {
+      toast.error('Download failed. Try screenshotting instead.');
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black text-white flex flex-col overflow-hidden">
@@ -235,6 +271,101 @@ export default function SoloSharePage() {
               </a>
             </div>
           )}
+
+          {/* Valorant-style HUD overlay */}
+          <div className="absolute inset-0 pointer-events-none">
+            {/* Top-left: editor identity */}
+            <div className="absolute top-2 left-2 flex items-center gap-2 px-2.5 py-1.5 bg-black/70 backdrop-blur-md border border-white/15"
+                 style={{ clipPath: 'polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%)' }}>
+              {share.avatar_url ? (
+                <img src={share.avatar_url} alt="" className="w-6 h-6 rounded-sm object-cover" crossOrigin="anonymous" />
+              ) : (
+                <div className="w-6 h-6 bg-white/10 rounded-sm" />
+              )}
+              <div className="leading-tight pr-2">
+                <div className="text-[10px] font-black tracking-wider text-white">@{share.username.toUpperCase()}</div>
+                <div className="text-[8px] uppercase tracking-[0.2em] text-amber-400 font-bold">LVL {levelNum} · {leagueLabel}</div>
+              </div>
+            </div>
+
+            {/* Top-right: IDX score */}
+            <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2.5 py-1.5 bg-black/70 backdrop-blur-md border border-amber-400/40"
+                 style={{ clipPath: 'polygon(8px 0, 100% 0, 100% 100%, 0 100%)' }}>
+              <Shield className="w-3 h-3 text-amber-400" />
+              <div className="leading-tight">
+                <div className="text-[8px] uppercase tracking-[0.2em] text-white/50 font-bold">IDX</div>
+                <div className="text-[11px] font-black text-amber-400 tabular-nums">{Number(idxScore).toFixed(2)}</div>
+              </div>
+            </div>
+
+            {/* Bottom-left: room code */}
+            <div className="absolute bottom-2 left-2 px-2.5 py-1.5 bg-black/70 backdrop-blur-md border border-white/15"
+                 style={{ clipPath: 'polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%)' }}>
+              <div className="text-[8px] uppercase tracking-[0.2em] text-white/50 font-bold">ROOM</div>
+              <div className="text-[11px] font-mono font-black text-white tracking-[0.18em]">{share.slug.toUpperCase()}</div>
+            </div>
+
+            {/* Bottom-right: loopgate.gg branding */}
+            <div className="absolute bottom-2 right-2 px-2.5 py-1.5 bg-amber-400 border border-amber-300"
+                 style={{ clipPath: 'polygon(8px 0, 100% 0, 100% 100%, 0 100%)' }}>
+              <div className="text-[10px] font-black text-black tracking-[0.15em]">LOOPGATE.GG</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Downloadable share card (hidden off-screen, rendered for capture) */}
+        <div className="fixed -left-[9999px] top-0 pointer-events-none" aria-hidden="true">
+          <div ref={cardRef} style={{ width: 1080, height: 1080, background: '#000', position: 'relative', fontFamily: 'system-ui, sans-serif' }}>
+            {/* Thumbnail background */}
+            {(share.thumbnail_url || getBunnyThumbnail(share.video_url)) && (
+              <img
+                src={share.thumbnail_url || getBunnyThumbnail(share.video_url) || ''}
+                alt=""
+                crossOrigin="anonymous"
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.55 }}
+              />
+            )}
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.85) 100%)' }} />
+
+            {/* Top bar: identity */}
+            <div style={{ position: 'absolute', top: 48, left: 48, right: 48, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 20, background: 'rgba(0,0,0,0.7)', padding: '16px 24px', border: '2px solid rgba(255,255,255,0.2)' }}>
+                {share.avatar_url && <img src={share.avatar_url} crossOrigin="anonymous" alt="" style={{ width: 64, height: 64, borderRadius: 8, objectFit: 'cover' }} />}
+                <div>
+                  <div style={{ color: '#fff', fontSize: 28, fontWeight: 900, letterSpacing: 2 }}>@{share.username.toUpperCase()}</div>
+                  <div style={{ color: '#fbbf24', fontSize: 14, fontWeight: 800, letterSpacing: 4, marginTop: 4 }}>LVL {levelNum} · {leagueLabel}</div>
+                </div>
+              </div>
+              <div style={{ background: 'rgba(0,0,0,0.7)', padding: '16px 24px', border: '2px solid rgba(251,191,36,0.5)', textAlign: 'right' }}>
+                <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, letterSpacing: 4, fontWeight: 800 }}>IDX SCORE</div>
+                <div style={{ color: '#fbbf24', fontSize: 32, fontWeight: 900 }}>{Number(idxScore).toFixed(2)}</div>
+              </div>
+            </div>
+
+            {/* Center title */}
+            <div style={{ position: 'absolute', left: 48, right: 48, top: '40%', textAlign: 'center' }}>
+              <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 18, letterSpacing: 8, fontWeight: 800 }}>SOLO EDIT</div>
+              <div style={{ color: '#fff', fontSize: 72, fontWeight: 900, letterSpacing: 2, marginTop: 12, lineHeight: 1 }}>
+                {(share.title || `${share.username}'s Edit`).slice(0, 28).toUpperCase()}
+              </div>
+              {share.total_ratings > 0 && (
+                <div style={{ marginTop: 24, color: '#fbbf24', fontSize: 32, fontWeight: 900 }}>
+                  ★ {share.avg_rating.toFixed(2)} <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 18, fontWeight: 700 }}>· {share.total_ratings} RATINGS</span>
+                </div>
+              )}
+            </div>
+
+            {/* Bottom bar: room + branding */}
+            <div style={{ position: 'absolute', bottom: 48, left: 48, right: 48, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              <div style={{ background: 'rgba(0,0,0,0.7)', padding: '16px 24px', border: '2px solid rgba(255,255,255,0.2)' }}>
+                <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, letterSpacing: 4, fontWeight: 800 }}>RATE AT</div>
+                <div style={{ color: '#fff', fontSize: 22, fontWeight: 900, letterSpacing: 2, fontFamily: 'monospace' }}>loopgate.gg/s/{share.slug}</div>
+              </div>
+              <div style={{ background: '#fbbf24', padding: '20px 28px', color: '#000', fontSize: 24, fontWeight: 900, letterSpacing: 3 }}>
+                LOOPGATE.GG
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Stats strip */}
@@ -246,6 +377,16 @@ export default function SoloSharePage() {
             <span>{share.rings_earned} earned</span>
           </div>
         </div>
+
+        {/* Download card CTA */}
+        <button
+          onClick={handleDownloadCard}
+          disabled={downloading}
+          className="w-full mt-3 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-bold uppercase tracking-[0.18em] active:scale-[0.98] transition disabled:opacity-50"
+        >
+          {downloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+          {downloading ? 'Generating' : 'Download share card'}
+        </button>
 
         {/* Rating block */}
         <section className="mt-6 rounded-2xl bg-[#0e0e0e] border border-white/5 p-4">
