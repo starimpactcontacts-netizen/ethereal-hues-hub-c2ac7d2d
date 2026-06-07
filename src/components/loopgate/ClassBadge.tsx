@@ -29,15 +29,16 @@ function chevron(cx: number, y: number, halfWidth: number): string {
 // 5-point star
 const STAR_PATH = 'M0 -4 L1.18 -1.24 L4.18 -0.94 L1.9 1.06 L2.6 4 L0 2.4 L-2.6 4 L-1.9 1.06 L-4.18 -0.94 L-1.18 -1.24 Z';
 
-// Feathered wing — multiple layered blade strokes, fanning outward
-const WING_FEATHERS = [
-  { angle: -28, length: 0.55 },
-  { angle: -14, length: 0.78 },
-  { angle: 0,   length: 1.0  },
-  { angle: 14,  length: 0.82 },
-  { angle: 28,  length: 0.62 },
+// Bulky rectangular wing bars — stacked chunky blocks fanning outward.
+// Each entry is a horizontal bar [x, y, width, height] in local wing space.
+// Heaviest bar sits at the shield mid-line; thinner bars step up and down.
+const WING_BARS: Array<{ x: number; y: number; w: number; h: number }> = [
+  { x: 0, y: -5.5, w: 7,  h: 2.2 },
+  { x: 0, y: -2.6, w: 11, h: 2.6 },
+  { x: 0, y:  0.4, w: 14, h: 3.0 },
+  { x: 0, y:  3.8, w: 10, h: 2.4 },
+  { x: 0, y:  6.6, w: 6,  h: 2.0 },
 ];
-const FEATHER_PATH = 'M0 -1.4 C5 -2.6 10 -2 13 0 C10 1.4 5 1.8 0 1.4 Z';
 
 interface ClassBadgeProps {
   rank: string;
@@ -104,19 +105,26 @@ export function ClassBadge({ rank, size = 40, className }: ClassBadgeProps) {
       {/* Ambient glow */}
       {tier > 0 && <circle cx="32" cy="32" r="22" fill={`url(#${glowId})`} opacity={0.3 + tier * 0.05} />}
 
-      {/* Wings — feathered plume each side (A and up) */}
+      {/* Wings — bulky rectangular bar stack (A and up). Skews outward so
+          the silhouette reads as armor plating, not feathers. */}
       {wingScale > 0 && [-1, 1].map((side) => (
-        <g key={side} transform={`translate(${32 + side * 11} 30) scale(${side * wingScale} ${wingScale})`}>
-          {WING_FEATHERS.map((f, i) => (
-            <g key={i} transform={`rotate(${f.angle}) scale(${f.length})`}>
-              <path
-                d={FEATHER_PATH}
-                fill={`url(#${gradId})`}
-                stroke={palette.dark}
-                strokeWidth="0.5"
-                strokeLinejoin="round"
-              />
-            </g>
+        <g
+          key={side}
+          transform={`translate(${32 + side * 10} 30) scale(${side * wingScale} ${wingScale}) skewY(-6)`}
+        >
+          {WING_BARS.map((b, i) => (
+            <rect
+              key={i}
+              x={b.x}
+              y={b.y - b.h / 2}
+              width={b.w}
+              height={b.h}
+              rx={0.4}
+              fill={`url(#${gradId})`}
+              stroke={palette.dark}
+              strokeWidth="0.6"
+              strokeLinejoin="miter"
+            />
           ))}
         </g>
       ))}
