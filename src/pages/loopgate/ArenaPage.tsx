@@ -1753,37 +1753,43 @@ export default function ArenaPage() {
           {/* ═══ SOLO — public shareable rating pages ═══ */}
           {(activeFilter === "all" || activeFilter === "competitions") && (
             <div id="arena-solo" className="mb-5">
-              <div className="flex items-center justify-between px-4 mb-2">
-                 <div>
-                   <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">New</div>
-                   <div className="flex items-center gap-1.5">
-                     <span className="text-[15px] font-extrabold text-foreground tracking-tight leading-none" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
-                       Solo
-                     </span>
-                     <button
-                       onClick={() => toast.info('Drop your edit. Get a shareable Loopgate page. World rates. You earn Rings.', { duration: 4500 })}
-                       className="flex items-center justify-center hover:opacity-80 active:scale-90 transition"
-                       aria-label="About Solo"
-                     >
-                       <Info className="w-3 h-3 text-white/40" />
-                     </button>
-                   </div>
-                 </div>
-                <button
-                  onClick={() => navigate(profile ? '/solo' : '/start')}
-                  className="text-[11px] text-white/60 hover:text-white flex items-center gap-1"
-                >
-                  My Pages <ChevronRight className="w-3 h-3" />
-                </button>
-              </div>
-              <div className="px-4">
-                <button
-                  onClick={() => navigate('/solo/find')}
-                  className="w-full flex items-center justify-center gap-2 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-white/80"
-                >
-                  <Search className="w-3.5 h-3.5" />
-                  Find a Solo by code or @username
-                </button>
+              <div className="flex items-center justify-between px-4 mb-3">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4" style={{ color: '#3BCB6B' }} fill="currentColor" />
+                  <span className="text-[15px] font-extrabold text-foreground tracking-tight" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
+                    Solo
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => toast.info('Drop your edit. Get a shareable Loopgate page. World rates. You earn Rings.', { duration: 4500 })}
+                    className="w-7 h-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-white/[0.06] active:scale-90 transition-all"
+                    aria-label="How Solo works"
+                  >
+                    <Info className="w-3.5 h-3.5" strokeWidth={2} />
+                  </button>
+                  <button
+                    onClick={() => navigate('/solo/find')}
+                    className="w-7 h-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-white/[0.06] active:scale-90 transition-all"
+                    aria-label="Find a Solo by code or username"
+                  >
+                    <Search className="w-3.5 h-3.5" strokeWidth={2} />
+                  </button>
+                  <button
+                    onClick={() => navigate(profile ? '/solo/create' : '/start')}
+                    className="w-7 h-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-white/[0.06] active:scale-90 transition-all"
+                    aria-label="Drop a new Solo"
+                  >
+                    <Plus className="w-3.5 h-3.5" strokeWidth={2} />
+                  </button>
+                  <button
+                    onClick={() => navigate(profile ? '/solo' : '/start')}
+                    className="w-7 h-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-white/[0.06] active:scale-90 transition-all"
+                    aria-label="My Solo Pages"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" strokeWidth={2} />
+                  </button>
+                </div>
               </div>
               {/* Live solo cards rail */}
               {latestSoloLoading ? (
