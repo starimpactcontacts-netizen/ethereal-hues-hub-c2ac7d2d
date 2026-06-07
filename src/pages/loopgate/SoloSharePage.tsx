@@ -207,7 +207,7 @@ export default function SoloSharePage() {
         </div>
 
         {/* Player */}
-        <div className="relative w-full rounded-2xl overflow-hidden bg-black border border-white/5" style={{ aspectRatio: share.platform === 'youtube' && !share.video_url.includes('/shorts/') ? '16/9' : '9/16' }}>
+        <div className="relative w-full aspect-square overflow-hidden bg-zinc-900 border border-white/10">
           {share.platform === 'bunny' ? (
             <BunnyVideo src={share.video_url} className="absolute inset-0 w-full h-full object-cover" controls autoPlay={false} />
           ) : embedUrl ? (
