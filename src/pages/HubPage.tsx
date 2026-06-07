@@ -813,32 +813,41 @@ export default function HubPage() {
                   <button
                     onClick={() => { setPlayExpanded(false); handleQuickFight(); }}
                     disabled={qfIsSearching}
-                    className="relative w-full py-4 overflow-hidden active:scale-[0.99] transition disabled:opacity-60 flex flex-col items-center justify-center"
+                    className="relative w-full py-2.5 overflow-hidden active:scale-[0.99] transition disabled:opacity-60 flex flex-col items-center justify-center"
                     style={{ background: '#FF3B3B', boxShadow: 'inset 0 1px 0 hsl(0 100% 82% / 0.4), inset 0 -3px 0 hsl(0 80% 28% / 0.5), 0 0 20px hsl(0 100% 55% / 0.35)' }}
                   >
                     <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.18) 1px, transparent 1px)', backgroundSize: '14px 14px' }} />
-                    <span className="relative text-white uppercase leading-none flex items-center gap-2" style={{ fontFamily: 'Teko, sans-serif', fontSize: '32px', fontWeight: 700, letterSpacing: '0.04em', textShadow: '1px 1px 0 rgba(0,0,0,0.4)' }}>
+                    <span className="relative text-white uppercase leading-none flex items-center gap-2" style={{ fontFamily: 'Teko, sans-serif', fontSize: '26px', fontWeight: 700, letterSpacing: '0.04em', textShadow: '1px 1px 0 rgba(0,0,0,0.4)' }}>
                       {qfIsSearching && <Loader2 className="w-4 h-4 animate-spin" />}
                       Edit Battles
                     </span>
-                    <span className="relative text-[10px] font-black text-white/70 uppercase tracking-[0.2em] mt-1" style={{ fontFamily: 'Teko, sans-serif' }}>Enter 1v1 Lobby</span>
+                    <span className="relative text-[9px] font-black text-white/70 uppercase tracking-[0.2em] mt-0.5" style={{ fontFamily: 'Teko, sans-serif' }}>Enter 1v1 Lobby</span>
                   </button>
 
                   <button
                     onClick={() => { setPlayExpanded(false); handleMultiplayer(); }}
-                    className="w-full py-4 active:scale-[0.99] transition flex flex-col items-center justify-center"
+                    className="w-full py-2.5 active:scale-[0.99] transition flex flex-col items-center justify-center"
                     style={{ background: 'hsl(var(--surface-1))', border: '1px solid hsl(0 100% 55% / 0.4)' }}
                   >
-                    <span className="text-foreground uppercase leading-none" style={{ fontFamily: 'Teko, sans-serif', fontSize: '32px', fontWeight: 700, letterSpacing: '0.04em' }}>Multiplayer</span>
-                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-1" style={{ fontFamily: 'Teko, sans-serif' }}>Join An Open Lobby</span>
+                    <span className="text-foreground uppercase leading-none" style={{ fontFamily: 'Teko, sans-serif', fontSize: '26px', fontWeight: 700, letterSpacing: '0.04em' }}>Multiplayer</span>
+                    <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-0.5" style={{ fontFamily: 'Teko, sans-serif' }}>Join An Open Lobby</span>
+                  </button>
+
+                  <button
+                    onClick={() => { setPlayExpanded(false); navigate('/arena?mode=solo&auto=1'); }}
+                    className="w-full py-2.5 active:scale-[0.99] transition flex flex-col items-center justify-center"
+                    style={{ background: 'hsl(var(--surface-1))', border: '1px solid hsl(var(--gold) / 0.4)' }}
+                  >
+                    <span className="text-foreground uppercase leading-none" style={{ fontFamily: 'Teko, sans-serif', fontSize: '26px', fontWeight: 700, letterSpacing: '0.04em' }}>Solo</span>
+                    <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-0.5" style={{ fontFamily: 'Teko, sans-serif' }}>Practice On Your Own</span>
                   </button>
 
                   <button
                     onClick={() => setPlayExpanded(false)}
-                    className="w-full py-3 active:scale-[0.99] transition"
+                    className="w-full py-1.5 active:scale-[0.99] transition"
                     style={{ background: 'hsl(var(--surface-1))', border: '1px solid hsl(var(--border))' }}
                   >
-                    <span className="text-muted-foreground uppercase leading-none" style={{ fontFamily: 'Teko, sans-serif', fontSize: '26px', fontWeight: 700, letterSpacing: '0.04em' }}>Back</span>
+                    <span className="text-muted-foreground uppercase leading-none" style={{ fontFamily: 'Teko, sans-serif', fontSize: '20px', fontWeight: 700, letterSpacing: '0.04em' }}>Back</span>
                   </button>
                 </motion.div>
               )}
