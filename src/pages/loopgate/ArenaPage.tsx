@@ -48,6 +48,7 @@ import { useMyCashBattles } from "@/hooks/useCashBattles";
 import { ArenaRail, ArenaRailCard, ArenaRailSkeleton } from "@/components/loopgate/ArenaCarouselSystem";
 import { useMyCompetitionReminders } from "@/hooks/useMyCompetitionReminders";
 import ArenaQOITop from "@/components/loopgate/ArenaQOITop";
+import { getBunnyThumbnail } from "@/lib/bunnyPlayback";
 import MatchmakingLobby from "@/components/loopgate/MatchmakingLobby";
 import SmartUsername from "@/components/loopgate/SmartUsername";
 
