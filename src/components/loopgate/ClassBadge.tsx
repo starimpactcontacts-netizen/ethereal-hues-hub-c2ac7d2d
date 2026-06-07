@@ -14,8 +14,9 @@ const RANK_COLORS: Record<string, [string, string]> = {
   'S++': ['#ffe9ff', '#b86bff'],
 };
 
-// Stylized swept-feather wing, drawn pointing rightward from its attachment point — mirrored for the left side
-const WING_PATH = 'M0 0 C7 -5 16 -6 23 -2 C17 -1 11 1 6 2 C12 3 17 6 21 9 C13 8 5 6 0 3 Z';
+// A single tapered blade, drawn pointing rightward from its attachment point — mirrored for the left side.
+// Kept to one clean silhouette (not stacked feather lobes) so it reads as a crisp wing, not a smear of layers.
+const WING_PATH = 'M0 -2 C9 -6.5 18 -7 24 -3.5 C16 -1.5 8 -0.5 0 2 Z';
 
 function hexPoints(r: number, cx = 32, cy = 32): string {
   const pts: string[] = [];
@@ -87,19 +88,14 @@ export function ClassBadge({ rank, size = 40, className }: ClassBadgeProps) {
       {/* Soft iridescent halo — the crystal tier only */}
       {isCrystal && <circle cx="32" cy="32" r="29" fill={`url(#${wingGradId})`} fillOpacity="0.14" />}
 
-      {/* Wings — flank the shield from A onward, escalating in span + ornament */}
-      {hasWings && (
-        <>
-          <g transform={`translate(${32 - apothem - 1} 32) scale(${-wingScale} ${wingScale})`}>
-            <path d={WING_PATH} fill={wingFill} fillOpacity={wingOpacity} />
-            {isOrnate && <circle cx="14" cy="2" r="1.6" fill={light} />}
-          </g>
-          <g transform={`translate(${32 + apothem + 1} 32) scale(${wingScale} ${wingScale})`}>
-            <path d={WING_PATH} fill={wingFill} fillOpacity={wingOpacity} />
-            {isOrnate && <circle cx="14" cy="2" r="1.6" fill={light} />}
-          </g>
-        </>
-      )}
+      {/* Wings — a single crisp blade flanks each side of the shield from A onward, escalating in span + trim */}
+      {hasWings && [-1, 1].map((side) => (
+        <g key={side} transform={`translate(${32 + side * (apothem + 1)} 32) scale(${side * wingScale} ${wingScale})`}>
+          <path d={WING_PATH} fill={wingFill} fillOpacity={wingOpacity}
+            stroke={isOrnate ? dark : 'none'} strokeWidth={isOrnate ? 0.6 : 0} strokeOpacity="0.5" />
+          {isOrnate && <circle cx="22" cy="-3.2" r="1.5" fill={light} />}
+        </g>
+      ))}
 
       {/* Scalloped edge — small studs tracing the hexagon's perimeter, B and up */}
       {hasScallops && Array.from({ length: 6 }).map((_, i) => {
