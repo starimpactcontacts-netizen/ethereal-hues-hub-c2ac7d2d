@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import GateIcon from '@/components/loopgate/GateIcon';
 import { supabase } from '@/integrations/supabase/client';
 import html2canvas from 'html2canvas';
+import { attachHlsSource } from '@/lib/attachHlsSource';
 
 const RATED_KEY = (slug: string) => `lg_solo_rated_${slug}`;
 
@@ -145,6 +146,179 @@ export default function SoloSharePage() {
     } catch (e: any) {
       toast.error('Download failed. Try screenshotting instead.');
     } finally {
+      setDownloading(false);
+    }
+  };
+
+  const handleDownloadVideo = async () => {
+    if (!share) return;
+    if (share.platform !== 'bunny') {
+      toast.error('Video export only works for uploaded edits. Copy the share link instead.');
+      return;
+    }
+    if (typeof MediaRecorder === 'undefined') {
+      toast.error('Your browser can\'t export video. Try Chrome on desktop.');
+      return;
+    }
+    setDownloading(true);
+    const loadingToast = toast.loading('Baking HUD onto your edit…');
+    let cleanupHls: (() => void) | null = null;
+    let rafId = 0;
+    const video = document.createElement('video');
+    video.muted = false;
+    video.playsInline = true;
+    video.setAttribute('playsinline', 'true');
+    try {
+      cleanupHls = attachHlsSource(video, share.video_url);
+      await new Promise<void>((resolve, reject) => {
+        const ok = () => { video.removeEventListener('loadedmetadata', ok); resolve(); };
+        const fail = () => { video.removeEventListener('error', fail); reject(new Error('Video failed to load')); };
+        video.addEventListener('loadedmetadata', ok);
+        video.addEventListener('error', fail);
+        setTimeout(() => reject(new Error('Video load timeout')), 15000);
+      });
+
+      // Square 720x720 export
+      const W = 720, H = 720;
+      const canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d')!;
+
+      // Preload avatar
+      let avatar: HTMLImageElement | null = null;
+      if (share.avatar_url) {
+        avatar = new Image();
+        avatar.crossOrigin = 'anonymous';
+        avatar.src = share.avatar_url;
+        await new Promise<void>((res) => {
+          avatar!.onload = () => res();
+          avatar!.onerror = () => { avatar = null; res(); };
+        });
+      }
+
+      const stream = canvas.captureStream(30);
+      // Try to pipe audio
+      try {
+        const audioStream = (video as any).captureStream?.() || (video as any).mozCaptureStream?.();
+        if (audioStream) {
+          audioStream.getAudioTracks().forEach((t: MediaStreamTrack) => stream.addTrack(t));
+        }
+      } catch {}
+
+      const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
+        ? 'video/webm;codecs=vp9,opus'
+        : (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus') ? 'video/webm;codecs=vp8,opus' : 'video/webm');
+      const recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 4_500_000 });
+      const chunks: Blob[] = [];
+      recorder.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+
+      const drawHUD = () => {
+        // Top-left identity pill
+        ctx.fillStyle = 'rgba(0,0,0,0.75)';
+        ctx.fillRect(16, 16, 260, 60);
+        ctx.strokeStyle = 'rgba(255,255,255,0.18)'; ctx.lineWidth = 1;
+        ctx.strokeRect(16, 16, 260, 60);
+        if (avatar) {
+          try { ctx.drawImage(avatar, 26, 26, 40, 40); } catch {}
+        } else {
+          ctx.fillStyle = 'rgba(255,255,255,0.1)';
+          ctx.fillRect(26, 26, 40, 40);
+        }
+        ctx.fillStyle = '#fff';
+        ctx.font = '900 15px system-ui, -apple-system, sans-serif';
+        ctx.textBaseline = 'alphabetic';
+        ctx.fillText(`@${share.username.toUpperCase()}`, 76, 44);
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = '800 10px system-ui, -apple-system, sans-serif';
+        ctx.fillText(`LVL ${levelNum} · ${leagueLabel}`, 76, 62);
+
+        // Top-right IDX
+        ctx.fillStyle = 'rgba(0,0,0,0.75)';
+        ctx.fillRect(W - 168, 16, 152, 60);
+        ctx.strokeStyle = 'rgba(251,191,36,0.5)';
+        ctx.strokeRect(W - 168, 16, 152, 60);
+        ctx.fillStyle = 'rgba(255,255,255,0.55)';
+        ctx.font = '800 10px system-ui';
+        ctx.fillText('IDX SCORE', W - 156, 36);
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = '900 22px system-ui';
+        ctx.fillText(Number(idxScore).toFixed(2), W - 156, 64);
+
+        // Bottom-left room code
+        ctx.fillStyle = 'rgba(0,0,0,0.75)';
+        ctx.fillRect(16, H - 76, 240, 60);
+        ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+        ctx.strokeRect(16, H - 76, 240, 60);
+        ctx.fillStyle = 'rgba(255,255,255,0.55)';
+        ctx.font = '800 10px system-ui';
+        ctx.fillText('ROOM', 28, H - 56);
+        ctx.fillStyle = '#fff';
+        ctx.font = '900 18px ui-monospace, SFMono-Regular, Menlo, monospace';
+        ctx.fillText(share.slug.toUpperCase(), 28, H - 30);
+
+        // Bottom-right brand
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(W - 220, H - 76, 204, 60);
+        ctx.fillStyle = '#000';
+        ctx.font = '900 16px system-ui';
+        ctx.fillText('LOOPGATE.GG', W - 206, H - 46);
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.font = '800 11px ui-monospace, monospace';
+        ctx.fillText(`/s/${share.slug}`, W - 206, H - 26);
+      };
+
+      const draw = () => {
+        const vw = video.videoWidth, vh = video.videoHeight;
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, W, H);
+        if (vw && vh) {
+          const scale = Math.max(W / vw, H / vh);
+          const dw = vw * scale, dh = vh * scale;
+          try { ctx.drawImage(video, (W - dw) / 2, (H - dh) / 2, dw, dh); } catch {}
+        }
+        drawHUD();
+        rafId = requestAnimationFrame(draw);
+      };
+
+      // Cap export at 60s
+      const maxDuration = Math.min(video.duration || 60, 60);
+      video.currentTime = 0;
+      await video.play();
+      recorder.start(250);
+      draw();
+
+      await new Promise<void>((resolve) => {
+        const tick = () => {
+          if (video.ended || video.currentTime >= maxDuration) { resolve(); return; }
+          requestAnimationFrame(tick);
+        };
+        tick();
+      });
+
+      cancelAnimationFrame(rafId);
+      video.pause();
+      recorder.stop();
+      await new Promise<void>((res) => { recorder.onstop = () => res(); });
+
+      const blob = new Blob(chunks, { type: 'video/webm' });
+      if (blob.size < 1000) throw new Error('Empty recording');
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `loopgate-${share.slug}.webm`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      toast.dismiss(loadingToast);
+      toast.success('Edit downloaded with HUD baked in.');
+    } catch (e: any) {
+      console.error('[Solo video export]', e);
+      toast.dismiss(loadingToast);
+      toast.error('Video export failed. Try the card download instead.');
+    } finally {
+      try { cleanupHls?.(); } catch {}
+      cancelAnimationFrame(rafId);
       setDownloading(false);
     }
   };
@@ -378,15 +552,27 @@ export default function SoloSharePage() {
           </div>
         </div>
 
-        {/* Download card CTA */}
-        <button
-          onClick={handleDownloadCard}
-          disabled={downloading}
-          className="w-full mt-3 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-bold uppercase tracking-[0.18em] active:scale-[0.98] transition disabled:opacity-50"
-        >
-          {downloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
-          {downloading ? 'Generating' : 'Download share card'}
-        </button>
+        {/* Download CTAs */}
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          <button
+            onClick={handleDownloadVideo}
+            disabled={downloading}
+            className="col-span-2 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black text-xs font-black uppercase tracking-[0.18em] active:scale-[0.98] transition disabled:opacity-50"
+          >
+            {downloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+            {downloading ? 'Baking' : 'Download Edit'}
+          </button>
+          <button
+            onClick={handleDownloadCard}
+            disabled={downloading}
+            className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-[10px] font-bold uppercase tracking-[0.18em] active:scale-[0.98] transition disabled:opacity-50"
+          >
+            <Download className="w-3 h-3" /> Card
+          </button>
+        </div>
+        <p className="mt-1.5 text-[10px] text-white/40 text-center">
+          Bakes the Valorant-style HUD onto your video. Up to 60s, .webm format.
+        </p>
 
         {/* Rating block */}
         <section className="mt-6 rounded-2xl bg-[#0e0e0e] border border-white/5 p-4">
