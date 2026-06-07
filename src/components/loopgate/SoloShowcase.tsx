@@ -24,69 +24,122 @@ function SoloCard({ solo }: { solo: RecentSolo }) {
 
   return (
     <Link to={`/solo/${solo.id}`} className="block h-full group">
-      <div className="relative h-full overflow-hidden rounded-2xl flex flex-col" style={{
-        boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
-      }}>
-        {/* Background */}
+      <div
+        className="relative h-full overflow-hidden flex flex-col bg-black"
+        style={{
+          clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%)',
+          boxShadow: '0 6px 28px rgba(0,0,0,0.6), 0 0 0 1.5px rgba(234,179,8,0.35)',
+        }}
+      >
+        {/* Poster image */}
         <div className="relative flex-1 min-h-0 overflow-hidden">
           {solo.thumbnail_url ? (
-            <img src={solo.thumbnail_url} alt="" className="absolute inset-0 w-full h-full object-cover scale-[1.02] group-hover:scale-[1.06] transition-transform duration-700" />
+            <img
+              src={solo.thumbnail_url}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover scale-[1.05] group-hover:scale-[1.12] transition-transform duration-700"
+            />
           ) : (
-            <div className="absolute inset-0" style={{
-              background: 'linear-gradient(160deg, #1a1520 0%, #0d0d12 40%, #141018 100%)',
-            }} />
+            <div
+              className="absolute inset-0"
+              style={{ background: 'linear-gradient(160deg,#2a1810 0%,#0d0d12 50%,#1a0a14 100%)' }}
+            />
           )}
 
-          {/* Fade overlay */}
-          <div className="absolute inset-0" style={{
-            background: 'linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, transparent 30%, transparent 50%, rgba(0,0,0,0.6) 85%, rgba(0,0,0,0.85) 100%)',
-          }} />
-          
-          {/* Border glow */}
-          <div className="absolute inset-0 rounded-lg border border-white/[0.08] group-hover:border-gold/30 transition-colors duration-300" />
+          {/* Smash-style diagonal red glare */}
+          <div
+            className="absolute -top-1/3 -right-1/3 w-2/3 h-2/3 opacity-40 mix-blend-screen pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(239,68,68,0.55), transparent 65%)',
+            }}
+          />
+          {/* Bottom darkening for text */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                'linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, transparent 25%, transparent 45%, rgba(0,0,0,0.85) 80%, #000 100%)',
+            }}
+          />
+          {/* Scanline texture */}
+          <div
+            className="absolute inset-0 opacity-[0.08] pointer-events-none mix-blend-overlay"
+            style={{
+              backgroundImage:
+                'repeating-linear-gradient(0deg, rgba(255,255,255,0.6) 0px, rgba(255,255,255,0.6) 1px, transparent 1px, transparent 3px)',
+            }}
+          />
 
-          {/* Status badge — top left */}
-          <div className="absolute top-2 left-2 z-10">
-            <div className={`flex items-center gap-1 px-2 py-0.5 border rounded-full backdrop-blur-md ${s.bg}`}>
+          {/* TOP LEFT — Status flag */}
+          <div className="absolute top-0 left-0 z-10">
+            <div
+              className={`flex items-center gap-1 pl-2 pr-3 py-1 border-r border-b ${s.bg}`}
+              style={{ clipPath: 'polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%)' }}
+            >
               {s.pulse && <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />}
-              <span className={`text-[8px] font-black uppercase tracking-wider ${s.color}`}>{s.label}</span>
+              <span className={`text-[8px] font-black uppercase tracking-[0.15em] ${s.color}`}>{s.label}</span>
             </div>
           </div>
 
-          {/* Index badge — top right */}
-          {solo.index_awarded > 0 && (
-            <div className="absolute top-2 right-2 z-10 flex items-center gap-0.5 bg-black/50 border border-white/[0.1] px-1.5 py-0.5 rounded-full backdrop-blur-md">
-              <Zap className="w-2.5 h-2.5 text-gold" />
-              <span className="text-[8px] font-black text-gold">+{solo.index_awarded}</span>
-            </div>
-          )}
-
-          {/* QOI Score — bottom right */}
+          {/* TOP RIGHT — QOI as Smash damage % */}
           {solo.qoi_score != null && (
-            <div className="absolute bottom-2 right-2 z-10">
-              <div className="bg-black/50 backdrop-blur-md px-2 py-1 rounded-lg border border-white/[0.08]">
-                <span className="text-lg font-black text-gold leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>{Math.round(solo.qoi_score)}</span>
-                <span className="text-[7px] text-gold/50 ml-0.5 font-bold">QOI</span>
+            <div className="absolute top-1.5 right-1.5 z-10 text-right leading-none">
+              <div
+                className="font-black text-gold"
+                style={{
+                  fontFamily: 'Teko, sans-serif',
+                  fontSize: 30,
+                  lineHeight: 0.85,
+                  textShadow: '0 2px 0 #000, 0 0 14px rgba(234,179,8,0.7), 0 0 2px #000',
+                  WebkitTextStroke: '0.5px rgba(0,0,0,0.6)',
+                }}
+              >
+                {Math.round(solo.qoi_score)}
+                <span className="text-[10px] align-super text-gold/80">%</span>
               </div>
+              <span className="text-[7px] font-black text-gold/60 tracking-[0.2em] uppercase">QOI</span>
             </div>
           )}
 
-          {/* Bottom content overlay */}
-           <div className="absolute bottom-0 left-0 right-0 p-3 z-10">
-            <div className="flex items-center gap-1.5 mb-0.5">
-              <Avatar className="w-4 h-4 border border-white/10">
+          {/* BOTTOM — Smash nameplate */}
+          <div className="absolute bottom-0 left-0 right-0 z-10 p-2.5 pt-8">
+            {/* Yellow accent stripe */}
+            <div className="h-[2px] w-10 bg-gold mb-1.5" style={{ boxShadow: '0 0 8px rgba(234,179,8,0.8)' }} />
+
+            {/* Username — big & loud */}
+            <div
+              className="text-white font-black uppercase leading-none truncate"
+              style={{
+                fontFamily: 'Teko, sans-serif',
+                fontSize: 22,
+                letterSpacing: '0.02em',
+                textShadow: '0 2px 0 #000, 0 0 12px rgba(0,0,0,0.9)',
+              }}
+            >
+              @{solo.username}
+            </div>
+
+            {/* Meta row: avatar · song · time */}
+            <div className="flex items-center gap-1.5 mt-1">
+              <Avatar className="w-3.5 h-3.5 border border-white/20 shrink-0">
                 <AvatarImage src={solo.avatar_url || ''} />
                 <AvatarFallback className="bg-white/10 text-[6px] font-bold text-white">
                   {solo.username?.[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-[10px] font-bold text-white truncate">@{solo.username}</span>
+              <Music className="w-2.5 h-2.5 text-white/40 shrink-0" />
+              <span className="text-[9px] text-white/55 truncate flex-1">{solo.song_name}</span>
+              <span className="text-[8px] text-white/30 shrink-0">{timeAgo}</span>
             </div>
-            <div className="flex items-center gap-1 text-[9px] text-white/50 truncate">
-              <Music className="w-2.5 h-2.5 shrink-0" />
-              <span className="truncate">{solo.song_name}</span>
-            </div>
-            <span className="text-[8px] text-white/25 block mt-0.5">{timeAgo}</span>
+
+            {/* Rings earned pill */}
+            {solo.index_awarded > 0 && (
+              <div className="mt-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-400/40">
+                <span className="text-[10px] font-black text-emerald-400 leading-none">R$</span>
+                <span className="text-[10px] font-black text-emerald-300 leading-none">+{solo.index_awarded}</span>
+                <span className="text-[7px] font-bold text-emerald-400/60 uppercase tracking-wider ml-0.5">earned</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
