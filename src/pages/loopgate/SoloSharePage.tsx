@@ -171,7 +171,7 @@ export default function SoloSharePage() {
           {share.title && (
             <h1 className="font-display text-2xl mt-4 leading-tight">{share.title}</h1>
           )}
-          {share.caption && (
+          {share.caption && !/^https?:\/\//i.test(share.caption.trim()) && (
             <p className="text-sm text-white/70 mt-2 whitespace-pre-wrap">{share.caption}</p>
           )}
 
@@ -209,7 +209,7 @@ export default function SoloSharePage() {
         {/* Player */}
         <div className="relative w-full rounded-2xl overflow-hidden bg-black border border-white/5" style={{ aspectRatio: share.platform === 'youtube' && !share.video_url.includes('/shorts/') ? '16/9' : '9/16' }}>
           {share.platform === 'bunny' ? (
-            <BunnyVideo src={share.video_url} className="absolute inset-0 w-full h-full object-contain" controls autoPlay={false} />
+            <BunnyVideo src={share.video_url} className="absolute inset-0 w-full h-full object-cover" controls autoPlay={false} />
           ) : embedUrl ? (
             <iframe
               src={embedUrl}
