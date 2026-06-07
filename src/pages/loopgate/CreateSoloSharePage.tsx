@@ -69,6 +69,9 @@ export default function CreateSoloSharePage() {
   const [mode, setMode] = useState<'upload' | 'link'>('upload');
   const [uploadPct, setUploadPct] = useState(0);
   const [uploading, setUploading] = useState(false);
+  // Local object-URL preview so the editor monitor shows the just-uploaded
+  // clip instantly while Bunny Stream transcodes the HLS/MP4 in the background.
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Song preview audio
@@ -214,6 +217,14 @@ export default function CreateSoloSharePage() {
     if (!file) return;
     if (!file.type.startsWith('video/')) { toast.error('Pick a video file.'); return; }
     if (file.size > MAX_EDIT_UPLOAD_BYTES) { toast.error(`Too large — ${MAX_EDIT_UPLOAD_LABEL} max`); return; }
+    // Show the clip in the monitor immediately — Bunny transcoding takes ~30-60s
+    // and the CDN MP4/HLS isn't playable until then. Object URL = instant preview.
+    try {
+      if (localPreview) URL.revokeObjectURL(localPreview);
+      const objUrl = URL.createObjectURL(file);
+      setLocalPreview(objUrl);
+      setPlatform('bunny');
+    } catch {}
     setUploading(true);
     setUploadPct(0);
     try {
