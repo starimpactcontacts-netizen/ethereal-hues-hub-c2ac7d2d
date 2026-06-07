@@ -242,8 +242,8 @@ export default function SoloSharePage() {
           <div className="flex items-center gap-1"><Eye className="w-3.5 h-3.5" /> {share.views} views</div>
           <div className="flex items-center gap-1"><MessageCircle className="w-3.5 h-3.5" /> {ratings.filter(r => r.comment).length} feedback</div>
           <div className="flex items-center gap-1">
-            <span className="font-display font-black text-emerald-400">R$</span>
-            {share.rings_earned} earned
+            <span className="font-black text-emerald-400 text-[12px] tracking-tight">R$</span>
+            <span>{share.rings_earned} earned</span>
           </div>
         </div>
 
