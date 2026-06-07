@@ -69,6 +69,9 @@ export default function CreateSoloSharePage() {
   const [mode, setMode] = useState<'upload' | 'link'>('upload');
   const [uploadPct, setUploadPct] = useState(0);
   const [uploading, setUploading] = useState(false);
+  // Local object-URL preview so the editor monitor shows the just-uploaded
+  // clip instantly while Bunny Stream transcodes the HLS/MP4 in the background.
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Song preview audio
@@ -214,6 +217,14 @@ export default function CreateSoloSharePage() {
     if (!file) return;
     if (!file.type.startsWith('video/')) { toast.error('Pick a video file.'); return; }
     if (file.size > MAX_EDIT_UPLOAD_BYTES) { toast.error(`Too large — ${MAX_EDIT_UPLOAD_LABEL} max`); return; }
+    // Show the clip in the monitor immediately — Bunny transcoding takes ~30-60s
+    // and the CDN MP4/HLS isn't playable until then. Object URL = instant preview.
+    try {
+      if (localPreview) URL.revokeObjectURL(localPreview);
+      const objUrl = URL.createObjectURL(file);
+      setLocalPreview(objUrl);
+      setPlatform('bunny');
+    } catch {}
     setUploading(true);
     setUploadPct(0);
     try {
@@ -338,11 +349,16 @@ export default function CreateSoloSharePage() {
             <NLECockpit
               tone={tonePicked}
               videoUrl={videoUrl}
+              localPreview={localPreview}
               uploading={uploading}
               uploadPct={uploadPct}
               platform={platform}
               onPick={() => fileInputRef.current?.click()}
-              onReplace={() => { setVideoUrl(''); fileInputRef.current?.click(); }}
+              onReplace={() => {
+                if (localPreview) { URL.revokeObjectURL(localPreview); setLocalPreview(null); }
+                setVideoUrl('');
+                fileInputRef.current?.click();
+              }}
               title={title}
               setTitle={setTitle}
               caption={caption}
@@ -680,7 +696,7 @@ function OsuLobby({ user, profile, onPick }: { user: any; profile: any; onPick: 
 }
 /* ====== NLE COCKPIT — AE/Premiere/Resolve x Roblox-Draw ====== */
 function NLECockpit({
-  tone, videoUrl, uploading, uploadPct, platform, onPick, onReplace,
+  tone, videoUrl, localPreview, uploading, uploadPct, platform, onPick, onReplace,
   title, setTitle, caption, setCaption, overtime, remainingMs, timerLabel, onCancel,
   packs, songs, libLoading, scenepack, setScenepack, song, setSong, previewingId, togglePreview,
   onPublish, canPublish,
@@ -688,6 +704,7 @@ function NLECockpit({
 }: {
   tone: string;
   videoUrl: string;
+  localPreview: string | null;
   uploading: boolean;
   uploadPct: number;
   platform: 'tiktok' | 'instagram' | 'youtube' | 'bunny';
@@ -715,7 +732,11 @@ function NLECockpit({
   startOffset: number;
   setStartOffset: (n: number) => void;
 }) {
-  const hasVid = !!videoUrl && platform === 'bunny' && !uploading;
+  // Use the local object-URL while Bunny finishes transcoding; fall back to the
+  // CDN MP4/HLS once it's ready. Either source counts as "video loaded".
+  const playSrc = localPreview || (platform === 'bunny' ? videoUrl : '');
+  const hasVid = !!playSrc && !uploading;
+  const isHls = !localPreview && !!videoUrl && /\.m3u8(\?|$)/i.test(videoUrl);
   const timerDisplay = overtime ? `+${fmtRemaining(-remainingMs)}` : fmtRemaining(remainingMs);
   const timerColor = overtime ? '#ef4444' : tone;
   const [bin, setBin] = useState<'packs' | 'tracks'>('packs');
@@ -1077,11 +1098,27 @@ function NLECockpit({
               className="relative w-full rounded-md overflow-hidden bg-black"
               style={{ aspectRatio: '16/10', border: `1px solid ${tone}44` }}
             >
-              <BunnyVideo
-                ref={videoRef}
-                src={videoUrl}
-                className="w-full h-full object-contain"
-                controls
+              {localPreview ? (
+                <video
+                  ref={videoRef}
+                  src={localPreview}
+                  className="w-full h-full object-contain"
+                  controls
+                  playsInline
+                  onLoadedMetadata={(e) => {
+                    const d = (e.currentTarget as HTMLVideoElement).duration;
+                    if (isFinite(d)) setDuration(d);
+                  }}
+                  onTimeUpdate={(e) => setCurrentTime((e.currentTarget as HTMLVideoElement).currentTime)}
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                />
+              ) : (
+                <BunnyVideo
+                  ref={videoRef}
+                  src={videoUrl}
+                  className="w-full h-full object-contain"
+                  controls
                 onLoadedMetadata={(e) => {
                   const d = (e.currentTarget as HTMLVideoElement).duration;
                   if (isFinite(d)) setDuration(d);
@@ -1089,7 +1126,8 @@ function NLECockpit({
                 onTimeUpdate={(e) => setCurrentTime((e.currentTarget as HTMLVideoElement).currentTime)}
                 onPlay={() => setIsPlaying(true)}
                 onPause={() => setIsPlaying(false)}
-              />
+                />
+              )}
               {[
                 'top-1.5 left-1.5 border-t border-l',
                 'top-1.5 right-1.5 border-t border-r',
