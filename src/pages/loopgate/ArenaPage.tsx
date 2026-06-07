@@ -1755,7 +1755,7 @@ export default function ArenaPage() {
             <div id="arena-solo" className="mb-5">
               <div className="flex items-center justify-between px-4 mb-3">
                 <div className="flex items-center gap-2">
-                  <Zap className="w-4 h-4" style={{ color: '#3BCB6B' }} fill="currentColor" />
+                  <UserRound className="w-4 h-4" style={{ color: '#3BCB6B' }} strokeWidth={2.5} />
                   <span className="text-[15px] font-extrabold text-foreground tracking-tight" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
                     Solo
                   </span>

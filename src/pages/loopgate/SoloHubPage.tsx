@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Star, Copy, Check, Zap, Eye, ChevronRight, Play } from 'lucide-react';
+import { ArrowLeft, Plus, Star, Copy, Check, UserRound, Eye, ChevronRight, Play } from 'lucide-react';
 import { useMySoloShares } from '@/hooks/useSoloShares';
 import { Skeleton } from '@/components/ui/skeleton';
 import SEO from '@/components/SEO';
@@ -114,7 +114,7 @@ export default function SoloHubPage() {
         <div className="mt-7 mb-3 flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <div className="w-4 h-4 rounded-[5px] flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #3BCB6B, #fbbf24)' }}>
-              <Zap className="w-2.5 h-2.5 text-black" strokeWidth={2.5} fill="currentColor" />
+              <UserRound className="w-2.5 h-2.5 text-black" strokeWidth={2.5} />
             </div>
             <h2 className="text-[15px] font-extrabold tracking-tight text-foreground" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>My Drops</h2>
           </div>
@@ -157,7 +157,7 @@ export default function SoloHubPage() {
                       <img src={s.thumbnail_url} alt="" className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <Zap className="w-5 h-5 text-white/15" />
+                        <UserRound className="w-5 h-5 text-white/15" />
                       </div>
                     )}
                     <span className="absolute top-1 left-1 text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-white text-black leading-none" style={TEKO}>
