@@ -40,7 +40,7 @@ export default function SoloHubPage() {
       {/* Top bar — flat icon-button chips, matches the live Arena header language */}
       <div className="sticky top-0 z-10 backdrop-blur-xl border-b border-white/[0.06]" style={{ background: 'rgba(10,10,10,0.85)' }}>
         <div className="max-w-xl mx-auto px-4 h-12 flex items-center justify-between">
-          <button onClick={() => navigate(-1)} className="w-8 h-8 rounded-md flex items-center justify-center bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] active:scale-95 transition-all">
+          <button onClick={() => navigate('/arena')} className="w-8 h-8 rounded-md flex items-center justify-center bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] active:scale-95 transition-all">
             <ArrowLeft className="w-3.5 h-3.5 text-white/70" />
           </button>
           <span className="text-[10px] font-black uppercase tracking-[0.26em] text-white/30" style={TEKO}>My Solo Pages</span>
