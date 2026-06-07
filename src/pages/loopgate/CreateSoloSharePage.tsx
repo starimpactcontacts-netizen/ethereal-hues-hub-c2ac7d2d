@@ -1051,14 +1051,13 @@ function NLECockpit({
                     aria-label={isPlaying ? 'Pause preview' : 'Play preview'}
                     className="shrink-0 w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-transform"
                     style={{
-                      background: isPlaying ? '#fbbf24' : 'rgba(251,191,36,0.15)',
-                      border: `1px solid ${isPlaying ? '#fbbf24' : 'rgba(251,191,36,0.5)'}`,
-                      boxShadow: isPlaying ? '0 0 12px rgba(251,191,36,0.5)' : 'none',
+                      background: '#ffffff',
+                      border: '1px solid #ffffff',
                     }}
                   >
                     {isPlaying
                       ? <Pause className="w-4 h-4 fill-black text-black" />
-                      : <Play className="w-4 h-4 fill-amber-400 text-amber-400 ml-0.5" />}
+                      : <Play className="w-4 h-4 fill-black text-black ml-0.5" />}
                   </button>
                 </div>
               );
