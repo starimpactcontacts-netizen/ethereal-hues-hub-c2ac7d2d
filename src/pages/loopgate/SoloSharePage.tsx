@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSoloShareBySlug, submitSoloShareRating } from '@/hooks/useSoloShares';
 import { getEmbedUrl } from '@/lib/videoEmbed';
 import BunnyVideo from '@/components/loopgate/BunnyVideo';
+import { getBunnyThumbnail } from '@/lib/bunnyPlayback';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
