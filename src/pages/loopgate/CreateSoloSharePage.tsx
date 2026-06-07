@@ -275,7 +275,35 @@ export default function CreateSoloSharePage() {
     if (!share) { toast.error('Could not publish. Try again.'); setPublishing(false); return; }
     clearSoloDraft(user.id);
     clearActiveSoloDraft();
-    toast.success(overtime ? 'Published — flagged OVERTIME.' : 'Solo page live.');
+
+    // Award XP for publishing a solo edit (daily-capped server-side)
+    try {
+      const { data: xpData } = await supabase.rpc('award_xp', {
+        p_user_id: user.id,
+        p_amount: 250,
+        p_action: 'submit_edit',
+        p_description: 'Published a Solo edit',
+      });
+      const result = (xpData as any)?.[0];
+      if (result) {
+        toast.success('+250 XP', {
+          description: overtime ? 'Solo edit live (OVERTIME)' : 'Solo edit live',
+          duration: 3000,
+        });
+        if (result.leveled_up) {
+          setTimeout(() => {
+            toast.success('🎉 Level Up!', {
+              description: `You reached Level ${result.new_level}`,
+              duration: 4500,
+            });
+          }, 500);
+        }
+      } else {
+        toast.success(overtime ? 'Published — flagged OVERTIME.' : 'Solo page live.');
+      }
+    } catch {
+      toast.success(overtime ? 'Published — flagged OVERTIME.' : 'Solo page live.');
+    }
     navigate(`/s/${share.slug}`);
   };
 
