@@ -662,11 +662,11 @@ export default function HubPage() {
                       {/* Class crest + slanted league tag — loopgate HUD style */}
                       <button
                         onClick={(e) => { e.stopPropagation(); navigate('/class'); }}
-                        className="flex items-end gap-1 mt-1.5 active:opacity-70 transition-opacity"
+                        className="flex items-center gap-1.5 mt-1.5 active:opacity-70 transition-opacity"
                       >
                         <ClassBadge rank={classLetter} size={42} />
                         <span
-                          className="text-[13px] font-black uppercase leading-none pb-0.5"
+                          className="text-[13px] font-black uppercase leading-none"
                           style={{
                             fontFamily: 'Teko, sans-serif',
                             letterSpacing: '0.08em',
