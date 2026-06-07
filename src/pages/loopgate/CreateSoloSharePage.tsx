@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import GateIcon from '@/components/loopgate/GateIcon';
 import BunnyVideo from '@/components/loopgate/BunnyVideo';
 import { uploadToBunny, MAX_EDIT_UPLOAD_BYTES, MAX_EDIT_UPLOAD_LABEL } from '@/lib/bunnyUpload';
+import { getBunnyThumbnail } from '@/lib/bunnyPlayback';
 import { getVideoPreviewFrame } from '@/lib/extractVideoFrames';
 import { loadSoloDraft, saveSoloDraft, clearSoloDraft, loadActiveSoloDraft, saveActiveSoloDraft, clearActiveSoloDraft, loadLatestSoloDraft, isLiveDraft } from '@/lib/soloDraft';
 
@@ -254,6 +255,10 @@ export default function CreateSoloSharePage() {
       });
       setVideoUrl(res.url);
       setPlatform('bunny');
+      // If client-side frame extraction didn't produce a thumb, fall back to
+      // Bunny Stream's auto-generated /thumbnail.jpg (always available once
+      // the video is transcoded).
+      setThumbnailUrl((prev) => prev || getBunnyThumbnail(res.url));
       toast.success('Edit uploaded.');
     } catch (e: any) {
       toast.error(e?.message || 'Upload failed');
