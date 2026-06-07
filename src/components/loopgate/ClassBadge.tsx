@@ -2,35 +2,37 @@ import { useId } from 'react';
 
 const RANK_ORDER = ['F', 'D', 'C', 'B', 'A', 'S', 'S+', 'S++'];
 
-// Aura energy palette — each tier radiates a different glow color, escalating from dormant steel
-// through cool currents, into a magenta/crimson blaze, and finally a golden-white supernova at the peak.
-const AURA: Record<string, [string, string]> = {
-  'F':   ['#9ca3af', '#4b5563'],
-  'D':   ['#7dd3fc', '#1d4ed8'],
-  'C':   ['#5eead4', '#0f766e'],
-  'B':   ['#86efac', '#15803d'],
-  'A':   ['#c4b5fd', '#6d28d9'],
-  'S':   ['#f9a8d4', '#be185d'],
-  'S+':  ['#fca5a5', '#b91c1c'],
-  'S++': ['#fef9c3', '#f59e0b'],
+// Purple/violet gameified rank palette — every tier uses the same neon violet family,
+// escalating only in saturation, wing span, stars, and chevrons (per reference art).
+const PURPLE = {
+  light: '#e9d5ff',   // soft highlight
+  mid:   '#c084fc',   // primary face
+  deep:  '#7e22ce',   // shadow tone
+  dark:  '#4c1d95',   // deep edge
+  rim:   '#f5d0fe',   // metallic rim highlight
 };
 
-// Flat-topped crest — the rectangular field (good chevron real estate) tapers to a point at the base
-function shieldPath(w: number, cx = 32, cy = 32): string {
-  return `M ${cx - w} ${cy - 12} L ${cx + w} ${cy - 12} L ${cx + w} ${cy + 8} L ${cx} ${cy + 16} L ${cx - w} ${cy + 8} Z`;
-}
+// Pentagon shield — flat top, angled shoulders, pointed base (matches reference)
+const SHIELD_PATH = 'M32 14 L46 20 L43 40 L32 50 L21 40 L18 20 Z';
+const SHIELD_INNER = 'M32 18 L43 23 L40.5 38.5 L32 46 L23.5 38.5 L21 23 Z';
 
-// Open V-shaped rank stripe
+// Open V-shaped rank chevron
 function chevron(cx: number, y: number, halfWidth: number): string {
-  return `M ${cx - halfWidth} ${y - 3} L ${cx} ${y + 3} L ${cx + halfWidth} ${y - 3}`;
+  return `M ${cx - halfWidth} ${y - 2.5} L ${cx} ${y + 2.5} L ${cx + halfWidth} ${y - 2.5}`;
 }
 
-// A short feather blade — three fan out per side at staggered angles to form a compact plume
-const FEATHER_PATH = 'M0 -1.1 C4 -2.4 7.5 -1.8 9.5 0 C7.5 1.1 4 1.6 0 1.1 Z';
-const FEATHER_ANGLES = [-20, 0, 20];
-const FEATHER_LENGTHS = [0.72, 1, 0.72];
+// 5-point star
+const STAR_PATH = 'M0 -4 L1.18 -1.24 L4.18 -0.94 L1.9 1.06 L2.6 4 L0 2.4 L-2.6 4 L-1.9 1.06 L-4.18 -0.94 L-1.18 -1.24 Z';
 
-const STAR_PATH = 'M32 21.5 L33.6 25 L37.4 25.3 L34.5 27.8 L35.4 31.5 L32 29.4 L28.6 31.5 L29.5 27.8 L26.6 25.3 L30.4 25 Z';
+// Feathered wing — multiple layered blade strokes, fanning outward
+const WING_FEATHERS = [
+  { angle: -28, length: 0.55 },
+  { angle: -14, length: 0.78 },
+  { angle: 0,   length: 1.0  },
+  { angle: 14,  length: 0.82 },
+  { angle: 28,  length: 0.62 },
+];
+const FEATHER_PATH = 'M0 -1.4 C5 -2.6 10 -2 13 0 C10 1.4 5 1.8 0 1.4 Z';
 
 interface ClassBadgeProps {
   rank: string;
@@ -39,25 +41,34 @@ interface ClassBadgeProps {
 }
 
 /**
- * Military-crest class badge — a shield insignia that builds up rank chevrons,
- * then earns a star emblem and a feathered plume, all wrapped in an "aura" glow
- * whose color and intensity escalate with tier (cool currents → crimson blaze → gold supernova).
+ * Gameified neon-violet rank crest — pentagon shield builds up chevrons, then
+ * earns star emblems and a feathered wing-plume that grows wider with each tier.
+ * Always the same purple gradient family; only count and span scale with rank.
  */
 export function ClassBadge({ rank, size = 40, className }: ClassBadgeProps) {
   const gradId = useId();
-  const auraId = useId();
-  const [glow, deep] = AURA[rank] || AURA['F'];
+  const rimId = useId();
+  const glowId = useId();
   const tier = RANK_ORDER.indexOf(rank);
 
-  const chevronCount = Math.min(3, tier);  // 0,1,2,3,3,3,3,3 — caps out at B
-  const hasStar = tier >= 4;                // A and up — emblem earned
-  const hasWings = tier >= 5;               // S and up — plumage unlocked
-  const isOrnate = tier >= 6;               // S+ and up — gem-trimmed
-  const isMaximal = rank === 'S++';
-
-  const w = 14;
-  const wingScale = tier === 5 ? 0.85 : tier === 6 ? 1.1 : tier === 7 ? 1.35 : 0;
-  const auraLevel = Math.max(0, tier - 1);  // the aura starts charging at C, escalating fast from there
+  // Progression matched to reference art (10 badges → mapped to 8 ranks):
+  // F: empty shield, D: 1 chev, C: 2 chev, B: 3 chev,
+  // A: small wings + 1 star, S: wings + 2 stars,
+  // S+: bigger wings + 1 star + chevrons, S++: full eagle wings + star
+  const chevronCount =
+    tier === 0 ? 0 :
+    tier === 1 ? 1 :
+    tier === 2 ? 2 :
+    tier === 3 ? 3 :
+    tier === 6 ? 2 :
+    tier === 7 ? 1 : 0;
+  const starCount = tier === 4 ? 1 : tier === 5 ? 2 : tier === 6 ? 1 : tier === 7 ? 1 : 0;
+  const wingScale =
+    tier === 4 ? 0.7 :
+    tier === 5 ? 0.95 :
+    tier === 6 ? 1.15 :
+    tier === 7 ? 1.4 : 0;
+  const isMax = rank === 'S++';
 
   return (
     <svg
@@ -66,60 +77,99 @@ export function ClassBadge({ rank, size = 40, className }: ClassBadgeProps) {
       viewBox="0 0 64 64"
       fill="none"
       className={className}
-      style={auraLevel > 0 ? { filter: `drop-shadow(0 0 ${2 + auraLevel * 1.6}px ${deep}cc)` } : undefined}
+      style={{ filter: `drop-shadow(0 0 ${3 + tier * 0.8}px ${PURPLE.deep}aa)` }}
     >
       <defs>
-        <linearGradient id={gradId} x1="0" y1="0" x2="0.4" y2="1">
-          <stop offset="0%" stopColor={glow} />
-          <stop offset="100%" stopColor={deep} />
+        <linearGradient id={gradId} x1="0.2" y1="0" x2="0.8" y2="1">
+          <stop offset="0%" stopColor={PURPLE.light} />
+          <stop offset="40%" stopColor={PURPLE.mid} />
+          <stop offset="100%" stopColor={PURPLE.dark} />
         </linearGradient>
-        <radialGradient id={auraId} cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0%" stopColor={glow} stopOpacity="0.55" />
-          <stop offset="100%" stopColor={glow} stopOpacity="0" />
+        <linearGradient id={rimId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={PURPLE.rim} />
+          <stop offset="100%" stopColor={PURPLE.deep} />
+        </linearGradient>
+        <radialGradient id={glowId} cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0%" stopColor={PURPLE.light} stopOpacity="0.5" />
+          <stop offset="100%" stopColor={PURPLE.light} stopOpacity="0" />
         </radialGradient>
       </defs>
 
-      {/* Aura bloom — radiant energy field, charges up fast starting at C */}
-      {auraLevel > 0 && (
-        <circle cx="32" cy="32" r={16 + auraLevel * 2.4} fill={`url(#${auraId})`}
-          opacity={Math.min(0.9, 0.22 + auraLevel * 0.12)} />
-      )}
+      {/* Ambient glow */}
+      {tier > 0 && <circle cx="32" cy="32" r="22" fill={`url(#${glowId})`} opacity={0.3 + tier * 0.05} />}
 
-      {/* Wings — feathered plume fans from each flank once earned (S and up) */}
-      {hasWings && [-1, 1].map((side) => (
-        <g key={side} transform={`translate(${32 + side * (w + 1)} 29) scale(${side * wingScale} ${wingScale})`}>
-          {FEATHER_ANGLES.map((deg, i) => (
-            <g key={i} transform={`rotate(${deg}) scale(${FEATHER_LENGTHS[i]})`}>
-              <path d={FEATHER_PATH} fill={glow} fillOpacity={isMaximal ? 0.95 : 0.85}
-                stroke={isOrnate ? deep : 'none'} strokeWidth={isOrnate ? 0.5 : 0} strokeOpacity="0.5" />
+      {/* Wings — feathered plume each side (A and up) */}
+      {wingScale > 0 && [-1, 1].map((side) => (
+        <g key={side} transform={`translate(${32 + side * 11} 30) scale(${side * wingScale} ${wingScale})`}>
+          {WING_FEATHERS.map((f, i) => (
+            <g key={i} transform={`rotate(${f.angle}) scale(${f.length})`}>
+              <path
+                d={FEATHER_PATH}
+                fill={`url(#${gradId})`}
+                stroke={PURPLE.dark}
+                strokeWidth="0.5"
+                strokeLinejoin="round"
+              />
             </g>
           ))}
-          {isOrnate && <circle cx="9.5" cy="0" r="1.3" fill={glow} />}
         </g>
       ))}
 
-      {/* Shield body — gradient-filled crest */}
-      <path d={shieldPath(w)} fill={`url(#${gradId})`} fillOpacity={rank === 'F' ? 0.16 : 0.95}
-        stroke={glow} strokeWidth="1.4" strokeOpacity={rank === 'F' ? 0.4 : 0.8} strokeLinejoin="round" />
+      {/* Shield outer rim */}
+      <path
+        d={SHIELD_PATH}
+        fill={`url(#${rimId})`}
+        stroke={PURPLE.dark}
+        strokeWidth="1"
+        strokeLinejoin="round"
+      />
+      {/* Shield inner face — gradient body */}
+      <path
+        d={SHIELD_INNER}
+        fill={`url(#${gradId})`}
+        stroke={PURPLE.light}
+        strokeWidth="0.6"
+        strokeOpacity="0.6"
+        strokeLinejoin="round"
+      />
 
-      {/* Glossy sheen — diagonal highlight streak across the crest face */}
-      {rank !== 'F' && (
-        <path d="M20 23 L25 23 L30 42 L25 42 Z" fill="white" fillOpacity="0.1" />
-      )}
+      {/* Diagonal glossy highlight */}
+      <path
+        d="M24 21 L28 21 L34 44 L30 44 Z"
+        fill={PURPLE.rim}
+        fillOpacity="0.35"
+      />
 
-      {/* Star emblem — earned at A and beyond, sits in the crest's crown */}
-      {hasStar && (
-        <path d={STAR_PATH} fill={glow} fillOpacity="0.95" stroke={deep} strokeWidth="0.6" strokeLinejoin="round" />
-      )}
+      {/* Stars — sit in crest crown */}
+      {starCount > 0 && Array.from({ length: starCount }).map((_, i) => {
+        const offset = starCount === 1 ? 0 : (i === 0 ? -4 : 4);
+        return (
+          <g key={i} transform={`translate(${32 + offset} 28)`}>
+            <path d={STAR_PATH} fill={PURPLE.rim} stroke={PURPLE.dark} strokeWidth="0.5" strokeLinejoin="round" />
+          </g>
+        );
+      })}
 
-      {/* Rank chevrons — stack in the crest's lower field, count escalates with tier */}
-      {Array.from({ length: chevronCount }).map((_, i) => (
-        <path key={i} d={chevron(32, 34 + i * 4.5, 9 - i * 1.2)}
-          stroke={glow} strokeWidth="1.7" fill="none" strokeLinecap="round" strokeLinejoin="round" opacity="0.92" />
+      {/* Chevrons — stack in crest's lower field */}
+      {Array.from({ length: chevronCount }).map((_, i) => {
+        const baseY = starCount > 0 ? 36 : 28;
+        return (
+          <path
+            key={i}
+            d={chevron(32, baseY + i * 4, 7 - i * 0.8)}
+            stroke={PURPLE.rim}
+            strokeWidth="1.6"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        );
+      })}
+
+      {/* Max-tier sparkle dots on wing tips */}
+      {isMax && [-1, 1].map((side) => (
+        <circle key={side} cx={32 + side * 24} cy="30" r="1.4" fill={PURPLE.rim} />
       ))}
-
-      {/* Dormant pip — unranked placeholder */}
-      {rank === 'F' && <circle cx="32" cy="32" r="2.6" fill={glow} opacity="0.4" />}
     </svg>
   );
 }
