@@ -552,24 +552,15 @@ export default function SoloSharePage() {
           </div>
         </div>
 
-        {/* Download CTAs */}
-        <div className="mt-3 grid grid-cols-3 gap-2">
-          <button
-            onClick={handleDownloadVideo}
-            disabled={downloading}
-            className="col-span-2 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black text-xs font-black uppercase tracking-[0.18em] active:scale-[0.98] transition disabled:opacity-50"
-          >
-            {downloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
-            {downloading ? 'Baking' : 'Download Edit'}
-          </button>
-          <button
-            onClick={handleDownloadCard}
-            disabled={downloading}
-            className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-[10px] font-bold uppercase tracking-[0.18em] active:scale-[0.98] transition disabled:opacity-50"
-          >
-            <Download className="w-3 h-3" /> Card
-          </button>
-        </div>
+        {/* Download CTA */}
+        <button
+          onClick={handleDownloadVideo}
+          disabled={downloading}
+          className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-black text-xs font-black uppercase tracking-[0.18em] active:scale-[0.98] transition disabled:opacity-50"
+        >
+          {downloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+          {downloading ? 'Baking' : 'Download Edit'}
+        </button>
         <p className="mt-1.5 text-[10px] text-white/40 text-center">
           Bakes the Valorant-style HUD onto your video. Up to 60s, .webm format.
         </p>
