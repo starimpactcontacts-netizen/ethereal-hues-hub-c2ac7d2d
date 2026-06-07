@@ -1756,8 +1756,10 @@ export default function ArenaPage() {
               <div className="flex items-center justify-between px-4 mb-2">
                 <div className="flex items-center gap-2">
                   <div>
-                  <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">New</div>
-                  <h2 className="font-display text-xl leading-none">SOLO</h2>
+                    <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">New</div>
+                    <span className="text-[15px] font-extrabold text-foreground tracking-tight leading-none" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
+                      Solo
+                    </span>
                   </div>
                   <button
                     onClick={() => toast.info('Drop your edit. Get a shareable Loopgate page. World rates. You earn Rings.', { duration: 4500 })}
