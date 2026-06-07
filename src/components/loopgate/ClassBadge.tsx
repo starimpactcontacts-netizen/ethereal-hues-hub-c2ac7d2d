@@ -14,18 +14,14 @@ const RANK_COLORS: Record<string, [string, string]> = {
   'S++': ['#fff7d6', '#f59e0b'],
 };
 
-// Outer-shape side count escalates per tier — circle (unranked) up through a 9-point burst
-const RANK_SIDES: Record<string, number> = {
-  'F': 0, 'D': 3, 'C': 4, 'B': 5, 'A': 6, 'S': 7, 'S+': 8, 'S++': 9,
+// Rim tick-mark count escalates per tier — like a dial filling toward completion
+const RANK_TICKS: Record<string, number> = {
+  'F': 0, 'D': 6, 'C': 8, 'B': 10, 'A': 12, 'S': 16, 'S+': 20, 'S++': 24,
 };
 
-function polygonPoints(sides: number, r: number, rotateDeg = 0, cx = 32, cy = 32): string {
-  const pts: string[] = [];
-  for (let i = 0; i < sides; i++) {
-    const angle = (Math.PI * 2 * i) / sides - Math.PI / 2 + (rotateDeg * Math.PI) / 180;
-    pts.push(`${(cx + r * Math.cos(angle)).toFixed(2)},${(cy + r * Math.sin(angle)).toFixed(2)}`);
-  }
-  return pts.join(' ');
+function pointOnCircle(r: number, angleDeg: number, cx = 32, cy = 32): [number, number] {
+  const a = (angleDeg * Math.PI) / 180;
+  return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
 }
 
 interface ClassBadgeProps {
@@ -35,21 +31,22 @@ interface ClassBadgeProps {
 }
 
 /**
- * Faceted class badge — shape complexity, gem centerpiece, vertex sparkles and
- * glow all escalate with tier, mirroring how Valorant/Discord badges evolve.
+ * Medallion-style class badge — a Discord-Nitro-esque coin emblem whose rim
+ * ticks, sunburst rays, orbiting gems and crown all escalate with tier,
+ * rendered in Loopgate's gold-escalation palette.
  */
 export function ClassBadge({ rank, size = 40, className }: ClassBadgeProps) {
-  const gradId = useId();
+  const faceGradId = useId();
+  const rimGradId = useId();
   const [light, dark] = RANK_COLORS[rank] || RANK_COLORS['F'];
-  const sides = RANK_SIDES[rank] ?? 0;
+  const ticks = RANK_TICKS[rank] ?? 0;
   const tier = RANK_ORDER.indexOf(rank);
-  const hasGlow = tier >= 5;       // S, S+, S++ radiate
-  const isOrnate = tier >= 6;      // S+, S++ get vertex gems
-  const isMaximal = rank === 'S++';
+  const hasGlow = tier >= 5;        // S, S+, S++ radiate
+  const isOrnate = tier >= 6;       // S+, S++ earn rays + orbiting gems
+  const isMaximal = rank === 'S++'; // the absolute pinnacle — crowned
 
-  const outerPts = sides ? polygonPoints(sides, 23) : '';
-  const innerPts = sides ? polygonPoints(sides, 18) : '';
-  const outerVerts = outerPts.split(' ').map(p => p.split(',').map(Number) as [number, number]);
+  const rayCount = isMaximal ? 16 : 12;
+  const gemCount = isMaximal ? 8 : 6;
 
   return (
     <svg
@@ -58,46 +55,73 @@ export function ClassBadge({ rank, size = 40, className }: ClassBadgeProps) {
       viewBox="0 0 64 64"
       fill="none"
       className={className}
-      style={hasGlow ? { filter: `drop-shadow(0 0 ${isMaximal ? 6 : 4}px ${dark}aa)` } : undefined}
+      style={hasGlow ? { filter: `drop-shadow(0 0 ${isMaximal ? 7 : 4}px ${dark}aa)` } : undefined}
     >
       <defs>
-        <linearGradient id={gradId} x1="0" y1="0" x2="0.3" y2="1">
+        <radialGradient id={faceGradId} cx="0.35" cy="0.3" r="0.85">
+          <stop offset="0%" stopColor={light} />
+          <stop offset="100%" stopColor={dark} />
+        </radialGradient>
+        <linearGradient id={rimGradId} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor={light} />
           <stop offset="100%" stopColor={dark} />
         </linearGradient>
       </defs>
 
-      {/* Outermost halo ring — S++ only, doubles up the silhouette */}
-      {isMaximal && sides > 0 && (
-        <polygon points={polygonPoints(sides, 28)} stroke={light} strokeWidth="0.75" fill="none" opacity="0.3" />
-      )}
+      {/* Sunburst rays — radiate from behind the medallion, top tiers only */}
+      {isOrnate && Array.from({ length: rayCount }).map((_, i) => {
+        const angle = (360 / rayCount) * i;
+        const [x1, y1] = pointOnCircle(26, angle);
+        const [x2, y2] = pointOnCircle(isMaximal ? 31.5 : 29.5, angle);
+        return (
+          <line key={i} x1={x1} y1={y1} x2={x2} y2={y2}
+            stroke={light} strokeWidth="1.4" strokeLinecap="round" opacity="0.4" />
+        );
+      })}
 
-      {/* Outer shape — escalates from dashed circle (unranked) to a 9-point burst */}
-      {sides > 0 ? (
-        <polygon points={outerPts} stroke={`url(#${gradId})`} strokeWidth="2" fill={dark} fillOpacity="0.16" />
-      ) : (
-        <circle cx="32" cy="32" r="22" stroke={light} strokeWidth="1.5" strokeDasharray="3,3" fill={dark} fillOpacity="0.08" />
-      )}
+      {/* Outer rim ring — dashed/dim when unranked, solid gradient once ranked */}
+      <circle cx="32" cy="32" r="25" stroke={`url(#${rimGradId})`}
+        strokeWidth={hasGlow ? 2 : 1.4} fill="none"
+        opacity={rank === 'F' ? 0.3 : 0.85}
+        strokeDasharray={rank === 'F' ? '2,3' : undefined} />
 
-      {/* Inner ring — appears from C upward */}
-      {sides > 0 && tier >= 2 && (
-        <polygon points={innerPts} stroke={light} strokeWidth="1" fill="none" opacity="0.4" />
-      )}
+      {/* Rim tick marks — dial-style progress indicator, density escalates with tier */}
+      {Array.from({ length: ticks }).map((_, i) => {
+        const angle = (360 / ticks) * i;
+        const [x1, y1] = pointOnCircle(22.5, angle);
+        const [x2, y2] = pointOnCircle(25.5, angle);
+        return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke={light} strokeWidth="1.1" opacity="0.5" />;
+      })}
 
-      {/* Vertex gems — only the top tiers earn the full constellation */}
-      {isOrnate && outerVerts.map(([x, y], i) => (
-        <circle key={i} cx={x} cy={y} r={isMaximal ? 1.8 : 1.4} fill={light} />
-      ))}
+      {/* Coin face — gradient-filled medallion */}
+      <circle cx="32" cy="32" r="20" fill={`url(#${faceGradId})`}
+        fillOpacity={rank === 'F' ? 0.16 : 0.92} stroke={light} strokeWidth="1" strokeOpacity="0.45" />
 
-      {/* Faceted gem centerpiece — every ranked tier (D+) gets one; unranked gets a dim pip */}
+      {/* Inner bevel ring — appears once ranked (D and up) */}
+      {rank !== 'F' && <circle cx="32" cy="32" r="15.5" stroke={dark} strokeWidth="1" fill="none" opacity="0.35" />}
+
+      {/* Orbiting gems along the rim — reserved for the elite tiers */}
+      {isOrnate && Array.from({ length: gemCount }).map((_, i) => {
+        const angle = (360 / gemCount) * i - 90;
+        const [x, y] = pointOnCircle(25, angle);
+        return <circle key={i} cx={x} cy={y} r={isMaximal ? 1.7 : 1.3} fill={light} />;
+      })}
+
+      {/* Centerpiece — faceted gem for ranked tiers, dim pip for unranked */}
       {rank !== 'F' ? (
         <g>
-          <path d="M32 21 L41 32 L32 43 L23 32 Z" fill={dark} fillOpacity="0.92" />
-          <path d="M32 21 L41 32 L32 32 Z" fill={light} fillOpacity="0.95" />
-          <path d="M32 21 L23 32 L32 32 Z" fill={light} fillOpacity="0.6" />
+          <path d="M32 22 L40 32 L32 42 L24 32 Z" fill={dark} fillOpacity="0.88" />
+          <path d="M32 22 L40 32 L32 32 Z" fill={light} fillOpacity="0.95" />
+          <path d="M32 22 L24 32 L32 32 Z" fill={light} fillOpacity="0.55" />
         </g>
       ) : (
-        <circle cx="32" cy="32" r="3" fill={light} opacity="0.45" />
+        <circle cx="32" cy="32" r="3" fill={light} opacity="0.4" />
+      )}
+
+      {/* Crown flourish — S++ only, marking the absolute pinnacle */}
+      {isMaximal && (
+        <path d="M23 15 L27.5 20.5 L32 13 L36.5 20.5 L41 15 L38.5 24.5 L25.5 24.5 Z"
+          fill={light} fillOpacity="0.88" stroke={dark} strokeWidth="0.6" strokeLinejoin="round" />
       )}
     </svg>
   );

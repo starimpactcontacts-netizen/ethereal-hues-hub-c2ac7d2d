@@ -12,7 +12,6 @@ import {
   getIndexFloorFromRank,
   type GQTRank,
 } from '@/data/gqtConfig';
-import { Button } from '@/components/ui/button';
 
 type ClassMeta = {
   rank: GQTRank;
@@ -48,6 +47,17 @@ const GQT_TARGETS: Record<GQTRank, number> = {
   'F': 0, 'D': 40, 'C': 50, 'B': 60, 'A': 70, 'S': 80, 'S+': 90, 'S++': 96,
 };
 const RANK_ORDER: GQTRank[] = ['F','D','C','B','A','S','S+','S++'];
+
+// Accent hex per tier — drives the top glow bar on cards, escalating dull grey to radiant gold
+const ACCENT: Record<GQTRank, string> = {
+  'F': '#6b7280', 'D': '#fb923c', 'C': '#94a3b8', 'B': '#3b82f6', 'A': '#10b981', 'S': '#f59e0b', 'S+': '#facc15', 'S++': '#fde68a',
+};
+
+const dotGrid = {
+  backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.025) 1px, transparent 1px)',
+  backgroundSize: '20px 20px',
+};
+const TEKO = { fontFamily: 'Teko, sans-serif' };
 
 function nextRank(current: GQTRank): GQTRank | null {
   const idx = RANK_ORDER.indexOf(current);
@@ -86,44 +96,46 @@ export default function ClassPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#000000] pb-24">
+    <div className="min-h-screen pb-24 relative" style={{ background: '#0a0a0a' }}>
+      <div className="fixed inset-0 pointer-events-none" style={dotGrid} />
+
       {/* ─── Hero ─── */}
-      <div className="px-4 pt-6 pb-2">
+      <div className="relative px-4 pt-6 pb-2">
         <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="font-display text-3xl text-foreground tracking-tight">CLASS SYSTEM</h1>
-          <p className="text-xs text-muted-foreground mt-1 max-w-md">
-            Your class reflects your <span className="text-foreground">overall standing</span> — the higher of your GQT score or your level progression.
+          <h1 className="text-4xl font-bold leading-[0.85] italic tracking-tighter uppercase text-white" style={TEKO}>Class System</h1>
+          <p className="text-[11px] text-white/35 mt-2 max-w-md">
+            Your class reflects your <span className="text-white/70">overall standing</span> — the higher of your GQT score or your level progression.
           </p>
         </motion.div>
       </div>
 
       {/* ─── Your Status Card ─── */}
-      <div className="px-4 mt-3">
+      <div className="relative px-4 mt-3">
         {loading ? (
-          <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-5 animate-pulse h-40" />
+          <div className="rounded-2xl border border-white/[0.07] p-5 animate-pulse h-40" style={{ background: '#111114' }} />
         ) : profile ? (
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`relative overflow-hidden rounded-2xl bg-[#0a0a0a] border ${userMeta.borderColor} p-5`}
+            className="relative overflow-hidden rounded-2xl border border-white/[0.07] p-5"
+            style={{ background: 'linear-gradient(180deg, #18181b 0%, #0e0e10 100%)' }}
           >
-            {userMeta.glow && (
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-gold/5 via-transparent to-transparent" />
-            )}
+            <div className="absolute inset-0 pointer-events-none" style={dotGrid} />
+            <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: `linear-gradient(90deg, ${ACCENT[effectiveRank]}, transparent 65%)` }} />
             <div className="relative">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-1">Your Class</p>
-                  <p className={`font-display text-5xl leading-none ${userMeta.textColor}`}>{userMeta.name}</p>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-[0.25em] mt-1">{userMeta.subtitle}</p>
+                  <p className="text-[9px] text-white/30 uppercase tracking-[0.22em] font-black mb-1" style={TEKO}>Your Class</p>
+                  <p className={`text-4xl font-bold italic tracking-tight uppercase leading-none ${userMeta.textColor}`} style={TEKO}>{userMeta.name}</p>
+                  <p className="text-[10px] text-white/30 uppercase tracking-[0.25em] mt-1.5">{userMeta.subtitle}</p>
                 </div>
-                <div className={`relative w-20 h-20 rounded-2xl bg-black border ${userMeta.borderColor} flex items-center justify-center shrink-0`}>
-                  <ClassBadge rank={effectiveRank} size={62} />
+                <div className="relative w-[72px] h-[72px] rounded-2xl flex items-center justify-center shrink-0 border border-white/[0.07]" style={{ background: '#0a0a0a' }}>
+                  <ClassBadge rank={effectiveRank} size={56} />
                 </div>
               </div>
 
               {/* Stat strip */}
-              <div className="grid grid-cols-4 gap-2 py-4 border-y border-white/5">
+              <div className="grid grid-cols-4 gap-2 py-4 border-y border-white/[0.06]">
                 <Stat label="Level" value={`${userLevel}`} />
                 <Stat label="Best GQT" value={userScore ? userScore.toFixed(0) : '—'} />
                 <Stat label="Index Floor" value={`+${indexFloor}`} />
@@ -134,57 +146,69 @@ export default function ClassPage() {
               {next ? (
                 <div className="mt-4 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Next: {next} Class</span>
-                    <span className="text-[10px] text-foreground font-semibold">{progressPct}%</span>
+                    <span className="text-[10px] text-white/35 uppercase tracking-wider font-black" style={TEKO}>Next: {next} Class</span>
+                    <span className="text-[11px] text-white/80 font-black tabular-nums" style={TEKO}>{progressPct}%</span>
                   </div>
-                  <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${progressPct}%` }}
                       transition={{ duration: 0.7, delay: 0.2 }}
-                      className={`h-full bg-gradient-to-r from-amber-400 to-gold`}
+                      className="h-full rounded-full"
+                      style={{ background: 'linear-gradient(90deg, #fbbf24, #fde68a)' }}
                     />
                   </div>
-                  <p className="text-[10px] text-muted-foreground">{progressLabel}</p>
+                  <p className="text-[10px] text-white/30">{progressLabel}</p>
                 </div>
               ) : (
-                <p className="mt-4 text-center text-gold font-display text-base">S++ — Maximum tier reached</p>
+                <p className="mt-4 text-center text-gold text-base font-bold italic uppercase tracking-tight" style={TEKO}>S++ — Maximum tier reached</p>
               )}
 
               {/* GQT CTA */}
               {!userScore && (
-                <Button onClick={() => navigate('/gqt')} className="w-full mt-4 bg-foreground text-background hover:bg-foreground/90 rounded-xl">
-                  Take the Global QOI Test
-                </Button>
+                <button
+                  onClick={() => navigate('/gqt')}
+                  className="relative w-full mt-4 overflow-hidden rounded-xl border border-white/[0.07] active:scale-[0.985] transition-transform"
+                  style={{ background: 'linear-gradient(180deg, #1a1a1e 0%, #0d0d10 100%)' }}
+                >
+                  <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, #fbbf24, transparent 60%)' }} />
+                  <div className="relative px-4 py-3 flex items-center justify-center gap-2">
+                    <span className="text-[12px] font-black uppercase tracking-[0.16em] text-gold" style={TEKO}>Take the Global QOI Test</span>
+                  </div>
+                </button>
               )}
             </div>
           </motion.div>
         ) : (
-          <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-5 text-center">
-            <p className="text-sm text-muted-foreground">Sign in to see your class</p>
+          <div className="rounded-2xl border border-white/[0.07] p-5 text-center" style={{ background: '#111114' }}>
+            <p className="text-[12px] text-white/40">Sign in to see your class</p>
           </div>
         )}
       </div>
 
       {/* ─── How it works ─── */}
-      <div className="px-4 mt-6">
-        <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4 flex items-start gap-3">
+      <div className="relative px-4 mt-6">
+        <div className="rounded-2xl border border-white/[0.07] p-4 flex items-start gap-3" style={{ background: '#111114' }}>
           <TrendingUp className="w-4 h-4 text-gold shrink-0 mt-0.5" />
-          <p className="text-[11px] text-muted-foreground leading-relaxed">
-            Two ways to rank up: <span className="text-foreground">level up</span> by competing, judging, and posting — or <span className="text-foreground">score high on the GQT</span>. Whichever rank is higher becomes your class.
+          <p className="text-[11px] text-white/40 leading-relaxed">
+            Two ways to rank up: <span className="text-white/70">level up</span> by competing, judging, and posting — or <span className="text-white/70">score high on the GQT</span>. Whichever rank is higher becomes your class.
           </p>
         </div>
       </div>
 
       {/* ─── All Classes — badge showcase grid ─── */}
-      <div className="px-4 mt-6">
-        <p className="text-[10px] text-muted-foreground uppercase tracking-[0.25em] mb-3 px-1">All Classes</p>
+      <div className="relative px-4 mt-6">
+        <div className="flex items-center gap-1.5 mb-3 px-1">
+          <div className="w-4 h-4 rounded-[5px] flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b)' }}>
+            <TrendingUp className="w-2.5 h-2.5 text-black" strokeWidth={2.5} />
+          </div>
+          <h2 className="text-[15px] font-extrabold tracking-tight text-white/80" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>All Classes</h2>
+        </div>
         <div className="grid grid-cols-2 gap-2.5">
           {CLASSES.map((c, i) => {
             const cIdx = getRankIndex(c.rank);
             const isCurrent = c.rank === effectiveRank;
             const isLocked = cIdx > userIdx;
-            const isUnlocked = cIdx <= userIdx;
 
             return (
               <motion.div
@@ -192,42 +216,45 @@ export default function ClassPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.03 }}
-                className={`relative overflow-hidden rounded-2xl border ${isCurrent ? c.borderColor + ' ring-1 ring-gold/40' : 'border-white/[0.06]'} ${isLocked ? 'opacity-45' : ''} p-3.5 flex flex-col items-center text-center gap-2.5`}
-                style={{ background: isCurrent ? 'linear-gradient(180deg, #16161a 0%, #0a0a0a 100%)' : '#0c0c0e' }}
+                className={`relative overflow-hidden rounded-2xl border ${isCurrent ? 'border-gold/40' : 'border-white/[0.07]'} ${isLocked ? 'opacity-40' : ''} p-3.5 flex flex-col items-center text-center gap-2.5`}
+                style={{ background: isCurrent ? 'linear-gradient(180deg, #1c1c20 0%, #111114 100%)' : '#111114' }}
               >
+                <div className="absolute inset-0 pointer-events-none" style={dotGrid} />
+                {isCurrent && <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: `linear-gradient(90deg, ${ACCENT[c.rank]}, transparent 65%)` }} />}
+
                 {/* Status chip — top-right corner */}
-                <div className="absolute top-2.5 right-2.5">
+                <div className="absolute top-2.5 right-2.5 z-10">
                   {isCurrent ? (
-                    <span className="flex items-center gap-1 text-[8px] uppercase tracking-wider font-bold bg-gold/20 text-gold px-1.5 py-0.5 rounded">
+                    <span className="flex items-center gap-1 text-[8px] uppercase tracking-wider font-black bg-gold/15 text-gold px-1.5 py-0.5 rounded" style={TEKO}>
                       <Check className="w-2.5 h-2.5" strokeWidth={3} /> You
                     </span>
                   ) : isLocked ? (
-                    <Lock className="w-3 h-3 text-muted-foreground/60" />
+                    <Lock className="w-3 h-3 text-white/20" />
                   ) : (
-                    <span className="text-[8px] uppercase tracking-wider text-emerald-400/70 font-semibold">Unlocked</span>
+                    <span className="text-[8px] uppercase tracking-wider text-emerald-400/70 font-black" style={TEKO}>Unlocked</span>
                   )}
                 </div>
 
-                <div className="mt-1 p-2 rounded-2xl bg-black/40 border border-white/[0.05]">
-                  <ClassBadge rank={c.rank} size={52} />
+                <div className="relative mt-1 w-16 h-16 rounded-2xl flex items-center justify-center border border-white/[0.06]" style={{ background: '#0a0a0a' }}>
+                  <ClassBadge rank={c.rank} size={50} />
                 </div>
 
-                <div>
-                  <p className={`font-display text-lg leading-none ${c.textColor}`}>{c.name}</p>
-                  <p className="text-[9px] text-muted-foreground uppercase tracking-[0.2em] mt-1">{c.subtitle}</p>
+                <div className="relative">
+                  <p className={`text-lg font-bold italic tracking-tight uppercase leading-none ${c.textColor}`} style={TEKO}>{c.name}</p>
+                  <p className="text-[9px] text-white/30 uppercase tracking-[0.2em] mt-1">{c.subtitle}</p>
                 </div>
 
-                <div className="flex items-center justify-center gap-1 flex-wrap pt-1.5 mt-auto border-t border-white/5 w-full">
-                  <span className={`text-[8px] uppercase tracking-wider px-1.5 py-0.5 border ${c.borderColor} ${c.textColor} bg-black rounded`}>{c.scoreBadge}</span>
+                <div className="relative flex items-center justify-center gap-1 flex-wrap pt-1.5 mt-auto border-t border-white/[0.05] w-full">
+                  <span className={`text-[8px] uppercase tracking-wider px-1.5 py-0.5 border ${c.borderColor} ${c.textColor} bg-black/40 rounded font-bold`} style={TEKO}>{c.scoreBadge}</span>
                   {c.rank !== 'F' && (
-                    <span className="text-[8px] uppercase tracking-wider px-1.5 py-0.5 bg-gold/10 text-gold border border-gold/20 rounded">+{getIndexFloorFromRank(c.rank)} IDX</span>
+                    <span className="text-[8px] uppercase tracking-wider px-1.5 py-0.5 bg-gold/10 text-gold border border-gold/20 rounded font-bold" style={TEKO}>+{getIndexFloorFromRank(c.rank)} IDX</span>
                   )}
                 </div>
               </motion.div>
             );
           })}
         </div>
-        <p className="text-center text-[10px] text-muted-foreground/60 uppercase tracking-widest pt-5">
+        <p className="text-center text-[10px] text-white/20 uppercase tracking-widest pt-5">
           Class updates automatically
         </p>
       </div>
@@ -238,8 +265,8 @@ export default function ClassPage() {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="text-center">
-      <p className="font-display text-lg text-foreground leading-none">{value}</p>
-      <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-1">{label}</p>
+      <p className="text-lg font-black tabular-nums text-white/90 leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>{value}</p>
+      <p className="text-[9px] text-white/30 uppercase tracking-wider mt-1">{label}</p>
     </div>
   );
 }
