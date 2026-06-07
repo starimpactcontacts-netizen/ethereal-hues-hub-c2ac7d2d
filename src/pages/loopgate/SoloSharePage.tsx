@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { Star, Send, ExternalLink, Loader2, Copy, Check, MessageCircle, Eye, Clock, AlertTriangle, Music, X, Download, Shield } from 'lucide-react';
+import { Star, Send, ExternalLink, Loader2, Copy, Check, MessageCircle, Eye, Clock, AlertTriangle, Music, X, Download, Shield, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSoloShareBySlug, submitSoloShareRating } from '@/hooks/useSoloShares';
 import { getEmbedUrl } from '@/lib/videoEmbed';
 import BunnyVideo from '@/components/loopgate/BunnyVideo';
 import { getBunnyThumbnail } from '@/lib/bunnyPlayback';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import SEO from '@/components/SEO';
@@ -323,28 +322,37 @@ export default function SoloSharePage() {
     }
   };
 
+  const dotGrid = {
+    backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.025) 1px, transparent 1px)',
+    backgroundSize: '20px 20px',
+  };
+  const TEKO = { fontFamily: 'Teko, sans-serif' };
+
   return (
-    <div className="fixed inset-0 bg-black text-white flex flex-col overflow-hidden">
+    <div className="fixed inset-0 text-white flex flex-col overflow-hidden" style={{ background: '#0a0a0a' }}>
       <SEO
         title={`${title} — by @${share.username}`}
         description={description}
         canonical={`https://loopgate.gg/s/${share.slug}`}
         image={share.thumbnail_url || getBunnyThumbnail(share.video_url) || undefined}
       />
+      <div className="fixed inset-0 pointer-events-none" style={dotGrid} />
 
-      {/* Top bar */}
-      <div className="shrink-0 z-20 bg-black/80 backdrop-blur-xl border-b border-white/5" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+      {/* Top bar — matches Loopgate's flat icon-chip header language */}
+      <div className="shrink-0 z-20 backdrop-blur-xl border-b border-white/[0.06]" style={{ background: 'rgba(10,10,10,0.85)', paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="max-w-xl mx-auto px-3 h-12 flex items-center justify-between gap-2">
           <button
             onClick={() => (user ? navigate('/solo') : navigate('/start'))}
-            className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/15 flex items-center justify-center active:scale-90 transition-transform"
+            className="w-9 h-9 rounded-md flex items-center justify-center bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] active:scale-95 transition-all"
             aria-label="Exit"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4 text-white/70" />
           </button>
+          <span className="text-[10px] font-black uppercase tracking-[0.26em] text-white/30" style={TEKO}>Solo Edit</span>
           <button
             onClick={handleCopy}
-            className="text-xs px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 flex items-center gap-1.5"
+            className="h-9 px-3 rounded-md flex items-center gap-1.5 bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] active:scale-95 transition-all text-[11px] font-black uppercase tracking-wide text-white/70"
+            style={TEKO}
           >
             {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
             {copied ? 'Copied' : 'Share'}
@@ -352,76 +360,72 @@ export default function SoloSharePage() {
         </div>
       </div>
 
-      <main className="flex-1 overflow-y-auto overscroll-contain w-full max-w-xl mx-auto px-4 pb-24" style={{ WebkitOverflowScrolling: 'touch', paddingBottom: 'calc(6rem + env(safe-area-inset-bottom))' }}>
+      <main className="relative flex-1 overflow-y-auto overscroll-contain w-full max-w-xl mx-auto px-4 pb-24" style={{ WebkitOverflowScrolling: 'touch', paddingBottom: 'calc(6rem + env(safe-area-inset-bottom))' }}>
         {/* Header */}
         <div className="pt-5 pb-4">
           <div className="flex items-center gap-3">
             {share.avatar_url ? (
-              <img src={share.avatar_url} alt={share.username} className="w-10 h-10 rounded-full object-cover" />
+              <img src={share.avatar_url} alt={share.username} className="w-11 h-11 rounded-full object-cover border border-white/[0.08]" />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm font-bold">
+              <div className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-black border border-white/[0.08]" style={{ background: '#111114' }}>
                 {share.username.slice(0, 1).toUpperCase()}
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <div className="text-[11px] uppercase tracking-[0.18em] text-white/40">Solo Edit</div>
-              <Link to={`/u/${share.username}`} className="text-sm font-bold hover:underline truncate block">
+              <div className="text-[9px] uppercase tracking-[0.24em] text-white/30 font-black" style={TEKO}>Solo Edit</div>
+              <Link to={`/u/${share.username}`} className="text-[15px] font-black hover:underline truncate block text-white/90">
                 @{share.username}
               </Link>
             </div>
-            <div className="text-right">
-              <div className="flex items-center gap-1 text-amber-400">
-                <Star className="w-3.5 h-3.5 fill-amber-400" />
-                <span className="text-sm font-bold">
+            <div className="text-right shrink-0">
+              <div className="flex items-center justify-end gap-1">
+                <Star className="w-3.5 h-3.5 fill-gold text-gold" />
+                <span className="text-[15px] font-black text-gold tabular-nums leading-none" style={TEKO}>
                   {share.total_ratings > 0 ? share.avg_rating.toFixed(2) : '—'}
                 </span>
               </div>
-              <div className="text-[10px] text-white/40 uppercase tracking-wider">
+              <div className="text-[9px] text-white/30 uppercase tracking-[0.18em] mt-0.5" style={TEKO}>
                 {share.total_ratings} {share.total_ratings === 1 ? 'rating' : 'ratings'}
               </div>
             </div>
           </div>
 
           {share.title && (
-            <h1 className="font-display text-2xl mt-4 leading-tight">{share.title}</h1>
+            <h1 className="text-3xl font-bold leading-[0.95] italic tracking-tight uppercase mt-4" style={TEKO}>{share.title}</h1>
           )}
           {share.caption && !/^https?:\/\//i.test(share.caption.trim()) && (
-            <p className="text-sm text-white/70 mt-2 whitespace-pre-wrap">{share.caption}</p>
+            <p className="text-sm text-white/60 mt-2 whitespace-pre-wrap">{share.caption}</p>
           )}
 
-          {/* Room code pill */}
-          <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
-            <span className="text-[10px] uppercase tracking-[0.18em] text-white/40">Room Code</span>
-            <span className="font-mono text-sm font-bold tracking-[0.2em]">{share.slug.toUpperCase()}</span>
-          </div>
-
-          {/* Session badges */}
-          {(share.timer_minutes || share.song_name || share.is_overtime) && (
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              {share.timer_minutes && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] uppercase tracking-[0.18em] text-white/60">
-                  <Clock className="w-3 h-3 text-amber-400" />
-                  {share.timer_minutes >= 60 ? `${share.timer_minutes / 60}h` : `${share.timer_minutes}m`} session
-                </span>
-              )}
-              {share.is_overtime && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-300 text-[10px] uppercase tracking-[0.18em] font-bold">
-                  <AlertTriangle className="w-3 h-3" />
-                  Overtime
-                </span>
-              )}
-              {share.song_name && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] uppercase tracking-[0.18em] text-white/60">
-                  <Music className="w-3 h-3 text-amber-400" />
-                  {share.song_name}
-                </span>
-              )}
+          {/* Room code + session badges — sharp dark chips */}
+          <div className="mt-3 flex flex-wrap items-center gap-1.5">
+            <div className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-md border border-white/[0.08]" style={{ background: '#111114' }}>
+              <span className="text-[8px] uppercase tracking-[0.2em] text-white/30 font-black" style={TEKO}>Room</span>
+              <span className="font-mono text-[12px] font-bold tracking-[0.2em] text-white/80">{share.slug.toUpperCase()}</span>
             </div>
-          )}
+            {share.timer_minutes && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-white/[0.08] text-[9px] uppercase tracking-[0.18em] text-white/50 font-black" style={{ ...TEKO, background: '#111114' }}>
+                <Clock className="w-3 h-3 text-gold" />
+                {share.timer_minutes >= 60 ? `${share.timer_minutes / 60}h` : `${share.timer_minutes}m`} session
+              </span>
+            )}
+            {share.is_overtime && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-amber-500/30 bg-amber-500/[0.08] text-amber-300 text-[9px] uppercase tracking-[0.18em] font-black" style={TEKO}>
+                <AlertTriangle className="w-3 h-3" />
+                Overtime
+              </span>
+            )}
+            {share.song_name && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-white/[0.08] text-[9px] uppercase tracking-[0.18em] text-white/50 font-black" style={{ ...TEKO, background: '#111114' }}>
+                <Music className="w-3 h-3 text-gold" />
+                {share.song_name}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Player */}
-        <div className="relative w-full aspect-square overflow-hidden bg-zinc-900 border border-white/10">
+        <div className="relative w-full aspect-square overflow-hidden rounded-2xl border border-white/[0.08]" style={{ background: '#111114' }}>
           {share.platform === 'bunny' ? (
             <BunnyVideo src={share.video_url} poster={share.thumbnail_url || getBunnyThumbnail(share.video_url) || undefined} className="absolute inset-0 w-full h-full object-cover" controls autoPlay={false} />
           ) : embedUrl ? (
@@ -542,37 +546,57 @@ export default function SoloSharePage() {
           </div>
         </div>
 
-        {/* Stats strip */}
-        <div className="flex items-center gap-4 mt-3 text-[11px] text-white/50">
-          <div className="flex items-center gap-1"><Eye className="w-3.5 h-3.5" /> {share.views} views</div>
-          <div className="flex items-center gap-1"><MessageCircle className="w-3.5 h-3.5" /> {ratings.filter(r => r.comment).length} feedback</div>
-          <div className="flex items-center gap-1">
-            <span className="font-black text-emerald-400 text-[12px] tracking-tight">R$</span>
-            <span>{share.rings_earned} earned</span>
+        {/* Stats strip — dark surfaces, $R currency convention */}
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          <div className="rounded-xl px-3 py-2.5 flex flex-col items-center gap-1 border border-white/[0.07]" style={{ background: '#111114' }}>
+            <span className="flex items-center gap-1 text-[15px] font-black tabular-nums leading-none" style={TEKO}>
+              <Eye className="w-3.5 h-3.5 text-white/30" />{share.views}
+            </span>
+            <span className="text-[8px] text-white/35 uppercase tracking-[0.22em] font-black leading-none" style={TEKO}>Views</span>
+          </div>
+          <div className="rounded-xl px-3 py-2.5 flex flex-col items-center gap-1 border border-white/[0.07]" style={{ background: '#111114' }}>
+            <span className="flex items-center gap-1 text-[15px] font-black tabular-nums leading-none" style={TEKO}>
+              <MessageCircle className="w-3.5 h-3.5 text-white/30" />{ratings.filter(r => r.comment).length}
+            </span>
+            <span className="text-[8px] text-white/35 uppercase tracking-[0.22em] font-black leading-none" style={TEKO}>Feedback</span>
+          </div>
+          <div className="rounded-xl px-3 py-2.5 flex flex-col items-center gap-1 border border-white/[0.07]" style={{ background: '#111114' }}>
+            <span className="text-[15px] font-black tabular-nums leading-none" style={TEKO}>
+              <span style={{ color: '#3BCB6B' }}>$</span>{share.rings_earned}
+            </span>
+            <span className="text-[8px] text-white/35 uppercase tracking-[0.22em] font-black leading-none" style={TEKO}>Rings</span>
           </div>
         </div>
 
-        {/* Download CTA */}
+        {/* Download CTA — Rings-green accent, matching Solo's currency tone */}
         <button
           onClick={handleDownloadVideo}
           disabled={downloading}
-          className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-black text-xs font-black uppercase tracking-[0.18em] active:scale-[0.98] transition disabled:opacity-50"
+          className="relative mt-3 w-full overflow-hidden rounded-2xl border border-white/[0.07] active:scale-[0.985] transition-transform disabled:opacity-50"
+          style={{ background: 'linear-gradient(180deg, #1a1a1e 0%, #0d0d10 100%)' }}
         >
-          {downloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
-          {downloading ? 'Baking' : 'Download Edit'}
+          <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, #3BCB6B, transparent 60%)' }} />
+          <div className="relative px-4 py-3.5 flex items-center justify-center gap-2">
+            {downloading ? <Loader2 className="w-4 h-4 animate-spin" style={{ color: '#3BCB6B' }} /> : <Download className="w-4 h-4" style={{ color: '#3BCB6B' }} />}
+            <span className="text-[13px] font-black uppercase tracking-[0.16em]" style={TEKO}>{downloading ? 'Baking…' : 'Download Edit'}</span>
+          </div>
         </button>
-        <p className="mt-1.5 text-[10px] text-white/40 text-center">
+        <p className="mt-1.5 text-[10px] text-white/30 text-center">
           Bakes the Valorant-style HUD onto your video. Up to 60s, .webm format.
         </p>
 
         {/* Rating block */}
-        <section className="mt-6 rounded-2xl bg-[#0e0e0e] border border-white/5 p-4">
+        <section className="relative mt-6 rounded-2xl overflow-hidden border border-white/[0.07] p-4" style={{ background: 'linear-gradient(180deg, #18181b 0%, #0e0e10 100%)' }}>
+          <div className="absolute inset-0 pointer-events-none" style={dotGrid} />
+          <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, #fbbf24, transparent 60%)' }} />
+          <div className="relative">
           {isOwner ? (
             <div className="text-center py-3">
-              <p className="text-sm text-white/70">This is your edit. Share the link to start earning Rings.</p>
+              <p className="text-[12px] text-white/50">This is your edit. Share the link to start earning Rings.</p>
               <button
                 onClick={handleCopy}
-                className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white text-black text-xs font-bold"
+                className="mt-3 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-wide active:scale-[0.97] transition-transform bg-white/[0.05] border border-white/[0.08] text-white/70"
+                style={TEKO}
               >
                 {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                 {copied ? 'Link copied' : 'Copy share link'}
@@ -581,13 +605,13 @@ export default function SoloSharePage() {
           ) : alreadyRated ? (
             <div className="text-center py-3">
               <Check className="w-6 h-6 mx-auto text-emerald-400" />
-              <p className="text-sm font-bold mt-1">Thanks for rating</p>
-              <p className="text-xs text-white/50">Your feedback is below.</p>
+              <p className="text-[13px] font-black mt-1.5">Thanks for rating</p>
+              <p className="text-[11px] text-white/40">Your feedback is below.</p>
             </div>
           ) : (
             <>
-              <div className="text-center font-display text-lg font-bold mb-3">Rate this edit</div>
-              <div className="flex items-center justify-center gap-1 mb-4 rounded-xl bg-white/[0.04] border border-white/10 py-3">
+              <div className="text-center text-[15px] font-black uppercase tracking-wide mb-3" style={TEKO}>Rate this edit</div>
+              <div className="flex items-center justify-center gap-1 mb-4 rounded-xl bg-black/30 border border-white/[0.07] py-3">
                 {[1, 2, 3, 4, 5].map((n) => {
                   const filled = (hover || stars) >= n;
                   return (
@@ -599,7 +623,7 @@ export default function SoloSharePage() {
                       className="p-1 active:scale-90 transition-transform"
                       aria-label={`${n} star${n > 1 ? 's' : ''}`}
                     >
-                      <Star className={`w-10 h-10 transition-colors ${filled ? 'fill-amber-400 text-amber-400' : 'text-white/15'}`} strokeWidth={1.5} />
+                      <Star className={`w-10 h-10 transition-colors ${filled ? 'fill-gold text-gold' : 'text-white/15'}`} strokeWidth={1.5} />
                     </button>
                   );
                 })}
@@ -610,7 +634,7 @@ export default function SoloSharePage() {
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value.slice(0, 24))}
                   placeholder="Your nickname"
-                  className="bg-white/5 border-white/10 mb-3 text-sm"
+                  className="bg-white/[0.04] border-white/[0.08] mb-3 text-sm"
                 />
               )}
 
@@ -619,47 +643,56 @@ export default function SoloSharePage() {
                 onChange={(e) => setComment(e.target.value.slice(0, 500))}
                 placeholder="Optional feedback for the editor..."
                 rows={3}
-                className="bg-white/5 border-white/10 text-sm resize-none"
+                className="bg-white/[0.04] border-white/[0.08] text-sm resize-none"
               />
 
-              <Button
+              <button
                 onClick={handleSubmitRating}
                 disabled={submitting || stars < 1}
-                className="w-full mt-3 bg-white text-black hover:bg-white/90 font-bold"
+                className="relative w-full mt-3 overflow-hidden rounded-xl border border-white/[0.07] active:scale-[0.985] transition-transform disabled:opacity-50"
+                style={{ background: 'linear-gradient(180deg, #1a1a1e 0%, #0d0d10 100%)' }}
               >
-                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : (
-                  <><Send className="w-4 h-4 mr-1.5" /> Submit Rating</>
-                )}
-              </Button>
+                <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, #fbbf24, transparent 60%)' }} />
+                <div className="relative px-4 py-3 flex items-center justify-center gap-2">
+                  {submitting ? <Loader2 className="w-4 h-4 animate-spin text-gold" /> : <Send className="w-4 h-4 text-gold" />}
+                  <span className="text-[12px] font-black uppercase tracking-[0.16em]" style={TEKO}>Submit Rating</span>
+                </div>
+              </button>
 
               {!user && (
-                <p className="text-[10px] text-white/40 text-center mt-2">
-                  No account needed. <Link to="/start" className="underline">Join Loopgate</Link> to track your ratings.
+                <p className="text-[10px] text-white/35 text-center mt-2">
+                  No account needed. <Link to="/start" className="underline text-white/60">Join Loopgate</Link> to track your ratings.
                 </p>
               )}
             </>
           )}
+          </div>
         </section>
 
         {/* Feedback wall */}
         {ratings.length > 0 && (
           <section className="mt-6">
-            <div className="text-[11px] uppercase tracking-[0.18em] text-white/40 mb-2">Feedback</div>
+            <div className="flex items-center gap-1.5 mb-2.5">
+              <div className="w-4 h-4 rounded-[5px] flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #fbbf24, #3BCB6B)' }}>
+                <MessageCircle className="w-2.5 h-2.5 text-black" strokeWidth={2.5} />
+              </div>
+              <h2 className="text-[13px] font-extrabold tracking-tight text-white/80" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Feedback</h2>
+            </div>
             <div className="space-y-2">
               {ratings.map((r) => (
-                <div key={r.id} className="rounded-xl bg-[#0e0e0e] border border-white/5 p-3">
+                <div key={r.id} className="rounded-xl border border-white/[0.07] p-3" style={{ background: '#111114' }}>
                   <div className="flex items-center justify-between gap-2">
-                    <div className="text-xs font-bold truncate">
+                    <div className="text-[12px] font-black truncate" style={TEKO}>
                       {r.rater_nickname || 'Anonymous'}
                     </div>
                     <div className="flex items-center gap-0.5">
                       {Array.from({ length: r.stars }).map((_, i) => (
-                        <Star key={i} className="w-3 h-3 fill-amber-400 text-amber-400" />
+                        <Star key={i} className="w-3 h-3 fill-gold text-gold" />
                       ))}
                     </div>
                   </div>
                   {r.comment && (
-                    <p className="text-sm text-white/80 mt-1 whitespace-pre-wrap">{r.comment}</p>
+                    <p className="text-[12px] text-white/60 mt-1.5 whitespace-pre-wrap">{r.comment}</p>
                   )}
                 </div>
               ))}
@@ -668,18 +701,25 @@ export default function SoloSharePage() {
         )}
 
         {/* Footer CTA */}
-        <section className="mt-10 rounded-2xl border border-white/10 p-5 text-center bg-gradient-to-b from-white/[0.03] to-transparent">
-          <GateIcon size={36} className="mx-auto" />
-          <h2 className="font-display text-2xl mt-2">YOUR EDIT, YOUR PAGE.</h2>
-          <p className="text-sm text-white/60 mt-1">
-            Share any edit and get rated by the world. Earn Rings on every rating.
-          </p>
-          <button
-            onClick={() => navigate(user ? '/solo/create' : '/start')}
-            className="mt-4 px-5 py-2.5 bg-white text-black rounded-xl text-sm font-bold"
-          >
-            Create your Solo page
-          </button>
+        <section className="relative mt-10 rounded-2xl overflow-hidden border border-white/[0.07] p-5 text-center" style={{ background: 'linear-gradient(180deg, #18181b 0%, #0d0d10 100%)' }}>
+          <div className="absolute inset-0 pointer-events-none" style={dotGrid} />
+          <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, #3BCB6B, transparent 60%)' }} />
+          <div className="relative">
+            <div className="w-11 h-11 rounded-full mx-auto flex items-center justify-center" style={{ background: 'rgba(59,203,107,0.12)', border: '2px solid rgba(59,203,107,0.35)', boxShadow: '0 0 14px rgba(59,203,107,0.18)' }}>
+              <GateIcon size={22} />
+            </div>
+            <h2 className="text-2xl font-bold leading-[0.95] italic tracking-tight uppercase mt-3" style={TEKO}>Your Edit, Your Page</h2>
+            <p className="text-[12px] text-white/40 mt-1.5">
+              Share any edit and get rated by the world. Earn Rings on every rating.
+            </p>
+            <button
+              onClick={() => navigate(user ? '/solo/create' : '/start')}
+              className="mt-4 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-wide active:scale-[0.97] transition-transform"
+              style={{ ...TEKO, background: 'rgba(59,203,107,0.1)', border: '1px solid rgba(59,203,107,0.25)', color: '#3BCB6B' }}
+            >
+              Create your Solo page <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </section>
       </main>
     </div>
