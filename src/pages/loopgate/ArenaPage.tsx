@@ -1799,49 +1799,72 @@ export default function ArenaPage() {
                       <ArenaRailCard key={s.id}>
                         <button
                           onClick={() => navigate(`/s/${s.slug}`)}
-                          className="w-full h-full relative overflow-hidden rounded-2xl border border-white/[0.08] text-left active:scale-[0.98] transition-transform group"
-                          style={{ background: 'linear-gradient(180deg, #1c1c20 0%, #111114 100%)' }}
+                          className="relative w-full h-full overflow-hidden text-left active:scale-[0.97] transition-transform group flex flex-col"
+                          style={{ background: '#111', border: '1px solid rgba(255,255,255,0.07)' }}
                         >
-                          {/* Accent glow bar — Rings green, Solo's currency tone */}
-                          <div className="absolute top-0 left-0 right-0 h-[2px] z-10" style={{ background: 'linear-gradient(90deg, #3BCB6B, transparent 65%)' }} />
+                          {/* Dot grid — same texture as Competition cards */}
+                          <div className="absolute inset-0 pointer-events-none z-0" style={{
+                            backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.025) 1px, transparent 1px)',
+                            backgroundSize: '18px 18px',
+                          }} />
 
-                          {(() => {
-                            const thumb = s.thumbnail_url || getBunnyThumbnail(s.video_url);
-                            return thumb ? (
-                              <img
-                                src={thumb}
-                                alt={s.title || 'Solo edit'}
-                                className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 transition"
-                                loading="lazy"
-                                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-                              />
-                            ) : (
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="absolute inset-0 opacity-[0.05]" style={{
-                                  backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 1px)',
-                                  backgroundSize: '18px 18px',
-                                }} />
-                                <Film className="w-7 h-7 text-white/15 relative" />
-                              </div>
-                            );
-                          })()}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-transparent" />
-                          <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between z-10">
-                            <span className="text-[8px] font-black uppercase tracking-[0.2em] px-1.5 py-0.5 rounded bg-white text-black leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>Solo</span>
-                            <span className="text-[8px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/60 text-white/65 border border-white/10 leading-none">{s.slug.toUpperCase()}</span>
+                          {/* Green top accent bar — Rings currency tone, mirrors Competition's gold bar */}
+                          <div className="absolute inset-x-0 top-0 h-[2px] pointer-events-none z-10" style={{
+                            background: 'linear-gradient(90deg, #3BCB6B, rgba(59,203,107,0.3) 60%, transparent)',
+                          }} />
+
+                          {/* Corner notches — same sharp-edge language as Competitions */}
+                          <div className="absolute top-0 right-0 pointer-events-none z-10">
+                            <div className="w-3 h-px bg-white/20" />
+                            <div className="w-px h-3 bg-white/20 ml-auto" />
                           </div>
-                          <div className="absolute bottom-0 left-0 right-0 p-2.5">
-                            <div className="font-display text-sm leading-tight truncate text-white">{s.title || 'Untitled edit'}</div>
-                            <div className="text-[10px] text-white/40 truncate mt-0.5 uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>@{s.username}</div>
-                            <div className="mt-1.5 flex items-center gap-1">
-                              <Star className="w-3 h-3 fill-gold text-gold" />
-                              <span className="text-[12px] font-black text-gold tabular-nums leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>
-                                {s.total_ratings > 0 ? s.avg_rating.toFixed(1) : '—'}
-                              </span>
-                              <span className="text-[10px] text-white/30 tabular-nums" style={{ fontFamily: 'Teko, sans-serif' }}>
-                                · {s.total_ratings} {s.total_ratings === 1 ? 'rate' : 'rates'}
-                              </span>
+                          <div className="absolute bottom-0 left-0 pointer-events-none z-10">
+                            <div className="w-3 h-px bg-white/20" />
+                            <div className="w-px h-3 bg-white/20" />
+                          </div>
+
+                          {/* Cover */}
+                          <div className="relative flex-1 overflow-hidden z-0">
+                            {(() => {
+                              const thumb = s.thumbnail_url || getBunnyThumbnail(s.video_url);
+                              return thumb ? (
+                                <img
+                                  src={thumb}
+                                  alt={s.title || 'Solo edit'}
+                                  className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition"
+                                  loading="lazy"
+                                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center" style={{ background: '#0a0a0a' }}>
+                                  <Film className="w-6 h-6 text-white/15" />
+                                </div>
+                              );
+                            })()}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none" />
+
+                            {/* Badges: SOLO + slug — small, sharp, like duration/private badges */}
+                            <div className="absolute top-2 left-2 right-2 z-20 flex items-center justify-between">
+                              <span className="text-[7px] font-black uppercase tracking-[0.16em] px-1.5 py-0.5 leading-none bg-white text-black" style={{ fontFamily: 'Teko, sans-serif' }}>Solo</span>
+                              <span className="text-[7px] font-mono uppercase tracking-wider px-1.5 py-0.5 leading-none" style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.13)', color: 'rgba(255,255,255,0.65)' }}>{s.slug.toUpperCase()}</span>
                             </div>
+
+                            {/* Title */}
+                            <div className="absolute bottom-0 left-0 right-0 p-2 z-10">
+                              <h3 className="text-[13px] font-black text-white leading-tight truncate uppercase" style={{ fontFamily: 'Teko, sans-serif', letterSpacing: '0.02em' }}>
+                                {s.title || 'Untitled edit'}
+                              </h3>
+                            </div>
+                          </div>
+
+                          {/* Footer — minimized to icons, same convention as Competition's player-count/status row */}
+                          <div className="relative z-10 px-2 py-1.5 flex items-center gap-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                            <span className="text-[9px] font-black text-white/35 truncate" style={{ fontFamily: 'Teko, sans-serif' }}>@{s.username}</span>
+                            <span className="text-white/15">·</span>
+                            <Star className="w-2.5 h-2.5 fill-gold text-gold shrink-0" strokeWidth={2.5} />
+                            <span className="text-[9px] font-black text-gold tabular-nums leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>
+                              {s.total_ratings > 0 ? s.avg_rating.toFixed(1) : '—'}
+                            </span>
                           </div>
                         </button>
                       </ArenaRailCard>
