@@ -1753,9 +1753,18 @@ export default function ArenaPage() {
           {(activeFilter === "all" || activeFilter === "competitions") && (
             <div id="arena-solo" className="mb-5">
               <div className="flex items-center justify-between px-4 mb-2">
-                <div>
+                <div className="flex items-center gap-2">
+                  <div>
                   <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">New</div>
                   <h2 className="font-display text-xl leading-none">SOLO</h2>
+                  </div>
+                  <button
+                    onClick={() => toast.info('Drop your edit. Get a shareable Loopgate page. World rates. You earn Rings.', { duration: 4500 })}
+                    className="w-5 h-5 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 active:scale-90 transition"
+                    aria-label="About Solo"
+                  >
+                    <Info className="w-3 h-3 text-white/60" />
+                  </button>
                 </div>
                 <button
                   onClick={() => navigate(profile ? '/solo' : '/start')}
@@ -1766,25 +1775,8 @@ export default function ArenaPage() {
               </div>
               <div className="px-4">
                 <button
-                  onClick={() => navigate(profile ? '/solo/create' : '/start')}
-                  className="w-full relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#141414] to-[#0a0a0a] p-4 text-left active:scale-[0.99] transition-transform"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-white text-black flex items-center justify-center shrink-0">
-                      <Star className="w-6 h-6 fill-black" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-display text-lg leading-tight">DROP YOUR EDIT.</div>
-                      <div className="text-[11px] text-white/55 leading-snug">
-                        Get a shareable Loopgate page. World rates. You earn Rings.
-                      </div>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-white/40 shrink-0" />
-                  </div>
-                </button>
-                <button
                   onClick={() => navigate('/solo/find')}
-                  className="mt-2 w-full flex items-center justify-center gap-2 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-white/80"
+                  className="w-full flex items-center justify-center gap-2 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-white/80"
                 >
                   <Search className="w-3.5 h-3.5" />
                   Find a Solo by code or @username
