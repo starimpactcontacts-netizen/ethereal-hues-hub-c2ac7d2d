@@ -834,12 +834,12 @@ export default function HubPage() {
                   </button>
 
                   <button
-                    onClick={() => { setPlayExpanded(false); navigate('/arena?mode=solo&auto=1'); }}
+                    onClick={() => { setPlayExpanded(false); navigate('/arena?section=solo'); }}
                     className="w-full py-2.5 active:scale-[0.99] transition flex flex-col items-center justify-center"
                     style={{ background: 'hsl(var(--surface-1))', border: '1px solid hsl(var(--gold) / 0.4)' }}
                   >
                     <span className="text-foreground uppercase leading-none" style={{ fontFamily: 'Teko, sans-serif', fontSize: '26px', fontWeight: 700, letterSpacing: '0.04em' }}>Solo</span>
-                    <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-0.5" style={{ fontFamily: 'Teko, sans-serif' }}>Practice On Your Own</span>
+                    <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-0.5" style={{ fontFamily: 'Teko, sans-serif' }}>Rate &amp; Browse Edits</span>
                   </button>
 
                   <button
