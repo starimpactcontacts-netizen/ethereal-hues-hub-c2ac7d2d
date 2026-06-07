@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Lock, TrendingUp, Crown, Flame, Zap, Star, Shield } from 'lucide-react';
+import { Lock, TrendingUp, Check } from 'lucide-react';
+import { ClassBadge } from '@/components/loopgate/ClassBadge';
 import { useAuth } from '@/hooks/useAuth';
 import { useRealRankings } from '@/hooks/useRealData';
 import {
@@ -17,7 +18,6 @@ type ClassMeta = {
   rank: GQTRank;
   name: string;
   subtitle: string;
-  icon: typeof Shield;
   description: string;
   scoreBadge: string;
   levelBadge: string;
@@ -27,14 +27,14 @@ type ClassMeta = {
 };
 
 const CLASSES: ClassMeta[] = [
-  { rank: 'S++', name: 'S++ CLASS', subtitle: 'LEGENDARY', icon: Flame, description: 'The apex. Absolute mastery. Maximum prestige.', scoreBadge: 'GQT 96+', levelBadge: 'LVL 90+', textColor: 'text-gold', borderColor: 'border-gold', glow: true },
-  { rank: 'S+',  name: 'S+ CLASS',  subtitle: 'ELITE',     icon: Flame, description: 'Elite editors at the peak of competitive editing.', scoreBadge: 'GQT 90+', levelBadge: 'LVL 70+', textColor: 'text-gold', borderColor: 'border-gold/70', glow: true },
-  { rank: 'S',   name: 'S CLASS',   subtitle: 'MASTER',    icon: Crown, description: 'Pro-tier editors competing with the best.', scoreBadge: 'GQT 80+', levelBadge: 'LVL 40+', textColor: 'text-amber-400', borderColor: 'border-amber-400', glow: true },
-  { rank: 'A',   name: 'A CLASS',   subtitle: 'ADVANCED',  icon: Zap,   description: 'Skilled editors entering the pro conversation.', scoreBadge: 'GQT 70+', levelBadge: 'LVL 20+', textColor: 'text-emerald-400', borderColor: 'border-emerald-400', glow: false },
-  { rank: 'B',   name: 'B CLASS',   subtitle: 'SKILLED',   icon: Star,  description: 'Above-average editors with solid fundamentals.', scoreBadge: 'GQT 60+', levelBadge: 'LVL 10+', textColor: 'text-blue-400', borderColor: 'border-blue-400/60', glow: false },
-  { rank: 'C',   name: 'C CLASS',   subtitle: 'CONTRIBUTOR', icon: Shield, description: 'Average editors building their foundation.', scoreBadge: 'GQT 50+', levelBadge: 'LVL 5+', textColor: 'text-slate-300', borderColor: 'border-slate-400/50', glow: false },
-  { rank: 'D',   name: 'D CLASS',   subtitle: 'BEGINNER',  icon: Shield, description: 'Developing editors learning the craft.', scoreBadge: 'GQT 40+', levelBadge: 'LVL 2+', textColor: 'text-orange-400', borderColor: 'border-orange-500/40', glow: false },
-  { rank: 'F',   name: 'F CLASS',   subtitle: 'UNRANKED',  icon: Shield, description: 'Default for new editors. Rank up by leveling or taking the GQT.', scoreBadge: 'GQT < 40', levelBadge: 'LVL 1', textColor: 'text-muted-foreground', borderColor: 'border-border', glow: false },
+  { rank: 'S++', name: 'S++ CLASS', subtitle: 'LEGENDARY', description: 'The apex. Absolute mastery. Maximum prestige.', scoreBadge: 'GQT 96+', levelBadge: 'LVL 90+', textColor: 'text-gold', borderColor: 'border-gold', glow: true },
+  { rank: 'S+',  name: 'S+ CLASS',  subtitle: 'ELITE',     description: 'Elite editors at the peak of competitive editing.', scoreBadge: 'GQT 90+', levelBadge: 'LVL 70+', textColor: 'text-gold', borderColor: 'border-gold/70', glow: true },
+  { rank: 'S',   name: 'S CLASS',   subtitle: 'MASTER',    description: 'Pro-tier editors competing with the best.', scoreBadge: 'GQT 80+', levelBadge: 'LVL 40+', textColor: 'text-amber-400', borderColor: 'border-amber-400', glow: true },
+  { rank: 'A',   name: 'A CLASS',   subtitle: 'ADVANCED',  description: 'Skilled editors entering the pro conversation.', scoreBadge: 'GQT 70+', levelBadge: 'LVL 20+', textColor: 'text-emerald-400', borderColor: 'border-emerald-400', glow: false },
+  { rank: 'B',   name: 'B CLASS',   subtitle: 'SKILLED',   description: 'Above-average editors with solid fundamentals.', scoreBadge: 'GQT 60+', levelBadge: 'LVL 10+', textColor: 'text-blue-400', borderColor: 'border-blue-400/60', glow: false },
+  { rank: 'C',   name: 'C CLASS',   subtitle: 'CONTRIBUTOR', description: 'Average editors building their foundation.', scoreBadge: 'GQT 50+', levelBadge: 'LVL 5+', textColor: 'text-slate-300', borderColor: 'border-slate-400/50', glow: false },
+  { rank: 'D',   name: 'D CLASS',   subtitle: 'BEGINNER',  description: 'Developing editors learning the craft.', scoreBadge: 'GQT 40+', levelBadge: 'LVL 2+', textColor: 'text-orange-400', borderColor: 'border-orange-500/40', glow: false },
+  { rank: 'F',   name: 'F CLASS',   subtitle: 'UNRANKED',  description: 'Default for new editors. Rank up by leveling or taking the GQT.', scoreBadge: 'GQT < 40', levelBadge: 'LVL 1', textColor: 'text-muted-foreground', borderColor: 'border-border', glow: false },
 ];
 
 const getMeta = (rank: GQTRank) => CLASSES.find(c => c.rank === rank) || CLASSES[CLASSES.length - 1];
@@ -117,8 +117,8 @@ export default function ClassPage() {
                   <p className={`font-display text-5xl leading-none ${userMeta.textColor}`}>{userMeta.name}</p>
                   <p className="text-[10px] text-muted-foreground uppercase tracking-[0.25em] mt-1">{userMeta.subtitle}</p>
                 </div>
-                <div className={`w-14 h-14 rounded-xl bg-black border ${userMeta.borderColor} flex items-center justify-center shrink-0`}>
-                  <userMeta.icon className={`w-6 h-6 ${userMeta.textColor}`} strokeWidth={2} />
+                <div className={`relative w-20 h-20 rounded-2xl bg-black border ${userMeta.borderColor} flex items-center justify-center shrink-0`}>
+                  <ClassBadge rank={effectiveRank} size={62} />
                 </div>
               </div>
 
@@ -176,52 +176,58 @@ export default function ClassPage() {
         </div>
       </div>
 
-      {/* ─── All Classes ─── */}
-      <div className="px-4 mt-6 space-y-2">
+      {/* ─── All Classes — badge showcase grid ─── */}
+      <div className="px-4 mt-6">
         <p className="text-[10px] text-muted-foreground uppercase tracking-[0.25em] mb-3 px-1">All Classes</p>
-        {CLASSES.map((c, i) => {
-          const cIdx = getRankIndex(c.rank);
-          const isCurrent = c.rank === effectiveRank;
-          const isLocked = cIdx > userIdx;
-          const isUnlocked = cIdx <= userIdx;
+        <div className="grid grid-cols-2 gap-2.5">
+          {CLASSES.map((c, i) => {
+            const cIdx = getRankIndex(c.rank);
+            const isCurrent = c.rank === effectiveRank;
+            const isLocked = cIdx > userIdx;
+            const isUnlocked = cIdx <= userIdx;
 
-          return (
-            <motion.div
-              key={c.rank}
-              initial={{ opacity: 0, x: -12 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.03 }}
-              className={`relative overflow-hidden rounded-xl bg-[#0a0a0a] border ${isCurrent ? c.borderColor + ' ring-1 ring-gold/40' : 'border-white/5'} ${isLocked ? 'opacity-50' : ''} p-4`}
-            >
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-lg bg-black border ${c.borderColor} flex items-center justify-center shrink-0`}>
-                  <c.icon className={`w-4 h-4 ${c.textColor}`} strokeWidth={2} />
+            return (
+              <motion.div
+                key={c.rank}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.03 }}
+                className={`relative overflow-hidden rounded-2xl border ${isCurrent ? c.borderColor + ' ring-1 ring-gold/40' : 'border-white/[0.06]'} ${isLocked ? 'opacity-45' : ''} p-3.5 flex flex-col items-center text-center gap-2.5`}
+                style={{ background: isCurrent ? 'linear-gradient(180deg, #16161a 0%, #0a0a0a 100%)' : '#0c0c0e' }}
+              >
+                {/* Status chip — top-right corner */}
+                <div className="absolute top-2.5 right-2.5">
+                  {isCurrent ? (
+                    <span className="flex items-center gap-1 text-[8px] uppercase tracking-wider font-bold bg-gold/20 text-gold px-1.5 py-0.5 rounded">
+                      <Check className="w-2.5 h-2.5" strokeWidth={3} /> You
+                    </span>
+                  ) : isLocked ? (
+                    <Lock className="w-3 h-3 text-muted-foreground/60" />
+                  ) : (
+                    <span className="text-[8px] uppercase tracking-wider text-emerald-400/70 font-semibold">Unlocked</span>
+                  )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className={`font-display text-xl ${c.textColor}`}>{c.name}</p>
-                    {isCurrent && (
-                      <span className="text-[8px] uppercase tracking-wider font-bold bg-gold/20 text-gold px-1.5 py-0.5 rounded">You</span>
-                    )}
-                    {isUnlocked && !isCurrent && (
-                      <span className="text-[8px] uppercase tracking-wider text-emerald-400/80">Unlocked</span>
-                    )}
-                  </div>
-                  <p className="text-[10px] text-muted-foreground/80 truncate">{c.description}</p>
+
+                <div className="mt-1 p-2 rounded-2xl bg-black/40 border border-white/[0.05]">
+                  <ClassBadge rank={c.rank} size={52} />
                 </div>
-                {isLocked && <Lock className="w-3.5 h-3.5 text-muted-foreground shrink-0" />}
-              </div>
-              <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-white/5 flex-wrap">
-                <span className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 border ${c.borderColor} ${c.textColor} bg-black rounded`}>{c.scoreBadge}</span>
-                <span className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 border border-white/10 text-muted-foreground bg-black rounded`}>{c.levelBadge}</span>
-                {c.rank !== 'F' && (
-                  <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 bg-gold/10 text-gold border border-gold/20 rounded">+{getIndexFloorFromRank(c.rank)} INDEX</span>
-                )}
-              </div>
-            </motion.div>
-          );
-        })}
-        <p className="text-center text-[10px] text-muted-foreground/60 uppercase tracking-widest pt-4">
+
+                <div>
+                  <p className={`font-display text-lg leading-none ${c.textColor}`}>{c.name}</p>
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-[0.2em] mt-1">{c.subtitle}</p>
+                </div>
+
+                <div className="flex items-center justify-center gap-1 flex-wrap pt-1.5 mt-auto border-t border-white/5 w-full">
+                  <span className={`text-[8px] uppercase tracking-wider px-1.5 py-0.5 border ${c.borderColor} ${c.textColor} bg-black rounded`}>{c.scoreBadge}</span>
+                  {c.rank !== 'F' && (
+                    <span className="text-[8px] uppercase tracking-wider px-1.5 py-0.5 bg-gold/10 text-gold border border-gold/20 rounded">+{getIndexFloorFromRank(c.rank)} IDX</span>
+                  )}
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+        <p className="text-center text-[10px] text-muted-foreground/60 uppercase tracking-widest pt-5">
           Class updates automatically
         </p>
       </div>
