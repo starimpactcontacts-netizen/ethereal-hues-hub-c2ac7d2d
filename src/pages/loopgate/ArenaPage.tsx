@@ -1763,10 +1763,10 @@ export default function ArenaPage() {
                   </div>
                   <button
                     onClick={() => toast.info('Drop your edit. Get a shareable Loopgate page. World rates. You earn Rings.', { duration: 4500 })}
-                    className="w-5 h-5 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 active:scale-90 transition"
+                    className="w-5 h-5 flex items-center justify-center hover:opacity-80 active:scale-90 transition"
                     aria-label="About Solo"
                   >
-                    <Info className="w-3 h-3 text-white/60" />
+                    <Info className="w-3 h-3 text-white/40" />
                   </button>
                 </div>
                 <button
