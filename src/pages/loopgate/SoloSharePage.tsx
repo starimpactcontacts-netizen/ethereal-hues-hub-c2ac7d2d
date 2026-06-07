@@ -113,7 +113,7 @@ export default function SoloSharePage() {
   const description = share.caption || `Rate ${share.username}'s edit on Loopgate. Independent rating page for editors.`;
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="fixed inset-0 bg-black text-white flex flex-col overflow-hidden">
       <SEO
         title={`${title} — by @${share.username}`}
         description={description}
@@ -122,7 +122,7 @@ export default function SoloSharePage() {
       />
 
       {/* Top bar */}
-      <div className="sticky top-0 z-20 bg-black/80 backdrop-blur-xl border-b border-white/5">
+      <div className="shrink-0 z-20 bg-black/80 backdrop-blur-xl border-b border-white/5" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="max-w-xl mx-auto px-4 h-12 flex items-center justify-between">
           <Link to="/start" className="flex items-center gap-2">
             <GateIcon size={22} />
@@ -138,7 +138,7 @@ export default function SoloSharePage() {
         </div>
       </div>
 
-      <main className="max-w-xl mx-auto px-4 pb-24">
+      <main className="flex-1 overflow-y-auto overscroll-contain w-full max-w-xl mx-auto px-4 pb-24" style={{ WebkitOverflowScrolling: 'touch', paddingBottom: 'calc(6rem + env(safe-area-inset-bottom))' }}>
         {/* Header */}
         <div className="pt-5 pb-4">
           <div className="flex items-center gap-3">
