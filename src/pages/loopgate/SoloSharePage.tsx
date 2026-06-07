@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { Star, Send, ExternalLink, Loader2, Copy, Check, MessageCircle, Eye, Clock, AlertTriangle, Music, X } from 'lucide-react';
+import { Star, Send, ExternalLink, Loader2, Copy, Check, MessageCircle, Eye, Clock, AlertTriangle, Music, X, Download, Shield } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSoloShareBySlug, submitSoloShareRating } from '@/hooks/useSoloShares';
 import { getEmbedUrl } from '@/lib/videoEmbed';
@@ -13,6 +13,7 @@ import SEO from '@/components/SEO';
 import { toast } from 'sonner';
 import GateIcon from '@/components/loopgate/GateIcon';
 import { supabase } from '@/integrations/supabase/client';
+import html2canvas from 'html2canvas';
 
 const RATED_KEY = (slug: string) => `lg_solo_rated_${slug}`;
 
@@ -29,10 +30,24 @@ export default function SoloSharePage() {
   const [submitting, setSubmitting] = useState(false);
   const [alreadyRated, setAlreadyRated] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [editorProfile, setEditorProfile] = useState<{ level: number; league: string; global_index_score: number } | null>(null);
+  const [downloading, setDownloading] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (slug && localStorage.getItem(RATED_KEY(slug))) setAlreadyRated(true);
   }, [slug]);
+
+  // Fetch editor profile for HUD
+  useEffect(() => {
+    if (!share?.user_id) return;
+    supabase
+      .from('profiles')
+      .select('level, league, global_index_score')
+      .eq('id', share.user_id)
+      .maybeSingle()
+      .then(({ data }) => { if (data) setEditorProfile(data as any); });
+  }, [share?.user_id]);
 
   // Bump views once per page load (best-effort, non-owner)
   useEffect(() => {
