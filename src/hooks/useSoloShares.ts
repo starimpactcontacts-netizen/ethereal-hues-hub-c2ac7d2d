@@ -146,6 +146,7 @@ export async function createSoloShare(input: {
   start_offset_seconds?: number;
   song_name?: string | null;
   scenepack_url?: string | null;
+  thumbnail_url?: string | null;
 }): Promise<SoloShare | null> {
   // Try a few times in case of slug collision
   for (let i = 0; i < 5; i++) {
