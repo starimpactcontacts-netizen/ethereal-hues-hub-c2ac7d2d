@@ -1799,13 +1799,22 @@ export default function ArenaPage() {
                           onClick={() => navigate(`/s/${s.slug}`)}
                           className="w-full h-full relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] text-left active:scale-[0.98] transition-transform group"
                         >
-                          {s.thumbnail_url ? (
-                            <img src={s.thumbnail_url} alt={s.title || 'Solo edit'} className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition" loading="lazy" />
-                          ) : (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <Star className="w-10 h-10 text-white/15 fill-white/10" />
-                            </div>
-                          )}
+                          {(() => {
+                            const thumb = s.thumbnail_url || getBunnyThumbnail(s.video_url);
+                            return thumb ? (
+                              <img
+                                src={thumb}
+                                alt={s.title || 'Solo edit'}
+                                className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 transition"
+                                loading="lazy"
+                                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                              />
+                            ) : (
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <Film className="w-8 h-8 text-white/15" />
+                              </div>
+                            );
+                          })()}
                           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                           <div className="absolute top-2 left-2 right-2 flex items-center justify-between">
                             <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-white text-black">SOLO</span>
