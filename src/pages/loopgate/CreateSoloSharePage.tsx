@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import GateIcon from '@/components/loopgate/GateIcon';
 import BunnyVideo from '@/components/loopgate/BunnyVideo';
 import { uploadToBunny, MAX_EDIT_UPLOAD_BYTES, MAX_EDIT_UPLOAD_LABEL } from '@/lib/bunnyUpload';
+import { getVideoPreviewFrame } from '@/lib/extractVideoFrames';
 import { loadSoloDraft, saveSoloDraft, clearSoloDraft, loadActiveSoloDraft, saveActiveSoloDraft, clearActiveSoloDraft, loadLatestSoloDraft, isLiveDraft } from '@/lib/soloDraft';
 
 const teko = { fontFamily: 'Teko, sans-serif' };
@@ -72,6 +73,7 @@ export default function CreateSoloSharePage() {
   // Local object-URL preview so the editor monitor shows the just-uploaded
   // clip instantly while Bunny Stream transcodes the HLS/MP4 in the background.
   const [localPreview, setLocalPreview] = useState<string | null>(null);
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Song preview audio
@@ -225,6 +227,24 @@ export default function CreateSoloSharePage() {
       setLocalPreview(objUrl);
       setPlatform('bunny');
     } catch {}
+    setThumbnailUrl(null);
+    // Extract a thumbnail frame in parallel with the Bunny upload
+    (async () => {
+      try {
+        const dataUrl = await getVideoPreviewFrame(file);
+        const blob = await (await fetch(dataUrl)).blob();
+        const path = `${user?.id || 'anon'}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+        const { error } = await supabase.storage
+          .from('solo-thumbnails')
+          .upload(path, blob, { contentType: 'image/jpeg', upsert: false });
+        if (!error) {
+          const { data } = supabase.storage.from('solo-thumbnails').getPublicUrl(path);
+          if (data?.publicUrl) setThumbnailUrl(data.publicUrl);
+        }
+      } catch (e) {
+        console.warn('[Solo] Thumbnail extract failed', e);
+      }
+    })();
     setUploading(true);
     setUploadPct(0);
     try {
@@ -271,6 +291,7 @@ export default function CreateSoloSharePage() {
       start_offset_seconds: Math.max(0, Math.floor(startOffset)),
       song_name: song?.song_name || null,
       scenepack_url: scenepack ? `scenepack:${scenepack.id}` : null,
+      thumbnail_url: thumbnailUrl,
     });
     if (!share) { toast.error('Could not publish. Try again.'); setPublishing(false); return; }
     clearSoloDraft(user.id);
