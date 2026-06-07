@@ -1098,11 +1098,27 @@ function NLECockpit({
               className="relative w-full rounded-md overflow-hidden bg-black"
               style={{ aspectRatio: '16/10', border: `1px solid ${tone}44` }}
             >
-              <BunnyVideo
-                ref={videoRef}
-                src={videoUrl}
-                className="w-full h-full object-contain"
-                controls
+              {localPreview ? (
+                <video
+                  ref={videoRef}
+                  src={localPreview}
+                  className="w-full h-full object-contain"
+                  controls
+                  playsInline
+                  onLoadedMetadata={(e) => {
+                    const d = (e.currentTarget as HTMLVideoElement).duration;
+                    if (isFinite(d)) setDuration(d);
+                  }}
+                  onTimeUpdate={(e) => setCurrentTime((e.currentTarget as HTMLVideoElement).currentTime)}
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                />
+              ) : (
+                <BunnyVideo
+                  ref={videoRef}
+                  src={videoUrl}
+                  className="w-full h-full object-contain"
+                  controls
                 onLoadedMetadata={(e) => {
                   const d = (e.currentTarget as HTMLVideoElement).duration;
                   if (isFinite(d)) setDuration(d);
@@ -1110,7 +1126,8 @@ function NLECockpit({
                 onTimeUpdate={(e) => setCurrentTime((e.currentTarget as HTMLVideoElement).currentTime)}
                 onPlay={() => setIsPlaying(true)}
                 onPause={() => setIsPlaying(false)}
-              />
+                />
+              )}
               {[
                 'top-1.5 left-1.5 border-t border-l',
                 'top-1.5 right-1.5 border-t border-r',
