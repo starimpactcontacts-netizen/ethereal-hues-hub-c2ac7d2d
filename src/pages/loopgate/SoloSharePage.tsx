@@ -241,7 +241,10 @@ export default function SoloSharePage() {
         <div className="flex items-center gap-4 mt-3 text-[11px] text-white/50">
           <div className="flex items-center gap-1"><Eye className="w-3.5 h-3.5" /> {share.views} views</div>
           <div className="flex items-center gap-1"><MessageCircle className="w-3.5 h-3.5" /> {ratings.filter(r => r.comment).length} feedback</div>
-          <div className="flex items-center gap-1">💍 {share.rings_earned} Rings earned</div>
+          <div className="flex items-center gap-1">
+            <span className="font-display font-black text-emerald-400">R$</span>
+            {share.rings_earned} earned
+          </div>
         </div>
 
         {/* Rating block */}
@@ -265,8 +268,8 @@ export default function SoloSharePage() {
             </div>
           ) : (
             <>
-              <div className="text-[11px] uppercase tracking-[0.18em] text-white/40 mb-2">Rate this edit</div>
-              <div className="flex items-center gap-1.5 mb-4">
+              <div className="text-center font-display text-lg font-bold mb-3">Rate this edit</div>
+              <div className="flex items-center justify-center gap-1 mb-4 rounded-xl bg-white/[0.04] border border-white/10 py-3">
                 {[1, 2, 3, 4, 5].map((n) => {
                   const filled = (hover || stars) >= n;
                   return (
@@ -275,10 +278,10 @@ export default function SoloSharePage() {
                       onMouseEnter={() => setHover(n)}
                       onMouseLeave={() => setHover(0)}
                       onClick={() => setStars(n)}
-                      className="p-1"
+                      className="p-1 active:scale-90 transition-transform"
                       aria-label={`${n} star${n > 1 ? 's' : ''}`}
                     >
-                      <Star className={`w-8 h-8 transition-colors ${filled ? 'fill-amber-400 text-amber-400' : 'text-white/20'}`} />
+                      <Star className={`w-10 h-10 transition-colors ${filled ? 'fill-amber-400 text-amber-400' : 'text-white/15'}`} strokeWidth={1.5} />
                     </button>
                   );
                 })}
