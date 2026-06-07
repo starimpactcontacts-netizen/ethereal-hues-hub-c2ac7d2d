@@ -123,14 +123,17 @@ export default function SoloSharePage() {
 
       {/* Top bar */}
       <div className="shrink-0 z-20 bg-black/80 backdrop-blur-xl border-b border-white/5" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-        <div className="max-w-xl mx-auto px-4 h-12 flex items-center justify-between">
-          <Link to="/start" className="flex items-center gap-2">
-            <GateIcon size={22} />
-            <span className="font-display text-lg tracking-tight">LOOPGATE</span>
-          </Link>
+        <div className="max-w-xl mx-auto px-3 h-12 flex items-center justify-between gap-2">
+          <button
+            onClick={() => (user ? navigate('/solo') : navigate('/start'))}
+            className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/15 flex items-center justify-center active:scale-90 transition-transform"
+            aria-label="Exit"
+          >
+            <X className="w-5 h-5" />
+          </button>
           <button
             onClick={handleCopy}
-            className="text-xs px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 flex items-center gap-1.5"
+            className="text-xs px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 flex items-center gap-1.5"
           >
             {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
             {copied ? 'Copied' : 'Share'}
