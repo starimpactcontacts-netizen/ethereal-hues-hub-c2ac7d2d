@@ -349,11 +349,16 @@ export default function CreateSoloSharePage() {
             <NLECockpit
               tone={tonePicked}
               videoUrl={videoUrl}
+              localPreview={localPreview}
               uploading={uploading}
               uploadPct={uploadPct}
               platform={platform}
               onPick={() => fileInputRef.current?.click()}
-              onReplace={() => { setVideoUrl(''); fileInputRef.current?.click(); }}
+              onReplace={() => {
+                if (localPreview) { URL.revokeObjectURL(localPreview); setLocalPreview(null); }
+                setVideoUrl('');
+                fileInputRef.current?.click();
+              }}
               title={title}
               setTitle={setTitle}
               caption={caption}
@@ -691,7 +696,7 @@ function OsuLobby({ user, profile, onPick }: { user: any; profile: any; onPick: 
 }
 /* ====== NLE COCKPIT — AE/Premiere/Resolve x Roblox-Draw ====== */
 function NLECockpit({
-  tone, videoUrl, uploading, uploadPct, platform, onPick, onReplace,
+  tone, videoUrl, localPreview, uploading, uploadPct, platform, onPick, onReplace,
   title, setTitle, caption, setCaption, overtime, remainingMs, timerLabel, onCancel,
   packs, songs, libLoading, scenepack, setScenepack, song, setSong, previewingId, togglePreview,
   onPublish, canPublish,
@@ -699,6 +704,7 @@ function NLECockpit({
 }: {
   tone: string;
   videoUrl: string;
+  localPreview: string | null;
   uploading: boolean;
   uploadPct: number;
   platform: 'tiktok' | 'instagram' | 'youtube' | 'bunny';
@@ -726,7 +732,11 @@ function NLECockpit({
   startOffset: number;
   setStartOffset: (n: number) => void;
 }) {
-  const hasVid = !!videoUrl && platform === 'bunny' && !uploading;
+  // Use the local object-URL while Bunny finishes transcoding; fall back to the
+  // CDN MP4/HLS once it's ready. Either source counts as "video loaded".
+  const playSrc = localPreview || (platform === 'bunny' ? videoUrl : '');
+  const hasVid = !!playSrc && !uploading;
+  const isHls = !localPreview && !!videoUrl && /\.m3u8(\?|$)/i.test(videoUrl);
   const timerDisplay = overtime ? `+${fmtRemaining(-remainingMs)}` : fmtRemaining(remainingMs);
   const timerColor = overtime ? '#ef4444' : tone;
   const [bin, setBin] = useState<'packs' | 'tracks'>('packs');
