@@ -1754,21 +1754,21 @@ export default function ArenaPage() {
           {(activeFilter === "all" || activeFilter === "competitions") && (
             <div id="arena-solo" className="mb-5">
               <div className="flex items-center justify-between px-4 mb-2">
-                <div className="flex items-center gap-2">
-                  <div>
-                    <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">New</div>
-                    <span className="text-[15px] font-extrabold text-foreground tracking-tight leading-none" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
-                      Solo
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => toast.info('Drop your edit. Get a shareable Loopgate page. World rates. You earn Rings.', { duration: 4500 })}
-                    className="w-5 h-5 flex items-center justify-center hover:opacity-80 active:scale-90 transition"
-                    aria-label="About Solo"
-                  >
-                    <Info className="w-3 h-3 text-white/40" />
-                  </button>
-                </div>
+                 <div>
+                   <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">New</div>
+                   <div className="flex items-center gap-1.5">
+                     <span className="text-[15px] font-extrabold text-foreground tracking-tight leading-none" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
+                       Solo
+                     </span>
+                     <button
+                       onClick={() => toast.info('Drop your edit. Get a shareable Loopgate page. World rates. You earn Rings.', { duration: 4500 })}
+                       className="flex items-center justify-center hover:opacity-80 active:scale-90 transition"
+                       aria-label="About Solo"
+                     >
+                       <Info className="w-3 h-3 text-white/40" />
+                     </button>
+                   </div>
+                 </div>
                 <button
                   onClick={() => navigate(profile ? '/solo' : '/start')}
                   className="text-[11px] text-white/60 hover:text-white flex items-center gap-1"
