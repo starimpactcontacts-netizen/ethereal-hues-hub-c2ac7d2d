@@ -1799,8 +1799,12 @@ export default function ArenaPage() {
                       <ArenaRailCard key={s.id}>
                         <button
                           onClick={() => navigate(`/s/${s.slug}`)}
-                          className="w-full h-full relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] text-left active:scale-[0.98] transition-transform group"
+                          className="w-full h-full relative overflow-hidden rounded-2xl border border-white/[0.08] text-left active:scale-[0.98] transition-transform group"
+                          style={{ background: 'linear-gradient(180deg, #1c1c20 0%, #111114 100%)' }}
                         >
+                          {/* Accent glow bar — Rings green, Solo's currency tone */}
+                          <div className="absolute top-0 left-0 right-0 h-[2px] z-10" style={{ background: 'linear-gradient(90deg, #3BCB6B, transparent 65%)' }} />
+
                           {(() => {
                             const thumb = s.thumbnail_url || getBunnyThumbnail(s.video_url);
                             return thumb ? (
@@ -1813,22 +1817,30 @@ export default function ArenaPage() {
                               />
                             ) : (
                               <div className="absolute inset-0 flex items-center justify-center">
-                                <Film className="w-8 h-8 text-white/15" />
+                                <div className="absolute inset-0 opacity-[0.05]" style={{
+                                  backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 1px)',
+                                  backgroundSize: '18px 18px',
+                                }} />
+                                <Film className="w-7 h-7 text-white/15 relative" />
                               </div>
                             );
                           })()}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-                          <div className="absolute top-2 left-2 right-2 flex items-center justify-between">
-                            <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-white text-black">SOLO</span>
-                            <span className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/60 text-white/80 border border-white/10">{s.slug.toUpperCase()}</span>
+                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-transparent" />
+                          <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between z-10">
+                            <span className="text-[8px] font-black uppercase tracking-[0.2em] px-1.5 py-0.5 rounded bg-white text-black leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>Solo</span>
+                            <span className="text-[8px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/60 text-white/65 border border-white/10 leading-none">{s.slug.toUpperCase()}</span>
                           </div>
                           <div className="absolute bottom-0 left-0 right-0 p-2.5">
                             <div className="font-display text-sm leading-tight truncate text-white">{s.title || 'Untitled edit'}</div>
-                            <div className="text-[10px] text-white/60 truncate">@{s.username}</div>
-                            <div className="mt-1 flex items-center gap-1 text-[10px] text-white/70">
+                            <div className="text-[10px] text-white/40 truncate mt-0.5 uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>@{s.username}</div>
+                            <div className="mt-1.5 flex items-center gap-1">
                               <Star className="w-3 h-3 fill-gold text-gold" />
-                              <span className="font-bold">{s.total_ratings > 0 ? s.avg_rating.toFixed(1) : '—'}</span>
-                              <span className="text-white/40">· {s.total_ratings} {s.total_ratings === 1 ? 'rate' : 'rates'}</span>
+                              <span className="text-[12px] font-black text-gold tabular-nums leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>
+                                {s.total_ratings > 0 ? s.avg_rating.toFixed(1) : '—'}
+                              </span>
+                              <span className="text-[10px] text-white/30 tabular-nums" style={{ fontFamily: 'Teko, sans-serif' }}>
+                                · {s.total_ratings} {s.total_ratings === 1 ? 'rate' : 'rates'}
+                              </span>
                             </div>
                           </div>
                         </button>
