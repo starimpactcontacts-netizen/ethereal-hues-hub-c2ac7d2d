@@ -1,9 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Star, Copy, Check, Zap, Eye, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Plus, Star, Copy, Check, Zap, Eye, ChevronRight, Play } from 'lucide-react';
 import { useMySoloShares } from '@/hooks/useSoloShares';
 import { Skeleton } from '@/components/ui/skeleton';
 import SEO from '@/components/SEO';
-import NotificationCenter from '@/components/loopgate/NotificationCenter';
 import { useState } from 'react';
 
 const TEKO = { fontFamily: 'Teko, sans-serif' };
@@ -45,7 +44,13 @@ export default function SoloHubPage() {
             <ArrowLeft className="w-3.5 h-3.5 text-white/70" />
           </button>
           <span className="text-[10px] font-black uppercase tracking-[0.26em] text-white/30" style={TEKO}>My Solo Pages</span>
-          <NotificationCenter />
+          <button
+            onClick={() => navigate('/solo/create')}
+            aria-label="Go to Solo lobby"
+            className="w-8 h-8 rounded-md flex items-center justify-center bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] active:scale-95 transition-all"
+          >
+            <Play className="w-3.5 h-3.5 text-white/50" fill="currentColor" />
+          </button>
         </div>
       </div>
 
