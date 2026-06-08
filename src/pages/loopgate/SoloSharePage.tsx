@@ -708,20 +708,15 @@ export default function SoloSharePage() {
           </div>
         </div>
 
-        {/* Feedback count + (owner-only) Rings earned — short, no wall of text */}
-        <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-white/[0.07] px-3.5 py-3" style={{ background: '#111114' }}>
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-black text-white/40 tabular-nums shrink-0" style={TEKO}>
-            <MessageCircle className="w-3.5 h-3.5 text-white/30" />
-            {ratings.length}
-            <span className="text-[8px] uppercase tracking-[0.2em] text-white/25 font-black">feedback</span>
-          </span>
-          {isOwner && (
+        {/* Rings earned — owner-only, no point showing it (or a feedback count) to visitors */}
+        {isOwner && (
+          <div className="mt-3 flex items-center justify-end rounded-xl border border-white/[0.07] px-3.5 py-3" style={{ background: '#111114' }}>
             <span className="inline-flex items-center gap-1.5 text-[11px] font-black tabular-nums shrink-0" style={TEKO}>
               <span style={{ color: '#3BCB6B' }}>${share.rings_earned}</span>
               <span className="text-[8px] uppercase tracking-[0.2em] text-white/25 font-black">earned</span>
             </span>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Rating block */}
         <section className="relative mt-6 rounded-2xl overflow-hidden border border-white/[0.07] p-4" style={{ background: 'linear-gradient(180deg, #18181b 0%, #0e0e10 100%)' }}>
